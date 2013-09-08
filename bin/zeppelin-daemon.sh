@@ -25,7 +25,7 @@
 #
 
 usage="Usage: zeppelin-daemon.sh [--config <conf-dir>]\
- (start|stop|restart) \
+ (start|stop|restart|status) \
  <args...>"
 
 # if no args specified, show usage
@@ -60,49 +60,80 @@ fi
 
 ZEPPELIN_MAIN=org.apache.zeppelin.server.ZeppelinServer
 
-case $startStop in
-    (start)
-	if [ -f "$pid" ]; then
-	    if kill -0 `cat $pid` > /dev/null 2>&1; then
-		echo zeppelin running as process `cat $pid`. Stop it first.
-		exit 1
-	    fi
-	fi
-	
-	if [ ! -d "$ZEPPELIN_LOG_DIR" ]; then
-	    echo "Log dir doesn't exist, create $ZEPPELIN_LOG_DIR"
-	    mkdir -p "$ZEPPELIN_LOG_DIR"
-	fi
-
-	if [ ! -d "$ZEPPELIN_PID_DIR" ]; then
-	    echo "Pid dir doesn't exist, create $ZEPPELIN_PID_DIR"
-	    mkdir -p "$ZEPPELIN_PID_DIR"
-	fi
 
 
-	nohup nice -n $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER $ZEPPELIN_MAIN -cp $CLASSPATH $JAVA_OPTS "$@" >> "$log" 2>&1 < /dev/null &
-	newpid=$!
-	echo $newpid > $pid
-	sleep 2
-	# Check if the process has died; in that case we'll tail the log so the user can see
-	if ! kill -0 $newpid >/dev/null 2>&1; then
-	    echo "failed to launch Zeppelin:"
-	    tail -2 "$log" | sed 's/^/  /'
-	    echo "full log in $log"
+function start(){
+    if [ -f "$pid" ]; then
+	if kill -0 `cat $pid` > /dev/null 2>&1; then
+	    echo zeppelin running as process `cat $pid`. Stop it first.
+	    exit 1
 	fi
-	;;
-    (stop)
-	if [ -f $pid ]; then
-	    if kill -0 `cat $pid` > /dev/null 2>&1; then
-		echo stopping Zeppelin
-		kill `cat $pid`
-	    else
-		echo no Zeppelin to stop
-	    fi
+    fi
+    
+    if [ ! -d "$ZEPPELIN_LOG_DIR" ]; then
+	echo "Log dir doesn't exist, create $ZEPPELIN_LOG_DIR"
+	mkdir -p "$ZEPPELIN_LOG_DIR"
+    fi
+
+    if [ ! -d "$ZEPPELIN_PID_DIR" ]; then
+	echo "Pid dir doesn't exist, create $ZEPPELIN_PID_DIR"
+	mkdir -p "$ZEPPELIN_PID_DIR"
+    fi
+
+
+    nohup nice -n $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER $ZEPPELIN_MAIN -cp $CLASSPATH $JAVA_OPTS "$@" >> "$log" 2>&1 < /dev/null &
+    newpid=$!
+    echo $newpid > $pid
+    sleep 2
+    # Check if the process has died; in that case we'll tail the log so the user can see
+    if ! kill -0 $newpid >/dev/null 2>&1; then
+	echo "failed to launch Zeppelin:"
+	tail -2 "$log" | sed 's/^/  /'
+	echo "full log in $log"
+    fi
+
+}
+
+function stop(){
+    if [ -f $pid ]; then
+	if kill -0 `cat $pid` > /dev/null 2>&1; then
+	    echo Shutdown Zeppelin
+	    kill `cat $pid`
 	else
 	    echo no Zeppelin to stop
 	fi
+    else
+	echo no Zeppelin to stop
+    fi
+
+}
+
+function status(){
+    if [ -f "${pid}" ] && kill -0 `cat $pid` > /dev/null 2>&1; then
+	echo "Zeppelin is running `cat $pid`"
+	exit 0
+    else
+	echo "Zeppelin is not running"
+	exit 1
+    fi
+}
+
+
+case $startStop in
+    (start)
+	start
 	;;
+    (stop)
+	stop
+	;;
+    (restart)
+	stop
+	start
+	;;
+    (status)
+	status
+	;;
+
     (*)
 	echo $usage
 	exit 1
