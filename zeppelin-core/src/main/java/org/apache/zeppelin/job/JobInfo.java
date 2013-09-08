@@ -1,7 +1,7 @@
-package org.nflabs.zeppelin.job;
+package org.apache.zeppelin.job;
 
-import org.nflabs.zeppelin.driver.Progress;
-import org.nflabs.zeppelin.job.JobRunner.Status;
+import org.apache.zeppelin.driver.Progress;
+import org.apache.zeppelin.job.JobRunner.Status;
 
 public class JobInfo {
 	Job job;

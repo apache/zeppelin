@@ -1,4 +1,4 @@
-package org.nflabs.zeppelin.job;
+package org.apache.zeppelin.job;
 
 import java.util.Date;
 import java.util.Random;

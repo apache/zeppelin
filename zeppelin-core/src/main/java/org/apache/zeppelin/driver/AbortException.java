@@ -1,4 +1,4 @@
-package org.nflabs.zeppelin.driver;
+package org.apache.zeppelin.driver;
 
 public class AbortException extends Exception{
 

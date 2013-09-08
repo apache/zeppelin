@@ -1,6 +1,8 @@
-package org.nflabs.zeppelin.job;
+package org.apache.zeppelin.job;
 
 import java.util.Date;
+
+import org.apache.zeppelin.job.JobId;
 
 import junit.framework.TestCase;
 

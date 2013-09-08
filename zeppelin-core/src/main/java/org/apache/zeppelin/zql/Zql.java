@@ -1,4 +1,4 @@
-package org.nflabs.zeppelin.zql;
+package org.apache.zeppelin.zql;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,10 +9,37 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.nflabs.zeppelin.job.Job;
-import org.nflabs.zeppelin.job.JobId;
+import org.apache.zeppelin.job.Job;
+import org.apache.zeppelin.job.JobId;
 
-
+/**
+ * 
+ * select * from tbl
+ * 
+ * select * from tbl | select * from (${zql})
+ * 
+ * select * from tbl1 && select * from tbl2
+ * 
+ * select * from tbl1 || select * from tbl2
+ * 
+ * select * from tbl1 ; select * from tbl2
+ * 
+ * select * from tbl1 | exec wc -l 
+ * 
+ * select * from tbl1 > tbl3
+ * 
+ * select * from tbl1 >> tbl3
+ * 
+ * select * from tbl1 | wc -l | as table test(a int b a
+ * 
+ * select * from tbl1 && exec --- && exec |   // pipe trying to read last one
+ * 
+ * email 
+ * 
+ * 
+ * @author moon
+ *
+ */
 public class Zql {
 	private String zql;
 	private File appRoot;

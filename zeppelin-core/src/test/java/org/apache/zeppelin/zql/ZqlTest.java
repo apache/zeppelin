@@ -1,12 +1,21 @@
-package org.nflabs.zeppelin.zql;
+package org.apache.zeppelin.zql;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
+import org.antlr.runtime.ANTLRInputStream;
+import org.antlr.runtime.CharStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.RecognitionException;
 import org.apache.commons.io.FileUtils;
-import org.nflabs.zeppelin.job.Job;
+import org.apache.zeppelin.job.Job;
+import org.apache.zeppelin.zql.App;
+import org.apache.zeppelin.zql.Zql;
+import org.apache.zeppelin.zql.ZqlLexer;
+import org.apache.zeppelin.zql.ZqlParser;
 
 
 import junit.framework.TestCase;
@@ -39,7 +48,17 @@ public class ZqlTest extends TestCase {
 			file.delete();
 		}
 	}
+	
+	private ZqlParser createParser(String str) throws IOException{
+		ZqlLexer lex = new ZqlLexer(new ANTLRInputStream(new ByteArrayInputStream(str.getBytes())));
+		CommonTokenStream tokens = new CommonTokenStream(lex);
 
+		ZqlParser parser = new ZqlParser(tokens);
+		return parser;
+		
+	}
+
+	
 	
 	public void testHiveInvalidApp(){
 		new File(tmpDir.getAbsolutePath()+"/testapp1").mkdir();

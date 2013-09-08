@@ -1,7 +1,7 @@
-package org.nflabs.zeppelin.driver;
+package org.apache.zeppelin.driver;
 
-import org.nflabs.zeppelin.job.Job;
-import org.nflabs.zeppelin.job.JobResult;
+import org.apache.zeppelin.job.Job;
+import org.apache.zeppelin.job.JobResult;
 
 public interface Driver {
 	/**

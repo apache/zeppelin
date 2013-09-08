@@ -1,4 +1,4 @@
-package org.nflabs.zeppelin.job;
+package org.apache.zeppelin.job;
 
 public class JobResult {
 	String query; // query to select result

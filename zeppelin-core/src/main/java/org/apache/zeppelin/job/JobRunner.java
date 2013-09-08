@@ -1,10 +1,10 @@
-package org.nflabs.zeppelin.job;
+package org.apache.zeppelin.job;
 
 import java.util.logging.Logger;
 
-import org.nflabs.zeppelin.driver.AbortException;
-import org.nflabs.zeppelin.driver.Driver;
-import org.nflabs.zeppelin.driver.DriverManager;
+import org.apache.zeppelin.driver.AbortException;
+import org.apache.zeppelin.driver.Driver;
+import org.apache.zeppelin.driver.DriverManager;
 
 public class JobRunner implements Runnable{
 	Logger logger = Logger.getLogger(JobRunner.class.getName());

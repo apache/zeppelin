@@ -1,4 +1,4 @@
-package org.nflabs.zeppelin.zql;
+package org.apache.zeppelin.zql;
 
 import java.io.File;
 import java.io.IOException;

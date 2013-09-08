@@ -1,10 +1,10 @@
-package org.nflabs.zeppelin;
+package org.apache.zeppelin;
 
-import org.nflabs.zeppelin.driver.AbortException;
-import org.nflabs.zeppelin.driver.Driver;
-import org.nflabs.zeppelin.driver.Progress;
-import org.nflabs.zeppelin.job.Job;
-import org.nflabs.zeppelin.job.JobResult;
+import org.apache.zeppelin.driver.AbortException;
+import org.apache.zeppelin.driver.Driver;
+import org.apache.zeppelin.driver.Progress;
+import org.apache.zeppelin.job.Job;
+import org.apache.zeppelin.job.JobResult;
 
 public class DummyDriver implements Driver{
 

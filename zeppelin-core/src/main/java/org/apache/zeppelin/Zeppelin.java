@@ -1,4 +1,4 @@
-package org.nflabs.zeppelin;
+package org.apache.zeppelin;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,18 +18,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.nflabs.zeppelin.driver.Driver;
-import org.nflabs.zeppelin.driver.DriverManager;
-import org.nflabs.zeppelin.driver.Progress;
-import org.nflabs.zeppelin.job.Job;
-import org.nflabs.zeppelin.job.JobHistoryManager;
-import org.nflabs.zeppelin.job.JobId;
-import org.nflabs.zeppelin.job.JobInfo;
-import org.nflabs.zeppelin.job.JobResult;
-import org.nflabs.zeppelin.job.JobRunner;
-import org.nflabs.zeppelin.job.JobRunner.Status;
-import org.nflabs.zeppelin.job.JobRunnerListener;
-import org.nflabs.zeppelin.zql.Zql;
+import org.apache.zeppelin.driver.Driver;
+import org.apache.zeppelin.driver.DriverManager;
+import org.apache.zeppelin.driver.Progress;
+import org.apache.zeppelin.job.Job;
+import org.apache.zeppelin.job.JobHistoryManager;
+import org.apache.zeppelin.job.JobId;
+import org.apache.zeppelin.job.JobInfo;
+import org.apache.zeppelin.job.JobResult;
+import org.apache.zeppelin.job.JobRunner;
+import org.apache.zeppelin.job.JobRunnerListener;
+import org.apache.zeppelin.job.JobRunner.Status;
+import org.apache.zeppelin.zql.Zql;
 
 public class Zeppelin implements JobRunnerListener {
 	Logger logger = Logger.getLogger(Zeppelin.class.getName());
