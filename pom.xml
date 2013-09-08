@@ -21,16 +21,142 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.nflabs.zeppelin</groupId>
+	<groupId>org.apache.zeppelin</groupId>
 	<artifactId>zeppelin</artifactId>
 	<packaging>pom</packaging>
 	<version>1.0</version>
 	<name>zeppelin</name>
 
 	<modules>
+		<module>zeppelin-cli</module>
 		<module>zeppelin-core</module>
 		<module>zeppelin-hive-0.9-driver</module>
+		<module>zeppelin-server</module>
+		<module>zeppelin-web</module>
 	</modules>
+
+        <build>
+	  <plugins>
+	    <plugin>
+	      <groupId>org.apache.maven.plugins</groupId>
+	      <artifactId>maven-dependency-plugin</artifactId>
+	      <version>2.8</version>
+	      <executions>
+		<execution>
+		  <id>copy-dependencies</id>
+		  <phase>prepare-package</phase>
+		  <goals>
+		    <goal>copy-dependencies</goal>
+		  </goals>
+		  <configuration>
+		    <outputDirectory>${project.build.directory}/lib</outputDirectory>
+		    <overWriteReleases>false</overWriteReleases>
+		    <overWriteSnapshots>false</overWriteSnapshots>
+		    <overWriteIfNewer>true</overWriteIfNewer>
+		  </configuration>
+		</execution>
+	      </executions>
+	    </plugin>
+
+	    <plugin>
+	      <groupId>org.apache.maven.plugins</groupId>
+	      <artifactId>maven-jar-plugin</artifactId>
+	      <version>2.4</version>
+	      <configuration>
+		<archive>
+		  <manifest>
+		    <addClasspath>true</addClasspath>
+		    <classpathPrefix>lib/</classpathPrefix>
+		    <mainClass>theMainClass</mainClass>
+		  </manifest>
+		</archive>
+	      </configuration>
+	    </plugin>
+
+	    <plugin>
+              <artifactId>maven-assembly-plugin</artifactId>
+              <version>2.4</version>
+
+              <!-- executions>
+		<execution>
+		  <id>make-assembly</id>
+		  <phase>package</phase>
+		  <goals>
+		    <goal>single</goal>
+		  </goals>
+		</execution>
+              </executions -->
+
+              <configuration>
+		<appendAssemblyId>false</appendAssemblyId>
+		<runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
+		<descriptors>
+		  <descriptor>distribution.xml</descriptor>
+		</descriptors>
+              </configuration>	    
+	    </plugin>
+	  </plugins>
+        </build>
+
+	<!-- profiles>
+	  <profile>
+	    <id>dist</id>
+	    <build>
+              <plugins>
+		<plugin>
+		  <groupId>org.apache.maven.plugins</groupId>
+		  <artifactId>maven-dependency-plugin</artifactId>
+		  <executions>
+		    <execution>
+		      <id>copy-dependencies</id>
+		      <phase>package</phase>
+		      <goals>
+			<goal>copy-dependencies</goal>
+		      </goals>
+		      <configuration>
+			<outputDirectory>
+			  ${session.executionRootDirectory}/dist/lib
+			</outputDirectory>
+		      </configuration>
+		    </execution>
+		  </executions>
+		</plugin>	      
+
+		<plugin>
+		  <groupId>org.apache.maven.plugins</groupId>
+		  <artifactId>maven-jar-plugin</artifactId>
+		  <configuration>
+		    <finalName>${project.artifactId}</finalName>
+		    <outputDirectory>${session.executionRootDirectory}/dist/lib</outputDirectory>
+		  </configuration>
+		</plugin>
+
+		<plugin>
+		  <artifactId>maven-resources-plugin</artifactId>
+		  <version>2.6</version>
+		  <executions>
+		    <execution>
+		      <id>copy-resources</id>
+		      <phase>validate</phase>
+		      <goals>
+			<goal>copy-resources</goal>
+		      </goals>
+		      <configuration>
+			<outputDirectory>${session.executionRootDirectory}/target/extra-resources</outputDirectory>
+			<resources>          
+			  <resource>
+			    <directory>src/non-packaged-resources</directory>
+			    <filtering>true</filtering>
+			  </resource>
+			</resources>              
+		      </configuration>            
+		    </execution>
+		  </executions>
+		</plugin>
+              </plugins>
+	    </build>
+	  </profile>
+	</profiles -->
 
 	<repositories>
 		<!-- FuseSource maven repositories -->

@@ -4,6 +4,19 @@ zeppelin
 Zeppelin is graphical analytics tool on top of the Hadoop.
 
 
+build
+========
+
+      mvn clean package
+
+
+Packaging
+========
+
+After build
+
+      mvn assembly:assembly
+
 
 Mailing list
 ========
