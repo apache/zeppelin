@@ -16,7 +16,13 @@ public class ZeppelinConfiguration extends XMLConfiguration{
 	 * @throws ConfigurationException 
 	 */
 	public static ZeppelinConfiguration create() throws ConfigurationException{
-		URL url = ZeppelinConfiguration.class.getClassLoader().getResource("zeppelin-site.xml");
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	    if (classLoader == null) {
+	      classLoader = ZeppelinConfiguration.class.getClassLoader();
+	    }
+	    
+		//URL url = ZeppelinConfiguration.class.getClassLoader().getResource("classpath:zeppelin-site.xml");
+		URL url = classLoader.getResource("zeppelin-site.xml");
 		return new ZeppelinConfiguration(url);
 	}
 	

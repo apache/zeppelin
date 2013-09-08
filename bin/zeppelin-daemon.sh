@@ -49,7 +49,7 @@ shift
 
 
 HOSTNAME=`hostname`
-ZEPPELIN_LOGFILE=ZEPPELIN_LOG_DIR/zeppelin-$ZEPPELIN_IDENT_STRING-$HOSTNAME.log
+ZEPPELIN_LOGFILE=$ZEPPELIN_LOG_DIR/zeppelin-$ZEPPELIN_IDENT_STRING-$HOSTNAME.log
 log=$ZEPPELIN_LOG_DIR/zeppelin-$ZEPPELIN_IDENT_STRING-$HOSTNAME.out
 pid=$ZEPPELIN_PID_DIR/zeppelin-$ZEPPELIN_IDENT_STRING-$HOSTNAME.pid
 
@@ -60,7 +60,7 @@ fi
 
 ZEPPELIN_MAIN=org.apache.zeppelin.server.ZeppelinServer
 
-
+JAVA_OPTS+=" -Dzeppelin.log.file=$ZEPPELIN_LOGFILE"
 
 function start(){
     if [ -f "$pid" ]; then
@@ -80,8 +80,7 @@ function start(){
 	mkdir -p "$ZEPPELIN_PID_DIR"
     fi
 
-
-    nohup nice -n $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER $ZEPPELIN_MAIN -cp $CLASSPATH $JAVA_OPTS "$@" >> "$log" 2>&1 < /dev/null &
+    nohup nice -n $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_MAIN "$@" >> "$log" 2>&1 < /dev/null &
     newpid=$!
     echo $newpid > $pid
     sleep 2
@@ -99,6 +98,13 @@ function stop(){
 	if kill -0 `cat $pid` > /dev/null 2>&1; then
 	    echo Shutdown Zeppelin
 	    kill `cat $pid`
+	    sleep 3
+	    status > /dev/null
+	    if [ $? -eq 0 ]; then
+		echo "failed to stop Zeppelin:"
+		tail -2 "$log" | sed 's/^/  /'
+		echo "full log in $log"
+	    fi
 	else
 	    echo no Zeppelin to stop
 	fi

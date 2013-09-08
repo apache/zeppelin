@@ -44,8 +44,7 @@ if [ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]; then
     . "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh"
 fi
 
-ZEPPELIN_CLASSPATH+=:${ZEPPELIN_CONF_DIR}
-
+ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 
 function addJarInDir(){
     if [ -d "${1}" ]; then
@@ -56,12 +55,17 @@ function addJarInDir(){
 }
 
 addJarInDir ${ZEPPELIN_HOME}
-addJarInDir ${ZEPPELIN_HOME}/lib
+
+addJarInDir ${ZEPPELIN_HOME}/zeppelin-cli/target/lib
 addJarInDir ${ZEPPELIN_HOME}/zeppelin-core/target/lib
 addJarInDir ${ZEPPELIN_HOME}/zeppelin-server/target/lib
 addJarInDir ${ZEPPELIN_HOME}/zeppelin-web/target/lib
-addJarInDir ${ZEPPELIN_HOME}/zeppelin-cli/target/lib
 
+
+
+if [ -d "${ZEPPELIN_HOME}/zeppelin-cli/target/classes" ]; then
+    ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-cli/target/classes"
+fi
 
 if [ -d "${ZEPPELIN_HOME}/zeppelin-core/target/classes" ]; then
     ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-core/target/classes"
@@ -71,11 +75,16 @@ if [ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]; then
     ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
 fi
 
+if [ -d "${ZEPPELIN_HOME}/zeppelin-web/target/classes" ]; then
+    ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-web/target/classes"
+fi
 
 export ZEPPELIN_CLASSPATH
 export CLASSPATH+=${ZEPPELIN_CLASSPATH}
 
+
 JAVA_OPTS+="$ZEPPELIN_JAVA_OPTS"
+export JAVA_OPTS
 
 if [ -n "$JAVA_HOME" ]; then
     ZEPPELIN_RUNNER="${JAVA_HOME}/bin/java"
