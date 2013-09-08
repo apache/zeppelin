@@ -1,0 +1,110 @@
+#!/bin/bash
+#
+#/**
+# * Copyright 2007 The Apache Software Foundation
+# *
+# * Licensed to the Apache Software Foundation (ASF) under one
+# * or more contributor license agreements.  See the NOTICE file
+# * distributed with this work for additional information
+# * regarding copyright ownership.  The ASF licenses this file
+# * to you under the Apache License, Version 2.0 (the
+# * "License"); you may not use this file except in compliance
+# * with the License.  You may obtain a copy of the License at
+# *
+# *     http://www.apache.org/licenses/LICENSE-2.0
+# *
+# * Unless required by applicable law or agreed to in writing, software
+# * distributed under the License is distributed on an "AS IS" BASIS,
+# * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# * See the License for the specific language governing permissions and
+# * limitations under the License.
+# */
+#
+# Runs Zeppelin daemon
+#
+#
+
+usage="Usage: zeppelin-daemon.sh [--config <conf-dir>]\
+ (start|stop|restart) \
+ <args...>"
+
+# if no args specified, show usage
+if [ $# -le 0 ]; then
+  echo $usage
+  exit 1
+fi
+
+bin=`dirname "${BASH_SOURCE-$0}"`
+bin=`cd "$bin">/dev/null; pwd`
+
+. $bin/common.sh
+
+
+# get arguments
+startStop=$1
+shift
+args=$1
+shift
+
+
+
+HOSTNAME=`hostname`
+ZEPPELIN_LOGFILE=ZEPPELIN_LOG_DIR/zeppelin-$ZEPPELIN_IDENT_STRING-$HOSTNAME.log
+log=$ZEPPELIN_LOG_DIR/zeppelin-$ZEPPELIN_IDENT_STRING-$HOSTNAME.out
+pid=$ZEPPELIN_PID_DIR/zeppelin-$ZEPPELIN_IDENT_STRING-$HOSTNAME.pid
+
+
+if [ "${ZEPPELIN_NICENESS}" = "" ]; then
+    export ZEPPELIN_NICENESS=0
+fi
+
+ZEPPELIN_MAIN=org.apache.zeppelin.server.ZeppelinServer
+
+case $startStop in
+    (start)
+	if [ -f "$pid" ]; then
+	    if kill -0 `cat $pid` > /dev/null 2>&1; then
+		echo zeppelin running as process `cat $pid`. Stop it first.
+		exit 1
+	    fi
+	fi
+	
+	if [ ! -d "$ZEPPELIN_LOG_DIR" ]; then
+	    echo "Log dir doesn't exist, create $ZEPPELIN_LOG_DIR"
+	    mkdir -p "$ZEPPELIN_LOG_DIR"
+	fi
+
+	if [ ! -d "$ZEPPELIN_PID_DIR" ]; then
+	    echo "Pid dir doesn't exist, create $ZEPPELIN_PID_DIR"
+	    mkdir -p "$ZEPPELIN_PID_DIR"
+	fi
+
+
+	nohup nice -n $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER $ZEPPELIN_MAIN -cp $CLASSPATH $JAVA_OPTS "$@" >> "$log" 2>&1 < /dev/null &
+	newpid=$!
+	echo $newpid > $pid
+	sleep 2
+	# Check if the process has died; in that case we'll tail the log so the user can see
+	if ! kill -0 $newpid >/dev/null 2>&1; then
+	    echo "failed to launch Zeppelin:"
+	    tail -2 "$log" | sed 's/^/  /'
+	    echo "full log in $log"
+	fi
+	;;
+    (stop)
+	if [ -f $pid ]; then
+	    if kill -0 `cat $pid` > /dev/null 2>&1; then
+		echo stopping Zeppelin
+		kill `cat $pid`
+	    else
+		echo no Zeppelin to stop
+	    fi
+	else
+	    echo no Zeppelin to stop
+	fi
+	;;
+    (*)
+	echo $usage
+	exit 1
+	;;
+esac
