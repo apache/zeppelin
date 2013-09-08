@@ -5,6 +5,11 @@
 *.war
 *.ear
 
+# conf file
+conf/zeppelin-env.sh
+conf/zeppelin-site.xml
+
+
 # OS generated files #
 ######################
 .DS_Store
