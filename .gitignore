@@ -9,6 +9,9 @@
 conf/zeppelin-env.sh
 conf/zeppelin-site.xml
 
+data/
+logs/
+run/
 
 # OS generated files #
 ######################
