@@ -24,6 +24,11 @@ Icon?
 ehthumbs.db
 Thumbs.db
 
+# eclipse project files
+**/.classpath
+**/.project
+**/.settings/
+
 # maven target files
 target/
 **/target/
