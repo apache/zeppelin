@@ -20,9 +20,15 @@
 
 <configuration>
 <property>
-  <name>zeppelin.driver.class</name>
-  <value>org.apache.driver.Driver</value>
-  <description>Zeppelin driver name</description>
+  <name>zeppelin.jdbc.driver</name>
+  <value>org.apache.hadoop.hive.jdbc.HiveDriver</value>
+  <description>JDBC driver name</description>
 </property>
+<property>
+  <name>zeppelin.jdbc.connection</name>
+  <value>jdbc:hive://localhost:10000/default"</value>
+  <description>JDBC connection string</description>
+</property>
+
 </configuration>
 

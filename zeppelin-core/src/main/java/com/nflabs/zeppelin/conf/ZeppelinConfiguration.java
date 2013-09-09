@@ -61,7 +61,8 @@ public class ZeppelinConfiguration extends XMLConfiguration{
 
 	
 	public static enum ConfVars {
-		DRIVERCLASS("zeppelin.driver.class", null)
+		JDBCDRIVER("zeppelin.jdbc.driver", null),
+		JDBCCONNECTION("zeppelin.jdbc.connection", null)
 		;
 		
 		
