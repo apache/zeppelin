@@ -11,8 +11,6 @@ import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.commons.io.FileUtils;
-import com.nflabs.zeppelin.zql.ZqlLexer;
-import com.nflabs.zeppelin.zql.ZqlParser;
 
 import com.nflabs.zeppelin.job.Job;
 import com.nflabs.zeppelin.zql.App;
@@ -49,15 +47,7 @@ public class ZqlTest extends TestCase {
 			file.delete();
 		}
 	}
-	
-	private ZqlParser createParser(String str) throws IOException{
-		ZqlLexer lex = new ZqlLexer(new ANTLRInputStream(new ByteArrayInputStream(str.getBytes())));
-		CommonTokenStream tokens = new CommonTokenStream(lex);
 
-		ZqlParser parser = new ZqlParser(tokens);
-		return parser;
-		
-	}
 
 	
 	
