@@ -35,8 +35,24 @@
 		<module>zeppelin-web</module>
 	</modules>
 
+        <properties>
+                <hadoop.version>0.20.2</hadoop.version>
+                <hive.version>0.9.0</hive.version>
+                <scala.version>2.9.3</scala.version>
+                <spark.version>0.8.0-PELOTON</spark.version>
+                <shark.version>0.8.0-PELOTON</shark.version>
+        </properties>
+
         <build>
 	  <plugins>
+		<plugin>
+			<artifactId>maven-compiler-plugin</artifactId>
+			<configuration>
+				<source>1.6</source>
+				<target>1.6</target>
+			</configuration>
+		</plugin>
+
 	    <plugin>
 	      <groupId>org.apache.maven.plugins</groupId>
 	      <artifactId>maven-dependency-plugin</artifactId>
@@ -97,66 +113,6 @@
 	    </plugin>
 	  </plugins>
         </build>
-
-	<!-- profiles>
-	  <profile>
-	    <id>dist</id>
-	    <build>
-              <plugins>
-		<plugin>
-		  <groupId>org.apache.maven.plugins</groupId>
-		  <artifactId>maven-dependency-plugin</artifactId>
-		  <executions>
-		    <execution>
-		      <id>copy-dependencies</id>
-		      <phase>package</phase>
-		      <goals>
-			<goal>copy-dependencies</goal>
-		      </goals>
-		      <configuration>
-			<outputDirectory>
-			  ${session.executionRootDirectory}/dist/lib
-			</outputDirectory>
-		      </configuration>
-		    </execution>
-		  </executions>
-		</plugin>	      
-
-		<plugin>
-		  <groupId>org.apache.maven.plugins</groupId>
-		  <artifactId>maven-jar-plugin</artifactId>
-		  <configuration>
-		    <finalName>${project.artifactId}</finalName>
-		    <outputDirectory>${session.executionRootDirectory}/dist/lib</outputDirectory>
-		  </configuration>
-		</plugin>
-
-		<plugin>
-		  <artifactId>maven-resources-plugin</artifactId>
-		  <version>2.6</version>
-		  <executions>
-		    <execution>
-		      <id>copy-resources</id>
-		      <phase>validate</phase>
-		      <goals>
-			<goal>copy-resources</goal>
-		      </goals>
-		      <configuration>
-			<outputDirectory>${session.executionRootDirectory}/target/extra-resources</outputDirectory>
-			<resources>          
-			  <resource>
-			    <directory>src/non-packaged-resources</directory>
-			    <filtering>true</filtering>
-			  </resource>
-			</resources>              
-		      </configuration>            
-		    </execution>
-		  </executions>
-		</plugin>
-              </plugins>
-	    </build>
-	  </profile>
-	</profiles -->
 
 	<repositories>
 		<!-- FuseSource maven repositories -->

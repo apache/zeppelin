@@ -41,17 +41,6 @@ public class ZeppelinTest extends TestCase {
 
 	public void testZeppelinDriverLoading() throws InterruptedException, IOException{
 		Zeppelin zp = new Zeppelin(tmpPath.getAbsolutePath());
-		Job job = new Job(new JobId(), "hello world", null);
-		JobId id = zp.submit(job, "com.nflabs.zeppelin.DummyDriver");
-		JobInfo jobInfo = zp.getJobInfo(id);
-		assertTrue(jobInfo.getStatus()==JobRunner.Status.CREATED || jobInfo.getStatus()==JobRunner.Status.RUNNING );
-		Thread.sleep(500);
 		
-		jobInfo = zp.getJobInfo(id);
-		assertNotNull(jobInfo.getProgress());
-		
-		Thread.sleep(700);
-		jobInfo = zp.getJobInfo(id);
-		assertEquals(Status.FINISHED, jobInfo.getStatus());
 	}
 }

@@ -1,10 +1,10 @@
 package com.nflabs.zeppelin.job;
 
+import java.sql.Driver;
+import java.sql.DriverManager;
 import java.util.logging.Logger;
 
-import com.nflabs.zeppelin.driver.AbortException;
-import com.nflabs.zeppelin.driver.Driver;
-import com.nflabs.zeppelin.driver.DriverManager;
+
 
 public class JobRunner implements Runnable{
 	Logger logger = Logger.getLogger(JobRunner.class.getName());
@@ -43,15 +43,12 @@ public class JobRunner implements Runnable{
 	public void run() {
 		status = Status.RUNNING;		
 		try {
-			driver = driverManager.get(driverClass);
+			//driver = driverManager.get(driverClass);
 			if(listener!=null) listener.onStatusChange(job, this, Status.RUNNING);
 			
-			result = driver.execute(job);
+			//result = driver.execute(job);
 			status = Status.FINISHED;
 			if(listener!=null) listener.onStatusChange(job, this, Status.FINISHED);
-		} catch(AbortException e){
-			status = Status.ABORTED;
-			if(listener!=null) listener.onStatusChange(job, this, Status.ABORTED);
 		} catch(Exception e){
 			this.e = e;
 			status = Status.ERROR;
@@ -76,8 +73,8 @@ public class JobRunner implements Runnable{
 			// job is already finished. can not abort.
 			return;
 		}
-		if(driver!=null)
-			driver.abort(job);
+		//if(driver!=null)
+		//	driver.abort(job);
 	}
 	
 	public JobResult getResult(){

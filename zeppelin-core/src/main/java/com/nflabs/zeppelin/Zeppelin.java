@@ -2,6 +2,8 @@ package com.nflabs.zeppelin;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Driver;
+import java.sql.DriverManager;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -18,8 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.nflabs.zeppelin.driver.Driver;
-import com.nflabs.zeppelin.driver.DriverManager;
 import com.nflabs.zeppelin.driver.Progress;
 import com.nflabs.zeppelin.job.Job;
 import com.nflabs.zeppelin.job.JobHistoryManager;
@@ -46,7 +46,7 @@ public class Zeppelin implements JobRunnerListener {
         int maximumPoolSize = 20; //the maximum number of threads to allow in the pool. 
         long keepAliveTime = 10; //when the number of threads is greater than the core, this is the maximum time that excess idle threads will wait for new tasks before terminating.
         executorPool = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(corePoolSize), threadFactory);
-        driverManager = new DriverManager();
+        //driverManager = new DriverManager();
         jobHistoryManager = new JobHistoryManager(new File(historyPath));
 	}
 	
@@ -102,9 +102,9 @@ public class Zeppelin implements JobRunnerListener {
 					break;
 				}
 				Job job = runner.getJob();
-				Driver driver = runner.getDriver();
-				Progress progress = (driver==null) ? null : driver.progress(job);
-				jobList.add(new JobInfo(job, runner.getStatus(), progress, runner.getDriverClass(), runner.getResult()));
+				//Driver driver = runner.getDriver();
+				//Progress progress = (driver==null) ? null : driver.progress(job);
+				//jobList.add(new JobInfo(job, runner.getStatus(), progress, runner.getDriverClass(), runner.getResult()));
 			}
 		}
 		jobList.addAll(jobHistoryManager.getAll(fromInclusive, toExclusive));
@@ -131,7 +131,7 @@ public class Zeppelin implements JobRunnerListener {
 			if(runner!=null){
 				Job job = runner.getJob();
 				Driver driver = runner.getDriver();
-				Progress progress = (driver==null) ? null : driver.progress(job);
+				Progress progress = null;//(driver==null) ? null : driver.progress(job);
 				return new JobInfo(job, runner.getStatus(), progress, runner.getDriverClass(), runner.getResult());
 			}
 		}
@@ -164,7 +164,7 @@ public class Zeppelin implements JobRunnerListener {
 			}
 			
 			Driver driver = jobRunner.getDriver();
-			Progress progress = (driver==null) ? null : driver.progress(job);
+			Progress progress = null; //(driver==null) ? null : driver.progress(job);
 			JobInfo jobInfo = new JobInfo(job, jobRunner.getStatus(), progress, jobRunner.getDriverClass(), jobRunner.getResult());
 			try {
 				jobHistoryManager.save(jobInfo);
