@@ -24,7 +24,7 @@
       <artifactId>commons-configuration</artifactId>
       <version>1.9</version>
     </dependency>
-    <dependency>
+    <!-- dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpcore</artifactId>
       <version>4.1.2</version>
@@ -38,8 +38,8 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <version>2.1</version>		
-    </dependency>
-    <dependency>
+    </dependency -->
+    <!-- dependency>
       <groupId>org.jruby</groupId>
       <artifactId>jruby-complete</artifactId>
       <version>1.3.1</version>
@@ -48,22 +48,28 @@
       <groupId>com.sun.script.jruby</groupId>
       <artifactId>jruby-engine</artifactId>
       <version>1.1.7</version>
-    </dependency>   
-    <dependency>
+    </dependency -->   
+    <!-- dependency>
       <groupId>org.antlr</groupId>
       <artifactId>antlr-runtime</artifactId>
       <version>3.4</version>
       <scope>compile</scope>
-    </dependency>  
-	<dependency>
+    </dependency -->  
+	<!-- dependency>
 		<groupId>org.apache.hadoop</groupId>
 		<artifactId>hadoop-core</artifactId>
 		<version>${hadoop.version}</version>
-	</dependency>          
+	</dependency -->          
 	<dependency>
 	  <groupId>org.apache.hive</groupId>
 	  <artifactId>hive-jdbc</artifactId>
 	  <version>${hive.version}</version>
+	  <exclusions>
+	  	<exclusion>
+	  		<groupId>asm</groupId>
+	  		<artifactId>asm</artifactId>
+	  	</exclusion>
+	  </exclusions>
 	</dependency>
 	<dependency>
 		<groupId>org.scala-lang</groupId>
@@ -235,7 +241,7 @@
         <artifactId>maven-source-plugin</artifactId>
       </plugin>      
       	  
-      <plugin>
+      <!-- plugin>
         <groupId>org.antlr</groupId>
         <artifactId>antlr3-maven-plugin</artifactId>
         <version>3.4</version>
@@ -246,7 +252,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin -->
       
    <plugin>
     <groupId>org.apache.maven.plugins</groupId>
@@ -255,7 +261,7 @@
     <configuration>
       <downloadSources>true</downloadSources>
       <downloadJavadocs>true</downloadJavadocs>
-      <projectnatures>
+      <!-- projectnatures>
         <projectnature>org.scala-ide.sdt.core.scalanature</projectnature>
         <projectnature>org.eclipse.jdt.core.javanature</projectnature>
       </projectnatures>
@@ -265,15 +271,16 @@
       <classpathContainers>
         <classpathContainer>org.scala-ide.sdt.launching.SCALA_CONTAINER"</classpathContainer>
         <classpathContainer>org.eclipse.jdt.launching.JRE_CONTAINER</classpathContainer>
-      </classpathContainers>
+      </classpathContainers -->
       <excludes>
-        <exclude>org.scala-lang:scala-library</exclude>
+        <exclude>asm:asm:3.1</exclude>
+        <!-- exclude>org.scala-lang:scala-library</exclude -->
         <!-- exclude>org.scala-lang:scala-compiler</exclude -->
       </excludes>
-      <sourceIncludes>
+      <!-- sourceIncludes>
         <sourceInclude>**/*.scala</sourceInclude>
         <sourceInclude>**/*.java</sourceInclude>
-      </sourceIncludes>
+      </sourceIncludes -->
     </configuration>
   </plugin>
     </plugins>
