@@ -94,7 +94,78 @@
   </dependencies>
 
   <build>
-
+	<!-- pluginManagement>
+	<plugins>
+	    <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>1.7</version>
+        </plugin>
+        <plugin>
+          <groupId>net.alchim31.maven</groupId>
+          <artifactId>scala-maven-plugin</artifactId>
+          <version>3.1.5</version>
+          <executions>
+            <execution>
+              <id>scala-compile-first</id>
+              <phase>process-resources</phase>
+              <goals>
+                <goal>compile</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>scala-test-compile-first</id>
+              <phase>process-test-resources</phase>
+              <goals>
+                <goal>testCompile</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>attach-scaladocs</id>
+              <phase>verify</phase>
+              <goals>
+                <goal>doc-jar</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <scalaVersion>${scala.version}</scalaVersion>
+            <recompileMode>incremental</recompileMode>
+            <useZincServer>true</useZincServer>
+            <args>
+              <arg>-unchecked</arg>
+              <arg>-optimise</arg>
+              <arg>-deprecation</arg>
+            </args>
+            <jvmArgs>
+              <jvmArg>-Xms64m</jvmArg>
+              <jvmArg>-Xms1024m</jvmArg>
+              <jvmArg>-Xmx1024m</jvmArg>
+              <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
+              <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
+            </jvmArgs>
+            <javacArgs>
+              <javacArg>-source</javacArg>
+              <javacArg>${java.version}</javacArg>
+              <javacArg>-target</javacArg>
+              <javacArg>${java.version}</javacArg>
+            </javacArgs>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.5.1</version>
+          <configuration>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+            <encoding>UTF-8</encoding>
+            <maxmem>1024m</maxmem>
+          </configuration>
+        </plugin>                  
+	</plugins>
+	</pluginManagement -->
+	
     <defaultGoal>install</defaultGoal>
 
     <plugins>
@@ -125,12 +196,12 @@
 		</executions>
 	  </plugin>
 
-     <plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>add-source</id>
+           <id>add-scala-sources</id>
             <phase>generate-sources</phase>
             <goals>
               <goal>add-source</goal>
@@ -142,7 +213,7 @@
             </configuration>
           </execution>
           <execution>
-            <id>add-test-source</id>
+            <id>add-scala-test-sources</id>
             <phase>generate-test-sources</phase>
             <goals>
               <goal>add-test-source</goal>
@@ -152,10 +223,17 @@
                 <source>src/test/scala</source>
               </sources>
             </configuration>
-          </execution>          
+          </execution>
         </executions>
       </plugin>
-      
+      <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>      
       	  
       <plugin>
         <groupId>org.antlr</groupId>
@@ -190,7 +268,7 @@
       </classpathContainers>
       <excludes>
         <exclude>org.scala-lang:scala-library</exclude>
-        <exclude>org.scala-lang:scala-compiler</exclude>
+        <!-- exclude>org.scala-lang:scala-compiler</exclude -->
       </excludes>
       <sourceIncludes>
         <sourceInclude>**/*.scala</sourceInclude>

@@ -36,6 +36,7 @@
 	</modules>
 
         <properties>
+                <java.version>1.6</java.version>
                 <hadoop.version>0.20.2</hadoop.version>
                 <hive.version>0.9.0</hive.version>
                 <scala.version>2.9.3</scala.version>
