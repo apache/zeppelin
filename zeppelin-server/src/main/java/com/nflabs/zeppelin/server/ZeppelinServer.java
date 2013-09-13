@@ -19,7 +19,6 @@ public class ZeppelinServer extends Application {
 	
 	public static void main(String [] args) throws Exception{
 		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-		String driverClassName = conf.getString(ZeppelinConfiguration.ConfVars.DRIVERCLASS);
 
 		JAXRSServerFactoryBean jaxrsServerFactory = RuntimeDelegate.getInstance().createEndpoint(new ZeppelinServer(), JAXRSServerFactoryBean.class);
         jaxrsServerFactory.setAddress("http://localhost:8080");

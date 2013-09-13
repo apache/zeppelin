@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import com.nflabs.zeppelin.Zeppelin;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 
 
 import junit.framework.TestCase;
@@ -35,8 +36,8 @@ public class ZeppelinTest extends TestCase {
 		}
 	}
 
-	public void testZeppelinDriverLoading() throws InterruptedException, IOException{
-		//Zeppelin zp = new Zeppelin(tmpPath.getAbsolutePath());
+	public void testZeppelin() throws InterruptedException, IOException{
+		Zeppelin zp = new Zeppelin(new ZeppelinConfiguration());
 		
 	}
 }

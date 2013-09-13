@@ -12,9 +12,10 @@ public abstract class ZeppelinApplication {
 	
 	public abstract String name();
 	public abstract String version();
+	public abstract String description();
 	
 	
-	public abstract ParamSpec getParamSpec();	
+	public abstract ParamSpec getParamSpec();
 	public abstract SchemaSpec getInputSpec();
 	public abstract SchemaSpec getOutputSpec();
 	

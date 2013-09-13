@@ -12,7 +12,7 @@ public class ZDD {
 
 	public ZDD(TableRDD rdd) {
 		this.rdd = rdd;
-		this.schema = new Schema(ColumnDesc.createSchema(rdd.schema()));
+		this.schema = new Schema(rdd.name(), ColumnDesc.createSchema(rdd.schema()));
 	}
 	
 	public Schema schema(){

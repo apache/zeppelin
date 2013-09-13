@@ -11,6 +11,24 @@ public class ZeppelinConfiguration extends XMLConfiguration{
 		super(url);
 	}
 	
+	public ZeppelinConfiguration() {
+		ConfVars[] vars = ConfVars.values();
+		for(ConfVars v : vars){
+			if(v.getType()==ConfVars.VarType.BOOLEAN){
+				this.setProperty(v.getVarName(), v.getBooleanValue());
+			} else if(v.getType()==ConfVars.VarType.INT){
+				this.setProperty(v.getVarName(), v.getIntValue());
+			} else if(v.getType()==ConfVars.VarType.FLOAT){
+				this.setProperty(v.getVarName(), v.getFloatValue());
+			} else if(v.getType()==ConfVars.VarType.STRING){
+				this.setProperty(v.getVarName(), v.getStringValue());
+			} else {
+				throw new RuntimeException("Unsupported VarType");
+			}
+		}
+		
+	}
+
 	/**
 	 * Laod from resource
 	 * @throws ConfigurationException 
@@ -61,8 +79,8 @@ public class ZeppelinConfiguration extends XMLConfiguration{
 
 	
 	public static enum ConfVars {
-		JDBCDRIVER("zeppelin.jdbc.driver", null),
-		JDBCCONNECTION("zeppelin.jdbc.connection", null)
+		SPARK_MASTER("spark.master", "local"),
+		SPARK_HOME("spark.home", "./"),
 		;
 		
 		
