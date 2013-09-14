@@ -30,7 +30,6 @@
 	<modules>
 		<module>zeppelin-cli</module>
 		<module>zeppelin-core</module>
-		<module>zeppelin-hive-0.9-driver</module>
 		<module>zeppelin-server</module>
 		<module>zeppelin-web</module>
 	</modules>
