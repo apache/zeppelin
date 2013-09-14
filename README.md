@@ -1,7 +1,7 @@
 zeppelin
 ========
 
-Zeppelin is graphical analytics tool on top of the Hadoop.
+Zeppelin simplifies analytics on Hadoop.
 
 
 build
