@@ -5,6 +5,10 @@
 *.war
 *.ear
 
+*.log
+metastore_db/
+
+
 # OS generated files #
 ######################
 .DS_Store
