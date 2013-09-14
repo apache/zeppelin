@@ -43,7 +43,7 @@ public class ColumnDesc implements Serializable {
 	}
 	
 	public static ColumnDesc [] createSchema(shark.api.ColumnDesc [] cols){
-		if(cols==null)return new ColumnDesc[]{};
+		if(cols==null) return new ColumnDesc[]{};
 		else {
 			ColumnDesc [] desc = new ColumnDesc[cols.length];
 			int i=0; 

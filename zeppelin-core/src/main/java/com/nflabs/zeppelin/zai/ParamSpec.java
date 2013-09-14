@@ -3,7 +3,6 @@ package com.nflabs.zeppelin.zai;
 import java.util.LinkedList;
 import java.util.List;
 
-
 public abstract class ParamSpec <T>{
 	String name;
     String description; 
@@ -39,6 +38,11 @@ public abstract class ParamSpec <T>{
 	
 	public ParamSpec<T> withDefaultValue(T def){
 		this.defaultValue = def;
+		return this;
+	}
+	
+	public ParamSpec<T> withAllowAny(boolean tf){
+		this.allowAny = tf;
 		return this;
 	}
 	
@@ -112,33 +116,33 @@ public abstract class ParamSpec <T>{
 		} else {
 
 			if(defaultValue!=null){
-				if(defaultValue.equals(v)){
+				if(compare(defaultValue, v)==0){
 					return v;
 				}
 			}
 			if(options!=null){
 				for(Option<T> o : options){
-					if(o.getValue().equals(v)){
+					if(compare(o.getValue(), v)==0){
 						return v;
 					}
 				}
 			}
 			
-			if(range!=null){
-				Option<T> from = range.from();
-				Option<T> to = range.to();
-				if((from==null || compare(from.getValue(), v)>=0) &&
-					(to==null || compare(v, to.getValue())>=0)){
+			if(allowAny==true){
+				if(range!=null){
+					Option<T> from = range.from();
+					Option<T> to = range.to();
+					if((from==null || compare(from.getValue(), v)>=0) &&
+						(to==null || compare(v, to.getValue())>=0)){
+						return v;
+					} else {	
+						throw new ParamSpecException("Value not in range");
+					}
+				} else {
 					return v;
-				} else {	
-					throw new ParamSpecException("Value not in range");
 				}
 			} else {
-				if(allowAny==true){
-					return v;
-				} else {
-					throw new ParamSpecException("Does not allow any value");
-				}
+				throw new ParamSpecException("Any value is not allowed");
 			}
 		}
 	}
@@ -208,10 +212,13 @@ public abstract class ParamSpec <T>{
 				com.nflabs.zeppelin.zai.ParamSpec.Range<Integer> range) {
 			super(name, description, defaultValue, allowAny, options, range);
 		}
+		public IntegerParamSpec(String name){
+			super(name);
+		}
 
 		@Override
 		public int compare(Integer a, Integer b) {
-			return a.compareTo(b);
+			return b.compareTo(a);
 		}
 		
 	}
@@ -230,9 +237,10 @@ public abstract class ParamSpec <T>{
 
 		@Override
 		public int compare(String a, String b) {
-			return a.compareTo(b);
+			return b.compareTo(a);
 		}
 		
 	}
+	
 	
 }
