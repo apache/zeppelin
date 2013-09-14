@@ -18,8 +18,7 @@ public class ZDD {
 	public Schema schema(){
 		return schema;
 	}
-
-
+	
 	public RDD rdd(){
 		return rdd;
 	}

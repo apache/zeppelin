@@ -3,7 +3,7 @@ package com.nflabs.zeppelin.zai;
 import com.nflabs.zeppelin.zdd.DataType;
 
 public class ColumnSpec {
-	private Object columnName;
+	private String columnName;
 	private int columnIndex;
 	private DataType dataType;
 
@@ -26,7 +26,7 @@ public class ColumnSpec {
 		return this;
 	}
 
-	public Object getColumnName() {
+	public String getColumnName() {
 		return columnName;
 	}
 

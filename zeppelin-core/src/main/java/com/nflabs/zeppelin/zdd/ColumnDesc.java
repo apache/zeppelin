@@ -26,8 +26,8 @@ import org.apache.hadoop.hive.metastore.api.Schema;
 import com.nflabs.zeppelin.zdd.DataTypes.UnknownDataTypeException;
 
 public class ColumnDesc implements Serializable {
-	public final String name;
-	public final DataType dataType;
+	String name;
+	DataType dataType;
 
 	public ColumnDesc(String name, DataType dataType){
 		this.name = name;
@@ -36,6 +36,15 @@ public class ColumnDesc implements Serializable {
 	
 	public ColumnDesc(shark.api.ColumnDesc desc){
 		this(desc.name(), new DataType(desc.dataType()));
+	}
+	
+	
+	public String name(){
+		return name;
+	}
+	
+	public DataType type(){
+		return dataType;
 	}
 	
 	public ColumnDesc(FieldSchema hiveSchema) throws UnknownDataTypeException{

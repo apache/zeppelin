@@ -6,4 +6,8 @@ public class ZeppelinRuntimeException extends Exception {
 		super(string);
 	}
 
+	public ZeppelinRuntimeException(Exception e) {
+		super(e);
+	}
+
 }

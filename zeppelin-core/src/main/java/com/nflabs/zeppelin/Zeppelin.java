@@ -24,21 +24,10 @@ public class Zeppelin {
 
 	public Zeppelin(ZeppelinConfiguration conf){
 		this.conf = conf;		
-		this.runtime = new ZeppelinRuntime(conf);
+		//this.runtime = new ZeppelinRuntime(conf, new User(""));
 	}
 	
-	public List<ZDD> run(ZeppelinApplication za, List<ZDD> inputs, List<Param> params){
-		return za.execute(inputs, params);
-	}
-	
-	public ZDD fromHadoop(URI location){
-		return null;
-	}
-	
-	public ZDD fromShark(String sql){
-		TableRDD rdd = runtime.sharkContext().sql2rdd(sql);
-		return new ZDD(rdd);
-	}
+
 	
 	
 }
