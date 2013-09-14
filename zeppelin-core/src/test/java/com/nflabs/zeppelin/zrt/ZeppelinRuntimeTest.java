@@ -19,8 +19,9 @@ public class ZeppelinRuntimeTest extends TestCase {
 
 	private File tmpPath;
 
-	protected void setUp() throws Exception {
+	protected void setUp() throws Exception {		
 		super.setUp();
+		System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
 		String tempDir = System.getProperty("java.io.tmpdir")+"/zeppelin_test_"+System.currentTimeMillis();
 		tmpPath = new File(tempDir);
 		tmpPath.mkdirs();
@@ -61,7 +62,7 @@ public class ZeppelinRuntimeTest extends TestCase {
 		
 		ZeppelinConfiguration conf = new ZeppelinConfiguration();
 		ZeppelinRuntime zr = new ZeppelinRuntime(conf, new User("test"));
-		ZDD zdd = zr.fromText(new Schema("test", 
+		ZDD zdd = zr.fromText(new Schema( 
 				              new ColumnDesc[]{
 				                     new ColumnDesc("key", DataTypes.STRING),
 				                     new ColumnDesc("value", DataTypes.INT)
@@ -70,6 +71,11 @@ public class ZeppelinRuntimeTest extends TestCase {
 				              ',');
 		
 		assertEquals(3, zdd.rdd().count());
+		ZDD select = zr.fromSql("select * from "+zdd.tableName());
+		assertEquals("a", select.rdd().first().getString(0));
+		
+		ZDD sum = zr.fromSql("select sum(value) from "+zdd.tableName());
+		assertEquals(new Long(6), sum.rdd().first().getLong(0));
 		
 	}
 }

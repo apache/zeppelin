@@ -2,10 +2,8 @@ package com.nflabs.zeppelin.zdd;
 
 public class Schema {
 	ColumnDesc[] columns;
-	String name;
 	
-	public Schema(String name, ColumnDesc [] columns){
-		this.name = name;
+	public Schema(ColumnDesc [] columns){
 		this.columns = columns;
 	}
 
@@ -13,9 +11,6 @@ public class Schema {
 		return columns;
 	}
 
-	public String getName() {
-		return name;
-	}
 
 	public String toHiveTableCreationQueryColumnPart(){
 		String col = null;

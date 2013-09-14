@@ -1,25 +1,35 @@
 package com.nflabs.zeppelin.zdd;
 
 
-
-import org.apache.spark.rdd.RDD;
-
 import shark.api.TableRDD;
 
 public class ZDD {
 	private TableRDD rdd;
 	private Schema schema;
+	
 
 	public ZDD(TableRDD rdd) {
 		this.rdd = rdd;
-		this.schema = new Schema(rdd.name(), ColumnDesc.createSchema(rdd.schema()));
+		this.schema = new Schema(ColumnDesc.createSchema(rdd.schema()));
 	}
 	
 	public Schema schema(){
 		return schema;
 	}
 	
-	public RDD rdd(){
+	public TableRDD rdd(){
 		return rdd;
+	}
+	
+	public String tableName(){
+		return rdd.name();
+	}
+	
+	public boolean equals(Object o){
+		if(o instanceof ZDD){
+			return tableName().equals(((ZDD)o).tableName());
+		} else {
+			return false;
+		}
 	}
 }
