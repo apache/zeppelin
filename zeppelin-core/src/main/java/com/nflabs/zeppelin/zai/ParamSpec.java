@@ -224,7 +224,10 @@ public abstract class ParamSpec <T>{
 	}
 	
 	public static class StringParamSpec extends ParamSpec<String>{
-
+		public StringParamSpec(String name){
+			super(name);
+		}
+		
 		public StringParamSpec(
 				String name,
 				String description,

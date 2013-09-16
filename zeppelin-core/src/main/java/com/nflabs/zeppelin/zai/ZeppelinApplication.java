@@ -6,19 +6,19 @@ import com.nflabs.zeppelin.zdd.ZDD;
 
 public abstract class ZeppelinApplication {
 	
-	public ZeppelinApplication(){
-		
-	}
-	
 	public abstract String name();
 	public abstract String version();
 	public abstract String description();
 	
 	
-	public abstract ParamSpec getParamSpec();
-	public abstract SchemaSpec getInputSpec();
-	public abstract SchemaSpec getOutputSpec();
+	public abstract ParamSpec [] getParamSpec();
+	public abstract ColumnSpec [][] getInputSpec();
+	public abstract ColumnSpec [][] getOutputSpec();
 	
 
-	public abstract List<ZDD> execute(List<ZDD> input, List<Param> params);
+	public ZDD [] run(ZDD [] input, Param [] params){
+		return execute(input, params);
+	}
+	
+	protected abstract ZDD [] execute(ZDD [] input, Param [] params);
 }

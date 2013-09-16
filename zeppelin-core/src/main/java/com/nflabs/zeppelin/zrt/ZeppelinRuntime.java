@@ -57,8 +57,8 @@ public class ZeppelinRuntime {
 		
 	}
 
-	public List<ZDD> run(ZeppelinApplication za, List<ZDD> inputs, List<Param> params){
-		return za.execute(inputs, params);
+	public ZDD [] run(ZeppelinApplication za, ZDD [] inputs, Param [] params){
+		return za.run(inputs, params);
 	}
 	
 
@@ -66,68 +66,43 @@ public class ZeppelinRuntime {
 		return prefix+"_"+user.getName()+"_"+tableId.getAndIncrement();
 	}
 	
-	public ZDD fromText(Schema schema, URI location, char split) throws ZeppelinRuntimeException{
-		String tableName = genTableName();
-		String tc = 
-				"CREATE EXTERNAL TABLE "+ tableName+
-				"("+schema.toHiveTableCreationQueryColumnPart()+") "+
-				"ROW FORMAT DELIMITED FIELDS TERMINATED BY '"+split+"' "+
-				"STORED AS TEXTFILE " +
-				"LOCATION '"+location.toString()+"'"				
-				;
-		
-		try{
-			sharkContext.sql(tc, 0);
-		} catch(Exception e){
-			throw new ZeppelinRuntimeException(e);
-		}
-		
-		return fromTable(tableName);
-	}
-	
 
-
-	public ZDD fromTable(String tableName) throws ZeppelinRuntimeException{
-		TableRDD rdd;
+	
+	
+	public List<String> sql(String query) throws ZeppelinRuntimeException{
 		try{
-			rdd = sharkContext.sql2rdd("select * from "+tableName);
+			scala.collection.Seq<String> ret = sharkContext.sql(query, 0);
+			return scala.collection.JavaConversions.seqAsJavaList(ret);			
 		} catch(Exception e){
 			throw new ZeppelinRuntimeException(e);
-		}
-		rdd.setName(tableName);
-		return new ZDD(rdd);
+		}		
 	}
 	
-
-	public ZDD fromRDD(RDD rdd, Schema schema){
-		return fromRDD(rdd, schema, genTableName());
-	}
-	
-	public ZDD fromRDD(RDD rdd, Schema schema, String tableName){
-		// TODO
-		return null;
-	}
-	
-	public ZDD fromSql(String sql) throws ZeppelinRuntimeException{
-		return fromSql(sql, genTableName());
-	}
-	
-	public ZDD fromSql(String sql, String tableName) throws ZeppelinRuntimeException{
+	public TableRDD sql2rdd(String sql) throws ZeppelinRuntimeException{
 		try{
-			sharkContext.sql("CREATE VIEW "+tableName+" as "+sql, 0);
-			return fromTable(tableName);			
+			return sharkContext.sql2rdd(sql);
 		} catch(Exception e){
 			throw new ZeppelinRuntimeException(e);
 		}
 	}
 	
+	public ZDD fromText(String name, Schema schema, String location, char split){
+		return ZDD.createFromText(this, name, schema, location, split);
+	}
 	
-	public void drop(ZDD zdd) throws ZeppelinRuntimeException{
-		try{
-			sharkContext.sql("drop table if exists "+ zdd.tableName(), 0);
-			sharkContext.sql("drop view if exists "+ zdd.tableName(), 0);
-		} catch(Exception e){
-			throw new ZeppelinRuntimeException(e);
-		}
+	public ZDD fromText(Schema schema, String location, char split){
+		return ZDD.createFromText(this, genTableName(), schema, location, split);
+	}
+	
+	public ZDD fromTable(String name){
+		return ZDD.createFromTable(this, name);
+	}
+	
+	public ZDD fromSql(String name, String sql){
+		return ZDD.createFromSql(this, name, sql);
+	}
+	
+	public ZDD fromSql(String sql){
+		return ZDD.createFromSql(this, genTableName(), sql);
 	}
 }

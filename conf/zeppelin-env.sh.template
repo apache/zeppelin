@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#SPARK_HOME            Spark Home
+#SHARK_HOME            Shark Home
 
 
 #   ZEPPELIN_PORT       Zeppelin port number

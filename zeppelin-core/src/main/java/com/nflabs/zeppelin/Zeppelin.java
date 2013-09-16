@@ -23,7 +23,11 @@ public class Zeppelin {
 	
 
 	public Zeppelin(ZeppelinConfiguration conf){
-		this.conf = conf;		
+		this.conf = conf;
+		
+		if(System.getProperty("spark.serializer")==null){
+			System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
+		}
 		//this.runtime = new ZeppelinRuntime(conf, new User(""));
 	}
 	

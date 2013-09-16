@@ -44,38 +44,10 @@ public class ZeppelinRuntimeTest extends TestCase {
 		}
 	}
 	
-	
-	
-	public void testFromText() throws IOException, ZeppelinRuntimeException{
-		// create data dir
-		File dir = new File(tmpPath.getAbsolutePath()+"/data");
-		dir.mkdir();
-		
-		// write some data
-		File data = new File(tmpPath.getAbsolutePath()+"/data/a");
-		FileOutputStream out = new FileOutputStream(data);
-		out.write("a,1\n".getBytes());
-		out.write("b,2\n".getBytes());
-		out.write("c,3".getBytes());
-		out.flush();
-		out.close();
-		
+	public void testInit(){
 		ZeppelinConfiguration conf = new ZeppelinConfiguration();
 		ZeppelinRuntime zr = new ZeppelinRuntime(conf, new User("test"));
-		ZDD zdd = zr.fromText(new Schema( 
-				              new ColumnDesc[]{
-				                     new ColumnDesc("key", DataTypes.STRING),
-				                     new ColumnDesc("value", DataTypes.INT)
-				              }), 
-				              dir.toURI(), 
-				              ',');
-		
-		assertEquals(3, zdd.rdd().count());
-		ZDD select = zr.fromSql("select * from "+zdd.tableName());
-		assertEquals("a", select.rdd().first().getString(0));
-		
-		ZDD sum = zr.fromSql("select sum(value) from "+zdd.tableName());
-		assertEquals(new Long(6), sum.rdd().first().getLong(0));
-		
 	}
+	
+	
 }
