@@ -2,7 +2,11 @@ package com.nflabs.zeppelin.zdd;
 
 
 import java.net.URI;
+import java.util.logging.Logger;
 
+import org.mortbay.log.Log;
+
+import com.nflabs.zeppelin.Zeppelin;
 import com.nflabs.zeppelin.zrt.ZeppelinRuntime;
 import com.nflabs.zeppelin.zrt.ZeppelinRuntimeException;
 
@@ -15,6 +19,8 @@ import shark.api.TableRDD;
  *
  */
 public class ZDD {
+	Logger logger = Logger.getLogger(ZDD.class.getName());
+	
 	private ZeppelinRuntime runtime;
 	private Source src;
 	
@@ -98,13 +104,10 @@ public class ZDD {
 		return rdd;
 	}
 	
-	public String tableName(){
-		return rdd.name();
-	}
 	
 	public boolean equals(Object o){
 		if(o instanceof ZDD){
-			return tableName().equals(((ZDD)o).tableName());
+			return name().equals(((ZDD)o).name());
 		} else {
 			return false;
 		}
@@ -132,9 +135,11 @@ public class ZDD {
 					"STORED AS TEXTFILE " +
 					"LOCATION '"+location.toString()+"'"				
 					;
-			
+			Log.debug("execute sql "+tc);
 			try{
-				this.rdd = runtime.sql2rdd(tc);
+				runtime.sql(tc);
+				rdd = runtime.sql2rdd("select * from "+name);
+				rdd.setName(name);
 			} catch(Exception e){
 				throw new ZeppelinRuntimeException(e);
 			}
