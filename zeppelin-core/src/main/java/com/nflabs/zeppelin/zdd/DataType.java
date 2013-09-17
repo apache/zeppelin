@@ -20,6 +20,7 @@ package com.nflabs.zeppelin.zdd;
 
 import java.io.Serializable;
 
+
 public class DataType implements Serializable {
 
 	public final String name;
@@ -34,6 +35,14 @@ public class DataType implements Serializable {
 	
 	public DataType(shark.api.DataType type){
 		this(type.name, type.hiveName, type.isPrimitive);
+	}
+	
+	public shark.api.DataType toSharkType(){
+		try {
+			return shark.api.DataTypes.fromHiveType(hiveName);
+		} catch (Exception e){
+			throw new RuntimeException(e);
+		}
 	}
 	
 	@Override

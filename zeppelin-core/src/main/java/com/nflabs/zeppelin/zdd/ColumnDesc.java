@@ -51,6 +51,18 @@ public class ColumnDesc implements Serializable {
 		this(hiveSchema.getName(), DataTypes.fromHiveType(hiveSchema.getType()));
 	}
 	
+	public static shark.api.ColumnDesc[] convertToSharkColumnDesc(ColumnDesc [] desc){
+		shark.api.ColumnDesc[] sharkDesc = new shark.api.ColumnDesc[desc.length];
+		
+		for(int i=0; i<desc.length; i++){
+			ColumnDesc d = desc[i];
+			sharkDesc[i] = new shark.api.ColumnDesc(d.name(), d.type().toSharkType()); 
+		}
+		
+		return sharkDesc;
+		
+	}
+	
 	public static ColumnDesc [] createSchema(shark.api.ColumnDesc [] cols){
 		if(cols==null) return new ColumnDesc[]{};
 		else {

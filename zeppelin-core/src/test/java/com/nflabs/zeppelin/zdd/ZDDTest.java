@@ -65,13 +65,23 @@ public class ZDDTest extends TestCase {
 				              }), 
 				              dir.getAbsolutePath(),
 				              ',');
+
+		assertEquals(3, zdd.tableRdd().count());
 		
-		assertEquals(3, zdd.rdd().count());
+		assertEquals(dir.getAbsolutePath().toString(), zdd.getLocation());
+		
 		ZDD select = zr.fromTable(zdd.name());
-		assertEquals("a", select.rdd().first().getString(0));
+		assertEquals("a", select.tableRdd().first().getString(0));
+		
+		assertEquals("file:"+dir.getAbsolutePath().toString(), select.getLocation());
 		
 		ZDD sum = zr.fromSql("test1", "select sum(value) from "+zdd.name());
-		assertEquals(new Long(6), sum.rdd().first().getLong(0));
+		assertEquals(new Long(6), sum.tableRdd().first().getLong(0));
 		
 	}
+	
+	public void testFromRDD() throws IOException{
+
+	}
+
 }

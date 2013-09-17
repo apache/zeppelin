@@ -49,7 +49,7 @@ public class MetaApplication extends ZeppelinApplication {
 
 
 	@Override
-	public ZDD[] execute(ZDD[] input, Param[] params) {
+	public ZDD[] execute(ZDD[] input) {
 		// TODO Auto-generated method stub
 		return null;
 	}

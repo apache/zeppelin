@@ -71,7 +71,7 @@ public class ZeppelinRuntime {
 	
 	public List<String> sql(String query) throws ZeppelinRuntimeException{
 		try{
-			scala.collection.Seq<String> ret = sharkContext.sql(query, 0);
+			scala.collection.Seq<String> ret = sharkContext.sql(query, 1000);
 			return scala.collection.JavaConversions.seqAsJavaList(ret);			
 		} catch(Exception e){
 			throw new ZeppelinRuntimeException(e);
@@ -104,5 +104,10 @@ public class ZeppelinRuntime {
 	
 	public ZDD fromSql(String sql){
 		return ZDD.createFromSql(this, genTableName(), sql);
+	}
+	
+	public ZDD fromRDD(String name, Schema schema, RDD rdd){
+
+		return ZDD.createFromRdd(this, name, schema, rdd);
 	}
 }

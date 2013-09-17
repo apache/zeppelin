@@ -1,16 +1,38 @@
 package com.nflabs.zeppelin.zdd;
 
 
+import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.mortbay.log.Log;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.spark.rdd.RDD;
+
+
+
 
 import com.nflabs.zeppelin.Zeppelin;
 import com.nflabs.zeppelin.zrt.ZeppelinRuntime;
 import com.nflabs.zeppelin.zrt.ZeppelinRuntimeException;
 
+import scala.collection.immutable.Seq;
+import scala.reflect.ClassManifest;
+import scala.reflect.Manifest;
+import shark.SharkEnv;
 import shark.api.TableRDD;
+import shark.execution.EmptyRDD;
+import shark.memstore2.TablePartitionBuilder;
+import shark.memstore2.TablePartitionStats;
 /**
  * ZDD is lazy evaluated data representation
  * 
@@ -27,7 +49,7 @@ public class ZDD {
 	// when zdd is evaluated, than name, schema, rdd will be set
 	private String name;
 	private Schema schema;
-	private TableRDD rdd;
+	private TableRDD tableRDD;
 	
 	
 	// source text
@@ -37,13 +59,16 @@ public class ZDD {
 	
 	// source sql
 	private String sql;
+
+	// source rdd
+	private RDD rdd;
 	
 	
 	private static enum Source{
-		TableRDD,
 		Text,		
 		SQL,
-		Table
+		Table,
+		RDD,
 	}
 	
 	private ZDD(ZeppelinRuntime runtime, Source src, String name){
@@ -93,15 +118,52 @@ public class ZDD {
 		return zdd;
 	}
 	
+	public static ZDD createFromRdd(ZeppelinRuntime runtime, String name, Schema schema, RDD rdd){
+		ZDD zdd = new ZDD(runtime, Source.Table, name);
+		zdd.schema = schema;
+		zdd.rdd = rdd;
+		return zdd;
+	}
+	
+	public String getLocation() throws ZeppelinRuntimeException{
+		if(src==Source.Text){
+			return location;
+		} else if(src==Source.Table){
+			List<String> ret = runtime.sql("describe formatted "+name);
+			Pattern p = Pattern.compile("^Location:+\\s(.*)");
+			for(String s: ret){
+				Matcher m = p.matcher(s);
+				if(m.matches()==false) continue;
+				return m.group(1).trim();
+			}
+			throw new ZeppelinRuntimeException("Can not get location of the table '"+name+"'");
+		} else {
+			throw new ZeppelinRuntimeException("Not implemented");
+		} 
+	}
+	
+
 	
 	public Schema schema() throws ZeppelinRuntimeException{
-		evaluate();
+		if(schema==null){
+			evaluate();
+		}
 		return schema;
 	}
 	
-	public TableRDD rdd() throws ZeppelinRuntimeException{
-		evaluate();
-		return rdd;
+	public TableRDD tableRdd() throws ZeppelinRuntimeException{
+		if(tableRDD==null){
+			evaluate();
+		}
+		return tableRDD;
+	}
+	
+	public RDD rdd() throws ZeppelinRuntimeException{
+		if(rdd!=null){
+			return rdd;
+		} else {
+			return tableRdd();
+		}
 	}
 	
 	
@@ -113,12 +175,8 @@ public class ZDD {
 		}
 	}
 	
-	public void saveAsTextFile(String path){
-		rdd.saveAsTextFile(path);
-	}
-	
 	public boolean isEvaluated(){
-		if(name!=null && rdd!=null && schema!=null){
+		if(name!=null && tableRDD!=null && schema!=null){
 			return true;
 		} else {
 			return false;
@@ -135,28 +193,67 @@ public class ZDD {
 					"STORED AS TEXTFILE " +
 					"LOCATION '"+location.toString()+"'"				
 					;
-			Log.debug("execute sql "+tc);
+			
+			logger.info("Execute "+tc);
+			
 			try{
 				runtime.sql(tc);
-				rdd = runtime.sql2rdd("select * from "+name);
-				rdd.setName(name);
+				tableRDD = runtime.sql2rdd("select * from "+name);
+				tableRDD.setName(name);
 			} catch(Exception e){
 				throw new ZeppelinRuntimeException(e);
 			}
 		} else if(src==Source.SQL){
 			try{
 				runtime.sql("CREATE VIEW "+name+" as "+sql);
-				rdd = runtime.sql2rdd("select * from "+name);
-				rdd.setName(name);
-				schema = new Schema(ColumnDesc.createSchema(rdd.schema()));
+				tableRDD = runtime.sql2rdd("select * from "+name);
+				tableRDD.setName(name);
+				schema = new Schema(ColumnDesc.createSchema(tableRDD.schema()));
 			} catch(Exception e){
 				throw new ZeppelinRuntimeException(e);
 			}
 		} else if(src==Source.Table){
 			try{
-				rdd = runtime.sql2rdd("select * from "+name);
-				rdd.setName(name);
-				schema = new Schema(ColumnDesc.createSchema(rdd.schema()));
+				tableRDD = runtime.sql2rdd("select * from "+name);
+				tableRDD.setName(name);
+				schema = new Schema(ColumnDesc.createSchema(tableRDD.schema()));
+			} catch(Exception e){
+				throw new ZeppelinRuntimeException(e);
+			}
+		} else if(src==Source.RDD){
+			try{
+				List<ObjectInspector> columnOIs = new ArrayList<ObjectInspector>(schema.getColumns().length);
+				for(int i=0; i<schema.getColumns().length; i++){
+					ColumnDesc col = schema.getColumns()[i];
+					ObjectInspector oi = null;
+					if(col.type().name.equals(DataTypes.STRING.name)){
+						oi = PrimitiveObjectInspectorFactory.javaStringObjectInspector;
+					} else if(col.type().name.equals(DataTypes.INT)){
+						oi = PrimitiveObjectInspectorFactory.javaIntObjectInspector;
+					}
+					columnOIs.add(i, oi);
+				}
+				
+
+				
+				
+				/*
+				ClassManifest m = rdd.elementClassManifest();
+				Class[] classes = m.erasure().getClasses();
+				
+				
+				SharkEnv.memoryMetadataManager().putStats(key, stats)
+				*/
+				
+				Map<Object, TablePartitionStats> stats = new HashMap<Object, TablePartitionStats>();
+
+				
+				
+				tableRDD = new TableRDD(rdd, ColumnDesc.convertToSharkColumnDesc(schema.getColumns()), ObjectInspectorFactory.getStandardUnionObjectInspector(columnOIs), -1);
+				runtime.sql("CREATE TABLE "+name+"("+schema.toHiveTableCreationQueryColumnPart()+") TBLPROPERTIES('shark.cache'='true')");
+				SharkEnv.memoryMetadataManager().put(name, tableRDD);
+				SharkEnv.memoryMetadataManager().putStats(name, scala.collection.JavaConversions.mapAsScalaMap(stats));
+				
 			} catch(Exception e){
 				throw new ZeppelinRuntimeException(e);
 			}
