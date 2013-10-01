@@ -5,6 +5,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -22,12 +23,13 @@ import org.apache.spark.rdd.RDD;
 
 
 import com.nflabs.zeppelin.Zeppelin;
+import com.nflabs.zeppelin.shark.RDDTableFunctions;
 import com.nflabs.zeppelin.zrt.ZeppelinRuntime;
 import com.nflabs.zeppelin.zrt.ZeppelinRuntimeException;
 
-import scala.collection.immutable.Seq;
-import scala.reflect.ClassManifest;
-import scala.reflect.Manifest;
+import scala.collection.JavaConversions;
+
+
 import shark.SharkEnv;
 import shark.api.TableRDD;
 import shark.execution.EmptyRDD;
@@ -69,6 +71,7 @@ public class ZDD {
 		SQL,
 		Table,
 		RDD,
+		Array,
 	}
 	
 	private ZDD(ZeppelinRuntime runtime, Source src, String name){
@@ -124,6 +127,7 @@ public class ZDD {
 		zdd.rdd = rdd;
 		return zdd;
 	}
+	
 	
 	public String getLocation() throws ZeppelinRuntimeException{
 		if(src==Source.Text){
@@ -222,6 +226,7 @@ public class ZDD {
 			}
 		} else if(src==Source.RDD){
 			try{
+				/*
 				List<ObjectInspector> columnOIs = new ArrayList<ObjectInspector>(schema.getColumns().length);
 				for(int i=0; i<schema.getColumns().length; i++){
 					ColumnDesc col = schema.getColumns()[i];
@@ -233,27 +238,47 @@ public class ZDD {
 					}
 					columnOIs.add(i, oi);
 				}
-				
+			
+			    val statsAcc = SharkEnv.sc().accumulableCollection(arg0, arg1)
 
-				
-				
-				/*
 				ClassManifest m = rdd.elementClassManifest();
 				Class[] classes = m.erasure().getClasses();
 				
 				
 				SharkEnv.memoryMetadataManager().putStats(key, stats)
-				*/
-				
-				Map<Object, TablePartitionStats> stats = new HashMap<Object, TablePartitionStats>();
 
 				
+				Map<Object, TablePartitionStats> stats = new HashMap<Object, TablePartitionStats>();
+				List<String> fields = new LinkedList<String>();
+
+				for(ColumnDesc c : schema.getColumns()){
+					fields.add(c.name());
+				}
+
+				List<Class> manifests = new LinkedList<Class>();
+				*/				
 				
-				tableRDD = new TableRDD(rdd, ColumnDesc.convertToSharkColumnDesc(schema.getColumns()), ObjectInspectorFactory.getStandardUnionObjectInspector(columnOIs), -1);
-				runtime.sql("CREATE TABLE "+name+"("+schema.toHiveTableCreationQueryColumnPart()+") TBLPROPERTIES('shark.cache'='true')");
-				SharkEnv.memoryMetadataManager().put(name, tableRDD);
-				SharkEnv.memoryMetadataManager().putStats(name, scala.collection.JavaConversions.mapAsScalaMap(stats));
+				//scala.collection.immutable.<ClassManifest> a = JavaConversions.asScalaBuffer(manifests).toList();
 				
+				
+				ColumnDesc.convertToSharkColumnDesc(schema.getColumns());
+				List<shark.api.DataType> types = new LinkedList<shark.api.DataType>();
+				List<String> fields = new LinkedList<String>();
+				for(ColumnDesc c : schema.getColumns()){
+					fields.add(c.name());
+					types.add(c.type().toSharkType());
+				}
+				if(new RDDTableFunctions(rdd, JavaConversions.asScalaBuffer(types).toList())
+				    .saveAsTable(name, JavaConversions.asScalaBuffer(fields).toList())){
+					tableRDD = runtime.sql2rdd("select * from "+name);
+					tableRDD.setName(name);
+				} else {
+					throw new ZeppelinRuntimeException("Can't convert");
+				}
+				
+				tableRDD = runtime.sql2rdd("select * from "+name);
+				tableRDD.setName(name);
+
 			} catch(Exception e){
 				throw new ZeppelinRuntimeException(e);
 			}
@@ -270,6 +295,10 @@ public class ZDD {
 		} else if(src==Source.Table){
 			// nothing to do
 		}
+	}
+	
+	public void drop() throws ZeppelinRuntimeException{
+		destroy();
 	}
 
 	public String name() {

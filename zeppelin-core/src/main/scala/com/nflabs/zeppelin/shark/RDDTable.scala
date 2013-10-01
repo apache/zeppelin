@@ -22,22 +22,23 @@ import scala.collection.mutable.ArrayBuffer
 import shark.SharkEnv
 import shark.memstore2.{TablePartitionStats, TablePartition, TablePartitionBuilder}
 import org.apache.spark.rdd.RDD
+import shark.api.{DataType, DataTypes}
 
-
-class RDDTableFunctions(self: RDD[Product], manifests: Seq[ClassManifest[_]]) {
-
+class RDDTableFunctions(self: RDD[Product], columnTypes: Seq[DataType]) {
+ 
+  
   def saveAsTable(tableName: String, fields: Seq[String]): Boolean = {
-    require(fields.size == this.manifests.size,
-      "Number of column names != number of fields in the RDD.")
+    //require(fields.size == columnTypes.size,
+    //  "Number of column names != number of fields in the RDD.")
 
-    // Get a local copy of the manifests so we don't need to serialize this object.
-    val manifests = this.manifests
+    // Get a local copy of the columnTypes so we don't need to serialize this object.
+    val columnTypes = this.columnTypes
 
     val statsAcc = SharkEnv.sc.accumulableCollection(ArrayBuffer[(Int, TablePartitionStats)]())
 
     // Create the RDD object.
     val rdd = self.mapPartitionsWithIndex { case(partitionIndex, iter) =>
-      val ois = manifests.map(HiveUtils.getJavaPrimitiveObjectInspector)
+      val ois = columnTypes.map(HiveUtils.getJavaPrimitiveObjectInspector)
       val builder = new TablePartitionBuilder(ois, 1000000, shouldCompress = false)
 
       for (p <- iter) {
@@ -53,7 +54,7 @@ class RDDTableFunctions(self: RDD[Product], manifests: Seq[ClassManifest[_]]) {
     }.persist()
 
     // Put the table in the metastore. Only proceed if the DDL statement is executed successfully.
-    if (HiveUtils.createTable(tableName, fields, manifests)) {
+    if (HiveUtils.createTable(tableName, fields, columnTypes)) {
       // Force evaluate to put the data in memory.
       SharkEnv.memoryMetadataManager.put(tableName, rdd)
       rdd.context.runJob(rdd, (iter: Iterator[TablePartition]) => iter.foreach(_ => Unit))
@@ -71,53 +72,3 @@ class RDDTableFunctions(self: RDD[Product], manifests: Seq[ClassManifest[_]]) {
 }
 
 
-object RDDTable {
-
-  private type M[T] = ClassManifest[T]
-  private def m[T](implicit m : ClassManifest[T]) = classManifest[T](m)
-
-  def apply[T1: M, T2: M](rdd: RDD[(T1, T2)]) = {
-    new RDDTableFunctions(rdd.asInstanceOf[RDD[Product]], Seq(m[T1], m[T2]))
-  }
-
-  def apply[T1: M, T2: M, T3: M](rdd: RDD[(T1, T2, T3)]) = {
-    new RDDTableFunctions(rdd.asInstanceOf[RDD[Product]], Seq(m[T1], m[T2], m[T3]))
-  }
-
-  def apply[T1: M, T2: M, T3: M, T4: M](rdd: RDD[(T1, T2, T3, T4)]) = {
-    new RDDTableFunctions(rdd.asInstanceOf[RDD[Product]], Seq(m[T1], m[T2], m[T3], m[T4]))
-  }
-
-  def apply[T1: M, T2: M, T3: M, T4: M, T5: M](rdd: RDD[(T1, T2, T3, T4, T5)]) = {
-    new RDDTableFunctions(rdd.asInstanceOf[RDD[Product]], Seq(m[T1], m[T2], m[T3], m[T4], m[T5]))
-  }
-
-  def apply[T1: M, T2: M, T3: M, T4: M, T5: M, T6: M](rdd: RDD[(T1, T2, T3, T4, T5, T6)]) = {
-    new RDDTableFunctions(rdd.asInstanceOf[RDD[Product]],
-      Seq(m[T1], m[T2], m[T3], m[T4], m[T5], m[T6]))
-  }
-
-  def apply[T1: M, T2: M, T3: M, T4: M, T5: M, T6: M, T7: M](
-      rdd: RDD[(T1, T2, T3, T4, T5, T6, T7)]) = {
-    new RDDTableFunctions(rdd.asInstanceOf[RDD[Product]],
-      Seq(m[T1], m[T2], m[T3], m[T4], m[T5], m[T6], m[T7]))
-  }
-
-  def apply[T1: M, T2: M, T3: M, T4: M, T5: M, T6: M, T7: M, T8: M](
-      rdd: RDD[(T1, T2, T3, T4, T5, T6, T7, T8)]) = {
-    new RDDTableFunctions(rdd.asInstanceOf[RDD[Product]],
-      Seq(m[T1], m[T2], m[T3], m[T4], m[T5], m[T6], m[T7], m[T8]))
-  }
-
-  def apply[T1: M, T2: M, T3: M, T4: M, T5: M, T6: M, T7: M, T8: M, T9: M](
-      rdd: RDD[(T1, T2, T3, T4, T5, T6, T7, T8, T9)]) = {
-    new RDDTableFunctions(rdd.asInstanceOf[RDD[Product]],
-      Seq(m[T1], m[T2], m[T3], m[T4], m[T5], m[T6], m[T7], m[T8], m[T9]))
-  }
-
-  def apply[T1: M, T2: M, T3: M, T4: M, T5: M, T6: M, T7: M, T8: M, T9: M, T10: M](
-      rdd: RDD[(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10)]) = {
-    new RDDTableFunctions(rdd.asInstanceOf[RDD[Product]],
-      Seq(m[T1], m[T2], m[T3], m[T4], m[T5], m[T6], m[T7], m[T8], m[T9], m[T10]))
-  }
-}

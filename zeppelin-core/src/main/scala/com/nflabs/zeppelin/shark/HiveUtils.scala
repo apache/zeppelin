@@ -17,6 +17,7 @@
 
 package com.nflabs.zeppelin.shark
 
+import shark.api.{DataType, DataTypes}
 import java.util.{ArrayList => JavaArrayList, HashSet => JavaHashSet}
 import scala.collection.JavaConversions._
 
@@ -36,19 +37,22 @@ private[shark] object HiveUtils {
   private val timestampManfiest = classManifest[java.sql.Timestamp]
   private val stringManifest = classManifest[String]
 
- 
-  def getJavaPrimitiveObjectInspector(m: ClassManifest[_]): PrimitiveObjectInspector = m match {
-    case Manifest.Boolean => PrimitiveObjectInspectorFactory.javaBooleanObjectInspector
-    case Manifest.Byte => PrimitiveObjectInspectorFactory.javaByteObjectInspector
-    case Manifest.Short => PrimitiveObjectInspectorFactory.javaShortObjectInspector
-    case Manifest.Int => PrimitiveObjectInspectorFactory.javaIntObjectInspector
-    case Manifest.Long => PrimitiveObjectInspectorFactory.javaLongObjectInspector
-    case Manifest.Float => PrimitiveObjectInspectorFactory.javaFloatObjectInspector
-    case Manifest.Double => PrimitiveObjectInspectorFactory.javaDoubleObjectInspector
-    case Manifest.Unit => PrimitiveObjectInspectorFactory.javaVoidObjectInspector
-    case `timestampManfiest` => PrimitiveObjectInspectorFactory.javaTimestampObjectInspector
-    case `stringManifest` => PrimitiveObjectInspectorFactory.javaStringObjectInspector
+  def getJavaPrimitiveObjectInspector(m: ClassManifest[_]): PrimitiveObjectInspector = {
+    getJavaPrimitiveObjectInspector(DataTypes.fromManifest(m))
   }
+  
+  def getJavaPrimitiveObjectInspector(t: DataType): PrimitiveObjectInspector = t match {
+    case DataTypes.BOOLEAN => PrimitiveObjectInspectorFactory.javaBooleanObjectInspector
+    case DataTypes.TINYINT => PrimitiveObjectInspectorFactory.javaByteObjectInspector
+    case DataTypes.SMALLINT => PrimitiveObjectInspectorFactory.javaShortObjectInspector
+    case DataTypes.INT => PrimitiveObjectInspectorFactory.javaIntObjectInspector
+    case DataTypes.BIGINT => PrimitiveObjectInspectorFactory.javaLongObjectInspector
+    case DataTypes.FLOAT => PrimitiveObjectInspectorFactory.javaFloatObjectInspector
+    case DataTypes.DOUBLE => PrimitiveObjectInspectorFactory.javaDoubleObjectInspector
+    case DataTypes.TIMESTAMP => PrimitiveObjectInspectorFactory.javaTimestampObjectInspector
+    case DataTypes.STRING => PrimitiveObjectInspectorFactory.javaStringObjectInspector
+  }
+  
   
     /**
    * Execute the create table DDL operation against Hive's metastore.
@@ -56,10 +60,10 @@ private[shark] object HiveUtils {
   def createTable(
       tableName: String,
       columnNames: Seq[String],
-      columnTypes: Seq[ClassManifest[_]]): Boolean =
+      columnTypes: Seq[DataType]): Boolean =
   {
-    val schema = columnNames.zip(columnTypes).map { case (colName, manifest) =>
-      new FieldSchema(colName, DataTypes.fromManifest(manifest).hiveName, "")
+    val schema = columnNames.zip(columnTypes).map { case (colName, dataType) =>
+      new FieldSchema(colName, dataType.hiveName, "")
     }
 
     // Setup the create table descriptor with necessary information.

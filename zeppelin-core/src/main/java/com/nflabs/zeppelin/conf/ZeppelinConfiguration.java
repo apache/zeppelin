@@ -1,9 +1,11 @@
 package com.nflabs.zeppelin.conf;
 
 import java.net.URL;
+import java.util.List;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.configuration.tree.ConfigurationNode;
 
 public class ZeppelinConfiguration extends XMLConfiguration{
 	
@@ -39,48 +41,108 @@ public class ZeppelinConfiguration extends XMLConfiguration{
 	      classLoader = ZeppelinConfiguration.class.getClassLoader();
 	    }
 	    
-		//URL url = ZeppelinConfiguration.class.getClassLoader().getResource("classpath:zeppelin-site.xml");
 		URL url = classLoader.getResource("zeppelin-site.xml");
-		return new ZeppelinConfiguration(url);
+		if(url!=null){
+			return new ZeppelinConfiguration(url);
+		} else {
+			return new ZeppelinConfiguration();
+		}
 	}
 	
 	
-	public String getString(String k){
-		return super.getString(k, ConfVars.valueOf(k).getStringValue());
+	private String getStringValue(String name, String d){
+		List<ConfigurationNode> properties = getRootNode().getChildren();
+		if(properties==null || properties.size()==0) return d;
+		for(ConfigurationNode p : properties){
+			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
+				return (String) p.getChildren("value").get(0).getValue();
+			}
+		}		
+		return d;
+	}
+	
+	private int getIntValue(String name, int d){
+		List<ConfigurationNode> properties = getRootNode().getChildren();
+		if(properties==null || properties.size()==0) return d;
+		for(ConfigurationNode p : properties){
+			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
+				return (Integer) p.getChildren("value").get(0).getValue();
+			}
+		}		
+		return d;
+	}
+	
+	private float getFloatValue(String name, float d){
+		List<ConfigurationNode> properties = getRootNode().getChildren();
+		if(properties==null || properties.size()==0) return d;
+		for(ConfigurationNode p : properties){
+			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
+				return (Float) p.getChildren("value").get(0).getValue();
+			}
+		}		
+		return d;
+	}
+	
+	private boolean getBooleanValue(String name, boolean d){
+		List<ConfigurationNode> properties = getRootNode().getChildren();
+		if(properties==null || properties.size()==0) return d;
+		for(ConfigurationNode p : properties){
+			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
+				return (Boolean) p.getChildren("value").get(0).getValue();
+			}
+		}		
+		return d;
 	}
 	
 	public String getString(ConfVars c){
-		return super.getString(c.name(), c.getStringValue());
+		if(System.getenv(c.name())!=null){
+			return System.getenv(c.name());
+		}
+		if(System.getProperty(c.getVarName())!=null){
+			return System.getProperty(c.getVarName());
+		}
+
+		return getStringValue(c.getVarName(), c.getStringValue());
 	}
 
-	public int getInt(String k){
-		return super.getInt(k, ConfVars.valueOf(k).getIntValue());
-	}
 	
 	public int getInt(ConfVars c){
-		return super.getInt(c.name(), c.getIntValue());
-	}
-	
-	public float getFloat(String k){
-		return super.getFloat(k, ConfVars.valueOf(k).getFloatValue());
-	}
-	
-	public float getFloat(ConfVars c){
-		return super.getFloat(c.name(), c.getFloatValue());
+		if(System.getenv(c.name())!=null){
+			return Integer.parseInt(System.getenv(c.name()));
+		}
+		
+		if(System.getProperty(c.getVarName())!=null){
+			return Integer.parseInt(System.getProperty(c.getVarName()));
+		}
+		return getIntValue(c.getVarName(), c.getIntValue());
 	}
 
-	public boolean getBoolean(String k){
-		return super.getBoolean(k, ConfVars.valueOf(k).getBooleanValue());
+	public float getFloat(ConfVars c){
+		if(System.getenv(c.name())!=null){
+			return Float.parseFloat(System.getenv(c.name()));
+		}
+		if(System.getProperty(c.getVarName())!=null){
+			return Float.parseFloat(System.getProperty(c.getVarName()));
+		}
+		return getFloatValue(c.getVarName(), c.getFloatValue());
 	}
-	
+
 	public boolean getBoolean(ConfVars c){
-		return super.getBoolean(c.name(), c.getBooleanValue());
+		if(System.getenv(c.name())!=null){
+			return Boolean.parseBoolean(System.getenv(c.name()));
+		}
+		
+		if(System.getProperty(c.getVarName())!=null){
+			return Boolean.parseBoolean(System.getProperty(c.getVarName()));
+		}
+		return getBooleanValue(c.getVarName(), c.getBooleanValue());
 	}
 
 	
 	public static enum ConfVars {
 		SPARK_MASTER("spark.master", "local"),
 		SPARK_HOME("spark.home", "./"),
+		ZEPPELIN_PORT("zeppelin.server.port", 8080)
 		;
 		
 		
