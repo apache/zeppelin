@@ -109,7 +109,11 @@
 		  	<exclusion>
 		  		<groupId>org.eclipse.jetty</groupId>
 		  		<artifactId>*</artifactId>
-		  	</exclusion>		  		  	
+		  	</exclusion>	
+		    <exclusion>
+		      <groupId>org.slf4j</groupId>
+		      <artifactId>slf4j-api</artifactId>
+		    </exclusion>		  		  		  	
 		  </exclusions>			
 	</dependency>
 	<dependency>
@@ -124,7 +128,12 @@
 		  	<exclusion>
 		  		<groupId>org.eclipse.jetty</groupId>
 		  		<artifactId>*</artifactId>
-		  	</exclusion>		  		  	
+		  	</exclusion>
+		  	
+		    <exclusion>
+		      <groupId>org.slf4j</groupId>
+		      <artifactId>slf4j-api</artifactId>
+		    </exclusion>
 		  </exclusions>			
 	</dependency>
 	<dependency>

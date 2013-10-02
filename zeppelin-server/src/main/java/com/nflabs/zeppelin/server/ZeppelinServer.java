@@ -5,11 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.ws.rs.core.Application;
-import javax.ws.rs.ext.RuntimeDelegate;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
@@ -33,7 +29,7 @@ import com.nflabs.zeppelin.rest.ZeppelinImpl;
 
 
 public class ZeppelinServer extends Application {
-	private static final Log LOG = LogFactory.getLog(ZeppelinServer.class);
+	static Logger logger = Logger.getLogger(ZeppelinServer.class.getName());
 	
 	public static void main(String [] args) throws Exception{
 		if(System.getProperty("log4j.configuration")==null){
@@ -78,14 +74,11 @@ public class ZeppelinServer extends Application {
         
         if(resourcePath.isDirectory()){
         	System.setProperty("wicket.configuration", "development");
-        	System.out.println("----------------- DEV MODE -----------------");
             ServletHolder wicketServletHolder = new ServletHolder(WicketServlet.class);
-/*            
+
             wicketServletHolder.setInitParameter(ContextParamWebApplicationFactory.APP_CLASS_PARAM, "com.nflabs.zeppelin.web.WicketApplication");
             wicketServletHolder.setInitParameter(WicketFilter.FILTER_MAPPING_PARAM, "/*");
         	
-        	wicketServletHolder.setInitParameter("wicket.configuration", "development");
-*/
             sch.setWar(resourcePath.getAbsolutePath());
             sch.addServlet(wicketServletHolder, "/");
 
@@ -99,23 +92,23 @@ public class ZeppelinServer extends Application {
 	    server.setHandler(contexts);
 	        
 	        
-        LOG.info("Start zeppelin server");
+	    logger.info("Start zeppelin server");
         server.start();
-        LOG.info("Started");
+        logger.info("Started");
         
 		Runtime.getRuntime().addShutdownHook(new Thread()
         {
             @Override
             public void run()
             {
-            	LOG.info("Shutting down Zeppelin Server ... ");
+            	logger.info("Shutting down Zeppelin Server ... ");
             	try {
 					server.stop();
 				} catch (Exception e) {
-					LOG.error("Error while stopping servlet container", e);
+					logger.error("Error while stopping servlet container", e);
 				}
             	
-                LOG.info("Bye");
+            	logger.info("Bye");
             }
         });
 
