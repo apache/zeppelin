@@ -58,7 +58,7 @@ if [ "${ZEPPELIN_NICENESS}" = "" ]; then
     export ZEPPELIN_NICENESS=0
 fi
 
-ZEPPELIN_MAIN=org.apache.zeppelin.server.ZeppelinServer
+ZEPPELIN_MAIN=com.nflabs.zeppelin.server.ZeppelinServer
 
 JAVA_OPTS+=" -Dzeppelin.log.file=$ZEPPELIN_LOGFILE"
 

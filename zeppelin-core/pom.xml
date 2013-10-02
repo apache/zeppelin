@@ -56,9 +56,21 @@
       <scope>compile</scope>
     </dependency -->  
 	<dependency>
+		<groupId>org.eclipse.jetty.aggregate</groupId>
+		<artifactId>jetty-all-server</artifactId>
+		<version>${jetty.version}</version>
+	</dependency>  
+
+	<dependency>
 		<groupId>org.apache.hadoop</groupId>
 		<artifactId>hadoop-core</artifactId>
 		<version>${hadoop.version}</version>
+		  <exclusions>
+		  	<exclusion>
+		  		<groupId>org.mortbay.jetty</groupId>
+		  		<artifactId>*</artifactId>
+		  	</exclusion>		  	
+		  </exclusions>		
 	</dependency>       
   
 	<dependency>
@@ -93,11 +105,27 @@
 		<groupId>edu.berkeley.cs.amplab</groupId>
 		<artifactId>shark-assembly_${scala.version}</artifactId>
 		<version>${shark.version}</version>
+          <exclusions>
+		  	<exclusion>
+		  		<groupId>org.eclipse.jetty</groupId>
+		  		<artifactId>*</artifactId>
+		  	</exclusion>		  		  	
+		  </exclusions>			
 	</dependency>
 	<dependency>
 		<groupId>org.apache.spark</groupId>
 		<artifactId>spark-core_${scala.version}</artifactId>
 		<version>${spark.version}</version>
+		  <exclusions>
+		  	<exclusion>
+		  		<groupId>org.mortbay.jetty</groupId>
+		  		<artifactId>*</artifactId>
+		  	</exclusion>	
+		  	<exclusion>
+		  		<groupId>org.eclipse.jetty</groupId>
+		  		<artifactId>*</artifactId>
+		  	</exclusion>		  		  	
+		  </exclusions>			
 	</dependency>
 	<dependency>
 		<groupId>com.google.code.findbugs</groupId>

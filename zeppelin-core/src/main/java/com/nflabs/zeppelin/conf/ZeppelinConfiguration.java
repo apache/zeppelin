@@ -140,9 +140,10 @@ public class ZeppelinConfiguration extends XMLConfiguration{
 
 	
 	public static enum ConfVars {
-		SPARK_MASTER("spark.master", "local"),
-		SPARK_HOME("spark.home", "./"),
-		ZEPPELIN_PORT("zeppelin.server.port", 8080)
+		SPARK_MASTER				("spark.master", "local"),
+		SPARK_HOME					("spark.home", "./"),
+		ZEPPELIN_PORT				("zeppelin.server.port", 8080),
+		ZEPPELIN_WAR				("zeppelin.war", "../zeppelin-web/src/main/webapp")
 		;
 		
 		
