@@ -17,7 +17,10 @@ import shark.api.QueryExecutionException;
 import shark.api.TableRDD;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.zai.Input;
+import com.nflabs.zeppelin.zai.Output;
 import com.nflabs.zeppelin.zai.Param;
+import com.nflabs.zeppelin.zai.ParamSpecException;
 import com.nflabs.zeppelin.zai.ZeppelinApplication;
 import com.nflabs.zeppelin.zdd.Schema;
 import com.nflabs.zeppelin.zdd.ZDD;
@@ -54,11 +57,12 @@ public class ZeppelinRuntime {
 	}
 
 	public void destroy(){
+		sharkContext.stop();
 		
 	}
 
-	public ZDD [] run(ZeppelinApplication za, ZDD [] inputs, Param [] params){
-		return za.run(inputs, params);
+	public Output run(ZeppelinApplication za, Input input) throws ParamSpecException{
+		return za.run(input);
 	}
 	
 
@@ -67,7 +71,9 @@ public class ZeppelinRuntime {
 	}
 	
 
-	
+	public ZeppelinConfiguration configuration(){
+		return conf;
+	}
 	
 	public List<String> sql(String query) throws ZeppelinRuntimeException{
 		try{

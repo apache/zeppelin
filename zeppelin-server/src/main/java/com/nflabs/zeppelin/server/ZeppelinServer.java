@@ -19,6 +19,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.session.SessionHandler;
+import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -67,7 +68,7 @@ public class ZeppelinServer extends Application {
 		cxfContext.addServlet( cxfServletHolder, "/zeppelin/*" ); 
 
 		
-
+		// web
 		WebAppContext sch = new WebAppContext();
         sch.setParentLoaderPriority(true);
         File resourcePath = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
@@ -86,9 +87,21 @@ public class ZeppelinServer extends Application {
         } else {
         	sch.setWar(resourcePath.getAbsolutePath());
         }
+        
+        
+        // dynamic resource
+        WebAppContext res = new WebAppContext();
+        DefaultServlet sv = new DefaultServlet();
+
+        ServletHolder resServletHolder = new ServletHolder(sv);
+        resServletHolder.setName("resources");
+        //resServletHolder.setInitParameter(param, value)
+        res.setWar(conf.getString(ConfVars.ZEPPELIN_RESOURCE_DIR));
+        res.addServlet(resServletHolder, "/resources/*");
+        
 
 	    ContextHandlerCollection contexts = new ContextHandlerCollection();
-	    contexts.setHandlers(new Handler[]{cxfContext, sch});
+	    contexts.setHandlers(new Handler[]{cxfContext, sch, res});
 	    server.setHandler(contexts);
 	        
 	        

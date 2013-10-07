@@ -3,6 +3,7 @@ package com.nflabs.zeppelin.zai;
 import java.util.List;
 
 import com.nflabs.zeppelin.zdd.ZDD;
+import com.nflabs.zeppelin.zrt.ZeppelinRuntime;
 
 public class MetaApplication extends ZeppelinApplication {
 	String name;
@@ -12,8 +13,8 @@ public class MetaApplication extends ZeppelinApplication {
 	ColumnSpec [][] inputSpec;
 	ColumnSpec [][] outputSpec;
 	
-	public MetaApplication(){
-		
+	public MetaApplication(ZeppelinRuntime zr){
+		super(zr);
 	}
 	
 	
@@ -49,7 +50,7 @@ public class MetaApplication extends ZeppelinApplication {
 
 
 	@Override
-	public ZDD[] execute(ZDD[] input) {
+	public Output execute(Input input) {
 		// TODO Auto-generated method stub
 		return null;
 	}

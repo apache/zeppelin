@@ -47,6 +47,7 @@ public class ZeppelinRuntimeTest extends TestCase {
 	public void testInit(){
 		ZeppelinConfiguration conf = new ZeppelinConfiguration();
 		ZeppelinRuntime zr = new ZeppelinRuntime(conf, new User("test"));
+		zr.destroy();
 	}
 	
 	

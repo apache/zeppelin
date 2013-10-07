@@ -1,13 +1,32 @@
 package com.nflabs.zeppelin.zai;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.zdd.ZDD;
+import com.nflabs.zeppelin.zrt.ZeppelinRuntime;
 
 public abstract class ZeppelinApplication {
 	
+	public ZeppelinApplication(ZeppelinRuntime runtime){
+		this.runtime = runtime;
+	}
+	
+	private ZeppelinApplication(){
+		
+	}
+
+	public ZeppelinRuntime getRuntime(){
+		return runtime;
+	}
+	
+	private ZeppelinRuntime runtime;
+
+
 	private Param[] params;
 
 	public abstract String name();
@@ -20,14 +39,18 @@ public abstract class ZeppelinApplication {
 	public abstract ColumnSpec [][] getOutputSpec();
 	
 
-	public ZDD [] run(ZDD [] input, Param [] params){
-		this.params = params;
+	public Output run(Input input) throws ParamSpecException{
+		this.params = input.getParams();
 		return execute(input);
 	}
 	
+	
+	
 	public Object getParam(String name) throws ParamSpecException{
+		if(params==null) return null;
+		
 		// first find param
-		Param param = null;
+		Param param = null;		
 		for(Param p : params){
 			if(name.equals(p.getName())){
 				param = p;
@@ -36,9 +59,12 @@ public abstract class ZeppelinApplication {
 		}
 		if(param==null) return null;
 		
-		for(ParamSpec ps : getParamSpec()){
-			if(name.equals(ps.getName())){
-				return ps.validate(param.getValue());
+		ParamSpec[] paramSpecs = getParamSpec();
+		if(paramSpecs!=null){
+			for(ParamSpec ps : getParamSpec()){
+				if(name.equals(ps.getName())){
+					return ps.validate(param.getValue());
+				}
 			}
 		}
 		
@@ -46,5 +72,5 @@ public abstract class ZeppelinApplication {
 	}
 	
 	
-	protected abstract ZDD [] execute(ZDD [] input);
+	protected abstract Output execute(Input input) throws ParamSpecException;
 }
