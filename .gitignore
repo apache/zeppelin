@@ -12,6 +12,7 @@ conf/zeppelin-site.xml
 data/
 logs/
 run/
+resources/
 
 # OS generated files #
 ######################
