@@ -2,6 +2,8 @@ package com.nflabs.zeppelin.web;
 
 import org.apache.wicket.protocol.http.WebApplication;
 
+import com.nflabs.zeppelin.web.analyze.Analyze;
+
 
 
 public class WicketApplication extends WebApplication{
@@ -9,9 +11,9 @@ public class WicketApplication extends WebApplication{
 	 * @see org.apache.wicket.Application#getHomePage()
 	 */
 	@Override
-	public Class<HomePage> getHomePage()
+	public Class<Home> getHomePage()
 	{
-		return HomePage.class;
+		return Home.class;
 	}
 
 	/**
@@ -21,7 +23,9 @@ public class WicketApplication extends WebApplication{
 	public void init()
 	{
 		super.init();
-		mountPage("home", HomePage.class);
+		mountPage("home", Home.class);
+		mountPage("analyze", Analyze.class);
+		mountPage("analyze/new", com.nflabs.zeppelin.web.analyze.New.class);
 	}
 	
 }

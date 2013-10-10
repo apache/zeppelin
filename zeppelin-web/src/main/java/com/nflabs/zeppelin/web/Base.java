@@ -6,9 +6,9 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
 
-public class BasePage  extends WebPage{
+public class Base  extends WebPage{
 
-    public BasePage(final PageParameters parameters) {
+    public Base(final PageParameters parameters) {
     	super(parameters);
     }
     
@@ -21,14 +21,19 @@ public class BasePage  extends WebPage{
     	response.renderJavaScriptReference("http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js");	
     	response.renderCSSReference("http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", "screen");
     	response.renderCSSReference("http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css");
-
-
     	
-		if(isDevMode()){
-
-		} else {
-
-		}
+    	// zeppelin-dependency
+    	response.renderJavaScriptReference("js/lib/json2.js");
+    	
+    	// zeppelin
+    	response.renderCSSReference("css/zeppelin.css");
+    	response.renderJavaScriptReference("js/zeppelin.js");
+    	
+    	if(isDevMode()){
+    		response.renderJavaScript("var zeppelinMode=\"development\";\n", "configure-zeppelin");
+    	}
+    	response.renderJavaScript("var zeppelin = new Zeppelin();", "init-zeppelin");
+    	
 
 
     }

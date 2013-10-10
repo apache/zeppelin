@@ -29,7 +29,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.rest.ZeppelinImpl;
+import com.nflabs.zeppelin.rest.Analyze;
 
 
 public class ZeppelinServer extends Application {
@@ -128,8 +128,16 @@ public class ZeppelinServer extends Application {
 	
     public Set<Class<?>> getClasses() {
         Set<Class<?>> classes = new HashSet<Class<?>>();
-        classes.add(ZeppelinImpl.class);
- 
+        //classes.add(ZeppelinImpl.class); 
         return classes;
+    }
+    
+    public java.util.Set<java.lang.Object> getSingletons(){
+    	Set<Object> singletons = new HashSet<Object>();
+    	
+    	Analyze analyze = new Analyze();
+    	singletons.add(analyze);
+    	
+    	return singletons;
     }
 }

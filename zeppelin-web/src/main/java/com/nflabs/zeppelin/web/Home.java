@@ -3,9 +3,9 @@ package com.nflabs.zeppelin.web;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
 
-public class HomePage extends BasePage{
+public class Home extends Base{
 
-	public HomePage(PageParameters parameters) {
+	public Home(PageParameters parameters) {
 		super(parameters);
 	}
 
