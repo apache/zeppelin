@@ -144,7 +144,7 @@ public class ZeppelinConfiguration extends XMLConfiguration{
 		SPARK_HOME					("spark.home", "./"),
 		ZEPPELIN_PORT				("zeppelin.server.port", 8080),
 		ZEPPELIN_WAR				("zeppelin.war", "../zeppelin-web/src/main/webapp"),
-		ZEPPELIN_RESOURCE_DIR		("zeppelin.resource.dir", "../data/resource")
+		ZEPPELIN_RESOURCE_DIR		("zeppelin.resource.dir", "../resources")
 		;
 		
 		

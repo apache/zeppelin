@@ -11,13 +11,16 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
+
 import org.apache.wicket.protocol.http.ContextParamWebApplicationFactory;
 import org.apache.wicket.protocol.http.WicketFilter;
 import org.apache.wicket.protocol.http.WicketServlet;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.bio.SocketConnector;
+import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -34,15 +37,9 @@ public class ZeppelinServer extends Application {
 	
 	public static void main(String [] args) throws Exception{
 		if(System.getProperty("log4j.configuration")==null){
-			ConsoleAppender console = new ConsoleAppender(); // create appender
-			// configure the appender
-			String PATTERN = "%d [%p|%c|%C{1}] %m%n";
-			console.setLayout(new PatternLayout(PATTERN));
-			console.setThreshold(Level.DEBUG);
-			console.activateOptions();
-			// add appender to any Logger (here is root)
-			Logger.getRootLogger().addAppender(console);
+			Logger.getRootLogger().setLevel(Level.DEBUG);
 		}
+		
 		
 		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
@@ -90,18 +87,16 @@ public class ZeppelinServer extends Application {
         
         
         // dynamic resource
-        WebAppContext res = new WebAppContext();
-        DefaultServlet sv = new DefaultServlet();
+        ResourceHandler res = new ResourceHandler();
+        res.setDirectoriesListed(true);
+        res.setResourceBase(conf.getString(ConfVars.ZEPPELIN_RESOURCE_DIR));
+        ContextHandler resContext = new ContextHandler("/resources");
+        resContext.setHandler(res);
 
-        ServletHolder resServletHolder = new ServletHolder(sv);
-        resServletHolder.setName("resources");
-        //resServletHolder.setInitParameter(param, value)
-        res.setWar(conf.getString(ConfVars.ZEPPELIN_RESOURCE_DIR));
-        res.addServlet(resServletHolder, "/resources/*");
-        
 
+        // add all handlers
 	    ContextHandlerCollection contexts = new ContextHandlerCollection();
-	    contexts.setHandlers(new Handler[]{cxfContext, sch, res});
+	    contexts.setHandlers(new Handler[]{cxfContext, resContext, sch});
 	    server.setHandler(contexts);
 	        
 	        
