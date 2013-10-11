@@ -21,7 +21,10 @@
 # */
 
 FWDIR="$(cd `dirname $0`; pwd)"
-ZEPPELIN_HOME=$FWDIR/..
+
+if [ "x$ZEPPELIN_HOME" == "x" ] ; then
+    export ZEPPELIN_HOME=$FWDIR/..
+fi
 
 if [ "x$ZEPPELIN_CONF_DIR" == "x" ] ; then
     export ZEPPELIN_CONF_DIR="$ZEPPELIN_HOME/conf"
