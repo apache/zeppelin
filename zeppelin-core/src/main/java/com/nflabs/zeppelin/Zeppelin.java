@@ -1,16 +1,12 @@
 package com.nflabs.zeppelin;
 
-import java.net.URI;
-import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Logger;
 
-import shark.api.TableRDD;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
-import com.nflabs.zeppelin.zai.Param;
-import com.nflabs.zeppelin.zai.ZeppelinApplication;
-import com.nflabs.zeppelin.zdd.ZDD;
+
+import com.nflabs.zeppelin.zrt.User;
 import com.nflabs.zeppelin.zrt.ZeppelinRuntime;
 
 
@@ -20,18 +16,25 @@ public class Zeppelin {
 	private ThreadPoolExecutor executorPool;
 	private ZeppelinConfiguration conf;
 	private ZeppelinRuntime runtime;
+	private User user;
 	
 
-	public Zeppelin(ZeppelinConfiguration conf){
+	public Zeppelin(ZeppelinConfiguration conf, User user) throws Exception{
 		this.conf = conf;
+		this.user = user;
 		
 		if(System.getProperty("spark.serializer")==null){
 			System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
 		}
-		//this.runtime = new ZeppelinRuntime(conf, new User(""));
+		
+		this.runtime = new ZeppelinRuntime(conf, user);
+		
 	}
 	
 
+	public void destroy(){
+		runtime.destroy();
+	}
 	
 	
 }

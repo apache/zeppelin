@@ -14,6 +14,8 @@ import junit.framework.TestCase;
 public class ZDDTest extends TestCase {
 
 	private File tmpPath;
+	private ZeppelinConfiguration conf;
+	private ZeppelinRuntime zr;
 
 	protected void setUp() throws Exception {		
 		super.setUp();
@@ -22,9 +24,14 @@ public class ZDDTest extends TestCase {
 		tmpPath = new File(tempDir);
 		tmpPath.mkdirs();
 		deleteRecursive(new File("./metastore_db"));
+		
+		Thread.sleep(3*1000); // to prevent address already use
+		this.conf = new ZeppelinConfiguration();
+		this.zr = new ZeppelinRuntime(conf, new User("test"));
 	}
 
 	protected void tearDown() throws Exception {
+		zr.destroy();
 		deleteRecursive(tmpPath);
 		super.tearDown();
 	}
@@ -54,9 +61,6 @@ public class ZDDTest extends TestCase {
 		out.flush();
 		out.close();
 		
-		ZeppelinConfiguration conf = new ZeppelinConfiguration();
-		ZeppelinRuntime zr = new ZeppelinRuntime(conf, new User("test"));
-		
 		
 		ZDD zdd = ZDD.createFromText(zr, "test", new Schema( 
 				              new ColumnDesc[]{
@@ -77,14 +81,10 @@ public class ZDDTest extends TestCase {
 		
 		ZDD sum = zr.fromSql("test1", "select sum(value) from "+zdd.name());
 		assertEquals(new Long(6), sum.tableRdd().first().getLong(0));
-		zr.destroy();
 		
 	}
 	
 	public void testFromRDD() throws IOException{
-		ZeppelinConfiguration conf = new ZeppelinConfiguration();
-		ZeppelinRuntime zr = new ZeppelinRuntime(conf, new User("test"));
-
 		// create data dir
 		File dir = new File(tmpPath.getAbsolutePath()+"/data");
 		dir.mkdir();
@@ -105,8 +105,6 @@ public class ZDDTest extends TestCase {
 	              }), 
 	              dir.getAbsolutePath(),
 	              ',');
-		zr.destroy();
-		
 	}
 
 }

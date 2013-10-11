@@ -18,17 +18,24 @@ import junit.framework.TestCase;
 public class ZeppelinRuntimeTest extends TestCase {
 
 	private File tmpPath;
+	private ZeppelinConfiguration conf;
+	private ZeppelinRuntime zr;
 
-	protected void setUp() throws Exception {		
+	protected void setUp() throws Exception {
 		super.setUp();
 		System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
 		String tempDir = System.getProperty("java.io.tmpdir")+"/zeppelin_test_"+System.currentTimeMillis();
 		tmpPath = new File(tempDir);
 		tmpPath.mkdirs();
 		deleteRecursive(new File("./metastore_db"));
+		
+		Thread.sleep(3*1000); // to prevent address already use
+		this.conf = new ZeppelinConfiguration();
+		this.zr = new ZeppelinRuntime(conf, new User("test"));
 	}
 
 	protected void tearDown() throws Exception {
+		zr.destroy();
 		deleteRecursive(tmpPath);
 		super.tearDown();
 	}
@@ -45,9 +52,7 @@ public class ZeppelinRuntimeTest extends TestCase {
 	}
 	
 	public void testInit(){
-		ZeppelinConfiguration conf = new ZeppelinConfiguration();
-		ZeppelinRuntime zr = new ZeppelinRuntime(conf, new User("test"));
-		zr.destroy();
+		assertTrue(true);
 	}
 	
 	

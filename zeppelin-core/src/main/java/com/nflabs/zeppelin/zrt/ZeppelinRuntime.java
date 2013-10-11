@@ -58,7 +58,6 @@ public class ZeppelinRuntime {
 
 	public void destroy(){
 		sharkContext.stop();
-		
 	}
 
 	public Output run(ZeppelinApplication za, Input input) throws ParamSpecException{

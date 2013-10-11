@@ -24,6 +24,8 @@ public class SqlTest extends TestCase {
 
 
 	private File tmpPath;
+	private ZeppelinConfiguration conf;
+	private ZeppelinRuntime zr;
 
 	protected void setUp() throws Exception {		
 		super.setUp();
@@ -32,9 +34,15 @@ public class SqlTest extends TestCase {
 		tmpPath = new File(tempDir);
 		tmpPath.mkdirs();
 		deleteRecursive(new File("./metastore_db"));
+		
+		Thread.sleep(3*1000); // to prevent address already use
+		conf = new ZeppelinConfiguration();
+		zr = new ZeppelinRuntime(conf, new User("test"));
+		
 	}
 
 	protected void tearDown() throws Exception {
+		zr.destroy();
 		deleteRecursive(tmpPath);
 		super.tearDown();
 	}
@@ -64,9 +72,7 @@ public class SqlTest extends TestCase {
 		out.flush();
 		out.close();
 		
-		ZeppelinConfiguration conf = new ZeppelinConfiguration();
-		ZeppelinRuntime zr = new ZeppelinRuntime(conf, new User("test"));
-		
+
 		
 		ZDD zdd = ZDD.createFromText(zr, "test", new Schema( 
 				              new ColumnDesc[]{
@@ -83,8 +89,6 @@ public class SqlTest extends TestCase {
 		ZDD[] outputData = output.getData();
 		assertEquals(1, outputData.length);
 		assertEquals(new Long(3), (((shark.api.Row[])(outputData[0].rdd().take(1)))[0].getLong(0)));
-
-		zr.destroy();
 		
 	}
 
