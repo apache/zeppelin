@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.zai.DataSpecException;
 import com.nflabs.zeppelin.zai.Input;
 import com.nflabs.zeppelin.zai.Output;
 import com.nflabs.zeppelin.zai.Param;
@@ -58,7 +59,7 @@ public class SqlTest extends TestCase {
 		}
 	}
 	
-	public void testFromText() throws IOException, ZeppelinRuntimeException, ParamSpecException{
+	public void testRunSql() throws IOException, ZeppelinRuntimeException, ParamSpecException, DataSpecException{
 		// create data dir
 		File dir = new File(tmpPath.getAbsolutePath()+"/data");
 		dir.mkdir();

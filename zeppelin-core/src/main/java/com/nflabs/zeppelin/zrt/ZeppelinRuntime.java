@@ -17,6 +17,7 @@ import shark.api.QueryExecutionException;
 import shark.api.TableRDD;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.zai.DataSpecException;
 import com.nflabs.zeppelin.zai.Input;
 import com.nflabs.zeppelin.zai.Output;
 import com.nflabs.zeppelin.zai.Param;
@@ -60,7 +61,7 @@ public class ZeppelinRuntime {
 		sharkContext.stop();
 	}
 
-	public Output run(ZeppelinApplication za, Input input) throws ParamSpecException{
+	public Output run(ZeppelinApplication za, Input input) throws ParamSpecException, DataSpecException, ZeppelinRuntimeException{
 		return za.run(input);
 	}
 	

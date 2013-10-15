@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.zai.builtin;
 
 import com.nflabs.zeppelin.zai.ColumnSpec;
+import com.nflabs.zeppelin.zai.DataSpec;
 import com.nflabs.zeppelin.zai.Input;
 import com.nflabs.zeppelin.zai.Output;
 import com.nflabs.zeppelin.zai.ParamSpec;
@@ -32,19 +33,22 @@ public class Sql extends ZeppelinApplication{
 
 	@Override
 	public ParamSpec[] getParamSpec() {
-		// TODO Auto-generated method stub
+		return new ParamSpec[]{ 
+				new ParamSpec.StringParamSpec("query")
+					.withDescription("query string")
+					.withAllowAny(true)
+		};
+	}
+
+	@Override
+	public DataSpec[] getInputSpec() {
+		// return null to allow any data
 		return null;
 	}
 
 	@Override
-	public ColumnSpec[][] getInputSpec() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ColumnSpec[][] getOutputSpec() {
-		// TODO Auto-generated method stub
+	public DataSpec[] getOutputSpec() {
+		// return null to allow any output
 		return null;
 	}
 
@@ -54,7 +58,7 @@ public class Sql extends ZeppelinApplication{
 		ZDD[] zdds = input.getData();
 		if(zdds == null || zdds.length==0) return null;
 		
-		String query = (String) getParam("query");
+		String query = (String) input.getParam("query");
 		if(query == null) throw new ParamSpecException("Param 'query' not defined");
 		
 		ZDD[] outs = new ZDD[zdds.length];

@@ -48,7 +48,13 @@
 		<artifactId>jets3t</artifactId>
 		<version>0.9.0</version>
 	</dependency>
-	                        	
+
+	<dependency>
+		<groupId>org.reflections</groupId>
+		<artifactId>reflections</artifactId>
+		<version>0.9.8</version>
+	</dependency>
+            	                        	
 	<dependency>
 	  <groupId>org.apache.hive</groupId>
 	  <artifactId>hive-jdbc</artifactId>

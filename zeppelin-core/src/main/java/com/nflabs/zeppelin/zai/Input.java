@@ -33,5 +33,19 @@ public class Input {
 		this.resources = resources;
 	}
 	
+	public Object getParam(String name) throws ParamSpecException{
+		if(params==null) return null;
+		
+		// first find param
+		Param param = null;		
+		for(Param p : params){
+			if(name.equals(p.getName())){
+				param = p;
+				break;
+			}
+		}
+		if(param==null) return null;
+		return param.getValue();
+	}
 	
 }

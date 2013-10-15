@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.zai.builtin;
 
 import com.nflabs.zeppelin.zai.ColumnSpec;
+import com.nflabs.zeppelin.zai.DataSpec;
 import com.nflabs.zeppelin.zai.Input;
 import com.nflabs.zeppelin.zai.Output;
 import com.nflabs.zeppelin.zai.ParamSpec;
@@ -35,12 +36,12 @@ public class Chart extends ZeppelinApplication {
 	}
 
 	@Override
-	public ColumnSpec[][] getInputSpec() {
+	public DataSpec[] getInputSpec() {
 		return null;
 	}
 
 	@Override
-	public ColumnSpec[][] getOutputSpec() {
+	public DataSpec[] getOutputSpec() {
 		return null;
 	}
 

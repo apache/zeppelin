@@ -10,8 +10,8 @@ public class MetaApplication extends ZeppelinApplication {
 	String version;
 	String description;
 	ParamSpec [] paramSpec;
-	ColumnSpec [][] inputSpec;
-	ColumnSpec [][] outputSpec;
+	DataSpec [] inputSpec;
+	DataSpec [] outputSpec;
 	
 	public MetaApplication(ZeppelinRuntime zr){
 		super(zr);
@@ -39,12 +39,12 @@ public class MetaApplication extends ZeppelinApplication {
 	}
 
 	@Override
-	public ColumnSpec [][] getInputSpec() {
+	public DataSpec [] getInputSpec() {
 		return inputSpec;
 	}
 
 	@Override
-	public ColumnSpec [][] getOutputSpec() {
+	public DataSpec [] getOutputSpec() {
 		return outputSpec;
 	}
 
