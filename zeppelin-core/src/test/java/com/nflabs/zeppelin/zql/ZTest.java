@@ -1,7 +1,9 @@
 package com.nflabs.zeppelin.zql;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.List;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 
@@ -30,7 +32,14 @@ public class ZTest extends TestCase {
 		ZeppelinConfiguration conf = new ZeppelinConfiguration();
 		Z.init(conf);
 		
-		new Q("show tables").execute();
+		new Q("create table if not exists test(a INT, b STRING)").execute();
+		List<ResultSet> results = new Q("show tables").execute();
+		assertEquals(1, results.size());
+		results.get(0).next();
+		assertEquals("test", results.get(0).getString(1));
 		
+		results = new Q("drop table test; show tables").execute();
+		assertEquals(2, results.size());
+		assertFalse(results.get(1).next());
 	}
 }
