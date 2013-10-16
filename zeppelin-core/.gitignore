@@ -16,6 +16,7 @@ metastore_db/
 ._*
 .Spotlight-V100
 .Trashes
+.cache
 Icon?
 ehthumbs.db
 Thumbs.db
