@@ -86,8 +86,6 @@ public class ZQLTest extends TestCase {
 	}
 	
 	public void testLstmtArg() throws IOException, ZException, ZQLException{
-		// create zql with l statment
-
 		ZQL zql = new ZQL("select * from test | test(limit=10) select * from (${arg}) arg");
 		
 		List<Z> z = zql.eval();
