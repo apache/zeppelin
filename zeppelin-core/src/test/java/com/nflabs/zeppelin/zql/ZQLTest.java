@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 
 import junit.framework.TestCase;
@@ -28,8 +27,6 @@ public class ZQLTest extends TestCase {
 		FileOutputStream resource = new FileOutputStream(new File(tmpDir.getAbsolutePath()+"/test/test_data.log"));
 		resource.write("".getBytes());
 		resource.close();
-		
-		ZeppelinConfiguration conf = new ZeppelinConfiguration();
 		
 		System.out.println(tmpDir.toURI().toString());
 		System.setProperty(ConfVars.ZEPPELIN_LIBRARY_DIR.getVarName(), tmpDir.toURI().toString());

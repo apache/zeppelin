@@ -1,7 +1,6 @@
 package com.nflabs.zeppelin.zql;
 
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +30,7 @@ public class ZTest extends TestCase {
 	
 	public void testPipeGetQuery() throws ZException{
 		assertEquals("create view vv as select * from (select * from bank) q limit 10", new Q("select * from bank")
-																	  .pipe(new Q("select * from (${q}) q limit 10"))
+																	  .pipe(new Q("select * from (${arg}) q limit 10"))
 																	  .pipe(new Q("create view vv as"))
 																	  .getQuery()
 		);

@@ -4,15 +4,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
-
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 import junit.framework.TestCase;
 
@@ -61,8 +54,6 @@ public class LTest extends TestCase {
 		FileOutputStream resource = new FileOutputStream(new File(tmpDir.getAbsolutePath()+"/test/test_data.log"));
 		resource.write("".getBytes());
 		resource.close();
-		
-		ZeppelinConfiguration conf = new ZeppelinConfiguration();
 		
 		System.out.println(tmpDir.toURI().toString());
 		System.setProperty(ConfVars.ZEPPELIN_LIBRARY_DIR.getVarName(), tmpDir.toURI().toString());

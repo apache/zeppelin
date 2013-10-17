@@ -8,13 +8,10 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.hadoop.fs.FileSystem;
