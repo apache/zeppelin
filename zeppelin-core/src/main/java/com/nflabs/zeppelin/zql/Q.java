@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 public class Q extends Z{
 	private String query;
 	private List<URI> resources = new LinkedList<URI>();
-	transient static final String PREV_VAR_NAME="q";
+	transient static final String PREV_VAR_NAME="arg";
 	transient static final Pattern templatePattern = Pattern.compile(".*[$][{]"+PREV_VAR_NAME+"[}].*");
 	
 	public Q(String query){
@@ -22,7 +22,7 @@ public class Q extends Z{
 	}
 	
 	@Override
-	public String getQuery(){
+	public String getQuery() throws ZException{
 		if(prev()==null){
 			return query;			
 		} else {
@@ -37,7 +37,7 @@ public class Q extends Z{
 	}
 
 	@Override
-	public List<URI> getResources() {	
+	public List<URI> getResources() throws ZException {	
 		if(prev()==null){
 			return resources;
 		} else {

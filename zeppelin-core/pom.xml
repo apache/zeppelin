@@ -24,47 +24,35 @@
       <artifactId>commons-configuration</artifactId>
       <version>1.9</version>
     </dependency>
-                     
-	<dependency>
-		<groupId>org.eclipse.jetty.aggregate</groupId>
-		<artifactId>jetty-all-server</artifactId>
-		<version>${jetty.version}</version>
-	</dependency>  
 
-	<dependency>
-		<groupId>org.apache.hadoop</groupId>
-		<artifactId>hadoop-core</artifactId>
-		<version>${hadoop.version}</version>
-		  <exclusions>
-		  	<exclusion>
-		  		<groupId>org.mortbay.jetty</groupId>
-		  		<artifactId>*</artifactId>
-		  	</exclusion>		  	
-		  </exclusions>		
-	</dependency>       
-  
-	<dependency>
-		<groupId>net.java.dev.jets3t</groupId>
-		<artifactId>jets3t</artifactId>
-		<version>0.9.0</version>
-	</dependency>
-
-	<dependency>
-		<groupId>org.reflections</groupId>
-		<artifactId>reflections</artifactId>
-		<version>0.9.8</version>
-	</dependency>
-            	                        	
+    <dependency>
+	    <groupId>org.apache.hadoop</groupId>
+	    <artifactId>hadoop-core</artifactId>
+	    <version>${hadoop.version}</version>
+	      <exclusions>
+	          <exclusion>
+                  <groupId>org.mortbay.jetty</groupId>
+                  <artifactId>*</artifactId>
+	          </exclusion>                          
+	      </exclusions>                
+    </dependency> 
+                             
 	<dependency>
 	  <groupId>org.apache.hive</groupId>
 	  <artifactId>hive-jdbc</artifactId>
 	  <version>${hive.version}</version>
-	  <exclusions>
-	  	<exclusion>
-	  		<groupId>asm</groupId>
-	  		<artifactId>asm</artifactId>
-	  	</exclusion>
-	  </exclusions>
 	</dependency>
+	
+	<!-- to use erb -->
+	<dependency>
+        <groupId>org.jruby</groupId>
+        <artifactId>jruby-complete</artifactId>
+        <version>1.3.1</version>
+    </dependency>
+    <dependency>
+        <groupId>com.sun.script.jruby</groupId>
+        <artifactId>jruby-engine</artifactId>
+        <version>1.1.7</version>
+    </dependency>
   </dependencies>
 </project>
