@@ -31,13 +31,25 @@
           </div>
           <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-              <li>{{#link-to 'core'}}Zeppelin-Core{{/link-to}}</a></li>
-              <li><a href="#">ZQL</a></li>
-              <li><a href="#">ZAN</a></li>
+              <li>{{#link-to 'zengine'}}Zengine{{/link-to}}</a></li>
+              <li>{{#link-to 'zql'}}ZQL{{/link-to}}</a></li>
+              <li>{{#link-to 'zan'}}ZAN{{/link-to}}</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-              <li><a href="./navbar-static-top/">License</a></li>
-              <li><a href="./navbar-fixed-top/">Contact</a></li>
+              <li><a href="#">Examples</a></li>
+              <li><a href="#">Downloads</a></li>
+              <li><a href="#">Documentation</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Development <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="https://github.com/NFLabs/zeppelin" target="_blank">Source Code</a></li>
+                  <li><a href="#">Mailing Lists</a></li>
+                  <li><a href="https://github.com/NFLabs/zeppelin/wiki" target="_blank">Wiki</a></li>
+                  <li><a href="#">Issue Tracking</a></li>
+                </ul>
+              </li>
+              <li><a href="#">License</a></li>
+
             </ul>
           </div><!--/.nav-collapse -->
 	</div>
@@ -46,7 +58,11 @@
         {{outlet}}
       </div> <!-- /container -->
 
-
+      <div id="footer">
+        <div class="container">
+          <p class="text-muted">NFLabs.inc</p>
+        </div>
+      </div>
 
 
     </script>
@@ -55,7 +71,7 @@
     <script type="text/x-handlebars" data-template-name="index">
       <div class="jumbotron">
         <h1>Zeppelin</h1>
-        <p>Zeppelin is data analysis environment on top of Hive.</p>
+        <p>Zeppelin is open source data analysis environment on top of Hive.</p>
 	<br />
         <p>
           <a class="btn btn-lg btn-primary" href="../../components/#navbar">Getting started &raquo;</a>
@@ -65,15 +81,31 @@
     </script>
 
 
-    <script type="text/x-handlebars" data-template-name="core">
-      Core
+    <script type="text/x-handlebars" data-template-name="zengine">
+      <div class="jumbotron">
+	<b>Zengine</b> is open source framework based on <a href="http://hive.apache.org">Hive</a> that aims to make data analytics easy.
+      </div>
+	<h6>Word Count</h6>
+	<h5>
+	  <pre>
+import com.nflabs.zeppelin.zengine.*
+...
+result = new L("select text from myTable")
+             .pipe(new L("wordcount"))
+             .execute();
+...
+          </pre>
+        </h5>
+
     </script>
 
     <script type="text/x-handlebars" data-template-name="zql">
       ZQL
     </script>
 
-
+    <script type="text/x-handlebars" data-template-name="zan">
+      ZAN
+    </script>
 
     <script type="text/javascript" src="javascripts/jquery-1.9.1.js"></script>
     <script type="text/javascript" src="javascripts/plax.js"></script>
