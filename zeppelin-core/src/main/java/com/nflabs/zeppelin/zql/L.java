@@ -24,7 +24,12 @@ import org.apache.log4j.Logger;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 
-public class L extends Z{
+/**
+ * L stands for Library
+ * @author moon
+ *
+ */
+public class L extends Q{
 	Logger logger = Logger.getLogger(L.class);
 	
 	private String name;
@@ -36,6 +41,11 @@ public class L extends Z{
 	private FileSystem fs;
 	
 	public L(String name) throws ZException{
+		this(name, null);
+	}
+	
+	public L(String name, String query) throws ZException{
+		super(query);
 		this.name = name;
 		fs = fs();
 		
@@ -88,13 +98,10 @@ public class L extends Z{
 
 		rubyScript.append("require 'erb'\n");
 		
-		String prevQuery = null;
-		if(prev()!=null){
-			prevQuery = prev().getQuery();
-		}
+		String query = super.getQuery();
 		
 		// add arg local var
-		bindings.put(Q.PREV_VAR_NAME, prevQuery);		
+		bindings.put(Q.PREV_VAR_NAME, query);		
 		rubyScript.append(Q.PREV_VAR_NAME+"=$"+Q.PREV_VAR_NAME+"\n");
 		
 		// add param local var
@@ -150,9 +157,8 @@ public class L extends Z{
 				
 			}
 		}
-		if(prev()!=null){
-			resources.addAll(prev().getResources());
-		}
+		
+		resources.addAll(super.getResources());
 		return resources;
 	}
 

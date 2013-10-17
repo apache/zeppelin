@@ -6,6 +6,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Q stands for Query
+ * @author moon
+ *
+ */
 public class Q extends Z{
 	private String query;
 	private List<URI> resources = new LinkedList<URI>();
@@ -24,7 +29,9 @@ public class Q extends Z{
 	@Override
 	public String getQuery() throws ZException{
 		if(prev()==null){
-			return query;			
+			return query;
+		} else if(query==null){
+			return prev().getQuery();
 		} else {
 			String prevQuery = prev().getQuery();
 			Matcher m = templatePattern.matcher(query);
