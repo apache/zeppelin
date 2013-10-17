@@ -62,6 +62,7 @@ public abstract class Z {
 	
 	public abstract String getQuery() throws ZException;
 	public abstract List<URI> getResources() throws ZException;
+	public abstract void clean() throws ZException;
 	
 	public List<ResultSet> execute() throws ZException{		
 		Connection con;

@@ -150,6 +150,16 @@ public class L extends Z{
 				
 			}
 		}
+		if(prev()!=null){
+			resources.addAll(prev().getResources());
+		}
 		return resources;
+	}
+
+	@Override
+	public void clean() throws ZException {
+		if(prev()!=null){
+			prev().clean();
+		}		
 	}
 }

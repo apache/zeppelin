@@ -48,4 +48,11 @@ public class Q extends Z{
 		}
 	}
 
+	@Override
+	public void clean() throws ZException {
+		if(prev()!=null){
+			prev().clean();
+		}
+	}
+
 }
