@@ -36,9 +36,18 @@
               <li>{{#link-to 'zan'}}ZAN{{/link-to}}</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
+
+              <li><a href="#">Download</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="#">Install Zeppelin</a></li>
+                  <li><a href="#">Configure Zeppelin</a></li>
+                  <li><a href="#">Zengine API</a></li>
+                  <li><a href="#">ZQL</a></li>
+                </ul>
+              </li>
               <li><a href="#">Examples</a></li>
-              <li><a href="#">Downloads</a></li>
-              <li><a href="#">Documentation</a></li>
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Development <b class="caret"></b></a>
                 <ul class="dropdown-menu">
@@ -63,8 +72,6 @@
           <p class="text-muted">NFLabs.inc</p>
         </div>
       </div>
-
-
     </script>
 
 
@@ -74,7 +81,7 @@
         <p>Zeppelin is open source data analysis environment on top of Hive.</p>
 	<br />
         <p>
-          <a class="btn btn-lg btn-primary" href="../../components/#navbar">Getting started &raquo;</a>
+          {{#link-to 'docZeppelinGettingstarted' classNames="btn btn-lg btn-primary"}}Getting started &raquo;{{/link-to}}
         </p>
       </div>
 
@@ -89,23 +96,51 @@
 	<h5>
 	  <pre>
 import com.nflabs.zeppelin.zengine.*
+import com.nflabs.zeppelin.result.*
 ...
-result = new L("select text from myTable")
-             .pipe(new L("wordcount"))
-             .execute();
+result = new Q("select text from myTable")                   // load some data
+             .pipe(new L("wordcount"))                       // load wordcount library
+             .execute();                                     // execute
+
+new ResultDataStream(result.get(0), 10, System.out).load();  // take first result set 
+                                                             // and display first 10 rows
 ...
           </pre>
         </h5>
-
     </script>
 
     <script type="text/x-handlebars" data-template-name="zql">
-      ZQL
+      <div class="jumbotron">
+	<b>ZQL</b> is super easy yet powerful analytical language
+      </div>
+	<h6>Word Count</h6>
+	<h5>
+	  <pre>
+select text from myTable | wordcount > wc_out;               // load | process > export
+select * from wc_out limit 10;                               // print first 10 rows of wc_out
+          </pre>
+        </h5>
+
+	You can run ZQL through Zepplin GUI or Zeppelin Cli.
+
+
+
+	
     </script>
 
     <script type="text/x-handlebars" data-template-name="zan">
       ZAN
     </script>
+
+
+    <script type="text/x-handlebars" data-template-name="docZeppelinGettingstarted">
+      Getting started
+    </script>
+
+    <script type="text/x-handlebars" data-template-name="docZeppelinInstall">
+      Install
+    </script>
+
 
     <script type="text/javascript" src="javascripts/jquery-1.9.1.js"></script>
     <script type="text/javascript" src="javascripts/plax.js"></script>

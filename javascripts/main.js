@@ -5,26 +5,15 @@ App.Router.map(function(){
     this.route("zengine", { path:"/zengine"});
     this.route("zql", { path:"/zql"});
     this.route("zan", { path:"/zan"});
+    this.route("docZeppelinGettingstarted", { path:"/doc/zeppelin/getting_started"});
+    this.route("docZeppelinInstall", { path:"/doc/zeppelin/install"});
+    this.route("docZeppelinConfigure", { path:"/doc/zeppelin/configure"});
 });
 
 
 App.ApplicationController = Ember.Controller.extend({
-
+    
 });
 
 
-
-App.ZengineView = Ember.View.extend({
-    templateName : 'zengine',
-});
-
-
-
-App.ZQLView = Ember.View.extend({
-    templateName : 'zql',
-});
-
-App.ZANView = Ember.View.extend({
-    templateName : 'zan',
-});
 
