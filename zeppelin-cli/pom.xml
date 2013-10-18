@@ -31,6 +31,13 @@
 		<artifactId>zeppelin-zengine</artifactId>
 		<version>${zeppelin.version}</version>
 	</dependency>
+	
+	<dependency>
+		<groupId>jline</groupId>
+		<artifactId>jline</artifactId>
+		<version>2.11</version>
+	</dependency>
+            
   </dependencies>
 
 </project>
