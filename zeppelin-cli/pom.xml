@@ -26,6 +26,11 @@
 		<version>1.2</version>
 	</dependency>
 	 
+	<dependency>
+		<groupId>com.nflabs.zeppelin</groupId>
+		<artifactId>zeppelin-zengine</artifactId>
+		<version>${zeppelin.version}</version>
+	</dependency>
   </dependencies>
 
 </project>
