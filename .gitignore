@@ -13,6 +13,8 @@ data/
 logs/
 run/
 resources/
+metastore_db/
+*.log
 
 # OS generated files #
 ######################
