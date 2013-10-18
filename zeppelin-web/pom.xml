@@ -6,13 +6,13 @@
     <parent>
       <artifactId>zeppelin</artifactId>
       <groupId>com.nflabs.zeppelin</groupId>
-      <version>1.0</version>
+      <version>0.1-SNAPSHOT</version>
     </parent>
 
     <groupId>com.nflabs.zeppelin</groupId>
     <artifactId>zeppelin-web</artifactId>
     <packaging>war</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>${zeppelin.version}</version>
     <name>zeppelin-web</name>
 
     <build>

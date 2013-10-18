@@ -4,14 +4,14 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>com.nflabs.zeppelin</groupId>
-    <version>1.0</version>
+    <version>0.1-SNAPSHOT</version>
   </parent>
   <groupId>com.nflabs.zeppelin</groupId>
-  <artifactId>zeppelin-core</artifactId>
+  <artifactId>zeppelin-zengine</artifactId>
   <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
-  <name>zeppelin-core</name>
-  <url>http://www.nflabs.com</url>
+  <version>${zeppelin.version}</version>
+  <name>zeppelin-zengine</name>
+  <url>http://nflabs.github.io/zeppelin/#/zengine</url>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -55,4 +55,5 @@
         <version>1.1.7</version>
     </dependency>
   </dependencies>
+
 </project>
