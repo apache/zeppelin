@@ -45,7 +45,7 @@ public class LTest extends TestCase {
 		new File(tmpDir.getAbsolutePath()+"/test").mkdir();
 		File erb = new File(tmpDir.getAbsolutePath()+"/test/test.erb");
 		FileOutputStream out = new FileOutputStream(erb);		
-		out.write("select * from table limit <%= params['limit'] %>\n".getBytes());
+		out.write("select * from table limit <%= z.param('limit') %>\n".getBytes());
 		out.close();
 		
 		// create resource that will be ignored

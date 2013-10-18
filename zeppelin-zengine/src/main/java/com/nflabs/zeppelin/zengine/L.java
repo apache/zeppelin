@@ -97,18 +97,30 @@ public class L extends Q{
 		engine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
 
 		rubyScript.append("require 'erb'\n");
-		
+		rubyScript.append(
+				"class Zeppelin\n"+
+				"  def initialize(a, p)\n"+
+				"    @a = a\n"+
+				"    @p = {}\n"+
+				"    p.each{|key,value|@p[key]=value}\n"+
+				"  end\n"+
+				"  def param(key)\n"+
+				"    @p[key]\n"+
+				"  end\n"+
+				"  def "+Q.PREV_VAR_NAME+"\n"+
+				"    @a\n"+
+				"  end\n"+				
+                "end\n");
 		String query = super.getQuery();
 		
 		// add arg local var
 		bindings.put(Q.PREV_VAR_NAME, query);		
-		rubyScript.append(Q.PREV_VAR_NAME+"=$"+Q.PREV_VAR_NAME+"\n");
 		
 		// add param local var
 		bindings.put("params", params);
-		rubyScript.append("params = {}\n");
-		rubyScript.append("$params.each{|key,value|params[key]=value}\n");
 		
+		// create zeppelin context
+		rubyScript.append("z = Zeppelin.new($"+Q.PREV_VAR_NAME+", $params)\n");
 		try {
 			FSDataInputStream ins = fs.open(erbFile);
 			BufferedReader br = new BufferedReader(new InputStreamReader(ins));
