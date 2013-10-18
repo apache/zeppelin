@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zql;
+package com.nflabs.zeppelin.zengine;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,6 +13,9 @@ import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.zengine.Q;
+import com.nflabs.zeppelin.zengine.Z;
+import com.nflabs.zeppelin.zengine.ZException;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 import junit.framework.TestCase;

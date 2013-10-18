@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zql;
+package com.nflabs.zeppelin.zengine;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.zengine.L;
+import com.nflabs.zeppelin.zengine.Z;
+import com.nflabs.zeppelin.zengine.ZException;
 
 import junit.framework.TestCase;
 

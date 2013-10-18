@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zql;
+package com.nflabs.zeppelin.zengine;
 
 public class ZException extends Exception{
 	public ZException(Exception e){
