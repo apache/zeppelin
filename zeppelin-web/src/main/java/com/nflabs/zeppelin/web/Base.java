@@ -1,7 +1,9 @@
 package com.nflabs.zeppelin.web;
 
 import org.apache.wicket.RuntimeConfigurationType;
-import org.apache.wicket.markup.html.IHeaderResponse;
+import org.apache.wicket.markup.head.CssHeaderItem;
+import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
@@ -14,28 +16,34 @@ public class Base  extends WebPage{
     
     public void renderHead(IHeaderResponse response){
     	// jquery
-    	response.renderJavaScriptReference("https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js");
-    	//response.renderJavaScriptReference("https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.js");
+    	response.render(JavaScriptHeaderItem.forUrl("https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"));
+    	//response.render(JavaScriptHeaderItem.forUrl("https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.js"));
+
+    	// ember
+    	response.render(JavaScriptHeaderItem.forUrl("js/lib/handlebars-1.0.0.js"));
+    	response.render(JavaScriptHeaderItem.forUrl("js/lib/ember-1.0.0.js"));
     	
     	// bootstrap
-    	response.renderJavaScriptReference("http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js");	
-    	response.renderCSSReference("http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", "screen");
-    	response.renderCSSReference("http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css");
+    	response.render(JavaScriptHeaderItem.forUrl("http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"));	
+    	response.render(CssHeaderItem.forUrl("http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css", "screen"));
+    	response.render(CssHeaderItem.forUrl("http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css"));
+
+    	// ace
+    	response.render(JavaScriptHeaderItem.forUrl("js/lib/ace/ace.js"));
     	
     	// zeppelin-dependency
-    	response.renderJavaScriptReference("js/lib/json2.js");
+    	response.render(JavaScriptHeaderItem.forUrl("js/lib/json2.js"));
     	
     	// zeppelin
-    	response.renderCSSReference("css/zeppelin.css");
-    	response.renderJavaScriptReference("js/zeppelin.js");
+    	response.render(CssHeaderItem.forUrl("css/zeppelin.css"));
+    	response.render(JavaScriptHeaderItem.forUrl("js/zeppelin.js"));
+    	
+    	response.render(JavaScriptHeaderItem.forUrl("app/main.js"));
     	
     	if(isDevMode()){
-    		response.renderJavaScript("var zeppelinMode=\"development\";\n", "configure-zeppelin");
+    		response.render(JavaScriptHeaderItem.forScript("var zeppelinMode=\"development\";\n", "configure-zeppelin"));
     	}
-    	response.renderJavaScript("var zeppelin = new Zeppelin();", "init-zeppelin");
-    	
-
-
+    	response.render(JavaScriptHeaderItem.forScript("var zeppelin = new Zeppelin();", "init-zeppelin"));
     }
     
     

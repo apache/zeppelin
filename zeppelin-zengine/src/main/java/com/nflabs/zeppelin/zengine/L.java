@@ -137,7 +137,7 @@ public class L extends Q{
 		rubyScript.append("$e = ERB.new(erb).result(binding)\n");
 
         try {
-        	logger.info("rubyScript to run : \n"+rubyScript.toString());
+        	logger.debug("rubyScript to run : \n"+rubyScript.toString());
 			engine.eval(rubyScript.toString(), bindings);
 		} catch (ScriptException e) {
 			throw new ZException(e);

@@ -7,6 +7,14 @@ function isDevMode(){
 function Zeppelin(arg){
 	this.arg = arg;
 	
+	this.zql = function(ql, max, listener, scope){
+		this.post("/analyze/zql", {
+			zql : ql,
+			max : max
+		}, listener, scope);
+	}
+	
+	
 	this.getBaseURL = function(){
 		return "http://"+window.location.host.split(":")[0]+":8080";
 	}
@@ -66,7 +74,7 @@ function Zeppelin(arg){
 	 		contentType : "application/json",
 	 		xhrFields: devMode,
 			beforeSend: function(xhr) {
-				if (this.isDevMode() == false)
+				if (isDevMode() == false)
 			     xhr.withCredentials = true;
 			},
    			headers : this.getHeaders(),		 		
@@ -74,7 +82,7 @@ function Zeppelin(arg){
 	 			if(listener) listener.call(scope, status.status, data.body);
 	 		},
 	 		error : function(xhr, status){
-	 			this.log("ERROR %o, %o", xhr, status);
+	 			console.log("ERROR %o, %o", xhr, status);
 	 			if(listener) listener.call(scope, xhr.status, $.parseJSON(xhr.responseText))
 	 			
 	 		},
@@ -101,7 +109,7 @@ function Zeppelin(arg){
 	 			if(listener) listener.call(scope, status.status, data.body);
 	 		},
 	 		error : function(xhr, status){ 			
-	 			console.log("ERROR %o, %o", xhr, status);
+	 			log("ERROR %o, %o", xhr, status);
 	 			if(listener) listener.call(scope, xhr.status, $.parseJSON(xhr.responseText))
 	 			
 	 		},
