@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.server;
 
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -86,6 +87,10 @@ public class AnalyzeSessionManager implements JobListener {
 			// add to history;
 		}
 		
+	}
+
+	public Map<String, AnalyzeSession> getRunning() {
+		return (Map<String, AnalyzeSession>) sessions.clone();
 	}
 	
 	

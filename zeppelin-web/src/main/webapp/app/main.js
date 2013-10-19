@@ -53,7 +53,7 @@ $(document).ready(function(){
 	});
 	
 	App.ApplicationController = Ember.Controller.extend({
-	    
+	    zqlLink : "http://nflabs.github.io/zeppelin/#/zql",	    
 	});
 
 	// Analyze --------------------------------------
@@ -74,9 +74,19 @@ $(document).ready(function(){
             }
         });
 
-	App.AnalyzeEditController = Ember.Controller.extend({
-	    zqlLink : "http://nflabs.github.io/zeppelin/#/zql",
+	App.AnalyzeController = App.ApplicationController.extend({
+	    actions : {
+		newSession : function(){
+		    controller = this;
+		    Ember.$.getJSON('/cxf/zeppelin/analyze/new').then(function(d){
+			controller.transitionToRoute('analyze.edit', {sessionid: d.body.id, session:d.body})
+		    });
 
+                }
+	    }
+	});
+
+	App.AnalyzeEditController = App.ApplicationController.extend({
 	});
 	
 	App.AnalyzeEditView = Ember.View.extend({
