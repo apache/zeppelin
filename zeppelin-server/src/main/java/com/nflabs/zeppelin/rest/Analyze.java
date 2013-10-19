@@ -10,13 +10,19 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.log4j.Logger;
 
+import com.nflabs.zeppelin.server.AnalyzeSessionManager;
 import com.nflabs.zeppelin.server.JsonResponse;
 
 
 @Path("/analyze")
-public class Analyze {
+public class Analyze {	
 	Logger logger = Logger.getLogger(Analyze.class);
-
+	AnalyzeSessionManager sessionManager;
+	
+	
+	public Analyze(AnalyzeSessionManager sessionManager){
+		this.sessionManager = sessionManager;
+	}
     
     @POST
     @Produces("application/json")

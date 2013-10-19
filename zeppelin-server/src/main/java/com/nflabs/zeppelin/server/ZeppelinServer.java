@@ -7,10 +7,8 @@ import java.util.Set;
 import javax.ws.rs.core.Application;
 
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
-import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
 
 import org.apache.wicket.protocol.http.ContextParamWebApplicationFactory;
 import org.apache.wicket.protocol.http.WicketFilter;
@@ -22,7 +20,6 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.session.SessionHandler;
-import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -30,6 +27,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.rest.Analyze;
+import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 
 public class ZeppelinServer extends Application {
@@ -99,7 +97,6 @@ public class ZeppelinServer extends Application {
 	    contexts.setHandlers(new Handler[]{cxfContext, resContext, sch});
 	    server.setHandler(contexts);
 	        
-	        
 	    logger.info("Start zeppelin server");
         server.start();
         logger.info("Started");
@@ -125,17 +122,30 @@ public class ZeppelinServer extends Application {
             Thread.sleep(10000);
         }
 	}
+
+
+
+	private SchedulerFactory schedulerFactory;
+	private AnalyzeSessionManager analyzeSessionManager;
+	
+	
+	public ZeppelinServer() throws Exception{
+		this.schedulerFactory = new SchedulerFactory();
+		this.analyzeSessionManager = new AnalyzeSessionManager(schedulerFactory.createOrGetParallelScheduler("analyze", 30));
+
+	}
 	
     public Set<Class<?>> getClasses() {
         Set<Class<?>> classes = new HashSet<Class<?>>();
-        //classes.add(ZeppelinImpl.class); 
         return classes;
     }
+    
+    
     
     public java.util.Set<java.lang.Object> getSingletons(){
     	Set<Object> singletons = new HashSet<Object>();
     	
-    	Analyze analyze = new Analyze();
+    	Analyze analyze = new Analyze(analyzeSessionManager);
     	singletons.add(analyze);
     	
     	return singletons;
