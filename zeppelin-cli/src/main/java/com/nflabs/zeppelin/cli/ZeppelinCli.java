@@ -51,7 +51,7 @@ public class ZeppelinCli {
 		if(cmd.hasOption("f")){
 			ZQL zql = new ZQL();
 			zql.load(new File(cmd.getOptionValue("f")));
-			List<Z> zs = zql.eval();
+			List<Z> zs = zql.compile();
 			
 			
 			for(Z z : zs){
@@ -62,7 +62,7 @@ public class ZeppelinCli {
 			}
 		} else if(cmd.hasOption("e")){ 			
 			ZQL zql = new ZQL(cmd.getOptionValue("e"));
-			List<Z> zs = zql.eval();			
+			List<Z> zs = zql.compile();			
 			
 			for(Z z : zs){
 				List<ResultSet> results = z.execute();
@@ -102,7 +102,7 @@ public class ZeppelinCli {
         	 ZQL zql;
 			try {
 				zql = new ZQL(line);
-	 			List<Z> zs = zql.eval();			
+	 			List<Z> zs = zql.compile();			
 				
 	 			for(Z z : zs){
 	 				List<ResultSet> results = z.execute();

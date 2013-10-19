@@ -10,19 +10,43 @@ import java.util.List;
 
 public abstract class ResultData {
 	ColumnDef [] columnDef;
-	private ResultSet res;
 	private long max;
+	
+	transient private ResultSet res;
+	transient Exception e;
+	
+	
 	
 	public ResultData(ResultSet res) throws ResultDataException {
 		this(res, -1);
 	}
 	public ResultData(ResultSet res, long max) throws ResultDataException {
 		try {
-			beforeProcess();
 			init(res, max);
-			afterProcess();
 		} catch (SQLException e) {
 			throw new ResultDataException(e);
+		}
+	}
+	
+
+	public ResultData(Exception e) throws ResultDataException {
+		this.e = e;
+		columnDef = new ColumnDef[4];
+		columnDef[0] = new ColumnDef("class", Types.VARCHAR, "varchar");
+		columnDef[1] = new ColumnDef("message", Types.VARCHAR, "varchar");
+		columnDef[2] = new ColumnDef("stacktrace", Types.VARCHAR, "varchar");
+		columnDef[3] = new ColumnDef("cause", Types.VARCHAR, "varchar");
+		
+		max = -1;
+		Object [] row = new Object[4];
+		row[0] = e.getClass().getName();
+		row[1] = e.getMessage();
+		row[2] = e.getStackTrace();
+		row[3] = (e.getCause()==null) ? null : e.getCause().getMessage();
+		try {
+			process(columnDef, row, 0);
+		} catch (Exception e1) {
+			throw new ResultDataException(e1);
 		}
 	}
 	
@@ -137,7 +161,7 @@ public abstract class ResultData {
 		}
 
 	}
-	protected abstract void beforeProcess();
+
 	protected abstract void process(ColumnDef [] columnDef, Object [] row, long n) throws Exception;
-	protected abstract void afterProcess();
+
 }

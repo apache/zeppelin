@@ -76,11 +76,11 @@ public class ZQL {
 		sb = new StringBuilder();
 	}
 	
-	public List<Z> eval() throws ZQLException{
-		return evalZql(sb.toString());
+	public List<Z> compile() throws ZQLException{
+		return compileZql(sb.toString());
 	}
 	
-	private List<Z> evalZql(String stmts) throws ZQLException{
+	private List<Z> compileZql(String stmts) throws ZQLException{
 		List<Z> zList = new LinkedList<Z>();
 		Z currentZ = null;
 		
@@ -191,6 +191,7 @@ public class ZQL {
 		} else {
 			return null;
 		}
-	}		
+	}
+
 
 }

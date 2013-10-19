@@ -52,13 +52,4 @@ public class ResultDataStream extends ResultData{
 			out.write(rowSep.getBytes());
 		}
 	}
-
-	@Override
-	protected void beforeProcess() {
-	}
-
-	@Override
-	protected void afterProcess() {
-	}
-
 }
