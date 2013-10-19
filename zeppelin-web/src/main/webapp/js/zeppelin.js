@@ -6,13 +6,27 @@ function isDevMode(){
 
 function Zeppelin(arg){
 	this.arg = arg;
-	
-	this.zql = function(ql, max, listener, scope){
-		this.post("/analyze/zql", {
-			zql : ql,
-			max : max
+
+        this.analyze = new function(){
+	    zeppelin = this
+	    this.create = function(listener, scope){
+		get("/analyze/new", listener, scope);
+            }
+	    this.set = function(zql, name, listener, scope){
+		post("/analyze/set", {
+		    zql : ql,
+		    name : name
 		}, listener, scope);
-	}
+	    }
+	    this.run = function(id, listener, scope){
+		zeppelin.get("/analyze/run/"+id, listener, scope);
+            }
+	    this.get = function(sessionId){
+		return Ember.$.getJSON('/analyze/get/'+sessionId);
+            }
+
+	}()
+    
 	
 	
 	this.getBaseURL = function(){
@@ -28,6 +42,9 @@ function Zeppelin(arg){
 		else return (zeppelinMode=="development");
 	}
 
+        this.alert = function(msg, element){
+	    $(element).append('<div class="alert"><a class="close" data-dismiss="alert">×</a><span>'+msg+'</span></div>');
+        }
 	this.log = function(msg, level){
 		console.log(msg);
 	}
@@ -37,7 +54,7 @@ function Zeppelin(arg){
 	}
 	this.get = function(path, listener, scope, async){
 		var devMode = new Object();
-		if(this.isDevMode())
+		if(isDevMode())
 			devMode["withCredentials"] = true;
 		$.support.cors = true;
 		$.ajax({
@@ -46,7 +63,7 @@ function Zeppelin(arg){
 	 		dataType : "json",
 	 		xhrFields: devMode,
 			beforeSend: function(xhr) {
-				if (this.isDevMode() == false)
+				if (isDevMode() == false)
 			     xhr.withCredentials = true;
 			},
    			headers : this.getHeaders(),
@@ -54,7 +71,7 @@ function Zeppelin(arg){
 	 			if(listener) listener.call(scope, status.status, data.body);
 	 		},
 	 		error : function(xhr, status){
-	 			this.log("ERROR %o, %o", xhr, status);
+	 			console.log("ERROR %o, %o", xhr, status);
 	 			if(listener) listener.call(scope, xhr.status, $.parseJSON(xhr.responseText))
 	 		},
 	 		async : (async==undefined) ? true : async
@@ -63,7 +80,7 @@ function Zeppelin(arg){
 	
 	this.post = function(path, data, listener, scope, async){
 		var devMode = new Object();
-		if(this.isDevMode())
+		if(isDevMode())
 			devMode["withCredentials"] = true;
 		$.support.cors = true;
 		$.ajax({
@@ -95,16 +112,16 @@ function Zeppelin(arg){
 			devMode["withCredentials"] = true;
 		$.support.cors = true;
 		$.ajax({
-			url : this.getRestURL()+path,
+			url : getRestURL()+path,
 	 		type : "PUT",
 	 		dataType : "json",
 	 		data: JSON.stringify(data),
 			xhrFields: devMode,
 			beforeSend: function(xhr) {
-				if (this.isDevMode() == false)
+				if (isDevMode() == false)
 			     xhr.withCredentials = true;
 			},
-			headers : this.getHeaders(),   				
+			headers : getHeaders(),   				
 	 		success: function(data, type, status){
 	 			if(listener) listener.call(scope, status.status, data.body);
 	 		},
@@ -120,16 +137,16 @@ function Zeppelin(arg){
     this.del = function(path, listener, scope, async){
     	var devMode = new Object();
 		if(isDevMode())
-			this.devMode["withCredentials"] = true;
+			devMode["withCredentials"] = true;
     	$.support.cors = true;
 		$.ajax({
-			url : this.getRestURL()+path,
+			url : getRestURL()+path,
 	 		type : "DELETE",
 	 		dataType : "json",
-			headers : this.getHeaders(),	 		
+			headers : getHeaders(),	 		
 			xhrFields: devMode,
 			beforeSend: function(xhr) {
-				if (this.isDevMode() == false)
+				if (isDevMode() == false)
 			     xhr.withCredentials = true;
 			},	 		
 	 		success: function(data, type, status){

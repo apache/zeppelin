@@ -1,11 +1,12 @@
-
-<p />
-<div>Place your <a target="_blank" {{bindAttr href="zqlLink"}}>ZQL</a></div>
-<p />
-<div id="zqlEditor" class="zqlEditor"></div>
-<p />
-<div>
-	<a id="zqlRunButton" class="btn btn-lg btn-primary">Run</a>
+<div class="row">
+  <div class="col-md-3">
+    <div class="bs-sidebar hidden-print" role="complementary">
+      <ul class="nav bs-sidenav">
+        <li><a href="#overview">New analyze</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-8">
+    {{outlet}}
+  </div>
 </div>
-
-

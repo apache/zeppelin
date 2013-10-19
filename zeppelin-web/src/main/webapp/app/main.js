@@ -2,7 +2,8 @@
 var loaderObj = {
 	templates : [
 		'index.html',
-		'analyze.html'
+		'analyze.html',
+	        'analyze/edit.html'
 	],
 	scripts : [
 	]
@@ -46,7 +47,9 @@ $(document).ready(function(){
 	window.App = Ember.Application.create();
 	
 	App.Router.map(function(){
-	    this.route("analyze", { path:"/analyze"});
+	    this.resource('analyze', function(){
+		this.route('edit', {path:'/:sessionid'});
+            });
 	});
 	
 	App.ApplicationController = Ember.Controller.extend({
@@ -54,25 +57,46 @@ $(document).ready(function(){
 	});
 
 	// Analyze --------------------------------------
+        App.AnalyzeRoute = Ember.Route.extend({
+            model : function(params){
+		return {}
+            }
+        });
 
-	App.AnalyzeController = Ember.Controller.extend({
+        App.AnalyzeEditRoute = Ember.Route.extend({
+            model : function(params){
+		console.log("edit param=%o", params);
+		if(params.sessionid!=undefined){
+		    return Ember.$.getJSON('/cxf/zeppelin/analyze/get/'+params.sessionid);
+                } else {
+		    return null;
+		}
+            }
+        });
+
+	App.AnalyzeEditController = Ember.Controller.extend({
 	    zqlLink : "http://nflabs.github.io/zeppelin/#/zql",
 
 	});
 	
-	App.AnalyzeView = Ember.View.extend({
+	App.AnalyzeEditView = Ember.View.extend({
 	    didInsertElement : function(){
-			var editor = ace.edit("zqlEditor");
-		    editor.setTheme("ace/theme/monokai");
-		    editor.getSession().setMode("ace/mode/sql");
-		    editor.focus();
+		var editor = ace.edit("zqlEditor");
+		editor.setTheme("ace/theme/monokai");
+		editor.getSession().setMode("ace/mode/sql");
+		editor.focus();
+		
+		$('#zqlRunButton').on('click', function(w){
+		    console.log("run zql = %o", editor.getValue());
 		    
-			$('#zqlRunButton').on('click', function(w){
-				console.log("run zql = %o", editor.getValue());
-				zeppelin.zql(editor.getValue(), function(c, d){
-					console.log("zql resp=%o %o", c,d);
-				}, this);
-			});
+		    zeppelin.analyze.run("123", function(c, d){
+			if(c==404){
+			    zeppelin.alert("Error: Invalid Session", "#analyzeAlert");
+			} else {
+			    console.log("zql resp=%o %o", c,d);
+                        }
+		    }, this);
+		});
 	    }		
 	});
 	
