@@ -28,6 +28,7 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.rest.ZQL;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
+import com.nflabs.zeppelin.zengine.Z;
 
 
 public class ZeppelinServer extends Application {
@@ -131,8 +132,9 @@ public class ZeppelinServer extends Application {
 	
 	public ZeppelinServer() throws Exception{
 		this.schedulerFactory = new SchedulerFactory();
-		this.analyzeSessionManager = new ZQLSessionManager(schedulerFactory.createOrGetParallelScheduler("analyze", 30));
-
+		Z.init();
+		this.analyzeSessionManager = new ZQLSessionManager(schedulerFactory.createOrGetParallelScheduler("analyze", 30), Z.fs(), Z.conf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
+		
 	}
 	
     public Set<Class<?>> getClasses() {

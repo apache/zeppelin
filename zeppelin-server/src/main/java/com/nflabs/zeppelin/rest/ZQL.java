@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.rest;
 
+import java.util.Date;
 import java.util.Map;
 
 import javax.ws.rs.GET;
@@ -83,17 +84,53 @@ public class ZQL {
     	 }
     }
     
-    
+ 
     /**
-     * Get all running sessions. status like READY, RUNNING
+     * Get all active sessions.
      * @param data
      * @return
      */
     @GET
+    @Path("active")
+    @Produces("application/json")    
+    public Response active() {
+    	Map<String, ZQLSession> sessions = sessionManager.getActive();
+        return new JsonResponse(Status.OK, "", sessions.values()).build();
+    }  
+	class FindParam{
+		long from;
+		long to;
+		int max;
+	} 
+    /**
+     * Find session
+     * @param data
+     * @return
+     */
+    @POST
     @Path("find")
     @Produces("application/json")    
-    public Response find() {
-    	Map<String, ZQLSession> sessions = sessionManager.getRunning();
+    public Response find(String json) {
+
+    	FindParam param = gson.fromJson(json, FindParam.class);
+    	
+    	Date from = new Date(0);
+    	Date to = new Date();
+    	int max = 10;
+
+    	if(param.from>0){
+    		from = new Date(param.from);
+    	}
+    	if(param.to>0){
+    		to = new Date(param.to);
+    	}
+
+    	if(param.max>0){
+    		max =  param.max;
+    	}
+
+    	Map<String, ZQLSession> sessions = sessionManager.find(from, to, max);
+    	
         return new JsonResponse(Status.OK, "", sessions.values()).build();
     }   
 

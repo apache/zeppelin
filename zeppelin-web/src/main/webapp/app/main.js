@@ -62,7 +62,7 @@ $(document).ready(function(){
 		return params;
             },
 	    setupController : function(controller, model){
-		zeppelin.zql.find(function(c, resp){
+		zeppelin.zql.find((new Date().getTime())-(1000*60*60*24*30), new Date().getTime(), 10, function(c, resp){
 		    if(c==200){
 			controller.set('runningSessions', resp);
 		    }
@@ -76,7 +76,7 @@ $(document).ready(function(){
 		    controller = this;
 		    Ember.$.getJSON('/cxf/zeppelin/zql/new').then(function(d){
 			// update runnning
-			zeppelin.zql.find(function(c, resp){
+			zeppelin.zql.find((new Date().getTime())-(1000*60*60*24*30), new Date().getTime(), 10, function(c, resp){
 			    if(c==200){
 				controller.set('runningSessions', resp);
 			    }

@@ -25,8 +25,16 @@ function Zeppelin(arg){
 		zeppelin.get('/zql/get/'+sessionId, listener, scope);
             }
 
-	    this.find = function(listener, scope){
-		zeppelin.get("/zql/find", listener, scope);
+	    this.active = function(listener, scope){
+		zeppelin.get("/zql/active", listener, scope);
+	    }
+
+	    this.find = function(from, to, max, listener, scope){
+		zeppelin.post("/zql/find", {
+		    from : from,
+		    to : to,
+		    max : max
+		}, listener, scope);
 	    }
 	}()
     

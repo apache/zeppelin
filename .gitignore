@@ -9,12 +9,13 @@
 conf/zeppelin-env.sh
 conf/zeppelin-site.xml
 
-data/
 logs/
 run/
-resources/
 metastore_db/
 *.log
+**/resources/
+**/sessions/
+**/data/
 
 # OS generated files #
 ######################

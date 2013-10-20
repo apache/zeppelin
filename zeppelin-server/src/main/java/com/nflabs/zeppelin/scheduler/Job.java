@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.scheduler;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
@@ -26,12 +27,17 @@ public abstract class Job {
 	Date dateStarted;
 	Date dateFinished;
 	
+	
+	
 	public Job(String jobName, JobListener listener) {
 		this.jobName = jobName;
 		this.listener = listener;
-		status = Status.READY;
-		id = System.currentTimeMillis()+"_"+hashCode();
-		dateCreated = new Date();
+		
+		dateCreated = new Date();		
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
+		id = dateFormat.format(dateCreated)+"_"+hashCode();
+		
+		setStatus(Status.READY);
 	}
 	
 	public String getId(){
@@ -41,8 +47,8 @@ public abstract class Job {
 	public Status getStatus(){
 		return status;
 	}
-
-	private void setStatus(Status status){
+	
+	public void setStatus(Status status){
 		if(this.status==status) return;
 		this.status = status;
 		if(listener!=null) listener.statusChange(this);
@@ -66,17 +72,17 @@ public abstract class Job {
 		try{
 			setStatus(Status.RUNNING);
 			dateStarted = new Date();
-			ret = jobRun();			
-			if(aborted==true){
+			ret = jobRun();
+			dateFinished = new Date();
+			if(aborted==true){				
 				setStatus(Status.ABORT);
 			} else {
 				setStatus(Status.FINISHED);
-			}
-			dateFinished = new Date();
+			}			
 		}catch(Exception e){
 			this.exception = e;
-			setStatus(Status.ERROR);
 			dateFinished = new Date();
+			setStatus(Status.ERROR);
 		}
 	}
 	
@@ -108,5 +114,22 @@ public abstract class Job {
 	protected abstract Object jobRun() throws Exception;	
 
 	protected abstract void jobAbort();
+
+	public boolean isAborted() {
+		return aborted;
+	}
+
+	public Date getDateCreated() {
+		return dateCreated;
+	}
+
+	public Date getDateStarted() {
+		return dateStarted;
+	}
+
+	public Date getDateFinished() {
+		return dateFinished;
+	}
+	
 	
 }
