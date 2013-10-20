@@ -75,7 +75,7 @@ public class Analyze {
     @Path("get/{sessionId}")
     @Produces("application/json")
     public Response get(@PathParam("sessionId") String sessionId) {
-    	 AnalyzeSession s = sessionManager.run(sessionId);
+    	 AnalyzeSession s = sessionManager.get(sessionId);
     	 if(s==null){
     		 return new JsonResponse(Status.OK, "not found").build(); 
     	 } else {
@@ -94,7 +94,7 @@ public class Analyze {
     @Produces("application/json")    
     public Response getAllRunning(String data) {
     	Map<String, AnalyzeSession> sessions = sessionManager.getRunning();
-        return new JsonResponse(Status.OK, "", sessions).build();
+        return new JsonResponse(Status.OK, "", sessions.values()).build();
     }   
 
 

@@ -59,15 +59,18 @@ $(document).ready(function(){
 	// Analyze --------------------------------------
         App.AnalyzeRoute = Ember.Route.extend({
             model : function(params){
-		return {}
+		var running = Ember.$.getJSON('/cxf/zeppelin/analyze/getAllRunning');
+		console.log("running=%o", running);
+		return running;
             }
         });
 
-        App.AnalyzeEditRoute = Ember.Route.extend({
+        App.AnalyzeEditRoute = App.AnalyzeRoute.extend({
             model : function(params){
-		console.log("edit param=%o", params);
 		if(params.sessionid!=undefined){
-		    return Ember.$.getJSON('/cxf/zeppelin/analyze/get/'+params.sessionid);
+		    var currentSession = Ember.$.getJSON('/cxf/zeppelin/analyze/get/'+params.sessionid);
+		    console.log("current=%o", currentSession);
+		    return currentSession;
                 } else {
 		    return null;
 		}
@@ -79,22 +82,61 @@ $(document).ready(function(){
 		newSession : function(){
 		    controller = this;
 		    Ember.$.getJSON('/cxf/zeppelin/analyze/new').then(function(d){
-			controller.transitionToRoute('analyze.edit', {sessionid: d.body.id, session:d.body})
+			controller.transitionToRoute('analyze.edit', {sessionid: d.body.id, body:d.body})
 		    });
 
-                }
+                },
+		openSession : function(sessionId){
+		    controller = this;
+		    Ember.$.getJSON('/cxf/zeppelin/analyze/get/'+sessionId).then(function(d){
+			controller.transitionToRoute('analyze.edit', {sessionid: d.body.id, body:d.body})
+                    });
+		}
 	    }
 	});
 
 	App.AnalyzeEditController = App.ApplicationController.extend({
+	    actions : {
+            }
 	});
 	
 	App.AnalyzeEditView = Ember.View.extend({
-	    didInsertElement : function(){
+	    editor : null,
+	    currentSession : null,
+
+	    sessionChanged : function(m, o, d){      // called when model is changed
+		var session = this.get('controller.model').body
+
+		var editor = this.get('editor');
+		if(editor==null) return;
+
+		editor.setValue(session.id)
+		if(session.status=="READY"){
+		    editor.setReadOnly(false);
+		} else {
+		    editor.setReadOnly(true);
+                }
+            }.observes('controller.model'),
+
+
+	    didInsertElement : function(){            // when it is first time of loading this view, sessionChanged can not be observed
+		var session = this.get('controller.model').body;
+
 		var editor = ace.edit("zqlEditor");
+		this.set('editor', editor);
 		editor.setTheme("ace/theme/monokai");
 		editor.getSession().setMode("ace/mode/sql");
 		editor.focus();
+
+		editor.setValue(session.id);
+		if(session.status=="READY"){
+		    editor.setReadOnly(false);
+		} else {
+		    editor.setReadOnly(true);
+                }
+		editor.getSession().on('change', function(e){
+                });
+		
 		
 		$('#zqlRunButton').on('click', function(w){
 		    console.log("run zql = %o", editor.getValue());
@@ -107,7 +149,10 @@ $(document).ready(function(){
                         }
 		    }, this);
 		});
-	    }		
+	    },
+            willClearRender: function(){
+		console.log("Clear editor view");
+	    }
 	});
 	
 });

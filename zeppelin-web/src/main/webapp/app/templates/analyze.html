@@ -3,6 +3,12 @@
     <div class="bs-sidebar hidden-print" role="complementary">
       <ul class="nav bs-sidenav">
         <li><a {{action 'newSession'}}>New analyze</a></li>
+	<li>Running</li>
+	<ul>
+        {{#each sess in model.body}}
+        <li><a {{action 'openSession' sess.id}}>{{sess.id}}</a></li>
+        {{/each}}
+	</ul>
       </ul>
     </div>
   </div>
