@@ -7,24 +7,27 @@ function isDevMode(){
 function Zeppelin(arg){
 	this.arg = arg;
 
-        this.analyze = new function(){
+        this.zql = new function(){
 	    zeppelin = this
 	    this.create = function(listener, scope){
-		zeppelin.get("/analyze/new", listener, scope);
+		zeppelin.get("/zql/new", listener, scope);
             }
 	    this.set = function(sessionId, name, zql, listener, scope){
-		zeppelin.post("/analyze/set/"+sessionId, {
+		zeppelin.post("/zql/set/"+sessionId, {
 		    zql : zql,
 		    name : name
 		}, listener, scope);
 	    }
 	    this.run = function(id, listener, scope){
-		zeppelin.get("/analyze/run/"+id, listener, scope);
+		zeppelin.get("/zql/run/"+id, listener, scope);
             }
 	    this.get = function(sessionId, listener, scope){
-		zeppelin.get('/analyze/get/'+sessionId, listener, scope);
+		zeppelin.get('/zql/get/'+sessionId, listener, scope);
             }
 
+	    this.find = function(listener, scope){
+		zeppelin.get("/zql/find", listener, scope);
+	    }
 	}()
     
 	

@@ -9,22 +9,20 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.result.ResultDataObject;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.zengine.Z;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQL;
-import com.nflabs.zeppelin.zengine.ZQLException;
 
-public class AnalyzeSession extends Job{
-	transient Logger logger = Logger.getLogger(AnalyzeSession.class);
+public class ZQLSession extends Job{
+	transient Logger logger = Logger.getLogger(ZQLSession.class);
 
 	private String zql;
 	List<ResultDataObject> results;
 
-	public AnalyzeSession(String jobName, JobListener listener) {
+	public ZQLSession(String jobName, JobListener listener) {
 		super(jobName, listener);
 	}
 	
@@ -35,50 +33,11 @@ public class AnalyzeSession extends Job{
 	public String getZQL(){
 		return zql;
 	}
-	/*
-	public void run(){
-		if(status!=Status.READY) return;
-		dateStarted = new Date();
-		try{
-			ZQL z = null;
-			try {
-				z = new ZQL(zql);
-			} catch (ZException e1) {
-				results.add(new ResultDataObject(e1));
-			}
-			List<Z> zqlResult = null;
-	
-			try {
-				zqlResult = z.eval();
-			} catch (ZQLException e) {
-				results.add(new ResultDataObject(e));
-			}
-			
-			for(Z zz : zqlResult){
-				List<ResultSet> res;
-				try {
-					res = zz.execute();
-					for(ResultSet r : res){
-						results.add(new ResultDataObject(r));
-					}
-				} catch (ZException e) {
-					results.add(new ResultDataObject(e));
-				} 
-			}
-		} catch(ResultDataException e){
-			logger.error("Assert", e);
-		} finally {
-			status = Status.FINISHED;
-			dateFinished = new Date();
-		}
-	}
-	*/
 	
 	public List<ResultDataObject> getResults(){
 		return results;
 	}
 	
-
 	@Override
 	public int progress() {
 		return 0;

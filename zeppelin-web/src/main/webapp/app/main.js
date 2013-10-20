@@ -2,8 +2,8 @@
 var loaderObj = {
 	templates : [
 		'index.html',
-		'analyze.html',
-	        'analyze/edit.html'
+		'zql.html',
+	        'zql/edit.html'
 	],
 	scripts : [
 	]
@@ -47,7 +47,7 @@ $(document).ready(function(){
 	window.App = Ember.Application.create();
 	
 	App.Router.map(function(){
-	    this.resource('analyze', function(){
+	    this.resource('zql', function(){
 		this.route('edit', {path:'/:sessionid'});
             });
 	});
@@ -56,56 +56,71 @@ $(document).ready(function(){
 	    zqlLink : "http://nflabs.github.io/zeppelin/#/zql",	    
 	});
 
-	// Analyze --------------------------------------
-        App.AnalyzeRoute = Ember.Route.extend({
+	// Zql  --------------------------------------
+        App.ZqlRoute = Ember.Route.extend({
             model : function(params){
-		var running = Ember.$.getJSON('/cxf/zeppelin/analyze/getAllRunning');
-		return running;
-            }
-        });
+		return params;
+            },
+	    setupController : function(controller, model){
+		zeppelin.zql.find(function(c, resp){
+		    if(c==200){
+			controller.set('runningSessions', resp);
+		    }
+		});
+	    }
+	});
 
-        App.AnalyzeEditRoute = App.AnalyzeRoute.extend({
-            model : function(params){
-		if(params.sessionid!=undefined){
-		    var currentSession = Ember.$.getJSON('/cxf/zeppelin/analyze/get/'+params.sessionid);
-		    return currentSession;
-                } else {
-		    return null;
-		}
-            }
-        });
-
-	App.AnalyzeController = App.ApplicationController.extend({
+	App.ZqlController = App.ApplicationController.extend({
 	    actions : {
 		newSession : function(){
 		    controller = this;
-		    Ember.$.getJSON('/cxf/zeppelin/analyze/new').then(function(d){
-			controller.transitionToRoute('analyze.edit', {sessionid : d.body.id, body:d.body})
+		    Ember.$.getJSON('/cxf/zeppelin/zql/new').then(function(d){
+			// update runnning
+			zeppelin.zql.find(function(c, resp){
+			    if(c==200){
+				controller.set('runningSessions', resp);
+			    }
+			});
+
+			controller.transitionToRoute('zql.edit', {sessionid : d.body.id, body:d.body})
 		    });
 
                 },
 		openSession : function(sessionId){
 		    controller = this;
-		    Ember.$.getJSON('/cxf/zeppelin/analyze/get/'+sessionId).then(function(d){
-			controller.transitionToRoute('analyze.edit', {sessionid : d.body.id, body:d.body})
+		    Ember.$.getJSON('/cxf/zeppelin/zql/get/'+sessionId).then(function(d){
+			controller.transitionToRoute('zql.edit', {sessionid : d.body.id, body:d.body})
                     });
 		}
 
 	    }
 	});
 
-	App.AnalyzeEditController = App.ApplicationController.extend({
+        // ZqlEidt ---------------------------------------
+        App.ZqlEditRoute = App.ZqlRoute.extend({
+            model : function(params){
+		return params;
+            },
+	    setupController : function(controller, model){
+		zeppelin.zql.get(model.sessionid, function(c, d){
+		    controller.set('currentSession', d);
+		}, this);
+	    }
+        });
+
+
+	App.ZqlEditController = App.ApplicationController.extend({
 	    dirty : false,
 
 	    actions : {
 		runSession : function(sessionId){
 		    var zql = $('#zqlEditorArea').val();
-		    zeppelin.analyze.set(sessionId, "", zql, function(c, d){
+		    zeppelin.zql.set(sessionId, "", zql, function(c, d){
 			if(c==404){
 			    zeppelin.alert("Error: Invalid Session", "#alert");
 			} else {
-			    zeppelin.analyze.run(sessionId, function(c, d){
-				console.log("Analyzed %o %o", c,d);
+			    zeppelin.zql.run(sessionId, function(c, d){
+				console.log("Zql %o %o", c,d);
 			    });
                         }
 		    }, this);
@@ -116,7 +131,7 @@ $(document).ready(function(){
 		    // save session before change
 		    if(model.status=="READY"){
 			if(this.get('dirty')){
-			    zeppelin.analyze.set(model.id, "", editor.getValue(), function(c, d){
+			    zeppelin.zql.set(model.id, "", editor.getValue(), function(c, d){
 				if(c==200){
 				    console.log("session %o saved", model.id)
 				} else {
@@ -136,11 +151,12 @@ $(document).ready(function(){
 		},
 
 		loop : function(model, editor){
+		    if(model==null) return;
 		    if(model.status=="READY"){
 			// auto save every 10 sec
 			if(new Date().getSeconds() % 10 == 0 && this.get('dirty')){
 			    // TODO display saving... -> saved message
-			    zeppelin.analyze.set(model.id, "", editor.getValue(), function(c, d){
+			    zeppelin.zql.set(model.id, "", editor.getValue(), function(c, d){
 				if(c==200){
 				    this.set('dirty', false);
 				    console.log("autosave completed %o %o", c, d);
@@ -153,13 +169,13 @@ $(document).ready(function(){
             }
 	});
 	
-	App.AnalyzeEditView = Ember.View.extend({
+	App.ZqlEditView = Ember.View.extend({
 	    editor : null,
 	    currentModel : null,
 
-	    sessionChanged : function(){      // called when model is changed
-		var model = this.get('controller.model').body
+	    modelChanged : function(){      // called when model is changed
 		var controller = this.get("controller");
+		var model = controller.get('currentSession');
 		var editor = this.get('editor');
 
 		controller.send("beforeChangeSession", this.get('currentModel'), editor);
@@ -175,12 +191,12 @@ $(document).ready(function(){
                 }
 
 		controller.send("afterChangeSession", model, editor);
-            }.observes('controller.model'),
+            }.observes('controller.currentSession'),
 
 
 	    didInsertElement : function(){            // when it is first time of loading this view, sessionChanged can not be observed
-		var model = this.get('controller.model').body;
 		var controller = this.get("controller");
+		var model = controller.get('currentSession');
 		var view = this;
 		this.set('currentModel', model);
 
@@ -190,17 +206,7 @@ $(document).ready(function(){
 		editor.setTheme("ace/theme/monokai");
 		editor.getSession().setMode("ace/mode/sql");
 		editor.focus();
-
-		editor.setValue(model.zql);
-		editorArea.val(model.zql);
-		controller.send("zqlChanged", model.zql);
-
-		if(model.status=="READY"){
-		    editor.setReadOnly(false);
-		} else {
-		    editor.setReadOnly(true);
-                }
-
+		
 		editor.getSession().on('change', function(e){
 		    var zql = editor.getSession().getValue();
 		    editorArea.val(zql);
@@ -217,24 +223,14 @@ $(document).ready(function(){
 		    controller.send("loop", model, editor);
 		};
 		editorLoop();
-
-		
-/*		
-		$('#zqlRunButton').on('click', function(w){
-		    console.log("run zql = %o", editor.getValue());
-		    
-		    zeppelin.analyze.run("123", function(c, d){
-			if(c==404){
-			    zeppelin.alert("Error: Invalid Session", "#analyzeAlert");
-			} else {
-			    console.log("zql resp=%o %o", c,d);
-                        }
-		    }, this);
-		});
-*/
 	    },
             willClearRender: function(){
-		console.log("Clear editor view");
+		var controller = this.get("controller");
+		var model = controller.get("currentSession");
+		var view = this;
+		var editor = ace.edit("zqlEditor");
+		controller.send('beforeChangeSession', model, editor);
+		this.set('currentModel', null);
 	    }
 	});
 	

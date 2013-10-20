@@ -115,6 +115,12 @@ body {
 }
 
 /* All levels of nav */
+.bs-sidebar .nav > li > .submenu {
+  display: block;
+  color: #716b7a;
+  padding: 5px 20px;
+  border-top: 1px solid #dddddd;
+}
 .bs-sidebar .nav > li > a {
   display: block;
   color: #716b7a;

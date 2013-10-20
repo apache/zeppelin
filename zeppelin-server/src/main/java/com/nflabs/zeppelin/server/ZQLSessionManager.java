@@ -9,17 +9,18 @@ import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 
-public class AnalyzeSessionManager implements JobListener {
-	public TreeMap<String, AnalyzeSession> sessions = new TreeMap<String, AnalyzeSession>();
+public class ZQLSessionManager implements JobListener {
+	public TreeMap<String, ZQLSession> sessions = new TreeMap<String, ZQLSession>();
+	
 	AtomicLong counter = new AtomicLong(0);
 	private Scheduler scheduler;
 	
-	public AnalyzeSessionManager(Scheduler scheduler){
+	public ZQLSessionManager(Scheduler scheduler){
 		this.scheduler = scheduler;
 	}
 	
-	public AnalyzeSession create(){
-		AnalyzeSession as = new AnalyzeSession("", this);
+	public ZQLSession create(){
+		ZQLSession as = new ZQLSession("", this);
 		
 		synchronized(sessions){
 			sessions.put(as.getId(), as);
@@ -28,7 +29,7 @@ public class AnalyzeSessionManager implements JobListener {
 		return as;
 	}
 	
-	public AnalyzeSession get(String sessionId){
+	public ZQLSession get(String sessionId){
 		synchronized(sessions){
 			if(sessions.containsKey(sessionId)){
 				return sessions.get(sessionId);
@@ -38,16 +39,16 @@ public class AnalyzeSessionManager implements JobListener {
 		}
 	}
 	
-	public AnalyzeSession run(String sessionId){		
-		AnalyzeSession s = get(sessionId);
+	public ZQLSession run(String sessionId){		
+		ZQLSession s = get(sessionId);
 		if(s==null) return null;
 		scheduler.submit(s);
 		return s;
 	}
 	
 	
-	public AnalyzeSession setZql(String sessionId, String zql){
-		AnalyzeSession s = get(sessionId);
+	public ZQLSession setZql(String sessionId, String zql){
+		ZQLSession s = get(sessionId);
 		if(s==null){
 			return null;
 		} else {
@@ -57,7 +58,7 @@ public class AnalyzeSessionManager implements JobListener {
 	}
 
 	public boolean discard(String sessionId){
-		AnalyzeSession s= get(sessionId);
+		ZQLSession s= get(sessionId);
 		if(s==null) return false;
 		
 		abort(sessionId);
@@ -67,8 +68,8 @@ public class AnalyzeSessionManager implements JobListener {
 		return true;
 	}
 	
-	public AnalyzeSession abort(String sessionId){
-		AnalyzeSession s= get(sessionId);
+	public ZQLSession abort(String sessionId){
+		ZQLSession s= get(sessionId);
 		if(s==null) return null;
 		
 		s.abort();
@@ -84,14 +85,16 @@ public class AnalyzeSessionManager implements JobListener {
 				sessions.remove(job.getId());
 			}
 			
-			// add to history;
+			// TODO persist
 		}
 		
 	}
 
-	public Map<String, AnalyzeSession> getRunning() {
-		return (Map<String, AnalyzeSession>) sessions.clone();
+	public Map<String, ZQLSession> getRunning() {
+		return (Map<String, ZQLSession>) sessions.clone();
 	}
 	
-	
+	private void persist(ZQLSession sess){
+		
+	}
 }

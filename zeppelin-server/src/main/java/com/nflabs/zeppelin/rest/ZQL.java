@@ -13,19 +13,19 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
-import com.nflabs.zeppelin.server.AnalyzeSession;
-import com.nflabs.zeppelin.server.AnalyzeSessionManager;
+import com.nflabs.zeppelin.server.ZQLSession;
+import com.nflabs.zeppelin.server.ZQLSessionManager;
 import com.nflabs.zeppelin.server.JsonResponse;
 
 
-@Path("/analyze")
-public class Analyze {	
-	Logger logger = Logger.getLogger(Analyze.class);
-	AnalyzeSessionManager sessionManager;
+@Path("/zql")
+public class ZQL {	
+	Logger logger = Logger.getLogger(ZQL.class);
+	ZQLSessionManager sessionManager;
 	private Gson gson;
 	
 	
-	public Analyze(AnalyzeSessionManager sessionManager){
+	public ZQL(ZQLSessionManager sessionManager){
 		this.sessionManager = sessionManager;
 		gson = new Gson();
 	}
@@ -34,7 +34,7 @@ public class Analyze {
     @Path("new")
     @Produces("application/json")
     public Response newSession() {
-    	AnalyzeSession s = sessionManager.create();
+    	ZQLSession s = sessionManager.create();
         return new JsonResponse(Status.OK, "", s).build();
     }
 
@@ -42,7 +42,7 @@ public class Analyze {
     @Path("set/{sessionId}")
     @Produces("application/json")
     public Response set(@PathParam("sessionId") String sessionId, String json) {
-    	AnalyzeSession s = sessionManager.get(sessionId);
+    	ZQLSession s = sessionManager.get(sessionId);
     	if(s==null){
     		return new JsonResponse(Status.NOT_FOUND).build();
     	}
@@ -63,7 +63,7 @@ public class Analyze {
     @Path("run/{sessionId}")
     @Produces("application/json")
     public Response set(@PathParam("sessionId") String sessionId) {
-    	 AnalyzeSession s = sessionManager.run(sessionId);
+    	 ZQLSession s = sessionManager.run(sessionId);
     	 if(s==null){
     		 return new JsonResponse(Status.NOT_FOUND).build(); 
     	 } else {
@@ -75,7 +75,7 @@ public class Analyze {
     @Path("get/{sessionId}")
     @Produces("application/json")
     public Response get(@PathParam("sessionId") String sessionId) {
-    	 AnalyzeSession s = sessionManager.get(sessionId);
+    	 ZQLSession s = sessionManager.get(sessionId);
     	 if(s==null){
     		 return new JsonResponse(Status.NOT_FOUND, "not found").build(); 
     	 } else {
@@ -85,18 +85,17 @@ public class Analyze {
     
     
     /**
-     * Get all running sessions
+     * Get all running sessions. status like READY, RUNNING
      * @param data
      * @return
      */
     @GET
-    @Path("getAllRunning")
+    @Path("find")
     @Produces("application/json")    
-    public Response getAllRunning(String data) {
-    	Map<String, AnalyzeSession> sessions = sessionManager.getRunning();
+    public Response find() {
+    	Map<String, ZQLSession> sessions = sessionManager.getRunning();
         return new JsonResponse(Status.OK, "", sessions.values()).build();
     }   
-
 
     @GET
     @Path("del/{sessionId}")

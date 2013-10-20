@@ -26,7 +26,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.rest.Analyze;
+import com.nflabs.zeppelin.rest.ZQL;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 
@@ -126,12 +126,12 @@ public class ZeppelinServer extends Application {
 
 
 	private SchedulerFactory schedulerFactory;
-	private AnalyzeSessionManager analyzeSessionManager;
+	private ZQLSessionManager analyzeSessionManager;
 	
 	
 	public ZeppelinServer() throws Exception{
 		this.schedulerFactory = new SchedulerFactory();
-		this.analyzeSessionManager = new AnalyzeSessionManager(schedulerFactory.createOrGetParallelScheduler("analyze", 30));
+		this.analyzeSessionManager = new ZQLSessionManager(schedulerFactory.createOrGetParallelScheduler("analyze", 30));
 
 	}
 	
@@ -145,7 +145,7 @@ public class ZeppelinServer extends Application {
     public java.util.Set<java.lang.Object> getSingletons(){
     	Set<Object> singletons = new HashSet<Object>();
     	
-    	Analyze analyze = new Analyze(analyzeSessionManager);
+    	ZQL analyze = new ZQL(analyzeSessionManager);
     	singletons.add(analyze);
     	
     	return singletons;
