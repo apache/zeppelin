@@ -1,8 +1,9 @@
 <div>Place your <a target="_blank" {{bindAttr href="zqlLink"}}>ZQL</a></div>
 <p />
 <div id="zqlEditor" class="zqlEditor"></div>
+{{textarea id="zqlEditorArea"}}
 <p />
 <div>
-  <a id="zqlRunButton" class="btn btn-lg btn-primary">Run</a>
+  <a id="zqlRunButton" class="btn btn-lg btn-primary" {{action 'runSession' model.body.id}}>Run</a>
 </div>
 

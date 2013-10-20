@@ -77,7 +77,7 @@ public class Analyze {
     public Response get(@PathParam("sessionId") String sessionId) {
     	 AnalyzeSession s = sessionManager.get(sessionId);
     	 if(s==null){
-    		 return new JsonResponse(Status.OK, "not found").build(); 
+    		 return new JsonResponse(Status.NOT_FOUND, "not found").build(); 
     	 } else {
     		 return new JsonResponse(Status.OK, "", s).build();	 
     	 }

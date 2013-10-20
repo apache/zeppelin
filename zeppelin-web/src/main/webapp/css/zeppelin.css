@@ -3,7 +3,11 @@ body {
 }
 
 .zqlEditor {
-	height : 300px;
+    height : 300px;
+}
+
+#zqlEditorArea {
+    display : none;
 }
 
 

@@ -10,19 +10,19 @@ function Zeppelin(arg){
         this.analyze = new function(){
 	    zeppelin = this
 	    this.create = function(listener, scope){
-		get("/analyze/new", listener, scope);
+		zeppelin.get("/analyze/new", listener, scope);
             }
-	    this.set = function(zql, name, listener, scope){
-		post("/analyze/set", {
-		    zql : ql,
+	    this.set = function(sessionId, name, zql, listener, scope){
+		zeppelin.post("/analyze/set/"+sessionId, {
+		    zql : zql,
 		    name : name
 		}, listener, scope);
 	    }
 	    this.run = function(id, listener, scope){
 		zeppelin.get("/analyze/run/"+id, listener, scope);
             }
-	    this.get = function(sessionId){
-		return Ember.$.getJSON('/analyze/get/'+sessionId);
+	    this.get = function(sessionId, listener, scope){
+		zeppelin.get('/analyze/get/'+sessionId, listener, scope);
             }
 
 	}()
