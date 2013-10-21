@@ -87,8 +87,7 @@ public abstract class Job {
 	}
 	
 	public void abort(){
-		aborted = true;
-		jobAbort();
+		aborted = jobAbort();
 	}
 	
 	public Exception getException(){
@@ -113,7 +112,7 @@ public abstract class Job {
 	
 	protected abstract Object jobRun() throws Exception;	
 
-	protected abstract void jobAbort();
+	protected abstract boolean jobAbort();
 
 	public boolean isAborted() {
 		return aborted;

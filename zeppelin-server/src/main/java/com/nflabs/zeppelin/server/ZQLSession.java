@@ -72,8 +72,9 @@ public class ZQLSession extends Job{
 	}
 
 	@Override
-	protected void jobAbort() {
+	protected boolean jobAbort() {
 		// TODO implement
+		return false;
 		
 	}
 	

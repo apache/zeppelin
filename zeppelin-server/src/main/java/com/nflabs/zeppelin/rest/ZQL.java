@@ -1,7 +1,9 @@
 package com.nflabs.zeppelin.rest;
 
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.TreeMap;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -84,24 +86,13 @@ public class ZQL {
     	 }
     }
     
- 
-    /**
-     * Get all active sessions.
-     * @param data
-     * @return
-     */
-    @GET
-    @Path("active")
-    @Produces("application/json")    
-    public Response active() {
-    	Map<String, ZQLSession> sessions = sessionManager.getActive();
-        return new JsonResponse(Status.OK, "", sessions.values()).build();
-    }  
-	class FindParam{
+   
+	static class FindParam{
 		long from;
 		long to;
 		int max;
 	} 
+	
     /**
      * Find session
      * @param data
@@ -114,8 +105,8 @@ public class ZQL {
 
     	FindParam param = gson.fromJson(json, FindParam.class);
     	
-    	Date from = new Date(0);
-    	Date to = new Date();
+    	Date from = null;
+    	Date to = null;
     	int max = 10;
 
     	if(param.from>0){
@@ -129,16 +120,16 @@ public class ZQL {
     		max =  param.max;
     	}
 
-    	Map<String, ZQLSession> sessions = sessionManager.find(from, to, max);
+    	TreeMap<String, ZQLSession> sessions = sessionManager.find(from, to, max);
     	
-        return new JsonResponse(Status.OK, "", sessions.values()).build();
+        return new JsonResponse(Status.OK, "", new LinkedList<ZQLSession>(sessions.descendingMap().values())).build();
     }   
 
     @GET
     @Path("del/{sessionId}")
     @Produces("application/json")
     public Response del(@PathParam("sessionId") String sessionId) {
-    	 boolean s = sessionManager.discard(sessionId);
+    	 boolean s = sessionManager.delete(sessionId);
     	 if(s==false){
     		 return new JsonResponse(Status.NOT_FOUND).build(); 
     	 } else {

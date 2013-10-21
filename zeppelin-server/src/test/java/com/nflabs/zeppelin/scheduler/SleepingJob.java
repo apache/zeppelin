@@ -29,8 +29,9 @@ public class SleepingJob extends Job{
 		return System.currentTimeMillis()-start;
 	}
 
-	public void jobAbort() {
+	public boolean jobAbort() {
 		abort = true;
+		return true;
 	}
 
 	public int progress() {

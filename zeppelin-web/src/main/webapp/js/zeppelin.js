@@ -25,10 +25,6 @@ function Zeppelin(arg){
 		zeppelin.get('/zql/get/'+sessionId, listener, scope);
             }
 
-	    this.active = function(listener, scope){
-		zeppelin.get("/zql/active", listener, scope);
-	    }
-
 	    this.find = function(from, to, max, listener, scope){
 		zeppelin.post("/zql/find", {
 		    from : from,

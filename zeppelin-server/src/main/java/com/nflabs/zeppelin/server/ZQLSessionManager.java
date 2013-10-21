@@ -28,7 +28,6 @@ import com.nflabs.zeppelin.scheduler.Job.Status;
 public class ZQLSessionManager implements JobListener {
 	Logger logger = Logger.getLogger(ZQLSessionManager.class);
 	
-	public TreeMap<String, ZQLSession> sessions = new TreeMap<String, ZQLSession>();
 	Gson gson =new GsonBuilder().setPrettyPrinting().create();;
 	
 	AtomicLong counter = new AtomicLong(0);
@@ -47,30 +46,31 @@ public class ZQLSessionManager implements JobListener {
 	
 	public ZQLSession create(){
 		ZQLSession as = new ZQLSession("", this);
-		
-		synchronized(sessions){
-			sessions.put(as.getId(), as);
+		try {
+			persist(as);
+		} catch (IOException e) {
+			logger.error("Can't create session ", e);
+			return null;
 		}
-		
 		return as;
 	}
 	
 	public ZQLSession get(String sessionId){
-		synchronized(sessions){
-			if(sessions.containsKey(sessionId)){
-				return sessions.get(sessionId);
-			}
-		}
-		
 		// search session dir
 		Path path = getPathForSessionId(sessionId);
 		try {
-			return load(path);
+			ZQLSession session = load(path);
+			if(session!=null){
+				return session;
+			} else {
+				return null;
+			}
 		} catch (IOException e) {
 			return null;
 		}
 		
 	}
+	
 	
 	public ZQLSession run(String sessionId){		
 		ZQLSession s = get(sessionId);
@@ -95,15 +95,20 @@ public class ZQLSessionManager implements JobListener {
 		}
 	}
 
-	public boolean discard(String sessionId){
+	public boolean delete(String sessionId){
 		ZQLSession s= get(sessionId);
 		if(s==null) return false;
 		
-		abort(sessionId);
-		synchronized(sessions){
-			sessions.remove(sessionId);
+		// can't delete running session
+		if(s.getStatus()==Status.RUNNING) return false;
+		
+		Path path = getPathForSessionId(sessionId);
+		try {
+			return fs.delete(path, true);
+		} catch (IOException e) {
+			logger.error("Can't remove session file "+path, e);
+			return false;
 		}
-		return true;
 	}
 	
 	public ZQLSession abort(String sessionId){
@@ -116,14 +121,6 @@ public class ZQLSessionManager implements JobListener {
 
 	@Override
 	public void statusChange(Job job) {
-		if(job.getStatus()==Status.FINISHED ||
-		   job.getStatus()==Status.ERROR ||
-		   job.getStatus()==Status.ABORT){
-			synchronized(sessions){
-				sessions.remove(job.getId());
-			}
-		}
-		
 		try {
 			persist((ZQLSession) job);
 		} catch (IOException e) {
@@ -132,16 +129,17 @@ public class ZQLSessionManager implements JobListener {
 		
 	}
 
-	public Map<String, ZQLSession> getActive() {
-		return (Map<String, ZQLSession>) sessions.clone();
-	}
 	
-	
-	public Map<String, ZQLSession> find(Date from, Date to, int max){
+	public TreeMap<String, ZQLSession> find(Date from, Date to, int max){
+		if(to==null){
+			to = new Date();
+		}
+		if(from==null){
+			from = new Date(to.getTime()-(1000*60*60*24*7));
+		}
 		TreeMap<String, ZQLSession> found = new TreeMap<String, ZQLSession>();
 		
-		for(Date cur=to; cur.before(from)==false; cur = new Date(cur.getTime()-(1000*60*60*24))){
-			System.out.println("Current Date="+cur);
+		for(Date cur=to; cur.before(from)==false; cur = new Date(cur.getTime()-(1000*60*60))){
 			Path dir = new Path(sessionPersistBasePath+"/"+pathFormat.format(cur));
 			try {
 				if(fs.isDirectory(dir)==false) continue;
@@ -171,6 +169,7 @@ public class ZQLSessionManager implements JobListener {
 			for(FileStatus f : files){
 				ZQLSession session;
 				try {
+					
 					session = load(f.getPath());
 					found.put(session.getId(), session);
 				} catch (IOException e) {
