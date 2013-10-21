@@ -193,7 +193,7 @@ $(document).ready(function(){
 			    }, this);
 			}
 		    } else if(session.status=="RUNNING"){
-			if(new Date().getSeconds() % 2 == 0){ // keep refreshing model
+			if(new Date().getSeconds() % 1 == 0){ // refreshing every 1 sec
 			    controller.send('loadSession', session.id);
 			}
 		    } else if(session.status=="FINISHED"){
@@ -216,7 +216,7 @@ $(document).ready(function(){
 
 		controller.send("beforeChangeSession", this.get('currentModel'), editor);
 		this.set('currentModel', model);
-
+		console.log("Current session=%o", model);
 		if(editor==null) return;
 
 		editor.setValue(model.zql)
