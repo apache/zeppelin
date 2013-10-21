@@ -69,7 +69,7 @@ public class Util {
 				boolean splitted = false;
 				for(String splitter : splitters){
 					// forward check for splitter
-					if(splitter.compareTo(str.substring(i, Math.min(i+splitter.length(), str.length()-1)))==0){
+					if(splitter.compareTo(str.substring(i, Math.min(i+splitter.length(), str.length())))==0){
 						splits.add(curString);
 						if(includeSplitter==true){
 							splits.add(splitter);

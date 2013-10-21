@@ -23,5 +23,11 @@ public class UtilTest extends TestCase {
 		assertEquals(4, token.length);
 		assertEquals(" \"world '>|hehe\" ", token[1]);
 	}
+	
+	public void testSplitWithSemicolonEnd(){
+		String[] token = Util.split("show tables;", ';');
+		assertEquals(1, token.length);
+		assertEquals("show tables", token[0]);
+	}
 
 }
