@@ -45,21 +45,14 @@ public class ZQL {
     @Path("set/{sessionId}")
     @Produces("application/json")
     public Response set(@PathParam("sessionId") String sessionId, String json) {
-    	ZQLSession s = sessionManager.get(sessionId);
-    	if(s==null){
-    		return new JsonResponse(Status.NOT_FOUND).build();
-    	}
     	
     	Map<String, Object> data = gson.fromJson(json, Map.class);
-    	
-    	if(data.containsKey("name")){
-    		s.setJobName((String) data.get("name"));
+    	ZQLSession s = sessionManager.setZql(sessionId, (String) data.get("zql"));
+    	if(s==null){
+    		return new JsonResponse(Status.NOT_FOUND).build();
+    	} else {    	
+    		return new JsonResponse(Status.OK, "", s).build();
     	}
-    	if(data.containsKey("zql")){
-    		s.setZQL((String) data.get("zql"));
-    	}
-    	
-    	return new JsonResponse(Status.OK, "", s).build();
     }
     
     @GET

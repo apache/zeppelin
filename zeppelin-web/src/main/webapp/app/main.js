@@ -111,20 +111,43 @@ $(document).ready(function(){
 
 	App.ZqlEditController = App.ApplicationController.extend({
 	    dirty : false,
+	    currentSession : undefined,
+	    zql : undefined,
 
 	    actions : {
-		runSession : function(sessionId){
-		    var zql = $('#zqlEditorArea').val();
+		runSession : function(){
+		    var controller = this;
+		    var session = this.get('currentSession');
+		    if(session==undefined) return;
+		    if(session.status=="FINISHED"){
+			// session is already finished
+			console.log("session %o is already finished", session);
+			return;
+		    }
+
+		    var sessionId = session.id;
+
+		    var zql = this.get('zql');
 		    zeppelin.zql.set(sessionId, "", zql, function(c, d){
 			if(c==404){
 			    zeppelin.alert("Error: Invalid Session", "#alert");
 			} else {
 			    zeppelin.zql.run(sessionId, function(c, d){
-				console.log("Zql %o %o", c,d);
+				if(c==200){
+				    controller.send('loadSession', sessionId);
+				}		 
 			    });
                         }
 		    }, this);
 		},
+		loadSession : function(sessionId){
+		    var controller = this;
+		    zeppelin.zql.get(sessionId, function(c, d){
+			controller.set('currentSession', d);
+		    });
+		},
+
+		// called from view
 		beforeChangeSession : function(model, editor){
 		    if(model==null) return;
 
@@ -142,21 +165,26 @@ $(document).ready(function(){
 		    }
 		},
 
+		// called from view
 		afterChangeSession : function(model, editor){
 		    this.set('dirty', false);
 		},
 
 		zqlChanged : function(zql){
 		    this.set('dirty', true);
+		    this.set('zql', zql);
 		},
 
-		loop : function(model, editor){
-		    if(model==null) return;
-		    if(model.status=="READY"){
+		// called from view
+		loop : function(editor){
+		    var controller = this;
+		    var session = this.get('currentSession');
+		    if(session==null) return;
+		    if(session.status=="READY"){
 			// auto save every 10 sec
 			if(new Date().getSeconds() % 10 == 0 && this.get('dirty')){
 			    // TODO display saving... -> saved message
-			    zeppelin.zql.set(model.id, "", editor.getValue(), function(c, d){
+			    zeppelin.zql.set(session.id, "", editor.getValue(), function(c, d){
 				if(c==200){
 				    this.set('dirty', false);
 				    console.log("autosave completed %o %o", c, d);
@@ -164,14 +192,22 @@ $(document).ready(function(){
 				
 			    }, this);
 			}
+		    } else if(session.status=="RUNNING"){
+			if(new Date().getSeconds() % 2 == 0){ // keep refreshing model
+			    controller.send('loadSession', session.id);
+			}
+		    } else if(session.status=="FINISHED"){
+			// change
+		    } else if(session.status=="ERROR"){
+		    } else if(session.status=="ABORT"){
 		    }
-		}
+		} 
             }
 	});
 	
 	App.ZqlEditView = Ember.View.extend({
 	    editor : null,
-	    currentModel : null,
+	    currentModel : undefined,
 
 	    modelChanged : function(){      // called when model is changed
 		var controller = this.get("controller");
@@ -180,15 +216,34 @@ $(document).ready(function(){
 
 		controller.send("beforeChangeSession", this.get('currentModel'), editor);
 		this.set('currentModel', model);
-	
+
 		if(editor==null) return;
 
 		editor.setValue(model.zql)
+
 		if(model.status=="READY"){
 		    editor.setReadOnly(false);
-		} else {
+		    $('#zqlRunButton').text("Run");
+		    //$('#zqlRunButton').removeClass('disabled');		    
+		} else if(model.status=="RUNNING"){
+		    $('#zqlRunButton').text("Running ...");
+		    //$('#zqlRunButton').addClass('disabled');
+		    //$('#zqlRunButton').prop('disabled', true);
 		    editor.setReadOnly(true);
-                }
+                } else if(model.status=="FINISHED"){
+		    $('#zqlRunButton').text("Finished");
+		    //$('#zqlRunButton').addClass('disabled');
+		    //$('#zqlRunButton').prop('disabled', true);
+		    editor.setReadOnly(true);
+		} else if(model.status=="ERROR"){
+		    $('#zqlRunButton').text("Run");
+		    //$('#zqlRunButton').removeClass('disabled');
+		    editor.setReadOnly(false);
+		} else if(model.status=="ABORT"){
+		    $('#zqlRunButton').text("Run");
+		    //$('#zqlRunButton').removeClass('disabled');
+		    editor.setReadOnly(false);
+		}
 
 		controller.send("afterChangeSession", model, editor);
             }.observes('controller.currentSession'),
@@ -219,8 +274,7 @@ $(document).ready(function(){
 			editorLoop();
 		    }, 1000);
 
-		    var model = view.get('currentModel');
-		    controller.send("loop", model, editor);
+		    controller.send("loop", editor);
 		};
 		editorLoop();
 	    },

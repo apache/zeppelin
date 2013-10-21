@@ -36,9 +36,9 @@ public class ZeppelinServer extends Application {
 	
 	public static void main(String [] args) throws Exception{
 		if(System.getProperty("log4j.configuration")==null){
-			Logger.getRootLogger().setLevel(Level.DEBUG);
+			Logger.getLogger("com.nflabs.zeppelin").setLevel(Level.DEBUG);
+			Logger.getRootLogger().setLevel(Level.INFO);
 		}
-		
 		
 		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 

@@ -6,7 +6,7 @@ import java.util.List;
 
 
 public class ResultDataObject extends ResultData{
-	List<Object []> rows = new LinkedList<Object [] >(); 
+	List<Object []> rows;
 	public ResultDataObject(ResultSet res) throws ResultDataException {
 		super(res);
 	}
@@ -17,10 +17,12 @@ public class ResultDataObject extends ResultData{
 
 	@Override
 	protected void process(ColumnDef[] columnDef, Object[] row, long n) {
+		if(rows==null) rows = new LinkedList<Object [] >(); 
 		rows.add(row);
 	}
 	
 	public List<Object []> getRows(){
+		if(rows==null) rows = new LinkedList<Object [] >(); 
 		return rows;
 	}
 }

@@ -4,6 +4,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import com.nflabs.zeppelin.scheduler.JobListener;
 
 public abstract class Job {
@@ -48,6 +50,10 @@ public abstract class Job {
 		return status;
 	}
 	
+	public void setListener(JobListener listener){
+		this.listener = listener;
+	}
+	
 	public void setStatus(Status status){
 		if(this.status==status) return;
 		this.status = status;
@@ -66,7 +72,7 @@ public abstract class Job {
 	
 	public void run(){
 		if(aborted==true){
-			setStatus(Status.ABORT);
+			//setStatus(Status.ABORT);
 			return;
 		}
 		try{
@@ -75,13 +81,13 @@ public abstract class Job {
 			ret = jobRun();
 			dateFinished = new Date();
 			if(aborted==true){				
-				setStatus(Status.ABORT);
+				//setStatus(Status.ABORT);
 			} else {
 				setStatus(Status.FINISHED);
 			}			
 		}catch(Exception e){
 			this.exception = e;
-			dateFinished = new Date();
+			dateFinished = new Date();			
 			setStatus(Status.ERROR);
 		}
 	}

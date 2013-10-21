@@ -20,7 +20,6 @@ public class ZQLSession extends Job{
 	transient Logger logger = Logger.getLogger(ZQLSession.class);
 
 	private String zql;
-	List<ResultDataObject> results;
 
 	public ZQLSession(String jobName, JobListener listener) {
 		super(jobName, listener);
@@ -33,10 +32,7 @@ public class ZQLSession extends Job{
 	public String getZQL(){
 		return zql;
 	}
-	
-	public List<ResultDataObject> getResults(){
-		return results;
-	}
+
 	
 	@Override
 	public int progress() {
@@ -50,9 +46,9 @@ public class ZQLSession extends Job{
 
 	@Override
 	protected Object jobRun() throws Exception {
-		
+		LinkedList<ResultDataObject> results = new LinkedList<ResultDataObject>();
 		ZQL zqlEvaluator = new ZQL(zql);
-		List<Z> zqlResult = null;
+		List<Z> zqlResult;
 		zqlResult = zqlEvaluator.compile();
 
 		

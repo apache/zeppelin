@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -27,7 +28,7 @@ import com.nflabs.zeppelin.scheduler.Job.Status;
 
 public class ZQLSessionManager implements JobListener {
 	Logger logger = Logger.getLogger(ZQLSessionManager.class);
-	
+	Map<String, ZQLSession> active = new HashMap<String, ZQLSession>();
 	Gson gson =new GsonBuilder().setPrettyPrinting().create();;
 	
 	AtomicLong counter = new AtomicLong(0);
@@ -48,6 +49,9 @@ public class ZQLSessionManager implements JobListener {
 		ZQLSession as = new ZQLSession("", this);
 		try {
 			persist(as);
+			synchronized(active){
+				active.put(as.getId(), as);
+			}
 		} catch (IOException e) {
 			logger.error("Can't create session ", e);
 			return null;
@@ -56,6 +60,11 @@ public class ZQLSessionManager implements JobListener {
 	}
 	
 	public ZQLSession get(String sessionId){
+		synchronized(active){
+			ZQLSession session = active.get(sessionId);
+			if(session!=null) return session;
+		}
+		
 		// search session dir
 		Path path = getPathForSessionId(sessionId);
 		try {
@@ -75,6 +84,7 @@ public class ZQLSessionManager implements JobListener {
 	public ZQLSession run(String sessionId){		
 		ZQLSession s = get(sessionId);
 		if(s==null) return null;
+		s.setListener(this);
 		scheduler.submit(s);
 		return s;
 	}
@@ -102,6 +112,9 @@ public class ZQLSessionManager implements JobListener {
 		// can't delete running session
 		if(s.getStatus()==Status.RUNNING) return false;
 		
+		synchronized(active){
+			active.remove(sessionId);
+		}
 		Path path = getPathForSessionId(sessionId);
 		try {
 			return fs.delete(path, true);
@@ -122,6 +135,15 @@ public class ZQLSessionManager implements JobListener {
 	@Override
 	public void statusChange(Job job) {
 		try {
+			if(job.getStatus()==Status.FINISHED){
+				synchronized(active){
+					active.remove(job.getId());
+				}
+			}
+			if(job.getStatus()==Status.ERROR && job.getException()!=null){
+				logger.error("Session error", job.getException());
+			} 
+			logger.info("Session "+job.getId()+" status changed "+job.getStatus());
 			persist((ZQLSession) job);
 		} catch (IOException e) {
 			logger.error("Can't persist session "+job.getId(), e);
@@ -221,6 +243,12 @@ public class ZQLSessionManager implements JobListener {
 		ZQLSession session = gson.fromJson(new InputStreamReader(ins), ZQLSession.class);
 		if(session.getStatus()==Status.RUNNING){
 			session.setStatus(Status.ABORT);
+		}
+		
+		if(session.getStatus()!=Status.FINISHED){
+			synchronized(active){
+				active.put(session.getId(), session);
+			}
 		}
 		ins.close();
 		return session;
