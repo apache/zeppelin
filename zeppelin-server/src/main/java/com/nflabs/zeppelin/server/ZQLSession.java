@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.server;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -20,7 +21,8 @@ public class ZQLSession extends Job{
 	transient Logger logger = Logger.getLogger(ZQLSession.class);
 
 	private String zql;
-
+	ResultDataObject error;
+	
 	public ZQLSession(String jobName, JobListener listener) {
 		super(jobName, listener);
 	}
@@ -45,7 +47,7 @@ public class ZQLSession extends Job{
 	}
 
 	@Override
-	protected Object jobRun() throws Exception {
+	protected Object jobRun() throws Throwable {
 		LinkedList<ResultDataObject> results = new LinkedList<ResultDataObject>();
 		ZQL zqlEvaluator = new ZQL(zql);
 		List<Z> zqlResult;
@@ -60,7 +62,8 @@ public class ZQLSession extends Job{
 					results.add(new ResultDataObject(r));
 				}
 			} catch (ZException e) {
-				results.add(new ResultDataObject(e));
+				error = new ResultDataObject(e);
+				throw e;
 			} 
 		}
 

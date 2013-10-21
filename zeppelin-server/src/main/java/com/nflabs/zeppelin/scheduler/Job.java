@@ -19,8 +19,8 @@ public abstract class Job {
 	
 	private String jobName;
 	Status status;
-	transient private Exception exception;
-	Object ret;
+	transient private Throwable exception;
+	Object result;
 	boolean aborted = false;
 	transient private JobListener listener;
 	String id;
@@ -72,20 +72,20 @@ public abstract class Job {
 	
 	public void run(){
 		if(aborted==true){
-			//setStatus(Status.ABORT);
+			setStatus(Status.ABORT);
 			return;
 		}
 		try{
 			setStatus(Status.RUNNING);
 			dateStarted = new Date();
-			ret = jobRun();
+			result = jobRun();
 			dateFinished = new Date();
 			if(aborted==true){				
-				//setStatus(Status.ABORT);
+				setStatus(Status.ABORT);
 			} else {
 				setStatus(Status.FINISHED);
 			}			
-		}catch(Exception e){
+		}catch(Throwable e){
 			this.exception = e;
 			dateFinished = new Date();			
 			setStatus(Status.ERROR);
@@ -96,12 +96,12 @@ public abstract class Job {
 		aborted = jobAbort();
 	}
 	
-	public Exception getException(){
+	public Throwable getException(){
 		return exception;
 	}
 	
 	public Object getReturn(){
-		return ret;
+		return result;
 	}
 	
 	public String getJobName() {
@@ -116,7 +116,7 @@ public abstract class Job {
 
 	public abstract Map<String, Object> info();
 	
-	protected abstract Object jobRun() throws Exception;	
+	protected abstract Object jobRun() throws Throwable;	
 
 	protected abstract boolean jobAbort();
 
