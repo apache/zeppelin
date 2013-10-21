@@ -140,7 +140,7 @@ public abstract class Z {
 	
 
 	public ScriptEngine getRubyScriptEngine(){
-		return  factory.getScriptEngine();
+		return factory.getScriptEngine();
 	}
 	
 	public static void init() throws ZException{

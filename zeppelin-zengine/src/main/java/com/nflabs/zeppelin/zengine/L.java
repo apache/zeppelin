@@ -2,6 +2,7 @@ package com.nflabs.zeppelin.zengine;
 
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
@@ -16,11 +17,13 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
+import org.datanucleus.util.StringUtils;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 
@@ -33,8 +36,7 @@ public class L extends Q{
 	Logger logger = Logger.getLogger(L.class);
 	
 	private String libName;
-	Map<String, Object> params = new HashMap<String, Object>();
-	
+
 	private URI libUri;
 	private Path dir;
 	private Path erbFile;
@@ -75,68 +77,22 @@ public class L extends Q{
 		}
 	}
 		
-	public L withParam(String key, Object val){
-		params.put(key, val);
-		return this;
-	}
+
 	
 
 	@Override
 	public String getQuery() throws ZException {
-		ScriptEngine engine = getRubyScriptEngine();
-
-		StringBuffer rubyScript = new StringBuffer();
-		SimpleBindings bindings = new SimpleBindings();
-		engine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
-
-		rubyScript.append("require 'erb'\n");
-		rubyScript.append(
-				"class Zeppelin\n"+
-				"  def initialize(a, p)\n"+
-				"    @a = a\n"+
-				"    @p = {}\n"+
-				"    p.each{|key,value|@p[key]=value}\n"+
-				"  end\n"+
-				"  def param(key)\n"+
-				"    @p[key]\n"+
-				"  end\n"+
-				"  def "+Q.PREV_VAR_NAME+"\n"+
-				"    @a\n"+
-				"  end\n"+				
-                "end\n");		
 		
-		// add arg local var
-		bindings.put(Q.PREV_VAR_NAME, query);		
-		
-		// add param local var
-		bindings.put("params", params);
-		
-		// create zeppelin context
-		rubyScript.append("z = Zeppelin.new($"+Q.PREV_VAR_NAME+", $params)\n");
+		String q;
 		try {
 			FSDataInputStream ins = fs.open(erbFile);
-			BufferedReader br = new BufferedReader(new InputStreamReader(ins));
-			String line = null;
-			rubyScript.append("erb = \"\"\n");
-			
-			while((line = br.readLine())!=null){
-				rubyScript.append("erb += \""+line+"\"\n");
-			}
+			BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
+			q = getQuery(erb, (prev()==null) ? null : prev().name(), null, params);
 			ins.close();
 		} catch (IOException e1) {
 			throw new ZException(e1);
 		}
-		rubyScript.append("$e = ERB.new(erb).result(binding)\n");
 
-        try {
-        	logger.debug("rubyScript to run : \n"+rubyScript.toString());
-			engine.eval(rubyScript.toString(), bindings);
-		} catch (ScriptException e) {
-			throw new ZException(e);
-		}
-        
-        String q = (String) engine.getBindings(ScriptContext.ENGINE_SCOPE).get("e");
-        
 		String tableCreation = null;
 		if(name()==null){
 			tableCreation = "";

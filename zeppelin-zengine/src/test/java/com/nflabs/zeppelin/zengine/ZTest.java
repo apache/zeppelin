@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 public class ZTest extends TestCase {
 
 	protected void setUp() throws Exception {
+		Z.init();
 		super.setUp();
 	}
 
@@ -32,9 +33,10 @@ public class ZTest extends TestCase {
 
 	
 	public void testPipeGetQuery() throws ZException{
+
 		Z z = new Q("select * from bank")
-   	    .pipe(new Q("select * from (${"+Q.PREV_VAR_NAME+"}) q limit 10"))
-	    .pipe(new Q("create view vv as select * from ${"+Q.PREV_VAR_NAME+"}"));
+   	    .pipe(new Q("select * from (<%=z."+Q.PREV_VAR_NAME+"%>) q limit 10"))
+	    .pipe(new Q("create view vv as select * from <%=z."+Q.PREV_VAR_NAME+"%>"));
 		
 		assertEquals("CREATE VIEW "+z.name()+" AS create view vv as select * from "+z.prev().name(), z.getQuery());
 	}
