@@ -34,9 +34,8 @@ public class Q extends Z{
 	private List<URI> resources = new LinkedList<URI>();
 	private boolean cache;
 	transient static final String ARG_VAR_NAME="arg";
-	transient static final String PREV_VAR_NAME="prev";
+	transient static final String PREV_VAR_NAME="table";
 	transient static final String NAME_PREFIX="zp_";
-	transient static final Pattern templatePattern = Pattern.compile(".*[$][{]"+ARG_VAR_NAME+"[}].*");
 	
 	public Q(String query){
 		this.query = query;
