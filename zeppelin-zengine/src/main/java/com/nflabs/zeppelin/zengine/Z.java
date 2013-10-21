@@ -63,7 +63,7 @@ public abstract class Z {
 	public abstract void clean() throws ZException;
 	
 	public List<ResultSet> execute() throws ZException{		
-		Connection con;
+		Connection con = null;
 		try {
 			con = getConnection();
 			// add resources			
@@ -96,6 +96,11 @@ public abstract class Z {
 			stmt.close();
 			return results;
 		} catch (SQLException e) {
+			try {
+				con.close();
+			} catch (SQLException e1) {
+				logger.error("error on closing connection", e1);
+			}
 			throw new ZException(e);
 		} 
  
@@ -146,6 +151,10 @@ public abstract class Z {
 	private static Connection getConnection() throws SQLException{
 		if(conn==null){
 			conn = DriverManager.getConnection(conf().getString(ConfVars.HIVE_URI));
+		} else {
+			if(conn.isClosed()){
+				conn = DriverManager.getConnection(conf().getString(ConfVars.HIVE_URI));	
+			}
 		}
 		return conn;
 	}
