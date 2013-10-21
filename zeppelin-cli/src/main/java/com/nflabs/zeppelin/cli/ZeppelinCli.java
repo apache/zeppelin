@@ -55,20 +55,16 @@ public class ZeppelinCli {
 			
 			
 			for(Z z : zs){
-				List<ResultSet> results = z.execute();
-				for(ResultSet r : results){
-					new ResultDataStream(r, System.out).load();
-				}
+				ResultSet res = z.execute();
+				new ResultDataStream(res, System.out).load();
 			}
 		} else if(cmd.hasOption("e")){ 			
 			ZQL zql = new ZQL(cmd.getOptionValue("e"));
 			List<Z> zs = zql.compile();			
 			
 			for(Z z : zs){
-				List<ResultSet> results = z.execute();
-				for(ResultSet r : results){
-					new ResultDataStream(r, System.out).load();
-				}
+				ResultSet res = z.execute();
+				new ResultDataStream(res, System.out).load();
 			}
 		} else if(cmd.hasOption("h")){
 			HelpFormatter formatter = new HelpFormatter();
@@ -105,10 +101,8 @@ public class ZeppelinCli {
 	 			List<Z> zs = zql.compile();			
 				
 	 			for(Z z : zs){
-	 				List<ResultSet> results = z.execute();
-	 				for(ResultSet r : results){
-	 					new ResultDataStream(r, System.out).load();
-	 				}
+	 				ResultSet res = z.execute();
+ 					new ResultDataStream(res, System.out).load();
 	 			}
 			} catch (ZException e) {
 				e.printStackTrace();

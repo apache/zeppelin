@@ -55,12 +55,10 @@ public class ZQLSession extends Job{
 
 		
 		for(Z zz : zqlResult){
-			List<ResultSet> res;
+			ResultSet res;
 			try {
 				res = zz.execute();
-				for(ResultSet r : res){
-					results.add(new ResultDataObject(r));
-				}
+				results.add(new ResultDataObject(res));
 			} catch (ZException e) {
 				error = new ResultDataObject(e);
 				throw e;

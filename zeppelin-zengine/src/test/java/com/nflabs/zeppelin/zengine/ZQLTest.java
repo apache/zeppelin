@@ -57,41 +57,46 @@ public class ZQLTest extends TestCase {
 	
 	public void testPipe() throws ZException, ZQLException {
 		ZQL zql = new ZQL();
-		zql.append("select * from bank | select * from (${arg}) limit 10");
+		zql.append("select * from bank | select * from ${arg} limit 10");
 		List<Z> z = zql.compile();
 		
 		assertEquals(1, z.size());
-		assertEquals("select * from (select * from bank) limit 10", z.get(0).getQuery());
+		assertEquals("CREATE VIEW "+z.get(0).name()+" AS select * from "+z.get(0).prev().name()+" limit 10", z.get(0).getQuery());
+		z.get(0).clean();
 	}
 	
 	
 	public void testSemicolon() throws ZException, ZQLException{
 		ZQL zql = new ZQL();
-		zql.append("select * from bank | select * from (${arg}) limit 10; show tables");
+		zql.append("select * from bank | select * from ${arg} limit 10; show tables");
 		List<Z> z = zql.compile();
 		
 		assertEquals(2, z.size());
-		assertEquals("select * from (select * from bank) limit 10", z.get(0).getQuery());
+		assertEquals("CREATE VIEW "+ z.get(0).name() +" AS select * from "+z.get(0).prev().name()+" limit 10", z.get(0).getQuery());
 		assertEquals("show tables", z.get(1).getQuery());
-		
+		z.get(0).clean();
 	}
 
 	public void testLstmtSimple() throws ZException, ZQLException{
 		ZQL zql = new ZQL("test");
-		assertEquals("select * from () a limit ", zql.compile().get(0).getQuery());
+		List<Z> zList = zql.compile();
+		assertEquals(1, zList.size());
+		Z z = zList.get(0);
+		assertEquals("CREATE VIEW "+z.name()+" AS select * from () a limit ", z.getQuery());
 	}
 	
 	public void testLstmtParam() throws ZException, ZQLException{
 		ZQL zql = new ZQL("test(limit=10)");
-		assertEquals("select * from () a limit 10", zql.compile().get(0).getQuery());
+		Z z = zql.compile().get(0);
+		assertEquals("CREATE VIEW "+z.name()+" AS select * from () a limit 10", z.getQuery());
 	}
 	
 	public void testLstmtArg() throws IOException, ZException, ZQLException{
-		ZQL zql = new ZQL("select * from test | test(limit=10) select * from (${arg}) arg");
+		ZQL zql = new ZQL("select * from test | test(limit=10) select * from arg");
 		
 		List<Z> z = zql.compile();
 		assertEquals(1, z.size());
-		assertEquals("select * from (select * from (select * from test) arg) a limit 10", z.get(0).getQuery());
+		assertEquals("CREATE VIEW "+z.get(0).name()+" AS select * from (select * from arg) a limit 10", z.get(0).getQuery());
 	}
 	
 }

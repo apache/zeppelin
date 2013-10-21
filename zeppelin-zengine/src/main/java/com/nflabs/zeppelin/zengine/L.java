@@ -32,7 +32,7 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 public class L extends Q{
 	Logger logger = Logger.getLogger(L.class);
 	
-	private String name;
+	private String libName;
 	Map<String, Object> params = new HashMap<String, Object>();
 	
 	private URI libUri;
@@ -40,20 +40,20 @@ public class L extends Q{
 	private Path erbFile;
 	private FileSystem fs;
 	
-	public L(String name) throws ZException{
-		this(name, null);
+	public L(String libName) throws ZException{
+		this(libName, null);
 	}
-	
-	public L(String name, String query) throws ZException{
+	public L(String libName, String query) throws ZException{
 		super(query);
-		this.name = name;
+		
+		this.libName = libName;
 		fs = fs();
 		
 		try {
-			if(name.indexOf(":/")>0){
-				libUri = new URI(name);
+			if(libName.indexOf(":/")>0){
+				libUri = new URI(libName);
 			} else {
-				libUri = new URI(conf().getString(ConfVars.ZEPPELIN_LIBRARY_DIR)+"/"+name);	
+				libUri = new URI(conf().getString(ConfVars.ZEPPELIN_LIBRARY_DIR)+"/"+libName);	
 			}
 		} catch (URISyntaxException e1) {
 			throw new ZException(e1);
@@ -80,14 +80,7 @@ public class L extends Q{
 		return this;
 	}
 	
-	
-	public String toString(){
-		return name;
-	}
 
-	
-	
-	
 	@Override
 	public String getQuery() throws ZException {
 		ScriptEngine engine = getRubyScriptEngine();
@@ -110,8 +103,7 @@ public class L extends Q{
 				"  def "+Q.PREV_VAR_NAME+"\n"+
 				"    @a\n"+
 				"  end\n"+				
-                "end\n");
-		String query = super.getQuery();
+                "end\n");		
 		
 		// add arg local var
 		bindings.put(Q.PREV_VAR_NAME, query);		
@@ -142,7 +134,20 @@ public class L extends Q{
 		} catch (ScriptException e) {
 			throw new ZException(e);
 		}
-        return (String) engine.getBindings(ScriptContext.ENGINE_SCOPE).get("e");
+        
+        String q = (String) engine.getBindings(ScriptContext.ENGINE_SCOPE).get("e");
+        
+		String tableCreation = null;
+		if(name()==null){
+			tableCreation = "";
+		} else {
+			if(isCache()){
+				tableCreation = "CREATE TABLE "+name()+" AS ";
+			} else {
+				tableCreation = "CREATE VIEW "+name()+" AS ";
+			}
+		}
+		return tableCreation + q;
 	}
 
 	@Override
@@ -159,9 +164,9 @@ public class L extends Q{
 				Path f = status.getPath();
 				if(f.getName().startsWith(".")){  // ignore hidden file
 					continue;
-				} else if(f.getName().startsWith(name+"_")==false){
+				} else if(f.getName().startsWith(libName+"_")==false){
 					continue;
-				} else if(f.getName().equals(name+".erb")){
+				} else if(f.getName().equals(libName+".erb")){
 					continue;
 				} else {
 					resources.add(f.toUri());
@@ -175,9 +180,7 @@ public class L extends Q{
 	}
 
 	@Override
-	public void clean() throws ZException {
-		if(prev()!=null){
-			prev().clean();
-		}		
+	public String getCleanQuery() throws ZException {
+		return super.getCleanQuery();
 	}
 }

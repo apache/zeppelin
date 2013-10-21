@@ -22,11 +22,11 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.util.Util;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
-public abstract class Z {
-	
+public abstract class Z {	
 	Logger logger = Logger.getLogger(Z.class);
 	Z prev;
 	Z next;
+	private ResultSet result;
 	
 	public Z pipe(Z z){
 		setNext(z);
@@ -58,11 +58,51 @@ public abstract class Z {
 		this.next = next;
 	}
 	
+	public abstract String name(); // table or view name
 	public abstract String getQuery() throws ZException;
 	public abstract List<URI> getResources() throws ZException;
-	public abstract void clean() throws ZException;
+	public abstract String getCleanQuery() throws ZException;
 	
-	public List<ResultSet> execute() throws ZException{		
+	public ResultSet getResult(){
+		return result;
+	}
+	
+	public void clean() throws ZException{
+		if(result==null) return;
+		
+		try {
+			result.close();
+		} catch (SQLException e) {
+			logger.error("Error on close ResultSet", e);
+		}		
+		
+		String q = getCleanQuery();
+		executeQuery(q);
+		
+		if(prev()!=null){
+			prev().clean();
+		}
+		
+		result = null;
+	}
+	
+	public ResultSet execute() throws ZException{
+		if(result!=null){  // if it is already calculated
+			return result;
+		}
+		
+		if(prev()!=null){
+			prev().execute();
+		}
+		
+		String query = getQuery();
+		result = executeQuery(query);
+		return result;
+	}
+	
+	private ResultSet executeQuery(String query) throws ZException{
+		if(query==null) return null;
+		
 		Connection con = null;
 		try {
 			con = getConnection();
@@ -81,20 +121,13 @@ public abstract class Z {
 				stmt.close();
 			}
 			
-			List<ResultSet> results = new LinkedList<ResultSet>();
-			
 			// execute query
-			String query = getQuery();
+			ResultSet res = null;
 			Statement stmt = con.createStatement();
-			String[] queries = Util.split(query, ';');
-			
-			for(String q : queries){
-				if(q==null || q.trim().length()==0) continue;			
-				logger.info("executeQuery("+q+")");
-				results.add(stmt.executeQuery(q));	
-			}
+			logger.info("executeQuery("+query+")");
+			res = stmt.executeQuery(query);				
 			stmt.close();
-			return results;
+			return res;
 		} catch (SQLException e) {
 			try {
 				con.close();
@@ -103,8 +136,8 @@ public abstract class Z {
 			}
 			throw new ZException(e);
 		} 
- 
 	}
+	
 
 	public ScriptEngine getRubyScriptEngine(){
 		return  factory.getScriptEngine();

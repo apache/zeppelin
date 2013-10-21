@@ -73,7 +73,7 @@ public class LTest extends TestCase {
 		// load existing L
 		L test = new L("test");
 		test.withParam("limit", 3);
-		assertEquals("select * from table limit 3", test.getQuery());
+		assertEquals("CREATE VIEW "+test.name()+" AS select * from table limit 3", test.getQuery());
 		List<URI> res = test.getResources();
 		assertEquals(1, res.size());
 		assertEquals("file://"+tmpDir.getAbsolutePath()+"/test/test_data.log", res.get(0).toString());

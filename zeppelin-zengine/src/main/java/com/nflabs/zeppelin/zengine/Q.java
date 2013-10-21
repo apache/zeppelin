@@ -12,13 +12,18 @@ import java.util.regex.Pattern;
  *
  */
 public class Q extends Z{
-	private String query;
+	private String name;
+	protected String query;
 	private List<URI> resources = new LinkedList<URI>();
+	private boolean cache;
 	transient static final String PREV_VAR_NAME="arg";
+	transient static final String NAME_PREFIX="zp_";
 	transient static final Pattern templatePattern = Pattern.compile(".*[$][{]"+PREV_VAR_NAME+"[}].*");
 	
 	public Q(String query){
 		this.query = query;
+		name = NAME_PREFIX + this.hashCode();
+		cache = false;
 	}
 
 	public Q withResource(URI r){
@@ -26,21 +31,42 @@ public class Q extends Z{
 		return this;
 	}
 	
+	public Q withName(String name){
+		this.name = name;
+		return this;
+	}
+	
+	public Q withCache(boolean cache){
+		this.cache  = cache;
+		return this;
+	}
+	
+	public boolean isCache(){
+		return cache;
+	}
+		
 	@Override
 	public String getQuery() throws ZException{
-		if(prev()==null){
-			return query;
-		} else if(query==null){
-			return prev().getQuery();
+		String q = null;
+		if(prev()!=null && prev().name()!=null){
+			String prevName = prev().name();
+			q = query.replaceAll("[$][{]"+PREV_VAR_NAME+"[}]", prevName.trim());
 		} else {
-			String prevQuery = prev().getQuery();
-			Matcher m = templatePattern.matcher(query);
-			if(m.matches()){
-				return query.replaceAll("[$][{]"+PREV_VAR_NAME+"[}]", prevQuery.replaceAll("\\$", "\\\\\\$").trim());
-			} else {
-				return query+" "+prevQuery; 
-			}			
+			q = query;
 		}
+		
+		String tableCreation = null;
+		if(name==null){
+			tableCreation = "";
+		} else {
+			if(cache){
+				tableCreation = "CREATE TABLE "+name+" AS ";
+			} else {
+				tableCreation = "CREATE VIEW "+name+" AS ";
+			}
+		}
+		
+		return tableCreation+q;
 	}
 
 	@Override
@@ -54,11 +80,19 @@ public class Q extends Z{
 			return r;
 		}
 	}
-
+	
 	@Override
-	public void clean() throws ZException {
-		if(prev()!=null){
-			prev().clean();
+	public String name(){
+		return name;
+	}
+	
+	@Override
+	public String getCleanQuery() throws ZException {
+		if(name==null) return null;
+		if(cache==true){
+			return "DROP TABLE "+name;
+		} else {
+			return "DROP VIEW "+name;
 		}
 	}
 

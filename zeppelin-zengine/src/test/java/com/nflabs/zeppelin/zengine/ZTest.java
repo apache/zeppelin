@@ -32,26 +32,24 @@ public class ZTest extends TestCase {
 
 	
 	public void testPipeGetQuery() throws ZException{
-		assertEquals("create view vv as select * from (select * from bank) q limit 10", new Q("select * from bank")
-																	  .pipe(new Q("select * from (${arg}) q limit 10"))
-																	  .pipe(new Q("create view vv as"))
-																	  .getQuery()
-		);
+		Z z = new Q("select * from bank")
+   	    .pipe(new Q("select * from (${"+Q.PREV_VAR_NAME+"}) q limit 10"))
+	    .pipe(new Q("create view vv as select * from ${"+Q.PREV_VAR_NAME+"}"));
+		
+		assertEquals("CREATE VIEW "+z.name()+" AS create view vv as select * from "+z.prev().name(), z.getQuery());
 	}
 	
 	public void testShowTables() throws ClassNotFoundException, SQLException, ZException{
 		ZeppelinConfiguration conf = new ZeppelinConfiguration();
 		Z.init(conf);
 		
-		new Q("create table if not exists test(a INT, b STRING)").execute();
-		List<ResultSet> results = new Q("show tables").execute();
-		assertEquals(1, results.size());
-		results.get(0).next();
-		assertEquals("test", results.get(0).getString(1));
+		new Q("create table if not exists test(a INT, b STRING)").withName(null).execute();
+		ResultSet results = new Q("show tables").withName(null).execute();
+		results.next();
+		assertEquals("test", results.getString(1));
 		
-		results = new Q("drop table test; show tables").execute();
-		assertEquals(2, results.size());
-		assertFalse(results.get(1).next());
+		results = new Q("drop table test").withName(null).pipe(new Q("show tables").withName(null)).execute();
+		assertFalse(results.next());
 	}
 	
 	

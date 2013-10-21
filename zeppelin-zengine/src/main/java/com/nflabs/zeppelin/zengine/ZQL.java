@@ -123,7 +123,11 @@ public class ZQL {
 			
 			// if it is not L statment, assume it is a Q statement --
 			if(z==null){
-				z = new Q(stmt);
+				Q q = new Q(stmt);
+				if(stmt.toLowerCase().trim().startsWith("select")==false && stmt.toLowerCase().trim().startsWith("map")==false){
+					q.withName(null);
+				}
+				z = q;
 			}
 			if(currentZ==null){
 				currentZ = z;
