@@ -16,6 +16,7 @@ import javax.script.ScriptEngine;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
+import org.apache.velocity.app.Velocity;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -169,6 +170,7 @@ public abstract class Z {
 				throw new ZException(e);
 			}
 		}
+		Velocity.init();
 	}
 	
 	public static void disconnect(){

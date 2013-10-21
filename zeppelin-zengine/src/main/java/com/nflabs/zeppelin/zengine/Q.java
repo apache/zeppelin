@@ -1,9 +1,12 @@
 package com.nflabs.zeppelin.zengine;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.net.URI;
 import java.util.HashMap;
@@ -20,6 +23,8 @@ import javax.script.SimpleBindings;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
 import org.datanucleus.util.StringUtils;
 
 /**
@@ -67,6 +72,38 @@ public class Q extends Z{
 		return this;
 	}
 	
+	protected String getQuery(BufferedReader erb, ZContext zcontext) throws ZException{
+		ScriptEngine engine = getRubyScriptEngine();
+
+		StringBuffer rubyScript = new StringBuffer();
+		SimpleBindings bindings = new SimpleBindings();
+		engine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
+		bindings.put("z", zcontext);
+		rubyScript.append("require 'erb'\n");
+		rubyScript.append("z = $z\n");
+		try {
+			String line = null;
+			rubyScript.append("erb = \"\"\n");
+			
+			while((line = erb.readLine())!=null){
+				rubyScript.append("erb += \""+StringEscapeUtils.escapeJavaScript(line)+"\"\n");
+			}
+		} catch (IOException e1) {
+			throw new ZException(e1);
+		}
+		rubyScript.append("$e = ERB.new(erb).result(binding)\n");
+
+        try {
+        	logger.debug("rubyScript to run : \n"+rubyScript.toString());
+			engine.eval(rubyScript.toString(), bindings);
+		} catch (ScriptException e) {
+			throw new ZException(e);
+		}
+        
+        String q = (String) engine.getBindings(ScriptContext.ENGINE_SCOPE).get("e");
+        return q;
+	}
+	/*
 	
 	protected String getQuery(BufferedReader erb, String prev, String arg, Map<String,Object>params) throws ZException{
 		ScriptEngine engine = getRubyScriptEngine();
@@ -132,12 +169,16 @@ public class Q extends Z{
         String q = (String) engine.getBindings(ScriptContext.ENGINE_SCOPE).get("e");
         return q;
 	}
+	*/
 	
 	@Override
 	public String getQuery() throws ZException{
 		ByteArrayInputStream ins = new ByteArrayInputStream(query.getBytes());
 		BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
-		String q = getQuery(erb, (prev()==null) ? null : prev().name(), null, params);
+		
+		ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), null, params);
+				
+		String q = getQuery(erb, zContext);
 		try {ins.close();} catch (IOException e) {}
 		
 		String tableCreation = null;
@@ -153,6 +194,7 @@ public class Q extends Z{
 		
 		return tableCreation+q;
 	}
+
 
 	@Override
 	public List<URI> getResources() throws ZException {	

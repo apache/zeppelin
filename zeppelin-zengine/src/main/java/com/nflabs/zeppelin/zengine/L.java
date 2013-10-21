@@ -86,8 +86,10 @@ public class L extends Q{
 		String q;
 		try {
 			FSDataInputStream ins = fs.open(erbFile);
-			BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
-			q = getQuery(erb, (prev()==null) ? null : prev().name(), null, params);
+			BufferedReader vtl = new BufferedReader(new InputStreamReader(ins));
+			
+			ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), null, params);			
+			q = getQuery(vtl, zContext);
 			ins.close();
 		} catch (IOException e1) {
 			throw new ZException(e1);
