@@ -16,6 +16,7 @@ metastore_db/
 **/resources/
 **/sessions/
 **/data/
+**/build/
 
 # OS generated files #
 ######################
