@@ -34,6 +34,7 @@ public class ZQLSession extends Job{
 	}
 	
 	public List<Z> getPlan(){
+		reconstructNextReference();
 		return zqlPlans;
 	}
 	
@@ -41,6 +42,17 @@ public class ZQLSession extends Job{
 		return zql;
 	}
 
+	private void reconstructNextReference(){
+		if(zqlPlans==null) return;
+		// reconstruct plan link. in case of restored by gson
+		for(Z z : zqlPlans){
+			Z next = null;
+			for(Z c=z; c!=null; c=c.prev()){
+				c.setNext(next);
+				next = c;
+			}
+		}
+	}
 	
 	@Override
 	public int progress() {
@@ -58,6 +70,8 @@ public class ZQLSession extends Job{
 		if(zqlPlans==null){
 			ZQL zqlEvaluator = new ZQL(zql);
 			zqlPlans = zqlEvaluator.compile();
+		} else {
+			reconstructNextReference();
 		}
 		
 		for(Z zz : zqlPlans){
@@ -66,6 +80,7 @@ public class ZQLSession extends Job{
 					zz.execute();
 				}
 				results.add(zz.result());
+				zz.release();
 			} catch (ZException e) {
 				error = new Result(e);
 				throw e;

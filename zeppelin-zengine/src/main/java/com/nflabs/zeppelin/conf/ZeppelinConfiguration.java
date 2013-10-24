@@ -143,9 +143,9 @@ public class ZeppelinConfiguration extends XMLConfiguration{
 		ZEPPELIN_HOME				("zeppelin.home", "../"),
 		ZEPPELIN_PORT				("zeppelin.server.port", 8080),
 		ZEPPELIN_WAR				("zeppelin.war", "../zeppelin-web/src/main/webapp"),
-		ZEPPELIN_RESOURCE_DIR		("zeppelin.resource.dir", "../resources"),
+		ZEPPELIN_RESOURCE_DIR		("zeppelin.resource.dir", "resources"),
 		ZEPPELIN_SESSION_DIR		("zeppelin.session.dir", "sessions"),
-		ZEPPELIN_LIBRARY_DIR		("zeppelin.library.dir", "library"),
+		ZEPPELIN_ZAN_LOCAL_REPO		("zeppelin.zan.localrepo", "../zan-repo"),
 		HIVE_DRIVER					("hive.driver.class", "org.apache.hadoop.hive.jdbc.HiveDriver"), // for hive2 "org.apache.hive.jdbc.HiveDriver"
 		HIVE_URI					("hive.jdbc.uri", "jdbc:hive://")
 		;

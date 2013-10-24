@@ -157,7 +157,11 @@ public class ZQL {
     		if(z.getId().equals(zId)){
     			try {
 					InputStream ins = z.readWebResource(path);
-					return Response.ok(IOUtils.toByteArray(ins), typeByExtention(path)).build();
+					if(ins==null){
+						return javax.ws.rs.core.Response.status(Status.NOT_FOUND).entity("").build();
+					} else {
+						return Response.ok(IOUtils.toByteArray(ins), typeByExtention(path)).build();
+					}
 				} catch (ZException e) {
 					logger.error("Can't read web resource", e);
 					return new JsonResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();

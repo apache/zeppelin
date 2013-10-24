@@ -9,7 +9,7 @@ import java.util.List;
 
 
 public class Result extends AbstractResult{
-	List<Object []> rows;
+	public List<Object []> rows;
 
 	public Result(ResultSet res, int max) throws ResultDataException {
 		super(res, max);

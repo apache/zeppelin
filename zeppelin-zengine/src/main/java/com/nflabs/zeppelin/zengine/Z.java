@@ -28,10 +28,12 @@ import com.sun.script.jruby.JRubyScriptEngineFactory;
 public abstract class Z {
 	String id; // z object identifier
 	Z prev;
-	Z next;
-	transient private Result result;
+	transient Z next;
+	private Result result;
+	private Result lastQueryResult;
 	boolean executed = false;
 	int maxResult = 10000;
+	boolean webEnabled = false;
 	
 	protected Z(){
 		this.id = Integer.toString(hashCode());
@@ -72,36 +74,34 @@ public abstract class Z {
 		return next;
 	}
 	
-	private void setPrev(Z prev){
+	public void setPrev(Z prev){
 		this.prev = prev;
 	}
 	
-	private void setNext(Z next){
+	public void setNext(Z next){
 		this.next = next;
 	}
 	
 	public abstract String name(); // table or view name
 	public abstract String getQuery() throws ZException;
 	public abstract List<URI> getResources() throws ZException;
-	public abstract String getCleanQuery() throws ZException;
+	public abstract String getReleaseQuery() throws ZException;
 	public abstract InputStream readWebResource(String path) throws ZException;
+	public abstract boolean isWebEnabled(); 
 	protected abstract void initialize() throws ZException;
-
-	public void clean() throws ZException{
+	
+	public void release() throws ZException{
 		initialize();
 		if(executed==false) return;
 		
-		String q = getCleanQuery();
+		String q = getReleaseQuery();
 		executeQuery(q);
 		
 		if(prev()!=null){
-			prev().clean();
+			prev().release();
 		}
-		
-		result = null;
-		executed = false;
 	}
-
+	
 	public Z execute() throws ZException{
 		initialize();
 
@@ -113,11 +113,12 @@ public abstract class Z {
 		ResultSet res = executeQuery(query);
 		if(name()==null){
 			try {
-				result = new Result(res, maxResult);
+				lastQueryResult = new Result(res, maxResult);
 			} catch (ResultDataException e) {
 				throw new ZException(e);
 			}
 		}
+		webEnabled = isWebEnabled();
 		executed = true;
 		return this;
 	}
@@ -143,24 +144,26 @@ public abstract class Z {
 			throw new ZException("Can not get result because of this is not executed");
 		}
 		try {
-			if(name()==null){ // unnamed
-				if(result!=null){
-					result.load();
-					return result;
-				} else {
-					return null;
-				}
-			} else {
-				if(result==null){				
-					if(isTableExists(name())==true){
+			if(result==null){
+				if(name()==null){ // unmaed
+					if(lastQueryResult!=null){
+						result = lastQueryResult;
+						result.load();
+					}
+				} else { // named
+					try{
 						result = new Result(executeQuery("select * from "+name()), maxResult);
 						result.load();
-					} else {
-						return null;
+					} catch(Exception e){
+						if(lastQueryResult!=null){
+							result = lastQueryResult;
+							result.load();
+						}
 					}
 				}
-				return result;
+
 			}
+			return result;			
 		} catch (ResultDataException e) {
 			throw new ZException(e);
 		} catch (SQLException e) {
@@ -201,12 +204,12 @@ public abstract class Z {
 			res = stmt.executeQuery(query);				
 			stmt.close();
 			return res;
-		} catch (SQLException e) {
+		} catch (Throwable e) {
 			try {
 				if(con!=null){
-					con.close();
+					disconnect();
 				}
-			} catch (Exception e1) {
+			} catch (Throwable e1) {
 				logger().error("error on closing connection", e1);
 			}
 			throw new ZException(e);
@@ -250,9 +253,10 @@ public abstract class Z {
 		if(conn!=null){
 			try {
 				conn.close();
-			} catch (SQLException e) {
+			} catch (Throwable e) {
 				e.printStackTrace();
 			}
+			conn = null;
 		}
 	}
 

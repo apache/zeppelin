@@ -33,7 +33,7 @@ public class ZQLTest extends TestCase {
 		resource.close();
 		
 		System.out.println(tmpDir.toURI().toString());
-		System.setProperty(ConfVars.ZEPPELIN_LIBRARY_DIR.getVarName(), tmpDir.toURI().toString());
+		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 	}
 
 	protected void tearDown() throws Exception {
@@ -62,7 +62,7 @@ public class ZQLTest extends TestCase {
 		
 		assertEquals(1, z.size());
 		assertEquals("CREATE VIEW "+z.get(0).name()+" AS select * from "+z.get(0).prev().name()+" limit 10", z.get(0).getQuery());
-		z.get(0).clean();
+		z.get(0).release();
 	}
 	
 	
@@ -74,7 +74,7 @@ public class ZQLTest extends TestCase {
 		assertEquals(2, z.size());
 		assertEquals("CREATE VIEW "+ z.get(0).name() +" AS select * from "+z.get(0).prev().name()+" limit 10", z.get(0).getQuery());
 		assertEquals("show tables", z.get(1).getQuery());
-		z.get(0).clean();
+		z.get(0).release();
 	}
 
 	public void testLstmtSimple() throws ZException, ZQLException{

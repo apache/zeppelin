@@ -75,7 +75,7 @@ public class L extends Q{
 			if(libName.indexOf(":/")>0){
 				libUri = new URI(libName);
 			} else {
-				libUri = new URI(conf().getString(ConfVars.ZEPPELIN_LIBRARY_DIR)+"/"+libName);	
+				libUri = new URI(conf().getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO)+"/"+libName);	
 			}
 		} catch (URISyntaxException e1) {
 			throw new ZException(e1);
@@ -170,14 +170,21 @@ public class L extends Q{
 			throw new ZException(e);
 		}
 	}
-
 	
-
-	
-	protected String evalWebTemplate(BufferedReader erb, ZWebContext zWebContext) throws ZException{
-		return evalErb(erb, zWebContext);
+	@Override
+	public boolean isWebEnabled(){
+		Path resourcePath = new Path(webDir.toUri()+"/index.erb");
+		try {
+			if(fs.isFile(resourcePath)==false){
+				return false;
+			} else {
+				return true;
+			}
+		} catch (IOException e) {
+			logger().error("Error while reading file "+resourcePath, e);
+			return false;
+		}
 	}
-
 	
 	@Override
 	public List<URI> getResources() throws ZException {
@@ -215,7 +222,7 @@ public class L extends Q{
 	}
 
 	@Override
-	public String getCleanQuery() throws ZException {
-		return super.getCleanQuery();
+	public String getReleaseQuery() throws ZException {
+		return super.getReleaseQuery();
 	}
 }

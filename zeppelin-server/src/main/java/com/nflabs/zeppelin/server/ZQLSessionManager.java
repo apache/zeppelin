@@ -19,12 +19,16 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.Job.Status;
+import com.nflabs.zeppelin.zengine.L;
+import com.nflabs.zeppelin.zengine.Q;
 import com.nflabs.zeppelin.zengine.Z;
 
 public class ZQLSessionManager implements JobListener {
@@ -46,6 +50,7 @@ public class ZQLSessionManager implements JobListener {
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		gsonBuilder.setPrettyPrinting();
 		gsonBuilder.registerTypeAdapter(Z.class, new ZAdapter());
+
 		gson = gsonBuilder.create();		
 	}
 	

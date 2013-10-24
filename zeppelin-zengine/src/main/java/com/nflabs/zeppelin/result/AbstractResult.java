@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public abstract class AbstractResult {
-	ColumnDef [] columnDef;
+	private ColumnDef [] columnDef;
 	private long max;
 	
 	transient private ResultSet res;
@@ -31,7 +31,6 @@ public abstract class AbstractResult {
 	public boolean isLoaded(){
 		return loaded;
 	}
-	
 
 	public AbstractResult(Exception e) throws ResultDataException {
 		this.e = e;
@@ -170,4 +169,7 @@ public abstract class AbstractResult {
 
 	protected abstract void process(ColumnDef [] columnDef, Object [] row, long n) throws Exception;
 
+	public ColumnDef [] getColumnDef(){
+		return columnDef;
+	}
 }

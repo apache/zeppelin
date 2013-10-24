@@ -129,6 +129,12 @@ public class Q extends Z{
         return q;
 	}
 	
+
+	protected String evalWebTemplate(BufferedReader erb, ZWebContext zWebContext) throws ZException{
+		return evalErb(erb, zWebContext);
+	}
+
+	
 	@Override
 	public String getQuery() throws ZException{
 		ByteArrayInputStream ins = new ByteArrayInputStream(query.getBytes());
@@ -155,7 +161,21 @@ public class Q extends Z{
 	
 	public InputStream readWebResource(String path) throws ZException{
 		initialize();
-		return null;
+		
+		ZWebContext zWebContext = null;
+		try{
+			zWebContext = new ZWebContext(result());
+		} catch(ZException e){						
+		}
+		InputStream ins = this.getClass().getResourceAsStream("/table.erb");
+		BufferedReader erb = new BufferedReader(new InputStreamReader(ins));					
+		String q = evalWebTemplate(erb, zWebContext);
+		try {
+			ins.close();
+		} catch (IOException e) {
+			logger().error("Assert", e);
+		}
+		return new ByteArrayInputStream(q.getBytes());
 	}
 
 	
@@ -178,13 +198,18 @@ public class Q extends Z{
 	}
 	
 	@Override
-	public String getCleanQuery() throws ZException {
+	public String getReleaseQuery() throws ZException {
 		if(name==null) return null;
 		if(cache==true){
-			return "DROP TABLE "+name;
+			return "DROP TABLE if exists "+name;
 		} else {
-			return "DROP VIEW "+name;
+			return "DROP VIEW if exists "+name;
 		}
+	}
+
+	@Override
+	public boolean isWebEnabled() {
+		return true;
 	}
 
 }

@@ -221,6 +221,9 @@ $(document).ready(function(){
 
 		editor.setValue(model.zql)
 
+		// clear visualizations
+		$('#visualizationContainer iframe').remove();
+
 		if(model.status=="READY"){
 		    editor.setReadOnly(false);
 		    $('#zqlRunButton').text("Run");
@@ -237,17 +240,22 @@ $(document).ready(function(){
 		    editor.setReadOnly(true);
 
 		    // draw visualization if there's some
-		    $('#visualizationContainer iframe').remove();
 		    if(model.zqlPlans){			
 			for(var i=0; i<model.zqlPlans.length; i++){
 			    var plan = model.zqlPlans[i];
 			    console.log("visualize plan=%o", plan);
+
+			    if(!plan || !plan.webEnabled) continue;
 			    
 			    $('<iframe />', {
 				name : plan.id,
 				id : plan.id,
 				src : zeppelin.getWebResourceURL(model.id, plan.id)
 			    }).appendTo('#visualizationContainer');
+
+			    $('#'+plan.id).load(function(c,d){
+				console.log("iframe %o %o", c,d);
+			    });
 			}
 		    }
 

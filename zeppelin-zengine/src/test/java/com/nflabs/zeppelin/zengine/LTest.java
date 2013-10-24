@@ -64,7 +64,7 @@ public class LTest extends TestCase {
 		resource.close();
 		
 		System.out.println(tmpDir.toURI().toString());
-		System.setProperty(ConfVars.ZEPPELIN_LIBRARY_DIR.getVarName(), tmpDir.toURI().toString());
+		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 		Z.configure();
 		
 		// load nonexisting L
@@ -98,7 +98,7 @@ public class LTest extends TestCase {
 		out.write("HELLO HTML\n".getBytes());
 		out.close();
 
-		System.setProperty(ConfVars.ZEPPELIN_LIBRARY_DIR.getVarName(), tmpDir.toURI().toString());
+		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 		Z.configure();
 		
 		// load existing L

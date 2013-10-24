@@ -40,7 +40,7 @@ public class ZTest extends TestCase {
 	    .pipe(new Q("create view vv as select * from <%=z."+Q.INPUT_VAR_NAME+"%>"));
 		
 		assertEquals("CREATE VIEW "+z.name()+" AS create view vv as select * from "+z.prev().name(), z.getQuery());
-		z.clean();
+		z.release();
 	}
 	
 	public void testShowTables() throws ClassNotFoundException, SQLException, ZException{
