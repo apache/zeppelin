@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SPARK_HOME            Spark Home
-#SHARK_HOME            Shark Home
+# JAVA_HOME=
+# HADOOP_HOME=
 
 
 #   ZEPPELIN_PORT       Zeppelin port number

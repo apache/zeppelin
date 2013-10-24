@@ -19,16 +19,23 @@
 
 
 <configuration>
+
 <property>
-  <name>zeppelin.jdbc.driver</name>
-  <value>org.apache.hadoop.hive.jdbc.HiveDriver</value>
-  <description>JDBC driver name</description>
+  <name>zeppelin.server.port</name>
+  <value>8080</value>
+  <description>Zeppelin server port</description>
 </property>
+
 <property>
-  <name>zeppelin.jdbc.connection</name>
-  <value>jdbc:hive://localhost:10000/default"</value>
-  <description>JDBC connection string</description>
+  <name>hive.driver.class</name>
+  <value>org.apache.hadoop.hive.jdbc.HiveDriver</value>
+  <description>Hive driver class</description>
+</property>
+
+<property>
+  <name>hive.jdbc.uri</name>
+  <value>jdbc:hive://</value>
+  <description>Hive connection URI</description>
 </property>
 
 </configuration>
-

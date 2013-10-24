@@ -62,14 +62,7 @@ ZEPPELIN_MAIN=com.nflabs.zeppelin.server.ZeppelinServer
 
 JAVA_OPTS+=" -Dzeppelin.log.file=$ZEPPELIN_LOGFILE"
 
-function start(){
-    if [ -f "$pid" ]; then
-	if kill -0 `cat $pid` > /dev/null 2>&1; then
-	    echo zeppelin running as process `cat $pid`. Stop it first.
-	    exit 1
-	fi
-    fi
-    
+function init(){
     if [ ! -d "$ZEPPELIN_LOG_DIR" ]; then
 	echo "Log dir doesn't exist, create $ZEPPELIN_LOG_DIR"
 	mkdir -p "$ZEPPELIN_LOG_DIR"
@@ -79,6 +72,27 @@ function start(){
 	echo "Pid dir doesn't exist, create $ZEPPELIN_PID_DIR"
 	mkdir -p "$ZEPPELIN_PID_DIR"
     fi
+
+    if [ ! -d "$ZEPPELIN_SESSION_DIR" ]; then
+	echo "Session dir doesn't exist, create $ZEPPELIN_SESSION_DIR"
+	mkdir -p "$ZEPPELIN_SESSION_DIR"
+    fi
+
+    if [ ! -d "$ZEPPELIN_ZAN_LOCAL_REPO" ]; then
+	echo "ZAN repo doesn't exist, create $ZEPPELIN_ZAN_LOCAL_REPO"
+	mkdir -p "$ZEPPELIN_ZAN_LOCAL_REPO"
+    fi
+}
+
+function start(){
+    if [ -f "$pid" ]; then
+	if kill -0 `cat $pid` > /dev/null 2>&1; then
+	    echo zeppelin running as process `cat $pid`. Stop it first.
+	    exit 1
+	fi
+    fi
+    
+    init
 
     nohup nice -n $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_MAIN "$@" >> "$log" 2>&1 < /dev/null &
     newpid=$!
@@ -139,7 +153,6 @@ case $startStop in
     (status)
 	status
 	;;
-
     (*)
 	echo $usage
 	exit 1

@@ -42,6 +42,22 @@ if [ "x$ZEPPELIN_PID_DIR" == "x" ]; then
     export ZEPPELIN_PID_DIR="$ZEPPELIN_HOME/run"
 fi
 
+if [ "x$ZEPPELIN_WAR" == "x" ]; then
+    if [ -d "${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp" ]; then
+	export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp"
+    else
+	export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web.war"
+    fi
+fi
+
+if [ "x$ZEPPELIN_SESSION_DIR" == "x" ]; then
+    export ZEPPELIN_SESSION_DIR="$ZEPPELIN_HOME/sessions"
+fi
+
+if [ "x$ZEPPELIN_ZAN_LOCAL_REPO" == "x" ]; then
+    export ZEPPELIN_ZAN_LOCAL_REPO="$ZEPPELIN_HOME/zan-repo"
+fi
+
 
 if [ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]; then
     . "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh"
@@ -81,6 +97,7 @@ fi
 if [ -d "${ZEPPELIN_HOME}/zeppelin-web/target/classes" ]; then
     ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-web/target/classes"
 fi
+
 
 export ZEPPELIN_CLASSPATH
 export CLASSPATH+=${ZEPPELIN_CLASSPATH}
