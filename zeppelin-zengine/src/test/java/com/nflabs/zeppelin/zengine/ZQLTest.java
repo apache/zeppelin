@@ -24,7 +24,7 @@ public class ZQLTest extends TestCase {
 		new File(tmpDir.getAbsolutePath()+"/test").mkdir();
 		File erb = new File(tmpDir.getAbsolutePath()+"/test/test.erb");
 		FileOutputStream out = new FileOutputStream(erb);		
-		out.write(("select * from (<%= z."+Q.PREV_VAR_NAME+" %>) a limit <%= z.param('limit') %>\n").getBytes());
+		out.write(("CREATE VIEW <%= z."+Q.OUTPUT_VAR_NAME+" %> AS select * from (<%= z."+Q.INPUT_VAR_NAME+" %>) a limit <%= z.param('limit') %>\n").getBytes());
 		out.close();
 	
 		// create resource
@@ -57,7 +57,7 @@ public class ZQLTest extends TestCase {
 	
 	public void testPipe() throws ZException, ZQLException {
 		ZQL zql = new ZQL();
-		zql.append("select * from bank | select * from <%= z."+Q.PREV_VAR_NAME+" %> limit 10");
+		zql.append("select * from bank | select * from <%= z."+Q.INPUT_VAR_NAME+" %> limit 10");
 		List<Z> z = zql.compile();
 		
 		assertEquals(1, z.size());
@@ -68,7 +68,7 @@ public class ZQLTest extends TestCase {
 	
 	public void testSemicolon() throws ZException, ZQLException{
 		ZQL zql = new ZQL();
-		zql.append("select * from bank | select * from <%= z."+Q.PREV_VAR_NAME+" %> limit 10; show tables");
+		zql.append("select * from bank | select * from <%= z."+Q.INPUT_VAR_NAME+" %> limit 10; show tables");
 		List<Z> z = zql.compile();
 		
 		assertEquals(2, z.size());

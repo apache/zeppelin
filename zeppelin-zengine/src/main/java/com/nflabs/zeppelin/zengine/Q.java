@@ -46,10 +46,12 @@ public class Q extends Z{
 	Result cachedResultDataObject;
 	
 	transient static final String ARG_VAR_NAME="arg";
-	transient static final String PREV_VAR_NAME="table";
+	transient static final String INPUT_VAR_NAME="in";
+	transient static final String OUTPUT_VAR_NAME="out";
 	transient static final String NAME_PREFIX="zp_";
 	
 	public Q(String query) throws ZException{
+		super();
 		this.query = query;
 		initialize();
 	}
@@ -132,7 +134,7 @@ public class Q extends Z{
 		ByteArrayInputStream ins = new ByteArrayInputStream(query.getBytes());
 		BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
 		
-		ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), null, params);
+		ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);
 				
 		String q = getQuery(erb, zContext);
 		try {ins.close();} catch (IOException e) {}
@@ -152,6 +154,7 @@ public class Q extends Z{
 	}
 	
 	public InputStream readWebResource(String path) throws ZException{
+		initialize();
 		return null;
 	}
 

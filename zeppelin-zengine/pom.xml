@@ -47,48 +47,7 @@
 	  <artifactId>hive-jdbc</artifactId>
 	  <version>${hive.version}</version>
 	</dependency>
-	
-	<dependency>
-		<groupId>org.apache.hive</groupId>
-		<artifactId>hive-cli</artifactId>
-		<version>${hive.version}</version>
-		<scope>test</scope>
-	</dependency>
-	
-	<dependency>
-		<groupId>org.apache.hive</groupId>
-		<artifactId>hive-exec</artifactId>
-		<version>${hive.version}</version>
-		<scope>test</scope>
-	</dependency>
-	
- 	<dependency>
-		<groupId>org.apache.hive</groupId>
-		<artifactId>hive-serde</artifactId>
-		<version>${hive.version}</version>
-		<scope>test</scope>
-	</dependency>
-
- 	<dependency>
-		<groupId>org.apache.hive</groupId>
-		<artifactId>hive-shims</artifactId>
-		<version>${hive.version}</version>
-		<scope>test</scope>
-	</dependency>
-	
- 	<dependency>
-		<groupId>org.apache.hadoop</groupId>
-		<artifactId>hadoop-test</artifactId>
-		<version>${hadoop.version}</version>
-		<scope>test</scope>
-	</dependency>                       
-            
- 	<dependency>
-		<groupId>org.apache.hbase</groupId>
-		<artifactId>hbase</artifactId>
-		<version>${hbase.version}</version>
-		<scope>test</scope>
-	</dependency>                       
+                   
 	
 	<!-- to use erb -->
 	<dependency>

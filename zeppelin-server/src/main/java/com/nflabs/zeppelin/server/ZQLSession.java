@@ -30,7 +30,6 @@ public class ZQLSession extends Job{
 	}
 	
 	public void setZQL(String zql){
-		zqlPlans = null;
 		this.zql = zql;
 	}
 	

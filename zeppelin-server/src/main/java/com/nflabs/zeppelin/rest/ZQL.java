@@ -1,7 +1,13 @@
 package com.nflabs.zeppelin.rest;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -10,15 +16,19 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import com.google.gson.Gson;
 import com.nflabs.zeppelin.server.ZQLSession;
 import com.nflabs.zeppelin.server.ZQLSessionManager;
 import com.nflabs.zeppelin.server.JsonResponse;
+import com.nflabs.zeppelin.zengine.Z;
+import com.nflabs.zeppelin.zengine.ZException;
 
 
 @Path("/zql")
@@ -131,5 +141,59 @@ public class ZQL {
     }
     
 
+    @GET
+    @Path("web/{sessionId}/{zId}/{path:.*}")
+    public Response web(@PathParam("sessionId") String sessionId, @PathParam("zId") String zId, @PathParam("path") String path){
+    	ZQLSession session = sessionManager.get(sessionId);
+    	if(session==null){
+    		return new JsonResponse(Status.NOT_FOUND).build();
+    	}
+    	if(path==null || path.equals("/") || path.length()==0){
+    		path = "/index.erb";
+    	}
+    	
+    	List<Z> plans = session.getPlan();
+    	for(Z z : plans){
+    		if(z.getId().equals(zId)){
+    			try {
+					InputStream ins = z.readWebResource(path);
+					return Response.ok(IOUtils.toByteArray(ins), typeByExtention(path)).build();
+				} catch (ZException e) {
+					logger.error("Can't read web resource", e);
+					return new JsonResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+				} catch (IOException e) {
+					logger.error("IOexception", e);
+					return new JsonResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+				}
+    		}
+    	}
+		return null;    	
+    }
+    
+    private MediaType typeByExtention(String path){
+    	String filename;
+		try {
+			filename = new URI(path).getPath();
+		} catch (URISyntaxException e) {
+			logger.error("Invalid path "+path, e);
+			return MediaType.APPLICATION_OCTET_STREAM_TYPE;
+		}
+    	
+    	if(filename.endsWith(".erb")){
+    		return MediaType.TEXT_HTML_TYPE;
+    	} else if(filename.endsWith(".html") || filename.endsWith(".htm")){
+    		return MediaType.TEXT_HTML_TYPE;
+    	} else if(filename.endsWith(".css") || filename.endsWith(".js")){
+    		return MediaType.TEXT_PLAIN_TYPE;
+    	} else if(filename.endsWith(".json")){
+    		return MediaType.APPLICATION_JSON_TYPE;
+    	} else if(filename.endsWith(".xml")){
+    		return MediaType.APPLICATION_XML_TYPE;
+    	} else if(filename.endsWith(".text") || filename.endsWith(".txt")){
+    		return MediaType.TEXT_PLAIN_TYPE;
+    	} else {
+    		return MediaType.APPLICATION_OCTET_STREAM_TYPE;
+    	}
+    }
     
 }

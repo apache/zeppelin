@@ -34,7 +34,10 @@ function Zeppelin(arg){
 	    }
 	}()
     
-	
+
+        this.getWebResourceURL = function(sessionId, planId){
+	    return this.getRestURL()+"/zql/web/"+sessionId+"/"+planId+"/";
+	}
 	
 	this.getBaseURL = function(){
 		return "http://"+window.location.host.split(":")[0]+":8080";

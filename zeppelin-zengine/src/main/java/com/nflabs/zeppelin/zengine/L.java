@@ -103,30 +103,20 @@ public class L extends Q{
 
 	@Override
 	public String getQuery() throws ZException {
-		
+		initialize();
 		String q;
 		try {
 			FSDataInputStream ins = fs.open(erbFile);
 			BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
 			
-			ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), null, params);			
+			ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);			
 			q = getQuery(erb, zContext);
 			ins.close();
 		} catch (IOException e1) {
 			throw new ZException(e1);
 		}
 
-		String tableCreation = null;
-		if(name()==null){
-			tableCreation = "";
-		} else {
-			if(isCache()){
-				tableCreation = "CREATE TABLE "+name()+" AS ";
-			} else {
-				tableCreation = "CREATE VIEW "+name()+" AS ";
-			}
-		}
-		return tableCreation + q;
+		return q;
 	}
 
 	
@@ -140,6 +130,7 @@ public class L extends Q{
 	 * @throws ZException 
 	 */
 	public InputStream readWebResource(String path) throws ZException{
+		initialize();
 		FileStatus[] files;
 		
 		if(path==null || path.compareTo("/")==0){
@@ -157,7 +148,11 @@ public class L extends Q{
 			if(resourcePath.getName().endsWith(".erb")){
 				String q;
 				try {					
-					ZWebContext zWebContext = new ZWebContext(result());
+					ZWebContext zWebContext = null;
+					try{
+						zWebContext = new ZWebContext(result());
+					} catch(ZException e){						
+					}
 					FSDataInputStream ins = fs.open(resourcePath);
 					BufferedReader erb = new BufferedReader(new InputStreamReader(ins));					
 					q = evalWebTemplate(erb, zWebContext);

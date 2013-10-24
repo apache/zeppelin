@@ -235,6 +235,23 @@ $(document).ready(function(){
 		    //$('#zqlRunButton').addClass('disabled');
 		    //$('#zqlRunButton').prop('disabled', true);
 		    editor.setReadOnly(true);
+
+		    // draw visualization if there's some
+		    $('#visualizationContainer iframe').remove();
+		    if(model.zqlPlans){			
+			for(var i=0; i<model.zqlPlans.length; i++){
+			    var plan = model.zqlPlans[i];
+			    console.log("visualize plan=%o", plan);
+			    
+			    $('<iframe />', {
+				name : plan.id,
+				id : plan.id,
+				src : zeppelin.getWebResourceURL(model.id, plan.id)
+			    }).appendTo('#visualizationContainer');
+			}
+		    }
+
+
 		} else if(model.status=="ERROR"){
 		    $('#zqlRunButton').text("Run");
 		    //$('#zqlRunButton').removeClass('disabled');

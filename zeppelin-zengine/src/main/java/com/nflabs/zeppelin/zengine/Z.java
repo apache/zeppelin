@@ -25,12 +25,21 @@ import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.util.Util;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
-public abstract class Z {	
+public abstract class Z {
+	String id; // z object identifier
 	Z prev;
 	Z next;
 	transient private Result result;
-	transient boolean executed = false;
+	boolean executed = false;
 	int maxResult = 10000;
+	
+	protected Z(){
+		this.id = Integer.toString(hashCode());
+	}
+	
+	public String getId(){
+		return id;
+	}
 	
 	private Logger logger(){
 		return Logger.getLogger(Z.class);
@@ -113,18 +122,42 @@ public abstract class Z {
 		return this;
 	}
 	
+	private boolean isTableExists(String name){
+		try {
+			Result desc = new Result(executeQuery("describe "+name), 10000);
+			desc.load();
+			if(desc.getRows().size()<5) return false;
+			if(((String)desc.getRows().get(0)[0]).contains("not exist")) return false;
+			return true;
+		} catch (ZException e) {
+			return false;
+		} catch (ResultDataException e) {
+			return false;
+		} catch (SQLException e) {
+			return false;
+		} 
+	}
+	
 	public Result result() throws ZException{
 		if(executed==false){
 			throw new ZException("Can not get result because of this is not executed");
 		}
 		try {
 			if(name()==null){ // unnamed
-				result.load();
-				return result;
-			} else {
-				if(result==null){					
-					result = new Result(executeQuery("select * from "+name()), maxResult);
+				if(result!=null){
 					result.load();
+					return result;
+				} else {
+					return null;
+				}
+			} else {
+				if(result==null){				
+					if(isTableExists(name())==true){
+						result = new Result(executeQuery("select * from "+name()), maxResult);
+						result.load();
+					} else {
+						return null;
+					}
 				}
 				return result;
 			}
@@ -170,8 +203,10 @@ public abstract class Z {
 			return res;
 		} catch (SQLException e) {
 			try {
-				con.close();
-			} catch (SQLException e1) {
+				if(con!=null){
+					con.close();
+				}
+			} catch (Exception e1) {
 				logger().error("error on closing connection", e1);
 			}
 			throw new ZException(e);
