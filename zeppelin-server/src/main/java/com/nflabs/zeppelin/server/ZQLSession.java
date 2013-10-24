@@ -22,13 +22,20 @@ public class ZQLSession extends Job{
 
 	private String zql;
 	Result error;
+
+	private List<Z> zqlPlans;
 	
 	public ZQLSession(String jobName, JobListener listener) {
 		super(jobName, listener);
 	}
 	
 	public void setZQL(String zql){
+		zqlPlans = null;
 		this.zql = zql;
+	}
+	
+	public List<Z> getPlan(){
+		return zqlPlans;
 	}
 	
 	public String getZQL(){
@@ -49,14 +56,17 @@ public class ZQLSession extends Job{
 	@Override
 	protected Object jobRun() throws Throwable {
 		LinkedList<Result> results = new LinkedList<Result>();
-		ZQL zqlEvaluator = new ZQL(zql);
-		List<Z> zqlResult;
-		zqlResult = zqlEvaluator.compile();
-
+		if(zqlPlans==null){
+			ZQL zqlEvaluator = new ZQL(zql);
+			zqlPlans = zqlEvaluator.compile();
+		}
 		
-		for(Z zz : zqlResult){
+		for(Z zz : zqlPlans){
 			try {
-				results.add(zz.execute().result());
+				if(zz.isExecuted()==false){
+					zz.execute();
+				}
+				results.add(zz.result());
 			} catch (ZException e) {
 				error = new Result(e);
 				throw e;

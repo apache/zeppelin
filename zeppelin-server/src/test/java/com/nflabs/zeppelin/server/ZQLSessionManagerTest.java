@@ -2,9 +2,12 @@ package com.nflabs.zeppelin.server;
 
 import java.io.File;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.zengine.Z;
@@ -89,10 +92,30 @@ public class ZQLSessionManagerTest extends TestCase {
 		// run the session
 		sm.run(sess.getId());
 		
-		while(sm.get(sess.getId()).getStatus()==Status.FINISHED){
+		while(sm.get(sess.getId()).getStatus()!=Status.FINISHED){
 			Thread.sleep(300);
 		}
+		
+		assertEquals(Status.FINISHED, sm.get(sess.getId()).getStatus());
+	}
+	
+	public void testSerializePlan() throws InterruptedException{
+		// Create
+		ZQLSession sess = sm.create();
+		sm.setZql(sess.getId(), "create table if not exists test(txt STRING); show tables");
 
+		// run the session
+		sm.run(sess.getId());
+		
+
+		while(sm.get(sess.getId()).getStatus()!=Status.FINISHED){
+			Thread.sleep(300);
+		}
+		
+		assertEquals(2, ((LinkedList<Result>)sess.getReturn()).size());
+		List<Result> ret = (List<Result>) sm.get(sess.getId()).getReturn();
+		assertEquals(2, ret.size());
+		
 	}
 
 }

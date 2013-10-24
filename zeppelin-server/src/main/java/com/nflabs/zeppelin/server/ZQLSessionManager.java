@@ -25,11 +25,12 @@ import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.Job.Status;
+import com.nflabs.zeppelin.zengine.Z;
 
 public class ZQLSessionManager implements JobListener {
 	Logger logger = Logger.getLogger(ZQLSessionManager.class);
 	Map<String, ZQLSession> active = new HashMap<String, ZQLSession>();
-	Gson gson =new GsonBuilder().setPrettyPrinting().create();;
+	Gson gson ;
 	
 	AtomicLong counter = new AtomicLong(0);
 	private Scheduler scheduler;
@@ -42,6 +43,10 @@ public class ZQLSessionManager implements JobListener {
 		this.scheduler = scheduler;
 		this.sessionPersistBasePath = sessionPersistBasePath;
 		this.fs = fs;
+		GsonBuilder gsonBuilder = new GsonBuilder();
+		gsonBuilder.setPrettyPrinting();
+		gsonBuilder.registerTypeAdapter(Z.class, new ZAdapter());
+		gson = gsonBuilder.create();		
 	}
 	
 	
@@ -70,6 +75,7 @@ public class ZQLSessionManager implements JobListener {
 		try {
 			ZQLSession session = load(path);
 			if(session!=null){
+				session.setListener(this);
 				return session;
 			} else {
 				return null;
