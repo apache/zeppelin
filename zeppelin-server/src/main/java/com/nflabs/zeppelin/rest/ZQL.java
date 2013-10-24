@@ -129,7 +129,4 @@ public class ZQL {
     		 return new JsonResponse(Status.OK).build();	 
     	 }
     }
-    
-    
-
 }

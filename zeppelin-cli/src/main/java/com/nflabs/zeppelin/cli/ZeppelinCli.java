@@ -55,16 +55,14 @@ public class ZeppelinCli {
 			
 			
 			for(Z z : zs){
-				ResultSet res = z.execute();
-				new ResultDataStream(res, System.out).load();
+				z.execute().result().write(System.out);
 			}
 		} else if(cmd.hasOption("e")){ 			
 			ZQL zql = new ZQL(cmd.getOptionValue("e"));
 			List<Z> zs = zql.compile();			
 			
 			for(Z z : zs){
-				ResultSet res = z.execute();
-				new ResultDataStream(res, System.out).load();
+				z.execute().result().write(System.out);
 			}
 		} else if(cmd.hasOption("h")){
 			HelpFormatter formatter = new HelpFormatter();
@@ -101,14 +99,9 @@ public class ZeppelinCli {
 	 			List<Z> zs = zql.compile();			
 				
 	 			for(Z z : zs){
-	 				ResultSet res = z.execute();
- 					new ResultDataStream(res, System.out).load();
+	 				z.execute().result().write(System.out);
 	 			}
 			} catch (ZException e) {
-				e.printStackTrace();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			} catch (ResultDataException e) {
 				e.printStackTrace();
 			} catch (ZQLException e) {
 				e.printStackTrace();
@@ -119,6 +112,5 @@ public class ZeppelinCli {
 
 	 private void printWelcomeMessage() {
 		System.out.println("Welcome to Zeppelin.");
-
 	 }
 }

@@ -3,8 +3,12 @@ package com.nflabs.zeppelin.zengine;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
+
+import org.apache.commons.io.IOUtils;
+
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.zengine.L;
 import com.nflabs.zeppelin.zengine.Z;
@@ -60,7 +64,7 @@ public class LTest extends TestCase {
 		
 		System.out.println(tmpDir.toURI().toString());
 		System.setProperty(ConfVars.ZEPPELIN_LIBRARY_DIR.getVarName(), tmpDir.toURI().toString());
-		Z.init();
+		Z.configure();
 		
 		// load nonexisting L
 		try{
@@ -77,6 +81,32 @@ public class LTest extends TestCase {
 		List<URI> res = test.getResources();
 		assertEquals(1, res.size());
 		assertEquals("file://"+tmpDir.getAbsolutePath()+"/test/test_data.log", res.get(0).toString());
+	}
+	
+	
+
+	public void testWeb() throws Exception{
+		new File(tmpDir.getAbsolutePath()+"/test/web").mkdirs();
+		File erb = new File(tmpDir.getAbsolutePath()+"/test/test.erb");
+		FileOutputStream out = new FileOutputStream(erb);
+		out.write(("show tables").getBytes());
+		out.close();
+
+		erb = new File(tmpDir.getAbsolutePath()+"/test/web/index.erb");
+		out = new FileOutputStream(erb);		
+		out.write("HELLO HTML\n".getBytes());
+		out.close();
+
+		System.setProperty(ConfVars.ZEPPELIN_LIBRARY_DIR.getVarName(), tmpDir.toURI().toString());
+		Z.configure();
+		
+		// load existing L
+		Z test = new L("test").withName(null).execute();
+		InputStream ins = test.readWebResource("/");
+		assertEquals("HELLO HTML", IOUtils.toString(ins, "utf8"));
+		
+		
+		
 	}
 
 }

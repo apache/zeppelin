@@ -22,26 +22,26 @@ public class ZQL {
 	StringBuilder sb = new StringBuilder();
 	
 	public ZQL() throws ZException{
-		Z.init();
+		Z.configure();
 	}
 	
 	public ZQL(String zql) throws ZException{
-		Z.init();
+		Z.configure();
 		append(zql);
 	}
 	
 	public ZQL(URI uri) throws IOException, ZException{
-		Z.init();
+		Z.configure();
 		load(uri);
 	}
 	
 	public ZQL(File file) throws ZException, IOException{
-		Z.init();
+		Z.configure();
 		load(file);
 	}
 	
 	public ZQL(InputStream ins) throws IOException, ZException{
-		Z.init();
+		Z.configure();
 		load(ins);
 	}
 	
@@ -123,7 +123,12 @@ public class ZQL {
 			
 			// if it is not L statment, assume it is a Q statement --
 			if(z==null){
-				Q q = new Q(stmt);
+				Q q;
+				try {
+					q = new Q(stmt);
+				} catch (ZException e) {
+					throw new ZQLException(e);
+				}
 				if(stmt.toLowerCase().trim().startsWith("select")==false && stmt.toLowerCase().trim().startsWith("map")==false){
 					q.withName(null);
 				}

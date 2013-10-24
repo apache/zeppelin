@@ -5,10 +5,13 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.net.URI;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,7 +26,11 @@ import javax.script.SimpleBindings;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.log4j.Logger;
 import org.datanucleus.util.StringUtils;
+
+import com.nflabs.zeppelin.result.ResultDataException;
+import com.nflabs.zeppelin.result.Result;
 
 /**
  * Q stands for Query
@@ -36,14 +43,28 @@ public class Q extends Z{
 	Map<String, Object> params = new HashMap<String, Object>();
 	private List<URI> resources = new LinkedList<URI>();
 	private boolean cache;
+	Result cachedResultDataObject;
+	
 	transient static final String ARG_VAR_NAME="arg";
 	transient static final String PREV_VAR_NAME="table";
 	transient static final String NAME_PREFIX="zp_";
 	
-	public Q(String query){
+	public Q(String query) throws ZException{
 		this.query = query;
+		initialize();
+	}
+	
+	private Logger logger(){
+		return Logger.getLogger(Q.class);
+	}
+	
+	transient boolean initialized = false;
+	protected void initialize() throws ZException {
+		if(initialized==true){
+			return ;
+		}
 		name = NAME_PREFIX + this.hashCode();
-		cache = false;
+		initialized = true;
 	}
 
 	public Q withResource(URI r){
@@ -71,6 +92,10 @@ public class Q extends Z{
 	}
 	
 	protected String getQuery(BufferedReader erb, ZContext zcontext) throws ZException{
+		return evalErb(erb, zcontext);
+	}
+	
+	protected String evalErb(BufferedReader erb, Object zcontext) throws ZException{
 		ScriptEngine engine = getRubyScriptEngine();
 
 		StringBuffer rubyScript = new StringBuffer();
@@ -92,7 +117,7 @@ public class Q extends Z{
 		rubyScript.append("$e = ERB.new(erb).result(binding)\n");
 
         try {
-        	logger.debug("rubyScript to run : \n"+rubyScript.toString());
+        	logger().debug("rubyScript to run : \n"+rubyScript.toString());
 			engine.eval(rubyScript.toString(), bindings);
 		} catch (ScriptException e) {
 			throw new ZException(e);
@@ -125,7 +150,12 @@ public class Q extends Z{
 		
 		return tableCreation+q;
 	}
+	
+	public InputStream readWebResource(String path) throws ZException{
+		return null;
+	}
 
+	
 
 	@Override
 	public List<URI> getResources() throws ZException {	

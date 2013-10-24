@@ -8,19 +8,19 @@ import java.sql.Types;
 import java.util.LinkedList;
 import java.util.List;
 
-public abstract class ResultData {
+public abstract class AbstractResult {
 	ColumnDef [] columnDef;
 	private long max;
 	
 	transient private ResultSet res;
 	transient Exception e;
 	
+	boolean loaded = false;
 	
-	
-	public ResultData(ResultSet res) throws ResultDataException {
+	public AbstractResult(ResultSet res) throws ResultDataException {
 		this(res, -1);
 	}
-	public ResultData(ResultSet res, long max) throws ResultDataException {
+	public AbstractResult(ResultSet res, long max) throws ResultDataException {
 		try {
 			init(res, max);
 		} catch (SQLException e) {
@@ -28,8 +28,12 @@ public abstract class ResultData {
 		}
 	}
 	
+	public boolean isLoaded(){
+		return loaded;
+	}
+	
 
-	public ResultData(Exception e) throws ResultDataException {
+	public AbstractResult(Exception e) throws ResultDataException {
 		this.e = e;
 		columnDef = new ColumnDef[4];
 		columnDef[0] = new ColumnDef("class", Types.VARCHAR, "varchar");
@@ -66,6 +70,7 @@ public abstract class ResultData {
 	}
 		
 	public void load() throws SQLException, ResultDataException{
+		if(loaded==true) return;
 		// row data extraction
 		int numColumns = columnDef.length;
 		
@@ -159,6 +164,7 @@ public abstract class ResultData {
 				throw new ResultDataException(e);
 			}
 		}
+		loaded = true;
 
 	}
 

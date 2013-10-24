@@ -4,9 +4,12 @@ package com.nflabs.zeppelin.zengine;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,6 +29,8 @@ import org.apache.log4j.Logger;
 import org.datanucleus.util.StringUtils;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.result.ResultDataException;
+import com.nflabs.zeppelin.result.Result;
 
 /**
  * L stands for Library
@@ -33,22 +38,37 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
  *
  */
 public class L extends Q{
-	Logger logger = Logger.getLogger(L.class);
-	
 	private String libName;
-
-	private URI libUri;
-	private Path dir;
-	private Path erbFile;
-	private FileSystem fs;
+	
+	transient private URI libUri;
+	transient private Path dir;
+	transient private Path webDir;
+	transient private Path erbFile;
+	transient private FileSystem fs;
+	transient private boolean initialized = false;
+	
 	
 	public L(String libName) throws ZException{
 		this(libName, null);
 	}
 	public L(String libName, String query) throws ZException{
 		super(query);
-		
 		this.libName = libName;
+		initialize();
+	}
+	
+	private Logger logger(){
+		return Logger.getLogger(L.class);
+	}
+	
+	protected void initialize() throws ZException{
+		super.initialize();
+		if(initialized==true){
+			return ;
+		}
+		
+		if(libName==null) return;
+
 		fs = fs();
 		
 		try {
@@ -72,13 +92,14 @@ public class L extends Q{
 			if(fs.isFile(erbFile)==false){
 				throw new ZException("Template "+erbFile.toString()+" does not exist");
 			}
+			
+			this.webDir = new Path(libUri+"/web");
 		} catch (IOException e) {
 			throw new ZException(e);
-		}
-	}
+		}		
 		
-
-	
+		initialized = true;
+	}
 
 	@Override
 	public String getQuery() throws ZException {
@@ -86,10 +107,10 @@ public class L extends Q{
 		String q;
 		try {
 			FSDataInputStream ins = fs.open(erbFile);
-			BufferedReader vtl = new BufferedReader(new InputStreamReader(ins));
+			BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
 			
 			ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), null, params);			
-			q = getQuery(vtl, zContext);
+			q = getQuery(erb, zContext);
 			ins.close();
 		} catch (IOException e1) {
 			throw new ZException(e1);
@@ -108,6 +129,61 @@ public class L extends Q{
 		return tableCreation + q;
 	}
 
+	
+	
+	/**
+	 * access web resources
+	 * 
+	 * 
+	 * @param path related path from this libraries 'web' dir
+	 * @return
+	 * @throws ZException 
+	 */
+	public InputStream readWebResource(String path) throws ZException{
+		FileStatus[] files;
+		
+		if(path==null || path.compareTo("/")==0){
+			path = "index.erb";
+		}
+		
+		try {
+			if(fs.isDirectory(webDir)==false) return null;
+			
+			Path resourcePath = new Path(webDir.toUri()+"/"+path);
+			if(fs.isFile(resourcePath)==false){
+				return null;
+			}
+			
+			if(resourcePath.getName().endsWith(".erb")){
+				String q;
+				try {					
+					ZWebContext zWebContext = new ZWebContext(result());
+					FSDataInputStream ins = fs.open(resourcePath);
+					BufferedReader erb = new BufferedReader(new InputStreamReader(ins));					
+					q = evalWebTemplate(erb, zWebContext);
+					ins.close();
+					
+					return new ByteArrayInputStream(q.getBytes());
+				} catch (IOException e1) {
+					throw new ZException(e1);
+				}
+	
+			} else {
+				return fs.open(resourcePath);
+			}
+		} catch (IOException e) {
+			throw new ZException(e);
+		}
+	}
+
+	
+
+	
+	protected String evalWebTemplate(BufferedReader erb, ZWebContext zWebContext) throws ZException{
+		return evalErb(erb, zWebContext);
+	}
+
+	
 	@Override
 	public List<URI> getResources() throws ZException {
 		List<URI> resources = new LinkedList<URI>();
@@ -120,14 +196,20 @@ public class L extends Q{
 		if(files!=null){
 			for(FileStatus status : files){
 				Path f = status.getPath();
-				if(f.getName().startsWith(".")){  // ignore hidden file
-					continue;
-				} else if(f.getName().startsWith(libName+"_")==false){
-					continue;
-				} else if(f.getName().equals(libName+".erb")){
-					continue;
-				} else {
-					resources.add(f.toUri());
+				try {
+					if(fs.isFile(f)==false){
+						continue;
+					} else if(f.getName().startsWith(".")){  // ignore hidden file
+						continue;
+					} else if(f.getName().startsWith(libName+"_")==false){
+						continue;
+					} else if(f.getName().equals(libName+".erb")){
+						continue;
+					} else {
+						resources.add(f.toUri());
+					}
+				} catch (IOException e) {
+					logger().error("Error while reading library resource "+f.toString(), e);
 				}
 				
 			}

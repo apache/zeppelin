@@ -13,6 +13,7 @@ import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.zengine.Q;
 import com.nflabs.zeppelin.zengine.Z;
 import com.nflabs.zeppelin.zengine.ZException;
@@ -23,7 +24,7 @@ import junit.framework.TestCase;
 public class ZTest extends TestCase {
 
 	protected void setUp() throws Exception {
-		Z.init();
+		Z.configure();
 		super.setUp();
 	}
 
@@ -39,19 +40,18 @@ public class ZTest extends TestCase {
 	    .pipe(new Q("create view vv as select * from <%=z."+Q.PREV_VAR_NAME+"%>"));
 		
 		assertEquals("CREATE VIEW "+z.name()+" AS create view vv as select * from "+z.prev().name(), z.getQuery());
+		z.clean();
 	}
 	
 	public void testShowTables() throws ClassNotFoundException, SQLException, ZException{
 		ZeppelinConfiguration conf = new ZeppelinConfiguration();
-		Z.init(conf);
+		Z.configure(conf);
 		
 		new Q("create table if not exists test(a INT, b STRING)").withName(null).execute();
-		ResultSet results = new Q("show tables").withName(null).execute();
-		results.next();
-		assertEquals("test", results.getString(1));
+		Result results = new Q("show tables").withName(null).execute().result();
+		assertEquals("test", results.getRows().get(0)[0]);
 		
-		results = new Q("drop table test").withName(null).pipe(new Q("show tables").withName(null)).execute();
-		assertFalse(results.next());
+		new Q("drop table test").withName(null).execute();		
 	}
 	
 	

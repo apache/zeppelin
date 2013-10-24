@@ -10,7 +10,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.nflabs.zeppelin.result.ResultDataObject;
+import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.zengine.Z;
@@ -21,7 +21,7 @@ public class ZQLSession extends Job{
 	transient Logger logger = Logger.getLogger(ZQLSession.class);
 
 	private String zql;
-	ResultDataObject error;
+	Result error;
 	
 	public ZQLSession(String jobName, JobListener listener) {
 		super(jobName, listener);
@@ -48,19 +48,17 @@ public class ZQLSession extends Job{
 
 	@Override
 	protected Object jobRun() throws Throwable {
-		LinkedList<ResultDataObject> results = new LinkedList<ResultDataObject>();
+		LinkedList<Result> results = new LinkedList<Result>();
 		ZQL zqlEvaluator = new ZQL(zql);
 		List<Z> zqlResult;
 		zqlResult = zqlEvaluator.compile();
 
 		
 		for(Z zz : zqlResult){
-			ResultSet res;
 			try {
-				res = zz.execute();
-				results.add(new ResultDataObject(res));
+				results.add(zz.execute().result());
 			} catch (ZException e) {
-				error = new ResultDataObject(e);
+				error = new Result(e);
 				throw e;
 			} 
 		}

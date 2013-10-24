@@ -25,7 +25,7 @@ public class ZQLSessionManagerTest extends TestCase {
 		System.setProperty(ConfVars.ZEPPELIN_SESSION_DIR.getVarName(), tmpDir.getAbsolutePath());
 		
 		this.schedulerFactory = new SchedulerFactory();
-		Z.init();
+		Z.configure();
 		this.sm = new ZQLSessionManager(schedulerFactory.createOrGetParallelScheduler("analyze", 30), Z.fs(), Z.conf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
 
 	}

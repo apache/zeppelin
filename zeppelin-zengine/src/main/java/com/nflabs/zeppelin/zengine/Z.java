@@ -2,6 +2,7 @@ package com.nflabs.zeppelin.zengine;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -19,14 +20,26 @@ import org.apache.log4j.Logger;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.result.ResultDataException;
+import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.util.Util;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 public abstract class Z {	
-	Logger logger = Logger.getLogger(Z.class);
 	Z prev;
 	Z next;
-	private ResultSet result;
+	transient private Result result;
+	transient boolean executed = false;
+	int maxResult = 10000;
+	
+	private Logger logger(){
+		return Logger.getLogger(Z.class);
+	}
+	
+	public Z withMaxResult(int maxResult){
+		this.maxResult = maxResult;
+		return this;
+	}
 	
 	public Z pipe(Z z){
 		setNext(z);
@@ -62,19 +75,12 @@ public abstract class Z {
 	public abstract String getQuery() throws ZException;
 	public abstract List<URI> getResources() throws ZException;
 	public abstract String getCleanQuery() throws ZException;
-	
-	public ResultSet getResult(){
-		return result;
-	}
-	
+	public abstract InputStream readWebResource(String path) throws ZException;
+	protected abstract void initialize() throws ZException;
+
 	public void clean() throws ZException{
-		if(result==null) return;
-		
-		try {
-			result.close();
-		} catch (SQLException e) {
-			logger.error("Error on close ResultSet", e);
-		}		
+		initialize();
+		if(executed==false) return;
 		
 		String q = getCleanQuery();
 		executeQuery(q);
@@ -84,23 +90,57 @@ public abstract class Z {
 		}
 		
 		result = null;
+		executed = false;
 	}
-	
-	public ResultSet execute() throws ZException{
-		if(result!=null){  // if it is already calculated
-			return result;
-		}
-		
+
+	public Z execute() throws ZException{
+		initialize();
+
 		if(prev()!=null){
 			prev().execute();
 		}
 		
 		String query = getQuery();
-		result = executeQuery(query);
-		return result;
+		ResultSet res = executeQuery(query);
+		if(name()==null){
+			try {
+				result = new Result(res, maxResult);
+			} catch (ResultDataException e) {
+				throw new ZException(e);
+			}
+		}
+		executed = true;
+		return this;
+	}
+	
+	public Result result() throws ZException{
+		if(executed==false){
+			throw new ZException("Can not get result because of this is not executed");
+		}
+		try {
+			if(name()==null){ // unnamed
+				result.load();
+				return result;
+			} else {
+				if(result==null){					
+					result = new Result(executeQuery("select * from "+name()), maxResult);
+					result.load();
+				}
+				return result;
+			}
+		} catch (ResultDataException e) {
+			throw new ZException(e);
+		} catch (SQLException e) {
+			throw new ZException(e);
+		}
+	}
+	
+	public boolean isExecuted(){
+		return executed;
 	}
 	
 	private ResultSet executeQuery(String query) throws ZException{
+		initialize();
 		if(query==null) return null;
 		
 		Connection con = null;
@@ -111,7 +151,7 @@ public abstract class Z {
 
 			for(URI res : resources){
 				Statement stmt = con.createStatement();
-				logger.info("add resource "+res.toString()); 
+				logger().info("add resource "+res.toString()); 
 				if(res.getPath().endsWith(".jar")){
 					stmt.executeQuery("add JAR "+new File(res.toString()).getAbsolutePath());
 				} else {
@@ -124,7 +164,7 @@ public abstract class Z {
 			// execute query
 			ResultSet res = null;
 			Statement stmt = con.createStatement();
-			logger.info("executeQuery("+query+")");
+			logger().info("executeQuery("+query+")");
 			res = stmt.executeQuery(query);				
 			stmt.close();
 			return res;
@@ -132,7 +172,7 @@ public abstract class Z {
 			try {
 				con.close();
 			} catch (SQLException e1) {
-				logger.error("error on closing connection", e1);
+				logger().error("error on closing connection", e1);
 			}
 			throw new ZException(e);
 		} 
@@ -143,7 +183,7 @@ public abstract class Z {
 		return factory.getScriptEngine();
 	}
 	
-	public static void init() throws ZException{
+	public static void configure() throws ZException{
 		ZeppelinConfiguration conf;
 		try {
 			conf = ZeppelinConfiguration.create();
@@ -151,9 +191,9 @@ public abstract class Z {
 			conf = new ZeppelinConfiguration();
 		}
 
-		init(conf);
+		configure(conf);
 	}
-	public static void init(ZeppelinConfiguration conf) throws ZException{		
+	public static void configure(ZeppelinConfiguration conf) throws ZException{		
 		try {
 			Class.forName(conf.getString(ConfVars.HIVE_DRIVER));
 		} catch (ClassNotFoundException e1) {
