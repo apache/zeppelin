@@ -33,6 +33,7 @@ public class ZQLSession extends Job{
 		this.zql = zql;
 		// later we can improve this part. to make it modify current plan.
 		zqlPlans = null;
+		setStatus(Status.READY);
 	}
 	
 	public List<Z> getPlan(){
