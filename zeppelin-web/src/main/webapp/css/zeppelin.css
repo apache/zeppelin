@@ -11,8 +11,8 @@ body {
 }
 
 #visualizationContainer iframe{
-    border : 1px solid #CCCCCC;
-    width : 100%;
+    border : 0px solid #CCCCCC;
+    width:100%;
 }
 
 body {

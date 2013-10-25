@@ -19,6 +19,10 @@ public class Base  extends WebPage{
     	response.render(JavaScriptHeaderItem.forUrl("https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"));
     	//response.render(JavaScriptHeaderItem.forUrl("https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.js"));
 
+    	// jquery plugin for iframe autoheight
+    	response.render(JavaScriptHeaderItem.forUrl("js/lib/browser.js"));
+    	response.render(JavaScriptHeaderItem.forUrl("js/lib/iframe_auto_height.js"));
+    	
     	// ember
     	response.render(JavaScriptHeaderItem.forUrl("js/lib/handlebars-1.0.0.js"));
     	response.render(JavaScriptHeaderItem.forUrl("js/lib/ember-1.0.0.js"));

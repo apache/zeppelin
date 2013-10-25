@@ -242,16 +242,24 @@ $(document).ready(function(){
 
 			    if(!plan || !plan.webEnabled) continue;
 			    
-			    $('<iframe />', {
+			    $('<iframe />', {				
 				name : plan.id,
 				id : plan.id,
-				src : zeppelin.getWebResourceURL(model.id, plan.id)
+				src : zeppelin.getWebResourceURL(model.id, plan.id),
+				scrolling : 'no'
+				/*,
+										     
+				frameborder : "0",
+				height : "100%",
+				width : "100%"*/
 			    }).appendTo('#visualizationContainer');
 
 			    $('#'+plan.id).load(function(c,d){
 				console.log("iframe %o %o", c,d);
 			    });
 			}
+
+			jQuery('iframe').iframeAutoHeight();
 		    }
 
 
