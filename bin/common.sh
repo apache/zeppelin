@@ -54,6 +54,11 @@ if [ "x$ZEPPELIN_SESSION_DIR" == "x" ]; then
     export ZEPPELIN_SESSION_DIR="$ZEPPELIN_HOME/sessions"
 fi
 
+if [ "x$ZEPPELIN_LOCAL_WAREHOUSE" == "x" ]; then
+    export ZEPPELIN_LOCAL_WAREHOUSE="$ZEPPELIN_HOME/data"
+fi
+
+
 if [ "x$ZEPPELIN_ZAN_LOCAL_REPO" == "x" ]; then
     export ZEPPELIN_ZAN_LOCAL_REPO="$ZEPPELIN_HOME/zan-repo"
 fi

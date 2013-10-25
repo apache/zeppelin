@@ -21,21 +21,9 @@
 <configuration>
 
 <property>
-  <name>zeppelin.server.port</name>
-  <value>8080</value>
-  <description>Zeppelin server port</description>
-</property>
-
-<property>
   <name>hive.driver.class</name>
   <value>org.apache.hadoop.hive.jdbc.HiveDriver</value>
   <description>Hive driver class</description>
-</property>
-
-<property>
-  <name>hive.jdbc.uri</name>
-  <value>jdbc:hive://</value>
-  <description>Hive connection URI</description>
 </property>
 
 </configuration>

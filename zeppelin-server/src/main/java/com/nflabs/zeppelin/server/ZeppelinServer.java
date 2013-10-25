@@ -83,19 +83,10 @@ public class ZeppelinServer extends Application {
         } else {
         	sch.setWar(resourcePath.getAbsolutePath());
         }
-        
-        
-        // dynamic resource
-        ResourceHandler res = new ResourceHandler();
-        res.setDirectoriesListed(true);
-        res.setResourceBase(conf.getString(ConfVars.ZEPPELIN_RESOURCE_DIR));
-        ContextHandler resContext = new ContextHandler("/resources");
-        resContext.setHandler(res);
-
 
         // add all handlers
 	    ContextHandlerCollection contexts = new ContextHandlerCollection();
-	    contexts.setHandlers(new Handler[]{cxfContext, resContext, sch});
+	    contexts.setHandlers(new Handler[]{cxfContext, sch});
 	    server.setHandler(contexts);
 	        
 	    logger.info("Start zeppelin server");

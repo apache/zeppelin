@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -16,6 +17,8 @@ import javax.script.ScriptEngine;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.jdbc.HiveConnection;
 import org.apache.log4j.Logger;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
@@ -223,7 +226,23 @@ public abstract class Z {
 	}
 	
 	private static Connection getConnection() throws SQLException{
-		return DriverManager.getConnection(conf().getString(ConfVars.HIVE_URI));
+		return new HiveConnection(hiveConf());
+	}
+	
+	private static HiveConf hiveConf(){
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	    if (classLoader == null) {
+	      classLoader = Z.class.getClassLoader();
+	    }
+	    
+		URL url = classLoader.getResource("hive-site.xml");
+		HiveConf hiveConf = null;
+		hiveConf = new HiveConf();
+		if(url==null){
+			// set some default configuration if no hive-site.xml provided
+			hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, Z.conf().getString(ConfVars.ZEPPELIN_LOCAL_WAREHOUSE));
+		}
+		return hiveConf;		
 	}
 	
 	private static ZeppelinConfiguration conf;
