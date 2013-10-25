@@ -180,7 +180,7 @@ public abstract class Z {
 		} catch (Throwable e) {
 			try {
 				if(con!=null){
-					disconnect();
+					con.close();
 				}
 			} catch (Throwable e1) {
 				logger().error("error on closing connection", e1);
@@ -222,29 +222,10 @@ public abstract class Z {
 		}
 	}
 	
-	public static void disconnect(){
-		if(conn!=null){
-			try {
-				conn.close();
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
-			conn = null;
-		}
-	}
-
 	private static Connection getConnection() throws SQLException{
-		if(conn==null){
-			conn = DriverManager.getConnection(conf().getString(ConfVars.HIVE_URI));
-		} else {
-			if(conn.isClosed()){
-				conn = DriverManager.getConnection(conf().getString(ConfVars.HIVE_URI));	
-			}
-		}
-		return conn;
+		return DriverManager.getConnection(conf().getString(ConfVars.HIVE_URI));
 	}
 	
-	private static Connection conn;
 	private static ZeppelinConfiguration conf;
 	private static JRubyScriptEngineFactory factory;
 	private static FileSystem fs;
