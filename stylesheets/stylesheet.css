@@ -7,6 +7,14 @@ body {
   /* The html and body elements cannot have any padding or margin. */
 }
 
+.navbar {
+    background-image : linear-gradient(to bottom, #ffffff 0%, #ffffff 100%);
+    background-repeat : repeat-x;
+    border-radius: 0px;
+    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 3px rgba(0, 0, 0, 0.075);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 3px rgba(0, 0, 0, 0.075);    
+}
+
 /* Wrapper for page content to push down footer */
 #wrap {
   min-height: 100%;
@@ -25,14 +33,50 @@ body {
 }
 /* <<< Sticky footer styles */
 
-.navbar-brand div{
-    width : 160px;
-    height : 20px;
+
+
+/* Outline button for use within the docs */
+.btn-outline {
+  color: #563d7c;
+  background-color: #fff;
+  border-color: #e5e5e5;
+}
+.btn-outline:hover,
+.btn-outline:focus,
+.btn-outline:active {
+  color: #fff;
+  background-color: #563d7c;
+  border-color: #563d7c;
 }
 
-.navbar-brand img{
-    width : 150px;
+/* Inverted outline button (white on dark) */
+.btn-outline-inverse {
+  color: #fff;
+  background-color: transparent;
+  border-color: #cdbfe3;
+}
+.btn-outline-inverse:hover,
+.btn-outline-inverse:focus,
+.btn-outline-inverse:active {
+  color: #563d7c;
+  text-shadow: none;
+  background-color: #fff;
+  border-color: #fff;
 }
 
 
+/* 100% width */
+
+.container{
+  max-width:100%;
+  padding:0;
+}
+
+.content-block{
+    padding : 10px 10px 10px 10px;
+}
+
+.content-block p{
+    margin-bottom : 15px;
+}
 

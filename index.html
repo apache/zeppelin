@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
     <link rel="stylesheet" type="text/css" href="stylesheets/bootstrap.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/bootstrap-theme.css" media="screen" />
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
 
     <!--[if lt IE 9]>
@@ -18,7 +19,6 @@
   <body>
     <script type="text/x-handlebars">
       <div class="container">
-
 	<!-- Static navbar -->
 	<div class="navbar navbar-default">
           <div class="navbar-header">
@@ -27,7 +27,7 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#"><div id="zeppelin_logo"><img src="images/zeppelin_logo.png" /></div></a>
+            <a class="navbar-brand" href="#"><div id="zeppelin_logo"><!-- img src="images/zeppelin_logo.png" / -->Zeppelin</div></a>
           </div>
           <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
@@ -37,12 +37,11 @@
             </ul>
             <ul class="nav navbar-nav navbar-right">
 
-              <li><a href="#">Download</a></li>
+              <li>{{#link-to 'download'}}Download{{/link-to}}</li>
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation <b class="caret"></b></a>
                 <ul class="dropdown-menu">
-                  <li><a href="#">Install Zeppelin</a></li>
-                  <li><a href="#">Configure Zeppelin</a></li>
+                  <li>{{#link-to 'docZeppelinInstall'}}Install Zeppelin{{/link-to}}</li>
                   <li><a href="./docs/zengine-api/index.html">Zengine API</a></li>
                   <li><a href="#">ZQL</a></li>
                 </ul>
@@ -67,25 +66,46 @@
         {{outlet}}
       </div> <!-- /container -->
 
-      <div id="footer">
+      <!-- div id="footer">
         <div class="container">
           <p class="text-muted">NFLabs.inc</p>
         </div>
       </div>
-    </script>
+    </script -->
 
 
     <script type="text/x-handlebars" data-template-name="index">
-      <div class="jumbotron">
-        <h1>Zeppelin</h1>
-        <p>Zeppelin is open source data analysis environment on top of Hive.</p>
-	<br />
-        <p>
-          {{#link-to 'docZeppelinGettingstarted' classNames="btn btn-lg btn-primary"}}Getting started &raquo;{{/link-to}}
-        </p>
+      <p style="height:20px" />
+      <div class="row">
+	<div class="col-md-7">
+          <h1>Zeppelin</h1>
+          <p>Zeppelin is open source data analysis environment on top of Hive.</p>
+	  <br />
+          <p>
+            {{#link-to 'docZeppelinGettingstarted' classNames="btn btn-lg btn-primary"}}Getting started &raquo;{{/link-to}}
+          </p>
+	</div>
       </div>
 
+      <div class="row">
+	<div class="col-md-3">	
+	  <img width="250" src="./images/zeppelin_stack.png" />
+	</div>
+
+	<div class="col-md-7">
+	  <h3>Stack</h3>
+	  <ul>
+	    <li>GUI</li>
+	    <li>CLI</li>
+	    <li>ZAN</li>
+	    <li>ZQL</li>
+	    <li>Zengine</li>
+	  </ul>
+	</div>
+      </div>
     </script>
+
+
 
 
     <script type="text/x-handlebars" data-template-name="zengine">
@@ -129,17 +149,109 @@ select * from wc_out limit 10;                               // print first 10 r
 	
     </script>
 
+    <script type="text/x-handlebars" data-template-name="download">
+      <div class="content-block">
+	<h2>Download Zeppelin</h2>
+	
+	<h3>Unstable release</h3>
+	<h4>26 October, 2013: Release 0.1 Developer preview #1</h4>
+	This is devloper preview. With missing features, unknown bugs.
+	But still, enough to play with it.
+	<p>
+	<ul>
+	  <li>First Zengine, ZQL implementation</li>
+	  <li>GUI, CLI support</li>
+	</ul>
+	</p>
+      </div>
+    </script>
+
+
     <script type="text/x-handlebars" data-template-name="zan">
-      ZAN
+      <div class="content-block">
+	<h2>Zeppelin Archive Network</h2>
+	Instant download zeppelin libraries
+	<p>
+	  <h5>ZAN will be implemented from Developer preview #2</h5>
+	</p>
+      </div>
     </script>
 
 
     <script type="text/x-handlebars" data-template-name="docZeppelinGettingstarted">
-      Getting started
+      <div class="content-block">
+	Getting started
+      </div>
     </script>
 
     <script type="text/x-handlebars" data-template-name="docZeppelinInstall">
-      Install
+      <div class="content-block">
+	<p>
+	  <h2>Prerequisites</h2>
+	  <ul>
+            <li>Java 1.6 or Later</li>
+	    <li>Apache Hadoop</li>
+	  </ul>
+	</p>
+	<p>
+	  <h2>Download</h2>
+	  To get Zeppelin distribution, {{#link-to 'download'}}download{{/link-to}} a recent release.
+	</p>
+	<p>
+	  <h2>Install</h2>
+	  Unpack the downloaded Zeppelin distribution.
+	</p>
+	<p>
+	  <h2>Configure</h2>
+	  In the distribution, edit the conf/zeppelin-env.sh.
+	  At least, define JAVA_HOME, HADOOP_HOME.
+	  <table class="table">
+	    <tr>
+	      <th>Var Name</th>
+	      <th>Description</th>
+	    </tr>
+	    <tr>
+	      <td>JAVA_HOME</td>
+	      <td>Java Home directory</td>
+	    </tr>
+	    <tr>
+	      <td>HADOOP_HOME</td>
+	      <td>Hadoop Home directory</td>
+	    </tr>	    
+	  </table>
+	  <p />
+	  Also edit the conf/zeppelin-site.xml
+	  <table class="table">
+	    <tr>
+	      <th>Name</th>
+	      <th>Default Value</th>
+	      <th>Description</th>
+	    </tr>
+	    <tr>
+	      <td>hive.driver.class</td>
+	      <td>org.apache.hadoop.hive.jdbc.HiveDriver</td>
+	      <td>Hive driver class</td>
+	    </tr>
+	  </table>
+
+	  <h4>Local mode</h4>
+	  By default, Zeppelin is configured to run in non-distributed mode.
+
+	  <h4>Distributed mode</h4>
+	  Place hive-site.xml, core-site.xml, hdfs-site.xml, mapred-site.xml in conf directory.
+	</p>
+	<p>
+	  <h2>Start/Stop</h2>
+	  Start Zeppelin
+	  <pre>bin/zeppelin-daemon.sh start</pre>
+	  After successful start, visit <a href="http://localhost:8080">http://localhost:8080</a> with your web browser
+	  <p />
+	  <p />
+	  Stop Zeppelin
+	  <pre>bin/zeppelin-daemon.sh stop</pre>
+	</p>
+
+      </div>
     </script>
 
 
@@ -151,7 +263,7 @@ select * from wc_out limit 10;                               // print first 10 r
     <script src="javascripts/main.js"></script>
 
     <script>
-      $('#peloton_logo').plaxify({"xRange":100, "yRange":100})
+      $('#zeppelin_logo').plaxify({"xRange":200, "yRange":200})
       $.plax.enable()
     </script>
   </body>
