@@ -53,6 +53,7 @@ public class Q extends Z{
 	public Q(String query) throws ZException{
 		super();
 		this.query = query;
+		name = NAME_PREFIX + this.hashCode();
 		initialize();
 	}
 	
@@ -64,8 +65,7 @@ public class Q extends Z{
 	protected void initialize() throws ZException {
 		if(initialized==true){
 			return ;
-		}
-		name = NAME_PREFIX + this.hashCode();
+		}		
 		initialized = true;
 	}
 

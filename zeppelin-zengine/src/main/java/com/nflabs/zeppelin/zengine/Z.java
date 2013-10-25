@@ -95,7 +95,7 @@ public abstract class Z {
 		if(executed==false) return;
 		
 		String q = getReleaseQuery();
-		executeQuery(q);
+		executeQuery(q, maxResult);
 		
 		if(prev()!=null){
 			prev().release();
@@ -103,81 +103,51 @@ public abstract class Z {
 	}
 	
 	public Z execute() throws ZException{
+		if(executed==true) return this;
 		initialize();
 
 		if(prev()!=null){
 			prev().execute();
-		}
-		
+		}		
 		String query = getQuery();
-		ResultSet res = executeQuery(query);
-		if(name()==null){
-			try {
-				lastQueryResult = new Result(res, maxResult);
-			} catch (ResultDataException e) {
-				throw new ZException(e);
-			}
-		}
+		lastQueryResult = executeQuery(query, maxResult);
 		webEnabled = isWebEnabled();
 		executed = true;
 		return this;
 	}
-	
-	private boolean isTableExists(String name){
-		try {
-			Result desc = new Result(executeQuery("describe "+name), 10000);
-			desc.load();
-			if(desc.getRows().size()<5) return false;
-			if(((String)desc.getRows().get(0)[0]).contains("not exist")) return false;
-			return true;
-		} catch (ZException e) {
-			return false;
-		} catch (ResultDataException e) {
-			return false;
-		} catch (SQLException e) {
-			return false;
-		} 
-	}
-	
+		
 	public Result result() throws ZException{
 		if(executed==false){
 			throw new ZException("Can not get result because of this is not executed");
 		}
-		try {
-			if(result==null){
-				if(name()==null){ // unmaed
+
+		if(result==null){
+			if(name()==null){ // unmaed
+				if(lastQueryResult!=null){
+					result = lastQueryResult;
+				}
+			} else { // named
+				try{
+					result = executeQuery("select * from "+name(), maxResult);
+				} catch(Exception e){  // if table not found
 					if(lastQueryResult!=null){
 						result = lastQueryResult;
-						result.load();
-					}
-				} else { // named
-					try{
-						result = new Result(executeQuery("select * from "+name()), maxResult);
-						result.load();
-					} catch(Exception e){
-						if(lastQueryResult!=null){
-							result = lastQueryResult;
-							result.load();
-						}
 					}
 				}
-
 			}
-			return result;			
-		} catch (ResultDataException e) {
-			throw new ZException(e);
-		} catch (SQLException e) {
-			throw new ZException(e);
 		}
+		
+		return result;
 	}
 	
 	public boolean isExecuted(){
 		return executed;
 	}
 	
-	private ResultSet executeQuery(String query) throws ZException{
+	private Result executeQuery(String query, int max) throws ZException{
 		initialize();
 		if(query==null) return null;
+		
 		
 		Connection con = null;
 		try {
@@ -201,9 +171,12 @@ public abstract class Z {
 			ResultSet res = null;
 			Statement stmt = con.createStatement();
 			logger().info("executeQuery("+query+")");
-			res = stmt.executeQuery(query);				
+			res = stmt.executeQuery(query);
+			
+			Result r = new Result(res, maxResult);
+			r.load();
 			stmt.close();
-			return res;
+			return r;
 		} catch (Throwable e) {
 			try {
 				if(con!=null){

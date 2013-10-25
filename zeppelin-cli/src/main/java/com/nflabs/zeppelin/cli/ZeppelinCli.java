@@ -20,6 +20,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.result.ResultDataStream;
 import com.nflabs.zeppelin.zengine.Z;
@@ -99,7 +100,14 @@ public class ZeppelinCli {
 	 			List<Z> zs = zql.compile();			
 				
 	 			for(Z z : zs){
-	 				z.execute().result().write(System.out);
+	 				Result result = z.execute().result();
+	 				if(result!=null){
+	 					result.write(System.out);
+	 				}
+	 			}
+	 			
+	 			for(Z z : zs){
+	 				z.release();
 	 			}
 			} catch (ZException e) {
 				e.printStackTrace();

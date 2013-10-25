@@ -119,11 +119,6 @@ $(document).ready(function(){
 		    var controller = this;
 		    var session = this.get('currentSession');
 		    if(session==undefined) return;
-		    if(session.status=="FINISHED"){
-			// session is already finished
-			console.log("session %o is already finished", session);
-			return;
-		    }
 
 		    var sessionId = session.id;
 
@@ -234,10 +229,10 @@ $(document).ready(function(){
 		    //$('#zqlRunButton').prop('disabled', true);
 		    editor.setReadOnly(true);
                 } else if(model.status=="FINISHED"){
-		    $('#zqlRunButton').text("Finished");
+		    $('#zqlRunButton').text("Run");
 		    //$('#zqlRunButton').addClass('disabled');
 		    //$('#zqlRunButton').prop('disabled', true);
-		    editor.setReadOnly(true);
+		    editor.setReadOnly(false);
 
 		    // draw visualization if there's some
 		    if(model.zqlPlans){			

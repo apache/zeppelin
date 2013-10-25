@@ -31,6 +31,8 @@ public class ZQLSession extends Job{
 	
 	public void setZQL(String zql){
 		this.zql = zql;
+		// later we can improve this part. to make it modify current plan.
+		zqlPlans = null;
 	}
 	
 	public List<Z> getPlan(){

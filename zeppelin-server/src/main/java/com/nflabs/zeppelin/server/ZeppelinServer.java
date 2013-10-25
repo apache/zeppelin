@@ -133,7 +133,7 @@ public class ZeppelinServer extends Application {
 	public ZeppelinServer() throws Exception{
 		this.schedulerFactory = new SchedulerFactory();
 		Z.configure();
-		this.analyzeSessionManager = new ZQLSessionManager(schedulerFactory.createOrGetParallelScheduler("analyze", 30), Z.fs(), Z.conf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
+		this.analyzeSessionManager = new ZQLSessionManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.conf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
 		
 	}
 	
