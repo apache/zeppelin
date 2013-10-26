@@ -143,20 +143,20 @@
 	</div>
       </div>
       <div class="row">
-	<div class="col-md-8">
+	<div class="col-md-10">
 	  <h6>Word Count</h6>
 	  <h5>
 	    <pre>
-	      import com.nflabs.zeppelin.zengine.*
-	      import com.nflabs.zeppelin.result.*
-	      ...
-	      result = new Q("select text from myTable")                   // load some data
+import com.nflabs.zeppelin.zengine.*
+import com.nflabs.zeppelin.result.*
+...
+result = new Q("select text from myTable")                    // load some data
               .pipe(new L("wordcount"))                       // load wordcount library
-              .execute();                                     // execute
+              .execute()                                      // execute
+	      .result();
 
-	      new ResultDataStream(result, 10, System.out).load();         // take first result set 
-              // and display first 10 rows
-	      ...
+result.write(System.out);                                     // Print result to stdout
+...
             </pre>
           </h5>
 	  Checkout <a href="./docs/zengine-api/index.html">Zengine API</a> doc.
@@ -171,12 +171,12 @@
 	</div>
       </div>
       <div class="row">
-	<div class="col-md-8">
+	<div class="col-md-10">
 	  <h6>Word Count</h6>
 	  <h5>
 	    <pre>
-	      select text from myTable | wordcount > wc_out;               // load | process > export
-	      select * from wc_out limit 10;                               // print first 10 rows of wc_out
+select text from myTable | wordcount > wc_out;               // load | process > export
+select * from wc_out limit 10;                               // print first 10 rows of wc_out
             </pre>
           </h5>
 
