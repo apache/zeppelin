@@ -27,7 +27,7 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#"><div id="zeppelin_logo"><!-- img src="images/zeppelin_logo.png" / -->Zeppelin</div></a>
+            <a class="navbar-brand" href="#"><div id="zeppelin_logo" class="zeppelin-color"><!-- img src="images/zeppelin_logo.png" / -->Zeppelin</div></a>
           </div>
           <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
@@ -43,10 +43,9 @@
                 <ul class="dropdown-menu">
                   <li>{{#link-to 'docZeppelinInstall'}}Install Zeppelin{{/link-to}}</li>
                   <li><a href="./docs/zengine-api/index.html">Zengine API</a></li>
-                  <li><a href="#">ZQL</a></li>
+                  <li>{{#link-to 'zql'}}ZQL{{/link-to}}</li>
                 </ul>
               </li>
-              <li><a href="#">Examples</a></li>
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Development <b class="caret"></b></a>
                 <ul class="dropdown-menu">
@@ -56,7 +55,7 @@
                   <li><a href="https://zeppelin-project.atlassian.net/browse/ZEPPELIN">Issue Tracking</a></li>
                 </ul>
               </li>
-              <li><a href="#">License</a></li>
+              <li>{{#link-to 'license'}}License{{/link-to}}</li>
 
             </ul>
           </div><!--/.nav-collapse -->
@@ -66,191 +65,280 @@
         {{outlet}}
       </div> <!-- /container -->
 
-      <!-- div id="footer">
-        <div class="container">
-          <p class="text-muted">NFLabs.inc</p>
+      <footer>
+        <div class="container text-center">
+          NFLabs.inc
         </div>
-      </div>
-    </script -->
-
-
-    <script type="text/x-handlebars" data-template-name="index">
-      <p style="height:20px" />
-      <div class="row">
-	<div class="col-md-7">
-          <h1>Zeppelin</h1>
-          <p>Zeppelin is open source data analysis environment on top of Hive.</p>
-	  <br />
-          <p>
-            {{#link-to 'docZeppelinGettingstarted' classNames="btn btn-lg btn-primary"}}Getting started &raquo;{{/link-to}}
-          </p>
-	</div>
-      </div>
-
-      <div class="row">
-	<div class="col-md-3">	
-	  <img width="250" src="./images/zeppelin_stack.png" />
-	</div>
-
-	<div class="col-md-7">
-	  <h3>Stack</h3>
-	  <ul>
-	    <li>GUI</li>
-	    <li>CLI</li>
-	    <li>ZAN</li>
-	    <li>ZQL</li>
-	    <li>Zengine</li>
-	  </ul>
-	</div>
-      </div>
+      </footer>
     </script>
+
+
+      <script type="text/x-handlebars" data-template-name="index">
+	<div class="row content-style3">
+	  <div class="col-md-8">
+            <h1>Zeppelin</h1>
+            <p>Zeppelin is open source data analysis environment on top of Hadoop.</p>
+
+	    <h3>Less Development, More analysis!</h3>
+	    <br />
+            <p>
+	      {{#link-to 'docZeppelinGettingstarted' classNames="btn btn-lg btn-default"}}Getting started &raquo;{{/link-to}}
+            </p>
+	  </div>
+	</div>
+	<div class="row"></div>
+	<div class="row">
+	  <div class="col-md-6">
+	    <p><b>Zengine</b> is an framework for Java to simplify data analytics on Hadoop. Zeppelin generate Hive query</p>
+	    <p><b>ZQL</b> is extension of HiveQL. for easy data analysis.</p>
+	    <p><b>ZAN</b> Zeppelin archive network, to share libraries.</p>
+	  </div>
+	  <div class="col-md-4">
+	    <div class="text-center table-stack" style="width:200px; padding: 5px 5px 5px 5px;">
+	      <div class="zeppelin-color"><b>Zeppelin Stack</b></div>
+	      <p />
+	      <table style="width:100%">
+		<tr>
+		  <td rowspan=3><div class="rotate270" style="width:15px;padding:10px 0px 0px 0px;">Zeppelin</div></div></td>
+		  <td>CLI</td>
+		  <td>GUI</td>
+		  <td>ZAN</td>
+		</tr>
+		<tr>
+		  <td colspan=3>ZQL</td>
+		</tr>
+		<tr>
+		  <td colspan=3>Zengine</td>
+		</tr>
+		<tr>
+		  <td style="background-color:#FFFFFF"></td>
+		  <td colspan=3 style="background-color:#DDDDDD; color:#777777;">Hive</td>
+		</tr>
+		<tr>
+		  <td style="background-color:#FFFFFF"></td>
+		  <td colspan=3 style="background-color:#DDDDDD; color:#777777;">Hadoop</td>
+		</tr>
+	      </table>
+	    </div>
+	  </div>
+	</div>
+
+	<div class="row content-style2">
+	  <div class="col-md-12 main">
+	    <h3>Latest news</h3>
+	    <h4>Zeppelin 0.1 Developer preview</h4>
+	    Congratulations! The first developer preview is release. Check {{#link-to 'download'}}here{{/link-to}}
+	  </div>
+	</div>
+      </script>
 
 
 
 
     <script type="text/x-handlebars" data-template-name="zengine">
-      <div class="jumbotron">
-	<b>Zengine</b> is open source framework based on <a href="http://hive.apache.org">Hive</a> that aims to make data analytics easy.
+      <div class="row content-style3">
+	<div class="col-md-8">
+	  <h3>Zengine</h3>
+	</div>
       </div>
-	<h6>Word Count</h6>
-	<h5>
-	  <pre>
-import com.nflabs.zeppelin.zengine.*
-import com.nflabs.zeppelin.result.*
-...
-result = new Q("select text from myTable")                   // load some data
-             .pipe(new L("wordcount"))                       // load wordcount library
-             .execute();                                     // execute
+      <div class="row">
+	<div class="col-md-8">
+	  <h6>Word Count</h6>
+	  <h5>
+	    <pre>
+	      import com.nflabs.zeppelin.zengine.*
+	      import com.nflabs.zeppelin.result.*
+	      ...
+	      result = new Q("select text from myTable")                   // load some data
+              .pipe(new L("wordcount"))                       // load wordcount library
+              .execute();                                     // execute
 
-new ResultDataStream(result, 10, System.out).load();         // take first result set 
-                                                             // and display first 10 rows
-...
-          </pre>
-        </h5>
-	Checkout <a href="./docs/zengine-api/index.html">Zengine API</a> doc.
+	      new ResultDataStream(result, 10, System.out).load();         // take first result set 
+              // and display first 10 rows
+	      ...
+            </pre>
+          </h5>
+	  Checkout <a href="./docs/zengine-api/index.html">Zengine API</a> doc.
+	</div>
+      </div>
     </script>
 
     <script type="text/x-handlebars" data-template-name="zql">
-      <div class="jumbotron">
-	<b>ZQL</b> is super easy yet powerful analytical language
+      <div class="row content-style3">
+	<div class="col-md-8">
+	  <h3>ZQL</h3>
+	</div>
       </div>
-	<h6>Word Count</h6>
-	<h5>
-	  <pre>
-select text from myTable | wordcount > wc_out;               // load | process > export
-select * from wc_out limit 10;                               // print first 10 rows of wc_out
-          </pre>
-        </h5>
+      <div class="row">
+	<div class="col-md-8">
+	  <h6>Word Count</h6>
+	  <h5>
+	    <pre>
+	      select text from myTable | wordcount > wc_out;               // load | process > export
+	      select * from wc_out limit 10;                               // print first 10 rows of wc_out
+            </pre>
+          </h5>
 
-	You can run ZQL through Zepplin GUI or Zeppelin Cli.
+	  You can run ZQL through Zepplin GUI or Zeppelin Cli.
 
 
 
-	
+	</div>
+      </div>
     </script>
 
     <script type="text/x-handlebars" data-template-name="download">
-      <div class="content-block">
-	<h2>Download Zeppelin</h2>
-	
-	<h3>Unstable release</h3>
-	<h4>26 October, 2013: Release 0.1 Developer preview #1</h4>
-	This is devloper preview. With missing features, unknown bugs.
-	But still, enough to play with it.
-	<p>
-	<ul>
-	  <li>First Zengine, ZQL implementation</li>
-	  <li>GUI, CLI support</li>
-	</ul>
-	</p>
+      <div class="row content-style3">
+	<div class="col-md-8">
+	  <h3>Download</h3>
+	</div>
+      </div>
+      <div class="row">
+	<div class="col-md-12" style="min-height:500px;">
+	  <h3>Unstable release</h3>
+	  <h4>26 October, 2013: Release 0.1 Developer preview #1</h4>
+	  This is devloper preview. With missing features, unknown bugs.
+	  But still, enough to play with it.
+	  <p>
+	    <ul>
+	      <li>First Zengine, ZQL implementation</li>
+	      <li>GUI, CLI support</li>
+	    </ul>
+	  </p>
+	</div>
       </div>
     </script>
 
 
     <script type="text/x-handlebars" data-template-name="zan">
-      <div class="content-block">
-	<h2>Zeppelin Archive Network</h2>
-	Instant download zeppelin libraries
-	<p>
-	  <h5>ZAN will be implemented from Developer preview #2</h5>
-	</p>
+      <div class="row content-style3">
+	<div class="col-md-8">
+	  <h3>Zeppelin Archive Network</h3>
+	</div>
+      </div>
+      <div class="row"></div>
+      <div class="row">
+	<div class="col-md-12" style="min-height:500px;">
+	  Instant download zeppelin libraries
+	  <p>
+	    <h5>ZAN will be implemented from Developer preview #2</h5>
+	  </p>
+	</div>
+      </div>
+    </script>
+
+
+    <script type="text/x-handlebars" data-template-name="license">
+      <div class="row content-style3">
+	<div class="col-md-8">
+	  <h3>License</h3>
+	</div>
+      </div>
+      <div class="row"></div>
+      <div class="row">
+	<div class="col-md-12" style="min-height:500px;">
+	  Liensed under Apache 2
+	  <p />
+<pre>
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+</pre>
+	</div>
       </div>
     </script>
 
 
     <script type="text/x-handlebars" data-template-name="docZeppelinGettingstarted">
-      <div class="content-block">
+      <div class="">
 	Getting started
       </div>
     </script>
 
     <script type="text/x-handlebars" data-template-name="docZeppelinInstall">
-      <div class="content-block">
-	<p>
-	  <h2>Prerequisites</h2>
-	  <ul>
-            <li>Java 1.6 or Later</li>
-	    <li>Apache Hadoop</li>
-	  </ul>
-	</p>
-	<p>
-	  <h2>Download</h2>
-	  To get Zeppelin distribution, {{#link-to 'download'}}download{{/link-to}} a recent release.
-	</p>
-	<p>
-	  <h2>Install</h2>
-	  Unpack the downloaded Zeppelin distribution.
-	</p>
-	<p>
-	  <h2>Configure</h2>
-	  In the distribution, edit the conf/zeppelin-env.sh.
-	  At least, define JAVA_HOME, HADOOP_HOME.
-	  <table class="table">
-	    <tr>
-	      <th>Var Name</th>
-	      <th>Description</th>
-	    </tr>
-	    <tr>
-	      <td>JAVA_HOME</td>
-	      <td>Java Home directory</td>
-	    </tr>
-	    <tr>
-	      <td>HADOOP_HOME</td>
-	      <td>Hadoop Home directory</td>
-	    </tr>	    
-	  </table>
-	  <p />
-	  Also edit the conf/zeppelin-site.xml
-	  <table class="table">
-	    <tr>
-	      <th>Name</th>
-	      <th>Default Value</th>
-	      <th>Description</th>
-	    </tr>
-	    <tr>
-	      <td>hive.driver.class</td>
-	      <td>org.apache.hadoop.hive.jdbc.HiveDriver</td>
-	      <td>Hive driver class</td>
-	    </tr>
-	  </table>
+      <div class="row content-style3">
+	<div class="col-md-8">
+	  <h3>Download</h3>
+	</div>
+      </div>
+      <div class="row">
+	<div class="col-md-12" style="min-height:500px;">
+	  <p>
+	    <h2>Prerequisites</h2>
+	    <ul>
+              <li>Java 1.6 or Later</li>
+	      <li>Apache Hadoop</li>
+	    </ul>
+	  </p>
+	  <p>
+	    <h2>Download</h2>
+	    To get Zeppelin distribution, {{#link-to 'download'}}download{{/link-to}} a recent release.
+	  </p>
+	  <p>
+	    <h2>Install</h2>
+	    Unpack the downloaded Zeppelin distribution.
+	  </p>
+	  <p>
+	    <h2>Configure</h2>
+	    In the distribution, edit the conf/zeppelin-env.sh.
+	    At least, define JAVA_HOME, HADOOP_HOME.
+	    <table class="table">
+	      <tr>
+		<th>Var Name</th>
+		<th>Description</th>
+	      </tr>
+	      <tr>
+		<td>JAVA_HOME</td>
+		<td>Java Home directory</td>
+	      </tr>
+	      <tr>
+		<td>HADOOP_HOME</td>
+		<td>Hadoop Home directory</td>
+	      </tr>	    
+	    </table>
+	    <p />
+	    Also edit the conf/zeppelin-site.xml
+	    <table class="table">
+	      <tr>
+		<th>Name</th>
+		<th>Default Value</th>
+		<th>Description</th>
+	      </tr>
+	      <tr>
+		<td>hive.driver.class</td>
+		<td>org.apache.hadoop.hive.jdbc.HiveDriver</td>
+		<td>Hive driver class</td>
+	      </tr>
+	    </table>
 
-	  <h4>Local mode</h4>
-	  By default, Zeppelin is configured to run in non-distributed mode.
+	    <h4>Local mode</h4>
+	    By default, Zeppelin is configured to run in non-distributed mode.
 
-	  <h4>Distributed mode</h4>
-	  Place hive-site.xml, core-site.xml, hdfs-site.xml, mapred-site.xml in conf directory.
-	</p>
-	<p>
-	  <h2>Start/Stop</h2>
-	  Start Zeppelin
-	  <pre>bin/zeppelin-daemon.sh start</pre>
-	  After successful start, visit <a href="http://localhost:8080">http://localhost:8080</a> with your web browser
-	  <p />
-	  <p />
-	  Stop Zeppelin
-	  <pre>bin/zeppelin-daemon.sh stop</pre>
-	</p>
-
+	    <h4>Distributed mode</h4>
+	    Place hive-site.xml, core-site.xml, hdfs-site.xml, mapred-site.xml in conf directory.
+	  </p>
+	  <p>
+	    <h2>Start/Stop</h2>
+	    Start Zeppelin
+	    <pre>bin/zeppelin-daemon.sh start</pre>
+	    After successful start, visit <a href="http://localhost:8080">http://localhost:8080</a> with your web browser
+	    <p />
+	    <p />
+	    Stop Zeppelin
+	    <pre>bin/zeppelin-daemon.sh stop</pre>
+	  </p>
+	</div>
       </div>
     </script>
 

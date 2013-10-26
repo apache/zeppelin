@@ -7,76 +7,69 @@ body {
   /* The html and body elements cannot have any padding or margin. */
 }
 
-.navbar {
-    background-image : linear-gradient(to bottom, #ffffff 0%, #ffffff 100%);
-    background-repeat : repeat-x;
-    border-radius: 0px;
-    -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 3px rgba(0, 0, 0, 0.075);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 3px rgba(0, 0, 0, 0.075);    
+.zeppelin-color {
+    color : #3071a9;
 }
 
-/* Wrapper for page content to push down footer */
-#wrap {
-  min-height: 100%;
-  height: auto !important;
-  height: 100%;
-  /* Negative indent footer by its height */
-  margin: 0 auto -60px;
-  /* Pad bottom by footer height */
-  padding: 0 0 60px;
+.row {
+    margin-left:0px;
+    padding-bottom:15px;
 }
 
-/* Set the fixed height of the footer here */
-#footer {
-  height: 30px;
-  background-color: #f5f5f5;
-}
-/* <<< Sticky footer styles */
+.content-style2 {/*
+    background-image: -webkit-gradient(linear, left 0%, left 100%, from(#1e90ff), to(#1e90ff));
+    background-image: -webkit-linear-gradient(top, #1e90ff, 0%, #1e90ff, 100%);
+    background-image: -moz-linear-gradient(top, #1e90ff 0%, #1e90ff 100%);
+    background-image: linear-gradient(to bottom, #1e90ff 0%, #1e90ff 100%);
+    background-repeat: repeat-x;
+    background-color: #B0C4DE;
+*/
 
+    background-color: #55a3a9;
+    color: white;
 
-
-/* Outline button for use within the docs */
-.btn-outline {
-  color: #563d7c;
-  background-color: #fff;
-  border-color: #e5e5e5;
-}
-.btn-outline:hover,
-.btn-outline:focus,
-.btn-outline:active {
-  color: #fff;
-  background-color: #563d7c;
-  border-color: #563d7c;
-}
-
-/* Inverted outline button (white on dark) */
-.btn-outline-inverse {
-  color: #fff;
-  background-color: transparent;
-  border-color: #cdbfe3;
-}
-.btn-outline-inverse:hover,
-.btn-outline-inverse:focus,
-.btn-outline-inverse:active {
-  color: #563d7c;
-  text-shadow: none;
-  background-color: #fff;
-  border-color: #fff;
 }
 
 
-/* 100% width */
-
-.container{
-  max-width:100%;
-  padding:0;
+.rotate90 {    
+  -webkit-transform: rotate(90deg); 
+     -moz-transform: rotate(90deg); 
+      -ms-transform: rotate(90deg); 
+       -o-transform: rotate(90deg); 
+          transform: rotate(90deg);
+            float: left;        
+            vertical-align:top;    
+}
+.rotate270 {    
+  -webkit-transform: rotate(270deg); 
+     -moz-transform: rotate(270deg); 
+      -ms-transform: rotate(270deg); 
+       -o-transform: rotate(270deg); 
+          transform: rotate(270deg);
 }
 
-.content-block{
-    padding : 10px 10px 10px 10px;
+
+.content-style3 {
+    background-color: #3071a9;
+    color: white;
 }
 
-.content-block p{
-    margin-bottom : 15px;
+.table-stack {
+/*    border: 1px solid #6371a9;*/
 }
 
+.table-stack tr td{
+    border: 1px solid #FFFFFF;
+    height : 40px;
+    background-color : #6371a9;
+    color : #FFFFFF;
+}
+
+.inactive {
+    border: 1px solid #AAAAAA;    
+}
+.inactive tr td {
+    border: 1px solid #AAAAAA;    
+    background-color : #DDDDDD;    
+    color : #777777;
+}
