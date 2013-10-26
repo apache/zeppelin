@@ -41,6 +41,7 @@
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentation <b class="caret"></b></a>
                 <ul class="dropdown-menu">
+		  <li>{{#link-to 'docZeppelinGettingstarted'}}Getting Started{{/link-to}}</li>
                   <li>{{#link-to 'docZeppelinInstall'}}Install Zeppelin{{/link-to}}</li>
                   <li><a href="./docs/zengine-api/index.html">Zengine API</a></li>
                   <li>{{#link-to 'zql'}}ZQL{{/link-to}}</li>
@@ -91,7 +92,7 @@
 	  <div class="col-md-6">
 	    <p><b>Zengine</b> is an framework for Java to simplify data analytics on Hadoop. Zeppelin generate Hive query</p>
 	    <p><b>ZQL</b> is extension of HiveQL. for easy data analysis.</p>
-	    <p><b>ZAN</b> Zeppelin archive network, to share libraries.</p>
+	    <p><b>ZAN</b> Zeppelin archive network, sharing libraries.</p>
 	  </div>
 	  <div class="col-md-4">
 	    <div class="text-center table-stack" style="width:200px; padding: 5px 5px 5px 5px;">
@@ -127,7 +128,7 @@
 	  <div class="col-md-12 main">
 	    <h3>Latest news</h3>
 	    <h4>Zeppelin 0.1 Developer preview</h4>
-	    Congratulations! The first developer preview is release. Check {{#link-to 'download'}}here{{/link-to}}
+	    Congratulations! The first developer preview is released. Check {{#link-to 'download'}}here{{/link-to}}
 	  </div>
 	</div>
       </script>
@@ -196,7 +197,7 @@
       <div class="row">
 	<div class="col-md-12" style="min-height:500px;">
 	  <h3>Unstable release</h3>
-	  <h4>26 October, 2013: Release 0.1 Developer preview #1</h4>
+	  <h4>27 October, 2013: Release 0.1 Developer preview #1</h4>
 	  This is devloper preview. With missing features, unknown bugs.
 	  But still, enough to play with it.
 	  <p>
@@ -261,8 +262,58 @@ limitations under the License.
 
 
     <script type="text/x-handlebars" data-template-name="docZeppelinGettingstarted">
-      <div class="">
-	Getting started
+      <div class="row content-style3">
+	<div class="col-md-8">
+	  <h3>Getting Started</h3>
+	</div>
+      </div>
+      <div class="row">
+	<div class="col-md-12" style="min-height:500px;">
+	  <h4>What is Zeppelin</h4>
+	  <p>Zeppelin is opensource data analysis environment on top of Hadoop.</p>
+	  <br />
+	  <h4>Install</h4>
+	  <p>{{#link-to 'download'}}Download{{/link-to}} a release.</p>
+	  <p>Zeppelin can be run either locally or with existing hadoop cluster. see {{#link-to 'docZeppelinInstall'}}install{{/link-to}}</p>
+	  <br />
+
+	  <h4>Using GUI</h4>
+	  <p>Zeppelin has it's own GUI based on web. Browse http://localhost:8080 after start Zeppelin as a daemon by following command</p>
+	  <pre>bin/zeppelin-daemon.sh start</pre>
+	  GUI provides
+	  <ul>
+	    <li>
+	      ZQL editor
+	    </li>
+	    <li>
+	      Visualization
+	    </li>
+	    <li>
+	      Session save/restore
+	    </li>
+	  </ul>
+
+	  <br />
+	  <h4>Using Command Line Interface</h4>
+	  To open interactive CLI session, run
+	  <pre>bin/zeppelin</pre>
+
+	  <p>run with '-h' argument will print available options.</p>
+
+	  <br />
+	  <h4>Play with Zengine</h4>
+	  <p>Zengine is java framework for data analytics. to use it add dependency in your pom.xml</p>
+<pre>
+&ltdependency&gt
+    &ltgroupId&gtcom.nflabs.zeppelin&lt/groupId&gt
+    &ltartifactId&gtzeppelin-zengine&lt/artifactId&gt
+    &ltversion&gt0.1&lt/version&gt
+&lt/dependency&gt
+</pre>
+          <p>Checkout <a href="./docs/zengine-api/index.html">Zengine API</a></p>
+
+	  
+	</div>
       </div>
     </script>
 
@@ -275,22 +326,22 @@ limitations under the License.
       <div class="row">
 	<div class="col-md-12" style="min-height:500px;">
 	  <p>
-	    <h2>Prerequisites</h2>
+	    <h3>Prerequisites</h3>
 	    <ul>
               <li>Java 1.6 or Later</li>
 	      <li>Apache Hadoop</li>
 	    </ul>
 	  </p>
 	  <p>
-	    <h2>Download</h2>
+	    <h3>Download</h3>
 	    To get Zeppelin distribution, {{#link-to 'download'}}download{{/link-to}} a recent release.
 	  </p>
 	  <p>
-	    <h2>Install</h2>
+	    <h3>Install</h3>
 	    Unpack the downloaded Zeppelin distribution.
 	  </p>
 	  <p>
-	    <h2>Configure</h2>
+	    <h3>Configure</h3>
 	    In the distribution, edit the conf/zeppelin-env.sh.
 	    At least, define JAVA_HOME, HADOOP_HOME.
 	    <table class="table">
@@ -329,7 +380,7 @@ limitations under the License.
 	    Place hive-site.xml, core-site.xml, hdfs-site.xml, mapred-site.xml in conf directory.
 	  </p>
 	  <p>
-	    <h2>Start/Stop</h2>
+	    <h3>Start/Stop</h3>
 	    Start Zeppelin
 	    <pre>bin/zeppelin-daemon.sh start</pre>
 	    After successful start, visit <a href="http://localhost:8080">http://localhost:8080</a> with your web browser

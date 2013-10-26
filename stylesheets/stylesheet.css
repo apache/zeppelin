@@ -27,9 +27,12 @@ body {
 
     background-color: #55a3a9;
     color: white;
-
 }
 
+.content-style2 a{
+    color : white;
+    text-decoration:underline;
+}
 
 .rotate90 {    
   -webkit-transform: rotate(90deg); 
