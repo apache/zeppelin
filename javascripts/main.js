@@ -20,7 +20,6 @@ App.ApplicationController = Ember.Controller.extend({
 	// wait until the next run loop to inspect its value and make the call
 	// to track the page view
 	Ember.run.next(function() {
-	    console.log("Changed %o", ga);
 	    // Track the page in Google Analytics
 	    if (!Ember.isNone(ga)) {
 		// Assume that if there is a hash component to the url then we are using
