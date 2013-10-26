@@ -16,6 +16,7 @@ App.Router.map(function(){
 App.ApplicationController = Ember.Controller.extend({
     currentPathChanged: function() {
 	var page;
+	window.scrollTo(0, 0);
 	// window.location gets updated later in the current run loop, so we will
 	// wait until the next run loop to inspect its value and make the call
 	// to track the page view
