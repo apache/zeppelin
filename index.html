@@ -45,6 +45,7 @@
                   <li>{{#link-to 'docZeppelinInstall'}}Install Zeppelin{{/link-to}}</li>
                   <li><a href="./docs/zengine-api/0.1/index.html">Zengine API</a></li>
                   <li>{{#link-to 'zql'}}ZQL{{/link-to}}</li>
+                  <li>{{#link-to 'docZeppelinLibrary'}}Writing Zeppelin Library{{/link-to}}</li>
                 </ul>
               </li>
               <li class="dropdown">
@@ -195,7 +196,7 @@ select * from wc_out limit 10;                               // print first 10 r
 	</div>
       </div>
       <div class="row">
-	<div class="col-md-12" style="min-height:500px;">
+	<div class="col-md-12">
 	  <h3>Unstable release</h3>
 	  <h4>1 November, 2013: Release 0.1 Developer preview #1</h4>
 	  This is devloper preview. With missing features, unknown bugs.
@@ -219,7 +220,7 @@ select * from wc_out limit 10;                               // print first 10 r
       </div>
       <div class="row"></div>
       <div class="row">
-	<div class="col-md-12" style="min-height:500px;">
+	<div class="col-md-12">
 	  Instant download zeppelin libraries
 	  <p>
 	    <h5>ZAN will be implemented from Developer preview #2</h5>
@@ -268,7 +269,7 @@ limitations under the License.
 	</div>
       </div>
       <div class="row">
-	<div class="col-md-12" style="min-height:500px;">
+	<div class="col-md-12">
 	  <h4>What is Zeppelin</h4>
 	  <p>Zeppelin is opensource data analysis environment on top of Hadoop.</p>
 	  <br />
@@ -324,7 +325,7 @@ limitations under the License.
 	</div>
       </div>
       <div class="row">
-	<div class="col-md-12" style="min-height:500px;">
+	<div class="col-md-12">
 	  <p>
 	    <h3>Prerequisites</h3>
 	    <ul>
@@ -389,6 +390,83 @@ limitations under the License.
 	    Stop Zeppelin
 	    <pre>bin/zeppelin-daemon.sh stop</pre>
 	  </p>
+	</div>
+      </div>
+    </script>
+
+    <script type="text/x-handlebars" data-template-name="docZeppelinLibrary">
+      <div class="row content-style3">
+	<div class="col-md-8">
+	  <h3>Zeppelin Library</h3>
+	</div>
+      </div>
+      <div class="row">
+	<div class="col-md-12">
+	  <p>
+	    <h3>What is Zeppelin Library</h3>
+	    Zeppelin library let zeppelin user easily extend it's feature.<br />
+	    It aims easy writing. Even non-developer can write one quickly.<br />
+	    Also optionally library can impliment it's own visulization for data.
+	  </p>
+
+	  <p>
+	    <h3>Zeppelin Archive Network</h3>
+	    Zeppelin library can be published and shared through {{#link-to 'zan'}}ZAN{{/link-to}}
+	  </p>
+	  
+	  <p>
+	    <h3>Basic structure</h3>
+	    Library is reside on local-repository or {{#link-to 'zan'}}ZAN{{/link-to}}.
+	    Local-repository is 'zan-repo' directory under Zeppelin installation path at default.
+	    <pre>
+[LIBRARY_NAME]/[LIBRARY_NAME].erb
+               [LIBRARY_NAME]_[RESOURCES]
+               web/index.erb
+	       web/[WEB_RESOURCES]</pre>
+	       <p>
+		 <b>[LIBRARY_NAME]</b><br />
+		 Creating library is creating a directory with [LIBRARY_NAME].
+		 That simple.		 
+	       </p>
+	       <p>
+		 <b>[LIBRARY_NAME].erb</b><br />
+		 Query template file in ruby erb format.
+		 ZContext is accessible through local varialbe 'z'.
+	       </p>
+	       <p>
+		 <b>[LIBRARY_NAME]_[RESOURCES]</b><br />
+		 Any resource files required by [LIBRARY_NAME].erb.
+		 These files will be added by 'add FILE' or 'add JAR' before execution.
+	       </p>
+	       <p>
+		 <b>web/index.erb</b><br />
+		 Index of web in ruby erb template.
+		 ZWebContext is accessible through local variable 'z'.
+	       </p>
+	       <p>
+		 <b>web/[WEB_RESOURCES]</b><br />
+		 Any js, css, image files required by web/index.erb.
+	       </p>
+	  </p>
+	  <p>
+	    <h3>Call Library</h3>
+	    Library can be called in Zeppelin GUI or CLI by ZQL syntax.<br />
+	    <pre>[LIBRARY_NAME](paramName1=paramValue1, paramName2=paramValue2 ...) [argument]</pre>
+	    Paramter part and argument part are optional.<br />
+	    If you're using {{#link-to 'zengine'}}Zengine{{/link-to}}, library can be called using 'L' class.
+	  </p>
+	  <p>
+	    <h3>ZContext</h3>
+	    z.in - Input table name<br />
+	    z.out - Output table name<br />
+	    z.arg - library argument<br />
+	    z.param(paramName) - get parameter value by parameterName
+	  </p>
+	  <p>
+	    <h3>ZWebContext</h3>
+	    z.result - Result data of execution
+	  </p>
+
 	</div>
       </div>
     </script>
