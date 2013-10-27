@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.zengine;
 
+import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -12,6 +13,8 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.zengine.Q;
@@ -23,15 +26,35 @@ import junit.framework.TestCase;
 
 public class ZTest extends TestCase {
 
+	private File tmpDir;
+
+
 	protected void setUp() throws Exception {
+		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
+		tmpDir.mkdir();
+		System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_LOCAL_WAREHOUSE.getVarName(), "file://"+tmpDir.getAbsolutePath());
+
 		Z.configure();
-		super.setUp();
 	}
 
 	protected void tearDown() throws Exception {
 		super.tearDown();
+		delete(tmpDir);
 	}
-
+	
+	private void delete(File file){
+		if(file.isFile()) file.delete();
+		else if(file.isDirectory()){
+			File [] files = file.listFiles();
+			if(files!=null && files.length>0){
+				for(File f : files){
+					delete(f);
+				}
+			}
+			file.delete();
+		}
+	}
+	
 	
 	public void testPipeGetQuery() throws ZException{
 
@@ -47,6 +70,7 @@ public class ZTest extends TestCase {
 		ZeppelinConfiguration conf = new ZeppelinConfiguration();
 		Z.configure(conf);
 		
+		new Q("drop table if exists test").withName(null).execute();		
 		new Q("create table if not exists test(a INT, b STRING)").withName(null).execute();
 		Result results = new Q("show tables").withName(null).execute().result();
 		assertEquals("test", results.getRows().get(0)[0]);
