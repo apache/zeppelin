@@ -3,10 +3,25 @@
 
 html,
 body {
-  height: 100%;
-  /* The html and body elements cannot have any padding or margin. */
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 0;
+    margin: 0;
 }
 
+body .container{
+    margin-bottom:15px;
+}
+
+footer{
+    position:fixed;
+    bottom:0;
+    z-index: 10;
+    height: 15px;
+    width:100%;
+}
 .zeppelin-color {
     color : #3071a9;
 }
