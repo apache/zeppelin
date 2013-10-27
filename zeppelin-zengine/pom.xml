@@ -11,7 +11,19 @@
   <packaging>jar</packaging>
   <version>${zeppelin.version}</version>
   <name>zeppelin-zengine</name>
-  <url>http://nflabs.github.io/zeppelin/#/zengine</url>
+  <description>Zengine is java framework for data analysis on Hadoop. see http://nflabs.github.io/zeppelin/#/zengine</description>
+  <url>http://nflabs.github.io/zeppelin</url>
+
+  <developers>
+    <developer>
+      <id>moon</id>
+      <name>Lee moon soo</name>
+      <organization>NFLabs</organization>
+      <organizationUrl>http://www.nflabs.com</organizationUrl>
+    </developer>
+  </developers>	  
+	  
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>

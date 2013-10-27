@@ -28,7 +28,13 @@
 	<name>zeppelin</name>
 	<description>Zeppelin project</description>
 	<url>http://nflabs.github.io/zeppelin</url>
-	
+
+	<parent>
+	  <groupId>org.sonatype.oss</groupId>
+	  <artifactId>oss-parent</artifactId>
+	  <version>7</version>
+	</parent>	
+
 	<licenses>
 	  <license>
 	    <name>The Apache Software License, Version 2.0</name>
@@ -39,7 +45,19 @@
 
 	<scm>
 	  <url>http://www.github.com/NFLabs/zeppelin</url>
+	  <connection>scm:git:git:git@github.com:NFLabs/zeppelin.git</connection>
+	  <developerConnection>scm:git:git@github.com:NFLabs/zeppelin.git</developerConne
 	</scm>
+
+	<developers>
+  	  <developer>
+	    <id>moon</id>
+	    <name>Lee moon soo</name>
+	    <organization>NFLabs</organization>
+	    <organizationUrl>http://www.nflabs.com</organizationUrl>
+	  </developer>
+	</developers>	  
+
 
 	<modules>
 		<module>zeppelin-zengine</module>
@@ -153,6 +171,17 @@
 		</execution>
               </executions>
 	    </plugin>
+
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-scm-plugin</artifactId>
+              <version>1.8.1</version>
+              <configuration>
+		<connectionType>developerConnection</connectionType>
+		<scmVersion>branch-0.1</scmVersion>
+		<scmVersionType>branch</scmVersionType>
+              </configuration>
+            </plugin>
 	  </plugins>
         </build>
 

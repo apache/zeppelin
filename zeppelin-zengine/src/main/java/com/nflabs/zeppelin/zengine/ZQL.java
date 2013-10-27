@@ -16,49 +16,98 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 
 import com.nflabs.zeppelin.util.Util;
-
+/**
+ * class ZQL parses Zeppelin Query Language (http://nflabs.github.io/zeppelin/#zql) and generate logical plan
+ * @author moon
+ *
+ */
 public class ZQL {
 	String [] op = new String[]{";", "|"};
 	StringBuilder sb = new StringBuilder();
-	
+
+	/**
+	 * Constructor
+	 * @throws ZException
+	 */
 	public ZQL() throws ZException{
 		Z.configure();
 	}
-	
+
+	/**
+	 * Load ZQL statements from string
+	 * @param zql Zeppelin query language statements
+	 * @throws ZException
+	 */
 	public ZQL(String zql) throws ZException{
 		Z.configure();
 		append(zql);
 	}
 	
+	
+	/**
+	 * Load ZQL statements from URI location
+	 * @param uri URI location of text resource which contains ZQL
+	 * @throws IOException
+	 * @throws ZException
+	 */
 	public ZQL(URI uri) throws IOException, ZException{
 		Z.configure();
 		load(uri);
 	}
 	
+	/**
+	 * Load ZQL statements from File
+	 * @param file File contains text representation of ZQL
+	 * @throws ZException
+	 * @throws IOException
+	 */
 	public ZQL(File file) throws ZException, IOException{
 		Z.configure();
 		load(file);
 	}
 	
+	/**
+	 * Load ZQL statements from input stream
+	 * @param ins input stream which streams ZQL
+	 * @throws IOException
+	 * @throws ZException
+	 */
 	public ZQL(InputStream ins) throws IOException, ZException{
 		Z.configure();
 		load(ins);
 	}
 	
 
-
+	/**
+	 * Load ZQL statements from URI location
+	 * @param uri URI location of text resource which contains ZQL
+	 * @throws IOException
+	 * @throws ZException
+	 */
 	public void load(URI uri) throws IOException{
 		FSDataInputStream ins = Z.fs().open(new Path(uri));
 		load(ins);
 		ins.close();
 	}
 	
+	/**
+	 * Load ZQL statements from File
+	 * @param file File contains text representation of ZQL
+	 * @throws ZException
+	 * @throws IOException
+	 */
 	public void load(File file) throws IOException{ 
 		FileInputStream ins = new FileInputStream(file);
 		load(ins);
 		ins.close();
 	}
 	
+	/**
+	 * Load ZQL statements from input stream
+	 * @param ins input stream which streams ZQL
+	 * @throws IOException
+	 * @throws ZException
+	 */
 	public void load(InputStream ins) throws IOException{
 		BufferedReader in = new BufferedReader(new InputStreamReader(ins));
 		String line = null;
@@ -67,15 +116,26 @@ public class ZQL {
 		}		
 	}
 	
-	
+	/**
+	 * Append ZQL statement
+	 * @param s statmetn to add
+	 */
 	public void append(String s){
 		sb.append(s);
 	}
 	
+	/**
+	 * Clear ZQL statments
+	 */
 	public void clear(){
 		sb = new StringBuilder();
 	}
 	
+	/**
+	 * Compile ZQL statements and return logical plan
+	 * @return List of Z. Each Z represent single statement. 
+	 * @throws ZQLException
+	 */
 	public List<Z> compile() throws ZQLException{
 		return compileZql(sb.toString());
 	}

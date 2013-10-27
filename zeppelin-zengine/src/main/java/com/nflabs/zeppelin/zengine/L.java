@@ -33,7 +33,7 @@ import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.result.Result;
 
 /**
- * L stands for Library
+ * L stands for Library(aks UDF). This class load and execute Zeppelin User Defined Functions
  * @author moon
  *
  */
@@ -47,12 +47,20 @@ public class L extends Q{
 	transient private FileSystem fs;
 	transient private boolean initialized = false;
 	
-	
+	/**
+	 * @param libName library name to load and run
+	 * @throws ZException
+	 */
 	public L(String libName) throws ZException{
 		this(libName, null);
 	}
-	public L(String libName, String query) throws ZException{
-		super(query);
+	/**
+	 * @param libName library name to laod and run
+	 * @param arg
+	 * @throws ZException
+	 */
+	public L(String libName, String arg) throws ZException{
+		super(arg);
 		this.libName = libName;
 		initialize();
 	}
@@ -101,6 +109,12 @@ public class L extends Q{
 		initialized = true;
 	}
 
+	/**
+	 * Get query to be executed.
+	 * Each library has query template file. and returns evaluated value.
+	 * 
+	 * @return query to be executed
+	 */
 	@Override
 	public String getQuery() throws ZException {
 		initialize();
@@ -170,7 +184,11 @@ public class L extends Q{
 			throw new ZException(e);
 		}
 	}
-	
+
+	/**
+	 * Check if this library has web capabilities.
+	 * 
+	 */
 	@Override
 	public boolean isWebEnabled(){
 		Path resourcePath = new Path(webDir.toUri()+"/index.erb");
@@ -186,6 +204,9 @@ public class L extends Q{
 		}
 	}
 	
+	/**
+	 * Get resources to be required to run this library
+	 */
 	@Override
 	public List<URI> getResources() throws ZException {
 		List<URI> resources = new LinkedList<URI>();
