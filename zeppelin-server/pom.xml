@@ -4,12 +4,12 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>com.nflabs.zeppelin</groupId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
   </parent>
   <groupId>com.nflabs.zeppelin</groupId>
   <artifactId>zeppelin-server</artifactId>
   <packaging>jar</packaging>
-  <version>0.1-SNAPSHOT</version>
+  <version>${zeppelin.version}</version>
   <name>zeppelin-server</name>
   <url>http://www.nflabs.com</url>
   <dependencies>

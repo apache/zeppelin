@@ -4,7 +4,7 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>com.nflabs.zeppelin</groupId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
   </parent>
   <groupId>com.nflabs.zeppelin</groupId>
   <artifactId>zeppelin-zengine</artifactId>
