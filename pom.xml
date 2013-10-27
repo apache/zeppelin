@@ -26,6 +26,20 @@
 	<packaging>pom</packaging>
 	<version>0.1-SNAPSHOT</version>
 	<name>zeppelin</name>
+	<description>Zeppelin project</description>
+	<url>http://nflabs.github.io/zeppelin</url>
+	
+	<licenses>
+	  <license>
+	    <name>The Apache Software License, Version 2.0</name>
+	    <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+	    <distribution>repo</distribution>
+	  </license>
+	</licenses>
+
+	<scm>
+	  <url>http://www.github.com/NFLabs/zeppelin</url>
+	</scm>
 
 	<modules>
 		<module>zeppelin-zengine</module>
