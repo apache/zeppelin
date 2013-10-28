@@ -19,7 +19,12 @@
       <directory>bin</directory>
     </fileSet>
     <fileSet>
-      <directory>conf</directory>
+      <includes>
+        <include>conf/configuration.xsl</include>
+        <include>conf/log4j.properties</include>
+        <include>conf/zeppelin-env.sh.template</include>
+        <include>conf/zeppelin-site.xml.template</include>
+      </includes>
     </fileSet>
 
     <fileSet>
