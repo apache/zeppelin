@@ -107,5 +107,4 @@ public class LTest extends TestCase {
 		assertEquals("HELLO HTML", IOUtils.toString(ins, "utf8"));
 	}
 	
-	
 }

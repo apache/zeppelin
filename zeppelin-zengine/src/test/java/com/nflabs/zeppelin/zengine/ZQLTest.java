@@ -1,11 +1,16 @@
 package com.nflabs.zeppelin.zengine;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.util.MiniHiveCluster;
 import com.nflabs.zeppelin.zengine.Z;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQL;
@@ -15,8 +20,7 @@ import junit.framework.TestCase;
 
 public class ZQLTest extends TestCase {
 	private File tmpDir;
-
-
+												
 	protected void setUp() throws Exception {
 		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
 		tmpDir.mkdir();
@@ -111,5 +115,5 @@ public class ZQLTest extends TestCase {
 		assertEquals(1, z.size());
 		assertEquals("CREATE VIEW "+z.get(0).name()+" AS select * from ("+z.get(0).prev().name()+") a limit 10", z.get(0).getQuery());
 	}
-	
+
 }
