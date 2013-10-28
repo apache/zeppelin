@@ -11,6 +11,8 @@ App.Router.map(function(){
     this.route("docZeppelinGettingstarted", { path:"/doc/zeppelin/getting_started"});
     this.route("docZeppelinInstall", { path:"/doc/zeppelin/install"});
     this.route("docZeppelinLibrary", { path:"/doc/zeppelin/library"});
+    this.route("mailinglist", { path:"/mailinglist"});
+    this.route("howtocontribute", { path:"/development/howtocontribute"});
 });
 
 
