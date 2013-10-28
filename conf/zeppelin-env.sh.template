@@ -1,14 +1,12 @@
 #!/bin/bash
 
-# JAVA_HOME=
-# HADOOP_HOME=
+# export JAVA_HOME=
+# export HADOOP_HOME=            # Required except for setting with Hive Server
 
-
-#   ZEPPELIN_PORT       Zeppelin port number
-#   ZEPPELIN_CONF_DIR   Alternate zeppelin conf dir. Default is ${HBASE_HOME}/conf.
-#   ZEPPELIN_LOG_DIR    Where log files are stored.  PWD by default.
-#   ZEPPELIN_PID_DIR    The pid files are stored. /tmp by default.
-#   ZEPPELIN_DATA_DIR    The pid files are stored. /tmp by default.
-#   ZEPPELIN_IDENT_STRING   A string representing this instance of zeppelin. $USER by default
-#   ZEPPELIN_NICENESS The scheduling priority for daemons. Defaults to 0.
-#   ZEPPELIN_JAVA_OPTS
+# export ZEPPELIN_CONF_DIR       # Alternate zeppelin conf dir. Default is ${HBASE_HOME}/conf.
+# export ZEPPELIN_LOG_DIR        # Where log files are stored.  PWD by default.
+# export ZEPPELIN_PID_DIR        # The pid files are stored. /tmp by default.
+# export ZEPPELIN_DATA_DIR       # The pid files are stored. /tmp by default.
+# export ZEPPELIN_IDENT_STRING   # A string representing this instance of zeppelin. $USER by default
+# export ZEPPELIN_NICENESS       # The scheduling priority for daemons. Defaults to 0.
+# export ZEPPELIN_JAVA_OPTS      # Additional jvm option

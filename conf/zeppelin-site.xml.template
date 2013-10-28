@@ -21,9 +21,33 @@
 <configuration>
 
 <property>
+  <name>zeppelin.session.dir</name>
+  <value>sessions</value>
+  <description>Session directory</description>
+</property>
+
+<property>
+  <name>zeppelin.zan.localrepo</name>
+  <value>zan-repo</value>
+  <description>ZAN local repository</description>
+</property>
+
+<property>
+  <name>zeppelin.local.warehouse</name>
+  <value>data</value>
+  <description>Hive warehouse directory for standalone mode</description>
+</property>
+
+<property>
   <name>hive.driver.class</name>
   <value>org.apache.hadoop.hive.jdbc.HiveDriver</value>
   <description>Hive driver class</description>
+</property>
+
+<property>
+  <name>hive.connection.uri</name>
+  <value></value>
+  <description>Hive JDBC connection uri</description>
 </property>
 
 </configuration>
