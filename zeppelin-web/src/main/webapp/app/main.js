@@ -124,9 +124,10 @@ $(document).ready(function(){
 
 		    var zql = this.get('zql');
 		    zeppelin.zql.set(sessionId, "", zql, function(c, d){
-			if(c==404){
+			if(c!=200){
 			    zeppelin.alert("Error: Invalid Session", "#alert");
 			} else {
+			    this.set('dirty', false);
 			    zeppelin.zql.run(sessionId, function(c, d){
 				if(c==200){
 				    controller.send('loadSession', sessionId);

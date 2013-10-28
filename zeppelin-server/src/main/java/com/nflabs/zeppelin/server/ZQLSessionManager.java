@@ -143,24 +143,6 @@ public class ZQLSessionManager implements JobListener {
 		return s;
 	}
 
-	@Override
-	public void statusChange(Job job) {
-		try {
-			if(job.getStatus()==Status.FINISHED){
-				synchronized(active){
-					active.remove(job.getId());
-				}
-			}
-			if(job.getStatus()==Status.ERROR && job.getException()!=null){
-				logger.error("Session error", job.getException());
-			} 
-			logger.info("Session "+job.getId()+" status changed "+job.getStatus());
-			persist((ZQLSession) job);
-		} catch (IOException e) {
-			logger.error("Can't persist session "+job.getId(), e);
-		}
-		
-	}
 
 	
 	public TreeMap<String, ZQLSession> find(Date from, Date to, int max){
@@ -246,6 +228,30 @@ public class ZQLSessionManager implements JobListener {
 		out.close();
 	}
 	
+	
+	@Override
+	public void statusChange(Job job) {
+		try {
+			if(job.getStatus()==Status.FINISHED){
+				synchronized(active){
+					active.remove(job.getId());
+				}
+			} else {
+				synchronized(active){
+					active.put(job.getId(), (ZQLSession) job);
+				}
+			}
+			if(job.getStatus()==Status.ERROR && job.getException()!=null){
+				logger.error("Session error", job.getException());
+			} 
+			logger.info("Session "+job.getId()+" status changed "+job.getStatus());
+			persist((ZQLSession) job);
+		} catch (IOException e) {
+			logger.error("Can't persist session "+job.getId(), e);
+		}
+		
+	}
+
 	private ZQLSession load(Path path) throws IOException{
 		if(fs.isFile(path)==false){
 			return null;
