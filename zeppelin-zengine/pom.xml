@@ -133,19 +133,6 @@
 		    </exclusions> 
     </dependency>
     
-    <dependency>
-            <groupId>org.apache.hive</groupId>
-            <artifactId>hive-builtins</artifactId>
-            <version>${hive.version}</version>
-            <scope>test</scope>
-            <exclusions>
-		        <exclusion>
-		            <groupId>org.slf4j</groupId>
-		            <artifactId>*</artifactId>
-		        </exclusion>
-		    </exclusions> 
-    </dependency>
-    
      <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-test</artifactId>
