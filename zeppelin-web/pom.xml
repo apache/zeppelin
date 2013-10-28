@@ -6,7 +6,7 @@
     <parent>
       <artifactId>zeppelin</artifactId>
       <groupId>com.nflabs.zeppelin</groupId>
-      <version>0.1</version>
+      <version>0.2-SNAPSHOT</version>
     </parent>
 
     <groupId>com.nflabs.zeppelin</groupId>
