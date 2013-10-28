@@ -24,7 +24,7 @@
 	<groupId>com.nflabs.zeppelin</groupId>
 	<artifactId>zeppelin</artifactId>
 	<packaging>pom</packaging>
-	<version>0.1</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<name>zeppelin</name>
 	<description>Zeppelin project</description>
 	<url>http://nflabs.github.io/zeppelin</url>
@@ -67,7 +67,7 @@
 	</modules>
 
         <properties>
-		<zeppelin.version>0.1</zeppelin.version>
+		<zeppelin.version>0.1.0-SNAPSHOT</zeppelin.version>
                 <java.version>1.6</java.version>
                 <hadoop.version>1.0.4</hadoop.version>
                 <hive.version>0.9.0</hive.version>
