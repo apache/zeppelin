@@ -10,7 +10,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.util.MiniHiveCluster;
 import com.nflabs.zeppelin.zengine.Z;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQL;
