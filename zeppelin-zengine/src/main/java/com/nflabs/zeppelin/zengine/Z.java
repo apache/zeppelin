@@ -19,9 +19,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.jdbc.HiveConnection;
 import org.apache.log4j.Logger;
 
+import antlr.Utils;
+
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.result.Result;
+import com.nflabs.zeppelin.util.Util;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 
@@ -40,9 +43,13 @@ public abstract class Z {
 	boolean executed = false;
 	int maxResult = 10000;
 	boolean webEnabled = false;
+	private String name;
+	private boolean table;
+	transient static final String NAME_PREFIX="zp_";
 	
 	protected Z(){
 		this.id = Integer.toString(hashCode());
+		name = NAME_PREFIX + this.hashCode();
 	}
 
 	/**
@@ -127,12 +134,47 @@ public abstract class Z {
 	}
 	
 	/**
-	 * Name of this Z instance data. 
-	 * It is mapped to table name or view name.
-	 * Also can be null
-	 * @return name
+	 * Get name. name can be null.
+	 * name is table(view) name of result being saved
 	 */
-	public abstract String name(); // table or view name
+	public String name(){
+		return name;
+	}
+	
+	
+	/**
+	 * Set output table(view) name
+	 * Execution of query will be saved in to this table(view)
+	 * If name is null, out is not saved in the table(view).
+	 * By default, name is automatically generated.
+	 * @param name null if you don't want save the result into table(view). else the name of table(view) want to save
+	 * @return
+	 */
+	public Z withName(String name){
+		this.name = name;
+		return this;
+	}
+	
+	/**
+	 * if name is set (by withName() method), execution result will be saved into table(view).
+	 * this method controlls if table is used or view is used to save the result.
+	 * by default view is used.
+	 * @param table true for saving result into the table. false for saving result into view. default false
+	 * @return
+	 */
+	public Z withTable(boolean table){
+		this.table  = table;
+		return this;
+	}
+	
+	/**
+	 * Check withTable setting
+	 * @return
+	 */
+	public boolean isTable(){
+		return table;
+	}
+
 	
 	/**
 	 * Get HiveQL compatible query to execute
@@ -186,8 +228,18 @@ public abstract class Z {
 		initialize();
 		if(executed==false) return;
 		
+		if(name()!=null){
+			if(table==true){
+				executeQuery("DROP TABLE if exists "+name(), maxResult);
+			} else {
+				executeQuery("DROP VIEW if exists "+name(), maxResult);
+			}
+		}
+		
 		String q = getReleaseQuery();
-		executeQuery(q, maxResult);
+		if(q!=null){
+			executeQuery(q, maxResult);
+		}
 		
 		if(prev()!=null){
 			prev().release();
@@ -207,7 +259,24 @@ public abstract class Z {
 			prev().execute();
 		}		
 		String query = getQuery();
-		lastQueryResult = executeQuery(query, maxResult);
+		String[] queries = Util.split(query, ';');
+		for(int i=0; i<queries.length; i++){
+			String q = queries[i];
+			if(i==queries.length-1){
+				String tableCreation = null;
+				if(name()==null){
+					tableCreation = "";
+				} else {
+					if(isTable()){
+						tableCreation = "CREATE TABLE "+name()+" AS ";
+					} else {
+						tableCreation = "CREATE VIEW "+name()+" AS ";
+					}
+				}
+				q = tableCreation + q;
+			}
+			lastQueryResult = executeQuery(q, maxResult);
+		}
 		webEnabled = isWebEnabled();
 		executed = true;
 		return this;
@@ -384,5 +453,6 @@ public abstract class Z {
 	public static FileSystem fs(){
 		return fs;
 	}
-	
+
+
 }

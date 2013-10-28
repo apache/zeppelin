@@ -10,10 +10,10 @@ public class Util {
 	}
 	
 	public static String [] split(String str, String [] splitters, boolean includeSplitter){
-		String escapeSeq = "\"',;${}";
+		String escapeSeq = "\"',;<%>";
 		char escapeChar = '\\';
-		String [] blockStart = new String[]{ "\"", "'", "${" };
-		String [] blockEnd = new String[]{ "\"", "'", "}" };
+		String [] blockStart = new String[]{ "\"", "'", "<%" };
+		String [] blockEnd = new String[]{ "\"", "'", "%>" };
 		
 		return split(str, escapeSeq, escapeChar, blockStart, blockEnd, splitters, includeSplitter);
 		

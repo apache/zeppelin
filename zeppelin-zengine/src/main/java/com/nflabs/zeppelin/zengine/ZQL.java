@@ -22,7 +22,7 @@ import com.nflabs.zeppelin.util.Util;
  *
  */
 public class ZQL {
-	String [] op = new String[]{";", "|"};
+	String [] op = new String[]{";", "|", ">>", ">"};
 	StringBuilder sb = new StringBuilder();
 
 	/**
@@ -172,6 +172,22 @@ public class ZQL {
 				throw new ZQLException(currentOp+" can not be at the beginning");
 			}
 			
+			// Current operator is redirect
+			if(op[2].equals(currentOp)){ // redirect append
+				throw new ZQLException("redirection (append) not implemented");
+			} else if(op[3].equals(currentOp)){ // redirect overwrite
+				if(currentZ!=null){
+					RedirectStatement red = new RedirectStatement(stmt);
+					currentZ.withName(red.getName());
+					currentZ.withTable(red.isTable());
+					currentOp = null;
+					continue;
+				} else {
+					throw new ZQLException("Can not redirect empty");
+				}				
+			}
+			
+			
 			// check if it is L statment --
 			Z z= null;
 			try {
@@ -205,7 +221,7 @@ public class ZQL {
 			} else if(currentOp.equals(op[1])){ // pipe
 				currentZ = currentZ.pipe(z);
 				currentOp = null;
-			}			
+			}
 		}
 		if(currentZ!=null){
 			zList.add(currentZ);

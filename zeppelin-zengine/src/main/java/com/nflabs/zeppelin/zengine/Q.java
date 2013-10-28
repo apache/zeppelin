@@ -1,23 +1,15 @@
 package com.nflabs.zeppelin.zengine;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.StringReader;
 import java.net.URI;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -25,11 +17,8 @@ import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.log4j.Logger;
-import org.datanucleus.util.StringUtils;
 
-import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.result.Result;
 
 /**
@@ -38,17 +27,14 @@ import com.nflabs.zeppelin.result.Result;
  *
  */
 public class Q extends Z{
-	private String name;
 	protected String query;
 	Map<String, Object> params = new HashMap<String, Object>();
 	private List<URI> resources = new LinkedList<URI>();
-	private boolean table;
 	Result cachedResultDataObject;
 	
 	transient static final String ARG_VAR_NAME="arg";
 	transient static final String INPUT_VAR_NAME="in";
 	transient static final String OUTPUT_VAR_NAME="out";
-	transient static final String NAME_PREFIX="zp_";
 	
 	/**
 	 * Create with give query. Query is signle HiveQL statment.
@@ -59,7 +45,7 @@ public class Q extends Z{
 	public Q(String query) throws ZException{
 		super();
 		this.query = query;
-		name = NAME_PREFIX + this.hashCode();
+		
 		initialize();
 	}
 	
@@ -88,38 +74,9 @@ public class Q extends Z{
 		return this;
 	}
 	
-	/**
-	 * Set output table(view) name
-	 * Execution of query will be saved in to this table(view)
-	 * If name is null, out is not saved in the table(view).
-	 * By default, name is automatically generated.
-	 * @param name null if you don't want save the result into table(view). else the name of table(view) want to save
-	 * @return
-	 */
-	public Q withName(String name){
-		this.name = name;
-		return this;
-	}
+
 	
-	/**
-	 * if name is set (by withName() method), execution result will be saved into table(view).
-	 * this method controlls if table is used or view is used to save the result.
-	 * by default view is used.
-	 * @param table true for saving result into the table. false for saving result into view. default false
-	 * @return
-	 */
-	public Q withTable(boolean table){
-		this.table  = table;
-		return this;
-	}
-	
-	/**
-	 * Check withTable setting
-	 * @return
-	 */
-	public boolean isTable(){
-		return table;
-	}
+
 		
 	/**
 	 * Add a paramter to pass template environment
@@ -188,18 +145,8 @@ public class Q extends Z{
 		String q = getQuery(erb, zContext);
 		try {ins.close();} catch (IOException e) {}
 		
-		String tableCreation = null;
-		if(name==null){
-			tableCreation = "";
-		} else {
-			if(table){
-				tableCreation = "CREATE TABLE "+name+" AS ";
-			} else {
-				tableCreation = "CREATE VIEW "+name+" AS ";
-			}
-		}
 		
-		return tableCreation+q;
+		return q;
 	}
 	
 	/**
@@ -241,14 +188,7 @@ public class Q extends Z{
 		}
 	}
 	
-	/**
-	 * Get name. name can be null.
-	 * name is table(view) name of result being saved
-	 */
-	@Override
-	public String name(){
-		return name;
-	}
+
 	
 	
 	/**
@@ -256,12 +196,7 @@ public class Q extends Z{
 	 */
 	@Override
 	public String getReleaseQuery() throws ZException {
-		if(name==null) return null;
-		if(table==true){
-			return "DROP TABLE if exists "+name;
-		} else {
-			return "DROP VIEW if exists "+name;
-		}
+		return null;
 	}
 
 	/**

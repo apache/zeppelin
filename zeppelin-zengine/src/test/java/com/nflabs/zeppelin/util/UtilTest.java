@@ -29,5 +29,11 @@ public class UtilTest extends TestCase {
 		assertEquals(1, token.length);
 		assertEquals("show tables", token[0]);
 	}
+	
+	public void testEscapeTemplate(){
+		String[] token = Util.split("select * from <%=table%> limit 1 > output", '>');
+		assertEquals(2, token.length);
+		assertEquals("output", token[1]);
+	}
 
 }
