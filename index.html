@@ -172,19 +172,49 @@ result.write(System.out);                                     // Print result to
 	</div>
       </div>
       <div class="row">
-	<div class="col-md-10">
-	  <h6>Word Count</h6>
-	  <h5>
-	    <pre>
+	<div class="col-md-11">
+	  <h3>Introducing ZQL</h3>
+	  ZQL is very simple but powerful SQL like language based on HiveQL.
+	  ZQL can be run from Zeppelin GUI or CLI.
+	  
+	  <h3>ZQL syntax</h3>
+	  <pre>
+ZQLStmt            : HiveQLStmt | LibraryStmt | ZQLStmt (PipeOperator ZQLStmt)* | ZQLStmt RedirectOperator RedirectTargetStmt
+HiveQLStmt         : HIVE_QUERY
+LibraryStmt        : LIBRARY_NAME(paramName1=paramValue1, paramName2=paramValue2, ...)? (ARGUMENT)?
+RedirectTargetStmt : (table|view)? TABLE_NAME
+PipeOperator       : |
+RedirectOperator   : ></pre>
+          
+          <h3>Template</h3>
+	  ZQLStmt is also erb template. In ZQLStmt ZContext is provided by local variable 'z'.
+
+	  <h3>ZContext</h3>
+	    z.in - Input table name<br />
+	    z.out - Output table name<br />
+	    z.arg - library argument<br />
+	    z.param(paramName) - get parameter value by parameterName
+
+          <h3>Examples</h3>
+          <h5>Basic query</h5>
+	  <pre>select text from myTable</pre>
+	  <h5>Basic query with pipe</h5>
+	  <pre>select text from myTable | select * from <%= z.in %> limit 10</pre>
+	  <h5>Redirect (default behavior)</h5>
+	  By default, redirect create view.
+	  <pre>select text from myTable > ouputView</pre>
+	  <h5>Redirect (specifiying table|view)</h5>
+	  <pre>select text from myTable > table outputTable</pre>
+	  <h5>Library</h5>
+	  <pre>select text from myTable | wordcount</pre>
+	  <h5>Library with parameter</h5>
+	  <pre>select text from myTable | wordcount(limit=5)</pre>
+	  <h5>Library with parameter and argument</h5>
+	  <pre>select text from myTable | wordcount(limit=5) logscale</pre>
+	  <h5>Multiple statement</h5>
+	  <pre>
 select text from myTable | wordcount > wc_out;               // load | process > export
-select * from wc_out limit 10;                               // print first 10 rows of wc_out
-            </pre>
-          </h5>
-
-	  You can run ZQL through Zepplin GUI or Zeppelin Cli.
-
-
-
+select * from wc_out limit 10;                               // print first 10 rows of wc_out</pre>
 	</div>
       </div>
     </script>
