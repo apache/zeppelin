@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -413,7 +414,11 @@ public abstract class Z {
 	}
 	
 	private static Connection getConnection() throws SQLException{
-		return new HiveConnection(hiveConf());
+		if(conf().getString(ConfVars.HIVE_CONNECTION_URI)==null){
+			return new HiveConnection(hiveConf());
+		} else {
+			return DriverManager.getConnection(conf().getString(ConfVars.HIVE_CONNECTION_URI));
+		}
 	}
 	
 	private static HiveConf hiveConf(){
