@@ -40,6 +40,13 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-io</artifactId>
       <version>1.3.2</version>
+            <exclusions>
+		        <exclusion>
+		            <groupId>org.slf4j</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+		    </exclusions> 
+      
     </dependency>
     
     <dependency>
@@ -58,6 +65,12 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-jdbc</artifactId>
       <version>${hive.version}</version>
+	    <exclusions>
+	        <exclusion>
+	            <groupId>org.slf4j</groupId>
+	            <artifactId>*</artifactId>
+	        </exclusion>
+	    </exclusions>
     </dependency>
     
     
@@ -73,6 +86,84 @@
       <version>1.1.7</version>
     </dependency>
 
+    <!-- test -->
+    <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-cli</artifactId>
+            <version>${hive.version}</version>
+            <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-exec</artifactId>
+            <version>${hive.version}</version>
+            <scope>test</scope>
+	        <exclusions>
+		        <exclusion>
+		            <groupId>org.slf4j</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+		    </exclusions>
+    </dependency>
+    
+     <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-serde</artifactId>
+            <version>${hive.version}</version>
+            <scope>test</scope>
+	        <exclusions>
+		        <exclusion>
+		            <groupId>org.slf4j</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+		    </exclusions>            
+    </dependency>
+
+     <dependency>
+            <groupId>org.apache.hive</groupId>
+            <artifactId>hive-shims</artifactId>
+            <version>${hive.version}</version>
+            <scope>test</scope>
+            <exclusions>
+		        <exclusion>
+		            <groupId>org.slf4j</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+		    </exclusions> 
+    </dependency>
+    
+     <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-test</artifactId>
+            <version>${hadoop.version}</version>
+            <scope>test</scope>
+            <exclusions>
+		        <exclusion>
+		            <groupId>org.slf4j</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+		    </exclusions> 
+            
+    </dependency>                       
+        
+     <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase</artifactId>
+            <version>${hbase.version}</version>
+            <scope>test</scope>
+            <exclusions>
+	            <exclusion>
+	                <groupId>org.mortbay.jetty</groupId>
+	                <artifactId>*</artifactId>
+	            </exclusion>
+		        <exclusion>
+		            <groupId>org.slf4j</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+		    </exclusions>              
+    </dependency>    
+    
   </dependencies>
 
   <build>

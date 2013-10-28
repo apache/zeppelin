@@ -35,6 +35,12 @@
       <groupId>com.nflabs.zeppelin</groupId>
       <artifactId>zeppelin-zengine</artifactId>
       <version>${zeppelin.version}</version>
+		<exclusions>
+	        <exclusion>
+	        	<groupId>org.slf4j</groupId>
+	        	<artifactId>*</artifactId>
+	    	</exclusion>
+	    </exclusions>
     </dependency>
     <dependency>
       <groupId>com.nflabs.zeppelin</groupId>
@@ -56,11 +62,23 @@
 	        <groupId>org.apache.cxf</groupId>
 	        <artifactId>cxf-rt-transports-http-jetty</artifactId>
 	        <version>${cxf.version}</version>
+	        <exclusions>
+	            <exclusion>
+	                <groupId>org.eclipse.jetty</groupId>
+	                <artifactId>*</artifactId>
+	            </exclusion>
+            </exclusions>
 	    </dependency>
 	    <dependency>
 	        <groupId>org.apache.cxf</groupId>
 	        <artifactId>cxf-api</artifactId>
 	        <version>${cxf.version}</version>
+	        <exclusions>
+	            <exclusion>
+	                <groupId>org.eclipse.jetty</groupId>
+	                <artifactId>*</artifactId>
+	            </exclusion>
+            </exclusions>
 	    </dependency>
     
 	<dependency>

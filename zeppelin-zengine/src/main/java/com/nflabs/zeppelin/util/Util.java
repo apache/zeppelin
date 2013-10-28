@@ -97,7 +97,7 @@ public class Util {
 			}
 		}
 		if(curString.length()>0)
-			splits.add(curString);
+			splits.add(curString.trim());
 		return splits.toArray(new String[]{});
 		
 	}

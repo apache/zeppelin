@@ -19,8 +19,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.jdbc.HiveConnection;
 import org.apache.log4j.Logger;
 
-import antlr.Utils;
-
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.result.Result;
