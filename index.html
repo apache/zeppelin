@@ -143,8 +143,13 @@
 	  <h3>Zengine</h3>
 	</div>
       </div>
+
+
+
       <div class="row">
 	<div class="col-md-10">
+	  <h3>Zengine is java framework for data analytics. </h3>
+	  <h4>Examples</h4>
 	  <h6>Word Count</h6>
 	  <h5>
 	    <pre>
@@ -161,6 +166,39 @@ result.write(System.out);                                     // Print result to
             </pre>
           </h5>
 	  Checkout <a href="./docs/zengine-api/0.1/index.html">Zengine API</a> doc.
+	  <br />
+	  <br />
+	  <h4>Maven dependency</h4>
+	  <p>to use it add dependency in your pom.xml</p>
+<pre>
+&ltdependency&gt
+    &ltgroupId&gtcom.nflabs.zeppelin&lt/groupId&gt
+    &ltartifactId&gtzeppelin-zengine&lt/artifactId&gt
+    &ltversion&gt0.1.0&lt/version&gt
+&lt/dependency&gt
+</pre>
+
+if you want access snapshot
+<pre>
+&ltdependency&gt
+    &ltgroupId&gtcom.nflabs.zeppelin&lt/groupId&gt
+    &ltartifactId&gtzeppelin-zengine&lt/artifactId&gt
+    &ltversion&gt0.2.0-SNAPSHOT&lt/version&gt
+&lt/dependency&gt
+
+...
+
+&ltrepository&gt
+    &ltid&gtoss.sonatype.org-snapshot&lt/id&gt
+    &lturl&gthttp://oss.sonatype.org/content/repositories/snapshots&lt/url&gt
+    &ltreleases&gt
+        &ltenabled&gtfalse&lt/enabled&gt
+    &lt/releases&gt
+    &ltsnapshots&gt
+        &ltenabled&gttrue&lt/enabled&gt
+    &lt/snapshots&gt
+&lt/repository&gt
+</pre>
 	</div>
       </div>
     </script>
@@ -335,17 +373,7 @@ limitations under the License.
 
 	  <br />
 	  <h4>Play with Zengine</h4>
-	  <p>Zengine is java framework for data analytics. to use it add dependency in your pom.xml</p>
-<pre>
-&ltdependency&gt
-    &ltgroupId&gtcom.nflabs.zeppelin&lt/groupId&gt
-    &ltartifactId&gtzeppelin-zengine&lt/artifactId&gt
-    &ltversion&gt0.1&lt/version&gt
-&lt/dependency&gt
-</pre>
-          <p>Checkout <a href="./docs/zengine-api/0.1/index.html">Zengine API</a></p>
-
-	  
+	  <p>Zengine is java framework for data analytics. check {{#link-to 'zengine'}}Zengine{{/link-to}}</p>
 	</div>
       </div>
     </script>
