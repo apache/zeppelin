@@ -24,7 +24,7 @@
 	<groupId>com.nflabs.zeppelin</groupId>
 	<artifactId>zeppelin</artifactId>
 	<packaging>pom</packaging>
-	<version>0.2.0-SNAPSHOT</version>
+	<version>0.1.0</version>
 	<name>zeppelin</name>
 	<description>Zeppelin project</description>
 	<url>http://nflabs.github.io/zeppelin</url>
