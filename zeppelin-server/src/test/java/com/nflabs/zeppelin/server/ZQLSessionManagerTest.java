@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.scheduler.Job.Status;
@@ -19,16 +20,21 @@ public class ZQLSessionManagerTest extends TestCase {
 	private File tmpDir;
 	private SchedulerFactory schedulerFactory;
 	private ZQLSessionManager sm;
+	private File dataDir;
 
 
 	protected void setUp() throws Exception {
-		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
+		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());		
 		tmpDir.mkdir();
-		
+		dataDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis()+"/data");
+		dataDir.mkdir();
+		System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_LOCAL_WAREHOUSE.getVarName(), "file://"+dataDir.getAbsolutePath());
+		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 		System.setProperty(ConfVars.ZEPPELIN_SESSION_DIR.getVarName(), tmpDir.getAbsolutePath());
-		
-		this.schedulerFactory = new SchedulerFactory();
 		Z.configure();
+
+		this.schedulerFactory = new SchedulerFactory();
+
 		this.sm = new ZQLSessionManager(schedulerFactory.createOrGetParallelScheduler("analyze", 30), Z.fs(), Z.conf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
 
 	}

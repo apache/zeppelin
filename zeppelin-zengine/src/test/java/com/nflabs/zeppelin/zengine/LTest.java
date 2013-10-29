@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.zengine.L;
 import com.nflabs.zeppelin.zengine.Z;
@@ -20,11 +21,17 @@ import junit.framework.TestCase;
 public class LTest extends TestCase {
 	
 	private File tmpDir;
+	private File dataDir;
 
 
 	protected void setUp() throws Exception {
-		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
+		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());		
 		tmpDir.mkdir();
+		dataDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis()+"/data");
+		dataDir.mkdir();
+		System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_LOCAL_WAREHOUSE.getVarName(), "file://"+dataDir.getAbsolutePath());
+		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
+		Z.configure();
 	}
 
 	protected void tearDown() throws Exception {
@@ -98,9 +105,6 @@ public class LTest extends TestCase {
 		out.write("HELLO HTML\n".getBytes());
 		out.close();
 
-		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
-		Z.configure();
-		
 		// load existing L
 		Z test = new L("test").withName(null).execute();
 		InputStream ins = test.readWebResource("/");

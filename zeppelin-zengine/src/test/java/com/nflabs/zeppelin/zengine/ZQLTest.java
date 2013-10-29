@@ -19,11 +19,17 @@ import junit.framework.TestCase;
 
 public class ZQLTest extends TestCase {
 	private File tmpDir;
+	private File dataDir;
 												
 	protected void setUp() throws Exception {
-		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
+		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());		
 		tmpDir.mkdir();
-		
+		dataDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis()+"/data");
+		dataDir.mkdir();
+		System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_LOCAL_WAREHOUSE.getVarName(), "file://"+dataDir.getAbsolutePath());
+		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
+		Z.configure();
+
 		new File(tmpDir.getAbsolutePath()+"/test").mkdir();
 		File erb = new File(tmpDir.getAbsolutePath()+"/test/test.erb");
 		FileOutputStream out = new FileOutputStream(erb);		
@@ -34,9 +40,7 @@ public class ZQLTest extends TestCase {
 		FileOutputStream resource = new FileOutputStream(new File(tmpDir.getAbsolutePath()+"/test/test_data.log"));
 		resource.write("".getBytes());
 		resource.close();
-		
-		System.out.println(tmpDir.toURI().toString());
-		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
+
 	}
 
 	protected void tearDown() throws Exception {
