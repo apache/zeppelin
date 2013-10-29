@@ -30,17 +30,39 @@ Learn more | User Guide | API Document | Examples
 
 ####Maven dependency
 
+##Release
+      <dependency>
+            <groupId>com.nflabs.zeppelin</groupId>
+            <artifactId>zeppelin-core</artifactId>
+            <packaging>jar</packaging>
+            <version>0.1.0</version>
+      </dependency>
 
-Note: Not yet released in public maven repository.
-To use it, you need build from source and publish to local repository (mvn install)
+
+
+##Snapshot
 
       <dependency>
             <groupId>com.nflabs.zeppelin</groupId>
             <artifactId>zeppelin-core</artifactId>
             <packaging>jar</packaging>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.2.0-SNAPSHOT</version>
       </dependency>
 
+also you need add snapshot repository
+
+      <repositories>
+            <repository>
+                  <id>oss.sonatype.org-snapshot</id>
+                  <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+                  <releases>
+                        <enabled>false</enabled>
+                  </releases>
+                  <snapshots>
+                        <enabled>true</enabled>
+                  </snapshots>
+            </repository>
+      </repositories>
 
 
 
