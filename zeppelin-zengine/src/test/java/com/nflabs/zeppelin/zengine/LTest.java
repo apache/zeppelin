@@ -29,9 +29,11 @@ public class LTest extends TestCase {
 		tmpDir.mkdir();
 		dataDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis()+"/data");
 		dataDir.mkdir();
+
 		System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_LOCAL_WAREHOUSE.getVarName(), "file://"+dataDir.getAbsolutePath());
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 		Z.configure();
+		
 	}
 
 	protected void tearDown() throws Exception {
@@ -85,10 +87,12 @@ public class LTest extends TestCase {
 		// load existing L
 		L test = new L("test");
 		test.withParam("limit", 3);
+		test.withName("hello");
 		assertEquals("CREATE VIEW "+test.name()+" AS select * from table limit 3", test.getQuery());
 		List<URI> res = test.getResources();
 		assertEquals(1, res.size());
 		assertEquals("file://"+tmpDir.getAbsolutePath()+"/test/test_data.log", res.get(0).toString());
+		test.release();
 	}
 	
 	
@@ -106,7 +110,7 @@ public class LTest extends TestCase {
 		out.close();
 
 		// load existing L
-		Z test = new L("test").withName(null).execute();
+		Z test = new L("test");//.execute();
 		InputStream ins = test.readWebResource("/");
 		assertEquals("HELLO HTML", IOUtils.toString(ins, "utf8"));
 	}

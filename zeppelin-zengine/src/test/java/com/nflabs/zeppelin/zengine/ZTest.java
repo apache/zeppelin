@@ -33,7 +33,7 @@ public class ZTest extends TestCase {
 		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
 		tmpDir.mkdir();
 		System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_LOCAL_WAREHOUSE.getVarName(), "file://"+tmpDir.getAbsolutePath());
-
+		delete(new File("metastore_db"));
 		Z.configure();
 	}
 
@@ -66,16 +66,35 @@ public class ZTest extends TestCase {
 		z.release();
 	}
 	
+	public void testAutogenName() throws ZException{
+		Z z1 = new Q("select * from bank");
+		Z z2 = new Q("select * from (<%=z."+Q.INPUT_VAR_NAME+"%>) q limit 10");
+		assertNull(z1.name());
+		z1.pipe(z2);
+		assertNull(z2.name());
+		assertNotNull(z1.name());
+		
+		z1.unPipe();
+		assertNull(z1.name());
+		assertNull(z2.name());
+		
+		z1.withName("hello");
+		z1.pipe(z2);
+		z1.unPipe();
+		assertEquals("hello", z1.name());
+	}
+	
+	
 	public void testShowTables() throws ClassNotFoundException, SQLException, ZException{
 		ZeppelinConfiguration conf = new ZeppelinConfiguration();
 		Z.configure(conf);
 		
-		new Q("drop table if exists test").withName(null).execute();		
-		new Q("create table if not exists test(a INT, b STRING)").withName(null).execute();
-		Result results = new Q("show tables").withName(null).execute().result();
+		new Q("drop table if exists test").execute();		
+		new Q("create table if not exists test(a INT, b STRING)").execute();
+		Result results = new Q("show tables").execute().result();
 		assertEquals("test", results.getRows().get(0)[0]);
 		
-		new Q("drop table test").withName(null).execute();		
+		new Q("drop table test").execute();		
 	}
 	
 	

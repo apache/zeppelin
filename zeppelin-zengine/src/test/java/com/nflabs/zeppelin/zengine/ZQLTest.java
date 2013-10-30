@@ -33,7 +33,7 @@ public class ZQLTest extends TestCase {
 		new File(tmpDir.getAbsolutePath()+"/test").mkdir();
 		File erb = new File(tmpDir.getAbsolutePath()+"/test/test.erb");
 		FileOutputStream out = new FileOutputStream(erb);		
-		out.write(("CREATE VIEW <%= z."+Q.OUTPUT_VAR_NAME+" %> AS select * from (<%= z."+Q.INPUT_VAR_NAME+" %>) a limit <%= z.param('limit') %>\n").getBytes());
+		out.write(("select * from (<%= z."+Q.INPUT_VAR_NAME+" %>) a limit <%= z.param('limit') %>\n").getBytes());
 		out.close();
 	
 		// create resource
@@ -75,13 +75,12 @@ public class ZQLTest extends TestCase {
 	
 	public void testSemicolon() throws ZException, ZQLException{
 		ZQL zql = new ZQL();
-		zql.append("select * from bank | select * from <%= z."+Q.INPUT_VAR_NAME+" %> limit 10; show tables");
+		zql.append("create table if not exists bank(a INT); select * from bank | select * from <%= z."+Q.INPUT_VAR_NAME+" %> limit 10; show tables");
 		List<Z> z = zql.compile();
-		
-		assertEquals(2, z.size());
-		assertEquals("select * from "+z.get(0).prev().name()+" limit 10", z.get(0).getQuery());
-		assertEquals("show tables", z.get(1).getQuery());
-		z.get(0).release();
+
+		assertEquals(3, z.size());
+		assertEquals("select * from "+z.get(1).prev().name()+" limit 10", z.get(1).getQuery());
+		assertEquals("show tables", z.get(2).getQuery());
 	}
 	
 	public void testRedirection() throws ZException, ZQLException{
@@ -91,9 +90,6 @@ public class ZQLTest extends TestCase {
 		
 		assertEquals(1, z.size());
 		assertEquals("select * from bank limit 10", z.get(0).getQuery());
-		z.get(0).release();
-		
-		
 	}
 
 	public void testLstmtSimple() throws ZException, ZQLException{
@@ -101,14 +97,14 @@ public class ZQLTest extends TestCase {
 		List<Z> zList = zql.compile();
 		assertEquals(1, zList.size());
 		Z z = zList.get(0);
-		assertEquals("CREATE VIEW "+z.name()+" AS select * from () a limit ", z.getQuery());
+		assertEquals("select * from () a limit ", z.getQuery());
 		z.release();
 	}
 	
 	public void testLstmtParam() throws ZException, ZQLException{
 		ZQL zql = new ZQL("test(limit=10)");
 		Z z = zql.compile().get(0);
-		assertEquals("CREATE VIEW "+z.name()+" AS select * from () a limit 10", z.getQuery());
+		assertEquals("select * from () a limit 10", z.getQuery());
 	}
 	
 	public void testLstmtArg() throws IOException, ZException, ZQLException{
@@ -116,7 +112,7 @@ public class ZQLTest extends TestCase {
 		
 		List<Z> z = zql.compile();
 		assertEquals(1, z.size());
-		assertEquals("CREATE VIEW "+z.get(0).name()+" AS select * from ("+z.get(0).prev().name()+") a limit 10", z.get(0).getQuery());
+		assertEquals("select * from ("+z.get(0).prev().name()+") a limit 10", z.get(0).getQuery());
 	}
 
 }
