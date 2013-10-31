@@ -148,7 +148,9 @@ public class ZQL {
 		String currentOp = null;
 		for(int i=0; i<t.length; i++){
 			String stmt = t[i];
+			if(stmt==null) continue;
 			stmt = stmt.trim();
+			if(stmt.length()==0) continue;
 			
 			// check if it is operator ----
 			boolean operatorFound = false;

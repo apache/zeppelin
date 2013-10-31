@@ -75,7 +75,7 @@ public class ZQLTest extends TestCase {
 	
 	public void testSemicolon() throws ZException, ZQLException{
 		ZQL zql = new ZQL();
-		zql.append("create table if not exists bank(a INT); select * from bank | select * from <%= z."+Q.INPUT_VAR_NAME+" %> limit 10; show tables");
+		zql.append("create table if not exists bank(a INT); select * from bank | select * from <%= z."+Q.INPUT_VAR_NAME+" %> limit 10; show tables; ");
 		List<Z> z = zql.compile();
 
 		assertEquals(3, z.size());
