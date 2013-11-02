@@ -98,7 +98,7 @@ public class L extends Q{
 			this.erbFile = new Path(libUri.toString()+"/"+new Path(libUri).getName()+".erb");
 
 			if(fs.isFile(erbFile)==false){
-				throw new ZException("Template "+erbFile.toString()+" does not exist");
+				erbFile = null;
 			}
 			
 			this.webDir = new Path(libUri+"/web");
@@ -119,6 +119,7 @@ public class L extends Q{
 	public String getQuery() throws ZException {
 		initialize();
 		String q;
+		
 		try {
 			FSDataInputStream ins = fs.open(erbFile);
 			BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
@@ -133,6 +134,36 @@ public class L extends Q{
 		return q;
 	}
 
+	/**
+	 * Override execute to support web only library
+	 */
+	@Override
+	public Z execute() throws ZException{
+		if(executed==true) return this;
+		initialize();
+		
+		if(prev()!=null){
+			prev().execute();
+		}	
+		
+		if(erbFile==null){
+			return this;
+		} else {
+			return super.execute();
+		}
+	}
+	
+	@Override
+	public Result result() throws ZException{
+		if(erbFile==null){
+			if(prev()!=null) return prev().result();
+			else {
+				return null;
+			}
+		} else {
+			return super.result();
+		}
+	}
 	
 	
 	/**
