@@ -277,26 +277,28 @@ public abstract class Z {
 			prev().execute();
 		}		
 		String query = getQuery();
-		String[] queries = Util.split(query, ';');
-		for(int i=0; i<queries.length; i++){
-			String q = queries[i];
-			if(i==queries.length-1){
-				String tableCreation = null;
-				if(name()==null){
-					tableCreation = "";
-				} else {
-					if(isSaveableQuery(q)==false){
-						throw new ZException("Can not save query "+q+" into table "+name());
-					}
-					if(isTable()){
-						tableCreation = "CREATE TABLE "+name()+" AS ";
+		if(query!=null){
+			String[] queries = Util.split(query, ';');
+			for(int i=0; i<queries.length; i++){
+				String q = queries[i];
+				if(i==queries.length-1){
+					String tableCreation = null;
+					if(name()==null){
+						tableCreation = "";
 					} else {
-						tableCreation = "CREATE VIEW "+name()+" AS ";
+						if(isSaveableQuery(q)==false){
+							throw new ZException("Can not save query "+q+" into table "+name());
+						}
+						if(isTable()){
+							tableCreation = "CREATE TABLE "+name()+" AS ";
+						} else {
+							tableCreation = "CREATE VIEW "+name()+" AS ";
+						}
 					}
+					q = tableCreation + q;
 				}
-				q = tableCreation + q;
+				lastQueryResult = executeQuery(q, maxResult);
 			}
-			lastQueryResult = executeQuery(q, maxResult);
 		}
 		webEnabled = isWebEnabled();
 		executed = true;
@@ -336,6 +338,10 @@ public abstract class Z {
 			if(name()==null){ // unmaed
 				if(lastQueryResult!=null){
 					result = lastQueryResult;
+				} else {
+					if(prev()!=null){
+						result = prev().result();
+					}
 				}
 			} else { // named
 				try{

@@ -28,12 +28,26 @@ public class ZContext {
 	}
 	
 	/**
-	 * Get parameter by name
-	 * @param paramName
-	 * @return
+	 * Get params;
+	 * @return 
 	 */
-	public Object param(String paramName){
-		return params.get(paramName);
+	public Object param(String name){
+		return param(name, null);
+	}
+
+	/**
+	 * Get params;
+	 * @param name name of parameter
+	 * @param defaultValue defaultValue of the param
+	 * @return 
+	 */
+	public Object param(String name, Object defaultValue){		
+		Object r = params.get(name);
+		if(r==null){
+			return defaultValue;
+		} else {
+			return r;
+		}
 	}
 	
 	/**

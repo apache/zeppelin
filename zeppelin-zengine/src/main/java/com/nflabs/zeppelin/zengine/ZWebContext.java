@@ -1,5 +1,8 @@
 package com.nflabs.zeppelin.zengine;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.nflabs.zeppelin.result.Result;
 
 /**
@@ -12,13 +15,21 @@ import com.nflabs.zeppelin.result.Result;
 public class ZWebContext {
 
 	private Result result;
+	private Map<String, Object> params;
 
-	/**
-	 * 
-	 * @param resultDataObject result data after execution
-	 */
+	
 	public ZWebContext(Result resultDataObject) {
 		this.result = resultDataObject;
+		this.params = new HashMap<String, Object>();
+	}
+	/**
+	 * 
+	 * @param params 
+	 * @param resultDataObject result data after execution
+	 */
+	public ZWebContext(Map<String, Object> params, Result resultDataObject) {
+		this.result = resultDataObject;
+		this.params = params;
 	}
 	
 	/**
@@ -27,6 +38,29 @@ public class ZWebContext {
 	 */
 	public Result result(){
 		return result;
+	}
+	
+	/**
+	 * Get params;
+	 * @return 
+	 */
+	public Object param(String name){
+		return param(name, null);
+	}
+
+	/**
+	 * Get params;
+	 * @param name name of parameter
+	 * @param defaultValue defaultValue of the param
+	 * @return 
+	 */
+	public Object param(String name, Object defaultValue){		
+		Object r = params.get(name);
+		if(r==null){
+			return defaultValue;
+		} else {
+			return r;
+		}
 	}
 
 }
