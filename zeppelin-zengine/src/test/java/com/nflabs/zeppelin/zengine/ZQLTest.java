@@ -48,6 +48,12 @@ public class ZQLTest extends HiveTestService {
 		out.write(("select * from (<%= z."+Q.INPUT_VAR_NAME+" %>) a limit <%= z.param('limit') %>\n").getBytes());
 		out.close();
 	
+		new File(tmpDir.getAbsolutePath()+"/test1/web").mkdirs();
+		File index = new File(tmpDir.getAbsolutePath()+"/test1/web/index.erb");
+		out = new FileOutputStream(index);		
+		out.write(("WEB\n").getBytes());
+		out.close();
+		
 		// create resource
 		FileOutputStream resource = new FileOutputStream(new File(tmpDir.getAbsolutePath()+"/test/test_data.log"));
 		resource.write("".getBytes());
@@ -129,6 +135,16 @@ public class ZQLTest extends HiveTestService {
 		List<Z> z = zql.compile();
 		assertEquals(1, z.size());
 		assertEquals("select * from ("+z.get(0).prev().name()+") a limit 10", z.get(0).getQuery());
+	}
+	
+	public void testLstmtPipedArg() throws IOException, ZException, ZQLException{
+		ZQL zql = new ZQL("select * from test | test1 | test1");
+		
+		List<Z> z = zql.compile();
+		assertEquals(1, z.size());
+		assertEquals(null, z.get(0).getQuery());
+		assertEquals(null, z.get(0).prev().getQuery());
+		assertEquals("select * from test", z.get(0).prev().prev().getQuery());
 	}
 	
 	public void testMultilineQuery() throws IOException, ZException, ZQLException{

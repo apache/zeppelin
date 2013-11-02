@@ -153,25 +153,27 @@ public class ZQL {
     	}
     	
     	List<Z> plans = session.getPlan();
-    	for(Z z : plans){
-    		if(z.getId().equals(zId)){
-    			try {
-					InputStream ins = z.readWebResource(path);
-					if(ins==null){
-						return javax.ws.rs.core.Response.status(Status.NOT_FOUND).entity("").build();
-					} else {
-						return Response.ok(IOUtils.toByteArray(ins), typeByExtention(path)).build();
+    	for(Z plan : plans){
+    		for(Z z = plan; z!=null; z=z.prev()){
+	    		if(z.getId().equals(zId)){
+	    			try {
+						InputStream ins = z.readWebResource(path);
+						if(ins==null){
+							return null;
+						} else {
+							return Response.ok(IOUtils.toByteArray(ins), typeByExtention(path)).build();
+						}
+					} catch (ZException e) {
+						logger.error("Can't read web resource", e);
+						return new JsonResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+					} catch (IOException e) {
+						logger.error("IOexception", e);
+						return new JsonResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
 					}
-				} catch (ZException e) {
-					logger.error("Can't read web resource", e);
-					return new JsonResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
-				} catch (IOException e) {
-					logger.error("IOexception", e);
-					return new JsonResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
-				}
+	    		}
     		}
     	}
-		return null;    	
+		return javax.ws.rs.core.Response.status(Status.NOT_FOUND).entity("").build();    	
     }
     
     private MediaType typeByExtention(String path){

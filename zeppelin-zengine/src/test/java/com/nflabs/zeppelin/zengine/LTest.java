@@ -154,4 +154,31 @@ public class LTest extends HiveTestService {
 		InputStream ins = z.readWebResource("/");
 		assertEquals("HELLO HTML 5", IOUtils.toString(ins, "utf8"));
 	}
+	
+	public void testWebOnlyLibraryPipe() throws IOException, ZException{
+		new File(tmpDir.getAbsolutePath()+"/test/web").mkdirs();
+
+		Path p = new Path(this.ROOT_DIR, "afile");
+
+	    FSDataOutputStream o = this.getFileSystem().create(p);
+	    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(o));
+	    bw.write("5\n");
+	    bw.write("2\n");
+	    bw.close();
+	    
+		new Q("drop table if exists test").execute().result().write(System.out);
+		new Q("create table test(a INT)").execute().result().write(System.out);
+		new Q("load data local inpath '" + p.toString() + "' into table test").execute().result().write(System.out);
+
+		File erb = new File(tmpDir.getAbsolutePath()+"/test/web/index.erb");
+		FileOutputStream out = new FileOutputStream(erb);		
+		out.write("HELLO HTML <%= z.result.rows[0][0] %>\n".getBytes());
+		out.close();
+		
+		Z z = new Q("select * from test").pipe(new L("test")).pipe(new L("test"));
+		Result result = z.execute().result();
+		assertEquals(5, result.getRows().get(0)[0]);
+		
+		
+	}
 }

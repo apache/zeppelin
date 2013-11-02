@@ -250,4 +250,21 @@ public class L extends Q{
 	public String getReleaseQuery() throws ZException {
 		return super.getReleaseQuery();
 	}
+	
+	@Override
+	public Z pipe(Z z){
+		if(erbFile==null){
+			if(prev()!=null){
+				withName(z.name());
+			} else {
+				// should not be reach here
+			}
+			setNext(z);
+			z.setPrev(this);
+			
+			return z;
+		} else {
+			return super.pipe(z);
+		}
+	}
 }

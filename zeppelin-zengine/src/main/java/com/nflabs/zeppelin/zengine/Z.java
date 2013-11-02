@@ -483,7 +483,7 @@ public abstract class Z {
 		} else if(conf().getString(ConfVars.HIVE_CONNECTION_URI)==null || conf().getString(ConfVars.HIVE_CONNECTION_URI).trim().length()==0){
 			return new HiveConnection(hiveConf());
 		} else {
-			return DriverManager.getConnection(conf().getString(ConfVars.HIVE_CONNECTION_URI));
+				return DriverManager.getConnection(conf().getString(ConfVars.HIVE_CONNECTION_URI));
 		}
 	}
 	

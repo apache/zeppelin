@@ -212,7 +212,8 @@ public class Q extends Z{
 	 */
 	@Override
 	public boolean isWebEnabled() {
-		return true;
+		if(next()==null) return true;
+		else return false;
 	}
 
 }
