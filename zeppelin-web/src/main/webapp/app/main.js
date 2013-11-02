@@ -219,6 +219,7 @@ $(document).ready(function(){
 
 		// clear visualizations
 		$('#visualizationContainer iframe').remove();
+		$('#msgBox div').remove();
 
 		if(model.status=="READY"){
 		    editor.setReadOnly(false);
@@ -266,6 +267,9 @@ $(document).ready(function(){
 
 		} else if(model.status=="ERROR"){
 		    $('#zqlRunButton').text("Run");
+		    for(var i=0; i< model.error.rows.length; i++){
+			$('#msgBox').append("<div>"+model.error.rows[0][3]+"</div>");
+		    }
 		    //$('#zqlRunButton').removeClass('disabled');
 		    editor.setReadOnly(false);
 		} else if(model.status=="ABORT"){
