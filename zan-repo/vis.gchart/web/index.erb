@@ -1,33 +1,109 @@
 <html>
   <head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script type='text/javascript' src='https://www.google.com/jsapi'></script>
     <script type='text/javascript'>
-      google.load('visualization', '1', {packages:['table']});
+      google.load('visualization', '1', {packages:['table', 'corechart', 'gauge', 'geochart', 'map']});
       google.setOnLoadCallback(drawTable);
+
+      var columnTypeConversion = {
+	  "int"      : "number",
+	  "bigint"   : "number",
+	  "char"     : "string",
+	  "date"     : "date",
+	  "decimal"  : "number",
+	  "double"   : "number",
+	  "float"    : "number",
+	  "integer"  : "number",
+	  "longvarchar" : "string",
+	  "numeric"  : "number",
+	  "tinyint"  : "number",
+	  "varchar"  : "string"
+      };
+
       function drawTable() {
         var data = new google.visualization.DataTable();
-
 <% z.result.getColumnDef.each do |col| %>
-        data.addColumn('string', '<%=col.name%>');
+        data.addColumn((columnTypeConversion['<%=col.typeName%>']) ? columnTypeConversion['<%=col.typeName%>']: 'string', '<%=col.name%>');
 <% end %>
 <% if z.result.rows != nil %>
         data.addRows([
             <% z.result.rows.each do |row| %>
 	      [
-		  <% row.each do |cell| %>
-		    '<%= cell %>',
+		  <% row.each_with_index do |cell,index| %>
+		        (data.getColumnType(<%=index%>)=="number") ? <%= cell %> : '<%= cell %>', 
 		  <% end %>
 	      ],
 	    <% end %>
 	]);
 
 <% end %>
-        var table = new google.visualization.Table(document.getElementById('table_div'));
-        table.draw(data, {showRowNumber: true});
+
+        $('input:radio', '#chartTypeForm').change(
+          function(){
+            var chartType = $('input[name=chartType]:checked', '#chartTypeForm').val();
+	    
+            var chart;
+	    var defaultHeight = <%=z.param("height",400)%>;
+            if(chartType=="table"){
+              chart = new google.visualization.Table(document.getElementById('table_div'));
+	      chart.draw(data, {showRowNumber: true});
+            } else if(chartType=="pie"){
+              chart = new google.visualization.PieChart(document.getElementById('table_div'));
+	      chart.draw(data, { height: defaultHeight});
+            } else if(chartType=="line"){
+              chart = new google.visualization.LineChart(document.getElementById('table_div'));
+	      chart.draw(data, { height: defaultHeight});
+            } else if(chartType=="bar"){
+              chart = new google.visualization.BarChart(document.getElementById('table_div'));
+	      chart.draw(data, { height: defaultHeight});
+            } else if(chartType=="area"){
+              chart = new google.visualization.AreaChart(document.getElementById('table_div'));
+	      chart.draw(data, { height: defaultHeight});
+            } else if(chartType=="bubble"){
+              chart = new google.visualization.BubbleChart(document.getElementById('table_div'));
+	      chart.draw(data, { height: defaultHeight});
+            } else if(chartType=="column"){
+              chart = new google.visualization.ColumnChart(document.getElementById('table_div'));
+	      chart.draw(data, { height: defaultHeight});
+            } else if(chartType=="gauge"){
+              chart = new google.visualization.Gauge(document.getElementById('table_div'));
+	      chart.draw(data, { height: defaultHeight});
+            }
+	    else if(chartType=="geo"){
+              chart = new google.visualization.GeoChart(document.getElementById('table_div'));
+	      chart.draw(data, { height: defaultHeight});
+            } else if(chartType=="map"){
+              chart = new google.visualization.Map(document.getElementById('table_div'));
+	      chart.draw(data, { height: defaultHeight});
+            } else if(chartType=="scatter"){
+              chart = new google.visualization.ScatterChart(document.getElementById('table_div'));
+	      chart.draw(data, { height: defaultHeight});
+            }
+            
+          }
+        );   
+        var defaultType = "<%=z.param("type","table")%>";
+        $('input:radio[value='+defaultType+']', '#chartTypeForm').prop("checked", true);
+        $('input:radio', '#chartTypeForm').trigger('change');
       }
     </script>
   </head>
   <body>
+    <form id="chartTypeForm">
+       <input type="radio" name="chartType" value="table">Table</input>
+       <input type="radio" name="chartType" value="area">Area</input>
+       <input type="radio" name="chartType" value="bar">Bar</input>
+       <input type="radio" name="chartType" value="bubble">Bubble</input>
+       <input type="radio" name="chartType" value="candlestick">Candlestick</input>
+       <input type="radio" name="chartType" value="column">Column</input>
+       <input type="radio" name="chartType" value="gauge">Gauge</input>
+       <input type="radio" name="chartType" value="geo">Geo</input>
+       <input type="radio" name="chartType" value="line">Line</input>
+       <input type="radio" name="chartType" value="map">Map</input>
+       <input type="radio" name="chartType" value="pie">Pie</input>
+       <input type="radio" name="chartType" value="scatter">Scatter</input>
+    </form>
     <div id="table_div"></div>
   </body>
 </html>
