@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.zengine;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -15,8 +16,10 @@ import javax.script.SimpleBindings;
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
+import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.result.Result;
+import com.nflabs.zeppelin.util.TestUtil;
 import com.nflabs.zeppelin.zengine.Q;
 import com.nflabs.zeppelin.zengine.Z;
 import com.nflabs.zeppelin.zengine.ZException;
@@ -24,22 +27,30 @@ import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 import junit.framework.TestCase;
 
-public class ZTest extends TestCase {
+public class ZTest extends HiveTestService {
+
+	public ZTest() throws IOException {
+		super();
+		// TODO Auto-generated constructor stub
+	}
 
 	private File tmpDir;
 
 
-	protected void setUp() throws Exception {
+	public void setUp() throws Exception {
 		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
 		tmpDir.mkdir();
 		System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_LOCAL_WAREHOUSE.getVarName(), "file://"+tmpDir.getAbsolutePath());
-		delete(new File("metastore_db"));
-		Z.configure();
+		TestUtil.delete(new File("/tmp/warehouse"));
+		TestUtil.delete(new File(ROOT_DIR.getName()));
+		Z.configure(client);
 	}
 
-	protected void tearDown() throws Exception {
+	public void tearDown() throws Exception {
 		super.tearDown();
 		delete(tmpDir);
+		TestUtil.delete(new File("/tmp/warehouse"));
+		TestUtil.delete(new File(ROOT_DIR.getName()));
 	}
 	
 	private void delete(File file){

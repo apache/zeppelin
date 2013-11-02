@@ -13,6 +13,7 @@ import org.apache.commons.io.IOUtils;
 import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.util.TestUtil;
 import com.nflabs.zeppelin.zengine.L;
 import com.nflabs.zeppelin.zengine.Z;
 import com.nflabs.zeppelin.zengine.ZException;
@@ -33,6 +34,9 @@ public class LTest extends HiveTestService {
 		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());		
 		tmpDir.mkdir();
 
+		TestUtil.delete(new File("/tmp/warehouse"));
+		TestUtil.delete(new File(ROOT_DIR.getName()));
+		
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 		Z.configure(client);
 		
@@ -41,6 +45,9 @@ public class LTest extends HiveTestService {
 	public void tearDown() throws Exception {
 		delete(tmpDir);
 		super.tearDown();
+		
+		TestUtil.delete(new File("/tmp/warehouse"));
+		TestUtil.delete(new File(ROOT_DIR.getName()));
 	}
 	
 	private void delete(File file){
