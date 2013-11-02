@@ -219,6 +219,7 @@ $(document).ready(function(){
 
 		// clear visualizations
 		$('#visualizationContainer iframe').remove();
+		$('#visualizationContainer div').remove();
 		$('#msgBox div').remove();
 
 		if(model.status=="READY"){
@@ -237,28 +238,38 @@ $(document).ready(function(){
 		    editor.setReadOnly(false);
 
 		    // draw visualization if there's some
-		    if(model.zqlPlans){			
+		    if(model.zqlPlans){
 			for(var i=0; i<model.zqlPlans.length; i++){
-			    var plan = model.zqlPlans[i];
-			    console.log("visualize plan=%o", plan);
+			    var planModel = model.zqlPlans[i];
+			    if(!planModel) continue;
 
-			    if(!plan || !plan.webEnabled) continue;
+			    var planStack = [];
+			    for(var p = planModel; p!=undefined; p = p.prev){
+				planStack.unshift(p);
+			    }
 			    
-			    $('<iframe />', {				
-				name : plan.id,
-				id : plan.id,
-				src : zeppelin.getWebResourceURL(model.id, plan.id),
-				scrolling : 'no'
-				/*,
-										     
-				frameborder : "0",
-				height : "100%",
-				width : "100%"*/
-			    }).appendTo('#visualizationContainer');
+			    for(var j=0; j<planStack.length; j++){
+				var plan = planStack[j];
 
-			    $('#'+plan.id).load(function(c,d){
-				console.log("iframe %o %o", c,d);
-			    });
+				if(!plan || !plan.webEnabled) continue;
+				console.log("displaying %o", plan);
+				var planInfo = (plan.libName) ? plan.libName : plan.query;
+				$('#visualizationContainer').append('<div class="visTitle">'+planInfo+"</div>");
+				$('<iframe />', {				
+				    name : plan.id,
+				    id : plan.id,
+				    src : zeppelin.getWebResourceURL(model.id, plan.id),
+				    scrolling : 'no'
+				    /*,
+				      frameborder : "0",
+				      height : "100%",
+				      width : "100%"*/
+				}).appendTo('#visualizationContainer');
+
+				$('#'+plan.id).load(function(c,d){
+				    //console.log("iframe %o %o", c,d);
+				});
+			    }
 			}
 
 			jQuery('iframe').iframeAutoHeight();
