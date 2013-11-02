@@ -19,6 +19,9 @@
       <directory>bin</directory>
     </fileSet>
     <fileSet>
+      <directory>zan-repo</directory>
+    </fileSet>
+    <fileSet>
       <includes>
         <include>conf/configuration.xsl</include>
         <include>conf/log4j.properties</include>
