@@ -105,9 +105,17 @@ public class Q extends Z{
 		try {
 			String line = null;
 			rubyScript.append("erb = \"\"\n");
-			
+
+			boolean first = true;
 			while((line = erb.readLine())!=null){
-				rubyScript.append("erb += \""+StringEscapeUtils.escapeJavaScript(line)+"\"\n");
+				String newline;
+				if(first==false){
+					newline = "\\n";
+				} else {
+					newline = "";
+					first = false;
+				}
+				rubyScript.append("erb += \""+newline+StringEscapeUtils.escapeJavaScript(line)+"\"\n");
 			}
 		} catch (IOException e1) {
 			throw new ZException(e1);

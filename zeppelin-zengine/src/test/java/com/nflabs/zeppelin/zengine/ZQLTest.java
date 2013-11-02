@@ -1,11 +1,15 @@
 package com.nflabs.zeppelin.zengine;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.List;
 
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 
 import com.jointhegrid.hive_test.HiveTestService;
@@ -125,6 +129,15 @@ public class ZQLTest extends HiveTestService {
 		List<Z> z = zql.compile();
 		assertEquals(1, z.size());
 		assertEquals("select * from ("+z.get(0).prev().name()+") a limit 10", z.get(0).getQuery());
+	}
+	
+	public void testMultilineQuery() throws IOException, ZException, ZQLException{
+		ZQL zql = new ZQL("select\n*\nfrom\ntest");
+		
+		List<Z> z = zql.compile();
+		assertEquals(1, z.size());
+		assertEquals("select\n*\nfrom\ntest", z.get(0).getQuery());
+
 	}
 
 }
