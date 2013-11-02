@@ -17,11 +17,13 @@ import javax.script.ScriptEngine;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.jdbc.HiveConnection;
+
+import org.apache.hadoop.hive.service.HiveInterface;
 import org.apache.log4j.Logger;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.hive.HiveConnection;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.util.Util;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
@@ -407,13 +409,24 @@ public abstract class Z {
 	public ScriptEngine getRubyScriptEngine(){
 		return factory.getScriptEngine();
 	}
-
+	
 	/**
 	 * Configure Zeppelin environment.
 	 * zeppelin-site.xml will be loaded from classpath.
 	 * @throws ZException
 	 */
 	public static void configure() throws ZException{
+		HiveInterface cli = null;
+		configure(cli);
+	}
+
+	/**
+	 * Configure Zeppelin environment.
+	 * zeppelin-site.xml will be loaded from classpath.
+	 * @param client hive client object
+	 * @throws ZException
+	 */
+	public static void configure(HiveInterface client) throws ZException{
 		ZeppelinConfiguration conf;
 		try {
 			conf = ZeppelinConfiguration.create();
@@ -421,7 +434,7 @@ public abstract class Z {
 			conf = new ZeppelinConfiguration();
 		}
 
-		configure(conf);
+		configure(conf, client);
 	}
 	
 	/**
@@ -429,7 +442,17 @@ public abstract class Z {
 	 * @param conf configuration to use
 	 * @throws ZException
 	 */
-	public static void configure(ZeppelinConfiguration conf) throws ZException{		
+	public static void configure(ZeppelinConfiguration conf) throws ZException{
+		configure(conf, null);
+	}
+	
+	/**
+	 * Configure Zeppelin with given configuration
+	 * @param conf configuration to use
+	 * @param client hive clinet object
+	 * @throws ZException
+	 */
+	public static void configure(ZeppelinConfiguration conf, HiveInterface client) throws ZException{		
 		try {
 			Class.forName(conf.getString(ConfVars.HIVE_DRIVER));
 		} catch (ClassNotFoundException e1) {
@@ -437,6 +460,7 @@ public abstract class Z {
 		}
 		Z.conf = conf;		
 		Z.factory = new JRubyScriptEngineFactory();
+		Z.client = client;
 		
 		if(fs==null){
 			try {
@@ -448,7 +472,9 @@ public abstract class Z {
 	}
 	
 	private static Connection getConnection() throws SQLException{
-		if(conf().getString(ConfVars.HIVE_CONNECTION_URI)==null || conf().getString(ConfVars.HIVE_CONNECTION_URI).trim().length()==0){
+		if(client!=null){
+			return new HiveConnection(client);
+		} else if(conf().getString(ConfVars.HIVE_CONNECTION_URI)==null || conf().getString(ConfVars.HIVE_CONNECTION_URI).trim().length()==0){
 			return new HiveConnection(hiveConf());
 		} else {
 			return DriverManager.getConnection(conf().getString(ConfVars.HIVE_CONNECTION_URI));
@@ -474,6 +500,7 @@ public abstract class Z {
 	private static ZeppelinConfiguration conf;
 	private static JRubyScriptEngineFactory factory;
 	private static FileSystem fs;
+	private static HiveInterface client;
 	
 	/**
 	 * Get zeppelin configuration

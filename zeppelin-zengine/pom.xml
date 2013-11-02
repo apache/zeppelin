@@ -72,7 +72,20 @@
 	    </exclusions>
     </dependency>
     
-    
+    <dependency>
+		<groupId>com.nitayjoffe.thirdparty.com.jointhegrid</groupId>
+		<artifactId>hive_test</artifactId>
+		<version>4.0.0</version>
+		<scope>test</scope>
+	</dependency>
+	
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-test</artifactId>
+      <version>${hadoop.version}</version>
+      <scope>test</scope>
+    </dependency>
+                
     <!-- to use erb -->
     <dependency>
       <groupId>org.jruby</groupId>

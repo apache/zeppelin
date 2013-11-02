@@ -17,6 +17,7 @@ metastore_db/
 **/sessions/
 **/data/
 **/build/
+**/testing/
 
 # OS generated files #
 ######################

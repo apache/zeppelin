@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 
+import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.zengine.L;
@@ -18,27 +19,28 @@ import com.nflabs.zeppelin.zengine.ZException;
 
 import junit.framework.TestCase;
 
-public class LTest extends TestCase {
+public class LTest extends HiveTestService {
 	
+	public LTest() throws IOException {
+		super();
+	}
+
 	private File tmpDir;
-	private File dataDir;
 
 
-	protected void setUp() throws Exception {
+	public void setUp() throws Exception {
+		super.setUp();
 		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());		
 		tmpDir.mkdir();
-		dataDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis()+"/data");
-		dataDir.mkdir();
 
-		System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_LOCAL_WAREHOUSE.getVarName(), "file://"+dataDir.getAbsolutePath());
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
-		Z.configure();
+		Z.configure(client);
 		
 	}
 
-	protected void tearDown() throws Exception {
-		super.tearDown();
+	public void tearDown() throws Exception {
 		delete(tmpDir);
+		super.tearDown();
 	}
 	
 	private void delete(File file){
