@@ -13,6 +13,7 @@ body {
 #visualizationContainer iframe{
     border : 0px solid #CCCCCC;
     width:100%;
+    height : 0px;
 }
 
 body {
