@@ -23,10 +23,11 @@
 
       function drawTable() {
         var data = new google.visualization.DataTable();
-<% z.result.getColumnDef.each do |col| %>
+<% if z.result != nil %>
+  <% z.result.getColumnDef.each do |col| %>
         data.addColumn((columnTypeConversion['<%=col.typeName%>']) ? columnTypeConversion['<%=col.typeName%>']: 'string', '<%=col.name%>');
-<% end %>
-<% if z.result.rows != nil %>
+  <% end %>
+  <% if z.result.rows != nil %>
         data.addRows([
             <% z.result.rows.each do |row| %>
 	      [
@@ -37,6 +38,7 @@
 	    <% end %>
 	]);
 
+  <% end %>
 <% end %>
 
         $('input:radio', '#chartTypeForm').change(
