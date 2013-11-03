@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -30,6 +31,8 @@ import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.zengine.L;
 import com.nflabs.zeppelin.zengine.Q;
 import com.nflabs.zeppelin.zengine.Z;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.ZQLException;
 
 public class ZQLSessionManager implements JobListener {
 	Logger logger = Logger.getLogger(ZQLSessionManager.class);
@@ -100,6 +103,22 @@ public class ZQLSessionManager implements JobListener {
 		return s;
 	}
 	
+	public ZQLSession dryRun(String sessionId) {
+		ZQLSession s = get(sessionId);
+		if(s==null) return null;
+		try {
+			s.dryRun();
+			persist(s);			
+			logger.debug("---------------- persist -------------");
+		} catch (ZException e) {
+			logger.error("z error", e);
+		} catch (ZQLException e) {
+			logger.error("zql error", e);			
+		} catch (IOException e) {
+			logger.error("persist error", e);			
+		}
+		return s;
+	}
 	
 	public ZQLSession setZql(String sessionId, String zql){
 		ZQLSession s = get(sessionId);
@@ -114,6 +133,37 @@ public class ZQLSessionManager implements JobListener {
 			}
 			return s;
 		}
+	}
+	
+
+	public ZQLSession setParams(String sessionId, List<Map<String, Object>> params) {
+		ZQLSession s = get(sessionId);
+		if(s==null){
+			return null;
+		} else {
+			s.setParams(params);
+			try {
+				persist(s);
+			} catch (IOException e) {
+				logger.error("Can't persist session "+sessionId, e);
+			}
+			return s;
+		}
+	}
+	
+	public ZQLSession setName(String sessionId, String name) {
+		ZQLSession s = get(sessionId);
+		if(s==null){
+			return null;
+		} else {
+			s.setName(name);
+			try {
+				persist(s);
+			} catch (IOException e) {
+				logger.error("Can't persist session "+sessionId, e);
+			}
+			return s;
+		}		
 	}
 
 	public boolean delete(String sessionId){
@@ -270,4 +320,9 @@ public class ZQLSessionManager implements JobListener {
 		ins.close();
 		return session;
 	}
+
+
+
+
+
 }

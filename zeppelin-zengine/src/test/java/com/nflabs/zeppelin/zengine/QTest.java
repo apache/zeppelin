@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Map;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
@@ -82,5 +83,12 @@ public class QTest extends HiveTestService{
 		assertEquals(new Long(1), new Q("select count(*) from test2").execute().result().getRows().get(0)[0]);
 		z.release();
 		assertEquals(new Long(1), new Q("select count(*) from test2").execute().result().getRows().get(0)[0]);
+	}
+	
+	public void testExtractParam() throws ZException{
+		Z z = new Q("select <%=z.param('fieldname', 'hello')%> from here").dryRun();
+		Map<String, ParamInfo> infos = z.getParamInfos();
+		assertEquals(1, infos.size());
+		assertEquals("hello", infos.get("fieldname").getDefaultValue());
 	}
 }

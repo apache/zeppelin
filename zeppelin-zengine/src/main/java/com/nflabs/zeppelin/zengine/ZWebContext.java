@@ -16,6 +16,7 @@ public class ZWebContext {
 
 	private Result result;
 	private Map<String, Object> params;
+	Map<String, ParamInfo> paramInfos = new HashMap<String, ParamInfo>();
 
 	
 	public ZWebContext(Result resultDataObject) {
@@ -54,7 +55,11 @@ public class ZWebContext {
 	 * @param defaultValue defaultValue of the param
 	 * @return 
 	 */
-	public Object param(String name, Object defaultValue){		
+	public Object param(String name, Object defaultValue){
+		if(paramInfos.containsKey(name)==false){
+			paramInfos.put(name, new ParamInfo(name, defaultValue));
+		}
+		
 		Object r = params.get(name);
 		if(r==null){
 			return defaultValue;
@@ -63,4 +68,9 @@ public class ZWebContext {
 		}
 	}
 
+	
+	public Map<String, ParamInfo> getParamInfos(){
+		return paramInfos;
+	}
+	
 }

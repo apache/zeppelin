@@ -1,5 +1,8 @@
 package com.nflabs.zeppelin.zengine;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -12,7 +15,7 @@ public class ZContext {
 	public String out;
 	public String arg;
 	private Map<String, Object> params;
-	
+	Map<String, ParamInfo> paramInfos = new HashMap<String, ParamInfo>();
 	/**
 	 * Initialize Zeppelin Context
 	 * @param tableIn input table name
@@ -25,6 +28,10 @@ public class ZContext {
 		this.out = tableOut;
 		this.arg = arg;
 		this.params = params;
+	}
+	
+	public Map<String, ParamInfo> getParamInfos(){
+		return paramInfos;
 	}
 	
 	/**
@@ -41,8 +48,13 @@ public class ZContext {
 	 * @param defaultValue defaultValue of the param
 	 * @return 
 	 */
-	public Object param(String name, Object defaultValue){		
+	public Object param(String name, Object defaultValue){
+		if(paramInfos.containsKey(name)==false){
+			paramInfos.put(name, new ParamInfo(name, defaultValue));
+		}
+			
 		Object r = params.get(name);
+		
 		if(r==null){
 			return defaultValue;
 		} else {

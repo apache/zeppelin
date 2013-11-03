@@ -13,11 +13,14 @@ import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.zengine.Z;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQL;
+import com.nflabs.zeppelin.zengine.ZQLException;
 
 public class ZQLSession extends Job{
 	transient Logger logger = Logger.getLogger(ZQLSession.class);
 
+	private String name;
 	private String zql;
+	private List<Map<String, Object>> params;
 	Result error;
 
 	private List<Z> zqlPlans;
@@ -31,6 +34,19 @@ public class ZQLSession extends Job{
 		// later we can improve this part. to make it modify current plan.
 		zqlPlans = null;
 		setStatus(Status.READY);
+	}
+	
+
+	public void setParams(List<Map<String, Object>> params) {
+		this.params = params;
+	}
+	
+	public void setName(String name){
+		this.name = name;
+	}
+	
+	public String getName(){
+		return name;
 	}
 	
 	public List<Z> getPlan(){
@@ -63,6 +79,21 @@ public class ZQLSession extends Job{
 	public Map<String, Object> info() {
 		return new HashMap<String, Object>();
 	}
+	
+	public void dryRun() throws ZException, ZQLException{
+		if(getStatus()!=Status.READY) return;
+		
+		if(zqlPlans==null){
+			ZQL zqlEvaluator = new ZQL(zql);
+			zqlPlans = zqlEvaluator.compile();
+		} else {
+			reconstructNextReference();
+		}
+		
+		for(Z zz : zqlPlans){
+			zz.dryRun();
+		}
+	}
 
 	@Override
 	protected Object jobRun() throws Throwable {
@@ -74,11 +105,19 @@ public class ZQLSession extends Job{
 			reconstructNextReference();
 		}
 		
-		for(Z zz : zqlPlans){
+		for(int i=0; i<zqlPlans.size(); i++){
+			Z zz = zqlPlans.get(i);
+			Map<String, Object> p = new HashMap<String, Object>();
+			if(params!=null && params.size()>=i+1){
+				p = params.get(i);
+			}
 			try {
+				zz.withParams(p);
+				
 				if(zz.isExecuted()==false){
 					zz.execute();
 				}
+				
 				results.add(zz.result());
 				zz.release();
 			} catch (ZException e) {
@@ -96,5 +135,5 @@ public class ZQLSession extends Job{
 		return false;
 		
 	}
-	
+
 }

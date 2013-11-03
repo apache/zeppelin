@@ -28,7 +28,6 @@ import com.nflabs.zeppelin.result.Result;
  */
 public class Q extends Z{
 	protected String query;
-	Map<String, Object> params = new HashMap<String, Object>();
 	private List<URI> resources = new LinkedList<URI>();
 	Result cachedResultDataObject;
 	
@@ -71,21 +70,6 @@ public class Q extends Z{
 	 */
 	public Q withResource(URI r){
 		resources.add(r);
-		return this;
-	}
-	
-
-	
-
-		
-	/**
-	 * Add a paramter to pass template environment
-	 * @param key name of parameter
-	 * @param val value of parameter
-	 * @return this object
-	 */
-	public Q withParam(String key, Object val){
-		params.put(key, val);
 		return this;
 	}
 	
@@ -214,6 +198,52 @@ public class Q extends Z{
 	public boolean isWebEnabled() {
 		if(next()==null) return true;
 		else return false;
+	}
+
+	@Override
+	protected Map<String, ParamInfo> extractParams() throws ZException {
+		Map<String, ParamInfo> paramInfos = new HashMap<String, ParamInfo>();
+		
+		ByteArrayInputStream ins = new ByteArrayInputStream(query.getBytes());
+		BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
+		
+		ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);
+				
+		String q;
+		try {
+			q = getQuery(erb, zContext);
+		} catch (ZException e1) {
+			logger().debug("dry run error", e1);
+		}
+		try {ins.close();} catch (IOException e) {}
+
+		ZWebContext zWebContext = null;
+		if(isWebEnabled()==true){
+
+			zWebContext = new ZWebContext(null);
+			InputStream in = this.getClass().getResourceAsStream("/table.erb");
+			erb = new BufferedReader(new InputStreamReader(in));					
+			try {
+				q = evalWebTemplate(erb, zWebContext);
+			} catch (ZException e1) {
+				logger().debug("dry run error", e1);
+			}
+			try {
+				ins.close();
+			} catch (IOException e) {
+				logger().error("Assert", e);
+			}
+		}
+
+		if(zWebContext!=null){
+			paramInfos.putAll(zWebContext.getParamInfos());
+		}
+		
+		if(zContext!=null){
+			paramInfos.putAll(zContext.getParamInfos());
+		}
+		
+		return paramInfos;
 	}
 
 }

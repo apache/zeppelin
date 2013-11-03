@@ -3,7 +3,8 @@ var loaderObj = {
 	templates : [
 		'index.html',
 		'zql.html',
-	        'zql/edit.html'
+	        'zql/edit.html',
+	        'zql/param.html'
 	],
 	scripts : [
 	]
@@ -111,8 +112,11 @@ $(document).ready(function(){
 
 	App.ZqlEditController = App.ApplicationController.extend({
 	    dirty : false,
+	    dryrun : true,
 	    currentSession : undefined,
 	    zql : undefined,
+	    params : undefined,
+	    
 
 	    actions : {
 		runSession : function(){
@@ -123,19 +127,35 @@ $(document).ready(function(){
 		    var sessionId = session.id;
 
 		    var zql = this.get('zql');
-		    zeppelin.zql.set(sessionId, "", zql, function(c, d){
-			if(c!=200){
-			    zeppelin.alert("Error: Invalid Session", "#alert");
-			} else {
-			    this.set('dirty', false);
-			    zeppelin.zql.run(sessionId, function(c, d){
-				if(c==200){
-				    controller.send('loadSession', sessionId);
-				}		 
-			    });
-                        }
-		    }, this);
+		    if(this.get('dryrun')==true && false){
+			zeppelin.zql.set(sessionId, "", zql, undefined, function(c, d){
+			    if(c!=200){
+				zeppelin.alert("Error: Invalid Session", "#alert");
+			    } else {
+				zeppelin.zql.dryRun(sessionId, function(c, d){
+				    if(c==200){
+					controller.set('dryrun', false);
+					controller.send('loadSession', sessionId);
+				    }		 
+				});
+                            }
+			}, this);
+		    } else {
+			zeppelin.zql.set(sessionId, "", zql, undefined, function(c, d){
+			    if(c!=200){
+				zeppelin.alert("Error: Invalid Session", "#alert");
+			    } else {
+				controller.set('dirty', false);
+				zeppelin.zql.run(sessionId, function(c, d){
+				    if(c==200){
+					controller.send('loadSession', sessionId);
+				    }		 
+				});
+                            }
+			}, this);
+		    }
 		},
+
 		loadSession : function(sessionId){
 		    var controller = this;
 		    zeppelin.zql.get(sessionId, function(c, d){
@@ -146,11 +166,10 @@ $(document).ready(function(){
 		// called from view
 		beforeChangeSession : function(model, editor){
 		    if(model==null) return;
-
 		    // save session before change
 		    if(model.status=="READY"){
 			if(this.get('dirty')){
-			    zeppelin.zql.set(model.id, "", editor.getValue(), function(c, d){
+			    zeppelin.zql.set(model.id, "", editor.getValue(), undefined, function(c, d){
 				if(c==200){
 				    console.log("session %o saved", model.id)
 				} else {
@@ -167,7 +186,9 @@ $(document).ready(function(){
 		},
 
 		zqlChanged : function(zql){
+		    console.log("Zql changed from %o to %o", this.get('zql'), zql);
 		    this.set('dirty', true);
+		    this.set('dryrun', true);
 		    this.set('zql', zql);
 		},
 
@@ -180,7 +201,7 @@ $(document).ready(function(){
 			// auto save every 10 sec
 			if(new Date().getSeconds() % 10 == 0 && this.get('dirty')){
 			    // TODO display saving... -> saved message
-			    zeppelin.zql.set(session.id, "", editor.getValue(), function(c, d){
+			    zeppelin.zql.set(session.id, "", editor.getValue(), undefined, function(c, d){
 				if(c==200){
 				    this.set('dirty', false);
 				    console.log("autosave completed %o %o", c, d);
@@ -214,8 +235,9 @@ $(document).ready(function(){
 		this.set('currentModel', model);
 		console.log("Current session=%o", model);
 		if(editor==null) return;
-
-		editor.setValue(model.zql)
+		if(editor.getValue()!=model.zql){
+		    editor.setValue(model.zql)
+		}
 
 		// clear visualizations
 		$('#visualizationContainer iframe').remove();
@@ -329,7 +351,57 @@ $(document).ready(function(){
 		var editor = ace.edit("zqlEditor");
 		controller.send('beforeChangeSession', model, editor);
 		this.set('currentModel', null);
-	    }
+	    },
+
+	    zqlParamView : Ember.View.extend({
+		templateName : 'zql/param',
+		paramInfo : null,
+
+		modelChanged : function(){
+		    var controller = this.get("controller");
+		    var session = controller.get('currentSession');
+		    console.log("model changes %o", session);
+		    var planStack = [];
+
+		    if(session.zqlPlans){
+			for(var i=0; i<session.zqlPlans.length; i++){
+			    var planModel = session.zqlPlans[i];
+			    if(!planModel) continue;
+
+			    for(var p = planModel; p!=undefined; p = p.prev){
+				console.log("P=%o", p.paramInfos);
+				planStack.unshift(p);
+			    }
+			}
+		    }
+		    
+
+		    console.log("paramInfo=%o", planStack);
+		    this.set('paramInfo', planStack);
+		}.observes('controller.currentSession'),
+
+		didInsertElement : function(){
+  		    var controller = this.get("controller");
+		    var model = controller.get("currentSession");
+		    var view = this;
+		    
+		},
+		willClearRender: function(){
+  		    var controller = this.get("controller");
+		    var model = controller.get("currentSession");
+		    var view = this;
+		    this.set('paramInfo', null);
+		}
+	    })
 	});
-	
+});
+
+
+Handlebars.registerHelper('eachMap', function(context, options) {
+    var ret = "";
+    for(var prop in context)
+    {
+        ret = ret + options.fn({key:prop,value:context[prop]});
+    }
+    return ret;
 });

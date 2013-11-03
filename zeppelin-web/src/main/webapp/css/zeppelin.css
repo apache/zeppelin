@@ -137,7 +137,8 @@ body {
   padding: 5px 20px;
 }
 .bs-sidebar .nav > li > a:hover,
-.bs-sidebar .nav > li > a:focus {
+.bs-sidebar .nav > li > a:focus,
+.bs-sidebar .nav > li > ul > li > a:hover {
   text-decoration: none;
   background-color: #e5e3e9;
   border-right: 1px solid #dbd8e0;

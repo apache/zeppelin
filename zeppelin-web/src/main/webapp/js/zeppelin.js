@@ -12,15 +12,22 @@ function Zeppelin(arg){
 	    this.create = function(listener, scope){
 		zeppelin.get("/zql/new", listener, scope);
             }
-	    this.set = function(sessionId, name, zql, listener, scope){
+	    this.set = function(sessionId, name, zql, params, listener, scope){
 		zeppelin.post("/zql/set/"+sessionId, {
 		    zql : zql,
-		    name : name
+		    name : name,
+		    params : params
 		}, listener, scope);
 	    }
+
 	    this.run = function(id, listener, scope){
 		zeppelin.get("/zql/run/"+id, listener, scope);
             }
+
+	    this.dryRun = function(id, listener, scope){
+		zeppelin.get("/zql/run/"+id+"/dry", listener, scope);
+            }
+
 	    this.get = function(sessionId, listener, scope){
 		zeppelin.get('/zql/get/'+sessionId, listener, scope);
             }

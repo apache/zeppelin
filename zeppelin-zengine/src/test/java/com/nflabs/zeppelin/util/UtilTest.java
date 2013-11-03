@@ -36,4 +36,18 @@ public class UtilTest extends TestCase {
 		assertEquals("output", token[1]);
 	}
 
+	public void testSplit(){
+		String [] op = new String[]{";", "|", ">>", ">"};
+		
+		String str = "CREATE external table news20b_train (\n"+
+			"	rowid int,\n"+
+			"   label int,\n"+
+			"   features ARRAY<STRING>\n"+
+			")\n"+ 
+			"ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' \n"+
+			"COLLECTION ITEMS TERMINATED BY \",\" \n"+ 
+			"STORED AS TEXTFILE;\n";
+		Util.split(str, op, true);
+
+	}
 }

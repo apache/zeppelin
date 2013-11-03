@@ -6,21 +6,22 @@
       google.setOnLoadCallback(drawTable);
       function drawTable() {
         var data = new google.visualization.DataTable();
-
-<% z.result.getColumnDef.each do |col| %>
-        data.addColumn('string', '<%=col.name%>');
-<% end %>
-<% if z.result.rows != nil %>
-        data.addRows([
-            <% z.result.rows.each do |row| %>
-	      [
-		  <% row.each do |cell| %>
-		    '<%= cell %>',
-		  <% end %>
-	      ],
-	    <% end %>
-	]);
-
+<% if z and z.result != nil %>
+	<% z.result.getColumnDef.each do |col| %>
+	        data.addColumn('string', '<%=col.name%>');
+	<% end %>
+	<% if z.result.rows != nil %>
+	        data.addRows([
+	            <% z.result.rows.each do |row| %>
+		      [
+			  <% row.each do |cell| %>
+			    '<%= cell %>',
+			  <% end %>
+		      ],
+		    <% end %>
+		]);
+	
+	<% end %>
 <% end %>
         var table = new google.visualization.Table(document.getElementById('table_div'));
         table.draw(data, {showRowNumber: true});

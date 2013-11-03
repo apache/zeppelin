@@ -266,7 +266,6 @@ public class ZQL {
 						 if(kv.length==1){
 							 l.withParam(kv[0].trim(), null); 	 
 						 } else if(kv.length==2){
-							 System.out.println("Param="+kv[0]+","+kv[1]);
 							 l.withParam(kv[0].trim(), kv[1].trim()); 	 
 						 }						 
 					}

@@ -267,4 +267,56 @@ public class L extends Q{
 			return super.pipe(z);
 		}
 	}
+	
+	@Override
+	protected Map<String, ParamInfo> extractParams() throws ZException {
+		initialize();
+		
+		Map<String, ParamInfo> paramInfos = new HashMap<String, ParamInfo>();
+		
+		String q;
+		ZContext zContext = null;
+		if(erbFile!=null){
+			FSDataInputStream ins;
+			try {
+				ins = fs.open(erbFile);
+				BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
+				
+				zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);			
+				q = getQuery(erb, zContext);
+				ins.close();
+			} catch (IOException e1) {
+				logger().debug("dry run error", e1);
+			} catch (ZException e) {
+				logger().debug("dry run error", e);
+			}
+		}
+		
+		ZWebContext zWebContext = null;
+
+		try {
+			Path resourcePath = new Path(webDir.toUri()+"/index.erb");
+			if(fs.isFile(resourcePath)==true){
+					
+				zWebContext = new ZWebContext(params, null);
+				
+				FSDataInputStream ins = fs.open(resourcePath);
+				BufferedReader erb = new BufferedReader(new InputStreamReader(ins));					
+				q = evalWebTemplate(erb, zWebContext);
+				ins.close();
+			}				
+		} catch (IOException e) {
+			logger().debug("dry run error", e);
+		} catch (ZException e) {
+			logger().debug("dry run error", e);
+		}
+		
+		if(zWebContext!=null){
+			paramInfos.putAll(zWebContext.getParamInfos());
+		}
+		if(zContext!=null){
+			paramInfos.putAll(zContext.getParamInfos());
+		}
+		return paramInfos;
+	}
 }

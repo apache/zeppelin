@@ -51,25 +51,54 @@ public class ZQL {
         return new JsonResponse(Status.OK, "", s).build();
     }
 
+	static class SetZqlParam{
+		String name;
+		String zql;
+		List<Map<String, Object>> params;
+	} 
+
     @POST
     @Path("set/{sessionId}")
     @Produces("application/json")
-    public Response set(@PathParam("sessionId") String sessionId, String json) {
+    public Response setZql(@PathParam("sessionId") String sessionId, String json) {
     	
-    	Map<String, Object> data = gson.fromJson(json, Map.class);
-    	ZQLSession s = sessionManager.setZql(sessionId, (String) data.get("zql"));
+    	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
+    	ZQLSession s = sessionManager.setZql(sessionId, data.zql);
     	if(s==null){
     		return new JsonResponse(Status.NOT_FOUND).build();
-    	} else {    	
-    		return new JsonResponse(Status.OK, "", s).build();
     	}
+    	
+    	s = sessionManager.setParams(sessionId, data.params);
+    	if(s==null){
+    		return new JsonResponse(Status.NOT_FOUND).build();
+    	}
+    	
+    	s = sessionManager.setName(sessionId, data.name);
+    	if(s==null){
+    		return new JsonResponse(Status.NOT_FOUND).build();
+    	}
+    	
+    	return new JsonResponse(Status.OK, "", s).build();
     }
     
+        
     @GET
     @Path("run/{sessionId}")
     @Produces("application/json")
-    public Response set(@PathParam("sessionId") String sessionId) {
+    public Response run(@PathParam("sessionId") String sessionId) {
     	 ZQLSession s = sessionManager.run(sessionId);
+    	 if(s==null){
+    		 return new JsonResponse(Status.NOT_FOUND).build(); 
+    	 } else {
+    		 return new JsonResponse(Status.OK, "", s).build();	 
+    	 }
+    }
+    
+    @GET
+    @Path("run/{sessionId}/dry")
+    @Produces("application/json")
+    public Response dryRun(@PathParam("sessionId") String sessionId) {
+    	 ZQLSession s = sessionManager.dryRun(sessionId);
     	 if(s==null){
     		 return new JsonResponse(Status.NOT_FOUND).build(); 
     	 } else {
