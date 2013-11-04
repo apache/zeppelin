@@ -613,7 +613,7 @@ limitations under the License.
 	    Library is reside on local-repository or {{#link-to 'zan'}}ZAN{{/link-to}}.
 	    Local-repository is 'zan-repo' directory under Zeppelin installation path at default.
 	    <pre>
-[LIBRARY_NAME]/[LIBRARY_NAME].erb
+[LIBRARY_NAME]/zql.erb
                [LIBRARY_NAME]_[RESOURCES]
                web/index.erb
 	       web/[WEB_RESOURCES]</pre>
@@ -623,13 +623,13 @@ limitations under the License.
 		 That simple.		 
 	       </p>
 	       <p>
-		 <b>[LIBRARY_NAME].erb</b><br />
+		 <b>zql.erb</b><br />
 		 Query template file in ruby erb format.
 		 ZContext is accessible through local varialbe 'z'.
 	       </p>
 	       <p>
 		 <b>[LIBRARY_NAME]_[RESOURCES]</b><br />
-		 Any resource files required by [LIBRARY_NAME].erb.
+		 Any resource files required by zql.erb.
 		 These files will be added by 'add FILE' or 'add JAR' before execution.
 	       </p>
 	       <p>
