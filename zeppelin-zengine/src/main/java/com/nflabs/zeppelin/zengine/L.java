@@ -95,7 +95,7 @@ public class L extends Q{
 			if(fs.isDirectory(dir)==false){
 				throw new ZException("Directory "+dir.toUri()+" does not exist");
 			}
-			this.erbFile = new Path(libUri.toString()+"/"+new Path(libUri).getName()+".erb");
+			this.erbFile = new Path(libUri.toString()+"/zql.erb");
 
 			if(fs.isFile(erbFile)==false){
 				erbFile = null;
@@ -230,7 +230,7 @@ public class L extends Q{
 						continue;
 					} else if(f.getName().startsWith(libName+"_")==false){
 						continue;
-					} else if(f.getName().equals(libName+".erb")){
+					} else if(f.getName().equals("zql.erb")){
 						continue;
 					} else {
 						resources.add(f.toUri());

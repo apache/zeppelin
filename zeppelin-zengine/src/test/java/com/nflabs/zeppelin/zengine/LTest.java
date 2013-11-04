@@ -71,7 +71,7 @@ public class LTest extends HiveTestService {
 	
 	public void testLoadFromDir() throws IOException, ZException{
 		new File(tmpDir.getAbsolutePath()+"/test").mkdir();
-		File erb = new File(tmpDir.getAbsolutePath()+"/test/test.erb");
+		File erb = new File(tmpDir.getAbsolutePath()+"/test/zql.erb");
 		FileOutputStream out = new FileOutputStream(erb);		
 		out.write(("CREATE VIEW <%= z."+Q.OUTPUT_VAR_NAME+" %> AS select * from table limit <%= z.param('limit') %>\n").getBytes());
 		out.close();
@@ -111,7 +111,7 @@ public class LTest extends HiveTestService {
 
 	public void testWeb() throws Exception{
 		new File(tmpDir.getAbsolutePath()+"/test/web").mkdirs();
-		File erb = new File(tmpDir.getAbsolutePath()+"/test/test.erb");
+		File erb = new File(tmpDir.getAbsolutePath()+"/test/zql.erb");
 		FileOutputStream out = new FileOutputStream(erb);
 		out.write(("show tables").getBytes());
 		out.close();

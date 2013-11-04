@@ -43,7 +43,7 @@ public class ZQLTest extends HiveTestService {
 		Z.configure(client);
 
 		new File(tmpDir.getAbsolutePath()+"/test").mkdir();
-		File erb = new File(tmpDir.getAbsolutePath()+"/test/test.erb");
+		File erb = new File(tmpDir.getAbsolutePath()+"/test/zql.erb");
 		FileOutputStream out = new FileOutputStream(erb);		
 		out.write(("select * from (<%= z."+Q.INPUT_VAR_NAME+" %>) a limit <%= z.param('limit') %>\n").getBytes());
 		out.close();
