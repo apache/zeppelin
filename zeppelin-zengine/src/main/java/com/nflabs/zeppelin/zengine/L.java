@@ -155,8 +155,11 @@ public class L extends Q{
 			path = "index.erb";
 		}
 		
+
 		try {
-			if(fs.isDirectory(webDir)==false) return null;
+			if(fs.isDirectory(webDir)==false){
+				return super.readWebResource(path);
+			}
 			
 			Path resourcePath = new Path(webDir.toUri()+"/"+path);
 			if(fs.isFile(resourcePath)==false){
@@ -198,13 +201,14 @@ public class L extends Q{
 		Path resourcePath = new Path(webDir.toUri()+"/index.erb");
 		try {
 			if(fs.isFile(resourcePath)==false){
-				return false;
+				return super.isWebEnabled();
 			} else {
 				return true;
 			}
 		} catch (IOException e) {
 			logger().error("Error while reading file "+resourcePath, e);
-			return false;
+			// fall back to default view
+			return super.isWebEnabled();
 		}
 	}
 	
