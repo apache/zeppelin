@@ -186,7 +186,7 @@ $(document).ready(function(){
 		},
 
 		zqlChanged : function(zql){
-		    console.log("Zql changed from %o to %o", this.get('zql'), zql);
+		    //console.log("Zql changed from %o to %o", this.get('zql'), zql);
 		    this.set('dirty', true);
 		    this.set('dryrun', true);
 		    this.set('zql', zql);
