@@ -315,15 +315,25 @@ select * from wc_out limit 10;                               // print first 10 r
     <script type="text/x-handlebars" data-template-name="zan">
       <div class="row content-style3">
 	<div class="col-md-8">
-	  <h3>Zeppelin Archive Network</h3>
+	  <h2>Zeppelin Archive Network</h2>
+	  <p>Central library repository for Zeppelin, for Data analysis.</p>
+	  <h3>Don't reinvent the wheel.</h3>
 	</div>
       </div>
       <div class="row"></div>
       <div class="row">
 	<div class="col-md-12">
-	  Instant download zeppelin libraries
 	  <p>
-	    <h5>ZAN will be implemented from Developer preview #2</h5>
+	  Currently ZAN is included as a local repository in {{#link-to 'download'}}Zeppelin package release{{/link-to}}.
+	  </p>
+	  <p>
+	    You can check what's included in ZAN from <a href="https://github.com/NFLabs/zeppelin/tree/master/zan-repo">github zan-repo</a>
+	  </p>
+	  <p>
+	    Also, if you're interested in writing your own Zeppelin Library, checkout {{#link-to 'docZeppelinLibrary'}}writing Zeppelin Library{{/link-to}}.
+	  </p>
+	  <p>
+	    We're planning to make online, remote ZAN system in the future version.
 	  </p>
 	</div>
       </div>
