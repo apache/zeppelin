@@ -32,7 +32,7 @@
             <% z.result.rows.each do |row| %>
 	      [
 		  <% row.each_with_index do |cell,index| %>
-		        (data.getColumnType(<%=index%>)=="number") ? <%= cell %> : '<%= cell %>', 
+		        (data.getColumnType(<%=index%>)=="number") ? <%= cell %> : '<%= cell.to_s().sub("'","\\\'") %>', 
 		  <% end %>
 	      ],
 	    <% end %>

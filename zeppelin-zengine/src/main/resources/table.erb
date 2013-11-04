@@ -15,7 +15,7 @@
 	            <% z.result.rows.each do |row| %>
 		      [
 			  <% row.each do |cell| %>
-			    '<%= cell %>',
+			    '<%= cell.to_s().sub("'","\\\\'") %>',
 			  <% end %>
 		      ],
 		    <% end %>
