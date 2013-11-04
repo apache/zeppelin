@@ -436,9 +436,9 @@ public abstract class Z {
 				Statement stmt = con.createStatement();
 				logger().info("add resource "+res.toString()); 
 				if(res.getPath().endsWith(".jar")){
-					stmt.executeQuery("add JAR "+new File(res.toString()).getAbsolutePath());
+					stmt.executeQuery("add JAR "+res.toString());
 				} else {
-					stmt.executeQuery("add FILE "+new File(res.toString()).getAbsolutePath());
+					stmt.executeQuery("add FILE "+res.toString());
 					
 				}
 				stmt.close();
