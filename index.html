@@ -282,7 +282,8 @@ select * from wc_out limit 10;                               // print first 10 r
 	    </ul>
 	  </p>
 
-	  Download <a href="http://www.nflabs.com/pub/zeppelin/zeppelin-0.1.2.tar.gz">zeppelin-0.1.2.tar.gz</a>
+	  Download <a href="http://www.nflabs.com/pub/zeppelin/zeppelin-0.1.2.tar.gz"
+                  onclick="ga('send', 'event', 'download', 'download-page', 'v-0.1.2');">zeppelin-0.1.2.tar.gz</a>
 
 
 	  <h4>1 November, 2013: Release 0.1.1</h4>
@@ -294,7 +295,8 @@ select * from wc_out limit 10;                               // print first 10 r
 	    </ul>
 	  </p>
 
-	  Download <a href="http://www.nflabs.com/pub/zeppelin/zeppelin-0.1.1.tar.gz">zeppelin-0.1.1.tar.gz</a>
+	  Download <a href="http://www.nflabs.com/pub/zeppelin/zeppelin-0.1.1.tar.gz" 
+                  onclick="ga('send', 'event', 'download', 'download-page', 'v-0.1.1');" >zeppelin-0.1.1.tar.gz</a>
 
 	  <h4>29 October, 2013: Release 0.1.0 Developer preview #1</h4>
 	  This is devloper preview. With missing features, unknown bugs.
@@ -306,7 +308,8 @@ select * from wc_out limit 10;                               // print first 10 r
 	    </ul>
 	  </p>
 
-	  Download <a href="http://www.nflabs.com/pub/zeppelin/zeppelin-0.1.tar.gz">zeppelin-0.1.tar.gz</a>
+	  Download <a href="http://www.nflabs.com/pub/zeppelin/zeppelin-0.1.tar.gz" 
+                  onclick="ga('send', 'event', 'download', 'download-page', 'v-0.1');">zeppelin-0.1.tar.gz</a>
 	</div>
       </div>
     </script>
@@ -826,26 +829,22 @@ HADOOP_HOME=YOUR_HADOOP_HOME JAVA_HOME=YOUR_JAVA_HOME mvn exec:java -Dexec.mainC
     </script>
 
     <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','http://www.google-analytics.com/analytics.js','ga');
+
       if(document.location.protocol=="file:"){
-        var _gaq = _gaq || [];
-        _gaq.push(['_setAccount', 'UA-45176241-2']);
-        _gaq.push(['_setDomainName', 'none']);
-
-        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-        })(window,document,'script', ('https:' == document.location.protocol ? 'https://ssl' : 'http://www')+'.google-analytics.com/u/ga_debug.js','ga');
-
-        ga('create', 'UA-45176241-2', 'zeppelin-project.org');
-
+        ga('create', 'UA-45176241-2', {
+          'cookieDomain': 'none'
+        });
       } else {
-        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-	ga('create', 'UA-45176241-2', 'zeppelin-project.org');
+        ga('create', 'UA-45176241-2', {
+          siteSpeedSampleRate: 100
+        });
       }
+      ga('send', 'pageview');
+
       </script>
   </body>
 </html>
