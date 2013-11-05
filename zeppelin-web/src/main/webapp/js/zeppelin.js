@@ -32,12 +32,8 @@ function Zeppelin(arg){
 		zeppelin.get('/zql/get/'+sessionId, listener, scope);
             }
 
-	    this.find = function(from, to, max, listener, scope){
-		zeppelin.post("/zql/find", {
-		    from : from,
-		    to : to,
-		    max : max
-		}, listener, scope);
+	    this.list = function(listener, scope){
+		zeppelin.get("/zql/list", listener, scope);
 	    }
 	}()
     

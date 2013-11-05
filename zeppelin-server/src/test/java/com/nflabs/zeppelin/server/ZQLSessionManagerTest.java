@@ -63,7 +63,7 @@ public class ZQLSessionManagerTest extends TestCase {
 		assertNotNull(sess);
 		
 		// List
-		assertEquals(1, sm.find(new Date(0), new Date(), 5).size());
+		assertEquals(1, sm.list().size());
 		
 		// Update
 		sm.setZql(sess.getId(), "show tables");
@@ -76,15 +76,7 @@ public class ZQLSessionManagerTest extends TestCase {
 		assertNull(sm.get(sess.getId()));
 		
 		// List
-		assertEquals(0, sm.find(new Date(0), new Date(), 5).size());
-	}
-	
-	public void testFindWithMax(){
-		sm.create();
-		sm.create();
-		sm.create();
-		assertEquals(3, sm.find(new Date(0), new Date(), 10).size());
-		assertEquals(2, sm.find(new Date(0), new Date(), 2).size());
+		assertEquals(0, sm.list().size());
 	}
 	
 	public void testRun() throws InterruptedException{

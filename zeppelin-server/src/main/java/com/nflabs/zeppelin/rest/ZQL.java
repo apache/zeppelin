@@ -118,42 +118,15 @@ public class ZQL {
     	 }
     }
     
-   
-	static class FindParam{
-		long from;
-		long to;
-		int max;
-	} 
-	
     /**
-     * Find session
-     * @param data
+     * list session
      * @return
      */
-    @POST
-    @Path("find")
+    @GET
+    @Path("list")
     @Produces("application/json")    
-    public Response find(String json) {
-
-    	FindParam param = gson.fromJson(json, FindParam.class);
-    	
-    	Date from = null;
-    	Date to = null;
-    	int max = 10;
-
-    	if(param.from>0){
-    		from = new Date(param.from);
-    	}
-    	if(param.to>0){
-    		to = new Date(param.to);
-    	}
-
-    	if(param.max>0){
-    		max =  param.max;
-    	}
-
-    	TreeMap<String, ZQLSession> sessions = sessionManager.find(from, to, max);
-    	
+    public Response find() {
+    	TreeMap<String, ZQLSession> sessions = sessionManager.list();
         return new JsonResponse(Status.OK, "", new LinkedList<ZQLSession>(sessions.descendingMap().values())).build();
     }   
 

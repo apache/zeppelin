@@ -63,7 +63,7 @@ $(document).ready(function(){
 		return params;
             },
 	    setupController : function(controller, model){
-		zeppelin.zql.find((new Date().getTime())-(1000*60*60*24*30), new Date().getTime(), 10, function(c, resp){
+		zeppelin.zql.list(function(c, resp){
 		    if(c==200){
 			controller.set('runningSessions', resp);
 		    }
@@ -77,7 +77,7 @@ $(document).ready(function(){
 		    controller = this;
 		    Ember.$.getJSON('/cxf/zeppelin/zql/new').then(function(d){
 			// update runnning
-			zeppelin.zql.find((new Date().getTime())-(1000*60*60*24*30), new Date().getTime(), 10, function(c, resp){
+			zeppelin.zql.list(function(c, resp){
 			    if(c==200){
 				controller.set('runningSessions', resp);
 			    }
@@ -95,7 +95,7 @@ $(document).ready(function(){
 		},
 		updateSession : function(){
 		    controller = this;
-		    zeppelin.zql.find((new Date().getTime())-(1000*60*60*24*30), new Date().getTime(), 10, function(c, resp){
+		    zeppelin.zql.list(function(c, resp){
 			if(c==200){
 			    controller.set('runningSessions', resp);
 			}
@@ -159,7 +159,7 @@ $(document).ready(function(){
 				    if(c==200){
 					controller.send('loadSession', sessionId);
 				    }		 
-				});
+				});				
                             }
 			}, this);
 		    }
@@ -190,8 +190,10 @@ $(document).ready(function(){
 		},
 
 		// called from view
-		afterChangeSession : function(model, editor){
+		afterChangeSession : function(model, sessionNameEditor, editor){
 		    this.set('dirty', false);
+		    this.set("zql", editor.getValue());
+		    this.set("sessionName", sessionNameEditor.val());
 		},
 
 		zqlChanged : function(zql){
@@ -241,8 +243,8 @@ $(document).ready(function(){
 	});
 	
 	App.ZqlEditView = Ember.View.extend({
-	    sessionNameEditor : null,
-	    editor : null,
+	    sessionNameEditor : undefined,
+	    editor : undefined,
 	    currentModel : undefined,
 
 	    modelChanged : function(){      // called when model is changed
@@ -259,9 +261,10 @@ $(document).ready(function(){
 		    editor.setValue(model.zql)
 		}
 
-		if(model.jobName && model.jobName!="" &&
-		   sessionNameEditor.val()!=model.jobName){
-		    sessionNameEditor.val(model.jobName);
+		if(model.jobName && model.jobName!=""){
+		    if(sessionNameEditor.val()!=model.jobName){
+			sessionNameEditor.val(model.jobName);
+		    }
 		} else {
 		    sessionNameEditor.val(model.id);
 		}
@@ -338,7 +341,7 @@ $(document).ready(function(){
 		    editor.setReadOnly(false);
 		}
 
-		controller.send("afterChangeSession", model, editor);
+		controller.send("afterChangeSession", model, sessionNameEditor, editor);
             }.observes('controller.currentSession'),
 
 

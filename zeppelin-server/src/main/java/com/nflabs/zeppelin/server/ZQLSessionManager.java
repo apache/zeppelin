@@ -195,78 +195,58 @@ public class ZQLSessionManager implements JobListener {
 
 
 	
-	public TreeMap<String, ZQLSession> find(Date from, Date to, int max){
-		if(to==null){
-			to = new Date();
-		}
-		if(from==null){
-			from = new Date(to.getTime()-(1000*60*60*24*7));
-		}
+	public TreeMap<String, ZQLSession> list(){
 		TreeMap<String, ZQLSession> found = new TreeMap<String, ZQLSession>();
 		
-		for(Date cur=to; cur.before(from)==false; cur = new Date(cur.getTime()-(1000*60*60))){
-			Path dir = new Path(sessionPersistBasePath+"/"+pathFormat.format(cur));
-			try {
-				if(fs.isDirectory(dir)==false) continue;
-			} catch (IOException e) {
-				logger.error("Can't scan dir "+dir, e);
+		Path dir = new Path(sessionPersistBasePath);
+		try {
+			if(fs.isDirectory(dir)==false){
+				return found;
 			}
-			
-			FileStatus[] files = null;
-			try {
-				files = fs.listStatus(dir);
-			} catch (IOException e) {
-				logger.error("Can't list dir "+dir, e);
-				e.printStackTrace();
-			}
-			if(files==null) continue;
-			
-			Arrays.sort(files, new Comparator<FileStatus>(){
-
-				@Override
-				public int compare(FileStatus a, FileStatus b) {
-					String aName = a.getPath().getName();
-					String bName = b.getPath().getName();
-					return bName.compareTo(aName);
-				}				
-			});
-			
-			for(FileStatus f : files){
-				ZQLSession session;
-				try {
-					
-					session = load(f.getPath());
-					found.put(session.getId(), session);
-				} catch (IOException e) {
-					logger.error("Can't load session from path "+f.getPath(), e);
-				}
-				
-				if(found.size()>=max) break;
-			}
-			
-			if(found.size()>=max) break;	
+		} catch (IOException e) {
+			logger.error("Can't scan dir "+dir, e);
 		}
 		
+		FileStatus[] files = null;
+		try {
+			files = fs.listStatus(dir);
+		} catch (IOException e) {
+			logger.error("Can't list dir "+dir, e);
+			e.printStackTrace();
+		}
+		if(files==null) return found;
+			
+		Arrays.sort(files, new Comparator<FileStatus>(){
+
+			@Override
+			public int compare(FileStatus a, FileStatus b) {
+				String aName = a.getPath().getName();
+				String bName = b.getPath().getName();
+				return bName.compareTo(aName);
+			}				
+		});
+			
+		for(FileStatus f : files){
+			ZQLSession session;
+			try {
+				
+				session = load(f.getPath());
+				found.put(session.getId(), session);
+			} catch (IOException e) {
+				logger.error("Can't load session from path "+f.getPath(), e);
+			}
+		}
+			
 		return found;
 	}
 	
 	
 	private Path getPathForSession(ZQLSession session){
-		Date date = session.getDateCreated();
-		return new Path(sessionPersistBasePath+"/"+pathFormat.format(date)+session.getId());		
+		return new Path(sessionPersistBasePath+"/"+session.getId());		
 	}
 	
 	private Path getPathForSessionId(String sessionId){
-		String datePart = sessionId.substring(0, sessionId.indexOf('_'));
-		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd-HHmmss");
-		Date date;
-		try {
-			date = df.parse(datePart);
-		} catch (ParseException e) {
-			logger.error("Invalid sessionId format "+sessionId, e);
-			return null;
-		}
-		return new Path(sessionPersistBasePath+"/"+pathFormat.format(date)+sessionId);
+		return new Path(sessionPersistBasePath+"/"+sessionId);
 	}
 	
 	private void persist(ZQLSession session) throws IOException{		
