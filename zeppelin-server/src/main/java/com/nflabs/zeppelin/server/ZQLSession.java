@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.server;
 
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -105,6 +106,8 @@ public class ZQLSession extends Job{
 			reconstructNextReference();
 		}
 		
+		Connection conn = Z.getConnection();
+		
 		for(int i=0; i<zqlPlans.size(); i++){
 			Z zz = zqlPlans.get(i);
 			Map<String, Object> p = new HashMap<String, Object>();
@@ -115,7 +118,7 @@ public class ZQLSession extends Job{
 				zz.withParams(p);
 				
 				if(zz.isExecuted()==false){
-					zz.execute();
+					zz.execute(conn);
 				}
 				
 				results.add(zz.result());
@@ -126,6 +129,8 @@ public class ZQLSession extends Job{
 			} 
 		}
 
+		conn.close();
+		
 		return results;
 	}
 

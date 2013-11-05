@@ -52,6 +52,7 @@ public abstract class Z {
 	Map<String, Object> params = new HashMap<String, Object>();
 	private Map<String, ParamInfo> paramInfos;
 	transient static final String NAME_PREFIX="zp_";
+	transient Connection connection;
 	
 	protected Z(){
 		this.id = Integer.toString(hashCode());
@@ -301,6 +302,14 @@ public abstract class Z {
 	 * @throws ZException
 	 */
 	public Z execute() throws ZException{
+		return execute(null);
+	}
+	/**
+	 * Execute Z instance's query from head of this linked(piped) list to this instance.
+	 * @return this object
+	 * @throws ZException
+	 */
+	public Z execute(Connection connection) throws ZException{
 		if(executed==true) return this;
 		initialize();
 
@@ -328,7 +337,7 @@ public abstract class Z {
 					}
 					q = tableCreation + q;
 				}
-				lastQueryResult = executeQuery(q, maxResult);
+				lastQueryResult = executeQuery(connection, q, maxResult);
 			}
 		}
 		webEnabled = isWebEnabled();
@@ -421,14 +430,39 @@ public abstract class Z {
 		return executed;
 	}
 	
+	synchronized private Connection connection() throws SQLException{
+		return connection(null);
+	}
+	synchronized private Connection connection(Connection conn) throws SQLException{
+		if(prev()==null){
+			if(conn==null){
+				if(connection==null){
+					connection = getConnection();
+				}	
+			} else {
+				connection = conn;
+			}			
+		} else {
+			connection = prev().connection(conn);
+		}
+		
+		return connection;
+	}
+	
 	private Result executeQuery(String query, int max) throws ZException{
+		return executeQuery(null, query, max);
+	}
+	
+	private Result executeQuery(Connection connection, String query, int max) throws ZException{
 		initialize();
 		if(query==null) return null;
 		
 		
 		Connection con = null;
 		try {
-			con = getConnection();
+			con = connection(connection);
+
+			logger().debug("connection="+con);
 			// add resources			
 			List<URI> resources = getResources();
 
@@ -447,7 +481,7 @@ public abstract class Z {
 			// execute query
 			ResultSet res = null;
 			Statement stmt = con.createStatement();
-			logger().info("executeQuery("+query+")");
+			logger().info("executeQuery : "+query);
 			res = stmt.executeQuery(query);
 			
 			Result r = new Result(res, maxResult);
@@ -532,7 +566,7 @@ public abstract class Z {
 		}
 	}
 	
-	private static Connection getConnection() throws SQLException{
+	public static Connection getConnection() throws SQLException{
 		if(client!=null){
 			return new HiveConnection(client);
 		} else if(conf().getString(ConfVars.HIVE_CONNECTION_URI)==null || conf().getString(ConfVars.HIVE_CONNECTION_URI).trim().length()==0){
