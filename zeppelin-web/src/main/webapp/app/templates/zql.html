@@ -6,7 +6,7 @@
 	<li><div class="submenu">Sessions</div>
 	<ul>
           {{#each sess in 'runningSessions'}}
-          <li><a {{action 'openSession' sess.id}}>{{sess.id}}</a></li>
+          <li><a {{action 'openSession' sess.id}}>{{#if sess.jobName}}{{sess.jobName}}{{else}}{{sess.id}}{{/if}}</a></li>
           {{/each}}
 	</ul>
 	</li>

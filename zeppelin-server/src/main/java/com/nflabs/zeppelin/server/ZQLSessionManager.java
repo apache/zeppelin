@@ -156,7 +156,7 @@ public class ZQLSessionManager implements JobListener {
 		if(s==null){
 			return null;
 		} else {
-			s.setName(name);
+			s.setJobName(name);
 			try {
 				persist(s);
 			} catch (IOException e) {

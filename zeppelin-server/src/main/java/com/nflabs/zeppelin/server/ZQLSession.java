@@ -19,7 +19,6 @@ import com.nflabs.zeppelin.zengine.ZQLException;
 public class ZQLSession extends Job{
 	transient Logger logger = Logger.getLogger(ZQLSession.class);
 
-	private String name;
 	private String zql;
 	private List<Map<String, Object>> params;
 	Result error;
@@ -40,14 +39,6 @@ public class ZQLSession extends Job{
 
 	public void setParams(List<Map<String, Object>> params) {
 		this.params = params;
-	}
-	
-	public void setName(String name){
-		this.name = name;
-	}
-	
-	public String getName(){
-		return name;
 	}
 	
 	public List<Z> getPlan(){

@@ -54,7 +54,7 @@ $(document).ready(function(){
 	});
 	
 	App.ApplicationController = Ember.Controller.extend({
-	    zqlLink : "http://nflabs.github.io/zeppelin/#/zql",	    
+	    zqlLink : "http://zeppelin-project.org/#/zql",	    
 	});
 
 	// Zql  --------------------------------------
@@ -92,8 +92,15 @@ $(document).ready(function(){
 		    Ember.$.getJSON('/cxf/zeppelin/zql/get/'+sessionId).then(function(d){
 			controller.transitionToRoute('zql.edit', {sessionid : d.body.id, body:d.body})
                     });
+		},
+		updateSession : function(){
+		    controller = this;
+		    zeppelin.zql.find((new Date().getTime())-(1000*60*60*24*30), new Date().getTime(), 10, function(c, resp){
+			if(c==200){
+			    controller.set('runningSessions', resp);
+			}
+		    });
 		}
-
 	    }
 	});
 
@@ -115,6 +122,7 @@ $(document).ready(function(){
 	    dryrun : true,
 	    currentSession : undefined,
 	    zql : undefined,
+	    sessionName : undefined,
 	    params : undefined,
 	    
 
@@ -127,8 +135,9 @@ $(document).ready(function(){
 		    var sessionId = session.id;
 
 		    var zql = this.get('zql');
+		    var sessionName = this.get('sessionName');
 		    if(this.get('dryrun')==true && false){
-			zeppelin.zql.set(sessionId, "", zql, undefined, function(c, d){
+			zeppelin.zql.set(sessionId, sessionName, zql, undefined, function(c, d){
 			    if(c!=200){
 				zeppelin.alert("Error: Invalid Session", "#alert");
 			    } else {
@@ -141,7 +150,7 @@ $(document).ready(function(){
                             }
 			}, this);
 		    } else {
-			zeppelin.zql.set(sessionId, "", zql, undefined, function(c, d){
+			zeppelin.zql.set(sessionId, sessionName, zql, undefined, function(c, d){
 			    if(c!=200){
 				zeppelin.alert("Error: Invalid Session", "#alert");
 			    } else {
@@ -164,12 +173,12 @@ $(document).ready(function(){
 		},
 
 		// called from view
-		beforeChangeSession : function(model, editor){
+		beforeChangeSession : function(model, sessionNameEditor, editor){
 		    if(model==null) return;
 		    // save session before change
 		    if(model.status=="READY"){
 			if(this.get('dirty')){
-			    zeppelin.zql.set(model.id, "", editor.getValue(), undefined, function(c, d){
+			    zeppelin.zql.set(model.id, sessionNameEditor.val(), editor.getValue(), undefined, function(c, d){
 				if(c==200){
 				    console.log("session %o saved", model.id)
 				} else {
@@ -192,19 +201,28 @@ $(document).ready(function(){
 		    this.set('zql', zql);
 		},
 
+		zqlSessionNameChanged : function(sessionName){
+		    //console.log("Session name changed %o", sessionName);
+		    this.set('dirty', true);
+		    this.set('sessionName', sessionName);
+		},
+
 		// called from view
-		loop : function(editor){
+		loop : function(sessionNameEditor, editor){
 		    var controller = this;
 		    var session = this.get('currentSession');
 		    if(session==null) return;
-		    if(session.status=="READY"){
+		    if(session.status=="READY" || session.status=="FINISHED" || session.status=="ERROR" || session.status=="ABORT"){
 			// auto save every 10 sec
 			if(new Date().getSeconds() % 10 == 0 && this.get('dirty')){
 			    // TODO display saving... -> saved message
-			    zeppelin.zql.set(session.id, "", editor.getValue(), undefined, function(c, d){
+			    zeppelin.zql.set(session.id, sessionNameEditor.val(), editor.getValue(), undefined, function(c, d){
 				if(c==200){
 				    this.set('dirty', false);
 				    console.log("autosave completed %o %o", c, d);
+
+				    // send zqlcontroller to refresh session list. (session name may change by this save)
+				    this.controllerFor('zql').send('updateSession');
 				}
 				
 			    }, this);
@@ -223,6 +241,7 @@ $(document).ready(function(){
 	});
 	
 	App.ZqlEditView = Ember.View.extend({
+	    sessionNameEditor : null,
 	    editor : null,
 	    currentModel : undefined,
 
@@ -230,13 +249,21 @@ $(document).ready(function(){
 		var controller = this.get("controller");
 		var model = controller.get('currentSession');
 		var editor = this.get('editor');
+		var sessionNameEditor = this.get('sessionNameEditor');
 
-		controller.send("beforeChangeSession", this.get('currentModel'), editor);
+		controller.send("beforeChangeSession", this.get('currentModel'), sessionNameEditor, editor);
 		this.set('currentModel', model);
 		console.log("Current session=%o", model);
 		if(editor==null) return;
 		if(editor.getValue()!=model.zql){
 		    editor.setValue(model.zql)
+		}
+
+		if(model.jobName && model.jobName!="" &&
+		   sessionNameEditor.val()!=model.jobName){
+		    sessionNameEditor.val(model.jobName);
+		} else {
+		    sessionNameEditor.val(model.id);
 		}
 
 		// clear visualizations
@@ -334,13 +361,18 @@ $(document).ready(function(){
 		    controller.send("zqlChanged", zql);
                 });
 
+		var sessionNameEditor = $('#zqlSessionName');
+		sessionNameEditor.on('change', function(e){
+		    controller.send("zqlSessionNameChanged", sessionNameEditor.val());
+		});
+		this.set('sessionNameEditor', sessionNameEditor);
 
 		var editorLoop = function(){
 		    setTimeout(function(){
 			editorLoop();
 		    }, 1000);
 
-		    controller.send("loop", editor);
+		    controller.send("loop", sessionNameEditor, editor);
 		};
 		editorLoop();
 	    },
@@ -349,7 +381,8 @@ $(document).ready(function(){
 		var model = controller.get("currentSession");
 		var view = this;
 		var editor = ace.edit("zqlEditor");
-		controller.send('beforeChangeSession', model, editor);
+		var sessionNameEditor = this.get('sessionNameEditor');
+		controller.send('beforeChangeSession', model, sessionNameEditor, editor);
 		this.set('currentModel', null);
 	    },
 
@@ -367,16 +400,16 @@ $(document).ready(function(){
 			for(var i=0; i<session.zqlPlans.length; i++){
 			    var planModel = session.zqlPlans[i];
 			    if(!planModel) continue;
-
+			    
 			    for(var p = planModel; p!=undefined; p = p.prev){
-				console.log("P=%o", p.paramInfos);
+				//console.log("P=%o", p.paramInfos);
 				planStack.unshift(p);
 			    }
 			}
 		    }
 		    
 
-		    console.log("paramInfo=%o", planStack);
+		    //console.log("paramInfo=%o", planStack);
 		    this.set('paramInfo', planStack);
 		}.observes('controller.currentSession'),
 
