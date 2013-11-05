@@ -32,6 +32,10 @@ function Zeppelin(arg){
 		zeppelin.get('/zql/get/'+sessionId, listener, scope);
             }
 
+	    this.del = function(sessionId, listener, scope){
+		zeppelin.get('/zql/del/'+sessionId, listener, scope);
+            }
+
 	    this.list = function(listener, scope){
 		zeppelin.get("/zql/list", listener, scope);
 	    }

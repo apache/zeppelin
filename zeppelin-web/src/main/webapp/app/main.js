@@ -164,6 +164,22 @@ $(document).ready(function(){
 			}, this);
 		    }
 		},
+		deleteSession : function(){
+		    var controller = this;
+		    var session = this.get('currentSession');
+		    if(session==undefined) return;
+
+		    console.log("Delete session %o", session.id);
+
+		    zeppelin.zql.del(session.id, function(c, d){
+			if(c==200){
+			    controller.controllerFor('zql').send('updateSession');
+			    controller.transitionToRoute('zql');			    
+			} else {
+			    // handle error
+			}
+		    });
+		},
 
 		loadSession : function(sessionId){
 		    var controller = this;
