@@ -2,6 +2,11 @@ body {
   padding-top: 50px;
 }
 
+.report {
+    padding : 10px 10px 10px 10px;
+    margin-top : -50px;
+}
+
 a {
     cursor : pointer;
 }
@@ -35,6 +40,10 @@ a {
 body {
   position: relative; /* For scrollyspy */
   padding-top: 50px; /* Account for fixed navbar */
+}
+
+.bs-docs-conntainer{
+    padding-left : 20px;
 }
 
 /* Keep code small in tables on account of limited space */

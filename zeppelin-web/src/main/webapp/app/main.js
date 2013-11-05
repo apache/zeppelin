@@ -2,9 +2,13 @@
 var loaderObj = {
 	templates : [
 		'index.html',
+	        'default_layout.html',
+	        'report_layout.html',
 		'zql.html',
 	        'zql/edit.html',
-	        'zql/param.html'
+	        'zql/param.html',
+	        'report.html',
+	        'report/link.html'
 	],
 	scripts : [
 	]
@@ -51,11 +55,19 @@ $(document).ready(function(){
 	    this.resource('zql', function(){
 		this.route('edit', {path:'/:sessionid'});
             });
+	    this.resource('report', function(){
+		this.route('link', {path:'/:sessionid'});
+	    });
 	});
 	
 	App.ApplicationController = Ember.Controller.extend({
-	    zqlLink : "http://zeppelin-project.org/#/zql",	    
+	    zqlLink : "http://zeppelin-project.org/#/zql",
 	});
+
+        App.IndexView = Ember.View.extend({
+	    layoutName: 'default_layout',
+        });
+
 
 	// Zql  --------------------------------------
         App.ZqlRoute = Ember.Route.extend({
@@ -164,6 +176,13 @@ $(document).ready(function(){
 			}, this);
 		    }
 		},
+		shareSession : function(){
+		    var controller = this;
+		    var session = this.get('currentSession');
+		    if(session==undefined) return;
+		    
+		    
+		},
 		deleteSession : function(){
 		    var controller = this;
 		    var session = this.get('currentSession');
@@ -257,11 +276,17 @@ $(document).ready(function(){
 		} 
             }
 	});
-	
+
+	App.ZqlView = Ember.View.extend({
+	    layoutName: 'default_layout',
+	});
+
 	App.ZqlEditView = Ember.View.extend({
+	    layoutName: 'default_layout',
 	    sessionNameEditor : undefined,
 	    editor : undefined,
 	    currentModel : undefined,
+
 
 	    modelChanged : function(){      // called when model is changed
 		var controller = this.get("controller");
@@ -445,6 +470,115 @@ $(document).ready(function(){
 		    this.set('paramInfo', null);
 		}
 	    })
+	});
+
+
+	// Report  --------------------------------------
+        App.ReportRoute = Ember.Route.extend({
+            model : function(params){
+		return params;
+            },
+	    setupController : function(controller, model){
+	    }
+	});
+
+        // ZqlEidt ---------------------------------------
+        App.ReportLinkRoute = App.ReportRoute.extend({
+            model : function(params){
+		return params;
+            },
+	    setupController : function(controller, model){
+		zeppelin.zql.get(model.sessionid, function(c, d){
+		    controller.set('currentSession', d);
+		}, this);
+	    }
+        });
+
+
+	App.ReportController = App.ApplicationController.extend({
+	});
+
+	App.ReportLinkController = App.ApplicationController.extend({
+	    currentSession : undefined
+	});
+
+
+	App.ReportLinkView = Ember.View.extend({
+	    layoutName: 'report_layout',
+
+	    modelChanged : function(){      // called when model is changed
+		var controller = this.get("controller");
+		var model = controller.get('currentSession');
+		if(!model){
+		    return null;
+		}
+		console.log("report %o", model);
+
+		var zqlSessionName = $('#zqlSessionName');
+		if(model.jobName && model.jobName!=""){
+		    if(zqlSessionName.text()!=model.jobName){
+			zqlSessionName.html(model.jobName);
+		    }
+		} else {
+		    zqlSessionName.html(model.id);
+		}
+
+		// clear visualizations
+		$('#visualizationContainer iframe').remove();
+		$('#visualizationContainer div').remove();
+		$('#msgBox div').remove();
+
+		if(model.status=="READY"){
+		} else if(model.status=="RUNNING"){
+                } else if(model.status=="FINISHED"){
+		    // draw visualization if there's some
+		    if(model.zqlPlans){
+			for(var i=0; i<model.zqlPlans.length; i++){
+			    var planModel = model.zqlPlans[i];
+			    if(!planModel) continue;
+
+			    var planStack = [];
+			    for(var p = planModel; p!=undefined; p = p.prev){
+				planStack.unshift(p);
+			    }
+			    
+			    for(var j=0; j<planStack.length; j++){
+				var plan = planStack[j];
+
+				if(!plan || !plan.webEnabled) continue;
+				console.log("displaying %o", plan);
+				var planInfo = (plan.libName) ? plan.libName : plan.query;
+				$('#visualizationContainer').append('<div class="visTitle">'+planInfo+"</div>");
+				$('<iframe />', {				
+				    name : plan.id,
+				    id : plan.id,
+				    src : zeppelin.getWebResourceURL(model.id, plan.id),
+				    scrolling : 'no'
+				    /*,
+				      frameborder : "0",
+				      height : "100%",
+				      width : "100%"*/
+				}).appendTo('#visualizationContainer');
+
+				$('#'+plan.id).load(function(c,d){
+				    //console.log("iframe %o %o", c,d);
+				});
+			    }
+			}
+
+			jQuery('iframe').iframeAutoHeight();
+		    }
+
+
+		} else if(model.status=="ERROR"){
+		    for(var i=0; i< model.error.rows.length; i++){
+			$('#msgBox').append("<div>"+model.error.rows[0][3]+"</div>");
+		    }
+		} else if(model.status=="ABORT"){
+		}
+		
+		
+            }.observes('controller.currentSession'),
 	});
 });
 
