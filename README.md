@@ -37,6 +37,7 @@ The package is generated under __target__ directory
 
 
 
+[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/10ba60fb64e53bb1ccd0bab47abbcc4a "githalytics.com")](http://githalytics.com/NFLabs/zeppelin)
 
 
 
