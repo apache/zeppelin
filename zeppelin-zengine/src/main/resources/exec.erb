@@ -1,0 +1,15 @@
+<html>
+  <head>
+  </head>
+  <body>
+
+<% if z and z.result != nil %>
+	<% if z.result.rows != nil %>
+<pre><% z.result.rows.each do |row| %>
+<% row.each do |cell| %><%= cell %><% end %><% end %>
+<% end %></pre>
+	
+<% end %>
+
+  </body>
+</html>
