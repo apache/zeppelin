@@ -1,10 +1,14 @@
 package com.nflabs.zeppelin.result;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,6 +20,7 @@ public abstract class AbstractResult {
 	transient Exception e;
 	
 	boolean loaded = false;
+	private int code;
 	
 	public AbstractResult(ResultSet res) throws ResultDataException {
 		this(res, -1);
@@ -53,6 +58,21 @@ public abstract class AbstractResult {
 		}
 	}
 	
+	public AbstractResult(int code, String [] message) throws ResultDataException {
+		this.code = code;
+		
+		columnDef = new ColumnDef[1];
+		columnDef[0] = new ColumnDef("message", Types.VARCHAR, "varchar");
+
+		try {
+			for(int i=0; i<message.length; i++){
+				process(columnDef, new String[]{message[i]}, i);			
+			}
+		} catch (Exception e1) {
+			throw new ResultDataException(e1);
+		}
+	}
+
 	public void init(ResultSet res, long max) throws SQLException, ResultDataException{
 		ResultSetMetaData metaData = res.getMetaData();
 		int numColumns = metaData.getColumnCount();

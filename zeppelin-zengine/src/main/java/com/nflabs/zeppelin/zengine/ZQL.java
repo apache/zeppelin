@@ -144,7 +144,11 @@ public class ZQL {
 		List<Z> zList = new LinkedList<Z>();
 		Z currentZ = null;
 		
-		String [] t = Util.split(stmts, op, true);
+		String escapeSeq = "\"',;<%>!";
+		char escapeChar = '\\';
+		String [] blockStart = new String[]{ "\"", "'", "<%", "<", "!"};
+		String [] blockEnd = new String[]{ "\"", "'", "%>", ">", ";" };
+		String [] t = Util.split(stmts, escapeSeq, escapeChar, blockStart, blockEnd, op, true);
 		String currentOp = null;
 		for(int i=0; i<t.length; i++){
 			String stmt = t[i];
@@ -169,7 +173,6 @@ public class ZQL {
 			}
 			
 			// it is not an operator ------			
-			
 			if(currentZ==null && currentOp!=null){  // check if stmt start from operator
 				throw new ZQLException(currentOp+" can not be at the beginning");
 			}
@@ -189,6 +192,24 @@ public class ZQL {
 				}				
 			}
 			
+			// check if it is ExecStatement
+			if(stmt.startsWith("!")){
+				if(currentZ!=null){ // previous query exist
+					if(currentOp==null || (currentOp!=null && currentOp.equals(op[0]))){ // semicolon
+						zList.add(currentZ);
+						currentZ = null;
+						currentOp = null;
+					} else {
+						throw new ZQLException("Can not piped or redirected from/to exec statement");
+					}
+				}
+				try {				
+					currentZ = new ExecStatement(stmt); 
+				} catch (ZException e) {
+					throw new ZQLException(e);
+				}
+				continue;				
+			}
 			
 			// check if it is L statment --
 			Z z= null;

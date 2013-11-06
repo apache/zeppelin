@@ -43,6 +43,7 @@ public class Util {
 		int ignoreBlockIndex = -1;
 		boolean escape = false;  // true when escape char is found
 		int lastEscapeOffset = -1;
+		int blockStartPos = -1;
 		for(int i=0; i<str.length();i++){
 			char c = str.charAt(i);
 
@@ -66,16 +67,37 @@ public class Util {
 
 			if(ignoreBlockIndex>=0){ // inside of block
 				curString += c;
+				// check multichar block
+				for(int b=0; b<blockStart.length; b++){
+					if(blockStart[b].compareTo(str.substring(blockStartPos, i))==0){
+						ignoreBlockIndex = b;
+					}
+				}
 				
 				// check if block is finishing
 				if(curString.substring(lastEscapeOffset+1).endsWith(blockEnd[ignoreBlockIndex])){
+					
+					// the block closer is one of the splitters
+					for(String splitter : splitters){
+						if(splitter.compareTo(blockEnd[ignoreBlockIndex])==0){
+							splits.add(curString);
+							if(includeSplitter==true){
+								splits.add(splitter);
+							}
+							curString = "";
+							lastEscapeOffset = -1;
+							
+							break;
+						}
+					}
+					blockStartPos = -1;
 					ignoreBlockIndex = -1;
 					continue;
 				}
 								
 			} else { // not in the block
 				boolean splitted = false;
-				for(String splitter : splitters){
+				for(String splitter : splitters){				
 					// forward check for splitter
 					if(splitter.compareTo(str.substring(i, Math.min(i+splitter.length(), str.length())))==0){
 						splits.add(curString);
@@ -100,6 +122,8 @@ public class Util {
 				for(int b=0; b<blockStart.length;b++){
 					if(curString.substring(lastEscapeOffset+1).endsWith(blockStart[b])==true){
 						ignoreBlockIndex = b; // block is started
+						blockStartPos = i;
+						break;
 					}
 				}
 			}

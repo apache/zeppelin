@@ -347,6 +347,9 @@ $(document).ready(function(){
 				if(!plan || !plan.webEnabled) continue;
 				console.log("displaying %o", plan);
 				var planInfo = (plan.libName) ? plan.libName : plan.query;
+				if(planInfo.length>1 && planInfo[0]=='!'){
+				    planInfo = planInfo.substring(1);
+				}
 				$('#visualizationContainer').append('<div class="visTitle">'+planInfo+"</div>");
 				$('<iframe />', {				
 				    name : plan.id,
@@ -548,6 +551,9 @@ $(document).ready(function(){
 				if(!plan || !plan.webEnabled) continue;
 				console.log("displaying %o", plan);
 				var planInfo = (plan.libName) ? plan.libName : plan.query;
+				if(planInfo.length>1 && planInfo[0]=='!'){
+				    planInfo = planInfo.substring(1);
+				}
 				$('#visualizationContainer').append('<div class="visTitle">'+planInfo+"</div>");
 				$('<iframe />', {				
 				    name : plan.id,

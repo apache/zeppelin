@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.result;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.ResultSet;
@@ -18,7 +19,11 @@ public class Result extends AbstractResult{
 	public Result(Exception e1) throws ResultDataException {
 		super(e1);
 	}
-
+	
+	public Result(int code, String [] message) throws ResultDataException{
+		super(code, message);
+	}
+	
 	@Override
 	protected void process(ColumnDef[] columnDef, Object[] row, long n) {
 		if(rows==null) rows = new LinkedList<Object [] >(); 

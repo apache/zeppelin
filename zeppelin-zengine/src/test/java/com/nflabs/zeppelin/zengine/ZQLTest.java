@@ -155,5 +155,15 @@ public class ZQLTest extends HiveTestService {
 		assertEquals("select\n*\nfrom\ntest", z.get(0).getQuery());
 
 	}
-
+	
+	public void testExecStatmentQuery() throws ZException, ZQLException{
+		ZQL zql = new ZQL("select * from test;!echo -n 'hello world';!echo ls");
+		List<Z> z = zql.compile();
+		assertEquals(3, z.size());
+		assertEquals("select * from test", z.get(0).getQuery());
+		assertEquals("!echo -n 'hello world';", z.get(1).getQuery());
+		assertEquals("!echo ls", z.get(2).getQuery());
+		assertTrue(z.get(1) instanceof ExecStatement); 
+		assertTrue(z.get(2) instanceof ExecStatement); 
+	}
 }

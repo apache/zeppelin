@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.zengine;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +18,11 @@ import java.util.Map;
 import javax.script.ScriptEngine;
 
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.exec.CommandLine;
+import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.exec.ExecuteWatchdog;
+import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 
@@ -27,6 +33,7 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.hive.HiveConnection;
 import com.nflabs.zeppelin.result.Result;
+import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.util.Util;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
@@ -453,9 +460,45 @@ public abstract class Z {
 		return executeQuery(null, query, max);
 	}
 	
+	
+	private Result shellCommand(String cmd) throws ExecuteException, IOException, ResultDataException{
+		logger().info("Run shell command '"+cmd+"'");
+		CommandLine cmdLine = CommandLine.parse("bash");
+		cmdLine.addArgument("-c", false);
+		cmdLine.addArgument(cmd, false);
+		DefaultExecutor executor = new DefaultExecutor();
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		executor.setStreamHandler(new PumpStreamHandler(outputStream));
+
+		executor.setWatchdog(new ExecuteWatchdog(conf.getLong(ConfVars.ZEPPELIN_COMMAND_TIMEOUT)));
+		int exitValue = executor.execute(cmdLine);
+		String [] msgs = null;
+		if (outputStream!=null){
+			String msgstr = outputStream.toString();
+			logger().debug("exec out="+msgstr);
+			if(msgstr!=null){
+				msgs = msgstr.split("\n");
+			}
+		}
+		Result resultData = new Result(exitValue, msgs);
+		return resultData;		
+	}
+	
 	private Result executeQuery(Connection connection, String query, int max) throws ZException{
 		initialize();
 		if(query==null) return null;
+		
+		if(query.startsWith("!")){
+			try {
+				return shellCommand(query.substring(1));
+			} catch (ExecuteException e) {
+				logger().error(e);
+			} catch (IOException e) {
+				logger().error(e);
+			} catch (ResultDataException e) {
+				logger().error(e);
+			}
+		}
 		
 		
 		Connection con = null;

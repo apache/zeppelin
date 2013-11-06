@@ -50,4 +50,18 @@ public class UtilTest extends TestCase {
 		Util.split(str, op, true);
 
 	}
+	
+	public void testSplitDifferentBlockStartEnd(){
+		String [] op = new String[]{";", "|", ">>", ">"};
+		String escapeSeq = "\"',;<%>!";
+		char escapeChar = '\\';
+		String [] blockStart = new String[]{ "\"", "'", "<%", "<", "!"};
+		String [] blockEnd = new String[]{ "\"", "'", "%>", ">", ";" };
+		String [] t = Util.split("!echo a;!echo b;", escapeSeq, escapeChar, blockStart, blockEnd, op, true);
+		assertEquals(4, t.length);
+		assertEquals("!echo a;", t[0]);
+		assertEquals(";", t[1]);
+		assertEquals("!echo b;", t[2]);
+		assertEquals(";", t[3]);
+	}
 }
