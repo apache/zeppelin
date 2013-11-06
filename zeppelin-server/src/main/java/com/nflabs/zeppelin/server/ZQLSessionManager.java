@@ -229,9 +229,12 @@ public class ZQLSessionManager implements JobListener {
 		for(FileStatus f : files){
 			ZQLSession session;
 			try {
-				
 				session = load(f.getPath());
-				found.put(session.getId(), session);
+				if(session!=null){
+					found.put(session.getId(), session);
+				} else {
+					logger.error("Session not loaded "+f.getPath());
+				}
 			} catch (IOException e) {
 				logger.error("Can't load session from path "+f.getPath(), e);
 			}
