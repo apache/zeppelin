@@ -223,10 +223,11 @@ if you want access snapshot
 	  
 	  <h3>ZQL syntax</h3>
 	  <pre>
-ZQLStmt            : HiveQLStmt | LibraryStmt | ZQLStmt (PipeOperator ZQLStmt)* | ZQLStmt RedirectOperator RedirectTargetStmt
+ZQLStmt            : HiveQLStmt | LibraryStmt | ZQLStmt (PipeOperator ZQLStmt)*
 HiveQLStmt         : HIVE_QUERY
 LibraryStmt        : LIBRARY_NAME(paramName1=paramValue1, paramName2=paramValue2, ...)? (ARGUMENT)?
-RedirectTargetStmt : (table|view)? TABLE_NAME
+RedirectStmt       : ZQLStmt RedirectOperator (table|view)? TABLE_NAME
+ExecStmt           : !SHELL_COMMAND
 PipeOperator       : |
 RedirectOperator   : ></pre>
           
@@ -259,6 +260,11 @@ RedirectOperator   : ></pre>
 	  <pre>
 select text from myTable | wordcount > wc_out;               // load | process > export
 select * from wc_out limit 10;                               // print first 10 rows of wc_out</pre>
+	  <h5>Shell command</h5>
+	  <pre>
+!date                                                        // print date
+select text from myTable | wordcount > wc_out;               // load | process > export
+!echo "finished" | mail -s "JOB_FINISHED" hello@world.net    // send email</pre>
 	</div>
       </div>
     </script>
