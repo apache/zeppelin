@@ -182,6 +182,7 @@
               <rules>
                 <DependencyConvergence/>
               </rules>
+              <failFast>true</failFast>
             </configuration>
             <goals>
               <goal>enforce</goal>
