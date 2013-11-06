@@ -63,6 +63,7 @@ public abstract class Z {
 	
 	protected Z(){
 		this.id = Integer.toString(hashCode());
+		maxResult = conf.getInt(ConfVars.ZEPPELIN_MAX_RESULT);
 	}
 
 	/**
