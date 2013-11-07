@@ -84,7 +84,7 @@
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
-          <artifactId>*</artifactId>
+          <artifactId>slf4j-api</artifactId>
         </exclusion>
         <exclusion>
           <groupId>log4j</groupId>
@@ -112,7 +112,7 @@
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
-          <artifactId>*</artifactId>
+          <artifactId>slf4j-api</artifactId>
         </exclusion>
         <exclusion>
           <groupId>log4j</groupId>
@@ -159,6 +159,10 @@
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-core</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -174,6 +178,10 @@
         <exclusion>
           <groupId>org.apache.ftpserver</groupId>
           <artifactId>ftpserver-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
         </exclusion>
       </exclusions>
       <scope>test</scope>
