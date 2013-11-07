@@ -78,6 +78,10 @@
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>commons-configuration</groupId>
+          <artifactId>commons-configuration</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -198,6 +202,10 @@
         <exclusion>
           <groupId>org.apache.ftpserver</groupId>
           <artifactId>ftpserver-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.ftpserver</groupId>
+          <artifactId>ftplet-api</artifactId>
         </exclusion>
         <exclusion>
           <groupId>org.slf4j</groupId>
