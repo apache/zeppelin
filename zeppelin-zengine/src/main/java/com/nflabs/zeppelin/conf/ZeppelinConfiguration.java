@@ -7,9 +7,10 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
 
-public class ZeppelinConfiguration extends XMLConfiguration{
-	
-	public ZeppelinConfiguration(URL url) throws ConfigurationException{		
+public class ZeppelinConfiguration extends XMLConfiguration {
+    private static final long serialVersionUID = 4749305895693848035L;
+
+    public ZeppelinConfiguration(URL url) throws ConfigurationException {
 		super(url);
 	}
 	
@@ -180,7 +181,8 @@ public class ZeppelinConfiguration extends XMLConfiguration{
 		
 		
 		private String varName;
-		private Class varClass;
+		@SuppressWarnings("rawtypes")
+        private Class varClass;
 		private String stringValue;
 		private VarType type;
 		private int intValue;
@@ -244,16 +246,12 @@ public class ZeppelinConfiguration extends XMLConfiguration{
 			this.type = VarType.BOOLEAN;
 		}
 		
-		
-		
-		
 	    public String getVarName() {
 			return varName;
 		}
 
-
-
-		public Class getVarClass() {
+		@SuppressWarnings("rawtypes")
+        public Class getVarClass() {
 			return varClass;
 		}
 
@@ -277,12 +275,9 @@ public class ZeppelinConfiguration extends XMLConfiguration{
 			return booleanValue;
 		}
 
-
 		public VarType getType() {
 			return type;
 		}
-
-
 
 		enum VarType {
 	        STRING { @Override
@@ -303,8 +298,6 @@ public class ZeppelinConfiguration extends XMLConfiguration{
 	        String typeString() { return name().toUpperCase();}
 	        abstract void checkType(String value) throws Exception;
 	    }
-	    
 	}
-	
-	
+
 }

@@ -1,7 +1,7 @@
 package com.nflabs.zeppelin.zengine;
 
+
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -26,7 +26,6 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.service.HiveInterface;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -439,10 +438,11 @@ public abstract class Z {
 		return executed;
 	}
 	
-	synchronized private Connection connection() throws SQLException{
+	@SuppressWarnings("unused")
+    synchronized private Connection connection() throws SQLException {
 		return connection(null);
 	}
-	synchronized private Connection connection(Connection conn) throws SQLException{
+	synchronized private Connection connection(Connection conn) throws SQLException {
 		if(prev()==null){
 			if(conn==null){
 				if(connection==null){
@@ -458,7 +458,7 @@ public abstract class Z {
 		return connection;
 	}
 	
-	private Result executeQuery(String query, int max) throws ZException{
+	private Result executeQuery(String query, int max) throws ZException {
 		return executeQuery(null, query, max);
 	}
 	
@@ -618,7 +618,7 @@ public abstract class Z {
 		} else if(conf().getString(ConfVars.HIVE_CONNECTION_URI)==null || conf().getString(ConfVars.HIVE_CONNECTION_URI).trim().length()==0){
 			return new HiveConnection(hiveConf());
 		} else {
-				return DriverManager.getConnection(conf().getString(ConfVars.HIVE_CONNECTION_URI));
+		    return DriverManager.getConnection(conf().getString(ConfVars.HIVE_CONNECTION_URI));
 		}
 	}
 	

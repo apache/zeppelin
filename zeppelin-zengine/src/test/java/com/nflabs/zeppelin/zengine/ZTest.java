@@ -2,10 +2,8 @@ package com.nflabs.zeppelin.zengine;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.script.ScriptContext;
@@ -14,18 +12,11 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-
 import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.util.TestUtil;
-import com.nflabs.zeppelin.zengine.Q;
-import com.nflabs.zeppelin.zengine.Z;
-import com.nflabs.zeppelin.zengine.ZException;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
-
-import junit.framework.TestCase;
 
 public class ZTest extends HiveTestService {
 
@@ -109,24 +100,27 @@ public class ZTest extends HiveTestService {
 	}
 	
 	
-	public void testErb() throws ScriptException{
+	public void testThatErbTempleteRuns() throws ScriptException {
+	    //given engine
 		ScriptEngineFactory factory = new JRubyScriptEngineFactory();
 		ScriptEngine engine = factory.getScriptEngine();
 		
+		StringBuffer rubyScript = new StringBuffer();
 		
 		String varName = "pelotonAppScriptOut_"+System.currentTimeMillis();
-		
-		
-		StringBuffer rubyScript = new StringBuffer();
 		rubyScript.append("require 'erb'\n");
 		rubyScript.append("$"+varName+" = ERB.new(\"<%= $hql %> world\").result(binding)\n");
+
 		SimpleBindings bindings = new SimpleBindings();
 		engine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
+
+		//when
 		bindings.put("hql", "hello");
 		engine.eval(rubyScript.toString(), bindings);
-		String out = (String) engine.getBindings(ScriptContext.ENGINE_SCOPE).get(varName);
-		assertEquals("hello world", out);
 
+		//then
+		String out = (String) bindings.get(varName);
+		assertEquals("hello world", out);
 	}
 	
 	public void testRubyBinding() throws ScriptException{

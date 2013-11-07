@@ -2,7 +2,6 @@ package com.nflabs.zeppelin.zengine;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,16 +13,11 @@ import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 
+import com.jointhegrid.hive_test.HiveTestBase;
 import com.jointhegrid.hive_test.HiveTestService;
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.util.TestUtil;
-import com.nflabs.zeppelin.zengine.L;
-import com.nflabs.zeppelin.zengine.Z;
-import com.nflabs.zeppelin.zengine.ZException;
-
-import junit.framework.TestCase;
 
 public class LTest extends HiveTestService {
 	
@@ -32,7 +26,6 @@ public class LTest extends HiveTestService {
 	}
 
 	private File tmpDir;
-
 
 	public void setUp() throws Exception {
 		super.setUp();
@@ -44,7 +37,6 @@ public class LTest extends HiveTestService {
 		
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 		Z.configure(client);
-		
 	}
 
 	public void tearDown() throws Exception {
@@ -68,7 +60,6 @@ public class LTest extends HiveTestService {
 		}
 	}
 
-	
 	public void testLoadFromDir() throws IOException, ZException{
 		new File(tmpDir.getAbsolutePath()+"/test").mkdir();
 		File erb = new File(tmpDir.getAbsolutePath()+"/test/zql.erb");
@@ -130,7 +121,7 @@ public class LTest extends HiveTestService {
 	public void testWebOnlyLibrary() throws IOException, ZException{
 		new File(tmpDir.getAbsolutePath()+"/test/web").mkdirs();
 
-		Path p = new Path(this.ROOT_DIR, "afile");
+		Path p = new Path(HiveTestBase.ROOT_DIR, "afile");
 
 	    FSDataOutputStream o = this.getFileSystem().create(p);
 	    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(o));
@@ -158,7 +149,7 @@ public class LTest extends HiveTestService {
 	public void testWebOnlyLibraryPipe() throws IOException, ZException{
 		new File(tmpDir.getAbsolutePath()+"/test/web").mkdirs();
 
-		Path p = new Path(this.ROOT_DIR, "afile");
+		Path p = new Path(HiveTestBase.ROOT_DIR, "afile");
 
 	    FSDataOutputStream o = this.getFileSystem().create(p);
 	    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(o));
@@ -178,7 +169,6 @@ public class LTest extends HiveTestService {
 		Z z = new Q("select * from test").pipe(new L("test")).pipe(new L("test"));
 		Result result = z.execute().result();
 		assertEquals(5, result.getRows().get(0)[0]);
-		
-		
 	}
+
 }

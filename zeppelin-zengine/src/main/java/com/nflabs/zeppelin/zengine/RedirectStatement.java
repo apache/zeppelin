@@ -7,7 +7,8 @@ import com.nflabs.zeppelin.util.Util;
  * @author moon
  */
 public class RedirectStatement {
-	private String stmt;
+	@SuppressWarnings("unused")
+    private String stmt;
 	private String name;
 	private boolean table = false;
 

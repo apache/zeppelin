@@ -9,10 +9,10 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.service.HiveInterface;
 import org.apache.hadoop.hive.service.HiveServerException;
 import org.apache.thrift.TException;
 
+import com.jointhegrid.hive_test.HiveTestBase;
 import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.util.TestUtil;
@@ -20,7 +20,6 @@ import com.nflabs.zeppelin.util.TestUtil;
 public class QTest extends HiveTestService{
 
 	private File tmpDir;
-
 
 	public void setUp() throws Exception {
 		super.setUp();
@@ -32,7 +31,6 @@ public class QTest extends HiveTestService{
 		
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 		Z.configure(client);
-		
 	}
 
 	public void tearDown() throws Exception {
@@ -46,10 +44,9 @@ public class QTest extends HiveTestService{
 	public QTest() throws IOException {
 		super();
 	}
-
 	
 	public void testBasicQuery() throws HiveServerException, TException, ZException, IOException{
-		Path p = new Path(this.ROOT_DIR, "afile");
+		Path p = new Path(HiveTestBase.ROOT_DIR, "afile");
 
 	    FSDataOutputStream o = this.getFileSystem().create(p);
 	    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(o));
@@ -65,7 +62,7 @@ public class QTest extends HiveTestService{
 	
 	
 	public void testName() throws HiveServerException, TException, ZException, IOException{
-		Path p = new Path(this.ROOT_DIR, "afile");
+		Path p = new Path(HiveTestBase.ROOT_DIR, "afile");
 
 	    FSDataOutputStream o = this.getFileSystem().create(p);
 	    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(o));

@@ -17,7 +17,8 @@ import org.apache.hadoop.fs.Path;
 
 import com.nflabs.zeppelin.util.Util;
 /**
- * class ZQL parses Zeppelin Query Language (http://nflabs.github.io/zeppelin/#zql) and generate logical plan
+ * ZQL parses Zeppelin Query Language (http://nflabs.github.io/zeppelin/#zql) 
+ * and generate logical plan (produces Z classes)
  * @author moon
  *
  */
@@ -211,16 +212,15 @@ public class ZQL {
 				continue;				
 			}
 			
-			// check if it is L statment --
+			// check if a statement is L --
 			Z z= null;
 			try {
 				z = loadL(stmt);
 			} catch (ZException e) {
+			    //statement is not Library.. and we go on
 			}
 			
-			
-			
-			// if it is not L statment, assume it is a Q statement --
+			// if it is not L statement, assume it is a Q statement --
 			if(z==null){
 				Q q;
 				try {

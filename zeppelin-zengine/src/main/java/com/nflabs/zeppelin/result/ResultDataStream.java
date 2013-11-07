@@ -3,7 +3,6 @@ package com.nflabs.zeppelin.result;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class ResultDataStream extends AbstractResult{
 	public static final String DEFAULT_COLUMN_SEPARATOR="\t";

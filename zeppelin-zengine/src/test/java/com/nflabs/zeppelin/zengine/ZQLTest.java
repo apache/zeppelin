@@ -1,27 +1,13 @@
 package com.nflabs.zeppelin.zengine;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.List;
 
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
-
 import com.jointhegrid.hive_test.HiveTestService;
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.util.TestUtil;
-import com.nflabs.zeppelin.zengine.Z;
-import com.nflabs.zeppelin.zengine.ZException;
-import com.nflabs.zeppelin.zengine.ZQL;
-import com.nflabs.zeppelin.zengine.ZQLException;
-
-import junit.framework.TestCase;
 
 public class ZQLTest extends HiveTestService {
 	public ZQLTest() throws IOException {

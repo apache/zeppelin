@@ -27,7 +27,7 @@ import com.nflabs.zeppelin.result.Result;
  * @author moon
  *
  */
-public class Q extends Z{
+public class Q extends Z {
 	protected String query;
 	private List<URI> resources = new LinkedList<URI>();
 	Result cachedResultDataObject;
@@ -210,9 +210,8 @@ public class Q extends Z{
 		
 		ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);
 				
-		String q;
 		try {
-			q = getQuery(erb, zContext);
+			getQuery(erb, zContext);
 		} catch (ZException e1) {
 			logger().debug("dry run error", e1);
 		}
@@ -225,7 +224,7 @@ public class Q extends Z{
 			InputStream in = this.getClass().getResourceAsStream("/table.erb");
 			erb = new BufferedReader(new InputStreamReader(in));					
 			try {
-				q = evalWebTemplate(erb, zWebContext);
+				evalWebTemplate(erb, zWebContext);
 			} catch (ZException e1) {
 				logger().debug("dry run error", e1);
 			}

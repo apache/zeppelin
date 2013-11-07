@@ -1,16 +1,9 @@
 package com.nflabs.zeppelin.result;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 public abstract class AbstractResult {
 	private ColumnDef [] columnDef;
@@ -20,7 +13,8 @@ public abstract class AbstractResult {
 	transient Exception e;
 	
 	boolean loaded = false;
-	private int code;
+	@SuppressWarnings("unused")
+    private int code;
 	
 	public AbstractResult(ResultSet res) throws ResultDataException {
 		this(res, -1);

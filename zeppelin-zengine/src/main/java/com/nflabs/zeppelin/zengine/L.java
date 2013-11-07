@@ -8,39 +8,26 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
-import javax.script.SimpleBindings;
-
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-
-import org.datanucleus.util.StringUtils;
-
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.result.ResultDataException;
-import com.nflabs.zeppelin.result.Result;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 
 /**
  * L stands for Library(aks UDF). This class load and execute Zeppelin User Defined Functions
  * @author moon
  *
  */
-public class L extends Q{
+public class L extends Q {
 	private String libName;
 	
 	transient private URI libUri;
@@ -95,12 +82,12 @@ public class L extends Q{
 		try {		
 			// search for library dir
 			this.dir = new Path(libUri);
-			if(fs.isDirectory(dir)==false){
+			if(fs.getFileStatus(dir).isDir() == false){
 				throw new ZException("Directory "+dir.toUri()+" does not exist");
 			}
 			this.erbFile = new Path(libUri.toString()+"/zql.erb");
 
-			if(fs.isFile(erbFile)==false){
+			if(fs.isFile(erbFile) == false){
 				erbFile = null;
 			}
 			
@@ -152,20 +139,17 @@ public class L extends Q{
 	 */
 	public InputStream readWebResource(String path) throws ZException{
 		initialize();
-		FileStatus[] files;
 		
 		if(path==null || path.compareTo("/")==0){
 			path = "index.erb";
 		}
-		
-
 		try {
-			if(fs.isDirectory(webDir)==false){
+			if(fs.getFileStatus(webDir).isDir() == false){
 				return super.readWebResource(path);
 			}
 			
 			Path resourcePath = new Path(webDir.toUri()+"/"+path);
-			if(fs.isFile(resourcePath)==false){
+			if (fs.isFile(resourcePath) == false) {
 				return null;
 			}
 			
@@ -175,7 +159,8 @@ public class L extends Q{
 					ZWebContext zWebContext = null;
 					try{
 						zWebContext = new ZWebContext(params, result());
-					} catch(ZException e){						
+					} catch(ZException e){
+					    //TODO explain
 					}
 					FSDataInputStream ins = fs.open(resourcePath);
 					BufferedReader erb = new BufferedReader(new InputStreamReader(ins));					
@@ -264,7 +249,7 @@ public class L extends Q{
 			if(prev()!=null){
 				withName(z.name());
 			} else {
-				// should not be reach here
+			    assert false; // should never reach here
 			}
 			setNext(z);
 			z.setPrev(this);
@@ -281,7 +266,6 @@ public class L extends Q{
 		
 		Map<String, ParamInfo> paramInfos = new HashMap<String, ParamInfo>();
 		
-		String q;
 		ZContext zContext = null;
 		if(erbFile!=null){
 			FSDataInputStream ins;
@@ -290,7 +274,7 @@ public class L extends Q{
 				BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
 				
 				zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);			
-				q = getQuery(erb, zContext);
+				getQuery(erb, zContext);
 				ins.close();
 			} catch (IOException e1) {
 				logger().debug("dry run error", e1);
@@ -298,7 +282,6 @@ public class L extends Q{
 				logger().debug("dry run error", e);
 			}
 		}
-		
 		ZWebContext zWebContext = null;
 
 		try {
@@ -309,7 +292,7 @@ public class L extends Q{
 				
 				FSDataInputStream ins = fs.open(resourcePath);
 				BufferedReader erb = new BufferedReader(new InputStreamReader(ins));					
-				q = evalWebTemplate(erb, zWebContext);
+				evalWebTemplate(erb, zWebContext);
 				ins.close();
 			}				
 		} catch (IOException e) {

@@ -1,7 +1,9 @@
 package com.nflabs.zeppelin.zengine;
 
 public class ZQLException extends Exception{
-	public ZQLException(Exception e){
+    private static final long serialVersionUID = -1706289522346311416L;
+
+    public ZQLException(Exception e){
 		super(e);
 	}
 	

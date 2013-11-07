@@ -4,13 +4,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.io.FileUtils;
 
 public class TestUtil {
 	
@@ -54,24 +50,21 @@ public class TestUtil {
 		out.close();
 	}
 
-	public static void setEnv(String k, String v)
-	{
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static void setEnv(String k, String v) {
 		Map<String, String> newenv = new HashMap<String, String>();
 		newenv.put(k, v);
-	  try
-	    {
+	  try {
 	        Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
 	        Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
 	        theEnvironmentField.setAccessible(true);
-	        Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
+            Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
 	        env.putAll(newenv);
 	        Field theCaseInsensitiveEnvironmentField = processEnvironmentClass.getDeclaredField("theCaseInsensitiveEnvironment");
 	        theCaseInsensitiveEnvironmentField.setAccessible(true);
 	        Map<String, String> cienv = (Map<String, String>)     theCaseInsensitiveEnvironmentField.get(null);
 	        cienv.putAll(newenv);
-	    }
-	    catch (NoSuchFieldException e)
-	    {
+	  } catch (NoSuchFieldException e) {
 	      try {
 	        Class[] classes = Collections.class.getDeclaredClasses();
 	        Map<String, String> env = System.getenv();
