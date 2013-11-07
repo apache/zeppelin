@@ -4,7 +4,8 @@ import java.io.File;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+
+import junit.framework.TestCase;
 
 import org.quartz.SchedulerException;
 
@@ -14,8 +15,6 @@ import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.zengine.Z;
-
-import junit.framework.TestCase;
 
 public class ZQLSessionManagerTest extends TestCase {
 
@@ -38,7 +37,6 @@ public class ZQLSessionManagerTest extends TestCase {
 		this.schedulerFactory = new SchedulerFactory();
 
 		this.sm = new ZQLSessionManager(schedulerFactory.createOrGetParallelScheduler("analyze", 30), Z.fs(), Z.conf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
-
 	}
 
 	protected void tearDown() throws Exception {
@@ -99,7 +97,8 @@ public class ZQLSessionManagerTest extends TestCase {
 		assertEquals(Status.FINISHED, sm.get(sess.getId()).getStatus());
 	}
 	
-	public void testSerializePlan() throws InterruptedException{
+	@SuppressWarnings("unchecked")
+    public void testSerializePlan() throws InterruptedException{
 		// Create
 		ZQLSession sess = sm.create();
 		sm.setZql(sess.getId(), "create table if not exists test(txt STRING); show tables");
@@ -118,6 +117,7 @@ public class ZQLSessionManagerTest extends TestCase {
 		
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void testCron() throws InterruptedException{
 		ZQLSession sess = sm.create();
 		sm.setZql(sess.getId(), "!echo 'hello world'");
@@ -130,7 +130,6 @@ public class ZQLSessionManagerTest extends TestCase {
 		List<Result> ret = (List<Result>) sm.get(sess.getId()).getReturn();
 		assertEquals("hello world", ret.get(0).getRows().get(0)[0]);
 
-		
 		Date firstDateFinished = sm.get(sess.getId()).getDateFinished();
 		
 		// wait for second run

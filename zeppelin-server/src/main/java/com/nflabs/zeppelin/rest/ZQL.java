@@ -1,11 +1,9 @@
 package com.nflabs.zeppelin.rest;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -21,24 +19,24 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import com.nflabs.zeppelin.server.JsonResponse;
 import com.nflabs.zeppelin.server.ZQLSession;
 import com.nflabs.zeppelin.server.ZQLSessionManager;
-import com.nflabs.zeppelin.server.JsonResponse;
 import com.nflabs.zeppelin.zengine.Z;
 import com.nflabs.zeppelin.zengine.ZException;
 
-
 @Path("/zql")
 public class ZQL {	
-	Logger logger = LoggerFactory.getLogger(ZQL.class);
+    Logger logger = LoggerFactory.getLogger(ZQL.class);
+    
+	@SuppressWarnings("rawtypes")
+    private static final Response STATUS_NOT_FOUND = new JsonResponse(Status.NOT_FOUND).build();
 	ZQLSessionManager sessionManager;
 	private Gson gson;
-	
 	
 	public ZQL(ZQLSessionManager sessionManager){
 		this.sessionManager = sessionManager;
@@ -50,7 +48,7 @@ public class ZQL {
     @Produces("application/json")
     public Response newSession() {
     	ZQLSession s = sessionManager.create();
-        return new JsonResponse(Status.OK, "", s).build();
+        return new JsonResponse<ZQLSession>(Status.OK, "", s).build();
     }
 
 	static class SetZqlParam{
@@ -68,27 +66,26 @@ public class ZQL {
     	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
     	ZQLSession s = sessionManager.setZql(sessionId, data.zql);
     	if(s==null){
-    		return new JsonResponse(Status.NOT_FOUND).build();
+    		return STATUS_NOT_FOUND;
     	}
     	
     	s = sessionManager.setParams(sessionId, data.params);
     	if(s==null){
-    		return new JsonResponse(Status.NOT_FOUND).build();
+    		return STATUS_NOT_FOUND;
     	}
     	
     	s = sessionManager.setName(sessionId, data.name);
     	if(s==null){
-    		return new JsonResponse(Status.NOT_FOUND).build();
+    		return STATUS_NOT_FOUND;
     	}
     	
     	s = sessionManager.setCron(sessionId, data.cron);
     	if(s==null){
-    		return new JsonResponse(Status.NOT_FOUND).build();
+    		return STATUS_NOT_FOUND;
     	}
-    	
-    	return new JsonResponse(Status.OK, "", s).build();
+    	return new JsonResponse<ZQLSession>(Status.OK, "", s).build();
     }
-    
+
     @POST
     @Path("set/{sessionId}/zql")
     @Produces("application/json")
@@ -97,11 +94,11 @@ public class ZQL {
     	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
     	ZQLSession s = sessionManager.setZql(sessionId, data.zql);
     	if(s==null){
-    		return new JsonResponse(Status.NOT_FOUND).build();
+    		return STATUS_NOT_FOUND;
     	}
-    	
-    	return new JsonResponse(Status.OK, "", s).build();
+    	return new JsonResponse<ZQLSession>(Status.OK, "", s).build();
     }
+    
     @POST
     @Path("set/{sessionId}/name")
     @Produces("application/json")
@@ -109,10 +106,9 @@ public class ZQL {
     	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
     	ZQLSession s = sessionManager.setName(sessionId, data.name);
     	if(s==null){
-    		return new JsonResponse(Status.NOT_FOUND).build();
+    		return STATUS_NOT_FOUND;
     	}
-    	
-    	return new JsonResponse(Status.OK, "", s).build();
+    	return new JsonResponse<ZQLSession>(Status.OK, "", s).build();
     }    
      
     @POST
@@ -122,10 +118,9 @@ public class ZQL {
     	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
     	ZQLSession s = sessionManager.setParams(sessionId, data.params);
     	if(s==null){
-    		return new JsonResponse(Status.NOT_FOUND).build();
+    		return STATUS_NOT_FOUND;
     	}
-    	
-    	return new JsonResponse(Status.OK, "", s).build();
+    	return new JsonResponse<ZQLSession>(Status.OK, "", s).build();
     } 
     
     @POST
@@ -135,10 +130,9 @@ public class ZQL {
     	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
     	ZQLSession s = sessionManager.setCron(sessionId, data.cron);
     	if(s==null){
-    		return new JsonResponse(Status.NOT_FOUND).build();
+    		return STATUS_NOT_FOUND;
     	}
-    	
-    	return new JsonResponse(Status.OK, "", s).build();
+    	return new JsonResponse<ZQLSession>(Status.OK, "", s).build();
     }
     
     @GET
@@ -147,10 +141,9 @@ public class ZQL {
     public Response run(@PathParam("sessionId") String sessionId) {
     	 ZQLSession s = sessionManager.run(sessionId);
     	 if(s==null){
-    		 return new JsonResponse(Status.NOT_FOUND).build(); 
-    	 } else {
-    		 return new JsonResponse(Status.OK, "", s).build();	 
-    	 }
+    		 return STATUS_NOT_FOUND;
+    	 } 
+    	 return new JsonResponse<ZQLSession>(Status.OK, "", s).build();	  
     }
     
     @GET
@@ -159,10 +152,9 @@ public class ZQL {
     public Response dryRun(@PathParam("sessionId") String sessionId) {
     	 ZQLSession s = sessionManager.dryRun(sessionId);
     	 if(s==null){
-    		 return new JsonResponse(Status.NOT_FOUND).build(); 
-    	 } else {
-    		 return new JsonResponse(Status.OK, "", s).build();	 
+    		 return STATUS_NOT_FOUND;
     	 }
+    	 return new JsonResponse<ZQLSession>(Status.OK, "", s).build();	 
     }
     
     @GET
@@ -170,11 +162,10 @@ public class ZQL {
     @Produces("application/json")
     public Response get(@PathParam("sessionId") String sessionId) {
     	 ZQLSession s = sessionManager.get(sessionId);
-    	 if(s==null){
-    		 return new JsonResponse(Status.NOT_FOUND, "not found").build(); 
-    	 } else {
-    		 return new JsonResponse(Status.OK, "", s).build();	 
+    	 if(s==null) {
+    		 return STATUS_NOT_FOUND;
     	 }
+         return new JsonResponse<ZQLSession>(Status.OK, "", s).build();
     }
     
     /**
@@ -186,7 +177,9 @@ public class ZQL {
     @Produces("application/json")    
     public Response find() {
     	TreeMap<String, ZQLSession> sessions = sessionManager.list();
-        return new JsonResponse(Status.OK, "", new LinkedList<ZQLSession>(sessions.descendingMap().values())).build();
+        return new JsonResponse<LinkedList<ZQLSession>>(Status.OK, "",
+                new LinkedList<ZQLSession>(sessions.descendingMap().values()))
+                .build();
     }   
 
     @GET
@@ -195,10 +188,9 @@ public class ZQL {
     public Response del(@PathParam("sessionId") String sessionId) {
     	 boolean s = sessionManager.delete(sessionId);
     	 if(s==false){
-    		 return new JsonResponse(Status.NOT_FOUND).build(); 
-    	 } else {
-    		 return new JsonResponse(Status.OK).build();	 
+    		 return STATUS_NOT_FOUND; 
     	 }
+    	 return new JsonResponse(Status.OK).build();	 
     }
     
 
@@ -207,7 +199,7 @@ public class ZQL {
     public Response web(@PathParam("sessionId") String sessionId, @PathParam("zId") String zId, @PathParam("path") String path){
     	ZQLSession session = sessionManager.get(sessionId);
     	if(session==null){
-    		return new JsonResponse(Status.NOT_FOUND).build();
+    		return STATUS_NOT_FOUND;
     	}
     	if(path==null || path.equals("/") || path.length()==0){
     		path = "/index.erb";
@@ -246,7 +238,7 @@ public class ZQL {
 			return MediaType.APPLICATION_OCTET_STREAM_TYPE;
 		}
     	
-    	if(filename.endsWith(".erb")){
+    	if(filename.endsWith(".erb")) {
     		return MediaType.TEXT_HTML_TYPE;
     	} else if(filename.endsWith(".html") || filename.endsWith(".htm")){
     		return MediaType.TEXT_HTML_TYPE;

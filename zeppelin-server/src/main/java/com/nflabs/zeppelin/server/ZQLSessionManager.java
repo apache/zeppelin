@@ -3,11 +3,9 @@ package com.nflabs.zeppelin.server;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,10 +17,6 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobBuilder;
@@ -31,21 +25,17 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.JobKey;
 import org.quartz.SchedulerException;
-import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
-import org.quartz.TriggerKey;
 import org.quartz.impl.StdSchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nflabs.zeppelin.scheduler.Job;
+import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.scheduler.Scheduler;
-import com.nflabs.zeppelin.scheduler.Job.Status;
-import com.nflabs.zeppelin.zengine.L;
-import com.nflabs.zeppelin.zengine.Q;
 import com.nflabs.zeppelin.zengine.Z;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
@@ -120,8 +110,11 @@ public class ZQLSessionManager implements JobListener {
 	
 	public ZQLSession run(String sessionId){		
 		ZQLSession s = get(sessionId);
-		if(s==null) return null;
-		if(s.getStatus()==Status.RUNNING) return s;
+		if (s==null) { return null; }
+
+		if (s.getStatus() == Status.RUNNING) { 
+		    return s; 
+		}
 		s.setListener(this);
 		scheduler.submit(s);
 		return s;
@@ -129,7 +122,7 @@ public class ZQLSessionManager implements JobListener {
 	
 	public ZQLSession dryRun(String sessionId) {
 		ZQLSession s = get(sessionId);
-		if(s==null) return null;
+		if (s==null) {return null;}
 		try {
 			s.dryRun();
 			persist(s);			
@@ -162,7 +155,7 @@ public class ZQLSessionManager implements JobListener {
 
 	public ZQLSession setParams(String sessionId, List<Map<String, Object>> params) {
 		ZQLSession s = get(sessionId);
-		if(s==null){
+		if (s==null) {
 			return null;
 		} else {
 			s.setParams(params);
@@ -177,7 +170,7 @@ public class ZQLSessionManager implements JobListener {
 	
 	public ZQLSession setName(String sessionId, String name) {
 		ZQLSession s = get(sessionId);
-		if(s==null){
+		if (s==null) {
 			return null;
 		} else {
 			s.setJobName(name);
@@ -192,7 +185,7 @@ public class ZQLSessionManager implements JobListener {
 	
 	public ZQLSession setCron(String sessionId, String cron) {
 		ZQLSession s = get(sessionId);
-		if(s==null){
+		if (s==null) {
 			return null;
 		} else {
 			s.setCron(cron);			
@@ -208,7 +201,7 @@ public class ZQLSessionManager implements JobListener {
 
 	public boolean delete(String sessionId){
 		ZQLSession s= get(sessionId);
-		if(s==null) return false;
+		if (s==null) { return false; }
 		
 		// can't delete running session
 		if(s.getStatus()==Status.RUNNING) return false;
@@ -228,21 +221,19 @@ public class ZQLSessionManager implements JobListener {
 	
 	public ZQLSession abort(String sessionId){
 		ZQLSession s= get(sessionId);
-		if(s==null) return null;
+		if (s==null) { return null; }
 		
 		s.abort();
 		return s;
 	}
-
-
 	
 	public TreeMap<String, ZQLSession> list(){
 		TreeMap<String, ZQLSession> found = new TreeMap<String, ZQLSession>();
 		
 		Path dir = new Path(sessionPersistBasePath);
 		try {
-			if(fs.isDirectory(dir)==false){
-				return found;
+		    if (!fs.getFileStatus(dir).isDir()) {
+		        return found;
 			}
 		} catch (IOException e) {
 			logger.error("Can't scan dir "+dir, e);
@@ -255,23 +246,21 @@ public class ZQLSessionManager implements JobListener {
 			logger.error("Can't list dir "+dir, e);
 			e.printStackTrace();
 		}
-		if(files==null) return found;
+		if (files==null) { return found; }
 			
 		Arrays.sort(files, new Comparator<FileStatus>(){
-
-			@Override
-			public int compare(FileStatus a, FileStatus b) {
+		    @Override public int compare(FileStatus a, FileStatus b) {
 				String aName = a.getPath().getName();
 				String bName = b.getPath().getName();
 				return bName.compareTo(aName);
 			}				
 		});
 			
-		for(FileStatus f : files){
+		for(FileStatus f : files) {
 			ZQLSession session;
 			try {
 				session = load(f.getPath());
-				if(session!=null){
+				if (session!=null) {
 					found.put(session.getId(), session);
 				} else {
 					logger.error("Session not loaded "+f.getPath());
@@ -280,10 +269,8 @@ public class ZQLSessionManager implements JobListener {
 				logger.error("Can't load session from path "+f.getPath(), e);
 			}
 		}
-			
 		return found;
 	}
-	
 	
 	private Path getPathForSession(ZQLSession session){
 		return new Path(sessionPersistBasePath+"/"+session.getId());		
@@ -305,7 +292,6 @@ public class ZQLSessionManager implements JobListener {
 		out.writeBytes(json);
 		out.close();
 	}
-	
 	
 	@Override
 	public void statusChange(Job job) {
@@ -354,9 +340,7 @@ public class ZQLSessionManager implements JobListener {
 		public SessionCronJob() {
 		}
 
-		public void execute(JobExecutionContext context)
-				throws JobExecutionException {
-			
+		public void execute(JobExecutionContext context) throws JobExecutionException {
 			String sessionId = context.getJobDetail().getKey().getName();
 			sm.run(sessionId);						
 		}

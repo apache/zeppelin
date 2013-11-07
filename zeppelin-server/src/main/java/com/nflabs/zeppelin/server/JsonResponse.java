@@ -40,7 +40,7 @@ public class JsonResponse<T> {
 		this.body = body;
 	}
 
-	public JsonResponse setPretty(boolean pretty) {
+	public JsonResponse<T> setPretty(boolean pretty) {
 		this.pretty = pretty;
 		return this;
 	}
@@ -51,7 +51,7 @@ public class JsonResponse<T> {
 	 * @param newCookie
 	 * @return
 	 */
-	public JsonResponse addCookie(NewCookie newCookie) {
+	public JsonResponse<T> addCookie(NewCookie newCookie) {
 		if (cookies == null)
 			cookies = new ArrayList<NewCookie>();
 		cookies.add(newCookie);
@@ -66,7 +66,7 @@ public class JsonResponse<T> {
 	 * @param value
 	 * @return
 	 */
-	public JsonResponse addCookie(String name, String value) {
+	public JsonResponse<?> addCookie(String name, String value) {
 		return addCookie(new NewCookie(name, value));
 	}
 
