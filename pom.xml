@@ -71,7 +71,7 @@
     <hive.version>0.9.0</hive.version>
     <hbase.version>0.92.1</hbase.version>
     <scala.version>2.9.3</scala.version>
-    <slf4j.version>1.6.1</slf4j.version>
+    <slf4j.version>1.6.6</slf4j.version>
     <wicket.version>6.10.0</wicket.version>
     <jetty.version>7.6.13.v20130916</jetty.version>
     <cxf.version>2.4.3</cxf.version>
