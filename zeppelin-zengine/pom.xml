@@ -146,6 +146,10 @@
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-core</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.derby</groupId>
+          <artifactId>derby</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
