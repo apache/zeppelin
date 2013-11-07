@@ -2,11 +2,7 @@ package com.nflabs.zeppelin.cli;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.LinkedList;
 import java.util.List;
 
 import jline.ConsoleReader;
@@ -15,21 +11,20 @@ import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.result.ResultDataException;
-import com.nflabs.zeppelin.result.ResultDataStream;
 import com.nflabs.zeppelin.zengine.Z;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQL;
 import com.nflabs.zeppelin.zengine.ZQLException;
 
 public class ZeppelinCli {
-	public static void main(String args[]) throws ParseException, ZException, IOException, ZQLException, SQLException, ResultDataException{
+	@SuppressWarnings("static-access")
+    public static void main(String args[]) throws ParseException, ZException, IOException, ZQLException, SQLException, ResultDataException{
 	
 		Options options = new Options();
 		options.addOption(OptionBuilder.withArgName("File")
@@ -43,9 +38,7 @@ public class ZeppelinCli {
 		options.addOption(OptionBuilder.withDescription("See this messages")
 									   .withLongOpt("help")
 									   .create("h"));
-									 
-				
-		
+
 		CommandLineParser parser = new BasicParser();
 		CommandLine cmd = parser.parse(options, args);
 		
@@ -53,7 +46,6 @@ public class ZeppelinCli {
 			ZQL zql = new ZQL();
 			zql.load(new File(cmd.getOptionValue("f")));
 			List<Z> zs = zql.compile();
-			
 			
 			for(Z z : zs){
 				z.execute().result().write(System.out);
@@ -72,7 +64,6 @@ public class ZeppelinCli {
 			ZeppelinCli cli = new ZeppelinCli();
 			cli.run();
 		}
-		
 
 	}
 	
@@ -83,8 +74,7 @@ public class ZeppelinCli {
 	 private String readLine(ConsoleReader reader, String promtMessage)
              throws IOException {
 	     String line = reader.readLine(promtMessage + "\nzeppelin> ");
-	     if(line==null) return null;
-	     else return line.trim();
+	     return line == null ? null : line.trim();
 	 }
 	 
 	 public void run() throws IOException{
