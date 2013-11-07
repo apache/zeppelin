@@ -141,7 +141,7 @@
       <exclusions>
         <exclusion>
           <groupId>org.apache.thrift</groupId>
-          <artifactId>*</artifactId>
+          <artifactId>libfb303</artifactId>
         </exclusion>
         <exclusion>
           <groupId>junit</groupId>
@@ -162,6 +162,10 @@
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-collections</groupId>
+          <artifactId>commons-collections</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
