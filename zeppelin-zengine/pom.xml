@@ -98,6 +98,10 @@
           <groupId>commons-lang</groupId>
           <artifactId>commons-lang</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-core</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -121,6 +125,10 @@
         <exclusion>
           <groupId>commons-lang</groupId>
           <artifactId>commons-lang</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-core</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -147,6 +155,10 @@
           <groupId>commons-lang</groupId>
           <artifactId>commons-lang</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-core</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -158,6 +170,10 @@
         <exclusion>
           <groupId>org.apache.mina</groupId>
           <artifactId>mina-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.ftpserver</groupId>
+          <artifactId>ftpserver-core</artifactId>
         </exclusion>
       </exclusions>
       <scope>test</scope>
