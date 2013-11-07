@@ -82,6 +82,10 @@
           <groupId>commons-configuration</groupId>
           <artifactId>commons-configuration</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>commons-httpclient</groupId>
+          <artifactId>commons-httpclient</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
