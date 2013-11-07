@@ -20,14 +20,14 @@
       <organization>NFLabs</organization>
       <organizationUrl>http://www.nflabs.com</organizationUrl>
     </developer>
-  </developers>	  
-	  
+  </developers>
+
 
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
+      <version>4.11</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -36,79 +36,205 @@
       <version>1.9</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.commons</groupId>
+      <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>1.3.2</version>
-            <exclusions>
-		        <exclusion>
-		            <groupId>org.slf4j</groupId>
-		            <artifactId>*</artifactId>
-		        </exclusion>
-		    </exclusions> 
-      
+      <version>2.4</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
-	<dependency>
-		<groupId>org.apache.commons</groupId>
-		<artifactId>commons-exec</artifactId>
-		<version>1.1</version>
-	</dependency>
-	    
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-exec</artifactId>
+      <version>1.1</version>
+    </dependency>
+
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-core</artifactId>
       <version>${hadoop.version}</version>
       <exclusions>
-	<exclusion>
+        <exclusion>
           <groupId>org.mortbay.jetty</groupId>
           <artifactId>*</artifactId>
-	</exclusion>                          
-      </exclusions>                
-    </dependency> 
-    
+        </exclusion>
+        <exclusion>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-mapper-asl</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-codec</groupId>
+          <artifactId>commons-codec</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-configuration</groupId>
+          <artifactId>commons-configuration</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-httpclient</groupId>
+          <artifactId>commons-httpclient</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-jdbc</artifactId>
       <version>${hive.version}</version>
-	    <exclusions>
-	        <exclusion>
-	            <groupId>org.slf4j</groupId>
-	            <artifactId>*</artifactId>
-	        </exclusion>
-	    </exclusions>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-codec</groupId>
+          <artifactId>commons-codec</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-core</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
-    
+
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-service</artifactId>
       <version>${hive.version}</version>
-	    <exclusions>
-	        <exclusion>
-	            <groupId>org.slf4j</groupId>
-	            <artifactId>*</artifactId>
-	        </exclusion>
-	    </exclusions>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>log4j</groupId>
+          <artifactId>log4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.derby</groupId>
+          <artifactId>derby</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>jline</groupId>
+          <artifactId>jline</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
-    
+
     <dependency>
-		<groupId>com.nitayjoffe.thirdparty.com.jointhegrid</groupId>
-		<artifactId>hive_test</artifactId>
-		<version>4.0.0</version>
-		<scope>test</scope>
-		<exclusions>
-	        <exclusion>
-	            <groupId>org.apache.thrift</groupId>
-	            <artifactId>*</artifactId>
-	        </exclusion>
-	    </exclusions>
-	</dependency>
-	
+      <groupId>com.nitayjoffe.thirdparty.com.jointhegrid</groupId>
+      <artifactId>hive_test</artifactId>
+      <version>4.0.0</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.thrift</groupId>
+          <artifactId>libfb303</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-codec</groupId>
+          <artifactId>commons-codec</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-lang</groupId>
+          <artifactId>commons-lang</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>commons-collections</groupId>
+          <artifactId>commons-collections</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-test</artifactId>
       <version>${hadoop.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.mina</groupId>
+          <artifactId>mina-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.ftpserver</groupId>
+          <artifactId>ftpserver-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.ftpserver</groupId>
+          <artifactId>ftplet-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
       <scope>test</scope>
     </dependency>
-                
+
     <!-- to use erb -->
     <dependency>
       <groupId>org.jruby</groupId>
