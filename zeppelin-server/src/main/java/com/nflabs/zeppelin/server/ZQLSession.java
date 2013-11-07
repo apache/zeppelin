@@ -6,7 +6,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.scheduler.Job;
@@ -17,7 +18,7 @@ import com.nflabs.zeppelin.zengine.ZQL;
 import com.nflabs.zeppelin.zengine.ZQLException;
 
 public class ZQLSession extends Job{
-	transient Logger logger = Logger.getLogger(ZQLSession.class);
+	transient Logger logger = LoggerFactory.getLogger(ZQLSession.class);
 
 	private String zql;
 	private List<Map<String, Object>> params;

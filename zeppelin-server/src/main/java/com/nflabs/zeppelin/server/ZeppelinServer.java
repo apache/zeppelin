@@ -7,8 +7,8 @@ import java.util.Set;
 import javax.ws.rs.core.Application;
 
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.wicket.protocol.http.ContextParamWebApplicationFactory;
 import org.apache.wicket.protocol.http.WicketFilter;
@@ -32,13 +32,13 @@ import com.nflabs.zeppelin.zengine.Z;
 
 
 public class ZeppelinServer extends Application {
-	static Logger logger = Logger.getLogger(ZeppelinServer.class.getName());
+	static Logger logger = LoggerFactory.getLogger(ZeppelinServer.class.getName());
 	
 	public static void main(String [] args) throws Exception{
-		if(System.getProperty("log4j.configuration")==null){
-			Logger.getLogger("com.nflabs.zeppelin").setLevel(Level.DEBUG);
-			Logger.getRootLogger().setLevel(Level.INFO);
-		}
+        //if(System.getProperty("log4j.configuration")==null){
+		//	Logger.getLogger("com.nflabs.zeppelin").setLevel(Level.DEBUG);
+		//	Logger.getRootLogger().setLevel(Level.INFO);
+		//}
 		
 		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 

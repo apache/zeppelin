@@ -8,11 +8,12 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class SchedulerFactory implements SchedulerListener{
-	private final Logger logger = Logger.getLogger(SchedulerFactory.class);
+	private final Logger logger = LoggerFactory.getLogger(SchedulerFactory.class);
 	ScheduledExecutorService executor;
 	Map<String, Scheduler> schedulers = new LinkedHashMap<String, Scheduler>();
 	

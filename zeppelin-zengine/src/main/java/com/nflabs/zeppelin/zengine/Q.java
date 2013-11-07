@@ -17,7 +17,8 @@ import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.result.Result;
 
@@ -49,7 +50,7 @@ public class Q extends Z{
 	}
 	
 	private Logger logger(){
-		return Logger.getLogger(Q.class);
+		return LoggerFactory.getLogger(Q.class);
 	}
 	
 	transient boolean initialized = false;

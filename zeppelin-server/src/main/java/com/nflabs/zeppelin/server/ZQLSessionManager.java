@@ -19,7 +19,10 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobBuilder;
@@ -48,7 +51,7 @@ import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
 
 public class ZQLSessionManager implements JobListener {
-	Logger logger = Logger.getLogger(ZQLSessionManager.class);
+	Logger logger = LoggerFactory.getLogger(ZQLSessionManager.class);
 	Map<String, ZQLSession> active = new HashMap<String, ZQLSession>();
 	Gson gson ;
 	
@@ -363,7 +366,7 @@ public class ZQLSessionManager implements JobListener {
 		try {
 			quertzSched.deleteJob(new JobKey(session.getId(), "zql"));
 		} catch (SchedulerException e) {
-			logger.error(e);
+			logger.error("Failed to delete Quartz job", e);
 		}	
 	}
 	
@@ -388,7 +391,7 @@ public class ZQLSessionManager implements JobListener {
 		try {
 			quertzSched.scheduleJob(job, trigger);
 		} catch (SchedulerException e) {
-			logger.error(e);
+			logger.error("Failed to schedule Quartz job",e);
 		}
 	}
 }

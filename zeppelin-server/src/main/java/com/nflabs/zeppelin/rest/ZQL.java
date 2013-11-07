@@ -21,7 +21,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.nflabs.zeppelin.server.ZQLSession;
@@ -33,7 +35,7 @@ import com.nflabs.zeppelin.zengine.ZException;
 
 @Path("/zql")
 public class ZQL {	
-	Logger logger = Logger.getLogger(ZQL.class);
+	Logger logger = LoggerFactory.getLogger(ZQL.class);
 	ZQLSessionManager sessionManager;
 	private Gson gson;
 	

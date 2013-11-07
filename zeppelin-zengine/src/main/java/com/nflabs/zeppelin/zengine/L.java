@@ -25,12 +25,15 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.log4j.Logger;
+
 import org.datanucleus.util.StringUtils;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.result.Result;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * L stands for Library(aks UDF). This class load and execute Zeppelin User Defined Functions
@@ -66,7 +69,7 @@ public class L extends Q{
 	}
 	
 	private Logger logger(){
-		return Logger.getLogger(L.class);
+		return LoggerFactory.getLogger(L.class);
 	}
 	
 	protected void initialize() throws ZException{

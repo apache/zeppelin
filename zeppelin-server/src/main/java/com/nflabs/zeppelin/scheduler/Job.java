@@ -4,8 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 import com.nflabs.zeppelin.scheduler.JobListener;
 
 public abstract class Job {

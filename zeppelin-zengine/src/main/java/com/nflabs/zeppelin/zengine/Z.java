@@ -25,9 +25,10 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
-
 import org.apache.hadoop.hive.service.HiveInterface;
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -75,7 +76,7 @@ public abstract class Z {
 	}
 	
 	private Logger logger(){
-		return Logger.getLogger(Z.class);
+		return LoggerFactory.getLogger(Z.class);
 	}
 	
 
@@ -490,14 +491,15 @@ public abstract class Z {
 		if(query==null) return null;
 		
 		if(query.startsWith("!")){
+            String cmd = query.substring(1);
 			try {
-				return shellCommand(query.substring(1));
+				return shellCommand(cmd);
 			} catch (ExecuteException e) {
-				logger().error(e);
+				logger().error("Failed to execute shell command " + cmd, e);
 			} catch (IOException e) {
-				logger().error(e);
+				logger().error("Failed to execute shell command " + cmd, e);
 			} catch (ResultDataException e) {
-				logger().error(e);
+				logger().error("Failed to execute shell command " + cmd, e);
 			}
 		}
 		

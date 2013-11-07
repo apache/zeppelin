@@ -11,7 +11,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ExecStatement extends Q{
 	public ExecStatement(String command) throws ZException{
@@ -19,7 +20,7 @@ public class ExecStatement extends Q{
 	}
 	
 	private Logger logger(){
-		return Logger.getLogger(ExecStatement.class);
+		return LoggerFactory.getLogger(ExecStatement.class);
 	}
 
 	@Override
