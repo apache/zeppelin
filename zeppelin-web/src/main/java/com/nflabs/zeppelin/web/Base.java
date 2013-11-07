@@ -8,7 +8,8 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
 
-public class Base  extends WebPage{
+public class Base extends WebPage {
+    private static final long serialVersionUID = 4962397286766124332L;
 
     public Base(final PageParameters parameters) {
     	super(parameters);
