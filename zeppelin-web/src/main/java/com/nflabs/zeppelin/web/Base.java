@@ -35,6 +35,10 @@ public class Base  extends WebPage{
     	// ace
     	response.render(JavaScriptHeaderItem.forUrl("js/lib/ace/ace.js"));
     	
+    	// x-editable
+    	response.render(JavaScriptHeaderItem.forUrl("http://cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/js/bootstrap-editable.min.js"));
+    	response.render(CssHeaderItem.forUrl("http://cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.0/bootstrap3-editable/css/bootstrap-editable.css"));
+    	
     	// zeppelin-dependency
     	response.render(JavaScriptHeaderItem.forUrl("js/lib/json2.js"));
     	

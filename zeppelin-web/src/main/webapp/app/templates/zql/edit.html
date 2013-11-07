@@ -1,4 +1,4 @@
-<input type="text" id="zqlSessionName"></input>
+<a href="#" data-type="text" id="zqlSessionName"></a>
 <p />
 <div id="zqlEditor" class="zqlEditor"></div>
 {{textarea id="zqlEditorArea"}}
@@ -6,9 +6,11 @@
 {{view view.zqlParamView}}
 <div>
   <a id="zqlRunButton" class="btn btn-lg btn-primary" {{action 'runSession'}}>Run</a>
-  <div style="float:right">
+  <div style="float:right; text-align:right">
+    Schedule - <a href="#" data-type="select" id="zqlSessionCron"></a> |
     {{#link-to 'report.link' currentSession.id}}Share{{/link-to}} | 
     <a id="zqlDeleteButton" {{action 'deleteSession'}}>Delete</a>
+    <p style="font-size:11px">Last run {{currentSession.dateFinished}}, took {{sessionTook}}</p>
   </div>
 </div>
 <p />

@@ -6,6 +6,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.quartz.SchedulerException;
+
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.result.Result;
@@ -79,7 +81,7 @@ public class ZQLSessionManagerTest extends TestCase {
 		assertEquals(0, sm.list().size());
 	}
 	
-	public void testRun() throws InterruptedException{
+	public void testRun() throws InterruptedException, SchedulerException{
 		// Create
 		ZQLSession sess = sm.create();
 		sm.setZql(sess.getId(), "show tables");
@@ -114,6 +116,32 @@ public class ZQLSessionManagerTest extends TestCase {
 		List<Result> ret = (List<Result>) sm.get(sess.getId()).getReturn();
 		assertEquals(2, ret.size());
 		
+	}
+	
+	public void testCron() throws InterruptedException{
+		ZQLSession sess = sm.create();
+		sm.setZql(sess.getId(), "!echo 'hello world'");
+		sm.setCron(sess.getId(), "0/1 * * * * ?");
+
+		while (sm.get(sess.getId()).getStatus()!=Status.FINISHED){
+			Thread.sleep(300);
+		}
+		
+		List<Result> ret = (List<Result>) sm.get(sess.getId()).getReturn();
+		assertEquals("hello world", ret.get(0).getRows().get(0)[0]);
+
+		
+		Date firstDateFinished = sm.get(sess.getId()).getDateFinished();
+		
+		// wait for second run
+		while (sm.get(sess.getId()).getDateFinished().getTime()==firstDateFinished.getTime()){
+			Thread.sleep(300);
+		}
+		
+		ret = (List<Result>) sm.get(sess.getId()).getReturn();
+		assertEquals("hello world", ret.get(0).getRows().get(0)[0]);		
+		
+		sm.delete(sess.getId());
 	}
 
 }

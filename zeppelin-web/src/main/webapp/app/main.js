@@ -45,6 +45,8 @@ function loadTemplates(templates) {
 }
 
 $(document).ready(function(){
+        $.fn.editable.defaults.mode = 'inline';
+
 	// load all ember templates
 	loadTemplates(loaderObj.templates);
 
@@ -130,14 +132,21 @@ $(document).ready(function(){
 
 
 	App.ZqlEditController = App.ApplicationController.extend({
-	    dirty : false,
+	    dirty : 0,
+	    dirtyFlag : {
+		CLEAN : 0,
+		ZQL : 1,
+		NAME : 2,
+		PARAMS : 4,
+		CRON : 8
+	    },
 	    dryrun : true,
 	    currentSession : undefined,
 	    zql : undefined,
 	    sessionName : undefined,
+	    sessionCron : undefined,
 	    params : undefined,
 	    
-
 	    actions : {
 		runSession : function(){
 		    var controller = this;
@@ -148,8 +157,9 @@ $(document).ready(function(){
 
 		    var zql = this.get('zql');
 		    var sessionName = this.get('sessionName');
+		    var sessionCron = this.get('sessionCron');
 		    if(this.get('dryrun')==true && false){
-			zeppelin.zql.set(sessionId, sessionName, zql, undefined, function(c, d){
+			zeppelin.zql.set(sessionId, sessionName, zql, undefined, sessionCron, function(c, d){
 			    if(c!=200){
 				zeppelin.alert("Error: Invalid Session", "#alert");
 			    } else {
@@ -162,11 +172,11 @@ $(document).ready(function(){
                             }
 			}, this);
 		    } else {
-			zeppelin.zql.set(sessionId, sessionName, zql, undefined, function(c, d){
+			zeppelin.zql.set(sessionId, sessionName, zql, undefined, sessionCron, function(c, d){
 			    if(c!=200){
 				zeppelin.alert("Error: Invalid Session", "#alert");
 			    } else {
-				controller.set('dirty', false);
+				controller.set('dirty', 0);
 				zeppelin.zql.run(sessionId, function(c, d){
 				    if(c==200){
 					controller.send('loadSession', sessionId);
@@ -203,17 +213,19 @@ $(document).ready(function(){
 		loadSession : function(sessionId){
 		    var controller = this;
 		    zeppelin.zql.get(sessionId, function(c, d){
-			controller.set('currentSession', d);
+			if(c==200){
+			    controller.set('currentSession', d);
+			}
 		    });
 		},
 
 		// called from view
-		beforeChangeSession : function(model, sessionNameEditor, editor){
+		beforeChangeSession : function(model, sessionNameEditor, editor, sessionCronEditor){
 		    if(model==null) return;
 		    // save session before change
 		    if(model.status=="READY"){
 			if(this.get('dirty')){
-			    zeppelin.zql.set(model.id, sessionNameEditor.val(), editor.getValue(), undefined, function(c, d){
+			    zeppelin.zql.set(model.id, sessionNameEditor.val(), editor.getValue(), undefined, sessionCronEditor.getValue(), function(c, d){
 				if(c==200){
 				    console.log("session %o saved", model.id)
 				} else {
@@ -225,38 +237,89 @@ $(document).ready(function(){
 		},
 
 		// called from view
-		afterChangeSession : function(model, sessionNameEditor, editor){
-		    this.set('dirty', false);
+		afterChangeSession : function(model, sessionNameEditor, editor, sessionCronEditor){
+		    this.set('dirty', 0);
 		    this.set("zql", editor.getValue());
-		    this.set("sessionName", sessionNameEditor.val());
+		    this.set("sessionName", sessionNameEditor.editable('getValue', true));
+		    this.set("sessionCron", sessionCronEditor.editable('getValue', true));
+
+		    durationToString = function(duration){
+			var took = "";
+			if(duration.weeks>0){
+			    took += duration.weeks+" weeks, ";
+			}
+			if(duration.days>0){
+			    took += duration.days+" days, ";
+			}
+			if(duration.hours>0){
+			    took += duration.hours+" hours, ";
+			}
+			if(duration.minutes>0){
+			    took += duration.minutes+" minutes, ";
+			}
+			if(duration.seconds>0){
+			    took += duration.seconds+"."+duration.millis+" seconds";
+			}
+			else
+			    took += "0."+duration.millis+" seconds";
+			return took;
+		    };
+
+		    var getDuration = function(timeMillis){
+			if(isNaN(timeMillis) || timeMillis <0) timeMillis = 0;
+			var units = [
+			    {label:"millis",    mod:1000,},
+			    {label:"seconds",   mod:60,},
+			    {label:"minutes",   mod:60,},
+			    {label:"hours",     mod:24,},
+			    {label:"days",      mod:7,},
+			    {label:"weeks",     mod:52,},
+			];
+			var duration = new Object();
+			var x = timeMillis;
+			for (i = 0; i < units.length; i++){
+			    var tmp = x % units[i].mod;
+			    duration[units[i].label] = tmp;
+			    x = (x - tmp) / units[i].mod
+			}
+			return duration;
+		    };
+		    this.set("sessionTook", durationToString(getDuration(new Date(model.dateFinished).getTime() - new Date(model.dateStarted).getTime())));
 		},
 
 		zqlChanged : function(zql){
 		    //console.log("Zql changed from %o to %o", this.get('zql'), zql);
-		    this.set('dirty', true);
+		    this.set('dirty', this.get('dirty') | this.get('dirtyFlag').ZQL);
 		    this.set('dryrun', true);
 		    this.set('zql', zql);
 		},
 
 		zqlSessionNameChanged : function(sessionName){
 		    //console.log("Session name changed %o", sessionName);
-		    this.set('dirty', true);
+		    this.set('dirty', this.get('dirty') | this.get('dirtyFlag').NAME);
 		    this.set('sessionName', sessionName);
 		},
 
+		zqlSessionCronChanged : function(sessionCron){
+		    //console.log("Session name changed %o", sessionName);
+		    this.set('dirty', this.get('dirty') | this.get('dirtyFlag').CRON);
+		    this.set('sessionCron', sessionCron);
+		},
+
 		// called from view
-		loop : function(sessionNameEditor, editor){
+		loop : function(sessionNameEditor, editor, sessionCronEditor){
 		    var controller = this;
 		    var session = this.get('currentSession');
 		    if(session==null) return;
 		    if(session.status=="READY" || session.status=="FINISHED" || session.status=="ERROR" || session.status=="ABORT"){
 			// auto save every 10 sec
-			if(new Date().getSeconds() % 10 == 0 && this.get('dirty')){
+			if(new Date().getSeconds() % 10 == 0 && (this.get('dirty') & this.get('dirtyFlag').ZQL)){
+			    
 			    // TODO display saving... -> saved message
-			    zeppelin.zql.set(session.id, sessionNameEditor.val(), editor.getValue(), undefined, function(c, d){
+			    zeppelin.zql.setZql(session.id, editor.getValue(), function(c, d){
 				if(c==200){
-				    this.set('dirty', false);
-				    console.log("autosave completed %o %o", c, d);
+				    this.set('dirty', (this.get('dirty') & ~this.get('dirtyFlag').ZQL));
+				    console.log("autosave zql completed %o %o", c, d);
 
 				    // send zqlcontroller to refresh session list. (session name may change by this save)
 				    this.controllerFor('zql').send('updateSession');
@@ -264,6 +327,45 @@ $(document).ready(function(){
 				
 			    }, this);
 			}
+
+			if(new Date().getSeconds() % 10 == 0 && (this.get('dirty') & this.get('dirtyFlag').NAME)){
+			    
+			    // TODO display saving... -> saved message
+			    zeppelin.zql.setName(session.id, sessionNameEditor.editable('getValue', true), function(c, d){
+				if(c==200){
+				    this.set('dirty', (this.get('dirty') & ~this.get('dirtyFlag').NAME));
+				    console.log("autosave name completed %o %o", c, d);
+				}
+				
+			    }, this);
+			}
+
+			if(new Date().getSeconds() % 10 == 0 && (this.get('dirty') & this.get('dirtyFlag').CRON)){
+			    
+			    // TODO display saving... -> saved message
+			    zeppelin.zql.setCron(session.id, sessionCronEditor.editable('getValue', true), function(c, d){
+				if(c==200){
+				    this.set('dirty', (this.get('dirty') & ~this.get('dirtyFlag').CRON));
+				    console.log("autosave cron completed %o %o", c, d);
+				}
+				
+			    }, this);
+			}
+
+
+			if(new Date().getSeconds() % 60 == 0){ // check if it is running by scheduler every 1m
+			    zeppelin.zql.get(session.id, function(c, d){
+				if(c==200){
+				    if(d.status=="RUNNING" || d.dateFinished!=session.dateFinished){
+					if(controller.get('dirty')==0){ // auto refresh in only clean state
+					    controller.set("currentSession", d);
+					}
+				    }
+				}
+			    });
+			    this.controllerFor('zql').send('updateSession');
+			}
+
 		    } else if(session.status=="RUNNING"){
 			if(new Date().getSeconds() % 1 == 0){ // refreshing every 1 sec
 			    controller.send('loadSession', session.id);
@@ -284,6 +386,7 @@ $(document).ready(function(){
 	App.ZqlEditView = Ember.View.extend({
 	    layoutName: 'default_layout',
 	    sessionNameEditor : undefined,
+	    sessionCronEditor : undefined,
 	    editor : undefined,
 	    currentModel : undefined,
 
@@ -293,8 +396,9 @@ $(document).ready(function(){
 		var model = controller.get('currentSession');
 		var editor = this.get('editor');
 		var sessionNameEditor = this.get('sessionNameEditor');
+		var sessionCronEditor = this.get('sessionCronEditor');
 
-		controller.send("beforeChangeSession", this.get('currentModel'), sessionNameEditor, editor);
+		controller.send("beforeChangeSession", this.get('currentModel'), sessionNameEditor, editor, sessionCronEditor);
 		this.set('currentModel', model);
 		console.log("Current session=%o", model);
 		if(editor==null) return;
@@ -303,12 +407,22 @@ $(document).ready(function(){
 		}
 
 		if(model.jobName && model.jobName!=""){
-		    if(sessionNameEditor.val()!=model.jobName){
-			sessionNameEditor.val(model.jobName);
+		    if(sessionNameEditor.editable('getValue', true)!=model.jobName){
+			sessionNameEditor.editable('setValue', model.jobName);
 		    }
 		} else {
-		    sessionNameEditor.val(model.id);
+		    sessionNameEditor.editable('setValue', model.id);
 		}
+
+
+		if(model.cron && model.cron!=""){
+		    if(sessionCronEditor.editable('getValue', true)!=model.cron){
+			sessionCronEditor.editable('setValue', model.cron);
+		    }
+		} else {
+		    sessionCronEditor.editable('setValue', "");
+		}
+
 
 		// clear visualizations
 		$('#visualizationContainer iframe').remove();
@@ -317,6 +431,8 @@ $(document).ready(function(){
 
 		if(model.status=="READY"){
 		    editor.setReadOnly(false);
+		    sessionNameEditor.editable('enable');
+		    sessionCronEditor.editable('enable');
 		    $('#zqlRunButton').text("Run");
 		    //$('#zqlRunButton').removeClass('disabled');		    
 		} else if(model.status=="RUNNING"){
@@ -324,11 +440,15 @@ $(document).ready(function(){
 		    //$('#zqlRunButton').addClass('disabled');
 		    //$('#zqlRunButton').prop('disabled', true);
 		    editor.setReadOnly(true);
+		    sessionNameEditor.editable('disable');
+		    sessionCronEditor.editable('disable');
                 } else if(model.status=="FINISHED"){
 		    $('#zqlRunButton').text("Run");
 		    //$('#zqlRunButton').addClass('disabled');
 		    //$('#zqlRunButton').prop('disabled', true);
 		    editor.setReadOnly(false);
+		    sessionNameEditor.editable('enable');
+		    sessionCronEditor.editable('enable');
 
 		    // draw visualization if there's some
 		    if(model.zqlPlans){
@@ -379,13 +499,17 @@ $(document).ready(function(){
 		    }
 		    //$('#zqlRunButton').removeClass('disabled');
 		    editor.setReadOnly(false);
+		    sessionNameEditor.editable('enable');
+		    sessionCronEditor.editable('enable');
 		} else if(model.status=="ABORT"){
 		    $('#zqlRunButton').text("Run");
 		    //$('#zqlRunButton').removeClass('disabled');
 		    editor.setReadOnly(false);
+		    sessionNameEditor.editable('enable');
+		    sessionCronEditor.editable('enable');
 		}
 
-		controller.send("afterChangeSession", model, sessionNameEditor, editor);
+		controller.send("afterChangeSession", model, sessionNameEditor, editor, sessionCronEditor);
             }.observes('controller.currentSession'),
 
 
@@ -408,18 +532,37 @@ $(document).ready(function(){
 		    controller.send("zqlChanged", zql);
                 });
 
-		var sessionNameEditor = $('#zqlSessionName');
-		sessionNameEditor.on('change', function(e){
-		    controller.send("zqlSessionNameChanged", sessionNameEditor.val());
-		});
+		var sessionNameEditor = $('#zqlSessionName')
+		$('#zqlSessionName').editable({});
+		sessionNameEditor.on('save', function(e, params) {
+		    controller.send("zqlSessionNameChanged", params.newValue);	
+		});		
 		this.set('sessionNameEditor', sessionNameEditor);
+
+		var sessionCronEditor = $('#zqlSessionCron')
+		$('#zqlSessionCron').editable({
+		    value : "",
+		    source : [
+			{ value : "", text: 'None' },
+			{ value : "0 0/1 * * * ?", text: '1m' },
+			{ value : "0 0 0/1 * * ?", text: '1h' },
+			{ value : "0 0 0/3 * * ?", text: '3h' },
+			{ value : "0 0 0/6 * * ?", text: '6h' },
+			{ value : "0 0 0/12 * * ?", text: '12h' },
+			{ value : "0 0 0 * * ?", text: '24h' },
+		    ]
+		});
+		sessionCronEditor.on('save', function(e, params) {
+		    controller.send("zqlSessionCronChanged", params.newValue);	
+		});		
+		this.set('sessionCronEditor', sessionCronEditor);
 
 		var editorLoop = function(){
 		    setTimeout(function(){
 			editorLoop();
 		    }, 1000);
 
-		    controller.send("loop", sessionNameEditor, editor);
+		    controller.send("loop", sessionNameEditor, editor, sessionCronEditor);
 		};
 		editorLoop();
 	    },

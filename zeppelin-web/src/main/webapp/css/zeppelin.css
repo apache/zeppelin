@@ -26,6 +26,15 @@ a {
     color : #555555;
 }
 
+
+#zqlSessionCron {
+    border : 0px solid #dddddd;
+    width :100%;
+    font-weight : bold;
+    color : #555555;
+}
+
+
 #visualizationContainer iframe{
     border : 0px solid #CCCCCC;
     width:100%;

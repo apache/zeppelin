@@ -54,13 +54,14 @@ public class ZQL {
 	static class SetZqlParam{
 		String name;
 		String zql;
+		String cron;
 		List<Map<String, Object>> params;
 	} 
 
     @POST
     @Path("set/{sessionId}")
     @Produces("application/json")
-    public Response setZql(@PathParam("sessionId") String sessionId, String json) {
+    public Response set(@PathParam("sessionId") String sessionId, String json) {
     	
     	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
     	ZQLSession s = sessionManager.setZql(sessionId, data.zql);
@@ -78,10 +79,66 @@ public class ZQL {
     		return new JsonResponse(Status.NOT_FOUND).build();
     	}
     	
+    	s = sessionManager.setCron(sessionId, data.cron);
+    	if(s==null){
+    		return new JsonResponse(Status.NOT_FOUND).build();
+    	}
+    	
     	return new JsonResponse(Status.OK, "", s).build();
     }
     
-        
+    @POST
+    @Path("set/{sessionId}/zql")
+    @Produces("application/json")
+    public Response setZql(@PathParam("sessionId") String sessionId, String json) {
+    	
+    	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
+    	ZQLSession s = sessionManager.setZql(sessionId, data.zql);
+    	if(s==null){
+    		return new JsonResponse(Status.NOT_FOUND).build();
+    	}
+    	
+    	return new JsonResponse(Status.OK, "", s).build();
+    }
+    @POST
+    @Path("set/{sessionId}/name")
+    @Produces("application/json")
+    public Response setName(@PathParam("sessionId") String sessionId, String json) {	
+    	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
+    	ZQLSession s = sessionManager.setName(sessionId, data.name);
+    	if(s==null){
+    		return new JsonResponse(Status.NOT_FOUND).build();
+    	}
+    	
+    	return new JsonResponse(Status.OK, "", s).build();
+    }    
+     
+    @POST
+    @Path("set/{sessionId}/params")
+    @Produces("application/json")
+    public Response setParams(@PathParam("sessionId") String sessionId, String json) {	
+    	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
+    	ZQLSession s = sessionManager.setParams(sessionId, data.params);
+    	if(s==null){
+    		return new JsonResponse(Status.NOT_FOUND).build();
+    	}
+    	
+    	return new JsonResponse(Status.OK, "", s).build();
+    } 
+    
+    @POST
+    @Path("set/{sessionId}/cron")
+    @Produces("application/json")
+    public Response setCron(@PathParam("sessionId") String sessionId, String json) {	
+    	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
+    	ZQLSession s = sessionManager.setCron(sessionId, data.cron);
+    	if(s==null){
+    		return new JsonResponse(Status.NOT_FOUND).build();
+    	}
+    	
+    	return new JsonResponse(Status.OK, "", s).build();
+    }
+    
     @GET
     @Path("run/{sessionId}")
     @Produces("application/json")

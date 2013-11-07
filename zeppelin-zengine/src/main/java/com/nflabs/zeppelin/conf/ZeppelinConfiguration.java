@@ -171,6 +171,8 @@ public class ZeppelinConfiguration extends XMLConfiguration{
 		ZEPPELIN_LOCAL_WAREHOUSE	("zeppelin.local.warehouse", "data"),
 		ZEPPELIN_ZAN_LOCAL_REPO		("zeppelin.zan.localrepo", "../zan-repo"),
 		ZEPPELIN_COMMAND_TIMEOUT	("zeppelin.command.timeout", 1000*60*30),  // 30 min
+		ZEPPELIN_JOB_SCHEDULER	    ("zeppelin.job.scheduler", "FIFO"), // FIFO or PARALLEL
+		ZEPPELIN_MAX_RESULT			("zeppelin.max.result", 10000),     // max num result taken by result class
 		HIVE_DRIVER					("hive.driver.class", "org.apache.hadoop.hive.jdbc.HiveDriver"), // for hive2 "org.apache.hive.jdbc.HiveDriver"
 		HIVE_CONNECTION_URI			("hive.connection.uri", null) // jdbc:hive://localhost:10001/default
 		;

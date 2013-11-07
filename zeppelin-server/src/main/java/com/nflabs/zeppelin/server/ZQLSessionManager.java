@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.server;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.ParseException;
@@ -19,6 +20,18 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
+import org.quartz.CronScheduleBuilder;
+import org.quartz.CronTrigger;
+import org.quartz.JobBuilder;
+import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.quartz.JobKey;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
+import org.quartz.TriggerKey;
+import org.quartz.impl.StdSchedulerFactory;
 
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
@@ -45,8 +58,10 @@ public class ZQLSessionManager implements JobListener {
 	private FileSystem fs;
 	
 	SimpleDateFormat pathFormat = new SimpleDateFormat("yyyy/MM/dd/HH/");
+	private StdSchedulerFactory quertzSchedFact;
+	private org.quartz.Scheduler quertzSched;
 	
-	public ZQLSessionManager(Scheduler scheduler, FileSystem fs, String sessionPersistBasePath){
+	public ZQLSessionManager(Scheduler scheduler, FileSystem fs, String sessionPersistBasePath) throws SchedulerException{
 		this.scheduler = scheduler;
 		this.sessionPersistBasePath = sessionPersistBasePath;
 		this.fs = fs;
@@ -54,7 +69,13 @@ public class ZQLSessionManager implements JobListener {
 		gsonBuilder.setPrettyPrinting();
 		gsonBuilder.registerTypeAdapter(Z.class, new ZAdapter());
 
-		gson = gsonBuilder.create();		
+		gson = gsonBuilder.create();
+		
+		quertzSchedFact = new org.quartz.impl.StdSchedulerFactory();
+
+		quertzSched = quertzSchedFact.getScheduler();
+		quertzSched.start();
+		
 	}
 	
 	
@@ -81,9 +102,8 @@ public class ZQLSessionManager implements JobListener {
 		// search session dir
 		Path path = getPathForSessionId(sessionId);
 		try {
-			ZQLSession session = load(path);
-			if(session!=null){
-				session.setListener(this);
+			ZQLSession session = load(path);			
+			if(session!=null){				
 				return session;
 			} else {
 				return null;
@@ -98,6 +118,7 @@ public class ZQLSessionManager implements JobListener {
 	public ZQLSession run(String sessionId){		
 		ZQLSession s = get(sessionId);
 		if(s==null) return null;
+		if(s.getStatus()==Status.RUNNING) return s;
 		s.setListener(this);
 		scheduler.submit(s);
 		return s;
@@ -165,6 +186,22 @@ public class ZQLSessionManager implements JobListener {
 			return s;
 		}		
 	}
+	
+	public ZQLSession setCron(String sessionId, String cron) {
+		ZQLSession s = get(sessionId);
+		if(s==null){
+			return null;
+		} else {
+			s.setCron(cron);			
+			try {
+				persist(s);
+				refreshQuartz(s);
+			} catch (IOException e) {
+				logger.error("Can't persist session "+sessionId, e);
+			}
+			return s;
+		}		
+	}
 
 	public boolean delete(String sessionId){
 		ZQLSession s= get(sessionId);
@@ -174,6 +211,7 @@ public class ZQLSessionManager implements JobListener {
 		if(s.getStatus()==Status.RUNNING) return false;
 		
 		synchronized(active){
+			removeQuartz(s);
 			active.remove(sessionId);
 		}
 		Path path = getPathForSessionId(sessionId);
@@ -252,6 +290,10 @@ public class ZQLSessionManager implements JobListener {
 		return new Path(sessionPersistBasePath+"/"+sessionId);
 	}
 	
+	private String getSessionIdFromPath(Path path){
+		return new File(path.getName()).getName();
+	}
+	
 	private void persist(ZQLSession session) throws IOException{		
 		String json = gson.toJson(session);
 		Path path = getPathForSession(session);
@@ -265,15 +307,6 @@ public class ZQLSessionManager implements JobListener {
 	@Override
 	public void statusChange(Job job) {
 		try {
-			if(job.getStatus()==Status.FINISHED){
-				synchronized(active){
-					active.remove(job.getId());
-				}
-			} else {
-				synchronized(active){
-					active.put(job.getId(), (ZQLSession) job);
-				}
-			}
 			if(job.getStatus()==Status.ERROR && job.getException()!=null){
 				logger.error("Session error", job.getException());
 			} 
@@ -286,26 +319,76 @@ public class ZQLSessionManager implements JobListener {
 	}
 
 	private ZQLSession load(Path path) throws IOException{
-		if(fs.isFile(path)==false){
-			return null;
-		}
-		FSDataInputStream ins = fs.open(path);
-		ZQLSession session = gson.fromJson(new InputStreamReader(ins), ZQLSession.class);
-		if(session.getStatus()==Status.RUNNING){
-			session.setStatus(Status.ABORT);
-		}
 		
-		if(session.getStatus()!=Status.FINISHED){
-			synchronized(active){
+		synchronized(active){
+			String sessionId = getSessionIdFromPath(path);
+			
+			if(active.containsKey(sessionId)==false){
+				if(fs.isFile(path)==false){
+					return null;
+				}
+				FSDataInputStream ins = fs.open(path);
+				ZQLSession session = gson.fromJson(new InputStreamReader(ins), ZQLSession.class);
+				if(session.getStatus()==Status.RUNNING){
+					session.setStatus(Status.ABORT);
+				}
+				ins.close();
+				
+				session.setListener(this);
 				active.put(session.getId(), session);
+				
+				refreshQuartz(session);
+				return session;
+			} else {
+				return active.get(sessionId);
 			}
 		}
-		ins.close();
-		return session;
 	}
 
+	public static class SessionCronJob implements org.quartz.Job {
+		static ZQLSessionManager sm;
+		
+		public SessionCronJob() {
+		}
 
+		public void execute(JobExecutionContext context)
+				throws JobExecutionException {
+			
+			String sessionId = context.getJobDetail().getKey().getName();
+			sm.run(sessionId);						
+		}
+	}
+	
+	private void removeQuartz(ZQLSession session){
+		try {
+			quertzSched.deleteJob(new JobKey(session.getId(), "zql"));
+		} catch (SchedulerException e) {
+			logger.error(e);
+		}	
+	}
+	
+	private void refreshQuartz(ZQLSession session){
+		removeQuartz(session);
+		if(session.getCron()==null || session.getCron().trim().length()==0){
+			return;
+		}
 
+		SessionCronJob.sm = this;
+		JobDetail job = JobBuilder.newJob(SessionCronJob.class)
+			      .withIdentity(session.getId(), "zql")
+			      .usingJobData("sessionId", session.getId())
+			      .build();
+				
+		CronTrigger trigger = TriggerBuilder.newTrigger()
+		  .withIdentity("trigger_"+session.getId(), "zql")
+		  .withSchedule(CronScheduleBuilder.cronSchedule(session.getCron()))
+		  .forJob(session.getId(), "zql")
+		  .build();
 
-
+		try {
+			quertzSched.scheduleJob(job, trigger);
+		} catch (SchedulerException e) {
+			logger.error(e);
+		}
+	}
 }

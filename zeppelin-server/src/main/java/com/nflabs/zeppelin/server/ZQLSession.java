@@ -22,6 +22,7 @@ public class ZQLSession extends Job{
 	private String zql;
 	private List<Map<String, Object>> params;
 	Result error;
+	String cron;
 
 	private List<Z> zqlPlans;
 	
@@ -90,12 +91,16 @@ public class ZQLSession extends Job{
 	@Override
 	protected Object jobRun() throws Throwable {
 		LinkedList<Result> results = new LinkedList<Result>();
+		ZQL zqlEvaluator = new ZQL(zql);
+		zqlPlans = zqlEvaluator.compile();
+
+		/*
 		if(zqlPlans==null){
 			ZQL zqlEvaluator = new ZQL(zql);
 			zqlPlans = zqlEvaluator.compile();
 		} else {
 			reconstructNextReference();
-		}
+		}*/
 		
 		Connection conn = Z.getConnection();
 		
@@ -108,9 +113,7 @@ public class ZQLSession extends Job{
 			try {
 				zz.withParams(p);
 				
-				if(zz.isExecuted()==false){
-					zz.execute(conn);
-				}
+				zz.execute(conn);
 				
 				results.add(zz.result());
 				zz.release();
@@ -132,4 +135,13 @@ public class ZQLSession extends Job{
 		
 	}
 
+	public String getCron() {
+		return cron;
+	}
+
+	public void setCron(String cron) {
+		this.cron = cron;
+	}
+
+	
 }
