@@ -32,16 +32,18 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
+
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
     </dependency>
+
     <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
       <version>1.9</version>
     </dependency>
+
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
@@ -177,6 +179,12 @@
     </dependency>
 
     <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
       <groupId>com.nitayjoffe.thirdparty.com.jointhegrid</groupId>
       <artifactId>hive_test</artifactId>
       <version>4.0.0</version>
@@ -221,6 +229,7 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-test</artifactId>
       <version>${hadoop.version}</version>
+      <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>org.apache.mina</groupId>
@@ -239,7 +248,6 @@
           <artifactId>slf4j-api</artifactId>
         </exclusion>
       </exclusions>
-      <scope>test</scope>
     </dependency>
 
     <!-- to use erb -->
