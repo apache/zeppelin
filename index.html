@@ -472,15 +472,74 @@ limitations under the License.
 	  </p>
 	  <p>
 	    <h3>Configure</h3>
-	    Zeppelin can be configured in three different mode.
+	    <p>Theres two type of configuration. Common configuration and driver specific configuration. Both configuration can be done in the same way.
+	    Many properties can be set through either zeppelin-env.sh or zeppelin-site.xml. If a property have defined on both files at the same time, value in zeppelin-env.sh will be taken.
+	    
+	    <h4>Common configuration</h4>
+
+	    <table class="table">
+	      <tr>
+		<th>zepplin-env.sh</th>
+		<th>zepplin-site.xml</th>
+		<th>Default value</th>
+		<th>Description</th>
+	      </tr>
+	      <tr>
+		<td>ZEPPELIN_HOME</td>
+		<td></td>
+		<td></td>
+		<td>Zeppelin Home directory</td>
+	      </tr>
+	      <tr>
+		<td>ZEPPELIN_PORT</td>
+		<td>zeppelin.server.port</td>
+		<td>8080</td>
+		<td>Zeppelin server port</td>
+	      </tr>	    
+	      <tr>
+		<td>ZEPPELIN_SESSION_DIR</td>
+		<td>zeppelin.session.dir</td>
+		<td>sessions</td>
+		<td>Zeppelin persist/load session in this directory. Can be a path or a URI. location on HDFS supported</td>
+	      </tr>
+	      <tr>
+		<td>ZEPPELIN_ZAN_LOCAL_REPO</td>
+		<td>zeppelin.zan.localrepo</td>
+		<td>zan-repo</td>
+		<td>Zeppelin library local repository. Can be a path or a URI. location on HDFS supported</td>
+	      </tr>
+	      <tr>
+		<td>ZEPPELIN_LOCAL_WAREHOUSE</td>
+		<td>zeppelin.local.warehouse</td>
+		<td>data</td>
+		<td>Hive local repository path in standalone mode.</td>
+	      </tr>
+	      <tr>
+		<td>ZEPPELIN_DRIVER</td>
+		<td>zeppelin.driver.class</td>
+		<td>com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver</td>
+		<td>Zeppelin Driver class</td>
+	      </tr>
+	      <tr>
+		<td>HIVE_CONNECTION_URI</td>
+		<td>hive.connection.uri</td>
+		<td></td>
+		<td>Hive jdbc connection uri. Used for connecting to hive server</td>
+	      </tr>
+
+	    </table>
+
+	    <h4>Driver specific configuration : Hive Driver (com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver)</h4>
+	    Hive driver works in 3 different mode.
+
 	    <ul>
 	      <li>Standalone</li>
 	      <li>With hive server</li>
 	      <li>Without hive server</li>
 	    </ul>
-
-	    <h4>Standalone</h4>
-	    By default, Zeppelin is configured to run in standalone mode.
+	    <br />
+	    <h5>Standalone</h5>
+	    By default, Hive driver is configured to run in standalone mode.
 	    In the distribution, edit the conf/zeppelin-env.sh and define JAVA_HOME, HADOOP_HOME.	    
 	    <table class="table">
 	      <tr>
@@ -498,7 +557,7 @@ limitations under the License.
 	    </table>
 
 	    <h4>With Hive Server</h4>
-	    Zeppelin can access hive using hive server.
+	    Hive driver can access hive using hive server.
 	    This mode can be used without local Hadoop binary distribution package. (see prerequisties) <br />
 	    All you need to do is set following properties in zeppelin-site.xml.	    
 	    <table class="table">
@@ -538,59 +597,6 @@ limitations under the License.
 	    </table>
 	    Place hive-site.xml, core-site.xml, hdfs-site.xml, mapred-site.xml in conf directory.
 	    In this mode, make sure you don't set any value for hive.connection.uri in zeppelin-site.xml
-	    <h4>Common configuration</h4>
-	    Here's full list of configuration. Note that many properties can be set through either zeppelin-env.sh or zeppelin-site.xml. If a property have defined on both files at the same time, value in zeppelin-env.sh will be taken.
-	    <table class="table">
-	      <tr>
-		<th>zepplin-env.sh</th>
-		<th>zepplin-site.xml</th>
-		<th>Default value</th>
-		<th>Description</th>
-	      </tr>
-	      <tr>
-		<td>ZEPPELIN_HOME</td>
-		<td></td>
-		<td></td>
-		<td>Zeppelin Home directory</td>
-	      </tr>
-	      <tr>
-		<td>ZEPPELIN_PORT</td>
-		<td>zeppelin.server.port</td>
-		<td>8080</td>
-		<td>Zeppelin server port</td>
-	      </tr>	    
-	      <tr>
-		<td>ZEPPELIN_SESSION_DIR</td>
-		<td>zeppelin.session.dir</td>
-		<td>sessions</td>
-		<td>Zeppelin persist/load session in this directory. Can be a path or a URI. location on HDFS supported</td>
-	      </tr>
-	      <tr>
-		<td>ZEPPELIN_ZAN_LOCAL_REPO</td>
-		<td>zeppelin.zan.localrepo</td>
-		<td>zan-repo</td>
-		<td>Zeppelin library local repository. Can be a path or a URI. location on HDFS supported</td>
-	      </tr>
-	      <tr>
-		<td>ZEPPELIN_LOCAL_WAREHOUSE</td>
-		<td>zeppelin.local.warehouse</td>
-		<td>data</td>
-		<td>Hive local repository path in standalone mode.</td>
-	      </tr>
-	      <tr>
-		<td>HIVE_DRIVER</td>
-		<td>hive.driver.class</td>
-		<td>org.apache.hadoop.hive.jdbc.HiveDriver</td>
-		<td>JDBC Driver class</td>
-	      </tr>
-	      <tr>
-		<td>HIVE_CONNECTION_URI</td>
-		<td>hive.connection.uri</td>
-		<td></td>
-		<td>Hive jdbc connection uri. Used for connecting to hive server</td>
-	      </tr>
-
-	    </table>
 	    
 	  </p>
 	  <p>
