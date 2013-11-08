@@ -15,6 +15,7 @@ App.Router.map(function(){
     this.route("docZeppelinTutorial2", { path:"/doc/zeppelin/tutorial2"});
     this.route("docZeppelinTutorial3", { path:"/doc/zeppelin/tutorial3"});
     this.route("mailinglist", { path:"/mailinglist"});
+    this.route("team", { path:"/team"});
     this.route("howtocontribute", { path:"/development/howtocontribute"});
 });
 

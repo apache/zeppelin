@@ -9,6 +9,8 @@
     <link rel="stylesheet" type="text/css" href="stylesheets/bootstrap-theme.css" media="screen" />
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
 
+
+
     <!--[if lt IE 9]>
     <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
@@ -53,6 +55,7 @@
                 <ul class="dropdown-menu">
                   <li>{{#link-to 'howtocontribute'}}How to contribute{{/link-to}}</li>
                   <li>{{#link-to 'mailinglist'}}Mailing Lists{{/link-to}}</li>
+		  <li>{{#link-to 'team'}}Team{{/link-to}}</li>
                   <li><a href="https://github.com/NFLabs/zeppelin" target="_blank">Source Code</a></li>
                   <li><a href="https://zeppelin-project.atlassian.net/browse/ZEPPELIN">Issue Tracking</a></li>
                 </ul>
@@ -704,6 +707,37 @@ limitations under the License.
       </div>
     </script>
 
+
+
+    <script type="text/x-handlebars" data-template-name="team">
+      <link rel="stylesheet" type="text/css" href="stylesheets/starwars.css" media="screen" />
+      
+      <p id="start">A short time ago in a galaxy very, very close&hellip;</p>
+
+      <h1>PROJECT ZEPPELIN<sub>Contributors</sub></h1>
+      
+      <div id="titles">
+	<div id="titlecontent">
+	  
+	  <p class="center">EPISODE IV<br />
+	    A NEW HOPE FOR DATA ANALYTICS</p>
+	  
+	  <p>It is a period of vendor war.</p>
+	  
+	  <p>A successful project requires many people to play many roles. Some members write code or documentation, while others are valuable as testers, submitting patches and suggestions.</p>
+	  
+	  <p>The following is a list of developers with commit privileges that have directly contributed to the project in one way or another.</p>
+	  
+	  <p>- Lee Moon Soo <span style="margin-left: 5em;">NFLabs</span</p>
+	  <p>- Alexander Bezzubov <span style="margin-left: 2em;">NFLabs</span</p>
+	  <p>- Anthony Corbacho<span style="margin-left: 3em;">NFLabs</span</p>
+	  
+	  <p>Finally, Han shot first and the original, unadulterated movies remain the best. Stop fiddling with them, George!</p>
+	</div>
+      </div>
+      
+    </script>
+    
     <script type="text/x-handlebars" data-template-name="howtocontribute">
       <div class="row content-style3">
 	<div class="col-md-8">
