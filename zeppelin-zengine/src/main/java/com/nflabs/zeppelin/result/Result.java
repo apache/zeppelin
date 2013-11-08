@@ -15,6 +15,10 @@ public class Result extends AbstractResult{
 		super(res, max);
 	}
 	
+	public Result(ResultSet res) throws ResultDataException {
+		super(res);
+	}
+	
 	public Result(Exception e1) throws ResultDataException {
 		super(e1);
 	}

@@ -9,6 +9,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.JobListener;
@@ -103,7 +104,7 @@ public class ZQLSession extends Job{
 			reconstructNextReference();
 		}*/
 		
-		Connection conn = Z.getConnection();
+		ZeppelinConnection conn = Z.getConnection();
 		
 		for(int i=0; i<zqlPlans.size(); i++){
 			Z zz = zqlPlans.get(i);
