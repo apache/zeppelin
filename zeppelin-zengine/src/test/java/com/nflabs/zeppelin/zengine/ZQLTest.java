@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
 import com.nflabs.zeppelin.util.TestUtil;
 
 public class ZQLTest extends HiveTestService {
@@ -26,7 +27,8 @@ public class ZQLTest extends HiveTestService {
 		TestUtil.delete(new File(ROOT_DIR.getName()));
 		
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
-		Z.configure(client);
+		Z.configure();
+		Z.setDriver(new HiveZeppelinDriver(Z.conf()));
 
 		new File(tmpDir.getAbsolutePath()+"/test").mkdir();
 		File erb = new File(tmpDir.getAbsolutePath()+"/test/zql.erb");

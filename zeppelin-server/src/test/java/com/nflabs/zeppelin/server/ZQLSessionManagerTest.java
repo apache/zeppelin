@@ -29,7 +29,7 @@ public class ZQLSessionManagerTest extends TestCase {
 		tmpDir.mkdir();
 		dataDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis()+"/data");
 		dataDir.mkdir();
-		System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_LOCAL_WAREHOUSE.getVarName(), "file://"+dataDir.getAbsolutePath());
+		System.setProperty("hive.local.warehouse", "file://"+dataDir.getAbsolutePath());
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 		System.setProperty(ConfVars.ZEPPELIN_SESSION_DIR.getVarName(), tmpDir.getAbsolutePath());
 		Z.configure();

@@ -16,6 +16,7 @@ import org.apache.hadoop.fs.Path;
 import com.jointhegrid.hive_test.HiveTestBase;
 import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.util.TestUtil;
 
@@ -36,7 +37,10 @@ public class LTest extends HiveTestService {
 		TestUtil.delete(new File(ROOT_DIR.getName()));
 		
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
-		Z.configure(client);
+		Z.configure();
+		HiveZeppelinDriver driver = new HiveZeppelinDriver(Z.conf());
+		driver.setClient(client);
+		Z.setDriver(driver);
 	}
 
 	public void tearDown() throws Exception {

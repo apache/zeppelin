@@ -14,6 +14,7 @@ import javax.script.SimpleBindings;
 
 import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.util.TestUtil;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
@@ -31,10 +32,13 @@ public class ZTest extends HiveTestService {
 	public void setUp() throws Exception {
 		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
 		tmpDir.mkdir();
-		System.setProperty(ZeppelinConfiguration.ConfVars.ZEPPELIN_LOCAL_WAREHOUSE.getVarName(), "file://"+tmpDir.getAbsolutePath());
+		
 		TestUtil.delete(new File("/tmp/warehouse"));
 		TestUtil.delete(new File(ROOT_DIR.getName()));
-		Z.configure(client);
+				
+		System.setProperty("hive.local.warehouse", "file://"+tmpDir.getAbsolutePath());
+		Z.configure();
+		Z.setDriver(new HiveZeppelinDriver(Z.conf()));
 	}
 
 	public void tearDown() throws Exception {

@@ -5,6 +5,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.zengine.Z;
+
 public abstract class AbstractResult {
 	private ColumnDef [] columnDef;
 	private long max;
@@ -79,7 +82,11 @@ public abstract class AbstractResult {
 		}
 		
 		this.res = res;
-		this.max = max;
+		if (max < 0){
+			this.max = Z.conf().getLong(ConfVars.ZEPPELIN_MAX_RESULT);
+		} else {
+			this.max = max;
+		}
 	}
 		
 	public void load() throws SQLException, ResultDataException{

@@ -109,58 +109,76 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 	}
 	
 	public String getString(ConfVars c){
-		if(System.getenv(c.name())!=null){
-			return System.getenv(c.name());
+		return getString(c.name(), c.getVarName(), c.getStringValue());
+	}
+	
+	public String getString(String envName, String propertyName, String defaultValue){
+		if(System.getenv(envName)!=null){
+			return System.getenv(envName);
 		}
-		if(System.getProperty(c.getVarName())!=null){
-			return System.getProperty(c.getVarName());
+		if(System.getProperty(propertyName)!=null){
+			return System.getProperty(propertyName);
 		}
 
-		return getStringValue(c.getVarName(), c.getStringValue());
+		return getStringValue(propertyName, defaultValue);
 	}
 
-	
 	public int getInt(ConfVars c){
-		if(System.getenv(c.name())!=null){
-			return Integer.parseInt(System.getenv(c.name()));
+		return getInt(c.name(), c.getVarName(), c.getIntValue());
+	}
+	
+	public int getInt(String envName, String propertyName, int defaultValue){
+		if(System.getenv(envName)!=null){
+			return Integer.parseInt(System.getenv(envName));
 		}
 		
-		if(System.getProperty(c.getVarName())!=null){
-			return Integer.parseInt(System.getProperty(c.getVarName()));
+		if(System.getProperty(propertyName)!=null){
+			return Integer.parseInt(System.getProperty(propertyName));
 		}
-		return getIntValue(c.getVarName(), c.getIntValue());
+		return getIntValue(propertyName, defaultValue);
 	}
 	
 	public long getLong(ConfVars c){
-		if(System.getenv(c.name())!=null){
-			return Long.parseLong(System.getenv(c.name()));
+		return getLong(c.name(), c.getVarName(), c.getLongValue());
+	}
+	
+	public long getLong(String envName, String propertyName, long defaultValue){
+		if(System.getenv(envName)!=null){
+			return Long.parseLong(System.getenv(envName));
 		}
 		
-		if(System.getProperty(c.getVarName())!=null){
-			return Long.parseLong(System.getProperty(c.getVarName()));
+		if(System.getProperty(propertyName)!=null){
+			return Long.parseLong(System.getProperty(propertyName));
 		}
-		return getLongValue(c.getVarName(), c.getLongValue());
+		return getLongValue(propertyName, defaultValue);
 	}
 
 	public float getFloat(ConfVars c){
-		if(System.getenv(c.name())!=null){
-			return Float.parseFloat(System.getenv(c.name()));
+		return getFloat(c.name(), c.getVarName(), c.getFloatValue());
+	}
+	public float getFloat(String envName, String propertyName, float defaultValue){
+		if(System.getenv(envName)!=null){
+			return Float.parseFloat(System.getenv(envName));
 		}
-		if(System.getProperty(c.getVarName())!=null){
-			return Float.parseFloat(System.getProperty(c.getVarName()));
+		if(System.getProperty(propertyName)!=null){
+			return Float.parseFloat(System.getProperty(propertyName));
 		}
-		return getFloatValue(c.getVarName(), c.getFloatValue());
+		return getFloatValue(propertyName, defaultValue);
 	}
 
+	
 	public boolean getBoolean(ConfVars c){
-		if(System.getenv(c.name())!=null){
-			return Boolean.parseBoolean(System.getenv(c.name()));
+		return getBoolean(c.name(), c.getVarName(), c.getBooleanValue());
+	}
+	public boolean getBoolean(String envName, String propertyName, boolean defaultValue){
+		if(System.getenv(envName)!=null){
+			return Boolean.parseBoolean(System.getenv(envName));
 		}
 		
-		if(System.getProperty(c.getVarName())!=null){
-			return Boolean.parseBoolean(System.getProperty(c.getVarName()));
+		if(System.getProperty(propertyName)!=null){
+			return Boolean.parseBoolean(System.getProperty(propertyName));
 		}
-		return getBooleanValue(c.getVarName(), c.getBooleanValue());
+		return getBooleanValue(propertyName, defaultValue);
 	}
 
 	
@@ -169,13 +187,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_PORT				("zeppelin.server.port", 8080),
 		ZEPPELIN_WAR				("zeppelin.war", "../zeppelin-web/src/main/webapp"),
 		ZEPPELIN_SESSION_DIR		("zeppelin.session.dir", "sessions"),
-		ZEPPELIN_LOCAL_WAREHOUSE	("zeppelin.local.warehouse", "data"),
 		ZEPPELIN_ZAN_LOCAL_REPO		("zeppelin.zan.localrepo", "../zan-repo"),
 		ZEPPELIN_COMMAND_TIMEOUT	("zeppelin.command.timeout", 1000*60*30),  // 30 min
 		ZEPPELIN_JOB_SCHEDULER	    ("zeppelin.job.scheduler", "FIFO"), // FIFO or PARALLEL
 		ZEPPELIN_MAX_RESULT			("zeppelin.max.result", 10000),     // max num result taken by result class
-		HIVE_DRIVER					("hive.driver.class", "org.apache.hadoop.hive.jdbc.HiveDriver"), // for hive2 "org.apache.hive.jdbc.HiveDriver"
-		HIVE_CONNECTION_URI			("hive.connection.uri", null) // jdbc:hive://localhost:10001/default
+		ZEPPELIN_DRIVER				("zeppelin.driver.class", "com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver"),
 		;
 		
 		

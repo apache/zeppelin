@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.hive;
+package com.nflabs.zeppelin.driver.hive;
 
 import java.sql.Array;
 import java.sql.Blob;
