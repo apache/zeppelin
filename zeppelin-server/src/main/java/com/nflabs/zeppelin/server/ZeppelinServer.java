@@ -56,7 +56,7 @@ public class ZeppelinServer extends Application {
         if(webapp.isDirectory()){ // Development mode
             sch.setDescriptor(webapp+"/WEB-INF/web.xml");
             sch.setResourceBase(webapp.getPath());
-            sch.setContextPath("/zeppelin");
+            sch.setContextPath("/");
             sch.setParentLoaderPriority(true);
         } else {
             sch.setWar(webapp.getAbsolutePath());
