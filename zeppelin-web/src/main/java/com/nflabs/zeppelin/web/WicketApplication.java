@@ -2,6 +2,7 @@ package com.nflabs.zeppelin.web;
 
 import org.apache.wicket.protocol.http.WebApplication;
 
+@Deprecated
 public class WicketApplication extends WebApplication{
 	/**
 	 * @see org.apache.wicket.Application#getHomePage()

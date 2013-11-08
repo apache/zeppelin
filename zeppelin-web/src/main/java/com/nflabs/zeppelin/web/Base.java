@@ -7,7 +7,11 @@ import org.apache.wicket.markup.head.JavaScriptHeaderItem;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
-
+/**
+ * Moved to default template at {@link src/main/webapp/index.html}
+ * @author alex
+  */
+@Deprecated
 public class Base extends WebPage {
     private static final long serialVersionUID = 4962397286766124332L;
 

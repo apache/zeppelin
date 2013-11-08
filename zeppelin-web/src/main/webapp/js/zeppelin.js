@@ -2,7 +2,7 @@
 function isDevMode(){
 	if(zeppelinMode == undefined) return false;
 	else return (zeppelinMode=="development");
-}
+};
 
 function Zeppelin(arg){
 	this.arg = arg;
