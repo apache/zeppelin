@@ -147,8 +147,8 @@ public class ZQL {
 		
 		String escapeSeq = "\"',;<%>!";
 		char escapeChar = '\\';
-		String [] blockStart = new String[]{ "\"", "'", "<%", "<", "!"};
-		String [] blockEnd = new String[]{ "\"", "'", "%>", ">", ";" };
+		String [] blockStart = new String[]{ "\"", "'", "<%", "N_<", "!"};
+		String [] blockEnd = new String[]{ "\"", "'", "%>", "N_>", ";" };
 		String [] t = Util.split(stmts, escapeSeq, escapeChar, blockStart, blockEnd, op, true);
 		String currentOp = null;
 		for(int i=0; i<t.length; i++){

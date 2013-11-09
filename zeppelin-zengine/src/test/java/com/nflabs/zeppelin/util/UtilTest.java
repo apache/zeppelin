@@ -64,4 +64,15 @@ public class UtilTest extends TestCase {
 		assertEquals("!echo b;", t[2]);
 		assertEquals(";", t[3]);
 	}
+	
+	public void testNestedBlock(){
+		String [] op = new String[]{";", "|", ">>", ">"};
+		String escapeSeq = "\"',;<%>!";
+		char escapeChar = '\\';
+		String [] blockStart = new String[]{ "\"", "'", "<%", "N_<", "!"};
+		String [] blockEnd = new String[]{ "\"", "'", "%>", "N_>", ";" };
+		String [] t = Util.split("array <STRUCT<STRING>> tags", escapeSeq, escapeChar, blockStart, blockEnd, op, true);
+		//assertEquals(1, t.length);
+		assertEquals("array <STRUCT<STRING>> tags", t[0]);
+	}
 }

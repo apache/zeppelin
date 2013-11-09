@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.util;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Util {
@@ -12,13 +13,13 @@ public class Util {
 	public static String [] split(String str, String [] splitters, boolean includeSplitter){
 		String escapeSeq = "\"',;<%>";
 		char escapeChar = '\\';
-		String [] blockStart = new String[]{ "\"", "'", "<%", "<" };
-		String [] blockEnd = new String[]{ "\"", "'", "%>", ">" };
+		String [] blockStart = new String[]{ "\"", "'", "<%", "N_<"};
+		String [] blockEnd = new String[]{ "\"", "'", "%>", "N_>"};
 		
 		return split(str, escapeSeq, escapeChar, blockStart, blockEnd, splitters, includeSplitter);
 		
 	}
-	
+
 	public static String [] split(
 			String str,
 			String escapeSeq,
@@ -32,10 +33,12 @@ public class Util {
 		List<String> splits = new ArrayList<String>();
 		
 		String curString ="";
-		int ignoreBlockIndex = -1;
+
 		boolean escape = false;  // true when escape char is found
 		int lastEscapeOffset = -1;
 		int blockStartPos = -1;
+		List<Integer> blockStack = new LinkedList<Integer>();
+		
 		for(int i=0; i<str.length();i++){
 			char c = str.charAt(i);
 
@@ -55,35 +58,51 @@ public class Util {
 				lastEscapeOffset = i;
 				continue;
 			}
-			
 
-			if(ignoreBlockIndex>=0){ // inside of block
+			if(blockStack.size()>0){ // inside of block
 				curString += c;
 				// check multichar block
+				boolean multicharBlockDetected = false;
 				for(int b=0; b<blockStart.length; b++){
-					if(blockStart[b].compareTo(str.substring(blockStartPos, i))==0){
-						ignoreBlockIndex = b;
+					if(blockStartPos>=0 && getBlockStr(blockStart[b]).compareTo(str.substring(blockStartPos, i))==0){
+						blockStack.remove(0);
+						blockStack.add(0, b);
+						multicharBlockDetected = true;
+						break;
+					}
+				}
+				if(multicharBlockDetected==true) continue;
+				
+				// check if current block is nestable
+				if(isNestedBlock(blockStart[blockStack.get(0)])==true){
+					// try to find nested block start
+					
+					if(curString.substring(lastEscapeOffset+1).endsWith(getBlockStr(blockStart[blockStack.get(0)]))==true){
+						blockStack.add(0, blockStack.get(0)); // block is started
+						blockStartPos = i;
+						continue;
 					}
 				}
 				
 				// check if block is finishing
-				if(curString.substring(lastEscapeOffset+1).endsWith(blockEnd[ignoreBlockIndex])){
-					
-					// the block closer is one of the splitters
-					for(String splitter : splitters){
-						if(splitter.compareTo(blockEnd[ignoreBlockIndex])==0){
-							splits.add(curString);
-							if(includeSplitter==true){
-								splits.add(splitter);
+				if(curString.substring(lastEscapeOffset+1).endsWith(getBlockStr(blockEnd[blockStack.get(0)]))){
+					// the block closer is one of the splitters (and not nested block)
+					if(isNestedBlock(blockEnd[blockStack.get(0)])==false){
+						for(String splitter : splitters){
+							if(splitter.compareTo(getBlockStr(blockEnd[blockStack.get(0)]))==0){
+								splits.add(curString);
+								if(includeSplitter==true){
+									splits.add(splitter);
+								}
+								curString = "";
+								lastEscapeOffset = -1;
+								
+								break;
 							}
-							curString = "";
-							lastEscapeOffset = -1;
-							
-							break;
 						}
 					}
 					blockStartPos = -1;
-					ignoreBlockIndex = -1;
+					blockStack.remove(0);
 					continue;
 				}
 								
@@ -112,8 +131,8 @@ public class Util {
 				
 				// check if block is started
 				for(int b=0; b<blockStart.length;b++){
-					if(curString.substring(lastEscapeOffset+1).endsWith(blockStart[b])==true){
-						ignoreBlockIndex = b; // block is started
+					if(curString.substring(lastEscapeOffset+1).endsWith(getBlockStr(blockStart[b]))==true){
+						blockStack.add(0, b); // block is started
 						blockStartPos = i;
 						break;
 					}
@@ -124,5 +143,21 @@ public class Util {
 			splits.add(curString.trim());
 		return splits.toArray(new String[]{});
 		
+	}
+	
+	private static String getBlockStr(String blockDef){
+		if(blockDef.startsWith("N_")){
+			return blockDef.substring("N_".length());
+		} else {
+			return blockDef;
+		}
+	}
+	
+	private static boolean isNestedBlock(String blockDef){
+		if(blockDef.startsWith("N_")){
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
