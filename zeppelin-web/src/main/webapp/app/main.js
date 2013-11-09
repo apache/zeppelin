@@ -465,6 +465,8 @@ $(document).ready(function(){
 				var plan = planStack[j];
 
 				if(!plan || !plan.webEnabled) continue;
+				if(!plan.result || !plan.result.columnDef || plan.result.columnDef.length==0) continue;
+
 				console.log("displaying %o", plan);
 				var planInfo = (plan.libName) ? plan.libName : plan.query;
 				if(planInfo.length>1 && planInfo[0]=='!'){
@@ -692,6 +694,7 @@ $(document).ready(function(){
 				var plan = planStack[j];
 
 				if(!plan || !plan.webEnabled) continue;
+				if(!plan.result || !plan.result.columnDef || plan.result.columnDef.length==0) continue;
 				console.log("displaying %o", plan);
 				var planInfo = (plan.libName) ? plan.libName : plan.query;
 				if(planInfo.length>1 && planInfo[0]=='!'){
