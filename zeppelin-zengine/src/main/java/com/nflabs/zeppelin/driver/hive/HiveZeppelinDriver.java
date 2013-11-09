@@ -27,7 +27,7 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	}
 
 	private String getConnectionUri(){
-		return getConf().getString("HIVE_CONNECTION_URI", "hive.connection.uri", null);
+		return getConf().getString("HIVE_CONNECTION_URI", "hive.connection.uri", "jdbc:hive://");
 	}
 	
 	private String getHiveDriverClass(){
