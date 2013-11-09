@@ -9,7 +9,7 @@
    * Super easy SQL like analysis language called **ZQL**
    * Custom user routine support 
    * Central archive of library called **ZAN** (Zeppelin Archivce Network)
-   * On top of Hive (or any Hive compatible system like Spark)
+   * On top of Hive (or any Hive compatible system like Shark)
 
 
 To know more about Zeppelin, visit our web site http://zeppelin-project.org
