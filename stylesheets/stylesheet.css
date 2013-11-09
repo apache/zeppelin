@@ -83,6 +83,42 @@ footer{
     color : #FFFFFF;
 }
 
+.table-compatibility{
+
+}
+
+.table-compatibility table{
+
+}
+.table-compatibility tr th{
+    background-color : #D4DDDD;
+    border: 1px solid #FFFFFF; 
+    text-align: center;
+    height: 30px;
+}
+
+.table-compatibility tr td{
+    border: 1px solid #FFFFFF;
+    height: 30px;
+    padding : 3px 5px 3px 5px;
+    background-color : #efefee;
+}
+
+.table-compatibility .yes {
+    background-color: #32CD32;
+    text-align: center;
+}
+
+.table-compatibility .no {
+    background-color: #DDDDDD;
+    text-align: center;
+}
+
+.table-compatibility .partial {
+    text-align: center;
+}
+
+
 .inactive {
     border: 1px solid #AAAAAA;    
 }

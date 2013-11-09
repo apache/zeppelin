@@ -47,7 +47,9 @@
                   <li>{{#link-to 'docZeppelinInstall'}}Install Zeppelin{{/link-to}}</li>
                   <li><a href="./docs/zengine-api/0.1.2/index.html">Zengine API</a></li>
                   <li>{{#link-to 'zql'}}ZQL{{/link-to}}</li>
-                  <li>{{#link-to 'docZeppelinLibrary'}}Writing Zeppelin Library{{/link-to}}</li>
+                  <li>{{#link-to 'zql'}}ZQL{{/link-to}}</li>
+                  <li>{{#link-to 'docZeppelinLibrary'}}Zeppelin Library{{/link-to}}</li>
+                  <li>{{#link-to 'docCompatibility'}}Compatibility{{/link-to}}</li>
                 </ul>
               </li>
               <li class="dropdown">
@@ -692,6 +694,95 @@ limitations under the License.
       </div>
     </script>
 
+    <script type="text/x-handlebars" data-template-name="docCompatibility">
+      <div class="row content-style3">
+	<div class="col-md-8">
+	  <h3>Compatibility</h3>
+	  Zeppelin is compatible to many hive like systems.<br />
+	</div>
+      </div>
+      <div class="row">
+	<div class="col-md-12">
+	  <h3>Compatibility Table</h3>
+	  <table class="table-compatibility">
+	    <tr>
+	      <th width="20%">
+		Physical Layer
+	      </th>
+	      <th>
+		Supported
+	      </th>
+	      <th>
+		Driver
+	      </th>
+	      <th>
+		Note
+	      </th>
+	    </tr>
+	    <tr>
+	      <td>
+		Hive
+	      </td>
+	      <td class="yes">
+		Yes
+	      </td>
+	      <td>
+		com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver
+	      </td>
+	      <td>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		Shark
+	      </td>
+	      <td class="yes">
+		Yes
+	      </td>
+	      <td>
+		com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver
+	      </td>
+	      <td>
+		JDBC(thrift) connection throught sharkserver
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		Impala
+	      </td>
+	      <td class="no">
+	      </td>
+	      <td>
+	      </td>
+	      <td>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		Drill
+	      </td>
+	      <td class="no">
+	      </td>
+	      <td>
+	      </td>
+	      <td>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>
+		Prestodb
+	      </td>
+	      <td class="no">
+	      </td>
+	      <td>
+	      </td>
+	      <td>
+	      </td>
+	    </tr>
+	  </table>
+	</div>
+      </div>
+    </script>
 
     <script type="text/x-handlebars" data-template-name="mailinglist">
       <div class="row content-style3">
