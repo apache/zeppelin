@@ -186,7 +186,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_HOME				("zeppelin.home", "../"),
 		ZEPPELIN_PORT				("zeppelin.server.port", 8080),
 		ZEPPELIN_WAR				("zeppelin.war", "../zeppelin-web/src/main/webapp"),
-		ZEPPELIN_SESSION_DIR		("zeppelin.session.dir", "sessions"),
+		ZEPPELIN_SESSION_DIR		("zeppelin.session.dir", "../sessions"),
 		ZEPPELIN_ZAN_LOCAL_REPO		("zeppelin.zan.localrepo", "../zan-repo"),
 		ZEPPELIN_COMMAND_TIMEOUT	("zeppelin.command.timeout", 1000*60*30),  // 30 min
 		ZEPPELIN_JOB_SCHEDULER	    ("zeppelin.job.scheduler", "FIFO"), // FIFO or PARALLEL

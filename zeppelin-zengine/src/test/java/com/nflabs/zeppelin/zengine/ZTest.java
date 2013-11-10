@@ -2,7 +2,6 @@ package com.nflabs.zeppelin.zengine;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,9 +12,7 @@ import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
 import com.jointhegrid.hive_test.HiveTestService;
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
-import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.util.TestUtil;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
@@ -23,7 +20,6 @@ public class ZTest extends HiveTestService {
 
 	public ZTest() throws IOException {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	private File tmpDir;
@@ -36,9 +32,10 @@ public class ZTest extends HiveTestService {
 		TestUtil.delete(new File("/tmp/warehouse"));
 		TestUtil.delete(new File(ROOT_DIR.getName()));
 				
-		System.setProperty("hive.local.warehouse", "file://"+tmpDir.getAbsolutePath());
 		Z.configure();
-		Z.setDriver(new HiveZeppelinDriver(Z.conf()));
+		HiveZeppelinDriver driver = new HiveZeppelinDriver(Z.conf());
+		driver.setClient(client);
+		Z.setDriver(driver);
 	}
 
 	public void tearDown() throws Exception {
@@ -63,7 +60,6 @@ public class ZTest extends HiveTestService {
 	
 	
 	public void testPipeGetQuery() throws ZException{
-
 		Z z = new Q("select * from bank")
    	    .pipe(new Q("select * from (<%=z."+Q.INPUT_VAR_NAME+"%>) q limit 10"))
 	    .pipe(new Q("create view vv as select * from <%=z."+Q.INPUT_VAR_NAME+"%>"));
@@ -89,20 +85,6 @@ public class ZTest extends HiveTestService {
 		z1.unPipe();
 		assertEquals("hello", z1.name());
 	}
-	
-	
-	public void testShowTables() throws ClassNotFoundException, SQLException, ZException{
-		ZeppelinConfiguration conf = new ZeppelinConfiguration();
-		Z.configure(conf);
-		
-		new Q("drop table if exists test").execute();		
-		new Q("create table if not exists test(a INT, b STRING)").execute();
-		Result results = new Q("show tables").execute().result();
-		assertEquals("test", results.getRows().get(0)[0]);
-		
-		new Q("drop table test").execute();		
-	}
-	
 	
 	public void testThatErbTempleteRuns() throws ScriptException {
 	    //given engine

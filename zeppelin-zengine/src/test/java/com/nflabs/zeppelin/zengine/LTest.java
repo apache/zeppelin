@@ -44,24 +44,11 @@ public class LTest extends HiveTestService {
 	}
 
 	public void tearDown() throws Exception {
-		delete(tmpDir);
+		TestUtil.delete(tmpDir);
 		super.tearDown();
 		
 		TestUtil.delete(new File("/tmp/warehouse"));
 		TestUtil.delete(new File(ROOT_DIR.getName()));
-	}
-	
-	private void delete(File file){
-		if(file.isFile()) file.delete();
-		else if(file.isDirectory()){
-			File [] files = file.listFiles();
-			if(files!=null && files.length>0){
-				for(File f : files){
-					delete(f);
-				}
-			}
-			file.delete();
-		}
 	}
 
 	public void testLoadFromDir() throws IOException, ZException{

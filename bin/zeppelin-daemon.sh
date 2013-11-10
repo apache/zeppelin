@@ -82,12 +82,6 @@ function init(){
 	echo "ZAN repo doesn't exist, create $ZEPPELIN_ZAN_LOCAL_REPO"
 	mkdir -p "$ZEPPELIN_ZAN_LOCAL_REPO"
     fi
-
-    if [ ! -d "$ZEPPELIN_LOCAL_WAREHOUSE" ]; then
-	echo "Local warehouse doesn't exist, create $ZEPPELIN_LOCAL_WAREHOUSE"
-	mkdir -p "$ZEPPELIN_LOCAL_WAREHOUSE"
-    fi
-
 }
 
 function start(){

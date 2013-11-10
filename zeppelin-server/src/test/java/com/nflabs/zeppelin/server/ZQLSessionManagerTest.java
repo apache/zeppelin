@@ -9,7 +9,6 @@ import junit.framework.TestCase;
 
 import org.quartz.SchedulerException;
 
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.scheduler.Job.Status;
@@ -101,7 +100,7 @@ public class ZQLSessionManagerTest extends TestCase {
     public void testSerializePlan() throws InterruptedException{
 		// Create
 		ZQLSession sess = sm.create();
-		sm.setZql(sess.getId(), "create table if not exists test(txt STRING); show tables");
+		sm.setZql(sess.getId(), "!echo hello;!echo world");
 
 		// run the session
 		sm.run(sess.getId());
