@@ -923,10 +923,134 @@ HADOOP_HOME=YOUR_HADOOP_HOME JAVA_HOME=YOUR_JAVA_HOME mvn exec:java -Dexec.mainC
 	</div>
       </div>
       <div class="row">
-	<div class="col-md-12">
+	<div class="col-md-8">
+	  <p />
+	  <p>In this tutorial, you'll know the basic about Zeppelin and it's GUI interface. Please check {{#link-to 'docZeppelinInstall'}}intall{{/link-to}} for installation.</p>
+	  <h4>ZQL Session</h4>
+	  <p>If you run zeppelin-daemon.sh start, you'll see menu 'ZQL'.
+	  You can create/run/save/delete the sessions here.
+	  ZQL Session is one unit of your analysis, and
 	  <p>
-	    Sorry, We're going to be ready, very soon.
+	  <ul>
+	    <li>Have multiple ZQL Statements.</li>
+	    <li>Run ZQL Statement line by line.</li>
+	    <li>Have it's name. The name is user friendly name and it can be change at any time.</li>
+	    <li>Have it's id. Id is unique across all sessions. Can not be changed.</li>
+	    <li>Can be scheduled by cron like scheduler.</li>
+	    <li>Automatically persist all status. ZQL statments, Name, scheduing information and result data of execution.</li>
+	  </ul>
+	  
+	  <p>
+	    You can create new session with 'New' button. You'll see ZQL editor on the screen.
 	  </p>
+	  <img class="screenshot_tutorial" src="images/tutorial1/new_session.png" />
+	  <h4>Let's load some data</h4>
+	  <p>
+	    We'll use data <a href="http://archive.ics.uci.edu/ml/datasets/Bank+Marketing">Bank Marketing Data Set</a> in this tutorial.
+	  </p>
+	  <p>
+	    Let's create table first.
+<pre>
+CREATE TABLE IF NOT EXISTS bank(
+    age INT, 
+    job STRING,
+    marital STRING,
+    education STRING, 
+    default STRING,
+    balance INT,
+    housing STRING,
+    loan STRING,
+    contract STRING,
+    day INT,
+    month INT,
+    duration INT,
+    campain INT, 
+    pdays INT, 
+    previous INT, 
+    poutcome STRING, 
+    y STRING 
+) 
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY "59" 
+STORED AS TEXTFILE 
+; </pre>
+	  </p>
+
+	  <p>And then download and unarchive the data, using shell command statment (starting with !)</p>
+	  <pre>!curl -s http://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank.zip -o /tmp/bank.zip;
+!unzip -q -o /tmp/bank.zip bank-full.csv -d /tmp;</pre>
+          <p>Load downloaded data into table using HQL's load</p>
+	  <pre>LOAD DATA LOCAL INPATH '/tmp/bank-full.csv' OVERWRITE INTO TABLE bank;</pre>
+
+	  <p>Let's put all statments into the editor window. and change session name to 'Import bank marketing data' by clicking session name.</p>
+	  <img class="screenshot_tutorial" src="images/tutorial1/import_data.png" />
+
+	  <p>And then press 'Run'. Zeppelin will create table, download and unpack the data, and load data into the table.</p>	  
+	  <br />
+	  <h4>Your first analysis</h4>
+	  <p>
+	    Let's create new session with name 'Bank marketing data analysis'.
+	    And let's discover average balance by age. using following query.
+	  </p>
+<pre>select 
+    age, 
+    avg(balance) as balance
+from bank 
+group by age 
+order by age;</pre>
+          <p>
+	    If you run this session, you'll see data in table form. Great!
+	    However, there's better way. Zeppelin archive network has visualization library called vis.gchart, let's use it by simply pipe to <b>vis.gchart</b>.
+	  </p>
+
+<pre>select 
+    age, 
+    avg(balance) as balance
+from bank 
+group by age 
+order by age | vis.gchart;</pre>
+
+          <p>If you run your session, you'll see data in table at default. You can change chart type with radio button. It looks like line chart is better for this data.Let's make line chart default.</p>
+
+<pre>select 
+    age, 
+    avg(balance) as balance
+from bank 
+group by age 
+order by age | vis.gchart(type=line);</pre>
+          <p>If you run the session, you'll see the visualization like</p>
+	  <img class="screenshot_tutorial" src="images/tutorial1/first_analysis.png" />	  
+
+	  <p>Also you can put some more ZQL statments in the session</p>
+<pre>select 
+    age, 
+    avg(balance) as balance
+from bank 
+group by age 
+order by age | vis.gchart(type=line, height=200);
+
+select
+    job,
+    count(*) as count
+from bank
+group by job | vis.gchart(type=pie, height=200);</pre>
+          <p>Visualization will be displayed in order</p>
+	  <img class="screenshot_tutorial" src="images/tutorial1/multi_statment.png" />	  
+
+
+	  <br />
+	  <h4>Share analysis</h4>
+	  <p>
+	    You can share your analysis by email, etc.
+	    Click the <b>share</b> button on right bottom of your ZQL editor window.
+	  </p>
+	  You'll see session's result without menu, editor, etc. So this link can be shared by email in your organization.
+	  <img class="screenshot_tutorial" src="images/tutorial1/share.png" />	  
+
+	
+	  <br />
+	  In this tutorial, you have used 'vis.gchart' to visualize user data.
+	  Such thing is called Zeppelin Library. Next tutorial, we will take a look about Zeppelin Library. Go to {{#link-to 'docZeppelinTutorial2'}}Tutorial2{{/link-to}}.
 	</div>
       </div>
     </script>
