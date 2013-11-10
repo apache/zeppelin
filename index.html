@@ -925,7 +925,7 @@ HADOOP_HOME=YOUR_HADOOP_HOME JAVA_HOME=YOUR_JAVA_HOME mvn exec:java -Dexec.mainC
       <div class="row">
 	<div class="col-md-8">
 	  <p />
-	  <p>In this tutorial, you'll know the basic about Zeppelin and it's GUI interface. Please check {{#link-to 'docZeppelinInstall'}}intall{{/link-to}} for installation.</p>
+	  <p>In this tutorial, you'll know the basic about Zeppelin and it's GUI interface. Please check {{#link-to 'docZeppelinInstall'}}install{{/link-to}} for installation.</p>
 	  <h4>ZQL Session</h4>
 	  <p>If you run zeppelin-daemon.sh start, you'll see menu 'ZQL'.
 	  You can create/run/save/delete the sessions here.
@@ -937,7 +937,7 @@ HADOOP_HOME=YOUR_HADOOP_HOME JAVA_HOME=YOUR_JAVA_HOME mvn exec:java -Dexec.mainC
 	    <li>Have it's name. The name is user friendly name and it can be change at any time.</li>
 	    <li>Have it's id. Id is unique across all sessions. Can not be changed.</li>
 	    <li>Can be scheduled by cron like scheduler.</li>
-	    <li>Automatically persist all status. ZQL statments, Name, scheduing information and result data of execution.</li>
+	    <li>Automatically persist all status. ZQL statements, Name, scheduing information and result data of execution.</li>
 	  </ul>
 	  
 	  <p>
@@ -976,13 +976,13 @@ STORED AS TEXTFILE
 ; </pre>
 	  </p>
 
-	  <p>And then download and unarchive the data, using shell command statment (starting with !)</p>
+	  <p>And then download and unarchive the data, using shell command statement (starting with !)</p>
 	  <pre>!curl -s http://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank.zip -o /tmp/bank.zip;
 !unzip -q -o /tmp/bank.zip bank-full.csv -d /tmp;</pre>
           <p>Load downloaded data into table using HQL's load</p>
 	  <pre>LOAD DATA LOCAL INPATH '/tmp/bank-full.csv' OVERWRITE INTO TABLE bank;</pre>
 
-	  <p>Let's put all statments into the editor window. and change session name to 'Import bank marketing data' by clicking session name.</p>
+	  <p>Let's put all statements into the editor window. and change session name to 'Import bank marketing data' by clicking session name.</p>
 	  <img class="screenshot_tutorial" src="images/tutorial1/import_data.png" />
 
 	  <p>And then press 'Run'. Zeppelin will create table, download and unpack the data, and load data into the table.</p>	  
@@ -1021,7 +1021,7 @@ order by age | vis.gchart(type=line);</pre>
           <p>If you run the session, you'll see the visualization like</p>
 	  <img class="screenshot_tutorial" src="images/tutorial1/first_analysis.png" />	  
 
-	  <p>Also you can put some more ZQL statments in the session</p>
+	  <p>Also you can put some more ZQL statements in the session</p>
 <pre>select 
     age, 
     avg(balance) as balance
@@ -1035,7 +1035,7 @@ select
 from bank
 group by job | vis.gchart(type=pie, height=200);</pre>
           <p>Visualization will be displayed in order</p>
-	  <img class="screenshot_tutorial" src="images/tutorial1/multi_statment.png" />	  
+	  <img class="screenshot_tutorial" src="images/tutorial1/multi_statement.png" />	  
 
 
 	  <br />
