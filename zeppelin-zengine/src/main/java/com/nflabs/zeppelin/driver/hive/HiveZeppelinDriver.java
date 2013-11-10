@@ -91,4 +91,14 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 		hiveConf.set(HiveConf.ConfVars.HADOOPJT.varname, "local");
 		return hiveConf;		
 	}
+
+	@Override
+	public void init() throws ZeppelinDriverException {
+		logger.info("Initialize "+HiveZeppelinDriver.class.getName());
+	}
+
+	@Override
+	public void shutdown() throws ZeppelinDriverException {
+		logger.info("Shutdown "+HiveZeppelinDriver.class.getName());
+	}
 }

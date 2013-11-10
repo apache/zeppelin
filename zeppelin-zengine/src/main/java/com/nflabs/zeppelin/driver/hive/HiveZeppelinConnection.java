@@ -102,4 +102,9 @@ public class HiveZeppelinConnection implements ZeppelinConnection {
 		}
 	}
 
+	@Override
+	public void abort() throws ZeppelinDriverException {
+		throw new ZeppelinDriverException("Abort not supported");
+	}
+
 }

@@ -583,7 +583,8 @@ public abstract class Z {
 			try {
 				Class<?> driverClass = Class.forName(driverClassName);
 				Constructor<?> cons = driverClass.getConstructor(ZeppelinConfiguration.class);
-				Z.driver = (ZeppelinDriver) cons.newInstance(conf());				
+				Z.driver = (ZeppelinDriver) cons.newInstance(conf());
+				Z.driver.init();
 			} catch (ClassNotFoundException e) {
 				throw new ZException(e);
 			} catch (SecurityException e) {
@@ -597,6 +598,8 @@ public abstract class Z {
 			} catch (IllegalAccessException e) {
 				throw new ZException(e);
 			} catch (InvocationTargetException e) {
+				throw new ZException(e);
+			} catch (ZeppelinDriverException e) {
 				throw new ZException(e);
 			}
 		} else {

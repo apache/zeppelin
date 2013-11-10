@@ -1,6 +1,5 @@
 package com.nflabs.zeppelin.server;
 
-import java.sql.Connection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
+import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.JobListener;
@@ -19,17 +19,21 @@ import com.nflabs.zeppelin.zengine.ZQL;
 import com.nflabs.zeppelin.zengine.ZQLException;
 
 public class ZQLSession extends Job{
-	transient Logger logger = LoggerFactory.getLogger(ZQLSession.class);
-
 	private String zql;
 	private List<Map<String, Object>> params;
 	Result error;
 	String cron;
 
 	private List<Z> zqlPlans;
+
+	transient private ZeppelinConnection conn;
 	
 	public ZQLSession(String jobName, JobListener listener) {
 		super(jobName, listener);
+	}
+	
+	private Logger logger(){
+		return LoggerFactory.getLogger(ZQLSession.class);
 	}
 	
 	public void setZQL(String zql){
@@ -104,7 +108,9 @@ public class ZQLSession extends Job{
 			reconstructNextReference();
 		}*/
 		
-		ZeppelinConnection conn = Z.getConnection();
+		synchronized(this){
+			conn = Z.getConnection();
+		}
 		
 		for(int i=0; i<zqlPlans.size(); i++){
 			Z zz = zqlPlans.get(i);
@@ -121,20 +127,38 @@ public class ZQLSession extends Job{
 				zz.release();
 			} catch (ZException e) {
 				error = new Result(e);
+				
+				conn.close();
+				synchronized(this){					
+					conn = null;
+				}
 				throw e;
-			} 
+			}
 		}
-
+		
 		conn.close();
+		synchronized(this){					
+			conn = null;
+		}
 		
 		return results;
 	}
 
 	@Override
 	protected boolean jobAbort() {
-		// TODO implement
-		return false;
-		
+		synchronized(this){
+			if(conn!=null){
+				try {
+					conn.abort();
+					return true;
+				} catch (ZeppelinDriverException e) {
+					logger().error("Abort failure", e);
+					return false;
+				}
+			} else {
+				return true;
+			}
+		}
 	}
 
 	public String getCron() {

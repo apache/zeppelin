@@ -1,7 +1,6 @@
 package com.nflabs.zeppelin.driver;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 
 /**
  * Zeppelin driver is physical layer abstraction.
@@ -13,6 +12,7 @@ public abstract class ZeppelinDriver {
 	/**
 	 * Constructor
 	 * @param conf zeppelin configuration
+	 * @throws ZeppelinDriverException 
 	 */
 	public ZeppelinDriver(ZeppelinConfiguration conf){
 		this.conf = conf;
@@ -35,5 +35,15 @@ public abstract class ZeppelinDriver {
 	 */
 	public abstract ZeppelinConnection getConnection() throws ZeppelinDriverException;
 	
+	/**
+	 * Initialize driver
+	 * @throws ZeppelinDriverException
+	 */
+	public abstract void init() throws ZeppelinDriverException;
 	
+	/**
+	 * Distroy the driver
+	 * @throws ZeppelinDriverException
+	 */
+	public abstract void shutdown() throws ZeppelinDriverException;
 }

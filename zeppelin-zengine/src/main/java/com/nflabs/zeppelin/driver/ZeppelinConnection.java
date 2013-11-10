@@ -9,6 +9,11 @@ public interface ZeppelinConnection {
 	public void close() throws ZeppelinDriverException;
 	
 	/**
+	 * Cancel currently running operation
+	 */
+	public void abort() throws ZeppelinDriverException;
+	
+	/**
 	 * Add sql to execute
 	 * @param query
 	 * @throws ZeppelinDriverException 

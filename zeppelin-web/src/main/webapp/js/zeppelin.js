@@ -53,6 +53,10 @@ function Zeppelin(arg){
 		zeppelin.get("/zql/run/"+id+"/dry", listener, scope);
             }
 
+	    this.abort = function(sessionId, listener, scope){
+		zeppelin.get('/zql/abort/'+sessionId, listener, scope);
+            }
+
 	    this.get = function(sessionId, listener, scope){
 		zeppelin.get('/zql/get/'+sessionId, listener, scope);
             }

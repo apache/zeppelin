@@ -158,6 +158,17 @@ public class ZQL {
     }
     
     @GET
+    @Path("abort/{sessionId}")
+    @Produces("application/json")
+    public Response abort(@PathParam("sessionId") String sessionId) {
+    	 ZQLSession s = sessionManager.abort(sessionId);
+    	 if(s==null){
+    		 return STATUS_NOT_FOUND;
+    	 } 
+    	 return new JsonResponse<ZQLSession>(Status.OK, "", s).build();	  
+    }
+    
+    @GET
     @Path("get/{sessionId}")
     @Produces("application/json")
     public Response get(@PathParam("sessionId") String sessionId) {
