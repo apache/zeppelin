@@ -94,6 +94,7 @@ function start(){
     
     init
 
+    echo "Start Zeppelin"
     nohup nice -n $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_MAIN "$@" >> "$log" 2>&1 < /dev/null &
     newpid=$!
     echo $newpid > $pid
@@ -111,14 +112,23 @@ function stop(){
     if [ -f $pid ]; then
 	if kill -0 `cat $pid` > /dev/null 2>&1; then
 	    echo Shutdown Zeppelin
-	    kill `cat $pid`
-	    sleep 3
-	    status > /dev/null
-	    if [ $? -eq 0 ]; then
+
+	    COUNT=0
+	    while [ $COUNT -lt 5 ]; do
+		kill `cat $pid` > /dev/null 2> /dev/null
+		if kill -0 `cat $pid` > /dev/null 2>&1; then
+		    sleep 3
+		    let "COUNT+=1"
+		else
+		    break
+		fi
+	    done
+	    if kill -0 `cat $pid` > /dev/null 2>&1; then
 		echo "failed to stop Zeppelin:"
 		tail -2 "$log" | sed 's/^/  /'
 		echo "full log in $log"
 	    fi
+
 	else
 	    echo no Zeppelin to stop
 	fi
