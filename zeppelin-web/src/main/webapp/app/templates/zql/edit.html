@@ -6,6 +6,7 @@
 {{view view.zqlParamView}}
 <div>
   <a id="zqlRunButton" class="btn btn-lg btn-primary" {{action 'runSession'}}>Run</a>
+  <a id="zqlAbortButton" class="btn btn-lg btn-primary" style="display:none;" {{action 'abortSession'}}>Abort</a>
   <div style="float:right; text-align:right">
     Schedule - <a href="#" data-type="select" id="zqlSessionCron"></a> |
     {{#link-to 'report.link' currentSession.id}}Share{{/link-to}} | 

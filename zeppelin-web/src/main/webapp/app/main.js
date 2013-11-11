@@ -172,6 +172,9 @@ $(document).ready(function(){
                             }
 			}, this);
 		    } else {
+			if(session.status=="RUNNING"){
+			    return;
+			}
 			zeppelin.zql.set(sessionId, sessionName, zql, undefined, sessionCron, function(c, d){
 			    if(c!=200){
 				zeppelin.alert("Error: Invalid Session", "#alert");
@@ -186,6 +189,19 @@ $(document).ready(function(){
 			}, this);
 		    }
 		},
+		abortSession : function(){
+		    var controller = this;
+		    var session = this.get('currentSession');
+		    if(session==undefined) return;
+		    zeppelin.zql.abort(session.id, function(c,d){
+			if(c==200){
+			    console.log("session %o aborted", session);
+			} else {
+			    console.log("session %o abort fail", session);
+			}
+		    });
+		},
+
 		shareSession : function(){
 		    var controller = this;
 		    var session = this.get('currentSession');
@@ -429,6 +445,7 @@ $(document).ready(function(){
 		$('#visualizationContainer div').remove();
 		$('#msgBox div').remove();
 
+		$('#zqlAbortButton').css('display', 'none');
 		if(model.status=="READY"){
 		    editor.setReadOnly(false);
 		    sessionNameEditor.editable('enable');
@@ -442,6 +459,7 @@ $(document).ready(function(){
 		    editor.setReadOnly(true);
 		    sessionNameEditor.editable('disable');
 		    sessionCronEditor.editable('disable');
+		    $('#zqlAbortButton').css('display', 'inline');
                 } else if(model.status=="FINISHED"){
 		    $('#zqlRunButton').text("Run");
 		    //$('#zqlRunButton').addClass('disabled');
