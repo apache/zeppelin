@@ -21,10 +21,13 @@
 // load templates sub-dirs here
 
 require('templates/default_layout');
+require('templates/report_layout');
 require('templates/index');
 require('templates/zql');
 require('templates/zql/edit');
 require('templates/zql/param');
+require('templates/report');
+require('templates/report/link');
 
 
 
