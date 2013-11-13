@@ -21,39 +21,16 @@ window.App = require('app');
 
 require('config');
 
-/*require('messages');
-require('utils/base64');
-require('utils/db');
-require('utils/helper');
-require('utils/config')*/
-
 require('models');
 require('controllers');
 require('views');
 require('router');
 require('templates');
 
-/*
-require('utils/ajax');
-require('utils/updater');;
-
-require('mappers/server_data_mapper');
-require('mappers/status_mapper');
-require('mappers/hosts_mapper');
-require('mappers/cluster_mapper');
-require('mappers/jobs_mapper');
-require('mappers/runs_mapper');
-require('mappers/racks_mapper');
-require('mappers/alerts_mapper');
-require('mappers/users_mapper');
-require('mappers/service_mapper');
-require('mappers/target_cluster_mapper');
-require('mappers/dataset_mapper');
-require('utils/http_client');
-require('utils/host_progress_popup');
-*/
-
-
 console.log('TRACE: app.js-> localStorage:Zeppelin.authenticated=' + localStorage.getItem('Zeppelin' + 'authenticated'));
 //console.log('TRACE: app.js-> router.authenticated=' + App.get('router.loggedIn'));
 console.log("TRACE: app.js-> Ember.TEMPLATES: ", Ember.TEMPLATES);
+
+// set x-editable's default mode as inline
+$.fn.editable.defaults.mode = 'inline';
+
