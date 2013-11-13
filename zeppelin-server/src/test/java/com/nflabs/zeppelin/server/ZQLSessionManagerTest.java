@@ -35,7 +35,7 @@ public class ZQLSessionManagerTest extends TestCase {
 
 		this.schedulerFactory = new SchedulerFactory();
 
-		this.sm = new ZQLSessionManager(schedulerFactory.createOrGetParallelScheduler("analyze", 30), Z.fs(), Z.conf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
+		this.sm = new ZQLSessionManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.conf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
 	}
 
 	protected void tearDown() throws Exception {
@@ -84,7 +84,7 @@ public class ZQLSessionManagerTest extends TestCase {
 		sm.setZql(sess.getId(), "show tables");
 		
 		// check if new session manager read
-		sm = new ZQLSessionManager(schedulerFactory.createOrGetParallelScheduler("analyze", 30), Z.fs(), Z.conf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
+		sm = new ZQLSessionManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.conf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
 		
 		// run the session
 		sm.run(sess.getId());
