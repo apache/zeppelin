@@ -1,0 +1,5 @@
+node_modules
+src/main/webapp/stylesheets
+src/main/webapp/javascripts
+src/main/webapp/font
+src/main/webapp/*.html

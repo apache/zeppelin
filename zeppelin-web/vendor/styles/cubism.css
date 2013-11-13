@@ -1,0 +1,82 @@
+/*
+ * D3  visualization components 
+ * Styles for Dag viewer and Sankey diagram
+ */
+.wfdag {
+  width: 100%;
+}
+
+#dag_viewer .axis path,
+#dag_viewer .axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+#dag_viewer line.link,
+#dag_viewer path.link {
+  fill: none;
+  stroke: #666;
+  stroke-width: 2.5px;
+}
+
+#dag_viewer line.link.finished,
+#dag_viewer path.link.finished {
+  stroke: #444;
+}
+
+#dag_viewer marker#finished {
+  fill: #444;
+}
+
+#dag_viewer marker#circle {
+  fill: #666;
+  stroke: none;
+}
+
+#dag_viewer line.source.mark,
+#dag_viewer line.target.mark {
+  stroke: #666;
+  stroke-width: 2.5px;
+}
+
+#dag_viewer rect {
+  fill: #ccc;
+  stroke: #333;
+  stroke-width: 1px;
+}
+
+#dag_viewer rect.finished {
+  fill: green;
+  fill-opacity: 0.8;
+}
+
+#dag_viewer text.joblabel {
+  pointer-events: none;
+  text-anchor: middle;
+}
+
+#dag_viewer text.axislabel {
+  pointer-events: none;
+  text-anchor: middle;
+}
+
+#dag_viewer text.shadow {
+  stroke: #fff;
+  stroke-width: 3px;
+  stroke-opacity: .8;
+}
+
+.map, .shuffle, .reduce {
+  fill-opacity: 0.8;
+  stroke-width: 2px;
+}
+
+.allmap, .allshuffle, .allreduce {
+  fill: none;
+  stroke-width: 2px;
+}
+
+.y.axis {
+  font-size: 10px;
+}

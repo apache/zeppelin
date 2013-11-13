@@ -1,0 +1,70 @@
+var App = require('app');
+
+
+var Zeppelin = require('zeppelin').Zeppelin,
+    zeppelin = new Zeppelin();
+
+App.Router = Ember.Router.extend({
+  enableLogging: true,
+});
+
+
+
+App.Router.map(function(){
+  this.resource('zql', function(){
+	this.route('edit', {path:'/:sessionid'});
+  });
+  this.resource('report', function(){
+	this.route('link', {path:'/:sessionid'});
+  });
+});
+
+
+
+App.ZqlRoute = Ember.Route.extend({
+  model : function(params){
+	return params;
+  },
+  setupController : function(controller, model){
+    zeppelin.zql.list(function(c, resp){
+	  if ( c == 200 ) {
+		controller.set('runningSessions', resp);
+	  }
+	});
+  }
+});
+
+
+// ZqlEidt ---------------------------------------
+App.ZqlEditRoute = App.ZqlRoute.extend({
+  model : function(params){
+    return params;
+  },
+  setupController : function(controller, model){
+    zeppelin.zql.get(model.sessionid, function(c, d){
+      controller.set('currentSession', d);
+    }, this);
+  }
+});
+
+// Report  --------------------------------------
+App.ReportRoute = Ember.Route.extend({
+  model : function(params){
+	return params;
+  },
+  setupController : function(controller, model){
+  }
+});
+
+App.ReportLinkRoute = App.ReportRoute.extend({
+  model : function(params){
+	return params;
+  },
+  setupController : function(controller, model){
+	zeppelin.zql.get(model.sessionid, function(c, d){
+	  controller.set('currentSession', d);
+	}, this);
+  }
+});
+
+

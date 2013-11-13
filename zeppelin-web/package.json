@@ -1,0 +1,31 @@
+{
+  "name":"Zeppelin",
+  "description":"Front-end package for the Zeppelin Project",
+  "version":"1.0.0",
+  "homepage":"",
+  "repository":{
+    "type":"git",
+    "url":"https://github.com/NFLabs/zeppelin"
+  },
+  "engines":{
+    "node":"~0.6.10 || 0.8 || 0.9 || 0.10"
+  },
+  "scripts":{
+    "start":"brunch watch --server"
+  },
+  "dependencies":{
+    "javascript-brunch":">= 1.0 < 1.5",
+    "css-brunch":">= 1.0 < 1.5",
+    "uglify-js-brunch":">= 1.0 < 1.5",
+    "clean-css-brunch":">= 1.0 < 1.5",
+    "ember-handlebars-brunch": "~1.0.0",
+    "less-brunch":">= 1.0 < 1.5"
+  },
+  "devDependencies":{
+    "mocha":"1.9.0",
+    "chai":"*",
+    "sinon":"*",
+    "sinon-chai":"*",
+    "express":"2.5.8"
+  }
+}
