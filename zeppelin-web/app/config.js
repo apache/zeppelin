@@ -42,3 +42,6 @@ $.ajaxSetup({
   cache: false
 });
 
+// set x-editable's default mode as inline
+$.fn.editable.defaults.mode = 'inline';
+

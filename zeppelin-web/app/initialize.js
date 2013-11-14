@@ -31,6 +31,3 @@ console.log('TRACE: app.js-> localStorage:Zeppelin.authenticated=' + localStorag
 //console.log('TRACE: app.js-> router.authenticated=' + App.get('router.loggedIn'));
 console.log("TRACE: app.js-> Ember.TEMPLATES: ", Ember.TEMPLATES);
 
-// set x-editable's default mode as inline
-$.fn.editable.defaults.mode = 'inline';
-
