@@ -43,7 +43,7 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	}
 	
 	private String getLocalWarehouse(){
-		return getConf().getString(ConfVars.ZEPPELIN_HOME)+"/warehouse";
+		return new File(getConf().getString(ConfVars.ZEPPELIN_HOME)+"/warehouse").getAbsolutePath();
 	}
 	
 	@Override
