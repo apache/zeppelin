@@ -13,7 +13,7 @@ logs/
 run/
 metastore_db/
 *.log
-**/resources/
+
 **/sessions/
 **/data/
 **/build/
