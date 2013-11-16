@@ -1,5 +1,5 @@
 #Zeppelin
-
+[![Build Status](https://secure.travis-ci.org/NFLabs/zeppelin.png?branch=master)](https://travis-ci.org/NFLabs/zeppelin)
 
 
 **Zeppelin** is complete large scale data analysis environment, including
