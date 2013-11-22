@@ -28,7 +28,7 @@ public class ZQLTest extends HiveTestService {
 		
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 		Z.configure();
-		HiveZeppelinDriver driver = new HiveZeppelinDriver(Z.conf());
+		HiveZeppelinDriver driver = new HiveZeppelinDriver(Z.getConf());
 		driver.setClient(client);
 		Z.setDriver(driver);		
 

@@ -15,7 +15,7 @@ public class ExecStatementTest extends HiveTestService {
 	public void setUp() throws Exception {
 		super.setUp();
 		Z.configure();
-		HiveZeppelinDriver driver = new HiveZeppelinDriver(Z.conf());
+		HiveZeppelinDriver driver = new HiveZeppelinDriver(Z.getConf());
 		driver.setClient(client);
 		Z.setDriver(driver);
 	}

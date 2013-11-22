@@ -73,7 +73,7 @@ public class L extends Q {
 			if(libName.indexOf(":/")>0){
 				libUri = new URI(libName);
 			} else {
-				libUri = new URI(conf().getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO)+"/"+libName);	
+				libUri = new URI(getConf().getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO)+"/"+libName);	
 			}
 		} catch (URISyntaxException e1) {
 			throw new ZException(e1);

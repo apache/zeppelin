@@ -33,7 +33,7 @@ public class ZTest extends HiveTestService {
 		TestUtil.delete(new File(ROOT_DIR.getName()));
 				
 		Z.configure();
-		HiveZeppelinDriver driver = new HiveZeppelinDriver(Z.conf());
+		HiveZeppelinDriver driver = new HiveZeppelinDriver(Z.getConf());
 		driver.setClient(client);
 		Z.setDriver(driver);
 	}
