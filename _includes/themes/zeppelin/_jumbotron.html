@@ -1,0 +1,25 @@
+
+{% if page.url == '/index.html' %}
+    <div class="jumbotron">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-5">
+            <h1>Zeppelin</h1>
+            <p>is open source data analysis environment on top of Hadoop.</p>
+            <p><a class="btn btn-primary btn-lg" href="overview.html" role="button">
+                Learn more »
+            </a></p>
+          </div>
+          <div class="col-md-5 col-md-offset-2">
+            <img class="thumbnail" src="http://placehold.it/600x400?text=Video">
+          </div>
+        </div>
+      </div>
+    </div>
+{% else %}
+    <div class="jumbotron small">
+      <div class="container">
+        <p>{{page.title}}</p>
+      </div>
+    </div>
+{% endif %}
