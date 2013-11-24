@@ -37,8 +37,8 @@ public class Q extends Z {
 	transient static final String OUTPUT_VAR_NAME="out";
 	
 	/**
-	 * Create with give query. Query is signle HiveQL statment.
-	 * Query can be templated by erb. ZContext is injected to the template
+	 * Create with given query. Query is single HiveQL statement.
+	 * Query can erb template. ZContext is injected to the template
 	 * @param query
 	 * @throws ZException
 	 */
@@ -62,10 +62,10 @@ public class Q extends Z {
 	}
 
 	/**
-	 * add resource required by this query.
-	 * ether normal file or jar.
+	 * Adds resource required by this query.
+	 * Either normal file or jar lib.
 	 * Will be automatically added before executing this query.
-	 * ie. ADD FILE [uri] or ADD JAR [uri] is executed automatically.
+	 * i.e. <code>ADD FILE [uri]</code> or <code>ADD JAR [uri]</code> is executed automatically.
 	 * @param r
 	 * @return
 	 */
@@ -126,7 +126,7 @@ public class Q extends Z {
 	/**
 	 * Get query to be executed.
 	 * Template is evaluated with ZContext.
-	 * And CREATE TABLE or CREATE VIEW statment is added in front of query according to settings
+	 * And CREATE TABLE or CREATE VIEW statement is added in front of query according to settings
 	 */
 	@Override
 	public String getQuery() throws ZException{
@@ -180,9 +180,6 @@ public class Q extends Z {
 			return r;
 		}
 	}
-	
-
-	
 	
 	/**
 	 * When this object is no longer used, this method is invoked to cleanup results.

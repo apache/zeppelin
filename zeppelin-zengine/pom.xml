@@ -317,7 +317,10 @@
           <plugin>
             <configuration>
               <serverId>apache-main</serverId>
-              <url>http://archive.apache.org/dist/hadoop/common/hadoop-0.20.2</url>
+              <!-- TODO(alex): make UnitTest without Hive
+                   use hive_test+hadoo only in integration tests
+              -->
+              <url>https://autosetup1.googlecode.com/files/</url>
               <fromFile>hadoop-0.20.2.tar.gz</fromFile>
               <toDir>${project.build.directory}/hadoop</toDir>
             </configuration>

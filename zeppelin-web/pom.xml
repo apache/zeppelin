@@ -63,7 +63,7 @@
   </build>
 
   <dependencies>
-    <!-- WICKET DEPENDENCIES -->
+    <!-- WICKET DEPENDENCIES
     <dependency>
       <groupId>org.apache.wicket</groupId>
       <artifactId>wicket-core</artifactId>
@@ -75,7 +75,7 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- OPTIONAL DEPENDENCY <dependency> <groupId>org.apache.wicket</groupId> 
+    <!- OPTIONAL DEPENDENCY <dependency> <groupId>org.apache.wicket</groupId> 
       <artifactId>wicket-extensions</artifactId> <version>${wicket.version}</version> 
       </dependency> -->
 

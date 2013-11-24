@@ -34,10 +34,13 @@ Thumbs.db
 **/.classpath
 **/.project
 **/.settings/
+.project
+.settings/
 
 # maven target files
 target/
 **/target/
+bin/
 
 *~
 \#*\#
