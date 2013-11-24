@@ -205,7 +205,7 @@ public class ZQL {
 					}
 				}
 				try {				
-					currentZ = new ExecStatement(stmt); 
+					currentZ = new ShellExecStatement(stmt); 
 				} catch (ZException e) {
 					throw new ZQLException(e);
 				}

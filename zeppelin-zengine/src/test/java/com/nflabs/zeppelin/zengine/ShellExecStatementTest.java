@@ -6,10 +6,10 @@ import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
 import com.nflabs.zeppelin.result.Result;
 
-public class ExecStatementTest extends HiveTestService {
+public class ShellExecStatementTest extends HiveTestService {
     HiveZeppelinDriver driver;
     
-    public ExecStatementTest() throws IOException {
+    public ShellExecStatementTest() throws IOException {
         super();
     }
 
@@ -35,7 +35,7 @@ public class ExecStatementTest extends HiveTestService {
     
         //given Hive instance in local-mode
         //      ZeppelinConnection to it through ZeppelinDriver
-        ExecStatement e = new ExecStatement("!echo \"hello world\"");
+        ShellExecStatement e = new ShellExecStatement("!echo \"hello world\"");
         
         //when .execute()
         Result result = e.execute(driver.getConnection()).result();
