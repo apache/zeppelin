@@ -258,7 +258,7 @@
   </build>
 
   <repositories>
-    <!-- FuseSource maven repositories -->
+    <!-- FuseSource maven repositories
     <repository>
       <id>fusesource.releases</id>
       <name>FuseSoure releases repository</name>
@@ -286,11 +286,6 @@
       <url>http://clojars.org/repo</url>
     </repository>
     <repository>
-      <id>cdh-repository</id>
-      <name>CDH Repository</name>
-      <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
-    </repository>
-    <repository>
       <id>cdh-repository-typesafe</id>
       <name>CDH Repository-typesafe</name>
       <url>http://repo.typesafe.com/typesafe/cloudera</url>
@@ -299,6 +294,13 @@
       <id>cdh-repository-build</id>
       <name>CDH Repository-build, for jdo/jdo2-api/2.3-ec</name>
       <url>https://repository.cloudera.com/content/groups/cdh-build</url>
+    </repository> -->
+
+    <!-- for for jdo/jdo2-api/2.3-ec -->
+    <repository>
+      <id>cdh-repository</id>
+      <name>CDH Repository</name>
+      <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
     </repository>
   </repositories>
 
