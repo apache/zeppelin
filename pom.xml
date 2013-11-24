@@ -55,8 +55,15 @@
       <organization>NFLabs</organization>
       <organizationUrl>http://www.nflabs.com</organizationUrl>
     </developer>
+    <developer>
+      <id>alex</id>
+      <name>Alexander Bezzubov</name>
+      <organization>NFLabs</organization>
+      <organizationUrl>http://www.nflabs.com</organizationUrl>
+    </developer>
   </developers>
 
+  <inceptionYear>2013</inceptionYear>
 
   <modules>
     <module>zeppelin-zengine</module>
