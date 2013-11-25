@@ -6,19 +6,60 @@ tagline: Less Development, More analysis!
 ---
 {% include JB/setup %}
 
+
 ## What is Zeppelin?
+Simple analytical environment on top of Hadoop ecosystem.
+
+Less development, more analysis!
+
+Unix-way philosophy?
+
+
+  <div class="col-md-offset-9 table-container">
+    <div class="text-center table-stack">
+      <div class="zeppelin-color"><b>Zeppelin Stack</b></div><p></p>
+      <table>
+		<tbody>
+          <tr>
+		    <td rowspan="3"><div class="rotate270">Zeppelin</div></td>
+		    <td colspan="1">CLI</td>
+		    <td colspan="1">GUI</td>
+		    <td colspan="1">ZAN</td>
+		  </tr>
+		  <tr>
+		    <td colspan="3">ZQL</td>
+		  </tr>
+		  <tr>
+		    <td colspan="3">Zengine</td>
+		  </tr>
+		  <tr>
+		    <td  style="background-color:#FFFFFF"></td>
+		    <td colspan="3" class="gray">Hive</td>
+		  </tr>
+		  <tr>
+		    <td style="background-color:#FFFFFF"></td>
+		    <td colspan="3" class="gray">Hadoop</td>
+		  </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
 ### Zeppelin stack
-
- * **Zengine**  is an framework for Java to simplify data analytics on Hadoop. Zeppelin generate Hive query.
+ * **Zengine**  is an framework for Java to simplify data analytics on Hadoop.
+   Zeppelin generate Hive query.
  * **ZQL** is extension of HiveQL. Designed for easy data analysis.
  * **ZAN** is Zeppelin Archive Network, think npm for sharing libraries.
 
 
 ## Who uses it?
-...
+ * NFLabs
+
+...List names here...
+
 
 ## Lates News
+
 
 #### Zeppelin 0.1.2 Developer preview ####
  

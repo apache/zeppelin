@@ -35,6 +35,50 @@ body {
     padding: 10px 0 0 0;
 }
 
+
+/* Table on the index page */
+.table-container {
+    position: absolute;
+}
+
+.table-stack {
+/*    border: 1px solid #6371a9;*/
+    width:200px; padding: 5px 5px 5px 5px;
+}
+
+.table-stack table {
+    width:100%
+}
+
+.table-stack tr td{
+    border: 1px solid #FFFFFF;
+    height : 40px;
+    background-color : #6371a9;
+    color : #FFFFFF;
+}
+
+.table-stack .gray {
+    background-color:#DDDDDD;
+    color:#777777;
+}
+
+.rotate270 {
+    width:15px;padding:10px 0px 0px 0px;
+    -webkit-transform: rotate(270deg);
+    -moz-transform: rotate(270deg);
+    -ms-transform: rotate(270deg);
+    -o-transform: rotate(270deg);
+    transform: rotate(270deg);
+}
+
+
+
+
+
+
+
+
+
 /* Custom container */
 .container-narrow {
   margin: 0 auto;
