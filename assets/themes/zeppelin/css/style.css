@@ -35,6 +35,10 @@ body {
     padding: 10px 0 0 0;
 }
 
+/* screenshot img inside of doc */
+.screenshot {
+    width : 800px;
+}
 
 /* Table on the index page */
 .table-container {
