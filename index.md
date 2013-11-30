@@ -1,18 +1,23 @@
 ---
 layout: page
 title: Zeppelin
-desctiption: TODO add
+description: TODO add
 tagline: Less Development, More analysis!
 ---
 {% include JB/setup %}
 
 
 ## What is Zeppelin?
-Simple analytical environment on top of Hadoop ecosystem.
+Simple analytical environment on top of Hadoop ecosystem. 
 
-Less development, more analysis!
+Zeppelin provides
 
-Unix-way philosophy?
+ * SQL like analytical language [ZQL](./zql.html) (HiveQL extension)
+ * Pluggable visualization
+ * Pluggable algorithm
+ * Online archive of visualization, algorithm. [ZAN](./zan.html) (Zeppelin Archive Network)
+ * Cron like scheduler embedded
+ * Report generation (Share)
 
 
   <div class="col-md-offset-9 table-container">
@@ -46,24 +51,25 @@ Unix-way philosophy?
   </div>
 
 ### Zeppelin stack
- * **Zengine**  is an framework for Java to simplify data analytics on Hadoop.
+ * **[Zengine](./zengine.html)**  is an framework for Java to simplify data analytics on Hadoop.
    Zeppelin generate Hive query.
- * **ZQL** is extension of HiveQL. Designed for easy data analysis.
- * **ZAN** is Zeppelin Archive Network, think npm for sharing libraries.
+ * **[ZQL](./zql.html)** is extension of HiveQL. Designed for easy data analysis.
+ * **[ZAN](./zan.html)** is Zeppelin Archive Network, think npm for sharing libraries.
 
 
 ## Who uses it?
- * NFLabs
+ * **NFLabs** - Zeppelin automates regular analytical query execution via embedded scheduler. Also our data analyist take care of on-demand analysis request from customer using Zeppelin.
 
-...List names here...
+
+
 
 
 ## Lates News
 
 
-#### Zeppelin 0.1.2 Developer preview ####
+#### Zeppelin 0.2.0 Snapshot ####
  
-Some important changes with nice visualizer. [Check here](http://...)
+[Check here](./download.html)
 
  
 <ul class="posts">
