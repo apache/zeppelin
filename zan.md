@@ -2,12 +2,14 @@
 layout: page
 title: "ZAN"
 subtitle : "Zeppelin Archive Network"
-description: "Don't reinvent the wheel."
+description: ""
 group: nav-left
 ---
 {% include JB/setup %}
 
+#### Don't reinvent the wheel.
 
+<br />
 Currently ZAN is included as a local repository in [Zeppelin package release](./download.html).
 
 You can check what's included in ZAN from github [zan-repo](https://github.com/NFLabs/zeppelin/tree/master/zan-repo)
