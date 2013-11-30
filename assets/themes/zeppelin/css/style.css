@@ -32,8 +32,29 @@ body {
   margin-top: 0;
 }
 .jumbotron.small {
-    padding: 10px 0 0 0;
+    padding: 0 0 0 0;
+    color : #ffffff;
 }
+.jumbotron.small .title{
+    float : left;
+    font-weight : bold;
+    font-size : 20px;
+    height : 30px;
+    margin-right: 20px;
+}
+
+.jumbotron.small .subtitle{
+    font-size : 14px;
+    height : 30px;
+    vertical-align:text-bottom;
+    padding-top:7px;
+}
+
+.jumbotron.small .description{
+    margin-top: 7px;
+}
+
+
 
 /* screenshot img inside of doc */
 .screenshot {

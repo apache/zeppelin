@@ -19,7 +19,8 @@
 {% else %}
     <div class="jumbotron small">
       <div class="container">
-        <p>{{page.title}}</p>
+        <div class="title">{{page.title}}</div><div class="subtitle">{{page.subtitle}}</div>
+	<p class="description">{{page.description}}</p>
       </div>
     </div>
 {% endif %}
