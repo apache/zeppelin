@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Docs"
-description: "Documetation for Zeppelin project"
+description: ""
 group: nav-right
 ---
 {% include JB/setup %}
@@ -14,4 +14,5 @@ group: nav-right
 
 ### Development
 
+* [Zeppelin Library](./development/writingzeppelinlibrary.html)
 * [How to contribute](./development/howtocontribute.html)
