@@ -10,3 +10,8 @@ group: nav-right
 ### Tutorials
 
 * [Your first analysis](./tutorials/tutorial1.html)
+
+
+### Development
+
+* [How to contribute](./development/howtocontribute.html)
