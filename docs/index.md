@@ -11,8 +11,16 @@ group: nav-right
 
 * [Your first analysis](./tutorials/tutorial1.html)
 
+### Install
+
+* [Install](./install/install.html)
+* [Compatibility](./install/compatibility.html)
 
 ### Development
 
-* [Zeppelin Library](./development/writingzeppelinlibrary.html)
+* [Writing Zeppelin Library](./development/writingzeppelinlibrary.html)
 * [How to contribute](./development/howtocontribute.html)
+
+
+
+

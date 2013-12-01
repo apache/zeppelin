@@ -1,17 +1,43 @@
 ---
 layout: page
 title: "Overview"
-description: "Overview of Zeppelin project"
+description: ""
 group: nav-right
 ---
 {% include JB/setup %}
 
-## Introduction
+### What is Zeppelin
 
-....
-Need architecture picture here (i.e what Sejun draws): how Zeppelin is on top of Others and delivers analitical
-capabilities
+Zeppelin is opensource data analysis environment on top of Hadoop.
 
 
-## Something else
+### Install
 
+[Download](./download.html) a release.
+
+Zeppelin can be run either locally or with existing hadoop cluster. see [install](./install/install.html)
+
+
+### Using GUI
+
+Zeppelin has it's own GUI based on web. Browse http://localhost:8080 after start Zeppelin as a daemon by following command
+{% highlight bash %}
+bin/zeppelin-daemon.sh start
+{% endhighlight %}
+GUI provides
+ * ZQL editor
+ * Visualization
+ * Session save/restore
+
+### Using Command Line Interface
+
+To open interactive CLI session, run
+{% highlight bash %}
+bin/zeppelin
+{% endhighlight %}
+run with '-h' argument will print available options.
+
+
+### Play with Zengine
+
+Zengine is java framework for data analytics. check [Zengine](./zengine.html)
