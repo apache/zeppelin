@@ -83,7 +83,7 @@ public abstract class AbstractResult {
 		
 		this.res = res;
 		if (max < 0){
-			this.max = Z.conf().getLong(ConfVars.ZEPPELIN_MAX_RESULT);
+			this.max = Z.getConf().getLong(ConfVars.ZEPPELIN_MAX_RESULT);
 		} else {
 			this.max = max;
 		}

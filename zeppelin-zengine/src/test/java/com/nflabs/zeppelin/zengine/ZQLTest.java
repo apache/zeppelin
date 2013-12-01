@@ -28,7 +28,7 @@ public class ZQLTest extends HiveTestService {
 		
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 		Z.configure();
-		HiveZeppelinDriver driver = new HiveZeppelinDriver(Z.conf());
+		HiveZeppelinDriver driver = new HiveZeppelinDriver(Z.getConf());
 		driver.setClient(client);
 		Z.setDriver(driver);		
 
@@ -153,7 +153,7 @@ public class ZQLTest extends HiveTestService {
 		assertEquals("select * from test", z.get(0).getQuery());
 		assertEquals("!echo -n 'hello world';", z.get(1).getQuery());
 		assertEquals("!echo ls", z.get(2).getQuery());
-		assertTrue(z.get(1) instanceof ExecStatement); 
-		assertTrue(z.get(2) instanceof ExecStatement); 
+		assertTrue(z.get(1) instanceof ShellExecStatement); 
+		assertTrue(z.get(2) instanceof ShellExecStatement); 
 	}
 }

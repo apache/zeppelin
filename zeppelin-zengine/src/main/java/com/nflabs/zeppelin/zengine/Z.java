@@ -579,11 +579,11 @@ public abstract class Z {
 		Z.factory = new JRubyScriptEngineFactory();
 		
 		if(driver==null){
-			String driverClassName = conf().getString(ConfVars.ZEPPELIN_DRIVER);
+			String driverClassName = getConf().getString(ConfVars.ZEPPELIN_DRIVER);
 			try {
 				Class<?> driverClass = Class.forName(driverClassName);
 				Constructor<?> cons = driverClass.getConstructor(ZeppelinConfiguration.class);
-				Z.driver = (ZeppelinDriver) cons.newInstance(conf());
+				Z.driver = (ZeppelinDriver) cons.newInstance(getConf());
 				Z.driver.init();
 			} catch (ClassNotFoundException e) {
 				throw new ZException(e);
@@ -640,7 +640,7 @@ public abstract class Z {
 	 * Get zeppelin configuration
 	 * @return
 	 */
-	public static ZeppelinConfiguration conf(){
+	public static ZeppelinConfiguration getConf(){
 		return conf;
 	}
 
