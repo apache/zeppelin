@@ -9,7 +9,7 @@ group: nav-left
 ####Examples
 
 Word Count
-{% highlight java %}
+```java
 import com.nflabs.zeppelin.zengine.*
 import com.nflabs.zeppelin.result.*
 ...
@@ -20,22 +20,22 @@ result = new Q("select text from myTable")                    // load some data
 
 result.write(System.out);                                     // Print result to stdout
 ...
-{% endhighlight %}            
+```
 
 Checkout Zengine API doc. 
 
 Maven dependency
 
 to use it add dependency in your pom.xml
-{% highlight xml %}
+```xml
 <dependency>
     <groupId>com.nflabs.zeppelin</groupId>
     <artifactId>zeppelin-zengine</artifactId>
     <version>0.1.2</version>
 </dependency>
-{% endhighlight %}
+```
 if you want access snapshot
-{% highlight xml %}
+```xml
 <dependency>
     <groupId>com.nflabs.zeppelin</groupId>
     <artifactId>zeppelin-zengine</artifactId>
@@ -54,4 +54,4 @@ if you want access snapshot
         <enabled>true</enabled>
     </snapshots>
 </repository>
-{% endhighlight %}
+```
