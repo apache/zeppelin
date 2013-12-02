@@ -9,6 +9,7 @@ group: nav-left
 ####Examples
 
 Word Count
+
 ```java
 import com.nflabs.zeppelin.zengine.*
 import com.nflabs.zeppelin.result.*
@@ -27,6 +28,7 @@ Checkout Zengine API doc.
 Maven dependency
 
 to use it add dependency in your pom.xml
+
 ```xml
 <dependency>
     <groupId>com.nflabs.zeppelin</groupId>
@@ -35,6 +37,7 @@ to use it add dependency in your pom.xml
 </dependency>
 ```
 if you want access snapshot
+
 ```xml
 <dependency>
     <groupId>com.nflabs.zeppelin</groupId>
