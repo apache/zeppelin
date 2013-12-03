@@ -240,29 +240,31 @@ public class ZQL {
 		return javax.ws.rs.core.Response.status(Status.NOT_FOUND).entity("").build();    	
     }
     
-    private MediaType typeByExtention(String path){
+    private String typeByExtention(String path){
     	String filename;
 		try {
 			filename = new URI(path).getPath();
 		} catch (URISyntaxException e) {
 			logger.error("Invalid path "+path, e);
-			return MediaType.APPLICATION_OCTET_STREAM_TYPE;
+			return MediaType.APPLICATION_OCTET_STREAM_TYPE.toString();
 		}
     	
     	if(filename.endsWith(".erb")) {
-    		return MediaType.TEXT_HTML_TYPE;
+    		return MediaType.TEXT_HTML_TYPE.toString();
     	} else if(filename.endsWith(".html") || filename.endsWith(".htm")){
-    		return MediaType.TEXT_HTML_TYPE;
-    	} else if(filename.endsWith(".css") || filename.endsWith(".js")){
-    		return MediaType.TEXT_PLAIN_TYPE;
+    		return MediaType.TEXT_HTML_TYPE.toString();
+    	} else if(filename.endsWith(".css")){
+    		return "text/css";
+    	} else if(filename.endsWith(".js")){
+    		return "text/javascript";
     	} else if(filename.endsWith(".json")){
-    		return MediaType.APPLICATION_JSON_TYPE;
+    		return MediaType.APPLICATION_JSON_TYPE.toString();
     	} else if(filename.endsWith(".xml")){
-    		return MediaType.APPLICATION_XML_TYPE;
+    		return MediaType.APPLICATION_XML_TYPE.toString();
     	} else if(filename.endsWith(".text") || filename.endsWith(".txt")){
-    		return MediaType.TEXT_PLAIN_TYPE;
+    		return MediaType.TEXT_PLAIN_TYPE.toString();
     	} else {
-    		return MediaType.APPLICATION_OCTET_STREAM_TYPE;
+    		return MediaType.APPLICATION_OCTET_STREAM_TYPE.toString();
     	}
     }
     
