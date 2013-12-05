@@ -59,26 +59,28 @@
           <attachClasses>true</attachClasses>
         </configuration>
       </plugin>
+
+     <!-- Builds Zeppelin GUI Web-App, assuming Brunch.io is installed,
+          for details see https://github.com/NFLabs/zeppelin/tree/master/zeppelin-web#build -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.2.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <executable>brunch build</executable>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
   <dependencies>
-    <!-- WICKET DEPENDENCIES
-    <dependency>
-      <groupId>org.apache.wicket</groupId>
-      <artifactId>wicket-core</artifactId>
-      <version>${wicket.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!- OPTIONAL DEPENDENCY <dependency> <groupId>org.apache.wicket</groupId> 
-      <artifactId>wicket-extensions</artifactId> <version>${wicket.version}</version> 
-      </dependency> -->
-
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
