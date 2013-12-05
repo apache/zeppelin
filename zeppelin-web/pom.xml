@@ -77,35 +77,9 @@
           <executable>brunch build</executable>
         </configuration>
       </plugin>
-
-      <!-- did not work, results in exception :(
-           falling back to maven exec plugin
-      <plugin>
-        <groupId>org.mule.tools.javascript</groupId>
-        <artifactId>brunch-maven-plugin</artifactId>
-        <version>1.0-SNAPSHOT</version>
-        <configuration>
-            <sourceDirectory>src/main/webapp</sourceDirectory>
-        </configuration>
-      </plugin>
-      -->
     </plugins>
   </build>
-  <!--
-  <pluginRepositories>
-    <pluginRepository>
-        <id>mulesoft.snapshots</id>
-        <name>Mulesoft maven repository for brunch-maven-plugin dependecies</name>
-        <url>https://repository.mulesoft.org/nexus/content/repositories/snapshots</url>
-        <releases>
-            <enabled>false</enabled>
-        </releases>
-        <snapshots>
-            <enabled>true</enabled>
-        </snapshots>        
-    </pluginRepository>
-  </pluginRepositories>
-  -->
+
   <dependencies>
     <dependency>
       <groupId>org.slf4j</groupId>
