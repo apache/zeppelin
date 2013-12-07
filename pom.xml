@@ -75,7 +75,7 @@
   <properties>
     <java.version>1.6</java.version>
     <hadoop.version>1.0.4</hadoop.version>
-    <hive.version>0.9.0</hive.version>
+    <hive.version>0.11.0</hive.version>
     <hbase.version>0.92.1</hbase.version>
     <scala.version>2.9.3</scala.version>
     <slf4j.version>1.6.6</slf4j.version>
@@ -301,6 +301,12 @@
       <id>cdh-repository</id>
       <name>CDH Repository</name>
       <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
     </repository>
   </repositories>
 

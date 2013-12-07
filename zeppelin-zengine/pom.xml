@@ -131,6 +131,10 @@
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-core</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.thrift</groupId>
+          <artifactId>libthrift</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -174,6 +178,10 @@
         <exclusion>
           <groupId>jline</groupId>
           <artifactId>jline</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.antlr</groupId>
+          <artifactId>antlr-runtime</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
