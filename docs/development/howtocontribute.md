@@ -34,15 +34,15 @@ First of all, you need the Zeppelin source code. The official location for Zeppe
 
 Get the source code on your development machine using git.
 
-{% highlight bash %}
+```
 git clone https://github.com/NFLabs/zeppelin.git zeppelin
-{% endhighlight %}
+```
 
 You may also want to develop against a specific release. For example, for branch-0.1
 
-{% highlight bash %}
+```
 git clone -b branch-0.1 https://github.com/NFLabs/zeppelin.git zeppelin
-{% endhighlight %}
+```
 
 
 #### Fork repository
@@ -52,15 +52,17 @@ If you want not only build Zeppelin but also make change, then you need fork Zep
 
 ###Build
 
-{% highlight bash %}
+```
 mvn install
-{% endhighlight %}
+```
 
 ### Run Zepplin server in development mode
-{% highlight bash %}
+
+```
 cd zeppelin-server
 HADOOP_HOME=YOUR_HADOOP_HOME JAVA_HOME=YOUR_JAVA_HOME mvn exec:java -Dexec.mainClass="com.nflabs.zeppelin.server.ZeppelinServer" -Dexec.args=""
-{% endhighlight %}
+```
+
 Server will be run on http://localhost:8080
 
 ### JIRA

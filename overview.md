@@ -21,9 +21,11 @@ Zeppelin can be run either locally or with existing hadoop cluster. see [install
 ### Using GUI
 
 Zeppelin has it's own GUI based on web. Browse http://localhost:8080 after start Zeppelin as a daemon by following command
-{% highlight bash %}
+
+```
 bin/zeppelin-daemon.sh start
-{% endhighlight %}
+```
+
 GUI provides
  * ZQL editor
  * Visualization
@@ -32,9 +34,11 @@ GUI provides
 ### Using Command Line Interface
 
 To open interactive CLI session, run
-{% highlight bash %}
+
+```
 bin/zeppelin
-{% endhighlight %}
+```
+
 run with '-h' argument will print available options.
 
 

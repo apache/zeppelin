@@ -87,6 +87,22 @@ body {
     color:#777777;
 }
 
+/* Table for property */
+.table-configuration {
+    width : 800px;
+    border : 1px solid gray;
+}
+.table-configuration tr td {
+    border : 1px solid gray;
+    padding : 5px 5px 5px 5px;
+}
+.table-configuration tr th {
+    border : 1px solid gray;
+    padding : 5px 5px 5px 5px;
+    background-color: #B0C4DE;
+}
+
+
 .rotate270 {
     width:15px;padding:10px 0px 0px 0px;
     -webkit-transform: rotate(270deg);

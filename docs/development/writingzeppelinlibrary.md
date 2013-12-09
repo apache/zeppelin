@@ -19,13 +19,13 @@ Zeppelin library can be published and shared through ZAN
 
 #### Basic structure
 Library is reside on local-repository or ZAN. Local-repository is 'zan-repo' directory under Zeppelin installation path at default.
-{% highlight text %}
+
+```
 [LIBRARY_NAME]/zql.erb
                [LIBRARY_NAME]_[RESOURCES]
                web/index.erb
 	       web/[WEB_RESOURCES]
-
-{% endhighlight %}
+```
 
 **\[LIBRARY_NAME\]**
 
@@ -53,9 +53,9 @@ Any js, css, image files required by web/index.erb.
 #### Call Library
 Library can be called in Zeppelin GUI or CLI by ZQL syntax.
 
-{% highlight text %}
+```
 [LIBRARY_NAME](paramName1=paramValue1, paramName2=paramValue2 ...) [argument]
-{% endhighlight %}
+```
 
 Paramter part and argument part are optional.
 If you're using Zengine, library can be called using 'L' class.

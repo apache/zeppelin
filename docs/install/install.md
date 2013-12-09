@@ -10,7 +10,7 @@ group: install
 
 Install Zeppelin in standalone mode
 
-{% highlight bash %}
+```
 curl -O http://apache.mirror.cdnetworks.com/hadoop/common/hadoop-1.2.1/hadoop-1.2.1-bin.tar.gz
 tar -xzf hadoop-1.2.1-bin.tar.gz
 
@@ -23,7 +23,7 @@ echo "HADOOP_HOME=`pwd`/hadoop-1.2.1" >> zeppelin/conf/zeppelin-env.sh
 
 ./zeppelin/bin/zeppelin-daemon.sh start
 
-{% endhighlight %}
+```
 
 You can access Zeppelin with browser http://localhost:8080
 
@@ -42,26 +42,64 @@ Unpack the downloaded Zeppelin distribution.
 
 #### Common configuration
 
-| zepplin-env.sh | zepplin-site.xml | Default value | Description |
-| -------------- | ---------------- | ------------- | ----------- |
-| ZEPPELIN_HOME	 |                  |               | Zeppelin Home directory |
-| ZEPPELIN_PORT  | zeppelin.server.port | 8080 | Zeppelin server port |
-| ZEPPELIN_SESSION_DIR | zeppelin.session.dir | sessions | Zeppelin persist/load session in this directory. Can be a path or a URI. location on HDFS supported |
-| ZEPPELIN_ZAN_LOCAL_REPO | zeppelin.zan.localrepo | zan-repo | Zeppelin library local repository. Can be a path or a URI. location on HDFS supported |
-| ZEPPELIN_DRIVER | zeppelin.driver.class | com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver | Zeppelin Driver class |
-| HIVE_CONNECTION_URI | hive.connection.uri | | Hive jdbc connection uri. Used for connecting to hive server 
-Driver specific configuration : Hive Driver (com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver) |
+<table class="table-configuration">
+  <tr>
+    <th>zepplin-env.sh</th>
+    <th>zepplin-site.xml</th>
+    <th>Default value</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_HOME</td>
+    <td></td>
+    <td></td>
+    <td>Zeppelin Home directory</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_PORT</td>
+    <td>zeppelin.server.port</td>
+    <td>8080</td>
+    <td>Zeppelin server port</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SESSION_DIR</td>
+    <td>zeppelin.session.dir</td>
+    <td>sessions</td>
+    <td>Zeppelin persist/load session in this directory. Can be a path or a URI. location on HDFS supported</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_ZAN_LOCAL_REPO</td>
+    <td>zeppelin.zan.localrepo</td>
+    <td>zan-repo</td>
+    <td>Zeppelin library local repository. Can be a path or a URI. location on HDFS supported</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_DRIVER</td>
+    <td>zeppelin.driver.class</td>
+    <td>com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver</td>
+    <td>Zeppelin Driver class</td>
+  </tr>
+  <tr>
+    <td>HIVE_CONNECTION_URI</td>
+    <td>hive.connection.uri</td>
+    <td></td>
+    <td>Hive jdbc connection uri. Used for connecting to hive server 
+Driver specific configuration : Hive Driver (com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver)</td>
+  </tr>
+</table>
+
 
 
 ### Start/Stop
 #### Start Zeppelin
 
-{% highlight bash %}
+```
 bin/zeppelin-daemon.sh start
-{% endhighlight %}
+```
 After successful start, visit http://localhost:8080 with your web browser
 
 #### Stop Zeppelin
-{% highlight bash %}
+
+```
 bin/zeppelin-daemon.sh stop
-{% endhighlight %}
+```
