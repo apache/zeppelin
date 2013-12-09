@@ -11,12 +11,6 @@ group: nav-right
 
 Please, feel free to join our community!
 
-##### Zeppelin-users
-[https://groups.google.com/forum/#!forum/zeppelin-users](https://groups.google.com/forum/#!forum/zeppelin-users)
-
-
-##### Zeppelin-developers
-
 [https://groups.google.com/forum/#!forum/zeppelin-developers](https://groups.google.com/forum/#!forum/zeppelin-developers)
 
 
