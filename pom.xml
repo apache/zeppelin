@@ -296,7 +296,19 @@
       <url>https://repository.cloudera.com/content/groups/cdh-build</url>
     </repository> -->
 
-    <!-- for for jdo/jdo2-api/2.3-ec -->
+   <!-- For dependency recosiled version of hive_test -->
+   <repository>
+    <id>nflabs public repository</id>
+    <url>https://raw.github.com/NFLabs/mvn-repo/master/releases</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+   </repository>
+
+    <!-- for for jdo/jdo2-api/2.3-ec --> 
     <repository>
       <id>cdh-repository</id>
       <name>CDH Repository</name>
@@ -307,7 +319,7 @@
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
-    </repository>
+    </repository>    
   </repositories>
 
   <pluginRepositories>
@@ -364,6 +376,11 @@
         </plugins>
       </build>
     </profile>
+    <!-- TODO(alex): add profile "publish" 
+      - assemble 
+      - upload distrib to S3
+      - make available on http://get.zeppel.in
+     -->
   </profiles>
 
 </project>
