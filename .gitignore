@@ -26,3 +26,6 @@ target/
 auto-save-list
 tramp
 .\#*
+
+
+_site

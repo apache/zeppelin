@@ -3,7 +3,9 @@
 
 ## Build
 See https://help.github.com/articles/using-jekyll-with-pages#installing-jekyll
-**tl;dr**
+
+**tl;dr version:**
+
     ruby --version >= 1.9.3
     gem install bundler
     bundle install
