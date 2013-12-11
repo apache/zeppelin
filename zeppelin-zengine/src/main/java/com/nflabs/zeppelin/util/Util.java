@@ -55,7 +55,7 @@ public class Util {
 				}
 				curString += c;
 				escape = false;
-				lastEscapeOffset = i;
+				lastEscapeOffset = curString.length();
 				continue;
 			}
 
