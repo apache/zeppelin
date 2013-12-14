@@ -3,9 +3,11 @@ package com.nflabs.zeppelin.server;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +43,8 @@ import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
 
 public class ZQLSessionManager implements JobListener {
+	private static final String HISTORY_DIR_NAME = "/history";
+	private static final String CURRENT_SESSION_FILE_NAME = "/current";
 	Logger logger = LoggerFactory.getLogger(ZQLSessionManager.class);
 	Map<String, ZQLSession> active = new HashMap<String, ZQLSession>();
 	Gson gson ;
@@ -50,7 +54,7 @@ public class ZQLSessionManager implements JobListener {
 	private String sessionPersistBasePath;
 	private FileSystem fs;
 	
-	SimpleDateFormat pathFormat = new SimpleDateFormat("yyyy/MM/dd/HH/");
+	SimpleDateFormat historyPathFormat = new SimpleDateFormat("yyyy-MM-dd_HHmmss_SSS");
 	private StdSchedulerFactory quertzSchedFact;
 	private org.quartz.Scheduler quertzSched;
 	
@@ -95,7 +99,7 @@ public class ZQLSessionManager implements JobListener {
 		// search session dir
 		Path path = getPathForSessionId(sessionId);
 		try {
-			ZQLSession session = load(path);			
+			ZQLSession session = load(sessionId, new Path(path.toString()+CURRENT_SESSION_FILE_NAME), false);			
 			if(session!=null){				
 				return session;
 			} else {
@@ -229,7 +233,6 @@ public class ZQLSessionManager implements JobListener {
 	
 	public TreeMap<String, ZQLSession> list(){
 		TreeMap<String, ZQLSession> found = new TreeMap<String, ZQLSession>();
-		
 		Path dir = new Path(sessionPersistBasePath);
 		try {
 		    if (!fs.getFileStatus(dir).isDir()) {
@@ -237,6 +240,7 @@ public class ZQLSessionManager implements JobListener {
 			}
 		} catch (IOException e) {
 			logger.error("Can't scan dir "+dir, e);
+			return found;
 		}
 		
 		FileStatus[] files = null;
@@ -259,7 +263,9 @@ public class ZQLSessionManager implements JobListener {
 		for(FileStatus f : files) {
 			ZQLSession session;
 			try {
-				session = load(f.getPath());
+				Path path = f.getPath();
+				String sessionId = getSessionIdFromPath(path);
+				session = load(sessionId, new Path(path.toString()+CURRENT_SESSION_FILE_NAME), false);
 				if (session!=null) {
 					found.put(session.getId(), session);
 				} else {
@@ -273,22 +279,29 @@ public class ZQLSessionManager implements JobListener {
 	}
 	
 	private Path getPathForSession(ZQLSession session){
-		return new Path(sessionPersistBasePath+"/"+session.getId());		
+		return getPathForSessionId(session.getId());
 	}
 	
 	private Path getPathForSessionId(String sessionId){
 		return new Path(sessionPersistBasePath+"/"+sessionId);
 	}
 	
+	
 	private String getSessionIdFromPath(Path path){
 		return new File(path.getName()).getName();
+	}
+	
+	private void makeHistory(String sessionId) throws IOException{
+		Path from = new Path(getPathForSessionId(sessionId).toString()+CURRENT_SESSION_FILE_NAME);
+		Path to = new Path(getPathForSessionId(sessionId).toString()+HISTORY_DIR_NAME+"/"+historyPathFormat.format(new Date()));
+		fs.rename(from, to);		
 	}
 	
 	private void persist(ZQLSession session) throws IOException{		
 		String json = gson.toJson(session);
 		Path path = getPathForSession(session);
-		fs.mkdirs(path.getParent());
-		FSDataOutputStream out = fs.create(path, true);
+		fs.mkdirs(new Path(path.toString()+HISTORY_DIR_NAME));
+		FSDataOutputStream out = fs.create(new Path(path.toString()+CURRENT_SESSION_FILE_NAME), true);
 		out.writeBytes(json);
 		out.close();
 	}
@@ -299,6 +312,11 @@ public class ZQLSessionManager implements JobListener {
 			if(job.getStatus()==Status.ERROR && job.getException()!=null){
 				logger.error("Session error", job.getException());
 			} 
+			
+			if(job.getStatus()==Status.FINISHED){
+				makeHistory(((ZQLSession)job).getId());
+			}
+			
 			logger.info("Session "+job.getId()+" status changed "+job.getStatus());
 			persist((ZQLSession) job);
 		} catch (IOException e) {
@@ -307,11 +325,9 @@ public class ZQLSessionManager implements JobListener {
 		
 	}
 
-	private ZQLSession load(Path path) throws IOException{
+	private ZQLSession load(String sessionId, Path path, boolean history) throws IOException{
 		
-		synchronized(active){
-			String sessionId = getSessionIdFromPath(path);
-			
+		synchronized(active){			
 			if(active.containsKey(sessionId)==false){
 				if(fs.isFile(path)==false){
 					return null;
@@ -323,15 +339,95 @@ public class ZQLSessionManager implements JobListener {
 				}
 				ins.close();
 				
-				session.setListener(this);
-				active.put(session.getId(), session);
+				if(history==false){
+					session.setListener(this);
+					active.put(session.getId(), session);
 				
-				refreshQuartz(session);
+					refreshQuartz(session);
+				}
 				return session;
 			} else {
 				return active.get(sessionId);
 			}
 		}
+	}
+	
+	public void deleteHistory(String sessionId, String name){
+		Path file = new Path(getPathForSessionId(sessionId)+HISTORY_DIR_NAME+"/"+name);
+		try {
+			if(fs.isFile(file)){
+				fs.delete(file, true);
+			}
+		} catch (IOException e) {
+			logger.error("Can't delete history "+file, e);
+		}
+	}
+
+	public void deleteHistory(String sessionId){
+		Path file = new Path(getPathForSessionId(sessionId)+HISTORY_DIR_NAME);
+		try {
+			fs.delete(file, true);
+			fs.mkdirs(file);
+		} catch (IOException e) {
+			logger.error("Can't delete history "+file, e);
+		}
+	}
+
+	
+	public ZQLSession getHistory(String sessionId, String name){
+		Path file = new Path(getPathForSessionId(sessionId)+HISTORY_DIR_NAME+"/"+name);
+		try {
+			return load(sessionId, file, true);
+		} catch (IOException e) {
+			logger.error("Can't load session history "+file, e);
+			return null;
+		}		
+	}
+	
+	public TreeMap<String, ZQLSession> listHistory(String sessionId){
+		TreeMap<String, ZQLSession> found = new TreeMap<String, ZQLSession>();
+		Path dir = new Path(getPathForSessionId(sessionId)+HISTORY_DIR_NAME);
+		try {
+		    if (!fs.getFileStatus(dir).isDir()) {
+		        return found;
+			}
+		} catch (IOException e) {
+			logger.error("Can't scan dir "+dir, e);
+			return found;
+		}
+		
+		FileStatus[] files = null;
+		try {
+			files = fs.listStatus(dir);
+		} catch (IOException e) {
+			logger.error("Can't list dir "+dir, e);
+			e.printStackTrace();
+		}
+		if (files==null) { return found; }
+			
+		Arrays.sort(files, new Comparator<FileStatus>(){
+		    @Override public int compare(FileStatus a, FileStatus b) {
+				String aName = a.getPath().getName();
+				String bName = b.getPath().getName();
+				return bName.compareTo(aName);
+			}				
+		});
+			
+		for(FileStatus f : files) {
+			ZQLSession session;
+			try {
+				Path path = f.getPath();
+				session = load(sessionId, path, true);
+				if (session!=null) {
+					found.put(f.getPath().getName(), session);
+				} else {
+					logger.error("Session not loaded "+f.getPath());
+				}
+			} catch (IOException e) {
+				logger.error("Can't load session from path "+f.getPath(), e);
+			}
+		}
+		return found;		
 	}
 
 	public static class SessionCronJob implements org.quartz.Job {

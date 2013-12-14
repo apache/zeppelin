@@ -94,6 +94,28 @@ public class ZQLSessionManagerTest extends TestCase {
 		}
 		
 		assertEquals(Status.FINISHED, sm.get(sess.getId()).getStatus());
+		
+		// check if history is made
+		assertEquals(sess.getId(), sm.getHistory(sess.getId(), sm.listHistory(sess.getId()).firstKey()).getId());
+		
+		// run session again
+		sm.run(sess.getId());
+		Thread.sleep(500); // wait for start;
+		while(sm.get(sess.getId()).getStatus()!=Status.FINISHED){ // wait for finish
+			Thread.sleep(300);
+		}
+
+		// another history made
+		assertEquals(2, sm.listHistory(sess.getId()).size());
+		
+		// remove a history
+		sm.deleteHistory(sess.getId(), sm.listHistory(sess.getId()).firstKey());
+		assertEquals(1, sm.listHistory(sess.getId()).size());
+		
+		// remove whole history
+		sm.deleteHistory(sess.getId());
+		assertEquals(0, sm.listHistory(sess.getId()).size());
+		
 	}
 	
 	@SuppressWarnings("unchecked")

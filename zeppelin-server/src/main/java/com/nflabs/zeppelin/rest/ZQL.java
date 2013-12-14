@@ -203,6 +203,57 @@ public class ZQL {
     	 }
     	 return new JsonResponse(Status.OK).build();	 
     }
+
+    /**
+     * Get session history list
+     * @return
+     */
+    @GET
+    @Path("history/list/{sessionId}")
+    @Produces("application/json")    
+    public Response listHistory(@PathParam("sessionId") String sessionId) {
+    	TreeMap<String, ZQLSession> sessions = sessionManager.listHistory(sessionId);
+        return new JsonResponse<LinkedList<ZQLSession>>(Status.OK, "",
+                new LinkedList<ZQLSession>(sessions.descendingMap().values()))
+                .build();
+    }    
+
+    /**
+     * Get a session history
+     * @return
+     */
+    @GET
+    @Path("history/get/{sessionId}/{name}")
+    @Produces("application/json")    
+    public Response getHistory(@PathParam("sessionId") String sessionId, @PathParam("name") String name) {
+    	ZQLSession session = sessionManager.getHistory(sessionId, name);
+        return new JsonResponse<ZQLSession>(Status.OK, "", session).build();
+    }
+
+    /**
+     * Delete a session history
+     * @return
+     */
+    @GET
+    @Path("history/del/{sessionId}/{name}")
+    @Produces("application/json")    
+    public Response deleteHistory(@PathParam("sessionId") String sessionId, @PathParam("name") String name) {
+    	sessionManager.deleteHistory(sessionId, name);
+        return new JsonResponse<ZQLSession>(Status.OK).build();
+    }
+
+    /**
+     * Delete all session history
+     * @return
+     */
+    @GET
+    @Path("history/del/{sessionId}")
+    @Produces("application/json")    
+    public Response deleteHistory(@PathParam("sessionId") String sessionId) {
+    	sessionManager.deleteHistory(sessionId);
+        return new JsonResponse<ZQLSession>(Status.OK).build();
+    }
+
     
 
     @GET
