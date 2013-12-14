@@ -286,6 +286,19 @@ App.ZqlEditController = App.ApplicationController.extend({
 			    controller.get('controllers.zql').send('updateSession');
 			}
 
+			// auto height visualizer
+			if(new Date().getSeconds() % 1 == 0){ // refreshing every 1 sec
+			    // jquery iframe auto height plugin does not work in this place
+			    // jQuery('#visualizationContainer > iframe').iframeAutoHeight();
+
+			    $('#visualizationContainer > iframe').each(function(idx, el){
+				if(!el.contentWindow.document.body) return;
+				var height = el.contentWindow.document.body.scrollHeight;
+				$(el).height(height);
+			    });
+
+
+			}
 		    } else if(session.status=="RUNNING"){
 			if(new Date().getSeconds() % 1 == 0){ // refreshing every 1 sec
 			    controller.send('loadSession', session.id);

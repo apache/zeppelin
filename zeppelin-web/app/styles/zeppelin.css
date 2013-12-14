@@ -34,6 +34,10 @@ a {
     color : #555555;
 }
 
+#visualizationContainer{
+    margin : 0px;
+    padding : 0px;
+}
 
 #visualizationContainer iframe{
     border : 0px solid #CCCCCC;
