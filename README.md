@@ -21,9 +21,17 @@ To know more about Zeppelin, visit our web site http://zeppelin-project.org
 
 ###Packaging
 
-      mvn assembly:assembly
+      mvn clean install -P build-distr
 
-The package is generated under __target__ directory
+The package is generated under __zeppelin-distribution/target__ directory
+
+###Run
+To run Zeppelin in _local-mode_ using hive 0.9 + embedded derby metastore:
+
+    #make sure hadoop is availavle thorugh PATH or HADOOP_HOME
+    ./bin/zeppelin.sh
+
+For configuration details check __./conf__ subdirectory.
 
 ###Mailing list
 
