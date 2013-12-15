@@ -357,7 +357,7 @@
     <profile>
       <id>publish-distr</id>
       <activation>
-        <activeByDefault>true</activeByDefault>
+        <activeByDefault>false</activeByDefault>
       </activation>
       <build>
       <!-- skip tests in surefire plugin -->
