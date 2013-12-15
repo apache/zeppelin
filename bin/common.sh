@@ -118,3 +118,7 @@ export RUNNER
 if [ "x$ZEPPELIN_IDENT_STRING" == "x" ]; then
   export ZEPPELIN_IDENT_STRING="$USER"
 fi
+
+if [ "x$DEBUG" == "x" ] ; then
+    export DEBUG=0
+fi
