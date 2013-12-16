@@ -190,7 +190,8 @@ App.ZqlEditView = Ember.View.extend({
 	  btnOkLabel : "Delete",
 	  btnCancelLabel : "Cancel",
 	  href : "/#/zql",
-	  onComplete : function(){
+	  popout : true,
+	  onConfirm : function(){
 	    controller.send("deleteSession");
 	  }
 	});
