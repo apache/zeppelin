@@ -184,6 +184,17 @@ App.ZqlEditView = Ember.View.extend({
 	});		
 	this.set('sessionCronEditor', sessionCronEditor);
 
+        // bootstrap confirmation plugin http://ethaizone.github.io/Bootstrap-Confirmation
+        $('#zqlDeleteButton').confirmation({
+	  title : "Delete?",
+	  btnOkLabel : "Delete",
+	  btnCancelLabel : "Cancel",
+	  href : "/#/zql",
+	  onComplete : function(){
+	    controller.send("deleteSession");
+	  }
+	});
+
 	var editorLoop = function(){
 	  setTimeout(function(){
 		editorLoop();
