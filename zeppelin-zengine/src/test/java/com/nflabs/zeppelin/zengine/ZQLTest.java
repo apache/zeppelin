@@ -8,7 +8,7 @@ import java.util.List;
 import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
-import com.nflabs.zeppelin.util.TestUtil;
+import com.nflabs.zeppelin.util.UtilsForTests;
 
 public class ZQLTest extends HiveTestService {
 	public ZQLTest() throws IOException {
@@ -23,8 +23,8 @@ public class ZQLTest extends HiveTestService {
 		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());		
 		tmpDir.mkdir();
 
-		TestUtil.delete(new File("/tmp/warehouse"));
-		TestUtil.delete(new File(ROOT_DIR.getName()));
+		UtilsForTests.delete(new File("/tmp/warehouse"));
+		UtilsForTests.delete(new File(ROOT_DIR.getName()));
 		
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 		Z.configure();
@@ -55,8 +55,8 @@ public class ZQLTest extends HiveTestService {
 		super.tearDown();
 		delete(tmpDir);
 		
-		TestUtil.delete(new File("/tmp/warehouse"));
-		TestUtil.delete(new File(ROOT_DIR.getName()));
+		UtilsForTests.delete(new File("/tmp/warehouse"));
+		UtilsForTests.delete(new File(ROOT_DIR.getName()));
 		
 	}
 	
