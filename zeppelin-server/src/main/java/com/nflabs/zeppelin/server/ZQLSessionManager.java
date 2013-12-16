@@ -45,6 +45,7 @@ import com.nflabs.zeppelin.zengine.ZQLException;
 public class ZQLSessionManager implements JobListener {
 	private static final String HISTORY_DIR_NAME = "/history";
 	private static final String CURRENT_SESSION_FILE_NAME = "/current";
+	private static final String HISTORY_PATH_FORMAT="yyyy-MM-dd_HHmmss_SSS";
 	Logger logger = LoggerFactory.getLogger(ZQLSessionManager.class);
 	Map<String, ZQLSession> active = new HashMap<String, ZQLSession>();
 	Gson gson ;
@@ -54,7 +55,6 @@ public class ZQLSessionManager implements JobListener {
 	private String sessionPersistBasePath;
 	private FileSystem fs;
 	
-	SimpleDateFormat historyPathFormat = new SimpleDateFormat("yyyy-MM-dd_HHmmss_SSS");
 	private StdSchedulerFactory quertzSchedFact;
 	private org.quartz.Scheduler quertzSched;
 	
@@ -292,6 +292,7 @@ public class ZQLSessionManager implements JobListener {
 	}
 	
 	private void makeHistory(String sessionId) throws IOException{
+		SimpleDateFormat historyPathFormat = new SimpleDateFormat(HISTORY_PATH_FORMAT);
 		Path from = new Path(getPathForSessionId(sessionId).toString()+CURRENT_SESSION_FILE_NAME);
 		Path to = new Path(getPathForSessionId(sessionId).toString()+HISTORY_DIR_NAME+"/"+historyPathFormat.format(new Date()));
 		fs.rename(from, to);		
