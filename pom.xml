@@ -199,6 +199,25 @@
           </execution>
         </executions>
       </plugin>
+
+      <!--TODO(alex): make part of the build and reconcile conflicts
+      <plugin>
+        <groupId>com.ning.maven.plugins</groupId>
+        <artifactId>maven-duplicate-finder-plugin</artifactId>
+        <version>1.0.4</version>
+        <executions>
+          <execution>
+            <id>default</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <failBuildInCaseOfConflict>true</failBuildInCaseOfConflict>
+        </configuration>
+      </plugin>-->
     </plugins>
 
     <pluginManagement>
@@ -210,6 +229,9 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.4.2</version>
+          <configuration combine.children="append">
+            <argLine>-Xmx2g -Xms1g</argLine>
+          </configuration>
         </plugin>
 
         <!--This plugin's configuration is used to store Eclipse m2e settings only. 
@@ -391,6 +413,7 @@
             <version>1.1</version>
             <configuration>
               <bucketName>zeppel.in</bucketName>
+              <endpoint>s3-ap-northeast-1.amazonaws.com</endpoint>
               <sourceFile>zeppelin-distribution/target/zeppelin-${project.version}.tar.gz</sourceFile>
               <destinationFile>${project.name}-${project.version}.tar.gz</destinationFile>
             </configuration>
