@@ -62,6 +62,18 @@ function zql(zep) {
 	this.list = function(listener, scope){
 	  zeppelin.get("/zql/list", listener, scope);
 	}
+
+        this.listHistory = function(sessionId, listener, scope){
+	  zeppelin.get("/zql/history/list/"+sessionId, listener, scope);
+	}
+
+        this.getHistory = function(sessionId, historyId, listener, scope){
+	  zeppelin.get("/zql/history/get/"+sessionId+"/"+historyId, listener, scope);	  
+	}
+
+        this.delHistory = function(sessionId, historyId, listener, scope){
+	  zeppelin.get("/zql/history/del/"+sessionId+"/"+historyId, listener, scope);	  
+	}
   }
 
 module.exports.zql = zql

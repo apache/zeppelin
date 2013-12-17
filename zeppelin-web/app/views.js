@@ -15,7 +15,6 @@ App.ZqlEditView = Ember.View.extend({
   editor : undefined,
   currentModel : undefined,
 
-
   modelChanged : function(){      // called when model is changed
 	var controller = this.get("controller");
 	var model = controller.get('currentSession');
@@ -39,6 +38,42 @@ App.ZqlEditView = Ember.View.extend({
 	} else {
 	  sessionNameEditor.editable('setValue', model.id);
 	}
+
+	var sessionHistorySelector = $('#zqlSessionHistory');
+        var currentHistoryId = controller.get('historyId');
+        if(currentHistoryId==undefined) currentHistoryId = "current";
+        var getHistoryName = function(hid){
+	  if(hid=="current"){
+	    return "Current";
+	  } else {
+	    return hid;
+	  }
+        }
+
+        zeppelin.zql.listHistory(model.id, function(c, d){
+	  if(c==200){
+	    console.log("getHistory %o %o", c,d);
+	    var source = [];
+	    if(currentHistoryId=="current"){
+	      source.push({value:currentHistoryId, text: getHistoryName(currentHistoryId)});
+	    }
+	    for(var k in d){
+	      source.push({value:k, text: getHistoryName(k)});
+	    }
+	    if(sessionHistorySelector.destroy){
+	      sessionHistorySelector.destroy();
+	    }
+            $('#zqlSessionHistory').editable({
+	      value : currentHistoryId,
+	      source : source
+	    });
+	  } else {
+	    console.log("Can't get history %o %o", c,d);
+	    sessionHistorySelector.destroy();
+	  }
+	});
+        this.set('sessionHistorySelector', sessionHistorySelector);
+
 
 	if(model.cron && model.cron!=""){
 	  if(sessionCronEditor.editable('getValue', true)!=model.cron){
@@ -157,7 +192,7 @@ App.ZqlEditView = Ember.View.extend({
 	  var zql = editor.getSession().getValue();
 	  editorArea.val(zql);
 	  controller.send("zqlChanged", zql);
-    });
+        });
 
 	var sessionNameEditor = $('#zqlSessionName');
 	sessionNameEditor.editable();

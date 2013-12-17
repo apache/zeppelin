@@ -13,9 +13,11 @@ App.Router = Ember.Router.extend({
 App.Router.map(function(){
   this.resource('zql', function(){
 	this.route('edit', {path:'/:sessionid'});
+	this.route('edit', {path:'/:sessionid/:historyid'});
   });
   this.resource('report', function(){
 	this.route('link', {path:'/:sessionid'});
+	this.route('link', {path:'/:sessionid/:historyid'});
   });
 });
 
@@ -43,6 +45,7 @@ App.ZqlEditRoute = App.ZqlRoute.extend({
   setupController : function(controller, model){
     zeppelin.zql.get(model.sessionid, function(c, d){
       controller.set('currentSession', d);
+      controller.set('historyId', model.historyid);
     }, this);
   }
 });
@@ -63,6 +66,7 @@ App.ReportLinkRoute = App.ReportRoute.extend({
   setupController : function(controller, model){
 	zeppelin.zql.get(model.sessionid, function(c, d){
 	  controller.set('currentSession', d);
+	  controller.set('historyId', model.historyid);
 	}, this);
   }
 });

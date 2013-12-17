@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.TreeMap;
 
 import javax.ws.rs.GET;
@@ -213,9 +214,7 @@ public class ZQL {
     @Produces("application/json")    
     public Response listHistory(@PathParam("sessionId") String sessionId) {
     	TreeMap<String, ZQLSession> sessions = sessionManager.listHistory(sessionId);
-        return new JsonResponse<LinkedList<ZQLSession>>(Status.OK, "",
-                new LinkedList<ZQLSession>(sessions.descendingMap().values()))
-                .build();
+        return new JsonResponse<NavigableMap<String, ZQLSession>>(Status.OK, "", sessions.descendingMap()).build();
     }    
 
     /**

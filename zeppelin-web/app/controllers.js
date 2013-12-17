@@ -49,6 +49,7 @@ App.ZqlEditController = App.ApplicationController.extend({
   },
   dryrun : true,
   currentSession : undefined,
+  historyId : undefined,
   zql : undefined,
   sessionName : undefined,
   sessionCron : undefined,
