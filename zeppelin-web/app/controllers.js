@@ -125,22 +125,33 @@ App.ZqlEditController = App.ApplicationController.extend({
         deleteSession : function(){
             var controller = this;
             var session = this.get('currentSession');
+	    var historyId = this.get('historyId');
             if(session==undefined) {return;}
             console.log("Delete session %o", session.id);
-
-            zeppelin.zql.del(session.id, function(c, d){
-                if(c==200){
-                    controller.get('controllers.zql').send('updateSession');
-                    controller.transitionToRoute('zql');                            
-                } else {
-                    // handle error
-                }
-            });
+	    if (historyId==undefined || historyId=="") {
+		zeppelin.zql.del(session.id, function(c, d){
+                    if(c==200){
+			controller.get('controllers.zql').send('updateSession');
+			controller.transitionToRoute('zql');                            
+                    } else {
+			// handle error
+                    }
+		});
+	    } else {
+		zeppelin.zql.delHistory(session.id, historyId, function(c, d){
+		    if (c==200) {
+			controller.transitionToRoute('zql.edit', {sessionid:session.id, historyid:""});
+		    } else {
+			// handle error
+		    }
+		});
+	    }
         },
         loadSession : function(sessionId){
             var controller = this;
             zeppelin.zql.get(sessionId, function(c, d){
                 if(c==200){
+                    controller.set('historyId', undefined);
                     controller.set('currentSession', d);
                 }
             });
@@ -148,7 +159,7 @@ App.ZqlEditController = App.ApplicationController.extend({
         // called from view
         beforeChangeSession : function(model, sessionNameEditor, editor, sessionCronEditor){
             if(model==null) return;
-            // save session before change
+            // TODO save session before change
             if(model.status=="READY"){
                 if(this.get('dirty')){
                     zeppelin.zql.set(model.id, sessionNameEditor.val(), editor.getValue(), undefined, sessionCronEditor.getValue(), function(c, d){
