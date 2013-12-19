@@ -62,7 +62,7 @@ App.ZqlEditController = App.ApplicationController.extend({
             var job = this.get('currentJob');
 	    var historyId = this.get('historyId');
             if(job==undefined) return;
-	    if(!(historyId==undefined || historyId=="")) return;
+	    if(historyId) return;
 
             var jobid = job.id;
 
@@ -130,7 +130,7 @@ App.ZqlEditController = App.ApplicationController.extend({
 	    var historyId = this.get('historyId');
             if(job==undefined) {return;}
             console.log("Delete job %o", job.id);
-	    if (historyId==undefined || historyId=="") {
+	    if (!historyId) {
 		zeppelin.zql.del(job.id, function(c, d){
                     if(c==200){
 			controller.get('controllers.zql').send('updateJob');

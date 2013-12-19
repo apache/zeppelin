@@ -73,7 +73,7 @@ App.ZqlEditView = Ember.View.extend({
             $('#zqlRunButton').text("Run");
             //$('#zqlRunButton').addClass('disabled');
             //$('#zqlRunButton').prop('disabled', true);
-	    if(historyId==undefined || historyId==""){
+	    if(!historyId){
 		editor.setReadOnly(false);
 		jobNameEditor.editable('enable');
 		jobCronEditor.editable('enable');
