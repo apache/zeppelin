@@ -314,12 +314,12 @@ public class ZQLSessionManager implements JobListener {
 				logger.error("Session error", job.getException());
 			} 
 			
-			if(job.getStatus()==Status.FINISHED){
-				makeHistory(((ZQLSession)job).getId());
-			}
-			
 			logger.info("Session "+job.getId()+" status changed "+job.getStatus());
 			persist((ZQLSession) job);
+			if(job.getStatus()==Status.FINISHED){
+				makeHistory(((ZQLSession)job).getId()); // rename
+				persist((ZQLSession) job); // create current
+			}
 		} catch (IOException e) {
 			logger.error("Can't persist session "+job.getId(), e);
 		}
@@ -329,7 +329,7 @@ public class ZQLSessionManager implements JobListener {
 	private ZQLSession load(String sessionId, Path path, boolean history) throws IOException{
 		
 		synchronized(active){			
-			if(active.containsKey(sessionId)==false){
+			if(active.containsKey(sessionId)==false || history==true){
 				if(fs.isFile(path)==false){
 					return null;
 				}
@@ -343,7 +343,6 @@ public class ZQLSessionManager implements JobListener {
 				if(history==false){
 					session.setListener(this);
 					active.put(session.getId(), session);
-				
 					refreshQuartz(session);
 				}
 				return session;

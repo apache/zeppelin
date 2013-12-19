@@ -289,6 +289,42 @@ public class ZQL {
     	}
 		return javax.ws.rs.core.Response.status(Status.NOT_FOUND).entity("").build();    	
     }
+
+    @GET
+    @Path("history/web/{sessionId}/{historyId}/{zId}/{path:.*}")
+    public Response historyWeb(@PathParam("sessionId") String sessionId, @PathParam("historyId") String historyId, @PathParam("zId") String zId, @PathParam("path") String path){
+    	ZQLSession session = sessionManager.getHistory(sessionId, historyId);
+    	if(session==null){
+    		logger.warn("Session "+sessionId+", history "+historyId+" not found");
+    		return STATUS_NOT_FOUND;
+    	}
+    	if(path==null || path.equals("/") || path.length()==0){
+    		path = "/index.erb";
+    	}
+    	
+    	List<Z> plans = session.getPlan();
+    	for(Z plan : plans){
+    		for(Z z = plan; z!=null; z=z.prev()){
+	    		if(z.getId().equals(zId)){
+	    			try {
+						InputStream ins = z.readWebResource(path);
+						if(ins==null){
+							return null;
+						} else {
+							return Response.ok(IOUtils.toByteArray(ins), typeByExtention(path)).build();
+						}
+					} catch (ZException e) {
+						logger.error("Can't read web resource", e);
+						return new JsonResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+					} catch (IOException e) {
+						logger.error("IOexception", e);
+						return new JsonResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+					}
+	    		}
+    		}
+    	}
+		return javax.ws.rs.core.Response.status(Status.NOT_FOUND).entity("").build();    	
+    }
     
     private String typeByExtention(String path){
     	String filename;

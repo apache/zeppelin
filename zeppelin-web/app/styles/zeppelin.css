@@ -11,6 +11,14 @@ a {
     cursor : pointer;
 }
 
+#zqlEditorHeader {
+    height : 25px;
+}
+
+#zqlEditorHeader div{
+    float: right;
+}
+
 .zqlEditor {
     height : 300px;
 }

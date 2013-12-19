@@ -1,6 +1,6 @@
-<div>
+<div id="zqlEditorHeader">
   <a href="#" data-type="text" id="zqlSessionName"></a>
-  <a href="#" data-type="select" id="zqlSessionHistory"></a>
+  <div>History <a href="#" data-type="select" id="zqlSessionHistory"></a></div>
 </div>
 <p />
 <div id="zqlEditor" class="zqlEditor"></div>
@@ -11,8 +11,8 @@
   <a id="zqlRunButton" class="btn btn-lg btn-primary" {{action 'runSession'}}>Run</a>
   <a id="zqlAbortButton" class="btn btn-lg btn-primary" style="display:none;" {{action 'abortSession'}}>Abort</a>
   <div style="float:right; text-align:right">
-    Schedule - <a href="#" data-type="select" id="zqlSessionCron"></a> |
-    {{#link-to "report.link" currentSession.id}}Share{{/link-to}} | 
+    Schedule - <a href="#" data-type="select" id="zqlSessionCron"></a> | 
+    <a id="zqlShareButton" {{action "shareSession"}}>Share</a> | 
     <a id="zqlDeleteButton" {{action "deleteSession"}}>Delete</a>
     <p style="font-size:11px">Last run {{currentSession.dateFinished}}, took {{sessionTook}}</p>
   </div>
