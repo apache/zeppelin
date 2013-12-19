@@ -60,7 +60,9 @@ App.ZqlEditController = App.ApplicationController.extend({
         runSession : function(){
             var controller = this;
             var session = this.get('currentSession');
+	    var historyId = this.get('historyId');
             if(session==undefined) return;
+	    if(!(historyId==undefined || historyId=="")) return;
 
             var sessionId = session.id;
 

@@ -74,9 +74,16 @@ App.ZqlEditView = Ember.View.extend({
             $('#zqlRunButton').text("Run");
             //$('#zqlRunButton').addClass('disabled');
             //$('#zqlRunButton').prop('disabled', true);
-            editor.setReadOnly(false);
-            sessionNameEditor.editable('enable');
-            sessionCronEditor.editable('enable');
+	    if(historyId==undefined || historyId==""){
+		editor.setReadOnly(false);
+		sessionNameEditor.editable('enable');
+		sessionCronEditor.editable('enable');
+	    } else {
+		editor.setReadOnly(true);
+		sessionNameEditor.editable('disable');
+		sessionCronEditor.editable('disable');
+		$('#zqlRunButton').text("Finished");
+	    }
 
             // draw visualization if there's some
             if(model.zqlPlans){
