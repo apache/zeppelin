@@ -73,9 +73,9 @@ function init(){
 	mkdir -p "$ZEPPELIN_PID_DIR"
     fi
 
-    if [ ! -d "$ZEPPELIN_SESSION_DIR" ]; then
-	echo "Session dir doesn't exist, create $ZEPPELIN_SESSION_DIR"
-	mkdir -p "$ZEPPELIN_SESSION_DIR"
+    if [ ! -d "$ZEPPELIN_JOB_DIR" ]; then
+	echo "Session dir doesn't exist, create $ZEPPELIN_JOB_DIR"
+	mkdir -p "$ZEPPELIN_JOB_DIR"
     fi
 
     if [ ! -d "$ZEPPELIN_ZAN_LOCAL_REPO" ]; then
