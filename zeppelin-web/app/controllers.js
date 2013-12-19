@@ -325,7 +325,8 @@ App.ZqlEditController = App.ApplicationController.extend({
                     controller.send('loadSession', session.id);
                 }
             } else if(session.status=="FINISHED"){
-                // change
+		// historyis made when session finishes. update history list
+		controller.send('updateHistory');
             } else if(session.status=="ERROR"){
             } else if(session.status=="ABORT"){
             }
