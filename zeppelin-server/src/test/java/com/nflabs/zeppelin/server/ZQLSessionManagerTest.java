@@ -19,7 +19,7 @@ public class ZQLSessionManagerTest extends TestCase {
 
 	private File tmpDir;
 	private SchedulerFactory schedulerFactory;
-	private ZQLSessionManager sm;
+	private ZQLJobManager sm;
 	private File dataDir;
 
 
@@ -30,12 +30,12 @@ public class ZQLSessionManagerTest extends TestCase {
 		dataDir.mkdir();
 		System.setProperty("hive.local.warehouse", "file://"+dataDir.getAbsolutePath());
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
-		System.setProperty(ConfVars.ZEPPELIN_SESSION_DIR.getVarName(), tmpDir.getAbsolutePath());
+		System.setProperty(ConfVars.ZEPPELIN_JOB_DIR.getVarName(), tmpDir.getAbsolutePath());
 		Z.configure();
 
 		this.schedulerFactory = new SchedulerFactory();
 
-		this.sm = new ZQLSessionManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
+		this.sm = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 	}
 
 	protected void tearDown() throws Exception {
@@ -58,7 +58,7 @@ public class ZQLSessionManagerTest extends TestCase {
 
 	public void testCRUD() {
 		// Create
-		ZQLSession sess = sm.create();
+		ZQLJob sess = sm.create();
 		assertNotNull(sess);
 		
 		// List
@@ -80,11 +80,11 @@ public class ZQLSessionManagerTest extends TestCase {
 	
 	public void testRun() throws InterruptedException, SchedulerException{
 		// Create
-		ZQLSession sess = sm.create();
+		ZQLJob sess = sm.create();
 		sm.setZql(sess.getId(), "show tables");
 		
 		// check if new session manager read
-		sm = new ZQLSessionManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
+		sm = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		
 		// run the session
 		sm.run(sess.getId());
@@ -94,12 +94,34 @@ public class ZQLSessionManagerTest extends TestCase {
 		}
 		
 		assertEquals(Status.FINISHED, sm.get(sess.getId()).getStatus());
+		
+		// check if history is made
+		assertEquals(sess.getId(), sm.getHistory(sess.getId(), sm.listHistory(sess.getId()).firstKey()).getId());
+		
+		// run session again
+		sm.run(sess.getId());
+		Thread.sleep(500); // wait for start;
+		while(sm.get(sess.getId()).getStatus()!=Status.FINISHED){ // wait for finish
+			Thread.sleep(300);
+		}
+
+		// another history made
+		assertEquals(2, sm.listHistory(sess.getId()).size());
+		
+		// remove a history
+		sm.deleteHistory(sess.getId(), sm.listHistory(sess.getId()).firstKey());
+		assertEquals(1, sm.listHistory(sess.getId()).size());
+		
+		// remove whole history
+		sm.deleteHistory(sess.getId());
+		assertEquals(0, sm.listHistory(sess.getId()).size());
+		
 	}
 	
 	@SuppressWarnings("unchecked")
     public void testSerializePlan() throws InterruptedException{
 		// Create
-		ZQLSession sess = sm.create();
+		ZQLJob sess = sm.create();
 		sm.setZql(sess.getId(), "!echo hello;!echo world");
 
 		// run the session
@@ -118,7 +140,7 @@ public class ZQLSessionManagerTest extends TestCase {
 	
 	@SuppressWarnings("unchecked")
 	public void testCron() throws InterruptedException{
-		ZQLSession sess = sm.create();
+		ZQLJob sess = sm.create();
 		sm.setZql(sess.getId(), "!echo 'hello world'");
 		sm.setCron(sess.getId(), "0/1 * * * * ?");
 

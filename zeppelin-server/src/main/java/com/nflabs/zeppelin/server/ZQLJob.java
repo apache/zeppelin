@@ -18,7 +18,7 @@ import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQL;
 import com.nflabs.zeppelin.zengine.ZQLException;
 
-public class ZQLSession extends Job{
+public class ZQLJob extends Job{
 	private String zql;
 	private List<Map<String, Object>> params;
 	Result error;
@@ -28,12 +28,12 @@ public class ZQLSession extends Job{
 
 	transient private ZeppelinConnection conn;
 	
-	public ZQLSession(String jobName, JobListener listener) {
+	public ZQLJob(String jobName, JobListener listener) {
 		super(jobName, listener);
 	}
 	
 	private Logger logger(){
-		return LoggerFactory.getLogger(ZQLSession.class);
+		return LoggerFactory.getLogger(ZQLJob.class);
 	}
 	
 	public void setZQL(String zql){
