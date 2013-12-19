@@ -72,10 +72,17 @@ App.ReportLinkRoute = App.ReportRoute.extend({
         return params;
     },
     setupController : function(controller, model){
-        zeppelin.zql.get(model.sessionid, function(c, d){
-            controller.set('historyId', model.historyid);
-            controller.set('currentSession', d);  // currentSession is observed by ZqlEditView
-        }, this);
+        if(model.historyid==undefined || model.historyid==""){
+            zeppelin.zql.get(model.sessionid, function(c, d){
+                controller.set('historyId', model.historyid);
+                controller.set('currentSession', d);  // currentSession is observed by ZqlEditView
+            }, this);
+        } else {
+            zeppelin.zql.getHistory(model.sessionid, model.historyid, function(c, d){
+                controller.set('historyId', model.historyid);
+                controller.set('currentSession', d);  // currentSession is observed by ZqlEditView
+            }, this);      
+        }
     }
 });
 
