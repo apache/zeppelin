@@ -30,12 +30,12 @@ public class ZQLSessionManagerTest extends TestCase {
 		dataDir.mkdir();
 		System.setProperty("hive.local.warehouse", "file://"+dataDir.getAbsolutePath());
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
-		System.setProperty(ConfVars.ZEPPELIN_SESSION_DIR.getVarName(), tmpDir.getAbsolutePath());
+		System.setProperty(ConfVars.ZEPPELIN_JOB_DIR.getVarName(), tmpDir.getAbsolutePath());
 		Z.configure();
 
 		this.schedulerFactory = new SchedulerFactory();
 
-		this.sm = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
+		this.sm = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 	}
 
 	protected void tearDown() throws Exception {
@@ -84,7 +84,7 @@ public class ZQLSessionManagerTest extends TestCase {
 		sm.setZql(sess.getId(), "show tables");
 		
 		// check if new session manager read
-		sm = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
+		sm = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		
 		// run the session
 		sm.run(sess.getId());
