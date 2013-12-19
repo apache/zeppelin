@@ -9,20 +9,20 @@ App.ZqlView = Ember.View.extend({
 });
 
 App.ZqlEditView = Ember.View.extend({
-    sessionNameEditor : undefined,
-    sessionCronEditor : undefined,
+    jobNameEditor : undefined,
+    jobCronEditor : undefined,
     editor : undefined,
     currentModel : undefined,
 
     modelChanged : function(){      // called when model is changed
         var controller = this.get("controller");
-        var model = controller.get('currentSession');
+        var model = controller.get('currentJob');
         var historyId = controller.get('historyId');
         var editor = this.get('editor');
-        var sessionNameEditor = this.get('sessionNameEditor');
-        var sessionCronEditor = this.get('sessionCronEditor');
+        var jobNameEditor = this.get('jobNameEditor');
+        var jobCronEditor = this.get('jobCronEditor');
 
-        controller.send("beforeChangeSession", this.get('currentModel'), sessionNameEditor, editor, sessionCronEditor);
+        controller.send("beforeChangeJob", this.get('currentModel'), jobNameEditor, editor, jobCronEditor);
         this.set('currentModel', model);
 
         if( editor == null ) { return; }
@@ -30,26 +30,25 @@ App.ZqlEditView = Ember.View.extend({
             editor.setValue(model.zql);
         }
 
-        console.log("Current session=%o", model);
+        console.log("Current job=%o", model);
 
         if (model.jobName && model.jobName != "") {
-            if (sessionNameEditor.editable('getValue', true) != model.jobName) {
-                sessionNameEditor.editable('setValue', model.jobName);
+            if (jobNameEditor.editable('getValue', true) != model.jobName) {
+                jobNameEditor.editable('setValue', model.jobName);
             }
         } else {
-            sessionNameEditor.editable('setValue', model.id);
+            jobNameEditor.editable('setValue', model.id);
         }
 
         // update history list
-        console.log("Sned update history");
         controller.send('updateHistory', model.id);
 
         if(model.cron && model.cron!=""){
-            if(sessionCronEditor.editable('getValue', true)!=model.cron){
-                sessionCronEditor.editable('setValue', model.cron);
+            if(jobCronEditor.editable('getValue', true)!=model.cron){
+                jobCronEditor.editable('setValue', model.cron);
             }
         } else {
-            sessionCronEditor.editable('setValue', "");
+            jobCronEditor.editable('setValue', "");
         }
 
         // clear visualizations
@@ -59,8 +58,8 @@ App.ZqlEditView = Ember.View.extend({
 
         if(model.status=="READY"){
             editor.setReadOnly(false);
-            sessionNameEditor.editable('enable');
-            sessionCronEditor.editable('enable');
+            jobNameEditor.editable('enable');
+            jobCronEditor.editable('enable');
             $('#zqlRunButton').text("Run");
             //$('#zqlRunButton').removeClass('disabled');                   
         } else if(model.status=="RUNNING"){
@@ -68,20 +67,20 @@ App.ZqlEditView = Ember.View.extend({
             //$('#zqlRunButton').addClass('disabled');
             //$('#zqlRunButton').prop('disabled', true);
             editor.setReadOnly(true);
-            sessionNameEditor.editable('disable');
-            sessionCronEditor.editable('disable');
+            jobNameEditor.editable('disable');
+            jobCronEditor.editable('disable');
         } else if(model.status=="FINISHED"){
             $('#zqlRunButton').text("Run");
             //$('#zqlRunButton').addClass('disabled');
             //$('#zqlRunButton').prop('disabled', true);
 	    if(historyId==undefined || historyId==""){
 		editor.setReadOnly(false);
-		sessionNameEditor.editable('enable');
-		sessionCronEditor.editable('enable');
+		jobNameEditor.editable('enable');
+		jobCronEditor.editable('enable');
 	    } else {
 		editor.setReadOnly(true);
-		sessionNameEditor.editable('disable');
-		sessionCronEditor.editable('disable');
+		jobNameEditor.editable('disable');
+		jobCronEditor.editable('disable');
 		$('#zqlRunButton').text("Finished");
 	    }
 
@@ -137,33 +136,31 @@ App.ZqlEditView = Ember.View.extend({
             }
             //$('#zqlRunButton').removeClass('disabled');
             editor.setReadOnly(false);
-            sessionNameEditor.editable('enable');
-            sessionCronEditor.editable('enable');
+            jobNameEditor.editable('enable');
+            jobCronEditor.editable('enable');
         } else if(model.status=="ABORT"){
             $('#zqlRunButton').text("Run");
             //$('#zqlRunButton').removeClass('disabled');
             editor.setReadOnly(false);
-            sessionNameEditor.editable('enable');
-            sessionCronEditor.editable('enable');
+            jobNameEditor.editable('enable');
+            jobCronEditor.editable('enable');
         }
-        controller.send("afterChangeSession", model, sessionNameEditor, editor, sessionCronEditor);
-    }.observes('controller.currentSession'),
+        controller.send("afterChangeJob", model, jobNameEditor, editor, jobCronEditor);
+    }.observes('controller.currentJob'),
 
 
     historyListUpdated : function(){
         var controller = this.get("controller");
         var historyList = controller.get('historyList');
         var historyId = controller.get('historyId');
-        var model = controller.get('currentSession');
-        var sessionHistorySelector = $('#zqlSessionHistory');
+        var model = controller.get('currentJob');
+        var jobHistorySelector = $('#zqlJobHistory');
 
 	if(model==undefined){
-	    sessionHistorySelector.editable('destroy');
-	    sessionHistorySelector.off('save');
+	    jobHistorySelector.editable('destroy');
+	    jobHistorySelector.off('save');
 	    return;
 	}
-
-        console.log("HistoryListUpdated!!! %o %o", model, historyId);
 
         var source = [];
         source.push({value:"", text: "Latest"});
@@ -171,28 +168,26 @@ App.ZqlEditView = Ember.View.extend({
             source.push({value:k, text: k});
         }
 
-        sessionHistorySelector.editable('destroy');
-	sessionHistorySelector.off('save');
+        jobHistorySelector.editable('destroy');
+	jobHistorySelector.off('save');
 
-        $('#zqlSessionHistory').editable({
+        $('#zqlJobHistory').editable({
             value : historyId,
             source : source,
             showbuttons : false
         });
         
-	console.log("Source=%o", source);
-
-        $('#zqlSessionHistory').editable('setValue', (historyId==undefined) ? "" : historyId);
-        $('#zqlSessionHistory').on('save', function(e, params) {
-            controller.send("zqlSessionHistoryChanged", model.id, params.newValue);
+        $('#zqlJobHistory').editable('setValue', (historyId==undefined) ? "" : historyId);
+        $('#zqlJobHistory').on('save', function(e, params) {
+            controller.send("zqlJobHistoryChanged", model.id, params.newValue);
         });
 
     }.observes('controller.historyList'), // updated from controller:updateHistory
 
 
-    didInsertElement : function(){ // when it is first time of loading this view, sessionChanged can not be observed
+    didInsertElement : function(){ // when it is first time of loading this view, jobChanged can not be observed
         var controller = this.get("controller");
-        var model = controller.get('currentSession');
+        var model = controller.get('currentJob');
         var view = this;
         this.set('currentModel', model);
 
@@ -210,15 +205,15 @@ App.ZqlEditView = Ember.View.extend({
             controller.send("zqlChanged", zql);
         });
 
-        var sessionNameEditor = $('#zqlSessionName');
-        sessionNameEditor.editable();
-        sessionNameEditor.on('save', function(e, params) {
-            controller.send("zqlSessionNameChanged", params.newValue);  
+        var jobNameEditor = $('#zqlJobName');
+        jobNameEditor.editable();
+        jobNameEditor.on('save', function(e, params) {
+            controller.send("zqlJobNameChanged", params.newValue);  
         });
-        this.set('sessionNameEditor', sessionNameEditor);
+        this.set('jobNameEditor', jobNameEditor);
 
-        var sessionCronEditor = $('#zqlSessionCron');
-        $('#zqlSessionCron').editable({
+        var jobCronEditor = $('#zqlJobCron');
+        $('#zqlJobCron').editable({
             value : "",
             source : [
                 { value : "", text: 'None' },
@@ -230,28 +225,28 @@ App.ZqlEditView = Ember.View.extend({
                 { value : "0 0 0 * * ?", text: '24h' },
             ]
         });
-        sessionCronEditor.on('save', function(e, params) {
-            controller.send("zqlSessionCronChanged", params.newValue);  
+        jobCronEditor.on('save', function(e, params) {
+            controller.send("zqlJobCronChanged", params.newValue);  
         });             
-        this.set('sessionCronEditor', sessionCronEditor);
+        this.set('jobCronEditor', jobCronEditor);
 
         var editorLoop = function(){
             setTimeout(function(){
                 editorLoop();
             }, 1000);
 
-            controller.send("loop", sessionNameEditor, editor, sessionCronEditor);
+            controller.send("loop", jobNameEditor, editor, jobCronEditor);
         };
         editorLoop();
     },
 
     willClearRender: function(){
         var controller = this.get("controller");
-        var model = controller.get("currentSession");
+        var model = controller.get("currentJob");
         var view = this;
         var editor = ace.edit("zqlEditor");
-        var sessionNameEditor = this.get('sessionNameEditor');
-        controller.send('beforeChangeSession', model, sessionNameEditor, editor);
+        var jobNameEditor = this.get('jobNameEditor');
+        controller.send('beforeChangeJob', model, jobNameEditor, editor);
         this.set('currentModel', null);
     },
 
@@ -261,14 +256,14 @@ App.ZqlEditView = Ember.View.extend({
 
         modelChanged : function() {
             var controller = this.get("controller");
-            var session = controller.get('currentSession');
-            //console.log("model changes %o", session);
+            var job = controller.get('currentJob');
+            //console.log("model changes %o", job);
             var planStack = [];
 
-            if(session.zqlPlans){
+            if(job.zqlPlans){
                 var planModel;
-                for(var i=0; i<session.zqlPlans.length; i++){
-                    planModel = session.zqlPlans[i];
+                for(var i=0; i<job.zqlPlans.length; i++){
+                    planModel = job.zqlPlans[i];
                     if(!planModel) { continue; }
 
                     for(var p = planModel; p!=undefined; p = p.prev){
@@ -280,16 +275,16 @@ App.ZqlEditView = Ember.View.extend({
 
             //console.log("paramInfo=%o", planStack);
             this.set('paramInfo', planStack);
-        }.observes('controller.currentSession'),
+        }.observes('controller.currentJob'),
 
         didInsertElement : function(){
             var controller = this.get("controller");
-            var model = controller.get("currentSession");
+            var model = controller.get("currentJob");
             var view = this;
         },
         willClearRender: function(){
             var controller = this.get("controller");
-            var model = controller.get("currentSession");
+            var model = controller.get("currentJob");
             var view = this;
             this.set('paramInfo', null);
         }
@@ -304,19 +299,19 @@ App.ReportLinkView = Ember.View.extend({
     modelChanged : function(){      // called when model is changed
         var controller = this.get("controller");
         var historyId = controller.get('historyId');
-        var model = controller.get('currentSession');
+        var model = controller.get('currentJob');
         if (!model) {
             return null;
         }
         console.log("report %o", model);
 
-        var sessionNameEditor = $('#zqlSessionName');
+        var jobNameEditor = $('#zqlJobName');
         if(model.jobName && model.jobName!=""){
-            if(sessionNameEditor.text()!=model.jobName){
-                sessionNameEditor.html(model.jobName);
+            if(jobNameEditor.text()!=model.jobName){
+                jobNameEditor.html(model.jobName);
             }
         } else {
-            sessionNameEditor.html(model.id);
+            jobNameEditor.html(model.id);
         }
 
         // clear visualizations
@@ -343,7 +338,6 @@ App.ReportLinkView = Ember.View.extend({
 
                         if(!plan || !plan.webEnabled) continue;
                         if(!plan.result || !plan.result.columnDef || plan.result.columnDef.length==0) continue;
-                        console.log("Displaying plan %o", plan);
                         var planInfo = (plan.libName) ? plan.libName : plan.query;
                         if(planInfo.length>1 && planInfo[0]=='!'){
                             planInfo = planInfo.substring(1);
@@ -377,5 +371,5 @@ App.ReportLinkView = Ember.View.extend({
         } else if(model.status=="ABORT"){
         }
         
-    }.observes('controller.currentSession'),
+    }.observes('controller.currentJob'),
 });

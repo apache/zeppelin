@@ -21,9 +21,9 @@
 <configuration>
 
 <property>
-  <name>zeppelin.session.dir</name>
-  <value>sessions</value>
-  <description>Session directory</description>
+  <name>zeppelin.job.dir</name>
+  <value>jobs</value>
+  <description>job directory</description>
 </property>
 
 <property>

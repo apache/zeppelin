@@ -19,7 +19,7 @@ public class ZQLSessionManagerTest extends TestCase {
 
 	private File tmpDir;
 	private SchedulerFactory schedulerFactory;
-	private ZQLSessionManager sm;
+	private ZQLJobManager sm;
 	private File dataDir;
 
 
@@ -35,7 +35,7 @@ public class ZQLSessionManagerTest extends TestCase {
 
 		this.schedulerFactory = new SchedulerFactory();
 
-		this.sm = new ZQLSessionManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
+		this.sm = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
 	}
 
 	protected void tearDown() throws Exception {
@@ -58,7 +58,7 @@ public class ZQLSessionManagerTest extends TestCase {
 
 	public void testCRUD() {
 		// Create
-		ZQLSession sess = sm.create();
+		ZQLJob sess = sm.create();
 		assertNotNull(sess);
 		
 		// List
@@ -80,11 +80,11 @@ public class ZQLSessionManagerTest extends TestCase {
 	
 	public void testRun() throws InterruptedException, SchedulerException{
 		// Create
-		ZQLSession sess = sm.create();
+		ZQLJob sess = sm.create();
 		sm.setZql(sess.getId(), "show tables");
 		
 		// check if new session manager read
-		sm = new ZQLSessionManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
+		sm = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
 		
 		// run the session
 		sm.run(sess.getId());
@@ -121,7 +121,7 @@ public class ZQLSessionManagerTest extends TestCase {
 	@SuppressWarnings("unchecked")
     public void testSerializePlan() throws InterruptedException{
 		// Create
-		ZQLSession sess = sm.create();
+		ZQLJob sess = sm.create();
 		sm.setZql(sess.getId(), "!echo hello;!echo world");
 
 		// run the session
@@ -140,7 +140,7 @@ public class ZQLSessionManagerTest extends TestCase {
 	
 	@SuppressWarnings("unchecked")
 	public void testCron() throws InterruptedException{
-		ZQLSession sess = sm.create();
+		ZQLJob sess = sm.create();
 		sm.setZql(sess.getId(), "!echo 'hello world'");
 		sm.setCron(sess.getId(), "0/1 * * * * ?");
 

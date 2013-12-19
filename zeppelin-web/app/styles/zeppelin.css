@@ -27,7 +27,7 @@ a {
     display : none;
 }
 
-#zqlSessionName {
+#zqlJobName {
     border : 0px solid #dddddd;
     width :100%;
     font-weight : bold;
@@ -35,7 +35,7 @@ a {
 }
 
 
-#zqlSessionCron {
+#zqlJobCron {
     border : 0px solid #dddddd;
     width :100%;
     font-weight : bold;

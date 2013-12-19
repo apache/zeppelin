@@ -6,31 +6,31 @@ App.ApplicationController = Ember.Controller.extend({
 
 App.ZqlController = App.ApplicationController.extend({
     actions : {
-        newSession : function(){
+        newJob : function(){
             controller = this;
             Ember.$.getJSON('/cxf/zeppelin/zql/new').then(function(d){
                 // update runnning
                 zeppelin.zql.list(function(c, resp){
                     if(c==200){
-                        controller.set('runningSessions', resp);
+                        controller.set('runningJobs', resp);
                     }
                 });
 
-                controller.transitionToRoute('zql.edit', {sessionid : d.body.id, historyid: "", body:d.body})
+                controller.transitionToRoute('zql.edit', {jobid : d.body.id, historyid: "", body:d.body})
             });
 
         },
-        openSession : function(sessionId){
+        openJob : function(jobid){
             controller = this;
-            Ember.$.getJSON('/cxf/zeppelin/zql/get/'+sessionId).then(function(d){
-		controller.transitionToRoute('zql.edit', {sessionid : d.body.id, historyid : "", body:d.body})
+            Ember.$.getJSON('/cxf/zeppelin/zql/get/'+jobid).then(function(d){
+		controller.transitionToRoute('zql.edit', {jobid : d.body.id, historyid : "", body:d.body})
             });
         },
-        updateSession : function(){
+        updateJob : function(){
             controller = this;
             zeppelin.zql.list(function(c, resp){
                 if(c==200){
-                    controller.set('runningSessions', resp);
+                    controller.set('runningJobs', resp);
                 }
             });
         }
@@ -48,52 +48,52 @@ App.ZqlEditController = App.ApplicationController.extend({
         CRON : 8
     },
     dryrun : true,
-    currentSession : undefined,
+    currentJob : undefined,
     historyId : undefined,
     zql : undefined,
-    sessionName : undefined,
-    sessionCron : undefined,
+    jobName : undefined,
+    jobCron : undefined,
     params : undefined,
     needs: ['zql'],
     
     actions : {
-        runSession : function(){
+        runJob : function(){
             var controller = this;
-            var session = this.get('currentSession');
+            var job = this.get('currentJob');
 	    var historyId = this.get('historyId');
-            if(session==undefined) return;
+            if(job==undefined) return;
 	    if(!(historyId==undefined || historyId=="")) return;
 
-            var sessionId = session.id;
+            var jobid = job.id;
 
             var zql = this.get('zql');
-            var sessionName = this.get('sessionName');
-            var sessionCron = this.get('sessionCron');
+            var jobName = this.get('jobName');
+            var jobCron = this.get('jobCron');
             if(this.get('dryrun')==true && false){
-                zeppelin.zql.set(sessionId, sessionName, zql, undefined, sessionCron, function(c, d){
+                zeppelin.zql.set(jobid, jobName, zql, undefined, jobCron, function(c, d){
                     if(c!=200){
-                        zeppelin.alert("Error: Invalid Session", "#alert");
+                        zeppelin.alert("Error: Invalid Job", "#alert");
                     } else {
-                        zeppelin.zql.dryRun(sessionId, function(c, d){
+                        zeppelin.zql.dryRun(jobid, function(c, d){
                             if(c==200){
                                 controller.set('dryrun', false);
-                                controller.send('loadSession', sessionId);
+                                controller.send('loadJob', jobid);
                             }            
                         });
                     }
                 }, this);
             } else {
-                if(session.status=="RUNNING"){
+                if(job.status=="RUNNING"){
                     return;
                 }
-                zeppelin.zql.set(sessionId, sessionName, zql, undefined, sessionCron, function(c, d){
+                zeppelin.zql.set(jobid, jobName, zql, undefined, jobCron, function(c, d){
                     if(c!=200){
-                        zeppelin.alert("Error: Invalid Session", "#alert");
+                        zeppelin.alert("Error: Invalid Job", "#alert");
                     } else {
                         controller.set('dirty', 0);
-                        zeppelin.zql.run(sessionId, function(c, d){
+                        zeppelin.zql.run(jobid, function(c, d){
                             if (c==200) {
-                                controller.send('loadSession', sessionId);
+                                controller.send('loadJob', jobid);
                             }
                         });                     
                     }
@@ -101,72 +101,72 @@ App.ZqlEditController = App.ApplicationController.extend({
             }
         },
 
-        abortSession : function(){
+        abortJob : function(){
             var controller = this;
-            var session = this.get('currentSession');
-            if (session == undefined) { return; }
-            zeppelin.zql.abort(session.id, function(c,d){
+            var job = this.get('currentJob');
+            if (job == undefined) { return; }
+            zeppelin.zql.abort(job.id, function(c,d){
                 if (c == 200){
-                    console.log("session %o aborted", session);
+                    console.log("job %o aborted", job);
                 } else {
-                    console.log("session %o abort fail", session);
+                    console.log("job %o abort fail", job);
                 }
             });
         },
 
-        shareSession : function(){
+        shareJob : function(){
             var controller = this;
-            var session = this.get('currentSession');
+            var job = this.get('currentJob');
 	    var historyId = this.get('historyId');
-            if (session == undefined) { return; }
+            if (job == undefined) { return; }
 	    
-	    // TODO save session
-	    controller.transitionToRoute('report.link', {sessionid : session.id, historyid : (historyId==undefined) ? "" : historyId});	    
+	    // TODO save job
+	    controller.transitionToRoute('report.link', {jobid : job.id, historyid : (historyId==undefined) ? "" : historyId});	    
         },
 
-        deleteSession : function(){
+        deleteJob : function(){
             var controller = this;
-            var session = this.get('currentSession');
+            var job = this.get('currentJob');
 	    var historyId = this.get('historyId');
-            if(session==undefined) {return;}
-            console.log("Delete session %o", session.id);
+            if(job==undefined) {return;}
+            console.log("Delete job %o", job.id);
 	    if (historyId==undefined || historyId=="") {
-		zeppelin.zql.del(session.id, function(c, d){
+		zeppelin.zql.del(job.id, function(c, d){
                     if(c==200){
-			controller.get('controllers.zql').send('updateSession');
+			controller.get('controllers.zql').send('updateJob');
 			controller.transitionToRoute('zql');                            
                     } else {
 			// handle error
                     }
 		});
 	    } else {
-		zeppelin.zql.delHistory(session.id, historyId, function(c, d){
+		zeppelin.zql.delHistory(job.id, historyId, function(c, d){
 		    if (c==200) {
-			controller.transitionToRoute('zql.edit', {sessionid:session.id, historyid:""});
+			controller.transitionToRoute('zql.edit', {jobid:job.id, historyid:""});
 		    } else {
 			// handle error
 		    }
 		});
 	    }
         },
-        loadSession : function(sessionId){
+        loadJob : function(jobid){
             var controller = this;
-            zeppelin.zql.get(sessionId, function(c, d){
+            zeppelin.zql.get(jobid, function(c, d){
                 if(c==200){
                     controller.set('historyId', undefined);
-                    controller.set('currentSession', d);
+                    controller.set('currentJob', d);
                 }
             });
         },
         // called from view
-        beforeChangeSession : function(model, sessionNameEditor, editor, sessionCronEditor){
+        beforeChangeJob : function(model, jobNameEditor, editor, jobCronEditor){
             if(model==null) return;
-            // TODO save session before change
+            // TODO save job before change
             if(model.status=="READY"){
                 if(this.get('dirty')){
-                    zeppelin.zql.set(model.id, sessionNameEditor.val(), editor.getValue(), undefined, sessionCronEditor.getValue(), function(c, d){
+                    zeppelin.zql.set(model.id, jobNameEditor.val(), editor.getValue(), undefined, jobCronEditor.getValue(), function(c, d){
                         if(c==200){
-                            console.log("session %o saved", model.id)
+                            console.log("job %o saved", model.id)
                         } else {
                             // TODO : handle error
                         }
@@ -175,11 +175,11 @@ App.ZqlEditController = App.ApplicationController.extend({
             }
         },
         // called from view
-        afterChangeSession : function(model, sessionNameEditor, editor, sessionCronEditor){
+        afterChangeJob : function(model, jobNameEditor, editor, jobCronEditor){
             this.set('dirty', 0);
             this.set("zql", editor.getValue());
-            this.set("sessionName", sessionNameEditor.editable('getValue', true));
-            this.set("sessionCron", sessionCronEditor.editable('getValue', true));
+            this.set("jobName", jobNameEditor.editable('getValue', true));
+            this.set("jobCron", jobCronEditor.editable('getValue', true));
 
             durationToString = function(duration){
                 var took = "";
@@ -222,7 +222,7 @@ App.ZqlEditController = App.ApplicationController.extend({
                 }
                 return duration;
             };
-            this.set("sessionTook", durationToString(getDuration(new Date(model.dateFinished).getTime() - new Date(model.dateStarted).getTime())));
+            this.set("jobTook", durationToString(getDuration(new Date(model.dateFinished).getTime() - new Date(model.dateStarted).getTime())));
         },
 
         zqlChanged : function(zql){
@@ -232,30 +232,30 @@ App.ZqlEditController = App.ApplicationController.extend({
             this.set('zql', zql);
         },
 
-        zqlSessionNameChanged : function(sessionName){
-            //console.log("Session name changed %o", sessionName);
+        zqlJobNameChanged : function(jobName){
+            //console.log("Job name changed %o", jobName);
             this.set('dirty', this.get('dirty') | this.get('dirtyFlag').NAME);
-            this.set('sessionName', sessionName);
+            this.set('jobName', jobName);
         },
         
-        zqlSessionCronChanged : function(sessionCron){
-            //console.log("Session name changed %o", sessionName);
+        zqlJobCronChanged : function(jobCron){
+            //console.log("Job name changed %o", jobName);
             this.set('dirty', this.get('dirty') | this.get('dirtyFlag').CRON);
-            this.set('sessionCron', sessionCron);
+            this.set('jobCron', jobCron);
         },
 
         /**
          * called when user select on of history from history list
          */
-        zqlSessionHistoryChanged : function(sessionId, historyId){
-            // save current session if it is not saved
+        zqlJobHistoryChanged : function(jobId, historyId){
+            // save current job if it is not saved
             console.log("load history %o", historyId);
-            this.transitionToRoute('zql.edit', {sessionid:sessionId, historyid:historyId});
+            this.transitionToRoute('zql.edit', {jobid:jobId, historyid:historyId});
         },
 
-        updateHistory : function(sessionId){
+        updateHistory : function(jobId){
             controller = this;
-            zeppelin.zql.listHistory(sessionId, function(c, hist){
+            zeppelin.zql.listHistory(jobId, function(c, hist){
                 if(c==200){
                     controller.set('historyList', hist);
                 }
@@ -263,22 +263,22 @@ App.ZqlEditController = App.ApplicationController.extend({
         },
 
         // called from view
-        loop : function(sessionNameEditor, editor, sessionCronEditor){
+        loop : function(jobNameEditor, editor, jobCronEditor){
             var controller = this;
-            var session = this.get('currentSession');
-            if(session==null) return;
-            if(session.status=="READY" || session.status=="FINISHED" || session.status=="ERROR" || session.status=="ABORT"){
+            var job = this.get('currentJob');
+            if(job==null) return;
+            if(job.status=="READY" || job.status=="FINISHED" || job.status=="ERROR" || job.status=="ABORT"){
                 // auto save every 10 sec
                 if(new Date().getSeconds() % 10 == 0 && (this.get('dirty') & this.get('dirtyFlag').ZQL)){
                     
                     // TODO display saving... -> saved message
-                    zeppelin.zql.setZql(session.id, editor.getValue(), function(c, d){
+                    zeppelin.zql.setZql(job.id, editor.getValue(), function(c, d){
                         if(c==200){
                             this.set('dirty', (this.get('dirty') & ~this.get('dirtyFlag').ZQL));
                             console.log("autosave zql completed %o %o", c, d);
 
-                            // send zqlcontroller to refresh session list. (session name may change by this save)
-                            controller.get('controllers.zql').send('updateSession');
+                            // send zqlcontroller to refresh job list. (job name may change by this save)
+                            controller.get('controllers.zql').send('updateJob');
                         }
                         
                     }, this);
@@ -287,7 +287,7 @@ App.ZqlEditController = App.ApplicationController.extend({
                 if(new Date().getSeconds() % 10 == 0 && (this.get('dirty') & this.get('dirtyFlag').NAME)){
                     
                     // TODO display saving... -> saved message
-                    zeppelin.zql.setName(session.id, sessionNameEditor.editable('getValue', true), function(c, d){
+                    zeppelin.zql.setName(job.id, jobNameEditor.editable('getValue', true), function(c, d){
                         if(c==200){
                             this.set('dirty', (this.get('dirty') & ~this.get('dirtyFlag').NAME));
                             console.log("autosave name completed %o %o", c, d);
@@ -299,7 +299,7 @@ App.ZqlEditController = App.ApplicationController.extend({
                 if(new Date().getSeconds() % 10 == 0 && (this.get('dirty') & this.get('dirtyFlag').CRON)){
                     
                     // TODO display saving... -> saved message
-                    zeppelin.zql.setCron(session.id, sessionCronEditor.editable('getValue', true), function(c, d){
+                    zeppelin.zql.setCron(job.id, jobCronEditor.editable('getValue', true), function(c, d){
                         if(c==200){
                             this.set('dirty', (this.get('dirty') & ~this.get('dirtyFlag').CRON));
                             console.log("autosave cron completed %o %o", c, d);
@@ -310,27 +310,27 @@ App.ZqlEditController = App.ApplicationController.extend({
 
 
                 if(new Date().getSeconds() % 60 == 0){ // check if it is running by scheduler every 1m
-                    zeppelin.zql.get(session.id, function(c, d){
+                    zeppelin.zql.get(job.id, function(c, d){
                         if(c==200){
-                            if(d.status=="RUNNING" || d.dateFinished!=session.dateFinished){
+                            if(d.status=="RUNNING" || d.dateFinished!=job.dateFinished){
                                 if(controller.get('dirty')==0){ // auto refresh in only clean state
-                                    controller.set("currentSession", d);
+                                    controller.set("currentJob", d);
                                 }
                             }
                         }
                     });
-                    controller.get('controllers.zql').send('updateSession');
+                    controller.get('controllers.zql').send('updateJob');
                 }
 
-            } else if(session.status=="RUNNING"){
+            } else if(job.status=="RUNNING"){
                 if(new Date().getSeconds() % 1 == 0){ // refreshing every 1 sec
-                    controller.send('loadSession', session.id);
+                    controller.send('loadJob', job.id);
                 }
-            } else if(session.status=="FINISHED"){
-		// historyis made when session finishes. update history list
+            } else if(job.status=="FINISHED"){
+		// historyis made when job finishes. update history list
 		controller.send('updateHistory');
-            } else if(session.status=="ERROR"){
-            } else if(session.status=="ABORT"){
+            } else if(job.status=="ERROR"){
+            } else if(job.status=="ABORT"){
             }
         } 
     }
@@ -341,5 +341,5 @@ App.ZqlEditController = App.ApplicationController.extend({
 App.ReportController = App.ApplicationController.extend();
 
 App.ReportLinkController = App.ApplicationController.extend({
-    currentSession : undefined
+    currentJob : undefined
 });

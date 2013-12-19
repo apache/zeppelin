@@ -1,6 +1,6 @@
 <div id="zqlEditorHeader">
-  <a href="#" data-type="text" id="zqlSessionName"></a>
-  <div>History <a href="#" data-type="select" id="zqlSessionHistory"></a></div>
+  <a href="#" data-type="text" id="zqlJobName"></a>
+  <div>History <a href="#" data-type="select" id="zqlJobHistory"></a></div>
 </div>
 <p />
 <div id="zqlEditor" class="zqlEditor"></div>
@@ -8,13 +8,13 @@
 <p />
   {{view view.zqlParamView}}
 <div>
-  <a id="zqlRunButton" class="btn btn-lg btn-primary" {{action 'runSession'}}>Run</a>
-  <a id="zqlAbortButton" class="btn btn-lg btn-primary" style="display:none;" {{action 'abortSession'}}>Abort</a>
+  <a id="zqlRunButton" class="btn btn-lg btn-primary" {{action 'runJob'}}>Run</a>
+  <a id="zqlAbortButton" class="btn btn-lg btn-primary" style="display:none;" {{action 'abortJob'}}>Abort</a>
   <div style="float:right; text-align:right">
-    Schedule - <a href="#" data-type="select" id="zqlSessionCron"></a> | 
-    <a id="zqlShareButton" {{action "shareSession"}}>Share</a> | 
-    <a id="zqlDeleteButton" {{action "deleteSession"}}>Delete</a>
-    <p style="font-size:11px">Last run {{currentSession.dateFinished}}, took {{sessionTook}}</p>
+    Schedule - <a href="#" data-type="select" id="zqlJobCron"></a> | 
+    <a id="zqlShareButton" {{action "shareJob"}}>Share</a> | 
+    <a id="zqlDeleteButton" {{action "deleteJob"}}>Delete</a>
+    <p style="font-size:11px">Last run {{currentJob.dateFinished}}, took {{jobTook}}</p>
   </div>
 </div>
 <p />

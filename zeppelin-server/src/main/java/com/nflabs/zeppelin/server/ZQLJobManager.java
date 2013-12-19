@@ -42,25 +42,25 @@ import com.nflabs.zeppelin.zengine.Z;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
 
-public class ZQLSessionManager implements JobListener {
+public class ZQLJobManager implements JobListener {
 	private static final String HISTORY_DIR_NAME = "/history";
-	private static final String CURRENT_SESSION_FILE_NAME = "/current";
+	private static final String CURRENT_JOB_FILE_NAME = "/current";
 	private static final String HISTORY_PATH_FORMAT="yyyy-MM-dd_HHmmss_SSS";
-	Logger logger = LoggerFactory.getLogger(ZQLSessionManager.class);
-	Map<String, ZQLSession> active = new HashMap<String, ZQLSession>();
+	Logger logger = LoggerFactory.getLogger(ZQLJobManager.class);
+	Map<String, ZQLJob> active = new HashMap<String, ZQLJob>();
 	Gson gson ;
 	
 	AtomicLong counter = new AtomicLong(0);
 	private Scheduler scheduler;
-	private String sessionPersistBasePath;
+	private String jobPersistBasePath;
 	private FileSystem fs;
 	
 	private StdSchedulerFactory quertzSchedFact;
 	private org.quartz.Scheduler quertzSched;
 	
-	public ZQLSessionManager(Scheduler scheduler, FileSystem fs, String sessionPersistBasePath) throws SchedulerException{
+	public ZQLJobManager(Scheduler scheduler, FileSystem fs, String jobPersistBasePath) throws SchedulerException{
 		this.scheduler = scheduler;
-		this.sessionPersistBasePath = sessionPersistBasePath;
+		this.jobPersistBasePath = jobPersistBasePath;
 		this.fs = fs;
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		gsonBuilder.setPrettyPrinting();
@@ -76,32 +76,32 @@ public class ZQLSessionManager implements JobListener {
 	}
 	
 	
-	public ZQLSession create(){
-		ZQLSession as = new ZQLSession("", this);
+	public ZQLJob create(){
+		ZQLJob as = new ZQLJob("", this);
 		try {
 			persist(as);
 			synchronized(active){
 				active.put(as.getId(), as);
 			}
 		} catch (IOException e) {
-			logger.error("Can't create session ", e);
+			logger.error("Can't create job ", e);
 			return null;
 		}
 		return as;
 	}
 	
-	public ZQLSession get(String sessionId){
+	public ZQLJob get(String jobId){
 		synchronized(active){
-			ZQLSession session = active.get(sessionId);
-			if(session!=null) return session;
+			ZQLJob job = active.get(jobId);
+			if(job!=null) return job;
 		}
 		
-		// search session dir
-		Path path = getPathForSessionId(sessionId);
+		// search job dir
+		Path path = getPathForJobId(jobId);
 		try {
-			ZQLSession session = load(sessionId, new Path(path.toString()+CURRENT_SESSION_FILE_NAME), false);			
-			if(session!=null){				
-				return session;
+			ZQLJob job = load(jobId, new Path(path.toString()+CURRENT_JOB_FILE_NAME), false);			
+			if(job!=null){				
+				return job;
 			} else {
 				return null;
 			}
@@ -112,8 +112,8 @@ public class ZQLSessionManager implements JobListener {
 	}
 	
 	
-	public ZQLSession run(String sessionId){		
-		ZQLSession s = get(sessionId);
+	public ZQLJob run(String jobId){		
+		ZQLJob s = get(jobId);
 		if (s==null) { return null; }
 
 		if (s.getStatus() == Status.RUNNING) { 
@@ -124,8 +124,8 @@ public class ZQLSessionManager implements JobListener {
 		return s;
 	}
 	
-	public ZQLSession dryRun(String sessionId) {
-		ZQLSession s = get(sessionId);
+	public ZQLJob dryRun(String jobId) {
+		ZQLJob s = get(jobId);
 		if (s==null) {return null;}
 		try {
 			s.dryRun();
@@ -141,8 +141,8 @@ public class ZQLSessionManager implements JobListener {
 		return s;
 	}
 	
-	public ZQLSession setZql(String sessionId, String zql){
-		ZQLSession s = get(sessionId);
+	public ZQLJob setZql(String jobId, String zql){
+		ZQLJob s = get(jobId);
 		if(s==null){
 			return null;
 		} else {
@@ -150,15 +150,15 @@ public class ZQLSessionManager implements JobListener {
 			try {
 				persist(s);
 			} catch (IOException e) {
-				logger.error("Can't persist session "+sessionId, e);
+				logger.error("Can't persist job "+jobId, e);
 			}
 			return s;
 		}
 	}
 	
 
-	public ZQLSession setParams(String sessionId, List<Map<String, Object>> params) {
-		ZQLSession s = get(sessionId);
+	public ZQLJob setParams(String jobId, List<Map<String, Object>> params) {
+		ZQLJob s = get(jobId);
 		if (s==null) {
 			return null;
 		} else {
@@ -166,14 +166,14 @@ public class ZQLSessionManager implements JobListener {
 			try {
 				persist(s);
 			} catch (IOException e) {
-				logger.error("Can't persist session "+sessionId, e);
+				logger.error("Can't persist job "+jobId, e);
 			}
 			return s;
 		}
 	}
 	
-	public ZQLSession setName(String sessionId, String name) {
-		ZQLSession s = get(sessionId);
+	public ZQLJob setName(String jobId, String name) {
+		ZQLJob s = get(jobId);
 		if (s==null) {
 			return null;
 		} else {
@@ -181,14 +181,14 @@ public class ZQLSessionManager implements JobListener {
 			try {
 				persist(s);
 			} catch (IOException e) {
-				logger.error("Can't persist session "+sessionId, e);
+				logger.error("Can't persist job "+jobId, e);
 			}
 			return s;
 		}		
 	}
 	
-	public ZQLSession setCron(String sessionId, String cron) {
-		ZQLSession s = get(sessionId);
+	public ZQLJob setCron(String jobId, String cron) {
+		ZQLJob s = get(jobId);
 		if (s==null) {
 			return null;
 		} else {
@@ -197,43 +197,43 @@ public class ZQLSessionManager implements JobListener {
 				persist(s);
 				refreshQuartz(s);
 			} catch (IOException e) {
-				logger.error("Can't persist session "+sessionId, e);
+				logger.error("Can't persist job "+jobId, e);
 			}
 			return s;
 		}		
 	}
 
-	public boolean delete(String sessionId){
-		ZQLSession s= get(sessionId);
+	public boolean delete(String jobId){
+		ZQLJob s= get(jobId);
 		if (s==null) { return false; }
 		
-		// can't delete running session
+		// can't delete running job
 		if(s.getStatus()==Status.RUNNING) return false;
 		
 		synchronized(active){
 			removeQuartz(s);
-			active.remove(sessionId);
+			active.remove(jobId);
 		}
-		Path path = getPathForSessionId(sessionId);
+		Path path = getPathForJobId(jobId);
 		try {
 			return fs.delete(path, true);
 		} catch (IOException e) {
-			logger.error("Can't remove session file "+path, e);
+			logger.error("Can't remove job file "+path, e);
 			return false;
 		}
 	}
 	
-	public ZQLSession abort(String sessionId){
-		ZQLSession s= get(sessionId);
+	public ZQLJob abort(String jobId){
+		ZQLJob s= get(jobId);
 		if (s==null) { return null; }
 		
 		s.abort();
 		return s;
 	}
 	
-	public TreeMap<String, ZQLSession> list(){
-		TreeMap<String, ZQLSession> found = new TreeMap<String, ZQLSession>();
-		Path dir = new Path(sessionPersistBasePath);
+	public TreeMap<String, ZQLJob> list(){
+		TreeMap<String, ZQLJob> found = new TreeMap<String, ZQLJob>();
+		Path dir = new Path(jobPersistBasePath);
 		try {
 		    if (!fs.getFileStatus(dir).isDir()) {
 		        return found;
@@ -261,48 +261,48 @@ public class ZQLSessionManager implements JobListener {
 		});
 			
 		for(FileStatus f : files) {
-			ZQLSession session;
+			ZQLJob job;
 			try {
 				Path path = f.getPath();
-				String sessionId = getSessionIdFromPath(path);
-				session = load(sessionId, new Path(path.toString()+CURRENT_SESSION_FILE_NAME), false);
-				if (session!=null) {
-					found.put(session.getId(), session);
+				String jobId = getJobIdFromPath(path);
+				job = load(jobId, new Path(path.toString()+CURRENT_JOB_FILE_NAME), false);
+				if (job!=null) {
+					found.put(job.getId(), job);
 				} else {
-					logger.error("Session not loaded "+f.getPath());
+					logger.error("Job not loaded "+f.getPath());
 				}
 			} catch (IOException e) {
-				logger.error("Can't load session from path "+f.getPath(), e);
+				logger.error("Can't load job from path "+f.getPath(), e);
 			}
 		}
 		return found;
 	}
 	
-	private Path getPathForSession(ZQLSession session){
-		return getPathForSessionId(session.getId());
+	private Path getPathForJob(ZQLJob job){
+		return getPathForJobId(job.getId());
 	}
 	
-	private Path getPathForSessionId(String sessionId){
-		return new Path(sessionPersistBasePath+"/"+sessionId);
+	private Path getPathForJobId(String jobId){
+		return new Path(jobPersistBasePath+"/"+jobId);
 	}
 	
 	
-	private String getSessionIdFromPath(Path path){
+	private String getJobIdFromPath(Path path){
 		return new File(path.getName()).getName();
 	}
 	
-	private void makeHistory(String sessionId) throws IOException{
+	private void makeHistory(String jobId) throws IOException{
 		SimpleDateFormat historyPathFormat = new SimpleDateFormat(HISTORY_PATH_FORMAT);
-		Path from = new Path(getPathForSessionId(sessionId).toString()+CURRENT_SESSION_FILE_NAME);
-		Path to = new Path(getPathForSessionId(sessionId).toString()+HISTORY_DIR_NAME+"/"+historyPathFormat.format(new Date()));
+		Path from = new Path(getPathForJobId(jobId).toString()+CURRENT_JOB_FILE_NAME);
+		Path to = new Path(getPathForJobId(jobId).toString()+HISTORY_DIR_NAME+"/"+historyPathFormat.format(new Date()));
 		fs.rename(from, to);		
 	}
 	
-	private void persist(ZQLSession session) throws IOException{		
-		String json = gson.toJson(session);
-		Path path = getPathForSession(session);
+	private void persist(ZQLJob job) throws IOException{		
+		String json = gson.toJson(job);
+		Path path = getPathForJob(job);
 		fs.mkdirs(new Path(path.toString()+HISTORY_DIR_NAME));
-		FSDataOutputStream out = fs.create(new Path(path.toString()+CURRENT_SESSION_FILE_NAME), true);
+		FSDataOutputStream out = fs.create(new Path(path.toString()+CURRENT_JOB_FILE_NAME), true);
 		out.writeBytes(json);
 		out.close();
 	}
@@ -311,49 +311,49 @@ public class ZQLSessionManager implements JobListener {
 	public void statusChange(Job job) {
 		try {
 			if(job.getStatus()==Status.ERROR && job.getException()!=null){
-				logger.error("Session error", job.getException());
+				logger.error("Job error", job.getException());
 			} 
 			
-			logger.info("Session "+job.getId()+" status changed "+job.getStatus());
-			persist((ZQLSession) job);
+			logger.info("Job "+job.getId()+" status changed "+job.getStatus());
+			persist((ZQLJob) job);
 			if(job.getStatus()==Status.FINISHED){
-				makeHistory(((ZQLSession)job).getId()); // rename
-				persist((ZQLSession) job); // create current
+				makeHistory(((ZQLJob)job).getId()); // rename
+				persist((ZQLJob) job); // create current
 			}
 		} catch (IOException e) {
-			logger.error("Can't persist session "+job.getId(), e);
+			logger.error("Can't persist job "+job.getId(), e);
 		}
 		
 	}
 
-	private ZQLSession load(String sessionId, Path path, boolean history) throws IOException{
+	private ZQLJob load(String jobId, Path path, boolean history) throws IOException{
 		
 		synchronized(active){			
-			if(active.containsKey(sessionId)==false || history==true){
+			if(active.containsKey(jobId)==false || history==true){
 				if(fs.isFile(path)==false){
 					return null;
 				}
 				FSDataInputStream ins = fs.open(path);
-				ZQLSession session = gson.fromJson(new InputStreamReader(ins), ZQLSession.class);
-				if(session.getStatus()==Status.RUNNING){
-					session.setStatus(Status.ABORT);
+				ZQLJob job = gson.fromJson(new InputStreamReader(ins), ZQLJob.class);
+				if(job.getStatus()==Status.RUNNING){
+					job.setStatus(Status.ABORT);
 				}
 				ins.close();
 				
 				if(history==false){
-					session.setListener(this);
-					active.put(session.getId(), session);
-					refreshQuartz(session);
+					job.setListener(this);
+					active.put(job.getId(), job);
+					refreshQuartz(job);
 				}
-				return session;
+				return job;
 			} else {
-				return active.get(sessionId);
+				return active.get(jobId);
 			}
 		}
 	}
 	
-	public void deleteHistory(String sessionId, String name){
-		Path file = new Path(getPathForSessionId(sessionId)+HISTORY_DIR_NAME+"/"+name);
+	public void deleteHistory(String jobId, String name){
+		Path file = new Path(getPathForJobId(jobId)+HISTORY_DIR_NAME+"/"+name);
 		try {
 			if(fs.isFile(file)){
 				fs.delete(file, true);
@@ -363,8 +363,8 @@ public class ZQLSessionManager implements JobListener {
 		}
 	}
 
-	public void deleteHistory(String sessionId){
-		Path file = new Path(getPathForSessionId(sessionId)+HISTORY_DIR_NAME);
+	public void deleteHistory(String jobId){
+		Path file = new Path(getPathForJobId(jobId)+HISTORY_DIR_NAME);
 		try {
 			fs.delete(file, true);
 			fs.mkdirs(file);
@@ -374,19 +374,19 @@ public class ZQLSessionManager implements JobListener {
 	}
 
 	
-	public ZQLSession getHistory(String sessionId, String name){
-		Path file = new Path(getPathForSessionId(sessionId)+HISTORY_DIR_NAME+"/"+name);
+	public ZQLJob getHistory(String jobId, String name){
+		Path file = new Path(getPathForJobId(jobId)+HISTORY_DIR_NAME+"/"+name);
 		try {
-			return load(sessionId, file, true);
+			return load(jobId, file, true);
 		} catch (IOException e) {
-			logger.error("Can't load session history "+file, e);
+			logger.error("Can't load job history "+file, e);
 			return null;
 		}		
 	}
 	
-	public TreeMap<String, ZQLSession> listHistory(String sessionId){
-		TreeMap<String, ZQLSession> found = new TreeMap<String, ZQLSession>();
-		Path dir = new Path(getPathForSessionId(sessionId)+HISTORY_DIR_NAME);
+	public TreeMap<String, ZQLJob> listHistory(String jobId){
+		TreeMap<String, ZQLJob> found = new TreeMap<String, ZQLJob>();
+		Path dir = new Path(getPathForJobId(jobId)+HISTORY_DIR_NAME);
 		try {
 		    if (!fs.getFileStatus(dir).isDir()) {
 		        return found;
@@ -414,62 +414,62 @@ public class ZQLSessionManager implements JobListener {
 		});
 			
 		for(FileStatus f : files) {
-			ZQLSession session;
+			ZQLJob job;
 			try {
 				Path path = f.getPath();
-				session = load(sessionId, path, true);
-				if (session!=null) {
-					found.put(f.getPath().getName(), session);
+				job = load(jobId, path, true);
+				if (job!=null) {
+					found.put(f.getPath().getName(), job);
 				} else {
-					logger.error("Session not loaded "+f.getPath());
+					logger.error("Job not loaded "+f.getPath());
 				}
 			} catch (IOException e) {
-				logger.error("Can't load session from path "+f.getPath(), e);
+				logger.error("Can't load job from path "+f.getPath(), e);
 			}
 		}
 		return found;		
 	}
 
-	public static class SessionCronJob implements org.quartz.Job {
-		static ZQLSessionManager sm;
+	public static class JobCronJob implements org.quartz.Job {
+		static ZQLJobManager sm;
 		
-		public SessionCronJob() {
+		public JobCronJob() {
 		}
 
 		public void execute(JobExecutionContext context) throws JobExecutionException {
-			String sessionId = context.getJobDetail().getKey().getName();
-			sm.run(sessionId);						
+			String jobId = context.getJobDetail().getKey().getName();
+			sm.run(jobId);						
 		}
 	}
 	
-	private void removeQuartz(ZQLSession session){
+	private void removeQuartz(ZQLJob job){
 		try {
-			quertzSched.deleteJob(new JobKey(session.getId(), "zql"));
+			quertzSched.deleteJob(new JobKey(job.getId(), "zql"));
 		} catch (SchedulerException e) {
 			logger.error("Failed to delete Quartz job", e);
 		}	
 	}
 	
-	private void refreshQuartz(ZQLSession session){
-		removeQuartz(session);
-		if(session.getCron()==null || session.getCron().trim().length()==0){
+	private void refreshQuartz(ZQLJob job){
+		removeQuartz(job);
+		if(job.getCron()==null || job.getCron().trim().length()==0){
 			return;
 		}
 
-		SessionCronJob.sm = this;
-		JobDetail job = JobBuilder.newJob(SessionCronJob.class)
-			      .withIdentity(session.getId(), "zql")
-			      .usingJobData("sessionId", session.getId())
+		JobCronJob.sm = this;
+		JobDetail newjob = JobBuilder.newJob(JobCronJob.class)
+			      .withIdentity(job.getId(), "zql")
+			      .usingJobData("jobId", job.getId())
 			      .build();
 				
 		CronTrigger trigger = TriggerBuilder.newTrigger()
-		  .withIdentity("trigger_"+session.getId(), "zql")
-		  .withSchedule(CronScheduleBuilder.cronSchedule(session.getCron()))
-		  .forJob(session.getId(), "zql")
+		  .withIdentity("trigger_"+job.getId(), "zql")
+		  .withSchedule(CronScheduleBuilder.cronSchedule(job.getCron()))
+		  .forJob(job.getId(), "zql")
 		  .build();
 
 		try {
-			quertzSched.scheduleJob(job, trigger);
+			quertzSched.scheduleJob(newjob, trigger);
 		} catch (SchedulerException e) {
 			logger.error("Failed to schedule Quartz job",e);
 		}
