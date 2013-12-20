@@ -44,9 +44,9 @@ fi
 
 if [ "x$ZEPPELIN_WAR" == "x" ]; then
     if [ -d "${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp" ]; then
-	export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp"
+	    export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp"
     else
-	export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web.war"
+        export ZEPPELIN_WAR=`find ${ZEPPELIN_HOME} -name "zeppelin-web-*.war"`
     fi
 fi
 
@@ -92,10 +92,6 @@ fi
 
 if [ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]; then
     ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
-fi
-
-if [ -d "${ZEPPELIN_HOME}/zeppelin-web/target/classes" ]; then
-    ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-web/target/classes"
 fi
 
 

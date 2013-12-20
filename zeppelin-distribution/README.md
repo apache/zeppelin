@@ -16,6 +16,7 @@ zeppelin
  │    ├── ml.something
  │    └── ...
  ├── zeppelin-server-<verion>.jar
+ ├── zeppelin-web-<verion>.war
  └── zeppelin-cli-<verion>.jar
  
 ```
