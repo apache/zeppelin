@@ -26,13 +26,18 @@
         <version>1.2.1</version>
         <executions>
           <execution>
+            <id>brunch-build-to-src-main-webapp</id>
+            <phase>generate-sources</phase>
             <goals>
               <goal>exec</goal>
             </goals>
           </execution>
         </executions>
         <configuration>
-          <executable>brunch build</executable>
+          <executable>brunch</executable>
+          <arguments>
+            <argument>build</argument>
+          </arguments>
         </configuration>
       </plugin>
     </plugins>
