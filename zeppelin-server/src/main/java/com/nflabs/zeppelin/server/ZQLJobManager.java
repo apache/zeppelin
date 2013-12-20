@@ -118,6 +118,8 @@ public class ZQLJobManager implements JobListener {
 
 		if (s.getStatus() == Status.RUNNING) { 
 		    return s; 
+		} else {
+			s.setStatus(Status.READY);
 		}
 		s.setListener(this);
 		scheduler.submit(s);

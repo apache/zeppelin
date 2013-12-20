@@ -100,7 +100,7 @@ public class ZQLSessionManagerTest extends TestCase {
 		
 		// run session again
 		sm.run(sess.getId());
-		Thread.sleep(500); // wait for start;
+
 		while(sm.get(sess.getId()).getStatus()!=Status.FINISHED){ // wait for finish
 			Thread.sleep(300);
 		}
