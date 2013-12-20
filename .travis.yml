@@ -2,4 +2,9 @@ language: java
 jdk:
   - oraclejdk7
 
-script: sh -c 'cd zeppelin-web' && 'npm install -g brunch' && 'npm install'
+before_install:
+  - npm install -g brunch
+  - cd zeppelin-web
+  - npm install
+  - cd ..
+
