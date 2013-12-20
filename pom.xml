@@ -233,6 +233,10 @@
             <argLine>-Xmx2g -Xms1g</argLine>
           </configuration>
         </plugin>
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.4</version>
+        </plugin>
 
         <!--This plugin's configuration is used to store Eclipse m2e settings only. 
             It has no influence on the Maven build itself. -->
@@ -373,7 +377,6 @@
             </plugin>
             <plugin>
               <artifactId>maven-assembly-plugin</artifactId>
-              <version>2.4</version>
               <executions>
                 <execution>
                   <id>make-assembly</id>
@@ -395,24 +398,6 @@
         <activeByDefault>false</activeByDefault>
       </activation>
       <build>
-      <!-- skip tests in surefire plugin -->
-      <!-- assembly:single -->
-      <!-- publish distribution to S3
-
-      to settings.xml add:
-      <profiles><profile>
-         <id>inject-s3-credentials</id>
-         <properties>
-          <s3-upload.accessKey>your-key</s3-upload.accessKey>
-          <s3-upload.secretKey>your-secret-key</s3-upload.secretKey>
-         </properties>
-       </profile></profiles>
-      <activeProfiles>
-        <activeProfile>inject-s3-credentials</activeProfile>
-      </activeProfiles>
-      -->
-
-        <defaultGoal>assembly:single</defaultGoal>
         <plugins>
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
@@ -420,31 +405,10 @@
               <skipTests>true</skipTests>
             </configuration>
           </plugin>
-          <plugin>
-            <groupId>com.bazaarvoice.maven.plugins</groupId>
-            <artifactId>s3-upload-maven-plugin</artifactId>
-            <version>1.2-SNAPSHOT</version>
-            <configuration>
-              <bucketName>zeppel.in</bucketName>
-              <endpoint>s3-ap-northeast-1.amazonaws.com</endpoint>
-              <makePublic>true</makePublic>
-              <sourceFile>zeppelin-distribution/target/zeppelin-${project.version}.tar.gz</sourceFile>
-              <destinationFile>${project.name}-${project.version}.tar.gz</destinationFile>
-            </configuration>
-            <executions>
-              <execution>
-                <id>publish-distr-to-s3</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>s3-upload</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
         </plugins>
       </build>
     </profile>
-    
+
     <profile>
       <id>release-sign-artifacts</id>
       <activation>
