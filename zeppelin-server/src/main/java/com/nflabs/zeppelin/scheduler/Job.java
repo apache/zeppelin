@@ -52,10 +52,17 @@ public abstract class Job {
 		this.listener = listener;
 	}
 	
+	public JobListener getListener(){
+		return listener;
+	}
+	
 	public void setStatus(Status status){
 		if(this.status==status) return;
+		Status before = this.status;
+		Status after = status;
+		if(listener!=null) listener.beforeStatusChange(this, before, after);
 		this.status = status;
-		if(listener!=null) listener.statusChange(this);
+		if(listener!=null) listener.afterStatusChange(this, before, after);
 	}
 	
 	public boolean isTerminated(){
@@ -98,6 +105,10 @@ public abstract class Job {
 		return exception;
 	}
 	
+	protected void setException(Throwable t){
+		exception = t;
+	}
+	
 	public Object getReturn(){
 		return result;
 	}
@@ -133,6 +144,4 @@ public abstract class Job {
 	public Date getDateFinished() {
 		return dateFinished;
 	}
-	
-	
 }
