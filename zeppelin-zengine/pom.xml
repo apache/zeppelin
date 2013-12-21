@@ -187,7 +187,17 @@
           <groupId>org.antlr</groupId>
           <artifactId>antlr-runtime</artifactId>
         </exclusion>
+        <exclusion> <!-- hive-service brings 4.1.14 and 4.1.13 trough libthrift:0.9.0 -->
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpcore</artifactId>
+        </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>  <!-- needed for libtrift -->
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <version>4.1.4</version>
     </dependency>
 
     <dependency>
