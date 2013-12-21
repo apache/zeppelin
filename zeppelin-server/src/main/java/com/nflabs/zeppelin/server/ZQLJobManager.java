@@ -308,24 +308,34 @@ public class ZQLJobManager implements JobListener {
 		out.writeBytes(json);
 		out.close();
 	}
-	
+
 	@Override
-	public void statusChange(Job job) {
+	public void beforeStatusChange(Job job, Status before, Status after) {
 		try {
-			if(job.getStatus()==Status.ERROR && job.getException()!=null){
+			if(after==Status.ERROR && job.getException()!=null){
 				logger.error("Job error", job.getException());
 			} 
 			
-			logger.info("Job "+job.getId()+" status changed "+job.getStatus());
-			persist((ZQLJob) job);
-			if(job.getStatus()==Status.FINISHED){
-				makeHistory(((ZQLJob)job).getId()); // rename
-				persist((ZQLJob) job); // create current
+			logger.info("Job "+job.getId()+" status changed from "+before+" to "+after);
+			
+			// clone and change status to save
+			ZQLJob jobToSave = ((ZQLJob) job).clone();
+			jobToSave.setListener(null);
+			jobToSave.setStatus(after);			
+			
+			persist(jobToSave);
+			if(after==Status.FINISHED){
+				makeHistory(jobToSave.getId()); // rename
+				persist(jobToSave); // create current
 			}
 		} catch (IOException e) {
 			logger.error("Can't persist job "+job.getId(), e);
-		}
-		
+		}		
+	}
+	
+	@Override
+	public void afterStatusChange(Job job, Status before, Status after) {
+
 	}
 
 	private ZQLJob load(String jobId, Path path, boolean history) throws IOException{
