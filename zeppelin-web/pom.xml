@@ -15,51 +15,9 @@
   <name>zeppelin-web</name>
 
   <build>
-    <resources>
-      <resource>
-        <filtering>false</filtering>
-        <directory>src/main/resources</directory>
-      </resource>
-      <resource>
-        <filtering>false</filtering>
-        <directory>src/main/java</directory>
-        <includes>
-          <include>**</include>
-        </includes>
-        <excludes>
-          <exclude>**/*.java</exclude>
-        </excludes>
-      </resource>
-    </resources>
-    <testResources>
-      <testResource>
-        <filtering>false</filtering>
-        <directory>src/test/resources</directory>
-      </testResource>
-      <testResource>
-        <filtering>false</filtering>
-        <directory>src/test/java</directory>
-        <includes>
-          <include>**</include>
-        </includes>
-        <excludes>
-          <exclude>**/*.java</exclude>
-        </excludes>
-      </testResource>
-    </testResources>
-
     <finalName>zeppelin-web</finalName>
 
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>2.4</version>
-        <configuration>
-          <attachClasses>true</attachClasses>
-        </configuration>
-      </plugin>
-
      <!-- Builds Zeppelin GUI Web-App, assuming Brunch.io is installed,
           for details see https://github.com/NFLabs/zeppelin/tree/master/zeppelin-web#build -->
       <plugin>
@@ -68,43 +26,22 @@
         <version>1.2.1</version>
         <executions>
           <execution>
+            <id>brunch-build-to-src-main-webapp</id>
+            <phase>generate-sources</phase>
             <goals>
               <goal>exec</goal>
             </goals>
           </execution>
         </executions>
         <configuration>
-          <executable>brunch build</executable>
+          <executable>brunch</executable>
+          <arguments>
+            <argument>build</argument>
+          </arguments>
         </configuration>
       </plugin>
     </plugins>
   </build>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-
-    <!-- JETTY DEPENDENCIES FOR TESTING -->
-    <dependency>
-      <groupId>org.eclipse.jetty.aggregate</groupId>
-      <artifactId>jetty-all-server</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.codehaus.jackson</groupId>
-      <artifactId>jackson-mapper-asl</artifactId>
-      <version>1.8.8</version>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -31,7 +31,7 @@
     <dependency>
       <groupId>jline</groupId>
       <artifactId>jline</artifactId>
-      <version>2.11</version>
+      <version>0.9.93</version>
     </dependency>
 
     <dependency>
