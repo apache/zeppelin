@@ -8,6 +8,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.result.Result;
@@ -18,7 +20,7 @@ import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQL;
 import com.nflabs.zeppelin.zengine.ZQLException;
 
-public class ZQLSession extends Job{
+public class ZQLJob extends Job{
 	private String zql;
 	private List<Map<String, Object>> params;
 	Result error;
@@ -28,12 +30,29 @@ public class ZQLSession extends Job{
 
 	transient private ZeppelinConnection conn;
 	
-	public ZQLSession(String jobName, JobListener listener) {
+	public ZQLJob(String jobName, JobListener listener) {
 		super(jobName, listener);
 	}
 	
 	private Logger logger(){
-		return LoggerFactory.getLogger(ZQLSession.class);
+		return LoggerFactory.getLogger(ZQLJob.class);
+	}
+	
+	public ZQLJob clone(){
+		// clone object using gson
+		GsonBuilder gsonBuilder = new GsonBuilder();
+		gsonBuilder.setPrettyPrinting();
+		gsonBuilder.registerTypeAdapter(Z.class, new ZAdapter());
+
+		Gson gson = gsonBuilder.create();
+		String jsonstr = gson.toJson(this);
+		ZQLJob job = gson.fromJson(jsonstr, ZQLJob.class);
+		
+		// set transient values
+		job.conn = conn;
+		job.setListener(getListener());
+		job.setException(getException());
+		return job;
 	}
 	
 	public void setZQL(String zql){

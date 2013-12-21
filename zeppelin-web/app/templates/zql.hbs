@@ -2,11 +2,11 @@
   <div class="col-md-3">
     <div class="bs-sidebar hidden-print" role="complementary">
       <ul class="nav bs-sidenav">
-        <li><a {{action "newSession"}}>New</a></li>
-	<li><div class="submenu">Sessions</div>
+        <li><a {{action "newJob"}}>New</a></li>
+	<li><div class="submenu">Jobs</div>
 	<ul>
-          {{#each sess in "runningSessions"}}
-          <li><a {{action "openSession" sess.id}}>{{#if sess.jobName}}{{sess.jobName}}{{else}}{{sess.id}}{{/if}}</a></li>
+          {{#each sess in "runningJobs"}}
+          <li><a {{action "openJob" sess.id}}>{{#if sess.jobName}}{{sess.jobName}}{{else}}{{sess.id}}{{/if}}</a></li>
           {{/each}}
 	</ul>
 	</li>

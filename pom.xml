@@ -453,11 +453,7 @@
         </plugins>
       </build>
     </profile>
-    <!-- TODO(alex): add profile "publish" 
-      - assemble 
-      - upload distrib to S3
-      - make available on http://get.zeppel.in
-     -->
+
   </profiles>
 
 </project>

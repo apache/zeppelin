@@ -99,15 +99,15 @@ public class ZeppelinServer extends Application {
     }
 
 	private SchedulerFactory schedulerFactory;
-	private ZQLSessionManager analyzeSessionManager;
+	private ZQLJobManager analyzeSessionManager;
 	
 	public ZeppelinServer() throws Exception {
 		this.schedulerFactory = new SchedulerFactory();
 		Z.configure();
 		if(Z.getConf().getString(ConfVars.ZEPPELIN_JOB_SCHEDULER).equals("FIFO")){
-			this.analyzeSessionManager = new ZQLSessionManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
+			this.analyzeSessionManager = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		} else {
-			this.analyzeSessionManager = new ZQLSessionManager(schedulerFactory.createOrGetParallelScheduler("analyze", 100), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_SESSION_DIR));
+			this.analyzeSessionManager = new ZQLJobManager(schedulerFactory.createOrGetParallelScheduler("analyze", 100), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		}
 	}
 	

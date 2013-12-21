@@ -15,8 +15,8 @@ public class ShellExecStatementTest extends HiveTestService {
 
     public void setUp() throws Exception {
         super.setUp();
-//      Z z = new Z();
-//      z.configure();
+
+        Z.configure();
         
         // Configuration => Driver => Connection
         driver = new HiveZeppelinDriver(Z.getConf());

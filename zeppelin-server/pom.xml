@@ -23,13 +23,6 @@
     </dependency>
 
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>zeppelin-web</artifactId>
-      <version>${project.version}</version>
-      <classifier>classes</classifier>
-    </dependency>
-
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
