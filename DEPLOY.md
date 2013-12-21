@@ -3,14 +3,16 @@ Publish Zeppelin Distribution Package
 
 A. Build package
 
-Following command will create package zeppelin-VERSION.tar.gz under target directory.
+Following command will create package zeppelin-VERSION.tar.gz under _zeppelin-distribution/target_ directory.
 
-      mvn clean install assembly:assembly
+      mvn clean install -P build-distr
 
 
-B. Upload to web server
+B. Upload to S3 bucket ~~web server~~
 
-     scp target/zeppelin-VERSION.tar.gz root@www.nflabs.com:/var/www/html/pub/zeppelin/
+     ~~scp zeppelin-distribution/target/zeppelin-VERSION.tar.gz root@www.nflabs.com:/var/www/html/pub/zeppelin/~~x
+     mvn install -P publish-distr
+
 
 C. Edit www.zeppelin-project.org
 
