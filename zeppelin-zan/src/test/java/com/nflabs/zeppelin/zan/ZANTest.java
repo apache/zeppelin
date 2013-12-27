@@ -10,6 +10,11 @@ import java.util.Map;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.storage.file.FileRepository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,8 +50,7 @@ public class ZANTest {
 	}
 	
 	@Test
-	public void testSync() throws IOException, ZANException {
-		
+	public void testSync() throws IOException, ZANException {		
 		String localBase = tmpDir.getAbsolutePath()+"/local";
 		String remoteBase = tmpDir.getAbsolutePath()+"/remote";
 		ZAN zan = new ZAN(localBase, remoteBase, dfs);
@@ -97,4 +101,40 @@ public class ZANTest {
 	}
 	
 
+	@Test
+	public void testInstall() throws GitAPIException, IOException, ZANException{
+		// create remote zan repo
+		File testzanrepo = new File(tmpDir.getAbsolutePath()+"/local/zanrepo/libname");
+
+		FileRepositoryBuilder builder = new FileRepositoryBuilder();		
+		FileRepository repo = builder.setGitDir(new File(testzanrepo, ".git"))
+									 .build();		
+		repo.create();
+		repo.close();
+		
+		System.out.println(testzanrepo.toString());
+		
+		// commit some files to remore repo
+		/*
+		// create remote repository
+		Git.init().setBare(false).setDirectory(testzanrepo).call();
+		*/
+		Git git = Git.open(testzanrepo);
+		stringToFile(testzanrepo.getAbsolutePath()+"/file", "Hello world");
+		git.add().addFilepattern("file").call();
+		RevCommit rc = git.commit().setMessage("initial commit").call();
+		git.push();
+		
+		// install
+		String localBase = tmpDir.getAbsolutePath()+"/local";
+		String remoteBase = tmpDir.getAbsolutePath()+"/remote";
+		ZAN zan = new ZAN(localBase, remoteBase, dfs);
+		zan.install("libname", "file://"+tmpDir.getAbsolutePath()+"/local/zanrepo/libname", "master", rc.getId().getName(), null);
+		
+		// check if file is installed
+		assertTrue(new File(localBase+"/libname/file").isFile());
+		// check if file is synced
+		assertTrue(new File(remoteBase+"/libname/file").isFile());
+	}
+	
 }

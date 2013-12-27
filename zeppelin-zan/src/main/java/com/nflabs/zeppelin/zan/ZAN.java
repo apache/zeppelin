@@ -11,8 +11,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.eclipse.jgit.api.CloneCommand;
+import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.ResetCommand.ResetType;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
@@ -64,8 +64,9 @@ public class ZAN {
 			if (lp.exists()==false) {
 				CloneCommand clone = Git.cloneRepository();
 				clone.setURI(reporitoryURL);
-				clone.setBranch(branch);
 				clone.setDirectory(lp);
+				clone.setBranch(branch);
+				clone.setNoCheckout(true);
 				
 				if(progressListener!=null){
 					clone.setProgressMonitor(progressListener);
@@ -74,14 +75,22 @@ public class ZAN {
 				clone.call();
 			}
 			Git git = Git.open(lp);
+			
+			// fetch
 			git.fetch().call();
-			
-			ResetCommand reset = git.reset();
-			
-			reset.setRef(commit);
-			reset.setMode(ResetType.HARD);
-			
-			reset.call();
+
+			git.checkout().setName(branch)
+						  .setCreateBranch(true)
+						  .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
+						  .setStartPoint("origin/"+branch)
+						  .call();
+
+			git.reset().setRef(commit)
+					   .setMode(ResetType.HARD)
+					   .call();
+
+			// try to sync
+			sync(libraryName);
 		} catch (InvalidRemoteException e) {
 			throw new ZANException(e);
 		} catch (TransportException e) {
