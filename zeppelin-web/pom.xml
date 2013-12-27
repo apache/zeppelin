@@ -76,7 +76,7 @@
           </execution>
         </executions>
         <configuration>
-          <executable>brunch</executable>
+          <executable>./bin/brunch</executable>
           <arguments>
             <argument>build</argument>
           </arguments>
