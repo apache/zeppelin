@@ -2,9 +2,4 @@ language: java
 jdk:
   - oraclejdk7
 
-before_install:
-  - npm install -g brunch
-  - cd zeppelin-web
-  - npm install
-  - cd ..
 
