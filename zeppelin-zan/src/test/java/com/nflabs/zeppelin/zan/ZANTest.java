@@ -102,7 +102,7 @@ public class ZANTest {
 	
 
 	@Test
-	public void testInstall() throws GitAPIException, IOException, ZANException{
+	public void testCRUD() throws GitAPIException, IOException, ZANException{
 		// create remote zan repo
 		File testzanrepo = new File(tmpDir.getAbsolutePath()+"/local/zanrepo/libname");
 
@@ -115,10 +115,6 @@ public class ZANTest {
 		System.out.println(testzanrepo.toString());
 		
 		// commit some files to remore repo
-		/*
-		// create remote repository
-		Git.init().setBare(false).setDirectory(testzanrepo).call();
-		*/
 		Git git = Git.open(testzanrepo);
 		stringToFile(testzanrepo.getAbsolutePath()+"/file", "Hello world");
 		git.add().addFilepattern("file").call();
@@ -135,6 +131,31 @@ public class ZANTest {
 		assertTrue(new File(localBase+"/libname/file").isFile());
 		// check if file is synced
 		assertTrue(new File(remoteBase+"/libname/file").isFile());
+		
+
+		
+		// Update library
+		git = Git.open(testzanrepo);
+		stringToFile(testzanrepo.getAbsolutePath()+"/file1", "new file");
+		git.add().addFilepattern("file1").call();
+		rc = git.commit().setMessage("add file").call();
+		git.push();
+		
+		zan.upgrade("libname", "master", rc.getId().getName(), null);
+		// check if file is installed
+		assertTrue(new File(localBase+"/libname/file1").isFile());
+		// check if file is synced
+		assertTrue(new File(remoteBase+"/libname/file1").isFile());
+
+		
+		// Delete library
+		zan.delete("libname");
+		
+		assertFalse(new File(localBase+"/libname").exists());		
+		// check if file is synced
+		assertFalse(new File(remoteBase+"/libname").exists());
+
+		
 	}
 	
 }

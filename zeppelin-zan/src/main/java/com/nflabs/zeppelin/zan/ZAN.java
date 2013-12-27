@@ -10,6 +10,7 @@ import java.util.Map;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.tools.ant.util.FileUtils;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
@@ -101,6 +102,60 @@ public class ZAN {
 			throw new ZANException(e);
 		}			
 
+	}
+	
+	public void upgrade(String libraryName,
+						String branch, 
+						String commit,
+						ZANProgressMonitor progressListener) throws ZANException{
+		File lp = getLocalLibraryPath(libraryName);
+		if (lp.exists()==false) {
+			throw new ZANException("library "+libraryName+" not installed");
+		}
+		
+		
+		try {
+			Git git = Git.open(lp);
+			
+			// fetch
+			git.fetch().call();
+			git.reset().setRef(commit)
+					   .setMode(ResetType.HARD)
+					   .call();
+
+			// try to sync
+			sync(libraryName);
+		} catch (InvalidRemoteException e) {
+			throw new ZANException(e);
+		} catch (TransportException e) {
+			throw new ZANException(e);
+		} catch (GitAPIException e) {
+			throw new ZANException(e);
+		} catch (IOException e) {
+			throw new ZANException(e);
+		}
+	}
+	
+	public void delete(String libraryName) throws ZANException{
+		File lp = getLocalLibraryPath(libraryName);
+		if (lp.exists()==false) {
+			throw new ZANException("library "+libraryName+" not installed");
+		}
+		
+		deleteRecursive(lp);
+		sync(libraryName);
+	}
+	
+	private void deleteRecursive(File f){
+		if(f.isDirectory()){
+			for(File c : f.listFiles()){
+				deleteRecursive(c);
+			}
+			
+			f.delete();
+		} else if(f.isFile()){
+			f.delete();
+		}
 	}
 	
 	private File getLocalLibraryPath(String libraryName){
