@@ -1,2 +1,0 @@
-#!/bin/sh
-"node/node" "node/npm/bin/npm-cli.js" "$@"

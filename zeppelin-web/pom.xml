@@ -43,7 +43,7 @@
               <goal>npm</goal>
             </goals>
             <configuration>
-              <arguments>install -g brunch</arguments>
+              <arguments>install brunch</arguments>
             </configuration>
           </execution>
 
@@ -76,7 +76,7 @@
           </execution>
         </executions>
         <configuration>
-          <executable>./bin/brunch</executable>
+          <executable>./brunch</executable>
           <arguments>
             <argument>build</argument>
           </arguments>
