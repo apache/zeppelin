@@ -8,6 +8,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.result.Result;
@@ -34,6 +36,23 @@ public class ZQLJob extends Job{
 	
 	private Logger logger(){
 		return LoggerFactory.getLogger(ZQLJob.class);
+	}
+	
+	public ZQLJob clone(){
+		// clone object using gson
+		GsonBuilder gsonBuilder = new GsonBuilder();
+		gsonBuilder.setPrettyPrinting();
+		gsonBuilder.registerTypeAdapter(Z.class, new ZAdapter());
+
+		Gson gson = gsonBuilder.create();
+		String jsonstr = gson.toJson(this);
+		ZQLJob job = gson.fromJson(jsonstr, ZQLJob.class);
+		
+		// set transient values
+		job.conn = conn;
+		job.setListener(getListener());
+		job.setException(getException());
+		return job;
 	}
 	
 	public void setZQL(String zql){

@@ -177,7 +177,6 @@ App.ZqlEditView = Ember.View.extend({
         $('#zqlJobHistory').on('save', function(e, params) {
             controller.send("zqlJobHistoryChanged", model.id, params.newValue);
         });
-
     }.observes('controller.historyList'), // updated from controller:updateHistory
 
 
@@ -225,6 +224,18 @@ App.ZqlEditView = Ember.View.extend({
             controller.send("zqlJobCronChanged", params.newValue);  
         });             
         this.set('jobCronEditor', jobCronEditor);
+
+	// bootstrap confirmation plugin http://ethaizone.github.io/Bootstrap-Confirmation
+        $('#zqlDeleteButton').confirmation({
+	    title : "Delete?",
+	    btnOkLabel : "Delete",
+	    btnCancelLabel : "Cancel",
+	    href : "/#/zql",
+	    popout : true,
+	    onConfirm : function(){
+		controller.send("deleteJob");
+	    }
+	});
 
         var editorLoop = function(){
             setTimeout(function(){

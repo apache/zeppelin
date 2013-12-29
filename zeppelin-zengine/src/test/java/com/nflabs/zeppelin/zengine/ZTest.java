@@ -13,7 +13,7 @@ import javax.script.SimpleBindings;
 
 import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
-import com.nflabs.zeppelin.util.TestUtil;
+import com.nflabs.zeppelin.util.UtilsForTests;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 public class ZTest extends HiveTestService {
@@ -29,8 +29,8 @@ public class ZTest extends HiveTestService {
 		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
 		tmpDir.mkdir();
 		
-		TestUtil.delete(new File("/tmp/warehouse"));
-		TestUtil.delete(new File(ROOT_DIR.getName()));
+		UtilsForTests.delete(new File("/tmp/warehouse"));
+		UtilsForTests.delete(new File(ROOT_DIR.getName()));
 				
 		Z.configure();
 		HiveZeppelinDriver driver = new HiveZeppelinDriver(Z.getConf());
@@ -41,8 +41,8 @@ public class ZTest extends HiveTestService {
 	public void tearDown() throws Exception {
 		super.tearDown();
 		delete(tmpDir);
-		TestUtil.delete(new File("/tmp/warehouse"));
-		TestUtil.delete(new File(ROOT_DIR.getName()));
+		UtilsForTests.delete(new File("/tmp/warehouse"));
+		UtilsForTests.delete(new File(ROOT_DIR.getName()));
 	}
 	
 	private void delete(File file){
