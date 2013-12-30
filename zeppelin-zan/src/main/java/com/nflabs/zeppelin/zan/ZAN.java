@@ -23,49 +23,49 @@ public class ZAN {
 	private String localPath;
 	private String remotePath;
 	private FileSystem dfs;
+	private String zanRepo;
 
 
 	/**
 	 * Initialize ZAN with localRepository on local file system
 	 * @param localPath
 	 */
-	public ZAN(String localPath){
-		this(localPath, null, null);
+	public ZAN(String zanRepo, String localPath){
+		this(zanRepo, localPath, null, null);
 	}
 	
 	
 	/**
 	 * Initialize ZAN with localRepository at localPath and syncwith remote path dfsPath
-	 * @param localPath  
-	 * @param dfsPath 
+	 * @param zanRepo ZAN catalog repository url. 
+	 * @param localPath local path to install zan library
+	 * @param remotePath  dfs path to sync
 	 */
-	public ZAN(String localPath, String remotePath, FileSystem dfs){
+	public ZAN(String zanRepo, String localPath, String remotePath, FileSystem dfs){
+		this.zanRepo = zanRepo;
 		this.localPath = localPath;
 		this.remotePath = remotePath;
 		this.dfs = dfs;
 	}
 	
-	/**
-	 * Install new library
-	 * 
-	 * @param libraryName
-	 * @param reporitoryURL
-	 * @param branch
-	 * @param commit
-	 * @throws ZANException 
-	 */
-	public void install(String libraryName,
-						String reporitoryURL, 
-						String branch, 
-						String commit, 
-						ZANProgressMonitor progressListener) throws ZANException{
+	public void install(String libraryName, ZANProgressMonitor progressListener) throws ZANException{
+		Meta meta;
+		try {
+			meta = getMeta(libraryName);
+		} catch (IOException e) {
+			throw new ZANException(e);
+		}
+		if (meta==null) {
+			throw new ZANException(libraryName+" not exists");
+		}
+		
 		File lp = getLocalLibraryPath(libraryName);
 		try {
 			if (lp.exists()==false) {
 				CloneCommand clone = Git.cloneRepository();
-				clone.setURI(reporitoryURL);
+				clone.setURI(meta.repository);
 				clone.setDirectory(lp);
-				clone.setBranch(branch);
+				clone.setBranch(meta.branch);
 				clone.setNoCheckout(true);
 				
 				if(progressListener!=null){
@@ -79,13 +79,13 @@ public class ZAN {
 			// fetch
 			git.fetch().call();
 
-			git.checkout().setName(branch)
+			git.checkout().setName(meta.branch)
 						  .setCreateBranch(true)
 						  .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
-						  .setStartPoint("origin/"+branch)
+						  .setStartPoint("origin/"+meta.branch)
 						  .call();
 
-			git.reset().setRef(commit)
+			git.reset().setRef(meta.commit)
 					   .setMode(ResetType.HARD)
 					   .call();
 
@@ -100,13 +100,44 @@ public class ZAN {
 		} catch (IOException e) {
 			throw new ZANException(e);
 		}			
-
 	}
 	
-	public void upgrade(String libraryName,
-						String branch, 
-						String commit,
-						ZANProgressMonitor progressListener) throws ZANException{
+	private Meta getMeta(String libraryName) throws IOException{
+		File metaFile = new File(localPath+"/.zan/"+libraryName+"/meta");
+		if (metaFile.exists()==false) {
+			return null;
+		} else {
+			return Meta.createFromFile(metaFile);
+		}
+	}
+	
+	/**
+	 * Get information of the library
+	 * @param libraryName
+	 * @return
+	 * @throws ZANException
+	 */
+	public Info info(String libraryName) throws ZANException{
+		Meta meta;
+		try {
+			meta = getMeta(libraryName);
+		} catch (IOException e) {
+			throw new ZANException(e);
+		}
+		return new Info(meta);
+	}
+	
+	public void upgrade(String libraryName, ZANProgressMonitor progressListener) throws ZANException{
+		Meta meta;
+		try {
+			meta = getMeta(libraryName);
+		} catch (IOException e) {
+			throw new ZANException(e);
+		}
+		if (meta==null) {
+			throw new ZANException(libraryName+" not exists");
+		}
+		
 		File lp = getLocalLibraryPath(libraryName);
 		if (lp.exists()==false) {
 			throw new ZANException("library "+libraryName+" not installed");
@@ -118,7 +149,7 @@ public class ZAN {
 			
 			// fetch
 			git.fetch().call();
-			git.reset().setRef(commit)
+			git.reset().setRef(meta.commit)
 					   .setMode(ResetType.HARD)
 					   .call();
 
@@ -133,9 +164,15 @@ public class ZAN {
 		} catch (IOException e) {
 			throw new ZANException(e);
 		}
+				
 	}
-	
-	public void delete(String libraryName) throws ZANException{
+
+	/**
+	 * Remove library
+	 * @param libraryName
+	 * @throws ZANException
+	 */
+	public void uninstall(String libraryName) throws ZANException{
 		File lp = getLocalLibraryPath(libraryName);
 		if (lp.exists()==false) {
 			throw new ZANException("library "+libraryName+" not installed");
@@ -144,6 +181,77 @@ public class ZAN {
 		deleteRecursive(lp);
 		sync(libraryName);
 	}
+
+
+	/**
+	 * Update zan repository catalog
+	 * @throws ZANException 
+	 */
+	public void update() throws ZANException{
+		update(null);
+	}
+	
+	/**
+	 * Update zan repository catalog
+	 * @throws ZANException 
+	 */
+	public void update(ZANProgressMonitor progressListener) throws ZANException{
+		String branch = "master";
+		String commit = "HEAD";
+		File lp = getLocalLibraryPath(".zan");
+		try {
+			if (lp.exists()==false) {
+				CloneCommand clone = Git.cloneRepository();
+				clone.setURI(zanRepo);
+				clone.setDirectory(lp);
+				clone.setBranch(branch);
+				clone.setNoCheckout(true);
+				
+				if(progressListener!=null){
+					clone.setProgressMonitor(progressListener);
+				}
+				
+				clone.call();
+
+				Git git = Git.open(lp);
+				
+				// fetch
+				git.fetch().call();
+	
+				git.checkout().setName(branch)
+							  .setCreateBranch(true)
+							  .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
+							  .setStartPoint("origin/"+branch)
+							  .call();
+				
+				git.reset().setRef(commit)
+						   .setMode(ResetType.HARD)
+						   .call();
+			} else {
+				Git git = Git.open(lp);
+
+				// fetch
+				git.fetch().setRemote("origin").call();
+				git.rebase().setUpstream("origin/"+branch)
+						    .call();
+				/*
+				git.reset().setRef(commit)
+						   .setMode(ResetType.HARD)
+						   .call();
+						   */
+			}
+		} catch (InvalidRemoteException e) {
+			throw new ZANException(e);
+		} catch (TransportException e) {
+			throw new ZANException(e);
+		} catch (GitAPIException e) {
+			throw new ZANException(e);
+		} catch (IOException e) {
+			throw new ZANException(e);
+		}			
+	}
+	
+	
 	
 	private void deleteRecursive(File f){
 		if(f.isDirectory()){
