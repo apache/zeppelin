@@ -1,7 +1,10 @@
 package com.nflabs.zeppelin.cli;
 
+import java.util.List;
+
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.zan.Info;
 import com.nflabs.zeppelin.zan.ZAN;
 import com.nflabs.zeppelin.zan.ZANException;
 import com.nflabs.zeppelin.zengine.Z;
@@ -14,7 +17,8 @@ public class ZANCli {
 		install,
 		upgrade,
 		uninstall,
-		info
+		info,
+		list
 		;
 	}
 	public static void main(String [] args) throws ZANException, ZException{
@@ -53,8 +57,17 @@ public class ZANCli {
 			}	
 		} else if (cmd==Command.info) {
 			for(int i=cmdIndex+1; i<args.length; i++){
-				zan().info(args[i]);	
+				System.out.println("-------------------------------------");
+				printInfo(args[i], zan().info(args[i]));	
 			}
+			System.out.println("-------------------------------------");
+		} else if (cmd==Command.list) {
+			List<Info> infos = zan().list();
+			for(Info info : infos){
+				System.out.println("-------------------------------------");
+				printInfo(info.getName(), info);				
+			}
+			System.out.println("-------------------------------------");
 		} else if (cmd==Command.help){
 			printHelp();
 			System.exit(0);
@@ -72,6 +85,16 @@ public class ZANCli {
 		return zan;
 	}
 	
+	public static void printInfo(String name, Info info){
+		if (info==null) {
+			System.out.println(name + " not found");
+		} else {
+			System.out.println("Name - "+name);
+			System.out.println("Installed - "+info.isInstalled());
+			System.out.println("Update Available - "+info.isUpdateAvailable());
+		}
+	}
+	
 	public static void printHelp(){
 		System.out.println("help\t\t\t\t- print this messsage");
 		System.out.println("update\t\t\t\t- update catalog");
@@ -79,5 +102,6 @@ public class ZANCli {
 		System.out.println("upgrade [library name]\t\t- upgrade installed library");
 		System.out.println("uninstall [library name]\t- uninstall installed library");
 		System.out.println("info [library name]\t\t- print information of the library");
+		System.out.println("list");
 	}
 }

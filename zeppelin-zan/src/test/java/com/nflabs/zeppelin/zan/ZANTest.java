@@ -226,10 +226,14 @@ public class ZANTest {
 		git.push();
 				
 		// install library. however, update is not yet published
+		assertFalse(zan.info("lib1").isInstalled());
+		assertFalse(zan.info("lib1").isUpdateAvailable());
 		zan.install("lib1", null);
 		assertTrue(new File(localBase, "lib1").isDirectory());
 		assertTrue(new File(localBase, "lib1/zql").isFile());
 		assertFalse(new File(localBase, "lib1/res").isFile());
+		assertTrue(zan.info("lib1").isInstalled());
+		assertFalse(zan.info("lib1").isUpdateAvailable());
 		
 		// publish update
 		git = Git.open(zanrepoDir);
@@ -238,8 +242,9 @@ public class ZANTest {
 		git.push();
 		
 		zan.update();
+		assertTrue(zan.info("lib1").isUpdateAvailable());
 		zan.upgrade("lib1", null);
-		System.out.println("dir="+zanrepoDir.getAbsolutePath());
+		assertFalse(zan.info("lib1").isUpdateAvailable());
 		assertTrue(new File(localBase, "lib1").isDirectory());
 		assertTrue(new File(localBase, "lib1/zql").isFile());
 		assertTrue(new File(localBase, "lib1/res").isFile());		
@@ -274,5 +279,16 @@ public class ZANTest {
 		assertTrue(new File(localBase, "lib2").isDirectory());
 		assertFalse(new File(remoteBase, "lib1").isDirectory());
 		assertTrue(new File(remoteBase, "lib2").isDirectory());
+	}
+	
+	@Test
+	public void testList() throws ZANException{
+		String localBase = tmpDir.getAbsolutePath()+"/local";
+		String remoteBase = tmpDir.getAbsolutePath()+"/remote";
+		ZAN zan = new ZAN("file://"+zanrepoDir.getAbsolutePath(), localBase, remoteBase, dfs);
+		zan.update();
+		
+		List<Info> infos = zan.list();
+		assertEquals(2, infos.size());
 	}
 }

@@ -16,7 +16,10 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand.ResetType;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.errors.RepositoryNotFoundException;
+import org.eclipse.jgit.revwalk.RevCommit;
 
 public class ZAN {
 	
@@ -124,8 +127,72 @@ public class ZAN {
 		} catch (IOException e) {
 			throw new ZANException(e);
 		}
-		return new Info(meta);
+		
+		// update available
+		try {
+			return getInfoFromMeta(libraryName, meta);
+		} catch (IOException e) {
+			throw new ZANException(e);
+		} catch (NoHeadException e) {
+			throw new ZANException(e);
+		} catch (GitAPIException e) {
+			throw new ZANException(e);
+		}
 	}
+	
+	public List<Info> list() throws ZANException{
+		List<Info> infos = new LinkedList<Info>();
+		File zp = new File(localPath+"/.zan");
+		
+		File[] files = zp.listFiles();
+		if(files==null || files.length==0) return infos;
+		
+		for(File f : files){
+			String libraryName = f.getName();
+			if (libraryName.startsWith(".") ) continue;
+			if (libraryName.startsWith("#") ) continue;
+			if (libraryName.startsWith("~") ) continue;
+			if (f.isDirectory()==false) continue;
+			
+			try {
+				Meta meta = getMeta(libraryName);
+				infos.add(getInfoFromMeta(libraryName, meta));
+			} catch (NoHeadException e) {
+				throw new ZANException(e);
+			} catch (IOException e) {
+				throw new ZANException(e);
+			} catch (GitAPIException e) {
+				throw new ZANException(e);
+			}
+		}
+		
+		return infos;
+	}
+	
+	private Info getInfoFromMeta(String libraryName, Meta meta) throws IOException, NoHeadException, GitAPIException{
+		File lp = getLocalLibraryPath(libraryName);
+		boolean installed;
+		String commit = null;
+		
+		if (lp.exists()) {
+			try {
+				Git git = Git.open(lp);
+				Iterable<RevCommit> commits = git.log().setMaxCount(1).call();
+				RevCommit cm = commits.iterator().next();
+				commit = cm.getName();
+				installed = true;
+			} catch (RepositoryNotFoundException e){
+				// library not installed from remote
+				installed = false;
+			}
+		} else {
+			installed = false;
+		}
+				
+		
+		return new Info(libraryName, meta, installed, commit); 
+	}
+	
 	
 	public void upgrade(String libraryName, ZANProgressMonitor progressListener) throws ZANException{
 		Meta meta;
