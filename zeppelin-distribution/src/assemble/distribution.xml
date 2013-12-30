@@ -57,9 +57,6 @@
       <fileMode>0755</fileMode>
     </fileSet>
     <fileSet>
-      <directory>../zan-repo</directory>
-    </fileSet>
-    <fileSet>
       <directory>../conf</directory>
       <includes>
         <include>configuration.xsl</include>
