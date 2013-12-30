@@ -1,0 +1,83 @@
+package com.nflabs.zeppelin.cli;
+
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.zan.ZAN;
+import com.nflabs.zeppelin.zan.ZANException;
+import com.nflabs.zeppelin.zengine.Z;
+import com.nflabs.zeppelin.zengine.ZException;
+
+public class ZANCli {
+	public static enum Command{
+		help,
+		update,
+		install,
+		upgrade,
+		uninstall,
+		info
+		;
+	}
+	public static void main(String [] args) throws ZANException, ZException{
+
+		if(args==null || args.length==0){
+			printHelp();
+			System.exit(0);
+		}
+		
+		int cmdIndex = 0;
+		
+		String cmdStr = args[cmdIndex];
+		Command cmd = null;
+		try{
+			cmd = Command.valueOf(cmdStr);
+		} catch (IllegalArgumentException e){
+			// unsupported command
+			System.err.println("Unknown command '"+cmdStr+"'");
+			System.exit(-1);
+		}
+
+
+		if (cmd==Command.update) {			
+			zan().update();
+		} else if (cmd==Command.install) {			
+			for(int i=cmdIndex+1; i<args.length; i++){
+				zan().install(args[i], null);	
+			}			
+		} else if (cmd==Command.uninstall) {
+			for(int i=cmdIndex+1; i<args.length; i++){
+				zan().uninstall(args[i]);	
+			}
+		} else if (cmd==Command.upgrade) {
+			for(int i=cmdIndex+1; i<args.length; i++){
+				zan().upgrade(args[i], null);	
+			}	
+		} else if (cmd==Command.info) {
+			for(int i=cmdIndex+1; i<args.length; i++){
+				zan().info(args[i]);	
+			}
+		} else if (cmd==Command.help){
+			printHelp();
+			System.exit(0);
+		}
+	}
+	
+	public static ZAN zan() throws ZException{
+		ZeppelinConfiguration conf = new ZeppelinConfiguration();
+		Z.configure(conf);
+		
+		String zanRepo = conf.getString(ConfVars.ZEPPELIN_ZAN_REPO);
+		String zanLocalRepo = conf.getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO);
+		String zanSharedRepo = conf.getString(ConfVars.ZEPPELIN_ZAN_SHARED_REPO);
+		ZAN zan = new ZAN(zanRepo, zanLocalRepo, zanSharedRepo, Z.fs());
+		return zan;
+	}
+	
+	public static void printHelp(){
+		System.out.println("help\t\t\t\t- print this messsage");
+		System.out.println("update\t\t\t\t- update catalog");
+		System.out.println("install [library name]\t\t- install new library");
+		System.out.println("upgrade [library name]\t\t- upgrade installed library");
+		System.out.println("uninstall [library name]\t- uninstall installed library");
+		System.out.println("info [library name]\t\t- print information of the library");
+	}
+}
