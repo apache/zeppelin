@@ -50,8 +50,8 @@ if [ "x$ZEPPELIN_WAR" == "x" ]; then
     fi
 fi
 
-if [ "x$ZEPPELIN_SESSION_DIR" == "x" ]; then
-    export ZEPPELIN_SESSION_DIR="$ZEPPELIN_HOME/sessions"
+if [ "x$ZEPPELIN_JOB_DIR" == "x" ]; then
+    export ZEPPELIN_JOB_DIR="$ZEPPELIN_HOME/jobs"
 fi
 
 if [ "x$ZEPPELIN_ZAN_LOCAL_REPO" == "x" ]; then
