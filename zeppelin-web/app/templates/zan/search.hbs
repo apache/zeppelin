@@ -1,0 +1,10 @@
+Search
+<div class="row">
+{{#each lib in 'searchResult'}}
+	<div class='zanLibraryInformation col-md-8'>
+	  <h4>{{lib.name}}</h4>
+	  <div>Installed : {{lib.installed}}</div>
+	  <div>Update Available : {{lib.updateAvailable}}</div>
+	</div>
+{{/each}}
+</div>

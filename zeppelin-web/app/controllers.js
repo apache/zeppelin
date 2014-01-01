@@ -343,3 +343,27 @@ App.ReportController = App.ApplicationController.extend();
 App.ReportLinkController = App.ApplicationController.extend({
     currentJob : undefined
 });
+
+
+App.ZanController = App.ApplicationController.extend({
+    actions : {
+    }
+});
+
+App.ZanSearchController = App.ApplicationController.extend({
+    needs: ['zan'],
+    searchResult : undefined,
+
+    actions : {
+	search : function(queryString){
+	    var controller = this;
+	    zeppelin.zan.search({ queryString:"*" }, function(c, d){
+		if(c==200){
+		    controller.set("searchResult", d);
+		} else {
+		    // error
+		}
+	    }, this);
+	}
+    }
+});

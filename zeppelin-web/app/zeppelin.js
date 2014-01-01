@@ -4,6 +4,8 @@ function Zeppelin(arg){
 
     var zql = require('zql').zql;
     this.zql = new zql(this);
+    var zan = require('zan').zan;
+    this.zan = new zan(this);
 
     this.getWebResourceURL = function(sessionId, historyId, planId){
 	if (historyId==undefined || historyId=="") {

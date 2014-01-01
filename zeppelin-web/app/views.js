@@ -384,3 +384,27 @@ App.ReportLinkView = Ember.View.extend({
         
     }.observes('controller.currentJob'),
 });
+
+
+App.ZanView = Ember.View.extend({
+    layoutName: 'default_layout',
+});
+
+
+App.ZanSearchView = App.ZanView.extend({
+    didInsertElement : function(){
+        var controller = this.get("controller");
+	controller.send('search', { queryString:'*' });
+    },
+
+    modelChanged : function(){      // called when model is changed
+        var controller = this.get("controller");
+        var searchResult = controller.get('searchResult');
+	console.log("searchResult=%o", searchResult);
+	this.set('searchResult', searchResult);
+    }.observes('controller.searchResult'),
+
+    willClearRender: function(){
+    }
+
+});

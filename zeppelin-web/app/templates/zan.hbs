@@ -1,0 +1,13 @@
+<div class="row">
+  <div class="col-md-3">
+    <div class="bs-sidebar hidden-print" role="complementary">
+      <ul class="nav bs-sidenav">
+        <li>{{#link-to 'zan.search'}}Search{{/link-to}}</li>
+	<li>{{#link-to 'zan.installed'}}Installed{{/link-to}}</li>
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-8">
+    {{outlet}}
+  </div>
+</div>

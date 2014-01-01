@@ -19,6 +19,15 @@ App.Router.map(function(){
         this.route('link', {path:'/:jobid'});
         this.route('link', {path:'/:jobid/:historyid'});
     });
+    this.resource('zan', function(){
+	this.route('search');
+	this.route('installed');
+	this.route('update');
+	this.route('info', {path:'/:libname'});
+	this.route('install', {path:'/:libname'});
+	this.route('uninstall', {path:'/:libname'});
+	this.route('upgrade', {path:'/:libname'});
+    });
 });
 
 
@@ -87,3 +96,11 @@ App.ReportLinkRoute = App.ReportRoute.extend({
 });
 
 
+// --------- zan --------------
+App.ZanRoute = Ember.Route.extend({
+    model : function(params){	
+        return params;
+    },
+    setupController : function(controller, model){
+    }
+});

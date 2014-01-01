@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.rest.ZAN;
 import com.nflabs.zeppelin.rest.ZQL;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.zengine.Z;
@@ -100,6 +101,7 @@ public class ZeppelinServer extends Application {
 
 	private SchedulerFactory schedulerFactory;
 	private ZQLJobManager analyzeSessionManager;
+	private com.nflabs.zeppelin.zan.ZAN zan;
 	
 	public ZeppelinServer() throws Exception {
 		this.schedulerFactory = new SchedulerFactory();
@@ -109,6 +111,11 @@ public class ZeppelinServer extends Application {
 		} else {
 			this.analyzeSessionManager = new ZQLJobManager(schedulerFactory.createOrGetParallelScheduler("analyze", 100), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		}
+		
+		this.zan = new com.nflabs.zeppelin.zan.ZAN(Z.getConf().getString(ConfVars.ZEPPELIN_ZAN_REPO),
+												   Z.getConf().getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO),
+												   Z.getConf().getString(ConfVars.ZEPPELIN_ZAN_SHARED_REPO),
+												   Z.fs());
 	}
 	
     public Set<Class<?>> getClasses() {
@@ -121,6 +128,9 @@ public class ZeppelinServer extends Application {
     	
     	ZQL analyze = new ZQL(analyzeSessionManager);
     	singletons.add(analyze);
+    	
+    	ZAN zan = new ZAN(this.zan);
+    	singletons.add(zan);
     	
     	return singletons;
     }
