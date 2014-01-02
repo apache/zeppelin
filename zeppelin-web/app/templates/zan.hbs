@@ -1,13 +1,19 @@
+<div></div>
+{{#if 'waitForComplete'}}
+<div class="row">
+{{#each job in 'runningJobs'}}
+    <div class="col-md-8">
+        {{job.op}} {{job.libName}} ...
+    </div>
+{{/each}}
+</div>
+{{else}}
+
 <div class="row">
      <a {{action "update"}}>Update Catalog</a>
 </div>
 <p />
 <div class="row">
-{{#if 'waitForComplete'}}
-    <div class="col-md-8">
-        Waiting for Completetion
-    </div>
-{{/if}}
 {{#each lib in 'searchResult'}}
     <div class='zanLibraryInformation col-md-8'>
         <h4>{{lib.name}}</h4>
@@ -23,3 +29,5 @@
     </div>
 {{/each}}
 </div>
+
+{{/if}}
