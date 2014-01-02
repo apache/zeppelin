@@ -40,7 +40,6 @@ Thumbs.db
 # maven target files
 target/
 **/target/
-bin/
 
 *~
 \#*\#
