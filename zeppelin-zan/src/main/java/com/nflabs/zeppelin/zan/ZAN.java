@@ -42,7 +42,7 @@ public class ZAN {
 	 * Initialize ZAN with localRepository at localPath and syncwith remote path dfsPath
 	 * @param zanRepo ZAN catalog repository url. 
 	 * @param localPath local path to install zan library
-	 * @param remotePath  dfs path to sync
+	 * @param remotePath  dfs path to sync, nullable
 	 */
 	public ZAN(String zanRepo, String localPath, String remotePath, FileSystem dfs){
 		this.zanRepo = zanRepo;
