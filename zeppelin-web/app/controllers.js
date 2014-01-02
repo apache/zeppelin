@@ -346,20 +346,90 @@ App.ReportLinkController = App.ApplicationController.extend({
 
 
 App.ZanController = App.ApplicationController.extend({
-    actions : {
-    }
-});
-
-App.ZanSearchController = App.ApplicationController.extend({
-    needs: ['zan'],
+/**
+    runningJobs : undefined,
     searchResult : undefined,
+    waitForComplete : undefined,
+*/
 
     actions : {
 	search : function(queryString){
 	    var controller = this;
-	    zeppelin.zan.search({ queryString:"*" }, function(c, d){
-		if(c==200){
+	    zeppelin.zan.search({ queryString:queryString }, function(c, d){
+		if (c==200) {
 		    controller.set("searchResult", d);
+		} else {
+		    // error
+		}
+	    }, this);
+	},
+
+	update : function(){
+	    var controller = this;
+	    zeppelin.zan.update(function(c, d){
+		if(c==200){
+		    controller.send('waitForComplete');
+		} else {
+		    // error
+		}
+	    }, this);
+	},
+
+	install : function(libName){
+	    var controller = this;
+	    zeppelin.zan.install(libName, function(c, d){
+		if (c==200) {
+		    controller.send('waitForComplete');
+		} else {
+		    // error
+		}
+	    }, this);
+	},
+
+	uninstall : function(libName){
+	    var controller = this;
+	    zeppelin.zan.uninstall(libName, function(c, d){
+		if (c==200) {
+		    controller.send('waitForComplete');
+		} else {
+		    // error
+		}
+	    }, this);
+	},
+
+	upgrade : function(libName){
+	    var controller = this;
+	    zeppelin.zan.upgrade(libName, function(c, d){
+		if (c==200) {
+		    controller.send('waitForComplete');
+		} else {
+		    // error
+		}
+	    }, this);
+	},
+
+
+	
+	/**
+	 * wait for any running job complete
+	 */
+	waitForComplete : function(){
+	    var controller = this;
+	    controller.set("waitForComplete", true);
+
+	    zeppelin.zan.running(function(c, d){
+		if (c==200) {
+		    console.log("running = %o", d);
+		    controller.set("runningJobs", d);
+
+		    if(d && d.length>0){
+			setTimeout(function(){
+			    controller.send('waitForComplete');
+			}, 1000);
+		    } else {
+			controller.set("waitForComplete", false);
+			controller.send("search", "*");
+		    }
 		} else {
 		    // error
 		}

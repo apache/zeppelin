@@ -1,13 +1,25 @@
 <div class="row">
-  <div class="col-md-3">
-    <div class="bs-sidebar hidden-print" role="complementary">
-      <ul class="nav bs-sidenav">
-        <li>{{#link-to 'zan.search'}}Search{{/link-to}}</li>
-	<li>{{#link-to 'zan.installed'}}Installed{{/link-to}}</li>
-      </ul>
+     <a {{action "update"}}>Update Catalog</a>
+</div>
+<p />
+<div class="row">
+{{#if 'waitForComplete'}}
+    <div class="col-md-8">
+        Waiting for Completetion
     </div>
-  </div>
-  <div class="col-md-8">
-    {{outlet}}
-  </div>
+{{/if}}
+{{#each lib in 'searchResult'}}
+    <div class='zanLibraryInformation col-md-8'>
+        <h4>{{lib.name}}</h4>
+        <div>{{lib.status}} - <a {{action "install" lib.name}}>Install</a> | <a {{action "uninstall" lib.name}}>Uninstall</a> | <a {{action "upgrade" lib.name}}>Upgrade</a>
+	    <!-- following code supposed to work, but it doesn't -->
+	    {{#ifCond lib.status "==" "INSTALLED" }}
+	        <a {{action "uninstall" lib.name}}>Uninstall</a>
+	    {{/ifCond}}
+	    {{#ifCond lib.status "==" "UNINSTALLED" }}
+	        <a {{action "install" lib.name}}>Install</a>
+            {{/ifCond}} 
+	</div>
+    </div>
+{{/each}}
 </div>

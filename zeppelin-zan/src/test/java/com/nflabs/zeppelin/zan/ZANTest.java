@@ -226,14 +226,12 @@ public class ZANTest {
 		git.push();
 				
 		// install library. however, update is not yet published
-		assertFalse(zan.info("lib1").isInstalled());
-		assertFalse(zan.info("lib1").isUpdateAvailable());
+		assertEquals(Info.Status.UNINSTALLED, zan.info("lib1").getStatus());
 		zan.install("lib1", null);
 		assertTrue(new File(localBase, "lib1").isDirectory());
 		assertTrue(new File(localBase, "lib1/zql").isFile());
 		assertFalse(new File(localBase, "lib1/res").isFile());
-		assertTrue(zan.info("lib1").isInstalled());
-		assertFalse(zan.info("lib1").isUpdateAvailable());
+		assertEquals(Info.Status.INSTALLED, zan.info("lib1").getStatus());
 		
 		// publish update
 		git = Git.open(zanrepoDir);
@@ -242,9 +240,9 @@ public class ZANTest {
 		git.push();
 		
 		zan.update();
-		assertTrue(zan.info("lib1").isUpdateAvailable());
+		assertEquals(Info.Status.UPDATEAVAILABLE, zan.info("lib1").getStatus());
 		zan.upgrade("lib1", null);
-		assertFalse(zan.info("lib1").isUpdateAvailable());
+		assertEquals(Info.Status.INSTALLED, zan.info("lib1").getStatus());
 		assertTrue(new File(localBase, "lib1").isDirectory());
 		assertTrue(new File(localBase, "lib1/zql").isFile());
 		assertTrue(new File(localBase, "lib1/res").isFile());		

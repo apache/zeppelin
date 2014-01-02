@@ -35,13 +35,21 @@ public abstract class Job {
 		
 		dateCreated = new Date();		
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
-		id = dateFormat.format(dateCreated)+"_"+hashCode();
+		id = dateFormat.format(dateCreated)+"_"+super.hashCode();
 		
 		setStatus(Status.READY);
 	}
 	
 	public String getId(){
 		return id;
+	}
+	
+	public int hashCode(){
+		return id.hashCode();
+	}
+	
+	public boolean equals(Object o){
+		return ((Job)o).hashCode()==hashCode();
 	}
 	
 	public Status getStatus(){

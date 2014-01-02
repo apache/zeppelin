@@ -90,8 +90,7 @@ public class ZANCli {
 			System.out.println(name + " not found");
 		} else {
 			System.out.println("Name - "+name);
-			System.out.println("Installed - "+info.isInstalled());
-			System.out.println("Update Available - "+info.isUpdateAvailable());
+			System.out.println("Status - "+info.getStatus().toString());
 		}
 	}
 	

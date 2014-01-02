@@ -29,8 +29,6 @@ require('templates/zql/param');
 require('templates/report');
 require('templates/report/link');
 require('templates/zan');
-require('templates/zan/search');
-require('templates/zan/installed');
 
 
 

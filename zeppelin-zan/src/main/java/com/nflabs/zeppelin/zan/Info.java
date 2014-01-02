@@ -1,17 +1,35 @@
 package com.nflabs.zeppelin.zan;
 
 public class Info {
+	public static enum Status{
+		UNKNOWN,
+		INSTALLING,
+		INSTALLED,
+		UNINSTALLED,
+		UNINSTALLING,
+		UPDATEAVAILABLE,
+		UPUPDATING				
+	}
 	private Meta meta;
 	private String name;
-	private boolean installed;
+	private Status status;
 	private String commit;
 
 	public Info(String name, Meta meta, boolean installed, String commit) {
 		super();
 		this.name = name;
 		this.meta = meta;
-		this.installed = installed;
 		this.commit = commit;
+
+		if(installed==false){
+			status=Status.UNINSTALLED;
+		} else {
+			if(meta.commit.compareTo(commit)==0){
+				status = Status.INSTALLED;
+			} else {
+				status = Status.UPDATEAVAILABLE;
+			}
+		}
 	}
 
 	public String getName() {
@@ -30,20 +48,8 @@ public class Info {
 		this.meta = meta;
 	}
 
-	public boolean isInstalled() {
-		return installed;
-	}
-
-	public void setInstalled(boolean installed) {
-		this.installed = installed;
-	}
-
-	public boolean isUpdateAvailable() {
-		if (!isInstalled()) {
-			return false;
-		}				
-		
-		return (meta.commit.compareTo(commit)==0) ? false : true; 
+	public Status getStatus() {
+		return status;
 	}
 
 }
