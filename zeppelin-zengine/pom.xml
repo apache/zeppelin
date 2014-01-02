@@ -135,9 +135,23 @@
           <groupId>org.apache.thrift</groupId>
           <artifactId>libthrift</artifactId>
         </exclusion>
+         <exclusion>
+          <groupId>org.apache.derby</groupId>
+          <artifactId>derby</artifactId>
+        </exclusion>       
       </exclusions>
     </dependency>
-
+    
+    <!-- hive-jdbc, hive-test dependencies have transitive dependency to derby. in different version.
+         excluding/chaning derby transivie dependency in hive-test is braking hive-test.
+         therefore, only option is excluding derby from hive-jdbc's transitive and explicitly define
+         dependency with same version to hive-test's one -->
+    <dependency>
+      <groupId>org.apache.derby</groupId>
+      <artifactId>derby</artifactId>
+      <version>10.8.1.2</version>
+    </dependency>
+     
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-service</artifactId>
@@ -215,7 +229,7 @@
         <exclusion>
           <groupId>log4j</groupId>
           <artifactId>log4j</artifactId>
-        </exclusion>        
+        </exclusion>
       </exclusions>
     </dependency>
 

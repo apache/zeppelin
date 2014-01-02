@@ -44,6 +44,7 @@ exports.config =
           'vendor/scripts/bootstrap-combobox.js',
 
           'vendor/scripts/bootstrap-editable.js',
+          'vendor/scripts/bootstrap-confirmation.js',
 
           'vendor/scripts/jquery.ui.core.js',
           'vendor/scripts/jquery.ui.widget.js',
