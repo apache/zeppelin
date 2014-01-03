@@ -113,6 +113,38 @@
       <artifactId>selenium-java</artifactId>
       <version>2.39.0</version>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.seleniumhq.selenium</groupId>
+          <artifactId>selenium-firefox-driver</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.seleniumhq.selenium</groupId>
+          <artifactId>selenium-android-driver</artifactId>
+        </exclusion>   
+        <exclusion>
+          <groupId>org.seleniumhq.selenium</groupId>
+          <artifactId>selenium-chrome-driver</artifactId>
+        </exclusion>   
+        <exclusion>
+          <groupId>org.json</groupId>
+          <artifactId>json</artifactId>
+        </exclusion>   
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>   
+        <exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency> <!-- because there are two of them above  -->
+      <groupId>xml-apis</groupId>
+      <artifactId>xml-apis</artifactId>
+      <version>1.4.01</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
@@ -130,8 +162,52 @@
             </goals>
           </execution>
         </executions>
+         <configuration>
+          <skipTests>false</skipTests>
+        </configuration>
       </plugin>
+      
+      <plugin> <!-- start/stop zeppelin before and after integration-test  -->
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>start-zeppelin</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${zeppelin.deamon.packaged}</executable>
+              <arguments>
+                <argument>start</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>stop-zeppelin</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <configuration>
+              <executable>${zeppelin.deamon.packaged}</executable>
+              <arguments>
+                <argument>stop</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>          
     </plugins>
+    
   </build>
+
+  <properties>
+    <zeppelin.deamon.packaged>
+      ../zeppelin-distribution/target/zeppelin-${project.version}/zeppelin-${project.version}/bin/zeppelin-daemon.sh
+    </zeppelin.deamon.packaged>
+  </properties>
+
 
 </project>

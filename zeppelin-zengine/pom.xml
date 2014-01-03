@@ -135,6 +135,10 @@
           <groupId>org.apache.derby</groupId>
           <artifactId>derby</artifactId>
         </exclusion>       
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>       
       </exclusions>
     </dependency>
     
@@ -147,7 +151,15 @@
       <artifactId>derby</artifactId>
       <version>10.8.1.2</version>
     </dependency>
-     
+    
+    <!-- hive-exec, hive-service and hive-test depends on guava:r09 but selenium
+         brings a new on 15.0 so got rid of the old one, but bringing a new -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>15.0</version>
+    </dependency>
+    
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-service</artifactId>
@@ -188,6 +200,10 @@
         <exclusion>
           <groupId>jline</groupId>
           <artifactId>jline</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -239,6 +255,10 @@
         <exclusion>
           <groupId>log4j</groupId>
           <artifactId>log4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -360,7 +380,6 @@
           <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
-            <version>1.2.1</version>
             <configuration>
               <executable>tar</executable>
               <arguments>
