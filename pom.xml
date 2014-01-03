@@ -232,6 +232,28 @@
           <configuration combine.children="append">
             <argLine>-Xmx2g -Xms1g</argLine>
           </configuration>
+<!--
+            <excludes>
+              <exclude>**/itest/**</exclude>
+            </excludes>
+          <executions>
+            <execution>
+              <id>surefire-itest</id>
+              <phase>integration-test</phase>
+              <goals>
+                <goal>test</goal>
+              </goals>
+              <configuration>
+                <excludes>
+                  <exclude>none</exclude>
+                </excludes>
+                <includes>
+                  <include>**/itest/**</include>
+                </includes>
+              </configuration>
+            </execution>
+          </executions>
+-->
         </plugin>
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
