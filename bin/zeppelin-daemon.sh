@@ -74,7 +74,7 @@ function init(){
     fi
 
     if [ ! -d "$ZEPPELIN_JOB_DIR" ]; then
-	echo "Session dir doesn't exist, create $ZEPPELIN_JOB_DIR"
+	echo "Job dir doesn't exist, create $ZEPPELIN_JOB_DIR"
 	mkdir -p "$ZEPPELIN_JOB_DIR"
     fi
 
