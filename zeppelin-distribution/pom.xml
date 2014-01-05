@@ -12,7 +12,7 @@
 
   <artifactId>zeppelin-distribution</artifactId>
   <packaging>pom</packaging>
-  <name>zeppelin-distribution</name>
+  <name>Zeppelin: Packaging distribution</name>
 
   <!-- NOTE: These dependency declarations are only required to sort this project to the 
        end of the line in the multimodule build. 
