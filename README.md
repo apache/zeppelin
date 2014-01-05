@@ -18,12 +18,8 @@ To know more about Zeppelin, visit our web site http://zeppelin-project.org
 
       mvn clean package
 
-
-###Packaging
-
-      mvn clean package -P build-distr
-
-The package is generated under __zeppelin-distribution/target__ directory
+###Run UnitTests
+      mvn test
 
 ###Run
 To run Zeppelin in _local-mode_ using hive 0.9 + embedded derby metastore:
@@ -32,6 +28,22 @@ To run Zeppelin in _local-mode_ using hive 0.9 + embedded derby metastore:
     ./bin/zeppelin.sh
 
 For configuration details check __./conf__ subdirectory.
+
+###Package
+To package final distribution do:
+      mvn clean package -P build-distr
+
+The archive is generated under _zeppelin-distribution/target_ directory
+
+###Run end-to-end tests
+Zeppelin comes with a set of end-to-end acceptnce tests driving headless selenium browser
+
+      #assumes zeppelin-server runing on localhost:8080 (use -Durl=.. to overide)
+      mvn interation-test
+
+      #or take care of starting\stoping zeppelin-server from packaged _zeppelin-distribuion/target_
+      mvn verify
+
 
 ###Mailing list
 
