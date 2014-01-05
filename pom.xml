@@ -275,44 +275,6 @@
   </build>
 
   <repositories>
-    <!-- FuseSource maven repositories
-    <repository>
-      <id>fusesource.releases</id>
-      <name>FuseSoure releases repository</name>
-      <url>http://repo.fusesource.com/maven2/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>fusesource.snapshots</id>
-      <name>FuseSource Snapshot Repository</name>
-      <url>http://repo.fusesource.com/maven2-snapshot</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </repository>
-    <repository>
-      <id>clojars.org</id>
-      <url>http://clojars.org/repo</url>
-    </repository>
-    <repository>
-      <id>cdh-repository-typesafe</id>
-      <name>CDH Repository-typesafe</name>
-      <url>http://repo.typesafe.com/typesafe/cloudera</url>
-    </repository>
-    <repository>
-      <id>cdh-repository-build</id>
-      <name>CDH Repository-build, for jdo/jdo2-api/2.3-ec</name>
-      <url>https://repository.cloudera.com/content/groups/cdh-build</url>
-    </repository> -->
-
     <!-- for for jdo/jdo2-api/2.3-ec -->
     <repository>
       <id>cdh-repository</id>
@@ -322,30 +284,6 @@
   </repositories>
 
   <pluginRepositories>
-    <!-- FuseSource maven repositories -->
-    <pluginRepository>
-      <id>fusesource.releases</id>
-      <name>FuseSoure releases repository</name>
-      <url>http://repo.fusesource.com/maven2/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </pluginRepository>
-    <pluginRepository>
-      <id>fusesource.snapshots</id>
-      <name>FuseSource Snapshot Repository</name>
-      <url>http://repo.fusesource.com/maven2-snapshot</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </pluginRepository>
-
     <!-- for s3-upload-maven-pugin 1.2-SNAPSHOT until this one merged
     https://github.com/bazaarvoice/s3-upload-maven-plugin/pull/2 -->
 	<pluginRepository>
