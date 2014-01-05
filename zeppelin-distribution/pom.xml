@@ -34,7 +34,6 @@
       <version>${project.version}</version>
       <type>war</type>
     </dependency>
-
   </dependencies>
 
   <build>
@@ -98,7 +97,7 @@
             <executions>
               <execution>
                 <id>make-assembly</id>
-                <phase>compile</phase>
+                <phase>package</phase>
                 <goals>
                   <goal>single</goal>
                 </goals>

@@ -21,7 +21,7 @@ To know more about Zeppelin, visit our web site http://zeppelin-project.org
 
 ###Packaging
 
-      mvn clean install -P build-distr
+      mvn clean package -P build-distr
 
 The package is generated under __zeppelin-distribution/target__ directory
 
