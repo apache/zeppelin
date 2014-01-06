@@ -18,10 +18,11 @@
     "css-brunch":">= 1.0 < 1.5",
     "uglify-js-brunch":">= 1.0 < 1.5",
     "clean-css-brunch":">= 1.0 < 1.5",
-    "ember-handlebars-brunch": "~1.0.0",
+    "ember-handlebars-brunch": "~1.1.0",
     "less-brunch":">= 1.0 < 1.5"
   },
   "devDependencies":{
+    "brunch": "*",
     "mocha":"1.9.0",
     "chai":"*",
     "sinon":"*",
