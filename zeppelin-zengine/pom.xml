@@ -208,6 +208,12 @@
       </exclusions>
     </dependency>
 
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr-runtime</artifactId>
+      <version>3.4</version>
+    </dependency>
+
     <dependency>  <!-- needed for libtrift -->
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpcore</artifactId>
@@ -290,6 +296,22 @@
       <properties>
         <hadoop_available>already_downloaded</hadoop_available>
       </properties>
+
+      <build>
+	<pluginManagement>
+	  <plugins>
+	    <plugin>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <version>2.16</version>
+              <configuration>
+		<environmentVariables>
+		  <HADOOP_HOME>${project.build.directory}/hadoop-0.20.2</HADOOP_HOME>
+		</environmentVariables>
+              </configuration>
+	    </plugin>
+	  </plugins>
+	</pluginManagement>
+      </build>
     </profile>
 
     <profile>
@@ -302,6 +324,21 @@
       <properties>
         <hadoop_available>local_install</hadoop_available>
       </properties>
+      <build>
+	<pluginManagement>
+	  <plugins>
+	    <plugin>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <version>2.16</version>
+              <configuration>
+		<environmentVariables>
+		  <HADOOP_HOME>${user.home}/hadoop/hadoop-0.20.2_local</HADOOP_HOME>
+		</environmentVariables>
+              </configuration>
+	    </plugin>
+	  </plugins>
+	</pluginManagement>
+      </build>
     </profile>
 
     <profile>
@@ -323,6 +360,20 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <build>
+	<pluginManagement>
+	  <plugins>
+	    <plugin>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <version>2.16</version>
+              <configuration>
+		<environmentVariables>
+		  <HADOOP_HOME>${project.build.directory}/hadoop-0.20.2</HADOOP_HOME>
+		</environmentVariables>
+              </configuration>
+	    </plugin>
+	  </plugins>
+	</pluginManagement>
+
         <plugins>
           <plugin>
             <configuration>
