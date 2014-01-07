@@ -178,7 +178,7 @@
               <goal>exec</goal>
             </goals>
             <configuration>
-              <executable>${zeppelin.deamon.packaged}</executable>
+              <executable>${zeppelin.daemon.packaged}</executable>
               <arguments>
                 <argument>start</argument>
               </arguments>
@@ -191,7 +191,7 @@
               <goal>exec</goal>
             </goals>
             <configuration>
-              <executable>${zeppelin.deamon.packaged}</executable>
+              <executable>${zeppelin.daemon.packaged}</executable>
               <arguments>
                 <argument>stop</argument>
               </arguments>
@@ -204,9 +204,9 @@
   </build>
 
   <properties>
-    <zeppelin.deamon.packaged>
+    <zeppelin.daemon.packaged>
       ../zeppelin-distribution/target/zeppelin-${project.version}/zeppelin-${project.version}/bin/zeppelin-daemon.sh
-    </zeppelin.deamon.packaged>
+    </zeppelin.daemon.packaged>
   </properties>
 
 
