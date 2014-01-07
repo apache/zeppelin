@@ -3,11 +3,10 @@ This is a Zeppelin web frontend project.
 
 
 ### Build
-Web frontend uses [Brunch](http://brunch.io) to assemble so you need to:
- 1. install Node.js from http://nodejs.org
- 1. install Brunch with porject dependecies running
-
+Web frontend uses [Brunch.io](http://brunch.io) to assemble BUT you do not need to have Node installed upfront!
+Thanks to awesome [frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin) we have next stepse inside project build.
     ```
+     #install Node.js to zeppelin-web/node/ and then
      npm install -g brunch
      rm -rf node_modules public
      npm install
