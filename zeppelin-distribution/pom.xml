@@ -12,7 +12,7 @@
 
   <artifactId>zeppelin-distribution</artifactId>
   <packaging>pom</packaging>
-  <name>zeppelin-distribution</name>
+  <name>Zeppelin: Packaging distribution</name>
 
   <!-- NOTE: These dependency declarations are only required to sort this project to the 
        end of the line in the multimodule build. 
@@ -34,7 +34,6 @@
       <version>${project.version}</version>
       <type>war</type>
     </dependency>
-
   </dependencies>
 
   <build>
@@ -98,7 +97,7 @@
             <executions>
               <execution>
                 <id>make-assembly</id>
-                <phase>compile</phase>
+                <phase>package</phase>
                 <goals>
                   <goal>single</goal>
                 </goals>
