@@ -112,11 +112,7 @@ App.ZqlEditView = Ember.View.extend({
                             name : plan.id,
                             id : plan.id,
                             src : zeppelin.getWebResourceURL(model.id, historyId, plan.id),
-                            scrolling : 'no',
-                            /*,
-                              frameborder : "0",
-                              height : "100%",
-                              width : "100%"*/
+                            scrolling : 'auto'
                         }).appendTo('#visualizationContainer');
 
                         $('#'+plan.id).load(function(c,d){
@@ -358,11 +354,7 @@ App.ReportLinkView = Ember.View.extend({
                             name : plan.id,
                             id : plan.id,
                             src : zeppelin.getWebResourceURL(model.id, historyId, plan.id),
-                            scrolling : 'no'
-                            /*,
-                              frameborder : "0",
-                              height : "100%",
-                              width : "100%"*/
+                            scrolling : 'auto'
                         }).appendTo('#visualizationContainer');
 
                         $('#'+plan.id).load(function(c,d){
