@@ -59,7 +59,7 @@
         <include>zeppelin-site.xml.template</include>
       </includes>
     </fileSet>
-
+  </fileSets>
     <!--<fileSet>
       <directory>zeppelin-cli/target</directory>
       <outputDirectory></outputDirectory>
