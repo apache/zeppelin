@@ -172,6 +172,10 @@
         </executions>
          <configuration>
           <skipTests>false</skipTests>
+          <systemPropertyVariables>
+	    <!-- this pass variable to java VM so IT test class can determin if it is initiated by maven or not. -->
+            <runningFromMaven>true</runningFromMaven>
+          </systemPropertyVariables>
         </configuration>
       </plugin>
       
@@ -211,11 +215,31 @@
     
   </build>
 
-  <properties>
-    <zeppelin.daemon.packaged>
-      ../zeppelin-distribution/target/zeppelin-${project.version}/zeppelin-${project.version}/bin/zeppelin-daemon.sh
-    </zeppelin.daemon.packaged>
-  </properties>
+  <profiles>
+    <profile>
+      <id>dev-pkg</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+	<zeppelin.daemon.packaged>
+	  ../bin/zeppelin-daemon.sh
+	</zeppelin.daemon.packaged>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>build-distr</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+	<zeppelin.daemon.packaged>
+	  ../zeppelin-distribution/target/zeppelin-${project.version}/zeppelin-${project.version}/bin/zeppelin-daemon.sh
+	</zeppelin.daemon.packaged>
+      </properties>
+    </profile>
+  </profiles>
 
 
 </project>

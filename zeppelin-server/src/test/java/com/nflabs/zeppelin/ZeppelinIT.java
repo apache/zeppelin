@@ -11,18 +11,30 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.webautomation.ScreenCaptureHtmlUnitDriver;
 
-public class ZeppelinIT  {
+public class ZeppelinIT {
+	private WebDriver getWebDriver(){
+		if(System.getProperty("runningFromMaven")==null){
+			// zeppelin.daemon.packaged is defined by zeppelin-server/pom.xml
+			// assumes it is not running from maven. but eclipse
+			return new SafariDriver();
+		} else { // assumes running from maven
+			return new ScreenCaptureHtmlUnitDriver(); //HtmlUnitDriver();			
+		}
+		
+	}
+	
     @Test
-    public void runSimpleQueryInNewSession() {
+    public void testRunSimpleQueryInNewSession() {
         // Notice that the remainder of the code relies on the interface, 
         // not the implementation.
-        WebDriver driver = new ScreenCaptureHtmlUnitDriver(); //HtmlUnitDriver();
-
+        WebDriver driver = getWebDriver();
+        
         try {
             // go to zeppelin
             driver.get("http://localhost:8080");
