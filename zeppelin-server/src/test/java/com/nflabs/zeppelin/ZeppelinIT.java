@@ -19,16 +19,33 @@ import com.webautomation.ScreenCaptureHtmlUnitDriver;
 
 public class ZeppelinIT {
 	private WebDriver getWebDriver(){
-		if(System.getProperty("runningFromMaven")==null){
+		WebDriver driver;
+		if (System.getProperty("runningFromMaven")==null) {
 			// zeppelin.daemon.packaged is defined by zeppelin-server/pom.xml
 			// assumes it is not running from maven. but eclipse
-			return new SafariDriver();
+			driver = new SafariDriver();
 		} else { // assumes running from maven
-			ScreenCaptureHtmlUnitDriver driver = new ScreenCaptureHtmlUnitDriver(); //HtmlUnitDriver();
-			driver.setJavascriptEnabled(true);
-			return driver;
-		}
+			ScreenCaptureHtmlUnitDriver htmlUnitDriver = new ScreenCaptureHtmlUnitDriver(); //HtmlUnitDriver();
+			htmlUnitDriver.setJavascriptEnabled(true);
+			driver = htmlUnitDriver;
+		}	
 		
+		String url;
+		if (System.getProperty("url")!=null) {
+			url = System.getProperty("url");
+		} else {
+			url = "http://localhost:8080";
+		}
+		driver.get(url);
+		
+        // wait for page load
+        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+            public Boolean apply(WebDriver d) {
+                return d.findElement(By.partialLinkText("Start")).isDisplayed();
+            }
+        });
+
+		return driver;
 	}
 	
     @Test
@@ -38,15 +55,6 @@ public class ZeppelinIT {
         WebDriver driver = getWebDriver();
         
         try {
-            // go to zeppelin
-            driver.get("http://localhost:8080");
-
-            // wait for page load
-            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.partialLinkText("Start")).isDisplayed();
-                }
-            });
             // click start
             WebElement start = driver.findElement(By.partialLinkText("Start"));
             start.click();
