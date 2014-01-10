@@ -102,7 +102,7 @@ function start(){
     # Check if the process has died; in that case we'll tail the log so the user can see
     if ! kill -0 $newpid >/dev/null 2>&1; then
 	echo "failed to launch Zeppelin:"
-	tail -2 "$log" | sed 's/^/  /'
+	tail -300 "$log" | sed 's/^/  /'
 	echo "full log in $log"
     fi
 
