@@ -24,7 +24,7 @@
   <artifactId>zeppelin</artifactId>
   <packaging>pom</packaging>
   <version>0.3.0-SNAPSHOT</version>
-  <name>zeppelin</name>
+  <name>Zeppelin</name>
   <description>Zeppelin project</description>
   <url>http://zeppelin-project.org/</url>
 
@@ -76,7 +76,7 @@
   <properties>
     <java.version>1.6</java.version>
     <hadoop.version>1.0.4</hadoop.version>
-    <hive.version>0.9.0</hive.version>
+    <hive.version>0.11.0</hive.version>
     <hbase.version>0.92.1</hbase.version>
     <scala.version>2.9.3</scala.version>
     <slf4j.version>1.6.6</slf4j.version>
@@ -228,7 +228,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.4.2</version>
+          <version>2.16</version>
           <configuration combine.children="append">
             <argLine>-Xmx2g -Xms1g</argLine>
           </configuration>
@@ -302,77 +302,33 @@
   </build>
 
   <repositories>
-    <!-- FuseSource maven repositories
-    <repository>
-      <id>fusesource.releases</id>
-      <name>FuseSoure releases repository</name>
-      <url>http://repo.fusesource.com/maven2/</url>
+   <!-- For dependency recosiled version of hive_test -->
+   <repository>
+    <id>nflabs public repository</id>
+    <url>https://raw.github.com/NFLabs/mvn-repo/master/releases</url>
       <releases>
         <enabled>true</enabled>
       </releases>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
-    </repository>
-    <repository>
-      <id>fusesource.snapshots</id>
-      <name>FuseSource Snapshot Repository</name>
-      <url>http://repo.fusesource.com/maven2-snapshot</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </repository>
-    <repository>
-      <id>clojars.org</id>
-      <url>http://clojars.org/repo</url>
-    </repository>
-    <repository>
-      <id>cdh-repository-typesafe</id>
-      <name>CDH Repository-typesafe</name>
-      <url>http://repo.typesafe.com/typesafe/cloudera</url>
-    </repository>
-    <repository>
-      <id>cdh-repository-build</id>
-      <name>CDH Repository-build, for jdo/jdo2-api/2.3-ec</name>
-      <url>https://repository.cloudera.com/content/groups/cdh-build</url>
-    </repository> -->
+   </repository>
 
     <!-- for for jdo/jdo2-api/2.3-ec -->
     <repository>
       <id>cdh-repository</id>
       <name>CDH Repository</name>
       <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
-    </repository>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>    
   </repositories>
 
   <pluginRepositories>
-    <!-- FuseSource maven repositories -->
-    <pluginRepository>
-      <id>fusesource.releases</id>
-      <name>FuseSoure releases repository</name>
-      <url>http://repo.fusesource.com/maven2/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </pluginRepository>
-    <pluginRepository>
-      <id>fusesource.snapshots</id>
-      <name>FuseSource Snapshot Repository</name>
-      <url>http://repo.fusesource.com/maven2-snapshot</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-    </pluginRepository>
-
     <!-- for s3-upload-maven-pugin 1.2-SNAPSHOT until this one merged
     https://github.com/bazaarvoice/s3-upload-maven-plugin/pull/2 -->
 	<pluginRepository>
@@ -462,6 +418,7 @@
         </plugins>
       </build>
     </profile>
+
   </profiles>
 
 </project>

@@ -1,3 +1,5 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <configuration>
 
 <property>
@@ -31,5 +33,22 @@
   <description>controls whether to connect to remove metastore server or open a new metastore server in Hive Client JVM</description>
 </property>
 -->
+
+<property>
+  <name>hive.exec.compress.output</name>
+  <value>false</value>
+  <description>This controls whether the final outputs of a query (to a local/hdfs file or a hive table) is compressed. The compression codec and other options are determined from hadoop config variables mapred.output.compress* </description>
+</property>
+ 
+<property>
+  <name>hive.exec.compress.intermediate</name>
+  <value>false</value>
+  <description>This controls whether intermediate files produced by hive between multiple map-reduce jobs are compressed. The compression codec and other options are determined from hadoop config variables mapred.output.compress* </description>
+</property>
+
+<property>
+  <name>io.compression.codecs</name>
+  <value>org.apache.hadoop.io.compress.DefaultCodec</value>
+</property>
 
 </configuration>

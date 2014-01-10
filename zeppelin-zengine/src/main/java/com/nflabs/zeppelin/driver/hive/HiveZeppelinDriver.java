@@ -19,6 +19,9 @@ import com.nflabs.zeppelin.driver.ZeppelinDriver;
 
 public class HiveZeppelinDriver extends ZeppelinDriver {
 	Logger logger = LoggerFactory.getLogger(HiveZeppelinDriver.class);
+    private static String HIVE_SERVER = "org.apache.hadoop.hive.jdbc.HiveDriver";
+    private static String HIVE_SERVER_2 = "org.apache.hive.jdbc.HiveDriver";
+
 	private HiveInterface client;
 	
 	public HiveZeppelinDriver(ZeppelinConfiguration conf) {
@@ -30,12 +33,22 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	}
 
 	private String getConnectionUri(){
-		return getConf().getString("HIVE_CONNECTION_URI", "hive.connection.uri", "jdbc:hive://");
+		return getConf().getString("HIVE_CONNECTION_URI", "hive.connection.uri", "jdbc:hive2://");
 	}
 	
-	private String getHiveDriverClass(){
-		// for hive2 "org.apache.hive.jdbc.HiveDriver"
-		return getConf().getString("HIVE_DRIVER_CLASS", "hive.driver.class", "org.apache.hadoop.hive.jdbc.HiveDriver");
+	/**
+	 * HiveServer1 by default, but if uri starts with hive2 - assumes HiveServer2
+	 * @param uri Hive URI
+	 * @return JDBC driver class name
+	 */
+	private String getHiveDriverClass(String uri){
+	    String className;
+        if (uri.startsWith("jdbc:hive://")) { // HiveServer 
+	        className = HIVE_SERVER;
+	    } else { // HiveServer2
+	        className = HIVE_SERVER_2;
+	    }
+		return getConf().getString("HIVE_DRIVER_CLASS", "hive.driver.class", className);
 	}
 	
 	private String getLocalMetastore(){
@@ -49,19 +62,21 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	@Override
 	public ZeppelinConnection getConnection() throws ZeppelinDriverException {
 		try {
-			Connection con; 
+			Connection con;
+			String uri = getConnectionUri();
 			if (client!=null){ // create connection with given client instance
 				logger.debug("Create connection from provided client instance");
 				con = new HiveConnection(client);
-			} else if(getConnectionUri()==null || getConnectionUri().trim().length()==0){ // create instance using configuration files
+			//else create instance using configuration files
+			} else if(isEmpty(uri)){ 
 				logger.debug("Create connection from hive configuration");
 				con = new HiveConnection(hiveConf());
-			} else if(getConnectionUri().equals("jdbc:hive://")){ // local mode detected
+			} else if(uri.equals("jdbc:hive://")) { //local mode detected 
 				logger.debug("Create connection from local mode");
 				con = new HiveConnection(localHiveConf());
 			} else { // remote connection using jdbc uri
 				logger.debug("Create connection from given jdbc uri");
-				Class.forName(getHiveDriverClass());
+				Class.forName(getHiveDriverClass(uri));
 			    con = DriverManager.getConnection(getConnectionUri());
 			}
 
@@ -74,7 +89,11 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	}
 
 	
-	private HiveConf hiveConf(){
+	private boolean isEmpty(String string) {
+        return string==null || string.trim().length()==0;
+    }
+
+    private HiveConf hiveConf(){
 		HiveConf hiveConf = null;
 		hiveConf = new HiveConf(SessionState.class);
 		return hiveConf;		

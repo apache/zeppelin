@@ -13,7 +13,7 @@
   <artifactId>zeppelin-zengine</artifactId>
   <packaging>jar</packaging>
   <version>0.3.0-SNAPSHOT</version>
-  <name>zeppelin-zengine</name>
+  <name>Zeppelin: Zengine</name>
   <description>Zengine is java framework for data analysis on Hadoop. see http://nflabs.github.io/zeppelin/#/zengine</description>
   <url>http://nflabs.github.io/zeppelin</url>
 
@@ -131,6 +131,10 @@
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-core</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.apache.thrift</groupId>
+          <artifactId>libthrift</artifactId>
+        </exclusion>
          <exclusion>
           <groupId>org.apache.derby</groupId>
           <artifactId>derby</artifactId>
@@ -190,6 +194,10 @@
           <artifactId>commons-logging</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>commons-configuration</groupId>
+          <artifactId>commons-configuration</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-core</artifactId>
         </exclusion>
@@ -202,10 +210,26 @@
           <artifactId>jline</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
+          <groupId>org.antlr</groupId>
+          <artifactId>antlr-runtime</artifactId>
+        </exclusion>
+        <exclusion> <!-- hive-service brings 4.1.14 and 4.1.13 trough libthrift:0.9.0 -->
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpcore</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr-runtime</artifactId>
+      <version>3.4</version>
+    </dependency>
+
+    <dependency>  <!-- needed for libtrift -->
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <version>4.1.4</version>
     </dependency>
 
     <dependency>
@@ -215,43 +239,11 @@
     </dependency>
 
     <dependency>
-      <groupId>com.nitayjoffe.thirdparty.com.jointhegrid</groupId>
+      <groupId>com.jointhegrid</groupId>
       <artifactId>hive_test</artifactId>
-      <version>4.0.0</version>
+      <version>4.2.0</version>
       <scope>test</scope>
       <exclusions>
-        <exclusion>
-          <groupId>org.apache.thrift</groupId>
-          <artifactId>libfb303</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-lang</groupId>
-          <artifactId>commons-lang</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>commons-collections</groupId>
-          <artifactId>commons-collections</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-core</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-        </exclusion>
         <exclusion>
           <groupId>log4j</groupId>
           <artifactId>log4j</artifactId>
@@ -320,6 +312,22 @@
       <properties>
         <hadoop_available>already_downloaded</hadoop_available>
       </properties>
+
+      <build>
+	<pluginManagement>
+	  <plugins>
+	    <plugin>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <version>2.16</version>
+              <configuration>
+		<environmentVariables>
+		  <HADOOP_HOME>${project.build.directory}/hadoop-0.20.2</HADOOP_HOME>
+		</environmentVariables>
+              </configuration>
+	    </plugin>
+	  </plugins>
+	</pluginManagement>
+      </build>
     </profile>
 
     <profile>
@@ -332,6 +340,21 @@
       <properties>
         <hadoop_available>local_install</hadoop_available>
       </properties>
+      <build>
+	<pluginManagement>
+	  <plugins>
+	    <plugin>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <version>2.16</version>
+              <configuration>
+		<environmentVariables>
+		  <HADOOP_HOME>${user.home}/hadoop/hadoop-0.20.2_local</HADOOP_HOME>
+		</environmentVariables>
+              </configuration>
+	    </plugin>
+	  </plugins>
+	</pluginManagement>
+      </build>
     </profile>
 
     <profile>
@@ -353,6 +376,20 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <build>
+	<pluginManagement>
+	  <plugins>
+	    <plugin>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <version>2.16</version>
+              <configuration>
+		<environmentVariables>
+		  <HADOOP_HOME>${project.build.directory}/hadoop-0.20.2</HADOOP_HOME>
+		</environmentVariables>
+              </configuration>
+	    </plugin>
+	  </plugins>
+	</pluginManagement>
+
         <plugins>
           <plugin>
             <configuration>
