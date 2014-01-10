@@ -138,10 +138,6 @@
           <groupId>xml-apis</groupId>
           <artifactId>xml-apis</artifactId>
         </exclusion>
-	<exclusion> <!-- zeppelin-zengine brings -->
-	  <groupId>org.apache.httpcomponents</groupId>
-	  <artifactId>httpcore</artifactId>
-	</exclusion>
 	<exclusion> <!-- hive-service::hive-exec::hive-metastore::hive-serde brings -->
 	  <groupId>commons-codec</groupId>
 	  <artifactId>commons-codec</artifactId>
@@ -172,6 +168,7 @@
         </executions>
          <configuration>
           <skipTests>false</skipTests>
+	  <argLine>-Xmx1024m</argLine>
           <systemPropertyVariables>
 	    <!-- this pass variable to java VM so IT test class can determin if it is initiated by maven or not. -->
             <runningFromMaven>true</runningFromMaven>

@@ -24,7 +24,9 @@ public class ZeppelinIT {
 			// assumes it is not running from maven. but eclipse
 			return new SafariDriver();
 		} else { // assumes running from maven
-			return new ScreenCaptureHtmlUnitDriver(); //HtmlUnitDriver();			
+			ScreenCaptureHtmlUnitDriver driver = new ScreenCaptureHtmlUnitDriver(); //HtmlUnitDriver();
+			driver.setJavascriptEnabled(true);
+			return driver;
 		}
 		
 	}
@@ -38,26 +40,23 @@ public class ZeppelinIT {
         try {
             // go to zeppelin
             driver.get("http://localhost:8080");
-            // driver.navigate().to("http://www.google.com");
 
-            // Find the text input element by its text
+            // wait for page load
+            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+                public Boolean apply(WebDriver d) {
+                    return d.findElement(By.partialLinkText("Start")).isDisplayed();
+                }
+            });
+            // click start
             WebElement start = driver.findElement(By.partialLinkText("Start"));
             start.click();
 
-            // Check the title of the page
-            System.out.println("Page title is: " + driver.getTitle());
-
-            // Google's search is rendered dynamically with JavaScript.
             // Wait for the page to load, timeout after 10 seconds
             (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
                 public Boolean apply(WebDriver d) {
                     return d.findElement(By.linkText("New")).isDisplayed();
                 }
             });
-
-            // Should see: "cheese! - Google Search"
-            System.out.println("Page title is: " + driver.getTitle());
-
         } catch (WebDriverException e){
             File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
             System.out.println("Screenshot in: " + scrFile.getAbsolutePath());
