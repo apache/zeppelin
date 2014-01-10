@@ -65,6 +65,17 @@ public class ZeppelinIT {
                     return d.findElement(By.linkText("New")).isDisplayed();
                 }
             });
+            
+            // click new
+            driver.findElement(By.linkText("New")).click();
+            
+            // wait for run button appears
+            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+                public Boolean apply(WebDriver d) {
+                    return d.findElement(By.linkText("Run")).isDisplayed();
+                }
+            });
+            
         } catch (WebDriverException e){
             File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
             System.out.println("Screenshot in: " + scrFile.getAbsolutePath());
