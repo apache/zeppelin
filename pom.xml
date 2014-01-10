@@ -68,8 +68,8 @@
   <modules>
     <module>zeppelin-zengine</module>
     <module>zeppelin-cli</module>
-    <module>zeppelin-server</module>
     <module>zeppelin-web</module>
+    <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
   </modules>
 
