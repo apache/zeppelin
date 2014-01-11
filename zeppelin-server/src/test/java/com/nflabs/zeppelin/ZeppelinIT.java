@@ -6,6 +6,7 @@ import java.io.File;
 
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
@@ -76,10 +77,32 @@ public class ZeppelinIT {
                 }
             });
             
+            // type some query
+            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("create table if not exists test (id STRING);\n");
+            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("show tables;\n");
+            
+            // press run button
+            driver.findElement(By.linkText("Run")).click();
+
+            // wait for visualization
+            (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
+                public Boolean apply(WebDriver d) {
+                    return d.findElement(By.xpath("//div[@id='visualizationContainer']//iframe")).isDisplayed();
+                }
+            });
+            
+            WebDriver iframe = driver.switchTo().frame(driver.findElement(By.xpath("//div[@id='visualizationContainer']//iframe")));
+            
+            // wait for result displayed
+            (new WebDriverWait(iframe, 20)).until(new ExpectedCondition<Boolean>() {
+                public Boolean apply(WebDriver d) {
+                    return d.findElement(By.xpath("//table//td[text()='test']")).isDisplayed();
+                }
+            });           
         } catch (WebDriverException e){
             File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
             System.out.println("Screenshot in: " + scrFile.getAbsolutePath());
-            fail("Error occured " + e.getMessage());
+            fail("Error occured " + e.getMessage());	
         } finally {
             // Close the browser
             driver.quit();
