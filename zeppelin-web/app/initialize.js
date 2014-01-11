@@ -30,9 +30,9 @@ require('templates');
 // to support HtmlUnit
 if (typeof console != 'object') {
     console = {
-	log: function() {},
-	debug: function() {},
-	warn: function() {}
+        log: function() {},
+        debug: function() {},
+        warn: function() {}
     }
 }
 

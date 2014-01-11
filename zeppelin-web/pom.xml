@@ -25,7 +25,7 @@
         <configuration>
           <filesets>
             <fileset>
-	      <directory>src/main/webapp</directory>
+              <directory>src/main/webapp</directory>
               <includes>
                 <include>src/main/webapp/stylesheets</include>
                 <include>src/main/webapp/javascripts</include>
