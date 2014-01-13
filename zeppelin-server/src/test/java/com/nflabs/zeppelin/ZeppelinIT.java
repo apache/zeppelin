@@ -103,7 +103,7 @@ public class ZeppelinIT {
             driver.findElement(By.linkText("Run")).click();
 
             // wait for visualization
-            (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
+            (new WebDriverWait(driver, 120)).until(new ExpectedCondition<Boolean>() {
                 public Boolean apply(WebDriver d) {
                     return d.findElement(By.xpath("//div[@id='visualizationContainer']//iframe")).isDisplayed();
                 }
@@ -120,7 +120,7 @@ public class ZeppelinIT {
         } catch (WebDriverException e){
             File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
             System.out.println("Screenshot in: " + scrFile.getAbsolutePath());
-            fail("Error occured " + e.getMessage());	
+            throw e;
         } finally {
             // Close the browser
             driver.quit();
