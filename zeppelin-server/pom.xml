@@ -108,23 +108,16 @@
       <version>2.2.1</version>
     </dependency>
 
+
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-java</artifactId>
-      <version>2.39.0</version>
+      <version>2.37.1</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
           <groupId>org.seleniumhq.selenium</groupId>
-          <artifactId>selenium-firefox-driver</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.seleniumhq.selenium</groupId>
           <artifactId>selenium-android-driver</artifactId>
-        </exclusion>   
-        <exclusion>
-          <groupId>org.seleniumhq.selenium</groupId>
-          <artifactId>selenium-chrome-driver</artifactId>
         </exclusion>   
         <exclusion>
           <groupId>org.json</groupId>
@@ -135,6 +128,10 @@
           <artifactId>commons-logging</artifactId>
         </exclusion>   
         <exclusion>
+          <groupId>commons-io</groupId>
+          <artifactId>commons-io</artifactId>
+        </exclusion>   
+        <exclusion>
           <groupId>xml-apis</groupId>
           <artifactId>xml-apis</artifactId>
         </exclusion>
@@ -142,6 +139,10 @@
 	  <groupId>commons-codec</groupId>
 	  <artifactId>commons-codec</artifactId>
 	</exclusion>
+        <exclusion>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency> <!-- because there are two of them above  -->
@@ -169,10 +170,6 @@
          <configuration>
           <skipTests>false</skipTests>
 	  <argLine>-Xmx1024m</argLine>
-          <systemPropertyVariables>
-	    <!-- this pass variable to java VM so IT test class can determin if it is initiated by maven or not. -->
-            <runningFromMaven>true</runningFromMaven>
-          </systemPropertyVariables>
         </configuration>
       </plugin>
       

@@ -3,7 +3,6 @@ package com.nflabs.zeppelin;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
@@ -12,25 +11,44 @@ import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.firefox.FirefoxBinary;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import com.webautomation.ScreenCaptureHtmlUnitDriver;
-
 public class ZeppelinIT {
 	private WebDriver getWebDriver(){
-		WebDriver driver;
-		if (System.getProperty("runningFromMaven")==null) {
-			// zeppelin.daemon.packaged is defined by zeppelin-server/pom.xml
-			// assumes it is not running from maven. but eclipse
-			driver = new SafariDriver();
-		} else { // assumes running from maven
-			ScreenCaptureHtmlUnitDriver htmlUnitDriver = new ScreenCaptureHtmlUnitDriver(); //HtmlUnitDriver();
-			htmlUnitDriver.setJavascriptEnabled(true);
-			driver = htmlUnitDriver;
-		}	
+		WebDriver driver = null;
+
+		if (driver==null){
+			try {
+				FirefoxBinary ffox = new FirefoxBinary();
+				if ("true".equals(System.getenv("TRAVIS"))) {
+					ffox.setEnvironmentProperty("DISPLAY", ":99"); // xvfb is supposed to run with DISPLAY 99
+				}
+				FirefoxProfile profile = new FirefoxProfile();
+				driver = new FirefoxDriver(ffox, profile);
+			} catch (Exception e){				
+			}
+		}
+					
+		if (driver==null){
+			try {
+				driver = new ChromeDriver();
+			} catch (Exception e){				
+			}
+		}
 		
+		if (driver==null){
+			try {
+				driver = new SafariDriver();
+			} catch (Exception e){				
+			}
+		}
+			
 		String url;
 		if (System.getProperty("url")!=null) {
 			url = System.getProperty("url");
@@ -78,8 +96,8 @@ public class ZeppelinIT {
             });
             
             // type some query
-            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("create table if not exists test (id STRING);\n");
-            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("show tables;\n");
+            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("create table if not exists test "+Keys.chord(Keys.SHIFT, "9")+"id STRING);\n");
+            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("\nshow tables;");
             
             // press run button
             driver.findElement(By.linkText("Run")).click();
