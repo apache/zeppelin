@@ -5,6 +5,5 @@ before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
 after_failure:
-  - echo "Trying to print zeppelin server logs"
-  - cat ${TRAVIS_BUILD_DIR}/logs/zeppelin*.log
-  - cat ${TRAVIS_BUILD_DIR}/logs/zeppelin*.out
+  - "cat ${TRAVIS_BUILD_DIR}/logs/zeppelin*.log"
+  - "cat ${TRAVIS_BUILD_DIR}/logs/zeppelin*.out"
