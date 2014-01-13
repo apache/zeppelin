@@ -96,14 +96,34 @@ public class ZeppelinIT {
             });
             
             // type some query
-            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("create table if not exists test "+Keys.chord(Keys.SHIFT, "9")+"id STRING);\n");
-            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("\nshow tables;");
+            //driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("create table if not exists test "+Keys.chord(Keys.SHIFT, "9")+"id STRING);\n");
+            //driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("\nshow tables;");
+            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("asdf;");
             
             // press run button
             driver.findElement(By.linkText("Run")).click();
 
+            // wait for button becomes Running ...
+            (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+                public Boolean apply(WebDriver d) {
+                    return d.findElement(By.xpath("//div//a[text()='Running ...']")).isDisplayed();
+                }
+            });  
+
+            // wait for button becomes Run
+            (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
+                public Boolean apply(WebDriver d) {
+                    return d.findElement(By.xpath("//div//a[text()='Run']")).isDisplayed();
+                }
+            });
+            
+            WebElement msg = driver.findElement(By.id("msgBox"));
+            if (msg!=null) {
+            	System.out.println("msgBox="+msg.getText());
+            }
+            
             // wait for visualization
-            (new WebDriverWait(driver, 120)).until(new ExpectedCondition<Boolean>() {
+            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
                 public Boolean apply(WebDriver d) {
                     return d.findElement(By.xpath("//div[@id='visualizationContainer']//iframe")).isDisplayed();
                 }
