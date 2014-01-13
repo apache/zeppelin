@@ -96,9 +96,8 @@ public class ZeppelinIT {
             });
             
             // type some query
-            //driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("create table if not exists test "+Keys.chord(Keys.SHIFT, "9")+"id STRING);\n");
-            //driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("\nshow tables;");
-            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("asdf;");
+            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("create table if not exists test "+Keys.chord(Keys.SHIFT, "9")+"id STRING);\n");
+            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("\nshow tables;");
             
             // press run button
             driver.findElement(By.linkText("Run")).click();
