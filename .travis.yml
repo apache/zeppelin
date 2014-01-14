@@ -7,7 +7,7 @@ before_install:
   - "sh -e /etc/init.d/xvfb start"
 
 before_script:
-  - mvn package -Pbuild-distr -B -DskipTests
+  - mvn package -Pbuild-distr -B
 
 script:
   - mvn verify -Pusing-packaged-distr -B
