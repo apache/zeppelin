@@ -13,5 +13,5 @@ script:
   - mvn verify -Pusing-packaged-distr -B
 
 after_failure:
-  - sh -e "cat /home/travis/build/NFLabs/zeppelin/logs/zeppelin*.log"
-  - sh -e "cat /home/travis/build/NFLabs/zeppelin/logs/zeppelin*.out"
+  - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.log
+  - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.out
