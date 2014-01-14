@@ -210,7 +210,7 @@
 
   <profiles>
     <profile>
-      <id>dev-pkg</id>
+      <id>using-source-tree</id>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
@@ -222,7 +222,7 @@
     </profile>
 
     <profile>
-      <id>build-distr</id>
+      <id>using-packaged-distr</id>
       <activation>
         <activeByDefault>false</activeByDefault>
       </activation>
