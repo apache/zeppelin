@@ -168,7 +168,6 @@
           </execution>
         </executions>
          <configuration>
-          <skipTests>false</skipTests>
 	  <argLine>-Xmx1024m</argLine>
         </configuration>
       </plugin>
