@@ -103,7 +103,7 @@ public class ZeppelinIT {
             driver.findElement(By.linkText("Run")).click();
 
             // wait for button becomes Running ...
-            (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
                 public Boolean apply(WebDriver d) {
                     return d.findElement(By.xpath("//div//a[text()='Running ...']")).isDisplayed();
                 }
