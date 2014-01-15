@@ -10,10 +10,10 @@ group: nav-left
 #### Don't reinvent the wheel.
 
 <br />
-Currently ZAN is included as a local repository in [Zeppelin package release](./download.html).
+**Z**eppelin **A**rchive **N**etwork is library sharing network.
+You can download some library from ZAN or publish you library.
 
-You can check what's included in ZAN from github [zan-repo](https://github.com/NFLabs/zeppelin/tree/master/zan-repo)
+You can check what's included in ZAN from github [zan-repo](https://github.com/nflabs/zan)
 
 Also, if you're interested in writing your own Zeppelin Library, checkout [writing Zeppelin Library](/docs/development/writingzeppelinlibrary.html).
 
-We're planning to make online, remote ZAN system in the future version.
