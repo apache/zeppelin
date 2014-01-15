@@ -186,7 +186,7 @@
             <id>start-zeppelin</id>
             <phase>pre-integration-test</phase>
             <configuration>
-              <target>
+              <target unless="skipTests">
                 <exec executable="./zeppelin-daemon.sh"
                       dir="${zeppelin.daemon.package.base}"
                       spawn="true">
@@ -203,7 +203,7 @@
             <id>stop-zeppelin</id>
             <phase>post-integration-test</phase>
             <configuration>
-              <target>
+              <target unless="skipTests">
                 <exec executable="./zeppelin-daemon.sh"
                       dir="${zeppelin.daemon.package.base}"
                       spawn="false">
