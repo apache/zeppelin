@@ -27,6 +27,10 @@ public class Result extends AbstractResult{
 		super(code, message);
 	}
 	
+	public Result() throws ResultDataException {
+		super(0, null);
+	}
+	
 	@Override
 	protected void process(ColumnDef[] columnDef, Object[] row, long n) {
 		if(rows==null) rows = new LinkedList<Object [] >(); 

@@ -39,10 +39,10 @@ The archive is generated under _zeppelin-distribution/target_ directory
 Zeppelin comes with a set of end-to-end acceptnce tests driving headless selenium browser
 
       #assumes zeppelin-server runing on localhost:8080 (use -Durl=.. to overide)
-      mvn interation-test
+      mvn verify
 
       #or take care of starting\stoping zeppelin-server from packaged _zeppelin-distribuion/target_
-      mvn verify
+      mvn verify -P using-packaged-distr
 
 
 ###Mailing list

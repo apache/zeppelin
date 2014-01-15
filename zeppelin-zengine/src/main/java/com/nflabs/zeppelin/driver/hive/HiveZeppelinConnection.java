@@ -52,7 +52,15 @@ public class HiveZeppelinConnection implements ZeppelinConnection {
 			stmt.close();
 			return r;
 		} catch (SQLException e) {
-			throw new ZeppelinDriverException(e);
+			if (e.getMessage().startsWith("The query did not generate a result set")) {
+				try {
+					return new Result();
+				} catch (ResultDataException e1) {
+					throw new ZeppelinDriverException(e1);
+				}
+			} else {
+				throw new ZeppelinDriverException(e);
+			}
 		} catch (ResultDataException e) {
 			throw new ZeppelinDriverException(e);
 		}

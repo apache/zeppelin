@@ -18,6 +18,25 @@
     <finalName>zeppelin-web</finalName>
 
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>2.4.1</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>src/main/webapp</directory>
+              <includes>
+                <include>src/main/webapp/stylesheets</include>
+                <include>src/main/webapp/javascripts</include>
+                <include>src/main/webapp/font</include>
+                <include>src/main/webapp/*.html</include>
+              </includes>
+              <followSymlinks>false</followSymlinks>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
 
       <plugin>
         <groupId>com.github.eirslett</groupId>
@@ -54,7 +73,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>1.2.1</version>
         <executions>
           <execution>
             <id>brunch-build-to-src-main-webapp</id>

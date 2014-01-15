@@ -27,6 +27,15 @@ require('views');
 require('router');
 require('templates');
 
+// to support HtmlUnit
+if (typeof console != 'object') {
+    console = {
+        log: function() {},
+        debug: function() {},
+        warn: function() {}
+    }
+}
+
 console.log('TRACE: app.js-> localStorage:Zeppelin.authenticated=' + localStorage.getItem('Zeppelin' + 'authenticated'));
 //console.log('TRACE: app.js-> router.authenticated=' + App.get('router.loggedIn'));
 console.log("TRACE: app.js-> Ember.TEMPLATES: ", Ember.TEMPLATES);

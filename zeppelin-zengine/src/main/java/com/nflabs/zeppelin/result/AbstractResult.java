@@ -58,15 +58,17 @@ public abstract class AbstractResult {
 	public AbstractResult(int code, String [] message) throws ResultDataException {
 		this.code = code;
 		
-		columnDef = new ColumnDef[1];
-		columnDef[0] = new ColumnDef("message", Types.VARCHAR, "varchar");
-
-		try {
-			for(int i=0; i<message.length; i++){
-				process(columnDef, new String[]{message[i]}, i);			
+		if(message!=null){
+			columnDef = new ColumnDef[1];
+			columnDef[0] = new ColumnDef("message", Types.VARCHAR, "varchar");
+	
+			try {
+				for(int i=0; i<message.length; i++){
+					process(columnDef, new String[]{message[i]}, i);			
+				}
+			} catch (Exception e1) {
+				throw new ResultDataException(e1);
 			}
-		} catch (Exception e1) {
-			throw new ResultDataException(e1);
 		}
 	}
 
