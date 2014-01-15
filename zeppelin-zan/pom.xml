@@ -13,7 +13,7 @@
   <artifactId>zeppelin-zan</artifactId>
   <packaging>jar</packaging>
   <version>0.3.0-SNAPSHOT</version>
-  <name>zeppelin-zan</name>
+  <name>Zeppelin: Zeppelin Archive Network</name>
   <description>Zeppelin Archive Network</description>
   <url>http://zeppelin-project.org/zan.html</url>
 
