@@ -71,7 +71,7 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 			} else if(isEmpty(uri)){ 
 				logger.debug("Create connection from hive configuration");
 				con = new HiveConnection(hiveConf());
-			} else if(uri.equals("jdbc:hive://")) { //local mode detected 
+			} else if(uri.equals("jdbc:hive://") || uri.equals("jdbc:hive2://")) { //local mode detected 
 				logger.debug("Create connection from local mode");
 				con = new HiveConnection(localHiveConf());
 			} else { // remote connection using jdbc uri
