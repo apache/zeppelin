@@ -145,4 +145,30 @@ public class ZeppelinIT {
             driver.quit();
         }
     }
+    
+    
+    @Test
+	public void testZAN() {
+		WebDriver driver = getWebDriver();
+		
+		try {
+			// goto ZAN menu
+			driver.findElement(By.xpath("//ul//a[text()='ZAN']")).click();
+			
+			// wait for ZAN page loaded
+			(new WebDriverWait(driver, 20)).until(new ExpectedCondition<Boolean>() {
+                public Boolean apply(WebDriver d) {
+                    return d.findElement(By.xpath("//div//a[text()='Update Catalog']")).isDisplayed();
+                }
+            });
+		} catch (WebDriverException e) {
+			File scrFile = ((TakesScreenshot) driver)
+					.getScreenshotAs(OutputType.FILE);
+			System.out.println("Screenshot in: " + scrFile.getAbsolutePath());
+			throw e;
+		} finally {
+			// Close the browser
+			driver.quit();
+		}
+	}
 }
