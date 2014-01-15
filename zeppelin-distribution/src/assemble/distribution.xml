@@ -22,15 +22,6 @@
       </includes>
       <useProjectArtifact>false</useProjectArtifact>
       <useTransitiveDependencies>false</useTransitiveDependencies>
-      <!--<binaries>
-        <unpack>false</unpack>
-        <includeDependencies>true</includeDependencies>
-        <dependencySets>
-          <dependencySet>
-            <outputDirectory>/lib</outputDirectory>
-          </dependencySet>
-        </dependencySets>
-      </binaries>-->
     </dependencySet>
     <dependencySet>
       <outputDirectory>/lib</outputDirectory>
@@ -65,7 +56,7 @@
         <include>zeppelin-site.xml.template</include>
       </includes>
     </fileSet>
-
+  </fileSets>
     <!--<fileSet>
       <directory>zeppelin-cli/target</directory>
       <outputDirectory></outputDirectory>
@@ -74,39 +65,7 @@
         <include>lib/*.jar</include>
       </includes>
     </fileSet>
-    <fileSet>
-      <directory>zeppelin-core/target</directory>
-      <outputDirectory></outputDirectory>
-      <includes>
-        <include>*.jar</include>
-        <include>lib/*.jar</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>zeppelin-hive-0.9-driver/target</directory>
-      <outputDirectory></outputDirectory>
-      <includes>
-        <include>*.jar</include>
-        <include>lib/*.jar</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>zeppelin-server/target</directory>
-      <outputDirectory></outputDirectory>
-      <includes>
-        <include>*.jar</include>
-        <include>lib/*.jar</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>zeppelin-web/target</directory>
-      <outputDirectory></outputDirectory>
-      <includes>
-        <include>*.war</include>
-        <include>lib/*.jar</include>
-      </includes>
-    </fileSet> -->
-  </fileSets>
+  </fileSets>-->
 
 </assembly>
 

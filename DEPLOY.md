@@ -5,13 +5,13 @@ A. Build package
 
 Following command will create package zeppelin-VERSION.tar.gz under _zeppelin-distribution/target_ directory.
 
-      mvn clean install -P build-distr
+      mvn clean package -P build-distr
 
 
 B. Upload to S3 bucket ~~web server~~
 
-     ~~scp zeppelin-distribution/target/zeppelin-VERSION.tar.gz root@www.nflabs.com:/var/www/html/pub/zeppelin/~~x
-     mvn install -P publish-distr
+     ~~scp zeppelin-distribution/target/zeppelin-VERSION.tar.gz root@www.nflabs.com:/var/www/html/pub/zeppelin/~~
+     mvn package -P publish-distr
 
 
 C. Edit www.zeppelin-project.org
