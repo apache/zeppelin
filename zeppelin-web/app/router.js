@@ -19,6 +19,8 @@ App.Router.map(function(){
         this.route('link', {path:'/:jobid'});
         this.route('link', {path:'/:jobid/:historyid'});
     });
+    this.resource('zan', function(){
+    });
 });
 
 
@@ -87,3 +89,11 @@ App.ReportLinkRoute = App.ReportRoute.extend({
 });
 
 
+// --------- zan --------------
+App.ZanRoute = Ember.Route.extend({
+    model : function(params){	
+        return params;
+    },
+    setupController : function(controller, model){
+    }
+});

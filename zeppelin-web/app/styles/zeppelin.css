@@ -58,6 +58,14 @@ a {
     font-weight: bold;
 }
 
+.zanLibraryInformation{
+    -moz-border-radius: 7px;
+    border-radius: 7px;
+    background-color: #eeeeee;
+    padding:0px 10px 10px 10px;
+    margin-bottom: 20px;
+}
+
 body {
   position: relative; /* For scrollyspy */
   padding-top: 50px; /* Account for fixed navbar */

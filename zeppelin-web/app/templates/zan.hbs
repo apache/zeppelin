@@ -1,0 +1,33 @@
+<div></div>
+{{#if 'waitForComplete'}}
+<div class="row">
+{{#each job in 'runningJobs'}}
+    <div class="col-md-8">
+        {{job.op}} {{job.libName}} ...
+    </div>
+{{/each}}
+</div>
+{{else}}
+
+<div class="row">
+     <a {{action "update"}}>Update Catalog</a>
+</div>
+<p />
+<div class="row">
+{{#each lib in 'searchResult'}}
+    <div class='zanLibraryInformation col-md-8'>
+        <h4>{{lib.name}}</h4>
+        <div>{{lib.status}} - <a {{action "install" lib.name}}>Install</a> | <a {{action "uninstall" lib.name}}>Uninstall</a> | <a {{action "upgrade" lib.name}}>Upgrade</a>
+	    <!-- following code supposed to work, but it doesn't -->
+	    {{#ifCond lib.status "==" "INSTALLED" }}
+	        <a {{action "uninstall" lib.name}}>Uninstall</a>
+	    {{/ifCond}}
+	    {{#ifCond lib.status "==" "UNINSTALLED" }}
+	        <a {{action "install" lib.name}}>Install</a>
+            {{/ifCond}} 
+	</div>
+    </div>
+{{/each}}
+</div>
+
+{{/if}}

@@ -376,3 +376,37 @@ App.ReportLinkView = Ember.View.extend({
         
     }.observes('controller.currentJob'),
 });
+
+
+App.ZanView = Ember.View.extend({
+    layoutName: 'default_layout',
+
+    didInsertElement : function(){
+        var controller = this.get("controller");
+	controller.send('waitForComplete');
+    },
+
+    update : function(){
+	console.log("update");
+    },
+
+    searchResultChanged : function(){
+        var controller = this.get("controller");
+        var searchResult = controller.get('searchResult');
+	console.log("searchResult=%o", searchResult);
+	this.set('searchResult', searchResult);
+    }.observes('controller.searchResult'),
+
+    waitForCompleteChanged : function(){
+        var controller = this.get("controller");
+	var waitForComplete = controller.get('waitForComplete');
+	var runningJobs = controller.get('runningJobs');
+	console.log("waitForComplete=%o, %o", waitForComplete, runningJobs);
+	this.set('waitForComplete', waitForComplete);
+	this.set('runningJobs', runningJobs);
+    }.observes('controller.waitForComplete'),
+
+    willClearRender: function(){
+    }
+});
+

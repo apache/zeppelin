@@ -45,3 +45,41 @@ $.ajaxSetup({
 // set x-editable's default mode as inline
 $.fn.editable.defaults.mode = 'inline';
 
+
+Handlebars.registerHelper("ifCond",function(v1,operator,v2,options) {
+    switch (operator)
+    {
+        case "==":
+            return (v1==v2)?options.fn(this):options.inverse(this);
+
+        case "!=":
+            return (v1!=v2)?options.fn(this):options.inverse(this);
+
+        case "===":
+            return (v1===v2)?options.fn(this):options.inverse(this);
+
+        case "!==":
+            return (v1!==v2)?options.fn(this):options.inverse(this);
+
+        case "&&":
+            return (v1&&v2)?options.fn(this):options.inverse(this);
+
+        case "||":
+            return (v1||v2)?options.fn(this):options.inverse(this);
+
+        case "<":
+            return (v1<v2)?options.fn(this):options.inverse(this);
+
+        case "<=":
+            return (v1<=v2)?options.fn(this):options.inverse(this);
+
+        case ">":
+            return (v1>v2)?options.fn(this):options.inverse(this);
+
+        case ">=":
+         return (v1>=v2)?options.fn(this):options.inverse(this);
+
+        default:
+            return eval(""+v1+operator+v2)?options.fn(this):options.inverse(this);
+    }
+});

@@ -66,6 +66,7 @@
   <inceptionYear>2013</inceptionYear>
 
   <modules>
+    <module>zeppelin-zan</module>
     <module>zeppelin-zengine</module>
     <module>zeppelin-cli</module>
     <module>zeppelin-web</module>
