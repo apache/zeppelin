@@ -6,8 +6,13 @@ group: install
 ---
 {% include JB/setup %}
 
-| Physical Layer | Supported | Driver | Note |
-| -------------- | --------- | ------ | ---- |
-| Hive | Yes | com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver | JDBC(thrift) connection throught hiveserver
-| Shark | Yes | com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver | JDBC(thrift) connection throught sharkserver
+Currently, Zeppelin distribution includes Hive 0.11 jdbc driver implementation. Following system considered to compatible.
+
+ * Hive 0.11 (with hiveserver2)
+ * Hive 0.9  (with hiveserver)
+ * Shark 0.8 (with sharkserver)
+
+
+
+
 
