@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -21,6 +21,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.result.Result;
+import com.nflabs.zeppelin.zengine.ParamInfo;
+import com.nflabs.zeppelin.zengine.ZContext;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.ZWebContext;
 
 /**
  * Q stands for Query

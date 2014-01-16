@@ -1,10 +1,14 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 import java.io.IOException;
+
 import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
 import com.nflabs.zeppelin.result.Result;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.api.ShellExecStatement;
+import com.nflabs.zeppelin.zengine.api.Z;
 
 public class ShellExecStatementTest extends HiveTestService {
     HiveZeppelinDriver driver;

@@ -17,10 +17,10 @@ import org.apache.commons.cli.ParseException;
 
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.result.ResultDataException;
-import com.nflabs.zeppelin.zengine.Z;
 import com.nflabs.zeppelin.zengine.ZException;
-import com.nflabs.zeppelin.zengine.ZQL;
 import com.nflabs.zeppelin.zengine.ZQLException;
+import com.nflabs.zeppelin.zengine.api.Z;
+import com.nflabs.zeppelin.zengine.api.ZQL;
 
 public class ZeppelinCli {
 	@SuppressWarnings("static-access")

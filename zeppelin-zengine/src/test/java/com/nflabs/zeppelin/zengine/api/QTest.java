@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,6 +17,10 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.util.UtilsForTests;
+import com.nflabs.zeppelin.zengine.ParamInfo;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.api.Q;
+import com.nflabs.zeppelin.zengine.api.Z;
 
 public class QTest extends HiveTestService {
 

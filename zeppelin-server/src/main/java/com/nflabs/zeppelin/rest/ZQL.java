@@ -27,8 +27,8 @@ import com.google.gson.Gson;
 import com.nflabs.zeppelin.server.JsonResponse;
 import com.nflabs.zeppelin.server.ZQLJob;
 import com.nflabs.zeppelin.server.ZQLJobManager;
-import com.nflabs.zeppelin.zengine.Z;
 import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.api.Z;
 
 @Path("/zql")
 public class ZQL {	

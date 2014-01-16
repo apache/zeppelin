@@ -13,7 +13,7 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
-import com.nflabs.zeppelin.zengine.Z;
+import com.nflabs.zeppelin.zengine.api.Z;
 
 public class ZQLJobManagerTest extends TestCase {
 

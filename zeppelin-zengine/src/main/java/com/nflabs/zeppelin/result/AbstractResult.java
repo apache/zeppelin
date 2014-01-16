@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.zengine.Z;
+import com.nflabs.zeppelin.zengine.api.Z;
 
 public abstract class AbstractResult {
 	private ColumnDef [] columnDef;

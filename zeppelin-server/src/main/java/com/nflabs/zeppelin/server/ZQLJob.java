@@ -15,10 +15,10 @@ import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.JobListener;
-import com.nflabs.zeppelin.zengine.Z;
 import com.nflabs.zeppelin.zengine.ZException;
-import com.nflabs.zeppelin.zengine.ZQL;
 import com.nflabs.zeppelin.zengine.ZQLException;
+import com.nflabs.zeppelin.zengine.api.Z;
+import com.nflabs.zeppelin.zengine.api.ZQL;
 
 public class ZQLJob extends Job{
 	private String zql;

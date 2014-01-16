@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -9,6 +9,11 @@ import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
 import com.nflabs.zeppelin.util.UtilsForTests;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.ZQLException;
+import com.nflabs.zeppelin.zengine.api.Q;
+import com.nflabs.zeppelin.zengine.api.ShellExecStatement;
+import com.nflabs.zeppelin.zengine.api.Z;
 
 public class ZQLTest extends HiveTestService {
 	public ZQLTest() throws IOException {

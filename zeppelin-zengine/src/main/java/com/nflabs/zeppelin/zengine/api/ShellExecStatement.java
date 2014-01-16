@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -13,6 +13,10 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.nflabs.zeppelin.zengine.ParamInfo;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.ZWebContext;
 
 /**
  * This is an abstraction for runing shell scripts

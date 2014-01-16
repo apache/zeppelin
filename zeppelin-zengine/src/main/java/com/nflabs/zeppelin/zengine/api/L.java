@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 
 import java.io.BufferedReader;
@@ -21,6 +21,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.zengine.ParamInfo;
+import com.nflabs.zeppelin.zengine.ZContext;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.ZWebContext;
 
 /**
  * L stands for Library(aks UDF). This class load and execute Zeppelin User Defined Functions

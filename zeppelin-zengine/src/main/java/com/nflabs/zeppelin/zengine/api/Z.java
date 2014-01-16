@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 
 import java.io.ByteArrayOutputStream;
@@ -10,7 +10,9 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.script.ScriptEngine;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -20,6 +22,7 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.hadoop.fs.FileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
@@ -28,6 +31,8 @@ import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.util.Util;
+import com.nflabs.zeppelin.zengine.ParamInfo;
+import com.nflabs.zeppelin.zengine.ZException;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 

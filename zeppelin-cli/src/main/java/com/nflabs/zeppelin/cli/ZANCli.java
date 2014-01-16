@@ -7,8 +7,8 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.zan.Info;
 import com.nflabs.zeppelin.zan.ZAN;
 import com.nflabs.zeppelin.zan.ZANException;
-import com.nflabs.zeppelin.zengine.Z;
 import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.api.Z;
 
 public class ZANCli {
 	public static enum Command{

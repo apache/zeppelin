@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,6 +16,8 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 
 import com.nflabs.zeppelin.util.Util;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.ZQLException;
 /**
  * ZQL parses Zeppelin Query Language (http://nflabs.github.io/zeppelin/#zql) 
  * and generate logical plan (produces Z classes)

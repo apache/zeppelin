@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +14,9 @@ import javax.script.SimpleBindings;
 import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
 import com.nflabs.zeppelin.util.UtilsForTests;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.api.Q;
+import com.nflabs.zeppelin.zengine.api.Z;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 public class ZTest extends HiveTestService {
@@ -61,8 +64,8 @@ public class ZTest extends HiveTestService {
 	
 	public void testPipeGetQuery() throws ZException{
 		Z z = new Q("select * from bank")
-   	    .pipe(new Q("select * from (<%=z."+Q.INPUT_VAR_NAME+"%>) q limit 10"))
-	    .pipe(new Q("create view vv as select * from <%=z."+Q.INPUT_VAR_NAME+"%>"));
+		    .pipe(new Q("select * from (<%=z."+Q.INPUT_VAR_NAME+"%>) q limit 10"))
+		    .pipe(new Q("create view vv as select * from <%=z."+Q.INPUT_VAR_NAME+"%>"));
 		
 		assertEquals("create view vv as select * from "+z.prev().name(), z.getQuery());
 		z.release();

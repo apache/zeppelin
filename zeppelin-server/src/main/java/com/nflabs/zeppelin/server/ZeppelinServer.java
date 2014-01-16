@@ -23,7 +23,7 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.rest.ZAN;
 import com.nflabs.zeppelin.rest.ZQL;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
-import com.nflabs.zeppelin.zengine.Z;
+import com.nflabs.zeppelin.zengine.api.Z;
 
 
 public class ZeppelinServer extends Application {
