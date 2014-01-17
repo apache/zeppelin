@@ -86,7 +86,7 @@ public class L extends Q {
 		try {		
 			// search for library dir
 			this.dir = new Path(libUri);
-			if(fs.getFileStatus(dir).isDir() == false){
+			if(!fs.exists(dir) || !fs.getFileStatus(dir).isDir()){
 				throw new ZException("Directory "+dir.toUri()+" does not exist");
 			}
 			this.erbFile = new Path(libUri.toString()+"/zql.erb");
