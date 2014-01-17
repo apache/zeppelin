@@ -1,13 +1,20 @@
 package com.nflabs.zeppelin.driver;
 
+import java.net.URI;
+
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.result.Result;
 
 /**
  * Zeppelin driver is physical layer abstraction.
+ * 
+ * Each sub-class manages actual connections to backend systems:
+ * i.e Socket for JDBC to Hive or Spark or PrestoDB.
  *
  */
 public abstract class ZeppelinDriver {
-	private ZeppelinConfiguration conf;
+    protected ZeppelinConfiguration conf;
+	protected ZeppelinConnection connection;
 
 	/**
 	 * Constructor
@@ -25,7 +32,6 @@ public abstract class ZeppelinDriver {
 	public ZeppelinConfiguration getConf(){
 		return conf;
 	}
-	
 
 	/**
 	 * Get zeppelin connection
@@ -42,8 +48,38 @@ public abstract class ZeppelinDriver {
 	public abstract void init() throws ZeppelinDriverException;
 	
 	/**
-	 * Distroy the driver
+	 * Destroy the driver
 	 * @throws ZeppelinDriverException
 	 */
 	public abstract void shutdown() throws ZeppelinDriverException;
+	
+	
+    public void addResource(URI resourceLocation) {
+        this.connection.addResource(resourceLocation);
+    }
+
+    public Result query(String query) {
+        return this.connection.query(query);
+    }
+
+    public Result select(String tableName, int maxResult) {
+        return this.connection.select(tableName, maxResult);
+    }
+
+    public Result createTableFromQuery(String name, String query) {
+        return this.connection.createTableFromQuery(name, query);
+    }
+
+    public void dropTable(String name) {
+        this.connection.dropTable(name);
+    }
+
+    public void dropView(String name) {
+        this.connection.dropView(name);
+    }
+
+    public void abort() {
+        this.connection.abort();
+    }
+
 }

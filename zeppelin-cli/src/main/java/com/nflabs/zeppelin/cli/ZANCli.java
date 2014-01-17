@@ -8,6 +8,7 @@ import com.nflabs.zeppelin.zan.Info;
 import com.nflabs.zeppelin.zan.ZAN;
 import com.nflabs.zeppelin.zan.ZANException;
 import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.Zengine;
 import com.nflabs.zeppelin.zengine.api.Z;
 
 public class ZANCli {
@@ -76,12 +77,14 @@ public class ZANCli {
 	
 	public static ZAN zan() throws ZException{
 		ZeppelinConfiguration conf = new ZeppelinConfiguration();
-		Z.configure(conf);
+		//TODO(alex): replace with just file system
+		Zengine z = new Zengine();
+	    z.configure();
 		
 		String zanRepo = conf.getString(ConfVars.ZEPPELIN_ZAN_REPO);
 		String zanLocalRepo = conf.getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO);
 		String zanSharedRepo = conf.getString(ConfVars.ZEPPELIN_ZAN_SHARED_REPO);
-		ZAN zan = new ZAN(zanRepo, zanLocalRepo, zanSharedRepo, Z.fs());
+		ZAN zan = new ZAN(zanRepo, zanLocalRepo, zanSharedRepo, z.fs());
 		return zan;
 	}
 	

@@ -25,6 +25,7 @@ import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.Zengine;
 
 public class LTest extends HiveTestService {
     
@@ -34,6 +35,7 @@ public class LTest extends HiveTestService {
 
     @Rule
     public ExpectedException thrown= ExpectedException.none();
+    private Zengine z;
     
     public LTest() throws IOException {
         super();
@@ -51,13 +53,14 @@ public class LTest extends HiveTestService {
 		UtilsForTests.delete(new File(ROOT_DIR.getName()));
 		
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpUri );
-		//Dependensies: ZeppelinDriver + ZeppelinConfiguration
-		Z.configure();
+		z = new Zengine();
+		z.configure();
 		
-		HiveZeppelinDriver driver = new HiveZeppelinDriver(Z.getConf());
+		HiveZeppelinDriver driver = new HiveZeppelinDriver(z.getConf());
 		driver.setClient(client);
 		
-		Z.setDriver(driver);
+		z.setDriver(driver);
+     
 	}
 
     @After
@@ -77,7 +80,7 @@ public class LTest extends HiveTestService {
 		thrown.expect(ZException.class);
 		// load nonexisting L
 		try {
-		    new L("abc");
+		    new L("abc", z);
 		} catch (ZException e) {
 		    assertTrue(e.getMessage().contains("does not exist"));
 		}
@@ -123,7 +126,7 @@ public class LTest extends HiveTestService {
 	    generateTestLibraryIn(tmpDir);
 
         // load existing L
-        L test = new L("test");
+        L test = new L("test", z);
         test.withParam("limit", 3);
         test.withName("hello");
         assertEquals("CREATE VIEW "+test.name()+" AS select * from table limit 3", test.getQuery());
@@ -140,7 +143,7 @@ public class LTest extends HiveTestService {
         createFileWithContent(tmpDir+"/test/web/index.erb", "HELLO HTML\n");
 
 		// load existing L
-		Z test = new L("test");//.execute();
+		Z test = new L("test", z);//.execute();
 		InputStream ins = test.readWebResource("/");
 		assertEquals("HELLO HTML", IOUtils.toString(ins, "utf8"));
 	}
@@ -156,20 +159,20 @@ public class LTest extends HiveTestService {
 	    bw.write("2\n");
 	    bw.close();
 
-		new Q("drop table if exists test").execute().result().write(System.out);
-		new Q("create table test(a INT)").execute().result().write(System.out);
-		new Q("load data local inpath '" + p.toString() + "' into table test").execute().result().write(System.out);
+		new Q("drop table if exists test", z).execute().result().write(System.out);
+		new Q("create table test(a INT)", z).execute().result().write(System.out);
+		new Q("load data local inpath '" + p.toString() + "' into table test", z).execute().result().write(System.out);
 
 		File erb = new File(tmpDir+"/test/web/index.erb");
 		FileOutputStream out = new FileOutputStream(erb);		
 		out.write("HELLO HTML <%= z.result.rows[0][0] %>\n".getBytes());
 		out.close();
 		
-		Z z = new Q("select * from test").pipe(new L("test"));
-		Result result = z.execute().result();
+		Z q = new Q("select * from test", z).pipe(new L("test", z));
+		Result result = q.execute().result();
 		assertEquals(5, result.getRows().get(0)[0]);
 		
-		InputStream ins = z.readWebResource("/");
+		InputStream ins = q.readWebResource("/");
 		assertEquals("HELLO HTML 5", IOUtils.toString(ins, "utf8"));
 	}
 	
@@ -184,17 +187,17 @@ public class LTest extends HiveTestService {
 	    bw.write("2\n");
 	    bw.close();
 	    
-		new Q("drop table if exists test").execute().result().write(System.out);
-		new Q("create table test(a INT)").execute().result().write(System.out);
-		new Q("load data local inpath '" + p.toString() + "' into table test").execute().result().write(System.out);
+		new Q("drop table if exists test", z).execute().result().write(System.out);
+		new Q("create table test(a INT)", z).execute().result().write(System.out);
+		new Q("load data local inpath '" + p.toString() + "' into table test", z).execute().result().write(System.out);
 
 		File erb = new File(tmpDir+"/test/web/index.erb");
 		FileOutputStream out = new FileOutputStream(erb);		
 		out.write("HELLO HTML <%= z.result.rows[0][0] %>\n".getBytes());
 		out.close();
 		
-		Z z = new Q("select * from test").pipe(new L("test")).pipe(new L("test"));
-		Result result = z.execute().result();
+		Z q = new Q("select * from test", z).pipe(new L("test", z)).pipe(new L("test", z));
+		Result result = q.execute().result();
 		assertEquals(5, result.getRows().get(0)[0]);
 	}
 

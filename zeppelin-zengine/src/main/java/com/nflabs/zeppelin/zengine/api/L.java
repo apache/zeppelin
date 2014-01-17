@@ -25,6 +25,7 @@ import com.nflabs.zeppelin.zengine.ParamInfo;
 import com.nflabs.zeppelin.zengine.ZContext;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZWebContext;
+import com.nflabs.zeppelin.zengine.Zengine;
 
 /**
  * L stands for Library(aks UDF). This class load and execute Zeppelin User Defined Functions
@@ -45,16 +46,16 @@ public class L extends Q {
 	 * @param libName library name to load and run
 	 * @throws ZException
 	 */
-	public L(String libName) throws ZException{
-		this(libName, null);
+	public L(String libName, Zengine z) throws ZException{
+		this(libName, null, z);
 	}
 	/**
 	 * @param libName library name to laod and run
 	 * @param arg
 	 * @throws ZException
 	 */
-	public L(String libName, String arg) throws ZException{
-		super(arg);
+	public L(String libName, String arg, Zengine z) throws ZException{
+		super(arg, z);
 		this.libName = libName;
 		initialize();
 	}
@@ -71,13 +72,13 @@ public class L extends Q {
 		
 		if(libName==null) return;
 
-		fs = fs();
+		fs = zen.fs();
 		
 		try {
 			if(libName.indexOf(":/")>0){
 				libUri = new URI(libName);
 			} else {
-				libUri = new URI(getConf().getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO)+"/"+libName);	
+				libUri = new URI(zen.getConf().getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO)+"/"+libName);	
 			}
 		} catch (URISyntaxException e1) {
 			throw new ZException(e1);
@@ -103,7 +104,7 @@ public class L extends Q {
 		initialized = true;
 	}
 
-	/**
+    /**
 	 * Get query to be executed.
 	 * Each library has query template file. and returns evaluated value.
 	 * 

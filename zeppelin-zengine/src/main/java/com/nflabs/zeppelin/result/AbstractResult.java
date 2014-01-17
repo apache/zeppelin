@@ -5,11 +5,11 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.zengine.api.Z;
-
 public abstract class AbstractResult {
-	private ColumnDef [] columnDef;
+    //TODO: static configuration vs dependency igection
+    // = Zengine.getConf().getLong(ConfVars.ZEPPELIN_MAX_RESULT)
+	private static final long DEFAULT_RESULT_NUM_LIMIT = 100;
+    private ColumnDef [] columnDef;
 	private long max;
 	
 	transient private ResultSet res;
@@ -85,7 +85,8 @@ public abstract class AbstractResult {
 		
 		this.res = res;
 		if (max < 0){
-			this.max = Z.getConf().getLong(ConfVars.ZEPPELIN_MAX_RESULT);
+		    //FIXME(alex): is static configuration evil?
+			this.max = DEFAULT_RESULT_NUM_LIMIT;
 		} else {
 			this.max = max;
 		}

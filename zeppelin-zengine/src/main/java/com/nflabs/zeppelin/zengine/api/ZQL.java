@@ -18,32 +18,37 @@ import org.apache.hadoop.fs.Path;
 import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
+import com.nflabs.zeppelin.zengine.Zengine;
 /**
  * ZQL parses Zeppelin Query Language (http://nflabs.github.io/zeppelin/#zql) 
- * and generate logical plan (produces Z classes)
+ * and generate logical plan 
+ * 
+ * Instantiates all Z,Q,L.. class-family, pass them Zengine
  * @author moon
  *
  */
 public class ZQL {
 	String [] op = new String[]{";", "|", ">>", ">"};
 	StringBuilder sb = new StringBuilder();
-
+	private Zengine zen; 
+	
 	/**
 	 * Constructor
 	 * @throws ZException
 	 */
-	public ZQL() throws ZException{
-		Z.configure();
+	public ZQL(Zengine zen) throws ZException{
+	    this.zen = zen;
 	}
 
 	/**
 	 * Load ZQL statements from string
 	 * @param zql Zeppelin query language statements
+	 * @param z 
 	 * @throws ZException
 	 */
-	public ZQL(String zql) throws ZException{
-		Z.configure();
-		append(zql);
+	public ZQL(String zql, Zengine zen) throws ZException{
+	    this.zen = zen;
+	    append(zql);
 	}
 	
 	
@@ -54,7 +59,7 @@ public class ZQL {
 	 * @throws ZException
 	 */
 	public ZQL(URI uri) throws IOException, ZException{
-		Z.configure();
+		//Z.configure();
 		load(uri);
 	}
 	
@@ -65,7 +70,7 @@ public class ZQL {
 	 * @throws IOException
 	 */
 	public ZQL(File file) throws ZException, IOException{
-		Z.configure();
+		//Z.configure();
 		load(file);
 	}
 	
@@ -76,7 +81,7 @@ public class ZQL {
 	 * @throws ZException
 	 */
 	public ZQL(InputStream ins) throws IOException, ZException{
-		Z.configure();
+		//Z.configure();
 		load(ins);
 	}
 	
@@ -88,7 +93,7 @@ public class ZQL {
 	 * @throws ZException
 	 */
 	public void load(URI uri) throws IOException{
-		FSDataInputStream ins = Z.fs().open(new Path(uri));
+		FSDataInputStream ins = zen.fs().open(new Path(uri));
 		load(ins);
 		ins.close();
 	}
@@ -207,7 +212,7 @@ public class ZQL {
 					}
 				}
 				try {				
-					currentZ = new ShellExecStatement(stmt); 
+					currentZ = new ShellExecStatement(stmt, zen); 
 				} catch (ZException e) {
 					throw new ZQLException(e);
 				}
@@ -226,7 +231,7 @@ public class ZQL {
 			if(z==null){
 				Q q;
 				try {
-					q = new Q(stmt);
+					q = new Q(stmt, zen);
 				} catch (ZException e) {
 					throw new ZQLException(e);
 				}
@@ -271,7 +276,7 @@ public class ZQL {
 
 			
 			String args = m.group(3);
-			L l = new L(libName, args);
+			L l = new L(libName, args, zen);
 			
 			String params = m.group(2);
 			
@@ -294,7 +299,6 @@ public class ZQL {
 					}
 				}
 			}
-			
 			return l;
 			
 		} else {

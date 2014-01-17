@@ -23,6 +23,7 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.rest.ZAN;
 import com.nflabs.zeppelin.rest.ZQL;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
+import com.nflabs.zeppelin.zengine.Zengine;
 import com.nflabs.zeppelin.zengine.api.Z;
 
 
@@ -106,17 +107,20 @@ public class ZeppelinServer extends Application {
 	
 	public ZeppelinServer() throws Exception {
 		this.schedulerFactory = new SchedulerFactory();
-		Z.configure();
-		if(Z.getConf().getString(ConfVars.ZEPPELIN_JOB_SCHEDULER).equals("FIFO")){
-			this.analyzeSessionManager = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
+
+		Zengine z = new Zengine();
+        z.configure();
+
+        if(z.getConf().getString(ConfVars.ZEPPELIN_JOB_SCHEDULER).equals("FIFO")){
+			this.analyzeSessionManager = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), z.fs(), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		} else {
-			this.analyzeSessionManager = new ZQLJobManager(schedulerFactory.createOrGetParallelScheduler("analyze", 100), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
+			this.analyzeSessionManager = new ZQLJobManager(schedulerFactory.createOrGetParallelScheduler("analyze", 100), z.fs(), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		}		
 		
-		this.zan = new com.nflabs.zeppelin.zan.ZAN(Z.getConf().getString(ConfVars.ZEPPELIN_ZAN_REPO),
-												   Z.getConf().getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO),
-												   Z.getConf().getString(ConfVars.ZEPPELIN_ZAN_SHARED_REPO),
-												   Z.fs());
+		this.zan = new com.nflabs.zeppelin.zan.ZAN(z.getConf().getString(ConfVars.ZEPPELIN_ZAN_REPO),
+												   z.getConf().getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO),
+												   z.getConf().getString(ConfVars.ZEPPELIN_ZAN_SHARED_REPO),
+												   z.fs());
 		
 		this.zanJobManager = new ZANJobManager(zan, schedulerFactory.createOrGetFIFOScheduler("analyze"));
 	}

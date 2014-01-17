@@ -17,15 +17,16 @@ import org.slf4j.LoggerFactory;
 import com.nflabs.zeppelin.zengine.ParamInfo;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZWebContext;
+import com.nflabs.zeppelin.zengine.Zengine;
 
 /**
  * This is an abstraction for runing shell scripts
  * inside ZQL, i.e: "!echo 1" or "!time" or even "!git"
  * 
  */
-public class ShellExecStatement extends Q{
-	public ShellExecStatement(String command) throws ZException{
-		super(command);
+public class ShellExecStatement extends Q {
+	public ShellExecStatement(String command, Zengine z) throws ZException{
+		super(command, z);
 	}
 	
 	private Logger logger(){
