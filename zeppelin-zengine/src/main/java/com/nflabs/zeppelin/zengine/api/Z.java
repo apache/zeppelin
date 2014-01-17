@@ -41,6 +41,12 @@ import com.sun.script.jruby.JRubyScriptEngineFactory;
  * Instances of Z class can construct liked list by pipe method.
  * @author moon
  *
+ *
+ * Depends on: 
+ *  - ScriptEngine (for ERB)
+ *  - ZeppelinDriver 
+ *  - ZeppelinConfiguration 
+ *  
  */
 public abstract class Z {
 	String id; // z object identifier
@@ -626,7 +632,7 @@ public abstract class Z {
 	 * @throws ZException 
 	 */
 	public static ZeppelinConnection getConnection() throws ZException{
-
+	    //TODO return stored connection
 		
 		try {
 			return driver.getConnection();
@@ -655,10 +661,6 @@ public abstract class Z {
 	 */
 	public static FileSystem fs(){
 		return fs;
-	}
-
-	public static ZeppelinDriver driver(){
-		return driver;
 	}
 
 	public static void setDriver(ZeppelinDriver driver){
