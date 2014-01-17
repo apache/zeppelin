@@ -12,6 +12,11 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import com.jointhegrid.hive_test.HiveTestBase;
 import com.jointhegrid.hive_test.HiveTestService;
@@ -20,92 +25,119 @@ import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
-import com.nflabs.zeppelin.zengine.api.L;
-import com.nflabs.zeppelin.zengine.api.Q;
-import com.nflabs.zeppelin.zengine.api.Z;
 
 public class LTest extends HiveTestService {
-	
-	public LTest() throws IOException {
-		super();
-	}
+    
+    private File tmp;
+	private String tmpDir;
+    private String tmpUri;
 
-	private File tmpDir;
+    @Rule
+    public ExpectedException thrown= ExpectedException.none();
+    
+    public LTest() throws IOException {
+        super();
+    }
 
+    @Before
 	public void setUp() throws Exception {
 		super.setUp();
-		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());		
-		tmpDir.mkdir();
+		tmp = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());		
+		tmp.mkdir();
+		tmpDir = tmp.getAbsolutePath();
+		tmpUri = tmp.toURI().toString();
 
 		UtilsForTests.delete(new File("/tmp/warehouse"));
 		UtilsForTests.delete(new File(ROOT_DIR.getName()));
 		
-		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
+		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpUri );
+		//Dependensies: ZeppelinDriver + ZeppelinConfiguration
 		Z.configure();
+		
 		HiveZeppelinDriver driver = new HiveZeppelinDriver(Z.getConf());
 		driver.setClient(client);
+		
 		Z.setDriver(driver);
 	}
 
+    @After
 	public void tearDown() throws Exception {
-		UtilsForTests.delete(tmpDir);
+		UtilsForTests.delete(tmp);
 		super.tearDown();
 		
 		UtilsForTests.delete(new File("/tmp/warehouse"));
 		UtilsForTests.delete(new File(ROOT_DIR.getName()));
 	}
+    
 
-	public void testLoadFromDir() throws IOException, ZException{
-		new File(tmpDir.getAbsolutePath()+"/test").mkdir();
-		File erb = new File(tmpDir.getAbsolutePath()+"/test/zql.erb");
-		FileOutputStream out = new FileOutputStream(erb);		
-		out.write(("CREATE VIEW <%= z."+Q.OUTPUT_VAR_NAME+" %> AS select * from table limit <%= z.param('limit') %>\n").getBytes());
-		out.close();
+	@Test
+	public void testLoadingNonExistentLibrary() throws IOException, ZException {
+		generateTestLibraryIn(tmpDir);
 		
-		// create resource that will be ignored
-		FileOutputStream outInvalid = new FileOutputStream(new File(tmpDir.getAbsolutePath()+"/test/no_resource"));
-		outInvalid.write("".getBytes());
-		outInvalid.close();
-		
-		// create resource
-		FileOutputStream resource = new FileOutputStream(new File(tmpDir.getAbsolutePath()+"/test/test_data.log"));
-		resource.write("".getBytes());
-		resource.close();
-		
-		System.out.println(tmpDir.toURI().toString());
-		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
-		Z.configure();
-		
+		thrown.expect(ZException.class);
 		// load nonexisting L
-		try{
-			new L("abc");
-			assertTrue(false);
-		}catch(ZException e){
-			assertTrue(true);
+		try {
+		    new L("abc");
+		} catch (ZException e) {
+		    assertTrue(e.getMessage().contains("does not exist"));
 		}
-		
-		// load existing L
-		L test = new L("test");
-		test.withParam("limit", 3);
-		test.withName("hello");
-		assertEquals("CREATE VIEW "+test.name()+" AS select * from table limit 3", test.getQuery());
-		List<URI> res = test.getResources();
-		assertEquals(1, res.size());
-		assertEquals("file://"+tmpDir.getAbsolutePath()+"/test/test_data.log", res.get(0).toString());
-		test.release();
+	}
+
+	/**
+	 * Generates the mock of Zeppelin Library in file system
+	 * @param path of the library root
+	 * @throws IOException
+	 */
+    private void generateTestLibraryIn(String path) throws IOException {
+        File f = new File(path+"/test");
+        if (!f.exists()) { f.mkdir(); }
+        
+        String zqlQuery = "CREATE VIEW <%= z." + Q.OUTPUT_VAR_NAME + " %> AS select * from table limit <%= z.param('limit') %>\n";
+        
+        createFileWithContent(path+"/test/zql.erb", zqlQuery);
+        // create resource that will be ignored
+		createFileWithContent(path+"/test/no_resource", "");
+        // create resource
+        createFileWithContent(path+"/test/test_data.log", "");
+    }
+
+    /**
+     * Utility method to create a file (if does not exist) and populate it the the given content
+     * 
+     * @param path to file
+     * @param content of the file
+     * @throws IOException
+     */
+    private void createFileWithContent(String path, String content) throws IOException {
+        File f = new File(path);
+        if (!f.exists()) {
+            FileOutputStream out = new FileOutputStream(f);
+            out.write((content).getBytes());
+            out.close();
+        }
+    }
+
+	
+	@Test
+	public void testLoadingExistingLibrary() throws ZException, IOException {
+	    generateTestLibraryIn(tmpDir);
+
+        // load existing L
+        L test = new L("test");
+        test.withParam("limit", 3);
+        test.withName("hello");
+        assertEquals("CREATE VIEW "+test.name()+" AS select * from table limit 3", test.getQuery());
+        List<URI> res = test.getResources();
+        assertEquals(1, res.size());
+        assertEquals("file://"+tmpDir+"/test/test_data.log", res.get(0).toString());
+        test.release();
 	}
 
 	public void testWeb() throws Exception{
-		new File(tmpDir.getAbsolutePath()+"/test/web").mkdirs();
-		File erb = new File(tmpDir.getAbsolutePath()+"/test/zql.erb");
-		FileOutputStream out = new FileOutputStream(erb);
-		out.write(("show tables").getBytes());
-		out.close();
+		new File(tmpDir+"/test/web").mkdirs();
 
-		erb = new File(tmpDir.getAbsolutePath()+"/test/web/index.erb");
-		out = new FileOutputStream(erb);		
-		out.write("HELLO HTML\n".getBytes());
-		out.close();
+		createFileWithContent(tmpDir+"/test/zql.erb", "show tables");
+        createFileWithContent(tmpDir+"/test/web/index.erb", "HELLO HTML\n");
 
 		// load existing L
 		Z test = new L("test");//.execute();
@@ -114,7 +146,7 @@ public class LTest extends HiveTestService {
 	}
 	
 	public void testWebOnlyLibrary() throws IOException, ZException{
-		new File(tmpDir.getAbsolutePath()+"/test/web").mkdirs();
+		new File(tmpDir+"/test/web").mkdirs();
 
 		Path p = new Path(HiveTestBase.ROOT_DIR, "afile");
 
@@ -128,7 +160,7 @@ public class LTest extends HiveTestService {
 		new Q("create table test(a INT)").execute().result().write(System.out);
 		new Q("load data local inpath '" + p.toString() + "' into table test").execute().result().write(System.out);
 
-		File erb = new File(tmpDir.getAbsolutePath()+"/test/web/index.erb");
+		File erb = new File(tmpDir+"/test/web/index.erb");
 		FileOutputStream out = new FileOutputStream(erb);		
 		out.write("HELLO HTML <%= z.result.rows[0][0] %>\n".getBytes());
 		out.close();
@@ -142,7 +174,7 @@ public class LTest extends HiveTestService {
 	}
 	
 	public void testWebOnlyLibraryPipe() throws IOException, ZException{
-		new File(tmpDir.getAbsolutePath()+"/test/web").mkdirs();
+		new File(tmpDir+"/test/web").mkdirs();
 
 		Path p = new Path(HiveTestBase.ROOT_DIR, "afile");
 
@@ -156,7 +188,7 @@ public class LTest extends HiveTestService {
 		new Q("create table test(a INT)").execute().result().write(System.out);
 		new Q("load data local inpath '" + p.toString() + "' into table test").execute().result().write(System.out);
 
-		File erb = new File(tmpDir.getAbsolutePath()+"/test/web/index.erb");
+		File erb = new File(tmpDir+"/test/web/index.erb");
 		FileOutputStream out = new FileOutputStream(erb);		
 		out.write("HELLO HTML <%= z.result.rows[0][0] %>\n".getBytes());
 		out.close();
