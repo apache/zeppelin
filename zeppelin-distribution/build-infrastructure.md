@@ -26,8 +26,10 @@ compile                => *.class, minify *.js
 build modules          => *.jar, war
 test                   => UnitTest reports
 package -P build-distr => final .zip
-integration-test       => selenium over runing zeppelin-server (from package)
+integration-test       => selenium over running zeppelin-server (from package)
 
-pre-
-verify
-post
+
+verify:
+ pre-inegration-test   => start Zeppelin
+ integration-test
+ post-inegration-test  => stop Zeppelin
