@@ -18,30 +18,19 @@ Zeppelin is opensource data analysis environment on top of Hadoop.
 Zeppelin can be run either locally or with existing hadoop cluster. see [install](./docs/install/install.html)
 
 
-### Using GUI
+### Start
 
-Zeppelin has it's own GUI based on web. Browse http://localhost:8080 after start Zeppelin as a daemon by following command
+Zeppelin has it's own web based GUI. Browse http://localhost:8080 after start Zeppelin as a daemon by following command
 
 ```
 bin/zeppelin-daemon.sh start
 ```
 
 GUI provides
+
  * ZQL editor
  * Visualization
  * Session save/restore
-
-### Using Command Line Interface
-
-To open interactive CLI session, run
-
-```
-bin/zeppelin
-```
-
-run with '-h' argument will print available options.
+ * ZAN repository management
 
 
-### Play with Zengine
-
-Zengine is java framework for data analytics. check [Zengine](./zengine.html)
