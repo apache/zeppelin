@@ -15,7 +15,7 @@ Zeppelin is opensource data analysis environment on top of Hadoop.
 
 [Download](./download.html) a release.
 
-Zeppelin can be run either locally or with existing hadoop cluster. see [install](./install/install.html)
+Zeppelin can be run either locally or with existing hadoop cluster. see [install](./docs/install/install.html)
 
 
 ### Using GUI
