@@ -34,3 +34,7 @@ GUI provides
  * ZAN repository management
 
 
+
+### Play
+
+Check our [tutorials](./docs/tutorials/tutorial1.html).
