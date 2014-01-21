@@ -37,4 +37,5 @@ GUI provides
 
 ### Play
 
+Here's some [screenshots](./screenshots.html).
 Check our [tutorials](./docs/tutorials/tutorial1.html).
