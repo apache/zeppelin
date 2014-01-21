@@ -33,7 +33,7 @@ to use it add dependency in your pom.xml
 <dependency>
     <groupId>com.nflabs.zeppelin</groupId>
     <artifactId>zeppelin-zengine</artifactId>
-    <version>0.1.2</version>
+    <version>0.2.0</version>
 </dependency>
 ```
 if you want access snapshot
@@ -42,7 +42,7 @@ if you want access snapshot
 <dependency>
     <groupId>com.nflabs.zeppelin</groupId>
     <artifactId>zeppelin-zengine</artifactId>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.3.0-SNAPSHOT</version>
 </dependency>
 
 ...
