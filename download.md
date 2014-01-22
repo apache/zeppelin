@@ -7,12 +7,21 @@ group: nav-right
 {% include JB/setup %}
 
 
-## Nightly Build
+## Stable release
 
-#### Snapshot 0.2.0
+Officail stable releases
+
+#### Zeppelin-0.2.0
+
+Download [zeppelin-0.2.0.tar.gz](https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.2.0.tar.gz), ([release note](https://zeppelin-project.atlassian.net/secure/ReleaseNote.jspa?projectId=10001&version=10001))
+
+
+
+
+### Nightly Build
 This is snapshot release. Which contains latest improvement, new features. but unproven, some may be broken.
 
-Download [zeppelin-0.2.0-SNAPSHOT.tar.gz](http://www.nflabs.com/pub/zeppelin/zeppelin-0.2.0-SNAPSHOT.tar.gz)
+#### Snapshot 0.3.0-SNAPSHOT
 
-
+Download [zeppelin-0.3.0-SNAPSHOT.tar.gz](https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.3.0-SNAPSHOT.tar.gz)
 
