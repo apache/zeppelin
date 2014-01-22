@@ -5,20 +5,20 @@ description: "Tutorial 1"
 group: tutorial
 ---
 
-In this tutorial, you'll know the basic about Zeppelin and it's GUI interface. Please check install for installation.
+In this tutorial, you'll know the basic about Zeppelin and it's GUI interface. Please check [install](../install/install.html) for installation.
 
-#### ZQL Session
+#### ZQL Job
 
-If you run zeppelin-daemon.sh start, you'll see menu 'ZQL'. You can create/run/save/delete the sessions here. ZQL Session is one unit of your analysis, and
+If you run zeppelin-daemon.sh start, you'll see menu 'ZQL'. You can create/run/save/delete the job here. ZQL Job is one unit of your analysis, and
 
 * Have multiple ZQL Statements.
 * Run ZQL Statement line by line.
 * Have it's name. The name is user friendly name and it can be change at any time.
-* Have it's id. Id is unique across all sessions. Can not be changed.
+* Have it's id. Id is unique across all job. Can not be changed.
 * Can be scheduled by cron like scheduler.
 * Automatically persist all status. ZQL statements, Name, scheduing information and result data of execution.
 
-You can create new session with 'New' button. You'll see ZQL editor on the screen.
+You can create new job with 'New' button. You'll see ZQL editor on the screen.
 
 <img class="screenshot" src="/assets/themes/zeppelin/img/tutorial1/new_session.png" />
 
@@ -68,7 +68,7 @@ Load downloaded data into table using HQL's load
 LOAD DATA LOCAL INPATH '/tmp/bank-full.csv' OVERWRITE INTO TABLE bank;
 ```
 
-Let's put all statements into the editor window. and change session name to 'Import bank marketing data' by clicking session name.
+Let's put all statements into the editor window. and change job name to 'Import bank marketing data' by clicking job name.
 
 <img class="screenshot" src="/assets/themes/zeppelin/img/tutorial1/import_data.png" />
 
@@ -77,7 +77,7 @@ And then press 'Run'. Zeppelin will create table, download and unpack the data, 
 
 #### Your first analysis
 
-Let's create new session with name 'Bank marketing data analysis'. And let's discover average balance by age. using following query.
+Let's create new job with name 'Bank marketing data analysis'. And let's discover average balance by age. using following query.
 
 ```
 select 
@@ -88,7 +88,14 @@ group by age
 order by age;
 ```
 
-If you run this session, you'll see data in table form. Great! However, there's better way. Zeppelin archive network has visualization library called vis.gchart, let's use it by simply pipe to vis.gchart.
+If you run this job, you'll see data in table form. Great! 
+
+
+#### Install library from ZAN
+
+However, there's better way. Zeppelin Archive Network has visualization library called vis.gchart, let's use it.
+Go to ZAN menu, and click 'Update Catalog' link. Few seconds later, you'll see list of available Zeppelin libraries from ZAN repository. Install 'vis.gchart'.
+And comeback to ZQL menu and create new job.
 
 ```
 select 
@@ -99,7 +106,7 @@ group by age
 order by age | vis.gchart;
 ```
 
-If you run your session, you'll see data in table at default. You can change chart type with radio button. It looks like line chart is better for this data.Let's make line chart default.
+If you run your job, you'll see data in table at default. You can change chart type with radio button. It looks like line chart is better for this data.Let's make line chart default.
 
 ```
 select 
@@ -110,12 +117,12 @@ group by age
 order by age | vis.gchart(type=line);
 ```
 
-If you run the session, you'll see the visualization like
+If you run the job, you'll see the visualization like
 
 <img class="screenshot" src="/assets/themes/zeppelin/img/tutorial1/first_analysis.png" />
 
 
-Also you can put some more ZQL statements in the session
+Also you can put some more ZQL statements in the job
 
 ```
 select 
@@ -142,8 +149,8 @@ Visualization will be displayed in order
 
 You can share your analysis by email, etc. Click the share button on right bottom of your ZQL editor window.
 
-You'll see session's result without menu, editor, etc. So this link can be shared by email in your organization.
+You'll see job's result without menu, editor, etc. So this link can be shared by email in your organization.
 
 <img class="screenshot" src="/assets/themes/zeppelin/img/tutorial1/share.png" />
 
-In this tutorial, you have used 'vis.gchart' to visualize user data. Such thing is called Zeppelin Library. Next tutorial, we will take a look about Zeppelin Library. Go to Tutorial2.
+In this tutorial, you have used 'vis.gchart' to visualize user data. Such thing is called [Zeppelin Library](../development/writingzeppelinlibrary.html).

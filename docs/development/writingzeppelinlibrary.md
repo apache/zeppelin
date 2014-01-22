@@ -75,3 +75,9 @@ z.param(paramName) - get parameter value by parameterName
 
 #### ZWebContext
 z.result - Result data of execution
+
+
+
+#### Publish your library
+
+Checkout [https://github.com/nflabs/zan](https://github.com/nflabs/zan) page.

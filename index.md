@@ -19,6 +19,7 @@ Zeppelin provides
  * Cron like scheduler embedded
  * Report generation (Share)
 
+Checkout [screenshots](./screenshots.html).
 
   <div class="col-md-offset-9 table-container">
     <div class="text-center table-stack">
@@ -67,7 +68,7 @@ Zeppelin provides
 ## Lates News
 
 
-#### Zeppelin 0.2.0 Snapshot ####
+#### Zeppelin 0.2.0 Released! ####
  
 [Check here](./download.html)
 
