@@ -68,7 +68,7 @@ Checkout [screenshots](./screenshots.html).
 ## Lates News
 
 
-#### Zeppelin 0.2.0 Snapshot ####
+#### Zeppelin 0.2.0 Released! ####
  
 [Check here](./download.html)
 
