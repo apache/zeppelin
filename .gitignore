@@ -13,6 +13,10 @@ logs/
 run/
 metastore_db/
 *.log
+jobs/
+zan-repo/
+drivers/
+warehouse/
 
 **/sessions/
 **/data/
