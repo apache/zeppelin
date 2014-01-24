@@ -10,7 +10,9 @@ import com.nflabs.zeppelin.result.Result;
  * 
  * Each sub-class manages actual connections to backend systems:
  * i.e Socket for JDBC to Hive or Spark or PrestoDB.
- *
+ * 
+ * It is stateful, as the connection underneath could or could not already exist.
+ * 
  */
 public abstract class ZeppelinDriver {
     protected ZeppelinConfiguration conf;
@@ -34,12 +36,12 @@ public abstract class ZeppelinDriver {
 	}
 
 	/**
-	 * Get zeppelin connection
+	 * Creates actuall connection to the backed system
 	 * 
 	 * @return
 	 * @throws ZeppelinDriverException
 	 */
-	public abstract ZeppelinConnection getConnection() throws ZeppelinDriverException;
+	protected abstract ZeppelinConnection getConnection() throws ZeppelinDriverException;
 	
 	/**
 	 * Initialize driver
@@ -54,34 +56,49 @@ public abstract class ZeppelinDriver {
 	 */
 	@Deprecated
 	public abstract void shutdown() throws ZeppelinDriverException;
-	
-	
+		
     public void addResource(URI resourceLocation) {
+        lazyCheckForConnection();
         this.connection.addResource(resourceLocation);
     }
 
     public Result query(String query) {
+        lazyCheckForConnection();
         return this.connection.query(query);
     }
 
     public Result select(String tableName, int maxResult) {
+        lazyCheckForConnection();
         return this.connection.select(tableName, maxResult);
     }
 
     public Result createTableFromQuery(String name, String query) {
+        lazyCheckForConnection();
         return this.connection.createTableFromQuery(name, query);
     }
 
     public void dropTable(String name) {
+        lazyCheckForConnection();
         this.connection.dropTable(name);
     }
 
     public void dropView(String name) {
+        lazyCheckForConnection();
         this.connection.dropView(name);
     }
 
     public void abort() {
+        lazyCheckForConnection();
         this.connection.abort();
+    }
+
+
+    /**
+     * Lazy initialization of actual connection
+     */
+    private synchronized void lazyCheckForConnection() {
+        if (this.connection != null) { return; }
+        this.connection = getConnection();
     }
 
 }
