@@ -38,7 +38,7 @@ public class QTest extends HiveTestService {
         
         System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
         //Dependencies: ZeppelinDriver + ZeppelinConfiguration + fs + RubyExecutionEngine
-        Zengine z = new Zengine();
+        z = new Zengine();
         z.configure();
         
         HiveZeppelinDriver driver = new HiveZeppelinDriver(z.getConf());
