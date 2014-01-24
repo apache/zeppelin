@@ -20,9 +20,10 @@ import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.rest.ZAN;
-import com.nflabs.zeppelin.rest.ZQL;
+import com.nflabs.zeppelin.rest.ZANRestApi;
+import com.nflabs.zeppelin.rest.ZQLRestApi;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
+import com.nflabs.zeppelin.zan.ZAN;
 import com.nflabs.zeppelin.zengine.Zengine;
 
 
@@ -32,25 +33,13 @@ public class ZeppelinServer extends Application {
 	private SchedulerFactory schedulerFactory;
 	private ZQLJobManager analyzeSessionManager;
 	private ZANJobManager zanJobManager;
-	private com.nflabs.zeppelin.zan.ZAN zan;
+	private ZAN zan;
 
 	public static void main(String [] args) throws Exception{
-        //if (System.getProperty("log4j.configuration") == null) {
-		//	Logger.getLogger("com.nflabs.zeppelin").setLevel(Level.DEBUG);
-		//	Logger.getRootLogger().setLevel(Level.INFO);
-		//}
 		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
 		int port = conf.getInt(ConfVars.ZEPPELIN_PORT);
-        int timeout = 1000*30;
-        final Server server = new Server();
-        SocketConnector connector = new SocketConnector();
-
-        // Set some timeout options to make debugging easier.
-        connector.setMaxIdleTime(timeout);
-        connector.setSoLingerTime(-1);
-        connector.setPort(port);
-        server.addConnector(connector);
+        final Server server = setupJettyServer(port);
         
         //REST api
 		final ServletContextHandler restApi = setupRestApiContextHandler(); 
@@ -80,19 +69,17 @@ public class ZeppelinServer extends Application {
 		server.join();
 	}
 
-    private static WebAppContext setupWebAppContext(ZeppelinConfiguration conf) {
-        WebAppContext webApp = new WebAppContext();
-        File webapp = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
-        
-        if(webapp.isDirectory()){ // Development mode
-            webApp.setDescriptor(webapp+"/WEB-INF/web.xml");
-            webApp.setResourceBase(webapp.getPath());
-            webApp.setContextPath("/");
-            webApp.setParentLoaderPriority(true);
-        } else {
-            webApp.setWar(webapp.getAbsolutePath());
-        }
-        return webApp;
+    private static Server setupJettyServer(int port) {
+        int timeout = 1000*30;
+        final Server server = new Server();
+        SocketConnector connector = new SocketConnector();
+
+        // Set some timeout options to make debugging easier.
+        connector.setMaxIdleTime(timeout);
+        connector.setSoLingerTime(-1);
+        connector.setPort(port);
+        server.addConnector(connector);
+        return server;
     }
 
     private static ServletContextHandler setupRestApiContextHandler() {
@@ -107,39 +94,56 @@ public class ZeppelinServer extends Application {
 		cxfContext.addServlet( cxfServletHolder, "/zeppelin/*" );
         return cxfContext;
     }
-	
+
+    private static WebAppContext setupWebAppContext(ZeppelinConfiguration conf) {
+        WebAppContext webApp = new WebAppContext();
+        File webapp = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
+        
+        if(webapp.isDirectory()){ // Development mode, read from FS
+            webApp.setDescriptor(webapp+"/WEB-INF/web.xml");
+            webApp.setResourceBase(webapp.getPath());
+            webApp.setContextPath("/");
+            webApp.setParentLoaderPriority(true);
+        } else { //use packaged WAR
+            webApp.setWar(webapp.getAbsolutePath());
+        }
+        return webApp;
+    }
+
 	public ZeppelinServer() throws Exception {
 		this.schedulerFactory = new SchedulerFactory();
 
 		Zengine z = new Zengine();
         z.configure();
 
-        if(z.getConf().getString(ConfVars.ZEPPELIN_JOB_SCHEDULER).equals("FIFO")){
+        if(z.useFifoJobScheduler()){
 			this.analyzeSessionManager = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), z.fs(), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		} else {
 			this.analyzeSessionManager = new ZQLJobManager(schedulerFactory.createOrGetParallelScheduler("analyze", 100), z.fs(), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		}		
 		
-		this.zan = new com.nflabs.zeppelin.zan.ZAN(z.getConf().getString(ConfVars.ZEPPELIN_ZAN_REPO),
-												   z.getConf().getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO),
-												   z.getConf().getString(ConfVars.ZEPPELIN_ZAN_SHARED_REPO),
-												   z.fs());
+		this.zan = new ZAN(z.getConf().getString(ConfVars.ZEPPELIN_ZAN_REPO),
+		                   z.getConf().getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO),
+		                   z.getConf().getString(ConfVars.ZEPPELIN_ZAN_SHARED_REPO),
+		                   z.fs());
 		
 		this.zanJobManager = new ZANJobManager(zan, schedulerFactory.createOrGetFIFOScheduler("analyze"));
 	}
 	
+	@Override
     public Set<Class<?>> getClasses() {
         Set<Class<?>> classes = new HashSet<Class<?>>();
         return classes;
     }
     
+	@Override
     public java.util.Set<java.lang.Object> getSingletons(){
     	Set<Object> singletons = new HashSet<Object>();
     	
-    	ZQL analyze = new ZQL(analyzeSessionManager);
+    	ZQLRestApi analyze = new ZQLRestApi(this.analyzeSessionManager);
     	singletons.add(analyze);
     	
-    	ZAN zan = new ZAN(this.zan, this.zanJobManager);
+    	ZANRestApi zan = new ZANRestApi(this.zan, this.zanJobManager);
     	singletons.add(zan);
     	
     	return singletons;

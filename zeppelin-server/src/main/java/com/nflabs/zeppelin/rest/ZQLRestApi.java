@@ -31,15 +31,15 @@ import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.api.Z;
 
 @Path("/zql")
-public class ZQL {	
-    Logger logger = LoggerFactory.getLogger(ZQL.class);
+public class ZQLRestApi {	
+    Logger logger = LoggerFactory.getLogger(ZQLRestApi.class);
     
 	@SuppressWarnings("rawtypes")
     private static final Response STATUS_NOT_FOUND = new JsonResponse(Status.NOT_FOUND).build();
 	ZQLJobManager jobManager;
 	private Gson gson;
 	
-	public ZQL(ZQLJobManager jobManager){
+	public ZQLRestApi(ZQLJobManager jobManager){
 		this.jobManager = jobManager;
 		gson = new Gson();
 	}
