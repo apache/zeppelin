@@ -44,6 +44,20 @@ public class UtilsForTests {
 		}
 	}
 	
+    /**
+     * Utility method to create a file (if does not exist) and populate it the the given content
+     * 
+     * @param path to file
+     * @param content of the file
+     * @throws IOException
+     */
+    public static void createFileWithContent(String path, String content) throws IOException {
+        File f = new File(path);
+        if (!f.exists()) {
+            stringToFile(content, f);
+        }
+    }
+
 	public static void stringToFile(String string, File file) throws IOException{
 		FileOutputStream out = new FileOutputStream(file);
 		out.write(string.getBytes());

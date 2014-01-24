@@ -97,29 +97,12 @@ public class LTest extends HiveTestService {
         
         String zqlQuery = "CREATE VIEW <%= z." + Q.OUTPUT_VAR_NAME + " %> AS select * from table limit <%= z.param('limit') %>\n";
         
-        createFileWithContent(path+"/test/zql.erb", zqlQuery);
+        UtilsForTests.createFileWithContent(path+"/test/zql.erb", zqlQuery);
         // create resource that will be ignored
-		createFileWithContent(path+"/test/no_resource", "");
+        UtilsForTests.createFileWithContent(path+"/test/no_resource", "");
         // create resource
-        createFileWithContent(path+"/test/test_data.log", "");
+        UtilsForTests.createFileWithContent(path+"/test/test_data.log", "");
     }
-
-    /**
-     * Utility method to create a file (if does not exist) and populate it the the given content
-     * 
-     * @param path to file
-     * @param content of the file
-     * @throws IOException
-     */
-    private void createFileWithContent(String path, String content) throws IOException {
-        File f = new File(path);
-        if (!f.exists()) {
-            FileOutputStream out = new FileOutputStream(f);
-            out.write((content).getBytes());
-            out.close();
-        }
-    }
-
 	
 	@Test
 	public void testLoadingExistingLibrary() throws ZException, IOException {
@@ -139,8 +122,8 @@ public class LTest extends HiveTestService {
 	public void testWeb() throws Exception{
 		new File(tmpDir+"/test/web").mkdirs();
 
-		createFileWithContent(tmpDir+"/test/zql.erb", "show tables");
-        createFileWithContent(tmpDir+"/test/web/index.erb", "HELLO HTML\n");
+		UtilsForTests.createFileWithContent(tmpDir+"/test/zql.erb", "show tables");
+		UtilsForTests.createFileWithContent(tmpDir+"/test/web/index.erb", "HELLO HTML\n");
 
 		// load existing L
 		Z test = new L("test", z);//.execute();
