@@ -71,6 +71,10 @@ public abstract class AbstractResult {
 			}
 		}
 	}
+	
+	public AbstractResult(){
+		this.code = 0;
+	}
 
 	public void init(ResultSet res, long max) throws SQLException, ResultDataException{
 		ResultSetMetaData metaData = res.getMetaData();

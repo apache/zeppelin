@@ -27,8 +27,8 @@ public class Result extends AbstractResult{
 		super(code, message);
 	}
 	
-	public Result() throws ResultDataException {
-		super(0, null);
+	public Result() {
+		super();
 	}
 	
 	@Override
