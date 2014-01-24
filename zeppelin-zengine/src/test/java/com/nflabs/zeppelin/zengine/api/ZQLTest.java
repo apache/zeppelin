@@ -68,26 +68,12 @@ public class ZQLTest extends HiveTestService {
 
 	public void tearDown() throws Exception {
 		super.tearDown();
-		delete(tmpDir);
+		UtilsForTests.delete(tmpDir);
 		
 		UtilsForTests.delete(new File("/tmp/warehouse"));
 		UtilsForTests.delete(new File(ROOT_DIR.getName()));
 		
-	}
-	
-	private void delete(File file){
-		if(file.isFile()) file.delete();
-		else if(file.isDirectory()){
-			File [] files = file.listFiles();
-			if(files!=null && files.length>0){
-				for(File f : files){
-					delete(f);
-				}
-			}
-			file.delete();
-		}
-	}
-	
+	}	
 	
 	public void testPipe() throws ZException, ZQLException {
 		ZQL zql = new ZQL(z);
