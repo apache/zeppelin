@@ -24,12 +24,16 @@ import com.nflabs.zeppelin.rest.ZAN;
 import com.nflabs.zeppelin.rest.ZQL;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.zengine.Zengine;
-import com.nflabs.zeppelin.zengine.api.Z;
 
 
 public class ZeppelinServer extends Application {
-	static Logger logger = LoggerFactory.getLogger(ZeppelinServer.class);
-	
+	private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
+
+	private SchedulerFactory schedulerFactory;
+	private ZQLJobManager analyzeSessionManager;
+	private ZANJobManager zanJobManager;
+	private com.nflabs.zeppelin.zan.ZAN zan;
+
 	public static void main(String [] args) throws Exception{
         //if (System.getProperty("log4j.configuration") == null) {
 		//	Logger.getLogger("com.nflabs.zeppelin").setLevel(Level.DEBUG);
@@ -49,45 +53,49 @@ public class ZeppelinServer extends Application {
         server.addConnector(connector);
         
         //REST api
-		final ServletContextHandler cxfContext = setupRestApi(); 
-		
+		final ServletContextHandler restApi = setupRestApiContextHandler(); 
 		//Web UI
-		WebAppContext sch = new WebAppContext();
-        File webapp = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
-        
-        if(webapp.isDirectory()){ // Development mode
-            sch.setDescriptor(webapp+"/WEB-INF/web.xml");
-            sch.setResourceBase(webapp.getPath());
-            sch.setContextPath("/");
-            sch.setParentLoaderPriority(true);
-        } else {
-            sch.setWar(webapp.getAbsolutePath());
-        }
+		final WebAppContext webApp = setupWebAppContext(conf);
 
         // add all handlers
 	    ContextHandlerCollection contexts = new ContextHandlerCollection();
-	    contexts.setHandlers(new Handler[]{cxfContext, sch});
+	    contexts.setHandlers(new Handler[]{restApi, webApp});
 	    server.setHandler(contexts);
 	        
-	    logger.info("Start zeppelin server");
+	    LOG.info("Start zeppelin server");
         server.start();
-        logger.info("Started");
+        LOG.info("Started");
         
 		Runtime.getRuntime().addShutdownHook(new Thread(){
 		    @Override public void run() {
-		        logger.info("Shutting down Zeppelin Server ... ");
+		        LOG.info("Shutting down Zeppelin Server ... ");
             	try {
 					server.stop();
 				} catch (Exception e) {
-					logger.error("Error while stopping servlet container", e);
+					LOG.error("Error while stopping servlet container", e);
 				}
-            	logger.info("Bye");
+            	LOG.info("Bye");
             }
         });
 		server.join();
 	}
 
-    private static ServletContextHandler setupRestApi() {
+    private static WebAppContext setupWebAppContext(ZeppelinConfiguration conf) {
+        WebAppContext webApp = new WebAppContext();
+        File webapp = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
+        
+        if(webapp.isDirectory()){ // Development mode
+            webApp.setDescriptor(webapp+"/WEB-INF/web.xml");
+            webApp.setResourceBase(webapp.getPath());
+            webApp.setContextPath("/");
+            webApp.setParentLoaderPriority(true);
+        } else {
+            webApp.setWar(webapp.getAbsolutePath());
+        }
+        return webApp;
+    }
+
+    private static ServletContextHandler setupRestApiContextHandler() {
         final ServletHolder cxfServletHolder = new ServletHolder( new CXFNonSpringJaxrsServlet() );
 		cxfServletHolder.setInitParameter("javax.ws.rs.Application", ZeppelinServer.class.getName());
 		cxfServletHolder.setName("rest");
@@ -99,11 +107,6 @@ public class ZeppelinServer extends Application {
 		cxfContext.addServlet( cxfServletHolder, "/zeppelin/*" );
         return cxfContext;
     }
-
-	private SchedulerFactory schedulerFactory;
-	private ZQLJobManager analyzeSessionManager;
-	private com.nflabs.zeppelin.zan.ZAN zan;
-	private ZANJobManager zanJobManager;
 	
 	public ZeppelinServer() throws Exception {
 		this.schedulerFactory = new SchedulerFactory();
