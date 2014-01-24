@@ -45,12 +45,14 @@ public abstract class ZeppelinDriver {
 	 * Initialize driver
 	 * @throws ZeppelinDriverException
 	 */
+	@Deprecated
 	public abstract void init() throws ZeppelinDriverException;
 	
 	/**
 	 * Destroy the driver
 	 * @throws ZeppelinDriverException
 	 */
+	@Deprecated
 	public abstract void shutdown() throws ZeppelinDriverException;
 	
 	
