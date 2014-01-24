@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -20,7 +20,13 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.result.Result;
+import com.nflabs.zeppelin.zengine.ParamInfo;
+import com.nflabs.zeppelin.zengine.ZContext;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.ZWebContext;
+import com.nflabs.zeppelin.zengine.Zengine;
 
 /**
  * Q stands for Query
@@ -31,7 +37,8 @@ public class Q extends Z {
 	protected String query;
 	private List<URI> resources = new LinkedList<URI>();
 	Result cachedResultDataObject;
-	
+	transient boolean initialized = false;
+    
 	transient static final String ARG_VAR_NAME="arg";
 	transient static final String INPUT_VAR_NAME="in";
 	transient static final String OUTPUT_VAR_NAME="out";
@@ -40,11 +47,14 @@ public class Q extends Z {
 	 * Create with given query. Query is single HiveQL statement.
 	 * Query can erb template. ZContext is injected to the template
 	 * @param query
+	 * @param z 
+	 * @param driver 
 	 * @throws ZException
 	 */
-	public Q(String query) throws ZException{
-		super();
+	public Q(String query, Zengine z, ZeppelinDriver driver) throws ZException{
+		super(z);
 		this.query = query;
+		this.driver = driver;
 		
 		initialize();
 	}
@@ -53,9 +63,8 @@ public class Q extends Z {
 		return LoggerFactory.getLogger(Q.class);
 	}
 	
-	transient boolean initialized = false;
 	protected void initialize() throws ZException {
-		if(initialized==true){
+		if(initialized){
 			return ;
 		}		
 		initialized = true;
@@ -79,7 +88,7 @@ public class Q extends Z {
 	}
 	
 	protected String evalErb(BufferedReader erb, Object zcontext) throws ZException{
-		ScriptEngine engine = getRubyScriptEngine();
+		ScriptEngine engine = zen.getRubyScriptEngine();
 
 		StringBuffer rubyScript = new StringBuffer();
 		SimpleBindings bindings = new SimpleBindings();
@@ -115,11 +124,14 @@ public class Q extends Z {
 		}
         
         String q = (String) engine.getBindings(ScriptContext.ENGINE_SCOPE).get("e");
-        return q;
+        return nonNullString(q);
 	}
-	
 
-	protected String evalWebTemplate(BufferedReader erb, ZWebContext zWebContext) throws ZException{
+	private String nonNullString(String q) {
+	    return q == null ? "" : q;
+	}
+
+    protected String evalWebTemplate(BufferedReader erb, ZWebContext zWebContext) throws ZException{
 		return evalErb(erb, zWebContext);
 	}
 
@@ -132,13 +144,12 @@ public class Q extends Z {
 	public String getQuery() throws ZException{
 		ByteArrayInputStream ins = new ByteArrayInputStream(query.getBytes());
 		BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
-		
-		ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);
-				
+
+		ZContext zContext = new ZContext( hasPrev() ? prev().name() : null, name(), query, params);
+
 		String q = getQuery(erb, zContext);
 		try {ins.close();} catch (IOException e) {}
-		
-		
+
 		return q;
 	}
 	

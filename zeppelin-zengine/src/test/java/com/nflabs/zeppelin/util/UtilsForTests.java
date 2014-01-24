@@ -8,6 +8,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.service.HiveInterface;
+
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.driver.ZeppelinDriver;
+import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
+
 public class UtilsForTests {
 	
 	public static File createTmpDir() throws Exception {
@@ -44,6 +50,20 @@ public class UtilsForTests {
 		}
 	}
 	
+    /**
+     * Utility method to create a file (if does not exist) and populate it the the given content
+     * 
+     * @param path to file
+     * @param content of the file
+     * @throws IOException
+     */
+    public static void createFileWithContent(String path, String content) throws IOException {
+        File f = new File(path);
+        if (!f.exists()) {
+            stringToFile(content, f);
+        }
+    }
+
 	public static void stringToFile(String string, File file) throws IOException{
 		FileOutputStream out = new FileOutputStream(file);
 		out.write(string.getBytes());
@@ -85,4 +105,11 @@ public class UtilsForTests {
 	        e1.printStackTrace();
 	    } 
 	}
+	
+    public static ZeppelinDriver createHiveTestDriver(ZeppelinConfiguration zc, HiveInterface client) {
+        ZeppelinDriver driver = new HiveZeppelinDriver(zc);
+        ((HiveZeppelinDriver) driver).setClient(client);
+        return driver;
+    }
+
 }

@@ -13,7 +13,8 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
-import com.nflabs.zeppelin.zengine.Z;
+import com.nflabs.zeppelin.zengine.Zengine;
+import com.nflabs.zeppelin.zengine.api.Z;
 
 public class ZQLJobManagerTest extends TestCase {
 
@@ -21,6 +22,7 @@ public class ZQLJobManagerTest extends TestCase {
 	private SchedulerFactory schedulerFactory;
 	private ZQLJobManager jm;
 	private File dataDir;
+    private Zengine z;
 
 
 	protected void setUp() throws Exception {
@@ -31,11 +33,13 @@ public class ZQLJobManagerTest extends TestCase {
 		System.setProperty("hive.local.warehouse", "file://"+dataDir.getAbsolutePath());
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 		System.setProperty(ConfVars.ZEPPELIN_JOB_DIR.getVarName(), tmpDir.getAbsolutePath());
-		Z.configure();
+
+		z = new Zengine();
+		z.configure();
 
 		this.schedulerFactory = new SchedulerFactory();
 
-		this.jm = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
+		this.jm = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), z.fs(), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 	}
 
 	protected void tearDown() throws Exception {
@@ -84,7 +88,7 @@ public class ZQLJobManagerTest extends TestCase {
 		jm.setZql(sess.getId(), "show tables");
 		
 		// check if new session manager read
-		jm = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), Z.fs(), Z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
+		jm = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), z.fs(), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		
 		// run the session
 		jm.run(sess.getId());

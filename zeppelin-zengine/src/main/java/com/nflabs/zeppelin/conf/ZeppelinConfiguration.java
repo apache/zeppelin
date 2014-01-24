@@ -6,9 +6,12 @@ import java.util.List;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ZeppelinConfiguration extends XMLConfiguration {
     private static final long serialVersionUID = 4749305895693848035L;
+    private static final Logger LOG = LoggerFactory.getLogger(ZeppelinConfiguration.class);
 
     public ZeppelinConfiguration(URL url) throws ConfigurationException {
 		super(url);
@@ -35,21 +38,28 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 	}
 
 	/**
-	 * Laod from resource
+	 * Load from resource
 	 * @throws ConfigurationException 
 	 */
-	public static ZeppelinConfiguration create() throws ConfigurationException{
+	public static ZeppelinConfiguration create() {
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 	    if (classLoader == null) {
 	      classLoader = ZeppelinConfiguration.class.getClassLoader();
 	    }
-	    
 		URL url = classLoader.getResource("zeppelin-site.xml");
-		if(url!=null){
-			return new ZeppelinConfiguration(url);
-		} else {
-			return new ZeppelinConfiguration();
+		if (url == null){
+            LOG.warn("Failed to load configuration, proceeding with a default");
+		    return new ZeppelinConfiguration();
 		}
+		
+		ZeppelinConfiguration result;
+		try {
+		    result = new ZeppelinConfiguration(url);
+		} catch (ConfigurationException e) {
+		    LOG.warn("Failed to load configuration from " + url + " proceeding with a default", e);
+		    result = new ZeppelinConfiguration();
+		}
+		return result;
 	}
 	
 	

@@ -24,14 +24,14 @@ import com.nflabs.zeppelin.zan.Info;
 import com.nflabs.zeppelin.zan.ZANException;
 
 @Path("/zan")
-public class ZAN {
-	Logger logger = Logger.getLogger(ZAN.class);
+public class ZANRestApi {
+	Logger logger = Logger.getLogger(ZANRestApi.class);
 	
 	private com.nflabs.zeppelin.zan.ZAN zan;
 
 	private ZANJobManager jobManager;
 
-	public ZAN(com.nflabs.zeppelin.zan.ZAN zan, ZANJobManager zanJobManager){
+	public ZANRestApi(com.nflabs.zeppelin.zan.ZAN zan, ZANJobManager zanJobManager){
 		this.zan = zan;
 		this.jobManager = zanJobManager;
 	}

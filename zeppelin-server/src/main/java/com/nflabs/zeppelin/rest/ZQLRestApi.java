@@ -27,28 +27,28 @@ import com.google.gson.Gson;
 import com.nflabs.zeppelin.server.JsonResponse;
 import com.nflabs.zeppelin.server.ZQLJob;
 import com.nflabs.zeppelin.server.ZQLJobManager;
-import com.nflabs.zeppelin.zengine.Z;
 import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.api.Z;
 
 @Path("/zql")
-public class ZQL {	
-    Logger logger = LoggerFactory.getLogger(ZQL.class);
+public class ZQLRestApi {	
+    Logger logger = LoggerFactory.getLogger(ZQLRestApi.class);
     
 	@SuppressWarnings("rawtypes")
     private static final Response STATUS_NOT_FOUND = new JsonResponse(Status.NOT_FOUND).build();
-	ZQLJobManager sessionManager;
+	ZQLJobManager jobManager;
 	private Gson gson;
 	
-	public ZQL(ZQLJobManager sessionManager){
-		this.sessionManager = sessionManager;
+	public ZQLRestApi(ZQLJobManager jobManager){
+		this.jobManager = jobManager;
 		gson = new Gson();
 	}
     
     @GET
     @Path("new")
     @Produces("application/json")
-    public Response newSession() {
-    	ZQLJob s = sessionManager.create();
+    public Response newJob() {
+    	ZQLJob s = jobManager.create();
         return new JsonResponse<ZQLJob>(Status.OK, "", s).build();
     }
 
@@ -62,25 +62,25 @@ public class ZQL {
     @POST
     @Path("set/{sessionId}")
     @Produces("application/json")
-    public Response set(@PathParam("sessionId") String sessionId, String json) {
+    public Response set(@PathParam("sessionId") String jobId, String json) {
     	
     	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
-    	ZQLJob s = sessionManager.setZql(sessionId, data.zql);
+    	ZQLJob s = jobManager.setZql(jobId, data.zql);
     	if(s==null){
     		return STATUS_NOT_FOUND;
     	}
     	
-    	s = sessionManager.setParams(sessionId, data.params);
+    	s = jobManager.setParams(jobId, data.params);
     	if(s==null){
     		return STATUS_NOT_FOUND;
     	}
     	
-    	s = sessionManager.setName(sessionId, data.name);
+    	s = jobManager.setName(jobId, data.name);
     	if(s==null){
     		return STATUS_NOT_FOUND;
     	}
     	
-    	s = sessionManager.setCron(sessionId, data.cron);
+    	s = jobManager.setCron(jobId, data.cron);
     	if(s==null){
     		return STATUS_NOT_FOUND;
     	}
@@ -90,10 +90,10 @@ public class ZQL {
     @POST
     @Path("set/{sessionId}/zql")
     @Produces("application/json")
-    public Response setZql(@PathParam("sessionId") String sessionId, String json) {
+    public Response setZql(@PathParam("sessionId") String jobId, String json) {
     	
     	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
-    	ZQLJob s = sessionManager.setZql(sessionId, data.zql);
+    	ZQLJob s = jobManager.setZql(jobId, data.zql);
     	if(s==null){
     		return STATUS_NOT_FOUND;
     	}
@@ -103,9 +103,9 @@ public class ZQL {
     @POST
     @Path("set/{sessionId}/name")
     @Produces("application/json")
-    public Response setName(@PathParam("sessionId") String sessionId, String json) {	
+    public Response setName(@PathParam("sessionId") String jobId, String json) {	
     	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
-    	ZQLJob s = sessionManager.setName(sessionId, data.name);
+    	ZQLJob s = jobManager.setName(jobId, data.name);
     	if(s==null){
     		return STATUS_NOT_FOUND;
     	}
@@ -115,9 +115,9 @@ public class ZQL {
     @POST
     @Path("set/{sessionId}/params")
     @Produces("application/json")
-    public Response setParams(@PathParam("sessionId") String sessionId, String json) {	
+    public Response setParams(@PathParam("sessionId") String jobId, String json) {	
     	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
-    	ZQLJob s = sessionManager.setParams(sessionId, data.params);
+    	ZQLJob s = jobManager.setParams(jobId, data.params);
     	if(s==null){
     		return STATUS_NOT_FOUND;
     	}
@@ -127,9 +127,9 @@ public class ZQL {
     @POST
     @Path("set/{sessionId}/cron")
     @Produces("application/json")
-    public Response setCron(@PathParam("sessionId") String sessionId, String json) {	
+    public Response setCron(@PathParam("sessionId") String jobId, String json) {	
     	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
-    	ZQLJob s = sessionManager.setCron(sessionId, data.cron);
+    	ZQLJob s = jobManager.setCron(jobId, data.cron);
     	if(s==null){
     		return STATUS_NOT_FOUND;
     	}
@@ -139,8 +139,8 @@ public class ZQL {
     @GET
     @Path("run/{sessionId}")
     @Produces("application/json")
-    public Response run(@PathParam("sessionId") String sessionId) {
-    	 ZQLJob s = sessionManager.run(sessionId);
+    public Response run(@PathParam("sessionId") String jobId) {
+    	 ZQLJob s = jobManager.run(jobId);
     	 if(s==null){
     		 return STATUS_NOT_FOUND;
     	 } 
@@ -150,8 +150,8 @@ public class ZQL {
     @GET
     @Path("run/{sessionId}/dry")
     @Produces("application/json")
-    public Response dryRun(@PathParam("sessionId") String sessionId) {
-    	 ZQLJob s = sessionManager.dryRun(sessionId);
+    public Response dryRun(@PathParam("sessionId") String jobId) {
+    	 ZQLJob s = jobManager.dryRun(jobId);
     	 if(s==null){
     		 return STATUS_NOT_FOUND;
     	 }
@@ -161,8 +161,8 @@ public class ZQL {
     @GET
     @Path("abort/{sessionId}")
     @Produces("application/json")
-    public Response abort(@PathParam("sessionId") String sessionId) {
-    	 ZQLJob s = sessionManager.abort(sessionId);
+    public Response abort(@PathParam("sessionId") String jobId) {
+    	 ZQLJob s = jobManager.abort(jobId);
     	 if(s==null){
     		 return STATUS_NOT_FOUND;
     	 } 
@@ -172,8 +172,8 @@ public class ZQL {
     @GET
     @Path("get/{sessionId}")
     @Produces("application/json")
-    public Response get(@PathParam("sessionId") String sessionId) {
-    	 ZQLJob s = sessionManager.get(sessionId);
+    public Response get(@PathParam("sessionId") String jobId) {
+    	 ZQLJob s = jobManager.get(jobId);
     	 if(s==null) {
     		 return STATUS_NOT_FOUND;
     	 }
@@ -181,14 +181,14 @@ public class ZQL {
     }
     
     /**
-     * list session
+     * list jobs
      * @return
      */
     @GET
     @Path("list")
     @Produces("application/json")    
     public Response find() {
-    	TreeMap<String, ZQLJob> sessions = sessionManager.list();
+    	TreeMap<String, ZQLJob> sessions = jobManager.list();
         return new JsonResponse<LinkedList<ZQLJob>>(Status.OK, "",
                 new LinkedList<ZQLJob>(sessions.descendingMap().values()))
                 .build();
@@ -197,12 +197,12 @@ public class ZQL {
     @GET
     @Path("del/{sessionId}")
     @Produces("application/json")
-    public Response del(@PathParam("sessionId") String sessionId) {
-    	 boolean s = sessionManager.delete(sessionId);
+    public Response del(@PathParam("sessionId") String jobId) {
+    	 boolean s = jobManager.delete(jobId);
     	 if(s==false){
     		 return STATUS_NOT_FOUND; 
     	 }
-    	 return new JsonResponse(Status.OK).build();	 
+    	 return new JsonResponse<ZQLJob>(Status.OK).build();	 
     }
 
     /**
@@ -212,8 +212,8 @@ public class ZQL {
     @GET
     @Path("history/list/{sessionId}")
     @Produces("application/json")    
-    public Response listHistory(@PathParam("sessionId") String sessionId) {
-    	TreeMap<String, ZQLJob> sessions = sessionManager.listHistory(sessionId);
+    public Response listHistory(@PathParam("sessionId") String jobId) {
+    	TreeMap<String, ZQLJob> sessions = jobManager.listHistory(jobId);
         return new JsonResponse<NavigableMap<String, ZQLJob>>(Status.OK, "", sessions.descendingMap()).build();
     }    
 
@@ -224,8 +224,8 @@ public class ZQL {
     @GET
     @Path("history/get/{sessionId}/{name}")
     @Produces("application/json")    
-    public Response getHistory(@PathParam("sessionId") String sessionId, @PathParam("name") String name) {
-    	ZQLJob session = sessionManager.getHistory(sessionId, name);
+    public Response getHistory(@PathParam("sessionId") String jobId, @PathParam("name") String name) {
+    	ZQLJob session = jobManager.getHistory(jobId, name);
         return new JsonResponse<ZQLJob>(Status.OK, "", session).build();
     }
 
@@ -236,8 +236,8 @@ public class ZQL {
     @GET
     @Path("history/del/{sessionId}/{name}")
     @Produces("application/json")    
-    public Response deleteHistory(@PathParam("sessionId") String sessionId, @PathParam("name") String name) {
-    	sessionManager.deleteHistory(sessionId, name);
+    public Response deleteHistory(@PathParam("sessionId") String jobId, @PathParam("name") String name) {
+    	jobManager.deleteHistory(jobId, name);
         return new JsonResponse<ZQLJob>(Status.OK).build();
     }
 
@@ -248,8 +248,8 @@ public class ZQL {
     @GET
     @Path("history/del/{sessionId}")
     @Produces("application/json")    
-    public Response deleteHistory(@PathParam("sessionId") String sessionId) {
-    	sessionManager.deleteHistory(sessionId);
+    public Response deleteHistory(@PathParam("sessionId") String jobId) {
+    	jobManager.deleteHistory(jobId);
         return new JsonResponse<ZQLJob>(Status.OK).build();
     }
 
@@ -257,8 +257,8 @@ public class ZQL {
 
     @GET
     @Path("web/{sessionId}/{zId}/{path:.*}")
-    public Response web(@PathParam("sessionId") String sessionId, @PathParam("zId") String zId, @PathParam("path") String path){
-    	ZQLJob session = sessionManager.get(sessionId);
+    public Response web(@PathParam("sessionId") String jobId, @PathParam("zId") String zId, @PathParam("path") String path){
+    	ZQLJob session = jobManager.get(jobId);
     	if(session==null){
     		return STATUS_NOT_FOUND;
     	}
@@ -272,17 +272,13 @@ public class ZQL {
 	    		if(z.getId().equals(zId)){
 	    			try {
 						InputStream ins = z.readWebResource(path);
-						if(ins==null){
-							return null;
-						} else {
-							return Response.ok(IOUtils.toByteArray(ins), typeByExtention(path)).build();
-						}
+                        return ins != null ? Response.ok(IOUtils.toByteArray(ins), typeByExtention(path)).build() : null;
 					} catch (ZException e) {
 						logger.error("Can't read web resource", e);
-						return new JsonResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+						return new JsonResponse<ZQLJob>(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
 					} catch (IOException e) {
 						logger.error("IOexception", e);
-						return new JsonResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+						return new JsonResponse<ZQLJob>(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
 					}
 	    		}
     		}
@@ -292,33 +288,29 @@ public class ZQL {
 
     @GET
     @Path("history/web/{sessionId}/{historyId}/{zId}/{path:.*}")
-    public Response historyWeb(@PathParam("sessionId") String sessionId, @PathParam("historyId") String historyId, @PathParam("zId") String zId, @PathParam("path") String path){
-    	ZQLJob session = sessionManager.getHistory(sessionId, historyId);
-    	if(session==null){
-    		logger.warn("Session "+sessionId+", history "+historyId+" not found");
+    public Response historyWeb(@PathParam("sessionId") String jobId, @PathParam("historyId") String historyId, @PathParam("zId") String zId, @PathParam("path") String path){
+    	ZQLJob job = jobManager.getHistory(jobId, historyId);
+    	if(job==null){
+    		logger.warn("Session "+jobId+", history "+historyId+" not found");
     		return STATUS_NOT_FOUND;
     	}
     	if(path==null || path.equals("/") || path.length()==0){
     		path = "/index.erb";
     	}
     	
-    	List<Z> plans = session.getPlan();
+    	List<Z> plans = job.getPlan();
     	for(Z plan : plans){
     		for(Z z = plan; z!=null; z=z.prev()){
 	    		if(z.getId().equals(zId)){
 	    			try {
 						InputStream ins = z.readWebResource(path);
-						if(ins==null){
-							return null;
-						} else {
-							return Response.ok(IOUtils.toByteArray(ins), typeByExtention(path)).build();
-						}
+						return ins != null ? Response.ok(IOUtils.toByteArray(ins), typeByExtention(path)).build() : null;
 					} catch (ZException e) {
 						logger.error("Can't read web resource", e);
-						return new JsonResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+						return new JsonResponse<ZQLJob>(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
 					} catch (IOException e) {
 						logger.error("IOexception", e);
-						return new JsonResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+						return new JsonResponse<ZQLJob>(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
 					}
 	    		}
     		}

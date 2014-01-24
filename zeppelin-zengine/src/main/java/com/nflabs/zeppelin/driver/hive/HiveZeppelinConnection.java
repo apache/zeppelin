@@ -41,7 +41,7 @@ public class HiveZeppelinConnection implements ZeppelinConnection {
 		}
 	}
 	
-	private Result execute(String query) throws ZeppelinDriverException{
+	private Result execute(String query) {
 
 		try{
 			ResultSet res = null;
@@ -82,12 +82,12 @@ public class HiveZeppelinConnection implements ZeppelinConnection {
 	}
 
 	@Override
-	public Result createViewFromQuery(String viewName, String query) throws ZeppelinDriverException {
+	public Result createViewFromQuery(String viewName, String query) {// throws ZeppelinDriverException {
 		return execute("CREATE VIEW "+viewName+" AS "+query);
 	}
 
 	@Override
-	public Result createTableFromQuery(String tableName, String query) throws ZeppelinDriverException {
+	public Result createTableFromQuery(String tableName, String query){// throws ZeppelinDriverException {
 		return execute("CREATE TABLE "+tableName+" AS "+query);
 	}
 

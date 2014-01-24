@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
-import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
+import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 
 public class HiveZeppelinDriver extends ZeppelinDriver {
 	Logger logger = LoggerFactory.getLogger(HiveZeppelinDriver.class);
@@ -117,7 +117,11 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	}
 
 	@Override
-	public void shutdown() throws ZeppelinDriverException {
+	public synchronized void destroy() throws ZeppelinDriverException {
 		logger.info("Shutdown "+HiveZeppelinDriver.class.getName());
+		if (connection != null) {
+		    connection.close();
+		}
 	}
+	    
 }

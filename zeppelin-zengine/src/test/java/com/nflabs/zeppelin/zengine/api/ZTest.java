@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,9 +11,14 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
+import org.junit.After;
+import org.junit.Before;
+
 import com.jointhegrid.hive_test.HiveTestService;
-import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
+import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.util.UtilsForTests;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.Zengine;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 public class ZTest extends HiveTestService {
@@ -23,8 +28,11 @@ public class ZTest extends HiveTestService {
 	}
 
 	private File tmpDir;
+    private Zengine z;
+    private ZeppelinDriver drv;
 
 
+    @Before
 	public void setUp() throws Exception {
 		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
 		tmpDir.mkdir();
@@ -32,45 +40,33 @@ public class ZTest extends HiveTestService {
 		UtilsForTests.delete(new File("/tmp/warehouse"));
 		UtilsForTests.delete(new File(ROOT_DIR.getName()));
 				
-		Z.configure();
-		HiveZeppelinDriver driver = new HiveZeppelinDriver(Z.getConf());
-		driver.setClient(client);
-		Z.setDriver(driver);
+        //Dependencies: ZeppelinDriver + ZeppelinConfiguration + fs + RubyExecutionEngine
+        z = new Zengine();
+        z.configure();
+
+        drv = UtilsForTests.createHiveTestDriver(z.getConf(), client);
 	}
 
+    @After
 	public void tearDown() throws Exception {
 		super.tearDown();
-		delete(tmpDir);
+		UtilsForTests.delete(tmpDir);
 		UtilsForTests.delete(new File("/tmp/warehouse"));
 		UtilsForTests.delete(new File(ROOT_DIR.getName()));
-	}
-	
-	private void delete(File file){
-		if(file.isFile()) file.delete();
-		else if(file.isDirectory()){
-			File [] files = file.listFiles();
-			if(files!=null && files.length>0){
-				for(File f : files){
-					delete(f);
-				}
-			}
-			file.delete();
-		}
-	}
-	
+	}	
 	
 	public void testPipeGetQuery() throws ZException{
-		Z z = new Q("select * from bank")
-   	    .pipe(new Q("select * from (<%=z."+Q.INPUT_VAR_NAME+"%>) q limit 10"))
-	    .pipe(new Q("create view vv as select * from <%=z."+Q.INPUT_VAR_NAME+"%>"));
+		Z q = new Q("select * from bank", z, drv)
+		    .pipe(new Q("select * from (<%=z."+Q.INPUT_VAR_NAME+"%>) q limit 10", z, drv))
+		    .pipe(new Q("create view vv as select * from <%=z."+Q.INPUT_VAR_NAME+"%>", z, drv));
 		
-		assertEquals("create view vv as select * from "+z.prev().name(), z.getQuery());
-		z.release();
+		assertEquals("create view vv as select * from "+q.prev().name(), q.getQuery());
+		q.release();
 	}
 	
 	public void testAutogenName() throws ZException{
-		Z z1 = new Q("select * from bank");
-		Z z2 = new Q("select * from (<%=z."+Q.INPUT_VAR_NAME+"%>) q limit 10");
+		Z z1 = new Q("select * from bank", z, drv);
+		Z z2 = new Q("select * from (<%=z."+Q.INPUT_VAR_NAME+"%>) q limit 10", z, drv);
 		assertNull(z1.name());
 		z1.pipe(z2);
 		assertNull(z2.name());

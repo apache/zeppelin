@@ -10,7 +10,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import com.nflabs.zeppelin.zengine.Z;
+import com.nflabs.zeppelin.zengine.api.Z;
 
 public class ZAdapter implements JsonSerializer<Z>, JsonDeserializer<Z>{
 

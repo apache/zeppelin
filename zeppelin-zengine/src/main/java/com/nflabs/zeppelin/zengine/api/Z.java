@@ -1,34 +1,31 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.script.ScriptEngine;
-import org.apache.commons.configuration.ConfigurationException;
+
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
-import org.apache.hadoop.fs.FileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.driver.ZeppelinConnection;
-import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
+import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.util.Util;
-import com.sun.script.jruby.JRubyScriptEngineFactory;
+import com.nflabs.zeppelin.zengine.ParamInfo;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.Zengine;
 
 
 /**
@@ -36,11 +33,18 @@ import com.sun.script.jruby.JRubyScriptEngineFactory;
  * Instances of Z class can construct liked list by pipe method.
  * @author moon
  *
+ *
+ * Depends on: 
+ *  - ZeppelinDriver, to be able to call .execute() 
+ *  - ZeppelinConfiguration
+ *  
  */
 public abstract class Z {
 	String id; // z object identifier
+	
 	Z prev;
 	transient Z next;
+	
 	private Result result;
 	private Result lastQueryResult;
 	boolean executed = false;
@@ -52,11 +56,15 @@ public abstract class Z {
 	Map<String, Object> params = new HashMap<String, Object>();
 	private Map<String, ParamInfo> paramInfos;
 	transient static final String NAME_PREFIX="zp_";
-	transient ZeppelinConnection connection;
-	
-	protected Z(){
+
+	//TODO(alex): remove this as only ZeppelinConfiguration is really needed
+	protected  Zengine zen;
+    protected transient ZeppelinDriver driver;
+    
+	protected Z(Zengine z){
+	    this.zen = z;
 		this.id = Integer.toString(hashCode());
-		maxResult = conf.getInt(ConfVars.ZEPPELIN_MAX_RESULT);
+		this.maxResult = zen.getConf().getInt(ConfVars.ZEPPELIN_MAX_RESULT);
 	}
 
 	/**
@@ -87,12 +95,10 @@ public abstract class Z {
 		this.params.putAll(params);
 		return this;
 	}
-	
-	
+
 	public Map<String, Object> getParams(){
 		return params;
 	}
-	
 	
 	public void setParams(Map<String, Object> params){
 		this.params = params;
@@ -115,7 +121,7 @@ public abstract class Z {
 	 */
 	public Z pipe(Z z){
 		unPipe();
-		if(name()==null){
+		if(isUnNamed()){
 			name = NAME_PREFIX + this.hashCode();
 			autogenName = true;
 		}
@@ -147,6 +153,10 @@ public abstract class Z {
 	public Z prev(){
 		return prev;
 	}
+	public boolean hasPrev(){
+	    return prev != null;
+	}
+
 	/**
 	 * Get next Z instance linked by pipe
 	 * @return Next Z instance. if there's no next instance, return null
@@ -154,6 +164,10 @@ public abstract class Z {
 	public Z next(){
 		return next;
 	}
+	public boolean hasNext(){
+	    return next != null;
+	}
+
 	
 	/**
 	 * Manually link previous Z instance. You should not use this method. use pipe() instead.
@@ -277,14 +291,14 @@ public abstract class Z {
 	 */
 	public void release() throws ZException{
 		initialize();
-		if(executed==false) return;
+		if (!executed) return;
 		
 		try {
 			if (name()!=null && autogenName==true){
-				if (table==true){
-					connection().dropTable(name());
+				if (isTable()){
+					driver.dropTable(name());
 				} else {
-					connection().dropView(name());
+					driver.dropView(name());
 				}
 			}
 		} catch (ZeppelinDriverException e){
@@ -292,11 +306,11 @@ public abstract class Z {
 		}
 		
 		String q = getReleaseQuery();
-		if(q!=null){
+		if (q!=null){
 			executeQuery(q, maxResult);
 		}
 		
-		if(prev()!=null){
+		if (hasPrev()){
 			prev().release();
 		}
 	}
@@ -306,49 +320,39 @@ public abstract class Z {
 	 * @return this object
 	 * @throws ZException
 	 */
-	public Z execute() throws ZException{
-		return execute(null);
-	}
-	/**
-	 * Execute Z instance's query from head of this linked(piped) list to this instance.
-	 * @return this object
-	 * @throws ZException
-	 */
-	public Z execute(ZeppelinConnection conn) throws ZException{
-		if(executed==true) return this;
+	public Z execute() throws ZException {
+		if(executed) { return this; }
 		initialize();
-		connection = connection(conn);
+		//connection = connection(conn);
 		
-		if(prev()!=null){
+		if (this.hasPrev()){
 			prev().execute();
-		}		
-		String query = getQuery();
-		if (query!=null){
-			String[] queries = Util.split(query, ';');
-			for (int i=0; i<queries.length; i++){
-				String q = queries[i];
-				if (i==queries.length-1){
-					if (name()==null){
-						lastQueryResult = executeQuery(conn, q, maxResult);
-					} else {
-						if(isSaveableQuery(q)==false){
-							throw new ZException("Can not save query "+q+" into table "+name());
-						}
-						try {
-							if(isTable()){
-								lastQueryResult = connection(conn).createTableFromQuery(name(), q);
-							} else {
-								lastQueryResult = connection(conn).createViewFromQuery(name(), q);
-							}
-						} catch (ZeppelinDriverException e) {
-							throw new ZException(e);
-						}
-					}
-				} else {
-					lastQueryResult = executeQuery(connection, q, maxResult);
-				}
-			}
 		}
+		String q;
+		String query = getQuery();
+		String[] queries = Util.split(query, ';');
+		for (int i=0; i<queries.length-1; i++){//all except last one
+		    q = queries[i];
+		    lastQueryResult = executeQuery(q, maxResult);
+		}
+		
+		if (queries.length > 0) {//the last query
+            q = queries[queries.length-1];
+            if (isUnNamed()){
+                lastQueryResult = executeQuery(q, maxResult);
+            } else {
+                if(!isSaveableQuery(q)){
+                    throw new ZException("Can not save query "+q+" into table "+name());
+                }
+                if(isTable()){
+                    lastQueryResult = driver.createTableFromQuery(name(), q);
+                } else {
+                    lastQueryResult = driver.createTableFromQuery(name(), q);
+                }
+            }
+
+		}
+
 		webEnabled = isWebEnabled();
 		executed = true;
 		return this;
@@ -362,10 +366,9 @@ public abstract class Z {
 	public Z dryRun() throws ZException{
 		initialize();
 		
-		if(prev()!=null){
+		if(hasPrev()){
 			prev().dryRun();
 		}
-		
 		Map<String, ParamInfo> infos = extractParams();
 
 		this.paramInfos = infos;
@@ -379,17 +382,9 @@ public abstract class Z {
 	}
 	
 	private boolean isSaveableQuery(String query){
-		if(query==null) return false;
-		String q = query.trim();
-		q = q.toLowerCase();
-		if(q.startsWith("select") ||
-		   q.startsWith("map")){
-			return true;
-		} else {
-			return false;
-		}
-		
-		   
+		if (query==null || query.isEmpty()) return false;
+		String q = query.trim().toLowerCase();
+		return q.startsWith("select") || q.startsWith("map");		   
 	}
 		
 	/**
@@ -403,12 +398,12 @@ public abstract class Z {
 	 * @throws ZException 
 	 */
 	public Result result() throws ZException{
-		if(executed==false){
+		if(!executed){
 			throw new ZException("Can not get result because of this is not executed");
 		}
 
 		if(result==null){
-			if(name()==null){ // unmaed
+			if(isUnNamed()){
 				if(lastQueryResult!=null){
 					result = lastQueryResult;
 				} else {
@@ -418,7 +413,7 @@ public abstract class Z {
 				}
 			} else { // named
 				try{
-					result = connection().select(name(), maxResult);
+					result = driver.select(name(), maxResult);
 				} catch(Exception e){  // if table not found
 					if(lastQueryResult!=null){
 						result = lastQueryResult;
@@ -429,6 +424,10 @@ public abstract class Z {
 		
 		return result;
 	}
+
+    private boolean isUnNamed() {
+        return name==null;
+    }
 	
 	/**
 	 * Check if this instance is executed or not
@@ -437,32 +436,6 @@ public abstract class Z {
 	 */
 	public boolean isExecuted(){
 		return executed;
-	}
-	
-    synchronized private ZeppelinConnection connection() throws ZException {
-		return connection(null);
-	}
-	synchronized private ZeppelinConnection connection(ZeppelinConnection conn) throws ZException {
-		if(prev()==null){
-			if(conn==null){
-				if(connection==null){
-					// get one from factory
-					connection = getConnection();
-				}	
-			} else {
-				// get from given param
-				connection = conn;
-			}			
-		} else {
-			// get from previous query linked with pipe
-			connection = prev().connection(conn);
-		}
-		
-		return connection;
-	}
-	
-	private Result executeQuery(String query, int max) throws ZException {
-		return executeQuery(null, query, max);
 	}
 	
 	
@@ -475,7 +448,7 @@ public abstract class Z {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 		executor.setStreamHandler(new PumpStreamHandler(outputStream));
 
-		executor.setWatchdog(new ExecuteWatchdog(conf.getLong(ConfVars.ZEPPELIN_COMMAND_TIMEOUT)));
+		executor.setWatchdog(new ExecuteWatchdog(zen.getConf().getLong(ConfVars.ZEPPELIN_COMMAND_TIMEOUT)));
 		int exitValue = executor.execute(cmdLine);
 		String [] msgs = null;
 		if (outputStream!=null){
@@ -489,7 +462,7 @@ public abstract class Z {
 		return resultData;		
 	}
 	
-	private Result executeQuery(ZeppelinConnection connection, String query, int max) throws ZException{
+	private Result executeQuery(String query, int max) throws ZException{
 		initialize();
 		if(query==null) return null;
 		
@@ -497,8 +470,6 @@ public abstract class Z {
             String cmd = query.substring(1);
 			try {
 				return shellCommand(cmd);
-			} catch (ExecuteException e) {
-				logger().error("Failed to execute shell command " + cmd, e);
 			} catch (IOException e) {
 				logger().error("Failed to execute shell command " + cmd, e);
 			} catch (ResultDataException e) {
@@ -506,157 +477,34 @@ public abstract class Z {
 			}
 		}
 		
-		
-		ZeppelinConnection con = null;
-		try {
-			con = connection(connection);
+        // add resources
+        List<URI> resources = getResources();
 
-			logger().debug("connection="+con);
-			// add resources			
-			List<URI> resources = getResources();
+        for (URI res : resources) {
+            driver.addResource(res);
+        }
 
-			for(URI res : resources){
-				con.addResource(res);
-			}
-			
-			// execute query
-			logger().info("executeQuery : "+query);
-			return con.query(query);
-		} catch (Throwable e) {
-			try {
-				if(con!=null){
-					con.close();
-				}
-			} catch (Throwable e1) {
-				logger().error("error on closing connection", e1);
-			}
-			throw new ZException(e);
-		} 
+        // execute query
+        logger().info("executeQuery : " + query);
+        return driver.query(query);
 	}
+
+	public void setDriver(ZeppelinDriver driver){
+		this.driver = driver;
+	}
+
+	/*for tests*/ ZeppelinDriver getDriver() {
+	    return this.driver;
+	}
+
 	
-
-	public ScriptEngine getRubyScriptEngine(){
-		return factory.getScriptEngine();
-	}
-	
-	/**
-	 * Configure Zeppelin environment.
-	 * zeppelin-site.xml will be loaded from classpath.
-	 * @throws ZException
-	 */
-	public static void configure() throws ZException{
-		ZeppelinDriver drv = null;
-		configure(drv);
-	}
-
-	/**
-	 * Configure Zeppelin environment.
-	 * zeppelin-site.xml will be loaded from classpath.
-	 * @param driver zeppelin driver
-	 * @throws ZException
-	 */
-	public static void configure(ZeppelinDriver driver) throws ZException{
-		ZeppelinConfiguration conf;
-		try {
-			conf = ZeppelinConfiguration.create();
-		} catch (ConfigurationException e) {
-			conf = new ZeppelinConfiguration();
-		}
-
-		configure(conf, driver);
-	}
-	
-	/**
-	 * Configure Zeppelin with given configuration
-	 * @param conf configuration to use
-	 * @throws ZException
-	 */
-	public static void configure(ZeppelinConfiguration conf) throws ZException{
-		configure(conf, null);
-	}		
-	public static void configure(ZeppelinConfiguration conf, ZeppelinDriver driver) throws ZException{
-		Z.conf = conf;		
-		Z.factory = new JRubyScriptEngineFactory();
-		
-		if(driver==null){
-			String driverClassName = getConf().getString(ConfVars.ZEPPELIN_DRIVER);
-			try {
-				Class<?> driverClass = Class.forName(driverClassName);
-				Constructor<?> cons = driverClass.getConstructor(ZeppelinConfiguration.class);
-				Z.driver = (ZeppelinDriver) cons.newInstance(getConf());
-				Z.driver.init();
-			} catch (ClassNotFoundException e) {
-				throw new ZException(e);
-			} catch (SecurityException e) {
-				throw new ZException(e);
-			} catch (NoSuchMethodException e) {
-				throw new ZException(e);
-			} catch (IllegalArgumentException e) {
-				throw new ZException(e);
-			} catch (InstantiationException e) {
-				throw new ZException(e);
-			} catch (IllegalAccessException e) {
-				throw new ZException(e);
-			} catch (InvocationTargetException e) {
-				throw new ZException(e);
-			} catch (ZeppelinDriverException e) {
-				throw new ZException(e);
-			}
-		} else {
-			Z.driver = driver;
-		}
-		
-		if(fs==null){
-			try {
-				fs = FileSystem.get(new org.apache.hadoop.conf.Configuration());
-			} catch (IOException e) {
-				throw new ZException(e);
-			}
-		}
-	}
-	
-	/**
-	 * Get connection from factory
-	 * @return
-	 * @throws ZException 
-	 */
-	public static ZeppelinConnection getConnection() throws ZException{
-
-		
-		try {
-			return driver.getConnection();
-		} catch (ZeppelinDriverException e) {
-			throw new ZException(e);
-		}
-		
-	}	
-	
-	private static ZeppelinConfiguration conf;
-	private static JRubyScriptEngineFactory factory;
-	private static FileSystem fs;
-	private static ZeppelinDriver driver;
-	
-	/**
-	 * Get zeppelin configuration
-	 * @return
-	 */
-	public static ZeppelinConfiguration getConf(){
-		return conf;
-	}
-
-	/**
-	 * Get filesystem object
-	 * @return
-	 */
-	public static FileSystem fs(){
-		return fs;
-	}
-
-	public static ZeppelinDriver driver(){
-		return driver;
-	}
-
-	public static void setDriver(ZeppelinDriver driver){
-		Z.driver = driver;
-	}
+    public boolean abort() {
+        try {
+            this.driver.abort();
+        } catch (ZeppelinDriverException e) {
+            logger().error("Abort failure", e);
+            return false;
+        }
+        return true;
+    }
 }

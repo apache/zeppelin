@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -14,14 +14,19 @@ import org.apache.thrift.TException;
 import com.jointhegrid.hive_test.HiveTestBase;
 import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
+import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.util.UtilsForTests;
+import com.nflabs.zeppelin.zengine.ParamInfo;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.Zengine;
 
 public class QTest extends HiveTestService {
 
     private File tmpDir;
-
+    private Zengine z;
+    private ZeppelinDriver drv; 
+    
     public void setUp() throws Exception {
         super.setUp();
         tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());       
@@ -29,12 +34,13 @@ public class QTest extends HiveTestService {
         
         UtilsForTests.delete(new File("/tmp/warehouse"));
         UtilsForTests.delete(new File(ROOT_DIR.getName()));
-        
         System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
-        Z.configure();
-        HiveZeppelinDriver driver = new HiveZeppelinDriver(Z.getConf());
-        driver.setClient(client);
-        Z.setDriver(driver);
+
+        //Dependencies: ZeppelinDriver + ZeppelinConfiguration + fs + RubyExecutionEngine
+        z = new Zengine();
+        z.configure();
+        
+        drv = UtilsForTests.createHiveTestDriver(z.getConf(), client);
     }
 
     public void tearDown() throws Exception {
@@ -56,12 +62,13 @@ public class QTest extends HiveTestService {
         Path p = genTestDataFile();
 
         //when
-        new Q("drop table if exists test").execute().result().write(System.out);
-        new Q("create table test(a INT)").execute().result().write(System.out);
-        new Q("load data local inpath '" + p.toString() + "' into table test").execute().result().write(System.out);
+        new Q("drop table if exists test", z, drv).execute().result().write(System.out);
+        new Q("create table test(a INT)", z, drv).execute().result().write(System.out);
+        new Q("load data local inpath '" + p.toString() + "' into table test", z, drv).execute().result()
+                .write(System.out);
 
         //then
-        assertEquals(new Long(2), new Q("select count(*) from test").execute().result().getRows().get(0)[0]);
+        assertEquals(new Long(2), new Q("select count(*) from test", z, drv).execute().result().getRows().get(0)[0]);
     }
     
     private Path genTestDataFile() throws IOException {
@@ -77,23 +84,24 @@ public class QTest extends HiveTestService {
     public void testName() throws HiveServerException, TException, ZException, IOException{
         Path p = genTestDataFile();
 
-        new Q("drop view if exists test2").execute().result().write(System.out);
-        new Q("drop table if exists test").execute().result().write(System.out);
-        new Q("create table test(a INT)").execute().result().write(System.out);
-        new Q("load data local inpath '" + p.toString() + "' into table test").execute().result().write(System.out);
-        Z z = new Q("select count(*) from test").withName("test2").execute();
-        assertEquals(new Long(2), new Q("select count(*) from test").execute().result().getRows().get(0)[0]);
+        new Q("drop view if exists test2", z, drv).execute().result().write(System.out);
+        new Q("drop table if exists test", z, drv).execute().result().write(System.out);
+        new Q("create table test(a INT)", z, drv).execute().result().write(System.out);
+        new Q("load data local inpath '" + p.toString() + "' into table test", z, drv).execute().result()
+                .write(System.out);
+        Z q = new Q("select count(*) from test", z, drv).withName("test2").execute();
+        assertEquals(new Long(2), new Q("select count(*) from test", z, drv).execute().result().getRows().get(0)[0]);
         
-        new Q("select * from test2").execute().result().write(System.out);
-        assertEquals(new Long(1), new Q("select count(*) from test2").execute().result().getRows().get(0)[0]);
+        new Q("select * from test2", z, drv).execute().result().write(System.out);
+        assertEquals(new Long(1), new Q("select count(*) from test2", z, drv).execute().result().getRows().get(0)[0]);
         
-        z.release();
-        assertEquals(new Long(1), new Q("select count(*) from test2").execute().result().getRows().get(0)[0]);
+        q.release();
+        assertEquals(new Long(1), new Q("select count(*) from test2", z, drv).execute().result().getRows().get(0)[0]);
     }
     
     public void testExtractParam() throws ZException {
-        Z z = new Q("select <%=z.param('fieldname', 'hello')%> from here").dryRun();
-        Map<String, ParamInfo> infos = z.getParamInfos();
+        Z q = new Q("select <%=z.param('fieldname', 'hello')%> from here", z, drv).dryRun();
+        Map<String, ParamInfo> infos = q.getParamInfos();
         assertEquals(1, infos.size());
         assertEquals("hello", infos.get("fieldname").getDefaultValue());
     }
@@ -121,7 +129,7 @@ public class QTest extends HiveTestService {
         //  Z.setDriver(driver)
         
         //when
-        Result r = new Q("select count(*) from test").execute().result();
+        Result r = new Q("select count(*) from test", z, drv).execute().result();
         
         //then
         //assertThat(r.getRows().get(0)[0], is());

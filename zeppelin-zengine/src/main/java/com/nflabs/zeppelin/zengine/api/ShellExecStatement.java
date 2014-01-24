@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -14,14 +14,20 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nflabs.zeppelin.driver.ZeppelinDriver;
+import com.nflabs.zeppelin.zengine.ParamInfo;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.ZWebContext;
+import com.nflabs.zeppelin.zengine.Zengine;
+
 /**
- * This is an abstraction for runing shell scripts
+ * This is an abstraction for running shell scripts
  * inside ZQL, i.e: "!echo 1" or "!time" or even "!git"
  * 
  */
-public class ShellExecStatement extends Q{
-	public ShellExecStatement(String command) throws ZException{
-		super(command);
+public class ShellExecStatement extends Q {
+	public ShellExecStatement(String command, Zengine z, ZeppelinDriver driver) throws ZException{
+		super(command, z, driver);
 	}
 	
 	private Logger logger(){

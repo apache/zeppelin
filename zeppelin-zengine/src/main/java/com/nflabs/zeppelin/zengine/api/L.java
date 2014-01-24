@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 
 import java.io.BufferedReader;
@@ -21,6 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.driver.ZeppelinDriver;
+import com.nflabs.zeppelin.zengine.ParamInfo;
+import com.nflabs.zeppelin.zengine.ZContext;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.ZWebContext;
+import com.nflabs.zeppelin.zengine.Zengine;
 
 /**
  * L stands for Library(aks UDF). This class load and execute Zeppelin User Defined Functions
@@ -41,16 +47,17 @@ public class L extends Q {
 	 * @param libName library name to load and run
 	 * @throws ZException
 	 */
-	public L(String libName) throws ZException{
-		this(libName, null);
+	public L(String libName, Zengine z, ZeppelinDriver drv) throws ZException{
+		this(libName, null, z, drv);
 	}
 	/**
 	 * @param libName library name to laod and run
 	 * @param arg
+	 * @param currentDriver 
 	 * @throws ZException
 	 */
-	public L(String libName, String arg) throws ZException{
-		super(arg);
+	public L(String libName, String arg, Zengine z, ZeppelinDriver driver) throws ZException{
+		super(arg, z, driver);
 		this.libName = libName;
 		initialize();
 	}
@@ -67,13 +74,13 @@ public class L extends Q {
 		
 		if(libName==null) return;
 
-		fs = fs();
+		fs = zen.fs();
 		
 		try {
 			if(libName.indexOf(":/")>0){
 				libUri = new URI(libName);
 			} else {
-				libUri = new URI(getConf().getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO)+"/"+libName);	
+				libUri = new URI(zen.getConf().getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO)+"/"+libName);	
 			}
 		} catch (URISyntaxException e1) {
 			throw new ZException(e1);
@@ -82,7 +89,7 @@ public class L extends Q {
 		try {		
 			// search for library dir
 			this.dir = new Path(libUri);
-			if(fs.getFileStatus(dir).isDir() == false){
+			if(!fs.exists(dir) || !fs.getFileStatus(dir).isDir()){
 				throw new ZException("Directory "+dir.toUri()+" does not exist");
 			}
 			this.erbFile = new Path(libUri.toString()+"/zql.erb");
@@ -99,7 +106,7 @@ public class L extends Q {
 		initialized = true;
 	}
 
-	/**
+    /**
 	 * Get query to be executed.
 	 * Each library has query template file. and returns evaluated value.
 	 * 

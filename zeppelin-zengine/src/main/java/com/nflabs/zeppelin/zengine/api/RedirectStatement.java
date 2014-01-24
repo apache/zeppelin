@@ -1,6 +1,7 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 import com.nflabs.zeppelin.util.Util;
+import com.nflabs.zeppelin.zengine.ZQLException;
 
 /**
  * 
