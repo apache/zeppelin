@@ -40,36 +40,23 @@ public class Zengine {
      * @throws ZException
      */
     public void configure() throws ZException{
-        ZeppelinDriver drv = null;
-        configure(drv);
-    }
-
-    /**
-     * Configure Zeppelin environment.
-     * zeppelin-site.xml will be loaded from classpath.
-     * @param driver zeppelin driver
-     * @throws ZException
-     */
-    public void configure(ZeppelinDriver driver) throws ZException{
         ZeppelinConfiguration conf;
         try {
             conf = ZeppelinConfiguration.create();
         } catch (ConfigurationException e) {
             conf = new ZeppelinConfiguration();
         }
-
-        configure(conf, driver);
-    }
-    
-    /**
-     * Configure Zeppelin with given configuration
-     * @param conf configuration to use
-     * @throws ZException
-     */
-    public void configure(ZeppelinConfiguration conf) throws ZException{
         configure(conf, null);
     }
-    
+        
+    /**
+     * Configures Zengine with dependencies: 
+     * 
+     * @param conf - configuration from FileSysyem
+     * @param driver - driver implementation
+     *                 could be NULL, then default from configuration is used
+     * @throws ZException
+     */
     public void configure(ZeppelinConfiguration conf, ZeppelinDriver driver) throws ZException{
         this.conf = conf;      
         this.factory = new JRubyScriptEngineFactory();
