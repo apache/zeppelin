@@ -56,6 +56,9 @@
         <include>zeppelin-site.xml.template</include>
       </includes>
     </fileSet>
+    <fileSet>
+      <directory>../drivers</directory>
+    </fileSet>
   </fileSets>
     <!--<fileSet>
       <directory>zeppelin-cli/target</directory>
