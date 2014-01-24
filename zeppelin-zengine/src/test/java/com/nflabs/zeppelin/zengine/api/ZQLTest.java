@@ -89,61 +89,65 @@ public class ZQLTest extends HiveTestService {
 	public void testSemicolon() throws ZException, ZQLException{
 		ZQL zql = new ZQL(z);
 		zql.append("create table if not exists bank(a INT); select * from bank | select * from <%= z."+Q.INPUT_VAR_NAME+" %> limit 10; show tables; ");
-		List<Z> z = zql.compile();
+		List<Z> plan = zql.compile();
 
-		assertEquals(3, z.size());
-		assertEquals("select * from "+z.get(1).prev().name()+" limit 10", z.get(1).getQuery());
-		assertEquals("show tables", z.get(2).getQuery());
+		assertEquals(3, plan.size());
+		assertEquals("select * from "+plan.get(1).prev().name()+" limit 10", plan.get(1).getQuery());
+		assertEquals("show tables", plan.get(2).getQuery());
+		
+		for (Z query : plan) {
+		    assertNotNull(query.getDriver());
+		}
 	}
 	
 	public void testRedirection() throws ZException, ZQLException{
 		ZQL zql = new ZQL(z);
 		zql.append("select * from bank limit 10 > summary");
-		List<Z> z = zql.compile();
+		List<Z> plan = zql.compile();
 		
-		assertEquals(1, z.size());
-		assertEquals("select * from bank limit 10", z.get(0).getQuery());
+		assertEquals(1, plan.size());
+		assertEquals("select * from bank limit 10", plan.get(0).getQuery());
 	}
 
 	public void testLstmtSimple() throws ZException, ZQLException{
 		ZQL zql = new ZQL("test", z);
 		List<Z> zList = zql.compile();
 		assertEquals(1, zList.size());
-		Z z = zList.get(0);
-		assertEquals("select * from () a limit ", z.getQuery());
-		z.release();
+		Z q = zList.get(0);
+		assertEquals("select * from () a limit ", q.getQuery());
+		q.release();
 	}
 	
 	public void testLstmtParam() throws ZException, ZQLException{
 		ZQL zql = new ZQL("test(limit=10)", z);
-		Z z = zql.compile().get(0);
-		assertEquals("select * from () a limit 10", z.getQuery());
+		Z q = zql.compile().get(0);
+		assertEquals("select * from () a limit 10", q.getQuery());
 	}
 	
 	public void testLstmtArg() throws IOException, ZException, ZQLException{
 		ZQL zql = new ZQL("select * from test | test(limit=10)", z);
 		
-		List<Z> z = zql.compile();
-		assertEquals(1, z.size());
-		assertEquals("select * from ("+z.get(0).prev().name()+") a limit 10", z.get(0).getQuery());
+		List<Z> q = zql.compile();
+		assertEquals(1, q.size());
+		assertEquals("select * from ("+q.get(0).prev().name()+") a limit 10", q.get(0).getQuery());
 	}
 	
 	public void testLstmtPipedArg() throws IOException, ZException, ZQLException{
 		ZQL zql = new ZQL("select * from test | test1 | test1", z);
 		
-		List<Z> z = zql.compile();
-		assertEquals(1, z.size());
-		assertEquals(null, z.get(0).getQuery());
-		assertEquals(null, z.get(0).prev().getQuery());
-		assertEquals("select * from test", z.get(0).prev().prev().getQuery());
+		List<Z> q = zql.compile();
+		assertEquals(1, q.size());
+		assertEquals(null, q.get(0).getQuery());
+		assertEquals(null, q.get(0).prev().getQuery());
+		assertEquals("select * from test", q.get(0).prev().prev().getQuery());
 	}
 	
 	public void testMultilineQuery() throws IOException, ZException, ZQLException{
 		ZQL zql = new ZQL("select\n*\nfrom\ntest", z);
 		
-		List<Z> z = zql.compile();
-		assertEquals(1, z.size());
-		assertEquals("select\n*\nfrom\ntest", z.get(0).getQuery());
+		List<Z> q = zql.compile();
+		assertEquals(1, q.size());
+		assertEquals("select\n*\nfrom\ntest", q.get(0).getQuery());
 	}
 
 
@@ -165,12 +169,12 @@ public class ZQLTest extends HiveTestService {
 	
 	public void testExecStatmentQuery() throws ZException, ZQLException{
 		ZQL zql = new ZQL("select * from test;!echo -n 'hello world';!echo ls", z);
-		List<Z> z = zql.compile();
-		assertEquals(3, z.size());
-		assertEquals("select * from test", z.get(0).getQuery());
-		assertEquals("!echo -n 'hello world';", z.get(1).getQuery());
-		assertEquals("!echo ls", z.get(2).getQuery());
-		assertTrue(z.get(1) instanceof ShellExecStatement); 
-		assertTrue(z.get(2) instanceof ShellExecStatement); 
+		List<Z> plan = zql.compile();
+		assertEquals(3, plan.size());
+		assertEquals("select * from test", plan.get(0).getQuery());
+		assertEquals("!echo -n 'hello world';", plan.get(1).getQuery());
+		assertEquals("!echo ls", plan.get(2).getQuery());
+		assertTrue(plan.get(1) instanceof ShellExecStatement); 
+		assertTrue(plan.get(2) instanceof ShellExecStatement); 
 	}
 }

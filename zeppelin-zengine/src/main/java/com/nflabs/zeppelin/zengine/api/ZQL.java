@@ -147,7 +147,16 @@ public class ZQL {
 	public List<Z> compile() throws ZQLException{
 		return compileZql(sb.toString());
 	}
-	
+	/**
+	 * Each Z should obtain ref to one of Zengine.supportedDrivers here:
+	 *  - either from explicit @Driver statement
+	 *  - or implicitly copy one from previous Z
+     * 
+	 * 
+	 * @param stmts
+	 * @return
+	 * @throws ZQLException
+	 */
 	private List<Z> compileZql(String stmts) throws ZQLException{
 		List<Z> zList = new LinkedList<Z>();
 		Z currentZ = null;
@@ -204,6 +213,8 @@ public class ZQL {
 			if(stmt.startsWith("!")){
 				if(currentZ!=null){ // previous query exist
 					if(currentOp==null || (currentOp!=null && currentOp.equals(op[0]))){ // semicolon
+					    //TODO replace with exec driver
+					    currentZ.setDriver(zen.getDriver());
 						zList.add(currentZ);
 						currentZ = null;
 						currentOp = null;
@@ -245,6 +256,8 @@ public class ZQL {
 			} else if(currentOp==null){
 				throw new ZQLException("Assert! Statment does not have operator in between");
 			} else if(currentOp.equals(op[0])){ // semicolon
+                //TODO replace with the right driver
+                currentZ.setDriver(zen.getDriver());
 				zList.add(currentZ);
 				currentZ = z;
 				currentOp = null;
@@ -254,6 +267,8 @@ public class ZQL {
 			}
 		}
 		if(currentZ!=null){
+            //TODO replace with exec driver
+            currentZ.setDriver(zen.getDriver());
 			zList.add(currentZ);
 		}
 		

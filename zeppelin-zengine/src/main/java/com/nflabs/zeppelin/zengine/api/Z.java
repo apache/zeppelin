@@ -59,17 +59,14 @@ public abstract class Z {
 	private Map<String, ParamInfo> paramInfos;
 	transient static final String NAME_PREFIX="zp_";
 
-	//TODO(alex): get rid of it here!
+	//TODO(alex): get rid of it here as only Configuration is needed
 	protected  Zengine zen;
-	//These should be injected!
-	transient protected ZeppelinDriver driver;
-
+    protected transient ZeppelinDriver driver;
+    
 	protected Z(Zengine z){
 	    this.zen = z;
 		this.id = Integer.toString(hashCode());
 		this.maxResult = zen.getConf().getInt(ConfVars.ZEPPELIN_MAX_RESULT);
-		//TODO(alex): get rid of this ASAP with clean DI's!
-		this.driver = zen.getDriver();
 	}
 
 	/**
@@ -500,6 +497,11 @@ public abstract class Z {
 		this.driver = driver;
 	}
 
+	/*for tests*/ ZeppelinDriver getDriver() {
+	    return this.driver;
+	}
+
+	
     public boolean abort() {
         try {
             this.driver.abort();
