@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.zengine.ParamInfo;
 import com.nflabs.zeppelin.zengine.ZContext;
 import com.nflabs.zeppelin.zengine.ZException;
@@ -46,16 +47,17 @@ public class L extends Q {
 	 * @param libName library name to load and run
 	 * @throws ZException
 	 */
-	public L(String libName, Zengine z) throws ZException{
-		this(libName, null, z);
+	public L(String libName, Zengine z, ZeppelinDriver drv) throws ZException{
+		this(libName, null, z, drv);
 	}
 	/**
 	 * @param libName library name to laod and run
 	 * @param arg
+	 * @param currentDriver 
 	 * @throws ZException
 	 */
-	public L(String libName, String arg, Zengine z) throws ZException{
-		super(arg, z);
+	public L(String libName, String arg, Zengine z, ZeppelinDriver driver) throws ZException{
+		super(arg, z, driver);
 		this.libName = libName;
 		initialize();
 	}

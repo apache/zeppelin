@@ -8,6 +8,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.service.HiveInterface;
+
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.driver.ZeppelinDriver;
+import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
+
 public class UtilsForTests {
 	
 	public static File createTmpDir() throws Exception {
@@ -99,4 +105,11 @@ public class UtilsForTests {
 	        e1.printStackTrace();
 	    } 
 	}
+	
+    public static ZeppelinDriver createHiveTestDriver(ZeppelinConfiguration zc, HiveInterface client) {
+        ZeppelinDriver driver = new HiveZeppelinDriver(zc);
+        ((HiveZeppelinDriver) driver).setClient(client);
+        return driver;
+    }
+
 }

@@ -1,22 +1,20 @@
 package com.nflabs.zeppelin.zengine.api;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 
+import com.google.common.collect.ImmutableMap;
 import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
+import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
-import com.nflabs.zeppelin.zengine.api.Q;
-import com.nflabs.zeppelin.zengine.api.ShellExecStatement;
-import com.nflabs.zeppelin.zengine.api.Z;
 
 public class ZQLTest extends HiveTestService {
 
@@ -25,7 +23,7 @@ public class ZQLTest extends HiveTestService {
 		// TODO Auto-generated constructor stub
 	}
 
-	private File tmpDir;
+	private static File tmpDir;
 	private Zengine z;
 						
 	@Before
@@ -33,46 +31,35 @@ public class ZQLTest extends HiveTestService {
 		super.setUp();
 		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());		
 		tmpDir.mkdir();
+		String tmpDirPath = tmpDir.getAbsolutePath();
 
 		UtilsForTests.delete(new File("/tmp/warehouse"));
 		UtilsForTests.delete(new File(ROOT_DIR.getName()));
-		
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 
-		//Dependencies: ZeppelinDriver + ZeppelinConfiguration + fs + RubyExecutionEngine
+		String q1 = "select * from (<%= z."+Q.INPUT_VAR_NAME+" %>) a limit <%= z.param('limit') %>\n";      
+		new File(tmpDirPath + "/test").mkdir();
+		UtilsForTests.createFileWithContent(tmpDirPath + "/test/zql.erb", q1);
+		UtilsForTests.createFileWithContent(tmpDirPath + "/test/test_data.log", "");
+		new File(tmpDirPath + "/test1").mkdir();
+		new File(tmpDirPath + "/test1/web").mkdirs();
+		UtilsForTests.createFileWithContent(tmpDirPath + "/test1/web/index.erb", "WEB\n");
+
+		
+		//Dependencies: collection of ZeppelinDrivers + ZeppelinConfiguration + fs + RubyExecutionEngine
         z = new Zengine();
 		z.configure();
 		
-		HiveZeppelinDriver driver = new HiveZeppelinDriver(z.getConf());
-		driver.setClient(client);
-		z.setDriver(driver);		
-
-		new File(tmpDir.getAbsolutePath()+"/test").mkdir();
-		File erb = new File(tmpDir.getAbsolutePath()+"/test/zql.erb");
-		FileOutputStream out = new FileOutputStream(erb);		
-		out.write(("select * from (<%= z."+Q.INPUT_VAR_NAME+" %>) a limit <%= z.param('limit') %>\n").getBytes());
-		out.close();
-	
-		new File(tmpDir.getAbsolutePath()+"/test1/web").mkdirs();
-		File index = new File(tmpDir.getAbsolutePath()+"/test1/web/index.erb");
-		out = new FileOutputStream(index);		
-		out.write(("WEB\n").getBytes());
-		out.close();
-		
-		// create resource
-		FileOutputStream resource = new FileOutputStream(new File(tmpDir.getAbsolutePath()+"/test/test_data.log"));
-		resource.write("".getBytes());
-		resource.close();
-
+		ZeppelinDriver driver = UtilsForTests.createHiveTestDriver(z.getConf(), client);
+		z._mockSingleAvailableDriver(ImmutableMap.of("hive", driver));
 	}
 
+    @After
 	public void tearDown() throws Exception {
 		super.tearDown();
 		UtilsForTests.delete(tmpDir);
-		
 		UtilsForTests.delete(new File("/tmp/warehouse"));
 		UtilsForTests.delete(new File(ROOT_DIR.getName()));
-		
 	}	
 	
 	public void testPipe() throws ZException, ZQLException {

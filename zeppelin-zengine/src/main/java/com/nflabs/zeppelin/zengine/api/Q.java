@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.zengine.ParamInfo;
 import com.nflabs.zeppelin.zengine.ZContext;
@@ -36,7 +37,8 @@ public class Q extends Z {
 	protected String query;
 	private List<URI> resources = new LinkedList<URI>();
 	Result cachedResultDataObject;
-	
+	transient boolean initialized = false;
+    
 	transient static final String ARG_VAR_NAME="arg";
 	transient static final String INPUT_VAR_NAME="in";
 	transient static final String OUTPUT_VAR_NAME="out";
@@ -46,11 +48,13 @@ public class Q extends Z {
 	 * Query can erb template. ZContext is injected to the template
 	 * @param query
 	 * @param z 
+	 * @param driver 
 	 * @throws ZException
 	 */
-	public Q(String query, Zengine z) throws ZException{
+	public Q(String query, Zengine z, ZeppelinDriver driver) throws ZException{
 		super(z);
 		this.query = query;
+		this.driver = driver;
 		
 		initialize();
 	}
@@ -59,7 +63,6 @@ public class Q extends Z {
 		return LoggerFactory.getLogger(Q.class);
 	}
 	
-	transient boolean initialized = false;
 	protected void initialize() throws ZException {
 		if(initialized){
 			return ;

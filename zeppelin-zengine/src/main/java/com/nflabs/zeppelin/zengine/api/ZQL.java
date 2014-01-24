@@ -9,45 +9,51 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 
+import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
 /**
  * ZQL parses Zeppelin Query Language (http://nflabs.github.io/zeppelin/#zql) 
- * and generate logical plan 
+ * and generate logical execution plan.
+ *  
+ * IN:  Plain-text user input in Zeppelin Query Language syntax
+ *      Collection of available driver instances
+ * OUT: sequence of Z instances (lined to appropriate drivers)
  * 
- * Instantiates all Z,Q,L.. class-family, pass them Zengine
  * @author moon
  *
  */
 public class ZQL {
 	String [] op = new String[]{";", "|", ">>", ">"};
 	StringBuilder sb = new StringBuilder();
-	private Zengine zen; 
+	
+	private Zengine zengine;
 	
 	/**
 	 * Constructor
 	 * @throws ZException
 	 */
 	public ZQL(Zengine zen) throws ZException{
-	    this.zen = zen;
+	    this.zengine = zen;
 	}
 
 	/**
 	 * Load ZQL statements from string
 	 * @param zql Zeppelin query language statements
-	 * @param z 
+	 * @param z Zengine
 	 * @throws ZException
 	 */
 	public ZQL(String zql, Zengine zen) throws ZException{
-	    this.zen = zen;
+	    this.zengine = zen;
 	    append(zql);
 	}
 	
@@ -59,7 +65,6 @@ public class ZQL {
 	 * @throws ZException
 	 */
 	public ZQL(URI uri) throws IOException, ZException{
-		//Z.configure();
 		load(uri);
 	}
 	
@@ -70,7 +75,6 @@ public class ZQL {
 	 * @throws IOException
 	 */
 	public ZQL(File file) throws ZException, IOException{
-		//Z.configure();
 		load(file);
 	}
 	
@@ -93,9 +97,8 @@ public class ZQL {
 	 * @throws ZException
 	 */
 	public void load(URI uri) throws IOException{
-		FSDataInputStream ins = zen.fs().open(new Path(uri));
+		FSDataInputStream ins = zengine.fs().open(new Path(uri));
 		load(ins);
-		ins.close();
 	}
 	
 	/**
@@ -107,11 +110,12 @@ public class ZQL {
 	public void load(File file) throws IOException{ 
 		FileInputStream ins = new FileInputStream(file);
 		load(ins);
-		ins.close();
 	}
 	
 	/**
-	 * Load ZQL statements from input stream
+	 * Load ZQL statements from input stream.
+	 * Closes the stream at the end.
+	 * 
 	 * @param ins input stream which streams ZQL
 	 * @throws IOException
 	 * @throws ZException
@@ -121,7 +125,8 @@ public class ZQL {
 		String line = null;
 		while((line = in.readLine())!=null){
 			sb.append(line);
-		}		
+		}
+		ins.close();
 	}
 	
 	/**
@@ -143,8 +148,9 @@ public class ZQL {
 	 * Compile ZQL statements and return logical plan
 	 * @return List of Z. Each Z represent single statement. 
 	 * @throws ZQLException
+	 * @throws ZException 
 	 */
-	public List<Z> compile() throws ZQLException{
+	public List<Z> compile() throws ZQLException, ZException{
 		return compileZql(sb.toString());
 	}
 	/**
@@ -156,8 +162,13 @@ public class ZQL {
 	 * @param stmts
 	 * @return
 	 * @throws ZQLException
+	 * @throws ZException 
 	 */
-	private List<Z> compileZql(String stmts) throws ZQLException{
+	private List<Z> compileZql(String stmts) throws ZQLException, ZException{
+	    final Map<String, ZeppelinDriver> drivers = zengine.createAvailableDrivers();
+	    //TODO add support for @driver statement
+	    String currentDriverName = "hive";
+	    ZeppelinDriver currentDriver = drivers.get(currentDriverName);
 		List<Z> zList = new LinkedList<Z>();
 		Z currentZ = null;
 		
@@ -213,8 +224,7 @@ public class ZQL {
 			if(stmt.startsWith("!")){
 				if(currentZ!=null){ // previous query exist
 					if(currentOp==null || (currentOp!=null && currentOp.equals(op[0]))){ // semicolon
-					    //TODO replace with exec driver
-					    currentZ.setDriver(zen.getDriver());
+			            currentZ.setDriver(currentDriver);
 						zList.add(currentZ);
 						currentZ = null;
 						currentOp = null;
@@ -223,7 +233,7 @@ public class ZQL {
 					}
 				}
 				try {				
-					currentZ = new ShellExecStatement(stmt, zen); 
+					currentZ = new ShellExecStatement(stmt, zengine, currentDriver); 
 				} catch (ZException e) {
 					throw new ZQLException(e);
 				}
@@ -233,7 +243,7 @@ public class ZQL {
 			// check if a statement is L --
 			Z z= null;
 			try {
-				z = loadL(stmt);
+				z = loadL(stmt, currentDriver);
 			} catch (ZException e) {
 			    //statement is not Library.. and we go on
 			}
@@ -242,11 +252,11 @@ public class ZQL {
 			if(z==null){
 				Q q;
 				try {
-					q = new Q(stmt, zen);
+					q = new Q(stmt, zengine, currentDriver);
 				} catch (ZException e) {
 					throw new ZQLException(e);
 				}
-				if(stmt.toLowerCase().trim().startsWith("select")==false && stmt.toLowerCase().trim().startsWith("map")==false){
+				if (!stmt.toLowerCase().trim().startsWith("select") && !stmt.toLowerCase().trim().startsWith("map")){
 					q.withName(null);
 				}
 				z = q;
@@ -256,8 +266,7 @@ public class ZQL {
 			} else if(currentOp==null){
 				throw new ZQLException("Assert! Statment does not have operator in between");
 			} else if(currentOp.equals(op[0])){ // semicolon
-                //TODO replace with the right driver
-                currentZ.setDriver(zen.getDriver());
+                currentZ.setDriver(currentDriver);
 				zList.add(currentZ);
 				currentZ = z;
 				currentOp = null;
@@ -267,8 +276,7 @@ public class ZQL {
 			}
 		}
 		if(currentZ!=null){
-            //TODO replace with exec driver
-            currentZ.setDriver(zen.getDriver());
+            currentZ.setDriver(currentDriver);
 			zList.add(currentZ);
 		}
 		
@@ -283,7 +291,7 @@ public class ZQL {
 	 * libName(param1=value1, param2=value2, ...) args
 	 */
 	static final Pattern LPattern = Pattern.compile("([^ ()]*)\\s*([(][^)]*[)])?\\s*(.*)");
-	private L loadL(String stmt) throws ZException{
+	private L loadL(String stmt, ZeppelinDriver currentDriver) throws ZException{
 		Matcher m = LPattern.matcher(stmt);
 		
 		if(m.matches()==true && m.groupCount()>0){
@@ -291,7 +299,7 @@ public class ZQL {
 
 			
 			String args = m.group(3);
-			L l = new L(libName, args, zen);
+			L l = new L(libName, args, zengine, currentDriver);
 			
 			String params = m.group(2);
 			

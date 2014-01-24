@@ -21,7 +21,7 @@ import org.junit.rules.ExpectedException;
 import com.jointhegrid.hive_test.HiveTestBase;
 import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
+import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
@@ -36,6 +36,7 @@ public class LTest extends HiveTestService {
     @Rule
     public ExpectedException thrown= ExpectedException.none();
     private Zengine z;
+    private ZeppelinDriver drv;
     
     public LTest() throws IOException {
         super();
@@ -56,11 +57,7 @@ public class LTest extends HiveTestService {
 		z = new Zengine();
 		z.configure();
 		
-		HiveZeppelinDriver driver = new HiveZeppelinDriver(z.getConf());
-		driver.setClient(client);
-		
-		z.setDriver(driver);
-     
+	    drv = UtilsForTests.createHiveTestDriver(z.getConf(), client);
 	}
 
     @After
@@ -80,7 +77,7 @@ public class LTest extends HiveTestService {
 		thrown.expect(ZException.class);
 		// load nonexisting L
 		try {
-		    new L("abc", z);
+		    new L("abc", z, drv);
 		} catch (ZException e) {
 		    assertTrue(e.getMessage().contains("does not exist"));
 		}
@@ -109,7 +106,7 @@ public class LTest extends HiveTestService {
 	    generateTestLibraryIn(tmpDir);
 
         // load existing L
-        L test = new L("test", z);
+        L test = new L("test", z, drv);
         test.withParam("limit", 3);
         test.withName("hello");
         assertEquals("CREATE VIEW "+test.name()+" AS select * from table limit 3", test.getQuery());
@@ -126,7 +123,7 @@ public class LTest extends HiveTestService {
 		UtilsForTests.createFileWithContent(tmpDir+"/test/web/index.erb", "HELLO HTML\n");
 
 		// load existing L
-		Z test = new L("test", z);//.execute();
+		Z test = new L("test", z, drv);//.execute();
 		InputStream ins = test.readWebResource("/");
 		assertEquals("HELLO HTML", IOUtils.toString(ins, "utf8"));
 	}
@@ -142,16 +139,16 @@ public class LTest extends HiveTestService {
 	    bw.write("2\n");
 	    bw.close();
 
-		new Q("drop table if exists test", z).execute().result().write(System.out);
-		new Q("create table test(a INT)", z).execute().result().write(System.out);
-		new Q("load data local inpath '" + p.toString() + "' into table test", z).execute().result().write(System.out);
+		new Q("drop table if exists test", z, drv).execute().result().write(System.out);
+		new Q("create table test(a INT)", z, drv).execute().result().write(System.out);
+		new Q("load data local inpath '" + p.toString() + "' into table test", z, drv).execute().result().write(System.out);
 
 		File erb = new File(tmpDir+"/test/web/index.erb");
 		FileOutputStream out = new FileOutputStream(erb);		
 		out.write("HELLO HTML <%= z.result.rows[0][0] %>\n".getBytes());
 		out.close();
 		
-		Z q = new Q("select * from test", z).pipe(new L("test", z));
+		Z q = new Q("select * from test", z, drv).pipe(new L("test", z, drv));
 		Result result = q.execute().result();
 		assertEquals(5, result.getRows().get(0)[0]);
 		
@@ -170,16 +167,16 @@ public class LTest extends HiveTestService {
 	    bw.write("2\n");
 	    bw.close();
 	    
-		new Q("drop table if exists test", z).execute().result().write(System.out);
-		new Q("create table test(a INT)", z).execute().result().write(System.out);
-		new Q("load data local inpath '" + p.toString() + "' into table test", z).execute().result().write(System.out);
+		new Q("drop table if exists test", z, drv).execute().result().write(System.out);
+		new Q("create table test(a INT)", z, drv).execute().result().write(System.out);
+		new Q("load data local inpath '" + p.toString() + "' into table test", z, drv).execute().result().write(System.out);
 
 		File erb = new File(tmpDir+"/test/web/index.erb");
 		FileOutputStream out = new FileOutputStream(erb);		
 		out.write("HELLO HTML <%= z.result.rows[0][0] %>\n".getBytes());
 		out.close();
 		
-		Z q = new Q("select * from test", z).pipe(new L("test", z)).pipe(new L("test", z));
+		Z q = new Q("select * from test", z, drv).pipe(new L("test", z, drv)).pipe(new L("test", z, drv));
 		Result result = q.execute().result();
 		assertEquals(5, result.getRows().get(0)[0]);
 	}

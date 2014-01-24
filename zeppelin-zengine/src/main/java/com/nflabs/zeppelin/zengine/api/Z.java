@@ -18,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.result.Result;
@@ -36,9 +35,8 @@ import com.nflabs.zeppelin.zengine.Zengine;
  *
  *
  * Depends on: 
- *  - ScriptEngine (for ERB)
- *  - ZeppelinDriver 
- *  - ZeppelinConfiguration 
+ *  - ZeppelinDriver, to be able to call .execute() 
+ *  - ZeppelinConfiguration
  *  
  */
 public abstract class Z {
@@ -59,7 +57,7 @@ public abstract class Z {
 	private Map<String, ParamInfo> paramInfos;
 	transient static final String NAME_PREFIX="zp_";
 
-	//TODO(alex): get rid of it here as only Configuration is needed
+	//TODO(alex): remove this as only ZeppelinConfiguration is really needed
 	protected  Zengine zen;
     protected transient ZeppelinDriver driver;
     
@@ -472,8 +470,6 @@ public abstract class Z {
             String cmd = query.substring(1);
 			try {
 				return shellCommand(cmd);
-			} catch (ExecuteException e) {
-				logger().error("Failed to execute shell command " + cmd, e);
 			} catch (IOException e) {
 				logger().error("Failed to execute shell command " + cmd, e);
 			} catch (ResultDataException e) {

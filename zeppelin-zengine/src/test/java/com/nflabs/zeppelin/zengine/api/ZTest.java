@@ -15,12 +15,10 @@ import org.junit.After;
 import org.junit.Before;
 
 import com.jointhegrid.hive_test.HiveTestService;
-import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
+import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.Zengine;
-import com.nflabs.zeppelin.zengine.api.Q;
-import com.nflabs.zeppelin.zengine.api.Z;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 public class ZTest extends HiveTestService {
@@ -31,6 +29,7 @@ public class ZTest extends HiveTestService {
 
 	private File tmpDir;
     private Zengine z;
+    private ZeppelinDriver drv;
 
 
     @Before
@@ -45,9 +44,7 @@ public class ZTest extends HiveTestService {
         z = new Zengine();
         z.configure();
 
-        HiveZeppelinDriver driver = new HiveZeppelinDriver(z.getConf());
-		driver.setClient(client);
-		z.setDriver(driver);
+        drv = UtilsForTests.createHiveTestDriver(z.getConf(), client);
 	}
 
     @After
@@ -59,17 +56,17 @@ public class ZTest extends HiveTestService {
 	}	
 	
 	public void testPipeGetQuery() throws ZException{
-		Z q = new Q("select * from bank", z)
-		    .pipe(new Q("select * from (<%=z."+Q.INPUT_VAR_NAME+"%>) q limit 10", z))
-		    .pipe(new Q("create view vv as select * from <%=z."+Q.INPUT_VAR_NAME+"%>", z));
+		Z q = new Q("select * from bank", z, drv)
+		    .pipe(new Q("select * from (<%=z."+Q.INPUT_VAR_NAME+"%>) q limit 10", z, drv))
+		    .pipe(new Q("create view vv as select * from <%=z."+Q.INPUT_VAR_NAME+"%>", z, drv));
 		
 		assertEquals("create view vv as select * from "+q.prev().name(), q.getQuery());
 		q.release();
 	}
 	
 	public void testAutogenName() throws ZException{
-		Z z1 = new Q("select * from bank", z);
-		Z z2 = new Q("select * from (<%=z."+Q.INPUT_VAR_NAME+"%>) q limit 10", z);
+		Z z1 = new Q("select * from bank", z, drv);
+		Z z2 = new Q("select * from (<%=z."+Q.INPUT_VAR_NAME+"%>) q limit 10", z, drv);
 		assertNull(z1.name());
 		z1.pipe(z2);
 		assertNull(z2.name());

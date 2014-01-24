@@ -22,24 +22,26 @@ import com.nflabs.zeppelin.zengine.api.Z;
 import com.nflabs.zeppelin.zengine.api.ZQL;
 
 public class ZQLJob extends Job {
-	private String zql;
+    private static final Logger LOG = LoggerFactory.getLogger(ZQLJob.class);
+	
+    private String userInputZql;
 	private List<Map<String, Object>> params;
 	Result error;
 	String cron;
 
 	private List<Z> zqlPlans = Collections.emptyList();
-    private Zengine z;
+    private Zengine zengine;
 
 	//FIXME transient private ZeppelinConnection conn;
 	
 	public ZQLJob(String jobName, JobListener listener) {
 		super(jobName, listener);
 	}
-	
-	private Logger logger(){
-		return LoggerFactory.getLogger(ZQLJob.class);
-	}
-	
+		
+	/**
+	 * Only place we .clone() Job is before persisting it
+	 * so AFAIU we should not be copying actual Connections here
+	 */
 	public ZQLJob clone(){
 		// clone object using gson
 		GsonBuilder gsonBuilder = new GsonBuilder();
@@ -58,7 +60,7 @@ public class ZQLJob extends Job {
 	}
 	
 	public void setZQL(String zql){
-		this.zql = zql;
+		this.userInputZql = zql;
 		//TODO(moon): possible optimization - update current plan
 		zqlPlans = Collections.emptyList();
 		setStatus(Status.READY);
@@ -75,7 +77,7 @@ public class ZQLJob extends Job {
 	}
 	
 	public String getZQL(){
-		return zql;
+		return userInputZql;
 	}
 
 	private void reconstructNextReference(){
@@ -103,7 +105,7 @@ public class ZQLJob extends Job {
 		if(getStatus()!=Status.READY) return;
 		
 		if(zqlPlans.isEmpty()){
-			ZQL zqlEvaluator = new ZQL(zql, z);
+			ZQL zqlEvaluator = new ZQL(userInputZql, zengine);
 			zqlPlans = zqlEvaluator.compile();
 		} else {
 			reconstructNextReference();
@@ -114,16 +116,17 @@ public class ZQLJob extends Job {
 		}
 	}
 
+	/**
+	 * ZQLJob run does:
+	 *   - compile ZQL query to LogicalPlan: collection of Z's
+	 *   - executes each Z, using appropriate driver instance
+	 */
 	@Override
 	protected Object jobRun() throws ZQLException, ZException, ResultDataException {
 		LinkedList<Result> results = new LinkedList<Result>();
-		ZQL zqlEvaluator = new ZQL(zql, z);
+		ZQL zqlEvaluator = new ZQL(userInputZql, zengine);
 		zqlPlans = zqlEvaluator.compile();
-		
-		synchronized(this){
-			//FIXME conn = Z.getConnection();
-		}
-		
+				
 		for(int i=0; i<zqlPlans.size(); i++){
 			Z zz = zqlPlans.get(i);
 			Map<String, Object> p = new HashMap<String, Object>();
@@ -139,31 +142,18 @@ public class ZQLJob extends Job {
 				zz.release();
 			} catch (ZException e) {
 				error = new Result(e);
-				
-				//FIXME conn.close();
-				synchronized(this){					
-					//FIXME conn = null;
-				}
 				throw e;
 			}
 		}
-		
-		//FIXME conn.close();
-		synchronized(this){					
-			//FIXME conn = null;
-		}
-		
 		return results;
 	}
 
 	@Override
 	protected boolean jobAbort() {
 		boolean result = true;
-		synchronized(this) {
-		    for (Z zz : zqlPlans) {
-		        result = zz.abort();
-		        if (!result) break;
-		    }
+		for (Z zz : zqlPlans) {
+		    result = zz.abort();
+		    if (!result) break;
 		}
 		return result;
 	}

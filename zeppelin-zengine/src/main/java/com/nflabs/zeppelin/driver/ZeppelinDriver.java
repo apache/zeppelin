@@ -36,7 +36,7 @@ public abstract class ZeppelinDriver {
 	}
 
 	/**
-	 * Creates actuall connection to the backed system
+	 * Creates actual connection to the backed system
 	 * 
 	 * @return
 	 * @throws ZeppelinDriverException
@@ -44,18 +44,17 @@ public abstract class ZeppelinDriver {
 	protected abstract ZeppelinConnection getConnection() throws ZeppelinDriverException;
 	
 	/**
-	 * Initialize driver
+	 * Initialize driver.
+	 * It's dependencies become available in separate separate classloader.
 	 * @throws ZeppelinDriverException
 	 */
-	@Deprecated
 	public abstract void init() throws ZeppelinDriverException;
 	
 	/**
 	 * Destroy the driver
 	 * @throws ZeppelinDriverException
 	 */
-	@Deprecated
-	public abstract void shutdown() throws ZeppelinDriverException;
+	public abstract void destroy() throws ZeppelinDriverException;
 		
     public void addResource(URI resourceLocation) {
         lazyCheckForConnection();
