@@ -1,20 +1,24 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.api;
 
 import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-public class AnnotationStatement extends Z {
-	private String stmt;
+import com.nflabs.zeppelin.driver.ZeppelinDriver;
+import com.nflabs.zeppelin.zengine.ParamInfo;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.Zengine;
 
-	public AnnotationStatement(String stmt){
-		this.stmt = stmt;
+public class AnnotationStatement extends Q {
+
+	public AnnotationStatement(String stmt, Zengine z, ZeppelinDriver driver) throws ZException{
+		super(stmt, z, driver);
 	}
 
 	@Override
 	public String getQuery() throws ZException {
-		return stmt;
+		return super.getQuery();
 	}
 
 	@Override

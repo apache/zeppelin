@@ -220,8 +220,8 @@ public class ZQL {
 				}				
 			}
 			
-			// check if it is ExecStatement
-			if(stmt.startsWith("!")){
+			// check if it is Annotation
+			if(stmt.startsWith("@")){
 				if(currentZ!=null){ // previous query exist
 					if(currentOp==null || (currentOp!=null && currentOp.equals(op[0]))){ // semicolon
 			            currentZ.setDriver(currentDriver);
@@ -233,7 +233,7 @@ public class ZQL {
 					}
 				}
 				try {				
-					currentZ = new ShellExecStatement(stmt, zengine, currentDriver); 
+					currentZ = new AnnotationStatement(stmt, zengine, currentDriver); 
 				} catch (ZException e) {
 					throw new ZQLException(e);
 				}

@@ -33,7 +33,10 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	}
 
 	private String getConnectionUri(){
-		return getConf().getString("HIVE_CONNECTION_URI", "hive.connection.uri", "jdbc:hive2://");
+		//return getConf().getString("HIVE_CONNECTION_URI", "hive.connection.uri", "jdbc:hive2://");
+		// TODO fixme
+		return null;
+		
 	}
 	
 	/**
@@ -47,8 +50,11 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	        className = HIVE_SERVER;
 	    } else { // HiveServer2
 	        className = HIVE_SERVER_2;
-	    }
-		return getConf().getString("HIVE_DRIVER_CLASS", "hive.driver.class", className);
+	    }       
+		//return getConf().getString("HIVE_DRIVER_CLASS", "hive.driver.class", className);
+        // TODO fixme
+        return null;
+        
 	}
 	
 	private String getLocalMetastore(){
@@ -117,7 +123,7 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	}
 
 	@Override
-	public void shutdown() throws ZeppelinDriverException {
-		logger.info("Shutdown "+HiveZeppelinDriver.class.getName());
+	public void destroy() throws ZeppelinDriverException {
+		logger.info("Destroy "+HiveZeppelinDriver.class.getName());		
 	}
 }

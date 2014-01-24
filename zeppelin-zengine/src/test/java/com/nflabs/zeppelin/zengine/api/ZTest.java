@@ -11,17 +11,18 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
 
+import junit.framework.TestCase;
+
 import org.junit.After;
 import org.junit.Before;
 
-import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.Zengine;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
-public class ZTest extends HiveTestService {
+public class ZTest extends TestCase {
 
 	public ZTest() throws IOException {
 		super();
@@ -38,13 +39,12 @@ public class ZTest extends HiveTestService {
 		tmpDir.mkdir();
 		
 		UtilsForTests.delete(new File("/tmp/warehouse"));
-		UtilsForTests.delete(new File(ROOT_DIR.getName()));
 				
         //Dependencies: ZeppelinDriver + ZeppelinConfiguration + fs + RubyExecutionEngine
         z = new Zengine();
         z.configure();
 
-        drv = UtilsForTests.createHiveTestDriver(z.getConf(), client);
+        drv = UtilsForTests.createTestDriver(z.getConf());
 	}
 
     @After
@@ -52,7 +52,6 @@ public class ZTest extends HiveTestService {
 		super.tearDown();
 		UtilsForTests.delete(tmpDir);
 		UtilsForTests.delete(new File("/tmp/warehouse"));
-		UtilsForTests.delete(new File(ROOT_DIR.getName()));
 	}	
 	
 	public void testPipeGetQuery() throws ZException{

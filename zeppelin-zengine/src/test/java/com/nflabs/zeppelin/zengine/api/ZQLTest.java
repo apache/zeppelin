@@ -4,11 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.junit.After;
 import org.junit.Before;
 
 import com.google.common.collect.ImmutableMap;
-import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.util.UtilsForTests;
@@ -16,7 +17,7 @@ import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
 
-public class ZQLTest extends HiveTestService {
+public class ZQLTest extends TestCase {
 
     public ZQLTest() throws IOException {
 		super();
@@ -34,7 +35,6 @@ public class ZQLTest extends HiveTestService {
 		String tmpDirPath = tmpDir.getAbsolutePath();
 
 		UtilsForTests.delete(new File("/tmp/warehouse"));
-		UtilsForTests.delete(new File(ROOT_DIR.getName()));
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 
 		String q1 = "select * from (<%= z."+Q.INPUT_VAR_NAME+" %>) a limit <%= z.param('limit') %>\n";      
@@ -50,7 +50,7 @@ public class ZQLTest extends HiveTestService {
         z = new Zengine();
 		z.configure();
 		
-		ZeppelinDriver driver = UtilsForTests.createHiveTestDriver(z.getConf(), client);
+		ZeppelinDriver driver = UtilsForTests.createTestDriver(z.getConf());
 		z._mockSingleAvailableDriver(ImmutableMap.of("hive", driver));
 	}
 
@@ -59,7 +59,6 @@ public class ZQLTest extends HiveTestService {
 		super.tearDown();
 		UtilsForTests.delete(tmpDir);
 		UtilsForTests.delete(new File("/tmp/warehouse"));
-		UtilsForTests.delete(new File(ROOT_DIR.getName()));
 	}	
 	
 	public void testPipe() throws ZException, ZQLException {
@@ -154,14 +153,14 @@ public class ZQLTest extends HiveTestService {
         zql.compile();
 	}
 	
-	public void testExecStatmentQuery() throws ZException, ZQLException{
-		ZQL zql = new ZQL("select * from test;!echo -n 'hello world';!echo ls", z);
+	public void testAnnotationStatmentQuery() throws ZException, ZQLException{
+		ZQL zql = new ZQL("select * from test;@driver set exec;!echo ls", z);
 		List<Z> plan = zql.compile();
 		assertEquals(3, plan.size());
 		assertEquals("select * from test", plan.get(0).getQuery());
-		assertEquals("!echo -n 'hello world';", plan.get(1).getQuery());
+		assertEquals("@driver set exec", plan.get(1).getQuery());
 		assertEquals("!echo ls", plan.get(2).getQuery());
-		assertTrue(plan.get(1) instanceof ShellExecStatement); 
-		assertTrue(plan.get(2) instanceof ShellExecStatement); 
+		assertTrue(plan.get(1) instanceof AnnotationStatement); 
+		assertTrue(plan.get(2) instanceof Q); 
 	}
 }

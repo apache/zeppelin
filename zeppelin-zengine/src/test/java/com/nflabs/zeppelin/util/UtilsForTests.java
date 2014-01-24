@@ -8,11 +8,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.service.HiveInterface;
-
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.driver.TestDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
-import com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver;
 
 public class UtilsForTests {
 	
@@ -106,9 +104,8 @@ public class UtilsForTests {
 	    } 
 	}
 	
-    public static ZeppelinDriver createHiveTestDriver(ZeppelinConfiguration zc, HiveInterface client) {
-        ZeppelinDriver driver = new HiveZeppelinDriver(zc);
-        ((HiveZeppelinDriver) driver).setClient(client);
+    public static TestDriver createTestDriver(ZeppelinConfiguration zc) {
+    	TestDriver driver = new TestDriver(zc);
         return driver;
     }
 

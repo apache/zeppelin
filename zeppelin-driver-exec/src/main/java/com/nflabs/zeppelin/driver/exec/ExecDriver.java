@@ -21,7 +21,9 @@ public class ExecDriver extends ZeppelinDriver {
 	}
 
 	@Override
-	public void shutdown() throws ZeppelinDriverException {
+	public void destroy() throws ZeppelinDriverException {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

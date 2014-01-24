@@ -8,12 +8,9 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.exec.PumpStreamHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -330,27 +327,29 @@ public abstract class Z {
 		}
 		String q;
 		String query = getQuery();
-		String[] queries = Util.split(query, ';');
-		for (int i=0; i<queries.length-1; i++){//all except last one
-		    q = queries[i];
-		    lastQueryResult = executeQuery(q, maxResult);
-		}
-		
-		if (queries.length > 0) {//the last query
-            q = queries[queries.length-1];
-            if (isUnNamed()){
-                lastQueryResult = executeQuery(q, maxResult);
-            } else {
-                if(!isSaveableQuery(q)){
-                    throw new ZException("Can not save query "+q+" into table "+name());
-                }
-                if(isTable()){
-                    lastQueryResult = driver.createTableFromQuery(name(), q);
-                } else {
-                    lastQueryResult = driver.createTableFromQuery(name(), q);
-                }
-            }
-
+		if (query!=null) {
+			String[] queries = Util.split(query, ';');
+			for (int i=0; i<queries.length-1; i++){//all except last one
+			    q = queries[i];
+			    lastQueryResult = executeQuery(q, maxResult);
+			}
+			
+			if (queries.length > 0) {//the last query
+	            q = queries[queries.length-1];
+	            if (isUnNamed()){
+	                lastQueryResult = executeQuery(q, maxResult);
+	            } else {
+	                if(!isSaveableQuery(q)){
+	                    throw new ZException("Can not save query "+q+" into table "+name());
+	                }
+	                if(isTable()){
+	                    lastQueryResult = driver.createTableFromQuery(name(), q);
+	                } else {
+	                    lastQueryResult = driver.createTableFromQuery(name(), q);
+	                }
+	            }
+	
+			}
 		}
 
 		webEnabled = isWebEnabled();
@@ -439,42 +438,25 @@ public abstract class Z {
 	}
 	
 	
-	private Result shellCommand(String cmd) throws ExecuteException, IOException, ResultDataException{
-		logger().info("Run shell command '"+cmd+"'");
-		CommandLine cmdLine = CommandLine.parse("bash");
-		cmdLine.addArgument("-c", false);
-		cmdLine.addArgument(cmd, false);
-		DefaultExecutor executor = new DefaultExecutor();
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		executor.setStreamHandler(new PumpStreamHandler(outputStream));
-
-		executor.setWatchdog(new ExecuteWatchdog(zen.getConf().getLong(ConfVars.ZEPPELIN_COMMAND_TIMEOUT)));
-		int exitValue = executor.execute(cmdLine);
-		String [] msgs = null;
-		if (outputStream!=null){
-			String msgstr = outputStream.toString();
-			logger().debug("exec out="+msgstr);
-			if(msgstr!=null){
-				msgs = msgstr.split("\n");
-			}
-		}
-		Result resultData = new Result(exitValue, msgs);
-		return resultData;		
-	}
-	
 	private Result executeQuery(String query, int max) throws ZException{
 		initialize();
 		if(query==null) return null;
 		
-		if(query.startsWith("!")){
-            String cmd = query.substring(1);
-			try {
-				return shellCommand(cmd);
-			} catch (IOException e) {
-				logger().error("Failed to execute shell command " + cmd, e);
-			} catch (ResultDataException e) {
-				logger().error("Failed to execute shell command " + cmd, e);
-			}
+		if (query.startsWith("@")) { // annotation stmt
+            Pattern driverPattern = Pattern.compile("@driver+s(set)+s([^ ]*)");
+            Matcher driverMatcher = driverPattern.matcher(query);
+            if (driverMatcher.find()) {
+            	String op = driverMatcher.group(1);
+            	String arg = driverMatcher.group(2);
+            	
+            	if ("set".compareToIgnoreCase(op)==0) {
+            		// TODO change driver
+            	} else {
+            		throw new ZException("Unsupported @driver operation "+op);
+            	}
+            } else {
+            	throw new ZException("Invalid annotation statement "+query);
+            }
 		}
 		
         // add resources

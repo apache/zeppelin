@@ -11,14 +11,16 @@ import com.nflabs.zeppelin.result.Result;
 
 public class TestDriver extends ZeppelinDriver{
 	public Map<String, Result> queries = new HashMap<String, Result>();
-
+	public Map<String, Result> views = new HashMap<String, Result>();
+	public Map<String, Result> tables = new HashMap<String, Result>();
+	
 	public TestDriver(ZeppelinConfiguration conf) {
 		super(conf);
 	}
 
 	@Override
 	public ZeppelinConnection getConnection() throws ZeppelinDriverException {
-		return new TestDriverConnection(queries);
+		return new TestDriverConnection(queries, views, tables);
 	}
 
 	@Override
@@ -26,7 +28,7 @@ public class TestDriver extends ZeppelinDriver{
 	}
 
 	@Override
-	public void shutdown() throws ZeppelinDriverException {
+	public void destroy() throws ZeppelinDriverException {
 	}
 
 	

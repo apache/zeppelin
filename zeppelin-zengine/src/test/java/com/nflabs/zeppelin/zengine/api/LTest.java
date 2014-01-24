@@ -9,6 +9,8 @@ import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
@@ -18,16 +20,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.jointhegrid.hive_test.HiveTestBase;
-import com.jointhegrid.hive_test.HiveTestService;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.driver.TestDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.result.Result;
+import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.Zengine;
 
-public class LTest extends HiveTestService {
+public class LTest extends TestCase {
     
     private File tmp;
 	private String tmpDir;
@@ -36,7 +38,7 @@ public class LTest extends HiveTestService {
     @Rule
     public ExpectedException thrown= ExpectedException.none();
     private Zengine z;
-    private ZeppelinDriver drv;
+    private TestDriver drv;
     
     public LTest() throws IOException {
         super();
@@ -49,24 +51,18 @@ public class LTest extends HiveTestService {
 		tmp.mkdir();
 		tmpDir = tmp.getAbsolutePath();
 		tmpUri = tmp.toURI().toString();
-
-		UtilsForTests.delete(new File("/tmp/warehouse"));
-		UtilsForTests.delete(new File(ROOT_DIR.getName()));
 		
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpUri );
 		z = new Zengine();
 		z.configure();
 		
-	    drv = UtilsForTests.createHiveTestDriver(z.getConf(), client);
+	    drv = UtilsForTests.createTestDriver(z.getConf());
 	}
 
     @After
 	public void tearDown() throws Exception {
 		UtilsForTests.delete(tmp);
-		super.tearDown();
-		
-		UtilsForTests.delete(new File("/tmp/warehouse"));
-		UtilsForTests.delete(new File(ROOT_DIR.getName()));
+		super.tearDown();		
 	}
     
 
@@ -128,20 +124,10 @@ public class LTest extends HiveTestService {
 		assertEquals("HELLO HTML", IOUtils.toString(ins, "utf8"));
 	}
 	
-	public void testWebOnlyLibrary() throws IOException, ZException{
+	public void testWebOnlyLibrary() throws IOException, ZException, ResultDataException{
 		new File(tmpDir+"/test/web").mkdirs();
 
-		Path p = new Path(HiveTestBase.ROOT_DIR, "afile");
-
-	    FSDataOutputStream o = this.getFileSystem().create(p);
-	    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(o));
-	    bw.write("5\n");
-	    bw.write("2\n");
-	    bw.close();
-
-		new Q("drop table if exists test", z, drv).execute().result().write(System.out);
-		new Q("create table test(a INT)", z, drv).execute().result().write(System.out);
-		new Q("load data local inpath '" + p.toString() + "' into table test", z, drv).execute().result().write(System.out);
+		drv.queries.put("select * from test", new Result(0, new String[]{"5"}));
 
 		File erb = new File(tmpDir+"/test/web/index.erb");
 		FileOutputStream out = new FileOutputStream(erb);		
@@ -150,26 +136,16 @@ public class LTest extends HiveTestService {
 		
 		Z q = new Q("select * from test", z, drv).pipe(new L("test", z, drv));
 		Result result = q.execute().result();
-		assertEquals(5, result.getRows().get(0)[0]);
+		assertEquals("5", result.getRows().get(0)[0]);
 		
 		InputStream ins = q.readWebResource("/");
 		assertEquals("HELLO HTML 5", IOUtils.toString(ins, "utf8"));
 	}
 	
-	public void testWebOnlyLibraryPipe() throws IOException, ZException{
+	public void testWebOnlyLibraryPipe() throws IOException, ZException, ResultDataException{
+		drv.queries.put("select * from test", new Result(0, new String[]{"5"}));
+
 		new File(tmpDir+"/test/web").mkdirs();
-
-		Path p = new Path(HiveTestBase.ROOT_DIR, "afile");
-
-	    FSDataOutputStream o = this.getFileSystem().create(p);
-	    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(o));
-	    bw.write("5\n");
-	    bw.write("2\n");
-	    bw.close();
-	    
-		new Q("drop table if exists test", z, drv).execute().result().write(System.out);
-		new Q("create table test(a INT)", z, drv).execute().result().write(System.out);
-		new Q("load data local inpath '" + p.toString() + "' into table test", z, drv).execute().result().write(System.out);
 
 		File erb = new File(tmpDir+"/test/web/index.erb");
 		FileOutputStream out = new FileOutputStream(erb);		
@@ -178,7 +154,7 @@ public class LTest extends HiveTestService {
 		
 		Z q = new Q("select * from test", z, drv).pipe(new L("test", z, drv)).pipe(new L("test", z, drv));
 		Result result = q.execute().result();
-		assertEquals(5, result.getRows().get(0)[0]);
+		assertEquals("5", result.getRows().get(0)[0]);
 	}
 
 }
