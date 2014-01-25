@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+
+<property>
+  <name>hive.exec.mode.local.auto</name>
+  <value>true</value>
+</property>
+
+<property>
+  <name>hive.mapred.local.mem</name>
+  <value>true</value>
+</property>
+
+
+<property>
+  <name>javax.jdo.option.ConnectionURL</name>
+  <!--<value>jdbc:derby:;databaseName=/tmp/metastore_db;create=true</value>-->
+  <value>jdbc:derby:memory:metastore_db;create=true</value>
+  <description>JDBC connect string for a JDBC metastore</description>
+</property>
+
+<property>
+  <name>hive.metastore.warehouse.dir</name>
+  <value>/tmp/warehouse</value>
+  <description>location of default database for the warehouse</description>
+</property>
+
+<!--
+<property>
+  <name>hive.metastore.local</name>
+  <value>true</value>
+  <description>controls whether to connect to remove metastore server or open a new metastore server in Hive Client JVM</description>
+</property>
+-->
+
+<property>
+  <name>hive.exec.compress.output</name>
+  <value>false</value>
+  <description>This controls whether the final outputs of a query (to a local/hdfs file or a hive table) is compressed. The compression codec and other options are determined from hadoop config variables mapred.output.compress* </description>
+</property>
+ 
+<property>
+  <name>hive.exec.compress.intermediate</name>
+  <value>false</value>
+  <description>This controls whether intermediate files produced by hive between multiple map-reduce jobs are compressed. The compression codec and other options are determined from hadoop config variables mapred.output.compress* </description>
+</property>
+
+<property>
+  <name>io.compression.codecs</name>
+  <value>org.apache.hadoop.io.compress.DefaultCodec</value>
+</property>
+
+</configuration>
