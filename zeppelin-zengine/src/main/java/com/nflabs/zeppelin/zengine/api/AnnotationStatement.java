@@ -26,7 +26,7 @@ import com.nflabs.zeppelin.zengine.Zengine;
  *
  */
 public class AnnotationStatement extends Q {
-	transient Pattern annotationPattern = Pattern.compile("@([^ ]*)\\s([^ ]*)(\\s(.*))?");
+	transient static Pattern annotationPattern = Pattern.compile("@([^ ]*)\\s([^ ]*)(\\s(.*))?");
 	private ANNOTATION annotation;
 	private COMMAND command;
 	private String arg;

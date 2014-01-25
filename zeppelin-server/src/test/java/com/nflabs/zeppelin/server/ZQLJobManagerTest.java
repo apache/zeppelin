@@ -13,6 +13,7 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
+import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.Zengine;
 import com.nflabs.zeppelin.zengine.api.Z;
 
@@ -34,8 +35,7 @@ public class ZQLJobManagerTest extends TestCase {
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 		System.setProperty(ConfVars.ZEPPELIN_JOB_DIR.getVarName(), tmpDir.getAbsolutePath());
 
-		z = new Zengine();
-
+		z = UtilsForTests.createZengine();
 		this.schedulerFactory = new SchedulerFactory();
 
 		this.jm = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), z.fs(), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));

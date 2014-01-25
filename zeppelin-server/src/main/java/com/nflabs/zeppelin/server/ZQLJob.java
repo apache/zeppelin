@@ -30,7 +30,7 @@ public class ZQLJob extends Job {
 	String cron;
 
 	private List<Z> zqlPlans = Collections.emptyList();
-    private Zengine zengine;
+    transient private Zengine zengine;
 
 	//FIXME transient private ZeppelinConnection conn;
 	

@@ -1,8 +1,5 @@
 package com.nflabs.zeppelin.zengine.api;
 
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.HashMap;
@@ -18,7 +15,6 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.result.Result;
-import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ParamInfo;
 import com.nflabs.zeppelin.zengine.ZException;
@@ -55,7 +51,7 @@ public abstract class Z {
 	transient static final String NAME_PREFIX="zp_";
 
 	//TODO(alex): remove this as only ZeppelinConfiguration is really needed
-	protected  Zengine zen;
+	protected transient Zengine zen;
     protected transient ZeppelinDriver driver;
     
 	protected Z(Zengine z){
