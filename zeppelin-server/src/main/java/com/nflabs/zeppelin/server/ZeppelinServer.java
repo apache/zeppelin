@@ -116,9 +116,9 @@ public class ZeppelinServer extends Application {
 		Zengine z = new Zengine();
 
         if(z.useFifoJobScheduler()){
-			this.analyzeSessionManager = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), z.fs(), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
+			this.analyzeSessionManager = new ZQLJobManager(z, schedulerFactory.createOrGetFIFOScheduler("analyze"), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		} else {
-			this.analyzeSessionManager = new ZQLJobManager(schedulerFactory.createOrGetParallelScheduler("analyze", 100), z.fs(), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
+			this.analyzeSessionManager = new ZQLJobManager(z, schedulerFactory.createOrGetParallelScheduler("analyze", 100), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		}		
 		
 		this.zan = new ZAN(z.getConf().getString(ConfVars.ZEPPELIN_ZAN_REPO),

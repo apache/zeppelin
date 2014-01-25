@@ -10,12 +10,13 @@ import junit.framework.TestCase;
 import org.quartz.SchedulerException;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.driver.TestDriver;
 import com.nflabs.zeppelin.result.Result;
+import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.Zengine;
-import com.nflabs.zeppelin.zengine.api.Z;
 
 public class ZQLJobManagerTest extends TestCase {
 
@@ -38,7 +39,7 @@ public class ZQLJobManagerTest extends TestCase {
 		z = UtilsForTests.createZengine();
 		this.schedulerFactory = new SchedulerFactory();
 
-		this.jm = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), z.fs(), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
+		this.jm = new ZQLJobManager(z, schedulerFactory.createOrGetFIFOScheduler("analyze"), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 	}
 
 	protected void tearDown() throws Exception {
@@ -87,7 +88,7 @@ public class ZQLJobManagerTest extends TestCase {
 		jm.setZql(sess.getId(), "show tables");
 		
 		// check if new session manager read
-		jm = new ZQLJobManager(schedulerFactory.createOrGetFIFOScheduler("analyze"), z.fs(), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
+		jm = new ZQLJobManager(z, schedulerFactory.createOrGetFIFOScheduler("analyze"), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		
 		// run the session
 		jm.run(sess.getId());
@@ -142,9 +143,12 @@ public class ZQLJobManagerTest extends TestCase {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void testCron() throws InterruptedException{
+	public void testCron() throws InterruptedException, ResultDataException{
+		TestDriver drv = (TestDriver) z.getDriverFactory().createDriver("test");
+		drv.queries.put("select * from tbl", new Result(0, new String []{"hello world"}));
+		
 		ZQLJob sess = jm.create();
-		jm.setZql(sess.getId(), "!echo 'hello world'");
+		jm.setZql(sess.getId(), "select * from tbl");
 		jm.setCron(sess.getId(), "0/1 * * * * ?");
 
 		while (jm.get(sess.getId()).getStatus()!=Status.FINISHED){

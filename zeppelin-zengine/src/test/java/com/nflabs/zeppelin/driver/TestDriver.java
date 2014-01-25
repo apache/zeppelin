@@ -11,7 +11,7 @@ import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.result.Result;
 
 public class TestDriver extends ZeppelinDriver{
-	public Map<String, Result> queries = new HashMap<String, Result>();
+	static public Map<String, Result> queries = new HashMap<String, Result>();
 	public Map<String, Result> views = new HashMap<String, Result>();
 	public Map<String, Result> tables = new HashMap<String, Result>();
 	

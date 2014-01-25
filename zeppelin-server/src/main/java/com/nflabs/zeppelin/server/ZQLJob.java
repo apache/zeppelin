@@ -34,8 +34,13 @@ public class ZQLJob extends Job {
 
 	//FIXME transient private ZeppelinConnection conn;
 	
-	public ZQLJob(String jobName, JobListener listener) {
+	public ZQLJob(String jobName, Zengine zengine, JobListener listener) {
 		super(jobName, listener);
+		this.zengine = zengine;
+	}
+	
+	public void setZengine(Zengine zengine){
+		this.zengine = zengine;
 	}
 		
 	/**
@@ -134,10 +139,8 @@ public class ZQLJob extends Job {
 				p = params.get(i);
 			}
 			try {
-				zz.withParams(p);
-				
-				zz.execute();//FIXME was .execute(conn)
-				
+				zz.withParams(p);				
+				zz.execute();
 				results.add(zz.result());
 				zz.release();
 			} catch (ZException e) {

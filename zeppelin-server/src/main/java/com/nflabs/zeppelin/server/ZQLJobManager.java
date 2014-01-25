@@ -40,6 +40,7 @@ import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
+import com.nflabs.zeppelin.zengine.Zengine;
 import com.nflabs.zeppelin.zengine.api.Z;
 
 public class ZQLJobManager implements JobListener {
@@ -57,11 +58,15 @@ public class ZQLJobManager implements JobListener {
 	
 	private StdSchedulerFactory quertzSchedFact;
 	private org.quartz.Scheduler quertzSched;
+	private Zengine zengine;
 	
-	public ZQLJobManager(Scheduler scheduler, FileSystem fs, String jobPersistBasePath) throws SchedulerException{
+	public ZQLJobManager(Zengine zengine, Scheduler scheduler, String jobPersistBasePath) throws SchedulerException{
 		this.scheduler = scheduler;
 		this.jobPersistBasePath = jobPersistBasePath;
-		this.fs = fs;
+		this.zengine = zengine;
+		
+		fs = zengine.fs();
+		
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		gsonBuilder.setPrettyPrinting();
 		gsonBuilder.registerTypeAdapter(Z.class, new ZAdapter());
@@ -77,7 +82,7 @@ public class ZQLJobManager implements JobListener {
 	
 	
 	public ZQLJob create(){
-		ZQLJob as = new ZQLJob("", this);
+		ZQLJob as = new ZQLJob("", zengine, this);
 		try {
 			persist(as);
 			synchronized(active){
@@ -354,6 +359,7 @@ public class ZQLJobManager implements JobListener {
 				
 				if(history==false){
 					job.setListener(this);
+					job.setZengine(zengine);
 					active.put(job.getId(), job);
 					refreshQuartz(job);
 				}

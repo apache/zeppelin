@@ -316,7 +316,6 @@ public abstract class Z {
 	public Z execute() throws ZException {
 		if(executed) { return this; }
 		initialize();
-		//connection = connection(conn);
 		
 		if (this.hasPrev()){
 			prev().execute();
