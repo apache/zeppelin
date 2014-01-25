@@ -117,11 +117,9 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	}
 
 	@Override
-	public synchronized void destroy() throws ZeppelinDriverException {
+	public void destroy() throws ZeppelinDriverException {
 		logger.info("Shutdown "+HiveZeppelinDriver.class.getName());
-		if (connection != null) {
-		    connection.close();
-		}
+		connection.get().close();
 	}
 	    
 }
