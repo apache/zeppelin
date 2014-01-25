@@ -122,7 +122,7 @@ public class ZeppelinIT {
             }
             
             // wait for visualization
-            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+            (new WebDriverWait(driver, 20)).until(new ExpectedCondition<Boolean>() {
                 public Boolean apply(WebDriver d) {
                     return d.findElement(By.xpath("//div[@id='visualizationContainer']//iframe")).isDisplayed();
                 }
