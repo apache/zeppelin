@@ -156,7 +156,7 @@ public class ZQLTest extends TestCase {
 		List<Z> plan = zql.compile();
 		assertEquals(3, plan.size());
 		assertEquals("select * from test", plan.get(0).getQuery());
-		assertEquals("@driver set exec", plan.get(1).getQuery());
+		assertEquals("@driver set production", plan.get(1).getQuery());
 		assertEquals("!echo ls", plan.get(2).getQuery());
 		assertTrue(plan.get(1) instanceof AnnotationStatement); 
 		assertTrue(plan.get(2) instanceof Q); 

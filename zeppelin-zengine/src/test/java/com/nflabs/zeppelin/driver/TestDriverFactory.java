@@ -29,7 +29,7 @@ public class TestDriverFactory extends ZeppelinDriverFactory {
 	}
 	
 	public Collection<String> getAllConfigurationNames(){		
-		return uris.keySet();
+		return drivers.keySet();
 	}
 	
 	public String getDefaultConfigurationName(){
