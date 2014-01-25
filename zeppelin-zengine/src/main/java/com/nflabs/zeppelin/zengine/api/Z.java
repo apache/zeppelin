@@ -2,11 +2,10 @@ package com.nflabs.zeppelin.zengine.api;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +52,7 @@ public abstract class Z {
 	//TODO(alex): remove this as only ZeppelinConfiguration is really needed
 	protected transient Zengine zen;
     protected transient ZeppelinDriver driver;
-    
+
 	protected Z(Zengine z){
 	    this.zen = z;
 		this.id = Integer.toString(hashCode());
@@ -438,20 +437,7 @@ public abstract class Z {
 		if(query==null) return null;
 		
 		if (query.startsWith("@")) { // annotation stmt
-            Pattern driverPattern = Pattern.compile("@driver+s(set)+s([^ ]*)");
-            Matcher driverMatcher = driverPattern.matcher(query);
-            if (driverMatcher.find()) {
-            	String op = driverMatcher.group(1);
-            	String arg = driverMatcher.group(2);
-            	
-            	if ("set".compareToIgnoreCase(op)==0) {
-            		// TODO change driver
-            	} else {
-            		throw new ZException("Unsupported @driver operation "+op);
-            	}
-            } else {
-            	throw new ZException("Invalid annotation statement "+query);
-            }
+            // if annotation statement
 		}
 		
         // add resources

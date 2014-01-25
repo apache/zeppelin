@@ -2,6 +2,8 @@ package com.nflabs.zeppelin.driver.mock;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +47,6 @@ public class MockDriverFactory extends ZeppelinDriverFactory {
 			throw new ZeppelinDriverException("Driver "+name+" not found");
 		}
 		
-		return new MockDriver(conf, uri);
+		return new MockDriver(conf, uri, new URLClassLoader(new URL[]{}));
 	}
 }

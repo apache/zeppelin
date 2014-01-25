@@ -203,7 +203,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_COMMAND_TIMEOUT	("zeppelin.command.timeout", 1000*60*30),  // 30 min
 		ZEPPELIN_JOB_SCHEDULER	    ("zeppelin.job.scheduler", "FIFO"), // FIFO or PARALLEL
 		ZEPPELIN_MAX_RESULT			("zeppelin.max.result", 10000),     // max num result taken by result class
-		ZEPPELIN_DRIVERS			("zeppelin.drivers", "hive:hive:com.nflabs.zeppelin.driver.hive11.HiveZeppelinDriver:jdbc:hive2://,exec:exec:com.nflabs.zeppelin.driver.exec.ExecDriver:exec://"),
+		ZEPPELIN_DRIVERS			("zeppelin.drivers", "hive:hive:com.nflabs.zeppelin.driver.hive11.HiveZeppelinDriver:jdbc:hive2://,exec:exec:com.nflabs.zeppelin.driver.exec.ExecDriver:shell:exec://"),
 		ZEPPELIN_DRIVER_DIR			("zeppelin.driver.dir", "../drivers"),
 		;
 		

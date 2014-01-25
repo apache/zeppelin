@@ -37,6 +37,7 @@ public class ZeppelinDriverFactory {
 		File[] drivers = root.listFiles();
 		if (drivers!=null) {
 			for (File d : drivers) {
+				logger.info("Load driver "+d.getName()+" from "+d.getAbsolutePath());;
 				classLoaders.put(d.getName(), loadLibrary(d));
 			}
 		}
@@ -68,7 +69,9 @@ public class ZeppelinDriverFactory {
 		URL[] urls;
 		try {
 			urls = recursiveBuildLibList(path);
+
 			URLClassLoader cl = new URLClassLoader(urls, oldcl);
+			Thread.currentThread().setContextClassLoader(cl);
 			return cl;
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
@@ -88,7 +91,7 @@ public class ZeppelinDriverFactory {
 			File[] files = path.listFiles();			
 			if (files!=null) {				
 				for (File f : files) {
-					ArrayUtils.addAll(urls, recursiveBuildLibList(f));
+					urls = (URL[]) ArrayUtils.addAll(urls, recursiveBuildLibList(f));
 				}
 			}
 			return urls;
@@ -97,6 +100,12 @@ public class ZeppelinDriverFactory {
 		}
 	}
 	
+	/**
+	 * Create new driver instance
+	 * @param name friendly name of driver configuration
+	 * @return driver instance
+	 * @throws ZeppelinDriverException
+	 */
 	public ZeppelinDriver createDriver(String name) throws ZeppelinDriverException{
 		URI uri = uris.get(name);
 		try {
@@ -136,10 +145,12 @@ public class ZeppelinDriverFactory {
 		}
 		
 		Class cls;
+		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 		try {
+			Thread.currentThread().setContextClassLoader(cl);
 			cls = cl.loadClass(driverClassName);
-			Constructor<ZeppelinDriver> constructor = cls.getConstructor(new Class []{ZeppelinConfiguration.class, URI.class});
-			return constructor.newInstance(conf, new URI(driverUri.getSchemeSpecificPart()));	
+			Constructor<ZeppelinDriver> constructor = cls.getConstructor(new Class []{ZeppelinConfiguration.class, URI.class, URLClassLoader.class});
+			return constructor.newInstance(conf, new URI(driverUri.getSchemeSpecificPart()), cl);	
 		} catch (ClassNotFoundException e) {
 			throw new ZeppelinDriverException(e);
 		} catch (IllegalArgumentException e) {
@@ -153,9 +164,11 @@ public class ZeppelinDriverFactory {
 		} catch (SecurityException e) {
 			throw new ZeppelinDriverException(e);
 		} catch (NoSuchMethodException e) {
-			throw new ZeppelinDriverException(e);
+			throw new ZeppelinDriverException(e);		
 		} catch (URISyntaxException e) {
 			throw new ZeppelinDriverException(e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(oldcl);
 		}
 	}
 	

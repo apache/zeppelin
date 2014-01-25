@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.driver;
 
 import java.net.URI;
+import java.net.URLClassLoader;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.result.Result;
@@ -22,11 +23,24 @@ import com.nflabs.zeppelin.result.Result;
 public abstract class ZeppelinDriver {
     protected ZeppelinConfiguration conf;
     private URI uri;
+	private URLClassLoader classLoader;
+	
     protected ThreadLocal<ZeppelinConnection> connection = new ThreadLocal<ZeppelinConnection>() {
 	    @Override protected ZeppelinConnection initialValue() { //Lazy Init by subClass impl
-            return getConnection();
+	    	ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+			Thread.currentThread().setContextClassLoader(classLoader);
+			try {
+				return getConnection();
+			} catch(ZeppelinDriverException e){
+				throw e;
+			} catch(Exception e) {
+				throw new ZeppelinDriverException(e);
+			} finally {
+				Thread.currentThread().setContextClassLoader(oldcl);
+			}
         }
 	};
+
 
 	/**
 	 * Constructor
@@ -34,9 +48,10 @@ public abstract class ZeppelinDriver {
 	 * @param uri driver connection uri
 	 * @throws ZeppelinDriverException 
 	 */
-	public ZeppelinDriver(ZeppelinConfiguration conf, URI uri){
+	public ZeppelinDriver(ZeppelinConfiguration conf, URI uri, URLClassLoader classLoader){
 		this.conf = conf;
 		this.uri = uri;
+		this.classLoader = classLoader;
 	}
 	
 	/**
@@ -73,35 +88,114 @@ public abstract class ZeppelinDriver {
 	public abstract void destroy() throws ZeppelinDriverException;
 		
     public void addResource(URI resourceLocation) {
-        this.connection.get().addResource(resourceLocation);
+    	ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(classLoader);
+		try {
+			this.connection.get().addResource(resourceLocation);
+		} catch(ZeppelinDriverException e){
+			throw e;
+		} catch(Exception e) {
+			throw new ZeppelinDriverException(e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(oldcl);
+		}
     }
 
     public Result query(String query) {
-        return this.connection.get().query(query);
+    	ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(classLoader);
+		try {
+	        return this.connection.get().query(query);
+		} catch(ZeppelinDriverException e){
+			throw e;
+		} catch(Exception e) {
+			throw new ZeppelinDriverException(e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(oldcl);
+		}    	
     }
 
     public Result select(String tableName, int maxResult) {
-        return this.connection.get().select(tableName, maxResult);
+    	ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(classLoader);
+		try {
+			return this.connection.get().select(tableName, maxResult);
+		} catch(ZeppelinDriverException e){
+			throw e;
+		} catch(Exception e) {
+			throw new ZeppelinDriverException(e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(oldcl);
+		} 
     }
 
     public Result createTableFromQuery(String name, String query) {
-        return this.connection.get().createTableFromQuery(name, query);
+    	ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(classLoader);
+		try {
+			return this.connection.get().createTableFromQuery(name, query);
+		} catch(ZeppelinDriverException e){
+			throw e;
+		} catch(Exception e) {
+			throw new ZeppelinDriverException(e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(oldcl);
+		} 
     }
     
     public Result createViewFromQuery(String name, String query) {
-        return this.connection.get().createViewFromQuery(name, query);
+    	ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(classLoader);
+		try {
+	        return this.connection.get().createViewFromQuery(name, query);
+		} catch(ZeppelinDriverException e){
+			throw e;
+		} catch(Exception e) {
+			throw new ZeppelinDriverException(e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(oldcl);
+		} 
     }
 
     public void dropTable(String name) {
-        this.connection.get().dropTable(name);
+    	ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(classLoader);
+		try {
+	        this.connection.get().dropTable(name);
+		} catch(ZeppelinDriverException e){
+			throw e;
+		} catch(Exception e) {
+			throw new ZeppelinDriverException(e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(oldcl);
+		} 
     }
 
     public void dropView(String name) {
-        this.connection.get().dropView(name);
+    	ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(classLoader);
+		try {
+		    this.connection.get().dropView(name);
+		} catch(ZeppelinDriverException e){
+			throw e;
+		} catch(Exception e) {
+			throw new ZeppelinDriverException(e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(oldcl);
+		} 
     }
 
     public void abort() {
-        this.connection.get().abort();
+    	ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(classLoader);
+		try {
+	        this.connection.get().abort();
+		} catch(ZeppelinDriverException e){
+			throw e;
+		} catch(Exception e) {
+			throw new ZeppelinDriverException(e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(oldcl);
+		} 
     }
-
 }
