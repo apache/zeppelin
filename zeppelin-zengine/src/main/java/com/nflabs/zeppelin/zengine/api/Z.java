@@ -345,7 +345,7 @@ public abstract class Z {
 	                if(isTable()){
 	                    lastQueryResult = driver.createTableFromQuery(name(), q);
 	                } else {
-	                    lastQueryResult = driver.createTableFromQuery(name(), q);
+	                    lastQueryResult = driver.createViewFromQuery(name(), q);
 	                }
 	            }
 	

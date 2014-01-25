@@ -17,14 +17,17 @@ import com.nflabs.zeppelin.result.Result;
 public abstract class ZeppelinDriver {
     protected ZeppelinConfiguration conf;
 	protected ZeppelinConnection connection;
+	private URI uri;
 
 	/**
 	 * Constructor
 	 * @param conf zeppelin configuration
+	 * @param uri driver connection uri
 	 * @throws ZeppelinDriverException 
 	 */
-	public ZeppelinDriver(ZeppelinConfiguration conf){
+	public ZeppelinDriver(ZeppelinConfiguration conf, URI uri){
 		this.conf = conf;
+		this.uri = uri;
 	}
 	
 	/**
@@ -34,7 +37,11 @@ public abstract class ZeppelinDriver {
 	public ZeppelinConfiguration getConf(){
 		return conf;
 	}
-
+	
+	public URI getUri(){
+		return uri;
+	}
+	
 	/**
 	 * Creates actual connection to the backed system
 	 * 
@@ -74,6 +81,11 @@ public abstract class ZeppelinDriver {
     public Result createTableFromQuery(String name, String query) {
         lazyCheckForConnection();
         return this.connection.createTableFromQuery(name, query);
+    }
+    
+    public Result createViewFromQuery(String name, String query) {
+        lazyCheckForConnection();
+        return this.connection.createViewFromQuery(name, query);
     }
 
     public void dropTable(String name) {

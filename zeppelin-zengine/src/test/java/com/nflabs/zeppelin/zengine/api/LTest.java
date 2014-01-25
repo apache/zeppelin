@@ -53,10 +53,8 @@ public class LTest extends TestCase {
 		tmpUri = tmp.toURI().toString();
 		
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpUri );
-		z = new Zengine();
-		z.configure();
-		
-	    drv = UtilsForTests.createTestDriver(z.getConf());
+		z = UtilsForTests.createZengine();
+		drv = (TestDriver) z.getDriverFactory().createDriver("test");
 	}
 
     @After

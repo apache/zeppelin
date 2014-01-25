@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.driver.hive11;
 
 import java.io.File;
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -24,8 +25,8 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 
 	private HiveInterface client;
 	
-	public HiveZeppelinDriver(ZeppelinConfiguration conf) {
-		super(conf);
+	public HiveZeppelinDriver(ZeppelinConfiguration conf, URI uri) {
+		super(conf, uri);
 	}
 	
 	public void setClient(HiveInterface client){

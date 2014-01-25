@@ -35,7 +35,6 @@ public class ZQLJobManagerTest extends TestCase {
 		System.setProperty(ConfVars.ZEPPELIN_JOB_DIR.getVarName(), tmpDir.getAbsolutePath());
 
 		z = new Zengine();
-		z.configure();
 
 		this.schedulerFactory = new SchedulerFactory();
 

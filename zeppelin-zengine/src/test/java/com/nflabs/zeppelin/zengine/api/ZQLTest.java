@@ -10,8 +10,10 @@ import org.junit.After;
 import org.junit.Before;
 
 import com.google.common.collect.ImmutableMap;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
+import com.nflabs.zeppelin.driver.ZeppelinDriverFactory;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
@@ -47,11 +49,7 @@ public class ZQLTest extends TestCase {
 
 		
 		//Dependencies: collection of ZeppelinDrivers + ZeppelinConfiguration + fs + RubyExecutionEngine
-        z = new Zengine();
-		z.configure();
-		
-		ZeppelinDriver driver = UtilsForTests.createTestDriver(z.getConf());
-		z._mockSingleAvailableDriver(ImmutableMap.of("hive", driver));
+		z = UtilsForTests.createZengine();
 	}
 
     @After
@@ -154,7 +152,7 @@ public class ZQLTest extends TestCase {
 	}
 	
 	public void testAnnotationStatmentQuery() throws ZException, ZQLException{
-		ZQL zql = new ZQL("select * from test;@driver set exec;!echo ls", z);
+		ZQL zql = new ZQL("select * from test;@driver set production;!echo ls", z);
 		List<Z> plan = zql.compile();
 		assertEquals(3, plan.size());
 		assertEquals("select * from test", plan.get(0).getQuery());

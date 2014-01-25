@@ -10,7 +10,11 @@ import java.util.Map;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.driver.TestDriver;
+import com.nflabs.zeppelin.driver.TestDriverFactory;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
+import com.nflabs.zeppelin.driver.ZeppelinDriverFactory;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.Zengine;
 
 public class UtilsForTests {
 	
@@ -104,9 +108,9 @@ public class UtilsForTests {
 	    } 
 	}
 	
-    public static TestDriver createTestDriver(ZeppelinConfiguration zc) {
-    	TestDriver driver = new TestDriver(zc);
-        return driver;
-    }
-
+	public static Zengine createZengine() throws ZException{
+		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+		TestDriverFactory driverFactory = new TestDriverFactory(conf);
+        return new Zengine(conf, driverFactory);
+	}
 }

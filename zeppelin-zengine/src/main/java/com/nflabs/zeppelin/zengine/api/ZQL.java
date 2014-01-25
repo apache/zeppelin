@@ -21,6 +21,8 @@ import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
+import com.nflabs.zeppelin.zengine.api.AnnotationStatement.ANNOTATION;
+import com.nflabs.zeppelin.zengine.api.AnnotationStatement.COMMAND;
 /**
  * ZQL parses Zeppelin Query Language (http://nflabs.github.io/zeppelin/#zql) 
  * and generate logical execution plan.
@@ -166,8 +168,7 @@ public class ZQL {
 	 */
 	private List<Z> compileZql(String stmts) throws ZQLException, ZException{
 	    final Map<String, ZeppelinDriver> drivers = zengine.createAvailableDrivers();
-	    //TODO add support for @driver statement
-	    String currentDriverName = "hive";
+	    String currentDriverName = zengine.getDriverFactory().getDefaultConfigurationName();
 	    ZeppelinDriver currentDriver = drivers.get(currentDriverName);
 		List<Z> zList = new LinkedList<Z>();
 		Z currentZ = null;
@@ -233,7 +234,20 @@ public class ZQL {
 					}
 				}
 				try {				
-					currentZ = new AnnotationStatement(stmt, zengine, currentDriver); 
+					AnnotationStatement annotation = new AnnotationStatement(stmt, zengine, currentDriver);
+					if (ANNOTATION.DRIVER == annotation.getAnnotation()) {
+						if (COMMAND.SET == annotation.getCommand()) {
+							String driverName = annotation.getArgument();
+							if (driverName == null) {
+								driverName = zengine.getDriverFactory().getDefaultConfigurationName();
+							}
+							currentDriver = drivers.get(driverName);
+							if (currentDriver == null) {
+								throw new ZQLException("Can not find driver "+driverName);
+							}
+						}
+					}
+					currentZ = annotation;
 				} catch (ZException e) {
 					throw new ZQLException(e);
 				}
@@ -255,9 +269,6 @@ public class ZQL {
 					q = new Q(stmt, zengine, currentDriver);
 				} catch (ZException e) {
 					throw new ZQLException(e);
-				}
-				if (!stmt.toLowerCase().trim().startsWith("select") && !stmt.toLowerCase().trim().startsWith("map")){
-					q.withName(null);
 				}
 				z = q;
 			}

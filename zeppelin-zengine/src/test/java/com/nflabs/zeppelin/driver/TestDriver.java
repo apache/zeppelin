@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.driver;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,8 +15,8 @@ public class TestDriver extends ZeppelinDriver{
 	public Map<String, Result> views = new HashMap<String, Result>();
 	public Map<String, Result> tables = new HashMap<String, Result>();
 	
-	public TestDriver(ZeppelinConfiguration conf) {
-		super(conf);
+	public TestDriver(ZeppelinConfiguration conf, URI uri) {
+		super(conf, uri);
 	}
 
 	@Override

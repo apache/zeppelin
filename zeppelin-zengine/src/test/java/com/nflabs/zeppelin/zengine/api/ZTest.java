@@ -16,6 +16,7 @@ import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.Before;
 
+import com.nflabs.zeppelin.driver.TestDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
@@ -41,10 +42,8 @@ public class ZTest extends TestCase {
 		UtilsForTests.delete(new File("/tmp/warehouse"));
 				
         //Dependencies: ZeppelinDriver + ZeppelinConfiguration + fs + RubyExecutionEngine
-        z = new Zengine();
-        z.configure();
-
-        drv = UtilsForTests.createTestDriver(z.getConf());
+		z = UtilsForTests.createZengine();
+		drv = (TestDriver) z.getDriverFactory().createDriver("test");
 	}
 
     @After

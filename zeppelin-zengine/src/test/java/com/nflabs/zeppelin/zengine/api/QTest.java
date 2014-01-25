@@ -36,10 +36,8 @@ public class QTest extends TestCase {
         System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 
         //Dependencies: ZeppelinDriver + ZeppelinConfiguration + fs + RubyExecutionEngine
-        z = new Zengine();
-        z.configure();
-        
-        drv = UtilsForTests.createTestDriver(z.getConf());
+		z = UtilsForTests.createZengine();
+		drv = (TestDriver) z.getDriverFactory().createDriver("test");
     }
 
     public void tearDown() throws Exception {
@@ -57,9 +55,9 @@ public class QTest extends TestCase {
     public void testName() throws ZException, IOException, ResultDataException{
     	drv.queries.put("select count(*) from test", new Result(0, new String[]{"2"}));
         Z q = new Q("select count(*) from test", z, drv).withName("test2").execute();
-        assertTrue(drv.tables.containsKey("test2"));
+        assertTrue(drv.views.containsKey("test2"));
         q.release();
-        assertTrue(drv.tables.containsKey("test2"));
+        assertTrue(drv.views.containsKey("test2"));
     }
     
     public void testExtractParam() throws ZException {
