@@ -21,10 +21,18 @@ import com.nflabs.zeppelin.zengine.Zengine;
 import com.nflabs.zeppelin.zengine.api.Z;
 import com.nflabs.zeppelin.zengine.api.ZQL;
 
+/**
+ * ZQLJob class runs ZQL statements.
+ * Extending Job and Scheduler manages it's lifecycle.
+ * This object is serialized to Json and send/receive from/to client side.
+ * Therefore chaning/adding/removing member variables should reflect client side code.
+ *
+ */
 public class ZQLJob extends Job {
     private static final Logger LOG = LoggerFactory.getLogger(ZQLJob.class);
 	
-    private String userInputZql;
+    // user input zql
+    private String zql;
 	private List<Map<String, Object>> params;
 	Result error;
 	String cron;
@@ -61,7 +69,7 @@ public class ZQLJob extends Job {
 	}
 	
 	public void setZQL(String zql){
-		this.userInputZql = zql;
+		this.zql = zql;
 		//TODO(moon): possible optimization - update current plan
 		zqlPlans = Collections.emptyList();
 		setStatus(Status.READY);
@@ -77,7 +85,7 @@ public class ZQLJob extends Job {
 	}
 	
 	public String getZQL(){
-		return userInputZql;
+		return zql;
 	}
 
 	private void reconstructNextReference(){
@@ -105,7 +113,7 @@ public class ZQLJob extends Job {
 		if(getStatus()!=Status.READY) return;
 		
 		if(zqlPlans.isEmpty()){
-			ZQL zqlEvaluator = new ZQL(userInputZql, zengine);
+			ZQL zqlEvaluator = new ZQL(zql, zengine);
 			zqlPlans = zqlEvaluator.compile();
 		} else {
 			reconstructNextReference();
@@ -124,7 +132,7 @@ public class ZQLJob extends Job {
 	@Override
 	protected Object jobRun() throws ZQLException, ZException, ResultDataException {
 		LinkedList<Result> results = new LinkedList<Result>();
-		ZQL zqlEvaluator = new ZQL(userInputZql, zengine);
+		ZQL zqlEvaluator = new ZQL(zql, zengine);
 		zqlPlans = zqlEvaluator.compile();
 				
 		for(int i=0; i<zqlPlans.size(); i++){
