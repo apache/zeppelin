@@ -32,8 +32,6 @@ public class ZQLJob extends Job {
 	private List<Z> zqlPlans = Collections.emptyList();
     private Zengine zengine;
 
-	//FIXME transient private ZeppelinConnection conn;
-	
 	public ZQLJob(String jobName, JobListener listener) {
 		super(jobName, listener);
 	}
@@ -52,8 +50,6 @@ public class ZQLJob extends Job {
 		String jsonstr = gson.toJson(this);
 		ZQLJob job = gson.fromJson(jsonstr, ZQLJob.class);
 		
-		// set transient values
-		//job.conn = conn;
 		job.setListener(getListener());
 		job.setException(getException());
 		return job;
@@ -65,7 +61,6 @@ public class ZQLJob extends Job {
 		zqlPlans = Collections.emptyList();
 		setStatus(Status.READY);
 	}
-	
 
 	public void setParams(List<Map<String, Object>> params) {
 		this.params = params;
@@ -135,8 +130,7 @@ public class ZQLJob extends Job {
 			}
 			try {
 				zz.withParams(p);
-				
-				zz.execute();//FIXME was .execute(conn)
+				zz.execute();
 				
 				results.add(zz.result());
 				zz.release();

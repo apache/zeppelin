@@ -130,23 +130,18 @@ public class LTest extends HiveTestService {
 	
 	public void testWebOnlyLibrary() throws IOException, ZException{
 		new File(tmpDir+"/test/web").mkdirs();
+        UtilsForTests.createFileWithContent(tmpDir+"/test/web/index.erb", "HELLO HTML <%= z.result.rows[0][0] %>\n");
 
-		Path p = new Path(HiveTestBase.ROOT_DIR, "afile");
+        Path p = new Path(HiveTestBase.ROOT_DIR, "afile");
+        FSDataOutputStream o = this.getFileSystem().create(p);
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(o));
+        bw.write("5\n");
+        bw.write("2\n");
+        bw.close();
 
-	    FSDataOutputStream o = this.getFileSystem().create(p);
-	    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(o));
-	    bw.write("5\n");
-	    bw.write("2\n");
-	    bw.close();
-
-		new Q("drop table if exists test", z, drv).execute().result().write(System.out);
+        new Q("drop table if exists test", z, drv).execute().result().write(System.out);
 		new Q("create table test(a INT)", z, drv).execute().result().write(System.out);
 		new Q("load data local inpath '" + p.toString() + "' into table test", z, drv).execute().result().write(System.out);
-
-		File erb = new File(tmpDir+"/test/web/index.erb");
-		FileOutputStream out = new FileOutputStream(erb);		
-		out.write("HELLO HTML <%= z.result.rows[0][0] %>\n".getBytes());
-		out.close();
 		
 		Z q = new Q("select * from test", z, drv).pipe(new L("test", z, drv));
 		Result result = q.execute().result();
