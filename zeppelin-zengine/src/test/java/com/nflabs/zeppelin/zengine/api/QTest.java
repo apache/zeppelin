@@ -12,8 +12,8 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.driver.TestDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
+import com.nflabs.zeppelin.driver.mock.MockDriver;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.util.UtilsForTests;
@@ -25,7 +25,7 @@ public class QTest extends TestCase {
 
     private File tmpDir;
     private Zengine z;
-    private TestDriver drv; 
+    private MockDriver drv; 
     
     public void setUp() throws Exception {
         super.setUp();
@@ -37,7 +37,7 @@ public class QTest extends TestCase {
 
         //Dependencies: ZeppelinDriver + ZeppelinConfiguration + fs + RubyExecutionEngine
 		z = UtilsForTests.createZengine();
-		drv = (TestDriver) z.getDriverFactory().createDriver("test");
+		drv = (MockDriver) z.getDriverFactory().createDriver("test");
     }
 
     public void tearDown() throws Exception {

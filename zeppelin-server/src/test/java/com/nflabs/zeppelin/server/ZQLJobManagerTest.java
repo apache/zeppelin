@@ -9,13 +9,14 @@ import junit.framework.TestCase;
 
 import org.quartz.SchedulerException;
 
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.driver.TestDriver;
+import com.nflabs.zeppelin.driver.mock.MockDriver;
+import com.nflabs.zeppelin.driver.mock.MockDriverFactory;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
-import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.Zengine;
 
 public class ZQLJobManagerTest extends TestCase {
@@ -36,7 +37,10 @@ public class ZQLJobManagerTest extends TestCase {
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 		System.setProperty(ConfVars.ZEPPELIN_JOB_DIR.getVarName(), tmpDir.getAbsolutePath());
 
-		z = UtilsForTests.createZengine();
+		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+		MockDriverFactory driverFactory = new MockDriverFactory(conf);
+        z = new Zengine(conf, driverFactory);
+        
 		this.schedulerFactory = new SchedulerFactory();
 
 		this.jm = new ZQLJobManager(z, schedulerFactory.createOrGetFIFOScheduler("analyze"), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
@@ -144,7 +148,7 @@ public class ZQLJobManagerTest extends TestCase {
 	
 	@SuppressWarnings("unchecked")
 	public void testCron() throws InterruptedException, ResultDataException{
-		TestDriver drv = (TestDriver) z.getDriverFactory().createDriver("test");
+		MockDriver drv = (MockDriver) z.getDriverFactory().createDriver("test");
 		drv.queries.put("select * from tbl", new Result(0, new String []{"hello world"}));
 		
 		ZQLJob sess = jm.create();

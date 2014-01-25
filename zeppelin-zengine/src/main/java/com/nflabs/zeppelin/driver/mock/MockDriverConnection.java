@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.driver;
+package com.nflabs.zeppelin.driver.mock;
 
 import java.net.URI;
 import java.util.Map;
@@ -9,14 +9,14 @@ import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.result.Result;
 
-public class TestDriverConnection implements ZeppelinConnection{
-	Logger logger = Logger.getLogger(TestDriverConnection.class);
+public class MockDriverConnection implements ZeppelinConnection{
+	Logger logger = Logger.getLogger(MockDriverConnection.class);
 	
 	private Map<String, Result> queries;
 	private Map<String, Result> views;
 	private Map<String, Result> tables;
 
-	public TestDriverConnection(Map<String, Result> queries, Map<String, Result> views, Map<String, Result> tables) {
+	public MockDriverConnection(Map<String, Result> queries, Map<String, Result> views, Map<String, Result> tables) {
 		this.queries = queries;
 		this.views = views;
 		this.tables = tables;

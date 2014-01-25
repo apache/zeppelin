@@ -16,8 +16,8 @@ import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.Before;
 
-import com.nflabs.zeppelin.driver.TestDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
+import com.nflabs.zeppelin.driver.mock.MockDriver;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.Zengine;
@@ -43,7 +43,7 @@ public class ZTest extends TestCase {
 				
         //Dependencies: ZeppelinDriver + ZeppelinConfiguration + fs + RubyExecutionEngine
 		z = UtilsForTests.createZengine();
-		drv = (TestDriver) z.getDriverFactory().createDriver("test");
+		drv = (MockDriver) z.getDriverFactory().createDriver("test");
 	}
 
     @After

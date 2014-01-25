@@ -21,14 +21,6 @@
       <artifactId>zeppelin-zengine</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-	<dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>zeppelin-zengine</artifactId>
-        <version>${project.version}</version>
-        <classifier>tests</classifier>
-        <scope>test</scope>
-    </dependency>
     
     <dependency>
       <groupId>${project.groupId}</groupId>

@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.driver;
+package com.nflabs.zeppelin.driver.mock;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -7,17 +7,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.driver.ZeppelinDriver;
+import com.nflabs.zeppelin.driver.ZeppelinDriverException;
+import com.nflabs.zeppelin.driver.ZeppelinDriverFactory;
 
-public class TestDriverFactory extends ZeppelinDriverFactory {
+public class MockDriverFactory extends ZeppelinDriverFactory {
 	Map<String, URI> drivers = new HashMap<String, URI>();
 	private ZeppelinConfiguration conf;
 	
-	private TestDriverFactory(String driverRootDir, URI[] uriList)
+	private MockDriverFactory(String driverRootDir, URI[] uriList)
 			throws ZeppelinDriverException {
 		super(null, driverRootDir, uriList);
 	}
 	
-	public TestDriverFactory(ZeppelinConfiguration conf){
+	public MockDriverFactory(ZeppelinConfiguration conf){
 		super(conf, null, null);
 		try {
 			drivers.put("test", new URI("test://test"));
@@ -42,6 +45,6 @@ public class TestDriverFactory extends ZeppelinDriverFactory {
 			throw new ZeppelinDriverException("Driver "+name+" not found");
 		}
 		
-		return new TestDriver(conf, uri);
+		return new MockDriver(conf, uri);
 	}
 }

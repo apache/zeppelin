@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.driver;
+package com.nflabs.zeppelin.driver.mock;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -10,18 +10,18 @@ import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.result.Result;
 
-public class TestDriver extends ZeppelinDriver{
+public class MockDriver extends ZeppelinDriver{
 	static public Map<String, Result> queries = new HashMap<String, Result>();
-	public Map<String, Result> views = new HashMap<String, Result>();
-	public Map<String, Result> tables = new HashMap<String, Result>();
+	static public Map<String, Result> views = new HashMap<String, Result>();
+	static public Map<String, Result> tables = new HashMap<String, Result>();
 	
-	public TestDriver(ZeppelinConfiguration conf, URI uri) {
+	public MockDriver(ZeppelinConfiguration conf, URI uri) {
 		super(conf, uri);
 	}
 
 	@Override
 	public ZeppelinConnection getConnection() throws ZeppelinDriverException {
-		return new TestDriverConnection(queries, views, tables);
+		return new MockDriverConnection(queries, views, tables);
 	}
 
 	@Override

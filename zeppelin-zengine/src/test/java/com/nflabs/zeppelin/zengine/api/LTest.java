@@ -21,8 +21,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.driver.TestDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
+import com.nflabs.zeppelin.driver.mock.MockDriver;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.util.UtilsForTests;
@@ -38,7 +38,7 @@ public class LTest extends TestCase {
     @Rule
     public ExpectedException thrown= ExpectedException.none();
     private Zengine z;
-    private TestDriver drv;
+    private MockDriver drv;
     
     public LTest() throws IOException {
         super();
@@ -54,7 +54,7 @@ public class LTest extends TestCase {
 		
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpUri );
 		z = UtilsForTests.createZengine();
-		drv = (TestDriver) z.getDriverFactory().createDriver("test");
+		drv = (MockDriver) z.getDriverFactory().createDriver("test");
 	}
 
     @After
