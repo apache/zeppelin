@@ -132,10 +132,6 @@
           <artifactId>selenium-android-driver</artifactId>
         </exclusion>   
         <exclusion>
-          <groupId>org.json</groupId>
-          <artifactId>json</artifactId>
-        </exclusion>   
-        <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>   
