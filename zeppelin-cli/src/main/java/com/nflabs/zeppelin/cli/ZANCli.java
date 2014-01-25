@@ -79,7 +79,6 @@ public class ZANCli {
 		ZeppelinConfiguration conf = new ZeppelinConfiguration();
 		//TODO(alex): replace with just file system
 		Zengine z = new Zengine();
-	    z.configure();
 		
 		String zanRepo = conf.getString(ConfVars.ZEPPELIN_ZAN_REPO);
 		String zanLocalRepo = conf.getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO);

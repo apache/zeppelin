@@ -44,7 +44,6 @@ public class ZeppelinCli {
 		CommandLine cmd = parser.parse(options, args);
 
 		Zengine z = new Zengine();
-	    z.configure();
 
 		if(cmd.hasOption("f")){
 			ZQL zql = new ZQL(z);
