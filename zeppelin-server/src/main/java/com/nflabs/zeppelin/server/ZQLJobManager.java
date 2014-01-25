@@ -357,9 +357,13 @@ public class ZQLJobManager implements JobListener {
 				}
 				ins.close();
 				
+				// inject zengine object. Zengine object inside of ZQLJob is not persisted to File. 
+				// therefore after loading ZQLJob from file, we need inject Zengine object again.
+				job.setZengine(zengine);
+				
 				if(history==false){
-					job.setListener(this);
-					job.setZengine(zengine);
+					// inject listener. the same reason why we're injecting zengine.
+					job.setListener(this);					
 					active.put(job.getId(), job);
 					refreshQuartz(job);
 				}

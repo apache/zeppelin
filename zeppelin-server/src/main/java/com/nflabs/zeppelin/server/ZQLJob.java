@@ -47,6 +47,11 @@ public class ZQLJob extends Job {
 	
 	public void setZengine(Zengine zengine){
 		this.zengine = zengine;
+		if (zqlPlans!=null && zqlPlans.size()>0) {
+			for (Z z : zqlPlans) {
+				z.setZengine(zengine);
+			}
+		}
 	}
 		
 	/**

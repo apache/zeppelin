@@ -71,6 +71,13 @@ public abstract class Z {
 		return LoggerFactory.getLogger(Z.class);
 	}
 	
+	public void setZengine(Zengine zengine){
+		if (this.hasPrev()){
+			prev().setZengine(zengine);
+		}		
+		this.zen = zengine;
+	}
+	
 
 	/**
 	 * Add a paramter to pass template environment
