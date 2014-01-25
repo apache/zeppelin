@@ -124,13 +124,9 @@ public class LTest extends TestCase {
 	
 	public void testWebOnlyLibrary() throws IOException, ZException, ResultDataException{
 		new File(tmpDir+"/test/web").mkdirs();
+        UtilsForTests.createFileWithContent(tmpDir+"/test/web/index.erb", "HELLO HTML <%= z.result.rows[0][0] %>\n");
 
 		drv.queries.put("select * from test", new Result(0, new String[]{"5"}));
-
-		File erb = new File(tmpDir+"/test/web/index.erb");
-		FileOutputStream out = new FileOutputStream(erb);		
-		out.write("HELLO HTML <%= z.result.rows[0][0] %>\n".getBytes());
-		out.close();
 		
 		Z q = new Q("select * from test", z, drv).pipe(new L("test", z, drv));
 		Result result = q.execute().result();

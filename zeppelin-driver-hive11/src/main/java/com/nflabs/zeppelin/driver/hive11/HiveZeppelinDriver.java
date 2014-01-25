@@ -126,5 +126,6 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	@Override
 	public void destroy() throws ZeppelinDriverException {
 		logger.info("Destroy "+HiveZeppelinDriver.class.getName());		
+		connection.get().close();
 	}
 }

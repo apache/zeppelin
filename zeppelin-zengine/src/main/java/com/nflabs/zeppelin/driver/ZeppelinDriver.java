@@ -11,13 +11,22 @@ import com.nflabs.zeppelin.result.Result;
  * Each sub-class manages actual connections to backend systems:
  * i.e Socket for JDBC to Hive or Spark or PrestoDB.
  * 
- * It is stateful, as the connection underneath could or could not already exist.
+ * Overall it might be statefull, as the connection underneath could or could not already exist.
  * 
+ * In current impl each thread i.e ZQLJob (who uses Driver to .execute() Z's) has it's own copy of Connection
+ * per-thread so Driver becomes stateless.
+ * 
+ * Open : connection opened by Lazy Initialization - will be created as soon as first request to .get() it comes.
+ * Close: so far connection is closed ONLY on driver shutdown
  */
 public abstract class ZeppelinDriver {
     protected ZeppelinConfiguration conf;
-	protected ZeppelinConnection connection;
-	private URI uri;
+    private URI uri;
+    protected ThreadLocal<ZeppelinConnection> connection = new ThreadLocal<ZeppelinConnection>() {
+	    @Override protected ZeppelinConnection initialValue() { //Lazy Init by subClass impl
+            return getConnection();
+        }
+	};
 
 	/**
 	 * Constructor
@@ -64,52 +73,35 @@ public abstract class ZeppelinDriver {
 	public abstract void destroy() throws ZeppelinDriverException;
 		
     public void addResource(URI resourceLocation) {
-        lazyCheckForConnection();
-        this.connection.addResource(resourceLocation);
+        this.connection.get().addResource(resourceLocation);
     }
 
     public Result query(String query) {
-        lazyCheckForConnection();
-        return this.connection.query(query);
+        return this.connection.get().query(query);
     }
 
     public Result select(String tableName, int maxResult) {
-        lazyCheckForConnection();
-        return this.connection.select(tableName, maxResult);
+        return this.connection.get().select(tableName, maxResult);
     }
 
     public Result createTableFromQuery(String name, String query) {
-        lazyCheckForConnection();
-        return this.connection.createTableFromQuery(name, query);
+        return this.connection.get().createTableFromQuery(name, query);
     }
     
     public Result createViewFromQuery(String name, String query) {
-        lazyCheckForConnection();
-        return this.connection.createViewFromQuery(name, query);
+        return this.connection.get().createViewFromQuery(name, query);
     }
 
     public void dropTable(String name) {
-        lazyCheckForConnection();
-        this.connection.dropTable(name);
+        this.connection.get().dropTable(name);
     }
 
     public void dropView(String name) {
-        lazyCheckForConnection();
-        this.connection.dropView(name);
+        this.connection.get().dropView(name);
     }
 
     public void abort() {
-        lazyCheckForConnection();
-        this.connection.abort();
-    }
-
-
-    /**
-     * Lazy initialization of actual connection
-     */
-    private synchronized void lazyCheckForConnection() {
-        if (this.connection != null) { return; }
-        this.connection = getConnection();
+        this.connection.get().abort();
     }
 
 }
