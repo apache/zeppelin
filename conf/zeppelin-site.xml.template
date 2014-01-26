@@ -21,9 +21,21 @@
 <configuration>
 
 <property>
+  <name>zeppelin.server.port</name>
+  <value>8080</value>
+  <description>Server port</description>
+</property>
+
+<property>
   <name>zeppelin.job.dir</name>
   <value>jobs</value>
   <description>job directory</description>
+</property>
+
+<property>
+  <name>zeppelin.zan.repo</name>
+  <value>https://github.com/NFLabs/zan</value>
+  <description>ZAN repo url</description>
 </property>
 
 <property>
@@ -33,21 +45,27 @@
 </property>
 
 <property>
-  <name>zeppelin.local.warehouse</name>
-  <value>data</value>
-  <description>Hive warehouse directory for standalone mode</description>
-</property>
-
-<property>
-  <name>hive.driver.class</name>
-  <value>org.apache.hadoop.hive.jdbc.HiveDriver</value>
-  <description>Hive driver class</description>
-</property>
-
-<property>
-  <name>hive.connection.uri</name>
+  <name>zeppelin.zan.sharedrepo</name>
   <value></value>
-  <description>Hive JDBC connection uri</description>
+  <description>Optionally, set ZAN Shared repository (on hdfs). zeppelin.zan.localrepo is synced to zeppelin.zan.sharedrepo automatically</description>
+</property>
+
+<property>
+  <name>zeppelin.max.result</name>
+  <value>10000</value>
+  <description>Maximum number of rows of data  which displayed in visualization</description>
+</property>
+
+<property>
+  <name>zeppelin.driver.dir</name>
+  <value>drivers</value>
+  <description>Drivers base directory</description>
+</property>
+
+<property>
+  <name>zeppelin.drivers</name>
+  <value>hive:hive:com.nflabs.zeppelin.driver.hive11.HiveZeppelinDriver:jdbc:hive2://,exec:exec:com.nflabs.zeppelin.driver.exec.ExecDriver:shell:exec://</value>
+  <description>Comma separated driver configurations uri. </description>
 </property>
 
 </configuration>
