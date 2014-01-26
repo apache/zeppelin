@@ -9,6 +9,7 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.log4j.Logger;
 
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
@@ -16,7 +17,8 @@ import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.result.ResultDataException;
 
 public class ExecConnection implements ZeppelinConnection {
-
+	Logger logger = Logger.getLogger(ExecConnection.class);
+	
 	public ExecConnection(){
 		
 	}
@@ -36,6 +38,7 @@ public class ExecConnection implements ZeppelinConnection {
 
 	@Override
 	public Result query(String query) throws ZeppelinDriverException {
+		logger.info("exec "+query);
 		CommandLine cmdLine = CommandLine.parse("bash");
 		cmdLine.addArgument("-c", false);
 		cmdLine.addArgument(query, false);

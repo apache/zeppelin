@@ -2,13 +2,16 @@ package com.nflabs.zeppelin.driver.exec;
 
 import static org.junit.Assert.*;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.nflabs.zeppelin.driver.ZeppelinDriverException;
-import com.nflabs.zeppelin.result.Result;
-import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 
 public class ExecDriverTest {
 
@@ -21,8 +24,9 @@ public class ExecDriverTest {
 	}
 
 	@Test
-	public void test() {
-		
+	public void testExec() throws URISyntaxException {
+		ExecDriver driver = new ExecDriver(ZeppelinConfiguration.create(), new URI("jdbc:hive2://"), new URLClassLoader(new URL[]{}, Thread.currentThread().getContextClassLoader()));
+
 	}
 
 	/*
