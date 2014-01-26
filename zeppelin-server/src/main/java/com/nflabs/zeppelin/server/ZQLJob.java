@@ -133,13 +133,14 @@ public class ZQLJob extends Job {
 	 * ZQLJob run does:
 	 *   - compile ZQL query to LogicalPlan: collection of Z's
 	 *   - executes each Z, using appropriate driver instance
+	 * @throws Exception 
 	 */
 	@Override
-	protected Object jobRun() throws ZQLException, ZException, ResultDataException {
+	protected Object jobRun() throws Exception {
 		LinkedList<Result> results = new LinkedList<Result>();
 		ZQL zqlEvaluator = new ZQL(zql, zengine);
 		zqlPlans = zqlEvaluator.compile();
-				
+		
 		for(int i=0; i<zqlPlans.size(); i++){
 			Z zz = zqlPlans.get(i);
 			Map<String, Object> p = new HashMap<String, Object>();
@@ -151,7 +152,7 @@ public class ZQLJob extends Job {
 				zz.execute();
 				results.add(zz.result());
 				zz.release();
-			} catch (ZException e) {
+			} catch (Exception e) {
 				error = new Result(e);
 				throw e;
 			}
