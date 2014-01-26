@@ -13,6 +13,9 @@ import com.nflabs.zeppelin.scheduler.JobListener;
  *  - maintains internal state: it's status
  *  - supports listeners who are updated on status change
  *  
+ *  
+ *  Job class is serialized/deserialized and used server<->client commnunication and saving/loading jobs from disk.
+ *  Changing/adding/deleting non transitive field name need consideration of that. 
  */
 public abstract class Job {
     //TODO(alex): make Job interface and AbstractJob - skeletal impl
@@ -34,9 +37,9 @@ public abstract class Job {
     Date dateFinished;
     Status status;
     //TODO(alex): why do we keep this state if we already have Status?
-    boolean jobWasAborted = false;
+    boolean aborted = false;
 	
-	transient private Throwable lastException;
+	transient private Throwable exception;
 	transient private JobListener listener;
 	
 	public Job(String jobName, JobListener listener) {
@@ -92,7 +95,7 @@ public abstract class Job {
 	}
 	
 	public void run(){
-		if(jobWasAborted){
+		if(aborted){
 			setStatus(Status.ABORT);
 			return;
 		}
@@ -101,24 +104,24 @@ public abstract class Job {
 			dateStarted = new Date();
 			result = jobRun();
 			dateFinished = new Date();
-			if(jobWasAborted){				
+			if(aborted){				
 				setStatus(Status.ABORT);
 			} else {
 				setStatus(Status.FINISHED);
 			}			
 		}catch(Throwable e){
-			this.lastException = e;
+			this.exception = e;
 			dateFinished = new Date();			
 			setStatus(Status.ERROR);
 		}
 	}
 		
 	public Throwable getException(){
-		return lastException;
+		return exception;
 	}
 	
 	protected void setException(Throwable t){
-		lastException = t;
+		exception = t;
 	}
 	
 	public Object getReturn(){
@@ -142,11 +145,11 @@ public abstract class Job {
 	protected abstract boolean jobAbort();
 
 	public void abort() {
-	    jobWasAborted = jobAbort();
+	    aborted = jobAbort();
 	}
 
 	public boolean isAborted() {
-		return jobWasAborted;
+		return aborted;
 		//TODO(alex) why not this.status.isAborted()?
 	}
 
