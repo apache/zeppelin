@@ -200,7 +200,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_ZAN_REPO			("zeppelin.zan.repo", "https://github.com/NFLabs/zan"),
 		ZEPPELIN_ZAN_LOCAL_REPO		("zeppelin.zan.localrepo", "../zan-repo"),
 		ZEPPELIN_ZAN_SHARED_REPO	("zeppelin.zan.sharedrepo", null),
-		ZEPPELIN_COMMAND_TIMEOUT	("zeppelin.command.timeout", 1000*60*30),  // 30 min
 		ZEPPELIN_JOB_SCHEDULER	    ("zeppelin.job.scheduler", "FIFO"), // FIFO or PARALLEL
 		ZEPPELIN_MAX_RESULT			("zeppelin.max.result", 10000),     // max num result taken by result class
 		ZEPPELIN_DRIVERS			("zeppelin.drivers", "hive:hive:com.nflabs.zeppelin.driver.hive11.HiveZeppelinDriver:jdbc:hive2://,exec:exec:com.nflabs.zeppelin.driver.exec.ExecDriver:shell:exec://"),
