@@ -34,13 +34,6 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 		this.client = client;
 	}
 
-	private String getConnectionUri(){
-		//return getConf().getString("HIVE_CONNECTION_URI", "hive.connection.uri", "jdbc:hive2://");
-		// TODO fixme
-		return null;
-		
-	}
-	
 	/**
 	 * HiveServer1 by default, but if uri starts with hive2 - assumes HiveServer2
 	 * @param uri Hive URI
@@ -53,10 +46,7 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	    } else { // HiveServer2
 	        className = HIVE_SERVER_2;
 	    }       
-		//return getConf().getString("HIVE_DRIVER_CLASS", "hive.driver.class", className);
-        // TODO fixme
-        return null;
-        
+        return className;        
 	}
 	
 	private String getLocalMetastore(){
@@ -71,7 +61,7 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	public ZeppelinConnection getConnection() throws ZeppelinDriverException {
 		try {
 			Connection con;
-			String uri = getConnectionUri();
+			String uri = getUri().toString();
 			if (client!=null){ // create connection with given client instance
 				logger.debug("Create connection from provided client instance");
 				con = new HiveConnection(client);
@@ -85,7 +75,7 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 			} else { // remote connection using jdbc uri
 				logger.debug("Create connection from given jdbc uri");
 				Class.forName(getHiveDriverClass(uri));
-			    con = DriverManager.getConnection(getConnectionUri());
+			    con = DriverManager.getConnection(uri);
 			}
 
 			return new HiveZeppelinConnection(con);
@@ -110,13 +100,13 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	private HiveConf localHiveConf(){
 		HiveConf hiveConf = null;
 		hiveConf = new HiveConf(SessionState.class);
-
+		logger.info("Local Hive Conf. warehouse="+getLocalWarehouse()+", metastore="+getLocalMetastore());
 		// set some default configuration if no hive-site.xml provided
 		hiveConf.set("javax.jdo.option.ConnectionURL", "jdbc:derby:;databaseName="+getLocalMetastore()+";create=true");
 		hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, getLocalWarehouse());
 		new File(getLocalWarehouse()).mkdirs();
 		hiveConf.set(HiveConf.ConfVars.HADOOPJT.varname, "local");
-		return hiveConf;		
+		return hiveConf;
 	}
 
 	@Override
@@ -128,5 +118,5 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	public void destroy() throws ZeppelinDriverException {
 		logger.info("Destroy "+HiveZeppelinDriver.class.getName());		
 		connection.get().close();
-	}
+	}	
 }
