@@ -2,12 +2,14 @@ package com.nflabs.zeppelin.zengine.api;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
+import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ParamInfo;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.Zengine;
@@ -87,7 +89,7 @@ public class AnnotationStatement extends Q {
 
 	@Override
 	public List<URI> getResources() throws ZException {
-		return null;
+		return new LinkedList<URI>();
 	}
 
 	@Override
@@ -112,5 +114,16 @@ public class AnnotationStatement extends Q {
 	@Override
 	protected Map<String, ParamInfo> extractParams() throws ZException {
 		return null;
+	}
+	
+	public Z execute() throws ZException {
+		if(executed) { return this; }
+		initialize();
+		
+		if (this.hasPrev()){
+			prev().execute();
+		}
+		executed = true;
+		return this;
 	}
 }
