@@ -139,7 +139,12 @@ public class ZQLJob extends Job {
 	protected Object jobRun() throws Exception {
 		LinkedList<Result> results = new LinkedList<Result>();
 		ZQL zqlEvaluator = new ZQL(zql, zengine);
-		zqlPlans = zqlEvaluator.compile();
+		try {
+			zqlPlans = zqlEvaluator.compile();
+		} catch(ZQLException e) {
+			error = new Result(e);
+			throw e;
+		}
 		
 		for(int i=0; i<zqlPlans.size(); i++){
 			Z zz = zqlPlans.get(i);
