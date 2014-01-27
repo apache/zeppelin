@@ -73,20 +73,21 @@ public abstract class ZeppelinDriver {
 	 * @throws ZeppelinDriverException
 	 */
 	protected abstract ZeppelinConnection getConnection() throws ZeppelinDriverException;
-	
-	/**
-	 * Initialize driver.
-	 * It's dependencies become available in separate separate classloader.
-	 * @throws ZeppelinDriverException
-	 */
-	public abstract void init() throws ZeppelinDriverException;
-	
-	/**
-	 * Destroy the driver
-	 * @throws ZeppelinDriverException
-	 */
-	public abstract void destroy() throws ZeppelinDriverException;
-		
+
+    public boolean isConnected() {
+    	ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(classLoader);
+		try {
+			return this.connection.get().isConnected();
+		} catch(ZeppelinDriverException e){
+			throw e;
+		} catch(Exception e) {
+			throw new ZeppelinDriverException(e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(oldcl);
+		}
+    }
+    
     public void addResource(URI resourceLocation) {
     	ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(classLoader);
@@ -190,6 +191,20 @@ public abstract class ZeppelinDriver {
 		Thread.currentThread().setContextClassLoader(classLoader);
 		try {
 	        this.connection.get().abort();
+		} catch(ZeppelinDriverException e){
+			throw e;
+		} catch(Exception e) {
+			throw new ZeppelinDriverException(e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(oldcl);
+		} 
+    }
+    
+    public void close() {
+    	ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(classLoader);
+		try {
+	        this.connection.get().close();
 		} catch(ZeppelinDriverException e){
 			throw e;
 		} catch(Exception e) {

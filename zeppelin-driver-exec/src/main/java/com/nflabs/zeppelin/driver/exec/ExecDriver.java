@@ -17,15 +17,4 @@ public class ExecDriver extends ZeppelinDriver {
 	public ZeppelinConnection getConnection() throws ZeppelinDriverException {
 		return new ExecConnection();
 	}
-
-	@Override
-	public void init() throws ZeppelinDriverException {
-	}
-
-	@Override
-	public void destroy() throws ZeppelinDriverException {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

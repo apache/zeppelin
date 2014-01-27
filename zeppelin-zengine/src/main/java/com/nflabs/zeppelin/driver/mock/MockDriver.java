@@ -23,14 +23,5 @@ public class MockDriver extends ZeppelinDriver{
 	public ZeppelinConnection getConnection() throws ZeppelinDriverException {
 		return new MockDriverConnection(queries, views, tables);
 	}
-
-	@Override
-	public void init() throws ZeppelinDriverException {
-	}
-
-	@Override
-	public void destroy() throws ZeppelinDriverException {
-	}
-
 	
 }
