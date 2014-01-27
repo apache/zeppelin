@@ -21,7 +21,7 @@
       <artifactId>zeppelin-zengine</artifactId>
       <version>${project.version}</version>
     </dependency>
-
+    
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>zeppelin-zan</artifactId>
@@ -130,10 +130,6 @@
         <exclusion>
           <groupId>org.seleniumhq.selenium</groupId>
           <artifactId>selenium-android-driver</artifactId>
-        </exclusion>   
-        <exclusion>
-          <groupId>org.json</groupId>
-          <artifactId>json</artifactId>
         </exclusion>   
         <exclusion>
           <groupId>commons-logging</groupId>

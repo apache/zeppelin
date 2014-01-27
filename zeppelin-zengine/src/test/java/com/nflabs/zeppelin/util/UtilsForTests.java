@@ -8,6 +8,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.driver.ZeppelinDriver;
+import com.nflabs.zeppelin.driver.ZeppelinDriverFactory;
+import com.nflabs.zeppelin.driver.mock.MockDriver;
+import com.nflabs.zeppelin.driver.mock.MockDriverFactory;
+import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.Zengine;
+
 public class UtilsForTests {
 	
 	public static File createTmpDir() throws Exception {
@@ -44,6 +52,20 @@ public class UtilsForTests {
 		}
 	}
 	
+    /**
+     * Utility method to create a file (if does not exist) and populate it the the given content
+     * 
+     * @param path to file
+     * @param content of the file
+     * @throws IOException
+     */
+    public static void createFileWithContent(String path, String content) throws IOException {
+        File f = new File(path);
+        if (!f.exists()) {
+            stringToFile(content, f);
+        }
+    }
+
 	public static void stringToFile(String string, File file) throws IOException{
 		FileOutputStream out = new FileOutputStream(file);
 		out.write(string.getBytes());
@@ -84,5 +106,11 @@ public class UtilsForTests {
 	    } catch (Exception e1) {
 	        e1.printStackTrace();
 	    } 
+	}
+	
+	public static Zengine createZengine() throws ZException{
+		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+		MockDriverFactory driverFactory = new MockDriverFactory(conf);
+        return new Zengine(conf, driverFactory);
 	}
 }

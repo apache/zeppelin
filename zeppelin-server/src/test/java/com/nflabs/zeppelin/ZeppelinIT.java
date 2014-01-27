@@ -122,7 +122,7 @@ public class ZeppelinIT {
             }
             
             // wait for visualization
-            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+            (new WebDriverWait(driver, 20)).until(new ExpectedCondition<Boolean>() {
                 public Boolean apply(WebDriver d) {
                     return d.findElement(By.xpath("//div[@id='visualizationContainer']//iframe")).isDisplayed();
                 }
@@ -171,4 +171,84 @@ public class ZeppelinIT {
 			driver.quit();
 		}
 	}
+    
+    
+    @Test
+	public void testAnnotationStmt() {
+        // Notice that the remainder of the code relies on the interface, 
+        // not the implementation.
+        WebDriver driver = getWebDriver();
+        
+        try {
+            // click start
+            WebElement start = driver.findElement(By.partialLinkText("Start"));
+            start.click();
+
+            // Wait for the page to load, timeout after 10 seconds
+            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+                public Boolean apply(WebDriver d) {
+                    return d.findElement(By.linkText("New")).isDisplayed();
+                }
+            });
+            
+            // click new
+            driver.findElement(By.linkText("New")).click();
+            
+            // wait for run button appears
+            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+                public Boolean apply(WebDriver d) {
+                    return d.findElement(By.linkText("Run")).isDisplayed();
+                }
+            });
+            
+            // type some query with default driver
+            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("@driver set exec;");
+            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("\necho 'hello world';");
+            
+            // press run button
+            driver.findElement(By.linkText("Run")).click();
+
+            // wait for button becomes Running ...
+            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+                public Boolean apply(WebDriver d) {
+                    return d.findElement(By.xpath("//div//a[text()='Running ...']")).isDisplayed();
+                }
+            });  
+
+            // wait for button becomes Run
+            (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
+                public Boolean apply(WebDriver d) {
+                    return d.findElement(By.xpath("//div//a[text()='Run']")).isDisplayed();
+                }
+            });
+            
+            WebElement msg = driver.findElement(By.id("msgBox"));
+            if (msg!=null) {
+            	System.out.println("msgBox="+msg.getText());
+            }
+            
+            // wait for visualization
+            (new WebDriverWait(driver, 20)).until(new ExpectedCondition<Boolean>() {
+                public Boolean apply(WebDriver d) {
+                    return d.findElement(By.xpath("//div[@id='visualizationContainer']//iframe")).isDisplayed();
+                }
+            });
+            
+            WebDriver iframe = driver.switchTo().frame(driver.findElement(By.xpath("//div[@id='visualizationContainer']//iframe")));
+            
+            // wait for result displayed
+            (new WebDriverWait(iframe, 20)).until(new ExpectedCondition<Boolean>() {
+                public Boolean apply(WebDriver d) {
+                    return d.findElement(By.xpath("//table//td[text()='hello world']")).isDisplayed();
+                }
+            });           
+        } catch (WebDriverException e){
+            File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+            System.out.println("Screenshot in: " + scrFile.getAbsolutePath());
+            throw e;
+        } finally {
+            // Close the browser
+            driver.quit();
+        }
+	}    
 }
