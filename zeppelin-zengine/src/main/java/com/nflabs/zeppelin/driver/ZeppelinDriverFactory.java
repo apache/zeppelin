@@ -149,7 +149,7 @@ public class ZeppelinDriverFactory {
 		try {
 			Thread.currentThread().setContextClassLoader(cl);
 			cls = cl.loadClass(driverClassName);
-			Constructor<ZeppelinDriver> constructor = cls.getConstructor(new Class []{ZeppelinConfiguration.class, URI.class, URLClassLoader.class});
+			Constructor<ZeppelinDriver> constructor = cls.getConstructor(new Class []{ZeppelinConfiguration.class, URI.class, ClassLoader.class});
 			URI connectionUri = new URI(driverUri.getSchemeSpecificPart());
 			if (logger.isDebugEnabled()) {
 				logger.debug("Create driver "+driverClassName+"("+connectionUri.toString()+")");
