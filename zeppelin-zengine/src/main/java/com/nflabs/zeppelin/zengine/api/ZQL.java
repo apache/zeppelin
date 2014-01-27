@@ -149,11 +149,11 @@ public class ZQL {
 	
 	/**
 	 * Compile ZQL statements and return logical plan
-	 * @return List of Z. Each Z represent single statement. 
+	 * @return ZPlan 
 	 * @throws ZQLException
 	 * @throws ZException 
 	 */
-	public List<Z> compile() throws ZQLException, ZException{
+	public ZPlan compile() throws ZQLException, ZException{
 		return compileZql(sb.toString());
 	}
 	/**
@@ -167,11 +167,11 @@ public class ZQL {
 	 * @throws ZQLException
 	 * @throws ZException 
 	 */
-	private List<Z> compileZql(String stmts) throws ZQLException, ZException{
+	private ZPlan compileZql(String stmts) throws ZQLException, ZException{
 	    final Map<String, ZeppelinDriver> drivers = zengine.createAvailableDrivers();
 	    String currentDriverName = zengine.getDriverFactory().getDefaultConfigurationName();
 	    ZeppelinDriver currentDriver = drivers.get(currentDriverName);
-		List<Z> zList = new LinkedList<Z>();
+	    ZPlan plan = new ZPlan();
 		Z currentZ = null;
 		
 		String escapeSeq = "\"',;<%>!";
@@ -227,7 +227,7 @@ public class ZQL {
 				if(currentZ!=null){ // previous query exist
 					if(currentOp==null || (currentOp!=null && currentOp.equals(op[0]))){ // semicolon
 			            currentZ.setDriver(currentDriver);
-						zList.add(currentZ);
+			            plan.add(currentZ);
 						currentZ = null;
 						currentOp = null;
 					} else {
@@ -279,7 +279,7 @@ public class ZQL {
 				throw new ZQLException("Assert! Statment does not have operator in between");
 			} else if(currentOp.equals(op[0])){ // semicolon
                 currentZ.setDriver(currentDriver);
-				zList.add(currentZ);
+                plan.add(currentZ);
 				currentZ = z;
 				currentOp = null;
 			} else if(currentOp.equals(op[1])){ // pipe
@@ -289,10 +289,10 @@ public class ZQL {
 		}
 		if(currentZ!=null){
             currentZ.setDriver(currentDriver);
-			zList.add(currentZ);
+            plan.add(currentZ);
 		}
 		
-		return zList;
+		return plan;
 	}
 	
 	/**

@@ -24,8 +24,12 @@ public abstract class ZeppelinDriver {
     protected ZeppelinConfiguration conf;
     private URI uri;
 	private ClassLoader classLoader;
+	private boolean initialized = false;
+	private boolean closed = false;
 	
     protected ThreadLocal<ZeppelinConnection> connection = new ThreadLocal<ZeppelinConnection>() {
+    	
+    	
 	    @Override protected ZeppelinConnection initialValue() { //Lazy Init by subClass impl
 	    	ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(classLoader);
@@ -36,6 +40,7 @@ public abstract class ZeppelinDriver {
 			} catch(Exception e) {
 				throw new ZeppelinDriverException(e);
 			} finally {
+				initialized = true;
 				Thread.currentThread().setContextClassLoader(oldcl);
 			}
         }
@@ -201,10 +206,13 @@ public abstract class ZeppelinDriver {
     }
     
     public void close() {
+    	if(initialized==false) return;
+    	if(closed==true) return;
     	ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
-		Thread.currentThread().setContextClassLoader(classLoader);
+		Thread.currentThread().setContextClassLoader(classLoader);		
 		try {
 	        this.connection.get().close();
+	        closed = true;
 		} catch(ZeppelinDriverException e){
 			throw e;
 		} catch(Exception e) {

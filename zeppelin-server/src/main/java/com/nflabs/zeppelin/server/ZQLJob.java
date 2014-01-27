@@ -19,6 +19,7 @@ import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
 import com.nflabs.zeppelin.zengine.api.Z;
+import com.nflabs.zeppelin.zengine.api.ZPlan;
 import com.nflabs.zeppelin.zengine.api.ZQL;
 
 /**
@@ -37,7 +38,7 @@ public class ZQLJob extends Job {
 	Result error;
 	String cron;
 
-	private List<Z> zqlPlans = Collections.emptyList();
+	private ZPlan zqlPlans;
     transient private Zengine zengine;
 
 	public ZQLJob(String jobName, Zengine zengine, JobListener listener) {
@@ -76,7 +77,7 @@ public class ZQLJob extends Job {
 	public void setZQL(String zql){
 		this.zql = zql;
 		//TODO(moon): possible optimization - update current plan
-		zqlPlans = Collections.emptyList();
+		zqlPlans = null;
 		setStatus(Status.READY);
 	}
 
@@ -137,7 +138,6 @@ public class ZQLJob extends Job {
 	 */
 	@Override
 	protected Object jobRun() throws Exception {
-		LinkedList<Result> results = new LinkedList<Result>();
 		ZQL zqlEvaluator = new ZQL(zql, zengine);
 		try {
 			zqlPlans = zqlEvaluator.compile();
@@ -145,24 +145,13 @@ public class ZQLJob extends Job {
 			error = new Result(e);
 			throw e;
 		}
-		
-		for(int i=0; i<zqlPlans.size(); i++){
-			Z zz = zqlPlans.get(i);
-			Map<String, Object> p = new HashMap<String, Object>();
-			if(params!=null && params.size()>=i+1){
-				p = params.get(i);
-			}
-			try {
-				zz.withParams(p);				
-				zz.execute();
-				results.add(zz.result());
-				zz.release();
-			} catch (Exception e) {
-				error = new Result(e);
-				throw e;
-			}
+
+		try {
+			return zqlPlans.execute(params);
+		} catch (Exception e) {
+			error = new Result(e);
+			throw e;
 		}
-		return results;
 	}
 
 	@Override

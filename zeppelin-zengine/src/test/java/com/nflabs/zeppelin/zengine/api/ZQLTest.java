@@ -62,7 +62,7 @@ public class ZQLTest extends TestCase {
 	public void testPipe() throws ZException, ZQLException {
 		ZQL zql = new ZQL(z);
 		zql.append("select * from bank | select * from <%= z."+Q.INPUT_VAR_NAME+" %> limit 10");
-		List<Z> plan = zql.compile();
+		ZPlan plan = zql.compile();
 		
 		assertEquals(1, plan.size());
 		assertEquals("select * from "+plan.get(0).prev().name()+" limit 10", plan.get(0).getQuery());
