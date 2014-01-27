@@ -23,7 +23,7 @@ import com.nflabs.zeppelin.result.Result;
 public abstract class ZeppelinDriver {
     protected ZeppelinConfiguration conf;
     private URI uri;
-	private URLClassLoader classLoader;
+	private ClassLoader classLoader;
 	
     protected ThreadLocal<ZeppelinConnection> connection = new ThreadLocal<ZeppelinConnection>() {
 	    @Override protected ZeppelinConnection initialValue() { //Lazy Init by subClass impl
@@ -48,7 +48,7 @@ public abstract class ZeppelinDriver {
 	 * @param uri driver connection uri
 	 * @throws ZeppelinDriverException 
 	 */
-	public ZeppelinDriver(ZeppelinConfiguration conf, URI uri, URLClassLoader classLoader){
+	public ZeppelinDriver(ZeppelinConfiguration conf, URI uri, ClassLoader classLoader){
 		this.conf = conf;
 		this.uri = uri;
 		this.classLoader = classLoader;

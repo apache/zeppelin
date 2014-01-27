@@ -1,7 +1,6 @@
 package com.nflabs.zeppelin.driver.exec;
 
 import java.net.URI;
-import java.net.URLClassLoader;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
@@ -10,7 +9,7 @@ import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 
 public class ExecDriver extends ZeppelinDriver {
 
-	public ExecDriver(ZeppelinConfiguration conf, URI uri, URLClassLoader classLoader) {
+	public ExecDriver(ZeppelinConfiguration conf, URI uri, ClassLoader classLoader) {
 		super(conf, uri, classLoader);
 	}
 

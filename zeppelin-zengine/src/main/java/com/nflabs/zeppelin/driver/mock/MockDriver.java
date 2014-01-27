@@ -1,7 +1,6 @@
 package com.nflabs.zeppelin.driver.mock;
 
 import java.net.URI;
-import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +15,7 @@ public class MockDriver extends ZeppelinDriver{
 	static public Map<String, Result> views = new HashMap<String, Result>();
 	static public Map<String, Result> tables = new HashMap<String, Result>();
 	
-	public MockDriver(ZeppelinConfiguration conf, URI uri, URLClassLoader classLoader) {
+	public MockDriver(ZeppelinConfiguration conf, URI uri, ClassLoader classLoader) {
 		super(conf, uri, classLoader);
 	}
 
