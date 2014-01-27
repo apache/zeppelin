@@ -79,7 +79,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		if(properties==null || properties.size()==0) return d;
 		for(ConfigurationNode p : properties){
 			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
-				return (Integer) p.getChildren("value").get(0).getValue();
+				return Integer.parseInt((String) p.getChildren("value").get(0).getValue());
 			}
 		}		
 		return d;
@@ -90,7 +90,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		if(properties==null || properties.size()==0) return d;
 		for(ConfigurationNode p : properties){
 			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
-				return (Long) p.getChildren("value").get(0).getValue();
+				return Long.parseLong((String) p.getChildren("value").get(0).getValue());
 			}
 		}		
 		return d;
@@ -101,7 +101,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		if(properties==null || properties.size()==0) return d;
 		for(ConfigurationNode p : properties){
 			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
-				return (Float) p.getChildren("value").get(0).getValue();
+				return Float.parseFloat((String) p.getChildren("value").get(0).getValue());
 			}
 		}		
 		return d;
@@ -112,7 +112,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		if(properties==null || properties.size()==0) return d;
 		for(ConfigurationNode p : properties){
 			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
-				return (Boolean) p.getChildren("value").get(0).getValue();
+				return Boolean.parseBoolean((String) p.getChildren("value").get(0).getValue());
 			}
 		}		
 		return d;
