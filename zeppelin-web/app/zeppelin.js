@@ -16,11 +16,11 @@ function Zeppelin(arg){
     }
 
     this.getBaseURL = function(){
-        return "http://"+window.location.host.split(":")[0]+":8080";
+        return "http://"+window.location.host;
     }
     
     this.getRestURL = function(){
-        return "http://"+window.location.host.split(":")[0]+":8080/cxf/zeppelin";
+        return "http://"+window.location.host+"/cxf/zeppelin";
     }
     
     this.isDevMode = function(){
