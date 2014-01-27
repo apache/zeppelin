@@ -17,7 +17,7 @@ tar -xzf hadoop-1.2.1-bin.tar.gz
 curl -O https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.2.0.tar.gz
 
 tar -xzf zeppelin-0.2.0.tar.gz
-echo "HADOOP_HOME=`pwd`/hadoop-1.2.1" >> zeppelin-0.2.0/conf/zeppelin-env.sh
+echo "export HADOOP_HOME=`pwd`/hadoop-1.2.1" >> zeppelin-0.2.0/conf/zeppelin-env.sh
 
 ./zeppelin-0.2.0/bin/zeppelin-daemon.sh start
 
