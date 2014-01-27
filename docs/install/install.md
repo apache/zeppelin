@@ -14,7 +14,7 @@ Install Zeppelin in standalone mode
 curl -O http://apache.mirror.cdnetworks.com/hadoop/common/hadoop-1.2.1/hadoop-1.2.1-bin.tar.gz
 tar -xzf hadoop-1.2.1-bin.tar.gz
 
-curl -O http://www.nflabs.com/pub/zeppelin/zeppelin-0.2.0.tar.gz
+curl -O https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.2.0.tar.gz
 
 tar -xzf zeppelin-0.2.0.tar.gz
 echo "HADOOP_HOME=`pwd`/hadoop-1.2.1" >> zeppelin-0.2.0/conf/zeppelin-env.sh
