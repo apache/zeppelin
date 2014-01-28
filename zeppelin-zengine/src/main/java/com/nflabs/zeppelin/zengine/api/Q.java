@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
@@ -89,42 +90,44 @@ public class Q extends Z {
 	
 	protected String evalErb(BufferedReader erb, Object zcontext) throws ZException{
 		ScriptEngine engine = zen.getRubyScriptEngine();
+		synchronized(engine){
+			StringBuffer rubyScript = new StringBuffer();
+			Bindings bindings = engine.createBindings();
+			bindings.put("z", zcontext);			
+			engine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
 
-		StringBuffer rubyScript = new StringBuffer();
-		SimpleBindings bindings = new SimpleBindings();
-		engine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
-		bindings.put("z", zcontext);
-		rubyScript.append("require 'erb'\n");
-		rubyScript.append("z = $z\n");
-		try {
-			String line = null;
-			rubyScript.append("erb = \"\"\n");
-
-			boolean first = true;
-			while((line = erb.readLine())!=null){
-				String newline;
-				if(first==false){
-					newline = "\\n";
-				} else {
-					newline = "";
-					first = false;
+			rubyScript.append("require 'erb'\n");
+			rubyScript.append("z = $z\n");
+			try {
+				String line = null;
+				rubyScript.append("erb = \"\"\n");
+	
+				boolean first = true;
+				while((line = erb.readLine())!=null){
+					String newline;
+					if(first==false){
+						newline = "\\n";
+					} else {
+						newline = "";
+						first = false;
+					}
+					rubyScript.append("erb += \""+newline+StringEscapeUtils.escapeJavaScript(line)+"\"\n");
 				}
-				rubyScript.append("erb += \""+newline+StringEscapeUtils.escapeJavaScript(line)+"\"\n");
+			} catch (IOException e1) {
+				throw new ZException(e1);
 			}
-		} catch (IOException e1) {
-			throw new ZException(e1);
+			rubyScript.append("$e = ERB.new(erb).result(binding)\n");
+	
+	        try {
+	        	logger().debug("rubyScript to run : \n"+rubyScript.toString());
+				engine.eval(rubyScript.toString(), bindings);
+			} catch (ScriptException e) {
+				throw new ZException(e);
+			}
+	        
+	        String q = (String) engine.getBindings(ScriptContext.ENGINE_SCOPE).get("e");
+	        return nonNullString(q);
 		}
-		rubyScript.append("$e = ERB.new(erb).result(binding)\n");
-
-        try {
-        	logger().debug("rubyScript to run : \n"+rubyScript.toString());
-			engine.eval(rubyScript.toString(), bindings);
-		} catch (ScriptException e) {
-			throw new ZException(e);
-		}
-        
-        String q = (String) engine.getBindings(ScriptContext.ENGINE_SCOPE).get("e");
-        return nonNullString(q);
 	}
 
 	private String nonNullString(String q) {
