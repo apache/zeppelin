@@ -31,10 +31,18 @@ public class Result extends AbstractResult{
 		super();
 	}
 	
+    public Result(ColumnDef[] columnDef) {
+        super(columnDef);
+    }
+    
+    public void addRow(Object[] row){
+        if(rows==null) rows = new LinkedList<Object [] >();
+        rows.add(row);
+    }
+
 	@Override
 	protected void process(ColumnDef[] columnDef, Object[] row, long n) {
-		if(rows==null) rows = new LinkedList<Object [] >(); 
-		rows.add(row);
+	        addRow(row);
 	}
 	
 	public List<Object []> getRows(){

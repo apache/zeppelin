@@ -72,6 +72,11 @@ public abstract class AbstractResult {
 		}
 	}
 	
+	public AbstractResult(ColumnDef [] columnDef) {
+		this.code = 0;
+		this.columnDef = columnDef;
+	}
+	
 	public AbstractResult(){
 		this.code = 0;
 	}
