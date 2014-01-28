@@ -2,6 +2,7 @@ package com.nflabs.zeppelin.zengine.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -14,10 +15,14 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriverFactory;
+import com.nflabs.zeppelin.driver.mock.MockDriver;
+import com.nflabs.zeppelin.result.Result;
+import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
+import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 public class ZQLTest extends TestCase {
 
@@ -160,5 +165,19 @@ public class ZQLTest extends TestCase {
 		assertEquals("!echo ls", plan.get(2).getQuery());
 		assertTrue(plan.get(1) instanceof AnnotationStatement); 
 		assertTrue(plan.get(2) instanceof Q); 
+	}
+	
+	public void testPerformance() throws Exception{
+		MockDriver.queries.put("select * from tbl", new Result(0, new String[]{"hello"}));
+		new ZQL("select * from tbl", z).compile().execute();
+		long start = System.currentTimeMillis();		
+		int count=0;
+		while(System.currentTimeMillis() - start < 2000){
+			count++;
+			new ZQL("select * from tbl", z).compile().execute();
+		}
+		long end = System.currentTimeMillis();
+		long diff = end - start;
+		System.out.println("ZQL performance " + (float)count*1000/diff+" run/sec");
 	}
 }
