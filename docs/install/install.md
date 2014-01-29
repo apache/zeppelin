@@ -6,25 +6,34 @@ group: install
 ---
 {% include JB/setup %}
 
-### Instructions for the Impatient
+#### Instructions for the Impatient
 
-Install Zeppelin in standalone mode
+Install Zeppelin in local mode
 
 ```
+# this scripts install hadoop and zeppelin in current directory and start zeppelin in local mode
+# download and unarchive hadoop distribution package
 curl -O http://apache.mirror.cdnetworks.com/hadoop/common/hadoop-1.2.1/hadoop-1.2.1-bin.tar.gz
 tar -xzf hadoop-1.2.1-bin.tar.gz
 
+# download zeppelin and unarchive
 curl -O https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.2.0.tar.gz
-
 tar -xzf zeppelin-0.2.0.tar.gz
+
+# set HADOOP_HOME
 echo "export HADOOP_HOME=`pwd`/hadoop-1.2.1" >> zeppelin-0.2.0/conf/zeppelin-env.sh
 
+# start zeppelin
 ./zeppelin-0.2.0/bin/zeppelin-daemon.sh start
 
 ```
 
 You can access Zeppelin with browser http://localhost:8080
 
+------------------------
+
+
+## Install
 
 ### Prerequisites
 
@@ -38,7 +47,7 @@ To get Zeppelin distribution, download a recent release.
 Unpack the downloaded Zeppelin distribution.
 
 
-### Configure
+## Configure
 Configuration can be done by both environment variable and java properties. If both defined, environment vaiable is used.
 <table class="table-configuration">
   <tr>
@@ -102,7 +111,7 @@ Driver specific configuration : Hive Driver (com.nflabs.zeppelin.driver.hive.Hiv
 
 Place your core-site.xml, hdfs-site.xml, hive-site.xml in _conf_ directory as you need. Zeppelin will include them in classpath on startup.
 
-### Start/Stop
+## Start/Stop
 #### Start Zeppelin
 
 ```

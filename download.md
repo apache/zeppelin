@@ -9,7 +9,7 @@ group: nav-right
 
 ## Stable release
 
-Officail stable releases
+Officail stable releases. Check [install](./docs/install/install.html). (standalone mode instruction included)
 
 #### Zeppelin-0.2.0
 
