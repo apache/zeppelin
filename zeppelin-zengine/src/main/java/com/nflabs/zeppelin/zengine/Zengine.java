@@ -39,8 +39,12 @@ public class Zengine {
     private FileSystem fs;
 	private ZeppelinDriverFactory driverFactory;
 
+	private static ScriptEngine rubyScriptEngine = null;
     public ScriptEngine getRubyScriptEngine(){
-        return factory.getScriptEngine();
+    	if (rubyScriptEngine==null ){
+    		rubyScriptEngine = factory.getScriptEngine();
+    	}
+        return rubyScriptEngine;
     }
     
     /**
