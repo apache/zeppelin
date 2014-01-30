@@ -24,7 +24,7 @@ Library is reside on local-repository or ZAN. Local-repository is 'zan-repo' dir
 [LIBRARY_NAME]/zql.erb
                [LIBRARY_NAME]_[RESOURCES]
                web/index.erb
-	       web/[WEB_RESOURCES]
+               web/[WEB_RESOURCES]
 ```
 
 **\[LIBRARY_NAME\]**
@@ -79,5 +79,7 @@ z.result - Result data of execution
 
 
 #### Publish your library
+
+You can use your own library without publishing it. But sharing your will helps others a lot.
 
 Checkout [https://github.com/nflabs/zan](https://github.com/nflabs/zan) page.
