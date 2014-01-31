@@ -25,8 +25,8 @@ public class ExecDriverTest {
 
 	@Test
 	public void testExec() throws URISyntaxException {
-		ExecDriver driver = new ExecDriver(ZeppelinConfiguration.create(), new URI("jdbc:hive2://"), new URLClassLoader(new URL[]{}, Thread.currentThread().getContextClassLoader()));
-
+		ExecDriver driver = new ExecDriver();
+		driver.getConnection(new URI("shell://"));
 	}
 
 	/*

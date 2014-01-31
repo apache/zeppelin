@@ -5,19 +5,26 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.nflabs.zeppelin.driver.LazyConnection;
+import com.nflabs.zeppelin.driver.ZeppelinConnection;
+import com.nflabs.zeppelin.driver.ZeppelinDriverFactory;
 import com.nflabs.zeppelin.result.Result;
+import com.nflabs.zeppelin.zengine.Zengine;
 
 public class ZPlan extends LinkedList<Z>{
 	
 	public ZPlan(){
 		
 	}
-	public LinkedList<Result> execute() throws Exception{
-		return execute(null);
+	public LinkedList<Result> execute(Zengine zengine) throws Exception{
+		return execute(zengine, null);
 	}
 	
-	public LinkedList<Result> execute(List<Map<String, Object>> params) throws Exception{
+	public LinkedList<Result> execute(Zengine zengine, List<Map<String, Object>> params) throws Exception{
 		LinkedList<Result> results = new LinkedList<Result>();
+		
+		ZeppelinDriverFactory driverFactory = zengine.getDriverFactory();
+
 		
 		for (int i=0; i<this.size(); i++) {
 			Z zz = this.get(i);
@@ -27,8 +34,13 @@ public class ZPlan extends LinkedList<Z>{
 			}
 			
 			try {
-				zz.withParams(p);				
-				zz.execute();
+				zz.withParams(p);
+				
+				ZeppelinConnection conn = zz.getConnection();
+				if (conn instanceof LazyConnection) {
+					((LazyConnection)conn).initialize(driverFactory);
+				}
+				zz.execute(conn);
 				results.add(zz.result());
 				zz.release();
 			} catch (Exception e) {
@@ -45,7 +57,7 @@ public class ZPlan extends LinkedList<Z>{
 	private void closeAllConnections(){
 		for (int i=0; i<this.size(); i++) {
 			Z zz = this.get(i);
-			zz.driver.close();
+			zz.connection.close();
 		}
 	}
 }

@@ -1,18 +1,13 @@
 package com.nflabs.zeppelin.zengine.api;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.Path;
-
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.driver.ZeppelinDriver;
+import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.mock.MockDriver;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.result.ResultDataException;
@@ -25,7 +20,8 @@ public class QTest extends TestCase {
 
     private File tmpDir;
     private Zengine z;
-    private MockDriver drv; 
+    private MockDriver drv;
+	private ZeppelinConnection conn; 
     
     public void setUp() throws Exception {
         super.setUp();
@@ -37,7 +33,8 @@ public class QTest extends TestCase {
 
         //Dependencies: ZeppelinDriver + ZeppelinConfiguration + fs + RubyExecutionEngine
 		z = UtilsForTests.createZengine();
-		drv = (MockDriver) z.getDriverFactory().createDriver("test");
+		drv = (MockDriver) z.getDriverFactory().getDriver("test");
+		conn = drv.getConnection(null);
     }
 
     public void tearDown() throws Exception {
@@ -54,14 +51,14 @@ public class QTest extends TestCase {
 
     public void testName() throws ZException, IOException, ResultDataException{
     	drv.queries.put("select count(*) from test", new Result(0, new String[]{"2"}));
-        Z q = new Q("select count(*) from test", z, drv).withName("test2").execute();
+        Z q = new Q("select count(*) from test").withName("test2").execute(conn);
         assertTrue(drv.views.containsKey("test2"));
         q.release();
         assertTrue(drv.views.containsKey("test2"));
     }
     
     public void testExtractParam() throws ZException {
-        Z q = new Q("select <%=z.param('fieldname', 'hello')%> from here", z, drv).dryRun();
+        Z q = new Q("select <%=z.param('fieldname', 'hello')%> from here").dryRun();
         Map<String, ParamInfo> infos = q.getParamInfos();
         assertEquals(1, infos.size());
         assertEquals("hello", infos.get("fieldname").getDefaultValue());
@@ -90,7 +87,7 @@ public class QTest extends TestCase {
         //  Z.setDriver(driver)
         
         //when
-        Result r = new Q("select count(*) from test", z, drv).execute().result();
+        Result r = new Q("select count(*) from test").execute(conn).result();
         
         //then
         //assertThat(r.getRows().get(0)[0], is());

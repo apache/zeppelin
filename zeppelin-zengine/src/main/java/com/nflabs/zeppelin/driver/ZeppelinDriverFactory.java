@@ -10,6 +10,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -20,11 +22,11 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 public class ZeppelinDriverFactory {
 	Logger logger = Logger.getLogger(ZeppelinDriverFactory.class);
 	
-	Map<String, URLClassLoader> classLoaders = new HashMap<String, URLClassLoader>();
+	static List<ZeppelinDriver> drivers = new LinkedList<ZeppelinDriver>();
 	Map<String, URI> uris = new HashMap<String, URI>();
 	String defaultDriverName = null;
 
-	private ZeppelinConfiguration conf;
+	private ZeppelinConfiguration conf;	
 	
 	public ZeppelinDriverFactory(ZeppelinConfiguration conf, String driverRootDir, URI [] uriList) throws ZeppelinDriverException{
 		if (driverRootDir==null || uriList==null) {
@@ -38,7 +40,7 @@ public class ZeppelinDriverFactory {
 		if (drivers!=null) {
 			for (File d : drivers) {
 				logger.info("Load driver "+d.getName()+" from "+d.getAbsolutePath());;
-				classLoaders.put(d.getName(), loadLibrary(d));
+				loadLibrary(d);
 			}
 		}
 		
@@ -62,6 +64,10 @@ public class ZeppelinDriverFactory {
 	
 	public String getDefaultConfigurationName(){
 		return defaultDriverName;
+	}
+	
+	public URI getUriFromConfiguration(String configurationName){
+		return uris.get(configurationName);
 	}
 	
 	private URLClassLoader loadLibrary(File path){
@@ -106,10 +112,10 @@ public class ZeppelinDriverFactory {
 	 * @return driver instance
 	 * @throws ZeppelinDriverException
 	 */
-	public ZeppelinDriver createDriver(String name) throws ZeppelinDriverException{
+	public ZeppelinDriver getDriver(String name) throws ZeppelinDriverException{
 		URI uri = uris.get(name);
 		try {
-			return createDriverByUri(uri);
+			return getDriver(uri);
 		} catch (Exception e) {
 			throw new ZeppelinDriverException(e);
 		}
@@ -117,63 +123,22 @@ public class ZeppelinDriverFactory {
 	
 	/**
 	 * Create new driver instance
-	 * @param uri eg) com.nflabs.zeppelin.hive.driver.HiveDriver:hive://localhost:10000/default
+	 * @param uri eg) hive://localhost:10000/default
 	 * @return
-	 * @throws URISyntaxException
-	 * @throws ZeppelinDriverException 
-	 * @throws ClassNotFoundException 
-	 * @throws InvocationTargetException 
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
-	 * @throws IllegalArgumentException 
-	 * @throws NoSuchMethodException 
-	 * @throws SecurityException 
 	 */
-	private ZeppelinDriver createDriverByUri(URI uri) throws ZeppelinDriverException {
-		String driverName = uri.getScheme();
-		URI driverUri;
-		try {
-			driverUri = new URI(uri.getSchemeSpecificPart());
-		} catch (URISyntaxException e1) {
-			throw new ZeppelinDriverException(e1);
-		}
-		String driverClassName = driverUri.getScheme();
-		
-		URLClassLoader cl = classLoaders.get(driverName);
-		if (cl==null) {
-			throw new ZeppelinDriverException("Can not find driver "+driverName);
-		}
-		
-		Class cls;
-		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
-		try {
-			Thread.currentThread().setContextClassLoader(cl);
-			cls = cl.loadClass(driverClassName);
-			Constructor<ZeppelinDriver> constructor = cls.getConstructor(new Class []{ZeppelinConfiguration.class, URI.class, ClassLoader.class});
-			URI connectionUri = new URI(driverUri.getSchemeSpecificPart());
-			if (logger.isDebugEnabled()) {
-				logger.debug("Create driver "+driverClassName+"("+connectionUri.toString()+")");
+	private ZeppelinDriver getDriver(URI uri) throws ZeppelinDriverException {
+		for (ZeppelinDriver d : drivers) {
+			if(d.acceptsURL(uri.toString())){
+				return d;
 			}
-			return constructor.newInstance(conf, connectionUri, cl);	
-		} catch (ClassNotFoundException e) {
-			throw new ZeppelinDriverException(e);
-		} catch (IllegalArgumentException e) {
-			throw new ZeppelinDriverException(e);
-		} catch (InstantiationException e) {
-			throw new ZeppelinDriverException(e);
-		} catch (IllegalAccessException e) {
-			throw new ZeppelinDriverException(e);
-		} catch (InvocationTargetException e) {
-			throw new ZeppelinDriverException(e);
-		} catch (SecurityException e) {
-			throw new ZeppelinDriverException(e);
-		} catch (NoSuchMethodException e) {
-			throw new ZeppelinDriverException(e);		
-		} catch (URISyntaxException e) {
-			throw new ZeppelinDriverException(e);
-		} finally {
-			Thread.currentThread().setContextClassLoader(oldcl);
 		}
+		throw new ZeppelinDriverException("Can't find driver for "+uri.toString());
+	}
+	
+	public static void registerDriver(ZeppelinDriver driver) {
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		driver.setClassLoader(cl);
+		drivers.add(driver);
 	}
 	
 }

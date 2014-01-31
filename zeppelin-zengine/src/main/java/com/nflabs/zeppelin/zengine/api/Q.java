@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.zengine.ParamInfo;
@@ -28,6 +29,7 @@ import com.nflabs.zeppelin.zengine.ZContext;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZWebContext;
 import com.nflabs.zeppelin.zengine.Zengine;
+import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 /**
  * Q stands for Query
@@ -52,11 +54,9 @@ public class Q extends Z {
 	 * @param driver 
 	 * @throws ZException
 	 */
-	public Q(String query, Zengine z, ZeppelinDriver driver) throws ZException{
-		super(z);
+	public Q(String query) throws ZException{
+		super();
 		this.query = query;
-		this.driver = driver;
-		
 		initialize();
 	}
 	
@@ -88,13 +88,25 @@ public class Q extends Z {
 		return evalErb(erb, zcontext);
 	}
 	
+	private static ScriptEngine rubyScriptEngine;
+	static {
+		JRubyScriptEngineFactory factory = new JRubyScriptEngineFactory();
+		rubyScriptEngine = factory.getScriptEngine();
+		StringBuffer rubyScript = new StringBuffer();
+		rubyScript.append("require 'erb'\n");
+		try {
+			rubyScriptEngine.eval(rubyScript.toString());
+		} catch (ScriptException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	protected String evalErb(BufferedReader erb, Object zcontext) throws ZException{
-		ScriptEngine engine = zen.getRubyScriptEngine();
-		synchronized(engine){
+		synchronized(rubyScriptEngine){
 			StringBuffer rubyScript = new StringBuffer();
-			Bindings bindings = engine.createBindings();
+			Bindings bindings = rubyScriptEngine.createBindings();
 			bindings.put("z", zcontext);			
-			engine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
+			rubyScriptEngine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
 
 			rubyScript.append("require 'erb'\n");
 			rubyScript.append("z = $z\n");
@@ -120,12 +132,12 @@ public class Q extends Z {
 	
 	        try {
 	        	logger().debug("rubyScript to run : \n"+rubyScript.toString());
-				engine.eval(rubyScript.toString(), bindings);
+	        	rubyScriptEngine.eval(rubyScript.toString(), bindings);
 			} catch (ScriptException e) {
 				throw new ZException(e);
 			}
 	        
-	        String q = (String) engine.getBindings(ScriptContext.ENGINE_SCOPE).get("e");
+	        String q = (String) rubyScriptEngine.getBindings(ScriptContext.ENGINE_SCOPE).get("e");
 	        return nonNullString(q);
 		}
 	}

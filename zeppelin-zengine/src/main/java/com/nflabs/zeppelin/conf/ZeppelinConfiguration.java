@@ -12,7 +12,8 @@ import org.slf4j.LoggerFactory;
 public class ZeppelinConfiguration extends XMLConfiguration {
     private static final long serialVersionUID = 4749305895693848035L;
     private static final Logger LOG = LoggerFactory.getLogger(ZeppelinConfiguration.class);
-
+	private static ZeppelinConfiguration conf;
+	
     public ZeppelinConfiguration(URL url) throws ConfigurationException {
 		super(url);
 	}
@@ -37,11 +38,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		
 	}
 
+
 	/**
 	 * Load from resource
 	 * @throws ConfigurationException 
 	 */
 	public static ZeppelinConfiguration create() {
+		if (conf != null) return conf;
+		
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 	    if (classLoader == null) {
 	      classLoader = ZeppelinConfiguration.class.getClassLoader();
@@ -49,17 +53,17 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		URL url = classLoader.getResource("zeppelin-site.xml");
 		if (url == null){
             LOG.warn("Failed to load configuration, proceeding with a default");
-		    return new ZeppelinConfiguration();
+		    conf =  new ZeppelinConfiguration();
+		} else {		
+			try {
+			    conf = new ZeppelinConfiguration(url);
+			} catch (ConfigurationException e) {
+			    LOG.warn("Failed to load configuration from " + url + " proceeding with a default", e);
+			    conf = new ZeppelinConfiguration();
+			}
 		}
 		
-		ZeppelinConfiguration result;
-		try {
-		    result = new ZeppelinConfiguration(url);
-		} catch (ConfigurationException e) {
-		    LOG.warn("Failed to load configuration from " + url + " proceeding with a default", e);
-		    result = new ZeppelinConfiguration();
-		}
-		return result;
+		return conf;
 	}
 	
 	

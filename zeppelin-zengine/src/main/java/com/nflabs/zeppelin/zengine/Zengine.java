@@ -35,17 +35,10 @@ import com.sun.script.jruby.JRubyScriptEngineFactory;
 public class Zengine {
 
     private ZeppelinConfiguration conf;
-    private JRubyScriptEngineFactory factory;
     private FileSystem fs;
 	private ZeppelinDriverFactory driverFactory;
 
-	private static ScriptEngine rubyScriptEngine = null;
-    public ScriptEngine getRubyScriptEngine(){
-    	if (rubyScriptEngine==null ){
-    		rubyScriptEngine = factory.getScriptEngine();
-    	}
-        return rubyScriptEngine;
-    }
+
     
     /**
      * Create Zeppelin environment
@@ -67,7 +60,6 @@ public class Zengine {
      */
     public Zengine(ZeppelinConfiguration conf, ZeppelinDriverFactory driverFactory) throws ZException{
         this.conf = conf;      
-        this.factory = new JRubyScriptEngineFactory();
         if (driverFactory == null) {
         	String driverDir = conf.getString(ConfVars.ZEPPELIN_DRIVER_DIR);
         	String [] uriList = conf.getString(ConfVars.ZEPPELIN_DRIVERS).split(",");
@@ -134,7 +126,7 @@ public class Zengine {
         
         Collection<String> driverNames = driverFactory.getAllConfigurationNames();
         for (String driverName : driverNames) {
-            drivers.put(driverName, driverFactory.createDriver(driverName));
+            drivers.put(driverName, driverFactory.getDriver(driverName));
         }
         return drivers.build();
     }

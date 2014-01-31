@@ -4,23 +4,20 @@ import static org.junit.Assert.*;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLClassLoader;
 
-import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.jointhegrid.hive_test.HiveTestService;
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.result.Result;
 
 public class HiveZeppelinDriverTest extends HiveTestService {
@@ -36,27 +33,29 @@ public class HiveZeppelinDriverTest extends HiveTestService {
 		super.setUp();
         tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());                
         tmpDir.mkdir();
+        System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getName());
 
-        FileUtils.deleteDirectory(new File("/tmp/warehouse"));
         FileUtils.deleteDirectory(new File(ROOT_DIR.getName()));
 	}
 
 	@After
 	public void tearDown() throws Exception {
-        FileUtils.deleteDirectory(new File("/tmp/warehouse"));
-        FileUtils.deleteDirectory(new File(ROOT_DIR.getName()));
+		FileUtils.deleteDirectory(new File(ROOT_DIR.getName()));
+		FileUtils.deleteDirectory(tmpDir);
 	}
 
 	@Test
 	public void testQuery() throws URISyntaxException, IOException {
-		HiveZeppelinDriver driver = new HiveZeppelinDriver(ZeppelinConfiguration.create(), new URI("jdbc:hive2://"), new URLClassLoader(new URL[]{}, Thread.currentThread().getContextClassLoader()));
+		HiveZeppelinDriver driver = new HiveZeppelinDriver();
+		driver.setClassLoader(Thread.currentThread().getContextClassLoader());
+		ZeppelinConnection conn = driver.getConnection(new URI("hive2://local"));
 		driver.setClient(client);
 		
 		// create table
-		Result res = driver.query("create table if not exists test(a INT)");
+		Result res = conn.query("create table if not exists test(a INT)");
 
 		// show table
-		res = driver.query("show tables");		
+		res = conn.query("show tables");		
 		assertEquals("test", res.getRows().get(0)[0]);
 
 		// add some data
@@ -67,7 +66,7 @@ public class HiveZeppelinDriverTest extends HiveTestService {
 	    bw.close();
 
 	    // count
-	    res = driver.query("select count(*) from test");
+	    res = conn.query("select count(*) from test");
 	    assertEquals(new Long(2), res.getRows().get(0)[0]);
 	}
 

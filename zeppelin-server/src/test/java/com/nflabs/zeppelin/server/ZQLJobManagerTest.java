@@ -148,7 +148,7 @@ public class ZQLJobManagerTest extends TestCase {
 	
 	@SuppressWarnings("unchecked")
 	public void testCron() throws InterruptedException, ResultDataException{
-		MockDriver drv = (MockDriver) z.getDriverFactory().createDriver("test");
+		MockDriver drv = (MockDriver) z.getDriverFactory().getDriver("test");
 		drv.queries.put("select * from tbl", new Result(0, new String []{"hello world"}));
 		
 		ZQLJob sess = jm.create();

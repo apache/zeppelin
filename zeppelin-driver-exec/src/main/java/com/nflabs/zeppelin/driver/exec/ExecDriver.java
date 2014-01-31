@@ -1,20 +1,26 @@
 package com.nflabs.zeppelin.driver.exec;
 
 import java.net.URI;
+import java.util.regex.Pattern;
 
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
+import com.nflabs.zeppelin.driver.ZeppelinDriverFactory;
 
 public class ExecDriver extends ZeppelinDriver {
-
-	public ExecDriver(ZeppelinConfiguration conf, URI uri, ClassLoader classLoader) {
-		super(conf, uri, classLoader);
+	
+	static {
+		ZeppelinDriverFactory.registerDriver(new ExecDriver());
+	}
+	
+	@Override
+	public ZeppelinConnection createConnection(URI uri) throws ZeppelinDriverException {
+		return new ExecConnection();
 	}
 
 	@Override
-	public ZeppelinConnection getConnection() throws ZeppelinDriverException {
-		return new ExecConnection();
+	public boolean acceptsURL(String url) {
+		return Pattern.matches("exec://.*", url);
 	}
 }

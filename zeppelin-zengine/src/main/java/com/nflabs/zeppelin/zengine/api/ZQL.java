@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URLClassLoader;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,8 @@ import java.util.regex.Pattern;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 
+import com.nflabs.zeppelin.driver.LazyConnection;
+import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ZException;
@@ -38,37 +41,18 @@ import com.nflabs.zeppelin.zengine.api.AnnotationStatement.COMMAND;
 public class ZQL {
 	String [] op = new String[]{";", "|", ">>", ">"};
 	StringBuilder sb = new StringBuilder();
-	
-	private Zengine zengine;
-	
-	/**
-	 * Constructor
-	 * @throws ZException
-	 */
-	public ZQL(Zengine zen) throws ZException{
-	    this.zengine = zen;
-	}
 
+	public ZQL(){
+	}
+	
 	/**
 	 * Load ZQL statements from string
 	 * @param zql Zeppelin query language statements
 	 * @param z Zengine
 	 * @throws ZException
 	 */
-	public ZQL(String zql, Zengine zen) throws ZException{
-	    this.zengine = zen;
+	public ZQL(String zql) throws ZException{
 	    append(zql);
-	}
-	
-	
-	/**
-	 * Load ZQL statements from URI location
-	 * @param uri URI location of text resource which contains ZQL
-	 * @throws IOException
-	 * @throws ZException
-	 */
-	public ZQL(URI uri) throws IOException, ZException{
-		load(uri);
 	}
 	
 	/**
@@ -92,17 +76,6 @@ public class ZQL {
 		load(ins);
 	}
 	
-
-	/**
-	 * Load ZQL statements from URI location
-	 * @param uri URI location of text resource which contains ZQL
-	 * @throws IOException
-	 * @throws ZException
-	 */
-	public void load(URI uri) throws IOException{
-		FSDataInputStream ins = zengine.fs().open(new Path(uri));
-		load(ins);
-	}
 	
 	/**
 	 * Load ZQL statements from File
@@ -134,14 +107,14 @@ public class ZQL {
 	
 	/**
 	 * Append ZQL statement
-	 * @param s statmetn to add
+	 * @param s statement to add
 	 */
 	public void append(String s){
 		sb.append(s);
 	}
 	
 	/**
-	 * Clear ZQL statments
+	 * Clear ZQL statement
 	 */
 	public void clear(){
 		sb = new StringBuilder();
@@ -168,9 +141,13 @@ public class ZQL {
 	 * @throws ZException 
 	 */
 	private ZPlan compileZql(String stmts) throws ZQLException, ZException{
-	    final Map<String, ZeppelinDriver> drivers = zengine.createAvailableDrivers();
-	    String currentDriverName = zengine.getDriverFactory().getDefaultConfigurationName();
-	    ZeppelinDriver currentDriver = drivers.get(currentDriverName);
+	    Map<String, ZeppelinConnection> connections = new HashMap<String, ZeppelinConnection>();
+	    String currentDriverName = null;
+	    
+	    // create default connection
+	    ZeppelinConnection currentConnection = new LazyConnection(currentDriverName);
+	    connections.put(currentDriverName, currentConnection);
+	    
 	    ZPlan plan = new ZPlan();
 		Z currentZ = null;
 		
@@ -226,7 +203,7 @@ public class ZQL {
 			if(stmt.startsWith("@")){
 				if(currentZ!=null){ // previous query exist
 					if(currentOp==null || (currentOp!=null && currentOp.equals(op[0]))){ // semicolon
-			            currentZ.setDriver(currentDriver);
+			            currentZ.setConnection(currentConnection);
 			            plan.add(currentZ);
 						currentZ = null;
 						currentOp = null;
@@ -235,16 +212,17 @@ public class ZQL {
 					}
 				}
 				try {				
-					AnnotationStatement annotation = new AnnotationStatement(stmt, zengine, currentDriver);
+					AnnotationStatement annotation = new AnnotationStatement(stmt);
 					if (ANNOTATION.DRIVER == annotation.getAnnotation()) {
 						if (COMMAND.SET == annotation.getCommand()) {
 							String driverName = annotation.getArgument();
 							if (driverName == null) {
-								driverName = zengine.getDriverFactory().getDefaultConfigurationName();
+								driverName = null;
 							}
-							currentDriver = drivers.get(driverName);
-							if (currentDriver == null) {
-								throw new ZQLException("Can not find driver "+driverName);
+							currentConnection = connections.get(driverName);
+							if (currentConnection == null) {
+								currentConnection = new LazyConnection(driverName);
+								connections.put(driverName, currentConnection);
 							}
 						}
 					}
@@ -258,7 +236,7 @@ public class ZQL {
 			// check if a statement is L --
 			Z z= null;
 			try {
-				z = loadL(stmt, currentDriver);
+				z = loadL(stmt, currentConnection);
 			} catch (ZException e) {
 			    //statement is not Library.. and we go on
 			}
@@ -267,7 +245,7 @@ public class ZQL {
 			if(z==null){
 				Q q;
 				try {
-					q = new Q(stmt, zengine, currentDriver);
+					q = new Q(stmt);
 				} catch (ZException e) {
 					throw new ZQLException(e);
 				}
@@ -278,7 +256,7 @@ public class ZQL {
 			} else if(currentOp==null){
 				throw new ZQLException("Assert! Statment does not have operator in between");
 			} else if(currentOp.equals(op[0])){ // semicolon
-                currentZ.setDriver(currentDriver);
+                currentZ.setConnection(currentConnection);
                 plan.add(currentZ);
 				currentZ = z;
 				currentOp = null;
@@ -288,7 +266,7 @@ public class ZQL {
 			}
 		}
 		if(currentZ!=null){
-            currentZ.setDriver(currentDriver);
+            currentZ.setConnection(currentConnection);
             plan.add(currentZ);
 		}
 		
@@ -303,7 +281,7 @@ public class ZQL {
 	 * libName(param1=value1, param2=value2, ...) args
 	 */
 	static final Pattern LPattern = Pattern.compile("([^ ()]*)\\s*([(][^)]*[)])?\\s*(.*)");
-	private L loadL(String stmt, ZeppelinDriver currentDriver) throws ZException{
+	private L loadL(String stmt, ZeppelinConnection currentConnection) throws ZException{
 		Matcher m = LPattern.matcher(stmt);
 		
 		if(m.matches()==true && m.groupCount()>0){
@@ -311,7 +289,7 @@ public class ZQL {
 
 			
 			String args = m.group(3);
-			L l = new L(libName, args, zengine, currentDriver);
+			L l = new L(libName, args);
 			
 			String params = m.group(2);
 			

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ParamInfo;
@@ -41,8 +42,8 @@ public class AnnotationStatement extends Q {
 		SET
 	};
 
-	public AnnotationStatement(String stmt, Zengine z, ZeppelinDriver driver) throws ZException{
-		super(stmt, z, driver);
+	public AnnotationStatement(String stmt) throws ZException{
+		super(stmt);
 		
 	    Matcher matcher = annotationPattern.matcher(query);
 	    if (matcher.find()) {
@@ -116,12 +117,12 @@ public class AnnotationStatement extends Q {
 		return null;
 	}
 	
-	public Z execute() throws ZException {
+	public Z execute(ZeppelinConnection connection) throws ZException {
 		if(executed) { return this; }
 		initialize();
 		
 		if (this.hasPrev()){
-			prev().execute();
+			prev().execute(connection);
 		}
 		executed = true;
 		return this;

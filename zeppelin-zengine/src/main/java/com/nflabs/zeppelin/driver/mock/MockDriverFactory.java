@@ -33,20 +33,23 @@ public class MockDriverFactory extends ZeppelinDriverFactory {
 
 	}
 	
-	public Collection<String> getAllConfigurationNames(){		
+	@Override
+	public Collection<String> getAllConfigurationNames(){
 		return drivers.keySet();
 	}
 	
+	@Override
 	public String getDefaultConfigurationName(){
 		return "test";
 	}
 	
-	public ZeppelinDriver createDriver(String name) throws ZeppelinDriverException{
+	@Override
+	public ZeppelinDriver getDriver(String name) throws ZeppelinDriverException{
 		URI uri = drivers.get(name);
 		if (uri==null) {
 			throw new ZeppelinDriverException("Driver "+name+" not found");
 		}
 		
-		return new MockDriver(conf, uri, new URLClassLoader(new URL[]{}));
+		return new MockDriver();
 	}
 }
