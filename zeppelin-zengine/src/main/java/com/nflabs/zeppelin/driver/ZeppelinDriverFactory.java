@@ -6,7 +6,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
@@ -20,7 +19,6 @@ import java.util.Set;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.reflections.Reflections;
-import org.reflections.util.ClasspathHelper;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
@@ -28,6 +26,17 @@ import com.google.common.reflect.ClassPath.ClassInfo;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.driver.mock.MockDriver;
 
+/**
+ * ZeppelinDriverFactory loads drivers from driver dir.
+ * Factory creates separate classloader for each subdirectory of driver directory.
+ * Therefore each driver implementation can avoid class confliction.
+ * 
+ * Factory scans all class to find subclass of ZeppelinDriver.
+ * One driver found, a instance created an being ready to create connection;
+ * 
+ * @author moon
+ *
+ */
 public class ZeppelinDriverFactory {
 	Logger logger = Logger.getLogger(ZeppelinDriverFactory.class);
 	
@@ -102,6 +111,7 @@ public class ZeppelinDriverFactory {
 					Constructor<ZeppelinDriver> constructor = c.getConstructor(new Class []{});
 					ZeppelinDriver driver = constructor.newInstance();
 					driver.setClassLoader(cl);
+					driver.init();
 					drivers.add(driver);
 					
 				}

@@ -5,7 +5,6 @@ import java.util.regex.Pattern;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
-import com.nflabs.zeppelin.driver.ZeppelinDriverFactory;
 
 public class ExecDriver extends ZeppelinDriver {
 	
@@ -17,5 +16,10 @@ public class ExecDriver extends ZeppelinDriver {
 	@Override
 	public boolean acceptsURL(String url) {
 		return Pattern.matches("exec://.*", url);
+	}
+
+	@Override
+	protected void init() {
+
 	}
 }

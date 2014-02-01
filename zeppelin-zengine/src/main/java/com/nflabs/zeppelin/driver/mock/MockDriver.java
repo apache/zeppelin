@@ -25,5 +25,11 @@ public class MockDriver extends ZeppelinDriver{
 	public boolean acceptsURL(String url) {
 		return true;
 	}
+
+
+	@Override
+	protected void init() {
+
+	}
 	
 }

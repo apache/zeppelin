@@ -1,7 +1,6 @@
 package com.nflabs.zeppelin.driver.hive11;
 
 import java.io.File;
-import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -18,7 +17,6 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
-import com.nflabs.zeppelin.driver.ZeppelinDriverFactory;
 
 public class HiveZeppelinDriver extends ZeppelinDriver {
 	Logger logger = LoggerFactory.getLogger(HiveZeppelinDriver.class);
@@ -113,5 +111,10 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	@Override
 	public boolean acceptsURL(String url) {
 		return ( Pattern.matches("hive://.*", url) || Pattern.matches("hive2://.*", url) );
+	}
+
+	@Override
+	protected void init() {
+		
 	}
 }

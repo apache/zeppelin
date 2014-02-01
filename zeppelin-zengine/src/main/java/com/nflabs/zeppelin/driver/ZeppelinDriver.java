@@ -1,31 +1,45 @@
 package com.nflabs.zeppelin.driver;
 
-import java.net.URI;
-import java.net.URLClassLoader;
-
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
-import com.nflabs.zeppelin.result.Result;
-
 /**
  * Zeppelin driver is physical layer abstraction.
  * 
- * Each sub-class manages actual connections to backend systems:
- * i.e Socket for JDBC to Hive or Spark or PrestoDB.
+ * Driver creates ZeppelinConnections. Each connections maps to each physical connection. i.e Socket for JDBC to Hive or Spark or PrestoDB.
+ * connection will used when executing logical plan(s).
  * 
- * Overall it might be statefull, as the connection underneath could or could not already exist.
- * 
- * In current impl each thread i.e ZQLJob (who uses Driver to .execute() Z's) has it's own copy of Connection
- * per-thread so Driver becomes stateless.
- * 
- * Open : connection opened by Lazy Initialization - will be created as soon as first request to .get() it comes.
- * Close: so far connection is closed ONLY on driver shutdown
  */
 public abstract class ZeppelinDriver {    
 	private ClassLoader classLoader;	
+
 	
+	/**
+	 * Constructor of Driver. all subclass should implement this.
+	 */
+	public ZeppelinDriver(){
+		
+	}
+	
+	/**
+	 * Driver comes with it's own classloader.
+	 * Classloader is set by DriverFactory, right after it is created. 
+	 * @param cl
+	 */
 	public void setClassLoader(ClassLoader cl){
 		this.classLoader = cl;
 	}
+	
+	/**
+	 * Initialize driver. automatically called after setClassLoader when driver created.
+	 */
+	protected abstract void init();
+
+	
+	
+	/**
+	 * Check if the driver can handle provided connection url or not.
+	 * @param url
+	 * @return
+	 */
+	public abstract boolean acceptsURL(String url);
 	
 	/**
 	 * Creates actual connection to the backed system
@@ -35,6 +49,11 @@ public abstract class ZeppelinDriver {
 	 */
 	protected abstract ZeppelinConnection createConnection(String url) throws ZeppelinDriverException;
 
+	/**
+	 * Create connection with given classloader
+	 * @param url
+	 * @return
+	 */
 	public ZeppelinConnection getConnection(String url){
 		ClassLoader cl = classLoader;
 		if (classLoader == null ) {
@@ -52,6 +71,4 @@ public abstract class ZeppelinDriver {
 			Thread.currentThread().setContextClassLoader(oldcl);
 		}
 	}
-	
-	public abstract boolean acceptsURL(String url);
 }
