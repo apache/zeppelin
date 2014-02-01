@@ -44,13 +44,11 @@ public class ZPlan extends LinkedList<Z>{
 				results.add(zz.result());
 				zz.release();
 			} catch (Exception e) {
-				e.printStackTrace();
-				throw e;
-			} finally {
 				closeAllConnections();
+				throw e;
 			}
 		}
-		
+		closeAllConnections();
 		return results;
 	}
 	
