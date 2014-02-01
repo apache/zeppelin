@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine.api;
+package com.nflabs.zeppelin.zengine.stmt;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -29,6 +29,9 @@ import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.Zengine;
+import com.nflabs.zeppelin.zengine.stmt.L;
+import com.nflabs.zeppelin.zengine.stmt.Q;
+import com.nflabs.zeppelin.zengine.stmt.Z;
 
 public class LTest extends TestCase {
     

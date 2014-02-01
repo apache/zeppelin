@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine.api;
+package com.nflabs.zeppelin.zengine.stmt;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -23,10 +23,11 @@ import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.ZPlan;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
-import com.nflabs.zeppelin.zengine.api.AnnotationStatement.ANNOTATION;
-import com.nflabs.zeppelin.zengine.api.AnnotationStatement.COMMAND;
+import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement.ANNOTATION;
+import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement.COMMAND;
 /**
  * ZQL parses Zeppelin Query Language (http://nflabs.github.io/zeppelin/#zql) 
  * and generate logical execution plan.

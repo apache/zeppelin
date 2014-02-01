@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine.api;
+package com.nflabs.zeppelin.zengine;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -9,7 +9,7 @@ import com.nflabs.zeppelin.driver.LazyConnection;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriverFactory;
 import com.nflabs.zeppelin.result.Result;
-import com.nflabs.zeppelin.zengine.Zengine;
+import com.nflabs.zeppelin.zengine.stmt.Z;
 
 public class ZPlan extends LinkedList<Z>{
 	
@@ -55,7 +55,12 @@ public class ZPlan extends LinkedList<Z>{
 	private void closeAllConnections(){
 		for (int i=0; i<this.size(); i++) {
 			Z zz = this.get(i);
-			zz.connection.close();
+			ZeppelinConnection conn = zz.getConnection();
+			if (conn!=null) {
+				if (conn.isConnected()){
+					conn.close();
+				}
+			}
 		}
 	}
 }

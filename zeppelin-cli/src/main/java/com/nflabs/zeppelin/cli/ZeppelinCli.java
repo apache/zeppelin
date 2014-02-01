@@ -19,11 +19,11 @@ import org.apache.commons.cli.ParseException;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.ZPlan;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
-import com.nflabs.zeppelin.zengine.api.Z;
-import com.nflabs.zeppelin.zengine.api.ZPlan;
-import com.nflabs.zeppelin.zengine.api.ZQL;
+import com.nflabs.zeppelin.zengine.stmt.Z;
+import com.nflabs.zeppelin.zengine.stmt.ZQL;
 
 public class ZeppelinCli {
 	@SuppressWarnings("static-access")

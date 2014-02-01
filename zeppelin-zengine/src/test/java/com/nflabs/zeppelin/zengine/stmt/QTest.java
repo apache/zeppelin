@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine.api;
+package com.nflabs.zeppelin.zengine.stmt;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +15,8 @@ import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ParamInfo;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.Zengine;
+import com.nflabs.zeppelin.zengine.stmt.Q;
+import com.nflabs.zeppelin.zengine.stmt.Z;
 
 public class QTest extends TestCase {
 

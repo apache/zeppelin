@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine.api;
+package com.nflabs.zeppelin.zengine.stmt;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -453,7 +453,7 @@ public abstract class Z {
 		this.connection = connection;
 	}
 
-	/*for tests*/ ZeppelinConnection getConnection() {
+	public ZeppelinConnection getConnection() {
 	    return this.connection;
 	}
 

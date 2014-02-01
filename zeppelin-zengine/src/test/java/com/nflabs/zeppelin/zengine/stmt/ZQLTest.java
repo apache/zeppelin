@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine.api;
+package com.nflabs.zeppelin.zengine.stmt;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,8 +20,13 @@ import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.ZPlan;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
+import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement;
+import com.nflabs.zeppelin.zengine.stmt.Q;
+import com.nflabs.zeppelin.zengine.stmt.Z;
+import com.nflabs.zeppelin.zengine.stmt.ZQL;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 public class ZQLTest extends TestCase {

@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine.api;
+package com.nflabs.zeppelin.zengine.stmt;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +15,8 @@ import org.junit.After;
 import org.junit.Before;
 
 import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.stmt.Q;
+import com.nflabs.zeppelin.zengine.stmt.Z;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 public class ZTest extends TestCase {

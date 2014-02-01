@@ -41,7 +41,7 @@ import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
-import com.nflabs.zeppelin.zengine.api.Z;
+import com.nflabs.zeppelin.zengine.stmt.Z;
 
 public class ZQLJobManager implements JobListener {
 	private static final String HISTORY_DIR_NAME = "/history";

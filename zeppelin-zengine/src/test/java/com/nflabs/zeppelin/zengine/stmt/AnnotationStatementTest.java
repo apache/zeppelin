@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine.api;
+package com.nflabs.zeppelin.zengine.stmt;
 
 import static org.junit.Assert.*;
 
@@ -8,8 +8,9 @@ import org.junit.Test;
 
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.Zengine;
-import com.nflabs.zeppelin.zengine.api.AnnotationStatement.ANNOTATION;
-import com.nflabs.zeppelin.zengine.api.AnnotationStatement.COMMAND;
+import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement;
+import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement.ANNOTATION;
+import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement.COMMAND;
 
 public class AnnotationStatementTest {
 

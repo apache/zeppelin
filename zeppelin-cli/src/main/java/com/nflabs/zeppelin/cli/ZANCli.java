@@ -9,7 +9,7 @@ import com.nflabs.zeppelin.zan.ZAN;
 import com.nflabs.zeppelin.zan.ZANException;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.Zengine;
-import com.nflabs.zeppelin.zengine.api.Z;
+import com.nflabs.zeppelin.zengine.stmt.Z;
 
 public class ZANCli {
 	public static enum Command{
