@@ -64,7 +64,7 @@
 
 <property>
   <name>zeppelin.drivers</name>
-  <value>hive:hive:com.nflabs.zeppelin.driver.hive11.HiveZeppelinDriver:jdbc:hive2://,exec:exec:com.nflabs.zeppelin.driver.exec.ExecDriver:shell:exec://</value>
+  <value>hive:jdbc:hive2://,exec:exec://</value>
   <description>Comma separated driver configurations uri. </description>
 </property>
 
