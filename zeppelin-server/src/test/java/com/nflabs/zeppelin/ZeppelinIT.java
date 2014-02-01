@@ -6,8 +6,10 @@ import java.io.File;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
@@ -55,14 +57,29 @@ public class ZeppelinIT {
 		} else {
 			url = "http://localhost:8080";
 		}
+		
+		long start = System.currentTimeMillis();
+		boolean loaded = false;
 		driver.get(url);
 		
-        // wait for page load
-        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
-            public Boolean apply(WebDriver d) {
-                return d.findElement(By.partialLinkText("Start")).isDisplayed();
-            }
-        });
+		while (System.currentTimeMillis() - start < 60*1000) {
+	        // wait for page load
+			try {
+		        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+		            public Boolean apply(WebDriver d) {
+		                return d.findElement(By.partialLinkText("Start")).isDisplayed();
+		            }
+		        });
+		        loaded = true;
+		        break;
+			} catch (TimeoutException e){
+				driver.navigate().to(url);
+			}
+		}
+		
+		if (loaded==false) {
+			fail();
+		}
 
 		return driver;
 	}
