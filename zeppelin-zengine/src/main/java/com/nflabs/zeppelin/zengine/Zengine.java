@@ -71,7 +71,7 @@ public class Zengine {
 					throw new ZException(e);
 				}
         	}
-        	this.driverFactory = new ZeppelinDriverFactory(conf, driverDir, uris);
+        	this.driverFactory = new ZeppelinDriverFactory(driverDir, uris);
         } else {
         	this.driverFactory = driverFactory;
         }

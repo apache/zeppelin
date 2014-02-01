@@ -44,7 +44,12 @@ public class ZeppelinDriverFactory {
 	Map<String, String> uris = new HashMap<String, String>();
 	String defaultDriverName = null;
 	
-	public ZeppelinDriverFactory(ZeppelinConfiguration conf, String driverRootDir, URI [] uriList) throws ZeppelinDriverException{
+	/**
+	 * Create driver factory
+	 * @param driverRootDir
+	 * @throws ZeppelinDriverException
+	 */
+	public ZeppelinDriverFactory(String driverRootDir, URI [] uriList) throws ZeppelinDriverException{
 		if (driverRootDir==null || uriList==null) {
 			return;
 		}

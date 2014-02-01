@@ -19,11 +19,11 @@ public class MockDriverFactory extends ZeppelinDriverFactory {
 	
 	private MockDriverFactory(String driverRootDir, URI[] uriList)
 			throws ZeppelinDriverException {
-		super(null, driverRootDir, uriList);
+		super(driverRootDir, uriList);
 	}
 	
-	public MockDriverFactory(ZeppelinConfiguration conf){
-		super(conf, null, null);
+	public MockDriverFactory(){
+		super(null, null);
 		try {
 			drivers.put("test", new URI("test://test"));
 			drivers.put("production", new URI("test://production"));
