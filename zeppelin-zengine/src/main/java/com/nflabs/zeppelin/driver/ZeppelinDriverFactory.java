@@ -6,6 +6,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
@@ -24,7 +25,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.mock.MockDriver;
+import com.nflabs.zeppelin.util.Util;
+import com.nflabs.zeppelin.zengine.ZException;
 
 /**
  * ZeppelinDriverFactory loads drivers from driver dir.
@@ -44,6 +48,25 @@ public class ZeppelinDriverFactory {
 	Map<String, String> uris = new HashMap<String, String>();
 	String defaultDriverName = null;
 	
+	public ZeppelinDriverFactory(){
+		this(ZeppelinConfiguration.create());
+	}
+	
+	public ZeppelinDriverFactory(ZeppelinConfiguration conf){
+    	String driverDir = conf.getString(ConfVars.ZEPPELIN_DRIVER_DIR);        	
+    	String [] uriList = Util.split(conf.getString(ConfVars.ZEPPELIN_DRIVERS), "\"',", '\\', new String[]{"\"", "'"}, new String[]{"\"", "'"}, new String[]{","}, false);
+    	URI [] uris = new URI[uriList.length];
+    	for (int i=0; i<uriList.length; i++) {
+    		try {
+				uris[i] = new URI(uriList[i]);
+			} catch (URISyntaxException e) {
+				throw new ZeppelinDriverException(e);
+			}
+    	}
+    	
+    	load(driverDir, uris);
+	}
+	
 	/**
 	 * Create driver factory
 	 * @param driverRootDir driver root dir
@@ -51,6 +74,11 @@ public class ZeppelinDriverFactory {
 	 * @throws ZeppelinDriverException
 	 */
 	public ZeppelinDriverFactory(String driverRootDir, URI [] uriList) throws ZeppelinDriverException{
+		load(driverRootDir, uriList);
+	}
+	
+	
+	private void load(String driverRootDir, URI [] uriList){
 		if (driverRootDir==null || uriList==null) {
 			return;
 		}
@@ -75,6 +103,8 @@ public class ZeppelinDriverFactory {
 			}
 		}
 	}
+	
+	
 	
 	/**
 	 * Get all configuration names

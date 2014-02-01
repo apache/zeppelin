@@ -12,6 +12,7 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriverFactory;
+import com.nflabs.zeppelin.util.Util;
 
 
 /**
@@ -51,8 +52,8 @@ public class Zengine {
     public Zengine(ZeppelinConfiguration conf, ZeppelinDriverFactory driverFactory) throws ZException{
         this.conf = conf;      
         if (driverFactory == null) {
-        	String driverDir = conf.getString(ConfVars.ZEPPELIN_DRIVER_DIR);
-        	String [] uriList = conf.getString(ConfVars.ZEPPELIN_DRIVERS).split(",");
+        	String driverDir = conf.getString(ConfVars.ZEPPELIN_DRIVER_DIR);        	
+        	String [] uriList = Util.split(conf.getString(ConfVars.ZEPPELIN_DRIVERS), "\"',", '\\', new String[]{"\"", "'"}, new String[]{"\"", "'"}, new String[]{","}, false);
         	URI [] uris = new URI[uriList.length];
         	for (int i=0; i<uriList.length; i++) {
         		try {
