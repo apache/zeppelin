@@ -33,9 +33,7 @@ public class HiveZeppelinDriverTest extends HiveTestService {
 		super.setUp();
         tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());                
         tmpDir.mkdir();
-        System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getName());
-
-        FileUtils.deleteDirectory(new File(ROOT_DIR.getName()));
+        System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), ROOT_DIR.getName());
 	}
 
 	@After
@@ -47,19 +45,19 @@ public class HiveZeppelinDriverTest extends HiveTestService {
 	@Test
 	public void testQuery() throws URISyntaxException, IOException {
 		HiveZeppelinDriver driver = new HiveZeppelinDriver();
-		driver.setClassLoader(Thread.currentThread().getContextClassLoader());
-		ZeppelinConnection conn = driver.getConnection(new URI("hive2://local"));
+		ZeppelinConnection conn = driver.getConnection("hive2://");
 		driver.setClient(client);
 		
 		// create table
-		Result res = conn.query("create table if not exists test(a INT)");
+		Result res = conn.query("create database if not exists default");
+		res = conn.query("create table if not exists test(a INT)");
 
 		// show table
 		res = conn.query("show tables");		
 		assertEquals("test", res.getRows().get(0)[0]);
 
 		// add some data
-		FileOutputStream out = new FileOutputStream(new File("/tmp/warehouse/test/data"));
+		FileOutputStream out = new FileOutputStream(new File(ROOT_DIR.getName()+"/warehouse/test/data"));
 		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out));
         bw.write("1\n");
 	    bw.write("2\n");

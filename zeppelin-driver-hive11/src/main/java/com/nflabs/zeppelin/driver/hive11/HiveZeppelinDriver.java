@@ -21,11 +21,6 @@ import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriverFactory;
 
 public class HiveZeppelinDriver extends ZeppelinDriver {
-	
-	static {
-		ZeppelinDriverFactory.registerDriver(new HiveZeppelinDriver());
-	}
-	
 	Logger logger = LoggerFactory.getLogger(HiveZeppelinDriver.class);
     private static String HIVE_SERVER = "org.apache.hadoop.hive.jdbc.HiveDriver";
     private static String HIVE_SERVER_2 = "org.apache.hive.jdbc.HiveDriver";
@@ -64,7 +59,7 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	}
 	
 	@Override
-	public ZeppelinConnection createConnection(URI uri) throws ZeppelinDriverException {
+	public ZeppelinConnection createConnection(String uri) throws ZeppelinDriverException {
 		try {
 			Connection con;
 			String uriString = "jdbc:"+uri.toString();
@@ -75,7 +70,7 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 			} else if(isEmpty(uriString)){ 
 				logger.debug("Create connection from hive configuration");
 				con = new HiveConnection(hiveConf());
-			} else if(uriString.equals("jdbc:hive://local") || uriString.equals("jdbc:hive2://local")) { //local mode detected 
+			} else if(uriString.equals("jdbc:hive://") || uriString.equals("jdbc:hive2://")) { //local mode detected 
 				logger.debug("Create connection from local mode");
 				con = new HiveConnection(localHiveConf());
 			} else { // remote connection using jdbc uri

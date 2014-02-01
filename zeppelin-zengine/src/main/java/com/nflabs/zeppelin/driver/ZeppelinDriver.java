@@ -33,10 +33,24 @@ public abstract class ZeppelinDriver {
 	 * @return
 	 * @throws ZeppelinDriverException
 	 */
-	protected abstract ZeppelinConnection createConnection(URI uri) throws ZeppelinDriverException;
+	protected abstract ZeppelinConnection createConnection(String url) throws ZeppelinDriverException;
 
-	public ZeppelinConnection getConnection(URI uri){
-		return new ClassLoaderConnection(createConnection(uri), classLoader);
+	public ZeppelinConnection getConnection(String url){
+		ClassLoader cl = classLoader;
+		if (classLoader == null ) {
+			cl = Thread.currentThread().getContextClassLoader();
+		}
+	   	ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(cl);
+		try {
+			return new ClassLoaderConnection(createConnection(url), cl);
+		} catch(ZeppelinDriverException e){
+			throw e;
+		} catch(Exception e) {
+			throw new ZeppelinDriverException(e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(oldcl);
+		}
 	}
 	
 	public abstract boolean acceptsURL(String url);

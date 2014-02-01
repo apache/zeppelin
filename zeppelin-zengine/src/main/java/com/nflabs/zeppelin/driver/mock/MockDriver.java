@@ -16,7 +16,7 @@ public class MockDriver extends ZeppelinDriver{
 	
 
 	@Override
-	protected ZeppelinConnection createConnection(URI uri) throws ZeppelinDriverException {
+	protected ZeppelinConnection createConnection(String uri) throws ZeppelinDriverException {
 		return new MockDriverConnection(queries, views, tables);
 	}
 

@@ -9,6 +9,7 @@ public class LazyConnection implements ZeppelinConnection {
 
 	private String driverUriConfName;
 	private transient ZeppelinConnection connection;
+	private transient boolean initialized = false;
 
 	/**
 	 * 
@@ -20,28 +21,37 @@ public class LazyConnection implements ZeppelinConnection {
 	
 	public void initialize(ZeppelinDriverFactory driverFactory){
 		if (connection!=null ) return;
+		if (initialized == true) return;
 		
 		ZeppelinDriver driver;
+		String confName;
 		if (driverUriConfName == null ){
-			driver = driverFactory.getDriver(driverFactory.getDefaultConfigurationName());
+			confName = driverFactory.getDefaultConfigurationName();
 		} else {
-			driver = driverFactory.getDriver(driverUriConfName);
+			confName = driverUriConfName;
 		}
-		connection = driver.getConnection(driverFactory.getUriFromConfiguration(driverUriConfName));
+		
+		driver = driverFactory.getDriver(confName);
+		connection = driver.getConnection(driverFactory.getUrlFromConfiguration(confName));
+		
+		initialized = true;
 	}
 
 	@Override
 	public boolean isConnected() throws ZeppelinDriverException {
+		if (initialized==false) return false;
 		return connection.isConnected();
 	}
 
 	@Override
 	public void close() throws ZeppelinDriverException {
+		if(isConnected()==false) return;
 		connection.close();		
 	}
 
 	@Override
 	public void abort() throws ZeppelinDriverException {
+		if(isConnected()==false) return;
 		connection.abort();
 	}
 

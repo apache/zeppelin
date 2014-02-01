@@ -1,6 +1,5 @@
 package com.nflabs.zeppelin.driver.exec;
 
-import java.net.URI;
 import java.util.regex.Pattern;
 
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
@@ -10,12 +9,8 @@ import com.nflabs.zeppelin.driver.ZeppelinDriverFactory;
 
 public class ExecDriver extends ZeppelinDriver {
 	
-	static {
-		ZeppelinDriverFactory.registerDriver(new ExecDriver());
-	}
-	
 	@Override
-	public ZeppelinConnection createConnection(URI uri) throws ZeppelinDriverException {
+	public ZeppelinConnection createConnection(String uri) throws ZeppelinDriverException {
 		return new ExecConnection();
 	}
 

@@ -26,7 +26,7 @@ public class ExecDriverTest {
 	@Test
 	public void testExec() throws URISyntaxException {
 		ExecDriver driver = new ExecDriver();
-		driver.getConnection(new URI("shell://"));
+		driver.getConnection("exec://");
 	}
 
 	/*
