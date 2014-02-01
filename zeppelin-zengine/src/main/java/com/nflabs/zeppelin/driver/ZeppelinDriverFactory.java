@@ -46,7 +46,8 @@ public class ZeppelinDriverFactory {
 	
 	/**
 	 * Create driver factory
-	 * @param driverRootDir
+	 * @param driverRootDir driver root dir
+	 * @param uriList driver configuration uri list. First item becomes default. each uri format is [confName]:[connectionUri]. ex) production:hive2://localhost:10000/default. 
 	 * @throws ZeppelinDriverException
 	 */
 	public ZeppelinDriverFactory(String driverRootDir, URI [] uriList) throws ZeppelinDriverException{
@@ -73,18 +74,36 @@ public class ZeppelinDriverFactory {
 		}
 	}
 	
+	/**
+	 * Get all configuration names
+	 * @return
+	 */
 	public Collection<String> getAllConfigurationNames(){
 		return uris.keySet();
 	}
 	
+	/**
+	 * Get default configuration name
+	 * @return
+	 */
 	public String getDefaultConfigurationName(){
 		return defaultDriverName;
 	}
 	
+	/**
+	 * Get connectionUrl part of configuration
+	 * @param configurationName
+	 * @return
+	 */
 	public String getUrlFromConfiguration(String configurationName){
 		return uris.get(configurationName);
 	}
 	
+	/**
+	 * Load driver
+	 * @param path driver path
+	 * @return
+	 */
 	private URLClassLoader loadLibrary(File path){
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 		URL[] urls;
@@ -137,7 +156,6 @@ public class ZeppelinDriverFactory {
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			Thread.currentThread().setContextClassLoader(oldcl);	

@@ -5,6 +5,10 @@ import java.net.URI;
 import com.nflabs.zeppelin.result.Result;
 
 
+/**
+ * Laze initialized driver connection
+ *
+ */
 public class LazyConnection implements ZeppelinConnection {
 
 	private String driverUriConfName;
@@ -12,13 +16,17 @@ public class LazyConnection implements ZeppelinConnection {
 	private transient boolean initialized = false;
 
 	/**
-	 * 
+	 * Create lazy initialized driver connection 
 	 * @param driverUriConfName driver configuration name. null means default driver configuration
 	 */
 	public LazyConnection(String driverUriConfName){
 		this.driverUriConfName = driverUriConfName;
 	}
 	
+	/**
+	 * Initialize lazyConnection. 
+	 * @param driverFactory 
+	 */
 	public void initialize(ZeppelinDriverFactory driverFactory){
 		if (connection!=null ) return;
 		if (initialized == true) return;

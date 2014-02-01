@@ -110,7 +110,7 @@ public class UtilsForTests {
 	
 	public static Zengine createZengine() throws ZException{
 		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-		MockDriverFactory driverFactory = new MockDriverFactory(conf);
+		MockDriverFactory driverFactory = new MockDriverFactory();
         return new Zengine(conf, driverFactory);
 	}
 }

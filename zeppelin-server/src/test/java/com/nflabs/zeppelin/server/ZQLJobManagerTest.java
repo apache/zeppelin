@@ -38,7 +38,7 @@ public class ZQLJobManagerTest extends TestCase {
 		System.setProperty(ConfVars.ZEPPELIN_JOB_DIR.getVarName(), tmpDir.getAbsolutePath());
 
 		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-		MockDriverFactory driverFactory = new MockDriverFactory(conf);
+		MockDriverFactory driverFactory = new MockDriverFactory();
         z = new Zengine(conf, driverFactory);
         
 		this.schedulerFactory = new SchedulerFactory();
