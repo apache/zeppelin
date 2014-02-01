@@ -58,6 +58,10 @@ if [ "x$ZEPPELIN_ZAN_LOCAL_REPO" == "x" ]; then
     export ZEPPELIN_ZAN_LOCAL_REPO="$ZEPPELIN_HOME/zan-repo"
 fi
 
+if [ "x$ZEPPELIN_DRIVER_DIR" == "x" ]; then
+    export ZEPPELIN_DRIVER_DIR="$ZEPPELIN_HOME/drivers"
+fi
+
 
 if [ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]; then
     . "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh"
