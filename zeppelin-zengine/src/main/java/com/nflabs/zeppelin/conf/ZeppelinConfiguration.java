@@ -10,12 +10,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ZeppelinConfiguration extends XMLConfiguration {
-    private static final long serialVersionUID = 4749305895693848035L;
+    private static final String ZEPPELIN_SITE_XML = "zeppelin-site.xml";
+	private static final long serialVersionUID = 4749305895693848035L;
     private static final Logger LOG = LoggerFactory.getLogger(ZeppelinConfiguration.class);
 	private static ZeppelinConfiguration conf;
 	
     public ZeppelinConfiguration(URL url) throws ConfigurationException {
-		super(url);
+		setDelimiterParsingDisabled(true);
+		load(url);
 	}
 	
 	public ZeppelinConfiguration() {
@@ -47,15 +49,25 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		if (conf != null) return conf;
 		
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-	    if (classLoader == null) {
-	      classLoader = ZeppelinConfiguration.class.getClassLoader();
-	    }
-		URL url = classLoader.getResource("zeppelin-site.xml");
+		URL url;
+		
+		url = ZeppelinConfiguration.class.getResource(ZEPPELIN_SITE_XML);
+		if (url == null) {
+			 ClassLoader cl = ZeppelinConfiguration.class.getClassLoader();
+			 if (cl!=null) {
+				 url = cl.getResource(ZEPPELIN_SITE_XML);
+			 }
+		}
+		if (url == null) {
+			url = classLoader.getResource(ZEPPELIN_SITE_XML);
+		}
+		
 		if (url == null){
             LOG.warn("Failed to load configuration, proceeding with a default");
 		    conf =  new ZeppelinConfiguration();
 		} else {		
 			try {
+				LOG.info("Load configuration from "+url);
 			    conf = new ZeppelinConfiguration(url);
 			} catch (ConfigurationException e) {
 			    LOG.warn("Failed to load configuration from " + url + " proceeding with a default", e);
