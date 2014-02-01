@@ -1,21 +1,15 @@
 package com.nflabs.zeppelin.zengine;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Map;
-
-import javax.script.ScriptEngine;
-
-import org.apache.hadoop.fs.FileSystem;
 
 import com.google.common.collect.ImmutableMap;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriverFactory;
-import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 
 /**
@@ -33,12 +27,8 @@ import com.sun.script.jruby.JRubyScriptEngineFactory;
  * @author Alex
  */
 public class Zengine {
-
     private ZeppelinConfiguration conf;
-    private FileSystem fs;
 	private ZeppelinDriverFactory driverFactory;
-
-
     
     /**
      * Create Zeppelin environment
@@ -75,14 +65,6 @@ public class Zengine {
         } else {
         	this.driverFactory = driverFactory;
         }
-
-        if(fs==null){
-            try {
-                fs = FileSystem.get(new org.apache.hadoop.conf.Configuration());
-            } catch (IOException e) {
-                throw new ZException(e);
-            }
-        }
     }
 
     /**
@@ -91,14 +73,6 @@ public class Zengine {
      */
     public ZeppelinConfiguration getConf(){
         return conf;
-    }
-
-    /**
-     * Get filesystem object
-     * @return
-     */
-    public FileSystem fs(){
-        return fs;
     }
     
     /**

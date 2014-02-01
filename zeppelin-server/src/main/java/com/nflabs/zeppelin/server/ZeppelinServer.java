@@ -1,12 +1,14 @@
 package com.nflabs.zeppelin.server;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.ws.rs.core.Application;
 
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
+import org.apache.hadoop.fs.FileSystem;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.bio.SocketConnector;
@@ -24,6 +26,7 @@ import com.nflabs.zeppelin.rest.ZANRestApi;
 import com.nflabs.zeppelin.rest.ZQLRestApi;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.zan.ZAN;
+import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.Zengine;
 
 
@@ -114,18 +117,19 @@ public class ZeppelinServer extends Application {
 		this.schedulerFactory = new SchedulerFactory();
 
 		Zengine z = new Zengine();
+		FileSystem fs = FileSystem.get(new org.apache.hadoop.conf.Configuration());
 
         if(z.useFifoJobScheduler()){
-			this.analyzeSessionManager = new ZQLJobManager(z, schedulerFactory.createOrGetFIFOScheduler("analyze"), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
+			this.analyzeSessionManager = new ZQLJobManager(z, fs, schedulerFactory.createOrGetFIFOScheduler("analyze"), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		} else {
-			this.analyzeSessionManager = new ZQLJobManager(z, schedulerFactory.createOrGetParallelScheduler("analyze", 100), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
-		}		
+			this.analyzeSessionManager = new ZQLJobManager(z, fs, schedulerFactory.createOrGetParallelScheduler("analyze", 100), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
+		}	
 		
 		this.zan = new ZAN(z.getConf().getString(ConfVars.ZEPPELIN_ZAN_REPO),
 		                   z.getConf().getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO),
 		                   z.getConf().getString(ConfVars.ZEPPELIN_ZAN_SHARED_REPO),
-		                   z.fs());
-		
+		                   fs);
+
 		this.zanJobManager = new ZANJobManager(zan, schedulerFactory.createOrGetFIFOScheduler("analyze"));
 	}
 	

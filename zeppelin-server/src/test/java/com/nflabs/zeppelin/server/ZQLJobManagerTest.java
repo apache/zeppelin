@@ -7,6 +7,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.quartz.SchedulerException;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
@@ -26,6 +27,7 @@ public class ZQLJobManagerTest extends TestCase {
 	private ZQLJobManager jm;
 	private File dataDir;
     private Zengine z;
+	private FileSystem fs;
 
 
 	protected void setUp() throws Exception {
@@ -42,8 +44,9 @@ public class ZQLJobManagerTest extends TestCase {
         z = new Zengine(conf, driverFactory);
         
 		this.schedulerFactory = new SchedulerFactory();
+		fs = FileSystem.get(new org.apache.hadoop.conf.Configuration());
 
-		this.jm = new ZQLJobManager(z, schedulerFactory.createOrGetFIFOScheduler("analyze"), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
+		this.jm = new ZQLJobManager(z, fs, schedulerFactory.createOrGetFIFOScheduler("analyze"), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 	}
 
 	protected void tearDown() throws Exception {
@@ -92,7 +95,7 @@ public class ZQLJobManagerTest extends TestCase {
 		jm.setZql(sess.getId(), "show tables");
 		
 		// check if new session manager read
-		jm = new ZQLJobManager(z, schedulerFactory.createOrGetFIFOScheduler("analyze"), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
+		jm = new ZQLJobManager(z, fs, schedulerFactory.createOrGetFIFOScheduler("analyze"), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		
 		// run the session
 		jm.run(sess.getId());
