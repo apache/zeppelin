@@ -33,14 +33,17 @@ import com.nflabs.zeppelin.zengine.Zengine;
 public class ZeppelinServer extends Application {
 	private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
 
+	private static Zengine z;
+
 	private SchedulerFactory schedulerFactory;
 	private ZQLJobManager analyzeSessionManager;
 	private ZANJobManager zanJobManager;
 	private ZAN zan;
 
-	public static void main(String [] args) throws Exception{
-		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-
+	public static void main(String [] args) throws Exception{		
+		z = new Zengine();
+		ZeppelinConfiguration conf = z.getConf();
+		
 		int port = conf.getInt(ConfVars.ZEPPELIN_PORT);
         final Server server = setupJettyServer(port);
         
@@ -116,7 +119,6 @@ public class ZeppelinServer extends Application {
 	public ZeppelinServer() throws Exception {
 		this.schedulerFactory = new SchedulerFactory();
 
-		Zengine z = new Zengine();
 		FileSystem fs = FileSystem.get(new org.apache.hadoop.conf.Configuration());
 
         if(z.useFifoJobScheduler()){
