@@ -56,6 +56,7 @@ public class ZeppelinDriverFactory {
 		}
 		
 		File root = new File(driverRootDir);
+		logger.info("Driver directory "+root.getAbsolutePath());
 		File[] drivers = root.listFiles();
 		if (drivers!=null) {
 			for (File d : drivers) {
@@ -67,6 +68,7 @@ public class ZeppelinDriverFactory {
 		if (uriList!=null) {
 			for (URI uri : uriList) {
 				uris.put(uri.getScheme(), uri.getSchemeSpecificPart());
+				logger.info("Add configuration name="+uri.getScheme()+", connectionUrl="+uri.getSchemeSpecificPart());
 				if (defaultDriverName == null) {
 					defaultDriverName = uri.getScheme();
 				}
@@ -130,7 +132,7 @@ public class ZeppelinDriverFactory {
 			Reflections reflections = new Reflections(packages);
 			Set<Class<? extends ZeppelinDriver>> driverClasses = reflections.getSubTypesOf(ZeppelinDriver.class);
 			for(Class c : driverClasses){
-				if(MockDriver.class.isAssignableFrom(c)==false){
+				if(c!=null && MockDriver.class.isAssignableFrom(c)==false){
 					logger.info("Found driver "+c.getName()+" cl="+cl);
 					Constructor<ZeppelinDriver> constructor = c.getConstructor(new Class []{});
 					ZeppelinDriver driver = constructor.newInstance();
@@ -191,6 +193,9 @@ public class ZeppelinDriverFactory {
 	 */
 	public ZeppelinDriver getDriver(String name) throws ZeppelinDriverException{
 		String uri = uris.get(name);
+		if(uri==null) {
+			throw new ZeppelinDriverException("Can't find uri from name "+name);
+		}
 		try {
 			return getDriverByUrl(uri);
 		} catch (Exception e) {
