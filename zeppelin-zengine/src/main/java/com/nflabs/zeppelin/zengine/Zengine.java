@@ -52,17 +52,7 @@ public class Zengine {
     public Zengine(ZeppelinConfiguration conf, ZeppelinDriverFactory driverFactory) throws ZException{
         this.conf = conf;      
         if (driverFactory == null) {
-        	String driverDir = conf.getString(ConfVars.ZEPPELIN_DRIVER_DIR);        	
-        	String [] uriList = Util.split(conf.getString(ConfVars.ZEPPELIN_DRIVERS), "\"',", '\\', new String[]{"\"", "'"}, new String[]{"\"", "'"}, new String[]{","}, false);
-        	URI [] uris = new URI[uriList.length];
-        	for (int i=0; i<uriList.length; i++) {
-        		try {
-					uris[i] = new URI(uriList[i]);
-				} catch (URISyntaxException e) {
-					throw new ZException(e);
-				}
-        	}
-        	this.driverFactory = new ZeppelinDriverFactory(driverDir, uris);
+        	this.driverFactory = new ZeppelinDriverFactory(conf);
         } else {
         	this.driverFactory = driverFactory;
         }
