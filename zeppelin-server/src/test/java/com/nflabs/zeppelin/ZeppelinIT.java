@@ -206,6 +206,8 @@ public class ZeppelinIT {
             driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("\necho 'hello world';");
             
             // press run button
+            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys(Keys.chord(Keys.COMMAND, Keys.ENTER));
+            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys(Keys.chord(Keys.CONTROL, Keys.ENTER));
             driver.findElement(By.linkText("Run")).click();
 
             // wait for button becomes Running ...
