@@ -181,6 +181,24 @@ App.ZqlEditController = App.ApplicationController.extend({
             this.set("jobName", jobNameEditor.editable('getValue', true));
             this.set("jobCron", jobCronEditor.editable('getValue', true));
 
+            // update cron
+            var cronPreset = jobCronEditor.cronPreset
+            var cronValue = jobCronEditor.editable('getValue', true)
+            var found = false;
+            for(var i=0; i<jobCronEditor.cronPreset.length; i++){
+                if(jobCronEditor.cronPreset[i].id==cronValue){
+                    found = true;
+                    break;
+                }
+            }
+            if(found==false){
+                jobCronEditor.cronPreset.push({id:cronValue, text:cronValue});
+                jobCronEditor.editable('option', 'source', jobCronEditor.cronPreset);
+                jobCronEditor.editable('setValue', cronValue);
+            }
+
+            console.log("after change %o %o", cronPreset);
+
             durationToString = function(duration){
                 var took = "";
                 if(duration.weeks>0){

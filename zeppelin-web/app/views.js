@@ -208,21 +208,47 @@ App.ZqlEditView = Ember.View.extend({
         this.set('jobNameEditor', jobNameEditor);
 
         var jobCronEditor = $('#zqlJobCron');
-        $('#zqlJobCron').editable({
-            value : "",
-            source : [
-                { value : "", text: 'None' },
-                { value : "0 0/1 * * * ?", text: '1m' },
-                { value : "0 0 0/1 * * ?", text: '1h' },
-                { value : "0 0 0/3 * * ?", text: '3h' },
-                { value : "0 0 0/6 * * ?", text: '6h' },
-                { value : "0 0 0/12 * * ?", text: '12h' },
-                { value : "0 0 0 * * ?", text: '24h' },
-            ]
+        jobCronEditor.cronPreset = [
+            { id : "", text: 'None' },
+            { id : "0 0/1 * * * ?", text: '1m' },
+            { id : "0 0 0/1 * * ?", text: '1h' },
+            { id : "0 0 0/3 * * ?", text: '3h' },
+            { id : "0 0 0/6 * * ?", text: '6h' },
+            { id : "0 0 0/12 * * ?", text: '12h' },
+            { id : "0 0 0 * * ?", text: '24h' }
+        ];
+
+        jobCronEditor.editable({
+            source : jobCronEditor.cronPreset,
+            select2 : {
+                width : "element",
+                clear : true,
+                maximumSelectionSize : 1,
+
+                createSearchChoice: function(term){
+                    return {id: term, text: term};
+                }
+
+            },
+            mode : "popup",
+            title : "Cron expression"
         });
+
         jobCronEditor.on('save', function(e, params) {
-            controller.send("zqlJobCronChanged", params.newValue);  
+            var found = false;
+            for(var i=0; i<jobCronEditor.cronPreset.length; i++){
+                if(jobCronEditor.cronPreset[i].id==params.newValue){
+                    found = true;
+                    break;
+                }
+            }
+            if(found==false){
+                jobCronEditor.cronPreset.push({id:params.newValue, text:params.newValue});
+                jobCronEditor.editable('option', 'source', jobCronEditor.cronPreset);
+            }            
+            controller.send("zqlJobCronChanged", params.newValue);
         });             
+
         this.set('jobCronEditor', jobCronEditor);
 
 	// bootstrap confirmation plugin http://ethaizone.github.io/Bootstrap-Confirmation

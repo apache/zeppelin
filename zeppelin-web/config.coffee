@@ -44,6 +44,7 @@ exports.config =
           'vendor/scripts/bootstrap-combobox.js',
 
           'vendor/scripts/bootstrap-editable.js',
+          'vendor/scripts/select2.js',
           'vendor/scripts/bootstrap-confirmation.js',
 
           'vendor/scripts/jquery.ui.core.js',
@@ -71,12 +72,14 @@ exports.config =
         before: [
           'vendor/styles/bootstrap-combined.min.css',
           'vendor/styles/bootstrap-theme.min.css',
-          'vendor/styles/font-awesome.css'
+          'vendor/styles/font-awesome.css',
           'vendor/styles/font-awesome-ie7.css',
           'vendor/styles/cubism.css',
-          'vendor/styles/rickshaw.css'
-          'vendor/styles/bootstrap-combobox.css'
-          'vendor/styles/bootstrap-editable.css'
+          'vendor/styles/rickshaw.css',
+          'vendor/styles/bootstrap-combobox.css',
+          'vendor/styles/bootstrap-editable.css',
+          'vendor/styles/select2.css',
+          'vendor/styles/select2-bootstrap.css'
         ]
 
     templates:
