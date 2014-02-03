@@ -56,7 +56,7 @@
           </execution>
 
           <execution>
-            <!-- This is workaround for looking for wrong registry when npm installing ansi-color package -->
+            <!-- This is workaround for looking for wrong registry when npm installing ansi-color package, when brunch bringing ansi-color as a dependency -->
             <id>npm install ansi-color</id>
             <phase>generate-sources</phase>
             <goals>
