@@ -206,6 +206,15 @@ App.ZqlEditView = Ember.View.extend({
             controller.send("zqlChanged", zql);
         });
 
+        editor.commands.addCommand({
+            name : 'run',
+            bindKey : {win: 'Ctrl-Enter', mac: 'Command-Enter'},
+            exec : function(editor){
+                controller.send('runJob');
+            },
+            readOnly: false
+        });
+
         var jobNameEditor = $('#zqlJobName');
         jobNameEditor.editable();
         jobNameEditor.on('save', function(e, params) {
