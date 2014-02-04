@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine.api;
+package com.nflabs.zeppelin.zengine.stmt;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,16 +20,16 @@ import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.ZPlan;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
+import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement;
+import com.nflabs.zeppelin.zengine.stmt.Q;
+import com.nflabs.zeppelin.zengine.stmt.Z;
+import com.nflabs.zeppelin.zengine.stmt.ZQL;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 public class ZQLTest extends TestCase {
-
-    public ZQLTest() throws IOException {
-		super();
-		// TODO Auto-generated constructor stub
-	}
 
 	private static File tmpDir;
 	private Zengine z;
@@ -42,7 +42,7 @@ public class ZQLTest extends TestCase {
 		String tmpDirPath = tmpDir.getAbsolutePath();
 
 		UtilsForTests.delete(new File("/tmp/warehouse"));
-		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
+		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDirPath);
 
 		String q1 = "select * from (<%= z."+Q.INPUT_VAR_NAME+" %>) a limit <%= z.param('limit') %>\n";      
 		new File(tmpDirPath + "/test").mkdir();
@@ -65,7 +65,7 @@ public class ZQLTest extends TestCase {
 	}	
 	
 	public void testPipe() throws ZException, ZQLException {
-		ZQL zql = new ZQL(z);
+		ZQL zql = new ZQL();
 		zql.append("select * from bank | select * from <%= z."+Q.INPUT_VAR_NAME+" %> limit 10");
 		ZPlan plan = zql.compile();
 		
@@ -76,7 +76,7 @@ public class ZQLTest extends TestCase {
 	
 	
 	public void testSemicolon() throws ZException, ZQLException{
-		ZQL zql = new ZQL(z);
+		ZQL zql = new ZQL();
 		zql.append("create table if not exists bank(a INT); select * from bank | select * from <%= z."+Q.INPUT_VAR_NAME+" %> limit 10; show tables; ");
 		List<Z> plan = zql.compile();
 
@@ -85,12 +85,12 @@ public class ZQLTest extends TestCase {
 		assertEquals("show tables", plan.get(2).getQuery());
 		
 		for (Z query : plan) {
-		    assertNotNull(query.getDriver());
+		    assertNotNull(query.getConnection());
 		}
 	}
 	
 	public void testRedirection() throws ZException, ZQLException{
-		ZQL zql = new ZQL(z);
+		ZQL zql = new ZQL();
 		zql.append("select * from bank limit 10 > summary");
 		List<Z> plan = zql.compile();
 		
@@ -99,7 +99,7 @@ public class ZQLTest extends TestCase {
 	}
 
 	public void testLstmtSimple() throws ZException, ZQLException{
-		ZQL zql = new ZQL("test", z);
+		ZQL zql = new ZQL("test");
 		List<Z> zList = zql.compile();
 		assertEquals(1, zList.size());
 		Z q = zList.get(0);
@@ -108,13 +108,13 @@ public class ZQLTest extends TestCase {
 	}
 	
 	public void testLstmtParam() throws ZException, ZQLException{
-		ZQL zql = new ZQL("test(limit=10)", z);
+		ZQL zql = new ZQL("test(limit=10)");
 		Z q = zql.compile().get(0);
 		assertEquals("select * from () a limit 10", q.getQuery());
 	}
 	
 	public void testLstmtArg() throws IOException, ZException, ZQLException{
-		ZQL zql = new ZQL("select * from test | test(limit=10)", z);
+		ZQL zql = new ZQL("select * from test | test(limit=10)");
 		
 		List<Z> q = zql.compile();
 		assertEquals(1, q.size());
@@ -122,7 +122,7 @@ public class ZQLTest extends TestCase {
 	}
 	
 	public void testLstmtPipedArg() throws IOException, ZException, ZQLException{
-		ZQL zql = new ZQL("select * from test | test1 | test1", z);
+		ZQL zql = new ZQL("select * from test | test1 | test1");
 		
 		List<Z> q = zql.compile();
 		assertEquals(1, q.size());
@@ -132,7 +132,7 @@ public class ZQLTest extends TestCase {
 	}
 	
 	public void testMultilineQuery() throws IOException, ZException, ZQLException{
-		ZQL zql = new ZQL("select\n*\nfrom\ntest", z);
+		ZQL zql = new ZQL("select\n*\nfrom\ntest");
 		
 		List<Z> q = zql.compile();
 		assertEquals(1, q.size());
@@ -148,16 +148,16 @@ public class ZQLTest extends TestCase {
 
 	    //given query without ' around path
         ZQL zql1 = new ZQL("ADD JAR /usr/lib/hive/lib/hive-contrib-0.11.0.1.3.2.0-111.jar;"+
-                "CREATE  external TABLE test (id INT, name STRING) \nLOCATION \u0027hdfs://saturn01.nflabs.com/data-repo/CDN-LOGS/scslog\u0027\n;\n", z);
+                "CREATE  external TABLE test (id INT, name STRING) \nLOCATION \u0027hdfs://saturn01.nflabs.com/data-repo/CDN-LOGS/scslog\u0027\n;\n");
 
-        ZQL zql = new ZQL("ADD JAR \u0027/usr/lib/hive/lib/hive-contrib-0.11.0.1.3.2.0-111.jar\u0027;\n\nCREATE external TABLE scslog (\n    hostname STRING,\n    level STRING,\n    servicename STRING,\n    time STRING,\n    responseTime STRING,\n    ip STRING,\n    status STRING,\n    size STRING,\n    method STRING,\n    url STRING,\n    username STRING,\n    cacheStatus STRING,\n    mime STRING,\n    requestHeader STRING,\n    responseHeader STRING)\nPARTITIONED BY(dt STRING, svc STRING)\nROW FORMAT SERDE \u0027org.apache.hadoop.hive.contrib.serde2.RegexSerDe\u0027\nWITH SERDEPROPERTIES (\n    \"input.regex\" \u003d \"([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) (-|\\\\[[^\\\\]]*\\\\]) (-|\\\\[[^\\\\]]*\\\\])\",\n    \"output.format.string\" \u003d \"%1$s %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s %10$s %11$s %12$s %13$s %14$s %15$s\"\n)\nSTORED AS TEXTFILE\nLOCATION \u0027hdfs://saturn01.nflabs.com/data-repo/CDN-LOGS/scslog\u0027\n;\n\n\n\n\n", z);
+        ZQL zql = new ZQL("ADD JAR \u0027/usr/lib/hive/lib/hive-contrib-0.11.0.1.3.2.0-111.jar\u0027;\n\nCREATE external TABLE scslog (\n    hostname STRING,\n    level STRING,\n    servicename STRING,\n    time STRING,\n    responseTime STRING,\n    ip STRING,\n    status STRING,\n    size STRING,\n    method STRING,\n    url STRING,\n    username STRING,\n    cacheStatus STRING,\n    mime STRING,\n    requestHeader STRING,\n    responseHeader STRING)\nPARTITIONED BY(dt STRING, svc STRING)\nROW FORMAT SERDE \u0027org.apache.hadoop.hive.contrib.serde2.RegexSerDe\u0027\nWITH SERDEPROPERTIES (\n    \"input.regex\" \u003d \"([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) (-|\\\\[[^\\\\]]*\\\\]) (-|\\\\[[^\\\\]]*\\\\])\",\n    \"output.format.string\" \u003d \"%1$s %2$s %3$s %4$s %5$s %6$s %7$s %8$s %9$s %10$s %11$s %12$s %13$s %14$s %15$s\"\n)\nSTORED AS TEXTFILE\nLOCATION \u0027hdfs://saturn01.nflabs.com/data-repo/CDN-LOGS/scslog\u0027\n;\n\n\n\n\n");
         //when
         zql1.compile();
         zql.compile();
 	}
 	
 	public void testAnnotationStatmentQuery() throws ZException, ZQLException{
-		ZQL zql = new ZQL("select * from test;@driver set production;!echo ls", z);
+		ZQL zql = new ZQL("select * from test;@driver set production;!echo ls");
 		List<Z> plan = zql.compile();
 		assertEquals(3, plan.size());
 		assertEquals("select * from test", plan.get(0).getQuery());
@@ -169,12 +169,12 @@ public class ZQLTest extends TestCase {
 	
 	public void testPerformance() throws Exception{
 		MockDriver.queries.put("select * from tbl", new Result(0, new String[]{"hello"}));
-		new ZQL("select * from tbl", z).compile().execute();
+		new ZQL("select * from tbl").compile().execute(z);
 		long start = System.currentTimeMillis();		
 		int count=0;
 		while(System.currentTimeMillis() - start < 2000){
 			count++;
-			new ZQL("select * from tbl", z).compile().execute();
+			new ZQL("select * from tbl").compile().execute(z);
 		}
 		long end = System.currentTimeMillis();
 		long diff = end - start;

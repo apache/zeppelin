@@ -41,7 +41,7 @@ import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
-import com.nflabs.zeppelin.zengine.api.Z;
+import com.nflabs.zeppelin.zengine.stmt.Z;
 
 public class ZQLJobManager implements JobListener {
 	private static final String HISTORY_DIR_NAME = "/history";
@@ -60,12 +60,12 @@ public class ZQLJobManager implements JobListener {
 	private org.quartz.Scheduler quertzSched;
 	private Zengine zengine;
 	
-	public ZQLJobManager(Zengine zengine, Scheduler scheduler, String jobPersistBasePath) throws SchedulerException{
+	public ZQLJobManager(Zengine zengine, FileSystem fs, Scheduler scheduler, String jobPersistBasePath) throws SchedulerException{
 		this.scheduler = scheduler;
 		this.jobPersistBasePath = jobPersistBasePath;
 		this.zengine = zengine;
 		
-		fs = zengine.fs();
+		this.fs = fs;
 		
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		gsonBuilder.setPrettyPrinting();

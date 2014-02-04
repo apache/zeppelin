@@ -1,10 +1,10 @@
 package com.nflabs.zeppelin.driver.hive11;
 
 import java.io.File;
-import java.net.URI;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -23,11 +23,7 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
     private static String HIVE_SERVER = "org.apache.hadoop.hive.jdbc.HiveDriver";
     private static String HIVE_SERVER_2 = "org.apache.hive.jdbc.HiveDriver";
 
-	private HiveInterface client;
-	
-	public HiveZeppelinDriver(ZeppelinConfiguration conf, URI uri, ClassLoader classLoader) {
-		super(conf, uri, classLoader);
-	}
+	private HiveInterface client;	
 	
 	public void setClient(HiveInterface client){
 		this.client = client;
@@ -48,8 +44,12 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
         return className;        
 	}
 	
+	private ZeppelinConfiguration getConf(){
+		return ZeppelinConfiguration.create();
+	}
+	
 	private String getLocalMetastore(){
-		return getConf().getString(ConfVars.ZEPPELIN_HOME)+"/metastore_db";
+		return new File(getConf().getString(ConfVars.ZEPPELIN_HOME)+"/metastore_db").getAbsolutePath();
 	}
 	
 	private String getLocalWarehouse(){
@@ -57,24 +57,24 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	}
 	
 	@Override
-	public ZeppelinConnection getConnection() throws ZeppelinDriverException {
+	public ZeppelinConnection createConnection(String uri) throws ZeppelinDriverException {
 		try {
 			Connection con;
-			String uri = getUri().toString();
+			String uriString = "jdbc:"+uri.toString();
 			if (client!=null){ // create connection with given client instance
 				logger.debug("Create connection from provided client instance");
 				con = new HiveConnection(client);
 			//else create instance using configuration files
-			} else if(isEmpty(uri)){ 
+			} else if(isEmpty(uriString)){ 
 				logger.debug("Create connection from hive configuration");
 				con = new HiveConnection(hiveConf());
-			} else if(uri.equals("jdbc:hive://") || uri.equals("jdbc:hive2://")) { //local mode detected 
+			} else if(uriString.equals("jdbc:hive://") || uriString.equals("jdbc:hive2://")) { //local mode detected 
 				logger.debug("Create connection from local mode");
 				con = new HiveConnection(localHiveConf());
 			} else { // remote connection using jdbc uri
 				logger.debug("Create connection from given jdbc uri");
-				Class.forName(getHiveDriverClass(uri));
-			    con = DriverManager.getConnection(uri);
+				Class.forName(getHiveDriverClass(uriString));
+			    con = DriverManager.getConnection(uriString);
 			}
 
 			return new HiveZeppelinConnection(con);
@@ -106,5 +106,15 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 		new File(getLocalWarehouse()).mkdirs();
 		hiveConf.set(HiveConf.ConfVars.HADOOPJT.varname, "local");
 		return hiveConf;
+	}	
+
+	@Override
+	public boolean acceptsURL(String url) {
+		return ( Pattern.matches("hive://.*", url) || Pattern.matches("hive2://.*", url) );
+	}
+
+	@Override
+	protected void init() {
+		
 	}
 }

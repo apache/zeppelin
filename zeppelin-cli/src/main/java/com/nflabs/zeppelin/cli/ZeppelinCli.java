@@ -3,6 +3,7 @@ package com.nflabs.zeppelin.cli;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.LinkedList;
 import java.util.List;
 
 import jline.ConsoleReader;
@@ -18,14 +19,15 @@ import org.apache.commons.cli.ParseException;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.ZPlan;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
-import com.nflabs.zeppelin.zengine.api.Z;
-import com.nflabs.zeppelin.zengine.api.ZQL;
+import com.nflabs.zeppelin.zengine.stmt.Z;
+import com.nflabs.zeppelin.zengine.stmt.ZQL;
 
 public class ZeppelinCli {
 	@SuppressWarnings("static-access")
-    public static void main(String args[]) throws ParseException, ZException, IOException, ZQLException, SQLException, ResultDataException{
+    public static void main(String args[]) throws Exception{
 	
 		Options options = new Options();
 		options.addOption(OptionBuilder.withArgName("File")
@@ -46,19 +48,18 @@ public class ZeppelinCli {
 		Zengine z = new Zengine();
 
 		if(cmd.hasOption("f")){
-			ZQL zql = new ZQL(z);
+			ZQL zql = new ZQL();
 			zql.load(new File(cmd.getOptionValue("f")));
-			List<Z> zs = zql.compile();
+			LinkedList<Result> rs = zql.compile().execute(z);
 			
-			for(Z q : zs){
-				q.execute().result().write(System.out);
+			for(Result r : rs){
+				r.write(System.out);
 			}
 		} else if(cmd.hasOption("e")){ 			
-			ZQL zql = new ZQL(cmd.getOptionValue("e"), z);
-			List<Z> zs = zql.compile();			
-			
-			for(Z q : zs){
-				q.execute().result().write(System.out);
+			ZQL zql = new ZQL(cmd.getOptionValue("e"));
+			LinkedList<Result> rs = zql.compile().execute(z);
+			for(Result r : rs){
+				r.write(System.out);
 			}
 		} else if(cmd.hasOption("h")){
 			HelpFormatter formatter = new HelpFormatter();
@@ -89,24 +90,19 @@ public class ZeppelinCli {
         while ((line = readLine(reader, "")) != null) {
             ZQL zql;
             try {
-                zql = new ZQL(line, z);
-                List<Z> zs = zql.compile();
-
-                for (Z q : zs) {
-                    Result result = q.execute().result();
-                    if (result != null) {
-                        result.write(System.out);
-                    }
-                }
-
-                for (Z q : zs) {
-                    q.release();
-                }
+                zql = new ZQL(line);
+    			LinkedList<Result> rs = zql.compile().execute(z);
+    			
+    			for(Result r : rs){
+    				r.write(System.out);
+    			}
             } catch (ZException e) {
                 e.printStackTrace();
             } catch (ZQLException e) {
                 e.printStackTrace();
-            }
+            } catch (Exception e) {
+				e.printStackTrace();
+			}
 
         }
     }

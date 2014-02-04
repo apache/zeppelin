@@ -86,10 +86,18 @@ App.ZqlEditController = App.ApplicationController.extend({
                 if(job.status=="RUNNING"){
                     return;
                 }
+
+                // TODO: move button controling to view
+                $('#zqlRunButton').text("Running ...");
+                $('#zqlRunButton').addClass('disabled');
+                $('#zqlRunButton').prop('disabled', true);
                 zeppelin.zql.set(jobid, jobName, zql, undefined, jobCron, function(c, d){
                     if(c!=200){
+                        $('#zqlRunButton').text("Run");
+                        $('#zqlRunButton').prop('disabled', false);
                         zeppelin.alert("Error: Invalid Job", "#alert");
                     } else {
+                        $('#zqlRunButton').prop('disabled', false);
                         controller.set('dirty', 0);
                         zeppelin.zql.run(jobid, function(c, d){
                             if (c==200) {

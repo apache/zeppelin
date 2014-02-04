@@ -28,7 +28,7 @@ import com.nflabs.zeppelin.server.JsonResponse;
 import com.nflabs.zeppelin.server.ZQLJob;
 import com.nflabs.zeppelin.server.ZQLJobManager;
 import com.nflabs.zeppelin.zengine.ZException;
-import com.nflabs.zeppelin.zengine.api.Z;
+import com.nflabs.zeppelin.zengine.stmt.Z;
 
 @Path("/zql")
 public class ZQLRestApi {	

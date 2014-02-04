@@ -1,7 +1,5 @@
-package com.nflabs.zeppelin.zengine.api;
+package com.nflabs.zeppelin.zengine.stmt;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,55 +14,32 @@ import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.Before;
 
-import com.nflabs.zeppelin.driver.ZeppelinDriver;
-import com.nflabs.zeppelin.driver.mock.MockDriver;
-import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
-import com.nflabs.zeppelin.zengine.Zengine;
+import com.nflabs.zeppelin.zengine.stmt.Q;
+import com.nflabs.zeppelin.zengine.stmt.Z;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 public class ZTest extends TestCase {
-
-	public ZTest() throws IOException {
-		super();
-	}
-
-	private File tmpDir;
-    private Zengine z;
-    private ZeppelinDriver drv;
-
-
     @Before
 	public void setUp() throws Exception {
-		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
-		tmpDir.mkdir();
-		
-		UtilsForTests.delete(new File("/tmp/warehouse"));
-				
-        //Dependencies: ZeppelinDriver + ZeppelinConfiguration + fs + RubyExecutionEngine
-		z = UtilsForTests.createZengine();
-		drv = (MockDriver) z.getDriverFactory().createDriver("test");
 	}
 
     @After
 	public void tearDown() throws Exception {
-		super.tearDown();
-		UtilsForTests.delete(tmpDir);
-		UtilsForTests.delete(new File("/tmp/warehouse"));
 	}	
 	
 	public void testPipeGetQuery() throws ZException{
-		Z q = new Q("select * from bank", z, drv)
-		    .pipe(new Q("select * from (<%=z."+Q.INPUT_VAR_NAME+"%>) q limit 10", z, drv))
-		    .pipe(new Q("create view vv as select * from <%=z."+Q.INPUT_VAR_NAME+"%>", z, drv));
+		Z q = new Q("select * from bank")
+		    .pipe(new Q("select * from (<%=z."+Q.INPUT_VAR_NAME+"%>) q limit 10"))
+		    .pipe(new Q("create view vv as select * from <%=z."+Q.INPUT_VAR_NAME+"%>"));
 		
 		assertEquals("create view vv as select * from "+q.prev().name(), q.getQuery());
 		q.release();
 	}
 	
 	public void testAutogenName() throws ZException{
-		Z z1 = new Q("select * from bank", z, drv);
-		Z z2 = new Q("select * from (<%=z."+Q.INPUT_VAR_NAME+"%>) q limit 10", z, drv);
+		Z z1 = new Q("select * from bank");
+		Z z2 = new Q("select * from (<%=z."+Q.INPUT_VAR_NAME+"%>) q limit 10");
 		assertNull(z1.name());
 		z1.pipe(z2);
 		assertNull(z2.name());

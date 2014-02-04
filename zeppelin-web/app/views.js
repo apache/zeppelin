@@ -61,27 +61,31 @@ App.ZqlEditView = Ember.View.extend({
             jobNameEditor.editable('enable');
             jobCronEditor.editable('enable');
             $('#zqlRunButton').text("Run");
-            //$('#zqlRunButton').removeClass('disabled');                   
+            $('#zqlRunButton').removeClass('disabled');
+            $('#zqlRunButton').prop('disabled', false);
         } else if(model.status=="RUNNING"){
             $('#zqlRunButton').text("Running ...");
-            //$('#zqlRunButton').addClass('disabled');
-            //$('#zqlRunButton').prop('disabled', true);
+            $('#zqlRunButton').addClass('disabled');
+            $('#zqlRunButton').prop('disabled', true);
             editor.setReadOnly(true);
             jobNameEditor.editable('disable');
             jobCronEditor.editable('disable');
         } else if(model.status=="FINISHED"){
             $('#zqlRunButton').text("Run");
-            //$('#zqlRunButton').addClass('disabled');
-            //$('#zqlRunButton').prop('disabled', true);
+            
 	    if(!historyId){
 		editor.setReadOnly(false);
 		jobNameEditor.editable('enable');
 		jobCronEditor.editable('enable');
+                $('#zqlRunButton').removeClass('disabled');
+                $('#zqlRunButton').prop('disabled', false);
 	    } else {
 		editor.setReadOnly(true);
 		jobNameEditor.editable('disable');
 		jobCronEditor.editable('disable');
 		$('#zqlRunButton').text("Finished");
+                $('#zqlRunButton').addClass('disabled');
+                $('#zqlRunButton').prop('disabled', true);
 	    }
 
             // draw visualization if there's some
@@ -130,13 +134,15 @@ App.ZqlEditView = Ember.View.extend({
             for(var i=0; i< model.error.rows.length; i++){
                 $('#msgBox').append("<div>"+model.error.rows[0][3]+"</div>");
             }
-            //$('#zqlRunButton').removeClass('disabled');
+            $('#zqlRunButton').removeClass('disabled');
+            $('#zqlRunButton').prop('disabled', false);
             editor.setReadOnly(false);
             jobNameEditor.editable('enable');
             jobCronEditor.editable('enable');
         } else if(model.status=="ABORT"){
             $('#zqlRunButton').text("Run");
-            //$('#zqlRunButton').removeClass('disabled');
+            $('#zqlRunButton').removeClass('disabled');
+            $('#zqlRunButton').prop('disabled', false);
             editor.setReadOnly(false);
             jobNameEditor.editable('enable');
             jobCronEditor.editable('enable');

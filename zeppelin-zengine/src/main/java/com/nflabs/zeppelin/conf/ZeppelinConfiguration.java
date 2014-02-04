@@ -10,11 +10,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ZeppelinConfiguration extends XMLConfiguration {
-    private static final long serialVersionUID = 4749305895693848035L;
+    private static final String ZEPPELIN_SITE_XML = "zeppelin-site.xml";
+	private static final long serialVersionUID = 4749305895693848035L;
     private static final Logger LOG = LoggerFactory.getLogger(ZeppelinConfiguration.class);
-
+	private static ZeppelinConfiguration conf;
+	
     public ZeppelinConfiguration(URL url) throws ConfigurationException {
-		super(url);
+		setDelimiterParsingDisabled(true);
+		load(url);
 	}
 	
 	public ZeppelinConfiguration() {
@@ -37,29 +40,42 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		
 	}
 
+
 	/**
 	 * Load from resource
 	 * @throws ConfigurationException 
 	 */
 	public static ZeppelinConfiguration create() {
+		if (conf != null) return conf;
+		
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-	    if (classLoader == null) {
-	      classLoader = ZeppelinConfiguration.class.getClassLoader();
-	    }
-		URL url = classLoader.getResource("zeppelin-site.xml");
-		if (url == null){
-            LOG.warn("Failed to load configuration, proceeding with a default");
-		    return new ZeppelinConfiguration();
+		URL url;
+		
+		url = ZeppelinConfiguration.class.getResource(ZEPPELIN_SITE_XML);
+		if (url == null) {
+			 ClassLoader cl = ZeppelinConfiguration.class.getClassLoader();
+			 if (cl!=null) {
+				 url = cl.getResource(ZEPPELIN_SITE_XML);
+			 }
+		}
+		if (url == null) {
+			url = classLoader.getResource(ZEPPELIN_SITE_XML);
 		}
 		
-		ZeppelinConfiguration result;
-		try {
-		    result = new ZeppelinConfiguration(url);
-		} catch (ConfigurationException e) {
-		    LOG.warn("Failed to load configuration from " + url + " proceeding with a default", e);
-		    result = new ZeppelinConfiguration();
+		if (url == null){
+            LOG.warn("Failed to load configuration, proceeding with a default");
+		    conf =  new ZeppelinConfiguration();
+		} else {		
+			try {
+				LOG.info("Load configuration from "+url);
+			    conf = new ZeppelinConfiguration(url);
+			} catch (ConfigurationException e) {
+			    LOG.warn("Failed to load configuration from " + url + " proceeding with a default", e);
+			    conf = new ZeppelinConfiguration();
+			}
 		}
-		return result;
+		
+		return conf;
 	}
 	
 	
@@ -202,7 +218,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_ZAN_SHARED_REPO	("zeppelin.zan.sharedrepo", null),
 		ZEPPELIN_JOB_SCHEDULER	    ("zeppelin.job.scheduler", "FIFO"), // FIFO or PARALLEL
 		ZEPPELIN_MAX_RESULT			("zeppelin.max.result", 10000),     // max num result taken by result class
-		ZEPPELIN_DRIVERS			("zeppelin.drivers", "hive:hive:com.nflabs.zeppelin.driver.hive11.HiveZeppelinDriver:jdbc:hive2://,exec:exec:com.nflabs.zeppelin.driver.exec.ExecDriver:shell:exec://"),
+		ZEPPELIN_DRIVERS			("zeppelin.drivers", "hive:hive2://,exec:exec://"),
 		ZEPPELIN_DRIVER_DIR			("zeppelin.driver.dir", "../drivers"),
 		;
 		

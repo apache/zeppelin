@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine.api;
+package com.nflabs.zeppelin.zengine.stmt;
 
 import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ZQLException;

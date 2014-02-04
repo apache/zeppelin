@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.zengine.api;
+package com.nflabs.zeppelin.zengine.stmt;
 
 import static org.junit.Assert.*;
 
@@ -8,8 +8,9 @@ import org.junit.Test;
 
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.Zengine;
-import com.nflabs.zeppelin.zengine.api.AnnotationStatement.ANNOTATION;
-import com.nflabs.zeppelin.zengine.api.AnnotationStatement.COMMAND;
+import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement;
+import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement.ANNOTATION;
+import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement.COMMAND;
 
 public class AnnotationStatementTest {
 
@@ -24,7 +25,7 @@ public class AnnotationStatementTest {
 	@Test
 	public void testAnnotation() throws ZException {
 		Zengine z = new Zengine();
-		AnnotationStatement a = new AnnotationStatement("@driver set hive", z, null);
+		AnnotationStatement a = new AnnotationStatement("@driver set hive");
 		assertEquals(ANNOTATION.DRIVER, a.getAnnotation());
 		assertEquals(COMMAND.SET, a.getCommand());
 		assertEquals("hive", a.getArgument());		
@@ -33,7 +34,7 @@ public class AnnotationStatementTest {
 	@Test
 	public void testAnnotationEmptyArg() throws ZException {
 		Zengine z = new Zengine();
-		AnnotationStatement a = new AnnotationStatement("@driver set", z, null);
+		AnnotationStatement a = new AnnotationStatement("@driver set");
 		assertEquals(ANNOTATION.DRIVER, a.getAnnotation());
 		assertEquals(COMMAND.SET, a.getCommand());
 		assertEquals(null, a.getArgument());		
@@ -44,7 +45,7 @@ public class AnnotationStatementTest {
 		Zengine z = new Zengine();
 		AnnotationStatement a;
 		try {
-			a = new AnnotationStatement("@worng set hive", z, null);
+			a = new AnnotationStatement("@worng set hive");
 			fail();
 		} catch (ZException e) {
 			// expected
@@ -56,7 +57,7 @@ public class AnnotationStatementTest {
 		Zengine z = new Zengine();
 		AnnotationStatement a;
 		try {
-			a = new AnnotationStatement("@driver wrong hive", z, null);
+			a = new AnnotationStatement("@driver wrong hive");
 			fail();
 		} catch (ZException e) {
 			// expected

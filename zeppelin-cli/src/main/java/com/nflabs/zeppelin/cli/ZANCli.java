@@ -1,6 +1,9 @@
 package com.nflabs.zeppelin.cli;
 
+import java.io.IOException;
 import java.util.List;
+
+import org.apache.hadoop.fs.FileSystem;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -9,7 +12,7 @@ import com.nflabs.zeppelin.zan.ZAN;
 import com.nflabs.zeppelin.zan.ZANException;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.Zengine;
-import com.nflabs.zeppelin.zengine.api.Z;
+import com.nflabs.zeppelin.zengine.stmt.Z;
 
 public class ZANCli {
 	public static enum Command{
@@ -79,11 +82,18 @@ public class ZANCli {
 		ZeppelinConfiguration conf = new ZeppelinConfiguration();
 		//TODO(alex): replace with just file system
 		Zengine z = new Zengine();
+		FileSystem fs;
+		try {
+			fs = FileSystem.get(new org.apache.hadoop.conf.Configuration());
+		} catch (IOException e) {
+			throw new ZException(e);
+		}
 		
 		String zanRepo = conf.getString(ConfVars.ZEPPELIN_ZAN_REPO);
 		String zanLocalRepo = conf.getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO);
 		String zanSharedRepo = conf.getString(ConfVars.ZEPPELIN_ZAN_SHARED_REPO);
-		ZAN zan = new ZAN(zanRepo, zanLocalRepo, zanSharedRepo, z.fs());
+		
+		ZAN zan = new ZAN(zanRepo, zanLocalRepo, zanSharedRepo, fs);
 		return zan;
 	}
 	

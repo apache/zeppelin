@@ -4,7 +4,6 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
@@ -15,13 +14,22 @@ public class MockDriver extends ZeppelinDriver{
 	static public Map<String, Result> views = new HashMap<String, Result>();
 	static public Map<String, Result> tables = new HashMap<String, Result>();
 	
-	public MockDriver(ZeppelinConfiguration conf, URI uri, ClassLoader classLoader) {
-		super(conf, uri, classLoader);
-	}
 
 	@Override
-	public ZeppelinConnection getConnection() throws ZeppelinDriverException {
+	protected ZeppelinConnection createConnection(String uri) throws ZeppelinDriverException {
 		return new MockDriverConnection(queries, views, tables);
+	}
+
+
+	@Override
+	public boolean acceptsURL(String url) {
+		return true;
+	}
+
+
+	@Override
+	protected void init() {
+
 	}
 	
 }

@@ -16,11 +16,11 @@ import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.zengine.ZException;
+import com.nflabs.zeppelin.zengine.ZPlan;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
-import com.nflabs.zeppelin.zengine.api.Z;
-import com.nflabs.zeppelin.zengine.api.ZPlan;
-import com.nflabs.zeppelin.zengine.api.ZQL;
+import com.nflabs.zeppelin.zengine.stmt.Z;
+import com.nflabs.zeppelin.zengine.stmt.ZQL;
 
 /**
  * ZQLJob class runs ZQL statements.
@@ -48,11 +48,6 @@ public class ZQLJob extends Job {
 	
 	public void setZengine(Zengine zengine){
 		this.zengine = zengine;
-		if (zqlPlans!=null && zqlPlans.size()>0) {
-			for (Z z : zqlPlans) {
-				z.setZengine(zengine);
-			}
-		}
 	}
 		
 	/**
@@ -119,7 +114,7 @@ public class ZQLJob extends Job {
 		if(getStatus()!=Status.READY) return;
 		
 		if(zqlPlans.isEmpty()){
-			ZQL zqlEvaluator = new ZQL(zql, zengine);
+			ZQL zqlEvaluator = new ZQL(zql);
 			zqlPlans = zqlEvaluator.compile();
 		} else {
 			reconstructNextReference();
@@ -138,7 +133,7 @@ public class ZQLJob extends Job {
 	 */
 	@Override
 	protected Object jobRun() throws Exception {
-		ZQL zqlEvaluator = new ZQL(zql, zengine);
+		ZQL zqlEvaluator = new ZQL(zql);
 		try {
 			zqlPlans = zqlEvaluator.compile();
 		} catch(ZQLException e) {
@@ -147,7 +142,7 @@ public class ZQLJob extends Job {
 		}
 
 		try {
-			return zqlPlans.execute(params);
+			return zqlPlans.execute(zengine, params);
 		} catch (Exception e) {
 			error = new Result(e);
 			throw e;
