@@ -29,7 +29,7 @@ body {
 
 /* Carousel base class */
 .carousel {
-  height: 300px;
+  height: 200px;
   margin-bottom: 10px;
 }
 /* Since positioning the image, we need to help out the caption */
@@ -40,8 +40,11 @@ body {
 /* Declare heights because of positioning of img element */
 .carousel .item {
   height: 300px;
-  background-color: #777;
 }
+.carousel-control {
+  background-image: none !important;
+}
+
 .carousel-inner > .item > img {
   position: absolute;
   top: 0;
@@ -53,7 +56,14 @@ body {
   margin-top:30px;
   margin-bottom:0px;
 }
-
+@media screen and (min-width: 768px) {
+  .carousel-indicators {
+    margin-bottom: -60px;
+  }
+  .carousel-caption {
+    padding-bottom: 60px;
+  }
+}
 
 
 .jumbotron h1,
