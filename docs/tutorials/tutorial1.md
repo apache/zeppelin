@@ -27,9 +27,19 @@ You can create new job with 'New' button. You'll see ZQL editor on the screen.
 
 We'll use data [Bank Marketing Data Set](http://archive.ics.uci.edu/ml/datasets/Bank+Marketing) in this tutorial.
 
-Let's create table first.
+
+Let's download and unarchive the data, using exec driver.
 
 ```
+@driver set exec;
+curl -s http://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank.zip -o /tmp/bank.zip;
+unzip -q -o /tmp/bank.zip bank-full.csv -d /tmp;
+```
+
+Then create table and load data into the table.
+
+```
+@driver set hive;
 CREATE TABLE IF NOT EXISTS bank(
     age INT, 
     job STRING,
@@ -52,19 +62,8 @@ CREATE TABLE IF NOT EXISTS bank(
 ROW FORMAT DELIMITED 
 FIELDS TERMINATED BY "59" 
 STORED AS TEXTFILE 
-; 
-```
+;
 
-And then download and unarchive the data, using shell command statement (starting with !)
-
-```
-!curl -s http://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank.zip -o /tmp/bank.zip;
-!unzip -q -o /tmp/bank.zip bank-full.csv -d /tmp;
-```
-
-Load downloaded data into table using HQL's load
-
-```
 LOAD DATA LOCAL INPATH '/tmp/bank-full.csv' OVERWRITE INTO TABLE bank;
 ```
 

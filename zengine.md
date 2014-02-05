@@ -14,10 +14,11 @@ Word Count
 import com.nflabs.zeppelin.zengine.*
 import com.nflabs.zeppelin.result.*
 ...
+Zengine z = new Zengine();                                    // initialize Zengine
 result = new Q("select text from myTable")                    // load some data
               .pipe(new L("wordcount"))                       // load wordcount library
-              .execute()                                      // execute
-	      .result();
+              .execute(z)                                     // execute
+              .result();
 
 result.write(System.out);                                     // Print result to stdout
 ...
@@ -33,7 +34,7 @@ to use it add dependency in your pom.xml
 <dependency>
     <groupId>com.nflabs.zeppelin</groupId>
     <artifactId>zeppelin-zengine</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
 </dependency>
 ```
 if you want access snapshot
@@ -42,7 +43,7 @@ if you want access snapshot
 <dependency>
     <groupId>com.nflabs.zeppelin</groupId>
     <artifactId>zeppelin-zengine</artifactId>
-    <version>0.3.0-SNAPSHOT</version>
+    <version>0.3.1-SNAPSHOT</version>
 </dependency>
 
 ...
