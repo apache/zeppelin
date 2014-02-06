@@ -172,7 +172,7 @@ App.ZqlEditController = App.ApplicationController.extend({
             // TODO save job before change
             if(model.status=="READY"){
                 if(this.get('dirty')){
-                    zeppelin.zql.set(model.id, jobNameEditor.val(), editor.getValue(), undefined, jobCronEditor.getValue(), function(c, d){
+                    zeppelin.zql.set(model.id, jobNameEditor.val(), editor.getValue(), undefined, jobCronEditor.val(), function(c, d){
                         if(c==200){
                             console.log("job %o saved", model.id)
                         } else {
