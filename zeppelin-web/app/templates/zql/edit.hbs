@@ -11,7 +11,7 @@
   <a id="zqlRunButton" class="btn btn-lg btn-primary" {{action 'runJob'}}>Run</a>
   <a id="zqlAbortButton" class="btn btn-lg btn-primary" style="display:none;" {{action 'abortJob'}}>Abort</a>
   <div style="float:right; text-align:right">
-    Schedule - <a href="#" data-type="select" id="zqlJobCron"></a> | 
+    Schedule - <a href="#" data-type="select2" id="zqlJobCron"></a> | 
     <a id="zqlShareButton" {{action "shareJob"}}>Share</a> | 
     <a id="zqlDeleteButton">Delete</a>
     <p style="font-size:11px">Last run {{currentJob.dateFinished}}, took {{jobTook}}</p>
