@@ -12,7 +12,7 @@ Simple analytical environment on top of Hadoop ecosystem.
 
 Zeppelin provides
 
- * SQL like analytical language [ZQL](./zql.html) (HiveQL extension)
+ * SQL like analytical language [ZQL](./zql.html) (based on HiveQL)
  * Pluggable visualization
  * Pluggable algorithm
  * Online archive of visualization, algorithm. [ZAN](./zan.html) (Zeppelin Archive Network)
@@ -68,7 +68,7 @@ Checkout [screenshots](./screenshots.html).
 ## Lates News
 
 
-#### Zeppelin 0.2.0 Released! ####
+#### Zeppelin 0.3.0 Released! ####
  
 [Check here](./download.html)
 

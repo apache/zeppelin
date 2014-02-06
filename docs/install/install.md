@@ -17,14 +17,14 @@ curl -O http://apache.mirror.cdnetworks.com/hadoop/common/hadoop-1.2.1/hadoop-1.
 tar -xzf hadoop-1.2.1-bin.tar.gz
 
 # download zeppelin and unarchive
-curl -O https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.2.0.tar.gz
-tar -xzf zeppelin-0.2.0.tar.gz
+curl -O https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.3.0.tar.gz
+tar -xzf zeppelin-0.3.0.tar.gz
 
 # set HADOOP_HOME
-echo "export HADOOP_HOME=`pwd`/hadoop-1.2.1" >> zeppelin-0.2.0/conf/zeppelin-env.sh
+echo "export HADOOP_HOME=`pwd`/hadoop-1.2.1" >> zeppelin-0.3.0/conf/zeppelin-env.sh
 
 # start zeppelin
-./zeppelin-0.2.0/bin/zeppelin-daemon.sh start
+./zeppelin-0.3.0/bin/zeppelin-daemon.sh start
 
 ```
 
@@ -71,7 +71,7 @@ Configuration can be done by both environment variable and java properties. If b
   <tr>
     <td>ZEPPELIN\_JOB\_DIR</td>
     <td>zeppelin.job.dir</td>
-    <td>sessions</td>
+    <td>jobs</td>
     <td>Zeppelin persist/load session in this directory. Can be a path or a URI. location on HDFS supported</td>
   </tr>
   <tr>
@@ -93,23 +93,19 @@ Configuration can be done by both environment variable and java properties. If b
     <td>Zeppelin library shared repository. Location on HDFS. Usufull when your backend (eg. hiveserver) is not running on the sam machine and want to use zeppelin library with resource file(eg. in hive 'ADD FILE 'path'). So your backend can get resource file from shared repository.</td>
   </tr>
   <tr>
-    <td>ZEPPELIN\_DRIVER</td>
-    <td>zeppelin.driver.class</td>
-    <td>com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver</td>
-    <td>Zeppelin Driver class</td>
+    <td>ZEPPELIN\_DRIVERS</td>
+    <td>zeppelin.drivers</td>
+    <td>hive:hive2://,exec:exec://</td>
+    <td>Comma separated list of [Name]:[Connection URI]</td>
   </tr>
   <tr>
-    <td>HIVE\_CONNECTION\_URI</td>
-    <td>hive.connection.uri</td>
-    <td>jdbc:hive2://</td>
-    <td>Hive jdbc connection uri. Used for connecting to hive server 
-Driver specific configuration : Hive Driver (com.nflabs.zeppelin.driver.hive.HiveZeppelinDriver).
-       eg. jdbc:hive2://localhost:10000/default, jdbc:hive://localhost:10000/default       
+    <td>ZEPPELIN\_DRIVER\_DIR</td>
+    <td>zeppelin.driver.dir</td>
+    <td>drivers</td>
+    <td>Zeppelin driver directory.
     </td>
   </tr>
 </table>
-
-Place your core-site.xml, hdfs-site.xml, hive-site.xml in _conf_ directory as you need. Zeppelin will include them in classpath on startup.
 
 ## Start/Stop
 #### Start Zeppelin

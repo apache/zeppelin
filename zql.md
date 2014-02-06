@@ -11,13 +11,15 @@ ZQL is very simple but powerful SQL like language based on HiveQL. ZQL can be ru
 
 ### ZQL syntax
 ```
-ZQLStmt            : HiveQLStmt | LibraryStmt | ZQLStmt (PipeOperator ZQLStmt)*
+ZQLStmt            : (HiveQLStmt | LibraryStmt | ZQLStmt (PipeOperator ZQLStmt)* | AnnotationStmt) StmtTerminator
+AnnotationStmt     : @(driver) CMD (ARGUMENT)?
 HiveQLStmt         : HIVE_QUERY
 LibraryStmt        : LIBRARY_NAME(paramName1=paramValue1, paramName2=paramValue2, ...)? (ARGUMENT)?
 RedirectStmt       : ZQLStmt RedirectOperator (table|view)? TABLE_NAME
 ExecStmt           : !SHELL_COMMAND
 PipeOperator       : |
 RedirectOperator   : >
+StmtTerminator     : ;
 ```
 
 ### Template
@@ -82,10 +84,17 @@ select text from myTable | wordcount > wc_out;               // load | process >
 select * from wc_out limit 10;                               // print first 10 rows of wc_out
 ```
 
-Shell command
+Annotation
 
 ```
-!date                                                        // print date
+@driver set exec;                                            // set current driver to exec
+date;                                                        // print date
+whoami;                                                      // print who i am. 'driver set' annotation applied 
+                                                             // until next 'drvier set' annotation
+
+@driver set hive;                                            // set current driver to hive
 select text from myTable | wordcount > wc_out;               // load | process > export
-!echo "finished" | mail -s "JOB_FINISHED" hello@world.net    // send email
+
+@driver set exec;                                            // set current driver to exec
+bash -c 'echo "finished" | mail -s "JOB_FINISHED" hello@world.net';     // send email
 ```
