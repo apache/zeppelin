@@ -23,7 +23,7 @@
   <groupId>com.nflabs.zeppelin</groupId>
   <artifactId>zeppelin</artifactId>
   <packaging>pom</packaging>
-  <version>0.3.0-SNAPSHOT</version>
+  <version>0.3.0</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
   <url>http://zeppelin-project.org/</url>
@@ -192,7 +192,7 @@
             <id>enforce</id>
             <configuration>
               <rules>
-                <DependencyConvergence/>
+                <DependencyConvergence />
               </rules>
               <failFast>true</failFast>
             </configuration>
@@ -308,7 +308,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore></ignore>
+                    <ignore />
                   </action>
                 </pluginExecution>
               </pluginExecutions>

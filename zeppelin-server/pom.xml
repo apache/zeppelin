@@ -5,13 +5,13 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>com.nflabs.zeppelin</groupId>
-    <version>0.3.0-SNAPSHOT</version>
+    <version>0.3.0</version>
   </parent>
   
   <groupId>com.nflabs.zeppelin</groupId>
   <artifactId>zeppelin-server</artifactId>
   <packaging>jar</packaging>
-  <version>0.3.0-SNAPSHOT</version>
+  <version>0.3.0</version>
   <name>Zeppelin: Server</name>
   <url>http://www.nflabs.com</url>
   
@@ -201,10 +201,8 @@
             <phase>pre-integration-test</phase>
             <configuration>
               <target unless="skipTests">
-                <exec executable="./zeppelin-daemon.sh"
-                      dir="${zeppelin.daemon.package.base}"
-                      spawn="true">
-                  <arg value="start"/>
+                <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="true">
+                  <arg value="start" />
                 </exec>
               </target>
             </configuration>
@@ -218,10 +216,8 @@
             <phase>post-integration-test</phase>
             <configuration>
               <target unless="skipTests">
-                <exec executable="./zeppelin-daemon.sh"
-                      dir="${zeppelin.daemon.package.base}"
-                      spawn="false">
-                  <arg value="stop"/>
+                <exec executable="./zeppelin-daemon.sh" dir="${zeppelin.daemon.package.base}" spawn="false">
+                  <arg value="stop" />
                 </exec>
               </target>
             </configuration>
