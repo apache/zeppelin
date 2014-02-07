@@ -39,30 +39,14 @@ exports.config =
           'vendor/scripts/handlebars-1.1.2.js',
           'vendor/scripts/ember-latest.js',
           'vendor/scripts/ember-data-latest.js',
-#          'vendor/scripts/ember-i18n-1.2.0.js',
+
           'vendor/scripts/bootstrap.min.js',
           'vendor/scripts/bootstrap-combobox.js',
-
           'vendor/scripts/bootstrap-editable.js',
           'vendor/scripts/select2.js',
           'vendor/scripts/bootstrap-confirmation.js',
 
-          'vendor/scripts/jquery.ui.core.js',
-          'vendor/scripts/jquery.ui.widget.js',
-          'vendor/scripts/jquery.ui.mouse.js',
-          'vendor/scripts/jquery.ui.datepicker.js',
-          'vendor/scripts/jquery-ui-timepicker-addon.js',
-          'vendor/scripts/jquery.ui.slider.js',
-          'vendor/scripts/jquery.ui.sortable.js',
-          'vendor/scripts/jquery.ui.custom-effects.js',
-          'vendor/scripts/jquery.timeago.js',
-          'vendor/scripts/jquery.ajax-retry.js',
-          'vendor/scripts/workflow_visualization.js',
-          'vendor/scripts/rickshaw.js',
-          'vendor/scripts/spin.js',
-          'vendor/scripts/jquery.flexibleArea.js',
-          'vendor/scripts/FileSaver.js',
-          'vendor/scripts/Blob.js'
+          'vendor/scripts/jquery-ui-1.10.4.custom.min',
           ]
 
     stylesheets:
@@ -72,6 +56,7 @@ exports.config =
         before: [
           'vendor/styles/bootstrap-combined.min.css',
           'vendor/styles/bootstrap-theme.min.css',
+          'vendor/styles/jquery-ui-bootstrap/jquery-ui-1.10.4.custom.css',
           'vendor/styles/font-awesome.css',
           'vendor/styles/font-awesome-ie7.css',
           'vendor/styles/cubism.css',
