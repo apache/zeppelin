@@ -70,6 +70,7 @@
     <module>zeppelin-zengine</module>
     <module>zeppelin-driver-hive11</module>
     <module>zeppelin-driver-exec</module>
+    <module>zeppelin-driver-jdbc</module>
     <module>zeppelin-cli</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
