@@ -113,6 +113,13 @@
       </exclusions>      
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-contrib</artifactId>
+      <version>${hive.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    
     <!-- hive-jdbc, hive-test dependencies have transitive dependency to derby. in different version.
          excluding/chaning derby transivie dependency in hive-test is braking hive-test.
          therefore, only option is excluding derby from hive-jdbc's transitive and explicitly define
