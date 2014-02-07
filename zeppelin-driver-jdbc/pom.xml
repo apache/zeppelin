@@ -29,6 +29,7 @@
 		<artifactId>mysql-connector-java</artifactId>
 		<version>5.1.28</version>
 		<scope>runtime</scope>
+		<optional>true</optional>
 	</dependency>
 	
     <dependency>
