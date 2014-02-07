@@ -118,6 +118,7 @@
       <artifactId>hive-contrib</artifactId>
       <version>${hive.version}</version>
       <scope>runtime</scope>
+      <optional>true</optional>
     </dependency>
     
     <!-- hive-jdbc, hive-test dependencies have transitive dependency to derby. in different version.
