@@ -219,7 +219,11 @@ App.ZqlEditView = Ember.View.extend({
             maxHeight : 3000,
             minHeight : 200,
             maxWidth : $('#zqlEditor').width(),
-            minWidth : $('#zqlEditor').width() 
+            minWidth : $('#zqlEditor').width(),
+            resize: function( event, ui ) {
+                editor.resize();
+            }
+
         });
 
         var jobNameEditor = $('#zqlJobName');
