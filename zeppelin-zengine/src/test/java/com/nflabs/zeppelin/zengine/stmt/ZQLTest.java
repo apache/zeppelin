@@ -89,15 +89,15 @@ public class ZQLTest extends TestCase {
 		}
 	}
 	
-	public void testRedirection() throws ZException, ZQLException{
+	public void testGtLt() throws ZException, ZQLException{
 		ZQL zql = new ZQL();
-		zql.append("select * from bank limit 10 > summary");
+		zql.append("select * from bank where age > 10 and age < 20");
 		List<Z> plan = zql.compile();
 		
 		assertEquals(1, plan.size());
-		assertEquals("select * from bank limit 10", plan.get(0).getQuery());
+		assertEquals("select * from bank where age > 10 and age < 20", plan.get(0).getQuery());
 	}
-
+	
 	public void testLstmtSimple() throws ZException, ZQLException{
 		ZQL zql = new ZQL("test");
 		List<Z> zList = zql.compile();
