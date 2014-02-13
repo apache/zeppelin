@@ -28,21 +28,6 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	public void setClient(HiveInterface client){
 		this.client = client;
 	}
-
-	/**
-	 * HiveServer1 by default, but if uri starts with hive2 - assumes HiveServer2
-	 * @param uri Hive URI
-	 * @return JDBC driver class name
-	 */
-	private String getHiveDriverClass(String uri){
-	    String className;
-        if (uri.startsWith("jdbc:hive://")) { // HiveServer 
-	        className = HIVE_SERVER;
-	    } else { // HiveServer2
-	        className = HIVE_SERVER_2;
-	    }       
-        return className;        
-	}
 	
 	private ZeppelinConfiguration getConf(){
 		return ZeppelinConfiguration.create();
@@ -61,6 +46,7 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 		try {
 			Connection con;
 			String uriString = "jdbc:"+uri.toString();
+			logger.info("Create connection "+uriString);
 			if (client!=null){ // create connection with given client instance
 				logger.debug("Create connection from provided client instance");
 				con = new HiveConnection(client);
@@ -73,14 +59,11 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 				con = new HiveConnection(localHiveConf());
 			} else { // remote connection using jdbc uri
 				logger.debug("Create connection from given jdbc uri");
-				Class.forName(getHiveDriverClass(uriString));
 			    con = DriverManager.getConnection(uriString);
 			}
 
 			return new HiveZeppelinConnection(con);
 		} catch (SQLException e) {
-			throw new ZeppelinDriverException(e);
-		} catch (ClassNotFoundException e) {
 			throw new ZeppelinDriverException(e);
 		}
 	}
@@ -115,6 +98,12 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 
 	@Override
 	protected void init() {
-		
+		try {
+			// loading hive driver class in proper order.
+			Class.forName(HIVE_SERVER);
+			Class.forName(HIVE_SERVER_2);
+		} catch (ClassNotFoundException e) {
+			throw new ZeppelinDriverException(e);
+		}
 	}
 }
