@@ -37,7 +37,7 @@ import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement.COMMAND;
  *
  */
 public class ZQL {
-	String [] op = new String[]{";", "|", ">>", ">"};
+	String [] op = new String[]{";", "|" /* Disable redirect. see ZEPPELIN-99, ">>", ">" */};
 	StringBuilder sb = new StringBuilder();
 
 	public ZQL(){
@@ -183,6 +183,7 @@ public class ZQL {
 			}
 			
 			// Current operator is redirect
+			/* Disable redirect. see ZEPPELIN-99
 			if(op[2].equals(currentOp)){ // redirect append
 				throw new ZQLException("redirection (append) not implemented");
 			} else if(op[3].equals(currentOp)){ // redirect overwrite
@@ -196,6 +197,7 @@ public class ZQL {
 					throw new ZQLException("Can not redirect empty");
 				}				
 			}
+			*/
 			
 			// check if it is Annotation
 			if(stmt.startsWith("@")){
