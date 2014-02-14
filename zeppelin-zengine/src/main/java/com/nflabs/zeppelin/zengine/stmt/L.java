@@ -101,6 +101,11 @@ public class L extends Q {
 	public String getQuery() throws ZException {
 		initialize();		
 		
+		if(hasPrev()){
+			// purpose of calling is evaluating erb. because it need to share the same local variable context
+			prev().getQuery();
+		}
+
 		if(erbFile==null){
 			return null;
 		}

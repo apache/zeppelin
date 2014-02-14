@@ -6,23 +6,17 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URLClassLoader;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.nflabs.zeppelin.driver.LazyConnection;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
-import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZPlan;
 import com.nflabs.zeppelin.zengine.ZQLException;
-import com.nflabs.zeppelin.zengine.Zengine;
 import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement.ANNOTATION;
 import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement.COMMAND;
 /**
@@ -39,6 +33,7 @@ import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement.COMMAND;
 public class ZQL {
 	String [] op = new String[]{";", "|" /* Disable redirect. see ZEPPELIN-99, ">>", ">" */};
 	StringBuilder sb = new StringBuilder();
+	Map<String, Object> binding = new HashMap<String, Object>();
 
 	public ZQL(){
 	}
@@ -246,6 +241,7 @@ public class ZQL {
 				Q q;
 				try {
 					q = new Q(stmt);
+					q.withErbBinding(binding);
 				} catch (ZException e) {
 					throw new ZQLException(e);
 				}

@@ -2,7 +2,6 @@ package com.nflabs.zeppelin.zengine.stmt;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -10,14 +9,9 @@ import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.Before;
 
-import com.google.common.collect.ImmutableMap;
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.driver.ZeppelinDriver;
-import com.nflabs.zeppelin.driver.ZeppelinDriverFactory;
 import com.nflabs.zeppelin.driver.mock.MockDriver;
 import com.nflabs.zeppelin.result.Result;
-import com.nflabs.zeppelin.result.ResultDataException;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZPlan;
@@ -27,7 +21,6 @@ import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement;
 import com.nflabs.zeppelin.zengine.stmt.Q;
 import com.nflabs.zeppelin.zengine.stmt.Z;
 import com.nflabs.zeppelin.zengine.stmt.ZQL;
-import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 public class ZQLTest extends TestCase {
 
@@ -139,6 +132,39 @@ public class ZQLTest extends TestCase {
 		assertEquals("select\n*\nfrom\ntest", q.get(0).getQuery());
 	}
 
+	public void testErbScopeMultilineQuery() throws IOException, ZException, ZQLException{
+		ZQL zql = new ZQL("<% var1=\"test\" %>select a from <%=var1%>; select b from <%=var1%>;");
+
+		List<Z> q = zql.compile();
+		assertEquals(2, q.size());
+		assertEquals("select a from test", q.get(0).getQuery());
+		assertEquals("select b from test", q.get(1).getQuery());
+	}
+
+	public void testErbScopePipedQuery() throws IOException, ZException, ZQLException{
+		ZQL zql = new ZQL("<% var1=\"test\" %>select a from <%=var1%> | select b from <%=var1%>;");
+
+		List<Z> q = zql.compile();
+		assertEquals(1, q.size());
+		assertEquals("select b from test", q.get(0).getQuery());
+	}
+
+	public void testErbEvalNoMoreThanOnce() throws IOException, ZException, ZQLException{
+		ZQL zql = new ZQL("<% var1=0 %>select a from <%=var1=var1+1%>;");
+
+		List<Z> q = zql.compile();
+		assertEquals(1, q.size());
+		assertEquals("select a from 1", q.get(0).getQuery());
+		assertEquals("select a from 1", q.get(0).getQuery());
+	}
+
+	public void testErbEvalEndwithLStmt() throws IOException, ZException, ZQLException{
+		ZQL zql = new ZQL("<% arg1='test'%>select * from <%=arg1%> | test(limit=10)");
+
+		List<Z> q = zql.compile();
+		assertEquals(1, q.size());
+		assertEquals("select * from ("+q.get(0).prev().name()+") a limit 10", q.get(0).getQuery());
+	}
 
 	public void testQueryCompilessOnAddJarStatement() throws ZException, ZQLException {
 	    //on API level: why is ZException is not parent of ZQLException?

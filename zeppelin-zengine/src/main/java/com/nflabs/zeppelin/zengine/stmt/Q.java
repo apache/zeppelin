@@ -15,20 +15,16 @@ import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-import javax.script.SimpleBindings;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nflabs.zeppelin.driver.ZeppelinConnection;
-import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.zengine.ParamInfo;
 import com.nflabs.zeppelin.zengine.ZContext;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZWebContext;
-import com.nflabs.zeppelin.zengine.Zengine;
 import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 /**
@@ -45,7 +41,17 @@ public class Q extends Z {
 	transient static final String ARG_VAR_NAME="arg";
 	transient static final String INPUT_VAR_NAME="in";
 	transient static final String OUTPUT_VAR_NAME="out";
-	
+
+	/**
+	 * ERB local variables
+	 */
+	transient private Map<String,Object> binding = null;
+
+    /**
+     * Once getQuery() evaluated, then save result into this variable so, don't evaluate again. 
+     */
+    transient private String evaluatedQuery = null;
+
 	/**
 	 * Create with given query. Query is single HiveQL statement.
 	 * Query can erb template. ZContext is injected to the template
@@ -101,18 +107,35 @@ public class Q extends Z {
 		}
 	}
 	
+	private Map<String, Object> getErbBinding(){
+		if(binding==null){
+			if(hasPrev() && prev() instanceof Q) {
+				binding = ((Q)prev()).getErbBinding();
+			} else {
+				binding = new HashMap<String, Object>();
+			}
+		}
+		return binding;
+	}
+
+	public void withErbBinding(Map<String, Object> b){
+		binding = b;
+	}
+
 	protected String evalErb(BufferedReader erb, Object zcontext) throws ZException{
 		synchronized(rubyScriptEngine){
 			StringBuffer rubyScript = new StringBuffer();
 			Bindings bindings = rubyScriptEngine.createBindings();
-			bindings.put("z", zcontext);			
+			bindings.put("_zpZ", zcontext);
+			bindings.put("_zpLV", getErbBinding());
 			rubyScriptEngine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
-
-			rubyScript.append("require 'erb'\n");
-			rubyScript.append("z = $z\n");
+			for(String k : getErbBinding().keySet()){
+				rubyScript.append(k+"= $_zpLV.get(\""+k+"\")\n");
+			}
+			rubyScript.append("z = $_zpZ\n");
 			try {
 				String line = null;
-				rubyScript.append("erb = \"\"\n");
+				rubyScript.append("$_zpErb = \"\"\n");
 	
 				boolean first = true;
 				while((line = erb.readLine())!=null){
@@ -123,21 +146,21 @@ public class Q extends Z {
 						newline = "";
 						first = false;
 					}
-					rubyScript.append("erb += \""+newline+StringEscapeUtils.escapeJavaScript(line)+"\"\n");
+					rubyScript.append("$_zpErb += \""+newline+StringEscapeUtils.escapeJavaScript(line)+"\"\n");
 				}
+				rubyScript.append("$_zpErb += \"<% local_variables.each do |xx|\n    if xx != 'z' and xx != '_erbout' then $_zpLV[xx] = eval(xx) end\nend %>\"\n");
 			} catch (IOException e1) {
 				throw new ZException(e1);
 			}
-			rubyScript.append("$e = ERB.new(erb).result(binding)\n");
-	
+			rubyScript.append("$_zpE = ERB.new($_zpErb, \"<>-\").result(binding)\n");
 	        try {
 	        	logger().debug("rubyScript to run : \n"+rubyScript.toString());
 	        	rubyScriptEngine.eval(rubyScript.toString(), bindings);
 			} catch (ScriptException e) {
 				throw new ZException(e);
-			}
-	        
-	        String q = (String) rubyScriptEngine.getBindings(ScriptContext.ENGINE_SCOPE).get("e");
+			}	        
+	        String q = (String) bindings.get("_zpE");
+
 	        return nonNullString(q);
 		}
 	}
@@ -157,6 +180,13 @@ public class Q extends Z {
 	 */
 	@Override
 	public String getQuery() throws ZException{
+		if(evaluatedQuery!=null) return evaluatedQuery;
+
+		if(hasPrev()){
+			// purpose of calling is evaluating erb. because it need to share the same local variable context
+			prev().getQuery();
+		}
+
 		ByteArrayInputStream ins = new ByteArrayInputStream(query.getBytes());
 		BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
 
