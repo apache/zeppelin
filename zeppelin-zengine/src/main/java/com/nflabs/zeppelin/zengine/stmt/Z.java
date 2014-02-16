@@ -2,7 +2,6 @@ package com.nflabs.zeppelin.zengine.stmt;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,13 +12,11 @@ import org.slf4j.LoggerFactory;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
-import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ParamInfo;
 import com.nflabs.zeppelin.zengine.ZException;
-import com.nflabs.zeppelin.zengine.Zengine;
 
 
 /**
@@ -312,6 +309,8 @@ public abstract class Z {
 		String q;
 		String query = getQuery();
 		if (query!=null) {
+			executeResource(getResources());
+	
 			String[] queries = Util.split(query, ';');
 			for (int i=0; i<queries.length-1; i++){//all except last one
 			    q = queries[i];
@@ -320,7 +319,7 @@ public abstract class Z {
 			
 			if (queries.length > 0) {//the last query
 	            q = queries[queries.length-1];
-	            if (isUnNamed()){
+	            if (isUnNamed()) {	
 	                lastQueryResult = executeQuery(q);
 	            } else {
 	                if(!isSaveableQuery(q)){
@@ -428,6 +427,11 @@ public abstract class Z {
 		return executed;
 	}
 	
+	private void executeResource(List<URI> resources) {
+		for (URI res : resources) {
+			connection.addResource(res);
+		}
+	}
 	
 	private Result executeQuery(String query) throws ZException{
 		initialize();
@@ -436,13 +440,6 @@ public abstract class Z {
 		if (query.startsWith("@")) { // annotation stmt
             // if annotation statement
 		}
-		
-        // add resources
-        List<URI> resources = getResources();
-
-        for (URI res : resources) {
-        	connection.addResource(res);
-        }
 
         // execute query
         logger().info("executeQuery : " + query);

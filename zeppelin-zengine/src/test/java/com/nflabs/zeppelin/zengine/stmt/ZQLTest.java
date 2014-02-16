@@ -2,10 +2,13 @@ package com.nflabs.zeppelin.zengine.stmt;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.LinkedList;
 import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 
@@ -43,7 +46,7 @@ public class ZQLTest extends TestCase {
 		UtilsForTests.createFileWithContent(tmpDirPath + "/test/test_data.log", "");
 		new File(tmpDirPath + "/test1").mkdir();
 		new File(tmpDirPath + "/test1/web").mkdirs();
-		UtilsForTests.createFileWithContent(tmpDirPath + "/test1/web/index.erb", "WEB\n");
+		UtilsForTests.createFileWithContent(tmpDirPath + "/test1/web/index.erb", "WEB <%= z.result.rows.get(0)[0] %>\n");
 
 		
 		//Dependencies: collection of ZeppelinDrivers + ZeppelinConfiguration + fs + RubyExecutionEngine
@@ -114,14 +117,27 @@ public class ZQLTest extends TestCase {
 		assertEquals("select * from ("+q.get(0).prev().name()+") a limit 10", q.get(0).getQuery());
 	}
 	
-	public void testLstmtPipedArg() throws IOException, ZException, ZQLException{
-		ZQL zql = new ZQL("select * from test | test1 | test1");
+	public void testLstmtPipedArg() throws Exception{
+		ZQL zql = new ZQL("select * from test | test(limit=20) | test1");
 		
-		List<Z> q = zql.compile();
+		ZPlan q = zql.compile();
 		assertEquals(1, q.size());
 		assertEquals(null, q.get(0).getQuery());
-		assertEquals(null, q.get(0).prev().getQuery());
+		assertEquals("select * from ("+q.get(0).prev().prev().name()+") a limit 20", q.get(0).prev().getQuery());
 		assertEquals("select * from test", q.get(0).prev().prev().getQuery());
+		assertEquals(1, q.get(0).prev().getResources().size());
+		
+		MockDriver.queries.put("select * from ("+q.get(0).prev().prev().name()+") a limit 20", new Result(0, new String[]{"hello"}));
+		LinkedList<Result> results = q.execute(z);
+		assertEquals(1, results.size());
+		assertEquals("hello", results.get(0).rows.get(0)[0]);
+
+		// check if resources are loaded
+		assertEquals(1, MockDriver.loadedResources.size());
+
+		// check web resource
+		InputStream ins = q.get(0).readWebResource("/");
+		assertEquals("WEB hello", IOUtils.toString(ins));
 	}
 	
 	public void testMultilineQuery() throws IOException, ZException, ZQLException{
