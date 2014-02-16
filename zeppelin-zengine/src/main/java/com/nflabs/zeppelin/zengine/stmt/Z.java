@@ -2,7 +2,6 @@ package com.nflabs.zeppelin.zengine.stmt;
 
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,13 +12,11 @@ import org.slf4j.LoggerFactory;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
-import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ParamInfo;
 import com.nflabs.zeppelin.zengine.ZException;
-import com.nflabs.zeppelin.zengine.Zengine;
 
 
 /**
@@ -433,7 +430,7 @@ public abstract class Z {
 	private void executeResource(List<URI> resources) {
 		for (URI res : resources) {
 			connection.addResource(res);
-        }
+		}
 	}
 	
 	private Result executeQuery(String query) throws ZException{
