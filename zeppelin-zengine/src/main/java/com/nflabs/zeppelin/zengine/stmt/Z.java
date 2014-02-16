@@ -312,6 +312,8 @@ public abstract class Z {
 		String q;
 		String query = getQuery();
 		if (query!=null) {
+			executeResource(getResources());
+	
 			String[] queries = Util.split(query, ';');
 			for (int i=0; i<queries.length-1; i++){//all except last one
 			    q = queries[i];
@@ -320,7 +322,7 @@ public abstract class Z {
 			
 			if (queries.length > 0) {//the last query
 	            q = queries[queries.length-1];
-	            if (isUnNamed()){
+	            if (isUnNamed()) {	
 	                lastQueryResult = executeQuery(q);
 	            } else {
 	                if(!isSaveableQuery(q)){
@@ -428,6 +430,11 @@ public abstract class Z {
 		return executed;
 	}
 	
+	private void executeResource(List<URI> resources) {
+		for (URI res : resources) {
+			connection.addResource(res);
+        }
+	}
 	
 	private Result executeQuery(String query) throws ZException{
 		initialize();
@@ -436,13 +443,6 @@ public abstract class Z {
 		if (query.startsWith("@")) { // annotation stmt
             // if annotation statement
 		}
-		
-        // add resources
-        List<URI> resources = getResources();
-
-        for (URI res : resources) {
-        	connection.addResource(res);
-        }
 
         // execute query
         logger().info("executeQuery : " + query);
