@@ -56,6 +56,8 @@ public class ZQLTest extends TestCase {
 		
 		//Dependencies: collection of ZeppelinDrivers + ZeppelinConfiguration + fs + RubyExecutionEngine
 		z = UtilsForTests.createZengine();
+
+		MockDriver.loadedResources.clear();
 	}
 
     @After
@@ -124,7 +126,7 @@ public class ZQLTest extends TestCase {
 	
 	public void testLstmtPipedArg() throws Exception{
 		ZQL zql = new ZQL("select * from test | test(limit=20) | test1");
-		
+
 		ZPlan q = zql.compile();
 		assertEquals(1, q.size());
 		assertEquals(null, q.get(0).getQuery());
@@ -143,6 +145,7 @@ public class ZQLTest extends TestCase {
 		// check web resource
 		InputStream ins = q.get(0).readWebResource("/");
 		assertEquals("WEB hello", IOUtils.toString(ins));
+		assertEquals(1, MockDriver.loadedResources.size());
 	}
 	
 	public void testMultilineQuery() throws IOException, ZException, ZQLException{

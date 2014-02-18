@@ -215,7 +215,6 @@ public class L extends Q {
 			}
 		}
 		
-		resources.addAll(super.getResources());
 		return resources;
 	}
 
