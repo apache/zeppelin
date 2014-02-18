@@ -306,11 +306,13 @@ public abstract class Z {
 		if (this.hasPrev()){
 			prev().execute(connection);
 		}
+
+		executeResource(getResources());
+
 		String q;
 		String query = getQuery();
+
 		if (query!=null) {
-			executeResource(getResources());
-	
 			String[] queries = Util.split(query, ';');
 			for (int i=0; i<queries.length-1; i++){//all except last one
 			    q = queries[i];

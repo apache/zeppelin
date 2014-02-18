@@ -40,17 +40,24 @@ public class ZQLTest extends TestCase {
 		UtilsForTests.delete(new File("/tmp/warehouse"));
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDirPath);
 
-		String q1 = "select * from (<%= z."+Q.INPUT_VAR_NAME+" %>) a limit <%= z.param('limit') %>\n";      
+		String q1 = "select * from (<%= z."+Q.INPUT_VAR_NAME+" %>) a limit <%= z.param('limit') %>\n";
+		// erb library with resource
 		new File(tmpDirPath + "/test").mkdir();
 		UtilsForTests.createFileWithContent(tmpDirPath + "/test/zql.erb", q1);
 		UtilsForTests.createFileWithContent(tmpDirPath + "/test/test_data.log", "");
+		// web only library
 		new File(tmpDirPath + "/test1").mkdir();
 		new File(tmpDirPath + "/test1/web").mkdirs();
 		UtilsForTests.createFileWithContent(tmpDirPath + "/test1/web/index.erb", "WEB <%= z.result.rows.get(0)[0] %>\n");
+		// resource only library
+		new File(tmpDirPath + "/test2").mkdir();
+		UtilsForTests.createFileWithContent(tmpDirPath + "/test2/test2_res", "");
 
 		
 		//Dependencies: collection of ZeppelinDrivers + ZeppelinConfiguration + fs + RubyExecutionEngine
 		z = UtilsForTests.createZengine();
+
+		MockDriver.loadedResources.clear();
 	}
 
     @After
@@ -119,7 +126,7 @@ public class ZQLTest extends TestCase {
 	
 	public void testLstmtPipedArg() throws Exception{
 		ZQL zql = new ZQL("select * from test | test(limit=20) | test1");
-		
+
 		ZPlan q = zql.compile();
 		assertEquals(1, q.size());
 		assertEquals(null, q.get(0).getQuery());
@@ -138,6 +145,7 @@ public class ZQLTest extends TestCase {
 		// check web resource
 		InputStream ins = q.get(0).readWebResource("/");
 		assertEquals("WEB hello", IOUtils.toString(ins));
+		assertEquals(1, MockDriver.loadedResources.size());
 	}
 	
 	public void testMultilineQuery() throws IOException, ZException, ZQLException{
@@ -197,7 +205,15 @@ public class ZQLTest extends TestCase {
         zql1.compile();
         zql.compile();
 	}
-	
+
+	public void testResourceOnlyLibrary() throws Exception{
+		ZQL zql = new ZQL("test2;");
+		ZPlan q = zql.compile();
+		LinkedList<Result> result = q.execute(z);
+		assertEquals(1, result.size());
+		assertEquals(1, MockDriver.loadedResources.size());
+	}
+
 	public void testAnnotationStatmentQuery() throws ZException, ZQLException{
 		ZQL zql = new ZQL("select * from test;@driver set production;!echo ls");
 		List<Z> plan = zql.compile();
