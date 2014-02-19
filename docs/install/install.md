@@ -35,6 +35,8 @@ You can access Zeppelin with browser http://localhost:8080
 
 ## Install
 
+Configuring Zeppelin with existing hadoop cluster, refer this section.
+
 ### Prerequisites
 
 * Java 1.6 or Later
@@ -106,6 +108,35 @@ Configuration can be done by both environment variable and java properties. If b
     </td>
   </tr>
 </table>
+
+
+### Configuring with existing Hive
+
+If you have hive already installed in your hadoop cluster, just run hive server and make Zeppelin to connect it.
+There're two different version of hive servers, [Hive Server1](https://cwiki.apache.org/confluence/display/Hive/HiveServer), [Hive Server2](https://cwiki.apache.org/confluence/display/Hive/Setting+Up+HiveServer2#SettingUpHiveServer2-HiveServer2). Make sure you have Hive server running.
+
+And then, add connection uri in zeppelin.drivers at zeppelin-site.xml
+If you have Hive Server 1 installed and running on host hiveserver1Address on port 10000, configuration property can be
+
+```
+<property>
+  <name>zeppelin.drivers</name>
+  <value>hive:hive://hiveserver1Address:10000/default,exec:exec://</value>
+  <description>Comma separated driver configurations uri. </description>
+</property>
+```
+
+If Hive Server 2 installed and running on host hiveserver2Address on port 10000, configuration will be
+
+```
+<property>
+  <name>zeppelin.drivers</name>
+  <value>hive:hive2://hiveserver2Address:10000/default,exec:exec://</value>
+  <description>Comma separated driver configurations uri. </description>
+</property>
+```
+
+
 
 ## Start/Stop
 #### Start Zeppelin
