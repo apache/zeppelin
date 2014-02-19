@@ -47,12 +47,15 @@ public class ZeppelinDriverFactory {
 	List<ZeppelinDriver> drivers = new LinkedList<ZeppelinDriver>();
 	Map<String, String> uris = new HashMap<String, String>();
 	String defaultDriverName = null;
+
+	private ZeppelinConfiguration conf;
 	
 	public ZeppelinDriverFactory(){
 		this(ZeppelinConfiguration.create());
 	}
 	
 	public ZeppelinDriverFactory(ZeppelinConfiguration conf){
+		this.conf = conf;
     	String driverDir = conf.getString(ConfVars.ZEPPELIN_DRIVER_DIR);        	
     	String [] uriList = Util.split(conf.getString(ConfVars.ZEPPELIN_DRIVERS), "\"',", '\\', new String[]{"\"", "'"}, new String[]{"\"", "'"}, new String[]{","}, false);
     	URI [] uris = new URI[uriList.length];
@@ -167,6 +170,7 @@ public class ZeppelinDriverFactory {
 					Constructor<ZeppelinDriver> constructor = c.getConstructor(new Class []{});
 					ZeppelinDriver driver = constructor.newInstance();
 					driver.setClassLoader(cl);
+					driver.setConf(conf);
 					driver.init();
 					drivers.add(driver);
 					
