@@ -28,11 +28,7 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 	public void setClient(HiveInterface client){
 		this.client = client;
 	}
-	
-	private ZeppelinConfiguration getConf(){
-		return ZeppelinConfiguration.create();
-	}
-	
+
 	private String getLocalMetastore(){
 		return new File(getConf().getString(ConfVars.ZEPPELIN_HOME)+"/metastore_db").getAbsolutePath();
 	}
@@ -62,7 +58,7 @@ public class HiveZeppelinDriver extends ZeppelinDriver {
 			    con = DriverManager.getConnection(uriString);
 			}
 
-			return new HiveZeppelinConnection(con);
+			return new HiveZeppelinConnection(getConf(), con);
 		} catch (SQLException e) {
 			throw new ZeppelinDriverException(e);
 		}

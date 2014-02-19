@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.result.Result;
@@ -14,8 +16,10 @@ import com.nflabs.zeppelin.result.ResultDataException;
 public class HiveZeppelinConnection implements ZeppelinConnection {
 
 	private Connection connection;
+	private ZeppelinConfiguration conf;
 	
-	public HiveZeppelinConnection(Connection connection) {
+	public HiveZeppelinConnection(ZeppelinConfiguration conf, Connection connection) {
+		this.conf = conf;
 		this.connection = connection;
 	}
 
@@ -41,13 +45,22 @@ public class HiveZeppelinConnection implements ZeppelinConnection {
 		}
 	}
 	
-	private Result execute(String query) throws ZeppelinDriverException{
+	private Result execute(String query){
+		int maxRow = conf.getInt(ConfVars.ZEPPELIN_MAX_RESULT);
+		return execute(query, maxRow);
+	}
 
-		try{
+	private Result execute(String query, int maxRow)
+			throws ZeppelinDriverException {
+
+		try {
 			ResultSet res = null;
 			Statement stmt = connection.createStatement();
+
+			stmt.setMaxRows(maxRow);
 			res = stmt.executeQuery(query);
-			Result r = new Result(res);
+
+			Result r = new Result(res, maxRow);
 			r.load();
 			stmt.close();
 			return r;
