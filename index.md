@@ -8,16 +8,26 @@ tagline: Less Development, More analysis!
 
 
 ## What is Zeppelin?
-Simple analytical environment on top of Hadoop ecosystem. 
+Analytical environment on top of Hive (and Hive like systems).
 
 Zeppelin provides
 
- * SQL like analytical language [ZQL](./zql.html) (based on HiveQL)
+ * Web based user interface for Hive. History, Job management.
+ * Support multiple different system similar to hive through pluggable driver. Currently Hive, Shark.
  * Pluggable visualization
  * Pluggable algorithm
  * Online archive of visualization, algorithm. [ZAN](./zan.html) (Zeppelin Archive Network)
  * Cron like scheduler embedded
  * Report generation (Share)
+
+Can be used for
+  
+ * Lightweigt web interface for Hive and similar systems
+ * Visualize data on Hadoop using Hive
+ * Sharing visualization through http link
+ * Share queries, algorithms trough online archive
+ * Schedule queries for automate the job
+ * Create custom visualizations using d3, google chart and any html/javascript
 
 Checkout [screenshots](./screenshots.html).
 
@@ -40,7 +50,8 @@ Checkout [screenshots](./screenshots.html).
 		  </tr>
 		  <tr>
 		    <td  style="background-color:#FFFFFF"></td>
-		    <td colspan="3" class="gray">Hive</td>
+		    <td  colspan="2" class="gray">Hive</td>
+		    <td  class="gray">...</td>
 		  </tr>
 		  <tr>
 		    <td style="background-color:#FFFFFF"></td>
