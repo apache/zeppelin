@@ -56,8 +56,6 @@ public class ZQLTest extends TestCase {
 		
 		//Dependencies: collection of ZeppelinDrivers + ZeppelinConfiguration + fs + RubyExecutionEngine
 		z = UtilsForTests.createZengine();
-
-		MockDriver.loadedResources.clear();
 	}
 
     @After
