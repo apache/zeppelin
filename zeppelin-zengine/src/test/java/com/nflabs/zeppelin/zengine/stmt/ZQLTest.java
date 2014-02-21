@@ -40,7 +40,7 @@ public class ZQLTest extends TestCase {
 		UtilsForTests.delete(new File("/tmp/warehouse"));
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDirPath);
 
-		String q1 = "select * from (<%= z."+Q.INPUT_VAR_NAME+" %>) a limit <%= z.param('limit') %>\n";
+		String q1 = "select * from (<%= z."+Q.INPUT_VAR_NAME+" %>) a limit <%= z.param('limit') %><%= z.arg%>\n";
 		// erb library with resource
 		new File(tmpDirPath + "/test").mkdir();
 		UtilsForTests.createFileWithContent(tmpDirPath + "/test/zql.erb", q1);
@@ -105,6 +105,15 @@ public class ZQLTest extends TestCase {
 		assertEquals(1, zList.size());
 		Z q = zList.get(0);
 		assertEquals("select * from () a limit ", q.getQuery());
+		q.release();
+	}
+	
+	public void testLstmtMultilineArgs() throws ZException, ZQLException{
+		ZQL zql = new ZQL("test hello\nworld");
+		List<Z> zList = zql.compile();
+		assertEquals(1, zList.size());
+		Z q = zList.get(0);
+		assertEquals("select * from () a limit hello\nworld", q.getQuery());
 		q.release();
 	}
 	

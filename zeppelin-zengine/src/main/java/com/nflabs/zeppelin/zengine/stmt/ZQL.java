@@ -276,7 +276,7 @@ public class ZQL {
 	 * libName(param1=value1, param2=value2, ...)
 	 * libName(param1=value1, param2=value2, ...) args
 	 */
-	static final Pattern LPattern = Pattern.compile("([^ ()]*)\\s*([(][^)]*[)])?\\s*(.*)");
+	static final Pattern LPattern = Pattern.compile("([^ ()]*)\\s*([(][^)]*[)])?\\s*(.*)", Pattern.DOTALL);
 	private L loadL(String stmt, ZeppelinConnection currentConnection) throws ZException{
 		Matcher m = LPattern.matcher(stmt);
 		
