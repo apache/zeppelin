@@ -11,15 +11,31 @@ ZQL is very simple but powerful SQL like language based on HiveQL. ZQL can be ru
 
 ### ZQL syntax
 ```
-ZQLStmt            : (HiveQLStmt | LibraryStmt | ZQLStmt (PipeOperator ZQLStmt)* | AnnotationStmt) StmtTerminator
-AnnotationStmt     : @(driver) CMD (ARGUMENT)?
-HiveQLStmt         : HIVE_QUERY
-LibraryStmt        : LIBRARY_NAME(paramName1=paramValue1, paramName2=paramValue2, ...)? (ARGUMENT)?
-RedirectStmt       : ZQLStmt RedirectOperator (table|view)? TABLE_NAME
-ExecStmt           : !SHELL_COMMAND
-PipeOperator       : |
-RedirectOperator   : >
-StmtTerminator     : ;
+Stmt               : ZQLStmt STMT_TERMINATOR
+ZQLStmt            : (QStmt | LibraryStmt | ZQLStmt (PIPE_OPERATOR ZQLStmt)+ | AnnotationStmt)
+AnnotationStmt     : @"driver" ANNOTATION_CMD (ARGUMENT)?
+LibraryStmt        : LIBRARY_NAME(L_PAR KV_PAIR ("," KV_PAIR)* R_PAR)? (MULTI_LINE_ARGUMENT)?
+LibraryStmt_v2     : @"zan" LibraryStmt        // will be supported from future release 
+RedirectStmt       : ZQLStmt REDIRECT_OPTERATOR ("table"|"view")? TABLE_NAME
+QStmt              : MULTI_LINE_STRING
+
+PIPE_OPERATOR      : |
+REDIRECT_OPTERATOR : >                         // from 0.3.1 it is disabled. see ZEPPELIN-99
+STMT_TERMINATOR    : ;
+L_PAR              : (
+R_PAR              : )
+LIBRARY_NAME       : [A-Za-z_-0-9]+
+TABLE_NAME         : [A-Za-z_-0-9]+
+ANNOTATION_CMD     : "set"
+KV_PAIR            : KV_KEY "=" KV_VAL
+KV_KEY             : [A-Za-z_-0-9]+
+KV_VAL             : [^,R_PAR]+
+
+SINGLE_LINE_STRING : .*
+ARGUMENT           : SINGLE_LINE_STRING
+MULTI_LINE_ARGUMENT: MULTI_LINE_STRING
+MULTI_LINE_STRING  : SINGLE_LINE_STRING (\n SINGLE_LINE_STRING)*
+
 ```
 
 ### Template
