@@ -33,7 +33,7 @@ public class ERBEvaluator {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public String eval(String erbString, Object zcontext) throws ZException{
 		ByteArrayInputStream ins = new ByteArrayInputStream(erbString.getBytes());
 		BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
@@ -85,7 +85,11 @@ public class ERBEvaluator {
 			}	        
 	        String q = (String) bindings.get("_zpE");
 
-	        return q;
+	        return nonNullString(q);
 		}
+	}
+
+	private String nonNullString(String q) {
+	    return q == null ? "" : q;
 	}
 }
