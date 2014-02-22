@@ -123,6 +123,12 @@ public class ZQLTest extends TestCase {
 		assertEquals("select * from () a limit 10", q.getQuery());
 	}
 	
+	public void testLstmtParamErb() throws ZException, ZQLException{
+		ZQL zql = new ZQL("test(limit=<%='20'%>)");
+		Z q = zql.compile().get(0);
+		assertEquals("select * from () a limit 20", q.getQuery());
+	}
+
 	public void testLstmtArg() throws IOException, ZException, ZQLException{
 		ZQL zql = new ZQL("select * from test | test(limit=10)");
 		
