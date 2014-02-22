@@ -5,11 +5,11 @@ Build Zeppelin documentation
  - Install [Sphinx](http://sphinx-doc.org/install.html)
 
 ## Build
-```gradle generateDoc```
+```mvn package```
 Or
-```cd docs && make hmtl```
+```make html```
 
-Sphinx will create the folder "build".
+Sphinx will create the folder "targert".
 
 ### Build failed
  - make: sphinx-build: No such file or directory
