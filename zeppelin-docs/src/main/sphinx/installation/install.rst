@@ -86,6 +86,7 @@ Start/Stop
 ^^^^^^^^^^
 
 **Start Zeppelin**
+
 .. code-block:: bash
 
   bin/zeppelin-daemon.sh start
