@@ -11,6 +11,8 @@ Zeppelin documentation
    :numbered: 2
    :titlesonly:
 
+   installation
+
 Link
 ====================================
 .. toctree::
