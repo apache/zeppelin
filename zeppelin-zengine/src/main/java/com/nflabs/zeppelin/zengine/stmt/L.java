@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -19,13 +18,10 @@ import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.driver.ZeppelinConnection;
-import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.zengine.ParamInfo;
-import com.nflabs.zeppelin.zengine.ZContext;
 import com.nflabs.zeppelin.zengine.ZException;
-import com.nflabs.zeppelin.zengine.ZWebContext;
-import com.nflabs.zeppelin.zengine.Zengine;
+import com.nflabs.zeppelin.zengine.context.ZLocalContextImpl;
+import com.nflabs.zeppelin.zengine.context.ZWebContext;
 
 /**
  * L stands for Library(aks UDF). This class load and execute Zeppelin User Defined Functions
@@ -116,7 +112,7 @@ public class L extends Q {
 			FileInputStream ins = new FileInputStream(erbFile);
 			BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
 			
-			ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);			
+			ZLocalContextImpl zContext = new ZLocalContextImpl( (prev()==null) ? null : prev().name(), name(), query, params);
 			q = getQuery(erb, zContext);
 			ins.close();
 		} catch (IOException e1) {
@@ -246,14 +242,14 @@ public class L extends Q {
 		
 		Map<String, ParamInfo> paramInfos = new HashMap<String, ParamInfo>();
 		
-		ZContext zContext = null;
+		ZLocalContextImpl zContext = null;
 		if(erbFile!=null){
 			InputStream ins;
 			try {
 				ins = new FileInputStream(erbFile);
 				BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
 				
-				zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);			
+				zContext = new ZLocalContextImpl( (prev()==null) ? null : prev().name(), name(), query, params);
 				getQuery(erb, zContext);
 				ins.close();
 			} catch (IOException e1) {
