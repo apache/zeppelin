@@ -178,6 +178,14 @@ public class ZQLTest extends TestCase {
 		assertEquals("select b from test", q.get(1).getQuery());
 	}
 
+	public void testErbScopeMultilineQueryCondition() throws IOException, ZException, ZQLException{
+		ZQL zql = new ZQL("<% var1=\"b\" %> <% if var1==\"a\" %>select a; <% else %> select b;<% end %>");
+
+		List<Z> q = zql.compile();
+		assertEquals(1, q.size());
+		assertEquals("select b", q.get(0).getQuery());
+	}
+
 	public void testErbScopePipedQuery() throws IOException, ZException, ZQLException{
 		ZQL zql = new ZQL("<% var1=\"test\" %>select a from <%=var1%> | select b from <%=var1%>;");
 
