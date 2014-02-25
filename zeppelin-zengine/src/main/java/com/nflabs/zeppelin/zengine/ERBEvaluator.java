@@ -39,7 +39,11 @@ public class ERBEvaluator {
 		BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
 
 		String q = eval(erb, zcontext);
-		try {ins.close();} catch (IOException e) {}
+		try {
+			ins.close();
+		} catch (IOException e) {
+			throw new ZException(e);
+		}
 		return q;
 	}
 	
