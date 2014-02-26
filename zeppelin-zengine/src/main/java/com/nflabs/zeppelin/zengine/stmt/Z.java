@@ -3,6 +3,7 @@ package com.nflabs.zeppelin.zengine.stmt;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -332,22 +333,21 @@ public abstract class Z {
 			    q = queries.get(i);
 			    lastQueryResult = executeQuery(q);
 			}
-			
-			if (queries.length > 0) {//the last query
-	            q = queries[queries.length-1];
-	            if (isUnNamed()) {	
-	                lastQueryResult = executeQuery(q);
-	            } else {
-	                if(!isSaveableQuery(q)){
-	                    throw new ZException("Can not save query "+q+" into table "+name());
-	                }
-	                if(isTable()){
-	                    lastQueryResult = connection.createTableFromQuery(name(), q);
-	                } else {
-	                    lastQueryResult = connection.createViewFromQuery(name(), q);
-	                }
-	            }
-	
+
+			if (queries.size() > 0) {// the last query
+				q = queries.get(queries.size() - 1);
+				if (isUnNamed()) {
+					lastQueryResult = executeQuery(q);
+				} else {
+					if (!isSaveableQuery(q)) {
+						throw new ZException("Can not save query " + q + " into table " + name());
+					}
+					if (isTable()) {
+						lastQueryResult = connection.createTableFromQuery(name(), q);
+					} else {
+						lastQueryResult = connection.createViewFromQuery(name(), q);
+					}
+				}
 			}
 		}
 
