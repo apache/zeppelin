@@ -319,7 +319,7 @@ public abstract class Z {
 			String [] blockStart = new String[]{ "\"", "'", "<%", "<", "N_<", "!"};
 			String [] blockEnd = new String[]{ "\"", "'", "%>", ";", "N_>", ";" };
 			String [] op = new String[]{";"};
-			String [] querySplit = Util.split(query, escapeSeq, escapeChar, blockStart, blockEnd, op, true);			
+			String [] querySplit = Util.split(query, escapeSeq, escapeChar, blockStart, blockEnd, op, false);
 			List<String> queries = new LinkedList<String>();
 			for (int i = 0; i < querySplit.length; i++) {
 				String qs = querySplit[i];
