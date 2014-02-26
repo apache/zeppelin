@@ -92,11 +92,22 @@ public class ZQLTest extends TestCase {
 	
 	public void testGtLt() throws ZException, ZQLException{
 		ZQL zql = new ZQL();
-		zql.append("select * from bank where age > 10 and age < 20");
+		zql.append("select * from bank where age > 10 and age < 20; select * from a;");
 		List<Z> plan = zql.compile();
 		
-		assertEquals(1, plan.size());
+		assertEquals(2, plan.size());
 		assertEquals("select * from bank where age > 10 and age < 20", plan.get(0).getQuery());
+		assertEquals("select * from a", plan.get(1).getQuery());
+	}
+
+	public void testNestedGtLt() throws ZException, ZQLException{
+		ZQL zql = new ZQL();
+		zql.append("select <STRUCT<ARRAY> asdf> asdf; select * from a;");
+		List<Z> plan = zql.compile();
+		
+		assertEquals(2, plan.size());
+		assertEquals("select <STRUCT<ARRAY> asdf> asdf", plan.get(0).getQuery());
+		assertEquals("select * from a", plan.get(1).getQuery());
 	}
 	
 	public void testLstmtSimple() throws ZException, ZQLException{

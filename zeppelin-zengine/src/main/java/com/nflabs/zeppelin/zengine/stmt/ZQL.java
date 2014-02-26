@@ -146,14 +146,17 @@ public class ZQL {
 		
 		String escapeSeq = "\"',;<%>!";
 		char escapeChar = '\\';
-		String [] blockStart = new String[]{ "\"", "'", "<%", "N_<", "!"};
-		String [] blockEnd = new String[]{ "\"", "'", "%>", "N_>", ";" };
-		String [] t = Util.split(stmts, escapeSeq, escapeChar, blockStart, blockEnd, op, true);
+		String [] blockStart = new String[]{ "\"", "'", "<%", "<", "N_<", "!"};
+		String [] blockEnd = new String[]{ "\"", "'", "%>", ";", "N_>", ";" };
+		String [] t = Util.split(erbEvalGlobalScope(stmts), escapeSeq, escapeChar, blockStart, blockEnd, op, true);
 		String currentOp = null;
 		for(int i=0; i<t.length; i++){
 			String stmt = t[i];
 			if(stmt==null) continue;
 			stmt = stmt.trim();
+			if (stmt.endsWith(";")==true && stmt.length()>1) {
+				stmt = stmt.substring(0, stmt.length()-1);
+			}
 			if(stmt.length()==0) continue;
 			
 			// check if it is operator ----

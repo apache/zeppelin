@@ -313,9 +313,23 @@ public abstract class Z {
 		String query = getQuery();
 
 		if (query!=null) {
-			String[] queries = Util.split(query, ';');
-			for (int i=0; i<queries.length-1; i++){//all except last one
-			    q = queries[i];
+			String escapeSeq = "\"',;<%>!";
+			char escapeChar = '\\';
+			String [] blockStart = new String[]{ "\"", "'", "<%", "<", "N_<", "!"};
+			String [] blockEnd = new String[]{ "\"", "'", "%>", ";", "N_>", ";" };
+			String [] op = new String[]{";"};
+			String [] querySplit = Util.split(query, escapeSeq, escapeChar, blockStart, blockEnd, op, true);			
+			List<String> queries = new LinkedList<String>();
+			for (int i = 0; i < querySplit.length; i++) {
+				String qs = querySplit[i];
+				if(qs==null) continue;
+				qs = qs.trim();
+				if(qs.length()==0) continue;
+				queries.add(qs);
+			}
+
+			for (int i=0; i<queries.size()-1; i++){//all except last one
+			    q = queries.get(i);
 			    lastQueryResult = executeQuery(q);
 			}
 			
