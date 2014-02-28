@@ -61,6 +61,12 @@
       <organization>NFLabs</organization>
       <organizationUrl>http://www.nflabs.com</organizationUrl>
     </developer>
+    <developer>
+      <id>anthony</id>
+      <name>Anthony Corbacho</name>
+      <organization>NFLabs</organization>
+      <organizationUrl>http://www.nflabs.com</organizationUrl>
+    </developer>
   </developers>
 
   <inceptionYear>2013</inceptionYear>
@@ -74,6 +80,7 @@
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
+    <module>zeppelin-docs</module>
   </modules>
 
   <properties>
