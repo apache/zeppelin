@@ -2,8 +2,6 @@ package com.nflabs.zeppelin.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -44,7 +42,6 @@ import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
 import com.nflabs.zeppelin.zengine.stmt.Z;
-import com.sun.jna.platform.FileUtils;
 
 public class ZQLJobManager implements JobListener {
 	private static final String HISTORY_DIR_NAME = "/history";
