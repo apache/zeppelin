@@ -314,7 +314,12 @@ public abstract class Z {
 		String query = getQuery();
 
 		if (query!=null) {
-			String[] querySplit = Util.split(query, ';');
+			String escapeSeq = "\"',;<%>!";
+			char escapeChar = '\\';
+			String [] blockStart = new String[]{ "\"", "'", "<%", "<", "N_<", "!"};
+			String [] blockEnd = new String[]{ "\"", "'", "%>", ";", "N_>", ";" };
+			String [] op = new String[]{";"};
+			String [] querySplit = Util.split(query, escapeSeq, escapeChar, blockStart, blockEnd, op, false);
 			List<String> queries = new LinkedList<String>();
 			for (int i = 0; i < querySplit.length; i++) {
 				String qs = querySplit[i];
@@ -328,22 +333,21 @@ public abstract class Z {
 			    q = queries.get(i);
 			    lastQueryResult = executeQuery(q);
 			}
-			
-			if (queries.size() > 0) {//the last query
-	            q = queries.get(queries.size()-1);
-	            if (isUnNamed()) {	
-	                lastQueryResult = executeQuery(q);
-	            } else {
-	                if(!isSaveableQuery(q)){
-	                    throw new ZException("Can not save query "+q+" into table "+name());
-	                }
-	                if(isTable()){
-	                    lastQueryResult = connection.createTableFromQuery(name(), q);
-	                } else {
-	                    lastQueryResult = connection.createViewFromQuery(name(), q);
-	                }
-	            }
-	
+
+			if (queries.size() > 0) {// the last query
+				q = queries.get(queries.size() - 1);
+				if (isUnNamed()) {
+					lastQueryResult = executeQuery(q);
+				} else {
+					if (!isSaveableQuery(q)) {
+						throw new ZException("Can not save query " + q + " into table " + name());
+					}
+					if (isTable()) {
+						lastQueryResult = connection.createTableFromQuery(name(), q);
+					} else {
+						lastQueryResult = connection.createViewFromQuery(name(), q);
+					}
+				}
 			}
 		}
 
