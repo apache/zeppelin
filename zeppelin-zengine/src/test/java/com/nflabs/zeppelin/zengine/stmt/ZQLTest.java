@@ -231,7 +231,15 @@ public class ZQLTest extends TestCase {
 		assertTrue(plan.get(1) instanceof AnnotationStatement); 
 		assertTrue(plan.get(2) instanceof Q); 
 	}
-	
+
+	public void testUTF8() throws IOException, ZException, ZQLException{
+		ZQL zql = new ZQL("select\n*\nfrom\n한글");
+
+		List<Z> q = zql.compile();
+		assertEquals(1, q.size());
+		assertEquals("select\n*\nfrom\n한글", q.get(0).getQuery());
+	}
+
 	public void testPerformance() throws Exception{
 		MockDriver.queries.put("select * from tbl", new Result(0, new String[]{"hello"}));
 		new ZQL("select * from tbl").compile().execute(z);
