@@ -5,6 +5,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -16,11 +17,11 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.result.Result;
+import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ParamInfo;
 import com.nflabs.zeppelin.zengine.ZContext;
 import com.nflabs.zeppelin.zengine.ZException;
@@ -146,7 +147,7 @@ public class Q extends Z {
 						newline = "";
 						first = false;
 					}
-					rubyScript.append("$_zpErb += \""+newline+StringEscapeUtils.escapeJavaScript(line)+"\"\n");
+					rubyScript.append("$_zpErb += \""+newline+line.replaceAll("\"", "\\\\\"")+"\"\n");
 				}
 				rubyScript.append("$_zpErb += \"<% local_variables.each do |xx|\n    if xx != 'z' and xx != '_erbout' then $_zpLV[xx] = eval(xx) end\nend %>\"\n");
 			} catch (IOException e1) {
@@ -154,7 +155,6 @@ public class Q extends Z {
 			}
 			rubyScript.append("$_zpE = ERB.new($_zpErb, \"<>-\").result(binding)\n");
 	        try {
-	        	logger().debug("rubyScript to run : \n"+rubyScript.toString());
 	        	rubyScriptEngine.eval(rubyScript.toString(), bindings);
 			} catch (ScriptException e) {
 				throw new ZException(e);
@@ -187,15 +187,19 @@ public class Q extends Z {
 			prev().getQuery();
 		}
 
-		ByteArrayInputStream ins = new ByteArrayInputStream(query.getBytes());
-		BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
-
-		ZContext zContext = new ZContext( hasPrev() ? prev().name() : null, name(), query, params);
-
-		String q = getQuery(erb, zContext);
-		try {ins.close();} catch (IOException e) {}
-
-		return q;
+		ByteArrayInputStream ins;
+		try {
+			ins = new ByteArrayInputStream(query.getBytes());
+			BufferedReader erb = new BufferedReader(new InputStreamReader(ins, Util.getCharsetName()));
+			ZContext zContext = new ZContext( hasPrev() ? prev().name() : null, name(), query, params);
+			String q = getQuery(erb, zContext);
+			ins.close();
+			return q;
+		} catch (UnsupportedEncodingException e1) {
+			throw new ZException(e1);
+		} catch (IOException e) {
+			throw new ZException(e);
+		}
 	}
 	
 	/**

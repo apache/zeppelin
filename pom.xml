@@ -240,7 +240,10 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.16</version>
           <configuration combine.children="append">
-            <argLine>-Xmx2g -Xms1g</argLine>
+            <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
+            <encoding>UTF-8</encoding>
+            <inputEncoding>UTF-8</inputEncoding>
+            <outputEncoding>UTF-8</outputEncoding>
           </configuration>
 <!--
             <excludes>
