@@ -21,17 +21,22 @@ public class ERBEvaluator {
 	Logger logger = Logger.getLogger(ERBEvaluator.class);
 	Map<String, Object> localVariables = new HashMap<String, Object>();
 	
-	private static ScriptEngine rubyScriptEngine;
-	static {
-		JRubyScriptEngineFactory factory = new JRubyScriptEngineFactory();
-		rubyScriptEngine = factory.getScriptEngine();
-		StringBuffer rubyScript = new StringBuffer();
-		rubyScript.append("require 'erb'\n");
-		try {
-			rubyScriptEngine.eval(rubyScript.toString());
-		} catch (ScriptException e) {
-			e.printStackTrace();
+	private static ScriptEngine _rubyScriptEngine;
+
+	private ScriptEngine getSingletonScriptEngine(){
+		if ( _rubyScriptEngine == null ) {
+			JRubyScriptEngineFactory factory = new JRubyScriptEngineFactory();
+			_rubyScriptEngine = factory.getScriptEngine();
+			StringBuffer rubyScript = new StringBuffer();
+			rubyScript.append("require 'erb'\n");
+			try {
+				_rubyScriptEngine.eval(rubyScript.toString());
+			} catch (ScriptException e) {
+				e.printStackTrace();
+			}
 		}
+
+		return _rubyScriptEngine;
 	}
 
 	public String eval(String erbString, Object zcontext) throws ZException{
@@ -48,6 +53,7 @@ public class ERBEvaluator {
 	}
 	
 	public String eval(BufferedReader erb, Object zcontext) throws ZException{
+		ScriptEngine rubyScriptEngine = getSingletonScriptEngine();
 		synchronized(rubyScriptEngine){
 			StringBuffer rubyScript = new StringBuffer();
 			Bindings bindings = rubyScriptEngine.createBindings();
