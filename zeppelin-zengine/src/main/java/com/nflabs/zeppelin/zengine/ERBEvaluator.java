@@ -22,17 +22,22 @@ public class ERBEvaluator {
 	Map<String, Object> localVariables = new HashMap<String, Object>();
 	
 	private static ScriptEngine _rubyScriptEngine;
+	private static Long _rubyScriptEngineCreationLock = new Long(0);
 
 	private ScriptEngine getSingletonScriptEngine(){
 		if ( _rubyScriptEngine == null ) {
-			JRubyScriptEngineFactory factory = new JRubyScriptEngineFactory();
-			_rubyScriptEngine = factory.getScriptEngine();
-			StringBuffer rubyScript = new StringBuffer();
-			rubyScript.append("require 'erb'\n");
-			try {
-				_rubyScriptEngine.eval(rubyScript.toString());
-			} catch (ScriptException e) {
-				e.printStackTrace();
+			synchronized(_rubyScriptEngineCreationLock){
+				if ( _rubyScriptEngine == null ) {
+					JRubyScriptEngineFactory factory = new JRubyScriptEngineFactory();
+					_rubyScriptEngine = factory.getScriptEngine();
+					StringBuffer rubyScript = new StringBuffer();
+					rubyScript.append("require 'erb'\n");
+					try {
+						_rubyScriptEngine.eval(rubyScript.toString());
+					} catch (ScriptException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		}
 
