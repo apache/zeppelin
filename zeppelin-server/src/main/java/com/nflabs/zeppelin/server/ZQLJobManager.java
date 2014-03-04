@@ -39,6 +39,7 @@ import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
@@ -306,21 +307,13 @@ public class ZQLJobManager implements JobListener {
 		Path to = new Path(getPathForJobId(jobId).toString()+HISTORY_DIR_NAME+"/"+historyPathFormat.format(new Date()));
 		fs.rename(from, to);		
 	}
-	
-	private String getCharsetName() {
-		if (System.getProperty("file.encoding") != null) {
-			return System.getProperty("file.encoding");
-		} else {
-			return "UTF-8";
-		}
-	}
 
 	private void persist(ZQLJob job) throws IOException{		
 		String json = gson.toJson(job);
 		Path path = getPathForJob(job);
 		fs.mkdirs(new Path(path.toString()+HISTORY_DIR_NAME));
 		FSDataOutputStream out = fs.create(new Path(path.toString()+CURRENT_JOB_FILE_NAME), true);
-		out.write(json.getBytes(getCharsetName()));
+		out.write(json.getBytes(Util.getCharsetName()));
 		out.close();
 	}
 
@@ -361,7 +354,7 @@ public class ZQLJobManager implements JobListener {
 					return null;
 				}
 				FSDataInputStream ins = fs.open(path);
-				String json = IOUtils.toString(ins, getCharsetName());
+				String json = IOUtils.toString(ins, Util.getCharsetName());
 				ZQLJob job = gson.fromJson(json, ZQLJob.class);
 				if(job.getStatus()==Status.RUNNING){
 					job.setStatus(Status.ABORT);

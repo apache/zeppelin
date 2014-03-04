@@ -160,4 +160,13 @@ public class Util {
 			return false;
 		}
 	}
+
+	public static String getCharsetName() {
+		if (System.getProperty("file.encoding") != null) {
+			return System.getProperty("file.encoding");
+		} else {
+			return "UTF-8";
+		}
+	}
+
 }
