@@ -102,6 +102,9 @@ fi
 export ZEPPELIN_CLASSPATH
 export CLASSPATH+=${ZEPPELIN_CLASSPATH}
 
+# Text encoding for 
+# read/write job into files,
+# receiving/displaying query/result.
 if [ "x$ZEPPELIN_ENCODING" == "x" ]; then
   export ZEPPELIN_ENCODING="UTF-8"
 fi
