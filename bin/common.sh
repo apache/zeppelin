@@ -102,8 +102,14 @@ fi
 export ZEPPELIN_CLASSPATH
 export CLASSPATH+=${ZEPPELIN_CLASSPATH}
 
+# Text encoding for 
+# read/write job into files,
+# receiving/displaying query/result.
+if [ "x$ZEPPELIN_ENCODING" == "x" ]; then
+  export ZEPPELIN_ENCODING="UTF-8"
+fi
 
-JAVA_OPTS+="$ZEPPELIN_JAVA_OPTS"
+JAVA_OPTS+="$ZEPPELIN_JAVA_OPTS -Dfile.encoding=${ZEPPELIN_ENCODING} "
 export JAVA_OPTS
 
 if [ -n "$JAVA_HOME" ]; then

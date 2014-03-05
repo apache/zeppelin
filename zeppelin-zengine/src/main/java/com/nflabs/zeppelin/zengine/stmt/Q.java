@@ -11,12 +11,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
-
-import org.apache.commons.lang.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +21,6 @@ import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.context.ZContext;
 import com.nflabs.zeppelin.zengine.context.ZLocalContextImpl;
 import com.nflabs.zeppelin.zengine.context.ZWebContext;
-import com.sun.script.jruby.JRubyScriptEngineFactory;
 
 /**
  * Q stands for Query
@@ -126,15 +119,17 @@ public class Q extends Z {
 			prev().getQuery();
 		}
 
-		ByteArrayInputStream ins = new ByteArrayInputStream(query.getBytes());
-		BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
-
-		ZLocalContextImpl zContext = new ZLocalContextImpl( hasPrev() ? prev().name() : null, name(), query, params);
-
-		String q = getQuery(erb, zContext);
-		try {ins.close();} catch (IOException e) {}
-
-		return q;
+		ByteArrayInputStream ins;
+		try {
+			ins = new ByteArrayInputStream(query.getBytes());
+			BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
+			ZLocalContextImpl zContext = new ZLocalContextImpl( hasPrev() ? prev().name() : null, name(), query, params);
+			String q = getQuery(erb, zContext);
+			ins.close();
+			return q;
+		} catch (IOException e) {
+			throw new ZException(e);
+		}
 	}
 	
 	/**

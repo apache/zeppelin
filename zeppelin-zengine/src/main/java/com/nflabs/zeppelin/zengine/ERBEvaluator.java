@@ -12,7 +12,6 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
 import com.sun.script.jruby.JRubyScriptEngineFactory;
@@ -85,7 +84,7 @@ public class ERBEvaluator {
 						newline = "";
 						first = false;
 					}
-					rubyScript.append("$_zpErb += \""+newline+StringEscapeUtils.escapeJavaScript(line)+"\"\n");
+					rubyScript.append("$_zpErb += \""+newline+line.replaceAll("\"", "\\\\\"")+"\"\n");
 				}
 				rubyScript.append("$_zpErb += \"<% local_variables.each do |xx|\n    if xx != 'z' and xx != '_erbout' then $_zpLV[xx] = eval(xx) end\nend %>\"\n");
 			} catch (IOException e1) {

@@ -3,6 +3,7 @@ package com.nflabs.zeppelin.zengine.stmt;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import org.junit.Before;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.mock.MockDriver;
 import com.nflabs.zeppelin.result.Result;
+import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.util.UtilsForTests;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZPlan;
@@ -92,11 +94,22 @@ public class ZQLTest extends TestCase {
 	
 	public void testGtLt() throws ZException, ZQLException{
 		ZQL zql = new ZQL();
-		zql.append("select * from bank where age > 10 and age < 20");
+		zql.append("select * from bank where age > 10 and age < 20; select * from a;");
 		List<Z> plan = zql.compile();
 		
-		assertEquals(1, plan.size());
+		assertEquals(2, plan.size());
 		assertEquals("select * from bank where age > 10 and age < 20", plan.get(0).getQuery());
+		assertEquals("select * from a", plan.get(1).getQuery());
+	}
+
+	public void testNestedGtLt() throws ZException, ZQLException{
+		ZQL zql = new ZQL();
+		zql.append("select <STRUCT<ARRAY> asdf> asdf; select * from a;");
+		List<Z> plan = zql.compile();
+		
+		assertEquals(2, plan.size());
+		assertEquals("select <STRUCT<ARRAY> asdf> asdf", plan.get(0).getQuery());
+		assertEquals("select * from a", plan.get(1).getQuery());
 	}
 	
 	public void testLstmtSimple() throws ZException, ZQLException{
@@ -245,7 +258,14 @@ public class ZQLTest extends TestCase {
 		assertTrue(plan.get(1) instanceof AnnotationStatement); 
 		assertTrue(plan.get(2) instanceof Q); 
 	}
-	
+
+	public void testUTF8() throws IOException, ZException, ZQLException{
+		ZQL zql = new ZQL("select\n*\nfrom\n,<한글> 'quote' \"doublequote\"");
+		List<Z> q = zql.compile();
+		assertEquals(1, q.size());
+		assertEquals("select\n*\nfrom\n,<한글> 'quote' \"doublequote\"", q.get(0).getQuery());
+	}
+
 	public void testPerformance() throws Exception{
 		MockDriver.queries.put("select * from tbl", new Result(0, new String[]{"hello"}));
 		new ZQL("select * from tbl").compile().execute(z);

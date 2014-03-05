@@ -2,8 +2,6 @@ package com.nflabs.zeppelin.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -14,6 +12,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -34,10 +33,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
@@ -304,13 +305,13 @@ public class ZQLJobManager implements JobListener {
 		Path to = new Path(getPathForJobId(jobId).toString()+HISTORY_DIR_NAME+"/"+historyPathFormat.format(new Date()));
 		fs.rename(from, to);		
 	}
-	
+
 	private void persist(ZQLJob job) throws IOException{		
 		String json = gson.toJson(job);
 		Path path = getPathForJob(job);
 		fs.mkdirs(new Path(path.toString()+HISTORY_DIR_NAME));
-		FSDataOutputStream out = fs.create(new Path(path.toString()+CURRENT_JOB_FILE_NAME), true);
-		out.writeBytes(json);
+		FSDataOutputStream out = fs.create(new Path(path.toString()+CURRENT_JOB_FILE_NAME), true);		
+		out.write(json.getBytes(zengine.getConf().getString(ConfVars.ZEPPELIN_ENCODING)));
 		out.close();
 	}
 
@@ -351,7 +352,8 @@ public class ZQLJobManager implements JobListener {
 					return null;
 				}
 				FSDataInputStream ins = fs.open(path);
-				ZQLJob job = gson.fromJson(new InputStreamReader(ins), ZQLJob.class);
+				String json = IOUtils.toString(ins, zengine.getConf().getString(ConfVars.ZEPPELIN_ENCODING));
+				ZQLJob job = gson.fromJson(json, ZQLJob.class);
 				if(job.getStatus()==Status.RUNNING){
 					job.setStatus(Status.ABORT);
 				}
