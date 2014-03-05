@@ -20,6 +20,8 @@ import javax.script.ScriptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.result.Result;
 import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ParamInfo;
@@ -190,13 +192,11 @@ public class Q extends Z {
 		ByteArrayInputStream ins;
 		try {
 			ins = new ByteArrayInputStream(query.getBytes());
-			BufferedReader erb = new BufferedReader(new InputStreamReader(ins, Util.getCharsetName()));
+			BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
 			ZContext zContext = new ZContext( hasPrev() ? prev().name() : null, name(), query, params);
 			String q = getQuery(erb, zContext);
 			ins.close();
 			return q;
-		} catch (UnsupportedEncodingException e1) {
-			throw new ZException(e1);
 		} catch (IOException e) {
 			throw new ZException(e);
 		}
