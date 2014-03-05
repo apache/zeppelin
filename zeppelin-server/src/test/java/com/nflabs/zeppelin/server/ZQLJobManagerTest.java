@@ -178,4 +178,23 @@ public class ZQLJobManagerTest extends TestCase {
 		jm.delete(sess.getId());
 	}
 
+    public void testUTF8() throws InterruptedException, SchedulerException{
+		// Create
+		ZQLJob sess = jm.create();
+		jm.setZql(sess.getId(), "한글");
+
+		// run the session
+		jm.run(sess.getId());
+		
+
+		while(jm.get(sess.getId()).getStatus()!=Status.FINISHED){
+			Thread.sleep(300);
+		}
+		
+		assertEquals(1, jm.list().size());
+		
+		jm = new ZQLJobManager(z, fs, schedulerFactory.createOrGetFIFOScheduler("analyze"), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
+		assertEquals(1, jm.list().size());
+		assertEquals("한글",jm.list().firstEntry().getValue().getZQL());
+	}
 }
