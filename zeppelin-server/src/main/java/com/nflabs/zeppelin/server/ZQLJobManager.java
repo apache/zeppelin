@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.JobListener;
@@ -309,8 +310,8 @@ public class ZQLJobManager implements JobListener {
 		String json = gson.toJson(job);
 		Path path = getPathForJob(job);
 		fs.mkdirs(new Path(path.toString()+HISTORY_DIR_NAME));
-		FSDataOutputStream out = fs.create(new Path(path.toString()+CURRENT_JOB_FILE_NAME), true);
-		out.write(json.getBytes(Util.getCharsetName()));
+		FSDataOutputStream out = fs.create(new Path(path.toString()+CURRENT_JOB_FILE_NAME), true);		
+		out.write(json.getBytes(zengine.getConf().getString(ConfVars.ZEPPELIN_ENCODING)));
 		out.close();
 	}
 
@@ -351,7 +352,7 @@ public class ZQLJobManager implements JobListener {
 					return null;
 				}
 				FSDataInputStream ins = fs.open(path);
-				String json = IOUtils.toString(ins, Util.getCharsetName());
+				String json = IOUtils.toString(ins, zengine.getConf().getString(ConfVars.ZEPPELIN_ENCODING));
 				ZQLJob job = gson.fromJson(json, ZQLJob.class);
 				if(job.getStatus()==Status.RUNNING){
 					job.setStatus(Status.ABORT);

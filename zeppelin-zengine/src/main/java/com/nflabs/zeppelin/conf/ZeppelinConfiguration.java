@@ -220,6 +220,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_MAX_RESULT			("zeppelin.max.result", 10000),     // max num result taken by result class
 		ZEPPELIN_DRIVERS			("zeppelin.drivers", "hive:hive2://,exec:exec://"),
 		ZEPPELIN_DRIVER_DIR			("zeppelin.driver.dir", "../drivers"),
+		ZEPPELIN_ENCODING			("zeppelin.encoding", "UTF-8"),
 		;
 		
 		
