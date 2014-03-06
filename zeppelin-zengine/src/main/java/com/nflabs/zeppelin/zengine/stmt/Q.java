@@ -5,30 +5,22 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.result.Result;
-import com.nflabs.zeppelin.util.Util;
+import com.nflabs.zeppelin.zengine.ERBEvaluator;
 import com.nflabs.zeppelin.zengine.ParamInfo;
-import com.nflabs.zeppelin.zengine.ZContext;
 import com.nflabs.zeppelin.zengine.ZException;
-import com.nflabs.zeppelin.zengine.ZWebContext;
-import com.sun.script.jruby.JRubyScriptEngineFactory;
+import com.nflabs.zeppelin.zengine.context.ZContext;
+import com.nflabs.zeppelin.zengine.context.ZLocalContextImpl;
+import com.nflabs.zeppelin.zengine.context.ZWebContext;
 
 /**
  * Q stands for Query
@@ -45,10 +37,7 @@ public class Q extends Z {
 	transient static final String INPUT_VAR_NAME="in";
 	transient static final String OUTPUT_VAR_NAME="out";
 
-	/**
-	 * ERB local variables
-	 */
-	transient private Map<String,Object> binding = null;
+	transient private ERBEvaluator erbEvaluator = null;
 
     /**
      * Once getQuery() evaluated, then save result into this variable so, don't evaluate again. 
@@ -94,85 +83,26 @@ public class Q extends Z {
 	}
 	
 	protected String getQuery(BufferedReader erb, ZContext zcontext) throws ZException{
-		return evalErb(erb, zcontext);
+		return getErbEvaluator().eval(erb, zcontext);
 	}
 	
-	private static ScriptEngine rubyScriptEngine;
-	static {
-		JRubyScriptEngineFactory factory = new JRubyScriptEngineFactory();
-		rubyScriptEngine = factory.getScriptEngine();
-		StringBuffer rubyScript = new StringBuffer();
-		rubyScript.append("require 'erb'\n");
-		try {
-			rubyScriptEngine.eval(rubyScript.toString());
-		} catch (ScriptException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private Map<String, Object> getErbBinding(){
-		if(binding==null){
+	private ERBEvaluator getErbEvaluator(){
+		if(erbEvaluator==null){
 			if(hasPrev() && prev() instanceof Q) {
-				binding = ((Q)prev()).getErbBinding();
+				erbEvaluator = ((Q)prev()).getErbEvaluator();
 			} else {
-				binding = new HashMap<String, Object>();
+				erbEvaluator = new ERBEvaluator();
 			}
 		}
-		return binding;
+		return erbEvaluator;
 	}
 
-	public void withErbBinding(Map<String, Object> b){
-		binding = b;
-	}
-
-	protected String evalErb(BufferedReader erb, Object zcontext) throws ZException{
-		synchronized(rubyScriptEngine){
-			StringBuffer rubyScript = new StringBuffer();
-			Bindings bindings = rubyScriptEngine.createBindings();
-			bindings.put("_zpZ", zcontext);
-			bindings.put("_zpLV", getErbBinding());
-			rubyScriptEngine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
-			for(String k : getErbBinding().keySet()){
-				rubyScript.append(k+"= $_zpLV.get(\""+k+"\")\n");
-			}
-			rubyScript.append("z = $_zpZ\n");
-			try {
-				String line = null;
-				rubyScript.append("$_zpErb = \"\"\n");
-	
-				boolean first = true;
-				while((line = erb.readLine())!=null){
-					String newline;
-					if(first==false){
-						newline = "\\n";
-					} else {
-						newline = "";
-						first = false;
-					}
-					rubyScript.append("$_zpErb += \""+newline+line.replaceAll("\"", "\\\\\"")+"\"\n");
-				}
-				rubyScript.append("$_zpErb += \"<% local_variables.each do |xx|\n    if xx != 'z' and xx != '_erbout' then $_zpLV[xx] = eval(xx) end\nend %>\"\n");
-			} catch (IOException e1) {
-				throw new ZException(e1);
-			}
-			rubyScript.append("$_zpE = ERB.new($_zpErb, \"<>-\").result(binding)\n");
-	        try {
-	        	rubyScriptEngine.eval(rubyScript.toString(), bindings);
-			} catch (ScriptException e) {
-				throw new ZException(e);
-			}	        
-	        String q = (String) bindings.get("_zpE");
-
-	        return nonNullString(q);
-		}
-	}
-
-	private String nonNullString(String q) {
-	    return q == null ? "" : q;
+	public void withErbEvaluator(ERBEvaluator e){
+		erbEvaluator = e;
 	}
 
     protected String evalWebTemplate(BufferedReader erb, ZWebContext zWebContext) throws ZException{
-		return evalErb(erb, zWebContext);
+		return getErbEvaluator().eval(erb, zWebContext);
 	}
 
 	/**
@@ -193,7 +123,7 @@ public class Q extends Z {
 		try {
 			ins = new ByteArrayInputStream(query.getBytes());
 			BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
-			ZContext zContext = new ZContext( hasPrev() ? prev().name() : null, name(), query, params);
+			ZLocalContextImpl zContext = new ZLocalContextImpl( hasPrev() ? prev().name() : null, name(), query, params);
 			String q = getQuery(erb, zContext);
 			ins.close();
 			return q;
@@ -265,7 +195,7 @@ public class Q extends Z {
 		ByteArrayInputStream ins = new ByteArrayInputStream(query.getBytes());
 		BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
 		
-		ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);
+		ZLocalContextImpl zContext = new ZLocalContextImpl( (prev()==null) ? null : prev().name(), name(), query, params);
 				
 		try {
 			getQuery(erb, zContext);

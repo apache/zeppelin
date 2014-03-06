@@ -136,6 +136,12 @@ public class ZQLTest extends TestCase {
 		assertEquals("select * from () a limit 10", q.getQuery());
 	}
 	
+	public void testLstmtParamErb() throws ZException, ZQLException{
+		ZQL zql = new ZQL("test(limit=<%='20'%>)");
+		Z q = zql.compile().get(0);
+		assertEquals("select * from () a limit 20", q.getQuery());
+	}
+
 	public void testLstmtArg() throws IOException, ZException, ZQLException{
 		ZQL zql = new ZQL("select * from test | test(limit=10)");
 		
@@ -183,6 +189,14 @@ public class ZQLTest extends TestCase {
 		assertEquals(2, q.size());
 		assertEquals("select a from test", q.get(0).getQuery());
 		assertEquals("select b from test", q.get(1).getQuery());
+	}
+
+	public void testErbScopeMultilineQueryCondition() throws IOException, ZException, ZQLException{
+		ZQL zql = new ZQL("<% var1=\"b\" %> <% if var1==\"a\" %>select a; <% else %> select b;<% end %>");
+
+		List<Z> q = zql.compile();
+		assertEquals(1, q.size());
+		assertEquals("select b", q.get(0).getQuery());
 	}
 
 	public void testErbScopePipedQuery() throws IOException, ZException, ZQLException{
