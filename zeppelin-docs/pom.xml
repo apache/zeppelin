@@ -5,12 +5,12 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>com.nflabs.zeppelin</groupId>
-    <version>0.3.1</version>
+    <version>0.3.2-SNAPSHOT</version>
   </parent>
 
   <groupId>com.nflabs.zeppelin</groupId>
   <artifactId>zeppelin-docs</artifactId>
-  <version>0.3.1</version>
+  <version>0.3.2-SNAPSHOT</version>
   <name>Zeppelin: Documentation</name>
   <url>http://www.nflabs.com</url>
 
