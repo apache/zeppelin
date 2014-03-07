@@ -155,13 +155,15 @@ public class ZeppelinServer extends Application {
    */
   private static WebAppContext setupWebAppSwagger(ZeppelinConfiguration conf) {
     WebAppContext webApp = new WebAppContext();
-    File webapp = new File("../zeppelin-docs/src/main/swagger");
+    File webapp = new File(conf.getString(ConfVars.ZEPPELIN_API_WAR));
 
-    assert webapp.isDirectory(); // Swagger available only on Development mode? so read from FS
-    webApp.setResourceBase(webapp.getPath());
-    webApp.setContextPath("/docs");
-    webApp.setParentLoaderPriority(true);
-
+    if (webapp.isDirectory()) {
+      webApp.setResourceBase(webapp.getPath());
+      webApp.setContextPath("/docs");
+      webApp.setParentLoaderPriority(true);
+    } else {
+      webApp.setWar(webapp.getAbsolutePath());
+    }
     webApp.addServlet(new ServletHolder(new DefaultServlet()), "/docs/*");
     return webApp;
   }
