@@ -22,26 +22,33 @@ import com.nflabs.zeppelin.server.ZANJobManager;
 import com.nflabs.zeppelin.server.ZQLJob;
 import com.nflabs.zeppelin.zan.Info;
 import com.nflabs.zeppelin.zan.ZANException;
+import com.wordnik.swagger.annotations.Api;
 
 @Path("/zan")
+@Api( value = "/zan", description = "Zeppelin Archive Network is library sharing network. You can download some library from ZAN or publish you library." )
 public class ZANRestApi {
 	Logger logger = Logger.getLogger(ZANRestApi.class);
-	
 	private com.nflabs.zeppelin.zan.ZAN zan;
-
 	private ZANJobManager jobManager;
+
+	/**
+	 * This is required by Swagger
+	 */
+    public ZANRestApi() {
+      super();
+    }
 
 	public ZANRestApi(com.nflabs.zeppelin.zan.ZAN zan, ZANJobManager zanJobManager){
 		this.zan = zan;
 		this.jobManager = zanJobManager;
 	}
-	
+
 	public static class SearchRequest{
 		public String query;
 	}
-	
+
     @POST
-    @Path("search")
+    @Path("/search")
     @Produces("application/json")
     public Response search(String json) {
     	Gson gson = new Gson();
@@ -52,27 +59,27 @@ public class ZANRestApi {
 		} catch (ZANException e) {
 			logger.error("Search failed", e);
 			return new JsonResponse<Object>(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
-		}    	
+		}
     }
-    
+
     @GET
-    @Path("update")
+    @Path("/update")
     @Produces("application/json")
     public Response update() {
     	jobManager.update();
     	return new JsonResponse<Object>(Status.OK, "Job submitted").build();
     }
-    
+
     @GET
-    @Path("running")
+    @Path("/running")
     @Produces("application/json")
     public Response getJobsRunning(){
     	List<ZANJob> job = jobManager.getJobsRunning();
     	return new JsonResponse<List<ZANJob>>(Status.OK, "", job).build();
     }
-    
+
     @GET
-    @Path("install/{libName}")
+    @Path("/install/{libName}")
     @Produces("application/json")
     public Response install(@PathParam("libName") String libName){
     	jobManager.install(libName);
@@ -80,7 +87,7 @@ public class ZANRestApi {
     }
 
     @GET
-    @Path("uninstall/{libName}")
+    @Path("/uninstall/{libName}")
     @Produces("application/json")
     public Response uninstall(@PathParam("libName") String libName){
     	jobManager.uninstall(libName);
@@ -88,7 +95,7 @@ public class ZANRestApi {
     }
 
     @GET
-    @Path("upgrade/{libName}")
+    @Path("/upgrade/{libName}")
     @Produces("application/json")
     public Response upgrade(@PathParam("libName") String libName){
     	jobManager.upgrade(libName);
