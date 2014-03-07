@@ -2,9 +2,11 @@ package com.nflabs.zeppelin.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.servlet.DispatcherType;
 import javax.ws.rs.core.Application;
 
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
@@ -14,6 +16,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.session.SessionHandler;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -51,8 +55,9 @@ public class ZeppelinServer extends Application {
 		final ServletContextHandler restApi = setupRestApiContextHandler();
 		/** NOTE: Swagger is included via the web.xml in zeppelin-web
 		 *  A future work: remove web.xml and use this class in order to instenciate all the servlet
-		 *  final ServletContextHandler swagger = setupSwaggerContextHandler();
+		 *
 		 */
+		//final ServletContextHandler swagger = setupSwaggerContextHandler();
 		//Web UI
 		final WebAppContext webApp = setupWebAppContext(conf);
 
@@ -112,20 +117,23 @@ public class ZeppelinServer extends Application {
      *
      * @return ServletContextHandler of Swagger
      */
-    @Deprecated
+
     private static ServletContextHandler setupSwaggerContextHandler() {
-      final ServletHolder SwaggerSerlet = new ServletHolder(new com.wordnik.swagger.jaxrs.config.DefaultJaxrsConfig());
-
-      SwaggerSerlet.setInitParameter("api.version", "1.0.0");
-      SwaggerSerlet.setInitParameter("swagger.api.basepath", "http://localhost:8080/cxf/zeppelin");
-
       final ServletContextHandler handler = new ServletContextHandler();
+
+      final ServletHolder SwaggerServlet = new ServletHolder(new com.wordnik.swagger.jersey.config.JerseyJaxrsConfig());
+      SwaggerServlet.setInitParameter("api.version", "1.0.0");
+      SwaggerServlet.setInitParameter("swagger.api.basepath", "http://localhost:8080/cxf/zeppelin");
+      SwaggerServlet.setInitOrder(3);
+
       // Setup the handler
-      handler.setSessionHandler(new SessionHandler());
+      handler.addServlet(SwaggerServlet, "/api-docs/*");
+      //FilterHolder filter = FilterHolder.
       handler.setInitParameter("com.sun.jersey.config.property.packages", "com.nflabs.zeppelin.rest;com.wordnik.swagger.jaxrs.listing");
       handler.setInitParameter("com.sun.jersey.spi.container.ContainerRequestFilters", "com.sun.jersey.api.container.filter.PostReplaceFilter");
-      handler.addServlet(SwaggerSerlet, "/api-docs/*");
+      //handler.addFilter(filter, "/*", EnumSet.allOf(DispatcherType.class));
 
+      // And we are done
       return handler;
     }
 
@@ -134,13 +142,15 @@ public class ZeppelinServer extends Application {
         File webapp = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
 
         if(webapp.isDirectory()){ // Development mode, read from FS
-            webApp.setDescriptor(webapp+"/WEB-INF/web.xml");
+            //webApp.setDescriptor(webapp+"/WEB-INF/web.xml");
             webApp.setResourceBase(webapp.getPath());
             webApp.setContextPath("/");
             webApp.setParentLoaderPriority(true);
         } else { //use packaged WAR
             webApp.setWar(webapp.getAbsolutePath());
         }
+        // Explicit bind to root
+        webApp.addServlet(new ServletHolder(new DefaultServlet()), "/*");
         return webApp;
     }
 
