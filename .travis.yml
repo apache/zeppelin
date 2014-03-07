@@ -1,0 +1,7 @@
+language: ruby
+before_install:
+  - travis_retry gem install bundler
+  - travis_retry gem install jekyll
+  - bundle install
+script:
+  - jekyll build
