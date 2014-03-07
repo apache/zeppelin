@@ -53,18 +53,17 @@ public class ZeppelinServer extends Application {
 
         //REST api
 		final ServletContextHandler restApi = setupRestApiContextHandler();
-		/** NOTE: Swagger is included via the web.xml in zeppelin-web
-		 *  A future work: remove web.xml and use this class in order to instenciate all the servlet
-		 *
+		/** NOTE: Swagger-core is included via the web.xml in zeppelin-web
+		 * But the rest of swagger is configured here
 		 */
-		//final ServletContextHandler swagger = setupSwaggerContextHandler();
+		final ServletContextHandler swagger = setupSwaggerContextHandler(port);
 		//Web UI
 		final WebAppContext webApp = setupWebAppContext(conf);
 		final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
 
         // add all handlers
 	    ContextHandlerCollection contexts = new ContextHandlerCollection();
-	    contexts.setHandlers(new Handler[]{restApi, webAppSwagg, webApp});
+	    contexts.setHandlers(new Handler[]{swagger, restApi, webAppSwagg, webApp});
 	    server.setHandler(contexts);
 
 	    LOG.info("Start zeppelin server");
@@ -114,25 +113,20 @@ public class ZeppelinServer extends Application {
     /**
      * Swagger core handler - Needed for the RestFul api documentation
      *
-     * THIS IS HERE AS FOUNDATION FOR A FUTURE UPDATE
-     *
      * @return ServletContextHandler of Swagger
      */
-
-    private static ServletContextHandler setupSwaggerContextHandler() {
-      final ServletContextHandler handler = new ServletContextHandler();
-
-      final ServletHolder SwaggerServlet = new ServletHolder(new com.wordnik.swagger.jersey.config.JerseyJaxrsConfig());
+    private static ServletContextHandler setupSwaggerContextHandler(int port) {
+      final ServletHolder SwaggerServlet = new ServletHolder( new com.wordnik.swagger.jersey.config.JerseyJaxrsConfig() );
+      SwaggerServlet.setName("JerseyJaxrsConfig");
       SwaggerServlet.setInitParameter("api.version", "1.0.0");
-      SwaggerServlet.setInitParameter("swagger.api.basepath", "http://localhost:8080/cxf/zeppelin");
-      SwaggerServlet.setInitOrder(3);
+      SwaggerServlet.setInitParameter("swagger.api.basepath", "http://localhost:"+port+"/cxf/zeppelin");
+      SwaggerServlet.setInitOrder(2);
 
       // Setup the handler
+      final ServletContextHandler handler = new ServletContextHandler();
+      handler.setSessionHandler(new SessionHandler());
+      //handler.setContextPath("/swagg");
       handler.addServlet(SwaggerServlet, "/api-docs/*");
-      //FilterHolder filter = FilterHolder.
-      handler.setInitParameter("com.sun.jersey.config.property.packages", "com.nflabs.zeppelin.rest;com.wordnik.swagger.jaxrs.listing");
-      handler.setInitParameter("com.sun.jersey.spi.container.ContainerRequestFilters", "com.sun.jersey.api.container.filter.PostReplaceFilter");
-      //handler.addFilter(filter, "/*", EnumSet.allOf(DispatcherType.class));
 
       // And we are done
       return handler;
