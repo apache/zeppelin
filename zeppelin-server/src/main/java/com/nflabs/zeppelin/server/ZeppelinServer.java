@@ -60,10 +60,11 @@ public class ZeppelinServer extends Application {
 		//final ServletContextHandler swagger = setupSwaggerContextHandler();
 		//Web UI
 		final WebAppContext webApp = setupWebAppContext(conf);
+		final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
 
         // add all handlers
 	    ContextHandlerCollection contexts = new ContextHandlerCollection();
-	    contexts.setHandlers(new Handler[]{restApi, webApp});
+	    contexts.setHandlers(new Handler[]{restApi, webAppSwagg, webApp});
 	    server.setHandler(contexts);
 
 	    LOG.info("Start zeppelin server");
@@ -153,6 +154,24 @@ public class ZeppelinServer extends Application {
         webApp.addServlet(new ServletHolder(new DefaultServlet()), "/*");
         return webApp;
     }
+
+  /**
+   * Handles the WebApplication fir Swagger-ui: - for development mode
+   *
+   * @return
+   */
+  private static WebAppContext setupWebAppSwagger(ZeppelinConfiguration conf) {
+    WebAppContext webApp = new WebAppContext();
+    File webapp = new File("../zeppelin-docs/src/main/swagger");
+
+    assert webapp.isDirectory(); // Swagger available only on Development mode? so read from FS
+    webApp.setResourceBase(webapp.getPath());
+    webApp.setContextPath("/docs");
+    webApp.setParentLoaderPriority(true);
+
+    webApp.addServlet(new ServletHolder(new DefaultServlet()), "/docs/*");
+    return webApp;
+  }
 
 	public ZeppelinServer() throws Exception {
 		this.schedulerFactory = new SchedulerFactory();
