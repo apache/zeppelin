@@ -4,15 +4,34 @@
 	version="2.5">
 
  <display-name>zeppelin-web</display-name>
+	<servlet>
+		<servlet-name>default</servlet-name>
+		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+		<init-param>
+			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-value>com.nflabs.zeppelin.rest;com.wordnik.swagger.jersey.listing</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>default</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
 
-  <servlet>
-    <servlet-name>default</servlet-name>
-    <servlet-class>org.eclipse.jetty.servlet.DefaultServlet</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>default</servlet-name>
-    <url-pattern>/*</url-pattern>
-  </servlet-mapping>
+	<!-- Swagger configuration; TODO:(anthony) Remove forced port in api.basepath -->
+	<servlet>
+		<servlet-name>JerseyJaxrsConfig</servlet-name>
+		<servlet-class>com.wordnik.swagger.jersey.config.JerseyJaxrsConfig</servlet-class>
+		<init-param>
+			<param-name>api.version</param-name>
+			<param-value>1.0.0</param-value>
+		</init-param>
+		<init-param>
+			<param-name>swagger.api.basepath</param-name>
+			<param-value>http://localhost:8080/cxf/zeppelin</param-value>
+		</init-param>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
 
   <context-param>
     <param-name>configuration</param-name>
