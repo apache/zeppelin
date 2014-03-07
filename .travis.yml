@@ -1,5 +1,6 @@
 language: ruby
 before_install:
   - travis_retry gem install bundler
+  - bundle install
 script:
   - jekyll build
