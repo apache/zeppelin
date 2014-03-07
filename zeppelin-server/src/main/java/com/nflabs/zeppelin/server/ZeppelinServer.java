@@ -40,15 +40,19 @@ public class ZeppelinServer extends Application {
 	private ZANJobManager zanJobManager;
 	private ZAN zan;
 
-	public static void main(String [] args) throws Exception{		
+	public static void main(String [] args) throws Exception{
 		z = new Zengine();
 		ZeppelinConfiguration conf = z.getConf();
-		
+
 		int port = conf.getInt(ConfVars.ZEPPELIN_PORT);
         final Server server = setupJettyServer(port);
-        
+
         //REST api
-		final ServletContextHandler restApi = setupRestApiContextHandler(); 
+		final ServletContextHandler restApi = setupRestApiContextHandler();
+		/** NOTE: Swagger is included via the web.xml in zeppelin-web
+		 *  A future work: remove web.xml and use this class in order to instenciate all the servlet
+		 *  final ServletContextHandler swagger = setupSwaggerContextHandler();
+		 */
 		//Web UI
 		final WebAppContext webApp = setupWebAppContext(conf);
 
@@ -56,11 +60,11 @@ public class ZeppelinServer extends Application {
 	    ContextHandlerCollection contexts = new ContextHandlerCollection();
 	    contexts.setHandlers(new Handler[]{restApi, webApp});
 	    server.setHandler(contexts);
-	        
+
 	    LOG.info("Start zeppelin server");
         server.start();
         LOG.info("Started");
-        
+
 		Runtime.getRuntime().addShutdownHook(new Thread(){
 		    @Override public void run() {
 		        LOG.info("Shutting down Zeppelin Server ... ");
@@ -101,10 +105,34 @@ public class ZeppelinServer extends Application {
         return cxfContext;
     }
 
+    /**
+     * Swagger core handler - Needed for the RestFul api documentation
+     *
+     * THIS IS HERE AS FOUNDATION FOR A FUTURE UPDATE
+     *
+     * @return ServletContextHandler of Swagger
+     */
+    @Deprecated
+    private static ServletContextHandler setupSwaggerContextHandler() {
+      final ServletHolder SwaggerSerlet = new ServletHolder(new com.wordnik.swagger.jaxrs.config.DefaultJaxrsConfig());
+
+      SwaggerSerlet.setInitParameter("api.version", "1.0.0");
+      SwaggerSerlet.setInitParameter("swagger.api.basepath", "http://localhost:8080/cxf/zeppelin");
+
+      final ServletContextHandler handler = new ServletContextHandler();
+      // Setup the handler
+      handler.setSessionHandler(new SessionHandler());
+      handler.setInitParameter("com.sun.jersey.config.property.packages", "com.nflabs.zeppelin.rest;com.wordnik.swagger.jaxrs.listing");
+      handler.setInitParameter("com.sun.jersey.spi.container.ContainerRequestFilters", "com.sun.jersey.api.container.filter.PostReplaceFilter");
+      handler.addServlet(SwaggerSerlet, "/api-docs/*");
+
+      return handler;
+    }
+
     private static WebAppContext setupWebAppContext(ZeppelinConfiguration conf) {
         WebAppContext webApp = new WebAppContext();
         File webapp = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
-        
+
         if(webapp.isDirectory()){ // Development mode, read from FS
             webApp.setDescriptor(webapp+"/WEB-INF/web.xml");
             webApp.setResourceBase(webapp.getPath());
@@ -125,8 +153,8 @@ public class ZeppelinServer extends Application {
 			this.analyzeSessionManager = new ZQLJobManager(z, fs, schedulerFactory.createOrGetFIFOScheduler("analyze"), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		} else {
 			this.analyzeSessionManager = new ZQLJobManager(z, fs, schedulerFactory.createOrGetParallelScheduler("analyze", 100), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
-		}	
-		
+		}
+
 		this.zan = new ZAN(z.getConf().getString(ConfVars.ZEPPELIN_ZAN_REPO),
 		                   z.getConf().getString(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO),
 		                   z.getConf().getString(ConfVars.ZEPPELIN_ZAN_SHARED_REPO),
@@ -134,23 +162,23 @@ public class ZeppelinServer extends Application {
 
 		this.zanJobManager = new ZANJobManager(zan, schedulerFactory.createOrGetFIFOScheduler("analyze"));
 	}
-	
+
 	@Override
     public Set<Class<?>> getClasses() {
         Set<Class<?>> classes = new HashSet<Class<?>>();
         return classes;
     }
-    
+
 	@Override
     public java.util.Set<java.lang.Object> getSingletons(){
     	Set<Object> singletons = new HashSet<Object>();
-    	
+
     	ZQLRestApi analyze = new ZQLRestApi(this.analyzeSessionManager);
     	singletons.add(analyze);
-    	
+
     	ZANRestApi zan = new ZANRestApi(this.zan, this.zanJobManager);
     	singletons.add(zan);
-    	
+
     	return singletons;
     }
 
