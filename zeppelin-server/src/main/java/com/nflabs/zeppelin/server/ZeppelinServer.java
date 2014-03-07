@@ -125,7 +125,6 @@ public class ZeppelinServer extends Application {
       // Setup the handler
       final ServletContextHandler handler = new ServletContextHandler();
       handler.setSessionHandler(new SessionHandler());
-      //handler.setContextPath("/swagg");
       handler.addServlet(SwaggerServlet, "/api-docs/*");
 
       // And we are done
