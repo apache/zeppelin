@@ -13,10 +13,7 @@
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
-	<servlet-mapping>
-		<servlet-name>default</servlet-name>
-		<url-pattern>/*</url-pattern>
-	</servlet-mapping>
+
 
 	<!-- Swagger configuration; TODO:(anthony) Remove forced port in api.basepath -->
 	<servlet>
@@ -33,8 +30,14 @@
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 
-  <context-param>
-    <param-name>configuration</param-name>
-    <param-value>deployment</param-value>
-  </context-param>
+	<!-- This route is for swagger, must be different than root -->
+	<servlet-mapping>
+		<servlet-name>default</servlet-name>
+		<url-pattern>/rest/*</url-pattern>
+	</servlet-mapping>
+
+	<context-param>
+		<param-name>configuration</param-name>
+		<param-value>deployment</param-value>
+	</context-param>
 </web-app>
