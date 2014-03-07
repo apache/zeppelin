@@ -10,6 +10,7 @@
 
   <groupId>com.nflabs.zeppelin</groupId>
   <artifactId>zeppelin-docs</artifactId>
+  <packaging>war</packaging>
   <version>0.3.2-SNAPSHOT</version>
   <name>Zeppelin: Documentation</name>
   <url>http://www.nflabs.com</url>
@@ -21,6 +22,7 @@
     -->
 
     <build>
+    <finalName>zeppelin-api-ui</finalName>
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -36,60 +38,61 @@
             </plugins>
         </pluginManagement>
 
-        <plugins>
-            <plugin>
-                <groupId>org.tomdz.maven</groupId>
-                <artifactId>sphinx-maven-plugin</artifactId>
-                <configuration>
-                    <fork>true</fork>
-                    <force>true</force>
-                    <warningsAsErrors>true</warningsAsErrors>
-                    <sourceDirectory>${project.basedir}/src/main/sphinx</sourceDirectory>
-                    <outputDirectory>${project.build.directory}/html</outputDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-<!--
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>docs</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <appendAssemblyId>false</appendAssemblyId>
-                            <descriptors>
-                                <descriptor>src/main/assembly/docs.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
+	<plugins>
+		<!-- Swagger ui -->
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-clean-plugin</artifactId>
+			<version>2.4.1</version>
+			<configuration>
+				<filesets>
+					<fileset>
+						<directory>src/main/swagger</directory>
+						<includes>
+							<include>src/main/swagger/css</include>
+							<include>src/main/swagger/images</include>
+							<include>src/main/swagger/lib</include>
+							<include>src/main/swagger/*.html</include>
+							<include>src/main/swagger/*.js</include>
+						</includes>
+						<followSymlinks>false</followSymlinks>
+					</fileset>
+				</filesets>
+			</configuration>
+		</plugin>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-war-plugin</artifactId>
+			<configuration>
+				<failOnMissingWebXml>false</failOnMissingWebXml>
+				<webResources>
+				<resource>
+				<directory>src/main/swagger</directory>
+				</resource>
+				</webResources>
+			</configuration>
+		</plugin>
 
-                    <execution>
-                        <id>sources</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>src/main/assembly/sources.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
--->
-        </plugins>
+		<!-- Sphinx -->
+		<plugin>
+			<groupId>org.tomdz.maven</groupId>
+			<artifactId>sphinx-maven-plugin</artifactId>
+			<configuration>
+				<fork>true</fork>
+				<force>true</force>
+				<warningsAsErrors>true</warningsAsErrors>
+				<sourceDirectory>${project.basedir}/src/main/sphinx</sourceDirectory>
+				<outputDirectory>${project.build.directory}/html</outputDirectory>
+			</configuration>
+			<executions>
+				<execution>
+					<phase>package</phase>
+					<goals>
+						<goal>generate</goal>
+					</goals>
+				</execution>
+			</executions>
+		</plugin>
+	</plugins>
     </build>
 </project>
