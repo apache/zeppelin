@@ -76,8 +76,17 @@ public class ZQLTest extends TestCase {
 		assertEquals("select * from "+plan.get(0).prev().name()+" limit 10", plan.get(0).getQuery());
 		plan.get(0).release();
 	}
-	
-	
+
+	public void testPipe2() throws ZException, ZQLException {
+		ZQL zql = new ZQL();
+		zql.append("select <X:1,Y:2> from bank | test1");
+		ZPlan plan = zql.compile();
+		
+		assertEquals(1, plan.size());
+		assertEquals("select <X:1,Y:2> from bank", plan.get(0).prev().getQuery());
+		plan.get(0).release();
+	}
+
 	public void testSemicolon() throws ZException, ZQLException{
 		ZQL zql = new ZQL();
 		zql.append("create table if not exists bank(a INT); select * from bank | select * from <%= z."+Q.INPUT_VAR_NAME+" %> limit 10; show tables; ");
