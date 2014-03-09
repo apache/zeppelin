@@ -229,6 +229,7 @@ public class ZAN {
 			init.call();
 
 			SubmoduleUpdateCommand submoduleUpdate = git.submoduleUpdate();
+			submoduleUpdate.addPath(libraryName);
 			if(progressListener!=null){
 				submoduleUpdate.setProgressMonitor(progressListener);
 			}
