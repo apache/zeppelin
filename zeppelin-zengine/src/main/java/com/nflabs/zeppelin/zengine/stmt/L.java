@@ -200,8 +200,6 @@ public class L extends Q {
 					continue;
 				} else if(f.getName().startsWith(".")){  // ignore hidden file
 					continue;
-				} else if(f.getName().startsWith(libName+"_")==false){
-					continue;
 				} else if(f.getName().equals("zql.erb")){
 					continue;
 				} else {
