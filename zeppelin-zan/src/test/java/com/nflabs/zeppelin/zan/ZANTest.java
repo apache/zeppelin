@@ -220,13 +220,15 @@ public class ZANTest {
 		zan.update();
 
 		// try to install lib1
-		assertFalse(new File(localBase, "lib1").isDirectory());		
+		assertFalse(new File(localBase, "lib1").isDirectory());
+		assertFalse(new File(localBase, "lib2").isDirectory());
 		zan.install("lib1", null);
 
 		assertTrue(new File(localBase, "lib1").isDirectory());		
 		assertTrue(new File(localBase, "lib1/zql").isFile());
 		assertTrue(new File(remoteBase, "lib1").isDirectory());		
 		assertTrue(new File(remoteBase, "lib1/zql").isFile());
+		assertFalse(new File(localBase, "lib2").isDirectory());
 
 		// try to install nonexist lib
 		try {

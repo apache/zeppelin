@@ -10,6 +10,7 @@ import java.util.Map;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Logger;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
@@ -30,7 +31,7 @@ import org.eclipse.jgit.submodule.SubmoduleStatus;
 import org.eclipse.jgit.submodule.SubmoduleStatusType;
 
 public class ZAN {
-	
+	Logger logger = Logger.getLogger(ZAN.class);
 	private String localPath;
 	private String remotePath;
 	private FileSystem dfs;
@@ -66,6 +67,7 @@ public class ZAN {
 
 		try {
 			if (lp.exists()==false) {
+				logger.info("Init");
 				CloneCommand clone = Git.cloneRepository();
 				clone.setURI(zanRepo);
 				clone.setDirectory(lp);
@@ -118,12 +120,14 @@ public class ZAN {
 
 		Git git;
 		try {
+			logger.info("install "+libraryName);
 			git = Git.open(new File(localPath));
 			SubmoduleInitCommand init = git.submoduleInit();
 			init.addPath(libraryName);
 			init.call();
 
 			SubmoduleUpdateCommand submoduleUpdate = git.submoduleUpdate();
+			submoduleUpdate.addPath(libraryName);
 			if(progressListener!=null){
 				submoduleUpdate.setProgressMonitor(progressListener);
 			}
@@ -218,6 +222,7 @@ public class ZAN {
 
 		Git git;
 		try {
+			logger.info("upgrade "+libraryName);
 			git = Git.open(new File(localPath));
 			SubmoduleInitCommand init = git.submoduleInit();
 			init.addPath(libraryName);
@@ -246,6 +251,7 @@ public class ZAN {
 	 */
 	public void uninstall(String libraryName) throws ZANException{
 		init(null);
+		logger.info("uninstall "+libraryName);
 		File lp = getLocalLibraryPath(libraryName);
 		if (lp.exists()==false) {
 			throw new ZANException("library "+libraryName+" not installed");
@@ -272,6 +278,7 @@ public class ZAN {
 		String branch = "master";
 		File lp = new File(localPath);
 		try {
+			logger.info("update");
 			if (lp.exists()==false) {
 				init(null);
 			} else {
