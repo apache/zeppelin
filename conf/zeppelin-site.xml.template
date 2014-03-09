@@ -57,6 +57,12 @@
 </property>
 
 <property>
+  <name>zeppelin.max.history</name>
+  <value>100</value>
+  <description>Maximum number of job history.</description>
+</property>
+
+<property>
   <name>zeppelin.driver.dir</name>
   <value>drivers</value>
   <description>Drivers base directory</description>
