@@ -1,6 +1,9 @@
 package com.nflabs.zeppelin.driver.hive11;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -88,6 +91,14 @@ public class HiveZeppelinConnection implements ZeppelinConnection {
 	@Override
 	public Result addResource(URI resourceLocation) throws ZeppelinDriverException {
 		if(resourceLocation.getPath().endsWith(".jar")){
+			ClassLoader cl = Thread.currentThread().getContextClassLoader();
+			URLClassLoader newcl;
+			try {
+				newcl = new URLClassLoader(new URL[]{resourceLocation.toURL()}, cl);
+			} catch (MalformedURLException e) {
+				throw new ZeppelinDriverException(e);
+			}
+			Thread.currentThread().setContextClassLoader(newcl);
 			return execute("ADD JAR "+resourceLocation.toString());			
 		} else {
 			return execute("ADD FILE "+resourceLocation.toString());			
