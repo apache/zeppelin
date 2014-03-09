@@ -25,7 +25,7 @@ public abstract class Job {
 		FINISHED,
 		ERROR,
 		ABORT,;
-        boolean isReady() { return this==RUNNING; }
+        boolean isReady() { return this==READY; }
         boolean isRunning() { return this==RUNNING; }
 	}
 
