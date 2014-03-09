@@ -19,8 +19,12 @@ import org.eclipse.jgit.api.StatusCommand;
 import org.eclipse.jgit.api.SubmoduleInitCommand;
 import org.eclipse.jgit.api.SubmoduleStatusCommand;
 import org.eclipse.jgit.api.SubmoduleUpdateCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRefNameException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
+import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.submodule.SubmoduleStatus;
 import org.eclipse.jgit.submodule.SubmoduleStatusType;
@@ -55,7 +59,58 @@ public class ZAN {
 		this.dfs = dfs;
 	}
 	
+	public void init(ZANProgressMonitor progressListener) throws ZANException{
+		String branch = "master";
+		String commit = "HEAD";
+		File lp = new File(localPath);
+
+		try {
+			if (lp.exists()==false) {
+				CloneCommand clone = Git.cloneRepository();
+				clone.setURI(zanRepo);
+				clone.setDirectory(lp);
+				clone.setBranch(branch);
+				clone.setNoCheckout(true);
+				if(progressListener!=null){
+					clone.setProgressMonitor(progressListener);
+				}
+				
+				clone.call();
+	
+				Git git = Git.open(lp);
+				
+				// fetch
+				git.fetch().call();
+	
+				git.checkout().setName(branch)
+							  .setCreateBranch(true)
+							  .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
+							  .setStartPoint("origin/"+branch)
+							  .call();
+				
+				git.reset().setRef(commit)
+						   .setMode(ResetType.HARD)
+						   .call();
+				git.close();
+			}
+		} catch (RefAlreadyExistsException e) {
+			throw new ZANException(e);
+		} catch (RefNotFoundException e) {
+			throw new ZANException(e);
+		} catch (InvalidRefNameException e) {
+			throw new ZANException(e);
+		} catch (CheckoutConflictException e) {
+			throw new ZANException(e);
+		} catch (GitAPIException e) {
+			throw new ZANException(e);
+		} catch (IOException e) {
+			throw new ZANException(e);
+		}
+	}
+	
+	
 	public void install(String libraryName, ZANProgressMonitor progressListener) throws ZANException{
+		init(null);
 		File lp = getLocalLibraryPath(libraryName);
 		if (lp.exists()) {
 			throw new ZANException(libraryName+" already installed");
@@ -91,6 +146,7 @@ public class ZAN {
 	 * @throws ZANException
 	 */
 	public Info info(String libraryName) throws ZANException{
+		init(null);
 		Git git;
 		try {
 			git = Git.open(new File(localPath));
@@ -132,6 +188,7 @@ public class ZAN {
 	}
 	
 	public List<Info> list() throws ZANException{
+		init(null);
 		List<Info> infos = new LinkedList<Info>();
 		
 		Git git;
@@ -153,6 +210,7 @@ public class ZAN {
 	}
 	
 	public void upgrade(String libraryName, ZANProgressMonitor progressListener) throws ZANException {
+		init(null);
 		File lp = getLocalLibraryPath(libraryName);
 		if (lp.exists() == false) {
 			throw new ZANException(libraryName + " not installed");
@@ -187,6 +245,7 @@ public class ZAN {
 	 * @throws ZANException
 	 */
 	public void uninstall(String libraryName) throws ZANException{
+		init(null);
 		File lp = getLocalLibraryPath(libraryName);
 		if (lp.exists()==false) {
 			throw new ZANException("library "+libraryName+" not installed");
@@ -211,36 +270,10 @@ public class ZAN {
 	 */
 	public void update(ZANProgressMonitor progressListener) throws ZANException{
 		String branch = "master";
-		String commit = "HEAD";
 		File lp = new File(localPath);
 		try {
 			if (lp.exists()==false) {
-				CloneCommand clone = Git.cloneRepository();
-				clone.setURI(zanRepo);
-				clone.setDirectory(lp);
-				clone.setBranch(branch);
-				clone.setNoCheckout(true);
-				if(progressListener!=null){
-					clone.setProgressMonitor(progressListener);
-				}
-				
-				clone.call();
-
-				Git git = Git.open(lp);
-				
-				// fetch
-				git.fetch().call();
-	
-				git.checkout().setName(branch)
-							  .setCreateBranch(true)
-							  .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
-							  .setStartPoint("origin/"+branch)
-							  .call();
-				
-				git.reset().setRef(commit)
-						   .setMode(ResetType.HARD)
-						   .call();
-				git.close();
+				init(null);
 			} else {
 				Git git = Git.open(lp);
 
