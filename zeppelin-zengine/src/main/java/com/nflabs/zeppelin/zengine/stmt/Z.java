@@ -316,8 +316,8 @@ public abstract class Z {
 		if (query!=null) {
 			String escapeSeq = "\"',;<%>!";
 			char escapeChar = '\\';
-			String [] blockStart = new String[]{ "\"", "'", "<%", "<", "N_<", "!"};
-			String [] blockEnd = new String[]{ "\"", "'", "%>", ";", "N_>", ";" };
+			String [] blockStart = new String[]{ "\"", "'", "<%"};
+			String [] blockEnd = new String[]{ "\"", "'", "%>"};
 			String [] op = new String[]{";"};
 			String [] querySplit = Util.split(query, escapeSeq, escapeChar, blockStart, blockEnd, op, false);
 

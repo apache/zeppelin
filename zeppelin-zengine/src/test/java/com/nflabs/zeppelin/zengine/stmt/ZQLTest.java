@@ -42,7 +42,7 @@ public class ZQLTest extends TestCase {
 		UtilsForTests.delete(new File("/tmp/warehouse"));
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDirPath);
 
-		String q1 = "select * from (<%= z."+Q.INPUT_VAR_NAME+" %>) a limit <%= z.param('limit') %><%= z.arg%>\n";
+		String q1 = "select *\nfrom (<%= z."+Q.INPUT_VAR_NAME+" %>) a\nlimit <%= z.param('limit') %><%= z.arg%>;\n";
 		// erb library with resource
 		new File(tmpDirPath + "/test").mkdir();
 		UtilsForTests.createFileWithContent(tmpDirPath + "/test/zql.erb", q1);
@@ -126,7 +126,7 @@ public class ZQLTest extends TestCase {
 		List<Z> zList = zql.compile();
 		assertEquals(1, zList.size());
 		Z q = zList.get(0);
-		assertEquals("select * from () a limit ", q.getQuery());
+		assertEquals("select *\nfrom () a\nlimit ;", q.getQuery());
 		q.release();
 	}
 	
@@ -135,20 +135,20 @@ public class ZQLTest extends TestCase {
 		List<Z> zList = zql.compile();
 		assertEquals(1, zList.size());
 		Z q = zList.get(0);
-		assertEquals("select * from () a limit hello\nworld", q.getQuery());
+		assertEquals("select *\nfrom () a\nlimit hello\nworld;", q.getQuery());
 		q.release();
 	}
 	
 	public void testLstmtParam() throws ZException, ZQLException{
 		ZQL zql = new ZQL("test(limit=10)");
 		Z q = zql.compile().get(0);
-		assertEquals("select * from () a limit 10", q.getQuery());
+		assertEquals("select *\nfrom () a\nlimit 10;", q.getQuery());
 	}
 	
 	public void testLstmtParamErb() throws ZException, ZQLException{
 		ZQL zql = new ZQL("test(limit=<%='20'%>)");
 		Z q = zql.compile().get(0);
-		assertEquals("select * from () a limit 20", q.getQuery());
+		assertEquals("select *\nfrom () a\nlimit 20;", q.getQuery());
 	}
 
 	public void testLstmtArg() throws IOException, ZException, ZQLException{
@@ -156,7 +156,7 @@ public class ZQLTest extends TestCase {
 		
 		List<Z> q = zql.compile();
 		assertEquals(1, q.size());
-		assertEquals("select * from ("+q.get(0).prev().name()+") a limit 10", q.get(0).getQuery());
+		assertEquals("select *\nfrom ("+q.get(0).prev().name()+") a\nlimit 10;", q.get(0).getQuery());
 	}
 	
 	public void testLstmtPipedArg() throws Exception{
@@ -165,11 +165,11 @@ public class ZQLTest extends TestCase {
 		ZPlan q = zql.compile();
 		assertEquals(1, q.size());
 		assertEquals(null, q.get(0).getQuery());
-		assertEquals("select * from ("+q.get(0).prev().prev().name()+") a limit 20", q.get(0).prev().getQuery());
+		assertEquals("select *\nfrom ("+q.get(0).prev().prev().name()+") a\nlimit 20;", q.get(0).prev().getQuery());
 		assertEquals("select * from test", q.get(0).prev().prev().getQuery());
 		assertEquals(1, q.get(0).prev().getResources().size());
 		
-		MockDriver.queries.put("select * from ("+q.get(0).prev().prev().name()+") a limit 20", new Result(0, new String[]{"hello"}));
+		MockDriver.queries.put("select *\nfrom ("+q.get(0).prev().prev().name()+") a\nlimit 20", new Result(0, new String[]{"hello"}));
 		LinkedList<Result> results = q.execute(z);
 		assertEquals(1, results.size());
 		assertEquals("hello", results.get(0).rows.get(0)[0]);
@@ -230,7 +230,7 @@ public class ZQLTest extends TestCase {
 
 		List<Z> q = zql.compile();
 		assertEquals(1, q.size());
-		assertEquals("select * from ("+q.get(0).prev().name()+") a limit 10", q.get(0).getQuery());
+		assertEquals("select *\nfrom ("+q.get(0).prev().name()+") a\nlimit 10;", q.get(0).getQuery());
 	}
 
 	public void testQueryCompilessOnAddJarStatement() throws ZException, ZQLException {
