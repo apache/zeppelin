@@ -29,7 +29,7 @@ import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
 @Path("/zan")
-@Api( value = "/zan", description = "Zeppelin Archive Network is library sharing network. You can download some library from ZAN or publish you library." )
+@Api( value = "/zan", description = "Zeppelin Archive Network is library sharing network" )
 public class ZANRestApi {
 	Logger logger = Logger.getLogger(ZANRestApi.class);
 	private com.nflabs.zeppelin.zan.ZAN zan;
