@@ -42,26 +42,6 @@
       <!-- Swagger ui -->
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-clean-plugin</artifactId>
-	<version>2.4.1</version>
-	<configuration>
-	  <filesets>
-	    <fileset>
-	      <directory>src/main/swagger</directory>
-	      <includes>
-		<include>src/main/swagger/css</include>
-		<include>src/main/swagger/images</include>
-		<include>src/main/swagger/lib</include>
-		<include>src/main/swagger/*.html</include>
-		<include>src/main/swagger/*.js</include>
-	      </includes>
-	      <followSymlinks>false</followSymlinks>
-	    </fileset>
-	  </filesets>
-	</configuration>
-      </plugin>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-war-plugin</artifactId>
 	<configuration>
 	  <failOnMissingWebXml>false</failOnMissingWebXml>
