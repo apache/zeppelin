@@ -52,7 +52,7 @@ fi
 
 if [ "x$ZEPPELIN_API_WAR" == "x" ]; then
     if [ -d "${ZEPPELIN_HOME}/zeppelin-docs/src/main/swagger" ]; then
-	    export ZEPPELIN_API_WAR="${ZEPPELIN_HOME}/zeppelin-docs/src/main/swaggwer"
+	    export ZEPPELIN_API_WAR="${ZEPPELIN_HOME}/zeppelin-docs/src/main/swagger"
     else
         export ZEPPELIN_API_WAR=`find ${ZEPPELIN_HOME} -name "zeppelin-api-ui-*.war"`
     fi
