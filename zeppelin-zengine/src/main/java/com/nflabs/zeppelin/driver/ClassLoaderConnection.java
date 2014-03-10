@@ -24,6 +24,7 @@ public class ClassLoaderConnection implements ZeppelinConnection{
 		} catch(Exception e) {
 			throw new ZeppelinDriverException(e);
 		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);
 		}
 	}
@@ -39,6 +40,7 @@ public class ClassLoaderConnection implements ZeppelinConnection{
 		} catch(Exception e) {
 			throw new ZeppelinDriverException(e);
 		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);
 		}	
 	}
@@ -54,6 +56,7 @@ public class ClassLoaderConnection implements ZeppelinConnection{
 		} catch(Exception e) {
 			throw new ZeppelinDriverException(e);
 		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);
 		}	
 	}
@@ -69,6 +72,7 @@ public class ClassLoaderConnection implements ZeppelinConnection{
 		} catch(Exception e) {
 			throw new ZeppelinDriverException(e);
 		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);
 		}
 	}
@@ -85,6 +89,7 @@ public class ClassLoaderConnection implements ZeppelinConnection{
 		} catch(Exception e) {
 			throw new ZeppelinDriverException(e);
 		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);
 		}
 	}
@@ -101,6 +106,7 @@ public class ClassLoaderConnection implements ZeppelinConnection{
 		} catch(Exception e) {
 			throw new ZeppelinDriverException(e);
 		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);
 		}
 	}
@@ -117,6 +123,7 @@ public class ClassLoaderConnection implements ZeppelinConnection{
 		} catch(Exception e) {
 			throw new ZeppelinDriverException(e);
 		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);
 		}
 	}
@@ -133,6 +140,7 @@ public class ClassLoaderConnection implements ZeppelinConnection{
 		} catch(Exception e) {
 			throw new ZeppelinDriverException(e);
 		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);
 		}
 	}
@@ -148,6 +156,7 @@ public class ClassLoaderConnection implements ZeppelinConnection{
 		} catch(Exception e) {
 			throw new ZeppelinDriverException(e);
 		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);
 		}
 	}
@@ -163,6 +172,7 @@ public class ClassLoaderConnection implements ZeppelinConnection{
 		} catch(Exception e) {
 			throw new ZeppelinDriverException(e);
 		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);
 		}
 	}

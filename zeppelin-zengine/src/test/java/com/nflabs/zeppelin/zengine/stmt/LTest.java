@@ -108,8 +108,9 @@ public class LTest extends TestCase {
         test.withName("hello");
         assertEquals("CREATE VIEW "+test.name()+" AS select * from table limit 3", test.getQuery());
         List<URI> res = test.getResources();
-        assertEquals(1, res.size());
-        assertEquals("file:"+tmpDir+"/test/test_data.log", res.get(0).toString());
+        assertEquals(2, res.size());
+        assertTrue(res.get(0).toString().compareTo("file:"+tmpDir+"/test/test_data.log")==0 || res.get(0).toString().compareTo("file:"+tmpDir+"/test/no_resource")==0);
+        assertTrue(res.get(1).toString().compareTo("file:"+tmpDir+"/test/test_data.log")==0 || res.get(1).toString().compareTo("file:"+tmpDir+"/test/no_resource")==0);
         test.release();
 	}
 
