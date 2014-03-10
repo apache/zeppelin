@@ -95,14 +95,6 @@ public class ZAN {
 						   .call();
 				git.close();
 			}
-		} catch (RefAlreadyExistsException e) {
-			throw new ZANException(e);
-		} catch (RefNotFoundException e) {
-			throw new ZANException(e);
-		} catch (InvalidRefNameException e) {
-			throw new ZANException(e);
-		} catch (CheckoutConflictException e) {
-			throw new ZANException(e);
 		} catch (GitAPIException e) {
 			throw new ZANException(e);
 		} catch (IOException e) {
@@ -296,10 +288,6 @@ public class ZAN {
 						   .call();
 						   */
 			}
-		} catch (InvalidRemoteException e) {
-			throw new ZANException(e);
-		} catch (TransportException e) {
-			throw new ZANException(e);
 		} catch (GitAPIException e) {
 			throw new ZANException(e);
 		} catch (IOException e) {
