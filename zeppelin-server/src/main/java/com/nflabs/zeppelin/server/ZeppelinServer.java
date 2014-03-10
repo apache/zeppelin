@@ -116,6 +116,7 @@ public class ZeppelinServer extends Application {
      * @return ServletContextHandler of Swagger
      */
     private static ServletContextHandler setupSwaggerContextHandler(int port) {
+      // Configure Swagger-core
       final ServletHolder SwaggerServlet = new ServletHolder( new com.wordnik.swagger.jersey.config.JerseyJaxrsConfig() );
       SwaggerServlet.setName("JerseyJaxrsConfig");
       SwaggerServlet.setInitParameter("api.version", "1.0.0");
@@ -125,6 +126,7 @@ public class ZeppelinServer extends Application {
       // Setup the handler
       final ServletContextHandler handler = new ServletContextHandler();
       handler.setSessionHandler(new SessionHandler());
+      // Bind Swagger-core to the url HOST/api-docs
       handler.addServlet(SwaggerServlet, "/api-docs/*");
 
       // And we are done
@@ -149,9 +151,9 @@ public class ZeppelinServer extends Application {
     }
 
   /**
-   * Handles the WebApplication fir Swagger-ui: - for development mode
+   * Handles the WebApplication for Swagger-ui
    *
-   * @return
+   * @return WebAppContext with swagger ui context
    */
   private static WebAppContext setupWebAppSwagger(ZeppelinConfiguration conf) {
     WebAppContext webApp = new WebAppContext();
@@ -164,6 +166,8 @@ public class ZeppelinServer extends Application {
     } else {
       webApp.setWar(webapp.getAbsolutePath());
     }
+
+    // Bind swagger-ui to the path HOST/docs
     webApp.addServlet(new ServletHolder(new DefaultServlet()), "/docs/*");
     return webApp;
   }
