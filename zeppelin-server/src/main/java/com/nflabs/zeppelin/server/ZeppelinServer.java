@@ -63,7 +63,7 @@ public class ZeppelinServer extends Application {
 
         // add all handlers
 	    ContextHandlerCollection contexts = new ContextHandlerCollection();
-	    contexts.setHandlers(new Handler[]{swagger, restApi, webAppSwagg, webApp});
+	    contexts.setHandlers(new Handler[]{swagger, restApi, webApp, webAppSwagg});
 	    server.setHandler(contexts);
 
 	    LOG.info("Start zeppelin server");
@@ -161,12 +161,11 @@ public class ZeppelinServer extends Application {
 
     if (webapp.isDirectory()) {
       webApp.setResourceBase(webapp.getPath());
-      webApp.setContextPath("/docs");
-      webApp.setParentLoaderPriority(true);
     } else {
       webApp.setWar(webapp.getAbsolutePath());
     }
-
+    webApp.setContextPath("/docs");
+    webApp.setParentLoaderPriority(true);
     // Bind swagger-ui to the path HOST/docs
     webApp.addServlet(new ServletHolder(new DefaultServlet()), "/docs/*");
     return webApp;
