@@ -9,7 +9,7 @@
   </parent>
 
   <groupId>com.nflabs.zeppelin</groupId>
-  <artifactId>zeppelin-docs</artifactId>
+  <artifactId>zeppelin-api-ui</artifactId>
   <packaging>war</packaging>
   <version>0.3.2-SNAPSHOT</version>
   <name>Zeppelin: Documentation</name>
