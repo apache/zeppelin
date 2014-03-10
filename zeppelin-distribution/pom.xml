@@ -42,6 +42,12 @@
       <version>${project.version}</version>
       <type>war</type>
     </dependency>
+    <dependency>
+      <artifactId>zeppelin-api-ui</artifactId>
+      <groupId>${project.groupId}</groupId>
+      <version>${project.version}</version>
+      <type>war</type>
+    </dependency>
   </dependencies>
 
   <build>
