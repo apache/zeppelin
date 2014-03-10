@@ -38,6 +38,7 @@ public class ZQLJobManagerTest extends TestCase {
 		System.setProperty("hive.local.warehouse", "file://"+dataDir.getAbsolutePath());
 		System.setProperty(ConfVars.ZEPPELIN_ZAN_LOCAL_REPO.getVarName(), tmpDir.toURI().toString());
 		System.setProperty(ConfVars.ZEPPELIN_JOB_DIR.getVarName(), tmpDir.getAbsolutePath());
+		System.setProperty(ConfVars.ZEPPELIN_MAX_HISTORY.getVarName(), "2");
 
 		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 		MockDriverFactory driverFactory = new MockDriverFactory();
@@ -107,7 +108,8 @@ public class ZQLJobManagerTest extends TestCase {
 		assertEquals(Status.FINISHED, jm.get(sess.getId()).getStatus());
 		
 		// check if history is made
-		assertEquals(sess.getId(), jm.getHistory(sess.getId(), jm.listHistory(sess.getId()).firstKey()).getId());
+		String history1 = jm.listHistory(sess.getId()).lastKey();
+		assertEquals(sess.getId(), jm.getHistory(sess.getId(), history1).getId());
 		
 		// run session again
 		jm.run(sess.getId());
@@ -117,8 +119,22 @@ public class ZQLJobManagerTest extends TestCase {
 		}
 
 		// another history made
+		String history2 = jm.listHistory(sess.getId()).lastKey();
 		assertEquals(2, jm.listHistory(sess.getId()).size());
-		
+		assertNotSame(history1, history2);
+
+		// run session again
+		jm.run(sess.getId());
+
+		while(jm.get(sess.getId()).getStatus()!=Status.FINISHED){ // wait for finish
+			Thread.sleep(300);
+		}
+
+		// another history made but limited by ZEPPELIN_MAX_HISTORY
+		assertEquals(2, jm.listHistory(sess.getId()).size());
+		assertNull(jm.getHistory(sess.getId(), history1));
+		assertNotNull(jm.getHistory(sess.getId(), history2));
+
 		// remove a history
 		jm.deleteHistory(sess.getId(), jm.listHistory(sess.getId()).firstKey());
 		assertEquals(1, jm.listHistory(sess.getId()).size());
@@ -146,7 +162,6 @@ public class ZQLJobManagerTest extends TestCase {
 		assertEquals(2, ((LinkedList<Result>)sess.getReturn()).size());
 		List<Result> ret = (List<Result>) jm.get(sess.getId()).getReturn();
 		assertEquals(2, ret.size());
-		
 	}
 	
 	@SuppressWarnings("unchecked")

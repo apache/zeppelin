@@ -303,7 +303,17 @@ public class ZQLJobManager implements JobListener {
 		SimpleDateFormat historyPathFormat = new SimpleDateFormat(HISTORY_PATH_FORMAT);
 		Path from = new Path(getPathForJobId(jobId).toString()+CURRENT_JOB_FILE_NAME);
 		Path to = new Path(getPathForJobId(jobId).toString()+HISTORY_DIR_NAME+"/"+historyPathFormat.format(new Date()));
-		fs.rename(from, to);		
+		fs.rename(from, to);
+
+		// check if num history exeeds ZEPPEILN_MAX_HISTORY and remove some
+		int maxHistory = zengine.getConf().getInt(ConfVars.ZEPPELIN_MAX_HISTORY);
+		TreeMap<String, ZQLJob> histories = listHistory(jobId);
+		if (histories != null && histories.size() > maxHistory) {
+			int numRemove = histories.size() - maxHistory;
+			for (int i = 0; i < numRemove; i++) {
+				deleteHistory(jobId, histories.firstKey());
+			}
+		}		
 	}
 
 	private void persist(ZQLJob job) throws IOException{		
