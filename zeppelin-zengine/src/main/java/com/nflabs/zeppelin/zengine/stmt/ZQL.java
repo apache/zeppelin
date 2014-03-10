@@ -155,8 +155,8 @@ public class ZQL {
 		
 		String escapeSeq = "\"',;<%>!";
 		char escapeChar = '\\';
-		String [] blockStart = new String[]{ "\"", "'", "<%", "<", "N_<", "!"};
-		String [] blockEnd = new String[]{ "\"", "'", "%>", ";", "N_>", ";" };
+		String [] blockStart = new String[]{ "\"", "'", "<%"};
+		String [] blockEnd = new String[]{ "\"", "'", "%>"};
 		String [] t = Util.split(erbEvalGlobalScope(stmts), escapeSeq, escapeChar, blockStart, blockEnd, op, true);
 
 		String currentOp = null;

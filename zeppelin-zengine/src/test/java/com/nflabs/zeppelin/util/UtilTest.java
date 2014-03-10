@@ -69,10 +69,11 @@ public class UtilTest extends TestCase {
 		String [] op = new String[]{";", "|", ">>", ">"};
 		String escapeSeq = "\"',;<%>!";
 		char escapeChar = '\\';
-		String [] blockStart = new String[]{ "\"", "'", "<%", "N_<", "!"};
-		String [] blockEnd = new String[]{ "\"", "'", "%>", "N_>", ";" };
-		String [] t = Util.split("array <STRUCT<STRING>> tags", escapeSeq, escapeChar, blockStart, blockEnd, op, true);
-		//assertEquals(1, t.length);
+		String [] blockStart = new String[]{ "\"", "'", "<%", "N_<", "<", "!"};
+		String [] blockEnd = new String[]{ "\"", "'", "%>", "N_>", ";", ";" };
+		String [] t = Util.split("array <STRUCT<STRING>> tags|aa", escapeSeq, escapeChar, blockStart, blockEnd, op, true);
+		assertEquals(3, t.length);
 		assertEquals("array <STRUCT<STRING>> tags", t[0]);
+		assertEquals("aa", t[2]);
 	}
 }
