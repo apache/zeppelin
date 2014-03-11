@@ -4,18 +4,24 @@
 	version="2.5">
 
  <display-name>zeppelin-web</display-name>
+	<servlet>
+		<servlet-name>default</servlet-name>
+		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+		<init-param>
+			<param-name>com.sun.jersey.config.property.packages</param-name>
+			<param-value>com.nflabs.zeppelin.rest;com.wordnik.swagger.jersey.listing</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
 
-  <servlet>
-    <servlet-name>default</servlet-name>
-    <servlet-class>org.eclipse.jetty.servlet.DefaultServlet</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>default</servlet-name>
-    <url-pattern>/*</url-pattern>
-  </servlet-mapping>
+	<!-- This route is for swagger, must be different than root -->
+	<servlet-mapping>
+		<servlet-name>default</servlet-name>
+		<url-pattern>/rest/*</url-pattern>
+	</servlet-mapping>
 
-  <context-param>
-    <param-name>configuration</param-name>
-    <param-value>deployment</param-value>
-  </context-param>
+	<context-param>
+		<param-name>configuration</param-name>
+		<param-value>deployment</param-value>
+	</context-param>
 </web-app>

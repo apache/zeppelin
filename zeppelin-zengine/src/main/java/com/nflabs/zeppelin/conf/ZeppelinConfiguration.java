@@ -14,12 +14,12 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 	private static final long serialVersionUID = 4749305895693848035L;
     private static final Logger LOG = LoggerFactory.getLogger(ZeppelinConfiguration.class);
 	private static ZeppelinConfiguration conf;
-	
+
     public ZeppelinConfiguration(URL url) throws ConfigurationException {
 		setDelimiterParsingDisabled(true);
 		load(url);
 	}
-	
+
 	public ZeppelinConfiguration() {
 		ConfVars[] vars = ConfVars.values();
 		for(ConfVars v : vars){
@@ -37,20 +37,20 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 				throw new RuntimeException("Unsupported VarType");
 			}
 		}
-		
+
 	}
 
 
 	/**
 	 * Load from resource
-	 * @throws ConfigurationException 
+	 * @throws ConfigurationException
 	 */
 	public static ZeppelinConfiguration create() {
 		if (conf != null) return conf;
-		
+
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		URL url;
-		
+
 		url = ZeppelinConfiguration.class.getResource(ZEPPELIN_SITE_XML);
 		if (url == null) {
 			 ClassLoader cl = ZeppelinConfiguration.class.getClassLoader();
@@ -61,11 +61,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		if (url == null) {
 			url = classLoader.getResource(ZEPPELIN_SITE_XML);
 		}
-		
+
 		if (url == null){
             LOG.warn("Failed to load configuration, proceeding with a default");
 		    conf =  new ZeppelinConfiguration();
-		} else {		
+		} else {
 			try {
 				LOG.info("Load configuration from "+url);
 			    conf = new ZeppelinConfiguration(url);
@@ -74,11 +74,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 			    conf = new ZeppelinConfiguration();
 			}
 		}
-		
+
 		return conf;
 	}
-	
-	
+
+
 	private String getStringValue(String name, String d){
 		List<ConfigurationNode> properties = getRootNode().getChildren();
 		if(properties==null || properties.size()==0) return d;
@@ -86,10 +86,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
 				return (String) p.getChildren("value").get(0).getValue();
 			}
-		}		
+		}
 		return d;
 	}
-	
+
 	private int getIntValue(String name, int d){
 		List<ConfigurationNode> properties = getRootNode().getChildren();
 		if(properties==null || properties.size()==0) return d;
@@ -97,10 +97,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
 				return Integer.parseInt((String) p.getChildren("value").get(0).getValue());
 			}
-		}		
+		}
 		return d;
 	}
-	
+
 	private long getLongValue(String name, long d){
 		List<ConfigurationNode> properties = getRootNode().getChildren();
 		if(properties==null || properties.size()==0) return d;
@@ -108,10 +108,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
 				return Long.parseLong((String) p.getChildren("value").get(0).getValue());
 			}
-		}		
+		}
 		return d;
 	}
-	
+
 	private float getFloatValue(String name, float d){
 		List<ConfigurationNode> properties = getRootNode().getChildren();
 		if(properties==null || properties.size()==0) return d;
@@ -119,10 +119,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
 				return Float.parseFloat((String) p.getChildren("value").get(0).getValue());
 			}
-		}		
+		}
 		return d;
 	}
-	
+
 	private boolean getBooleanValue(String name, boolean d){
 		List<ConfigurationNode> properties = getRootNode().getChildren();
 		if(properties==null || properties.size()==0) return d;
@@ -130,14 +130,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 			if(p.getChildren("name")!=null && p.getChildren("name").size()>0 && name.equals(p.getChildren("name").get(0).getValue())){
 				return Boolean.parseBoolean((String) p.getChildren("value").get(0).getValue());
 			}
-		}		
+		}
 		return d;
 	}
-	
+
 	public String getString(ConfVars c){
 		return getString(c.name(), c.getVarName(), c.getStringValue());
 	}
-	
+
 	public String getString(String envName, String propertyName, String defaultValue){
 		if(System.getenv(envName)!=null){
 			return System.getenv(envName);
@@ -152,27 +152,27 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 	public int getInt(ConfVars c){
 		return getInt(c.name(), c.getVarName(), c.getIntValue());
 	}
-	
+
 	public int getInt(String envName, String propertyName, int defaultValue){
 		if(System.getenv(envName)!=null){
 			return Integer.parseInt(System.getenv(envName));
 		}
-		
+
 		if(System.getProperty(propertyName)!=null){
 			return Integer.parseInt(System.getProperty(propertyName));
 		}
 		return getIntValue(propertyName, defaultValue);
 	}
-	
+
 	public long getLong(ConfVars c){
 		return getLong(c.name(), c.getVarName(), c.getLongValue());
 	}
-	
+
 	public long getLong(String envName, String propertyName, long defaultValue){
 		if(System.getenv(envName)!=null){
 			return Long.parseLong(System.getenv(envName));
 		}
-		
+
 		if(System.getProperty(propertyName)!=null){
 			return Long.parseLong(System.getProperty(propertyName));
 		}
@@ -192,7 +192,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		return getFloatValue(propertyName, defaultValue);
 	}
 
-	
+
 	public boolean getBoolean(ConfVars c){
 		return getBoolean(c.name(), c.getVarName(), c.getBooleanValue());
 	}
@@ -200,18 +200,19 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		if(System.getenv(envName)!=null){
 			return Boolean.parseBoolean(System.getenv(envName));
 		}
-		
+
 		if(System.getProperty(propertyName)!=null){
 			return Boolean.parseBoolean(System.getProperty(propertyName));
 		}
 		return getBooleanValue(propertyName, defaultValue);
 	}
 
-	
+
 	public static enum ConfVars {
 		ZEPPELIN_HOME				("zeppelin.home", "../"),
 		ZEPPELIN_PORT				("zeppelin.server.port", 8080),
 		ZEPPELIN_WAR				("zeppelin.war", "../zeppelin-web/src/main/webapp"),
+	        ZEPPELIN_API_WAR                        ("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),
 		ZEPPELIN_JOB_DIR			("zeppelin.job.dir", "../jobs"),
 		ZEPPELIN_ZAN_REPO			("zeppelin.zan.repo", "https://github.com/NFLabs/zan"),
 		ZEPPELIN_ZAN_LOCAL_REPO		("zeppelin.zan.localrepo", "../zan-repo"),
@@ -223,9 +224,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_DRIVER_DIR			("zeppelin.driver.dir", "../drivers"),
 		ZEPPELIN_ENCODING			("zeppelin.encoding", "UTF-8"),
 		;
-		
-		
-		
+
+
+
 		private String varName;
 		@SuppressWarnings("rawtypes")
         private Class varClass;
@@ -235,7 +236,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		private float floatValue;
 		private boolean booleanValue;
 		private long longValue;
-		
+
 
 		ConfVars(String varName, String varValue){
 			this.varName = varName;
@@ -247,7 +248,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 			this.booleanValue = false;
 			this.type = VarType.STRING;
 		}
-		
+
 		ConfVars(String varName, int intValue){
 			this.varName = varName;
 			this.varClass = Integer.class;
@@ -258,7 +259,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 			this.booleanValue = false;
 			this.type = VarType.INT;
 		}
-		
+
 		ConfVars(String varName, long longValue){
 			this.varName = varName;
 			this.varClass = Integer.class;
@@ -269,7 +270,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 			this.booleanValue = false;
 			this.type = VarType.INT;
 		}
-		
+
 		ConfVars(String varName, float floatValue){
 			this.varName = varName;
 			this.varClass = Float.class;
@@ -280,7 +281,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 			this.booleanValue = false;
 			this.type = VarType.FLOAT;
 		}
-		
+
 		ConfVars(String varName, boolean booleanValue){
 			this.varName = varName;
 			this.varClass = Boolean.class;
@@ -291,7 +292,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 			this.booleanValue = booleanValue;
 			this.type = VarType.BOOLEAN;
 		}
-		
+
 	    public String getVarName() {
 			return varName;
 		}
@@ -304,15 +305,15 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		public int getIntValue(){
 			return intValue;
 		}
-		
+
 		public long getLongValue(){
 			return longValue;
 		}
-		
+
 		public float getFloatValue(){
 			return floatValue;
 		}
-		
+
 		public String getStringValue() {
 			return stringValue;
 		}
