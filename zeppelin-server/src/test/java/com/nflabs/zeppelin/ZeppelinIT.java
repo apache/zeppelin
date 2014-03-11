@@ -164,6 +164,26 @@ public class ZeppelinIT {
     }
 
 
+
+    /**
+     * Get the url of Zeppelin
+     *
+     * @param path to add to the url ex: HOST/myPath
+     * @return Zeppelin url HOST:PORT{/PATH}
+     */
+  private String getUrl(String path) {
+    String url;
+    if (System.getProperty("url") != null) {
+      url = System.getProperty("url");
+    } else {
+      url = "http://localhost:8080";
+    }
+    if (path != null)
+      url += path;
+    return url;
+  }
+
+
     @Test
 	public void testZAN() {
 		WebDriver driver = getWebDriver();
@@ -198,7 +218,8 @@ public class ZeppelinIT {
   public void testSwaggerDocumentation() {
     WebDriver driver = getWebDriver();
     try {
-      driver.get("localhost:8080/docs");
+
+      driver.get(getUrl("/docs"));
       // wait for Swagger page loaded
       (new WebDriverWait(driver, 20)).until(new ExpectedCondition<Boolean>() {
         public Boolean apply(WebDriver d) {
