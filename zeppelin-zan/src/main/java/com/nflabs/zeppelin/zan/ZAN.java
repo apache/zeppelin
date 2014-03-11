@@ -2,27 +2,36 @@ package com.nflabs.zeppelin.zan;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Logger;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand.ResetType;
+import org.eclipse.jgit.api.Status;
+import org.eclipse.jgit.api.StatusCommand;
+import org.eclipse.jgit.api.SubmoduleInitCommand;
+import org.eclipse.jgit.api.SubmoduleStatusCommand;
+import org.eclipse.jgit.api.SubmoduleUpdateCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRefNameException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.NoHeadException;
+import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
+import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.api.errors.TransportException;
-import org.eclipse.jgit.errors.RepositoryNotFoundException;
-import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.submodule.SubmoduleStatus;
+import org.eclipse.jgit.submodule.SubmoduleStatusType;
 
 public class ZAN {
-	
+	Logger logger = Logger.getLogger(ZAN.class);
 	private String localPath;
 	private String remotePath;
 	private FileSystem dfs;
@@ -51,66 +60,78 @@ public class ZAN {
 		this.dfs = dfs;
 	}
 	
-	public void install(String libraryName, ZANProgressMonitor progressListener) throws ZANException{
-		Meta meta;
-		try {
-			meta = getMeta(libraryName);
-		} catch (IOException e) {
-			throw new ZANException(e);
-		}
-		if (meta==null) {
-			throw new ZANException(libraryName+" not exists");
-		}
-		
-		File lp = getLocalLibraryPath(libraryName);
+	public void init(ZANProgressMonitor progressListener) throws ZANException{
+		String branch = "master";
+		String commit = "HEAD";
+		File lp = new File(localPath);
+
 		try {
 			if (lp.exists()==false) {
+				logger.info("Init");
 				CloneCommand clone = Git.cloneRepository();
-				clone.setURI(meta.repository);
+				clone.setURI(zanRepo);
 				clone.setDirectory(lp);
-				clone.setBranch(meta.branch);
+				clone.setBranch(branch);
 				clone.setNoCheckout(true);
-				
 				if(progressListener!=null){
 					clone.setProgressMonitor(progressListener);
 				}
 				
 				clone.call();
+	
+				Git git = Git.open(lp);
+				
+				// fetch
+				git.fetch().call();
+	
+				git.checkout().setName(branch)
+							  .setCreateBranch(true)
+							  .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
+							  .setStartPoint("origin/"+branch)
+							  .call();
+				
+				git.reset().setRef(commit)
+						   .setMode(ResetType.HARD)
+						   .call();
+				git.close();
 			}
-			Git git = Git.open(lp);
-			
-			// fetch
-			git.fetch().call();
-
-			git.checkout().setName(meta.branch)
-						  .setCreateBranch(true)
-						  .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
-						  .setStartPoint("origin/"+meta.branch)
-						  .call();
-
-			git.reset().setRef(meta.commit)
-					   .setMode(ResetType.HARD)
-					   .call();
-
-			// try to sync
-			sync(libraryName);
-		} catch (InvalidRemoteException e) {
-			throw new ZANException(e);
-		} catch (TransportException e) {
-			throw new ZANException(e);
 		} catch (GitAPIException e) {
 			throw new ZANException(e);
 		} catch (IOException e) {
 			throw new ZANException(e);
-		}			
+		}
 	}
 	
-	private Meta getMeta(String libraryName) throws IOException{
-		File metaFile = new File(localPath+"/.zan/"+libraryName+"/meta");
-		if (metaFile.exists()==false) {
-			return null;
-		} else {
-			return Meta.createFromFile(metaFile);
+	
+	public void install(String libraryName, ZANProgressMonitor progressListener) throws ZANException{
+		init(null);
+		File lp = getLocalLibraryPath(libraryName);
+		if (lp.exists()) {
+			throw new ZANException(libraryName+" already installed");
+		}
+
+		Git git;
+		try {
+			logger.info("install "+libraryName);
+			git = Git.open(new File(localPath));
+			SubmoduleInitCommand init = git.submoduleInit();
+			init.addPath(libraryName);
+			init.call();
+
+			SubmoduleUpdateCommand submoduleUpdate = git.submoduleUpdate();
+			submoduleUpdate.addPath(libraryName);
+			if(progressListener!=null){
+				submoduleUpdate.setProgressMonitor(progressListener);
+			}
+			Collection<String> ret = submoduleUpdate.call();
+			git.close();
+
+			if ( ret==null || ret.isEmpty() || lp.exists()==false) {
+				throw new ZANException("Can't update submodule "+libraryName);
+			}
+			sync(libraryName);
+		} catch (Exception e) {
+			throw new ZANException(e);
 		}
 	}
 	
@@ -121,19 +142,41 @@ public class ZAN {
 	 * @throws ZANException
 	 */
 	public Info info(String libraryName) throws ZANException{
-		Meta meta;
+		init(null);
+		Git git;
 		try {
-			meta = getMeta(libraryName);
+			git = Git.open(new File(localPath));
+
+			// git status libraryName
+			StatusCommand sc = git.status();
+			sc.addPath(libraryName);
+			Status st = sc.call();
+
+			boolean updateAvailable = false;
+
+			if(st.getModified().size()>0 ||
+			   st.getChanged().size()>0 ||
+			   st.getAdded().size()>0 ||
+			   st.getRemoved().size()>0){
+				updateAvailable = true;
+			}
+
+			// git submodule status libraryName
+			SubmoduleStatusCommand ssc = git.submoduleStatus();
+			ssc.addPath(libraryName);
+			Map<String, SubmoduleStatus> status = ssc.call();
+			if(status==null || status.size()!=1) return null;
+
+			// construct info
+			SubmoduleStatus ss = status.get(libraryName);
+			boolean installed = (ss.getType()==SubmoduleStatusType.INITIALIZED || ss.getType()==SubmoduleStatusType.REV_CHECKED_OUT) ? true : false;
+			String commit = ss.getIndexId().getName();
+			String path = ss.getPath();
+			git.close();
+			Info info = new Info(libraryName, path, installed, updateAvailable, commit);
+
+			return info;
 		} catch (IOException e) {
-			throw new ZANException(e);
-		}
-		
-		// update available
-		try {
-			return getInfoFromMeta(libraryName, meta);
-		} catch (IOException e) {
-			throw new ZANException(e);
-		} catch (NoHeadException e) {
 			throw new ZANException(e);
 		} catch (GitAPIException e) {
 			throw new ZANException(e);
@@ -141,97 +184,57 @@ public class ZAN {
 	}
 	
 	public List<Info> list() throws ZANException{
+		init(null);
 		List<Info> infos = new LinkedList<Info>();
-		File zp = new File(localPath+"/.zan");
 		
-		File[] files = zp.listFiles();
-		if(files==null || files.length==0) return infos;
-		
-		for(File f : files){
-			String libraryName = f.getName();
-			if (libraryName.startsWith(".") ) continue;
-			if (libraryName.startsWith("#") ) continue;
-			if (libraryName.startsWith("~") ) continue;
-			if (f.isDirectory()==false) continue;
-			
-			try {
-				Meta meta = getMeta(libraryName);
-				infos.add(getInfoFromMeta(libraryName, meta));
-			} catch (NoHeadException e) {
-				throw new ZANException(e);
-			} catch (IOException e) {
-				throw new ZANException(e);
-			} catch (GitAPIException e) {
-				throw new ZANException(e);
-			}
-		}
-		
-		return infos;
-	}
-	
-	private Info getInfoFromMeta(String libraryName, Meta meta) throws IOException, NoHeadException, GitAPIException{
-		File lp = getLocalLibraryPath(libraryName);
-		boolean installed;
-		String commit = null;
-		
-		if (lp.exists()) {
-			try {
-				Git git = Git.open(lp);
-				Iterable<RevCommit> commits = git.log().setMaxCount(1).call();
-				RevCommit cm = commits.iterator().next();
-				commit = cm.getName();
-				installed = true;
-			} catch (RepositoryNotFoundException e){
-				// library not installed from remote
-				installed = false;
-			}
-		} else {
-			installed = false;
-		}
-				
-		
-		return new Info(libraryName, meta, installed, commit); 
-	}
-	
-	
-	public void upgrade(String libraryName, ZANProgressMonitor progressListener) throws ZANException{
-		Meta meta;
+		Git git;
 		try {
-			meta = getMeta(libraryName);
+			git = Git.open(new File(localPath));
+			
+			SubmoduleStatusCommand sc = git.submoduleStatus();
+			Map<String, SubmoduleStatus> status = sc.call();
+			for(String k : status.keySet()) {
+				infos.add(info(k));
+			}
+			git.close();
 		} catch (IOException e) {
-			throw new ZANException(e);
-		}
-		if (meta==null) {
-			throw new ZANException(libraryName+" not exists");
-		}
-		
-		File lp = getLocalLibraryPath(libraryName);
-		if (lp.exists()==false) {
-			throw new ZANException("library "+libraryName+" not installed");
-		}
-		
-		
-		try {
-			Git git = Git.open(lp);
-			
-			// fetch
-			git.fetch().call();
-			git.reset().setRef(meta.commit)
-					   .setMode(ResetType.HARD)
-					   .call();
-
-			// try to sync
-			sync(libraryName);
-		} catch (InvalidRemoteException e) {
-			throw new ZANException(e);
-		} catch (TransportException e) {
 			throw new ZANException(e);
 		} catch (GitAPIException e) {
 			throw new ZANException(e);
-		} catch (IOException e) {
+		}
+		return infos;
+	}
+	
+	public void upgrade(String libraryName, ZANProgressMonitor progressListener) throws ZANException {
+		init(null);
+		File lp = getLocalLibraryPath(libraryName);
+		if (lp.exists() == false) {
+			throw new ZANException(libraryName + " not installed");
+		}
+
+		Git git;
+		try {
+			logger.info("upgrade "+libraryName);
+			git = Git.open(new File(localPath));
+			SubmoduleInitCommand init = git.submoduleInit();
+			init.addPath(libraryName);
+			init.call();
+
+			SubmoduleUpdateCommand submoduleUpdate = git.submoduleUpdate();
+			submoduleUpdate.addPath(libraryName);
+			if(progressListener!=null){
+				submoduleUpdate.setProgressMonitor(progressListener);
+			}
+			Collection<String> ret = submoduleUpdate.call();
+			git.close();
+
+			if ( ret==null || ret.isEmpty() || lp.exists()==false) {
+				throw new ZANException("Can't update submodule "+libraryName);
+			}
+			sync(libraryName);
+		} catch (Exception e) {
 			throw new ZANException(e);
 		}
-				
 	}
 
 	/**
@@ -240,6 +243,8 @@ public class ZAN {
 	 * @throws ZANException
 	 */
 	public void uninstall(String libraryName) throws ZANException{
+		init(null);
+		logger.info("uninstall "+libraryName);
 		File lp = getLocalLibraryPath(libraryName);
 		if (lp.exists()==false) {
 			throw new ZANException("library "+libraryName+" not installed");
@@ -264,36 +269,11 @@ public class ZAN {
 	 */
 	public void update(ZANProgressMonitor progressListener) throws ZANException{
 		String branch = "master";
-		String commit = "HEAD";
-		File lp = getLocalLibraryPath(".zan");
+		File lp = new File(localPath);
 		try {
+			logger.info("update");
 			if (lp.exists()==false) {
-				CloneCommand clone = Git.cloneRepository();
-				clone.setURI(zanRepo);
-				clone.setDirectory(lp);
-				clone.setBranch(branch);
-				clone.setNoCheckout(true);
-				
-				if(progressListener!=null){
-					clone.setProgressMonitor(progressListener);
-				}
-				
-				clone.call();
-
-				Git git = Git.open(lp);
-				
-				// fetch
-				git.fetch().call();
-	
-				git.checkout().setName(branch)
-							  .setCreateBranch(true)
-							  .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
-							  .setStartPoint("origin/"+branch)
-							  .call();
-				
-				git.reset().setRef(commit)
-						   .setMode(ResetType.HARD)
-						   .call();
+				init(null);
 			} else {
 				Git git = Git.open(lp);
 
@@ -301,16 +281,13 @@ public class ZAN {
 				git.fetch().setRemote("origin").call();
 				git.rebase().setUpstream("origin/"+branch)
 						    .call();
+				git.close();
 				/*
 				git.reset().setRef(commit)
 						   .setMode(ResetType.HARD)
 						   .call();
 						   */
 			}
-		} catch (InvalidRemoteException e) {
-			throw new ZANException(e);
-		} catch (TransportException e) {
-			throw new ZANException(e);
 		} catch (GitAPIException e) {
 			throw new ZANException(e);
 		} catch (IOException e) {

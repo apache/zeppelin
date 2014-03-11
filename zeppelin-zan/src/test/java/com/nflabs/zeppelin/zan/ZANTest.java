@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -11,11 +12,14 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IOUtils;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.SubmoduleAddCommand;
+import org.eclipse.jgit.api.SubmoduleInitCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoFilepatternException;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.storage.file.FileRepository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.junit.After;
 import org.junit.Before;
@@ -36,16 +40,16 @@ public class ZANTest {
 		dfs = FileSystem.get(new org.apache.hadoop.conf.Configuration());
 		
 		// create zan repo
-		zanrepoDir = new File(tmpDir.getAbsolutePath()+"/local/zanrepo");
+		zanrepoDir = new File(tmpDir.getAbsolutePath()+"/pub/zanrepo");
 
 		FileRepositoryBuilder builder = new FileRepositoryBuilder();		
-		FileRepository repo = builder.setGitDir(new File(zanrepoDir, ".git"))
+		Repository repo = builder.setGitDir(new File(zanrepoDir, ".git"))
 									 .build();		
 		repo.create();
 		repo.close();
 		
 		// create repo for lib1
-		lib1repoDir = new File(tmpDir.getAbsolutePath()+"/local/lib1repo");
+		lib1repoDir = new File(tmpDir.getAbsolutePath()+"/pub/lib1repo");
 
 		builder = new FileRepositoryBuilder();		
 		repo = builder.setGitDir(new File(lib1repoDir, ".git"))
@@ -60,42 +64,49 @@ public class ZANTest {
 		git.push();
 		
 		// create repo for lib2
-		lib2repoDir = new File(tmpDir.getAbsolutePath()+"/local/lib2repo");
+		lib2repoDir = new File(tmpDir.getAbsolutePath()+"/pub/lib2repo");
 
 		builder = new FileRepositoryBuilder();
 		repo = builder.setGitDir(new File(lib2repoDir, ".git"))
 									 .build();
 		repo.create();
 		repo.close();
-		
+
 		git = Git.open(lib2repoDir);
 		FileUtils.writeStringToFile(new File(lib2repoDir, "zql"), "select * from table2");
 		git.add().addFilepattern("zql").call();
 		RevCommit cm2 = git.commit().setMessage("add zql").call();
 		git.push();
-		
+
 		// publish first library
 		git = Git.open(zanrepoDir);
-		File lib1Dir = new File(zanrepoDir, "lib1");
-		lib1Dir.mkdir();		
-		new Meta("file://"+lib1repoDir.getAbsolutePath(), "master", cm1.getName()).write(new File(lib1Dir, "meta"));
-		git.add().addFilepattern("lib1").call();
-		RevCommit rc = git.commit().setMessage("lib1 commit").call();
+		SubmoduleAddCommand submoduleAdd = git.submoduleAdd();
+		submoduleAdd.setPath("lib1");
+		submoduleAdd.setURI(lib1repoDir.toURI().toString());
+		submoduleAdd.call();
+		git.commit().setMessage("lib1 commit").call();
 		git.push();
-		
+
 		// publish second library
-		File lib2Dir = new File(zanrepoDir, "lib2");
-		lib2Dir.mkdir();
-		new Meta("file://"+lib2repoDir.getAbsolutePath(), "master", cm2.getName()).write(new File(lib2Dir, "meta"));		
-		git.add().addFilepattern("lib2").call();
+		submoduleAdd = git.submoduleAdd();
+		submoduleAdd.setPath("lib2");
+		submoduleAdd.setURI(lib2repoDir.toURI().toString());
+		submoduleAdd.call();
 		git.commit().setMessage("lib2 commit").call();
 		git.push();
-		
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		delete(tmpDir);
+	}
+	
+	private void printDir(File file){
+		System.out.println("List "+file.getAbsolutePath());
+		File[] files = file.listFiles();
+		for(File f : files){
+			System.out.println(f.getName());
+		}
 	}
 
 	public static void delete(File file){
@@ -168,44 +179,62 @@ public class ZANTest {
 		String localBase = tmpDir.getAbsolutePath()+"/local";
 		String remoteBase = tmpDir.getAbsolutePath()+"/remote";
 		ZAN zan = new ZAN("file://"+zanrepoDir.getAbsolutePath(), localBase, remoteBase, dfs);
+		zan.update();
+		assertTrue(new File(localBase+"/.gitmodules").isFile());
+		String gitmodules = FileUtils.readFileToString(new File(localBase+"/.gitmodules"));
 		
-		zan.update(null);
-		assertTrue(new File(localBase+"/.zan/lib1/meta").isFile());
+		// create repo for lib3
+		File lib3repoDir = new File(tmpDir.getAbsolutePath()+"/pub/lib3repo");
+
+		FileRepositoryBuilder builder = new FileRepositoryBuilder();
+		Repository repo = builder.setGitDir(new File(lib3repoDir, ".git"))
+									 .build();
+		repo.create();
+		repo.close();
+
+		git = Git.open(lib3repoDir);
+		FileUtils.writeStringToFile(new File(lib3repoDir, "zql"), "select * from table3");
+		git.add().addFilepattern("zql").call();
+		RevCommit cm2 = git.commit().setMessage("add zql").call();
+		git.push();
 		
-		// push second library
-		File lib3Dir = new File(zanrepoDir, "lib3");
-		lib3Dir.mkdir();
-		stringToFile(lib3Dir.getAbsolutePath()+"/meta", "meta3\n");
-		
-		git.add().addFilepattern("lib3").call();
+		// publish thried library
+		git = Git.open(zanrepoDir);
+		SubmoduleAddCommand submoduleAdd = git.submoduleAdd();
+		submoduleAdd.setPath("lib3");
+		submoduleAdd.setURI(lib3repoDir.toURI().toString());
+		submoduleAdd.call();
 		git.commit().setMessage("lib3 commit").call();
 		git.push();
 		
 		// update
 		zan.update(null);
-		assertTrue(new File(localBase+"/.zan/lib3/meta").isFile());				
+		assertTrue(gitmodules.compareTo(FileUtils.readFileToString(new File(localBase+"/.gitmodules")))!=0);
 	}
 	
 	@Test
-	public void testInstall() throws ZANException{
+	public void testInstall() throws ZANException, IOException{
 		String localBase = tmpDir.getAbsolutePath()+"/local";
 		String remoteBase = tmpDir.getAbsolutePath()+"/remote";
 		ZAN zan = new ZAN("file://"+zanrepoDir.getAbsolutePath(), localBase, remoteBase, dfs);
 		zan.update();
-		
+
 		// try to install lib1
-		assertFalse(new File(localBase, "lib1").isDirectory());		
+		assertFalse(new File(localBase, "lib1").isDirectory());
+		assertFalse(new File(localBase, "lib2").isDirectory());
 		zan.install("lib1", null);
+
 		assertTrue(new File(localBase, "lib1").isDirectory());		
 		assertTrue(new File(localBase, "lib1/zql").isFile());
 		assertTrue(new File(remoteBase, "lib1").isDirectory());		
 		assertTrue(new File(remoteBase, "lib1/zql").isFile());
+		assertFalse(new File(localBase, "lib2").isDirectory());
 
 		// try to install nonexist lib
 		try {
 			zan.install("nonexist", null);
 			assertTrue(false);
-		} catch (Exception e){			
+		} catch (Exception e){
 		}
 		assertFalse(new File(localBase, "nonexist").isDirectory());
 		assertFalse(new File(remoteBase, "nonexist").isDirectory());
@@ -234,8 +263,10 @@ public class ZANTest {
 		assertEquals(Info.Status.INSTALLED, zan.info("lib1").getStatus());
 		
 		// publish update
+		git = Git.open(new File(zanrepoDir.getAbsolutePath()+"/lib1"));
+		git.pull().call();
+
 		git = Git.open(zanrepoDir);
-		new Meta("file://"+lib1repoDir.getAbsolutePath(), "master", cm.getName()).write(new File(zanrepoDir, "lib1/meta"));
 		git.commit().setAll(true).setMessage("update lib1 commit").call();
 		git.push();
 		
@@ -286,7 +317,7 @@ public class ZANTest {
 		ZAN zan = new ZAN("file://"+zanrepoDir.getAbsolutePath(), localBase, remoteBase, dfs);
 		zan.update();
 		
-		List<Info> infos = zan.list();
+		Collection<Info> infos = zan.list();
 		assertEquals(2, infos.size());
 	}
 }
