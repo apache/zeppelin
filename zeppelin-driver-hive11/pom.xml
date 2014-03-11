@@ -200,7 +200,7 @@
           <groupId>org.mortbay.jetty</groupId>
           <artifactId>servlet-api</artifactId>
         </exclusion>
-        <exclusion>
+        <exclusion> <!-- jgit from zeppelin-zan brings JavaEWAH dependency -->
           <groupId>com.googlecode.javaewah</groupId>
           <artifactId>JavaEWAH</artifactId>
         </exclusion>        
