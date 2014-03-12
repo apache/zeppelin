@@ -1,8 +1,10 @@
 {% if site.safe and site.JB.analytics.provider and page.JB.analytics != false %}
 
 {% case site.JB.analytics.provider %}
-{% when "google" %}
-  {% include JB/analytics-providers/google %}
+{% when "google_classic" %}
+  {% include JB/analytics-providers/google-classic %}
+{% when "google_universal" %}
+  {% include JB/analytics-providers/google-universal %}
 {% when "getclicky" %}
   {% include JB/analytics-providers/getclicky %}
 {% when "mixpanel" %}
