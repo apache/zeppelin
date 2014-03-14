@@ -79,7 +79,7 @@ Checkout [screenshots](./screenshots.html).
 ## Lates News
 
 
-#### Zeppelin 0.3.1 Released! ####
+#### [2014.03.14] Zeppelin 0.3.2 Released! ####
  
 [Check here](./download.html)
 
