@@ -5,13 +5,13 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>com.nflabs.zeppelin</groupId>
-    <version>0.3.2</version>
+    <version>0.3.3-SNAPSHOT</version>
   </parent>
 
   <groupId>com.nflabs.zeppelin</groupId>
   <artifactId>zeppelin-web</artifactId>
   <packaging>war</packaging>
-  <version>0.3.2</version>
+  <version>0.3.3-SNAPSHOT</version>
   <name>Zeppelin: Web UI</name>
 
   <build>
