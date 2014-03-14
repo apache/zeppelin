@@ -17,14 +17,14 @@ curl -O http://apache.mirror.cdnetworks.com/hadoop/common/hadoop-1.2.1/hadoop-1.
 tar -xzf hadoop-1.2.1-bin.tar.gz
 
 # download zeppelin and unarchive
-curl -O https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.3.0.tar.gz
-tar -xzf zeppelin-0.3.0.tar.gz
+curl -O https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.3.2.tar.gz
+tar -xzf zeppelin-0.3.2.tar.gz
 
 # set HADOOP_HOME
-echo "export HADOOP_HOME=`pwd`/hadoop-1.2.1" >> zeppelin-0.3.0/conf/zeppelin-env.sh
+echo "export HADOOP_HOME=`pwd`/hadoop-1.2.1" >> zeppelin-0.3.2/conf/zeppelin-env.sh
 
 # start zeppelin
-./zeppelin-0.3.0/bin/zeppelin-daemon.sh start
+./zeppelin-0.3.2/bin/zeppelin-daemon.sh start
 
 ```
 
