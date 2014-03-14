@@ -23,7 +23,7 @@
   <groupId>com.nflabs.zeppelin</groupId>
   <artifactId>zeppelin</artifactId>
   <packaging>pom</packaging>
-  <version>0.3.2-SNAPSHOT</version>
+  <version>0.3.2</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
   <url>http://zeppelin-project.org/</url>
