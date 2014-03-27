@@ -9,8 +9,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -23,12 +23,12 @@ public class HiveZeppelinConnection implements ZeppelinConnection {
 
 	private Connection connection;
 	private ZeppelinConfiguration conf;
-	private Map<String, Integer> loadedResources;
+	private Set<String> loadedResources;
 	
 	public HiveZeppelinConnection(ZeppelinConfiguration conf, Connection connection) {
 		this.conf = conf;
 		this.connection = connection;
-		loadedResources = new HashMap<String, Integer>();
+		loadedResources = new HashSet<String>();
 	}
 
 	@Override
@@ -97,7 +97,7 @@ public class HiveZeppelinConnection implements ZeppelinConnection {
 	public Result addResource(URI resourceLocation) throws ZeppelinDriverException {
 		String resName = new File(resourceLocation.getPath()).getName();
 
-		if (loadedResources.containsKey(resName)) {
+		if (loadedResources.contains(resName)) {
 			// already loaded
 			return new Result();
 		}
@@ -114,10 +114,10 @@ public class HiveZeppelinConnection implements ZeppelinConnection {
 			}
 			Thread.currentThread().setContextClassLoader(newcl);
 			result = execute("ADD JAR "+resourceLocation.toString());
-			loadedResources.put(resName, new Integer(1));
+			loadedResources.add(resName);
 		} else {
 			result = execute("ADD FILE "+resourceLocation.toString());
-			loadedResources.put(resName, new Integer(1));
+			loadedResources.add(resName);
 		}
 
 		return result;
