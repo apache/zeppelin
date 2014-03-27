@@ -275,6 +275,15 @@ public class ZQLTest extends TestCase {
 		assertEquals("select\n*\nfrom\n,<한글> 'quote' \"doublequote\"", q.get(0).getQuery());
 	}
 
+	public void testEacape() throws ZException, ZQLException{
+		ZQL zql = new ZQL("ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'\n"+
+					     "'input.regex'='([^:]*......)\\\\s+(\\\\S+)\\\\s+([^\\\\[]*)[\\\\[][0-9]*[\\\\]][:]\\\\s+(.*)'");
+		ZPlan q = zql.compile();
+		assertEquals(1, q.size());
+		assertEquals("ROW FORMAT SERDE 'org.apache.hadoop.hive.contrib.serde2.RegexSerDe'\n"+
+                     "'input.regex'='([^:]*......)\\\\s+(\\\\S+)\\\\s+([^\\\\[]*)[\\\\[][0-9]*[\\\\]][:]\\\\s+(.*)'", q.get(0).getQuery());
+	}
+
 	public void testPerformance() throws Exception{
 		MockDriver.queries.put("select * from tbl", new Result(0, new String[]{"hello"}));
 		new ZQL("select * from tbl").compile().execute(z);

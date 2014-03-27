@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -84,7 +85,7 @@ public class ERBEvaluator {
 						newline = "";
 						first = false;
 					}
-					rubyScript.append("$_zpErb += \""+newline+line.replaceAll("\"", "\\\\\"")+"\"\n");
+					rubyScript.append("$_zpErb += \""+newline+line.replaceAll(Matcher.quoteReplacement("\\"), "\\\\\\\\").replaceAll("\"", "\\\\\"")+"\"\n");
 				}
 				rubyScript.append("$_zpErb += \"<% local_variables.each do |xx|\n    if xx != 'z' and xx != '_erbout' then $_zpLV[xx] = eval(xx) end\nend %>\"\n");
 			} catch (IOException e1) {
