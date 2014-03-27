@@ -10,6 +10,7 @@ import java.io.OutputStreamWriter;
 import java.net.URISyntaxException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -76,5 +77,21 @@ public class HiveZeppelinDriverTest extends HiveTestService {
 
 		// clear
 		conn.query("drop table test");
+	}
+
+	@Test
+	public void testAddResource() throws IOException{
+		HiveZeppelinDriver driver = new HiveZeppelinDriver();
+		driver.setConf(ZeppelinConfiguration.create());
+		ZeppelinConnection conn = driver.getConnection("hive2://");
+		driver.setClient(client);
+		new File(tmpDir, "liba").mkdir();
+		new File(tmpDir, "libb").mkdir();
+		File resPathA = new File(new File(tmpDir, "liba"), "res");
+		File resPathB = new File(new File(tmpDir, "libb"), "res");
+		FileUtils.touch(resPathA);
+		FileUtils.touch(resPathB);
+		conn.addResource(resPathA.toURI());
+		conn.addResource(resPathB.toURI());
 	}
 }

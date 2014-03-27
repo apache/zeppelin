@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.driver.hive11;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -8,6 +9,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -20,10 +23,12 @@ public class HiveZeppelinConnection implements ZeppelinConnection {
 
 	private Connection connection;
 	private ZeppelinConfiguration conf;
+	private Set<String> loadedResources;
 	
 	public HiveZeppelinConnection(ZeppelinConfiguration conf, Connection connection) {
 		this.conf = conf;
 		this.connection = connection;
+		loadedResources = new HashSet<String>();
 	}
 
 	@Override
@@ -90,6 +95,15 @@ public class HiveZeppelinConnection implements ZeppelinConnection {
 
 	@Override
 	public Result addResource(URI resourceLocation) throws ZeppelinDriverException {
+		String resName = new File(resourceLocation.getPath()).getName();
+
+		if (loadedResources.contains(resName)) {
+			// already loaded
+			return new Result();
+		}
+
+		Result result;
+
 		if(resourceLocation.getPath().endsWith(".jar")){
 			ClassLoader cl = Thread.currentThread().getContextClassLoader();
 			URLClassLoader newcl;
@@ -99,10 +113,14 @@ public class HiveZeppelinConnection implements ZeppelinConnection {
 				throw new ZeppelinDriverException(e);
 			}
 			Thread.currentThread().setContextClassLoader(newcl);
-			return execute("ADD JAR "+resourceLocation.toString());			
+			result = execute("ADD JAR "+resourceLocation.toString());
+			loadedResources.add(resName);
 		} else {
-			return execute("ADD FILE "+resourceLocation.toString());			
+			result = execute("ADD FILE "+resourceLocation.toString());
+			loadedResources.add(resName);
 		}
+
+		return result;
 	}
 
 	@Override
