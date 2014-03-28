@@ -4,9 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -165,17 +168,24 @@ public class ZAN {
 			SubmoduleStatusCommand ssc = git.submoduleStatus();
 			ssc.addPath(libraryName);
 			Map<String, SubmoduleStatus> status = ssc.call();
-			if(status==null || status.size()!=1) return null;
-
-			// construct info
-			SubmoduleStatus ss = status.get(libraryName);
-			boolean installed = (ss.getType()==SubmoduleStatusType.INITIALIZED || ss.getType()==SubmoduleStatusType.REV_CHECKED_OUT) ? true : false;
-			String commit = ss.getIndexId().getName();
-			String path = ss.getPath();
-			git.close();
-			Info info = new Info(libraryName, path, installed, updateAvailable, commit);
-
-			return info;
+			if ( status==null || status.size()!=1 ){
+				// not in git
+				File libDir = new File(localPath, libraryName);
+				if (libDir.isDirectory()==false) {
+					return null;
+				} else {
+					return new Info(libraryName, libDir.getAbsolutePath());
+				}
+			} else {	
+				// construct info
+				SubmoduleStatus ss = status.get(libraryName);
+				boolean installed = (ss.getType()==SubmoduleStatusType.INITIALIZED || ss.getType()==SubmoduleStatusType.REV_CHECKED_OUT) ? true : false;
+				String commit = ss.getIndexId().getName();
+				String path = ss.getPath();
+				git.close();
+				Info info = new Info(libraryName, path, installed, updateAvailable, commit);	
+				return info;
+			}
 		} catch (IOException e) {
 			throw new ZANException(e);
 		} catch (GitAPIException e) {
@@ -193,7 +203,20 @@ public class ZAN {
 			
 			SubmoduleStatusCommand sc = git.submoduleStatus();
 			Map<String, SubmoduleStatus> status = sc.call();
-			for(String k : status.keySet()) {
+			
+			Set<String> libNames = new HashSet<String>(status.keySet());
+			File[] files = new File(localPath).listFiles();
+			if (files!=null) {
+				for (File file : files) {					
+					String name = file.getName();
+					if (name==null || name.startsWith(".") ) continue;					
+					if (libNames.contains(name) == false ) {
+						libNames.add(name);
+					}
+				}
+			}
+		
+			for(String k : libNames) {
 				infos.add(info(k));
 			}
 			git.close();

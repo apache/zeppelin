@@ -25,6 +25,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.nflabs.zeppelin.zan.Info.Status;
+
 public class ZANTest {
 	private File tmpDir;
 	private FileSystem dfs;
@@ -319,5 +321,22 @@ public class ZANTest {
 		
 		Collection<Info> infos = zan.list();
 		assertEquals(2, infos.size());
+		
+		new File(tmpDir.getAbsolutePath()+"/local/user").mkdirs();
+		infos = zan.list();
+		assertEquals(3, infos.size());		
+	}
+	
+	@Test
+	public void testUserLib() throws ZANException{
+		String localBase = tmpDir.getAbsolutePath()+"/local";
+		String remoteBase = tmpDir.getAbsolutePath()+"/remote";
+		ZAN zan = new ZAN("file://"+zanrepoDir.getAbsolutePath(), localBase, remoteBase, dfs);
+		zan.update();
+		
+		new File(tmpDir.getAbsolutePath()+"/local/user").mkdirs();
+		Info info = zan.info("user");
+		assertNotNull(info);
+		assertEquals(info.getStatus(), Status.USER);
 	}
 }

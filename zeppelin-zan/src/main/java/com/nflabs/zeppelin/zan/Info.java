@@ -4,11 +4,12 @@ public class Info {
 	public static enum Status{
 		UNKNOWN,
 		INSTALLING,
-		INSTALLED,
+		INSTALLED,		
 		UNINSTALLED,
 		UNINSTALLING,
 		UPDATEAVAILABLE,
-		UPUPDATING				
+		UPUPDATING,
+		USER,          // manually installed by user. not managed by ZAN
 	}
 	private String name;
 	private Status status;
@@ -31,6 +32,13 @@ public class Info {
 			status = Status.UNINSTALLED;
 		}
 		
+	}
+	
+	public Info(String name, String path) {
+		this.name = name;
+		this.path = path;
+		
+		status = Status.USER;
 	}
 
 	public String getName() {
