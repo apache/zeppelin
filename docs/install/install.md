@@ -79,7 +79,7 @@ Configuration can be done by both environment variable and java properties. If b
   <tr>
     <td>ZEPPELIN\_ZAN\_REPO</td>
     <td>zeppelin.zan.repo</td>
-    <td>https://github.com/NFLabs/zan</td>
+    <td>https://github.com/NFLabs/zan.git</td>
     <td>Remote ZAN repository URL</td>
   </tr>
   <tr>
