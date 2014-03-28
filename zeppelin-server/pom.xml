@@ -5,13 +5,13 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>com.nflabs.zeppelin</groupId>
-    <version>0.3.3</version>
+    <version>0.3.4-SNAPSHOT</version>
   </parent>
 
   <groupId>com.nflabs.zeppelin</groupId>
   <artifactId>zeppelin-server</artifactId>
   <packaging>jar</packaging>
-  <version>0.3.3</version>
+  <version>0.3.4-SNAPSHOT</version>
   <name>Zeppelin: Server</name>
   <url>http://www.nflabs.com</url>
 
