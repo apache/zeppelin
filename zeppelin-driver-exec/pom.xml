@@ -5,13 +5,13 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>com.nflabs.zeppelin</groupId>
-    <version>0.3.3-SNAPSHOT</version>
+    <version>0.3.3</version>
   </parent>
 
   <groupId>com.nflabs.zeppelin</groupId>
   <artifactId>zeppelin-driver-exec</artifactId>
   <packaging>jar</packaging>
-  <version>0.3.3-SNAPSHOT</version>
+  <version>0.3.3</version>
   <name>Zeppelin: Exec driver</name>
   <url>http://www.nflabs.com</url>
 
