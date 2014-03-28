@@ -4,11 +4,11 @@ public class Info {
 	public static enum Status{
 		UNKNOWN,
 		INSTALLING,
-		INSTALLED,		
+		INSTALLED,
 		UNINSTALLED,
 		UNINSTALLING,
 		UPDATEAVAILABLE,
-		UPUPDATING,
+		UPDATING,
 		NOT_MANAGED,          // manually installed by user. not managed by ZAN
 	}
 	private String name;
