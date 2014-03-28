@@ -9,7 +9,7 @@ public class Info {
 		UNINSTALLING,
 		UPDATEAVAILABLE,
 		UPUPDATING,
-		USER,          // manually installed by user. not managed by ZAN
+		NOT_MANAGED,          // manually installed by user. not managed by ZAN
 	}
 	private String name;
 	private Status status;
@@ -38,7 +38,7 @@ public class Info {
 		this.name = name;
 		this.path = path;
 		
-		status = Status.USER;
+		status = Status.NOT_MANAGED;
 	}
 
 	public String getName() {

@@ -207,7 +207,8 @@ public class ZAN {
 			Set<String> libNames = new HashSet<String>(status.keySet());
 			File[] files = new File(localPath).listFiles();
 			if (files!=null) {
-				for (File file : files) {					
+				for (File file : files) {
+					if (file.isDirectory() == false ) continue;
 					String name = file.getName();
 					if (name==null || name.startsWith(".") ) continue;					
 					if (libNames.contains(name) == false ) {

@@ -337,6 +337,6 @@ public class ZANTest {
 		new File(tmpDir.getAbsolutePath()+"/local/user").mkdirs();
 		Info info = zan.info("user");
 		assertNotNull(info);
-		assertEquals(info.getStatus(), Status.USER);
+		assertEquals(info.getStatus(), Status.NOT_MANAGED);
 	}
 }
