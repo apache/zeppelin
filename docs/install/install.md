@@ -17,14 +17,14 @@ curl -O http://apache.mirror.cdnetworks.com/hadoop/common/hadoop-1.2.1/hadoop-1.
 tar -xzf hadoop-1.2.1-bin.tar.gz
 
 # download zeppelin and unarchive
-curl -O https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.3.2.tar.gz
-tar -xzf zeppelin-0.3.2.tar.gz
+curl -O https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.3.3.tar.gz
+tar -xzf zeppelin-0.3.3.tar.gz
 
 # set HADOOP_HOME
-echo "export HADOOP_HOME=`pwd`/hadoop-1.2.1" >> zeppelin-0.3.2/conf/zeppelin-env.sh
+echo "export HADOOP_HOME=`pwd`/hadoop-1.2.1" >> zeppelin-0.3.3/conf/zeppelin-env.sh
 
 # start zeppelin
-./zeppelin-0.3.2/bin/zeppelin-daemon.sh start
+./zeppelin-0.3.3/bin/zeppelin-daemon.sh start
 
 ```
 
@@ -79,7 +79,7 @@ Configuration can be done by both environment variable and java properties. If b
   <tr>
     <td>ZEPPELIN\_ZAN\_REPO</td>
     <td>zeppelin.zan.repo</td>
-    <td>https://github.com/NFLabs/zan</td>
+    <td>https://github.com/NFLabs/zan.git</td>
     <td>Remote ZAN repository URL</td>
   </tr>
   <tr>
