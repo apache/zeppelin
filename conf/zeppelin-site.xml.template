@@ -34,7 +34,7 @@
 
 <property>
   <name>zeppelin.zan.repo</name>
-  <value>https://github.com/NFLabs/zan</value>
+  <value>https://github.com/NFLabs/zan.git</value>
   <description>ZAN repo url</description>
 </property>
 

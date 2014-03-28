@@ -77,11 +77,6 @@ function init(){
 	echo "Job dir doesn't exist, create $ZEPPELIN_JOB_DIR"
 	mkdir -p "$ZEPPELIN_JOB_DIR"
     fi
-
-    if [ ! -d "$ZEPPELIN_ZAN_LOCAL_REPO" ]; then
-	echo "ZAN repo doesn't exist, create $ZEPPELIN_ZAN_LOCAL_REPO"
-	mkdir -p "$ZEPPELIN_ZAN_LOCAL_REPO"
-    fi
 }
 
 function start(){

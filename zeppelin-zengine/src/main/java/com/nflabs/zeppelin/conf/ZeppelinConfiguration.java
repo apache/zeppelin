@@ -214,7 +214,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_WAR				("zeppelin.war", "../zeppelin-web/src/main/webapp"),
 	        ZEPPELIN_API_WAR                        ("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),
 		ZEPPELIN_JOB_DIR			("zeppelin.job.dir", "../jobs"),
-		ZEPPELIN_ZAN_REPO			("zeppelin.zan.repo", "https://github.com/NFLabs/zan"),
+		ZEPPELIN_ZAN_REPO			("zeppelin.zan.repo", "https://github.com/NFLabs/zan.git"),
 		ZEPPELIN_ZAN_LOCAL_REPO		("zeppelin.zan.localrepo", "../zan-repo"),
 		ZEPPELIN_ZAN_SHARED_REPO	("zeppelin.zan.sharedrepo", null),
 		ZEPPELIN_JOB_SCHEDULER	    ("zeppelin.job.scheduler", "FIFO"), // FIFO or PARALLEL
