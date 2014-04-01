@@ -28,8 +28,19 @@ function Zeppelin(arg){
         else return false;
     }
 
-    this.alert = function(msg, element){
-        $(element).append('<div class="alert"><a class="close" data-dismiss="alert">×</a><span>'+msg+'</span></div>');
+    this.info = function(msg, autocloseMsec){
+        if (autocloseMsec) {
+            var t = $('#info').append('<div class="info"><span>'+msg+'</span></div>');
+            setTimeout(function(){
+                t.remove();
+            }, autocloseMsec);
+        } else {
+            $('#info').append('<div class="info"><a class="close" data-dismiss="alert">×</a><span>'+msg+'</span></div>');
+        }
+    }
+
+    this.alert = function(msg){
+        $('#alert').append('<div class="alert"><a class="close" data-dismiss="alert">×</a><span>'+msg+'</span></div>');
     }
 
     this.log = function(msg, level){

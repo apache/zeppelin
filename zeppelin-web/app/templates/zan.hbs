@@ -1,25 +1,35 @@
-<div></div>
+<div class="container-fluid">
 {{#if 'waitForComplete'}}
 <div class="row">
 {{#each job in 'runningJobs'}}
-    <div class="col-md-8">
-        {{job.op}} {{job.libName}} ...
+    <div class="col-md-12">
+        <div class="zanWaitForComplete">
+            <div>
+                <img src="/img/spinner_small.gif" />
+            </div>
+            <div>
+                {{job.op}} {{job.libName}}
+            </div>
+        <div>
     </div>
 {{/each}}
 </div>
 {{else}}
-
+<p />
 <div class="row">
-     <a {{action "update"}}>Update Catalog</a>
+    <div class="col-md-12">
+        <a class="btn btn-info" {{action "update"}}>Update Catalog</a>
+    </div>
 </div>
 <p />
 <div class="row">
 {{#each lib in 'searchResult'}}
-    <div class='zanLibraryInformation col-md-8'>
-        <h4>{{lib.name}}</h4>
-        <div>{{lib.status}} - <a {{action "install" lib.name}}>Install</a> | <a {{action "uninstall" lib.name}}>Uninstall</a> | <a {{action "upgrade" lib.name}}>Upgrade</a>
+    <div class='zanLibraryInformation col-md-12'>
+        <h5>{{lib.name}}</h5>
+        <div>{{lib.status}}
 	    <!-- following code supposed to work, but it doesn't -->
 	    {{#ifCond lib.status "==" "INSTALLED" }}
+	        <a {{action "upgrade" lib.name}}>Upgrade</a> | 
 	        <a {{action "uninstall" lib.name}}>Uninstall</a>
 	    {{/ifCond}}
 	    {{#ifCond lib.status "==" "UNINSTALLED" }}
@@ -31,3 +41,5 @@
 </div>
 
 {{/if}}
+
+</div> <!-- container-fluid -->

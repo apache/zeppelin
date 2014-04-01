@@ -37,8 +37,12 @@ App.ZqlController = App.ApplicationController.extend({
     }
 });
 
+App.ZqlIndexController = App.ZqlController.extend({
+    needs: ['zql'],
+});
 
-App.ZqlEditController = App.ApplicationController.extend({
+
+App.ZqlEditController = App.ZqlController.extend({
     dirty : 0,
     dirtyFlag : {
         CLEAN : 0,
@@ -72,7 +76,7 @@ App.ZqlEditController = App.ApplicationController.extend({
             if(this.get('dryrun')==true && false){
                 zeppelin.zql.set(jobid, jobName, zql, undefined, jobCron, function(c, d){
                     if(c!=200){
-                        zeppelin.alert("Error: Invalid Job", "#alert");
+                        zeppelin.alert("Error: Invalid Job");
                     } else {
                         zeppelin.zql.dryRun(jobid, function(c, d){
                             if(c==200){
@@ -95,7 +99,7 @@ App.ZqlEditController = App.ApplicationController.extend({
                     if(c!=200){
                         $('#zqlRunButton').text("Run");
                         $('#zqlRunButton').prop('disabled', false);
-                        zeppelin.alert("Error: Invalid Job", "#alert");
+                        zeppelin.alert("Error: Invalid Job");
                     } else {
                         $('#zqlRunButton').prop('disabled', false);
                         controller.set('dirty', 0);
@@ -301,6 +305,7 @@ App.ZqlEditController = App.ApplicationController.extend({
                     zeppelin.zql.setZql(job.id, editor.getValue(), function(c, d){
                         if(c==200){
                             this.set('dirty', (this.get('dirty') & ~this.get('dirtyFlag').ZQL));
+                            zeppelin.info("autosave completed", 2000);
                             console.log("autosave zql completed %o %o", c, d);
 
                             // send zqlcontroller to refresh job list. (job name may change by this save)

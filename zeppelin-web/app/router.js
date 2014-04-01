@@ -15,6 +15,7 @@ App.Router.map(function(){
         this.route('edit', {path:'/:jobid'});
         this.route('edit', {path:'/:jobid/:historyid'});
     });
+
     this.resource('report', function(){
         this.route('link', {path:'/:jobid'});
         this.route('link', {path:'/:jobid/:historyid'});
@@ -26,6 +27,12 @@ App.Router.map(function(){
 
 
 App.ZqlRoute = Ember.Route.extend({
+    model : function(params){	
+        return params;
+    }
+});
+
+App.ZqlIndexRoute = Ember.Route.extend({
     model : function(params){	
         return params;
     },

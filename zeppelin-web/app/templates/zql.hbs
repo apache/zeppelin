@@ -1,19 +1,5 @@
-<div class="row">
-  <div class="col-md-3">
-    <div class="bs-sidebar hidden-print" role="complementary">
-      <ul class="nav bs-sidenav">
-        <li><a {{action "newJob"}}>New</a></li>
-	<li><div class="submenu">Jobs</div>
-	<ul>
-          {{#each sess in "runningJobs"}}
-          <li><a {{action "openJob" sess.id}}>{{#if sess.jobName}}{{sess.jobName}}{{else}}{{sess.id}}{{/if}}</a></li>
-          {{/each}}
-	</ul>
-	</li>
-      </ul>
-    </div>
-  </div>
-  <div class="col-md-8">
-    {{outlet}}
-  </div>
+<p />
+<div class="container-fluid">
+  {{outlet}}
 </div>
+

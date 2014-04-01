@@ -6,9 +6,23 @@ App.IndexView = Ember.View.extend({
 
 App.ZqlView = Ember.View.extend({
     layoutName: 'default_layout',
+
+    didInsertElement : function(){ // when it is first time of loading this view, jobChanged can not be observed
+        $('#jobList').nestable({ /* config options */ });
+    }
 });
 
+App.ZqlIndexView = Ember.View.extend({
+    layoutName: 'default_layout',
+
+    didInsertElement : function(){ // when it is first time of loading this view, jobChanged can not be observed
+        $('#jobList').nestable({ /* config options */ });
+    }
+});
+
+
 App.ZqlEditView = Ember.View.extend({
+    layoutName: 'default_layout',
     jobNameEditor : undefined,
     jobCronEditor : undefined,
     editor : undefined,

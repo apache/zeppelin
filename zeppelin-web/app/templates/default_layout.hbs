@@ -1,7 +1,8 @@
-<div class="navbar navbar-inverse navbar-fixed-top">
-  <div class="container bs-docs-nav">
+<div class="navbar navbar-fixed-top" role="navigation">
+  <div class="container-fluid">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="sr-only">Toggle navigation</span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -17,8 +18,11 @@
   </div><!-- container -->
 </div><!-- navbar -->
 
-<div class="container bs-docs-container">
-  <div id="alert"></div>
-  <p />
-  {{yield}}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-12" id="alert"></div>
+    <div class="col-xs-12 col-sm-12 col-md-12" id="info"></div>
+  </div>
 </div>
+{{yield}}
+
