@@ -2,6 +2,7 @@ body {
   padding-top: 50px;
   position: relative; /* For scrollyspy */
   font-family : "Open Sans",Arial,Helvetica,Sans-Serif;
+  font-size: 12px;
 }
 
 footer {
@@ -40,7 +41,7 @@ a {
 }
 
 .zqlEditor {
-    height : 300px;
+    height : 500px;
 }
 
 #zqlEditorArea {

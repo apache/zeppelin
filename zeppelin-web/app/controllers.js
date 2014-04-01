@@ -161,6 +161,7 @@ App.ZqlEditController = App.ZqlController.extend({
 		});
 	    }
         },
+
         loadJob : function(jobid){
             var controller = this;
             zeppelin.zql.get(jobid, function(c, d){
@@ -292,6 +293,25 @@ App.ZqlEditController = App.ZqlController.extend({
             });
         },
 
+        saveName : function(){
+
+        },
+
+        saveCron : function(){
+            var controller = this;
+            var job = this.get('currentJob');
+            if(job==null) return;
+            if(job.status=="READY" || job.status=="FINISHED" || job.status=="ERROR" || job.status=="ABORT"){
+                zeppelin.zql.setName(job.id, jobNameEditor.editable('getValue', true), function(c, d){
+                    if(c==200){
+                        this.set('dirty', (this.get('dirty') & ~this.get('dirtyFlag').NAME));
+                        console.log("change saved", c, d);
+                    }
+                    
+                }, this);
+            }
+        },
+
         // called from view
         loop : function(jobNameEditor, editor, jobCronEditor){
             var controller = this;
@@ -307,9 +327,6 @@ App.ZqlEditController = App.ZqlController.extend({
                             this.set('dirty', (this.get('dirty') & ~this.get('dirtyFlag').ZQL));
                             zeppelin.info("autosave completed", 2000);
                             console.log("autosave zql completed %o %o", c, d);
-
-                            // send zqlcontroller to refresh job list. (job name may change by this save)
-                            controller.get('controllers.zql').send('updateJob');
                         }
                         
                     }, this);
@@ -350,7 +367,6 @@ App.ZqlEditController = App.ZqlController.extend({
                             }
                         }
                     });
-                    controller.get('controllers.zql').send('updateJob');
                 }
 
 		// auto height visualizer

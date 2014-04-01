@@ -237,11 +237,13 @@ App.ZqlEditView = Ember.View.extend({
             resize: function( event, ui ) {
                 editor.resize();
             }
-
         });
 
         var jobNameEditor = $('#zqlJobName');
-        jobNameEditor.editable();
+        jobNameEditor.editable({
+            mode : "popup",
+            placement : "bottom"
+        });
         jobNameEditor.on('save', function(e, params) {
             controller.send("zqlJobNameChanged", params.newValue);  
         });
@@ -292,15 +294,18 @@ App.ZqlEditView = Ember.View.extend({
         this.set('jobCronEditor', jobCronEditor);
 
 	// bootstrap confirmation plugin http://ethaizone.github.io/Bootstrap-Confirmation
+
         $('#zqlDeleteButton').confirmation({
 	    title : "Delete?",
 	    btnOkLabel : "Delete",
 	    btnCancelLabel : "Cancel",
 	    href : "/#/zql",
 	    popout : true,
+            placement : 'left',
 	    onConfirm : function(){
 		controller.send("deleteJob");
 	    }
+
 	});
 
         var editorLoop = function(){

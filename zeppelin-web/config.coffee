@@ -49,6 +49,9 @@ exports.config =
           'vendor/scripts/bootstrap-confirmation.js',
           'vendor/scripts/select2.js',
 
+          'vendor/scripts/ace/ace.js',
+          'vendor/scripts/ace/mode-sql.js',
+          'vendor/scripts/ace/theme-terminal.js',
           ]
 
     stylesheets:
