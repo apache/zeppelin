@@ -47,16 +47,12 @@ App.ZqlEditController = App.ZqlController.extend({
     dirtyFlag : {
         CLEAN : 0,
         ZQL : 1,
-        NAME : 2,
-        PARAMS : 4,
-        CRON : 8
+        PARAMS : 2
     },
     dryrun : true,
     currentJob : undefined,
     historyId : undefined,
     zql : undefined,
-    jobName : undefined,
-    jobCron : undefined,
     params : undefined,
     needs: ['zql'],
     
@@ -174,10 +170,9 @@ App.ZqlEditController = App.ZqlController.extend({
         // called from view
         beforeChangeJob : function(model, jobNameEditor, editor, jobCronEditor){
             if(model==null) return;
-            // TODO save job before change
             if(model.status=="READY"){
                 if(this.get('dirty')){
-                    zeppelin.zql.set(model.id, jobNameEditor.val(), editor.getValue(), undefined, jobCronEditor.val(), function(c, d){
+                    zeppelin.zql.set(model.id, jobNameEditor.editable('getValue', true), editor.getValue(), undefined, jobCronEditor.editable('getValue', true), function(c, d){
                         if(c==200){
                             console.log("job %o saved", model.id)
                         } else {
@@ -264,15 +259,36 @@ App.ZqlEditController = App.ZqlController.extend({
         },
 
         zqlJobNameChanged : function(jobName){
-            //console.log("Job name changed %o", jobName);
-            this.set('dirty', this.get('dirty') | this.get('dirtyFlag').NAME);
-            this.set('jobName', jobName);
+            var controller = this;
+            var job = this.get('currentJob');
+	    var historyId = this.get('historyId');
+            if(historyId) return;
+            if(job.status!="READY" && job.status!="FINISHED" && job.status!="ERROR" && job.status!="ABORT") return;
+
+            zeppelin.zql.setName(job.id, jobName, function(c, d){
+                if(c==200){
+                    console.log("change saved", c, d);
+                    controller.set('jobName', jobName);
+                } else {
+                    zeppelin.alert("Error! Can't save change");
+                }                
+            }, this);
         },
         
         zqlJobCronChanged : function(jobCron){
-            //console.log("Job name changed %o", jobName);
-            this.set('dirty', this.get('dirty') | this.get('dirtyFlag').CRON);
-            this.set('jobCron', jobCron);
+            var controller = this;
+            var job = this.get('currentJob');
+	    var historyId = this.get('historyId');
+            if(historyId) return;
+            if(job.status!="READY" && job.status!="FINISHED" && job.status!="ERROR" && job.status!="ABORT") return;
+            zeppelin.zql.setCron(job.id, jobCron, function(c, d){
+                if(c==200){
+                    console.log("change saved", c, d);
+                    controller.set('jobCron', jobCron);
+                } else {
+                    zeppelin.alert("Error! Can't save change");
+                }                
+            }, this);
         },
 
         /**
@@ -293,103 +309,62 @@ App.ZqlEditController = App.ZqlController.extend({
             });
         },
 
-        saveName : function(){
-
-        },
-
-        saveCron : function(){
-            var controller = this;
-            var job = this.get('currentJob');
-            if(job==null) return;
-            if(job.status=="READY" || job.status=="FINISHED" || job.status=="ERROR" || job.status=="ABORT"){
-                zeppelin.zql.setName(job.id, jobNameEditor.editable('getValue', true), function(c, d){
-                    if(c==200){
-                        this.set('dirty', (this.get('dirty') & ~this.get('dirtyFlag').NAME));
-                        console.log("change saved", c, d);
-                    }
-                    
-                }, this);
-            }
-        },
-
         // called from view
         loop : function(jobNameEditor, editor, jobCronEditor){
             var controller = this;
             var job = this.get('currentJob');
+	    var historyId = this.get('historyId');
             if(job==null) return;
-            if(job.status=="READY" || job.status=="FINISHED" || job.status=="ERROR" || job.status=="ABORT"){
-                // auto save every 10 sec
-                if(new Date().getSeconds() % 10 == 0 && (this.get('dirty') & this.get('dirtyFlag').ZQL)){
-                    
-                    // TODO display saving... -> saved message
-                    zeppelin.zql.setZql(job.id, editor.getValue(), function(c, d){
-                        if(c==200){
-                            this.set('dirty', (this.get('dirty') & ~this.get('dirtyFlag').ZQL));
-                            zeppelin.info("autosave completed", 2000);
-                            console.log("autosave zql completed %o %o", c, d);
-                        }
+            if(!historyId){
+                if(job.status=="READY" || job.status=="FINISHED" || job.status=="ERROR" || job.status=="ABORT"){
+                    // auto save every 10 sec
+                    if(new Date().getSeconds() % 10 == 0 && (this.get('dirty') & this.get('dirtyFlag').ZQL)){
                         
-                    }, this);
-                }
+                        // TODO display saving... -> saved message
+                        zeppelin.zql.setZql(job.id, editor.getValue(), function(c, d){
+                            if(c==200){
+                                this.set('dirty', (this.get('dirty') & ~this.get('dirtyFlag').ZQL));
+                                zeppelin.info("autosave completed", 2000);
+                                console.log("autosave zql completed %o %o", c, d);
+                            }
+                            
+                        }, this);
+                    }
 
-                if(new Date().getSeconds() % 10 == 0 && (this.get('dirty') & this.get('dirtyFlag').NAME)){
-                    
-                    // TODO display saving... -> saved message
-                    zeppelin.zql.setName(job.id, jobNameEditor.editable('getValue', true), function(c, d){
-                        if(c==200){
-                            this.set('dirty', (this.get('dirty') & ~this.get('dirtyFlag').NAME));
-                            console.log("autosave name completed %o %o", c, d);
-                        }
-                        
-                    }, this);
-                }
-
-                if(new Date().getSeconds() % 10 == 0 && (this.get('dirty') & this.get('dirtyFlag').CRON)){
-                    
-                    // TODO display saving... -> saved message
-                    zeppelin.zql.setCron(job.id, jobCronEditor.editable('getValue', true), function(c, d){
-                        if(c==200){
-                            this.set('dirty', (this.get('dirty') & ~this.get('dirtyFlag').CRON));
-                            console.log("autosave cron completed %o %o", c, d);
-                        }
-                        
-                    }, this);
-                }
-
-
-                if(new Date().getSeconds() % 60 == 0){ // check if it is running by scheduler every 1m
-                    zeppelin.zql.get(job.id, function(c, d){
-                        if(c==200){
-                            if(d.status=="RUNNING" || d.dateFinished!=job.dateFinished){
-                                if(controller.get('dirty')==0){ // auto refresh in only clean state
-                                    controller.set("currentJob", d);
+                    if(new Date().getSeconds() % 60 == 0){ // check if it is running by scheduler every 1m
+                        zeppelin.zql.get(job.id, function(c, d){
+                            if(c==200){
+                                if(d.status=="RUNNING" || d.dateFinished!=job.dateFinished){
+                                    if(controller.get('dirty')==0){ // auto refresh in only clean state
+                                        controller.set("currentJob", d);
+                                    }
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
+                } else if(job.status=="RUNNING"){
+                    if(new Date().getSeconds() % 1 == 0){ // refreshing every 1 sec
+                        controller.send('loadJob', job.id);
+                    }
+                } else if(job.status=="FINISHED"){
+		    // historyis made when job finishes. update history list
+		    controller.send('updateHistory');
+                } else if(job.status=="ERROR"){
+                } else if(job.status=="ABORT"){
                 }
-
-		// auto height visualizer
-		if(new Date().getSeconds() % 1 == 0){ // refreshing every 1 sec
-		    // jquery iframe auto height plugin does not work in this place
-		    // jQuery('#visualizationContainer > iframe').iframeAutoHeight();
-
-		    $('#visualizationContainer > iframe').each(function(idx, el){
-			if(!el.contentWindow.document.body) return;
-			var height = el.contentWindow.document.body.scrollHeight;
-			$(el).height(height);
-		    });
-		}
-            } else if(job.status=="RUNNING"){
-                if(new Date().getSeconds() % 1 == 0){ // refreshing every 1 sec
-                    controller.send('loadJob', job.id);
-                }
-            } else if(job.status=="FINISHED"){
-		// historyis made when job finishes. update history list
-		controller.send('updateHistory');
-            } else if(job.status=="ERROR"){
-            } else if(job.status=="ABORT"){
             }
+
+	    // auto height visualizer
+	    if(new Date().getSeconds() % 1 == 0){ // refreshing every 1 sec
+		// jquery iframe auto height plugin does not work in this place
+		// jQuery('#visualizationContainer > iframe').iframeAutoHeight();
+
+		$('#visualizationContainer > iframe').each(function(idx, el){
+		    if(!el.contentWindow.document.body) return;
+		    var height = el.contentWindow.document.body.scrollHeight;
+		    $(el).height(height);
+		});
+	    }
         } 
     }
 });
