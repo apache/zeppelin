@@ -1,15 +1,21 @@
 <div class="row">
   <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-    <a class="btn btn-info" {{action "newJob"}}>Create new Job</a>
+    <a class="btn btn-primary" {{action "newJob"}}>Create new Job</a>
     <hr />
     <div id="jobList" class="dd">
       <ol class="dd-list">
-        {{#each sess in "runningJobs"}}
-        <li class="dd-item row" data-id="{{sess.id}}">
-            <dev class="dd-handle">::</dev>
-            <dev class="dd-content">
-                <a {{action "openJob" sess.id}}>{{#if sess.jobName}}{{sess.jobName}}{{else}}{{sess.id}}{{/if}}</a>
-            </dev>
+        {{#each job in "runningJobs"}}
+          <li class="dd-item row" data-id="{{sess.id}}">
+            <div class="dd-handle">::</div>
+            <div class="dd-content">
+              <div class="job-header">
+                <a {{action "openJob" job.id}}>{{#if job.jobName}}{{job.jobName}}{{else}}{{job.id}}{{/if}}</a>
+              </div>
+              <br />
+              <div class="job-content">
+                <div style="font-size:9px">Last run {{job.dateFinished}}</div> 
+              </div>
+            </div>
         </li>
         {{/each}}
       </ol>

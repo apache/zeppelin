@@ -316,6 +316,7 @@ App.ZqlEditView = Ember.View.extend({
             controller.send("loop", jobNameEditor, editor, jobCronEditor);
         };
         editorLoop();
+
     },
 
     willClearRender: function(){
@@ -324,7 +325,8 @@ App.ZqlEditView = Ember.View.extend({
         var view = this;
         var editor = ace.edit("zqlEditor");
         var jobNameEditor = this.get('jobNameEditor');
-        controller.send('beforeChangeJob', model, jobNameEditor, editor);
+        var jobCronEditor = this.get('jobCronEditor');
+        controller.send('beforeChangeJob', model, jobNameEditor, editor, jobCronEditor);
         this.set('currentModel', null);
     },
 
