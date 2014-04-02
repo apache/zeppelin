@@ -204,8 +204,10 @@ App.ZqlEditView = Ember.View.extend({
         var controller = this.get("controller");
         var model = controller.get('currentJob');
         var view = this;
+
         this.set('currentModel', model);
 
+        // initialize ace editor
         var editor = ace.edit("zqlEditor");
         var editorArea = $('#zqlEditorArea');
         this.set('editor', editor);

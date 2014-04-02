@@ -13,10 +13,15 @@
     </div>
   </div>
   <p />
-  <div>
-    <a id="zqlRunButton" class="btn btn-lg btn-primary" {{action 'runJob'}}>Run</a>
-    <a id="zqlAbortButton" class="btn btn-lg btn-primary" style="display:none;" {{action 'abortJob'}}>Abort</a>
-    <div style="float:right; text-align:right">
+  <div class="row">
+    <div class="col-xs-12 col-sm-2 col-md-2">
+      <a id="zqlRunButton" class="btn btn-lg btn-primary" {{action 'runJob'}}>Run</a>
+      <a id="zqlAbortButton" class="btn btn-lg btn-primary" style="display:none;" {{action 'abortJob'}}>Abort</a>
+    </div>
+    <div class="col-xs-12 col-sm-4 col-md-4">
+      <div id="jobMsg" style="display:inline">{{jobMessage}}</div>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-md-6" style="float:right; text-align:right">
       Schedule - <a data-type="select2" id="zqlJobCron"></a> | 
       <a id="zqlShareButton" {{action "shareJob"}}>Share</a> | 
       <a id="zqlDeleteButton">Delete</a>

@@ -1,5 +1,5 @@
 
-App.ApplicationController = Ember.Controller.extend({
+App.ApplicationController = Ember.Controller.extend(Ember.Evented, {
     zqlLink : "http://zeppelin-project.org/#/zql",
 });
 
@@ -18,7 +18,6 @@ App.ZqlController = App.ApplicationController.extend({
 
                 controller.transitionToRoute('zql.edit', {jobid : d.body.id, historyid: "", body:d.body})
             });
-
         },
         openJob : function(jobid){
             controller = this;
@@ -55,7 +54,20 @@ App.ZqlEditController = App.ZqlController.extend({
     zql : undefined,
     params : undefined,
     needs: ['zql'],
-    
+
+    printInfo : function(arg){
+        var controller = this;
+        controller.set('jobMessage', arg);
+        console.log("info : %o", arg);
+        if(controller._printInfoT){
+            clearTimeout(controller._printInfoT);
+        }
+
+        controller._printInfoT = setTimeout(function(){
+            controller.set('jobMessage', "");
+        }, 5000);
+    },
+
     actions : {
         runJob : function(){
             var controller = this;
@@ -267,8 +279,8 @@ App.ZqlEditController = App.ZqlController.extend({
 
             zeppelin.zql.setName(job.id, jobName, function(c, d){
                 if(c==200){
-                    console.log("change saved", c, d);
                     controller.set('jobName', jobName);
+                    controller.printInfo("change saved");
                 } else {
                     zeppelin.alert("Error! Can't save change");
                 }                
@@ -283,8 +295,8 @@ App.ZqlEditController = App.ZqlController.extend({
             if(job.status!="READY" && job.status!="FINISHED" && job.status!="ERROR" && job.status!="ABORT") return;
             zeppelin.zql.setCron(job.id, jobCron, function(c, d){
                 if(c==200){
-                    console.log("change saved", c, d);
                     controller.set('jobCron', jobCron);
+                    controller.printInfo("change saved");
                 } else {
                     zeppelin.alert("Error! Can't save change");
                 }                
@@ -324,8 +336,9 @@ App.ZqlEditController = App.ZqlController.extend({
                         zeppelin.zql.setZql(job.id, editor.getValue(), function(c, d){
                             if(c==200){
                                 this.set('dirty', (this.get('dirty') & ~this.get('dirtyFlag').ZQL));
-                                zeppelin.info("autosave completed", 2000);
-                                console.log("autosave zql completed %o %o", c, d);
+                                this.printInfo("autosave completed");
+                            } else {
+                                zeppelin.alert("autosave failed");
                             }
                             
                         }, this);
