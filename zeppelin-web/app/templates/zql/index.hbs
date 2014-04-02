@@ -1,7 +1,12 @@
 <div class="row">
   <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-    <a class="btn btn-primary" {{action "newJob"}}>Create new Job</a>
-    <hr />
+    Total {{runningJobs.length}} jobs
+    <a style="float:right" class="btn btn-sm btn-primary" {{action "newJob"}}>Create new Job</a>
+  </div>
+</div>
+<p />
+<div class="row">
+  <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
     <div id="jobList" class="dd">
       <ol class="dd-list">
         {{#each job in "runningJobs"}}

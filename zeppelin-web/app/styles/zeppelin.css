@@ -98,11 +98,6 @@ a {
 .zanLibraryInformation .installed{
 }
 
-
-
-/**
- * Nestable
- */
 #jobList ol li{
     border-bottom : 1px solid #CCCCCC;
     border-top : 1px solid #CCCCCC;
