@@ -8,15 +8,29 @@ App.ZqlView = Ember.View.extend({
     layoutName: 'default_layout',
 
     didInsertElement : function(){ // when it is first time of loading this view, jobChanged can not be observed
-        $('#jobList').nestable({ /* config options */ });
     }
 });
 
 App.ZqlIndexView = Ember.View.extend({
+    attributeBindings: ["data-id"],
     layoutName: 'default_layout',
 
     didInsertElement : function(){ // when it is first time of loading this view, jobChanged can not be observed
-        $('#jobList').nestable({ /* config options */ });
+        /* https://github.com/dbushell/Nestable */
+        $('#jobList').nestable({
+            maxDepth:2
+        });
+        $('#jobList').on('change', function(o, v){
+            var serialize = $('#jobList').nestable('serialize');            
+            zeppelin.zql.setTree(serialize, function(c, d){
+                if (c==200) {
+                    zeppelin.info("Change saved", 1000);
+                } else {
+                    zeppelin.alert("Can't save changes");
+                }
+            }, this);
+
+        });
     }
 });
 

@@ -24,9 +24,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.nflabs.zeppelin.server.JsonResponse;
 import com.nflabs.zeppelin.server.ZQLJob;
 import com.nflabs.zeppelin.server.ZQLJobManager;
+import com.nflabs.zeppelin.server.ZQLJobTree;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.stmt.Z;
 import com.wordnik.swagger.annotations.Api;
@@ -230,7 +232,42 @@ public class ZQLRestApi {
                 new LinkedList<ZQLJob>(sessions.descendingMap().values()))
                 .build();
     }
+   
+    /**
+     * get job tree 
+     * @return
+     */
+    @GET
+    @Path("/tree")
+    @ApiOperation(httpMethod = "GET", value = "Get job tree information", response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Run successfully"), @ApiResponse(code = 404, message = "Run failled")} )
+    @Produces("application/json")
+	public Response getJobTree() {
+		List<ZQLJobTree> jobTree = jobManager.getJobTree();
+		return new JsonResponse<List<ZQLJobTree>>(Status.OK, "", jobTree).build();
+	}
 
+	/**
+	 * save job tree
+	 * 
+	 * @return
+	 */
+	@POST
+	@Path("/tree")
+	@ApiOperation(httpMethod = "POST", value = "Set job tree information", response = Response.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Run successfully"),
+			@ApiResponse(code = 404, message = "Run failled") })
+	@Produces("application/json")
+	public Response setJobTree(String json) {
+		List<ZQLJobTree> jobTree = gson.fromJson(json,
+				new TypeToken<List<ZQLJobTree>>() {
+				}.getType());
+		jobManager.saveJobTree(jobTree);
+		return new JsonResponse(Status.OK, "").build();
+	}
+
+    
     @GET
     @Path("/del/{sessionId}")
     @ApiOperation(httpMethod = "GET", value = "Remove a Zeppelin job", response = Response.class)

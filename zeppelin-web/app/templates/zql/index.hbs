@@ -10,7 +10,7 @@
     <div id="jobList" class="dd">
       <ol class="dd-list">
         {{#each job in "runningJobs"}}
-          <li class="dd-item row" data-id="{{sess.id}}">
+          <li class="dd-item row" {{bindAttr data-id=job.id}}>
             <div class="dd-handle">::</div>
             <div class="dd-content">
               <div class="job-header">
@@ -21,7 +21,24 @@
                 <div style="font-size:9px">Last run {{job.dateFinished}}</div> 
               </div>
             </div>
-        </li>
+            {{#if job.children}}
+            <ol class="dd-list">
+              {{#each subjob in "job.children"}}
+                <li class="dd-item row" {{bindAttr data-id=subjob.id}}>
+                  <div class="dd-handle">::</div>
+                  <div class="dd-content">
+                    <div class="job-header">
+                      <a {{action "openJob" subjob.id}}>{{#if subjob.jobName}}{{subjob.jobName}}{{else}}{{subjob.id}}{{/if}}</a>
+                    </div>
+                    <br />
+                    <div class="job-content">
+                      <div style="font-size:9px">Last run {{subjob.dateFinished}}</div> 
+                    </div>
+                  </div>
+              {{/each}}
+            </ol>
+            {{/if}}
+          </li>
         {{/each}}
       </ol>
     </div>

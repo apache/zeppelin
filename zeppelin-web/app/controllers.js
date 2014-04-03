@@ -27,11 +27,52 @@ App.ZqlController = App.ApplicationController.extend({
         },
         updateJob : function(){
             controller = this;
-            zeppelin.zql.list(function(c, resp){
+            zeppelin.zql.getTree(function(c, tree){
                 if(c==200){
-                    controller.set('runningJobs', resp);
+                    zeppelin.zql.list(function(c, list){
+                        if(c==200){
+                            var jobs = [];
+                            // first traverse tree
+                            
+                            function findJobByIdFromList(id){
+                                for (var i=0; i<list.length; i++) {
+                                    if (list[i].id==id) {
+                                        var ret = list[i];
+                                        list.splice(i, 1);
+                                        return ret;
+                                    }
+                                }
+                                return undefined;
+                            }
+
+                            function constructTree(sourceTree, targetTree){
+                                for(var i=0; i<sourceTree.length; i++){
+                                    var job = findJobByIdFromList(sourceTree[i].id);
+                                    if (!job) continue;
+
+                                    if (sourceTree[i].children) {
+                                        job.children = [];
+                                        constructTree(sourceTree[i].children, job.children);
+                                    }
+                                    targetTree.push(job);
+                                }
+                            };
+                            constructTree(tree, jobs);
+
+                            for (var i=0; i<list.length; i++) {
+                                jobs.push(list[i]);
+                            }
+
+                            console.log("jobs=%o", jobs);
+                            controller.set("runningJobs", jobs);
+                        } else {
+                            zeppelin.alert("Can't get job list");
+                        }
+                    }, this);
+                } else {
+                    zeppelin.alert("Can't get job tree information");
                 }
-            });
+            }, this);
         }
     }
 });

@@ -37,11 +37,7 @@ App.ZqlIndexRoute = Ember.Route.extend({
         return params;
     },
     setupController : function(controller, model){
-        zeppelin.zql.list(function(c, resp){
-            if ( c == 200 ) {
-                controller.set('runningJobs', resp);
-            }
-        });
+        controller.send('updateJob');
     }
 });
 

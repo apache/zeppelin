@@ -30,12 +30,11 @@ function Zeppelin(arg){
 
     this.info = function(msg, autocloseMsec){
         if (autocloseMsec) {
+            var id = "zinfomsg_"+Math.floor((Math.random()*10000)+1);
 
-            var t = $('#info').append('<div class="alert alert-info"><span>'+msg+'</span></div>');
-            console.log("display info %o", t);
+            var t = $('#info').append('<div id="'+id+'" class="alert alert-info"><span>'+msg+'</span></div>');
             setTimeout(function(){
-                t.remove();
-                console.log("turn off info %o", t);
+                $('#'+id).remove();
             }, autocloseMsec);
         } else {
             $('#info').append('<div class="alert alert-info"><a class="close" data-dismiss="alert">×</a><span>'+msg+'</span></div>');
