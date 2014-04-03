@@ -89,7 +89,7 @@ a {
 .zanLibraryInformation{
     -moz-border-radius: 0px;
     border-radius: 0px;
-    border : 1px solid #CCCCCC;
+    border-top : 1px solid #CCCCCC;
     background-color: #ffffff;
     padding: 0px 10px 10px 10px;
     margin: 5px 10px 5px 10px;
