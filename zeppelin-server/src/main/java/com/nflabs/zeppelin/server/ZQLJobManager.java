@@ -245,8 +245,8 @@ public class ZQLJobManager implements JobListener {
 	public List<ZQLJobTree> getJobTree(){
 		Path path = new Path(jobPersistBasePath+"/"+JOB_TREE_FILE);
 		try {
-			if(fs.isFile(path)==false){
-				return null;
+			if(!fs.isFile(path)){
+				return new LinkedList<ZQLJobTree>();
 			}
 		} catch (IOException e) {
 			// Can not find job tree file. this is okay.

@@ -222,14 +222,15 @@ App.ZqlEditController = App.ZqlController.extend({
         },
         // called from view
         beforeChangeJob : function(model, jobNameEditor, editor, jobCronEditor){
+            var controller = this;
             if(model==null) return;
             if(model.status=="READY"){
                 if(this.get('dirty')){
                     zeppelin.zql.set(model.id, this.get("jobName"), this.get('zql'), undefined, this.get('jobCron'), function(c, d){
                         if(c==200){
-                            console.log("job %o saved", model.id)
+                            console.log("job %o saved", model.id);
                         } else {
-                            // TODO : handle error
+                            zeppelin.alert("Can't save job");
                         }
                     });                     
                 }
