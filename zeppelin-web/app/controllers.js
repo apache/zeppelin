@@ -63,7 +63,6 @@ App.ZqlController = App.ApplicationController.extend({
                                 jobs.push(list[i]);
                             }
 
-                            console.log("jobs=%o", jobs);
                             controller.set("runningJobs", jobs);
                         } else {
                             zeppelin.alert("Can't get job list");
@@ -80,7 +79,6 @@ App.ZqlController = App.ApplicationController.extend({
 App.ZqlIndexController = App.ZqlController.extend({
     needs: ['zql'],
 });
-
 
 App.ZqlEditController = App.ZqlController.extend({
     dirty : 0,
@@ -258,8 +256,6 @@ App.ZqlEditController = App.ZqlController.extend({
                 jobCronEditor.editable('option', 'source', jobCronEditor.cronPreset);
                 jobCronEditor.editable('setValue', cronValue);
             }
-
-            console.log("after change %o %o", cronPreset);
 
             durationToString = function(duration){
                 var took = "";

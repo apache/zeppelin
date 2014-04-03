@@ -31,7 +31,22 @@ App.ZqlIndexView = Ember.View.extend({
             }, this);
 
         });
-    }
+    },
+
+    jobListChanged : function(){
+        var controller = this.get("controller");
+        var count = 0;
+        var jobs = controller.get("runningJobs");
+        if (jobs) {
+            for (var i=0; i<jobs.length; i++) {
+                count++;
+                if (jobs[i].children) {
+                    count+=jobs[i].children.length;
+                }
+            }
+        }
+        this.set("jobListStat", {count: count});
+    }.observes('controller.runningJobs')
 });
 
 
@@ -58,7 +73,7 @@ App.ZqlEditView = Ember.View.extend({
             editor.setValue(model.zql);
         }
 
-        console.log("Current job=%o", model);
+        //console.log("Current job=%o", model);
 
         if (model.jobName && model.jobName != "") {
             if (jobNameEditor.editable('getValue', true) != model.jobName) {
@@ -134,7 +149,7 @@ App.ZqlEditView = Ember.View.extend({
                         if(!plan || !plan.webEnabled) { continue; }
                         if(!plan.result || !plan.result.columnDef || plan.result.columnDef.length==0) {continue;}
 
-                        console.log("Displaying plan %o", plan);
+                        //console.log("Displaying plan %o", plan);
                         var planInfo = (plan.libName) ? plan.libName : plan.query;
                         if(planInfo.length>1 && planInfo[0]=='!'){
                             planInfo = planInfo.substring(1);
