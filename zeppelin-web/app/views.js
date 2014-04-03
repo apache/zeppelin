@@ -36,16 +36,26 @@ App.ZqlIndexView = Ember.View.extend({
     jobListChanged : function(){
         var controller = this.get("controller");
         var count = 0;
+        var cron = 0;
+
         var jobs = controller.get("runningJobs");
         if (jobs) {
             for (var i=0; i<jobs.length; i++) {
                 count++;
+                if (jobs[i].cron) {
+                    cron++;
+                }
                 if (jobs[i].children) {
-                    count+=jobs[i].children.length;
+                    for (var j=0; j<jobs[i].children.length; j++) {
+                        count++;
+                        if (jobs[i].children[j].cron) {
+                            cron++;
+                        }
+                    }
                 }
             }
         }
-        this.set("jobListStat", {count: count});
+        this.set("jobListStat", {count: count, cron: cron});
     }.observes('controller.runningJobs')
 });
 
