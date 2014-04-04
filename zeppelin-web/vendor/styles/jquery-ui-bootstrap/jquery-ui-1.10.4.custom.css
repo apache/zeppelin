@@ -931,27 +931,27 @@ body .ui-tooltip {
 }
 .ui-icon,
 .ui-widget-content .ui-icon {
-	background-image: url(images/ui-icons_222222_256x240.png);
+	background-image: url(/img/jquery-ui-bootstrap/ui-icons_222222_256x240.png);
 }
 .ui-widget-header .ui-icon {
-	background-image: url(images/ui-icons_ffffff_256x240.png);
+	background-image: url(/img/jquery-ui-bootstrap/ui-icons_ffffff_256x240.png);
 }
 .ui-state-default .ui-icon {
-	background-image: url(images/ui-icons_ef8c08_256x240.png);
+	background-image: url(/img/jquery-ui-bootstrap/ui-icons_ef8c08_256x240.png);
 }
 .ui-state-hover .ui-icon,
 .ui-state-focus .ui-icon {
-	background-image: url(images/ui-icons_ef8c08_256x240.png);
+	background-image: url(/img/jquery-ui-bootstrap/ui-icons_ef8c08_256x240.png);
 }
 .ui-state-active .ui-icon {
-	background-image: url(images/ui-icons_ef8c08_256x240.png);
+	background-image: url(/img/jquery-ui-bootstrap/ui-icons_ef8c08_256x240.png);
 }
 .ui-state-highlight .ui-icon {
-	background-image: url(images/ui-icons_228ef1_256x240.png);
+	background-image: url(/img/jquery-ui-bootstrap/ui-icons_228ef1_256x240.png);
 }
 .ui-state-error .ui-icon,
 .ui-state-error-text .ui-icon {
-	background-image: url(images/ui-icons_ffd27a_256x240.png);
+	background-image: url(/img/jquery-ui-bootstrap/ui-icons_ffd27a_256x240.png);
 }
 
 /* positioning */

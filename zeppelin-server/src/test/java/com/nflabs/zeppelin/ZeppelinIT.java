@@ -98,12 +98,12 @@ public class ZeppelinIT {
             // Wait for the page to load, timeout after 10 seconds
             (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
                 public Boolean apply(WebDriver d) {
-                    return d.findElement(By.linkText("New")).isDisplayed();
+                    return d.findElement(By.linkText("Create new Job")).isDisplayed();
                 }
             });
 
             // click new
-            driver.findElement(By.linkText("New")).click();
+            driver.findElement(By.linkText("Create new Job")).click();
 
             // wait for run button appears
             (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
@@ -250,12 +250,12 @@ public class ZeppelinIT {
             // Wait for the page to load, timeout after 10 seconds
             (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
                 public Boolean apply(WebDriver d) {
-                    return d.findElement(By.linkText("New")).isDisplayed();
+                    return d.findElement(By.linkText("Create new Job")).isDisplayed();
                 }
             });
 
             // click new
-            driver.findElement(By.linkText("New")).click();
+            driver.findElement(By.linkText("Create new Job")).click();
 
             // wait for run button appears
             (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {

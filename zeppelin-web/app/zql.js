@@ -63,6 +63,14 @@ function zql(zep) {
         zeppelin.get("/zql/list", listener, scope);
     }
 
+    this.getTree = function(listener, scope){
+        zeppelin.get("/zql/tree", listener, scope);
+    }
+
+    this.setTree = function(jobTree, listener, scope){
+        zeppelin.post("/zql/tree", jobTree, listener, scope);
+    }
+
     this.listHistory = function(jobId, listener, scope){
         zeppelin.get("/zql/history/list/"+jobId, listener, scope);
     }

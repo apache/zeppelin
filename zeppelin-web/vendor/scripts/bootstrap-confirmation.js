@@ -1,8 +1,9 @@
-/* ===========================================================
- * bootstrap-confirmation.js v1.0.1
- * http://ethaizone.github.io/Bootstrap-Confirmation/
- * ===========================================================
+/* ========================================================================
+ * bootstrap-confirmation.js v2.0.0
+ * https://github.com/mistic100/Bootstrap-Confirmation
+ * ========================================================================
  * Copyright 2013 Nimit Suwannagate <ethaizone@hotmail.com>
+ * Copyright 2014 Damien "Mistic" Sorel <http://www.strangeplanet.fr>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,230 +16,228 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * =========================================================== */
+ * ======================================================================== */
+
++function ($) {
+  'use strict';
+
+  // Confirmation extends popover.js
+  if (!$.fn.popover) throw new Error('Confirmation requires popover.js');
+
+  // CONFIRMATION PUBLIC CLASS DEFINITION
+  // ===============================
+
+  var eventBody = false;
+
+  var Confirmation = function (element, options) {
+    this.init('confirmation', element, options);
+
+    var that = this;
+
+    // get existing href and target
+    if (this.$element.attr('href')) {
+      this.options.href = this.$element.attr('href');
+      this.$element.removeAttr('href');
+      if (this.$element.attr('target')) {
+        this.options.target = this.$element.attr('target');
+      }
+    }
+
+    // cancel original event
+    this.$element.on(that.options.trigger, function(e, ack) {
+      if (!ack) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      }
+    });
+
+    // trigger original event on confirm
+    this.$element.on('confirmed.bs.confirmation', function(e) {
+      $(this).trigger(that.options.trigger, [true]);
+    });
+
+    // manage singleton
+    this.$element.on('show.bs.confirmation', function(e) {
+      var o = that.options
+      if (o.singleton) {
+        $(o._all_selector).not(that.$element).confirmation('hide')
+      }
+    });
+
+    // manage popout
+    this.$element.on('shown.bs.confirmation', function(e) {
+      var o = that.options;
+      if (o.popout && !eventBody) {
+        eventBody = $('body').on('click', function (e) {
+          if ($(o._all_selector).is(e.target)) return;
+          $(o._all_selector).confirmation('hide');
+
+          $('body').off(e);
+          eventBody = false;
+        });
+      }
+    });
+  }
+
+  Confirmation.DEFAULTS = $.extend({}, $.fn.popover.Constructor.DEFAULTS, {
+    placement: 'top',
+    title: 'Are you sure?',
+	html: true,
+    href: false,
+    popout: false,
+    singleton: false,
+    target: '_self',
+    onConfirm: $.noop,
+    onCancel: $.noop,
+    btnOkClass: 'btn-xs btn-primary',
+    btnOkIcon: 'glyphicon glyphicon-ok',
+    btnOkLabel: 'Yes',
+    btnCancelClass: 'btn-xs btn-default',
+    btnCancelIcon: 'glyphicon glyphicon-remove',
+    btnCancelLabel: 'No',
+    template:
+      '<div class="popover confirmation">' +
+        '<div class="arrow"></div>' +
+        '<h3 class="popover-title"></h3>' +
+        '<div class="popover-content text-center">'+
+          '<div class="btn-group">'+
+            '<a class="btn" data-apply="confirmation"></a>'+
+            '<a class="btn" data-dismiss="confirmation"></a>'+
+          '</div>'+
+        '</div>'+
+      '</div>'
+  });
+  
+  Confirmation.prototype = $.extend({}, $.fn.popover.Constructor.prototype);
+
+  Confirmation.prototype.constructor = Confirmation;
+
+  Confirmation.prototype.getDefaults = function () {
+    return Confirmation.DEFAULTS;
+  };
+
+  Confirmation.prototype.setContent = function () {
+    var that    = this;
+    var $tip    = this.tip();
+    var title   = this.getTitle();
+	var o		= this.options;
+
+    $tip.find('.popover-title')[o.html ? 'html' : 'text'](title);
+
+    // configure 'ok' button
+    $tip.find('[data-apply="confirmation"]')
+      .addClass(o.btnOkClass)
+      .html(o.btnOkLabel)
+      .prepend($('<i></i>').addClass(o.btnOkIcon), ' ')
+      .off('click')
+      .one('click', function(e) {
+        that.getOnConfirm.call(that).call(that.$element);
+        that.$element.trigger('confirmed.bs.confirmation');
+        that.leave(that);
+      });
+
+    // add href to confirm button if needed
+    if (o.href) {
+      $tip.find('[data-apply="confirmation"]').attr({
+        href: o.href,
+        target: o.target
+      });
+    }
+
+    // configure 'cancel' button
+    $tip.find('[data-dismiss="confirmation"]')
+      .addClass(o.btnCancelClass)
+      .html(o.btnCancelLabel)
+      .prepend($('<i></i>').addClass(o.btnCancelIcon), ' ')
+      .off('click')
+      .one('click', function(e) {
+        that.getOnCancel.call(that).call(that.$element);
+        that.$element.trigger('canceled.bs.confirmation');
+        that.leave(that);
+      })
+
+    $tip.removeClass('fade top bottom left right in');
+
+    // IE8 doesn't accept hiding via the `:empty` pseudo selector, we have to do
+    // this manually by checking the contents.
+    if (!$tip.find('.popover-title').html()) {
+      $tip.find('.popover-title').hide();
+    }
+  }
+
+  Confirmation.prototype.getOnConfirm = function() {
+    var $e = this.$element;
+    var o = this.options;
+
+    if ($e.attr('data-on-confirm')) {
+      return getFunctionFromString($e.attr('data-on-confirm'));
+    }
+    else {
+      return o.onConfirm;
+    }
+  }
+
+  Confirmation.prototype.getOnCancel = function() {
+    var $e = this.$element;
+    var o = this.options;
+
+    if ($e.attr('data-on-cancel')) {
+      return getFunctionFromString($e.attr('data-on-cancel'));
+    }
+    else {
+      return o.onCancel;
+    }
+  }
+
+  /*
+   * Generates an anonymous function from a function name
+   * function name may contain dots (.) to navigate through objects
+   * root context is window
+   */
+  function getFunctionFromString(functionName) {
+    var context = window;
+    var namespaces = functionName.split(".");
+    var func = namespaces.pop();
+
+    for(var i=0; i<namespaces.length; i++) {
+      context = context[namespaces[i]];
+    }
+
+    return function() {
+      context[func].call(this);
+    }
+  }
 
 
-!function ($) {
+  // CONFIRMATION PLUGIN DEFINITION
+  // =========================
 
-	"use strict"; // jshint ;_;
+  var old = $.fn.confirmation;
 
+  $.fn.confirmation = function (option) {
+    var options = (typeof option == 'object' && option) || {};
+    options._all_selector = this.selector;
 
- /* CONFIRMATION PUBLIC CLASS DEFINITION
-	* =============================== */
+    return this.each(function () {
+      var $this   = $(this);
+      var data    = $this.data('bs.confirmation');
 
-	//var for check event at body can have only one.
-	var event_body = false;
+      if (!data && option == 'destroy') return;
+      if (!data) $this.data('bs.confirmation', (data = new Confirmation(this, options)));
+      if (typeof option == 'string') data[option]();
+    })
+  }
 
-	var Confirmation = function (element, options) {
-		var that = this;
-
-		// remove href attribute of button
-		$(element).removeAttr('href')
-
-		this.init('confirmation', element, options)
-
-		$(element).on('show', function(e) {
-			var options = that.options;
-			var all = options.all_selector;
-			if(options.singleton) {
-				$(all).not(that.$element).confirmation('hide');
-			}
-		});
-
-		$(element).on('shown', function(e) {
-			var options = that.options;
-			var all = options.all_selector;
-			$(this).next('.popover').one('click.dismiss.confirmation', '[data-dismiss="confirmation"]', $.proxy(that.hide, that))
-			if(that.isPopout()) {
-				if(!event_body) {
-					event_body = $('body').on('click', function (e) {
-						if($(all).is(e.target)) return;
-						if($(all).next('div').has(e.target).length) return;
-
-						$(all).confirmation('hide');
-						$('body').unbind(e);
-						event_body = false;
-
-						return;
-					});
-				}
-			}
-		});
-	}
+  $.fn.confirmation.Constructor = Confirmation;
 
 
-	/* NOTE: CONFIRMATION EXTENDS BOOTSTRAP-TOOLTIP.js
-		 ========================================== */
+  // CONFIRMATION NO CONFLICT
+  // ===================
 
-	Confirmation.prototype = $.extend({}, $.fn.tooltip.Constructor.prototype, {
+  $.fn.confirmation.noConflict = function () {
+    $.fn.confirmation = old;
+    return this;
+  }
 
-		constructor: Confirmation
-
-		, setContent: function () {
-				var $tip = this.tip()
-					, title = this.getTitle()
-					, href = this.getHref()
-					, target = this.getTarget()
-					, $e = this.$element
-					, btnOkClass = this.getBtnOkClass()
-					, btnCancelClass = this.getBtnCancelClass()
-					, btnOkLabel = this.getBtnOkLabel()
-					, btnCancelLabel = this.getBtnCancelLabel()
-					, o = this.options
-
-				$tip.find('.popover-title').text(title);
-
-				var btnOk = $tip.find('.popover-content > div > a:not([data-dismiss="confirmation"])');
-				var btnCancel = $tip.find('.popover-content > div > a[data-dismiss="confirmation"]');
-
-				btnOk.addClass(btnOkClass).html(btnOkLabel).attr('href', href).attr('target', target).on('click', o.onConfirm);
-				btnCancel.addClass(btnCancelClass).html(btnCancelLabel).on('click', o.onCancel);
-
-				$tip.removeClass('fade top bottom left right in')
-			}
-
-		, hasContent: function () {
-				return this.getTitle()
-			}
-
-		, isPopout: function () {
-				var popout
-					, $e = this.$element
-					, o = this.options
-
-				popout = $e.attr('data-popout') || (typeof o.popout == 'function' ? o.popout.call($e[0]) :	o.popout)
-
-				if(popout == 'false') popout = false;
-
-				return popout
-			}
-
-
-		, getHref: function () {
-				var href
-					, $e = this.$element
-					, o = this.options
-
-				href = $e.attr('data-href') || (typeof o.href == 'function' ? o.href.call($e[0]) :	o.href)
-
-				return href
-			}
-
-		, getTarget: function () {
-				var target
-					, $e = this.$element
-					, o = this.options
-
-				target = $e.attr('data-target') || (typeof o.target == 'function' ? o.target.call($e[0]) :	o.target)
-
-				return target
-			}
-
-		, getBtnOkClass: function () {
-				var btnOkClass
-					, $e = this.$element
-					, o = this.options
-
-				btnOkClass = $e.attr('data-btnOkClass') || (typeof o.btnOkClass == 'function' ? o.btnOkClass.call($e[0]) :	o.btnOkClass)
-
-				return btnOkClass
-			}
-
-		, getBtnCancelClass: function () {
-				var btnCancelClass
-					, $e = this.$element
-					, o = this.options
-
-				btnCancelClass = $e.attr('data-btnCancelClass') || (typeof o.btnCancelClass == 'function' ? o.btnCancelClass.call($e[0]) :	o.btnCancelClass)
-
-				return btnCancelClass
-			}
-
-		, getBtnOkLabel: function () {
-				var btnOkLabel
-					, $e = this.$element
-					, o = this.options
-
-				btnOkLabel = $e.attr('data-btnOkLabel') || (typeof o.btnOkLabel == 'function' ? o.btnOkLabel.call($e[0]) :	o.btnOkLabel)
-
-				return btnOkLabel
-			}
-
-		, getBtnCancelLabel: function () {
-				var btnCancelLabel
-					, $e = this.$element
-					, o = this.options
-
-				btnCancelLabel = $e.attr('data-btnCancelLabel') || (typeof o.btnCancelLabel == 'function' ? o.btnCancelLabel.call($e[0]) :	o.btnCancelLabel)
-
-				return btnCancelLabel
-			}
-
-		, tip: function () {
-				this.$tip = this.$tip || $(this.options.template)
-				return this.$tip
-			}
-
-		, destroy: function () {
-				this.hide().$element.off('.' + this.type).removeData(this.type)
-			}
-
-	})
-
-
- /* CONFIRMATION PLUGIN DEFINITION
-	* ======================= */
-
-	var old = $.fn.confirmation
-
-	$.fn.confirmation = function (option) {
-		var that = this
-		return this.each(function () {
-			var $this = $(this)
-				, data = $this.data('confirmation')
-				, options = typeof option == 'object' && option
-			options = options || {}
-			options.all_selector = that.selector
-			if (!data) $this.data('confirmation', (data = new Confirmation(this, options)))
-			if (typeof option == 'string') data[option]()
-		})
-	}
-
-	$.fn.confirmation.Constructor = Confirmation
-
-	$.fn.confirmation.defaults = $.extend({} , $.fn.tooltip.defaults, {
-		placement: 'top'
-		, trigger: 'click'
-		, target : '_self'
-		, href   : '#'
-		, title: 'Are you sure?'
-		, template: '<div class="popover">' +
-				'<div class="arrow"></div>' +
-				'<h3 class="popover-title"></h3>' +
-				'<div class="popover-content text-center">' +
-				'<div class="btn-group">' +
-				'<a class="btn btn-small" href="" target=""></a>' +
-				'<a class="btn btn-small" data-dismiss="confirmation"></a>' +
-				'</div>' +
-				'</div>' +
-				'</div>'
-		, btnOkClass:  'btn-primary'
-		, btnCancelClass:  ''
-		, btnOkLabel: '<i class="icon-ok-sign icon-white"></i> Yes'
-		, btnCancelLabel: '<i class="icon-remove-sign"></i> No'
-		, singleton: false
-		, popout: false
-		, onConfirm: function(){}
-		, onCancel: function(){}
-	})
-
-
- /* POPOVER NO CONFLICT
-	* =================== */
-
-	$.fn.confirmation.noConflict = function () {
-		$.fn.confirmation = old
-		return this
-	}
-
-}(window.jQuery);
+}(jQuery);

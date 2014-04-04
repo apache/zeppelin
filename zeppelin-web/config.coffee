@@ -36,17 +36,22 @@ exports.config =
         before: [
           'vendor/scripts/console-helper.js',
           'vendor/scripts/jquery-1.8.3.min.js',
+          'vendor/scripts/jquery-ui-1.10.4.custom.min.js',
+          'vendor/scripts/jquery-nestable.js',
+
           'vendor/scripts/handlebars-1.1.2.js',
           'vendor/scripts/ember-latest.js',
           'vendor/scripts/ember-data-latest.js',
 
           'vendor/scripts/bootstrap.min.js',
-          'vendor/scripts/bootstrap-combobox.js',
           'vendor/scripts/bootstrap-editable.js',
-          'vendor/scripts/select2.js',
+          'vendor/scripts/bootstrap-combobox.js',
           'vendor/scripts/bootstrap-confirmation.js',
+          'vendor/scripts/select2.js',
 
-          'vendor/scripts/jquery-ui-1.10.4.custom.min',
+          'vendor/scripts/ace/ace.js',
+          'vendor/scripts/ace/mode-sql.js',
+          'vendor/scripts/ace/theme-terminal.js',
           ]
 
     stylesheets:
@@ -54,8 +59,8 @@ exports.config =
       joinTo: 'stylesheets/app.css'
       order:
         before: [
-          'vendor/styles/bootstrap-combined.min.css',
-          'vendor/styles/bootstrap-theme.min.css',
+          'vendor/styles/bootstrap.css',
+          'vendor/styles/bootstrap-theme.css',
           'vendor/styles/jquery-ui-bootstrap/jquery-ui-1.10.4.custom.css',
           'vendor/styles/font-awesome.css',
           'vendor/styles/font-awesome-ie7.css',

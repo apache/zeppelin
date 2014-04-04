@@ -1,0 +1,53 @@
+<div class="row">
+  <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+    Total {{view.jobListStat.count}} jobs. {{view.jobListStat.cron}} scheduled.
+
+    <a style="float:right" class="btn btn-sm btn-primary" {{action "newJob"}}>Create new Job</a>
+  </div>
+</div>
+<p />
+<div class="row">
+  <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+    <div id="jobList" class="dd">
+      <ol class="dd-list">
+        {{#each job in "runningJobs"}}
+          <li class="dd-item row" {{bindAttr data-id=job.id}}>
+            <div class="dd-handle">::</div>
+            <div class="dd-content">
+              <div class="job-header">
+                <a {{action "openJob" job.id}}>{{#if job.jobName}}{{job.jobName}}{{else}}{{job.id}}{{/if}}</a>
+              </div>
+              <br />
+              <div class="job-content">
+                <div style="font-size:9px">Last run {{job.dateFinished}}</div>
+                {{#if job.cron}}
+                  <div style="font-size:9px">| Scheduled {{job.cron}}</div>
+                {{/if}}
+              </div>
+            </div>
+            {{#if job.children}}
+            <ol class="dd-list">
+              {{#each subjob in "job.children"}}
+                <li class="dd-item row" {{bindAttr data-id=subjob.id}}>
+                  <div class="dd-handle">::</div>
+                  <div class="dd-content">
+                    <div class="job-header">
+                      <a {{action "openJob" subjob.id}}>{{#if subjob.jobName}}{{subjob.jobName}}{{else}}{{subjob.id}}{{/if}}</a>
+                    </div>
+                    <br />
+                    <div class="job-content">
+                      <div style="font-size:9px">Last run {{subjob.dateFinished}}</div> 
+                      {{#if subjob.cron}}
+                        <div style="font-size:9px">| Scheduled {{subjob.cron}}</div>
+                      {{/if}}
+                    </div>
+                  </div>
+              {{/each}}
+            </ol>
+            {{/if}}
+          </li>
+        {{/each}}
+      </ol>
+    </div>
+  </div>
+</div>
