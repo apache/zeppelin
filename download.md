@@ -23,7 +23,7 @@ This is snapshot release. Which contains latest improvement, new features. but u
 
 ##### Snapshot 0.3.4-SNAPSHOT
 
-Download <a onclick="ga('send', 'event', 'download', 'zeppelin', '0.3.3-SNAPSHOT');" href="https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.3.3-SNAPSHOT.tar.gz">zeppelin-0.3.3-SNAPSHOT.tar.gz</a>
+Download <a onclick="ga('send', 'event', 'download', 'zeppelin', '0.3.4-SNAPSHOT');" href="https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.3.4-SNAPSHOT.tar.gz">zeppelin-0.3.4-SNAPSHOT.tar.gz</a>
 
 
 -------------
