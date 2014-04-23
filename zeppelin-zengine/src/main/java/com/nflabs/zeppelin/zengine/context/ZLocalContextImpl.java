@@ -1,19 +1,17 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.context;
 
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Zeppelin Context. This context is passed to Zeppelin UDF's ZQL template
- * @author moon
- *
- */
-public class ZContext {
+import com.nflabs.zeppelin.zengine.ParamInfo;
+
+public class ZLocalContextImpl implements ZContext {
 	public String in;
 	public String out;
 	public String arg;
 	private Map<String, Object> params;
 	Map<String, ParamInfo> paramInfos = new HashMap<String, ParamInfo>();
+	
 	/**
 	 * Initialize Zeppelin Context
 	 * @param tableIn input table name
@@ -21,7 +19,7 @@ public class ZContext {
 	 * @param arg arguments
 	 * @param params parameters to UDF
 	 */
-	public ZContext(String tableIn, String tableOut, String arg, Map<String, Object> params){
+	public ZLocalContextImpl(String tableIn, String tableOut, String arg, Map<String, Object> params){
 		this.in = tableIn;
 		this.out = tableOut;
 		this.arg = arg;
@@ -36,6 +34,7 @@ public class ZContext {
 	 * Get params;
 	 * @return 
 	 */
+	@Override
 	public Object param(String name){
 		return param(name, null);
 	}
@@ -46,6 +45,7 @@ public class ZContext {
 	 * @param defaultValue defaultValue of the param
 	 * @return 
 	 */
+	@Override
 	public Object param(String name, Object defaultValue){
 		if(paramInfos.containsKey(name)==false){
 			paramInfos.put(name, new ParamInfo(name, defaultValue));
@@ -64,6 +64,7 @@ public class ZContext {
 	 * Get input table name
 	 * @return
 	 */
+	@Override
 	public String in(){
 		return in;
 	}
@@ -72,6 +73,7 @@ public class ZContext {
 	 * Get output table name
 	 * @return
 	 */
+	@Override
 	public String out(){
 		return out;
 	}
@@ -80,6 +82,7 @@ public class ZContext {
 	 * Get arguments
 	 * @return
 	 */
+	@Override
 	public String arg(){
 		return arg;
 	}

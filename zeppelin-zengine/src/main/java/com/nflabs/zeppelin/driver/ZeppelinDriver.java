@@ -1,5 +1,7 @@
 package com.nflabs.zeppelin.driver;
 
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+
 /**
  * Zeppelin driver is physical layer abstraction.
  * 
@@ -8,7 +10,8 @@ package com.nflabs.zeppelin.driver;
  * 
  */
 public abstract class ZeppelinDriver {    
-	private ClassLoader classLoader;	
+	private ClassLoader classLoader;
+	private ZeppelinConfiguration conf;
 
 	
 	/**
@@ -26,7 +29,15 @@ public abstract class ZeppelinDriver {
 	public void setClassLoader(ClassLoader cl){
 		this.classLoader = cl;
 	}
-	
+
+	public void setConf(ZeppelinConfiguration conf) {
+		this.conf = conf;
+	}
+
+	public ZeppelinConfiguration getConf() {
+		return conf;
+	}
+
 	/**
 	 * Initialize driver. automatically called after setClassLoader when driver created.
 	 */

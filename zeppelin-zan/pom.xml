@@ -6,13 +6,13 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>com.nflabs.zeppelin</groupId>
-    <version>0.3.1-SNAPSHOT</version>
+    <version>0.3.4-SNAPSHOT</version>
   </parent>
 
   <groupId>com.nflabs.zeppelin</groupId>
   <artifactId>zeppelin-zan</artifactId>
   <packaging>jar</packaging>
-  <version>0.3.1-SNAPSHOT</version>
+  <version>0.3.4-SNAPSHOT</version>
   <name>Zeppelin: Zeppelin Archive Network</name>
   <description>Zeppelin Archive Network</description>
   <url>http://zeppelin-project.org/zan.html</url>
@@ -73,7 +73,7 @@
 	<dependency>
 		<groupId>org.eclipse.jgit</groupId>
 		<artifactId>org.eclipse.jgit</artifactId>
-		<version>2.3.1.201302201838-r</version>
+		<version>3.2.0.201312181205-r</version>
 	</dependency>
 
     <dependency>

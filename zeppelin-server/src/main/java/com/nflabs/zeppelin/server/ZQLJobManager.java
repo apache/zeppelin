@@ -2,18 +2,18 @@ package com.nflabs.zeppelin.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -34,10 +34,13 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.util.Util;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZQLException;
 import com.nflabs.zeppelin.zengine.Zengine;
@@ -47,6 +50,7 @@ public class ZQLJobManager implements JobListener {
 	private static final String HISTORY_DIR_NAME = "/history";
 	private static final String CURRENT_JOB_FILE_NAME = "/current";
 	private static final String HISTORY_PATH_FORMAT="yyyy-MM-dd_HHmmss_SSS";
+	private static final String JOB_TREE_FILE = ".tree";
 	Logger logger = LoggerFactory.getLogger(ZQLJobManager.class);
 	Map<String, ZQLJob> active = new HashMap<String, ZQLJob>();
 	Gson gson ;
@@ -238,6 +242,58 @@ public class ZQLJobManager implements JobListener {
 		return s;
 	}
 	
+	public List<ZQLJobTree> getJobTree(){
+		Path path = new Path(jobPersistBasePath+"/"+JOB_TREE_FILE);
+		try {
+			if(!fs.isFile(path)){
+				return new LinkedList<ZQLJobTree>();
+			}
+		} catch (IOException e) {
+			// Can not find job tree file. this is okay.
+		}
+
+		String json;
+		FSDataInputStream ins = null;
+		try {
+			ins = fs.open(path);
+			json = IOUtils.toString(ins, zengine.getConf().getString(ConfVars.ZEPPELIN_ENCODING));
+			List<ZQLJobTree> jobTree = gson.fromJson(json, new TypeToken<List<ZQLJobTree>>(){}.getType());
+			return jobTree;
+		} catch (IOException e) {
+			logger.error("Can't read job tree file", e);
+		} finally {
+			if(ins!=null){
+				try {
+					ins.close();
+				} catch (IOException e1) {
+					logger.error("Can't close inputstream", e1);
+				}
+			}			
+		}
+		return null;
+	}
+	
+	public void saveJobTree(List<ZQLJobTree> jobTree) {
+		String json = gson.toJson(jobTree);
+		Path path = new Path(jobPersistBasePath+"/"+JOB_TREE_FILE);
+		FSDataOutputStream out = null;
+		try {
+			out = fs.create(path, true);
+			out.write(json.getBytes(zengine.getConf().getString(ConfVars.ZEPPELIN_ENCODING)));
+			out.close();
+		} catch (IOException e) {
+			logger.error("can't write jobtree", e);
+		} finally {
+			if (out!=null) {
+				try {
+					out.close();
+				} catch (IOException e) {
+					logger.error("Can't close output stream", e);
+				}
+			}
+		}
+	}
+	
 	public TreeMap<String, ZQLJob> list(){
 		TreeMap<String, ZQLJob> found = new TreeMap<String, ZQLJob>();
 		Path dir = new Path(jobPersistBasePath);
@@ -251,14 +307,22 @@ public class ZQLJobManager implements JobListener {
 		}
 		
 		FileStatus[] files = null;
+		List<FileStatus> jobDirs = new LinkedList<FileStatus>();
 		try {
 			files = fs.listStatus(dir);
+			if (files == null) {
+				return found;
+			}
+			for (FileStatus f : files) {
+				if (f.getPath().getName().startsWith(".")) {
+					continue;
+				}
+				jobDirs.add(f);
+			}
 		} catch (IOException e) {
 			logger.error("Can't list dir "+dir, e);
-			e.printStackTrace();
 		}
-		if (files==null) { return found; }
-			
+		files = jobDirs.toArray(new FileStatus[]{});
 		Arrays.sort(files, new Comparator<FileStatus>(){
 		    @Override public int compare(FileStatus a, FileStatus b) {
 				String aName = a.getPath().getName();
@@ -302,15 +366,25 @@ public class ZQLJobManager implements JobListener {
 		SimpleDateFormat historyPathFormat = new SimpleDateFormat(HISTORY_PATH_FORMAT);
 		Path from = new Path(getPathForJobId(jobId).toString()+CURRENT_JOB_FILE_NAME);
 		Path to = new Path(getPathForJobId(jobId).toString()+HISTORY_DIR_NAME+"/"+historyPathFormat.format(new Date()));
-		fs.rename(from, to);		
+		fs.rename(from, to);
+
+		// check if num history exeeds ZEPPEILN_MAX_HISTORY and remove some
+		int maxHistory = zengine.getConf().getInt(ConfVars.ZEPPELIN_MAX_HISTORY);
+		TreeMap<String, ZQLJob> histories = listHistory(jobId);
+		if (histories != null && histories.size() > maxHistory) {
+			int numRemove = histories.size() - maxHistory;
+			for (int i = 0; i < numRemove; i++) {
+				deleteHistory(jobId, histories.firstKey());
+			}
+		}		
 	}
-	
+
 	private void persist(ZQLJob job) throws IOException{		
 		String json = gson.toJson(job);
 		Path path = getPathForJob(job);
 		fs.mkdirs(new Path(path.toString()+HISTORY_DIR_NAME));
-		FSDataOutputStream out = fs.create(new Path(path.toString()+CURRENT_JOB_FILE_NAME), true);
-		out.writeBytes(json);
+		FSDataOutputStream out = fs.create(new Path(path.toString()+CURRENT_JOB_FILE_NAME), true);		
+		out.write(json.getBytes(zengine.getConf().getString(ConfVars.ZEPPELIN_ENCODING)));
 		out.close();
 	}
 
@@ -351,7 +425,8 @@ public class ZQLJobManager implements JobListener {
 					return null;
 				}
 				FSDataInputStream ins = fs.open(path);
-				ZQLJob job = gson.fromJson(new InputStreamReader(ins), ZQLJob.class);
+				String json = IOUtils.toString(ins, zengine.getConf().getString(ConfVars.ZEPPELIN_ENCODING));
+				ZQLJob job = gson.fromJson(json, ZQLJob.class);
 				if(job.getStatus()==Status.RUNNING){
 					job.setStatus(Status.ABORT);
 				}

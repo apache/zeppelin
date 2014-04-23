@@ -1,9 +1,10 @@
-package com.nflabs.zeppelin.zengine;
+package com.nflabs.zeppelin.zengine.context;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import com.nflabs.zeppelin.result.Result;
+import com.nflabs.zeppelin.zengine.ParamInfo;
 
 /**
  * Zeppelin Web Context. Passed to Zeppelin UDF's web template.

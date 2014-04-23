@@ -23,7 +23,7 @@
   <groupId>com.nflabs.zeppelin</groupId>
   <artifactId>zeppelin</artifactId>
   <packaging>pom</packaging>
-  <version>0.3.1-SNAPSHOT</version>
+  <version>0.3.4-SNAPSHOT</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
   <url>http://zeppelin-project.org/</url>
@@ -61,6 +61,12 @@
       <organization>NFLabs</organization>
       <organizationUrl>http://www.nflabs.com</organizationUrl>
     </developer>
+    <developer>
+      <id>anthony</id>
+      <name>Anthony Corbacho</name>
+      <organization>NFLabs</organization>
+      <organizationUrl>http://www.nflabs.com</organizationUrl>
+    </developer>
   </developers>
 
   <inceptionYear>2013</inceptionYear>
@@ -75,6 +81,7 @@
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
+    <module>zeppelin-docs</module>
   </modules>
 
   <properties>
@@ -234,7 +241,10 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.16</version>
           <configuration combine.children="append">
-            <argLine>-Xmx2g -Xms1g</argLine>
+            <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
+            <encoding>UTF-8</encoding>
+            <inputEncoding>UTF-8</inputEncoding>
+            <outputEncoding>UTF-8</outputEncoding>
           </configuration>
 <!--
             <excludes>

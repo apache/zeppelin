@@ -24,28 +24,46 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.nflabs.zeppelin.server.JsonResponse;
 import com.nflabs.zeppelin.server.ZQLJob;
 import com.nflabs.zeppelin.server.ZQLJobManager;
+import com.nflabs.zeppelin.server.ZQLJobTree;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.stmt.Z;
+import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
+import com.wordnik.swagger.annotations.ApiResponse;
+import com.wordnik.swagger.annotations.ApiResponses;
 
 @Path("/zql")
-public class ZQLRestApi {	
+@Api( value = "/zql", description = "ZQL is very simple but powerful SQL like language based on HiveQL" )
+public class ZQLRestApi {
+
+    /**
+     * This is required by Swagger
+     */
+  public ZQLRestApi() {
+    super();
+  }
+
     Logger logger = LoggerFactory.getLogger(ZQLRestApi.class);
-    
+
 	@SuppressWarnings("rawtypes")
     private static final Response STATUS_NOT_FOUND = new JsonResponse(Status.NOT_FOUND).build();
 	ZQLJobManager jobManager;
 	private Gson gson;
-	
+
 	public ZQLRestApi(ZQLJobManager jobManager){
 		this.jobManager = jobManager;
 		gson = new Gson();
 	}
-    
+
     @GET
-    @Path("new")
+    @Path("/new")
+  @ApiOperation(httpMethod = "GET", value = "Create a new job session", response = Response.class)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "New job created")})
     @Produces("application/json")
     public Response newJob() {
     	ZQLJob s = jobManager.create();
@@ -57,29 +75,32 @@ public class ZQLRestApi {
 		String zql;
 		String cron;
 		List<Map<String, Object>> params;
-	} 
+	}
 
-    @POST
-    @Path("set/{sessionId}")
-    @Produces("application/json")
-    public Response set(@PathParam("sessionId") String jobId, String json) {
-    	
+  @POST
+  @Path("/set/{sessionId}")
+  @ApiOperation(httpMethod = "POST", value = "Update Zeppelin job", response = Response.class)
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "Job Updated"),
+      @ApiResponse(code = 404, message = "Job update failled due to a missing element")})
+  @Produces("application/json")
+  public Response set(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId, String json) {
+
     	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
     	ZQLJob s = jobManager.setZql(jobId, data.zql);
     	if(s==null){
     		return STATUS_NOT_FOUND;
     	}
-    	
+
     	s = jobManager.setParams(jobId, data.params);
     	if(s==null){
     		return STATUS_NOT_FOUND;
     	}
-    	
+
     	s = jobManager.setName(jobId, data.name);
     	if(s==null){
     		return STATUS_NOT_FOUND;
     	}
-    	
+
     	s = jobManager.setCron(jobId, data.cron);
     	if(s==null){
     		return STATUS_NOT_FOUND;
@@ -88,10 +109,12 @@ public class ZQLRestApi {
     }
 
     @POST
-    @Path("set/{sessionId}/zql")
+    @Path("/set/{sessionId}/zql")
+    @ApiOperation(httpMethod = "POST", value = "Update zql of the Zeppelin job", response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Job Updated"), @ApiResponse(code = 404, message = "Job update failled due to a missing element")} )
     @Produces("application/json")
-    public Response setZql(@PathParam("sessionId") String jobId, String json) {
-    	
+    public Response setZql(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId, String json) {
+
     	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
     	ZQLJob s = jobManager.setZql(jobId, data.zql);
     	if(s==null){
@@ -99,35 +122,41 @@ public class ZQLRestApi {
     	}
     	return new JsonResponse<ZQLJob>(Status.OK, "", s).build();
     }
-    
+
     @POST
-    @Path("set/{sessionId}/name")
+    @Path("/set/{sessionId}/name")
+    @ApiOperation(httpMethod = "POST", value = "Update the name of Zeppelin's job", response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Job Updated"), @ApiResponse(code = 404, message = "Job update failled due to a missing element")} )
     @Produces("application/json")
-    public Response setName(@PathParam("sessionId") String jobId, String json) {	
+    public Response setName(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId, String json) {
     	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
     	ZQLJob s = jobManager.setName(jobId, data.name);
     	if(s==null){
     		return STATUS_NOT_FOUND;
     	}
     	return new JsonResponse<ZQLJob>(Status.OK, "", s).build();
-    }    
-     
+    }
+
     @POST
-    @Path("set/{sessionId}/params")
+    @Path("/set/{sessionId}/params")
+    @ApiOperation(httpMethod = "POST", value = "Update the parameters of Zeppelin's job", response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Job Updated"), @ApiResponse(code = 404, message = "Job update failled due to a missing element")} )
     @Produces("application/json")
-    public Response setParams(@PathParam("sessionId") String jobId, String json) {	
+    public Response setParams(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId, String json) {
     	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
     	ZQLJob s = jobManager.setParams(jobId, data.params);
     	if(s==null){
     		return STATUS_NOT_FOUND;
     	}
     	return new JsonResponse<ZQLJob>(Status.OK, "", s).build();
-    } 
-    
+    }
+
     @POST
-    @Path("set/{sessionId}/cron")
+    @Path("/set/{sessionId}/cron")
+    @ApiOperation(httpMethod = "POST", value = "Update the crontab of Zeppelin's job", response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Job Updated"), @ApiResponse(code = 404, message = "Job update failled due to a missing element")} )
     @Produces("application/json")
-    public Response setCron(@PathParam("sessionId") String jobId, String json) {	
+    public Response setCron(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId, String json) {
     	SetZqlParam data = gson.fromJson(json, SetZqlParam.class);
     	ZQLJob s = jobManager.setCron(jobId, data.cron);
     	if(s==null){
@@ -135,74 +164,120 @@ public class ZQLRestApi {
     	}
     	return new JsonResponse<ZQLJob>(Status.OK, "", s).build();
     }
-    
+
     @GET
-    @Path("run/{sessionId}")
+    @Path("/run/{sessionId}")
+    @ApiOperation(httpMethod = "GET", value = "Run a Zeppelin job", response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Run successfully"), @ApiResponse(code = 404, message = "Run failled")} )
     @Produces("application/json")
-    public Response run(@PathParam("sessionId") String jobId) {
+    public Response run(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId) {
     	 ZQLJob s = jobManager.run(jobId);
     	 if(s==null){
     		 return STATUS_NOT_FOUND;
-    	 } 
-    	 return new JsonResponse<ZQLJob>(Status.OK, "", s).build();	  
+    	 }
+    	 return new JsonResponse<ZQLJob>(Status.OK, "", s).build();
     }
-    
+
     @GET
-    @Path("run/{sessionId}/dry")
+    @Path("/run/{sessionId}/dry")
+    @ApiOperation(httpMethod = "GET", value = "Run a Zeppelin job", response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Run successfully"), @ApiResponse(code = 404, message = "Run failled")} )
     @Produces("application/json")
-    public Response dryRun(@PathParam("sessionId") String jobId) {
+    public Response dryRun(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId) {
     	 ZQLJob s = jobManager.dryRun(jobId);
     	 if(s==null){
     		 return STATUS_NOT_FOUND;
     	 }
-    	 return new JsonResponse<ZQLJob>(Status.OK, "", s).build();	 
+    	 return new JsonResponse<ZQLJob>(Status.OK, "", s).build();
     }
-    
+
     @GET
-    @Path("abort/{sessionId}")
+    @Path("/abort/{sessionId}")
+    @ApiOperation(httpMethod = "GET", value = "Abort a Zeppelin job", response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Run successfully"), @ApiResponse(code = 404, message = "Run failled")} )
     @Produces("application/json")
-    public Response abort(@PathParam("sessionId") String jobId) {
+    public Response abort(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId) {
     	 ZQLJob s = jobManager.abort(jobId);
     	 if(s==null){
     		 return STATUS_NOT_FOUND;
-    	 } 
-    	 return new JsonResponse<ZQLJob>(Status.OK, "", s).build();	  
+    	 }
+    	 return new JsonResponse<ZQLJob>(Status.OK, "", s).build();
     }
-    
+
     @GET
-    @Path("get/{sessionId}")
+    @Path("/get/{sessionId}")
+    @ApiOperation(httpMethod = "GET", value = "Get Zeppelin job id", response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Run successfully"), @ApiResponse(code = 404, message = "Run failled")} )
     @Produces("application/json")
-    public Response get(@PathParam("sessionId") String jobId) {
+    public Response get(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId) {
     	 ZQLJob s = jobManager.get(jobId);
     	 if(s==null) {
     		 return STATUS_NOT_FOUND;
     	 }
          return new JsonResponse<ZQLJob>(Status.OK, "", s).build();
     }
-    
+
     /**
      * list jobs
      * @return
      */
     @GET
-    @Path("list")
-    @Produces("application/json")    
+    @Path("/list")
+    @ApiOperation(httpMethod = "GET", value = "List all the Zeppelin job", response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Run successfully"), @ApiResponse(code = 404, message = "Run failled")} )
+    @Produces("application/json")
     public Response find() {
     	TreeMap<String, ZQLJob> sessions = jobManager.list();
         return new JsonResponse<LinkedList<ZQLJob>>(Status.OK, "",
                 new LinkedList<ZQLJob>(sessions.descendingMap().values()))
                 .build();
-    }   
-
+    }
+   
+    /**
+     * get job tree 
+     * @return
+     */
     @GET
-    @Path("del/{sessionId}")
+    @Path("/tree")
+    @ApiOperation(httpMethod = "GET", value = "Get job tree information", response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "Run successfully"), @ApiResponse(code = 404, message = "Run failled")} )
     @Produces("application/json")
-    public Response del(@PathParam("sessionId") String jobId) {
+	public Response getJobTree() {
+		List<ZQLJobTree> jobTree = jobManager.getJobTree();
+		return new JsonResponse<List<ZQLJobTree>>(Status.OK, "", jobTree).build();
+	}
+
+	/**
+	 * save job tree
+	 * 
+	 * @return
+	 */
+	@POST
+	@Path("/tree")
+	@ApiOperation(httpMethod = "POST", value = "Set job tree information", response = Response.class)
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Run successfully"),
+			@ApiResponse(code = 404, message = "Run failled") })
+	@Produces("application/json")
+	public Response setJobTree(String json) {
+		List<ZQLJobTree> jobTree = gson.fromJson(json,
+				new TypeToken<List<ZQLJobTree>>() {
+				}.getType());
+		jobManager.saveJobTree(jobTree);
+		return new JsonResponse(Status.OK, "").build();
+	}
+
+    
+    @GET
+    @Path("/del/{sessionId}")
+    @ApiOperation(httpMethod = "GET", value = "Remove a Zeppelin job", response = Response.class)
+    @Produces("application/json")
+    public Response del(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId) {
     	 boolean s = jobManager.delete(jobId);
     	 if(s==false){
-    		 return STATUS_NOT_FOUND; 
+    		 return STATUS_NOT_FOUND;
     	 }
-    	 return new JsonResponse<ZQLJob>(Status.OK).build();	 
+    	 return new JsonResponse<ZQLJob>(Status.OK).build();
     }
 
     /**
@@ -210,21 +285,23 @@ public class ZQLRestApi {
      * @return
      */
     @GET
-    @Path("history/list/{sessionId}")
-    @Produces("application/json")    
-    public Response listHistory(@PathParam("sessionId") String jobId) {
+    @Path("/history/list/{sessionId}")
+    @ApiOperation(httpMethod = "GET", value = "List of the history from a Zeppelin job", response = Response.class)
+    @Produces("application/json")
+    public Response listHistory(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId) {
     	TreeMap<String, ZQLJob> sessions = jobManager.listHistory(jobId);
         return new JsonResponse<NavigableMap<String, ZQLJob>>(Status.OK, "", sessions.descendingMap()).build();
-    }    
+    }
 
     /**
      * Get a session history
      * @return
      */
     @GET
-    @Path("history/get/{sessionId}/{name}")
-    @Produces("application/json")    
-    public Response getHistory(@PathParam("sessionId") String jobId, @PathParam("name") String name) {
+    @Path("/history/get/{sessionId}/{name}")
+    @ApiOperation(httpMethod = "GET", value = "Detail of the history from a Zeppelin job", response = Response.class)
+    @Produces("application/json")
+    public Response getHistory(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId, @ApiParam(value = "Name of the history", required = true) @PathParam("name") String name) {
     	ZQLJob session = jobManager.getHistory(jobId, name);
         return new JsonResponse<ZQLJob>(Status.OK, "", session).build();
     }
@@ -234,9 +311,10 @@ public class ZQLRestApi {
      * @return
      */
     @GET
-    @Path("history/del/{sessionId}/{name}")
-    @Produces("application/json")    
-    public Response deleteHistory(@PathParam("sessionId") String jobId, @PathParam("name") String name) {
+    @Path("/history/del/{sessionId}/{name}")
+    @ApiOperation(httpMethod = "GET", value = "Remove history Zeppelin job", response = Response.class)
+    @Produces("application/json")
+    public Response deleteHistory(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId, @ApiParam(value = "Name of the history", required = true) @PathParam("name") String name) {
     	jobManager.deleteHistory(jobId, name);
         return new JsonResponse<ZQLJob>(Status.OK).build();
     }
@@ -246,18 +324,22 @@ public class ZQLRestApi {
      * @return
      */
     @GET
-    @Path("history/del/{sessionId}")
-    @Produces("application/json")    
-    public Response deleteHistory(@PathParam("sessionId") String jobId) {
+    @Path("/history/del/{sessionId}")
+    @ApiOperation(httpMethod = "GET", value = "Remove history Zeppelin job", response = Response.class)
+    @Produces("application/json")
+    public Response deleteHistory(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId) {
     	jobManager.deleteHistory(jobId);
         return new JsonResponse<ZQLJob>(Status.OK).build();
     }
 
-    
+
 
     @GET
-    @Path("web/{sessionId}/{zId}/{path:.*}")
-    public Response web(@PathParam("sessionId") String jobId, @PathParam("zId") String zId, @PathParam("path") String path){
+    @Path("/web/{sessionId}/{zId}/{path:.*}")
+    @ApiOperation(httpMethod = "GET", value = "Getinformation about job", response = Response.class)
+    public Response web(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId,
+        @ApiParam(value = "zId", required = true) @PathParam("zId") String zId,
+        @ApiParam(value = "Path", required = true) @PathParam("path") String path){
     	ZQLJob session = jobManager.get(jobId);
     	if(session==null){
     		return STATUS_NOT_FOUND;
@@ -265,7 +347,7 @@ public class ZQLRestApi {
     	if(path==null || path.equals("/") || path.length()==0){
     		path = "/index.erb";
     	}
-    	
+
     	List<Z> plans = session.getPlan();
     	for(Z plan : plans){
     		for(Z z = plan; z!=null; z=z.prev()){
@@ -283,12 +365,16 @@ public class ZQLRestApi {
 	    		}
     		}
     	}
-		return javax.ws.rs.core.Response.status(Status.NOT_FOUND).entity("").build();    	
+		return javax.ws.rs.core.Response.status(Status.NOT_FOUND).entity("").build();
     }
 
     @GET
-    @Path("history/web/{sessionId}/{historyId}/{zId}/{path:.*}")
-    public Response historyWeb(@PathParam("sessionId") String jobId, @PathParam("historyId") String historyId, @PathParam("zId") String zId, @PathParam("path") String path){
+    @Path("/history/web/{sessionId}/{historyId}/{zId}/{path:.*}")
+    @ApiOperation(httpMethod = "GET", value = "Getinformation about job", response = Response.class)
+    public Response historyWeb(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId,
+        @ApiParam(value = "history id", required = true) @PathParam("historyId") String historyId,
+        @ApiParam(value = "ZID", required = true) @PathParam("zId") String zId,
+        @ApiParam(value = "path", required = true) @PathParam("path") String path){
     	ZQLJob job = jobManager.getHistory(jobId, historyId);
     	if(job==null){
     		logger.warn("Session "+jobId+", history "+historyId+" not found");
@@ -297,7 +383,7 @@ public class ZQLRestApi {
     	if(path==null || path.equals("/") || path.length()==0){
     		path = "/index.erb";
     	}
-    	
+
     	List<Z> plans = job.getPlan();
     	for(Z plan : plans){
     		for(Z z = plan; z!=null; z=z.prev()){
@@ -315,9 +401,9 @@ public class ZQLRestApi {
 	    		}
     		}
     	}
-		return javax.ws.rs.core.Response.status(Status.NOT_FOUND).entity("").build();    	
+		return javax.ws.rs.core.Response.status(Status.NOT_FOUND).entity("").build();
     }
-    
+
     private String typeByExtention(String path){
     	String filename;
 		try {
@@ -326,7 +412,7 @@ public class ZQLRestApi {
 			logger.error("Invalid path "+path, e);
 			return MediaType.APPLICATION_OCTET_STREAM_TYPE.toString();
 		}
-    	
+
     	if(filename.endsWith(".erb")) {
     		return MediaType.TEXT_HTML_TYPE.toString();
     	} else if(filename.endsWith(".html") || filename.endsWith(".htm")){
@@ -345,5 +431,5 @@ public class ZQLRestApi {
     		return MediaType.APPLICATION_OCTET_STREAM_TYPE.toString();
     	}
     }
-    
+
 }

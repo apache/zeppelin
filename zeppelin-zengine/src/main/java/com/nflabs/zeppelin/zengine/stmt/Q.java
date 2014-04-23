@@ -11,25 +11,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngine;
-import javax.script.ScriptException;
-import javax.script.SimpleBindings;
-
-import org.apache.commons.lang.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nflabs.zeppelin.driver.ZeppelinConnection;
-import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.result.Result;
+import com.nflabs.zeppelin.zengine.ERBEvaluator;
 import com.nflabs.zeppelin.zengine.ParamInfo;
-import com.nflabs.zeppelin.zengine.ZContext;
 import com.nflabs.zeppelin.zengine.ZException;
-import com.nflabs.zeppelin.zengine.ZWebContext;
-import com.nflabs.zeppelin.zengine.Zengine;
-import com.sun.script.jruby.JRubyScriptEngineFactory;
+import com.nflabs.zeppelin.zengine.context.ZContext;
+import com.nflabs.zeppelin.zengine.context.ZLocalContextImpl;
+import com.nflabs.zeppelin.zengine.context.ZWebContext;
 
 /**
  * Q stands for Query
@@ -45,7 +36,14 @@ public class Q extends Z {
 	transient static final String ARG_VAR_NAME="arg";
 	transient static final String INPUT_VAR_NAME="in";
 	transient static final String OUTPUT_VAR_NAME="out";
-	
+
+	transient private ERBEvaluator erbEvaluator = null;
+
+    /**
+     * Once getQuery() evaluated, then save result into this variable so, don't evaluate again. 
+     */
+    transient private String evaluatedQuery = null;
+
 	/**
 	 * Create with given query. Query is single HiveQL statement.
 	 * Query can erb template. ZContext is injected to the template
@@ -85,69 +83,26 @@ public class Q extends Z {
 	}
 	
 	protected String getQuery(BufferedReader erb, ZContext zcontext) throws ZException{
-		return evalErb(erb, zcontext);
+		return getErbEvaluator().eval(erb, zcontext);
 	}
 	
-	private static ScriptEngine rubyScriptEngine;
-	static {
-		JRubyScriptEngineFactory factory = new JRubyScriptEngineFactory();
-		rubyScriptEngine = factory.getScriptEngine();
-		StringBuffer rubyScript = new StringBuffer();
-		rubyScript.append("require 'erb'\n");
-		try {
-			rubyScriptEngine.eval(rubyScript.toString());
-		} catch (ScriptException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	protected String evalErb(BufferedReader erb, Object zcontext) throws ZException{
-		synchronized(rubyScriptEngine){
-			StringBuffer rubyScript = new StringBuffer();
-			Bindings bindings = rubyScriptEngine.createBindings();
-			bindings.put("z", zcontext);			
-			rubyScriptEngine.setBindings(bindings, ScriptContext.ENGINE_SCOPE);
-
-			rubyScript.append("require 'erb'\n");
-			rubyScript.append("z = $z\n");
-			try {
-				String line = null;
-				rubyScript.append("erb = \"\"\n");
-	
-				boolean first = true;
-				while((line = erb.readLine())!=null){
-					String newline;
-					if(first==false){
-						newline = "\\n";
-					} else {
-						newline = "";
-						first = false;
-					}
-					rubyScript.append("erb += \""+newline+StringEscapeUtils.escapeJavaScript(line)+"\"\n");
-				}
-			} catch (IOException e1) {
-				throw new ZException(e1);
+	private ERBEvaluator getErbEvaluator(){
+		if(erbEvaluator==null){
+			if(hasPrev() && prev() instanceof Q) {
+				erbEvaluator = ((Q)prev()).getErbEvaluator();
+			} else {
+				erbEvaluator = new ERBEvaluator();
 			}
-			rubyScript.append("$e = ERB.new(erb).result(binding)\n");
-	
-	        try {
-	        	logger().debug("rubyScript to run : \n"+rubyScript.toString());
-	        	rubyScriptEngine.eval(rubyScript.toString(), bindings);
-			} catch (ScriptException e) {
-				throw new ZException(e);
-			}
-	        
-	        String q = (String) rubyScriptEngine.getBindings(ScriptContext.ENGINE_SCOPE).get("e");
-	        return nonNullString(q);
 		}
+		return erbEvaluator;
 	}
 
-	private String nonNullString(String q) {
-	    return q == null ? "" : q;
+	public void withErbEvaluator(ERBEvaluator e){
+		erbEvaluator = e;
 	}
 
     protected String evalWebTemplate(BufferedReader erb, ZWebContext zWebContext) throws ZException{
-		return evalErb(erb, zWebContext);
+		return getErbEvaluator().eval(erb, zWebContext);
 	}
 
 	/**
@@ -157,15 +112,24 @@ public class Q extends Z {
 	 */
 	@Override
 	public String getQuery() throws ZException{
-		ByteArrayInputStream ins = new ByteArrayInputStream(query.getBytes());
-		BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
+		if(evaluatedQuery!=null) return evaluatedQuery;
 
-		ZContext zContext = new ZContext( hasPrev() ? prev().name() : null, name(), query, params);
+		if(hasPrev()){
+			// purpose of calling is evaluating erb. because it need to share the same local variable context
+			prev().getQuery();
+		}
 
-		String q = getQuery(erb, zContext);
-		try {ins.close();} catch (IOException e) {}
-
-		return q;
+		ByteArrayInputStream ins;
+		try {
+			ins = new ByteArrayInputStream(query.getBytes());
+			BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
+			ZLocalContextImpl zContext = new ZLocalContextImpl( hasPrev() ? prev().name() : null, name(), query, params);
+			String q = getQuery(erb, zContext);
+			ins.close();
+			return q;
+		} catch (IOException e) {
+			throw new ZException(e);
+		}
 	}
 	
 	/**
@@ -231,7 +195,7 @@ public class Q extends Z {
 		ByteArrayInputStream ins = new ByteArrayInputStream(query.getBytes());
 		BufferedReader erb = new BufferedReader(new InputStreamReader(ins));
 		
-		ZContext zContext = new ZContext( (prev()==null) ? null : prev().name(), name(), query, params);
+		ZLocalContextImpl zContext = new ZLocalContextImpl( (prev()==null) ? null : prev().name(), name(), query, params);
 				
 		try {
 			getQuery(erb, zContext);

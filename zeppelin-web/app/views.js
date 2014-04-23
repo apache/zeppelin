@@ -6,9 +6,62 @@ App.IndexView = Ember.View.extend({
 
 App.ZqlView = Ember.View.extend({
     layoutName: 'default_layout',
+
+    didInsertElement : function(){ // when it is first time of loading this view, jobChanged can not be observed
+    }
 });
 
+App.ZqlIndexView = Ember.View.extend({
+    attributeBindings: ["data-id"],
+    layoutName: 'default_layout',
+
+    didInsertElement : function(){ // when it is first time of loading this view, jobChanged can not be observed
+        /* https://github.com/dbushell/Nestable */
+        $('#jobList').nestable({
+            maxDepth:2
+        });
+        $('#jobList').on('change', function(o, v){
+            var serialize = $('#jobList').nestable('serialize');            
+            zeppelin.zql.setTree(serialize, function(c, d){
+                if (c==200) {
+                    zeppelin.info("Change saved", 1000);
+                } else {
+                    zeppelin.alert("Can't save changes");
+                }
+            }, this);
+
+        });
+    },
+
+    jobListChanged : function(){
+        var controller = this.get("controller");
+        var count = 0;
+        var cron = 0;
+
+        var jobs = controller.get("runningJobs");
+        if (jobs) {
+            for (var i=0; i<jobs.length; i++) {
+                count++;
+                if (jobs[i].cron) {
+                    cron++;
+                }
+                if (jobs[i].children) {
+                    for (var j=0; j<jobs[i].children.length; j++) {
+                        count++;
+                        if (jobs[i].children[j].cron) {
+                            cron++;
+                        }
+                    }
+                }
+            }
+        }
+        this.set("jobListStat", {count: count, cron: cron});
+    }.observes('controller.runningJobs')
+});
+
+
 App.ZqlEditView = Ember.View.extend({
+    layoutName: 'default_layout',
     jobNameEditor : undefined,
     jobCronEditor : undefined,
     editor : undefined,
@@ -30,7 +83,7 @@ App.ZqlEditView = Ember.View.extend({
             editor.setValue(model.zql);
         }
 
-        console.log("Current job=%o", model);
+        //console.log("Current job=%o", model);
 
         if (model.jobName && model.jobName != "") {
             if (jobNameEditor.editable('getValue', true) != model.jobName) {
@@ -106,7 +159,7 @@ App.ZqlEditView = Ember.View.extend({
                         if(!plan || !plan.webEnabled) { continue; }
                         if(!plan.result || !plan.result.columnDef || plan.result.columnDef.length==0) {continue;}
 
-                        console.log("Displaying plan %o", plan);
+                        //console.log("Displaying plan %o", plan);
                         var planInfo = (plan.libName) ? plan.libName : plan.query;
                         if(planInfo.length>1 && planInfo[0]=='!'){
                             planInfo = planInfo.substring(1);
@@ -190,8 +243,10 @@ App.ZqlEditView = Ember.View.extend({
         var controller = this.get("controller");
         var model = controller.get('currentJob');
         var view = this;
+
         this.set('currentModel', model);
 
+        // initialize ace editor
         var editor = ace.edit("zqlEditor");
         var editorArea = $('#zqlEditorArea');
         this.set('editor', editor);
@@ -215,8 +270,21 @@ App.ZqlEditView = Ember.View.extend({
             readOnly: false
         });
 
+        $("#zqlEditor").resizable({
+            maxHeight : 3000,
+            minHeight : 200,
+            maxWidth : $('#zqlEditor').width(),
+            minWidth : $('#zqlEditor').width(),
+            resize: function( event, ui ) {
+                editor.resize();
+            }
+        });
+
         var jobNameEditor = $('#zqlJobName');
-        jobNameEditor.editable();
+        jobNameEditor.editable({
+            mode : "popup",
+            placement : "bottom"
+        });
         jobNameEditor.on('save', function(e, params) {
             controller.send("zqlJobNameChanged", params.newValue);  
         });
@@ -267,15 +335,18 @@ App.ZqlEditView = Ember.View.extend({
         this.set('jobCronEditor', jobCronEditor);
 
 	// bootstrap confirmation plugin http://ethaizone.github.io/Bootstrap-Confirmation
+
         $('#zqlDeleteButton').confirmation({
 	    title : "Delete?",
 	    btnOkLabel : "Delete",
 	    btnCancelLabel : "Cancel",
 	    href : "/#/zql",
 	    popout : true,
+            placement : 'left',
 	    onConfirm : function(){
 		controller.send("deleteJob");
 	    }
+
 	});
 
         var editorLoop = function(){
@@ -286,6 +357,7 @@ App.ZqlEditView = Ember.View.extend({
             controller.send("loop", jobNameEditor, editor, jobCronEditor);
         };
         editorLoop();
+
     },
 
     willClearRender: function(){
@@ -294,7 +366,8 @@ App.ZqlEditView = Ember.View.extend({
         var view = this;
         var editor = ace.edit("zqlEditor");
         var jobNameEditor = this.get('jobNameEditor');
-        controller.send('beforeChangeJob', model, jobNameEditor, editor);
+        var jobCronEditor = this.get('jobCronEditor');
+        controller.send('beforeChangeJob', model, jobNameEditor, editor, jobCronEditor);
         this.set('currentModel', null);
     },
 

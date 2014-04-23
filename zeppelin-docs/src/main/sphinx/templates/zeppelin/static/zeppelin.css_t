@@ -1,0 +1,132 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import url("haiku.css");
+@import url(http://fonts.googleapis.com/css?family=Anonymous+Pro);
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400italic,600italic,700italic,400,600,700);
+
+html {
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
+}
+
+body {
+/*    font-family: 'Helvetica Neue', Helvetica, Arial, 'lucida grande', tahoma, verdana, arial, sans-serif;*/
+    font-family: 'Open Sans', sans-serif;
+    color: #222222;
+}
+
+div.header {
+    background-color: rgb(48, 113, 169);
+    background-image: url(presto.png);
+    background-position: 36px 50%;
+    background-repeat: no-repeat;
+    background-size: 57px 50px;
+    padding: 10px 40px 20px 120px;
+        color: #fff !important;
+}
+
+div.header h1 a {
+    color: #fff !important;
+}
+
+div.header h2 {
+    color: rgb(184, 184, 185);
+}
+
+.nav .right {
+    float: right;
+    text-align: right;
+}
+
+.highlight pre {
+ background-color:white;
+ font-family: 'Anonymous Pro', sans-serif;
+}
+
+pre {
+    padding: 0.8em;
+    border: 0;
+}
+
+div.topnav {
+    background: #eeeeee;
+}
+
+div.topnav,
+div.bottomnav {
+    padding: 10px 0;
+}
+
+div.topnav p,
+div.bottomnav p {
+    font-size: 1.0em;
+    margin: 0 40px;
+    text-align: left;
+}
+
+div.header h1 {
+    font-size: 1.8em;
+}
+
+h1 {
+    font-size: 1.5em;
+}
+
+h2 {
+    font-size: 1.4em;
+}
+
+h3 {
+    font-size: 1.3em;
+}
+
+h4 {
+    font-size: 1.2em;
+}
+
+div.content {
+    font-size: 1.0em;
+}
+
+div.content ul > li {
+    background-image: url(bullet.png);
+}
+
+div.admonition {
+    border-radius: 3px;
+    border-style: solid;
+}
+
+div.note {
+    background-color: #f5f5ff
+}
+
+tt {
+    font-family: Consolas, 'Liberation Mono', Courier, monospace;
+    font-size: 0.9em;
+}
+
+tt.descname {
+    font-size: 1.1em;
+}
+
+tt.docutils.literal {
+    margin: 0 2px;
+    padding: 0 5px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    border-radius: 3px;
+    white-space: nowrap;
+}

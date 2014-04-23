@@ -1,11 +1,19 @@
 package com.nflabs.zeppelin.driver.hive11;
 
+import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
+import java.util.Set;
 
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
 import com.nflabs.zeppelin.driver.ZeppelinDriverException;
 import com.nflabs.zeppelin.result.Result;
@@ -14,9 +22,13 @@ import com.nflabs.zeppelin.result.ResultDataException;
 public class HiveZeppelinConnection implements ZeppelinConnection {
 
 	private Connection connection;
+	private ZeppelinConfiguration conf;
+	private Set<String> loadedResources;
 	
-	public HiveZeppelinConnection(Connection connection) {
+	public HiveZeppelinConnection(ZeppelinConfiguration conf, Connection connection) {
+		this.conf = conf;
 		this.connection = connection;
+		loadedResources = new HashSet<String>();
 	}
 
 	@Override
@@ -41,13 +53,22 @@ public class HiveZeppelinConnection implements ZeppelinConnection {
 		}
 	}
 	
-	private Result execute(String query) throws ZeppelinDriverException{
+	private Result execute(String query){
+		int maxRow = conf.getInt(ConfVars.ZEPPELIN_MAX_RESULT);
+		return execute(query, maxRow);
+	}
 
-		try{
+	private Result execute(String query, int maxRow)
+			throws ZeppelinDriverException {
+
+		try {
 			ResultSet res = null;
 			Statement stmt = connection.createStatement();
+
+			stmt.setMaxRows(maxRow);
 			res = stmt.executeQuery(query);
-			Result r = new Result(res);
+
+			Result r = new Result(res, maxRow);
 			r.load();
 			stmt.close();
 			return r;
@@ -74,11 +95,32 @@ public class HiveZeppelinConnection implements ZeppelinConnection {
 
 	@Override
 	public Result addResource(URI resourceLocation) throws ZeppelinDriverException {
-		if(resourceLocation.getPath().endsWith(".jar")){
-			return execute("ADD JAR "+resourceLocation.toString());			
-		} else {
-			return execute("ADD FILE "+resourceLocation.toString());			
+		String resName = new File(resourceLocation.getPath()).getName();
+
+		if (loadedResources.contains(resName)) {
+			// already loaded
+			return new Result();
 		}
+
+		Result result;
+
+		if(resourceLocation.getPath().endsWith(".jar")){
+			ClassLoader cl = Thread.currentThread().getContextClassLoader();
+			URLClassLoader newcl;
+			try {
+				newcl = new URLClassLoader(new URL[]{resourceLocation.toURL()}, cl);
+			} catch (MalformedURLException e) {
+				throw new ZeppelinDriverException(e);
+			}
+			Thread.currentThread().setContextClassLoader(newcl);
+			result = execute("ADD JAR "+resourceLocation.toString());
+			loadedResources.add(resName);
+		} else {
+			result = execute("ADD FILE "+resourceLocation.toString());
+			loadedResources.add(resName);
+		}
+
+		return result;
 	}
 
 	@Override

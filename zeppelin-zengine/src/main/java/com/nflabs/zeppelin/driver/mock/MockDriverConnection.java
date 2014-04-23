@@ -1,6 +1,8 @@
 package com.nflabs.zeppelin.driver.mock;
 
 import java.net.URI;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -15,11 +17,13 @@ public class MockDriverConnection implements ZeppelinConnection{
 	private Map<String, Result> queries;
 	private Map<String, Result> views;
 	private Map<String, Result> tables;
+	private List<URI> loadedResources;
 
-	public MockDriverConnection(Map<String, Result> queries, Map<String, Result> views, Map<String, Result> tables) {
+	public MockDriverConnection(Map<String, Result> queries, Map<String, Result> views, Map<String, Result> tables, List<URI> loadedResources) {
 		this.queries = queries;
 		this.views = views;
 		this.tables = tables;
+		this.loadedResources = loadedResources;
 	}
 
 	@Override
@@ -49,6 +53,7 @@ public class MockDriverConnection implements ZeppelinConnection{
 	@Override
 	public Result addResource(URI resourceLocation)
 			throws ZeppelinDriverException {
+		loadedResources.add(resourceLocation);
 		return null;
 	}
 

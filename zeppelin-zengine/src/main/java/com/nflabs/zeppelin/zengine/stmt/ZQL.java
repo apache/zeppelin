@@ -6,23 +6,19 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URLClassLoader;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.nflabs.zeppelin.driver.LazyConnection;
 import com.nflabs.zeppelin.driver.ZeppelinConnection;
-import com.nflabs.zeppelin.driver.ZeppelinDriver;
 import com.nflabs.zeppelin.util.Util;
+import com.nflabs.zeppelin.zengine.ERBEvaluator;
 import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.ZPlan;
 import com.nflabs.zeppelin.zengine.ZQLException;
-import com.nflabs.zeppelin.zengine.Zengine;
+import com.nflabs.zeppelin.zengine.context.ZGlobalContextImpl;
 import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement.ANNOTATION;
 import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement.COMMAND;
 /**
@@ -37,8 +33,9 @@ import com.nflabs.zeppelin.zengine.stmt.AnnotationStatement.COMMAND;
  *
  */
 public class ZQL {
-	String [] op = new String[]{";", "|", ">>", ">"};
+	String [] op = new String[]{";", "|" /* Disable redirect. see ZEPPELIN-99, ">>", ">" */};
 	StringBuilder sb = new StringBuilder();
+	ERBEvaluator erbEvaluator = new ERBEvaluator();
 
 	public ZQL(){
 	}
@@ -127,6 +124,13 @@ public class ZQL {
 	public ZPlan compile() throws ZQLException, ZException{
 		return compileZql(sb.toString());
 	}
+
+	private String erbEvalGlobalScope(String stmts) throws ZException{
+		ERBEvaluator evaluator = new ERBEvaluator();
+		ZGlobalContextImpl zcontext = new ZGlobalContextImpl();
+		return evaluator.eval(stmts, zcontext);
+	}
+
 	/**
 	 * Each Z should obtain ref to one of Zengine.supportedDrivers here:
 	 *  - either from explicit @Driver statement
@@ -151,14 +155,18 @@ public class ZQL {
 		
 		String escapeSeq = "\"',;<%>!";
 		char escapeChar = '\\';
-		String [] blockStart = new String[]{ "\"", "'", "<%", "N_<", "!"};
-		String [] blockEnd = new String[]{ "\"", "'", "%>", "N_>", ";" };
-		String [] t = Util.split(stmts, escapeSeq, escapeChar, blockStart, blockEnd, op, true);
+		String [] blockStart = new String[]{ "\"", "'", "<%"};
+		String [] blockEnd = new String[]{ "\"", "'", "%>"};
+		String [] t = Util.split(erbEvalGlobalScope(stmts), escapeSeq, escapeChar, blockStart, blockEnd, op, true);
+
 		String currentOp = null;
 		for(int i=0; i<t.length; i++){
 			String stmt = t[i];
 			if(stmt==null) continue;
 			stmt = stmt.trim();
+			if (stmt.endsWith(";")==true && stmt.length()>1) {
+				stmt = stmt.substring(0, stmt.length()-1);
+			}
 			if(stmt.length()==0) continue;
 			
 			// check if it is operator ----
@@ -183,6 +191,7 @@ public class ZQL {
 			}
 			
 			// Current operator is redirect
+			/* Disable redirect. see ZEPPELIN-99
 			if(op[2].equals(currentOp)){ // redirect append
 				throw new ZQLException("redirection (append) not implemented");
 			} else if(op[3].equals(currentOp)){ // redirect overwrite
@@ -196,6 +205,7 @@ public class ZQL {
 					throw new ZQLException("Can not redirect empty");
 				}				
 			}
+			*/
 			
 			// check if it is Annotation
 			if(stmt.startsWith("@")){
@@ -234,7 +244,8 @@ public class ZQL {
 			// check if a statement is L --
 			Z z= null;
 			try {
-				z = loadL(stmt, currentConnection);
+				L l = loadL(stmt);
+				z = l;
 			} catch (ZException e) {
 			    //statement is not Library.. and we go on
 			}
@@ -244,6 +255,7 @@ public class ZQL {
 				Q q;
 				try {
 					q = new Q(stmt);
+					q.withErbEvaluator(erbEvaluator);
 				} catch (ZException e) {
 					throw new ZQLException(e);
 				}
@@ -278,8 +290,8 @@ public class ZQL {
 	 * libName(param1=value1, param2=value2, ...)
 	 * libName(param1=value1, param2=value2, ...) args
 	 */
-	static final Pattern LPattern = Pattern.compile("([^ ()]*)\\s*([(][^)]*[)])?\\s*(.*)");
-	private L loadL(String stmt, ZeppelinConnection currentConnection) throws ZException{
+	static final Pattern LPattern = Pattern.compile("([^ ()]*)\\s*([(][^)]*[)])?\\s*(.*)", Pattern.DOTALL);
+	private L loadL(String stmt) throws ZException{
 		Matcher m = LPattern.matcher(stmt);
 		
 		if(m.matches()==true && m.groupCount()>0){

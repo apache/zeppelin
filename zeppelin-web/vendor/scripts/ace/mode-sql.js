@@ -46,6 +46,7 @@ oop.inherits(Mode, TextMode);
 
     this.lineCommentStart = "--";
 
+    this.$id = "ace/mode/sql";
 }).call(Mode.prototype);
 
 exports.Mode = Mode;
@@ -83,6 +84,10 @@ var SqlHighlightRules = function() {
         "start" : [ {
             token : "comment",
             regex : "--.*$"
+        },  {
+            token : "comment",
+            start : "/\\*",
+            end : "\\*/"
         }, {
             token : "string",           // " string
             regex : '".*?"'
@@ -109,6 +114,7 @@ var SqlHighlightRules = function() {
             regex : "\\s+"
         } ]
     };
+    this.normalizeRules();
 };
 
 oop.inherits(SqlHighlightRules, TextHighlightRules);

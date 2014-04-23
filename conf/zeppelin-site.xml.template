@@ -34,7 +34,7 @@
 
 <property>
   <name>zeppelin.zan.repo</name>
-  <value>https://github.com/NFLabs/zan</value>
+  <value>https://github.com/NFLabs/zan.git</value>
   <description>ZAN repo url</description>
 </property>
 
@@ -54,6 +54,12 @@
   <name>zeppelin.max.result</name>
   <value>10000</value>
   <description>Maximum number of rows of data  which displayed in visualization</description>
+</property>
+
+<property>
+  <name>zeppelin.max.history</name>
+  <value>100</value>
+  <description>Maximum number of job history.</description>
 </property>
 
 <property>

@@ -50,6 +50,14 @@ if [ "x$ZEPPELIN_WAR" == "x" ]; then
     fi
 fi
 
+if [ "x$ZEPPELIN_API_WAR" == "x" ]; then
+    if [ -d "${ZEPPELIN_HOME}/zeppelin-docs/src/main/swagger" ]; then
+	    export ZEPPELIN_API_WAR="${ZEPPELIN_HOME}/zeppelin-docs/src/main/swagger"
+    else
+        export ZEPPELIN_API_WAR=`find ${ZEPPELIN_HOME} -name "zeppelin-api-ui-*.war"`
+    fi
+fi
+
 if [ "x$ZEPPELIN_JOB_DIR" == "x" ]; then
     export ZEPPELIN_JOB_DIR="$ZEPPELIN_HOME/jobs"
 fi
@@ -102,8 +110,14 @@ fi
 export ZEPPELIN_CLASSPATH
 export CLASSPATH+=${ZEPPELIN_CLASSPATH}
 
+# Text encoding for 
+# read/write job into files,
+# receiving/displaying query/result.
+if [ "x$ZEPPELIN_ENCODING" == "x" ]; then
+  export ZEPPELIN_ENCODING="UTF-8"
+fi
 
-JAVA_OPTS+="$ZEPPELIN_JAVA_OPTS"
+JAVA_OPTS+="$ZEPPELIN_JAVA_OPTS -Dfile.encoding=${ZEPPELIN_ENCODING} -Xmx1024m -XX:MaxPermSize=512m"
 export JAVA_OPTS
 
 if [ -n "$JAVA_HOME" ]; then

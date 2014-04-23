@@ -66,6 +66,14 @@ public class QTest extends TestCase {
         assertEquals("hello", infos.get("fieldname").getDefaultValue());
     }
     
+	public void testMultiEmptyLines() throws ZException, IOException, ResultDataException {
+		drv.queries.put("select count(*) from test;", new Result(0, new String[] { "1" }));
+		drv.queries.put("show tables", new Result(0, new String[] { "2" }));
+		Result r = new Q("select count(*) from test;\nshow tables;\n\n").execute(conn).result();
+		assertEquals(1, r.getRows().size());
+		assertEquals("2", r.getRows().get(0)[0]);
+	}
+
     public void testRunQuery() throws ZException {
         //given
         //  zengine.set(mock(Hive) with table 2 rows in table "test")

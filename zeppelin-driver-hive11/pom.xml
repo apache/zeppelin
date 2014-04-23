@@ -5,13 +5,13 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>com.nflabs.zeppelin</groupId>
-    <version>0.3.1-SNAPSHOT</version>
+    <version>0.3.4-SNAPSHOT</version>
   </parent>
 
   <groupId>com.nflabs.zeppelin</groupId>
   <artifactId>zeppelin-driver-hive11</artifactId>
   <packaging>jar</packaging>
-  <version>0.3.1-SNAPSHOT</version>
+  <version>0.3.4-SNAPSHOT</version>
   <name>Zeppelin: Hive 0.11 driver</name>
   <url>http://www.nflabs.com</url>
 
@@ -113,6 +113,14 @@
       </exclusions>      
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-contrib</artifactId>
+      <version>${hive.version}</version>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
+    
     <!-- hive-jdbc, hive-test dependencies have transitive dependency to derby. in different version.
          excluding/chaning derby transivie dependency in hive-test is braking hive-test.
          therefore, only option is excluding derby from hive-jdbc's transitive and explicitly define
@@ -192,6 +200,10 @@
           <groupId>org.mortbay.jetty</groupId>
           <artifactId>servlet-api</artifactId>
         </exclusion>
+        <exclusion> <!-- jgit from zeppelin-zan brings JavaEWAH dependency -->
+          <groupId>com.googlecode.javaewah</groupId>
+          <artifactId>JavaEWAH</artifactId>
+        </exclusion>        
       </exclusions>
     </dependency>
     

@@ -6,16 +6,16 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>com.nflabs.zeppelin</groupId>
-    <version>0.3.1-SNAPSHOT</version>
+    <version>0.3.4-SNAPSHOT</version>
   </parent>
 
   <groupId>com.nflabs.zeppelin</groupId>
   <artifactId>zeppelin-zengine</artifactId>
   <packaging>jar</packaging>
-  <version>0.3.1-SNAPSHOT</version>
+  <version>0.3.4-SNAPSHOT</version>
   <name>Zeppelin: Zengine</name>
   <description>Zengine is java framework for data analysis on Hadoop. see http://nflabs.github.io/zeppelin/#/zengine</description>
-  <url>http://nflabs.github.io/zeppelin</url>
+  <url>http://zeppelin-project.org</url>
 
   <developers>
     <developer>
