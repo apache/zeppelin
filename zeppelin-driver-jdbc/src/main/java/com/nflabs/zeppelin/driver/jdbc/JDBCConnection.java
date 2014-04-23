@@ -43,17 +43,15 @@ public class JDBCConnection implements ZeppelinConnection {
 	}
 	
 	private Result execute(String query) throws ZeppelinDriverException{
-		
 		try{
 			ResultSet res = null;
 			Result r = null;
-			Statement stmt = connection.createStatement();			
-			if (query.toLowerCase().startsWith("select")) {
-				res = stmt.executeQuery(query);
+			
+			Statement stmt = connection.createStatement();
+			if (stmt.execute(query)) {
+				res = stmt.getResultSet();
 				r = new Result(res);
 				r.load();
-			} else {
-				stmt.execute(query);
 			}			
 			
 			stmt.close();
