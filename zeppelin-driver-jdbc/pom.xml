@@ -24,13 +24,13 @@
     </dependency> 
     
     <!-- included drivers -->
-	<dependency>
-		<groupId>mysql</groupId>
-		<artifactId>mysql-connector-java</artifactId>
-		<version>5.1.28</version>
-		<scope>runtime</scope>
-		<optional>true</optional>
-	</dependency>
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>5.1.28</version>
+      <scope>runtime</scope>
+      <optional>true</optional>
+    </dependency>
 	
     <dependency>
       <groupId>junit</groupId>
