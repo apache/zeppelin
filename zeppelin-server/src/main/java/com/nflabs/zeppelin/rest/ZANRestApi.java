@@ -4,6 +4,7 @@ import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -117,9 +118,9 @@ public class ZANRestApi {
     	return new JsonResponse<List<ZANJob>>(Status.OK, "", job).build();
     }
 
-    @GET
+    @POST
     @Path("/install/{libName}")
-    @ApiOperation(httpMethod = "GET", value = "Install Zeppelin Lib", response = Response.class)
+    @ApiOperation(httpMethod = "POST", value = "Install Zeppelin Lib", response = Response.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Install done")})
     @Produces("application/json")
     public Response install(@ApiParam(value = "Lib name", required = true) @PathParam("libName") String libName){
@@ -127,7 +128,7 @@ public class ZANRestApi {
     	return new JsonResponse<List<ZANJob>>(Status.OK, "").build();
     }
 
-    @GET
+    @DELETE
     @Path("/uninstall/{libName}")
     @ApiOperation(httpMethod = "GET", value = "Uninstall Zeppelin Lib", response = Response.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Uninstall done")})

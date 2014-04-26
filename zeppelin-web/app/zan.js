@@ -20,15 +20,15 @@ function zan(zep) {
     }
 
     this.install = function(libName, listener, scope){
-	zeppelin.get("/zan/install/"+libName, listener, scope);
+	zeppelin.post("/zan/install/"+libName, "", listener, scope);
     }
 
     this.upgrade = function(libName, listener, scope){
-	zeppelin.put("/zan/update/"+libName,"", listener, scope);
+	zeppelin.put("/zan/update/"+libName, "", listener, scope);
     }
 
     this.uninstall = function(libName, listener, scope){
-	zeppelin.get("/zan/uninstall/"+libName, listener, scope);
+	zeppelin.del("/zan/uninstall/"+libName, listener, scope);
     }
 
 }

@@ -156,13 +156,13 @@ function Zeppelin(arg){
         }
         $.support.cors = true;
         $.ajax({
-            url : getRestURL()+path,
+            url : this.getRestURL()+path,
             type : "DELETE",
             dataType : "json",
-            headers : getHeaders(),
+            headers : this.getHeaders(),
             xhrFields: devMode,
             beforeSend: function(xhr) {
-                if (this.isDevMode() == false) {
+                if (!devMode.withCredentials) {
                     xhr.withCredentials = true;
                 }
             },
