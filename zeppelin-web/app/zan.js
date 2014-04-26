@@ -24,7 +24,7 @@ function zan(zep) {
     }
 
     this.upgrade = function(libName, listener, scope){
-	zeppelin.get("/zan/upgrade/"+libName, listener, scope);
+	zeppelin.put("/zan/update/"+libName,"", listener, scope);
     }
 
     this.uninstall = function(libName, listener, scope){

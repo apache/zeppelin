@@ -97,6 +97,16 @@ public class ZANRestApi {
     	return new JsonResponse<Object>(Status.ACCEPTED, "Job submitted").build();
     }
 
+    @PUT
+    @Path("/update/{libName}")
+    @ApiOperation(httpMethod = "PUT", value = "Upgrate Zeppelin Lib", response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 202, message = "Upgrate done")})
+    @Produces("application/json")
+    public Response upgrade(@ApiParam(value = "Lib name", required = true) @PathParam("libName") String libName){
+        jobManager.upgrade(libName);
+        return new JsonResponse<List<ZANJob>>(Status.ACCEPTED, "").build();
+    }
+
     @GET
     @Path("/running")
     @ApiOperation(httpMethod = "GET", value = "run Zeppelin Lib", response = Response.class)
@@ -126,15 +136,4 @@ public class ZANRestApi {
     	jobManager.uninstall(libName);
     	return new JsonResponse<List<ZANJob>>(Status.OK, "").build();
     }
-
-    @GET
-    @Path("/upgrade/{libName}")
-    @ApiOperation(httpMethod = "GET", value = "Upgrate Zeppelin Lib", response = Response.class)
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Upgrate done")})
-    @Produces("application/json")
-    public Response upgrade(@ApiParam(value = "Lib name", required = true) @PathParam("libName") String libName){
-    	jobManager.upgrade(libName);
-    	return new JsonResponse<List<ZANJob>>(Status.OK, "").build();
-    }
-
 }
