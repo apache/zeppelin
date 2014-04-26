@@ -463,7 +463,7 @@ App.ZanController = App.ApplicationController.extend({
 	update : function(){
 	    var controller = this;
 	    zeppelin.zan.update(function(c, d){
-		if(c==200){
+		if(c==202){
 		    controller.send('waitForComplete');
 		} else {
 		    // error

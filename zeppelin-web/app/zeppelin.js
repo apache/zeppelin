@@ -126,19 +126,19 @@ function Zeppelin(arg){
         }
         $.support.cors = true;
         $.ajax({
-            url : getRestURL()+path,
+            url : this.getRestURL()+path,
             type : "PUT",
             dataType : "json",
             data: JSON.stringify(data),
             xhrFields: devMode,
             beforeSend: function(xhr) {
-                if (this.isDevMode() == false) {
+                if (!devMode.withCredentials) {
                     xhr.withCredentials = true;
                 }
             },
-            headers : getHeaders(),
+            headers : this.getHeaders(),
             success: function(data, type, status){
-                if(listener) listener.call(scope, status.status, data.body);
+               if(listener) listener.call(scope, status.status, data.body);
             },
             error : function(xhr, status){
                 log("ERROR %o, %o", xhr, status);

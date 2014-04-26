@@ -16,7 +16,7 @@ function zan(zep) {
     }
 
     this.update = function(listener, scope){
-	zeppelin.get("/zan/update", listener, scope);
+	zeppelin.put("/zan/update", "", listener, scope);
     }
 
     this.install = function(libName, listener, scope){
