@@ -120,7 +120,7 @@ public class ZeppelinServer extends Application {
       final ServletHolder SwaggerServlet = new ServletHolder( new com.wordnik.swagger.jersey.config.JerseyJaxrsConfig() );
       SwaggerServlet.setName("JerseyJaxrsConfig");
       SwaggerServlet.setInitParameter("api.version", "1.0.0");
-      SwaggerServlet.setInitParameter("swagger.api.basepath", "http://localhost:"+port+"/cxf/zeppelin");
+      SwaggerServlet.setInitParameter("swagger.api.basepath", "http://localhost:"+port+"/api");
       SwaggerServlet.setInitOrder(2);
 
       // Setup the handler
