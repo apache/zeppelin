@@ -28,6 +28,7 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.rest.ZANRestApi;
 import com.nflabs.zeppelin.rest.ZQLRestApi;
+import com.nflabs.zeppelin.rest.ZeppelinRestApi;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.zan.ZAN;
 import com.nflabs.zeppelin.zengine.ZException;
@@ -199,6 +200,10 @@ public class ZeppelinServer extends Application {
 	@Override
     public java.util.Set<java.lang.Object> getSingletons(){
     	Set<Object> singletons = new HashSet<Object>();
+
+    	/** Rest-api root endpoint */
+    	ZeppelinRestApi root = new ZeppelinRestApi();
+    	singletons.add(root);
 
     	ZQLRestApi analyze = new ZQLRestApi(this.analyzeSessionManager);
     	singletons.add(analyze);
