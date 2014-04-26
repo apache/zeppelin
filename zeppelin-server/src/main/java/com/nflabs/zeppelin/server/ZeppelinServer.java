@@ -105,8 +105,8 @@ public class ZeppelinServer extends Application {
 
 		final ServletContextHandler cxfContext = new ServletContextHandler();
 		cxfContext.setSessionHandler(new SessionHandler());
-		cxfContext.setContextPath("/cxf");
-		cxfContext.addServlet( cxfServletHolder, "/zeppelin/*" );
+		cxfContext.setContextPath("/api");
+		cxfContext.addServlet( cxfServletHolder, "/*" );
         return cxfContext;
     }
 
