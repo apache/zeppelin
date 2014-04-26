@@ -2,6 +2,11 @@ function zan(zep) {
 
     zeppelin = zep;
 
+	/** Get the list of ZAN app */
+	this.getApplications = function(listener, scope){
+		zeppelin.get("/zan", listener, scope);
+	}
+
     this.search = function(queryString, listener, scope) {
         zeppelin.post("/zan/search", queryString, listener, scope);
     }

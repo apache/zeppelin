@@ -51,6 +51,19 @@ public class ZANRestApi {
 		public String query;
 	}
 
+	@GET
+	@ApiOperation(httpMethod = "GET", value = "Get list of Zan libraries", response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "List of Zan libraries"),@ApiResponse(code = 500, message = "Couln't get the list of Zan application")})
+    @Produces("application/json")
+	public Response getZanLibList(){
+      try {
+        return new JsonResponse<List<Info>>(Status.OK, "", zan.list()).build();
+      } catch (ZANException e) {
+        logger.error("Listing error", e);
+        return new JsonResponse<Object>(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+      }
+	}
+
     @POST
     @Path("/search")
     @ApiOperation(httpMethod = "POST", value = "Search Zeppelin Lib", response = Response.class)
