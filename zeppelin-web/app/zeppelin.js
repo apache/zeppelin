@@ -18,13 +18,13 @@ function Zeppelin(arg){
     this.getBaseURL = function(){
         return "http://"+window.location.host;
     }
-    
+
     this.getRestURL = function(){
-        return "http://"+window.location.host+"/cxf/zeppelin";
+        return "http://"+window.location.host+"/api";
     }
-    
+
     this.isDevMode = function(){
-        if (typeof zeppelinMode != 'undefined') return (zeppelinMode=="development"); 
+        if (typeof zeppelinMode != 'undefined') return (zeppelinMode=="development");
         else return false;
     }
 
@@ -37,12 +37,12 @@ function Zeppelin(arg){
                 $('#'+id).remove();
             }, autocloseMsec);
         } else {
-            $('#info').append('<div class="alert alert-info"><a class="close" data-dismiss="alert">×</a><span>'+msg+'</span></div>');
+            $('#info').append('<div class="alert alert-info"><a class="close" data-dismiss="alert">��</a><span>'+msg+'</span></div>');
         }
     }
 
     this.alert = function(msg){
-        $('#alert').append('<div class="alert"><a class="close" data-dismiss="alert">×</a><span>'+msg+'</span></div>');
+        $('#alert').append('<div class="alert"><a class="close" data-dismiss="alert">��</a><span>'+msg+'</span></div>');
     }
 
     this.log = function(msg, level){
@@ -50,7 +50,7 @@ function Zeppelin(arg){
     }
 
     this.getHeaders = function(){
-        var headers = {}                
+        var headers = {}
         return headers;
     }
 
@@ -81,7 +81,7 @@ function Zeppelin(arg){
             async : (async==undefined) ? true : async
         });
     }
-    
+
     this.post = function(path, data, listener, scope, async){
         var devMode = new Object();
         if(this.isDevMode()) {
@@ -107,14 +107,14 @@ function Zeppelin(arg){
                     xhr.withCredentials = true;
                 }
             },
-            headers : this.getHeaders(),                                
+            headers : this.getHeaders(),
             success: function(data, type, status){
                 if(listener) listener.call(scope, status.status, data.body);
             },
             error : function(xhr, status){
                 console.log("ERROR %o, %o", xhr, status);
                 if(listener) listener.call(scope, xhr.status, $.parseJSON(xhr.responseText))
-                
+
             },
             async : (async==undefined) ? true : async
         });
@@ -136,19 +136,19 @@ function Zeppelin(arg){
                     xhr.withCredentials = true;
                 }
             },
-            headers : getHeaders(),                             
+            headers : getHeaders(),
             success: function(data, type, status){
                 if(listener) listener.call(scope, status.status, data.body);
             },
-            error : function(xhr, status){                      
+            error : function(xhr, status){
                 log("ERROR %o, %o", xhr, status);
                 if(listener) listener.call(scope, xhr.status, $.parseJSON(xhr.responseText))
-                
+
             },
             async : (async==undefined) ? true : async
         });
     }
-    
+
     this.del = function(path, listener, scope, async){
         var devMode = new Object();
         if(this.isDevMode()) {
@@ -165,14 +165,14 @@ function Zeppelin(arg){
                 if (this.isDevMode() == false) {
                     xhr.withCredentials = true;
                 }
-            },                  
+            },
             success: function(data, type, status){
                 if(listener) listener.call(scope, status.status, data.body);
             },
-            error : function(xhr, status){                      
+            error : function(xhr, status){
                 console.log("ERROR %o, %o", xhr, status);
                 if(listener) listener.call(scope, xhr.status, $.parseJSON(xhr.responseText))
-                
+
             },
             async : (async==undefined) ? true : async
         });
