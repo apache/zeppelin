@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -60,9 +61,9 @@ public class ZQLRestApi {
 		gson = new Gson();
 	}
 
-  @GET
-  @Path("/new")
-  @ApiOperation(httpMethod = "GET", value = "Create a new job session", response = Response.class)
+  @POST
+  @Path("/job")
+  @ApiOperation(httpMethod = "POST", value = "Create a new job session", response = Response.class)
   @ApiResponses(value = {@ApiResponse(code = 200, message = "New job created")})
     @Produces("application/json")
     public Response newJob() {
@@ -78,7 +79,7 @@ public class ZQLRestApi {
 	}
 
   @POST
-  @Path("/set/{sessionId}")
+  @Path("/job/{sessionId}")
   @ApiOperation(httpMethod = "POST", value = "Update Zeppelin job", response = Response.class)
   @ApiResponses(value = {@ApiResponse(code = 200, message = "Job Updated"),
       @ApiResponse(code = 404, message = "Job update failled due to a missing element")})
@@ -109,7 +110,7 @@ public class ZQLRestApi {
     }
 
     @POST
-    @Path("/set/{sessionId}/zql")
+    @Path("/job/{sessionId}/zql")
     @ApiOperation(httpMethod = "POST", value = "Update zql of the Zeppelin job", response = Response.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Job Updated"), @ApiResponse(code = 404, message = "Job update failled due to a missing element")} )
     @Produces("application/json")
@@ -124,7 +125,7 @@ public class ZQLRestApi {
     }
 
     @POST
-    @Path("/set/{sessionId}/name")
+    @Path("/job/{sessionId}/name")
     @ApiOperation(httpMethod = "POST", value = "Update the name of Zeppelin's job", response = Response.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Job Updated"), @ApiResponse(code = 404, message = "Job update failled due to a missing element")} )
     @Produces("application/json")
@@ -138,7 +139,7 @@ public class ZQLRestApi {
     }
 
     @POST
-    @Path("/set/{sessionId}/params")
+    @Path("/job/{sessionId}/params")
     @ApiOperation(httpMethod = "POST", value = "Update the parameters of Zeppelin's job", response = Response.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Job Updated"), @ApiResponse(code = 404, message = "Job update failled due to a missing element")} )
     @Produces("application/json")
@@ -152,7 +153,7 @@ public class ZQLRestApi {
     }
 
     @POST
-    @Path("/set/{sessionId}/cron")
+    @Path("/job/{sessionId}/cron")
     @ApiOperation(httpMethod = "POST", value = "Update the crontab of Zeppelin's job", response = Response.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Job Updated"), @ApiResponse(code = 404, message = "Job update failled due to a missing element")} )
     @Produces("application/json")
@@ -205,7 +206,7 @@ public class ZQLRestApi {
     }
 
     @GET
-    @Path("/get/{sessionId}")
+    @Path("/{sessionId}")
     @ApiOperation(httpMethod = "GET", value = "Get Zeppelin job id", response = Response.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Run successfully"), @ApiResponse(code = 404, message = "Run failled")} )
     @Produces("application/json")
@@ -222,7 +223,7 @@ public class ZQLRestApi {
      * @return
      */
     @GET
-    @Path("/list")
+    @Path("/")
     @ApiOperation(httpMethod = "GET", value = "List all the Zeppelin job", response = Response.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Run successfully"), @ApiResponse(code = 404, message = "Run failled")} )
     @Produces("application/json")
@@ -238,7 +239,7 @@ public class ZQLRestApi {
      * @return
      */
     @GET
-    @Path("/tree")
+    @Path("/getJobTrees")
     @ApiOperation(httpMethod = "GET", value = "Get job tree information", response = Response.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Run successfully"), @ApiResponse(code = 404, message = "Run failled")} )
     @Produces("application/json")
@@ -253,7 +254,7 @@ public class ZQLRestApi {
 	 * @return
 	 */
 	@POST
-	@Path("/tree")
+	@Path("/setJobTrees")
 	@ApiOperation(httpMethod = "POST", value = "Set job tree information", response = Response.class)
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Run successfully"),
@@ -268,8 +269,8 @@ public class ZQLRestApi {
 	}
 
 
-    @GET
-    @Path("/del/{sessionId}")
+    @DELETE
+    @Path("/{sessionId}")
     @ApiOperation(httpMethod = "GET", value = "Remove a Zeppelin job", response = Response.class)
     @Produces("application/json")
     public Response del(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId) {
@@ -285,7 +286,7 @@ public class ZQLRestApi {
      * @return
      */
     @GET
-    @Path("/history/list/{sessionId}")
+    @Path("/history/{sessionId}")
     @ApiOperation(httpMethod = "GET", value = "List of the history from a Zeppelin job", response = Response.class)
     @Produces("application/json")
     public Response listHistory(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId) {
@@ -298,7 +299,7 @@ public class ZQLRestApi {
      * @return
      */
     @GET
-    @Path("/history/get/{sessionId}/{name}")
+    @Path("/history/{sessionId}/{name}")
     @ApiOperation(httpMethod = "GET", value = "Detail of the history from a Zeppelin job", response = Response.class)
     @Produces("application/json")
     public Response getHistory(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId, @ApiParam(value = "Name of the history", required = true) @PathParam("name") String name) {
@@ -310,8 +311,8 @@ public class ZQLRestApi {
      * Delete a session history
      * @return
      */
-    @GET
-    @Path("/history/del/{sessionId}/{name}")
+    @DELETE
+    @Path("/history/{sessionId}/{name}")
     @ApiOperation(httpMethod = "GET", value = "Remove history Zeppelin job", response = Response.class)
     @Produces("application/json")
     public Response deleteHistory(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId, @ApiParam(value = "Name of the history", required = true) @PathParam("name") String name) {
@@ -323,16 +324,14 @@ public class ZQLRestApi {
      * Delete all session history
      * @return
      */
-    @GET
-    @Path("/history/del/{sessionId}")
+    @DELETE
+    @Path("/history/{sessionId}")
     @ApiOperation(httpMethod = "GET", value = "Remove history Zeppelin job", response = Response.class)
     @Produces("application/json")
     public Response deleteHistory(@ApiParam(value = "ID of the zeppelin job", required = true) @PathParam("sessionId") String jobId) {
     	jobManager.deleteHistory(jobId);
         return new JsonResponse<ZQLJob>(Status.OK).build();
     }
-
-
 
     @GET
     @Path("/web/{sessionId}/{zId}/{path:.*}")

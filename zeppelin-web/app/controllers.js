@@ -8,7 +8,7 @@ App.ZqlController = App.ApplicationController.extend({
     actions : {
         newJob : function(){
             controller = this;
-            Ember.$.getJSON('/api/zql/new').then(function(d){
+            Ember.$.post('/api/zql/job', "").then(function(d){
                 // update runnning
                 zeppelin.zql.list(function(c, resp){
                     if(c==200){
@@ -21,7 +21,7 @@ App.ZqlController = App.ApplicationController.extend({
         },
         openJob : function(jobid){
             controller = this;
-            Ember.$.getJSON('/api/zql/get/'+jobid).then(function(d){
+            Ember.$.getJSON('/api/zql/'+jobid).then(function(d){
 		controller.transitionToRoute('zql.edit', {jobid : d.body.id, historyid : "", body:d.body})
             });
         },
