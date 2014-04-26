@@ -60,8 +60,8 @@ public class ZQLRestApi {
 		gson = new Gson();
 	}
 
-    @GET
-    @Path("/new")
+  @GET
+  @Path("/new")
   @ApiOperation(httpMethod = "GET", value = "Create a new job session", response = Response.class)
   @ApiResponses(value = {@ApiResponse(code = 200, message = "New job created")})
     @Produces("application/json")
@@ -232,9 +232,9 @@ public class ZQLRestApi {
                 new LinkedList<ZQLJob>(sessions.descendingMap().values()))
                 .build();
     }
-   
+
     /**
-     * get job tree 
+     * get job tree
      * @return
      */
     @GET
@@ -249,7 +249,7 @@ public class ZQLRestApi {
 
 	/**
 	 * save job tree
-	 * 
+	 *
 	 * @return
 	 */
 	@POST
@@ -267,7 +267,7 @@ public class ZQLRestApi {
 		return new JsonResponse(Status.OK, "").build();
 	}
 
-    
+
     @GET
     @Path("/del/{sessionId}")
     @ApiOperation(httpMethod = "GET", value = "Remove a Zeppelin job", response = Response.class)
