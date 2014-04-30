@@ -17,19 +17,63 @@ import org.junit.runners.MethodSorters;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-
+/**
+ * BASIC Zeppelin rest api tests
+ * TODO: Add Post,Put,Delete test and method
+ *
+ * @author anthonycorbacho
+ *
+ */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ZqlRestTest extends RestApiTestAbstract {
+public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
   @BeforeClass
   public static void init() throws Exception {
-    RestApiTestAbstract.startUp();
+    AbstractTestRestApi.startUp();
   }
 
   @AfterClass
   public static void destroy() {
-    RestApiTestAbstract.shutDown();
+    AbstractTestRestApi.shutDown();
   }
+
+  /***
+   * ROOT API TEST
+   ***/
+  @Test
+  public void getApiRoot() throws IOException {
+    // when
+    GetMethod httpGetRoot = httpGet("/");
+    // then
+    assertThat(httpGetRoot, isAllowed());
+    httpGetRoot.releaseConnection();
+  }
+
+  /***
+   * TEST ZAN REST API
+   ***/
+
+  @Test
+  public void getZanRoot() throws IOException {
+    // when
+    GetMethod httpGetRoot = httpGet("/zan");
+    // then
+    assertThat(httpGetRoot, isAllowed());
+    httpGetRoot.releaseConnection();
+  }
+
+  @Test
+  public void getZanRunning() throws IOException {
+    // when
+    GetMethod httpGetRoot = httpGet("/zan/running");
+    // then
+    assertThat(httpGetRoot, isAllowed());
+    httpGetRoot.releaseConnection();
+  }
+
+  /***
+   * TEST ZQL REST API
+   ***/
 
   private static Map<String, Object> data = new HashMap<String, Object>();
 
@@ -62,7 +106,7 @@ public class ZqlRestTest extends RestApiTestAbstract {
   public void test002_getZqlSessionId() throws IOException {
     // when
     String id = getFisrtId();
-    // TODO (anthony): Implement post method et create test to get at least one element
+    // TODO (anthony): Implement post method and create test to get at least one element
     if (id.isEmpty()) {
       /** no job */
       assertTrue(true);
@@ -79,7 +123,7 @@ public class ZqlRestTest extends RestApiTestAbstract {
   public void test003_getZqlHistorySessionId() throws IOException {
     // when
     String id = getFisrtId();
-    // TODO (anthony): Implement post method et create test to get at least one element
+    // TODO (anthony): Implement post method and create test to get at least one element
     if (id.isEmpty()) {
       /** no job */
       assertTrue(true);

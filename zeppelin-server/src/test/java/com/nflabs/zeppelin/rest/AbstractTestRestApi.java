@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -19,9 +20,9 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.nflabs.zeppelin.server.ZeppelinServer;
 
-public abstract class RestApiTestAbstract {
+public abstract class AbstractTestRestApi {
 
-  protected static final Logger LOG = LoggerFactory.getLogger(RestApiTestAbstract.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(AbstractTestRestApi.class);
 
   static final String restApiUrl = "/api";
   static final String url = getUrlToTest();
@@ -74,6 +75,12 @@ public abstract class RestApiTestAbstract {
     if (!wasRunning) {
       LOG.info("Terminating test Zeppelin...");
       executor.shutdown();
+      try {
+        executor.awaitTermination(10, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
       LOG.info("Test Zeppelin terminated.");
     }
   }
