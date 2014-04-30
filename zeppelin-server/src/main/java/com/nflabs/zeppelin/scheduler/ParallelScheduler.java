@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import com.nflabs.zeppelin.scheduler.Job.Status;
+
 public class ParallelScheduler implements Scheduler{
 	List<Job> queue = new LinkedList<Job>();
 	List<Job> running = new LinkedList<Job>();
@@ -47,6 +49,7 @@ public class ParallelScheduler implements Scheduler{
 	
 	
 	public void submit(Job job){
+		job.setStatus(Status.PENDING);
 		synchronized(queue){
 			queue.add(job);
 			queue.notify();

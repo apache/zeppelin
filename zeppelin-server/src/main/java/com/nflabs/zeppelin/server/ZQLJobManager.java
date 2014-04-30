@@ -131,6 +131,7 @@ public class ZQLJobManager implements JobListener {
 			s.setStatus(Status.READY);
 		}
 		s.setListener(this);
+		logger.info("Job "+jobId+" sumitted to run");
 		scheduler.submit(s);
 		return s;
 	}

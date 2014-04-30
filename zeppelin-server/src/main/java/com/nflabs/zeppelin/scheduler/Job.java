@@ -21,6 +21,7 @@ public abstract class Job {
     //TODO(alex): make Job interface and AbstractJob - skeletal impl
 	public static enum Status {
 		READY,
+		PENDING,
 		RUNNING,
 		FINISHED,
 		ERROR,

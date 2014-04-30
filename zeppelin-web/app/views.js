@@ -37,7 +37,6 @@ App.ZqlIndexView = Ember.View.extend({
         var controller = this.get("controller");
         var count = 0;
         var cron = 0;
-
         var jobs = controller.get("runningJobs");
         if (jobs) {
             for (var i=0; i<jobs.length; i++) {
@@ -116,6 +115,13 @@ App.ZqlEditView = Ember.View.extend({
             $('#zqlRunButton').text("Run");
             $('#zqlRunButton').removeClass('disabled');
             $('#zqlRunButton').prop('disabled', false);
+        } else if(model.status=="PENDING"){
+            $('#zqlRunButton').text("Pending ...");
+            $('#zqlRunButton').addClass('disabled');
+            $('#zqlRunButton').prop('disabled', true);
+            editor.setReadOnly(true);
+            jobNameEditor.editable('disable');
+            jobCronEditor.editable('disable');
         } else if(model.status=="RUNNING"){
             $('#zqlRunButton').text("Running ...");
             $('#zqlRunButton').addClass('disabled');
@@ -442,6 +448,7 @@ App.ReportLinkView = Ember.View.extend({
         $('#msgBox div').remove();
 
         if(model.status=="READY"){
+        } else if(model.status=="PENDING"){
         } else if(model.status=="RUNNING"){
         } else if(model.status=="FINISHED"){
             // draw visualization if there's some
