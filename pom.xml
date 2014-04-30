@@ -76,6 +76,7 @@
     <module>zeppelin-zengine</module>
     <module>zeppelin-driver-hive11</module>
     <module>zeppelin-driver-exec</module>
+    <module>zeppelin-driver-jdbc</module>
     <module>zeppelin-cli</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
@@ -238,7 +239,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.16</version>
+          <version>2.17</version>
           <configuration combine.children="append">
             <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
             <encoding>UTF-8</encoding>
