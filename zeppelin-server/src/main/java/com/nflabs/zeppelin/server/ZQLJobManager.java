@@ -125,7 +125,7 @@ public class ZQLJobManager implements JobListener {
 		ZQLJob s = get(jobId);
 		if (s==null) { return null; }
 
-		if (s.getStatus() == Status.RUNNING) { 
+		if (s.getStatus() == Status.PENDING || s.getStatus() == Status.RUNNING) { 
 		    return s; 
 		} else {
 			s.setStatus(Status.READY);
@@ -220,7 +220,7 @@ public class ZQLJobManager implements JobListener {
 		if (s==null) { return false; }
 		
 		// can't delete running job
-		if(s.getStatus()==Status.RUNNING) return false;
+		if(s.getStatus()==Status.PENDING || s.getStatus()==Status.RUNNING) return false;
 		
 		synchronized(active){
 			removeQuartz(s);
@@ -428,7 +428,7 @@ public class ZQLJobManager implements JobListener {
 				FSDataInputStream ins = fs.open(path);
 				String json = IOUtils.toString(ins, zengine.getConf().getString(ConfVars.ZEPPELIN_ENCODING));
 				ZQLJob job = gson.fromJson(json, ZQLJob.class);
-				if(job.getStatus()==Status.RUNNING){
+				if(job.getStatus()==Status.PENDING || job.getStatus()==Status.RUNNING){
 					job.setStatus(Status.ABORT);
 				}
 				ins.close();
