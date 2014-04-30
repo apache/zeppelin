@@ -24,7 +24,7 @@ public class JDBCConnection implements ZeppelinConnection {
 	@Override
 	public boolean isConnected() throws ZeppelinDriverException {
 		try {
-			return connection.isClosed();
+			return !connection.isClosed();
 		} catch (SQLException e) {
 			throw new ZeppelinDriverException(e);
 		}
