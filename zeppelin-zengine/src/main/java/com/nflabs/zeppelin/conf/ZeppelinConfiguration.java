@@ -217,7 +217,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_ZAN_REPO			("zeppelin.zan.repo", "https://github.com/NFLabs/zan.git"),
 		ZEPPELIN_ZAN_LOCAL_REPO		("zeppelin.zan.localrepo", "../zan-repo"),
 		ZEPPELIN_ZAN_SHARED_REPO	("zeppelin.zan.sharedrepo", null),
-		ZEPPELIN_JOB_SCHEDULER	    ("zeppelin.job.scheduler", "FIFO"), // FIFO or PARALLEL
+		ZEPPELIN_JOB_SCHEDULER	    ("zeppelin.job.scheduler", "PARALLEL"), // FIFO or PARALLEL
 		ZEPPELIN_MAX_RESULT			("zeppelin.max.result", 10000),     // max num result taken by result class
 		ZEPPELIN_MAX_HISTORY		("zeppelin.max.history", 100),      // max num of job history
 		ZEPPELIN_DRIVERS			("zeppelin.drivers", "hive:hive2://,exec:exec://"),
