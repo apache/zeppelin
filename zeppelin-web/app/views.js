@@ -368,6 +368,7 @@ App.ZqlEditView = Ember.View.extend({
         var jobNameEditor = this.get('jobNameEditor');
         var jobCronEditor = this.get('jobCronEditor');
         controller.send('beforeChangeJob', model, jobNameEditor, editor, jobCronEditor);
+        controller.send('clearJob');
         this.set('currentModel', null);
     },
 

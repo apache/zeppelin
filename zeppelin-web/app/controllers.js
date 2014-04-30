@@ -359,6 +359,12 @@ App.ZqlEditController = App.ZqlController.extend({
             });
         },
 
+        // clear job status
+        clearJob : function(){
+            this.set('currentJob', null);
+            this.set('historyId', null);
+        },
+
         // called from view
         loop : function(jobNameEditor, editor, jobCronEditor){
             var controller = this;
