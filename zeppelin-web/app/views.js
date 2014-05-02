@@ -355,15 +355,17 @@ App.ZqlEditView = Ember.View.extend({
 
 	});
 
-        var editorLoop = function(){
-            setTimeout(function(){
-                editorLoop();
-            }, 1000);
+        if (!controller.get('editorLoop')) {
+            var editorLoop = function(){
+                setTimeout(function(){
+                    editorLoop();
+                }, 1000);
 
-            controller.send("loop", jobNameEditor, editor, jobCronEditor);
-        };
-        editorLoop();
-
+                controller.send("loop", jobNameEditor, editor, jobCronEditor);
+            };
+            editorLoop();
+            controller.set('editorLoop', editorLoop);
+        }
     },
 
     willClearRender: function(){
