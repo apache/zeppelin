@@ -32,7 +32,7 @@ public class ParallelSchedulerTest extends TestCase {
 
 		assertEquals(Status.RUNNING, job1.getStatus());
 		assertEquals(Status.RUNNING, job2.getStatus());
-		assertEquals(Status.READY, job3.getStatus());
+		assertEquals(Status.PENDING, job3.getStatus());
 		assertEquals(2, s.getJobsRunning().size());
 		assertEquals(1, s.getJobsWaiting().size());
 		

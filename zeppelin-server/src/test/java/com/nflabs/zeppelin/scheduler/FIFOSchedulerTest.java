@@ -29,7 +29,7 @@ public class FIFOSchedulerTest extends TestCase{
 		Thread.sleep(200);
 
 		assertEquals(Status.RUNNING, job1.getStatus());
-		assertEquals(Status.READY, job2.getStatus());
+		assertEquals(Status.PENDING, job2.getStatus());
 		assertEquals(1, s.getJobsRunning().size());
 		assertEquals(1, s.getJobsWaiting().size());
 

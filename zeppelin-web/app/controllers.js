@@ -109,6 +109,7 @@ App.ZqlEditController = App.ZqlController.extend({
 
     actions : {
         runJob : function(){
+
             var controller = this;
             var job = this.get('currentJob');
 	    var historyId = this.get('historyId');
@@ -193,7 +194,7 @@ App.ZqlEditController = App.ZqlController.extend({
 		zeppelin.zql.del(job.id, function(c, d){
                     if(c==200){
 			controller.get('controllers.zql').send('updateJob');
-			controller.transitionToRoute('zql');                            
+			controller.transitionToRoute('zql');
                     } else {
 			// handle error
                     }
@@ -359,6 +360,12 @@ App.ZqlEditController = App.ZqlController.extend({
             });
         },
 
+        // clear job status
+        clearJob : function(){
+            this.set('currentJob', null);
+            this.set('historyId', null);
+        },
+
         // called from view
         loop : function(jobNameEditor, editor, jobCronEditor){
             var controller = this;
@@ -385,7 +392,7 @@ App.ZqlEditController = App.ZqlController.extend({
                     if(new Date().getSeconds() % 60 == 0){ // check if it is running by scheduler every 1m
                         zeppelin.zql.get(job.id, function(c, d){
                             if(c==200){
-                                if(d.status=="RUNNING" || d.dateFinished!=job.dateFinished){
+                                if(d.status=="RUNNING" || d.status=="PENDING" || d.dateFinished!=job.dateFinished){
                                     if(controller.get('dirty')==0){ // auto refresh in only clean state
                                         controller.set("currentJob", d);
                                     }
@@ -393,7 +400,7 @@ App.ZqlEditController = App.ZqlController.extend({
                             }
                         });
                     }
-                } else if(job.status=="RUNNING"){
+                } else if(job.status=="RUNNING" || job.status=="PENDING"){
                     if(new Date().getSeconds() % 1 == 0){ // refreshing every 1 sec
                         controller.send('loadJob', job.id);
                     }

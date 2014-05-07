@@ -19,8 +19,20 @@ import com.nflabs.zeppelin.scheduler.JobListener;
  */
 public abstract class Job {
     //TODO(alex): make Job interface and AbstractJob - skeletal impl
+	/**
+	 * Job status
+	 *
+	 *  READY - Job is not running, ready to run.
+	 *  PENDING - Job is submitted to scheduler. but not running yet
+	 *  RUNNING - Job is running.
+	 *  FINISHED - Job finished run. with success
+	 *  ERROR - Job finished run. with error
+	 *  ABORT - Job finished by abort
+	 *
+	 */
 	public static enum Status {
 		READY,
+		PENDING,
 		RUNNING,
 		FINISHED,
 		ERROR,

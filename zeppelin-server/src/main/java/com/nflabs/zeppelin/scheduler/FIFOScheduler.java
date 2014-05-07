@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import com.nflabs.zeppelin.scheduler.Job.Status;
+
 public class FIFOScheduler implements Scheduler{
 	List<Job> queue = new LinkedList<Job>();
 	private ExecutorService executor;
@@ -45,6 +47,7 @@ public class FIFOScheduler implements Scheduler{
 	
 	
 	public void submit(Job job){
+		job.setStatus(Status.PENDING);
 		synchronized(queue){
 			queue.add(job);
 			queue.notify();
