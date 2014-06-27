@@ -64,11 +64,11 @@ function zql(zep) {
     }
 
     this.getTree = function(listener, scope){
-        zeppelin.get("/zql/getJobTrees", listener, scope);
+        zeppelin.get("/zql/job/tree", listener, scope);
     }
 
     this.setTree = function(jobTree, listener, scope){
-        zeppelin.post("/zql/setJobTrees", jobTree, listener, scope);
+        zeppelin.post("/zql/job/tree", jobTree, listener, scope);
     }
 
     this.listHistory = function(jobId, listener, scope){

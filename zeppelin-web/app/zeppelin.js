@@ -37,7 +37,7 @@ function Zeppelin(arg){
                 $('#'+id).remove();
             }, autocloseMsec);
         } else {
-            $('#info').append('<div class="alert alert-info"><a class="close" data-dismiss="alert">��</a><span>'+msg+'</span></div>');
+            $('#info').append('<div class="alert alert-info"><a class="close" data-dismiss="alert">×</a><span>'+msg+'</span></div>');
         }
     }
 
