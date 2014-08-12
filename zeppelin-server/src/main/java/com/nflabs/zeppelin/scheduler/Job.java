@@ -39,6 +39,7 @@ public abstract class Job {
 		ABORT,;
         boolean isReady() { return this==READY; }
         boolean isRunning() { return this==RUNNING; }
+        boolean isPending() { return this==PENDING; }
 	}
 
     private String jobName;
@@ -99,7 +100,7 @@ public abstract class Job {
 	}
 		
 	public boolean isTerminated(){
-		return !this.status.isReady() && !this.status.isRunning(); 
+		return !this.status.isReady() && !this.status.isRunning() && !this.status.isPending(); 
 	}
 	
 	public boolean isRunning(){
