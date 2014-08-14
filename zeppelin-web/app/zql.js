@@ -3,11 +3,11 @@ function zql(zep) {
     zeppelin = zep;
 
     this.create = function(listener, scope) {
-        zeppelin.get("/zql/new", listener, scope);
+        zeppelin.post("/zql/job", "", listener, scope);
     }
 
     this.set = function(jobId, name, zql, params, cron, listener, scope){
-        zeppelin.post("/zql/set/"+jobId, {
+        zeppelin.post("/zql/job/"+jobId, {
             zql : zql,
             name : name,
             params : params,
@@ -16,25 +16,25 @@ function zql(zep) {
     }
 
     this.setZql = function(jobId, zql, listener, scope){
-        zeppelin.post("/zql/set/"+jobId+"/zql", {
+        zeppelin.post("/zql/job/"+jobId+"/zql", {
             zql : zql
         }, listener, scope);
     }
 
     this.setName = function(jobId, name, listener, scope){
-        zeppelin.post("/zql/set/"+jobId+"/name", {
+        zeppelin.post("/zql/job/"+jobId+"/name", {
             name : name
         }, listener, scope);
     }
 
     this.setParams = function(jobId, params, listener, scope){
-        zeppelin.post("/zql/set/"+jobId+"/params", {
+        zeppelin.post("/zql/job/"+jobId+"/params", {
             params : params
         }, listener, scope);
     }
 
     this.setCron = function(jobId, cron, listener, scope){
-        zeppelin.post("/zql/set/"+jobId+"/cron", {
+        zeppelin.post("/zql/job/"+jobId+"/cron", {
             cron : cron
         }, listener, scope);
     }
@@ -52,35 +52,35 @@ function zql(zep) {
     }
 
     this.get = function(jobId, listener, scope){
-        zeppelin.get('/zql/get/'+jobId, listener, scope);
+        zeppelin.get('/zql/'+jobId, listener, scope);
     }
 
     this.del = function(jobId, listener, scope){
-        zeppelin.get('/zql/del/'+jobId, listener, scope);
+        zeppelin.del('/zql/'+jobId, listener, scope);
     }
 
     this.list = function(listener, scope){
-        zeppelin.get("/zql/list", listener, scope);
+        zeppelin.get("/zql/", listener, scope);
     }
 
     this.getTree = function(listener, scope){
-        zeppelin.get("/zql/tree", listener, scope);
+        zeppelin.get("/zql/job/tree", listener, scope);
     }
 
     this.setTree = function(jobTree, listener, scope){
-        zeppelin.post("/zql/tree", jobTree, listener, scope);
+        zeppelin.post("/zql/job/tree", jobTree, listener, scope);
     }
 
     this.listHistory = function(jobId, listener, scope){
-        zeppelin.get("/zql/history/list/"+jobId, listener, scope);
+        zeppelin.get("/zql/history/"+jobId, listener, scope);
     }
 
     this.getHistory = function(jobId, historyId, listener, scope){
-        zeppelin.get("/zql/history/get/"+jobId+"/"+historyId, listener, scope);       
+        zeppelin.get("/zql/history/"+jobId+"/"+historyId, listener, scope);
     }
 
     this.delHistory = function(jobId, historyId, listener, scope){
-        zeppelin.get("/zql/history/del/"+jobId+"/"+historyId, listener, scope);       
+        zeppelin.del("/zql/history/"+jobId+"/"+historyId, listener, scope);
     }
 }
 

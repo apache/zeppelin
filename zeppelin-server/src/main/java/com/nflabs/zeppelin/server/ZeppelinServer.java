@@ -28,6 +28,7 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.rest.ZANRestApi;
 import com.nflabs.zeppelin.rest.ZQLRestApi;
+import com.nflabs.zeppelin.rest.ZeppelinRestApi;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.zan.ZAN;
 import com.nflabs.zeppelin.zengine.ZException;
@@ -105,8 +106,8 @@ public class ZeppelinServer extends Application {
 
 		final ServletContextHandler cxfContext = new ServletContextHandler();
 		cxfContext.setSessionHandler(new SessionHandler());
-		cxfContext.setContextPath("/cxf");
-		cxfContext.addServlet( cxfServletHolder, "/zeppelin/*" );
+		cxfContext.setContextPath("/api");
+		cxfContext.addServlet( cxfServletHolder, "/*" );
         return cxfContext;
     }
 
@@ -120,7 +121,7 @@ public class ZeppelinServer extends Application {
       final ServletHolder SwaggerServlet = new ServletHolder( new com.wordnik.swagger.jersey.config.JerseyJaxrsConfig() );
       SwaggerServlet.setName("JerseyJaxrsConfig");
       SwaggerServlet.setInitParameter("api.version", "1.0.0");
-      SwaggerServlet.setInitParameter("swagger.api.basepath", "http://localhost:"+port+"/cxf/zeppelin");
+      SwaggerServlet.setInitParameter("swagger.api.basepath", "http://localhost:"+port+"/api");
       SwaggerServlet.setInitOrder(2);
 
       // Setup the handler
@@ -199,6 +200,10 @@ public class ZeppelinServer extends Application {
 	@Override
     public java.util.Set<java.lang.Object> getSingletons(){
     	Set<Object> singletons = new HashSet<Object>();
+
+    	/** Rest-api root endpoint */
+    	ZeppelinRestApi root = new ZeppelinRestApi();
+    	singletons.add(root);
 
     	ZQLRestApi analyze = new ZQLRestApi(this.analyzeSessionManager);
     	singletons.add(analyze);

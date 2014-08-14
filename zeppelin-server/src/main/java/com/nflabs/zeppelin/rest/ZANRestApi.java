@@ -4,8 +4,10 @@ import java.io.OutputStream;
 import java.util.Collection;
 import java.util.List;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -51,6 +53,25 @@ public class ZANRestApi {
 		public String query;
 	}
 
+    /**
+     * List all Zan application fron git repository
+     *
+     * @return List of Zan lib
+     */
+    @GET
+    @ApiOperation(httpMethod = "GET", value = "Get list of Zan libraries", response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 200, message = "List of Zan libraries"),
+        @ApiResponse(code = 500, message = "Couln't get the list of Zan application")})
+    @Produces("application/json")
+    public Response getZanLibList() {
+      try {
+        return new JsonResponse<List<Info>>(Status.OK, "", zan.list()).build();
+      } catch (ZANException e) {
+        logger.error("Listing error", e);
+        return new JsonResponse<Object>(Status.INTERNAL_SERVER_ERROR, e.getMessage()).build();
+      }
+    }
+
     @POST
     @Path("/search")
     @ApiOperation(httpMethod = "POST", value = "Search Zeppelin Lib", response = Response.class)
@@ -68,14 +89,24 @@ public class ZANRestApi {
 		}
     }
 
-    @GET
+    @PUT
     @Path("/update")
-    @ApiOperation(httpMethod = "GET", value = "Update Zeppelin Lib", response = Response.class)
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Updtate submitted")})
+    @ApiOperation(httpMethod = "PUT", value = "Update Zeppelin Lib", response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 202, message = "Updtate submitted")})
     @Produces("application/json")
     public Response update() {
     	jobManager.update();
-    	return new JsonResponse<Object>(Status.OK, "Job submitted").build();
+    	return new JsonResponse<Object>(Status.ACCEPTED, "Job submitted").build();
+    }
+
+    @PUT
+    @Path("/update/{libName}")
+    @ApiOperation(httpMethod = "PUT", value = "Upgrate Zeppelin Lib", response = Response.class)
+    @ApiResponses(value = {@ApiResponse(code = 202, message = "Upgrate done")})
+    @Produces("application/json")
+    public Response upgrade(@ApiParam(value = "Lib name", required = true) @PathParam("libName") String libName){
+        jobManager.upgrade(libName);
+        return new JsonResponse<List<ZANJob>>(Status.ACCEPTED, "").build();
     }
 
     @GET
@@ -88,9 +119,9 @@ public class ZANRestApi {
     	return new JsonResponse<List<ZANJob>>(Status.OK, "", job).build();
     }
 
-    @GET
+    @POST
     @Path("/install/{libName}")
-    @ApiOperation(httpMethod = "GET", value = "Install Zeppelin Lib", response = Response.class)
+    @ApiOperation(httpMethod = "POST", value = "Install Zeppelin Lib", response = Response.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Install done")})
     @Produces("application/json")
     public Response install(@ApiParam(value = "Lib name", required = true) @PathParam("libName") String libName){
@@ -98,7 +129,7 @@ public class ZANRestApi {
     	return new JsonResponse<List<ZANJob>>(Status.OK, "").build();
     }
 
-    @GET
+    @DELETE
     @Path("/uninstall/{libName}")
     @ApiOperation(httpMethod = "GET", value = "Uninstall Zeppelin Lib", response = Response.class)
     @ApiResponses(value = {@ApiResponse(code = 200, message = "Uninstall done")})
@@ -107,15 +138,4 @@ public class ZANRestApi {
     	jobManager.uninstall(libName);
     	return new JsonResponse<List<ZANJob>>(Status.OK, "").build();
     }
-
-    @GET
-    @Path("/upgrade/{libName}")
-    @ApiOperation(httpMethod = "GET", value = "Upgrate Zeppelin Lib", response = Response.class)
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Upgrate done")})
-    @Produces("application/json")
-    public Response upgrade(@ApiParam(value = "Lib name", required = true) @PathParam("libName") String libName){
-    	jobManager.upgrade(libName);
-    	return new JsonResponse<List<ZANJob>>(Status.OK, "").build();
-    }
-
 }

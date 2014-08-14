@@ -8,7 +8,7 @@ App.ZqlController = App.ApplicationController.extend({
     actions : {
         newJob : function(){
             controller = this;
-            Ember.$.getJSON('/cxf/zeppelin/zql/new').then(function(d){
+            Ember.$.post('/api/zql/job', "").then(function(d){
                 // update runnning
                 zeppelin.zql.list(function(c, resp){
                     if(c==200){
@@ -21,7 +21,7 @@ App.ZqlController = App.ApplicationController.extend({
         },
         openJob : function(jobid){
             controller = this;
-            Ember.$.getJSON('/cxf/zeppelin/zql/get/'+jobid).then(function(d){
+            Ember.$.getJSON('/api/zql/'+jobid).then(function(d){
 		controller.transitionToRoute('zql.edit', {jobid : d.body.id, historyid : "", body:d.body})
             });
         },
@@ -33,7 +33,7 @@ App.ZqlController = App.ApplicationController.extend({
                         if(c==200){
                             var jobs = [];
                             // first traverse tree
-                            
+
                             function findJobByIdFromList(id){
                                 for (var i=0; i<list.length; i++) {
                                     if (list[i].id==id) {
@@ -130,7 +130,7 @@ App.ZqlEditController = App.ZqlController.extend({
                             if(c==200){
                                 controller.set('dryrun', false);
                                 controller.send('loadJob', jobid);
-                            }            
+                            }
                         });
                     }
                 }, this);
@@ -155,7 +155,7 @@ App.ZqlEditController = App.ZqlController.extend({
                             if (c==200) {
                                 controller.send('loadJob', jobid);
                             }
-                        });                     
+                        });
                     }
                 }, this);
             }
@@ -179,9 +179,9 @@ App.ZqlEditController = App.ZqlController.extend({
             var job = this.get('currentJob');
 	    var historyId = this.get('historyId');
             if (job == undefined) { return; }
-	    
+
 	    // TODO save job
-	    controller.transitionToRoute('report.link', {jobid : job.id, historyid : (historyId==undefined) ? "" : historyId});	    
+	    controller.transitionToRoute('report.link', {jobid : job.id, historyid : (historyId==undefined) ? "" : historyId});
         },
 
         deleteJob : function(){
@@ -231,7 +231,7 @@ App.ZqlEditController = App.ZqlController.extend({
                         } else {
                             zeppelin.alert("Can't save job");
                         }
-                    });                     
+                    });
                 }
             }
         },
@@ -322,10 +322,10 @@ App.ZqlEditController = App.ZqlController.extend({
                     controller.printInfo("change saved");
                 } else {
                     zeppelin.alert("Error! Can't save change");
-                }                
+                }
             }, this);
         },
-        
+
         zqlJobCronChanged : function(jobCron){
             var controller = this;
             var job = this.get('currentJob');
@@ -338,7 +338,7 @@ App.ZqlEditController = App.ZqlController.extend({
                     controller.printInfo("change saved");
                 } else {
                     zeppelin.alert("Error! Can't save change");
-                }                
+                }
             }, this);
         },
 
@@ -376,7 +376,7 @@ App.ZqlEditController = App.ZqlController.extend({
                 if(job.status=="READY" || job.status=="FINISHED" || job.status=="ERROR" || job.status=="ABORT"){
                     // auto save every 10 sec
                     if(new Date().getSeconds() % 10 == 0 && (this.get('dirty') & this.get('dirtyFlag').ZQL)){
-                        
+
                         // TODO display saving... -> saved message
                         zeppelin.zql.setZql(job.id, editor.getValue(), function(c, d){
                             if(c==200){
@@ -385,7 +385,7 @@ App.ZqlEditController = App.ZqlController.extend({
                             } else {
                                 zeppelin.alert("autosave failed");
                             }
-                            
+
                         }, this);
                     }
 
@@ -423,7 +423,7 @@ App.ZqlEditController = App.ZqlController.extend({
 		    $(el).height(height);
 		});
 	    }
-        } 
+        }
     }
 });
 
@@ -444,6 +444,18 @@ App.ZanController = App.ApplicationController.extend({
 */
 
     actions : {
+
+    getApplications : function() {
+    	var controller = this;
+    	zeppelin.zan.getApplications(function(c, d){
+			if (c==200) {
+			    controller.set("zanAppList", d);
+			} else {
+			    // error
+			}
+	    }, this);
+    },
+
 	search : function(queryString){
 	    var controller = this;
 	    zeppelin.zan.search({ queryString:queryString }, function(c, d){
@@ -458,7 +470,7 @@ App.ZanController = App.ApplicationController.extend({
 	update : function(){
 	    var controller = this;
 	    zeppelin.zan.update(function(c, d){
-		if(c==200){
+		if(c==202){
 		    controller.send('waitForComplete');
 		} else {
 		    // error
@@ -491,7 +503,7 @@ App.ZanController = App.ApplicationController.extend({
 	upgrade : function(libName){
 	    var controller = this;
 	    zeppelin.zan.upgrade(libName, function(c, d){
-		if (c==200) {
+		if (c==202) {
 		    controller.send('waitForComplete');
 		} else {
 		    // error
@@ -500,7 +512,7 @@ App.ZanController = App.ApplicationController.extend({
 	},
 
 
-	
+
 	/**
 	 * wait for any running job complete
 	 */
@@ -519,7 +531,8 @@ App.ZanController = App.ApplicationController.extend({
 			}, 1000);
 		    } else {
 			controller.set("waitForComplete", false);
-			controller.send("search", "*");
+			controller.send("getApplications");
+			//controller.send("search", "*");
 		    }
 		} else {
 		    // error

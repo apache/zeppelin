@@ -23,18 +23,18 @@
 </div>
 <p />
 <div class="row">
-{{#each lib in 'searchResult'}}
+{{#each lib in 'zanAppList'}}
     <div class='zanLibraryInformation col-md-12'>
         <h5>{{lib.name}}</h5>
         <div>{{lib.status}}
 	    <!-- following code supposed to work, but it doesn't -->
 	    {{#ifCond lib.status "==" "INSTALLED" }}
-	        <a {{action "upgrade" lib.name}}>Upgrade</a> | 
+	        <a {{action "upgrade" lib.name}}>Upgrade</a> |
 	        <a {{action "uninstall" lib.name}}>Uninstall</a>
 	    {{/ifCond}}
 	    {{#ifCond lib.status "==" "UNINSTALLED" }}
 	        <a {{action "install" lib.name}}>Install</a>
-            {{/ifCond}} 
+        {{/ifCond}}
 	</div>
     </div>
 {{/each}}

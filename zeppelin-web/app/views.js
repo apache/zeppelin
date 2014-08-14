@@ -21,7 +21,7 @@ App.ZqlIndexView = Ember.View.extend({
             maxDepth:2
         });
         $('#jobList').on('change', function(o, v){
-            var serialize = $('#jobList').nestable('serialize');            
+            var serialize = $('#jobList').nestable('serialize');
             zeppelin.zql.setTree(serialize, function(c, d){
                 if (c==200) {
                     zeppelin.info("Change saved", 1000);
@@ -131,7 +131,7 @@ App.ZqlEditView = Ember.View.extend({
             jobCronEditor.editable('disable');
         } else if(model.status=="FINISHED"){
             $('#zqlRunButton').text("Run");
-            
+
 	    if(!historyId){
 		editor.setReadOnly(false);
 		jobNameEditor.editable('enable');
@@ -171,7 +171,7 @@ App.ZqlEditView = Ember.View.extend({
                             planInfo = planInfo.substring(1);
                         }
                         $('#visualizationContainer').append('<div class="visTitle">'+planInfo+"</div>");
-                        $('<iframe />', {                               
+                        $('<iframe />', {
                             name : plan.id,
                             id : plan.id,
                             src : zeppelin.getWebResourceURL(model.id, historyId, plan.id),
@@ -182,7 +182,7 @@ App.ZqlEditView = Ember.View.extend({
                             //console.log("iframe %o %o", c,d);
                         });
                     }}
-                
+
 
                 jQuery('iframe').iframeAutoHeight();
             }
@@ -237,7 +237,7 @@ App.ZqlEditView = Ember.View.extend({
             source : source,
             showbuttons : false
         });
-        
+
         $('#zqlJobHistory').editable('setValue', (historyId==undefined) ? "" : historyId);
         $('#zqlJobHistory').on('save', function(e, params) {
             controller.send("zqlJobHistoryChanged", model.id, params.newValue);
@@ -260,7 +260,7 @@ App.ZqlEditView = Ember.View.extend({
 
         editor.getSession().setMode("ace/mode/sql");
         editor.focus();
-        
+
         editor.getSession().on('change', function(e){
             var zql = editor.getSession().getValue();
             editorArea.val(zql);
@@ -292,7 +292,7 @@ App.ZqlEditView = Ember.View.extend({
             placement : "bottom"
         });
         jobNameEditor.on('save', function(e, params) {
-            controller.send("zqlJobNameChanged", params.newValue);  
+            controller.send("zqlJobNameChanged", params.newValue);
         });
         this.set('jobNameEditor', jobNameEditor);
 
@@ -334,9 +334,9 @@ App.ZqlEditView = Ember.View.extend({
             if(found==false){
                 jobCronEditor.cronPreset.push({id:params.newValue, text:params.newValue});
                 jobCronEditor.editable('option', 'source', jobCronEditor.cronPreset);
-            }            
+            }
             controller.send("zqlJobCronChanged", params.newValue);
-        });             
+        });
 
         this.set('jobCronEditor', jobCronEditor);
 
@@ -463,7 +463,7 @@ App.ReportLinkView = Ember.View.extend({
                     for(var p = planModel; p!=undefined; p = p.prev){
                         planStack.unshift(p);
                     }
-                    
+
                     for(var j=0; j<planStack.length; j++){
                         var plan = planStack[j];
 
@@ -474,7 +474,7 @@ App.ReportLinkView = Ember.View.extend({
                             planInfo = planInfo.substring(1);
                         }
                         $('#visualizationContainer').append('<div class="visTitle">'+planInfo+"</div>");
-                        $('<iframe />', {                               
+                        $('<iframe />', {
                             name : plan.id,
                             id : plan.id,
                             src : zeppelin.getWebResourceURL(model.id, historyId, plan.id),
@@ -497,7 +497,7 @@ App.ReportLinkView = Ember.View.extend({
             }
         } else if(model.status=="ABORT"){
         }
-        
+
     }.observes('controller.currentJob'),
 });
 

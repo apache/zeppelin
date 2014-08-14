@@ -18,13 +18,13 @@ function Zeppelin(arg){
     this.getBaseURL = function(){
         return "http://"+window.location.host;
     }
-    
+
     this.getRestURL = function(){
-        return "http://"+window.location.host+"/cxf/zeppelin";
+        return "http://"+window.location.host+"/api";
     }
-    
+
     this.isDevMode = function(){
-        if (typeof zeppelinMode != 'undefined') return (zeppelinMode=="development"); 
+        if (typeof zeppelinMode != 'undefined') return (zeppelinMode=="development");
         else return false;
     }
 
@@ -42,7 +42,7 @@ function Zeppelin(arg){
     }
 
     this.alert = function(msg){
-        $('#alert').append('<div class="alert"><a class="close" data-dismiss="alert">×</a><span>'+msg+'</span></div>');
+        $('#alert').append('<div class="alert"><a class="close" data-dismiss="alert">��</a><span>'+msg+'</span></div>');
     }
 
     this.log = function(msg, level){
@@ -50,7 +50,7 @@ function Zeppelin(arg){
     }
 
     this.getHeaders = function(){
-        var headers = {}                
+        var headers = {}
         return headers;
     }
 
@@ -81,7 +81,7 @@ function Zeppelin(arg){
             async : (async==undefined) ? true : async
         });
     }
-    
+
     this.post = function(path, data, listener, scope, async){
         var devMode = new Object();
         if(this.isDevMode()) {
@@ -107,14 +107,14 @@ function Zeppelin(arg){
                     xhr.withCredentials = true;
                 }
             },
-            headers : this.getHeaders(),                                
+            headers : this.getHeaders(),
             success: function(data, type, status){
                 if(listener) listener.call(scope, status.status, data.body);
             },
             error : function(xhr, status){
                 console.log("ERROR %o, %o", xhr, status);
                 if(listener) listener.call(scope, xhr.status, $.parseJSON(xhr.responseText))
-                
+
             },
             async : (async==undefined) ? true : async
         });
@@ -126,29 +126,29 @@ function Zeppelin(arg){
         }
         $.support.cors = true;
         $.ajax({
-            url : getRestURL()+path,
+            url : this.getRestURL()+path,
             type : "PUT",
             dataType : "json",
             data: JSON.stringify(data),
             xhrFields: devMode,
             beforeSend: function(xhr) {
-                if (this.isDevMode() == false) {
+                if (!devMode.withCredentials) {
                     xhr.withCredentials = true;
                 }
             },
-            headers : getHeaders(),                             
+            headers : this.getHeaders(),
             success: function(data, type, status){
-                if(listener) listener.call(scope, status.status, data.body);
+               if(listener) listener.call(scope, status.status, data.body);
             },
-            error : function(xhr, status){                      
+            error : function(xhr, status){
                 log("ERROR %o, %o", xhr, status);
                 if(listener) listener.call(scope, xhr.status, $.parseJSON(xhr.responseText))
-                
+
             },
             async : (async==undefined) ? true : async
         });
     }
-    
+
     this.del = function(path, listener, scope, async){
         var devMode = new Object();
         if(this.isDevMode()) {
@@ -156,23 +156,23 @@ function Zeppelin(arg){
         }
         $.support.cors = true;
         $.ajax({
-            url : getRestURL()+path,
+            url : this.getRestURL()+path,
             type : "DELETE",
             dataType : "json",
-            headers : getHeaders(),
+            headers : this.getHeaders(),
             xhrFields: devMode,
             beforeSend: function(xhr) {
-                if (this.isDevMode() == false) {
+                if (!devMode.withCredentials) {
                     xhr.withCredentials = true;
                 }
-            },                  
+            },
             success: function(data, type, status){
                 if(listener) listener.call(scope, status.status, data.body);
             },
-            error : function(xhr, status){                      
+            error : function(xhr, status){
                 console.log("ERROR %o, %o", xhr, status);
                 if(listener) listener.call(scope, xhr.status, $.parseJSON(xhr.responseText))
-                
+
             },
             async : (async==undefined) ? true : async
         });
