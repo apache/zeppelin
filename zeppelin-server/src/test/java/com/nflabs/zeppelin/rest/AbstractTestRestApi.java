@@ -66,7 +66,18 @@ public abstract class AbstractTestRestApi {
     if (!wasRunning) {
       LOG.info("Staring test Zeppelin up...");
       executor.submit(server);
-      Thread.sleep(25000);
+      long s = System.currentTimeMillis();
+      boolean started = false;
+      while (System.currentTimeMillis() - s < 1000 * 60 * 3) {  // 3 minutes
+    	  Thread.sleep(2000);
+    	  started = checkIfServerIsRuning();
+    	  if (started == true) {
+    		  break;
+    	  }
+      }
+      if (started == false) {
+    	  throw new RuntimeException("Can not start Zeppelin server");
+      }
       LOG.info("Test Zeppelin stared.");
     }
   }
