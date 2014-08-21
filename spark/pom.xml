@@ -131,6 +131,14 @@
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>*</artifactId>          
         </exclusion>
+        <exclusion>
+          <groupId>org.json4s</groupId>
+          <artifactId>json4s-jackson</artifactId>          
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>          
+        </exclusion>
       </exclusions>
     </dependency>
 
