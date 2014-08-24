@@ -48,6 +48,12 @@
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-frontend-jaxrs</artifactId>
       <version>${cxf.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>javax.ws.rs</groupId>
+          <artifactId>javax.ws.rs-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -253,9 +259,19 @@
       	<exclusion>
       	  <groupId>com.sun.jersey</groupId>
       	  <artifactId>jersey-server</artifactId>
-	</exclusion>
+	    </exclusion>
+      	<exclusion>
+      	  <groupId>javax.ws.rs</groupId>
+      	  <artifactId>javax.ws.rs-api</artifactId>
+	    </exclusion>	    
       </exclusions>
     </dependency>
+
+	<dependency>
+		<groupId>javax.ws.rs</groupId>
+		<artifactId>javax.ws.rs-api</artifactId>
+		<version>2.0-m10</version>
+	</dependency>
 
   </dependencies>
 

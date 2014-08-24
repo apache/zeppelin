@@ -1,16 +1,9 @@
 package com.nflabs.zeppelin.server;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.StringReader;
-import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 
-import javax.servlet.DispatcherType;
 import javax.ws.rs.core.Application;
 
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
@@ -21,7 +14,6 @@ import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
-import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -30,14 +22,13 @@ import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.repl.Repl;
 import com.nflabs.zeppelin.repl.ReplFactory;
+import com.nflabs.zeppelin.rest.NotebookApi;
 import com.nflabs.zeppelin.rest.ZANRestApi;
 import com.nflabs.zeppelin.rest.ZQLRestApi;
 import com.nflabs.zeppelin.rest.ZeppelinRestApi;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.zan.ZAN;
-import com.nflabs.zeppelin.zengine.ZException;
 import com.nflabs.zeppelin.zengine.Zengine;
 
 
@@ -50,16 +41,12 @@ public class ZeppelinServer extends Application {
 	private ZQLJobManager analyzeSessionManager;
 	private ZANJobManager zanJobManager;
 	private ZAN zan;
+	private Notebook notebook;
+
+	private ReplFactory replFactory;
 
 	public static void main(String [] args) throws Exception{
-		ReplFactory factory = new ReplFactory(ZeppelinConfiguration.create());
-		Repl repl = factory.createRepl("spark", "com.nflabs.zeppelin.spark.SparkRepl", new Properties());
-		repl.initialize();
-		repl.interpret("println(sc.version)");
-		System.exit(0);
-		
-		z = new Zengine();
-		ZeppelinConfiguration conf = z.getConf();
+		ZeppelinConfiguration conf = ZeppelinConfiguration.create();		
 
 		int port = conf.getInt(ConfVars.ZEPPELIN_PORT);
         final Server server = setupJettyServer(port);
@@ -185,10 +172,13 @@ public class ZeppelinServer extends Application {
   }
 
 	public ZeppelinServer() throws Exception {
+		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+		
 		this.schedulerFactory = new SchedulerFactory();
 
 		FileSystem fs = FileSystem.get(new org.apache.hadoop.conf.Configuration());
 
+		/*
         if(z.useFifoJobScheduler()){
 			this.analyzeSessionManager = new ZQLJobManager(z, fs, schedulerFactory.createOrGetFIFOScheduler("analyze"), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		} else {
@@ -201,6 +191,10 @@ public class ZeppelinServer extends Application {
 		                   fs);
 
 		this.zanJobManager = new ZANJobManager(zan, schedulerFactory.createOrGetFIFOScheduler("analyze"));
+		*/
+		
+		this.replFactory = new ReplFactory(conf);
+		this.notebook = new Notebook(conf, fs, schedulerFactory, replFactory);
 	}
 
 	@Override
@@ -217,12 +211,17 @@ public class ZeppelinServer extends Application {
     	ZeppelinRestApi root = new ZeppelinRestApi();
     	singletons.add(root);
 
+    	/*
     	ZQLRestApi analyze = new ZQLRestApi(this.analyzeSessionManager);
     	singletons.add(analyze);
 
     	ZANRestApi zan = new ZANRestApi(this.zan, this.zanJobManager);
     	singletons.add(zan);
+*/    	
 
+    	NotebookApi notebook = new NotebookApi(this.notebook);
+    	singletons.add(notebook);
+    	
     	return singletons;
     }
 
