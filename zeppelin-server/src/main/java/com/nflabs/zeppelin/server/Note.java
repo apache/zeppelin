@@ -18,6 +18,7 @@ import com.google.gson.GsonBuilder;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.repl.Repl;
+import com.nflabs.zeppelin.repl.ReplFactory;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.JobListener;
@@ -32,16 +33,16 @@ public class Note implements Serializable, JobListener {
 	private String name;
 	private String id;
 	
-	private transient Map<String, Repl> repls;
+	private transient NoteReplLoader replLoader;
 	private transient Scheduler scheduler;
 	private transient ZeppelinConfiguration conf;
 	private transient FileSystem fs;
 	
-	public Note(ZeppelinConfiguration conf, FileSystem fs, String name, Map<String, Repl> repls, Scheduler scheduler){
+	public Note(ZeppelinConfiguration conf, FileSystem fs, String name, ReplFactory replFactory, Scheduler scheduler){
 		this.conf = conf;
 		this.fs = fs;
 		this.name = name;
-		this.repls = repls;
+		this.replLoader = new NoteReplLoader(replFactory);
 		this.scheduler = scheduler;
 		generateId();
 	}
@@ -62,12 +63,12 @@ public class Note implements Serializable, JobListener {
 		this.name = name;
 	}
 
-	public Map<String, Repl> getRepls() {
-		return repls;
+	public NoteReplLoader getNoteReplLoader() {
+		return replLoader;
 	}
 
-	public void setRepls(Map<String, Repl> repls) {
-		this.repls = repls;
+	public void setReplLoader(NoteReplLoader replLoader) {
+		this.replLoader = replLoader;
 	}
 	
 	public void setScheduler(Scheduler scheduler) {
@@ -87,7 +88,7 @@ public class Note implements Serializable, JobListener {
 	 */
 	public void runAll(){
 		for (Paragraph p : paragraphs) {
-			p.setRepls(repls);
+			p.setNoteReplLoader(replLoader);
 			p.setListener(this);
 			scheduler.submit(p);
 		}
@@ -99,7 +100,7 @@ public class Note implements Serializable, JobListener {
 	 */
 	public void run(String paragraphId) {
 		Paragraph p = getParagraph(paragraphId);
-		p.setRepls(repls);
+		p.setNoteReplLoader(replLoader);
 		p.setListener(this);
 		scheduler.submit(p);
 	}
@@ -139,7 +140,7 @@ public class Note implements Serializable, JobListener {
 		out.close();
 	}
 	
-	public static Note load(String id, ZeppelinConfiguration conf, FileSystem fs, Map<String, Repl> repls, Scheduler scheduler) throws IOException{
+	public static Note load(String id, ZeppelinConfiguration conf, FileSystem fs, ReplFactory replFactory, Scheduler scheduler) throws IOException{
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		gsonBuilder.setPrettyPrinting();
 		Gson gson = gsonBuilder.create();
@@ -154,7 +155,7 @@ public class Note implements Serializable, JobListener {
 		Note note = gson.fromJson(json, Note.class);
 		note.setZeppelinConfiguration(conf);
 		note.setFileSystem(fs);
-		note.setRepls(repls);
+		note.setReplLoader(new NoteReplLoader(replFactory));
 		note.setScheduler(scheduler);
 		
 		return note;

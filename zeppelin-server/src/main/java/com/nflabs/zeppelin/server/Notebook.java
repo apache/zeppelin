@@ -44,14 +44,8 @@ public class Notebook {
 	 * @return
 	 */
 	public Note createNote() {
-		Map<String, Repl> repls = new HashMap<String, Repl>();
-		Repl spark = replFactory.createRepl("spark");
-		spark.initialize();
-		
-		repls.put("spark", spark); 		
-		Scheduler scheduler = schedulerFactory.createOrGetFIFOScheduler("note_"+System.currentTimeMillis());
-		
-		Note note = new Note(conf, fs, "Untitled Note "+notes.size(), repls, scheduler);
+		Scheduler scheduler = schedulerFactory.createOrGetFIFOScheduler("note_"+System.currentTimeMillis());		
+		Note note = new Note(conf, fs, "Untitled Note "+notes.size(), replFactory, scheduler);
 		synchronized(notes){
 			notes.put(note.id(), note);
 		}
@@ -70,7 +64,7 @@ public class Notebook {
 		synchronized(notes){
 			note = notes.remove(id);
 		}
-		// TODO free some resource from note
+		note.getNoteReplLoader().destroyAll();
 	}
 	
 }

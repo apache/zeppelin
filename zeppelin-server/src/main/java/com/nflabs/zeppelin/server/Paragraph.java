@@ -2,6 +2,7 @@ package com.nflabs.zeppelin.server;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 
 import com.nflabs.zeppelin.repl.Repl;
@@ -14,11 +15,11 @@ import com.nflabs.zeppelin.scheduler.JobListener;
  */
 public class Paragraph extends Job implements Serializable{
 	String paragraph;
-	private transient Map<String, Repl> repls;
+	private transient NoteReplLoader replLoader;
 	
-	public Paragraph(JobListener listener, Map<String, Repl> repls){
+	public Paragraph(JobListener listener, NoteReplLoader replLoader){
 		super(generateId(), listener);
-		this.repls = repls;
+		this.replLoader = replLoader;
 		paragraph = null;
 	}
 	
@@ -56,21 +57,18 @@ public class Paragraph extends Job implements Serializable{
 		return magic;
 	}
 	
-	public Map<String, Repl> getRepls(){
-		return repls;
+	public NoteReplLoader getNoteReplLoader(){
+		return replLoader;
 	}
 	
-	public Repl getRepl(String name) {
-		return repls.get(name);
+	public Repl getRepl(String name, Properties properties) {
+		return replLoader.getRepl(name, properties);
 	}
 	
-	public void setRepls(Map<String, Repl> repls) {
-		this.repls = repls;
+	public void setNoteReplLoader(NoteReplLoader repls) {
+		this.replLoader = repls;
 	}
 	
-	public void putRepl(String name, Repl repl) {
-		repls.put(name, repl);
-	}
 	
 	@Override
 	public int progress() {
@@ -84,14 +82,14 @@ public class Paragraph extends Job implements Serializable{
 
 	@Override
 	protected Object jobRun() throws Throwable {
-		Repl repl = repls.get(getRequiredReplName());
+		Repl repl = getRepl(getRequiredReplName(), new Properties());
 		ReplResult ret = repl.interpret(paragraph);
 		return ret;
 	}
 
 	@Override
 	protected boolean jobAbort() {
-		Repl repl = repls.get(getRequiredReplName());
+		Repl repl = getRepl(getRequiredReplName(), new Properties());
 		repl.cancel();
 		return true;
 	}

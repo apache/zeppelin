@@ -212,7 +212,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_HOME				("zeppelin.home", "../"),
 		ZEPPELIN_PORT				("zeppelin.server.port", 8080),
 		ZEPPELIN_WAR				("zeppelin.war", "../zeppelin-web/src/main/webapp"),
-	        ZEPPELIN_API_WAR                        ("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),
+	    ZEPPELIN_API_WAR            ("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),
 		ZEPPELIN_JOB_DIR			("zeppelin.job.dir", "../jobs"),
 		ZEPPELIN_ZAN_REPO			("zeppelin.zan.repo", "https://github.com/NFLabs/zan.git"),
 		ZEPPELIN_ZAN_LOCAL_REPO		("zeppelin.zan.localrepo", "../zan-repo"),
@@ -222,9 +222,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_MAX_HISTORY		("zeppelin.max.history", 100),      // max num of job history
 		ZEPPELIN_DRIVERS			("zeppelin.drivers", "hive:hive2://,exec:exec://"),
 		ZEPPELIN_DRIVER_DIR			("zeppelin.driver.dir", "../drivers"),
+		ZEPPELIN_REPLS				("zeppelin.repls", "spark:com.nflabs.zeppelin.spark.SparkRepl,md:com.nflabs.zeppelin.markdown.Markdown"),
 		ZEPPELIN_REPL_DIR			("zeppelin.repl.dir", "../repl"),
 		ZEPPELIN_ENCODING			("zeppelin.encoding", "UTF-8"), 
 		ZEPPELIN_NOTEBOOK_DIR       ("zeppelin.notebook.dir", "../notebook")
+		
 		;
 
 

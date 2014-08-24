@@ -7,6 +7,7 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.servlet.DispatcherType;
@@ -52,7 +53,7 @@ public class ZeppelinServer extends Application {
 
 	public static void main(String [] args) throws Exception{
 		ReplFactory factory = new ReplFactory(ZeppelinConfiguration.create());
-		Repl repl = factory.createRepl("spark", "com.nflabs.zeppelin.spark.SparkRepl", new StringReader(""), new OutputStreamWriter(new ByteArrayOutputStream()));
+		Repl repl = factory.createRepl("spark", "com.nflabs.zeppelin.spark.SparkRepl", new Properties());
 		repl.initialize();
 		repl.interpret("println(sc.version)");
 		System.exit(0);

@@ -7,6 +7,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -20,17 +22,28 @@ public class ReplFactory {
 	Logger logger = LoggerFactory.getLogger(ReplFactory.class);
 	
 	private ZeppelinConfiguration conf;
+	Map<String, String> replNameClassMap = new HashMap<String, String>();
+	String defaultReplName;
 
 	public ReplFactory(ZeppelinConfiguration conf){
 		this.conf = conf;
+		String replsConf = conf.getString(ConfVars.ZEPPELIN_REPLS);
+		String[] confs = replsConf.split(",");
+		for(String c : confs) {
+			String [] nameAndClass = c.split(":");
+			replNameClassMap.put(nameAndClass[0], nameAndClass[1]);
+			if(defaultReplName==null){
+				defaultReplName = nameAndClass[0];
+			}
+		}
 	}
 	
-	public Repl createRepl(String replName) {
-		if(replName.equals("spark")){
-			return createRepl("spark", "com.nflabs.zeppelin.spark.SparkRepl", new Properties());
-		} else {
-			throw new RuntimeException("Unsupported repl "+replName);
-		}
+	public Repl createRepl(String replName, Properties properties) {
+		String className = replNameClassMap.get(replName);
+		if(className==null) {
+			throw new RuntimeException("Configuration not found for "+replName);
+		} 
+		return createRepl(replName, className, properties);
 	}
 	
 	public Repl createRepl(String dirName, String className, Properties property) {
