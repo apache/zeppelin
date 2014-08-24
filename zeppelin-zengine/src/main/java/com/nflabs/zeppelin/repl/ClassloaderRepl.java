@@ -32,6 +32,7 @@ public class ClassloaderRepl extends Repl {
 		try {
 			return repl.interpret(st);
 		} catch (Exception e){
+			e.printStackTrace();
 			throw new ReplException(e);
 		} finally {
 			cl = Thread.currentThread().getContextClassLoader();

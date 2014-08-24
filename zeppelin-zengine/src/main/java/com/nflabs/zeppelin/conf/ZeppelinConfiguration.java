@@ -222,6 +222,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_MAX_HISTORY		("zeppelin.max.history", 100),      // max num of job history
 		ZEPPELIN_DRIVERS			("zeppelin.drivers", "hive:hive2://,exec:exec://"),
 		ZEPPELIN_DRIVER_DIR			("zeppelin.driver.dir", "../drivers"),
+		ZEPPELIN_REPL_DIR			("zeppelin.repl.dir", "../repl"),
 		ZEPPELIN_ENCODING			("zeppelin.encoding", "UTF-8"),
 		;
 

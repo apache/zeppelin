@@ -1,7 +1,10 @@
 package com.nflabs.zeppelin.server;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,6 +29,8 @@ import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.repl.Repl;
+import com.nflabs.zeppelin.repl.ReplFactory;
 import com.nflabs.zeppelin.rest.ZANRestApi;
 import com.nflabs.zeppelin.rest.ZQLRestApi;
 import com.nflabs.zeppelin.rest.ZeppelinRestApi;
@@ -46,6 +51,12 @@ public class ZeppelinServer extends Application {
 	private ZAN zan;
 
 	public static void main(String [] args) throws Exception{
+		ReplFactory factory = new ReplFactory(ZeppelinConfiguration.create());
+		Repl repl = factory.createRepl("spark", "com.nflabs.zeppelin.spark.SparkRepl", new StringReader(""), new OutputStreamWriter(new ByteArrayOutputStream()));
+		repl.initialize();
+		repl.interpret("println(sc.version)");
+		System.exit(0);
+		
 		z = new Zengine();
 		ZeppelinConfiguration conf = z.getConf();
 

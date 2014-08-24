@@ -70,6 +70,10 @@ if [ "x$ZEPPELIN_DRIVER_DIR" == "x" ]; then
     export ZEPPELIN_DRIVER_DIR="$ZEPPELIN_HOME/drivers"
 fi
 
+if [ "x$ZEPPELIN_REPL_DIR" == "x" ]; then
+    export ZEPPELIN_REPL_DIR="$ZEPPELIN_HOME/repl"
+fi
+
 
 if [ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]; then
     . "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh"

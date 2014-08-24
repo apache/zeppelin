@@ -9,6 +9,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+
 public class ReplFactoryTest {
 
 	@Before
@@ -21,9 +23,9 @@ public class ReplFactoryTest {
 
 	@Test
 	public void testBasic() {
-		ReplFactory factory = new ReplFactory(null);
+		ReplFactory factory = new ReplFactory(ZeppelinConfiguration.create());
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		Repl repl1 = factory.createRepl("com.nflabs.zeppelin.repl.mock.MockRepl", null, new OutputStreamWriter(out));
+		Repl repl1 = factory.createRepl("mock", "com.nflabs.zeppelin.repl.mock.MockRepl", null, new OutputStreamWriter(out));
 		repl1.bindValue("a", 1);
 		
 		assertEquals(repl1.getValue("a"), 1);
