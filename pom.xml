@@ -73,8 +73,9 @@
 
   <modules>
     <module>zeppelin-zan</module>
-    <module>spark</module>
     <module>zeppelin-zengine</module>
+    <module>spark</module>
+    <module>markdown</module>
     <module>zeppelin-driver-hive11</module>
     <module>zeppelin-driver-exec</module>
     <module>zeppelin-driver-jdbc</module>
@@ -126,8 +127,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.1</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.7</source>
+          <target>1.7</target>
         </configuration>
       </plugin>
 
