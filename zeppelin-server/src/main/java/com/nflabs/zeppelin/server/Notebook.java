@@ -52,7 +52,7 @@ public class Notebook {
 	 */
 	public Note createNote() {
 		Scheduler scheduler = schedulerFactory.createOrGetFIFOScheduler("note_"+System.currentTimeMillis());		
-		Note note = new Note(conf, fs, "Untitled Note "+notes.size(), replFactory, scheduler);
+		Note note = new Note(conf, fs, new NoteReplLoader(replFactory), scheduler);
 		synchronized(notes){
 			notes.put(note.id(), note);
 		}
@@ -81,7 +81,7 @@ public class Notebook {
 			if(f.isDir()) {
 				Scheduler scheduler = schedulerFactory.createOrGetFIFOScheduler("note_"+System.currentTimeMillis());
 				logger.info("Loading note from "+f.getPath().getName());
-				Note n = Note.load(f.getPath().getName(), conf, fs, replFactory, scheduler);
+				Note n = Note.load(f.getPath().getName(), conf, fs, new NoteReplLoader(replFactory), scheduler);
 				synchronized(notes){
 					notes.put(n.id(), n);
 				}

@@ -11,6 +11,7 @@ public class ReplResult implements Serializable{
 	
 	Code code;
 	String msg;
+	Serializable data;
 	
 	public ReplResult(Code code) {
 		this.code = code;
@@ -22,11 +23,21 @@ public class ReplResult implements Serializable{
 		this.msg = msg;
 	}
 	
+	public ReplResult(Code code, String msg, Serializable data) {
+		this.code = code;
+		this.msg = msg;
+		this.data = data;
+	}
+	
 	public Code code(){
 		return code;
 	}
 	
 	public String message(){
 		return msg;
+	}
+	
+	public Object data(){
+		return data;
 	}
 }

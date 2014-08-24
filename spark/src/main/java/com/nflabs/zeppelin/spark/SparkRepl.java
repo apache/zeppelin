@@ -2,6 +2,8 @@ package com.nflabs.zeppelin.spark;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Properties;
 
 import org.apache.spark.SparkContext;
@@ -22,7 +24,7 @@ import scala.tools.nsc.Settings;
 
 public class SparkRepl extends Repl {
 
-	private SparkILoop interpreter;
+	public static SparkILoop interpreter;
 	private SparkIMain intp;
 	private SparkContext sc;
 	private Long sparkContextCreationLock = new Long(0);
@@ -48,15 +50,16 @@ public class SparkRepl extends Repl {
 		intp.initializeSynchronous();
 		
 		synchronized(sparkContextCreationLock) {
-			if (sc == null) {
-				this.sc = interpreter.createSparkContext();
-			}
+			intp.interpret("@transient val sc = com.nflabs.zeppelin.spark.SparkRepl.interpreter.createSparkContext()\n");
+			intp.interpret("import org.apache.spark.SparkContext._");
+			intp.interpret("val sqlc = new org.apache.spark.sql.SQLContext(sc)");
+			intp.interpret("import sqlc.createSchemaRDD");
+			sc = (SparkContext) getValue("sc");
 		}
-		intp.bindValue("sc", sc);		
 	}
 	
 	public void bindValue(String name, Object o){
-		getResultCode(intp.bindValue("sc", sc));
+		getResultCode(intp.bindValue(name, o));
 	}
 	
 	public Object getValue(String name){

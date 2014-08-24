@@ -1,6 +1,8 @@
 package com.nflabs.zeppelin.server;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
@@ -18,6 +20,7 @@ import com.nflabs.zeppelin.scheduler.JobListener;
  */
 public class Paragraph extends Job implements Serializable{
 	String paragraph;
+	Map<String, Object> params = new HashMap<String, Object>();
 	private transient NoteReplLoader replLoader;
 	
 	public Paragraph(JobListener listener, NoteReplLoader replLoader){
@@ -38,6 +41,15 @@ public class Paragraph extends Job implements Serializable{
 		this.paragraph = paragraph;
 	}
 	
+	
+	public Map<String, Object> getParams() {
+		return params;
+	}
+
+	public void setParams(Map<String, Object> params) {
+		this.params = params;
+	}
+
 	public String getRequiredReplName(){
 		if(paragraph==null) return null;
 
@@ -58,6 +70,7 @@ public class Paragraph extends Job implements Serializable{
 			return null;
 		}
 	}
+	
 	
 	private String getScriptBody(){
 		if(paragraph==null) return null;
@@ -117,4 +130,5 @@ public class Paragraph extends Job implements Serializable{
 		Logger logger = LoggerFactory.getLogger(Paragraph.class);
 		return logger;
 	}
+	
 }

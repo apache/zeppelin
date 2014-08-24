@@ -2,47 +2,43 @@ package com.nflabs.zeppelin.spark;
 
 import static org.junit.Assert.*;
 
+import java.util.Collection;
 import java.util.Properties;
 
+import org.apache.spark.sql.catalyst.expressions.Row;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.nflabs.zeppelin.repl.ReplResult;
 
-
-public class SparkReplTest {
+public class SparkSqlReplTest {
 
 	private SparkRepl repl;
+	private SparkSqlRepl sql;
 
 	@Before
 	public void setUp() throws Exception {
 		repl = new SparkRepl(new Properties());
 		repl.initialize();
+		sql = new SparkSqlRepl(new Properties());
+		sql.setSparkRepl(repl);
+		sql.initialize();
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		repl.destroy();
 	}
-
 	@Test
-	public void testBasicRepl() {
-		assertEquals(ReplResult.Code.SUCCESS, repl.interpret("val a = 1\nval b = 2").code());
-		assertEquals(1, repl.getValue("a"));
-		assertEquals(2, repl.getValue("b"));
-		repl.interpret("val ver = sc.version");
-		assertNotNull(repl.getValue("ver"));
-	}
-	
-	@Test
-	public void testSparkRql(){
+	public void test() {
 		repl.interpret("case class Person(name:String, age:Int)");
 		repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))");
 		repl.interpret("people.registerAsTable(\"people\")");
-		repl.interpret("val oldguys = sqlc.sql(\"SELECT name FROM people WHERE age>40\")");
-		assertEquals("res1: Array[org.apache.spark.sql.Row] = Array([jobs], [gates])\n", repl.interpret("oldguys.collect()").message());
-		
+		ReplResult ret = sql.interpret("select name, age from people where age < 40");
+		assertEquals(ReplResult.Code.SUCCESS, ret.code());
+		Collection<Row> data = (Collection<Row>) ret.data();
+		assertEquals(2, data.size());
 	}
-	
+
 }
