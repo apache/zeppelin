@@ -1,46 +1,33 @@
 package com.nflabs.zeppelin.repl;
 
-import java.io.Reader;
-import java.io.Writer;
+
+import java.util.Properties;
+
+import com.nflabs.zeppelin.repl.ReplResult;
 
 
 public abstract class Repl {
-	public static enum Result {
-		SUCCESS,
-		INCOMPLETE,
-		ERROR
-	}
-	private Reader reader;
-	private Writer writer;
 	
-	public Repl(Reader reader, Writer writer){
-		this.reader = reader;
-		this.writer = writer;
+	private Properties property;
+	
+	public Repl(Properties property){
+		this.property = property;
 	}
 	
 	public abstract void initialize();
 	public abstract void destroy();
 	public abstract Object getValue(String name);
-	public abstract Result interpret(String st);
+	public abstract ReplResult interpret(String st);
 	public abstract void cancel();
 	public abstract void bindValue(String name, Object o);
-	
-	public Reader getReader() {
-		return reader;
+
+	public Properties getProperty() {
+		return property;
 	}
 
-	public void setReader(Reader reader) {
-		this.reader = reader;
+	public void setProperty(Properties property) {
+		this.property = property;
 	}
-
-	public Writer getWriter() {
-		return writer;
-	}
-
-	public void setWriter(Writer writer) {
-		this.writer = writer;
-	}
-	
 	
 	
 }

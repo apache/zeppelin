@@ -1,16 +1,16 @@
 package com.nflabs.zeppelin.repl.mock;
 
-import java.io.Reader;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import com.nflabs.zeppelin.repl.Repl;
+import com.nflabs.zeppelin.repl.ReplResult;
 
 public class MockRepl extends Repl {
 	
-	public MockRepl(Reader reader, Writer writer) {
-		super(reader, writer);
+	public MockRepl(Properties property) {
+		super(property);
 	}
 
 	static Map<String, Object> vars = new HashMap<String, Object>();
@@ -29,8 +29,8 @@ public class MockRepl extends Repl {
 	}
 
 	@Override
-	public Result interpret(String st) {
-		return Result.SUCCESS;
+	public ReplResult interpret(String st) {
+		return new ReplResult(ReplResult.Code.SUCCESS);
 	}
 
 	@Override

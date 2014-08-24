@@ -1,12 +1,16 @@
 package com.nflabs.zeppelin.repl;
 
+import java.util.Properties;
+
+import com.nflabs.zeppelin.repl.ReplResult;
+
 public class ClassloaderRepl extends Repl {
 
 	private ClassLoader cl;
 	private Repl repl;
 
-	public ClassloaderRepl(Repl repl, ClassLoader cl) {
-		super(repl.getReader(), repl.getWriter());
+	public ClassloaderRepl(Repl repl, ClassLoader cl, Properties property) {
+		super(property);
 		this.cl = cl;
 		this.repl = repl;
 	}
@@ -26,7 +30,7 @@ public class ClassloaderRepl extends Repl {
 	}
 
 	@Override
-	public Result interpret(String st) {
+	public ReplResult interpret(String st) {
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(cl);
 		try {

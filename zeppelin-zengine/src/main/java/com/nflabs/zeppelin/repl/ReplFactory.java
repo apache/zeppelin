@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Properties;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
@@ -27,7 +28,7 @@ public class ReplFactory {
 	}
 	
 	
-	public Repl createRepl(String dirName, String className, Reader reader, Writer writer)  {
+	public Repl createRepl(String dirName, String className, Properties property) {
 		logger.info("Create {} repl", className);
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 
@@ -39,9 +40,9 @@ public class ReplFactory {
 			Thread.currentThread().setContextClassLoader(cl);
 
 			Class<Repl> replClass = (Class<Repl>) cl.loadClass(className);
-			Constructor<Repl> constructor = replClass.getConstructor(new Class []{Reader.class, Writer.class});
-			Repl repl = constructor.newInstance(reader, writer);
-			return new ClassloaderRepl(repl, cl);
+			Constructor<Repl> constructor = replClass.getConstructor(new Class []{Properties.class});
+			Repl repl = constructor.newInstance();
+			return new ClassloaderRepl(repl, cl, property);
 		} catch (SecurityException e) {
 			throw new ReplException(e);
 		} catch (NoSuchMethodException e) {

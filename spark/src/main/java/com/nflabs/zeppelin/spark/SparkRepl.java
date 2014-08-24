@@ -1,9 +1,8 @@
 package com.nflabs.zeppelin.spark;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.Writer;
+import java.util.Properties;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.repl.SparkILoop;
@@ -12,6 +11,8 @@ import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 
 import com.nflabs.zeppelin.repl.Repl;
+import com.nflabs.zeppelin.repl.ReplResult;
+import com.nflabs.zeppelin.repl.ReplResult.Code;
 
 import scala.None;
 import scala.Some;
@@ -20,21 +21,26 @@ import scala.collection.mutable.HashSet;
 import scala.tools.nsc.Settings;
 
 public class SparkRepl extends Repl {
-	public SparkRepl(Reader reader, Writer writer) {
-		super(reader, writer);
-	}
 
 	private SparkILoop interpreter;
 	private SparkIMain intp;
-	private static SparkContext sc;
-	private static Long sparkContextCreationLock = new Long(0); 	
+	private SparkContext sc;
+	private Long sparkContextCreationLock = new Long(0);
+	private ByteArrayOutputStream out;
+	
+
+	public SparkRepl(Properties property) {
+		super(property);
+		out = new ByteArrayOutputStream();
+	}
+
 	
 	@Override
 	public void initialize(){
 		Settings settings = new Settings();
 		settings.classpath().value_$eq(System.getProperty("java.class.path"));
 		
-		this.interpreter = new SparkILoop(new BufferedReader(getReader()), new PrintWriter(getWriter()));
+		this.interpreter = new SparkILoop(null, new PrintWriter(out));
 		interpreter.settings_$eq(settings);
 		
 		interpreter.createInterpreter();
@@ -50,7 +56,7 @@ public class SparkRepl extends Repl {
 	}
 	
 	public void bindValue(String name, Object o){
-		getResult(intp.bindValue("sc", sc));
+		getResultCode(intp.bindValue("sc", sc));
 	}
 	
 	public Object getValue(String name){
@@ -66,23 +72,33 @@ public class SparkRepl extends Repl {
 	
 	
 	private final String jobGroup = "zeppelin-"+this.hashCode();
+
+	/**
+	 * Interpret a single line
+	 */
+	public ReplResult interpret(String line){
+		return interpret(line.split("\n"));
+	}
 	
-	public Result interpret(String st){
+	public ReplResult interpret(String [] lines){
 		synchronized(this){
-			String[] stmts = st.split("\n");
-			sc.setJobGroup(jobGroup, "Zeppelin", false);
-			Result r = null;
-			for(String s : stmts) {
-				r = getResult(intp.interpret(s));
-				if (r == Result.ERROR) {
+			out.reset();
+			sc.setJobGroup(jobGroup, "Zeppelin", false);			
+			Code r = null;
+			for(String s : lines) {
+				scala.tools.nsc.interpreter.Results.Result res = intp.interpret(s);
+				r = getResultCode(res);
+				
+				if (r == Code.ERROR) {
 					sc.clearJobGroup();
-					return r;
+					return new ReplResult(r, out.toString());
 				}
 			}
 			sc.clearJobGroup();
-			return r;
-		}
+			return new ReplResult(r, out.toString());
+		}		
 	}
+	
 	
 	public void cancel(){
 		sc.cancelJobGroup(jobGroup);
@@ -103,13 +119,13 @@ public class SparkRepl extends Repl {
 		return 0;
 	}
 	
-	private Result getResult(scala.tools.nsc.interpreter.Results.Result r){
+	private Code getResultCode(scala.tools.nsc.interpreter.Results.Result r){
 		if (r instanceof scala.tools.nsc.interpreter.Results.Success$) {
-			return Result.SUCCESS;
+			return Code.SUCCESS;
 		} else if (r instanceof scala.tools.nsc.interpreter.Results.Incomplete$) {
-			return Result.INCOMPLETE;
+			return Code.INCOMPLETE;
 		} else {
-			return Result.ERROR;
+			return Code.ERROR;
 		}
 	}
 

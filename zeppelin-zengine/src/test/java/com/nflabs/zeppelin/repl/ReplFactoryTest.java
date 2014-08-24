@@ -2,8 +2,7 @@ package com.nflabs.zeppelin.repl;
 
 import static org.junit.Assert.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStreamWriter;
+import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
@@ -24,8 +23,7 @@ public class ReplFactoryTest {
 	@Test
 	public void testBasic() {
 		ReplFactory factory = new ReplFactory(ZeppelinConfiguration.create());
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		Repl repl1 = factory.createRepl("mock", "com.nflabs.zeppelin.repl.mock.MockRepl", null, new OutputStreamWriter(out));
+		Repl repl1 = factory.createRepl("mock", "com.nflabs.zeppelin.repl.mock.MockRepl", new Properties());
 		repl1.bindValue("a", 1);
 		
 		assertEquals(repl1.getValue("a"), 1);
