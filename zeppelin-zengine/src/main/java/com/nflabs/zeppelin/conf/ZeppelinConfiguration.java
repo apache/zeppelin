@@ -223,7 +223,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_DRIVERS			("zeppelin.drivers", "hive:hive2://,exec:exec://"),
 		ZEPPELIN_DRIVER_DIR			("zeppelin.driver.dir", "../drivers"),
 		ZEPPELIN_REPL_DIR			("zeppelin.repl.dir", "../repl"),
-		ZEPPELIN_ENCODING			("zeppelin.encoding", "UTF-8"),
+		ZEPPELIN_ENCODING			("zeppelin.encoding", "UTF-8"), 
+		ZEPPELIN_NOTEBOOK_DIR       ("zeppelin.notebook.dir", "../notebook")
 		;
 
 

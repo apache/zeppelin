@@ -2,8 +2,6 @@ package com.nflabs.zeppelin.repl;
 
 
 import java.io.File;
-import java.io.Reader;
-import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
@@ -27,6 +25,13 @@ public class ReplFactory {
 		this.conf = conf;
 	}
 	
+	public Repl createRepl(String replName) {
+		if(replName.equals("spark")){
+			return createRepl("spark", "com.nflabs.zeppelin.spark.SparkRepl", new Properties());
+		} else {
+			throw new RuntimeException("Unsupported repl "+replName);
+		}
+	}
 	
 	public Repl createRepl(String dirName, String className, Properties property) {
 		logger.info("Create {} repl", className);

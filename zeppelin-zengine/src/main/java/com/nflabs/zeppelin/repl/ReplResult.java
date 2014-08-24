@@ -1,6 +1,8 @@
 package com.nflabs.zeppelin.repl;
 
-public class ReplResult {
+import java.io.Serializable;
+
+public class ReplResult implements Serializable{
 	public static enum Code {
 		SUCCESS,
 		INCOMPLETE,
