@@ -18,7 +18,6 @@ import com.nflabs.zeppelin.scheduler.JobListener;
  *  Changing/adding/deleting non transitive field name need consideration of that. 
  */
 public abstract class Job {
-    //TODO(alex): make Job interface and AbstractJob - skeletal impl
 	/**
 	 * Job status
 	 *
@@ -49,7 +48,7 @@ public abstract class Job {
     Date dateStarted;
     Date dateFinished;
     Status status;
-    //TODO(alex): why do we keep this state if we already have Status?
+
     boolean aborted = false;
 	
 	transient private Throwable exception;
@@ -163,7 +162,6 @@ public abstract class Job {
 
 	public boolean isAborted() {
 		return aborted;
-		//TODO(alex) why not this.status.isAborted()?
 	}
 
 	public Date getDateCreated() {

@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.nflabs.zeppelin.repl.Repl;
 import com.nflabs.zeppelin.repl.ReplResult;
 import com.nflabs.zeppelin.scheduler.Job;
@@ -37,24 +40,32 @@ public class Paragraph extends Job implements Serializable{
 	
 	public String getRequiredReplName(){
 		if(paragraph==null) return null;
-		
-		String magic = null;
+
+		// get script head
+		int scriptHeadIndex = 0;
 		for(int i=0; i < paragraph.length(); i++){
-			int ch = paragraph.charAt(i);
-			if (!(i==0 && ch == '%')) {  // detect magic
+			char ch = paragraph.charAt(i);
+			if(ch==' ' || ch == '\n'){
+				scriptHeadIndex = i;
 				break;
-			} else {
-				magic = "";
-			}
-			
-			if (ch == ' ' || ch == '\n') {
-				break;
-			} else {
-				magic += ch;
 			}
 		}
+		if(scriptHeadIndex==0) return null;
+		String head = paragraph.substring(0, scriptHeadIndex);
+		if(head.startsWith("%")){
+			return head.substring(1);
+		} else {
+			return null;
+		}
+	}
+	
+	private String getScriptBody(){
+		if(paragraph==null) return null;
 		
-		return magic;
+		String magic = getRequiredReplName();
+		if(magic==null) return paragraph;
+		if(magic.length()+2>=paragraph.length()) return "";
+		return paragraph.substring(magic.length()+2);
 	}
 	
 	public NoteReplLoader getNoteReplLoader(){
@@ -67,6 +78,10 @@ public class Paragraph extends Job implements Serializable{
 	
 	public void setNoteReplLoader(NoteReplLoader repls) {
 		this.replLoader = repls;
+	}
+	
+	public ReplResult getResult() {
+		return (ReplResult) getReturn();
 	}
 	
 	
@@ -83,7 +98,11 @@ public class Paragraph extends Job implements Serializable{
 	@Override
 	protected Object jobRun() throws Throwable {
 		Repl repl = getRepl(getRequiredReplName(), new Properties());
-		ReplResult ret = repl.interpret(paragraph);
+		if(repl==null) {	
+			logger().error("Can not find interpreter name "+getRequiredReplName());
+			throw new RuntimeException("Can not find interpreter for "+getRequiredReplName());
+		}
+		ReplResult ret = repl.interpret(getScriptBody());
 		return ret;
 	}
 
@@ -92,5 +111,10 @@ public class Paragraph extends Job implements Serializable{
 		Repl repl = getRepl(getRequiredReplName(), new Properties());
 		repl.cancel();
 		return true;
+	}
+	
+	private Logger logger(){
+		Logger logger = LoggerFactory.getLogger(Paragraph.class);
+		return logger;
 	}
 }

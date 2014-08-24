@@ -39,7 +39,7 @@ public class ReplFactory {
 	}
 	
 	public Repl createRepl(String replName, Properties properties) {
-		String className = replNameClassMap.get(replName);
+		String className = replNameClassMap.get(replName!=null ? replName : defaultReplName);
 		if(className==null) {
 			throw new RuntimeException("Configuration not found for "+replName);
 		} 
@@ -47,7 +47,7 @@ public class ReplFactory {
 	}
 	
 	public Repl createRepl(String dirName, String className, Properties property) {
-		logger.info("Create {} repl", className);
+		logger.info("Create repl {} from {}", className, dirName);
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 
 		try {
@@ -59,7 +59,7 @@ public class ReplFactory {
 
 			Class<Repl> replClass = (Class<Repl>) cl.loadClass(className);
 			Constructor<Repl> constructor = replClass.getConstructor(new Class []{Properties.class});
-			Repl repl = constructor.newInstance();
+			Repl repl = constructor.newInstance(property);
 			return new ClassloaderRepl(repl, cl, property);
 		} catch (SecurityException e) {
 			throw new ReplException(e);

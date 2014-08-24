@@ -12,6 +12,8 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -84,13 +86,69 @@ public class Note implements Serializable, JobListener {
 	}
 
 	/**
+	 * Add paragraph last
+	 * @param p
+	 */
+	public Paragraph addParagraph() {
+		Paragraph p = new Paragraph(this, replLoader);
+		synchronized(paragraphs){
+			paragraphs.add(p);
+		}
+		return p;
+	}
+	
+	/**
+	 * Insert paragraph in given index
+	 * @param index
+	 * @param p
+	 */
+	public Paragraph insertParagraph(int index) {
+		Paragraph p = new Paragraph(this, replLoader);
+		synchronized(paragraphs){
+			paragraphs.add(index, p);
+		}
+		return p;
+	}
+	
+	/**
+	 * Remove paragraph by id
+	 * @param paragraphId
+	 * @return
+	 */
+	public Paragraph removeParagraph(String paragraphId) {
+		synchronized(paragraphs){
+			for(int i=0; i<paragraphs.size(); i++){
+				Paragraph p = paragraphs.get(i);
+				if(p.getId().equals(paragraphId)) {
+					paragraphs.remove(i);
+					return p;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public Paragraph getParagraph(String paragraphId) {
+		synchronized(paragraphs) {
+			for(Paragraph p : paragraphs) {
+				if(p.getId().equals(paragraphId)) {
+					return p;
+				}
+			}
+		}
+		return null;
+	}
+	
+	/**
 	 * Run all paragraphs sequentially
 	 */
 	public void runAll(){
-		for (Paragraph p : paragraphs) {
-			p.setNoteReplLoader(replLoader);
-			p.setListener(this);
-			scheduler.submit(p);
+		synchronized(paragraphs){
+			for (Paragraph p : paragraphs) {
+				p.setNoteReplLoader(replLoader);
+				p.setListener(this);
+				scheduler.submit(p);
+			}
 		}
 	}
 	
@@ -104,18 +162,12 @@ public class Note implements Serializable, JobListener {
 		p.setListener(this);
 		scheduler.submit(p);
 	}
-	
-	public Paragraph getParagraph(String paragraphId) {
-		for(Paragraph p : paragraphs) {
-			if(p.getId().equals(paragraphId)) {
-				return p;
-			}
-		}
-		return null;
-	}
+
 	
 	public List<Paragraph> getParagraphs(){
-		return paragraphs;
+		synchronized(paragraphs) {
+			return new LinkedList<Paragraph>(paragraphs);
+		}
 	}
 	
 	
@@ -130,8 +182,9 @@ public class Note implements Serializable, JobListener {
 		} else if(fs.isFile(dir)) {
 			throw new RuntimeException("File already exists"+dir.toString());
 		}
-		
+				
 		Path file = new Path(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)+"/"+id+"/note.json");
+		logger().info("Persist note {} into {}", id, file.toUri());
 		
 		String json = gson.toJson(this);
 		FSDataOutputStream out;
@@ -146,12 +199,14 @@ public class Note implements Serializable, JobListener {
 		Gson gson = gsonBuilder.create();
 		
 		Path file = new Path(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)+"/"+id+"/note.json");
+		logger().info("Load note {} from {}", id, file.toUri());
+		
 		if(!fs.isFile(file)){
 			return null;
 		}
 		
 		FSDataInputStream ins = fs.open(file);
-		String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR));
+		String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
 		Note note = gson.fromJson(json, Note.class);
 		note.setZeppelinConfiguration(conf);
 		note.setFileSystem(fs);
@@ -171,5 +226,9 @@ public class Note implements Serializable, JobListener {
 		Paragraph p = (Paragraph) job;
 	}
 	
+	private static Logger logger(){
+		Logger logger = LoggerFactory.getLogger(Note.class);
+		return logger;
+	}
 	
 }

@@ -30,7 +30,7 @@ public class MockRepl extends Repl {
 
 	@Override
 	public ReplResult interpret(String st) {
-		return new ReplResult(ReplResult.Code.SUCCESS);
+		return new ReplResult(ReplResult.Code.SUCCESS, st);
 	}
 
 	@Override
