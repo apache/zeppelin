@@ -22,7 +22,9 @@ public class SparkSqlRepl extends Repl {
 	@Override
 	public void initialize() {
 		Map<String, Repl> repls = (Map<String, Repl>) this.getProperty().get("repls");
-		sparkRepl = repls.get("spark");
+		if(repls!=null) {
+			sparkRepl = repls.get("spark");
+		}
 	}
 	
 	public void setSparkRepl(Repl repl) {

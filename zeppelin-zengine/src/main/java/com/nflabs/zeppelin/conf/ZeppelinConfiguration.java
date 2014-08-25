@@ -225,11 +225,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_REPLS				("zeppelin.repls", "spark:com.nflabs.zeppelin.spark.SparkRepl,sql:spark:com.nflabs.zeppelin.spark.SparkSqlRepl,md:com.nflabs.zeppelin.markdown.Markdown"),
 		ZEPPELIN_REPL_DIR			("zeppelin.repl.dir", "../repl"),
 		ZEPPELIN_ENCODING			("zeppelin.encoding", "UTF-8"), 
-		ZEPPELIN_NOTEBOOK_DIR       ("zeppelin.notebook.dir", "../notebook")
-		
+		ZEPPELIN_NOTEBOOK_DIR       ("zeppelin.notebook.dir", "../notebook")		
 		;
-
-
 
 		private String varName;
 		@SuppressWarnings("rawtypes")
