@@ -1,9 +1,23 @@
 function Zeppelin(serverAddr){
+  this.ws = new WebSocket(serverAddr);
+  this.ws.onmessage = function(msg) {
+    console.log(msg);
+  };
+  
+  this.ws.onOpen = function(response) {
+    console.log("Websocket created %o", response);
+  };
+
+  this.ws.onError = function(response){
+    console.log("On error %o", response);
+  };
+
+/*
     this.serverAddr = serverAddr;
     this.socket = $.atmosphere;
 
     this.request = {
-        url: serverAddr + "/notebook",
+        url: serverAddr,
         contentType : "application/json",
         logLevel : 'debug',
         transport : 'websocket',
@@ -23,7 +37,7 @@ function Zeppelin(serverAddr){
     };
 
     var subSocket = this.socket.subscribe(this.request);
-
+*/
 };
 
 function Note(id){
@@ -42,5 +56,5 @@ function Pargraph(id){
 };
 
 
-var zp = new Zeppelin("ws://localhost:8181/api");
+var zp = new Zeppelin("ws://localhost:8081");
 console.log(">>>>>>>>> READY <<<<<<<<<<<");
