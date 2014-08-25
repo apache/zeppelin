@@ -17,6 +17,7 @@ import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.java_websocket.server.WebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +51,7 @@ public class ZeppelinServer extends Application {
 
 		int port = conf.getInt(ConfVars.ZEPPELIN_PORT);
         final Server server = setupJettyServer(port);
+        final com.nflabs.zeppelin.socket.Notebook websocket = new com.nflabs.zeppelin.socket.Notebook(port+1);
 
         //REST api
 		final ServletContextHandler restApi = setupRestApiContextHandler();
@@ -66,6 +68,8 @@ public class ZeppelinServer extends Application {
 	    contexts.setHandlers(new Handler[]{swagger, restApi, webApp, webAppSwagg});
 	    server.setHandler(contexts);
 
+	    
+        websocket.start();
 	    LOG.info("Start zeppelin server");
         server.start();
         LOG.info("Started");
@@ -75,6 +79,7 @@ public class ZeppelinServer extends Application {
 		        LOG.info("Shutting down Zeppelin Server ... ");
             	try {
 					server.stop();
+					websocket.stop();
 				} catch (Exception e) {
 					LOG.error("Error while stopping servlet container", e);
 				}
