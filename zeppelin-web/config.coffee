@@ -38,6 +38,7 @@ exports.config =
           'vendor/scripts/jquery-1.8.3.min.js',
           'vendor/scripts/jquery-ui-1.10.4.custom.min.js',
           'vendor/scripts/jquery-nestable.js',
+          'vendor/scripts/jquery.atmosphere.js',
 
           'vendor/scripts/handlebars-1.1.2.js',
           'vendor/scripts/ember-latest.js',
