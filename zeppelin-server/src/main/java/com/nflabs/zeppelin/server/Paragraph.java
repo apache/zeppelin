@@ -1,8 +1,6 @@
 package com.nflabs.zeppelin.server;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
@@ -14,19 +12,21 @@ import com.nflabs.zeppelin.repl.Repl;
 import com.nflabs.zeppelin.repl.ReplResult;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.JobListener;
+import com.nflabs.zeppelin.server.form.Form;
 
 /**
  * execution unit 
  */
 public class Paragraph extends Job implements Serializable{
 	String paragraph;
-	Map<String, Object> params = new HashMap<String, Object>();
 	private transient NoteReplLoader replLoader;
+	public final Form form;
 	
 	public Paragraph(JobListener listener, NoteReplLoader replLoader){
 		super(generateId(), listener);
 		this.replLoader = replLoader;
 		paragraph = null;
+		form = new Form();
 	}
 	
 	private static String generateId(){
@@ -39,15 +39,6 @@ public class Paragraph extends Job implements Serializable{
 
 	public void setParagraph(String paragraph) {
 		this.paragraph = paragraph;
-	}
-	
-	
-	public Map<String, Object> getParams() {
-		return params;
-	}
-
-	public void setParams(Map<String, Object> params) {
-		this.params = params;
 	}
 
 	public String getRequiredReplName(){
@@ -115,6 +106,8 @@ public class Paragraph extends Job implements Serializable{
 			logger().error("Can not find interpreter name "+getRequiredReplName());
 			throw new RuntimeException("Can not find interpreter for "+getRequiredReplName());
 		}
+		// inject form
+		repl.bindValue("form", form);
 		ReplResult ret = repl.interpret(getScriptBody());
 		return ret;
 	}
