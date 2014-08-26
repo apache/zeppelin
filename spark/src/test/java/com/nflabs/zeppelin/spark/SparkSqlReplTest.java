@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.nflabs.zeppelin.repl.ReplResult;
+import com.nflabs.zeppelin.repl.ReplResult.Type;
 
 public class SparkSqlReplTest {
 
@@ -37,8 +38,10 @@ public class SparkSqlReplTest {
 		repl.interpret("people.registerAsTable(\"people\")");
 		ReplResult ret = sql.interpret("select name, age from people where age < 40");
 		assertEquals(ReplResult.Code.SUCCESS, ret.code());
-		Collection<Row> data = (Collection<Row>) ret.data();
-		assertEquals(2, data.size());
+		assertEquals(Type.TABLE, ret.type());
+		assertEquals("name\tage\nmoon\t33\npark\t34\n", ret.message());
+		
+		assertEquals(ReplResult.Code.ERROR, sql.interpret("select wrong syntax").code());
 	}
 
 }

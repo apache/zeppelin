@@ -11,13 +11,13 @@ public class ReplResult implements Serializable{
 	
 	public static enum Type {
 		TEXT,
-		HTML
+		HTML,
+		TABLE
 	}
 	
 	Code code;
 	Type type;
 	String msg;
-	Serializable data;
 	
 	public ReplResult(Code code) {
 		this.code = code;
@@ -28,13 +28,6 @@ public class ReplResult implements Serializable{
 	public ReplResult(Code code, String msg) {
 		this.code = code;
 		this.msg = getData(msg);
-		this.type = getType(msg);
-	}
-	
-	public ReplResult(Code code, String msg, Serializable data) {
-		this.code = code;
-		this.msg = getData(msg);
-		this.data = data;
 		this.type = getType(msg);
 	}
 	
@@ -64,6 +57,13 @@ public class ReplResult implements Serializable{
 			} else {
 				return "";
 			}
+		} else if(msg.startsWith("%table ")){
+			int magicLength = "%table ".length();
+			if(msg.length()>magicLength){
+				return msg.substring(magicLength);
+			} else {
+				return "";
+			}			
 		} else {
 			return msg;
 		}
@@ -76,6 +76,8 @@ public class ReplResult implements Serializable{
 			return Type.HTML;
 		} else if(msg.startsWith("%text ")){
 			return Type.TEXT;
+		} else if(msg.startsWith("%table ")){
+			return Type.TABLE;
 		} else {
 			return Type.TEXT;
 		}		
@@ -87,10 +89,6 @@ public class ReplResult implements Serializable{
 	
 	public String message(){
 		return msg;
-	}
-	
-	public Object data(){
-		return data;
 	}
 	
 	public Type type(){

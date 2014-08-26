@@ -13,6 +13,7 @@ import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.repl.SparkIMain;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
+import org.apache.spark.sql.SQLContext;
 
 import com.nflabs.zeppelin.repl.Repl;
 import com.nflabs.zeppelin.repl.ReplResult;
@@ -31,6 +32,7 @@ public class SparkRepl extends Repl {
 	private SparkContext sc;
 	private Long sparkContextCreationLock = new Long(0);
 	private ByteArrayOutputStream out;
+	private SQLContext sqlc;
 	
 
 	public SparkRepl(Properties property) {
@@ -38,6 +40,13 @@ public class SparkRepl extends Repl {
 		out = new ByteArrayOutputStream();
 	}
 
+	public SparkContext getSparkContext(){
+		return sc;
+	}
+	
+	public SQLContext getSQLContext(){
+		return sqlc;
+	}
 	
 	@Override
 	public void initialize(){
@@ -64,6 +73,7 @@ public class SparkRepl extends Repl {
 			intp.interpret("val sqlc = new org.apache.spark.sql.SQLContext(sc)");
 			intp.interpret("import sqlc.createSchemaRDD");
 			sc = (SparkContext) getValue("sc");
+			sqlc = (SQLContext) getValue("sqlc");
 		}
 	}
 	
