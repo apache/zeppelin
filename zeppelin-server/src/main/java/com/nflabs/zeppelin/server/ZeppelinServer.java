@@ -42,16 +42,17 @@ public class ZeppelinServer extends Application {
 	private ZQLJobManager analyzeSessionManager;
 	private ZANJobManager zanJobManager;
 	private ZAN zan;
-	private Notebook notebook;
+	public static Notebook notebook;
 
 	private ReplFactory replFactory;
 
 	public static void main(String [] args) throws Exception{
-		ZeppelinConfiguration conf = ZeppelinConfiguration.create();		
+		z = new Zengine();
+		ZeppelinConfiguration conf = z.getConf();
 
 		int port = conf.getInt(ConfVars.ZEPPELIN_PORT);
         final Server server = setupJettyServer(port);
-        final com.nflabs.zeppelin.socket.Notebook websocket = new com.nflabs.zeppelin.socket.Notebook(port+1);
+        final com.nflabs.zeppelin.socket.NotebookServer websocket = new com.nflabs.zeppelin.socket.NotebookServer(port+1);
 
         //REST api
 		final ServletContextHandler restApi = setupRestApiContextHandler();
@@ -183,7 +184,7 @@ public class ZeppelinServer extends Application {
 
 		FileSystem fs = FileSystem.get(new org.apache.hadoop.conf.Configuration());
 
-		/*
+
         if(z.useFifoJobScheduler()){
 			this.analyzeSessionManager = new ZQLJobManager(z, fs, schedulerFactory.createOrGetFIFOScheduler("analyze"), z.getConf().getString(ConfVars.ZEPPELIN_JOB_DIR));
 		} else {
@@ -196,10 +197,9 @@ public class ZeppelinServer extends Application {
 		                   fs);
 
 		this.zanJobManager = new ZANJobManager(zan, schedulerFactory.createOrGetFIFOScheduler("analyze"));
-		*/
 		
 		this.replFactory = new ReplFactory(conf);
-		this.notebook = new Notebook(conf, fs, schedulerFactory, replFactory);
+		notebook = new Notebook(conf, fs, schedulerFactory, replFactory);
 	}
 
 	@Override
@@ -216,16 +216,11 @@ public class ZeppelinServer extends Application {
     	ZeppelinRestApi root = new ZeppelinRestApi();
     	singletons.add(root);
 
-    	/*
     	ZQLRestApi analyze = new ZQLRestApi(this.analyzeSessionManager);
     	singletons.add(analyze);
 
     	ZANRestApi zan = new ZANRestApi(this.zan, this.zanJobManager);
     	singletons.add(zan);
-*/    	
-
-    	NotebookApi notebook = new NotebookApi(this.notebook);
-    	singletons.add(notebook);
     	
     	return singletons;
     }

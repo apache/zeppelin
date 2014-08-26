@@ -40,6 +40,7 @@ public class SparkSqlRepl extends Repl {
 	public Object getValue(String name) {
 		return null;
 	}
+	
 
 	@Override
 	public ReplResult interpret(String st) {
