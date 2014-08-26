@@ -137,6 +137,12 @@ public class Note implements Serializable, JobListener {
 		return null;
 	}
 	
+	public Paragraph getLastParagraph(){
+		synchronized(paragraphs) {
+			return paragraphs.get(paragraphs.size()-1);
+		}
+	}
+	
 	/**
 	 * Run all paragraphs sequentially
 	 */
@@ -154,11 +160,15 @@ public class Note implements Serializable, JobListener {
 	 * Run a single paragraph
 	 * @param paragraphId
 	 */
-	public void run(String paragraphId) {
+	public void run(String paragraphId, JobListener listener) {
 		Paragraph p = getParagraph(paragraphId);
 		p.setNoteReplLoader(replLoader);
-		p.setListener(this);
+		p.setListener(listener);
 		scheduler.submit(p);
+	}
+	
+	public void run(String paragraphId){
+		run(paragraphId, this);
 	}
 
 	

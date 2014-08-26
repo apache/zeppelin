@@ -101,13 +101,16 @@ public class Paragraph extends Job implements Serializable{
 
 	@Override
 	protected Object jobRun() throws Throwable {
-		Repl repl = getRepl(getRequiredReplName(), new Properties());
+		String replName = getRequiredReplName();
+		Repl repl = getRepl(replName, new Properties());
+		logger().info("run paragraph {} using {} "+repl, getId(), replName);
 		if(repl==null) {	
-			logger().error("Can not find interpreter name "+getRequiredReplName());
+			logger().error("Can not find interpreter name "+repl);
 			throw new RuntimeException("Can not find interpreter for "+getRequiredReplName());
 		}
 		// inject form
 		repl.bindValue("form", form);
+		logger().info("RUN : "+getScriptBody());
 		ReplResult ret = repl.interpret(getScriptBody());
 		return ret;
 	}
