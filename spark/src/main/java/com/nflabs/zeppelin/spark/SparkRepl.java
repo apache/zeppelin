@@ -97,13 +97,18 @@ public class SparkRepl extends Repl {
 			out.reset();
 			sc.setJobGroup(jobGroup, "Zeppelin", false);			
 			Code r = null;
+			String incomplete = "";
 			for(String s : lines) {
-				scala.tools.nsc.interpreter.Results.Result res = intp.interpret(s);
+				scala.tools.nsc.interpreter.Results.Result res = intp.interpret(incomplete+s);
 				r = getResultCode(res);
 				
 				if (r == Code.ERROR) {
 					sc.clearJobGroup();
 					return new ReplResult(r, out.toString());
+				} else if(r==Code.INCOMPLETE) {
+					incomplete += s +"\n";
+				} else {
+					incomplete = "";
 				}
 			}
 			sc.clearJobGroup();
