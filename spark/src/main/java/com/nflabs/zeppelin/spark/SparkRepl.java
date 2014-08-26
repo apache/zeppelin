@@ -65,7 +65,7 @@ public class SparkRepl extends Repl {
 			intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
 			Map<String, Object> binder = (Map<String, Object>) getValue("_binder");
 			binder.put("out", new PrintStream(out));
-			intp.interpret("System.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
+			//intp.interpret("System.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
 			intp.interpret("Console.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
 			
 			intp.interpret("@transient val sc = com.nflabs.zeppelin.spark.SparkRepl.interpreter.createSparkContext()\n");

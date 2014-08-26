@@ -21,14 +21,16 @@ public class NoteReplLoader {
 	}
 	
 	
-	public Repl getRepl(String name, Properties properties){
+	public Repl getRepl(String replName, Properties properties){
+		String name = (replName!=null) ? replName : factory.getDefaultReplName();
 		if(loadedRepls.containsKey(name)) {
 			return loadedRepls.get(name);
 		} else {
 			Properties p = new Properties(properties);
-			p.put("repls", loadedRepls);
+			p.put("repls", loadedRepls);              // for SparkSqlRepl to use SparkRepl
 			Repl repl = factory.createRepl(name, p);
-			repl.initialize();				
+			repl.initialize();
+			
 			loadedRepls.put(name, repl);
 			return repl;
 		}

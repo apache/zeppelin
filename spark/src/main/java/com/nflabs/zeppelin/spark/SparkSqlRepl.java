@@ -16,12 +16,13 @@ import scala.collection.Seq;
 import scala.collection.convert.Decorators.AsJava;
 import scala.collection.immutable.Set;
 
+import com.nflabs.zeppelin.repl.ClassloaderRepl;
 import com.nflabs.zeppelin.repl.Repl;
 import com.nflabs.zeppelin.repl.ReplResult;
 import com.nflabs.zeppelin.repl.ReplResult.Code;
 
 public class SparkSqlRepl extends Repl {
-	private SparkRepl sparkRepl;
+	private ClassloaderRepl sparkClassloaderRepl;
 	AtomicInteger num = new AtomicInteger(0);
 
 	public SparkSqlRepl(Properties property) {
@@ -32,12 +33,21 @@ public class SparkSqlRepl extends Repl {
 	public void initialize() {
 		Map<String, Repl> repls = (Map<String, Repl>) this.getProperty().get("repls");
 		if(repls!=null) {
-			sparkRepl = (SparkRepl) repls.get("spark");
+			sparkClassloaderRepl = (ClassloaderRepl) repls.get("spark");
 		}
 	}
 	
-	public void setSparkRepl(SparkRepl repl) {
-		this.sparkRepl = (SparkRepl) repl;
+	public void setSparkClassloaderRepl(ClassloaderRepl repl) {
+		this.sparkClassloaderRepl = (ClassloaderRepl) repl;
+	}
+	
+	
+	private void findSpark(){
+		if(sparkClassloaderRepl!=null) return;
+		Map<String, Repl> repls = (Map<String, Repl>) this.getProperty().get("repls");
+		if(repls!=null) {			
+			sparkClassloaderRepl = (ClassloaderRepl) repls.get("spark");
+		}
 	}
 	
 
@@ -53,7 +63,8 @@ public class SparkSqlRepl extends Repl {
 
 	@Override
 	public ReplResult interpret(String st) {
-		SQLContext sqlc = sparkRepl.getSQLContext();
+		findSpark();
+		SQLContext sqlc = ((SparkRepl)sparkClassloaderRepl.getInnerRepl()).getSQLContext();
 		SchemaRDD rdd = sqlc.sql(st);
 		Row[] rows = null;
 		try {

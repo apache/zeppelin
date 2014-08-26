@@ -14,6 +14,10 @@ public class ClassloaderRepl extends Repl {
 		this.cl = cl;
 		this.repl = repl;
 	}
+	
+	public Repl getInnerRepl(){
+		return repl;
+	}
 
 	@Override
 	public Object getValue(String name) {

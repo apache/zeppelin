@@ -38,8 +38,13 @@ public class ReplFactory {
 		}
 	}
 	
+	public String getDefaultReplName(){
+		return defaultReplName;
+	}
+	
 	public Repl createRepl(String replName, Properties properties) {
 		String className = replNameClassMap.get(replName!=null ? replName : defaultReplName);
+		logger.info("find repl class {} = {}", replName, className);
 		if(className==null) {
 			throw new RuntimeException("Configuration not found for "+replName);
 		} 
