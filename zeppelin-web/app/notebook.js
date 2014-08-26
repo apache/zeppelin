@@ -155,7 +155,12 @@ function Paragraph(notebook, data){
 
         var result = this.data.result;
         if (result) {
-            target.children('div').html(this.data.result.msg);
+            if(result.type=="HTML"){
+                target.children('div').html(result.msg);
+            } else {
+                console.log("TEXT");
+                target.children('div').html("<pre>"+result.msg+"</pre>");
+            }
         }
     }
 
