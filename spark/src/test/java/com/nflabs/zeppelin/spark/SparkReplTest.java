@@ -2,6 +2,9 @@ package com.nflabs.zeppelin.spark;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.util.Map;
 import java.util.Properties;
 
 import org.junit.After;
@@ -33,6 +36,7 @@ public class SparkReplTest {
 		assertEquals(2, repl.getValue("b"));
 		repl.interpret("val ver = sc.version");
 		assertNotNull(repl.getValue("ver"));
+		assertEquals("HELLO\n", repl.interpret("println(\"HELLO\")").message());
 	}
 	
 	@Test

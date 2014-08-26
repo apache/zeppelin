@@ -1,9 +1,11 @@
 package com.nflabs.zeppelin.spark;
 
 import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.spark.SparkContext;
@@ -50,6 +52,13 @@ public class SparkRepl extends Repl {
 		intp.initializeSynchronous();
 		
 		synchronized(sparkContextCreationLock) {
+			// redirect stdout
+			intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
+			Map<String, Object> binder = (Map<String, Object>) getValue("_binder");
+			binder.put("out", new PrintStream(out));
+			intp.interpret("System.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
+			intp.interpret("Console.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
+			
 			intp.interpret("@transient val sc = com.nflabs.zeppelin.spark.SparkRepl.interpreter.createSparkContext()\n");
 			intp.interpret("import org.apache.spark.SparkContext._");
 			intp.interpret("val sqlc = new org.apache.spark.sql.SQLContext(sc)");
