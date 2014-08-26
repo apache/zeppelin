@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.socket;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.HashMap;
@@ -162,6 +163,7 @@ public class NotebookServer extends WebSocketServer {
 			} else if(m.op == OP.NEW_NOTE) { // new note
 				Note note = notebook.createNote();
 				note.addParagraph();         // it's an empty note. so add one paragraph
+				note.persist();
 				addConnectionToNote(note.id(), conn);
 				broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
 				broadcastNoteList();
@@ -175,6 +177,8 @@ public class NotebookServer extends WebSocketServer {
 				if(note.getLastParagraph().getId().equals(p.getId())){
 					note.addParagraph();
 				}
+				
+				note.persist();
 				
 				broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
 				
@@ -192,7 +196,12 @@ public class NotebookServer extends WebSocketServer {
 						}
 						if(job.isTerminated()){
 							LOG.info("Job {} is finished", job.getId());
-							broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
+							try {
+								note.persist();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+							broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));							
 						}
 					}					
 				});
