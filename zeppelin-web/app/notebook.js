@@ -364,7 +364,7 @@ function Paragraph(notebook, data){
         });
         editor.renderer.setShowGutter(false);
         editor.setHighlightActiveLine(false);
-        editor.getSession().on('change', function(){
+        editor.getSession().on('change', function(e, editSession){
             // The following code snippet is released under the MIT license,
             // -or- FreeBSD license, -or- an unrestrictive license of your
             // choice including CC-ZERO or public domain.
@@ -386,18 +386,26 @@ function Paragraph(notebook, data){
             editor.resize();
 
             // detect mode
+                /*  // ace throws some exception when this code enabled
             var script = editor.getValue();
             if("%md ".length <= script.length && script.substring(0, "%md ".length)==="%md "){
-                editor.getSession().setMode("ace/mode/markdown");
+                try{
+                    editor.getSession().setMode("ace/mode/markdown");
+                }catch(err){}
             } else if("%sql ".length <= script.length && script.substring(0, "%sql ".length)==="%sql "){
-                editor.getSession().setMode("ace/mode/sql");
+                try{
+                     editor.getSession().setMode("ace/mode/sql");
+                }catch(err){}
             } else {
                 // default scala
-                editor.getSession().setMode("ace/mode/scala");
+                try{
+                    editor.getSession().setMode("ace/mode/scala");
+                }catch(err){}
             }
+                */
                
         });
-        
+        editor.getSession().setMode("ace/mode/scala");
 
 
         this.editor = editor;
