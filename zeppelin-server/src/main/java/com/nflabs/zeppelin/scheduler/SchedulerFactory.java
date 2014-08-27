@@ -18,7 +18,7 @@ public class SchedulerFactory implements SchedulerListener{
 	Map<String, Scheduler> schedulers = new LinkedHashMap<String, Scheduler>();
 	
 	public SchedulerFactory() throws Exception {
-		executor = Executors.newScheduledThreadPool(5);		
+		executor = Executors.newScheduledThreadPool(100);		
 	}
 	
 	public void destroy() {
