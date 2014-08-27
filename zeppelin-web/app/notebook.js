@@ -44,6 +44,8 @@ function Notebook(config){
             notebook.setNote(data.note)
         } else if(op == "NOTES_INFO") { // list of notes
             // nothing to do. raise event
+        } else if(op == "PARAGRAPH") { // single paragraph
+            notebook.currentNote.refreshParagraph(data.paragraph.id, data.paragraph);
         }
         
         if(notebook.listener){
@@ -97,12 +99,89 @@ function Note(notebook, data){
     this.paragraphs = [];
     this.target;
 
+    this.getParagraph = function(id){
+        for(var i=0; i<this.paragraphs.length; i++){
+            var o = this.paragraphs[i];
+            if(o.data.id==id){
+                return o;
+            }
+        }
+        return undefined;
+    };
+
+    this.refreshParagraph = function(id, data){
+        var newData = jQuery.extend(true, {}, this.data);
+        for(var i=0; i<newData.paragraphs.length; i++){
+            if(newData.paragraphs[i].id == id){
+                newData.paragraphs[i] = data
+            }
+        }
+        this.refresh(newData);
+    };
+
     // refresh data 
     this.refresh = function(data){
         console.log("Note.refresh %o", data);
+
+        var paragraphsEl = this.target.children();
+        var newParagraphs = [];
+
+        var prevEl = undefined;
+        for(var i=0; i<data.paragraphs.length; i++){  // iterate new info
+            var newParagraphInfo = data.paragraphs[i];
+
+            // search for object
+            var existingParagraph = this.getParagraph(newParagraphInfo.id);
+            
+            if(existingParagraph){
+                newParagraphs.push(existingParagraph);
+                
+                var el = existingParagraph.target;
+                if(el.index()!=i){  // el need to be moved
+                    el.detach();
+                    if(i==0){
+                        this.target.prepend(el);
+                    } else {
+                        el.insertAfter(newParagraphs[i-1].target);
+                    }
+                }
+                existingParagraph.refresh(newParagraphInfo);
+            } else {
+                var p = new Paragraph(this.notebook, newParagraphInfo);
+                newParagraphs.push(p);
+                if(i==0){
+                    this.target.prepend("<div id='"+p.data.id+"' class=\"paragraph\"></div>");
+                } else {
+                    $("<div id='"+p.data.id+"' class=\"paragraph\"></div>").insertAfter(newParagraphs[i-1].target);
+                }
+                p.render($('#'+p.data.id));
+                console.log("Im HERE %o %o", i, $('#'+p.data.id));
+            }
+        }
+
+        // remove deleted
+        for(var i=0; i < this.paragraphs.length; i++){
+            var p = this.paragraphs[i];
+            var found = false;
+            for(var j=0; j<newParagraphs.length; j++){
+                if(p.data.id == newParagraphs[j].data.id){
+                    found = true;
+                    break;
+                }
+            }
+            if(found==false){
+                p.destroy();
+            }
+        }
+            
+        this.paragraphs = newParagraphs;
+
+// totally clear and render
+/*
         this.destroy();
         this.data = data;
         this.render(this.target);
+*/
     };
 
     this.render = function(target){
@@ -117,8 +196,8 @@ function Note(notebook, data){
                 var p = new Paragraph(this.notebook, paragraphs[i]);
                 this.paragraphs.push(p);
 
-                target.append("<div id='"+p.data.id+"'></div>");
-                p.render($('#'+p.data.id));                
+                target.append("<div id='"+p.data.id+"' class=\"paragraph\"></div>");
+                p.render($('#'+p.data.id));
             }
         }
     }
@@ -134,18 +213,91 @@ function Paragraph(notebook, data){
     this.notebook = notebook;
     this.data = data;
     this.target;
+    this.table;
     
     // refresh paragraph with new data
-    this.refresh = function(data){
+    this.refresh = function(data, force){
+        if(Object.equals(this.data, data) && !force){
+            // Up to date
+            return;
+        }
+
+        // update editor
+        this.target.children("textarea").val(data.paragraph);
+
+        // update result
+        var result = data.result;
+        var target = this.target.children(".result");
         
+        // same type
+        var typeChanged = true;
+        if(data.result && this.data.result &&
+           data.result.type == this.data.result.type){
+            typeChanged = false;
+        }
+        if(force){
+            typeChanged = true
+        }
+
+        if(typeChanged){
+            target.empty();
+        }
+
+        console.log("Refresh paragraph this=%o, data=%o, force=%o, typeChanged=%o", this, data, force, typeChanged);
+        
+        if (result) {
+            if(result.type=="HTML"){
+                target.html(result.msg);
+            } else if(result.type=="TABLE"){
+                // parse table and create object
+                var columnNames = [];
+                var rows = [];
+                var textRows = result.msg.split('\n');
+                for(var i=0; i<textRows.length; i++){
+                    var textRow = textRows[i];
+                    if(textRow=="") continue;
+                    var textCols = textRow.split('\t');
+                    var cols = [];
+                    for(var j=0; j<textCols.length; j++){
+                        var col = textCols[j];
+                        if(i==0){
+                            columnNames.push(col);
+                        } else {
+                            cols.push(col);
+                        }
+                    }
+                    if(i!=0){
+                        rows.push(cols);
+                    }
+                }
+                console.log("rows=%o", rows);
+                var config = data.form.params["_table"];
+
+                if(typeChanged){
+                    var table = new Table(config, columnNames, rows, new function(paragraph){
+                        this.modeChanged = function(table){
+                            console.log("Changed %o", table);
+                            paragraph.data.form.params["_table"] = table.config;
+                            paragraph.commit();
+                        }
+                    }(this));
+                    table.render(target);
+                    this.table = table;
+                } else {
+                    this.table.refresh(config, columnNames, rows);
+                }
+            } else {
+                target.html("<pre>"+result.msg+"</pre>");
+            }
+        }
+        this.data = data;
     };
 
     this.render = function(target){
         var p = this;
         this.target = target;
         target.html('<textarea></textarea>'+
-                    '<div class="zeppelin paragraph result"></div>');
-        target.children('textarea').val(this.data.paragraph);
+                    '<div class="result"></div>');
         target.on('keypress', 'textarea', function(e){
             if(e.shiftKey && e.keyCode==13){  // shift + enter
                 p.run();
@@ -153,15 +305,7 @@ function Paragraph(notebook, data){
             }
         });
 
-        var result = this.data.result;
-        if (result) {
-            if(result.type=="HTML"){
-                target.children('div').html(result.msg);
-            } else {
-                console.log("TEXT");
-                target.children('div').html("<pre>"+result.msg+"</pre>");
-            }
-        }
+        this.refresh(this.data, true);
     }
 
 
@@ -173,12 +317,148 @@ function Paragraph(notebook, data){
             op : "RUN_PARAGRAPH",
             data : {
                 id : this.data.id,
-                paragraph : paragraph
+                paragraph : paragraph,
+                params : this.data.form.params
+            }
+        });
+    };
+
+    // submit change
+    this.commit = function(){
+        var paragraph = this.target.children('textarea').val();
+
+        notebook.send({
+            op : "COMMIT_PARAGRAPH",
+            data : {
+                id : this.data.id,
+                paragraph : paragraph,
+                params : this.data.form.params
             }
         });
     };
 
     this.destroy = function(){
+        this.target.remove();
+    };
+};
+
+
+function Table(config, columnNames, rows, listener){
+    this.columnNames = columnNames;
+    this.rows = rows;
+    this.config = config || {
+        mode : "table",
+        height : 300,
+    };
+    this.listener = listener;
+    this.target;
+
+    this.refresh = function(config, columnNames, rows){
+        console.log("Table refresh %o", config);
+        this.config = config;
+
+        this.columnNames = columnNames;
+        this.rows = rows;
+
+        this.target.children(".tableDisplay").empty();
+
+        if(this.config.mode==="line"){
+            this.target.children(".tableDisplay").append("<svg></svg>");
+            
+            var xColIndex = 0;
+            var yColIndexes = [];
+            // select yColumns. 
+            for(var i=0; i<columnNames.length; i++){
+                if(i!=xColIndex){
+                    yColIndexes.push(i);
+                }
+            }
+
+            var d3g = [];
+            for(var i=0; i<yColIndexes.length; i++){
+                d3g.push({
+                    values : [],
+                    key : columnNames[i]
+                });
+            }
+
+            for(var i=0; i<rows.length; i++){
+                var row = rows[i];
+                for(var j=0; j<yColIndexes.length; j++){
+                    var xVar = row[xColIndex];
+                    var yVar = row[yColIndexes[j]];
+                    d3g[j].values.push({
+                        x : isNaN(xVar) ? xVar :parseFloat(xVar),
+                        y : parseFloat(yVar)
+                    });
+                }
+            }
+            var chart = nv.models.multiBarChart()
+                .transitionDuration(300)
+                .reduceXTicks(true)
+                .rotateLabels(0)
+                .showControls(true)
+                .groupSpacing(0.1)
+            ;
+            
+            //chart.xAxis.tickFormat(d3.format(',f'));
+            chart.yAxis.tickFormat(d3.format(',.1f'));
+
+            var svg = this.target.find(".tableDisplay > svg").height(this.config.height);
+
+
+            var d3El = d3.selectAll(this.target.find(".tableDisplay > svg").toArray());
+
+            d3El.datum(d3g)
+                .call(chart);
+
+            nv.utils.windowResize(chart.update);
+        } else {
+            // table
+            var html = "<table><tr>";
+            for(var i=0; i<columnNames.length; i++){
+                html += "<th>"+columnNames[i]+"</th>";
+            }
+            html += "</tr>";
+            for(var i=0; i<rows.length; i++){
+                html += "<tr>";
+                var row = rows[i];
+                for(var j=0; j<row.length; j++){
+                    var col = row[j];
+                    html += "<td>"+col+"</td>";
+                }
+                html += "</tr>";
+            }
+            html += "</table>";
+            this.target.children(".tableDisplay").html(html);
+        }
+
+    };
+
+    
+    this.render = function(target){
+        var self = this;
+        this.target = target;
+
+        this.target.empty();
+        this.target.html('<div class="tableDisplay"></div><div class="tableControl"></div>')
+        
+        var ctr = "";
+        ctr += '<a mode="table">Table</a> | <a mode="line">Line chart</a>'
+        this.target.children(".tableControl").html(ctr);
+
+         this.target.find('.tableControl > [mode="table"]').on('click', function(){
+            self.config.mode = "table";
+            self.refresh(self.config, self.columnNames, self.rows);
+            if(self.listener) self.listener.modeChanged(self);
+        });
+        this.target.find('.tableControl > [mode="line"]').on('click', function(){
+            self.config.mode = "line";
+            self.refresh(self.config, self.columnNames, self.rows);
+            if(self.listener) self.listener.modeChanged(self);
+        });
+
+        this.refresh(this.config, this.columnNames, this.rows);
     };
 };
 
@@ -190,7 +470,6 @@ var nb = new Notebook({
 
 nb.setListener({
     onMessage : function(op, data){
-        console.log("onMessage %o, %o", op, data);
         if(op=="NOTES_INFO"){
             if(data.notes && data.notes.length>0){
                 // display list of notebooks
@@ -225,3 +504,109 @@ setTimeout(function(){
     });
 }, 300);
 console.log(">>>>>>>>> READY <<<<<<<<<<<");
+
+
+
+
+    /**
+     * Deep compare of two objects.
+     *
+     * Note that this does not detect cyclical objects as it should.
+     * Need to implement that when this is used in a more general case. It's currently only used
+     * in a place that guarantees no cyclical structures.
+     *
+     * @param {*} x
+     * @param {*} y
+     * @return {Boolean} Whether the two objects are equivalent, that is,
+     *         every property in x is equal to every property in y recursively. Primitives
+     *         must be strictly equal, that is "1" and 1, null an undefined and similar objects
+     *         are considered different
+     */
+    Object.equals = function( x, y ) {
+        
+        if (isCyclic(x)) {
+            throw new Error("Cyclical object passed, cannot compare for equality")
+        }
+        if (isCyclic(y)) {
+            throw new Error("Cyclical object passed, cannot compare for equality")
+        }
+        // Keep track of objects we've seen to detect cyclical objects
+        var seen = [];
+        function equals() {
+        
+        
+        }
+        // If both x and y are null or undefined and exactly the same
+        if ( x === y ) {
+            return true;
+        }
+
+        // If they are not strictly equal, they both need to be Objects
+        if ( ! ( x instanceof Object ) || ! ( y instanceof Object ) ) {
+            return false;
+        }
+
+        // They must have the exact same prototype chain, the closest we can do is
+        // test the constructor.
+        if ( x.constructor !== y.constructor ) {
+            return false;
+        }
+
+        for ( var p in x ) {
+            // Inherited properties were tested using x.constructor === y.constructor
+            if ( x.hasOwnProperty( p ) ) {
+                // Allows comparing x[ p ] and y[ p ] when set to undefined
+                if ( ! y.hasOwnProperty( p ) ) {
+                    return false;
+                }
+
+                // If they have the same strict value or identity then they are equal
+                if ( x[ p ] === y[ p ] ) {
+                    continue;
+                }
+
+                // Numbers, Strings, Functions, Booleans must be strictly equal
+                if ( typeof( x[ p ] ) !== "object" ) {
+                    return false;
+                }
+
+                // Objects and Arrays must be tested recursively
+                if ( ! Object.equals( x[ p ],  y[ p ] ) ) {
+                    return false;
+                }
+            }
+        }
+
+        for ( p in y ) {
+            // allows x[ p ] to be set to undefined
+            if ( y.hasOwnProperty( p ) && ! x.hasOwnProperty( p ) ) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+
+function isCyclic (obj) {
+  var seenObjects = [];
+ 
+  function detect (obj) {
+    if (typeof obj === 'object') {
+      if (seenObjects.indexOf(obj) !== -1) {
+        return true;
+      }
+      seenObjects.push(obj);
+      for (var key in obj) {
+        if (obj.hasOwnProperty(key) && detect(obj[key])) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+ 
+  return detect(obj);
+}
+
+
+

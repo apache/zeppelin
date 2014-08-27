@@ -53,6 +53,8 @@ exports.config =
           'vendor/scripts/ace/ace.js',
           'vendor/scripts/ace/mode-sql.js',
           'vendor/scripts/ace/theme-terminal.js',
+
+          'vendor/scripts/d3.v3.min.js',
           ]
 
     stylesheets:

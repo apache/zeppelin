@@ -11,15 +11,29 @@ public class Message {
 		NOTE,          // [s-c] note info 
 		               // @param note serlialized Note object
 		
+		PARAGRAPH,	   // [s-c] paragraph info
+		               // @param paragraph serialized paragraph object
+		
 		NEW_NOTE,      // [c-s] create new notebook
 		
 		RUN_PARAGRAPH, // [c-s] run paragraph
 		               // @param id paragraph id
+			           // @param paragraph paragraph content.ie. script
+			           // @param params paragraph params
+
+		COMMIT_PARAGRAPH, // [c-s] commit paragraph
+                          // @param id paragraph id
+                          // @param paragraph paragraph content.ie. script
+                          // @param params paragraph params
 		
 		LIST_NOTES,    // [c-s] ask list of note
 		
 		NOTES_INFO,    // [s-c] list of note infos
 		               // @param notes serialized List<NoteInfo> object
+		
+		PARAGRAPH_PARAM, // [c-s] set parameters
+		                 // @param id paragraph id
+		                 // @param params parameter map
 	}	
 	public OP op;
 	public Map<String, Object> data = new HashMap<String, Object>();;

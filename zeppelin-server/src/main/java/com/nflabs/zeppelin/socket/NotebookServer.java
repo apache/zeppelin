@@ -167,11 +167,33 @@ public class NotebookServer extends WebSocketServer {
 				addConnectionToNote(note.id(), conn);
 				broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
 				broadcastNoteList();
+			} else if(m.op == OP.PARAGRAPH_PARAM) {
+				String paragraphId = (String) m.get("id");
+				Map<String, Object> params = (Map<String, Object>) m.get("params");
+				final Note note = notebook.getNote(getOpenNoteId(conn));
+				Paragraph p = note.getParagraph(paragraphId);
+				p.form.setParams(params);
+				note.persist();
+				broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));	
+			} else if(m.op == OP.COMMIT_PARAGRAPH){
+				String paragraphId = (String) m.get("id");
+				final Note note = notebook.getNote(getOpenNoteId(conn));
+				Paragraph p = note.getParagraph(paragraphId);
+				p.setParagraph((String) m.get("paragraph"));
+				Map<String, Object> params = (Map<String, Object>)m.get("params");
+				p.form.setParams(params);
+				
+				note.persist();
+				
+				broadcastNote(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
+				
 			} else if(m.op == OP.RUN_PARAGRAPH) { // run a paragaph
 				String paragraphId = (String) m.get("id");
 				final Note note = notebook.getNote(getOpenNoteId(conn));
 				Paragraph p = note.getParagraph(paragraphId);
 				p.setParagraph((String) m.get("paragraph"));
+				Map<String, Object> params = (Map<String, Object>)m.get("params");
+				p.form.setParams(params);
 				
 				// if it's an last pargraph, let's add new one
 				if(note.getLastParagraph().getId().equals(p.getId())){

@@ -1,7 +1,5 @@
 package com.nflabs.zeppelin.spark;
 
-import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -11,10 +9,6 @@ import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SchemaRDD;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
 import org.apache.spark.sql.catalyst.expressions.Row;
-
-import scala.collection.Seq;
-import scala.collection.convert.Decorators.AsJava;
-import scala.collection.immutable.Set;
 
 import com.nflabs.zeppelin.repl.ClassloaderRepl;
 import com.nflabs.zeppelin.repl.Repl;

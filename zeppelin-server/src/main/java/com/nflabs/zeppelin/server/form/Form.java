@@ -1,10 +1,11 @@
 package com.nflabs.zeppelin.server.form;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class Form {
-	Map<String, Object> params;  // actual values from client
+	Map<String, Object> params = new HashMap<String, Object>();  // actual values from client
 	Map<String, Base> forms = new TreeMap<String, Base>();
 	
 	public static enum Type {

@@ -33,3 +33,4 @@ module.exports = Ember.Application.create({
 });
 
 require('notebook');
+
