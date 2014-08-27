@@ -135,6 +135,7 @@ public class NotebookServer extends WebSocketServer {
 		LOG.info("SEND >> "+m.op);
 		synchronized(noteSocketMap) {
 			List<WebSocket> socketLists = noteSocketMap.get(noteId);
+			if(socketLists==null || socketLists.size()==0) return;
 			for(WebSocket conn : socketLists) {
 				conn.send(serializeMessage(m));
 			}
@@ -146,11 +147,25 @@ public class NotebookServer extends WebSocketServer {
 			for(WebSocket conn : connectedSockets) {
 				conn.send(serializeMessage(m));
 			}
-		}		
+		}
 	}
 	
 	private Notebook notebook(){
 		return ZeppelinServer.notebook;
+	}
+	
+	
+	private void printConnectionMap(){
+		synchronized(noteSocketMap){
+			for(Note n : notebook().getAllNotes()){
+				System.out.println("Note "+n.id());
+				List<WebSocket> socketLists = noteSocketMap.get(n.id());
+				if(socketLists==null || socketLists.size()==0) return;
+				for(WebSocket conn : socketLists) {
+					System.out.println("     - "+conn);
+				}
+			}
+		}
 	}
 	
 	
@@ -165,12 +180,11 @@ public class NotebookServer extends WebSocketServer {
 				String noteId = (String) m.get("id");			
 				Note note = notebook.getNote(noteId);
 				addConnectionToNote(note.id(), conn);
-				conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));			
+				conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
 			} else if(m.op == OP.NEW_NOTE) { // new note
 				Note note = notebook.createNote();
 				note.addParagraph();         // it's an empty note. so add one paragraph
 				note.persist();
-				addConnectionToNote(note.id(), conn);
 				broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
 				broadcastNoteList();
 			} else if(m.op == OP.DEL_NOTE){
@@ -212,9 +226,7 @@ public class NotebookServer extends WebSocketServer {
 				}
 				
 				note.persist();
-				
 				broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
-				
 				note.run(paragraphId, new JobListener(){					
 					@Override
 					public void beforeStatusChange(Job job, Status before,

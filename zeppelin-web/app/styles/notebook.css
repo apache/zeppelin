@@ -3,21 +3,29 @@
 }
 
 .paragraph {
-    border: 1px solid #EEEEEE;
+    border-top: 1px solid #CCCCCC;
     margin-top:5px;
     margin-bottom: 5px;
+    padding: 5px 5px 5px 5px;
 }
 
-.paragraph textarea {
-    width : 100%;
-    height: 100px;
-    border: 0px solid #EFEFEF;
+.paragraph .control {
+    
 }
-.paragraph. .status {
-    font-size : 8px;
+.paragraph .editor {
+    width : 100%;
+    height: 20px;
+    border-left: 4px solid #EEEEEE;
+}
+
+.paragraph .status {
+    font-size : 10px;
     color : #AAAAAA;
     background-color: white;
+    width: 100%;
+    text-align : right;
 }
+
 .paragraph .result {
     margin-top:5px;
     overflow : auto;

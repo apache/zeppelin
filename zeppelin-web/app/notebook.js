@@ -233,7 +233,8 @@ function Paragraph(notebook, data){
         }
 
         // update editor
-        this.target.children("textarea").val(data.paragraph);
+        this.editor.setValue(data.paragraph);
+        this.editor.clearSelection();
 
         // update form
         var paragraph = this;
@@ -268,7 +269,7 @@ function Paragraph(notebook, data){
         }
 
         // update progress
-        this.target.children(".status").html(data.status);
+        this.target.children(".status").html("Shift+Enter to Run. "+data.status);
 
         // update result
         var result = data.result;
@@ -343,16 +344,63 @@ function Paragraph(notebook, data){
     this.render = function(target){
         var p = this;
         this.target = target;
-        target.html('<textarea></textarea>'+
+
+        target.html('<div class="control"></div>'+
+                    '<div class="editor" id="'+this.data.id+'_editor"></div>'+
                     '<div class="form"></div>'+
                     '<div class="status"></div>'+
                     '<div class="result"></div>');
-        target.on('keypress', 'textarea', function(e){
-            if(e.shiftKey && e.keyCode==13){  // shift + enter
+
+
+        var editor = ace.edit(this.data.id+"_editor");
+        editor.focus();
+        editor.commands.addCommand({
+            name : 'run',
+            bindKey : {win: 'Shift-Enter', mac: 'Shift-Enter'},
+            exec : function(editor){
                 p.run();
-                return false;                 // discard the event
-            }
+            },
+            readOnly : false
         });
+        editor.renderer.setShowGutter(false);
+        editor.setHighlightActiveLine(false);
+        editor.getSession().on('change', function(){
+            // The following code snippet is released under the MIT license,
+            // -or- FreeBSD license, -or- an unrestrictive license of your
+            // choice including CC-ZERO or public domain.
+            //
+            // (those are GPL and Apache compatible, in any case)
+            //
+            // http://en.wikipedia.org/wiki/MIT_License
+            // http://en.wikipedia.org/wiki/BSD_licenses
+
+            // http://stackoverflow.com/questions/11584061/
+            var newHeight =
+                editor.getSession().getScreenLength()
+                * editor.renderer.lineHeight
+                + editor.renderer.scrollBar.getWidth();
+
+            $('#'+p.data.id+"_editor").height(newHeight.toString() + "px");
+            // This call is required for the editor to fix all of
+            // its inner structure for adapting to a change in size
+            editor.resize();
+
+            // detect mode
+            var script = editor.getValue();
+            if("%md ".length <= script.length && script.substring(0, "%md ".length)==="%md "){
+                editor.getSession().setMode("ace/mode/markdown");
+            } else if("%sql ".length <= script.length && script.substring(0, "%sql ".length)==="%sql "){
+                editor.getSession().setMode("ace/mode/sql");
+            } else {
+                // default scala
+                editor.getSession().setMode("ace/mode/scala");
+            }
+               
+        });
+        
+
+
+        this.editor = editor;
 
         this.refresh(this.data, true);
     }
@@ -360,7 +408,7 @@ function Paragraph(notebook, data){
 
     this.run = function(){
         console.log("Run paragraph");
-        var paragraph = this.target.children('textarea').val();
+        var paragraph = this.editor.getValue();
 
         notebook.send({
             op : "RUN_PARAGRAPH",
@@ -374,7 +422,7 @@ function Paragraph(notebook, data){
 
     // submit change
     this.commit = function(){
-        var paragraph = this.target.children('textarea').val();
+        var paragraph = this.editor.getValue();
 
         notebook.send({
             op : "COMMIT_PARAGRAPH",
@@ -388,6 +436,7 @@ function Paragraph(notebook, data){
 
     this.destroy = function(){
         this.target.remove();
+        this.editor.destroy();
     };
 };
 
