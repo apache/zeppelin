@@ -109,6 +109,7 @@ public class Paragraph extends Job implements Serializable{
 			throw new RuntimeException("Can not find interpreter for "+getRequiredReplName());
 		}
 		// inject form
+		form.clearForms();
 		repl.bindValue("form", form);
 		logger().info("RUN : "+getScriptBody());
 		ReplResult ret = repl.interpret(getScriptBody());

@@ -39,6 +39,9 @@ public class Note implements Serializable, JobListener {
 	private transient ZeppelinConfiguration conf;
 	private transient FileSystem fs;
 	
+	public Note(){		
+	}
+	
 	public Note(ZeppelinConfiguration conf, FileSystem fs, NoteReplLoader replLoader, Scheduler scheduler){
 		this.conf = conf;
 		this.fs = fs;
@@ -201,6 +204,11 @@ public class Note implements Serializable, JobListener {
 		out.close();
 	}
 	
+	public void unpersist() throws IOException{
+		Path dir = new Path(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)+"/"+id);
+		fs.delete(dir, true);
+	}
+	
 	public static Note load(String id, ZeppelinConfiguration conf, FileSystem fs, NoteReplLoader replLoader, Scheduler scheduler) throws IOException{
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		gsonBuilder.setPrettyPrinting();
@@ -220,6 +228,11 @@ public class Note implements Serializable, JobListener {
 		note.setFileSystem(fs);
 		note.setReplLoader(replLoader);
 		note.setScheduler(scheduler);
+		for(Paragraph p : note.paragraphs){
+			if(p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING){
+				p.setStatus(Status.ABORT);
+			}
+		}
 		
 		return note;
 	}

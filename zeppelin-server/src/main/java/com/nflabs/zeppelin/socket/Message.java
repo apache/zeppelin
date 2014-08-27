@@ -15,6 +15,8 @@ public class Message {
 		               // @param paragraph serialized paragraph object
 		
 		NEW_NOTE,      // [c-s] create new notebook
+		DEL_NOTE,	   // [c-s] delete notebook
+		               // @param id note id
 		
 		RUN_PARAGRAPH, // [c-s] run paragraph
 		               // @param id paragraph id

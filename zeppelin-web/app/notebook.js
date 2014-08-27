@@ -63,6 +63,7 @@ function Notebook(config){
 
     this.ws.onclose = function(response){
         console.log("On close %o", response);
+        notebook.closeNote();
     };
 
     this.send = function(o){
@@ -83,6 +84,16 @@ function Notebook(config){
     // Open note
     this.openNote = function(noteId){
         this.send({ op : "GET_NOTE", data : { id : noteId}});
+    };
+    
+    this.closeNote = function(){
+        if(!this.currentNote) return;
+        this.currentNote.destroy();
+        this.currentNote = undefined;
+    };
+
+    this.deleteNote = function(noteId){
+        this.send({ op : "DEL_NOTE", data : { id : noteId}});
     };
 
     // list all notebooks
@@ -155,7 +166,6 @@ function Note(notebook, data){
                     $("<div id='"+p.data.id+"' class=\"paragraph\"></div>").insertAfter(newParagraphs[i-1].target);
                 }
                 p.render($('#'+p.data.id));
-                console.log("Im HERE %o %o", i, $('#'+p.data.id));
             }
         }
 
@@ -225,6 +235,41 @@ function Paragraph(notebook, data){
         // update editor
         this.target.children("textarea").val(data.paragraph);
 
+        // update form
+        var paragraph = this;
+        var formEl = this.target.children(".form");
+        formEl.empty();
+        if(data.form.forms){
+            for(var name in data.form.forms){
+                var form = data.form.forms[name];
+                var value = form.value;
+                
+                if(data.form.params[name]){
+                    value = data.form.params[name];
+                }
+                
+                var html = "";
+                if(form.type=="INPUT"){
+                    formEl.append(name + ' : <input name="'+name+'" value="'+value+'"></input>');
+                    formEl.children('[name="'+name+'"]').on('change', function(formName){
+                        var name = formName;
+                        return function(evt){
+                            var value = formEl.children('[name="'+name+'"]').val();
+                            paragraph.data.form.params[name] = value;
+                            paragraph.run();
+                        }
+                    }(name));
+                } else {
+                    console.log("Unsupported form type %o", form);
+                }
+
+            }
+            
+        }
+
+        // update progress
+        this.target.children(".status").html(data.status);
+
         // update result
         var result = data.result;
         var target = this.target.children(".result");
@@ -246,7 +291,9 @@ function Paragraph(notebook, data){
         console.log("Refresh paragraph this=%o, data=%o, force=%o, typeChanged=%o", this, data, force, typeChanged);
         
         if (result) {
-            if(result.type=="HTML"){
+            if(result.type=="NULL"){
+                target.empty();
+            } else if(result.type=="HTML"){
                 target.html(result.msg);
             } else if(result.type=="TABLE"){
                 // parse table and create object
@@ -297,6 +344,8 @@ function Paragraph(notebook, data){
         var p = this;
         this.target = target;
         target.html('<textarea></textarea>'+
+                    '<div class="form"></div>'+
+                    '<div class="status"></div>'+
                     '<div class="result"></div>');
         target.on('keypress', 'textarea', function(e){
             if(e.shiftKey && e.keyCode==13){  // shift + enter
@@ -472,11 +521,28 @@ nb.setListener({
     onMessage : function(op, data){
         if(op=="NOTES_INFO"){
             if(data.notes && data.notes.length>0){
+                // close removed note
+                if(nb.currentNote){
+                    var found = false;
+                    for(var i=0; i<data.notes.length; i++){
+                        var noteInfo = data.notes[i];
+                        if(nb.currentNote.data.id == noteInfo.id){
+                            found = true;
+                            break;
+                        }
+                    }
+                    if(found==false){
+                        nb.closeNote();
+                    }
+                }
+
                 // display list of notebooks
+                $('#notebookList').empty();
                 var html = "";
                 for(var i=0; i<data.notes.length; i++){
                     var noteInfo = data.notes[i];
-                    html += "<button id="+noteInfo.id+">"+noteInfo.id+"</button>\n"
+                    html += "<button id="+noteInfo.id+">"+noteInfo.id+"</button>"
+                    html += "<button id="+noteInfo.id+"_del>X</button> "
                 }
                 $('#notebookList').html(html);
 
@@ -487,6 +553,14 @@ nb.setListener({
                         return function(event){ 
                             console.log("event %o, noteId=%o", event, id);
                             nb.openNote(id);
+                        }
+                    }(noteInfo.id));
+
+                    $('#'+noteInfo.id+"_del").on('click', function(noteId){ 
+                        var id = noteId;
+                        return function(event){ 
+                            console.log("event %o, noteId=%o", event, id);
+                            nb.deleteNote(id);
                         }
                     }(noteInfo.id));
                 }

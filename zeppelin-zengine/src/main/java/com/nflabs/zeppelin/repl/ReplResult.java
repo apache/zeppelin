@@ -12,7 +12,8 @@ public class ReplResult implements Serializable{
 	public static enum Type {
 		TEXT,
 		HTML,
-		TABLE
+		TABLE,
+		NULL
 	}
 	
 	Code code;
@@ -63,6 +64,13 @@ public class ReplResult implements Serializable{
 				return msg.substring(magicLength);
 			} else {
 				return "";
+			}
+		} else if(msg.startsWith("%null ")){
+			int magicLength = "%null ".length();
+			if(msg.length()>magicLength){
+				return msg.substring(magicLength);
+			} else {
+				return "";
 			}			
 		} else {
 			return msg;
@@ -78,6 +86,8 @@ public class ReplResult implements Serializable{
 			return Type.TEXT;
 		} else if(msg.startsWith("%table ")){
 			return Type.TABLE;
+		} else if(msg.startsWith("%null ")){
+			return Type.NULL;
 		} else {
 			return Type.TEXT;
 		}		

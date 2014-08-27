@@ -1,3 +1,6 @@
+.notebookList {
+
+}
 
 .paragraph {
     border: 1px solid #EEEEEE;
@@ -10,7 +13,11 @@
     height: 100px;
     border: 0px solid #EFEFEF;
 }
-
+.paragraph. .status {
+    font-size : 8px;
+    color : #AAAAAA;
+    background-color: white;
+}
 .paragraph .result {
     margin-top:5px;
     overflow : auto;

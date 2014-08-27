@@ -38,4 +38,8 @@ public class Form {
 	public Object input(String id) {
 		return input(id, "");
 	}
+	
+	public void clearForms(){
+		this.forms = new TreeMap<String, Base>();
+	}
 }

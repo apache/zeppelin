@@ -72,6 +72,11 @@ public class Notebook {
 			note = notes.remove(id);
 		}
 		note.getNoteReplLoader().destroyAll();
+		try {
+			note.unpersist();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void loadAllNotes() throws IOException{

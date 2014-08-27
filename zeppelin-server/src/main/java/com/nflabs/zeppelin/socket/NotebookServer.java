@@ -101,6 +101,12 @@ public class NotebookServer extends WebSocketServer {
 		}
 	}
 	
+	private void removeNote(String noteId){
+		synchronized(noteSocketMap){
+			List<WebSocket> socketList = noteSocketMap.remove(noteId);
+		}
+	}
+	
 	private void removeConnectionFromAllNote(WebSocket socket) {
 		synchronized(noteSocketMap){
 			Set<String> keys = noteSocketMap.keySet();
@@ -166,6 +172,11 @@ public class NotebookServer extends WebSocketServer {
 				note.persist();
 				addConnectionToNote(note.id(), conn);
 				broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
+				broadcastNoteList();
+			} else if(m.op == OP.DEL_NOTE){
+				String noteId = (String) m.get("id");
+				notebook.removeNote(noteId);
+				removeNote(noteId);
 				broadcastNoteList();
 			} else if(m.op == OP.PARAGRAPH_PARAM) {
 				String paragraphId = (String) m.get("id");
