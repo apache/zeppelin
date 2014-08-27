@@ -27,7 +27,7 @@ public class Message {
                           // @param id paragraph id
                           // @param paragraph paragraph content.ie. script
                           // @param params paragraph params
-		
+
 		LIST_NOTES,    // [c-s] ask list of note
 		
 		NOTES_INFO,    // [s-c] list of note infos

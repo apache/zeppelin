@@ -236,6 +236,19 @@ function Paragraph(notebook, data){
         this.editor.setValue(data.paragraph);
         this.editor.clearSelection();
 
+        // for job status, see com.nflabs.zeppelin.scheduler.Job.Status
+        if(data.status=="RUNNING" || data.status=="PENDING"){
+            this.editor.container.style.pointerEvents="none"
+            this.editor.container.style.opacity=0.5
+            this.editor.renderer.setStyle("disabled", true);
+            this.editor.blur();
+        } else {
+            this.editor.container.style.pointerEvents=""
+            this.editor.container.style.opacity=1.0
+            this.editor.renderer.setStyle("disabled", false);
+            this.editor.blur();
+        }
+
         // update form
         var paragraph = this;
         var formEl = this.target.children(".form");
@@ -292,9 +305,9 @@ function Paragraph(notebook, data){
             target.empty();
         }
 
-        console.log("Refresh paragraph this=%o, data=%o, force=%o, typeChanged=%o", this, data, force, typeChanged);
-        
-        if (result) {
+        if(data.status=="ERROR"){
+            target.html("<pre><error>ERROR : "+data.errorMessage+"</error></pre>");
+        } else if (result) {
             if(result.type=="NULL"){
                 target.empty();
             } else if(result.type=="HTML"){
@@ -335,7 +348,9 @@ function Paragraph(notebook, data){
                     table.render(target);
                     this.table = table;
                 } else {
-                    this.table.refresh(config, columnNames, rows);
+                    if(this.table){
+                        this.table.refresh(config, columnNames, rows);
+                    }
                 }
             } else {
                 target.html("<pre>"+result.msg+"</pre>");

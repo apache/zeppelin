@@ -51,6 +51,7 @@ public abstract class Job {
 
     boolean aborted = false;
 	
+    String errorMessage;
 	transient private Throwable exception;
 	transient private JobListener listener;
 	
@@ -121,8 +122,16 @@ public abstract class Job {
 			} else {
 				setStatus(Status.FINISHED);
 			}			
-		}catch(Throwable e){
+		} catch(NullPointerException e) {
 			this.exception = e;
+			result = null;
+			errorMessage = e.getMessage();
+			dateFinished = new Date();			
+			setStatus(Status.ERROR);
+		} catch(Throwable e){
+			this.exception = e;
+			result = null;
+			errorMessage = e.getMessage();
 			dateFinished = new Date();			
 			setStatus(Status.ERROR);
 		}

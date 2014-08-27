@@ -37,6 +37,10 @@
     max-height: 400px;
 }
 
+.paragraph .result error{
+    color: #DC143C;
+}
+
 .paragraph .result pre{
     font-size : 12px;
     border : 0px;

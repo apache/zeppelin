@@ -213,7 +213,7 @@ public class NotebookServer extends WebSocketServer {
 				broadcastNote(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
 				
 			} else if(m.op == OP.RUN_PARAGRAPH) { // run a paragaph
-				String paragraphId = (String) m.get("id");
+				final String paragraphId = (String) m.get("id");
 				final Note note = notebook.getNote(getOpenNoteId(conn));
 				Paragraph p = note.getParagraph(paragraphId);
 				p.setParagraph((String) m.get("paragraph"));
@@ -246,7 +246,9 @@ public class NotebookServer extends WebSocketServer {
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
-							broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));							
+							broadcastNote(note.id(), new Message(OP.PARAGRAPH).put("paragraph", note.getParagraph(paragraphId)));							
+						} else {
+							broadcastNote(note.id(), new Message(OP.PARAGRAPH).put("paragraph", note.getParagraph(paragraphId)));
 						}
 					}					
 				});
