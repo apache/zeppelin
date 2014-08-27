@@ -48,4 +48,9 @@ public class Markdown extends Repl {
 	@Override
 	public void bindValue(String name, Object o) {
 	}
+
+	@Override
+	public FormType getFormType() {
+		return FormType.SIMPLE;
+	}
 }

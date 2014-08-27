@@ -47,12 +47,12 @@ public class SparkRepl extends Repl {
 	public SQLContext getSQLContext(){
 		return sqlc;
 	}
-	
+
 	@Override
 	public void initialize(){
 		Settings settings = new Settings();
 		settings.classpath().value_$eq(System.getProperty("java.class.path"));
-		
+		PrintStream printStream = new PrintStream(out);
 		this.interpreter = new SparkILoop(null, new PrintWriter(out));
 		interpreter.settings_$eq(settings);
 		
@@ -64,9 +64,9 @@ public class SparkRepl extends Repl {
 			// redirect stdout
 			intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
 			Map<String, Object> binder = (Map<String, Object>) getValue("_binder");
-			binder.put("out", new PrintStream(out));
+			binder.put("out", printStream);
 			//intp.interpret("System.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
-			intp.interpret("Console.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
+			//intp.interpret("Console.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
 			
 			intp.interpret("@transient val sc = com.nflabs.zeppelin.spark.SparkRepl.interpreter.createSparkContext()\n");
 			intp.interpret("import org.apache.spark.SparkContext._");
@@ -104,11 +104,12 @@ public class SparkRepl extends Repl {
 	
 	public ReplResult interpret(String [] lines){
 		synchronized(this){
+			intp.interpret("Console.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
 			out.reset();
 			sc.setJobGroup(jobGroup, "Zeppelin", false);			
 			Code r = null;
 			String incomplete = "";
-			for(String s : lines) {
+			for(String s : lines) {				
 				scala.tools.nsc.interpreter.Results.Result res = intp.interpret(incomplete+s);
 				r = getResultCode(res);
 				
@@ -159,6 +160,11 @@ public class SparkRepl extends Repl {
 	@Override
 	public void destroy() {
 
+	}
+
+	@Override
+	public FormType getFormType() {
+		return FormType.NATIVE;
 	}
 	
 

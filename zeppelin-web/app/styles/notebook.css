@@ -12,6 +12,11 @@
 .paragraph .control {
     
 }
+
+.paragraph .form {
+    margin-top : 20px;
+}
+
 .paragraph .editor {
     width : 100%;
     height: 20px;

@@ -103,4 +103,18 @@ public class ClassloaderRepl extends Repl {
 			Thread.currentThread().setContextClassLoader(oldcl);
 		}	
 	}
+
+	@Override
+	public FormType getFormType() {
+		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(cl);
+		try {
+			return repl.getFormType();
+		} catch (Exception e){
+			throw new ReplException(e);
+		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
+			Thread.currentThread().setContextClassLoader(oldcl);
+		}	
+	}
 }

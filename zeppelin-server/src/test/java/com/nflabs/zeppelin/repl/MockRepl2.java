@@ -2,6 +2,8 @@ package com.nflabs.zeppelin.repl;
 
 import java.util.Properties;
 
+import com.nflabs.zeppelin.repl.Repl.FormType;
+
 public class MockRepl2 extends Repl{
 
 	public MockRepl2(Properties property) {
@@ -32,5 +34,10 @@ public class MockRepl2 extends Repl{
 
 	@Override
 	public void bindValue(String name, Object o) {
+	}
+	
+	@Override
+	public FormType getFormType() {
+		return FormType.SIMPLE;
 	}
 }

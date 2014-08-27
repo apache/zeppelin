@@ -42,4 +42,9 @@ public class MockRepl extends Repl {
 	public void cancel() {
 	}
 
+	@Override
+	public FormType getFormType() {
+		return FormType.SIMPLE;
+	}
+
 }

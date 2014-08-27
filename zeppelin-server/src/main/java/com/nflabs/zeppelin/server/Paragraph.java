@@ -4,15 +4,16 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nflabs.zeppelin.notebook.form.Form;
+import com.nflabs.zeppelin.notebook.form.Input;
 import com.nflabs.zeppelin.repl.Repl;
 import com.nflabs.zeppelin.repl.ReplResult;
+import com.nflabs.zeppelin.repl.Repl.FormType;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.JobListener;
-import com.nflabs.zeppelin.server.form.Form;
 
 /**
  * execution unit 
@@ -108,11 +109,20 @@ public class Paragraph extends Job implements Serializable{
 			logger().error("Can not find interpreter name "+repl);
 			throw new RuntimeException("Can not find interpreter for "+getRequiredReplName());
 		}
+		
+		String script = getScriptBody();
 		// inject form
-		form.clearForms();
-		repl.bindValue("form", form);
-		logger().info("RUN : "+getScriptBody());
-		ReplResult ret = repl.interpret(getScriptBody());
+		if(repl.getFormType()==FormType.NATIVE) {
+			form.clearForms();
+			repl.bindValue("form", form);  // user code will dynamically create inputs
+		} else if(repl.getFormType()==FormType.SIMPLE){ 
+			String scriptBody = getScriptBody();
+			Map<String, Input> inputs = Input.extractSimpleQueryParam(scriptBody);  // inputs will be built from script body
+			form.setForms(inputs);
+			script = Input.getSimpleQuery(form.getParams(), scriptBody);
+		}
+		logger().info("RUN : "+script);
+		ReplResult ret = repl.interpret(script);
 		return ret;
 	}
 
@@ -128,4 +138,5 @@ public class Paragraph extends Job implements Serializable{
 		return logger;
 	}
 	
+
 }

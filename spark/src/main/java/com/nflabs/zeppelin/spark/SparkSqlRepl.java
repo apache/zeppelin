@@ -122,4 +122,9 @@ public class SparkSqlRepl extends Repl {
 		
 	}
 
+	@Override
+	public FormType getFormType() {
+		return FormType.SIMPLE;
+	}
+
 }

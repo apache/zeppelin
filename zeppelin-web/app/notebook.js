@@ -243,14 +243,19 @@ function Paragraph(notebook, data){
         if(data.form.forms){
             for(var name in data.form.forms){
                 var form = data.form.forms[name];
-                var value = form.value;
+                var value = form.defaultValue;
                 
                 if(data.form.params[name]){
                     value = data.form.params[name];
                 }
                 
                 var html = "";
-                if(form.type=="INPUT"){
+
+                // for the defail, see Input.java
+
+                if(form.options && false){     
+                    // not implemented yet
+                } else {
                     formEl.append(name + ' : <input name="'+name+'" value="'+value+'"></input>');
                     formEl.children('[name="'+name+'"]').on('change', function(formName){
                         var name = formName;
@@ -260,8 +265,6 @@ function Paragraph(notebook, data){
                             paragraph.run();
                         }
                     }(name));
-                } else {
-                    console.log("Unsupported form type %o", form);
                 }
 
             }
@@ -468,7 +471,7 @@ function Table(config, columnNames, rows, listener){
 
         this.target.children(".tableDisplay").empty();
 
-        if(this.config.mode==="line"){
+        if(this.config && this.config.mode==="line"){
             this.target.children(".tableDisplay").append("<svg></svg>");
             
             var xColIndex = 0;

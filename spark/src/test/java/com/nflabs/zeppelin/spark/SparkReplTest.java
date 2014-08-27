@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Properties;
 
@@ -37,6 +38,17 @@ public class SparkReplTest {
 		repl.interpret("val ver = sc.version");
 		assertNotNull(repl.getValue("ver"));
 		assertEquals("HELLO\n", repl.interpret("println(\"HELLO\")").message());
+		/*
+		repl.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
+		Map<String, Object> binder = (Map<String, Object>) repl.getValue("_binder");
+		binder.put("out", new PrintStream(new ByteArrayOutputStream()));
+		System.err.println(repl.interpret("System.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])").message());
+		System.err.println(repl.interpret("Console.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])").message());
+		//System.err.println(repl.interpret("def println(s:Any){ _binder.get(\"out\").asInstanceOf[java.io.PrintStream]).println(s)}").message());
+		//System.err.println(repl.interpret("def print(s:Any){ _binder.get(\"out\").asInstanceOf[java.io.PrintStream]).print(s)}").message());
+		 * 
+		 */
+
 	}
 	
 	@Test
