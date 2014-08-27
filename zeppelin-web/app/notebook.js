@@ -382,6 +382,7 @@ function Paragraph(notebook, data){
         });
         editor.renderer.setShowGutter(false);
         editor.setHighlightActiveLine(false);
+        editor.getSession().setNewLineMode("unix");
         editor.getSession().on('change', function(e, editSession){
             // The following code snippet is released under the MIT license,
             // -or- FreeBSD license, -or- an unrestrictive license of your
@@ -486,7 +487,8 @@ function Table(config, columnNames, rows, listener){
 
         this.target.children(".tableDisplay").empty();
 
-        if(this.config && this.config.mode==="line"){
+        if(this.config && this.config.mode==="bar"){
+        } else if(this.config && this.config.mode==="line"){
             this.target.children(".tableDisplay").append("<svg></svg>");
             
             var xColIndex = 0;
@@ -531,10 +533,10 @@ function Table(config, columnNames, rows, listener){
             var svg = this.target.find(".tableDisplay > svg").height(this.config.height);
 
 
-            var d3El = d3.selectAll(this.target.find(".tableDisplay > svg").toArray());
+            this.d3 = d3.selectAll(this.target.find(".tableDisplay > svg").toArray());
 
-            d3El.datum(d3g)
-                .call(chart);
+            this.d3.datum(d3g)
+                   .call(chart);
 
             nv.utils.windowResize(chart.update);
         } else {

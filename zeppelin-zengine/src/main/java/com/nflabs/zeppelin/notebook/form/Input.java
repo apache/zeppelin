@@ -120,11 +120,10 @@ public class Input {
 	public static Map<String, Input> extractSimpleQueryParam(String script){
 		Map<String, Input> params = new HashMap<String, Input>();
 		if(script==null) return params;
-		
-		String replaced = script.replace('\n', ' ');
+		String replaced = script;
 		
 		Pattern pattern = Pattern.compile("([_])?[$][{]([^=}]*([=][^}]*)?)[}]");
-
+		
 		Matcher match = pattern.matcher(replaced);
 		while(match.find()){			
 			String hiddenPart = match.group(1);
@@ -209,7 +208,7 @@ public class Input {
 	}
 	
 	public static String getSimpleQuery(Map<String, Object> params, String script) {
-		String replaced = script.replace('\n', ' ');
+		String replaced = script;
 
 		for(String key : params.keySet()){
 			Object value = params.get(key);
