@@ -132,8 +132,7 @@ function Note(notebook, data){
 
     // refresh data 
     this.refresh = function(data){
-        console.log("Note.refresh %o", data);
-
+        console.log("Note.refresh %o -> %o", this.data, data);
         var paragraphsEl = this.target.children();
         var newParagraphs = [];
 
@@ -231,6 +230,7 @@ function Paragraph(notebook, data){
             // Up to date
             return;
         }
+        console.log("Paragraph.refresh %o -> %o, %o", this.data, data, force);
 
         // update editor
         this.editor.setValue(data.paragraph);
@@ -242,6 +242,9 @@ function Paragraph(notebook, data){
             this.editor.container.style.opacity=0.5
             this.editor.renderer.setStyle("disabled", true);
             this.editor.blur();
+
+            this.data = data;
+            return;
         } else {
             this.editor.container.style.pointerEvents=""
             this.editor.container.style.opacity=1.0
@@ -274,6 +277,7 @@ function Paragraph(notebook, data){
                         var name = formName;
                         return function(evt){
                             var value = formEl.children('[name="'+name+'"]').val();
+                            // TODO need to think this model one, change locally before sending it. better to be consistant way with commit()
                             paragraph.data.form.params[name] = value;
                             paragraph.run();
                         }
@@ -334,15 +338,15 @@ function Paragraph(notebook, data){
                         rows.push(cols);
                     }
                 }
-                console.log("rows=%o", rows);
                 var config = data.form.params["_table"];
 
                 if(typeChanged){
                     var table = new Table(config, columnNames, rows, new function(paragraph){
                         this.modeChanged = function(table){
                             console.log("Changed %o", table);
-                            paragraph.data.form.params["_table"] = table.config;
-                            paragraph.commit();
+                            var newParagraph = jQuery.extend(true, {}, paragraph);
+                            newParagraph.data.form.params["_table"] = table.config;
+                            newParagraph.commit();
                         }
                     }(this));
                     table.render(target);
@@ -432,7 +436,7 @@ function Paragraph(notebook, data){
         this.refresh(this.data, true);
     }
 
-
+    // TODO need to be moved into Note and not sending this, but sending arguments
     this.run = function(){
         console.log("Run paragraph");
         var paragraph = this.editor.getValue();
@@ -448,6 +452,7 @@ function Paragraph(notebook, data){
     };
 
     // submit change
+    // TODO need to be moved into Note and not sending this, but sending arguments
     this.commit = function(){
         var paragraph = this.editor.getValue();
 
@@ -478,19 +483,16 @@ function Table(config, columnNames, rows, listener){
     this.listener = listener;
     this.target;
 
-    this.refresh = function(config, columnNames, rows){
-        console.log("Table refresh %o", config);
-        this.config = config;
+    this.refresh = function(config, columnNames, rows, force){
+        console.log("Table.refresh %o -> %o, %o", this.config, config, force);
 
-        this.columnNames = columnNames;
-        this.rows = rows;
+        var modeChanged = false;
+        if(config.mode != this.config.mode || force){
+            modeChanged = true
+        }
 
-        this.target.children(".tableDisplay").empty();
-
-        if(this.config && this.config.mode==="bar"){
-        } else if(this.config && this.config.mode==="line"){
-            this.target.children(".tableDisplay").append("<svg></svg>");
-            
+        if(config && config.mode==="bar"){
+        } else if(config && config.mode==="line"){
             var xColIndex = 0;
             var yColIndexes = [];
             // select yColumns. 
@@ -519,27 +521,35 @@ function Table(config, columnNames, rows, listener){
                     });
                 }
             }
-            var chart = nv.models.multiBarChart()
-                .transitionDuration(300)
-                .reduceXTicks(true)
-                .rotateLabels(0)
-                .showControls(true)
-                .groupSpacing(0.1)
-            ;
-            
-            //chart.xAxis.tickFormat(d3.format(',f'));
-            chart.yAxis.tickFormat(d3.format(',.1f'));
 
-            var svg = this.target.find(".tableDisplay > svg").height(this.config.height);
+            if(modeChanged) {
+                console.log("DRAW DATA");
+                this.target.children(".tableDisplay").empty();
 
+                this.chart = nv.models.multiBarChart()
+                    .transitionDuration(300)
+                    .reduceXTicks(true)
+                    .rotateLabels(0)
+                    .showControls(true)
+                    .groupSpacing(0.1)
+                ;
+                
+                //chart.xAxis.tickFormat(d3.format(',f'));
+                this.chart.yAxis.tickFormat(d3.format(',.1f'));
 
-            this.d3 = d3.selectAll(this.target.find(".tableDisplay > svg").toArray());
+                this.target.children(".tableDisplay").append("<svg></svg>");
 
-            this.d3.datum(d3g)
-                   .call(chart);
-
-            nv.utils.windowResize(chart.update);
+                var svg = this.target.find(".tableDisplay > svg").height(config.height);
+                this.d3 = d3.selectAll(this.target.find(".tableDisplay > svg").toArray());
+                this.d3.datum(d3g).call(this.chart);
+                nv.utils.windowResize(this.chart.update);
+            } else {
+                this.d3.datum(d3g);
+                this.chart.update();
+            }
         } else {
+            this.target.children(".tableDisplay").empty();
+            
             // table
             var html = "<table><tr>";
             for(var i=0; i<columnNames.length; i++){
@@ -559,6 +569,10 @@ function Table(config, columnNames, rows, listener){
             this.target.children(".tableDisplay").html(html);
         }
 
+        this.config = config;
+
+        this.columnNames = columnNames;
+        this.rows = rows;
     };
 
     
@@ -574,17 +588,19 @@ function Table(config, columnNames, rows, listener){
         this.target.children(".tableControl").html(ctr);
 
          this.target.find('.tableControl > [mode="table"]').on('click', function(){
-            self.config.mode = "table";
-            self.refresh(self.config, self.columnNames, self.rows);
-            if(self.listener) self.listener.modeChanged(self);
+            var newData = jQuery.extend(true, {}, self);
+            newData.config.mode = "table"
+            console.log("CUR=%o NEW=%o", self, newData);
+            if(self.listener) self.listener.modeChanged(newData);
         });
         this.target.find('.tableControl > [mode="line"]').on('click', function(){
-            self.config.mode = "line";
-            self.refresh(self.config, self.columnNames, self.rows);
-            if(self.listener) self.listener.modeChanged(self);
+            var newData = jQuery.extend(true, {}, self);
+            newData.config.mode = "line"
+            console.log("CUR=%o NEW=%o", self, newData);
+            if(self.listener) self.listener.modeChanged(newData);
         });
 
-        this.refresh(this.config, this.columnNames, this.rows);
+        this.refresh(this.config, this.columnNames, this.rows, true);
     };
 };
 
