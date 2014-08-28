@@ -223,6 +223,7 @@ public class NotebookServer extends WebSocketServer {
 				// if it's an last pargraph, let's add new one
 				if(note.getLastParagraph().getId().equals(p.getId())){
 					note.addParagraph();
+					broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
 				}
 				
 				note.persist();
@@ -246,7 +247,7 @@ public class NotebookServer extends WebSocketServer {
 							} catch (IOException e) {
 								e.printStackTrace();
 							}
-							broadcastNote(note.id(), new Message(OP.PARAGRAPH).put("paragraph", note.getParagraph(paragraphId)));							
+							broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
 						} else {
 							broadcastNote(note.id(), new Message(OP.PARAGRAPH).put("paragraph", note.getParagraph(paragraphId)));
 						}
