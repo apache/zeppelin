@@ -6,6 +6,8 @@ function Notebook(config){
 
     // current note
     this.currentNote;
+    // focused paragraphId
+    this.focusedParagraphId;
 
     this.setNote = function(data){
         console.log("Notebook.setNote %o", data);
@@ -27,8 +29,52 @@ function Notebook(config){
             this.currentNote = new Note(this, data)
             this.currentNote.render(target)
         }
+        
+        // focus last paragraph on load
+        if(this.currentNote){
+            var paragraphToFocus;
+            for(var i=0; i<this.currentNote.paragraphs.length; i++){
+                if(this.currentNote.paragraphs[i].data.id==this.focusedParagraphId){
+                    paragraphToFocus = this.currentNote.paragraphs[i];
+                    break;
+                }
+            }
+
+            if(!paragraphToFocus){
+                paragraphToFocus = this.currentNote.paragraphs[this.currentNote.paragraphs.length-1];
+            }
+            
+            paragraphToFocus.focus();
+        }
+    };
+    
+    this.setFocus = function(paragraphId){
+        this.focusedParagraphId = paragraphId;
     };
 
+    this.focusPrevious = function(paragraphId){
+        if(this.currentNote){
+            var paragraphToFocus;
+            for(var i=0; i<this.currentNote.paragraphs.length; i++){
+                if(this.currentNote.paragraphs[i].data.id==this.focusedParagraphId){
+                    this.currentNote.paragraphs[Math.max(0,i-1)].focus();
+                    break;
+                }
+            }
+        }
+    };
+
+    this.focusNext = function(paragraphId){
+        if(this.currentNote){
+            var paragraphToFocus;
+            for(var i=0; i<this.currentNote.paragraphs.length; i++){
+                if(this.currentNote.paragraphs[i].data.id==this.focusedParagraphId){
+                    this.currentNote.paragraphs[Math.min(this.currentNote.paragraphs.length-1,i+1)].focus();
+                    break;
+                }
+            }
+        }
+    };
 
     this.ws.onmessage = function(msg) {
         var payload = undefined
@@ -184,13 +230,6 @@ function Note(notebook, data){
         }
             
         this.paragraphs = newParagraphs;
-
-// totally clear and render
-/*
-        this.destroy();
-        this.data = data;
-        this.render(this.target);
-*/
     };
 
     this.render = function(target){
@@ -223,6 +262,15 @@ function Paragraph(notebook, data){
     this.data = data;
     this.target;
     this.table;
+
+
+    this.focus = function(){
+        this.editor.focus();
+    };
+
+    this.isFocused = function(){
+        this.editor.isFocused();
+    };
     
     // refresh paragraph with new data
     this.refresh = function(data, force){
@@ -379,7 +427,7 @@ function Paragraph(notebook, data){
 
 
         var editor = ace.edit(this.data.id+"_editor");
-        editor.focus();
+        //editor.focus();
         editor.commands.addCommand({
             name : 'run',
             bindKey : {win: 'Shift-Enter', mac: 'Shift-Enter'},
@@ -388,9 +436,44 @@ function Paragraph(notebook, data){
             },
             readOnly : false
         });
+
+        editor.keyBinding.origOnCommandKey = editor.keyBinding.onCommandKey;
+        editor.keyBinding.onCommandKey = function(e, hashId, keyCode) {
+            if(keyCode==38){  // UP
+                var numRows = editor.getSession().getLength();
+                var currentRow = editor.getCursorPosition().row
+                if(currentRow==0){
+                    // move focus to previous paragraph
+                    p.notebook.focusPrevious(p.data.id);
+                }
+            } else if(keyCode==40){  // DOWN
+                var numRows = editor.getSession().getLength();
+                var currentRow = editor.getCursorPosition().row
+                if(currentRow == numRows-1){
+                    // move focus to next paragraph
+                    p.notebook.focusNext(p.data.id);
+                }
+            }
+            this.origOnCommandKey(e, hashId, keyCode);
+        }
+/*
+        editor.keyBinding.addKeyboardHandler(function(){
+            bindKey : "Up",
+            exec : function(){
+                console.log("UP");
+                console.log("length=%o", editor.getSession().getLength());
+                console.log("CURSOR=%o", editor.getSession().getCursorPosition());
+            }
+        });
+*/
         editor.renderer.setShowGutter(false);
         editor.setHighlightActiveLine(false);
         editor.getSession().setNewLineMode("unix");
+        editor.on('focus', function(e, editSession){
+            p.notebook.setFocus(p.data.id);
+        });
+        editor.on('blur', function(e, editSession){
+        });
         editor.getSession().on('change', function(e, editSession){
             // The following code snippet is released under the MIT license,
             // -or- FreeBSD license, -or- an unrestrictive license of your
