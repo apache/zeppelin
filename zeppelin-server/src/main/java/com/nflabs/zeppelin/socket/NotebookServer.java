@@ -53,7 +53,8 @@ public class NotebookServer extends WebSocketServer {
 
 	@Override
 	public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-		LOG.info("Closed connection to " + conn.getRemoteSocketAddress().getAddress().getHostAddress());
+		LOG.info("Closed connection to {} : {}", conn.getRemoteSocketAddress().getHostName()
+		                                       , conn.getRemoteSocketAddress().getPort());
 		removeConnectionFromAllNote(conn);
 		synchronized(connectedSockets){
 			connectedSockets.remove(conn);
@@ -281,8 +282,8 @@ public class NotebookServer extends WebSocketServer {
 
 	@Override
 	public void onOpen(WebSocket conn, ClientHandshake handshake) {
-		LOG.info("New connection from "
-				+ conn.getRemoteSocketAddress().getAddress().getHostAddress());
+		LOG.info("New connection from {} : {}", conn.getRemoteSocketAddress().getHostName()
+		                                      , conn.getRemoteSocketAddress().getPort());
 		synchronized(connectedSockets){
 			connectedSockets.add(conn);
 		}

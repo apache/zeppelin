@@ -699,8 +699,18 @@ function Table(config, columnNames, rows, listener){
     };
 };
 
+function getPort() {
+  port = Number(location.port);
+  // brunch port
+  if (port === 3333) {
+    port = 8080; 
+  }
+  return port+1;
+}
+
+
 var nb = new Notebook({
-    socket : "ws://"+location.hostname+":"+ (Number(location.port) + 1),
+    socket : "ws://"+location.hostname+":"+ getPort(),
     target : $('#notebook')
 });
 
