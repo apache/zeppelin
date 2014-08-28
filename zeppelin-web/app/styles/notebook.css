@@ -17,6 +17,11 @@
     margin-top : 20px;
 }
 
+.paragraph .form p {
+    margin-left: 10px;
+    display:inline;
+}
+
 .paragraph .editor {
     width : 100%;
     height: 20px;

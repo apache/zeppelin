@@ -249,7 +249,8 @@ public class NotebookServer extends WebSocketServer {
 							}
 							broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
 						} else {
-							broadcastNote(note.id(), new Message(OP.PARAGRAPH).put("paragraph", note.getParagraph(paragraphId)));
+							broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
+							//broadcastNote(note.id(), new Message(OP.PARAGRAPH).put("paragraph", note.getParagraph(paragraphId)));
 						}
 					}					
 				});
