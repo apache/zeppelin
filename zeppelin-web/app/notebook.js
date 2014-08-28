@@ -160,9 +160,9 @@ function Note(notebook, data){
                 var p = new Paragraph(this.notebook, newParagraphInfo);
                 newParagraphs.push(p);
                 if(i==0){
-                    this.target.prepend("<div id='"+p.data.id+"' class=\"paragraph\"></div>");
+                    this.target.prepend("<div id='"+p.data.id+"' style=\"background: rgba(255, 255, 255, 0.9);\" class=\"paragraph well well-sm\"></div>");
                 } else {
-                    newParagraphs[i-1].target.after("<div id='"+p.data.id+"' class=\"paragraph\"></div>");
+                    newParagraphs[i-1].target.after("<div id='"+p.data.id+"' style=\"background: rgba(255, 255, 255, 0.9);\" class=\"paragraph well well-sm\"></div>");
                 }
                 p.render($('#'+p.data.id));
             }
@@ -368,7 +368,7 @@ function Paragraph(notebook, data){
         var p = this;
         this.target = target;
         console.log("Paragraph.render %o", this.data);
-        target.html('<div class="control"><span class=\"glyphicon glyphicon-star\"></span></div>'+
+        target.html('<div class="control"><span class=\"glyphicon glyphicon-minus\"> <span class=\"glyphicon glyphicon-remove\"></span></div>'+
                     '<div id="'+this.data.id+'_wrapper">' +
                     '</div>' +
                     ' <div class="editor" id="'+this.data.id+'_editor"></div>'+
