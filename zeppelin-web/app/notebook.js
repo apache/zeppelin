@@ -205,7 +205,7 @@ function Note(notebook, data){
                 var p = new Paragraph(this.notebook, paragraphs[i]);
                 this.paragraphs.push(p);
 
-                target.append("<div id='"+p.data.id+"' class=\"paragraph\"></div>");
+                target.append("<div id='"+p.data.id+"' style=\"background: rgba(255, 255, 255, 0.9);\" class=\"paragraph well well-sm\"></div>");
                 p.render($('#'+p.data.id));
             }
         }
@@ -368,15 +368,14 @@ function Paragraph(notebook, data){
         var p = this;
         this.target = target;
         console.log("Paragraph.render %o", this.data);
-        target.html('<div class="control"></div>'+
+        target.html('<div class="control"><span class=\"glyphicon glyphicon-star\"></span></div>'+
                     '<div id="'+this.data.id+'_wrapper">' +
                     '</div>' +
                     ' <div class="editor" id="'+this.data.id+'_editor"></div>'+
                     
                     '<div class="form"></div>'+
-                    '<div class="status"></div>'+
-
-                    '<div class="result"></div>');
+                    '<div class="result"></div>'+
+                    '<div class="status"></div>');
 
 
         var editor = ace.edit(this.data.id+"_editor");
