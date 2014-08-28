@@ -272,11 +272,11 @@ function Paragraph(notebook, data){
                 if(form.options && false){     
                     // not implemented yet
                 } else {
-                    formEl.append(name + ' : <input name="'+name+'" value="'+value+'"></input>');
-                    formEl.children('[name="'+name+'"]').on('change', function(formName){
+                    formEl.append('<p>'+name + ' : <input name="'+name+'" value="'+value+'"></input></p>');
+                    formEl.find('[name="'+name+'"]').on('change', function(formName){
                         var name = formName;
                         return function(evt){
-                            var value = formEl.children('[name="'+name+'"]').val();
+                            var value = formEl.find('[name="'+name+'"]').val();
                             // TODO need to think this model one, change locally before sending it. better to be consistant way with commit()
                             paragraph.data.form.params[name] = value;
                             paragraph.run();
@@ -490,7 +490,15 @@ function Table(config, columnNames, rows, listener){
     this.refresh = function(config, columnNames, rows, force){
         console.log("Table.refresh %o -> %o, %o", this.config, config, force);
 
+        if(!config){
+            config = {
+                mode : "table",
+                height : 300,
+            }
+        }
+
         var modeChanged = false;
+
         if(config.mode != this.config.mode || force){
             modeChanged = true
         }
