@@ -3,14 +3,17 @@
 }
 
 .paragraph {
-    border-top: 1px solid #CCCCCC;
+    /*border-top: 1px solid #CCCCCC;*/
     margin-top:5px;
     margin-bottom: 5px;
     padding: 5px 5px 5px 5px;
 }
 
 .paragraph .control {
-    
+  float: right;
+  color: #999;
+  margin-right: 5px;
+  margin-top: -3px;
 }
 
 .paragraph .form {

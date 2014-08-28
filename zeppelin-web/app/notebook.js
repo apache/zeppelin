@@ -160,9 +160,9 @@ function Note(notebook, data){
                 var p = new Paragraph(this.notebook, newParagraphInfo);
                 newParagraphs.push(p);
                 if(i==0){
-                    this.target.prepend("<div id='"+p.data.id+"' class=\"paragraph\"></div>");
+                    this.target.prepend("<div id='"+p.data.id+"' style=\"background: rgba(255, 255, 255, 0.9);\" class=\"paragraph well well-sm\"></div>");
                 } else {
-                    newParagraphs[i-1].target.after("<div id='"+p.data.id+"' class=\"paragraph\"></div>");
+                    newParagraphs[i-1].target.after("<div id='"+p.data.id+"' style=\"background: rgba(255, 255, 255, 0.9);\" class=\"paragraph well well-sm\"></div>");
                 }
                 p.render($('#'+p.data.id));
             }
@@ -205,7 +205,7 @@ function Note(notebook, data){
                 var p = new Paragraph(this.notebook, paragraphs[i]);
                 this.paragraphs.push(p);
 
-                target.append("<div id='"+p.data.id+"' class=\"paragraph\"></div>");
+                target.append("<div id='"+p.data.id+"' style=\"background: rgba(255, 255, 255, 0.9);\" class=\"paragraph well well-sm\"></div>");
                 p.render($('#'+p.data.id));
             }
         }
@@ -289,6 +289,7 @@ function Paragraph(notebook, data){
         }
 
         // update progress
+        //this.target.children("#"+data.id+"_wrapper").children(".status").html("Shift+Enter to Run. "+data.status);
         this.target.children(".status").html("Shift+Enter to Run. "+data.status);
 
         // update result
@@ -367,11 +368,14 @@ function Paragraph(notebook, data){
         var p = this;
         this.target = target;
         console.log("Paragraph.render %o", this.data);
-        target.html('<div class="control"></div>'+
-                    '<div class="editor" id="'+this.data.id+'_editor"></div>'+
+        target.html('<div class="control"><span class=\"glyphicon glyphicon-minus\"> <span class=\"glyphicon glyphicon-remove\"></span></div>'+
+                    '<div id="'+this.data.id+'_wrapper">' +
+                    '</div>' +
+                    ' <div class="editor" id="'+this.data.id+'_editor"></div>'+
+                    
                     '<div class="form"></div>'+
-                    '<div class="status"></div>'+
-                    '<div class="result"></div>');
+                    '<div class="result"></div>'+
+                    '<div class="status"></div>');
 
 
         var editor = ace.edit(this.data.id+"_editor");
@@ -612,9 +616,8 @@ function Table(config, columnNames, rows, listener){
     };
 };
 
-
 var nb = new Notebook({
-    socket : "ws://localhost:8081",
+    socket : "ws://"+location.hostname+":"+ (Number(location.port) + 1),
     target : $('#notebook')
 });
 
@@ -642,8 +645,10 @@ nb.setListener({
                 var html = "";
                 for(var i=0; i<data.notes.length; i++){
                     var noteInfo = data.notes[i];
-                    html += "<button id="+noteInfo.id+">"+noteInfo.id+"</button>"
-                    html += "<button id="+noteInfo.id+"_del>X</button> "
+                    html += "<div class='btn-group'>"
+                    html += " <button type='button' class='btn btn-default btn-sm' id="+noteInfo.id+">Note "+i+"</button>"
+                    html += " <button type='button' class='btn btn-default btn-sm' id="+noteInfo.id+"_del ><span class='glyphicon glyphicon-remove'></span></button>"
+                    html += "</div> "
                 }
                 $('#notebookList').html(html);
 
