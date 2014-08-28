@@ -62,7 +62,8 @@ exports.config =
       joinTo: 'stylesheets/app.css'
       order:
         before: [
-          'vendor/styles/bootstrap.css',
+          # This conflict with the bootstrap theme
+          # 'vendor/styles/bootstrap.css',
           'vendor/styles/bootstrap-theme.css',
           'vendor/styles/jquery-ui-bootstrap/jquery-ui-1.10.4.custom.css',
           'vendor/styles/font-awesome.css',

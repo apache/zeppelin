@@ -289,6 +289,7 @@ function Paragraph(notebook, data){
         }
 
         // update progress
+        //this.target.children("#"+data.id+"_wrapper").children(".status").html("Shift+Enter to Run. "+data.status);
         this.target.children(".status").html("Shift+Enter to Run. "+data.status);
 
         // update result
@@ -368,9 +369,13 @@ function Paragraph(notebook, data){
         this.target = target;
 
         target.html('<div class="control"></div>'+
-                    '<div class="editor" id="'+this.data.id+'_editor"></div>'+
+                    '<div id="'+this.data.id+'_wrapper">' +
+                    '</div>' +
+                    ' <div class="editor" id="'+this.data.id+'_editor"></div>'+
+                    
                     '<div class="form"></div>'+
                     '<div class="status"></div>'+
+
                     '<div class="result"></div>');
 
 
@@ -604,9 +609,8 @@ function Table(config, columnNames, rows, listener){
     };
 };
 
-
 var nb = new Notebook({
-    socket : "ws://localhost:8081",
+    socket : "ws://"+location.hostname+":"+ (Number(location.port) + 1),
     target : $('#notebook')
 });
 
@@ -634,8 +638,10 @@ nb.setListener({
                 var html = "";
                 for(var i=0; i<data.notes.length; i++){
                     var noteInfo = data.notes[i];
-                    html += "<button id="+noteInfo.id+">"+noteInfo.id+"</button>"
-                    html += "<button id="+noteInfo.id+"_del>X</button> "
+                    html += "<div class='btn-group'>"
+                    html += " <button type='button' class='btn btn-default btn-sm' id="+noteInfo.id+">Note "+i+"</button>"
+                    html += " <button type='button' class='btn btn-default btn-sm' id="+noteInfo.id+"_del ><span class='glyphicon glyphicon-remove'></span></button>"
+                    html += "</div> "
                 }
                 $('#notebookList').html(html);
 
