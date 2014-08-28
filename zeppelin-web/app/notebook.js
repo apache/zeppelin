@@ -8,7 +8,7 @@ function Notebook(config){
     this.currentNote;
 
     this.setNote = function(data){
-        console.log("setNote %o", data);
+        console.log("Notebook.setNote %o", data);
         var target = $(config.target.selector);
 
         if(this.currentNote) {
@@ -162,7 +162,7 @@ function Note(notebook, data){
                 if(i==0){
                     this.target.prepend("<div id='"+p.data.id+"' class=\"paragraph\"></div>");
                 } else {
-                    $("<div id='"+p.data.id+"' class=\"paragraph\"></div>").insertAfter(newParagraphs[i-1].target);
+                    newParagraphs[i-1].target.after("<div id='"+p.data.id+"' class=\"paragraph\"></div>");
                 }
                 p.render($('#'+p.data.id));
             }
@@ -366,7 +366,7 @@ function Paragraph(notebook, data){
     this.render = function(target){
         var p = this;
         this.target = target;
-
+        console.log("Paragraph.render %o", this.data);
         target.html('<div class="control"></div>'+
                     '<div class="editor" id="'+this.data.id+'_editor"></div>'+
                     '<div class="form"></div>'+
@@ -523,7 +523,6 @@ function Table(config, columnNames, rows, listener){
             }
 
             if(modeChanged) {
-                console.log("DRAW DATA");
                 this.target.children(".tableDisplay").empty();
 
                 this.chart = nv.models.multiBarChart()
@@ -577,6 +576,7 @@ function Table(config, columnNames, rows, listener){
 
     
     this.render = function(target){
+        console.log("Table.render %o", this.config);
         var self = this;
         this.target = target;
 
