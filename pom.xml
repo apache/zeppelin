@@ -76,9 +76,6 @@
     <module>zeppelin-zengine</module>
     <module>spark</module>
     <module>markdown</module>
-    <module>zeppelin-driver-hive11</module>
-    <module>zeppelin-driver-exec</module>
-    <module>zeppelin-driver-jdbc</module>
     <module>zeppelin-cli</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
@@ -288,10 +285,6 @@
           <version>2.4.1</version>
           <configuration>
             <filesets>
-              <fileset>
-                <directory>drivers</directory>
-                <followSymlinks>false</followSymlinks>
-              </fileset>
               <fileset>
                 <directory>repl</directory>
                 <followSymlinks>false</followSymlinks>

@@ -59,9 +59,6 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>../drivers</directory>
-    </fileSet>
-    <fileSet>
       <directory>../repl</directory>
     </fileSet>
   </fileSets>

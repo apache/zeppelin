@@ -123,12 +123,14 @@ public abstract class Job {
 				setStatus(Status.FINISHED);
 			}			
 		} catch(NullPointerException e) {
+			e.printStackTrace();
 			this.exception = e;
 			result = null;
 			errorMessage = e.getMessage();
 			dateFinished = new Date();			
 			setStatus(Status.ERROR);
 		} catch(Throwable e){
+			e.printStackTrace();
 			this.exception = e;
 			result = null;
 			errorMessage = e.getMessage();

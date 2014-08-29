@@ -3,11 +3,10 @@ package com.nflabs.zeppelin.spark;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.repl.SparkIMain;
@@ -27,7 +26,7 @@ import scala.tools.nsc.Settings;
 
 public class SparkRepl extends Repl {
 
-	public static SparkILoop interpreter;
+	private SparkILoop interpreter;
 	private SparkIMain intp;
 	private SparkContext sc;
 	private Long sparkContextCreationLock = new Long(0);
@@ -47,6 +46,30 @@ public class SparkRepl extends Repl {
 	public SQLContext getSQLContext(){
 		return sqlc;
 	}
+	
+	public SparkContext createSparkContext(){
+		String execUri = System.getenv("SPARK_EXECUTOR_URI");
+		String[] jars = SparkILoop.getAddedJars();
+		SparkConf conf = new SparkConf().setMaster(getMaster())
+				.setAppName("Zeppelin").setJars(jars)
+				.set("spark.repl.class.uri", interpreter.intp().classServer().uri());
+		if (execUri != null) {
+			conf.set("spark.executor.uri", execUri);
+		}
+		if (System.getenv("SPARK_HOME") != null) {
+			conf.setSparkHome(System.getenv("SPARK_HOME"));
+		}
+		SparkContext sparkContext = new SparkContext(conf);
+		return sparkContext;
+	}
+	
+	public String getMaster() {
+		String envMaster = System.getenv().get("MASTER");
+		if(envMaster!=null) return envMaster;
+		String propMaster = System.getProperty("spark.master");
+		if(propMaster!=null) return propMaster;
+		return "local[*]";
+	}
 
 	@Override
 	public void initialize(){
@@ -59,21 +82,20 @@ public class SparkRepl extends Repl {
 		interpreter.createInterpreter();
 		intp = interpreter.intp();
 		intp.initializeSynchronous();
+		sc = createSparkContext();
+		sqlc = new SQLContext(sc);
 		
 		synchronized(sparkContextCreationLock) {
 			// redirect stdout
 			intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
 			Map<String, Object> binder = (Map<String, Object>) getValue("_binder");
 			binder.put("out", printStream);
-			//intp.interpret("System.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
-			//intp.interpret("Console.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
-			
-			intp.interpret("@transient val sc = com.nflabs.zeppelin.spark.SparkRepl.interpreter.createSparkContext()\n");
+			binder.put("sc", sc);
+			binder.put("sqlc", sqlc);
+			intp.interpret("@transient var sc = _binder.get(\"sc\")");
 			intp.interpret("import org.apache.spark.SparkContext._");
-			intp.interpret("val sqlc = new org.apache.spark.sql.SQLContext(sc)");
+			intp.interpret("val sqlc = _binder.get(\"sqlc\")");
 			intp.interpret("import sqlc.createSchemaRDD");
-			sc = (SparkContext) getValue("sc");
-			sqlc = (SQLContext) getValue("sqlc");
 		}
 	}
 	
