@@ -223,6 +223,10 @@
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-http</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>netty</artifactId>
+        </exclusion>        
       </exclusions>
     </dependency>
     <dependency> <!-- because there are two of them above  -->

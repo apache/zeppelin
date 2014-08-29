@@ -75,6 +75,7 @@ public class Notebook {
 	private void loadAllNotes() throws IOException{
 		File notebookDir = new File(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR));
 		File[] dirs = notebookDir.listFiles();
+		if(dirs==null) return;
 		for(File f : dirs) {
 			if(f.isDirectory()) {
 				Scheduler scheduler = schedulerFactory.createOrGetFIFOScheduler("note_"+System.currentTimeMillis());
