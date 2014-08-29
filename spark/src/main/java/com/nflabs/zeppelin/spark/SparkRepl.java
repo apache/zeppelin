@@ -92,9 +92,9 @@ public class SparkRepl extends Repl {
 			binder.put("out", printStream);
 			binder.put("sc", sc);
 			binder.put("sqlc", sqlc);
-			intp.interpret("@transient var sc = _binder.get(\"sc\")");
+			intp.interpret("@transient val sc = _binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
 			intp.interpret("import org.apache.spark.SparkContext._");
-			intp.interpret("val sqlc = _binder.get(\"sqlc\")");
+			intp.interpret("@transient val sqlc = _binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
 			intp.interpret("import sqlc.createSchemaRDD");
 		}
 	}

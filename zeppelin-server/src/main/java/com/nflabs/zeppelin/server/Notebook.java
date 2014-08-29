@@ -1,14 +1,12 @@
 package com.nflabs.zeppelin.server;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,8 +22,6 @@ import com.nflabs.zeppelin.scheduler.SchedulerFactory;
  */
 public class Notebook {
 	Logger logger = LoggerFactory.getLogger(Notebook.class);
-	
-	private FileSystem fs;
 
 	private SchedulerFactory schedulerFactory;
 
@@ -35,9 +31,8 @@ public class Notebook {
 
 	private ZeppelinConfiguration conf;
 
-	public Notebook(ZeppelinConfiguration conf, FileSystem fs, SchedulerFactory schedulerFactory, ReplFactory replFactory) throws IOException {
+	public Notebook(ZeppelinConfiguration conf, SchedulerFactory schedulerFactory, ReplFactory replFactory) throws IOException {
 		this.conf = conf;
-		this.fs = fs;		
 		this.schedulerFactory = schedulerFactory;
 		this.replFactory = replFactory;
 		loadAllNotes();
@@ -50,7 +45,7 @@ public class Notebook {
 	 */
 	public Note createNote() {
 		Scheduler scheduler = schedulerFactory.createOrGetFIFOScheduler("note_"+System.currentTimeMillis());		
-		Note note = new Note(conf, fs, new NoteReplLoader(replFactory), scheduler);
+		Note note = new Note(conf, new NoteReplLoader(replFactory), scheduler);
 		synchronized(notes){
 			notes.put(note.id(), note);
 		}
@@ -78,13 +73,13 @@ public class Notebook {
 	}
 	
 	private void loadAllNotes() throws IOException{
-		Path notebookDir = new Path(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR));
-		FileStatus[] dirs = fs.listStatus(notebookDir);
-		for(FileStatus f : dirs) {
-			if(f.isDir()) {
+		File notebookDir = new File(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR));
+		File[] dirs = notebookDir.listFiles();
+		for(File f : dirs) {
+			if(f.isDirectory()) {
 				Scheduler scheduler = schedulerFactory.createOrGetFIFOScheduler("note_"+System.currentTimeMillis());
-				logger.info("Loading note from "+f.getPath().getName());
-				Note n = Note.load(f.getPath().getName(), conf, fs, new NoteReplLoader(replFactory), scheduler);
+				logger.info("Loading note from "+f.getName());
+				Note n = Note.load(f.getName(), conf, new NoteReplLoader(replFactory), scheduler);
 				synchronized(notes){
 					notes.put(n.id(), n);
 				}

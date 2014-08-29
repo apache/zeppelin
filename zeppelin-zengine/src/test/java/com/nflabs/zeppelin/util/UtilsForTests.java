@@ -9,12 +9,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
-import com.nflabs.zeppelin.driver.ZeppelinDriver;
-import com.nflabs.zeppelin.driver.ZeppelinDriverFactory;
-import com.nflabs.zeppelin.driver.mock.MockDriver;
-import com.nflabs.zeppelin.driver.mock.MockDriverFactory;
-import com.nflabs.zeppelin.zengine.ZException;
-import com.nflabs.zeppelin.zengine.Zengine;
 
 public class UtilsForTests {
 	
@@ -106,15 +100,5 @@ public class UtilsForTests {
 	    } catch (Exception e1) {
 	        e1.printStackTrace();
 	    } 
-	}
-	
-	public static Zengine createZengine() throws ZException{
-		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-		MockDriverFactory driverFactory = new MockDriverFactory();
-		MockDriver.loadedResources.clear();
-		MockDriver.queries.clear();
-		MockDriver.tables.clear();
-		MockDriver.views.clear();
-        return new Zengine(conf, driverFactory);
 	}
 }

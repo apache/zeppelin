@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +17,6 @@ import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 public class NotebookTest {
 
 	private File tmpDir;
-	private FileSystem fs;
 	private ZeppelinConfiguration conf;
 	private SchedulerFactory schedulerFactory;
 	private File notebookDir;
@@ -35,10 +33,9 @@ public class NotebookTest {
 
 		conf = ZeppelinConfiguration.create();
         
-		fs = FileSystem.get(new org.apache.hadoop.conf.Configuration());
 		this.schedulerFactory = new SchedulerFactory();
 		
-		notebook = new Notebook(conf, fs, schedulerFactory, new MockReplFactory(conf));
+		notebook = new Notebook(conf, schedulerFactory, new MockReplFactory(conf));
 	}
 
 	@After
@@ -74,7 +71,7 @@ public class NotebookTest {
 		p1.setParagraph("hello world");
 		note.persist();
 		
-		Notebook notebook2 = new Notebook(conf, fs, schedulerFactory, new MockReplFactory(conf));
+		Notebook notebook2 = new Notebook(conf, schedulerFactory, new MockReplFactory(conf));
 		assertEquals(1, notebook2.getAllNotes().size());
 	}
 	

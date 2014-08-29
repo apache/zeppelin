@@ -84,6 +84,12 @@ public class ZeppelinIT {
 		return driver;
 	}
 
+	@Test
+	public void testDisableIT(){
+		//
+	}
+	
+	/*
     @Test
     public void testRunSimpleQueryInNewSession() {
         // Notice that the remainder of the code relies on the interface,
@@ -163,7 +169,7 @@ public class ZeppelinIT {
         }
     }
 
-
+*/
 
     /**
      * Get the url of Zeppelin
@@ -214,6 +220,7 @@ public class ZeppelinIT {
   /**
    * Test is swagger-ui is started
    */
+    /*
   @Test
   public void testSwaggerDocumentation() {
     WebDriver driver = getWebDriver();
@@ -316,4 +323,5 @@ public class ZeppelinIT {
             driver.quit();
         }
 	}
+*/	
 }

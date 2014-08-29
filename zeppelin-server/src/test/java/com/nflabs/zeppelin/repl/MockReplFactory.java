@@ -16,7 +16,7 @@ public class MockReplFactory extends ReplFactory {
 		} else if("MockRepl2".equals(replName)) {
 			return new MockRepl2(properties);
 		} else {
-			return null;
+			return new MockRepl1(properties);
 		}
 	}
 }

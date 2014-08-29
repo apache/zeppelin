@@ -2,10 +2,6 @@ package com.nflabs.zeppelin.spark;
 
 import static org.junit.Assert.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.Map;
 import java.util.Properties;
 
 import org.junit.After;
@@ -56,8 +52,8 @@ public class SparkReplTest {
 		repl.interpret("case class Person(name:String, age:Int)");
 		repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))");
 		repl.interpret("people.registerAsTable(\"people\")");
-		repl.interpret("val oldguys = sqlc.sql(\"SELECT name FROM people WHERE age>40\")");
-		assertEquals("res1: Array[org.apache.spark.sql.Row] = Array([jobs], [gates])\n", repl.interpret("oldguys.collect()").message());
+		System.err.println(repl.interpret("val oldguys = sqlc.sql(\"SELECT name FROM people WHERE age>40\")").message());
+		assertEquals("res6: Array[org.apache.spark.sql.Row] = Array([jobs], [gates])\n", repl.interpret("oldguys.collect()").message());
 		
 	}
 	

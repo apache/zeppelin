@@ -1,5 +1,8 @@
 package com.nflabs.zeppelin.server;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.LinkedList;
@@ -8,10 +11,7 @@ import java.util.Map;
 import java.util.Random;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.cxf.helpers.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,14 +37,12 @@ public class Note implements Serializable, JobListener {
 	private transient NoteReplLoader replLoader;
 	private transient Scheduler scheduler;
 	private transient ZeppelinConfiguration conf;
-	private transient FileSystem fs;
 	
 	public Note(){		
 	}
 	
-	public Note(ZeppelinConfiguration conf, FileSystem fs, NoteReplLoader replLoader, Scheduler scheduler){
+	public Note(ZeppelinConfiguration conf, NoteReplLoader replLoader, Scheduler scheduler){
 		this.conf = conf;
-		this.fs = fs;
 		this.replLoader = replLoader;
 		this.scheduler = scheduler;
 		generateId();
@@ -80,10 +78,6 @@ public class Note implements Serializable, JobListener {
 	
 	public void setZeppelinConfiguration(ZeppelinConfiguration conf){
 		this.conf = conf;
-	}
-	
-	public void setFileSystem(FileSystem fs) {
-		this.fs = fs;
 	}
 	
 	/**
@@ -187,45 +181,44 @@ public class Note implements Serializable, JobListener {
 		gsonBuilder.setPrettyPrinting();
 		Gson gson = gsonBuilder.create();
 		
-		Path dir = new Path(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)+"/"+id);
-		if(!fs.exists(dir)){
-			fs.mkdirs(dir);
-		} else if(fs.isFile(dir)) {
+		File dir = new File(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)+"/"+id);
+		if(!dir.exists()){
+			dir.mkdirs();
+		} else if(dir.isFile()) {
 			throw new RuntimeException("File already exists"+dir.toString());
 		}
 				
-		Path file = new Path(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)+"/"+id+"/note.json");
-		logger().info("Persist note {} into {}", id, file.toUri());
+		File file = new File(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)+"/"+id+"/note.json");
+		logger().info("Persist note {} into {}", id, file.getAbsolutePath());
 		
 		String json = gson.toJson(this);
-		FSDataOutputStream out;
-		out = fs.create(file, true);
+		FileOutputStream out = new FileOutputStream(file);
 		out.write(json.getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)));
 		out.close();
 	}
 	
 	public void unpersist() throws IOException{
-		Path dir = new Path(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)+"/"+id);
-		fs.delete(dir, true);
+		File dir = new File(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)+"/"+id);
+
+		FileUtils.delete(dir, true);
 	}
 	
-	public static Note load(String id, ZeppelinConfiguration conf, FileSystem fs, NoteReplLoader replLoader, Scheduler scheduler) throws IOException{
+	public static Note load(String id, ZeppelinConfiguration conf, NoteReplLoader replLoader, Scheduler scheduler) throws IOException{
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		gsonBuilder.setPrettyPrinting();
 		Gson gson = gsonBuilder.create();
 		
-		Path file = new Path(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)+"/"+id+"/note.json");
-		logger().info("Load note {} from {}", id, file.toUri());
+		File file = new File(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)+"/"+id+"/note.json");
+		logger().info("Load note {} from {}", id, file.getAbsolutePath());
 		
-		if(!fs.isFile(file)){
+		if(!file.isFile()){
 			return null;
 		}
 		
-		FSDataInputStream ins = fs.open(file);
+		FileInputStream ins = new FileInputStream(file);
 		String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
 		Note note = gson.fromJson(json, Note.class);
 		note.setZeppelinConfiguration(conf);
-		note.setFileSystem(fs);
 		note.setReplLoader(replLoader);
 		note.setScheduler(scheduler);
 		for(Paragraph p : note.paragraphs){

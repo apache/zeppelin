@@ -72,11 +72,9 @@
   <inceptionYear>2013</inceptionYear>
 
   <modules>
-    <module>zeppelin-zan</module>
     <module>zeppelin-zengine</module>
     <module>spark</module>
     <module>markdown</module>
-    <module>zeppelin-cli</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
