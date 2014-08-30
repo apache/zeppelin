@@ -31,7 +31,7 @@ public class InterpreterFactory {
 
 	public InterpreterFactory(ZeppelinConfiguration conf){
 		this.conf = conf;
-		String replsConf = conf.getString(ConfVars.ZEPPELIN_REPLS);
+		String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
 		String[] confs = replsConf.split(",");
 		for(String c : confs) {
 			String [] nameAndClass = c.split(":");
@@ -63,8 +63,8 @@ public class InterpreterFactory {
 
 			ClassLoader ccl = cleanCl.get(dirName);			
 			if(ccl==null) { // create
-				logger.info("Reading "+conf.getString(ConfVars.ZEPPELIN_REPL_DIR)+"/"+dirName);
-				File path = new File(conf.getString(ConfVars.ZEPPELIN_REPL_DIR)+"/"+dirName);
+				logger.info("Reading "+conf.getString(ConfVars.ZEPPELIN_INTERPRETER_DIR)+"/"+dirName);
+				File path = new File(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_DIR)+"/"+dirName);
 				URL [] urls = recursiveBuildLibList(path);
 				ccl = new URLClassLoader(urls, oldcl);
 				cleanCl.put(dirName, ccl);

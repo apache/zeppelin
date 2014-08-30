@@ -27,51 +27,21 @@
 </property>
 
 <property>
-  <name>zeppelin.job.dir</name>
-  <value>jobs</value>
-  <description>job directory</description>
+  <name>zeppelin.notebook.dir</name>
+  <value>notebook</value>
+  <description>notebook persist</description>
 </property>
 
 <property>
-  <name>zeppelin.zan.repo</name>
-  <value>https://github.com/NFLabs/zan.git</value>
-  <description>ZAN repo url</description>
+  <name>zeppelin.interpreter.dir</name>
+  <value>interpreter</value>
+  <description>Interpreter implementation base directory</description>
 </property>
 
 <property>
-  <name>zeppelin.zan.localrepo</name>
-  <value>zan-repo</value>
-  <description>ZAN local repository</description>
-</property>
-
-<property>
-  <name>zeppelin.zan.sharedrepo</name>
-  <value></value>
-  <description>Optionally, set ZAN Shared repository (on hdfs). zeppelin.zan.localrepo is synced to zeppelin.zan.sharedrepo automatically</description>
-</property>
-
-<property>
-  <name>zeppelin.max.result</name>
-  <value>10000</value>
-  <description>Maximum number of rows of data  which displayed in visualization</description>
-</property>
-
-<property>
-  <name>zeppelin.max.history</name>
-  <value>100</value>
-  <description>Maximum number of job history.</description>
-</property>
-
-<property>
-  <name>zeppelin.driver.dir</name>
-  <value>drivers</value>
-  <description>Drivers base directory</description>
-</property>
-
-<property>
-  <name>zeppelin.drivers</name>
-  <value>hive:hive2://,exec:exec://</value>
-  <description>Comma separated driver configurations uri. </description>
+  <name>zeppelin.interpreters</name>
+  <value>spark:com.nflabs.zeppelin.spark.SparkInterpreter,sql:com.nflabs.zeppelin.spark.SparkSqlInterpreter,md:com.nflabs.zeppelin.markdown.Markdown,sh:com.nflabs.zeppelin.shell.ShellInterpreter</value>
+  <description>Comma separated interpreter configurations. First interpreter become a default</description>
 </property>
 
 </configuration>

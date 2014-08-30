@@ -3,10 +3,13 @@
 # export JAVA_HOME=
 # export HADOOP_HOME=            # Required except for setting with Hive Server
 
+# export MASTER=                 # spark master
+# export SPARK_HOME=             # spark home
+
 # export ZEPPELIN_CONF_DIR       # Alternate zeppelin conf dir. Default is ${HBASE_HOME}/conf.
 # export ZEPPELIN_LOG_DIR        # Where log files are stored.  PWD by default.
 # export ZEPPELIN_PID_DIR        # The pid files are stored. /tmp by default.
-# export ZEPPELIN_DATA_DIR       # The pid files are stored. /tmp by default.
+# export ZEPPELIN_NOTEBOOK_DIR   # Where notebook saved
 # export ZEPPELIN_IDENT_STRING   # A string representing this instance of zeppelin. $USER by default
 # export ZEPPELIN_NICENESS       # The scheduling priority for daemons. Defaults to 0.
 # export ZEPPELIN_JAVA_OPTS      # Additional jvm option
