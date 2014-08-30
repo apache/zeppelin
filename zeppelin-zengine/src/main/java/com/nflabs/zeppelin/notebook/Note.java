@@ -181,14 +181,14 @@ public class Note implements Serializable, JobListener {
 		gsonBuilder.setPrettyPrinting();
 		Gson gson = gsonBuilder.create();
 		
-		File dir = new File(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)+"/"+id);
+		File dir = new File(conf.getNotebookDir()+"/"+id);
 		if(!dir.exists()){
 			dir.mkdirs();
 		} else if(dir.isFile()) {
 			throw new RuntimeException("File already exists"+dir.toString());
 		}
 				
-		File file = new File(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)+"/"+id+"/note.json");
+		File file = new File(conf.getNotebookDir()+"/"+id+"/note.json");
 		logger().info("Persist note {} into {}", id, file.getAbsolutePath());
 		
 		String json = gson.toJson(this);
@@ -198,7 +198,7 @@ public class Note implements Serializable, JobListener {
 	}
 	
 	public void unpersist() throws IOException{
-		File dir = new File(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)+"/"+id);
+		File dir = new File(conf.getNotebookDir()+"/"+id);
 
 		FileUtils.deleteDirectory(dir);
 	}
@@ -208,7 +208,7 @@ public class Note implements Serializable, JobListener {
 		gsonBuilder.setPrettyPrinting();
 		Gson gson = gsonBuilder.create();
 		
-		File file = new File(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)+"/"+id+"/note.json");
+		File file = new File(conf.getNotebookDir()+"/"+id+"/note.json");
 		logger().info("Load note {} from {}", id, file.getAbsolutePath());
 		
 		if(!file.isFile()){

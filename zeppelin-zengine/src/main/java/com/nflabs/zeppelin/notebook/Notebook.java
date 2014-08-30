@@ -73,7 +73,7 @@ public class Notebook {
 	}
 	
 	private void loadAllNotes() throws IOException{
-		File notebookDir = new File(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR));
+		File notebookDir = new File(conf.getNotebookDir());
 		File[] dirs = notebookDir.listFiles();
 		if(dirs==null) return;
 		for(File f : dirs) {

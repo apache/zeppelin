@@ -63,8 +63,8 @@ public class InterpreterFactory {
 
 			ClassLoader ccl = cleanCl.get(dirName);			
 			if(ccl==null) { // create
-				logger.info("Reading "+conf.getString(ConfVars.ZEPPELIN_INTERPRETER_DIR)+"/"+dirName);
-				File path = new File(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_DIR)+"/"+dirName);
+				File path = new File(conf.getInterpreterDir()+"/"+dirName);
+				logger.info("Reading "+path.getAbsolutePath());
 				URL [] urls = recursiveBuildLibList(path);
 				ccl = new URLClassLoader(urls, oldcl);
 				cleanCl.put(dirName, ccl);
