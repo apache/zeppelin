@@ -75,6 +75,7 @@
     <module>zeppelin-zengine</module>
     <module>spark</module>
     <module>markdown</module>
+    <module>shell</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
