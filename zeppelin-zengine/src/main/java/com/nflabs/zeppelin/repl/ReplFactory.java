@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -20,6 +21,9 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 
 public class ReplFactory {
 	Logger logger = LoggerFactory.getLogger(ReplFactory.class);
+	
+	private Map<String, Object> share = Collections.synchronizedMap(new HashMap<String, Object>());
+	private Map<String, ClassLoader> cleanCl = Collections.synchronizedMap(new HashMap<String, ClassLoader>());
 	
 	private ZeppelinConfiguration conf;
 	Map<String, String> replNameClassMap = new HashMap<String, String>();
@@ -53,18 +57,40 @@ public class ReplFactory {
 	
 	public Repl createRepl(String dirName, String className, Properties property) {
 		logger.info("Create repl {} from {}", className, dirName);
-		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
-
+		
+		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();		
 		try {
-			logger.info("Reading "+conf.getString(ConfVars.ZEPPELIN_REPL_DIR)+"/"+dirName);
-			File path = new File(conf.getString(ConfVars.ZEPPELIN_REPL_DIR)+"/"+dirName);
-			URL [] urls = recursiveBuildLibList(path);
-			URLClassLoader cl = new URLClassLoader(urls, oldcl);
-			Thread.currentThread().setContextClassLoader(cl);
 
+			ClassLoader ccl = cleanCl.get(dirName);			
+			if(ccl==null) { // create
+				logger.info("Reading "+conf.getString(ConfVars.ZEPPELIN_REPL_DIR)+"/"+dirName);
+				File path = new File(conf.getString(ConfVars.ZEPPELIN_REPL_DIR)+"/"+dirName);
+				URL [] urls = recursiveBuildLibList(path);
+				ccl = new URLClassLoader(urls, oldcl);
+				cleanCl.put(dirName, ccl);
+			}
+			
+			boolean separateCL = true;
+			try{ // check if server's classloader has driver already. 
+				Class cls = this.getClass().forName(className);
+				if(cls!=null) separateCL = false;				
+			} catch(Exception e) {
+				// nothing to do.
+			}
+			
+			URLClassLoader cl;
+
+			if(separateCL==true) {
+				cl = URLClassLoader.newInstance(new URL[]{}, (URLClassLoader) ccl);
+			} else {
+				cl = (URLClassLoader) ccl;
+			}
+			Thread.currentThread().setContextClassLoader(cl);
+			
 			Class<Repl> replClass = (Class<Repl>) cl.loadClass(className);
 			Constructor<Repl> constructor = replClass.getConstructor(new Class []{Properties.class});
 			Repl repl = constructor.newInstance(property);
+			property.put("share", share);
 			return new ClassloaderRepl(repl, cl, property);
 		} catch (SecurityException e) {
 			throw new ReplException(e);
@@ -83,7 +109,7 @@ public class ReplFactory {
 		} catch (MalformedURLException e) {
 			throw new ReplException(e);
 		} finally {
-			Thread.currentThread().setContextClassLoader(oldcl);	
+			Thread.currentThread().setContextClassLoader(oldcl);
 		}
 	}
 	

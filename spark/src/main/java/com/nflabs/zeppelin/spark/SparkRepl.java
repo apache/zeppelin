@@ -1,10 +1,16 @@
 package com.nflabs.zeppelin.spark;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -15,6 +21,7 @@ import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.sql.SQLContext;
 
 import com.nflabs.zeppelin.repl.Repl;
+import com.nflabs.zeppelin.repl.ReplFactory;
 import com.nflabs.zeppelin.repl.ReplResult;
 import com.nflabs.zeppelin.repl.ReplResult.Code;
 
@@ -23,13 +30,15 @@ import scala.Some;
 import scala.collection.Iterator;
 import scala.collection.mutable.HashSet;
 import scala.tools.nsc.Settings;
+import scala.tools.nsc.interpreter.IMain;
+import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
+import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
 public class SparkRepl extends Repl {
 
 	private SparkILoop interpreter;
 	private SparkIMain intp;
-	private SparkContext sc;
-	private Long sparkContextCreationLock = new Long(0);
+	static private SparkContext sc;
 	private ByteArrayOutputStream out;
 	private SQLContext sqlc;
 	
@@ -40,6 +49,15 @@ public class SparkRepl extends Repl {
 	}
 
 	public SparkContext getSparkContext(){
+		if(sc==null){
+			// save / load sc from common share
+			Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
+			sc = (SparkContext) share.get("sc");
+			if(sc==null) {
+				sc = createSparkContext();
+				share.put("sc", sc);				
+			}
+		}
 		return sc;
 	}
 	
@@ -48,6 +66,8 @@ public class SparkRepl extends Repl {
 	}
 	
 	public SparkContext createSparkContext(){
+		System.err.println("------ Create new SparkContext "+getMaster()+" -------");
+
 		String execUri = System.getenv("SPARK_EXECUTOR_URI");
 		String[] jars = SparkILoop.getAddedJars();
 		SparkConf conf = new SparkConf().setMaster(getMaster())
@@ -73,30 +93,106 @@ public class SparkRepl extends Repl {
 
 	@Override
 	public void initialize(){
+		// Very nice discussion about how scala compiler handle classpath
+		// https://groups.google.com/forum/#!topic/scala-user/MlVwo2xCCI0
+		
+		/*
+		 * > val env = new nsc.Settings(errLogger)
+> env.usejavacp.value = true
+> val p = new Interpreter(env)
+> p.setContextClassLoader
+>
+Alternatively you can set the class path throuh nsc.Settings.classpath.
+
+>> val settings = new Settings()
+>> settings.usejavacp.value = true
+>> settings.classpath.value += File.pathSeparator +
+>> System.getProperty("java.class.path")
+>> val in = new Interpreter(settings) {
+>>    override protected def parentClassLoader = getClass.getClassLoader
+>> }
+>> in.setContextClassLoader()
+
+
+		 */
+		
 		Settings settings = new Settings();
-		settings.classpath().value_$eq(System.getProperty("java.class.path"));
+		
+		// set classpath for scala compiler
+		PathSetting pathSettings = settings.classpath();
+		String classpath = "";
+		List<File> paths = currentClassPath();
+		for(File f : paths) {
+			if(classpath.length()>0){
+				classpath+=File.pathSeparator;
+			}
+			classpath+=f.getAbsolutePath();
+		}
+		pathSettings.v_$eq(classpath);
+		settings.scala$tools$nsc$settings$ScalaSettings$_setter_$classpath_$eq(pathSettings);
+
+		
+		// set classloader for scala compiler
+		settings.explicitParentLoader_$eq(new Some<ClassLoader>(Thread.currentThread().getContextClassLoader()));
+		BooleanSetting b = (BooleanSetting)settings.usejavacp();
+		b.v_$eq(true);
+		settings.scala$tools$nsc$settings$StandardScalaSettings$_setter_$usejavacp_$eq(b);
+		
 		PrintStream printStream = new PrintStream(out);
+		
+		/* spark interpreter */
 		this.interpreter = new SparkILoop(null, new PrintWriter(out));
 		interpreter.settings_$eq(settings);
 		
 		interpreter.createInterpreter();
+
 		intp = interpreter.intp();
+		intp.setContextClassLoader();
 		intp.initializeSynchronous();
-		sc = createSparkContext();
+
+
+		sc = getSparkContext();
+
 		sqlc = new SQLContext(sc);
 		
-		synchronized(sparkContextCreationLock) {
-			// redirect stdout
-			intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
-			Map<String, Object> binder = (Map<String, Object>) getValue("_binder");
-			binder.put("out", printStream);
-			binder.put("sc", sc);
-			binder.put("sqlc", sqlc);
-			intp.interpret("@transient val sc = _binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
-			intp.interpret("import org.apache.spark.SparkContext._");
-			intp.interpret("@transient val sqlc = _binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
-			intp.interpret("import sqlc.createSchemaRDD");
-		}
+		intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
+		Map<String, Object> binder = (Map<String, Object>) getValue("_binder");
+		binder.put("out", printStream);
+		binder.put("sc", sc);
+		binder.put("sqlc", sqlc);
+
+		intp.interpret("@transient val sc = _binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
+		intp.interpret("import org.apache.spark.SparkContext._");
+		intp.interpret("@transient val sqlc = _binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
+		intp.interpret("import sqlc.createSchemaRDD");
+	}
+
+	
+	private List<File> currentClassPath(){
+		List<File> paths = classPath(Thread.currentThread().getContextClassLoader());
+		String[] cps = System.getProperty("java.class.path").split(File.pathSeparator);
+		if(cps!=null) {
+			for(String cp : cps) {
+				paths.add(new File(cp));
+			}
+		}		
+		return paths;
+	}
+	
+	private List<File> classPath(ClassLoader cl){
+		List<File> paths = new LinkedList<File>();
+		if(cl==null)return paths;
+		
+		if(cl instanceof URLClassLoader) {
+			URLClassLoader ucl = (URLClassLoader) cl;
+			URL [] urls = ucl.getURLs();
+			if(urls!=null) {
+				for(URL url : urls) {
+					paths.add(new File(url.getFile()));
+				}
+			}
+		} 
+		return paths;
 	}
 	
 	public void bindValue(String name, Object o){
