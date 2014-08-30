@@ -189,7 +189,7 @@ public class ZeppelinIT {
     return url;
   }
 
-
+/*
     @Test
 	public void testZAN() {
 		WebDriver driver = getWebDriver();
@@ -214,7 +214,7 @@ public class ZeppelinIT {
 			driver.quit();
 		}
 	}
-
+*/
 
 
   /**
