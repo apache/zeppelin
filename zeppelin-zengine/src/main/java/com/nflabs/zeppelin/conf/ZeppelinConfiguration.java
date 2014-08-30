@@ -213,7 +213,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_PORT				("zeppelin.server.port", 8080),
 		ZEPPELIN_WAR				("zeppelin.war", "../zeppelin-web/src/main/webapp"),
 	    ZEPPELIN_API_WAR            ("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),
-		ZEPPELIN_REPLS				("zeppelin.interpreters", "spark:com.nflabs.zeppelin.spark.SparkRepl,sql:com.nflabs.zeppelin.spark.SparkSqlRepl,md:com.nflabs.zeppelin.markdown.Markdown"),
+		ZEPPELIN_REPLS				("zeppelin.interpreters", "spark:com.nflabs.zeppelin.spark.SparkInterpreter,sql:com.nflabs.zeppelin.spark.SparkSqlInterpreter,md:com.nflabs.zeppelin.markdown.Markdown"),
 		ZEPPELIN_REPL_DIR			("zeppelin.interpreter.dir", "../interpreter"),
 		ZEPPELIN_ENCODING			("zeppelin.encoding", "UTF-8"), 
 		ZEPPELIN_NOTEBOOK_DIR       ("zeppelin.notebook.dir", "../notebook")		

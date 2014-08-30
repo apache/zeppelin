@@ -15,11 +15,11 @@ import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 
-public class SparkSqlRepl extends Interpreter {
+public class SparkSqlInterpreter extends Interpreter {
 	private ClassloaderInterpreter sparkClassloaderRepl;
 	AtomicInteger num = new AtomicInteger(0);
 
-	public SparkSqlRepl(Properties property) {
+	public SparkSqlInterpreter(Properties property) {
 		super(property);
 	}
 
@@ -58,7 +58,7 @@ public class SparkSqlRepl extends Interpreter {
 	@Override
 	public InterpreterResult interpret(String st) {
 		findSpark();
-		SQLContext sqlc = ((SparkRepl)sparkClassloaderRepl.getInnerRepl()).getSQLContext();
+		SQLContext sqlc = ((SparkInterpreter)sparkClassloaderRepl.getInnerRepl()).getSQLContext();
 		SchemaRDD rdd = sqlc.sql(st);
 		Row[] rows = null;
 		try {

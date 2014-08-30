@@ -10,7 +10,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -21,7 +20,6 @@ import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.sql.SQLContext;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
-import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 
@@ -30,11 +28,10 @@ import scala.Some;
 import scala.collection.Iterator;
 import scala.collection.mutable.HashSet;
 import scala.tools.nsc.Settings;
-import scala.tools.nsc.interpreter.IMain;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
-public class SparkRepl extends Interpreter {
+public class SparkInterpreter extends Interpreter {
 
 	private SparkILoop interpreter;
 	private SparkIMain intp;
@@ -43,7 +40,7 @@ public class SparkRepl extends Interpreter {
 	private SQLContext sqlc;
 	
 
-	public SparkRepl(Properties property) {
+	public SparkInterpreter(Properties property) {
 		super(property);
 		out = new ByteArrayOutputStream();
 	}

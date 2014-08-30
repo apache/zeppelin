@@ -11,13 +11,13 @@ import org.junit.Test;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 
 
-public class SparkReplTest {
+public class SparkInterpreterTest {
 
-	private SparkRepl repl;
+	private SparkInterpreter repl;
 
 	@Before
 	public void setUp() throws Exception {
-		repl = new SparkRepl(new Properties());
+		repl = new SparkInterpreter(new Properties());
 		repl.initialize();
 	}
 

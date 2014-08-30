@@ -12,16 +12,16 @@ import com.nflabs.zeppelin.interpreter.ClassloaderInterpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Type;
 
-public class SparkSqlReplTest {
+public class SparkSqlInterpreterTest {
 
-	private SparkRepl repl;
-	private SparkSqlRepl sql;
+	private SparkInterpreter repl;
+	private SparkSqlInterpreter sql;
 
 	@Before
 	public void setUp() throws Exception {
-		repl = new SparkRepl(new Properties());
+		repl = new SparkInterpreter(new Properties());
 		repl.initialize();
-		sql = new SparkSqlRepl(new Properties());
+		sql = new SparkSqlInterpreter(new Properties());
 		sql.setSparkClassloaderRepl(new ClassloaderInterpreter(repl, Thread.currentThread().getContextClassLoader(), new Properties()));
 		sql.initialize();
 	}
