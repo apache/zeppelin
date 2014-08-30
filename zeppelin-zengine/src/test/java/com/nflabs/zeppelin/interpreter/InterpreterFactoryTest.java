@@ -12,7 +12,7 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 
-public class ReplFactoryTest {
+public class InterpreterFactoryTest {
 
 	@Before
 	public void setUp() throws Exception {
@@ -25,7 +25,7 @@ public class ReplFactoryTest {
 	@Test
 	public void testBasic() {
 		InterpreterFactory factory = new InterpreterFactory(ZeppelinConfiguration.create());
-		Interpreter repl1 = factory.createRepl("mock", "com.nflabs.zeppelin.repl.mock.MockRepl", new Properties());
+		Interpreter repl1 = factory.createRepl("mock", "com.nflabs.zeppelin.interpreter.mock.MockInterpreter", new Properties());
 		repl1.bindValue("a", 1);
 		
 		assertEquals(repl1.getValue("a"), 1);

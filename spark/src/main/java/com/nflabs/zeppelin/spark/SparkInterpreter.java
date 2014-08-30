@@ -35,7 +35,7 @@ public class SparkInterpreter extends Interpreter {
 
 	private SparkILoop interpreter;
 	private SparkIMain intp;
-	static private SparkContext sc;
+	private SparkContext sc;
 	private ByteArrayOutputStream out;
 	private SQLContext sqlc;
 	
@@ -281,6 +281,4 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 	public FormType getFormType() {
 		return FormType.NATIVE;
 	}
-	
-
 }

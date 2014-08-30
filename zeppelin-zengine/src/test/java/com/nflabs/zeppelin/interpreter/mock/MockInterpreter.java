@@ -7,9 +7,9 @@ import java.util.Properties;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 
-public class MockRepl extends Interpreter {
+public class MockInterpreter extends Interpreter {
 	
-	public MockRepl(Properties property) {
+	public MockInterpreter(Properties property) {
 		super(property);
 	}
 

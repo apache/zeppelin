@@ -2,6 +2,7 @@ package com.nflabs.zeppelin.spark;
 
 import static org.junit.Assert.*;
 
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.junit.After;
@@ -19,16 +20,18 @@ public class SparkSqlInterpreterTest {
 
 	@Before
 	public void setUp() throws Exception {
-		repl = new SparkInterpreter(new Properties());
+		Properties p = new Properties();
+		p.put("share", new HashMap<String, Object>());
+		repl = new SparkInterpreter(p);
 		repl.initialize();
-		sql = new SparkSqlInterpreter(new Properties());
+		sql = new SparkSqlInterpreter(p);
 		sql.setSparkClassloaderRepl(new ClassloaderInterpreter(repl, Thread.currentThread().getContextClassLoader(), new Properties()));
 		sql.initialize();
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		repl.destroy();
+		repl.getSparkContext().stop();
 	}
 	@Test
 	public void test() {

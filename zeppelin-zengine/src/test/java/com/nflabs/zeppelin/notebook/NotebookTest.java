@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.interpreter.mock.MockReplFactory;
+import com.nflabs.zeppelin.interpreter.mock.MockInterpreterFactory;
 import com.nflabs.zeppelin.notebook.Note;
 import com.nflabs.zeppelin.notebook.Notebook;
 import com.nflabs.zeppelin.notebook.Paragraph;
@@ -38,7 +38,7 @@ public class NotebookTest {
         
 		this.schedulerFactory = new SchedulerFactory();
 		
-		notebook = new Notebook(conf, schedulerFactory, new MockReplFactory(conf));
+		notebook = new Notebook(conf, schedulerFactory, new MockInterpreterFactory(conf));
 	}
 
 	@After
@@ -74,7 +74,7 @@ public class NotebookTest {
 		p1.setParagraph("hello world");
 		note.persist();
 		
-		Notebook notebook2 = new Notebook(conf, schedulerFactory, new MockReplFactory(conf));
+		Notebook notebook2 = new Notebook(conf, schedulerFactory, new MockInterpreterFactory(conf));
 		assertEquals(1, notebook2.getAllNotes().size());
 	}
 	
