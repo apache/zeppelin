@@ -21,7 +21,8 @@ import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.repl.ReplFactory;
+import com.nflabs.zeppelin.interpreter.InterpreterFactory;
+import com.nflabs.zeppelin.notebook.Notebook;
 import com.nflabs.zeppelin.rest.ZeppelinRestApi;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
@@ -32,7 +33,7 @@ public class ZeppelinServer extends Application {
 	private SchedulerFactory schedulerFactory;
 	public static Notebook notebook;
 
-	private ReplFactory replFactory;
+	private InterpreterFactory replFactory;
 
 	public static void main(String [] args) throws Exception{
 		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -169,7 +170,7 @@ public class ZeppelinServer extends Application {
 		
 		this.schedulerFactory = new SchedulerFactory();
 
-		this.replFactory = new ReplFactory(conf);
+		this.replFactory = new InterpreterFactory(conf);
 		notebook = new Notebook(conf, schedulerFactory, replFactory);
 	}
 

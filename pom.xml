@@ -284,7 +284,7 @@
           <configuration>
             <filesets>
               <fileset>
-                <directory>repl</directory>
+                <directory>interpreter</directory>
                 <followSymlinks>false</followSymlinks>
               </fileset>
             </filesets>

@@ -12,7 +12,7 @@
   <artifactId>zeppelin-markdown</artifactId>
   <packaging>jar</packaging>
   <version>0.3.4-SNAPSHOT</version>
-  <name>Zeppelin: Markdown Repl driver</name>
+  <name>Zeppelin: Markdown interpreter</name>
   <url>http://www.nflabs.com</url>
 
   <dependencies>
@@ -70,7 +70,7 @@
               <goal>copy-dependencies</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/../../repl/md</outputDirectory>
+              <outputDirectory>${project.build.directory}/../../interpreter/md</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
@@ -84,7 +84,7 @@
               <goal>copy</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/../../repl/md</outputDirectory>
+              <outputDirectory>${project.build.directory}/../../interpreter/md</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>

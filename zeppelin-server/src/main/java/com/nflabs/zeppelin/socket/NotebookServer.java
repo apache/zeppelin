@@ -16,12 +16,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import com.nflabs.zeppelin.notebook.Note;
+import com.nflabs.zeppelin.notebook.Notebook;
+import com.nflabs.zeppelin.notebook.Paragraph;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.JobListener;
-import com.nflabs.zeppelin.server.Note;
-import com.nflabs.zeppelin.server.Notebook;
-import com.nflabs.zeppelin.server.Paragraph;
 import com.nflabs.zeppelin.server.ZeppelinServer;
 import com.nflabs.zeppelin.socket.Message.OP;
 

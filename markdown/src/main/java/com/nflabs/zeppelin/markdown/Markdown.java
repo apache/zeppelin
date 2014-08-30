@@ -5,11 +5,11 @@ import java.util.Properties;
 
 import org.markdown4j.Markdown4jProcessor;
 
-import com.nflabs.zeppelin.repl.Repl;
-import com.nflabs.zeppelin.repl.ReplResult;
-import com.nflabs.zeppelin.repl.ReplResult.Code;
+import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 
-public class Markdown extends Repl {
+public class Markdown extends Interpreter {
 	private Markdown4jProcessor md;
 
 	public Markdown(Properties property){
@@ -31,14 +31,14 @@ public class Markdown extends Repl {
 	}
 
 	@Override
-	public ReplResult interpret(String st) {
+	public InterpreterResult interpret(String st) {
 		String html;
 		try {
 			html = md.process(st);
 		} catch (IOException e) {
-			return new ReplResult(Code.ERROR, e.getMessage());
+			return new InterpreterResult(Code.ERROR, e.getMessage());
 		}
-		return new ReplResult(Code.SUCCESS, html);
+		return new InterpreterResult(Code.SUCCESS, html);
 	}
 
 	@Override

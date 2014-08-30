@@ -34,8 +34,8 @@ if [ "x$ZEPPELIN_LOG_DIR" == "x" ]; then
     export ZEPPELIN_LOG_DIR="$ZEPPELIN_HOME/logs"
 fi
 
-if [ "x$ZEPPELIN_DATA_DIR" == "x" ]; then
-    export ZEPPELIN_DATA_DIR="$ZEPPELIN_HOME/data"
+if [ "x$ZEPPELIN_NOTEBOOK_DIR" == "x" ]; then
+    export ZEPPELIN_NOTEBOOK_DIR="$ZEPPELIN_HOME/notebook"
 fi
 
 if [ "x$ZEPPELIN_PID_DIR" == "x" ]; then

@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.repl;
+package com.nflabs.zeppelin.interpreter;
 
 import static org.junit.Assert.*;
 
@@ -9,6 +9,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 
 public class ReplFactoryTest {
 
@@ -22,8 +24,8 @@ public class ReplFactoryTest {
 
 	@Test
 	public void testBasic() {
-		ReplFactory factory = new ReplFactory(ZeppelinConfiguration.create());
-		Repl repl1 = factory.createRepl("mock", "com.nflabs.zeppelin.repl.mock.MockRepl", new Properties());
+		InterpreterFactory factory = new InterpreterFactory(ZeppelinConfiguration.create());
+		Interpreter repl1 = factory.createRepl("mock", "com.nflabs.zeppelin.repl.mock.MockRepl", new Properties());
 		repl1.bindValue("a", 1);
 		
 		assertEquals(repl1.getValue("a"), 1);

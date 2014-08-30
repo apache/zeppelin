@@ -213,17 +213,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		ZEPPELIN_PORT				("zeppelin.server.port", 8080),
 		ZEPPELIN_WAR				("zeppelin.war", "../zeppelin-web/src/main/webapp"),
 	    ZEPPELIN_API_WAR            ("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),
-		ZEPPELIN_JOB_DIR			("zeppelin.job.dir", "../jobs"),
-		ZEPPELIN_ZAN_REPO			("zeppelin.zan.repo", "https://github.com/NFLabs/zan.git"),
-		ZEPPELIN_ZAN_LOCAL_REPO		("zeppelin.zan.localrepo", "../zan-repo"),
-		ZEPPELIN_ZAN_SHARED_REPO	("zeppelin.zan.sharedrepo", null),
-		ZEPPELIN_JOB_SCHEDULER	    ("zeppelin.job.scheduler", "PARALLEL"), // FIFO or PARALLEL
-		ZEPPELIN_MAX_RESULT			("zeppelin.max.result", 10000),     // max num result taken by result class
-		ZEPPELIN_MAX_HISTORY		("zeppelin.max.history", 100),      // max num of job history
-		ZEPPELIN_DRIVERS			("zeppelin.drivers", "hive:hive2://,exec:exec://"),
-		ZEPPELIN_DRIVER_DIR			("zeppelin.driver.dir", "../drivers"),
-		ZEPPELIN_REPLS				("zeppelin.repls", "spark:com.nflabs.zeppelin.spark.SparkRepl,sql:com.nflabs.zeppelin.spark.SparkSqlRepl,md:com.nflabs.zeppelin.markdown.Markdown"),
-		ZEPPELIN_REPL_DIR			("zeppelin.repl.dir", "../repl"),
+		ZEPPELIN_REPLS				("zeppelin.interpreters", "spark:com.nflabs.zeppelin.spark.SparkRepl,sql:com.nflabs.zeppelin.spark.SparkSqlRepl,md:com.nflabs.zeppelin.markdown.Markdown"),
+		ZEPPELIN_REPL_DIR			("zeppelin.interpreter.dir", "../interpreter"),
 		ZEPPELIN_ENCODING			("zeppelin.encoding", "UTF-8"), 
 		ZEPPELIN_NOTEBOOK_DIR       ("zeppelin.notebook.dir", "../notebook")		
 		;

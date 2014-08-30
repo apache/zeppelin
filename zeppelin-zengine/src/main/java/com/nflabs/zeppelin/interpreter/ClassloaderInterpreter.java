@@ -1,22 +1,20 @@
-package com.nflabs.zeppelin.repl;
+package com.nflabs.zeppelin.interpreter;
 
 import java.util.Properties;
 
-import com.nflabs.zeppelin.repl.ReplResult;
-
-public class ClassloaderRepl extends Repl {
+public class ClassloaderInterpreter extends Interpreter {
 
 	private ClassLoader cl;
-	private Repl repl;
+	private Interpreter intp;
 
-	public ClassloaderRepl(Repl repl, ClassLoader cl, Properties property) {
+	public ClassloaderInterpreter(Interpreter intp, ClassLoader cl, Properties property) {
 		super(property);
 		this.cl = cl;
-		this.repl = repl;
+		this.intp = intp;
 	}
 	
-	public Repl getInnerRepl(){
-		return repl;
+	public Interpreter getInnerRepl(){
+		return intp;
 	}
 
 	@Override
@@ -24,9 +22,9 @@ public class ClassloaderRepl extends Repl {
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(cl);
 		try {
-			return repl.getValue(name);
+			return intp.getValue(name);
 		} catch (Exception e){
-			throw new ReplException(e);
+			throw new InterpreterException(e);
 		} finally {
 			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);
@@ -34,14 +32,14 @@ public class ClassloaderRepl extends Repl {
 	}
 
 	@Override
-	public ReplResult interpret(String st) {
+	public InterpreterResult interpret(String st) {
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(cl);
 		try {
-			return repl.interpret(st);
+			return intp.interpret(st);
 		} catch (Exception e){
 			e.printStackTrace();
-			throw new ReplException(e);
+			throw new InterpreterException(e);
 		} finally {
 			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);
@@ -53,9 +51,9 @@ public class ClassloaderRepl extends Repl {
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(cl);
 		try {
-			repl.bindValue(name, o);
+			intp.bindValue(name, o);
 		} catch (Exception e){
-			throw new ReplException(e);
+			throw new InterpreterException(e);
 		} finally {
 			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);
@@ -67,9 +65,9 @@ public class ClassloaderRepl extends Repl {
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(cl);
 		try {
-			repl.initialize();
+			intp.initialize();
 		} catch (Exception e){
-			throw new ReplException(e);
+			throw new InterpreterException(e);
 		} finally {
 			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);
@@ -81,9 +79,9 @@ public class ClassloaderRepl extends Repl {
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(cl);
 		try {
-			repl.destroy();
+			intp.destroy();
 		} catch (Exception e){
-			throw new ReplException(e);
+			throw new InterpreterException(e);
 		} finally {
 			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);
@@ -95,9 +93,9 @@ public class ClassloaderRepl extends Repl {
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(cl);
 		try {
-			repl.cancel();
+			intp.cancel();
 		} catch (Exception e){
-			throw new ReplException(e);
+			throw new InterpreterException(e);
 		} finally {
 			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);
@@ -109,9 +107,9 @@ public class ClassloaderRepl extends Repl {
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(cl);
 		try {
-			return repl.getFormType();
+			return intp.getFormType();
 		} catch (Exception e){
-			throw new ReplException(e);
+			throw new InterpreterException(e);
 		} finally {
 			cl = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(oldcl);

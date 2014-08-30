@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-import com.nflabs.zeppelin.server.Notebook;
+import com.nflabs.zeppelin.notebook.Notebook;
 
 @Path("/notebook")
 /*

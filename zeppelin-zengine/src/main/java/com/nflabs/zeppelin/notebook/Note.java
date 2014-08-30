@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.server;
+package com.nflabs.zeppelin.notebook;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.cxf.helpers.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +19,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.repl.ReplFactory;
+import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.JobListener;
@@ -200,7 +200,7 @@ public class Note implements Serializable, JobListener {
 	public void unpersist() throws IOException{
 		File dir = new File(conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR)+"/"+id);
 
-		FileUtils.delete(dir, true);
+		FileUtils.deleteDirectory(dir);
 	}
 	
 	public static Note load(String id, ZeppelinConfiguration conf, NoteReplLoader replLoader, Scheduler scheduler) throws IOException{

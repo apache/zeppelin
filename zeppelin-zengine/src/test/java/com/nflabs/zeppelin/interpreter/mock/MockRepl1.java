@@ -1,8 +1,11 @@
-package com.nflabs.zeppelin.repl;
+package com.nflabs.zeppelin.interpreter.mock;
 
 import java.util.Properties;
 
-public class MockRepl1 extends Repl{
+import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterResult;
+
+public class MockRepl1 extends Interpreter{
 
 	public MockRepl1(Properties property) {
 		super(property);
@@ -22,8 +25,8 @@ public class MockRepl1 extends Repl{
 	}
 
 	@Override
-	public ReplResult interpret(String st) {
-		return new ReplResult(ReplResult.Code.SUCCESS, "repl1: "+st);
+	public InterpreterResult interpret(String st) {
+		return new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: "+st);
 	}
 
 	@Override

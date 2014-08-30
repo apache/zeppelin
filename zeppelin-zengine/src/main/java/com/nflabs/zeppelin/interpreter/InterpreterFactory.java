@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.repl;
+package com.nflabs.zeppelin.interpreter;
 
 
 import java.io.File;
@@ -19,8 +19,8 @@ import org.slf4j.LoggerFactory;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 
-public class ReplFactory {
-	Logger logger = LoggerFactory.getLogger(ReplFactory.class);
+public class InterpreterFactory {
+	Logger logger = LoggerFactory.getLogger(InterpreterFactory.class);
 	
 	private Map<String, Object> share = Collections.synchronizedMap(new HashMap<String, Object>());
 	private Map<String, ClassLoader> cleanCl = Collections.synchronizedMap(new HashMap<String, ClassLoader>());
@@ -29,7 +29,7 @@ public class ReplFactory {
 	Map<String, String> replNameClassMap = new HashMap<String, String>();
 	String defaultReplName;
 
-	public ReplFactory(ZeppelinConfiguration conf){
+	public InterpreterFactory(ZeppelinConfiguration conf){
 		this.conf = conf;
 		String replsConf = conf.getString(ConfVars.ZEPPELIN_REPLS);
 		String[] confs = replsConf.split(",");
@@ -46,7 +46,7 @@ public class ReplFactory {
 		return defaultReplName;
 	}
 	
-	public Repl createRepl(String replName, Properties properties) {
+	public Interpreter createRepl(String replName, Properties properties) {
 		String className = replNameClassMap.get(replName!=null ? replName : defaultReplName);
 		logger.info("find repl class {} = {}", replName, className);
 		if(className==null) {
@@ -55,7 +55,7 @@ public class ReplFactory {
 		return createRepl(replName, className, properties);
 	}
 	
-	public Repl createRepl(String dirName, String className, Properties property) {
+	public Interpreter createRepl(String dirName, String className, Properties property) {
 		logger.info("Create repl {} from {}", className, dirName);
 		
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();		
@@ -87,27 +87,27 @@ public class ReplFactory {
 			}
 			Thread.currentThread().setContextClassLoader(cl);
 			
-			Class<Repl> replClass = (Class<Repl>) cl.loadClass(className);
-			Constructor<Repl> constructor = replClass.getConstructor(new Class []{Properties.class});
-			Repl repl = constructor.newInstance(property);
+			Class<Interpreter> replClass = (Class<Interpreter>) cl.loadClass(className);
+			Constructor<Interpreter> constructor = replClass.getConstructor(new Class []{Properties.class});
+			Interpreter repl = constructor.newInstance(property);
 			property.put("share", share);
-			return new ClassloaderRepl(repl, cl, property);
+			return new ClassloaderInterpreter(repl, cl, property);
 		} catch (SecurityException e) {
-			throw new ReplException(e);
+			throw new InterpreterException(e);
 		} catch (NoSuchMethodException e) {
-			throw new ReplException(e);
+			throw new InterpreterException(e);
 		} catch (IllegalArgumentException e) {
-			throw new ReplException(e);
+			throw new InterpreterException(e);
 		} catch (InstantiationException e) {
-			throw new ReplException(e);
+			throw new InterpreterException(e);
 		} catch (IllegalAccessException e) {
-			throw new ReplException(e);
+			throw new InterpreterException(e);
 		} catch (InvocationTargetException e) {
-			throw new ReplException(e);
+			throw new InterpreterException(e);
 		} catch (ClassNotFoundException e) {
-			throw new ReplException(e);
+			throw new InterpreterException(e);
 		} catch (MalformedURLException e) {
-			throw new ReplException(e);
+			throw new InterpreterException(e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(oldcl);
 		}

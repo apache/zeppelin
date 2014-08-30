@@ -10,13 +10,13 @@ import org.apache.spark.sql.SchemaRDD;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
 import org.apache.spark.sql.catalyst.expressions.Row;
 
-import com.nflabs.zeppelin.repl.ClassloaderRepl;
-import com.nflabs.zeppelin.repl.Repl;
-import com.nflabs.zeppelin.repl.ReplResult;
-import com.nflabs.zeppelin.repl.ReplResult.Code;
+import com.nflabs.zeppelin.interpreter.ClassloaderInterpreter;
+import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 
-public class SparkSqlRepl extends Repl {
-	private ClassloaderRepl sparkClassloaderRepl;
+public class SparkSqlRepl extends Interpreter {
+	private ClassloaderInterpreter sparkClassloaderRepl;
 	AtomicInteger num = new AtomicInteger(0);
 
 	public SparkSqlRepl(Properties property) {
@@ -25,22 +25,22 @@ public class SparkSqlRepl extends Repl {
 
 	@Override
 	public void initialize() {
-		Map<String, Repl> repls = (Map<String, Repl>) this.getProperty().get("repls");
+		Map<String, Interpreter> repls = (Map<String, Interpreter>) this.getProperty().get("repls");
 		if(repls!=null) {
-			sparkClassloaderRepl = (ClassloaderRepl) repls.get("spark");
+			sparkClassloaderRepl = (ClassloaderInterpreter) repls.get("spark");
 		}
 	}
 	
-	public void setSparkClassloaderRepl(ClassloaderRepl repl) {
-		this.sparkClassloaderRepl = (ClassloaderRepl) repl;
+	public void setSparkClassloaderRepl(ClassloaderInterpreter repl) {
+		this.sparkClassloaderRepl = (ClassloaderInterpreter) repl;
 	}
 	
 	
 	private void findSpark(){
 		if(sparkClassloaderRepl!=null) return;
-		Map<String, Repl> repls = (Map<String, Repl>) this.getProperty().get("repls");
+		Map<String, Interpreter> repls = (Map<String, Interpreter>) this.getProperty().get("repls");
 		if(repls!=null) {			
-			sparkClassloaderRepl = (ClassloaderRepl) repls.get("spark");
+			sparkClassloaderRepl = (ClassloaderInterpreter) repls.get("spark");
 		}
 	}
 	
@@ -56,7 +56,7 @@ public class SparkSqlRepl extends Repl {
 	
 
 	@Override
-	public ReplResult interpret(String st) {
+	public InterpreterResult interpret(String st) {
 		findSpark();
 		SQLContext sqlc = ((SparkRepl)sparkClassloaderRepl.getInnerRepl()).getSQLContext();
 		SchemaRDD rdd = sqlc.sql(st);
@@ -64,7 +64,7 @@ public class SparkSqlRepl extends Repl {
 		try {
 			rows = rdd.take(10000);
 		} catch(Exception e){
-			return new ReplResult(Code.ERROR, e.getMessage());
+			return new InterpreterResult(Code.ERROR, e.getMessage());
 		}
 		
 		String msg = null;
@@ -109,7 +109,7 @@ public class SparkSqlRepl extends Repl {
 			msg += "\n";
 		}
 
-		return new ReplResult(Code.SUCCESS, "%table "+msg);
+		return new InterpreterResult(Code.SUCCESS, "%table "+msg);
 	}
 
 	@Override

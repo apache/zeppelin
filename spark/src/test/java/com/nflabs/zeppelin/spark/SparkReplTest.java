@@ -8,7 +8,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.nflabs.zeppelin.repl.ReplResult;
+import com.nflabs.zeppelin.interpreter.InterpreterResult;
 
 
 public class SparkReplTest {
@@ -28,7 +28,7 @@ public class SparkReplTest {
 
 	@Test
 	public void testBasicRepl() {
-		assertEquals(ReplResult.Code.SUCCESS, repl.interpret("val a = 1\nval b = 2").code());
+		assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("val a = 1\nval b = 2").code());
 		assertEquals(1, repl.getValue("a"));
 		assertEquals(2, repl.getValue("b"));
 		repl.interpret("val ver = sc.version");

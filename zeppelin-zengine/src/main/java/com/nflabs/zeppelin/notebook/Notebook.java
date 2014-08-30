@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.server;
+package com.nflabs.zeppelin.notebook;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.repl.ReplFactory;
+import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
@@ -25,13 +25,13 @@ public class Notebook {
 
 	private SchedulerFactory schedulerFactory;
 
-	private ReplFactory replFactory;
+	private InterpreterFactory replFactory;
 	
 	Map<String, Note> notes = new HashMap<String, Note>();
 
 	private ZeppelinConfiguration conf;
 
-	public Notebook(ZeppelinConfiguration conf, SchedulerFactory schedulerFactory, ReplFactory replFactory) throws IOException {
+	public Notebook(ZeppelinConfiguration conf, SchedulerFactory schedulerFactory, InterpreterFactory replFactory) throws IOException {
 		this.conf = conf;
 		this.schedulerFactory = schedulerFactory;
 		this.replFactory = replFactory;

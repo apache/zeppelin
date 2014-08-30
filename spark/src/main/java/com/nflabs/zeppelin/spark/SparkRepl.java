@@ -20,10 +20,10 @@ import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.sql.SQLContext;
 
-import com.nflabs.zeppelin.repl.Repl;
-import com.nflabs.zeppelin.repl.ReplFactory;
-import com.nflabs.zeppelin.repl.ReplResult;
-import com.nflabs.zeppelin.repl.ReplResult.Code;
+import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterFactory;
+import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 
 import scala.None;
 import scala.Some;
@@ -34,7 +34,7 @@ import scala.tools.nsc.interpreter.IMain;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
-public class SparkRepl extends Repl {
+public class SparkRepl extends Interpreter {
 
 	private SparkILoop interpreter;
 	private SparkIMain intp;
@@ -216,11 +216,11 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 	/**
 	 * Interpret a single line
 	 */
-	public ReplResult interpret(String line){
+	public InterpreterResult interpret(String line){
 		return interpret(line.split("\n"));
 	}
 	
-	public ReplResult interpret(String [] lines){
+	public InterpreterResult interpret(String [] lines){
 		synchronized(this){
 			intp.interpret("Console.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
 			out.reset();
@@ -233,7 +233,7 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 				
 				if (r == Code.ERROR) {
 					sc.clearJobGroup();
-					return new ReplResult(r, out.toString());
+					return new InterpreterResult(r, out.toString());
 				} else if(r==Code.INCOMPLETE) {
 					incomplete += s +"\n";
 				} else {
@@ -241,7 +241,7 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 				}
 			}
 			sc.clearJobGroup();
-			return new ReplResult(r, out.toString());
+			return new InterpreterResult(r, out.toString());
 		}		
 	}
 	

@@ -1,10 +1,12 @@
-package com.nflabs.zeppelin.repl;
+package com.nflabs.zeppelin.interpreter.mock;
 
 import java.util.Properties;
 
-import com.nflabs.zeppelin.repl.Repl.FormType;
+import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.interpreter.Interpreter.FormType;
 
-public class MockRepl2 extends Repl{
+public class MockRepl2 extends Interpreter{
 
 	public MockRepl2(Properties property) {
 		super(property);
@@ -24,8 +26,8 @@ public class MockRepl2 extends Repl{
 	}
 
 	@Override
-	public ReplResult interpret(String st) {
-		return new ReplResult(ReplResult.Code.SUCCESS, "repl2: "+st);
+	public InterpreterResult interpret(String st) {
+		return new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl2: "+st);
 	}
 
 	@Override

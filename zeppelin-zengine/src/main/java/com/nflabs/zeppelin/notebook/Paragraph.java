@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.server;
+package com.nflabs.zeppelin.notebook;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -7,11 +7,11 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.interpreter.Interpreter.FormType;
 import com.nflabs.zeppelin.notebook.form.Form;
 import com.nflabs.zeppelin.notebook.form.Input;
-import com.nflabs.zeppelin.repl.Repl;
-import com.nflabs.zeppelin.repl.ReplResult;
-import com.nflabs.zeppelin.repl.Repl.FormType;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.JobListener;
 
@@ -77,7 +77,7 @@ public class Paragraph extends Job implements Serializable{
 		return replLoader;
 	}
 	
-	public Repl getRepl(String name) {
+	public Interpreter getRepl(String name) {
 		return replLoader.getRepl(name);
 	}
 	
@@ -85,8 +85,8 @@ public class Paragraph extends Job implements Serializable{
 		this.replLoader = repls;
 	}
 	
-	public ReplResult getResult() {
-		return (ReplResult) getReturn();
+	public InterpreterResult getResult() {
+		return (InterpreterResult) getReturn();
 	}
 	
 	
@@ -103,7 +103,7 @@ public class Paragraph extends Job implements Serializable{
 	@Override
 	protected Object jobRun() throws Throwable {
 		String replName = getRequiredReplName();
-		Repl repl = getRepl(replName);
+		Interpreter repl = getRepl(replName);
 		logger().info("run paragraph {} using {} "+repl, getId(), replName);
 		if(repl==null) {	
 			logger().error("Can not find interpreter name "+repl);
@@ -122,13 +122,13 @@ public class Paragraph extends Job implements Serializable{
 			script = Input.getSimpleQuery(form.getParams(), scriptBody);
 		}
 		logger().info("RUN : "+script);
-		ReplResult ret = repl.interpret(script);
+		InterpreterResult ret = repl.interpret(script);
 		return ret;
 	}
 
 	@Override
 	protected boolean jobAbort() {
-		Repl repl = getRepl(getRequiredReplName());
+		Interpreter repl = getRepl(getRequiredReplName());
 		repl.cancel();
 		return true;
 	}

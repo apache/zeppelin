@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.server;
+package com.nflabs.zeppelin.notebook;
 
 import static org.junit.Assert.*;
 
@@ -11,7 +11,10 @@ import org.junit.Test;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.repl.MockReplFactory;
+import com.nflabs.zeppelin.interpreter.mock.MockReplFactory;
+import com.nflabs.zeppelin.notebook.Note;
+import com.nflabs.zeppelin.notebook.Notebook;
+import com.nflabs.zeppelin.notebook.Paragraph;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 public class NotebookTest {

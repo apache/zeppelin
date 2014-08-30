@@ -1,16 +1,16 @@
-package com.nflabs.zeppelin.repl;
+package com.nflabs.zeppelin.interpreter;
 
 
 import java.util.Properties;
 
-import com.nflabs.zeppelin.repl.ReplResult;
+import com.nflabs.zeppelin.interpreter.InterpreterResult;
 
 
-public abstract class Repl {
+public abstract class Interpreter {
 	
 	private Properties property;
 	
-	public Repl(Properties property){
+	public Interpreter(Properties property){
 		this.property = property;
 	}
 	
@@ -23,7 +23,7 @@ public abstract class Repl {
 	public abstract void initialize();
 	public abstract void destroy();
 	public abstract Object getValue(String name);
-	public abstract ReplResult interpret(String st);
+	public abstract InterpreterResult interpret(String st);
 	public abstract void cancel();
 	public abstract void bindValue(String name, Object o);
 	public abstract FormType getFormType();

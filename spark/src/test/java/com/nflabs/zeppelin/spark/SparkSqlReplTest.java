@@ -8,9 +8,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.nflabs.zeppelin.repl.ClassloaderRepl;
-import com.nflabs.zeppelin.repl.ReplResult;
-import com.nflabs.zeppelin.repl.ReplResult.Type;
+import com.nflabs.zeppelin.interpreter.ClassloaderInterpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.interpreter.InterpreterResult.Type;
 
 public class SparkSqlReplTest {
 
@@ -22,7 +22,7 @@ public class SparkSqlReplTest {
 		repl = new SparkRepl(new Properties());
 		repl.initialize();
 		sql = new SparkSqlRepl(new Properties());
-		sql.setSparkClassloaderRepl(new ClassloaderRepl(repl, Thread.currentThread().getContextClassLoader(), new Properties()));
+		sql.setSparkClassloaderRepl(new ClassloaderInterpreter(repl, Thread.currentThread().getContextClassLoader(), new Properties()));
 		sql.initialize();
 	}
 

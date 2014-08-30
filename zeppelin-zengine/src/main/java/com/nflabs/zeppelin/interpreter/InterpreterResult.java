@@ -1,8 +1,8 @@
-package com.nflabs.zeppelin.repl;
+package com.nflabs.zeppelin.interpreter;
 
 import java.io.Serializable;
 
-public class ReplResult implements Serializable{
+public class InterpreterResult implements Serializable{
 	public static enum Code {
 		SUCCESS,
 		INCOMPLETE,
@@ -20,13 +20,13 @@ public class ReplResult implements Serializable{
 	Type type;
 	String msg;
 	
-	public ReplResult(Code code) {
+	public InterpreterResult(Code code) {
 		this.code = code;
 		this.msg = null;
 		this.type = Type.TEXT;
 	}
 	
-	public ReplResult(Code code, String msg) {
+	public InterpreterResult(Code code, String msg) {
 		this.code = code;
 		this.msg = getData(msg);
 		this.type = getType(msg);
@@ -105,7 +105,7 @@ public class ReplResult implements Serializable{
 		return type;
 	}
 	
-	public ReplResult type(Type type){
+	public InterpreterResult type(Type type){
 		this.type = type;
 		return this;
 	}
