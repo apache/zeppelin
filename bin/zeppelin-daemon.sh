@@ -72,11 +72,6 @@ function init(){
 	echo "Pid dir doesn't exist, create $ZEPPELIN_PID_DIR"
 	mkdir -p "$ZEPPELIN_PID_DIR"
     fi
-
-    if [ ! -d "$ZEPPELIN_JOB_DIR" ]; then
-	echo "Job dir doesn't exist, create $ZEPPELIN_JOB_DIR"
-	mkdir -p "$ZEPPELIN_JOB_DIR"
-    fi
 }
 
 function start(){

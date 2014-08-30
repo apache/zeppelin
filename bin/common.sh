@@ -58,18 +58,6 @@ if [ "x$ZEPPELIN_API_WAR" == "x" ]; then
     fi
 fi
 
-if [ "x$ZEPPELIN_JOB_DIR" == "x" ]; then
-    export ZEPPELIN_JOB_DIR="$ZEPPELIN_HOME/jobs"
-fi
-
-if [ "x$ZEPPELIN_ZAN_LOCAL_REPO" == "x" ]; then
-    export ZEPPELIN_ZAN_LOCAL_REPO="$ZEPPELIN_HOME/zan-repo"
-fi
-
-if [ "x$ZEPPELIN_DRIVER_DIR" == "x" ]; then
-    export ZEPPELIN_DRIVER_DIR="$ZEPPELIN_HOME/drivers"
-fi
-
 if [ "x$ZEPPELIN_REPL_DIR" == "x" ]; then
     export ZEPPELIN_REPL_DIR="$ZEPPELIN_HOME/repl"
 fi
@@ -91,19 +79,13 @@ function addJarInDir(){
 
 addJarInDir ${ZEPPELIN_HOME}
 
-addJarInDir ${ZEPPELIN_HOME}/zeppelin-cli/target/lib
-addJarInDir ${ZEPPELIN_HOME}/zeppelin-zan/target/lib
+addJarInDir ${ZEPPELIN_HOME}/zeppelin-zengine/target/lib
 addJarInDir ${ZEPPELIN_HOME}/zeppelin-server/target/lib
 addJarInDir ${ZEPPELIN_HOME}/zeppelin-web/target/lib
 
 
-
-if [ -d "${ZEPPELIN_HOME}/zeppelin-cli/target/classes" ]; then
-    ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-cli/target/classes"
-fi
-
-if [ -d "${ZEPPELIN_HOME}/zeppelin-zan/target/classes" ]; then
-    ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-zan/target/classes"
+if [ -d "${ZEPPELIN_HOME}/zeppelin-zengine/target/classes" ]; then
+    ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-zengine/target/classes"
 fi
 
 if [ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]; then

@@ -77,8 +77,8 @@ public class Paragraph extends Job implements Serializable{
 		return replLoader;
 	}
 	
-	public Repl getRepl(String name, Properties properties) {
-		return replLoader.getRepl(name, properties);
+	public Repl getRepl(String name) {
+		return replLoader.getRepl(name);
 	}
 	
 	public void setNoteReplLoader(NoteReplLoader repls) {
@@ -103,7 +103,7 @@ public class Paragraph extends Job implements Serializable{
 	@Override
 	protected Object jobRun() throws Throwable {
 		String replName = getRequiredReplName();
-		Repl repl = getRepl(replName, new Properties());
+		Repl repl = getRepl(replName);
 		logger().info("run paragraph {} using {} "+repl, getId(), replName);
 		if(repl==null) {	
 			logger().error("Can not find interpreter name "+repl);
@@ -128,7 +128,7 @@ public class Paragraph extends Job implements Serializable{
 
 	@Override
 	protected boolean jobAbort() {
-		Repl repl = getRepl(getRequiredReplName(), new Properties());
+		Repl repl = getRepl(getRequiredReplName());
 		repl.cancel();
 		return true;
 	}
