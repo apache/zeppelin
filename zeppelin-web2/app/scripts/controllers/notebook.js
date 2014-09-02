@@ -35,6 +35,10 @@ angular.module('zeppelinWeb2App')
       $scope.note = data.note;
       //$scope.$broadcast('updatedInformation', updateParagrapheInformation);
     } else if (op === 'NOTES_INFO') {
+      /** if all note are removed, empty the crap */
+      if (data.notes.length === 0) {
+        $scope.note = [];
+      }
       $scope.noteInfo = data.notes;
     } else if (op === 'PARAGRAPH') {
       // TODO send Event
