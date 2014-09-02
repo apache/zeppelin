@@ -1,0 +1,68 @@
+/* Space out content a bit */
+@import url(http://fonts.googleapis.com/css?family=Patua+One);
+
+body {
+  padding-top: 60px;
+}
+
+.container {
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+  width: auto;
+}
+
+.navbar-inverse {
+  background-color: #3071a9;
+  color: #fff;
+  border-color: #3071a9;
+  font-size: 18px;
+}
+
+.navbar-inverse .navbar-toggle:hover, .navbar-inverse .navbar-toggle:focus {
+  background-color: #3071a9;
+}
+
+.navbar-inverse .navbar-nav > li > a:hover, .navbar-inverse .navbar-nav > li > a:focus {
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.2);
+  
+}
+
+.navbar-inverse .navbar-toggle {
+  border-color: #FFFFFF;
+}
+
+.navbar-inverse .navbar-nav > .active > a, .navbar-inverse .navbar-nav > .active > a:hover, .navbar-inverse .navbar-nav > .active > a:focus {
+  color: #fff;
+  background-color: #080808;
+}
+
+.navbar-inverse .navbar-nav > li > a {
+  color: #FFFFFF;
+}
+
+.navbar-inverse .navbar-brand {
+  color: #fff;
+  text-decoration: none;
+  font-family: 'Patua One', cursive;
+  font-size: 32px;
+}
+
+a.navbar-brand:hover {
+  color: #fff !important;
+}
+
+
+#main {
+  margin-left: 190px;
+  padding-left: 15px;
+  padding-right: 15px;
+  height: 100%;
+}
+
+.fullMain {
+  margin-left:0px !important;
+}
+

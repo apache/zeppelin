@@ -1,0 +1,37 @@
+.paragraph .control {
+  float: right;
+  color: #999;
+  margin-right: 5px;
+  margin-top: -3px;
+}
+
+.paragraph .editor {
+  width: 90%;
+  border-left: 4px solid #EEEEEE;
+}
+
+.ace-tm {
+  background-color: #FFFFFF;
+  color: black;
+}
+.ace_editor {
+  position: relative;
+  overflow: hidden;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 12px;
+  line-height: normal;
+  direction: ltr;
+}
+
+.paragraph .status {
+  font-size: 10px;
+  color: #AAAAAA;
+  background-color: white;
+  width: 100%;
+  text-align: right;
+}
+
+.disable {
+  opacity:0.4!important;
+  pointer-events: none; 
+}
