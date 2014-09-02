@@ -5,13 +5,13 @@
   <div id="{{paragraph.id}}_editor"
        style="opacity: 1;"
        class="editor" ui-ace="{ onLoad : aceLoaded}"
-       ng-model="paragraph.paragraph"
+       ng-model="paragraph.text"
        ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">
   </div>
   <form id="{{paragraph.id}}_form" role="form" class="form-horizontal" style="margin-top: 15px;">
     <div class="form-group"
-         ng-repeat="formulaire in paragraph.form.forms"
-         ng-Init="loardForm(formulaire, paragraph.form.params)">
+         ng-repeat="formulaire in paragraph.settings.forms"
+         ng-Init="loardForm(formulaire, paragraph.settings.params)">
       <label class="col-sm-1 control-label">{{formulaire.name}}</label>
       <div class="col-sm-3">
         <input class="form-control" 

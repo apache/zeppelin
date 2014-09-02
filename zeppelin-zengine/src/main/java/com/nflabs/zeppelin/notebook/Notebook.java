@@ -3,6 +3,7 @@ package com.nflabs.zeppelin.notebook;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -24,10 +25,9 @@ public class Notebook {
 	Logger logger = LoggerFactory.getLogger(Notebook.class);
 
 	private SchedulerFactory schedulerFactory;
-
 	private InterpreterFactory replFactory;
-	
-	Map<String, Note> notes = new HashMap<String, Note>();
+	/** Keep the order */
+	Map<String, Note> notes = new LinkedHashMap<String, Note>();
 
 	private ZeppelinConfiguration conf;
 
