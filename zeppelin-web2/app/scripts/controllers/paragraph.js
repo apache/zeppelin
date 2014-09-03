@@ -45,10 +45,10 @@ angular.module('zeppelinWeb2App')
   $scope.init = function(newParagraph) {
     $scope.paragraph = newParagraph;
     
-    if ($scope.paragraph.settings.params['_table'] && $scope.paragraph.result) {
+    if ($scope.paragraph.settings.params._table && $scope.paragraph.result) {
       console.log('init %o', newParagraph);
       $scope.loadResultType($scope.paragraph.result);
-      $scope.setMode($scope.paragraph.settings.params['_table'].mode, false);
+      $scope.setMode($scope.paragraph.settings.params._table.mode, false);
     }
   };
 
@@ -58,7 +58,7 @@ angular.module('zeppelinWeb2App')
       //debugger;
       $scope.paragraph = data.paragraph;
       $scope.loadResultType($scope.paragraph.result);
-      $scope.setMode($scope.paragraph.settings.params['_table'].mode, false);
+      $scope.setMode($scope.paragraph.settings.params._table.mode, false);
     }
   });
   
@@ -70,11 +70,6 @@ angular.module('zeppelinWeb2App')
     var parapgraphData = {op: 'RUN_PARAGRAPH', data: {id: $scope.paragraph.id, paragraph: data, params: $scope.paragraph.settings.params}};
     
     $scope.$emit('sendNewData', parapgraphData);
-  };
-
-  var updateParagraph = function(data) {
-    $scope.paragraph = data;
-    
   };
   
   $scope.closeParagraph = function() {
@@ -141,11 +136,6 @@ angular.module('zeppelinWeb2App')
         readOnly: false
       });
     }
-  };
-
-  var getParagraphFromAceId = function(aceId) {
-    var position = aceId.indexOf('_editor');
-    return aceId.substr(0, position);
   };
 
   var setEditorHeight = function(id, height) {
@@ -224,16 +214,10 @@ angular.module('zeppelinWeb2App')
     $scope.d3.refreshDataOnly = true;
   };
 
-  var unSetD3Configuration = function() {
-    $scope.d3.config.visible = false;
-    $scope.d3.config.autorefresh = false;
-    $scope.d3.config.disabled = true;
-  };
-
   var setNewMode = function(newMode) {
-    $scope.paragraph.settings.params['_table'] = {mode: newMode, height: 300.0};
+    $scope.paragraph.settings.params._table = {mode: newMode, height: 300.0};
     var parapgraphData = {
-      op: "COMMIT_PARAGRAPH",
+      op: 'COMMIT_PARAGRAPH',
       data: {
         id: $scope.paragraph.id,
         paragraph: $scope.paragraph.text,
@@ -247,7 +231,7 @@ angular.module('zeppelinWeb2App')
     $scope.d3.options = {
       chart: {
         type: 'multiBarChart',
-        height: $scope.paragraph.settings.params['_table'].height,
+        height: $scope.paragraph.settings.params._table.height,
         margin: {
           top: 20,
           right: 20,
@@ -295,7 +279,7 @@ angular.module('zeppelinWeb2App')
     $scope.d3.options = {
       chart: {
         type: 'lineChart',
-        height: $scope.paragraph.settings.params['_table'].height,
+        height: $scope.paragraph.settings.params._table.height,
         margin: {
           top: 20,
           right: 20,
@@ -333,11 +317,8 @@ angular.module('zeppelinWeb2App')
         });
       }
     }
-
     var newData = d3g;
     $scope.d3.data = newData;
-    
-    console.log('OUI >>> %', $scope.d3.data);
   };
 
   var setStackedAreaChart = function(data) {
@@ -345,7 +326,7 @@ angular.module('zeppelinWeb2App')
     $scope.d3.options = {
       chart: {
         type: 'stackedAreaChart',
-        height: $scope.paragraph.settings.params['_table'].height,
+        height: $scope.paragraph.settings.params._table.height,
         margin: {
           top: 20,
           right: 20,
@@ -392,8 +373,7 @@ angular.module('zeppelinWeb2App')
 
   $scope.isTable = function() {
     if ($scope.paragraph.result) {
-      if ($scope.paragraph.result.type === 'TABLE'
-         && (!$scope.paragraph.settings.params['_table'] || $scope.paragraph.settings.params['_table'].mode === 'table')) {
+      if ($scope.paragraph.result.type === 'TABLE' && (!$scope.paragraph.settings.params._table || $scope.paragraph.settings.params._table.mode === 'table')) {
         return true;
       }
     }
@@ -401,8 +381,8 @@ angular.module('zeppelinWeb2App')
   };
   
   $scope.isGraphActive = function(graphName) {
-    if ($scope.paragraph.result && $scope.paragraph.settings.params['_table']) {
-      if ($scope.paragraph.settings.params['_table'].mode === graphName) {
+    if ($scope.paragraph.result && $scope.paragraph.settings.params._table) {
+      if ($scope.paragraph.settings.params._table.mode === graphName) {
         return true;
       }
     }
