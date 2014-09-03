@@ -8,23 +8,14 @@
     <span style="color:#999;" class="glyphicon glyphicon-plus"></span> 
     New Notebook
   </button><br/>
-  <div class="btn-group" ng-repeat="notes in noteInfo" style="margin-bottom: 15px; margin-left: 5px;">
+  <span class='btn-group' style="margin-bottom: 15px;" ng-repeat="notes in noteInfo">
     <button ng-click="goToNote(notes.id)"type='button' class='btn btn-default btn-sm' id="{{notes.id}}">Note {{$index}}</button>
-    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
-      <span class="caret"></span>
-      <span class="sr-only">Toggle Dropdown</span>
-    </button>
-    <ul class="dropdown-menu" role="menu">
-      <li><a><span class='fa fa-cog'></span> Settings</a></li>
-      <li><a><span class='fa fa-share-alt'></span> Share</a></li>
-      <li class="divider"></li>
-      <li><a id="{{notes.id}}_del" ng-click="removeNote(notes.id)"><span class='glyphicon glyphicon-remove'></span> Delete Note</a></li>
-    </ul>
-  </div>
-  <!-- List the paragraph from the note -->
+    <button ng-click="removeNote(notes.id)" type='button' class='btn btn-default btn-sm' id="{{notes.id}}_del" ><span class='glyphicon glyphicon-remove'></span></button>&nbsp;
+  </span>
   <div ng-repeat="currentParagraph in note.paragraphs"
        ng-controller="ParagraphCtrl"
        ng-Init="init(currentParagraph)"
        ng-include src="'views/paragraph.html'">
+   
   </div>
 </div>

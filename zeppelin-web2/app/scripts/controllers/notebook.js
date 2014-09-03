@@ -15,7 +15,7 @@ angular.module('zeppelinWeb2App')
   $scope.init = function() {
     getAllNotes();
   };
-  
+    
   // Native Functions
   WebSocket.onopen(function() {
     console.log('Websocket created');
@@ -23,7 +23,7 @@ angular.module('zeppelinWeb2App')
     if ($routeParams.noteId) {
       $scope.getNote($routeParams.noteId);
       $location.path('/notebook/'+$routeParams.noteId);
-      $scope.$apply();
+      //$scope.$apply();
     }
   });
 
