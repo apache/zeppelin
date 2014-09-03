@@ -89,6 +89,9 @@ public class NotebookServer extends WebSocketServer {
         case COMMIT_PARAGRAPH:
           updateParamsForParagraph(conn, notebook, messagereceived);
           break;
+        case PARAGRAPH_UPDATE_STATE:
+          updateParagraphState(conn, notebook, messagereceived);
+          break;
         case RUN_PARAGRAPH:
           runParagraph(conn, notebook, messagereceived);
           break;
@@ -273,6 +276,29 @@ public class NotebookServer extends WebSocketServer {
     p.settings.setParams(params);
     note.persist();
     broadcastNote(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
+  }
+  
+  private void updateParagraphState(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
+    final String paragraphId = (String) fromMessage.get("id");
+    if (paragraphId == null) {
+      return ;
+    }
+    final Note note = notebook.getNote(getOpenNoteId(conn));
+    Paragraph p = note.getParagraph(paragraphId);
+    boolean state = (boolean) fromMessage.get("isClose");
+    boolean editorState = (boolean) fromMessage.get("isEditorClose");
+    if (state) {
+      p.close();
+    } else {
+      p.open();
+    }
+    if (editorState) {
+      p.closeEditor();
+    } else {
+      p.openEditor();
+    }
+    note.persist();
+    broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
   }
   
   private void runParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {

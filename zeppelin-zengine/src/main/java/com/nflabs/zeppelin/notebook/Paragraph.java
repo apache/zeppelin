@@ -24,14 +24,19 @@ import com.nflabs.zeppelin.scheduler.JobListener;
  */
 public class Paragraph extends Job implements Serializable {
   private transient static final long serialVersionUID = -6328572073497992016L;
-  String text;
   private transient NoteReplLoader replLoader;
+  
+  String text;
+  private boolean isOpen;
+  private boolean isEditorOpen;
   public final Setting settings;
-
+  
   public Paragraph(JobListener listener, NoteReplLoader replLoader) {
     super(generateId(), listener);
     this.replLoader = replLoader;
     text = null;
+    isOpen = true;
+    isEditorOpen = true;
     settings = new Setting();
   }
 
@@ -48,6 +53,30 @@ public class Paragraph extends Job implements Serializable {
     this.text = newText;
   }
 
+  public void close() {
+    isOpen = false;
+  }
+  
+  public void open() {
+    isOpen = true;
+  }
+  
+  public boolean isOpen() {
+    return isOpen;
+  }
+  
+  public void closeEditor() {
+    isEditorOpen = false;
+  }
+  
+  public void openEditor() {
+    isEditorOpen = true;
+  }
+  
+  public boolean isEditorOpen() {
+    return isEditorOpen;
+  }
+  
   public String getRequiredReplName() {
     if (text == null)
       return null;

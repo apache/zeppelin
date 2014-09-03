@@ -36,12 +36,14 @@ public class Message {
 		PARAGRAPH_PARAM, // [c-s] set parameters
 		                 // @param id paragraph id
 		                 // @param params parameter map
-		PARAGRAPH_UPDATE, // [c-s] set parameters
-                          // @param id paragraph id
-                          // @param params parameter map
+
+		PARAGRAPH_UPDATE_STATE, // [c-s] set parameters
+                                // @param id paragraph id
+                                // @param parameter map
+
 	}	
 	public OP op;
-	public Map<String, Object> data = new HashMap<String, Object>();;
+	public Map<String, Object> data = new HashMap<String, Object>();
 	
 	public Message(OP op){
 		this.op = op;

@@ -66,7 +66,6 @@ angular.module('zeppelinWeb2App')
     }
   });
 
-
   $scope.sendParagraph = function(data) {
     //TODO: check if contnet changed
     console.log('send new paragraph: %o with %o', $scope.paragraph.id, data);
@@ -78,6 +77,34 @@ angular.module('zeppelinWeb2App')
   var updateParagraph = function(data) {
     $scope.paragraph = data;
   };
+  
+  $scope.closeParagraph = function() {
+    console.log('close the note');
+    var parapgraphData = {op: 'PARAGRAPH_UPDATE_STATE', data: {id: $scope.paragraph.id, isClose: true, isEditorClose: !$scope.paragraph.isEditorOpen}};
+    var info = {id: $scope.paragraph.id, graphMode: $scope.graphMode};
+    $scope.$emit('sendNewData', parapgraphData, info);
+  }
+  
+  $scope.openParagraph = function() {
+    console.log('open the note');
+    var parapgraphData = {op: 'PARAGRAPH_UPDATE_STATE', data: {id: $scope.paragraph.id, isClose: false, isEditorClose: !$scope.paragraph.isEditorOpen}};
+    var info = {id: $scope.paragraph.id, graphMode: $scope.graphMode};
+    $scope.$emit('sendNewData', parapgraphData, info);
+  }
+  
+  $scope.closeEditor = function() {
+    console.log('close the note');
+    var parapgraphData = {op: 'PARAGRAPH_UPDATE_STATE', data: {id: $scope.paragraph.id, isClose: !$scope.paragraph.isOpen, isEditorClose: true}};
+    var info = {id: $scope.paragraph.id, graphMode: $scope.graphMode};
+    $scope.$emit('sendNewData', parapgraphData, info);
+  }
+  
+  $scope.openEditor = function() {
+    console.log('open the note');
+    var parapgraphData = {op: 'PARAGRAPH_UPDATE_STATE', data: {id: $scope.paragraph.id, isClose: !$scope.paragraph.isOpen, isEditorClose: false}};
+    var info = {id: $scope.paragraph.id, graphMode: $scope.graphMode};
+    $scope.$emit('sendNewData', parapgraphData, info);
+  }
 
 
   $scope.loardForm = function(formulaire, params) {
