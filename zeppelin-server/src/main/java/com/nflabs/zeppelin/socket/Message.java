@@ -37,10 +37,8 @@ public class Message {
 		                 // @param id paragraph id
 		                 // @param params parameter map
 
-		PARAGRAPH_UPDATE_STATE, // [c-s] set parameters
-                                // @param id paragraph id
-                                // @param parameter map
-
+		PARAGRAPH_UPDATE_STATE,
+		PARAGRAPH_REMOVE,
 	}	
 	public OP op;
 	public Map<String, Object> data = new HashMap<String, Object>();

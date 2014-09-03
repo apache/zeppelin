@@ -85,6 +85,13 @@ angular.module('zeppelinWeb2App')
     $scope.$emit('sendNewData', parapgraphData, info);
   }
   
+  $scope.removeParagraph = function() {
+    console.log('close the note');
+    var parapgraphData = {op: 'PARAGRAPH_REMOVE', data: {id: $scope.paragraph.id}};
+    var info = {id: $scope.paragraph.id, graphMode: $scope.graphMode};
+    $scope.$emit('sendNewData', parapgraphData, info);
+  }
+  
   $scope.openParagraph = function() {
     console.log('open the note');
     var parapgraphData = {op: 'PARAGRAPH_UPDATE_STATE', data: {id: $scope.paragraph.id, isClose: false, isEditorClose: !$scope.paragraph.isEditorOpen}};

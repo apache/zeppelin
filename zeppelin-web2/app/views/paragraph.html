@@ -17,7 +17,8 @@
           ng-show="paragraph.isOpen == false"></span>
     
     <!-- remove paragraph -->
-    <span class="glyphicon glyphicon-remove" style="cursor:pointer"></span>
+    <span class="glyphicon glyphicon-remove" style="cursor:pointer"
+          ng-click="removeParagraph()"></span>
   </div>
   <div ng-show="paragraph.isOpen == true">
     <div ng-show="paragraph.isEditorOpen == true">

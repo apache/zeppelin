@@ -126,6 +126,19 @@ public class Note implements Serializable, JobListener {
 		return null;
 	}
 	
+  public boolean isLastParagraph(String paragraphId) {
+    if (!paragraphs.isEmpty()) {
+      synchronized (paragraphs) {
+        if (paragraphId.equals(paragraphs.get(paragraphs.size() - 1).getId())) {
+          return true;
+        }
+      }
+      return false;
+    }
+    /** because empty list, cannot remove nothing right? */
+    return true;
+  }
+	
 	public Paragraph getParagraph(String paragraphId) {
 		synchronized(paragraphs) {
 			for(Paragraph p : paragraphs) {
