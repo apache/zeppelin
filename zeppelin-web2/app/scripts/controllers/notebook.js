@@ -15,7 +15,7 @@ angular.module('zeppelinWeb2App')
   $scope.init = function() {
     getAllNotes();
   };
-    
+  
   // Native Functions
   WebSocket.onopen(function() {
     console.log('Websocket created');

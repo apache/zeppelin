@@ -9,8 +9,8 @@
     New Notebook
   </button><br/>
   <span class='btn-group' style="margin-bottom: 15px;" ng-repeat="notes in noteInfo">
-    <button ng-click="goToNote(notes.id)"type='button' class='btn btn-default btn-sm' id="{{notes.id}}">Note {{$index}}</button>
-    <button ng-click="removeNote(notes.id)" type='button' class='btn btn-default btn-sm' id="{{notes.id}}_del" ><span class='glyphicon glyphicon-remove'></span></button>&nbsp;
+    <button type='button' class='btn btn-default btn-sm' ng-click="getNote(notes.id)">Note {{$index}}</button>
+    <button type='button' class='btn btn-default btn-sm' ng-click="removeNote(notes.id)"><span class='glyphicon glyphicon-remove'></span></button>&nbsp;
   </span>
   <div ng-repeat="currentParagraph in note.paragraphs"
        ng-controller="ParagraphCtrl"
