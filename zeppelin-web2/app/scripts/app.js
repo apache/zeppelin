@@ -25,6 +25,7 @@ angular
     'ngSanitize',
     'angular-websocket',
     'ui.ace',
+    'ui.bootstrap',
     'nvd3',
     'ngTouch'
   ])
@@ -35,6 +36,10 @@ angular
         controller: 'MainCtrl'
       })
       .when('/notebooks', {
+        templateUrl: 'views/notebooks.html',
+        controller: 'NotebookCtrl'
+      })
+      .when('/notebook/:noteId', {
         templateUrl: 'views/notebooks.html',
         controller: 'NotebookCtrl'
       })

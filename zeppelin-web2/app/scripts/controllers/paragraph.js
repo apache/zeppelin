@@ -13,7 +13,6 @@ angular.module('zeppelinWeb2App')
   $scope.paragraph = null;
   $scope.editor = null;
   var editorMode = {scala: 'ace/mode/scala'};
-  $scope.graphMode = '';
 
   $scope.forms = {};
 
@@ -45,74 +44,68 @@ angular.module('zeppelinWeb2App')
   // Controller init
   $scope.init = function(newParagraph) {
     $scope.paragraph = newParagraph;
-    if ($scope.updateParagrapheInformation === []) {
-      return ;
-    }
-    if ($scope.updateParagrapheInformation[$scope.paragraph.id]) {
-      $scope.graphMode = $scope.updateParagrapheInformation[$scope.paragraph.id];
+    
+    if ($scope.paragraph.settings.params['_table'] && $scope.paragraph.result) {
+      console.log('init %o', newParagraph);
+      $scope.loadResultType($scope.paragraph.result);
+      $scope.setMode($scope.paragraph.settings.params['_table'].mode, false);
     }
   };
 
   $scope.$on('updateParagraph', function(event, data) {
-    console.log('%%%%%%%% %o', data);
-  });
-  
-  $scope.$on('updatedInformation', function(event, data) {
-    if (data.id === $scope.paragraph.id) {
-      if (!event.defaultPrevented) {
-        $scope.graphMode = data.graphMode;
-        event.preventDefault();
-      }
+    if (data.paragraph.id === $scope.paragraph.id) {
+      console.log('>>>>>>> %o = %o',data.paragraph,  $scope.paragraph);
+      //debugger;
+      $scope.paragraph = data.paragraph;
+      $scope.loadResultType($scope.paragraph.result);
+      $scope.setMode($scope.paragraph.settings.params['_table'].mode, false);
     }
   });
-
+  
+  
+  
   $scope.sendParagraph = function(data) {
     //TODO: check if contnet changed
     console.log('send new paragraph: %o with %o', $scope.paragraph.id, data);
-    var parapgraphData = {op: 'RUN_PARAGRAPH', data: {id: $scope.paragraph.id, paragraph: data, params: $scope.forms}};
-    var info = {id: $scope.paragraph.id, graphMode: $scope.graphMode};
-    $scope.$emit('sendNewData', parapgraphData, info);
+    var parapgraphData = {op: 'RUN_PARAGRAPH', data: {id: $scope.paragraph.id, paragraph: data, params: $scope.paragraph.settings.params}};
+    
+    $scope.$emit('sendNewData', parapgraphData);
   };
 
   var updateParagraph = function(data) {
     $scope.paragraph = data;
+    
   };
   
   $scope.closeParagraph = function() {
     console.log('close the note');
     var parapgraphData = {op: 'PARAGRAPH_UPDATE_STATE', data: {id: $scope.paragraph.id, isClose: true, isEditorClose: !$scope.paragraph.isEditorOpen}};
-    var info = {id: $scope.paragraph.id, graphMode: $scope.graphMode};
-    $scope.$emit('sendNewData', parapgraphData, info);
-  }
+    $scope.$emit('sendNewData', parapgraphData);
+  };
   
   $scope.removeParagraph = function() {
-    console.log('close the note');
+    console.log('remove the note');
     var parapgraphData = {op: 'PARAGRAPH_REMOVE', data: {id: $scope.paragraph.id}};
-    var info = {id: $scope.paragraph.id, graphMode: $scope.graphMode};
-    $scope.$emit('sendNewData', parapgraphData, info);
-  }
+    $scope.$emit('sendNewData', parapgraphData);
+  };
   
   $scope.openParagraph = function() {
     console.log('open the note');
     var parapgraphData = {op: 'PARAGRAPH_UPDATE_STATE', data: {id: $scope.paragraph.id, isClose: false, isEditorClose: !$scope.paragraph.isEditorOpen}};
-    var info = {id: $scope.paragraph.id, graphMode: $scope.graphMode};
-    $scope.$emit('sendNewData', parapgraphData, info);
-  }
+    $scope.$emit('sendNewData', parapgraphData);
+  };
   
   $scope.closeEditor = function() {
     console.log('close the note');
     var parapgraphData = {op: 'PARAGRAPH_UPDATE_STATE', data: {id: $scope.paragraph.id, isClose: !$scope.paragraph.isOpen, isEditorClose: true}};
-    var info = {id: $scope.paragraph.id, graphMode: $scope.graphMode};
-    $scope.$emit('sendNewData', parapgraphData, info);
-  }
+    $scope.$emit('sendNewData', parapgraphData);
+  };
   
   $scope.openEditor = function() {
     console.log('open the note');
     var parapgraphData = {op: 'PARAGRAPH_UPDATE_STATE', data: {id: $scope.paragraph.id, isClose: !$scope.paragraph.isOpen, isEditorClose: false}};
-    var info = {id: $scope.paragraph.id, graphMode: $scope.graphMode};
-    $scope.$emit('sendNewData', parapgraphData, info);
-  }
-
+    $scope.$emit('sendNewData', parapgraphData);
+  };
 
   $scope.loardForm = function(formulaire, params) {
     var value = formulaire.defaultValue;
@@ -196,47 +189,37 @@ angular.module('zeppelinWeb2App')
           array.push(cols2);
         }
       }
-      result.msgSave = result.msg;
-      result.msg = array;
+      result.msgTable = array;
       result.columnNames = columnNames;
       result.rows = rows;
       result.mode = 'TABLE';
-      if ($scope.graphMode === '') {
-        $scope.graphMode = 'TABLE';
+    }
+  };
+
+// todo: Change the name
+  $scope.setMode = function(type, emit) {
+    if (emit) {
+      setNewMode(type);
+    } else {
+      if (!type || type === 'table') {
       }
-      getGraphMode(result);
+      else if (type === 'multiBarChart') {
+        setMultiBarChart($scope.paragraph.result);
+      }
+      else if (type === 'pieChart') {
+      }
+      else if (type === 'stackedAreaChart') {
+        setStackedAreaChart($scope.paragraph.result);
+      }
+      else if (type === 'lineChart') {
+        setLineChart($scope.paragraph.result);
+      }
     }
   };
-
-  $scope.setMode = function(type, data) {
-    if (type === 'TABLE') {
-      setDefaultTable();
-    }
-    if (type === 'multiBarChart') {
-      setMultiBarChart(data);
-    }
-    else if (type === 'pieChart') {
-      $scope.d3.options.chart.type = 'pieChart';
-    }
-    else if (type === 'stackedAreaChart') {
-      $scope.d3.options.chart.type = 'stackedAreaChart';
-    }
-    else if (type === 'lineChart') {
-    }
-  };
-
-  var getGraphMode = function(data) {
-    $scope.setMode($scope.graphMode, data);
-  };
-  
-  var setDefaultTable = function() {
-    $scope.graphMode = 'TABLE';
-  };
-
 
   var setD3Configuration = function() {
     $scope.d3.config.visible = true;
-    $scope.d3.config.autorefresh = false;
+    $scope.d3.config.autorefresh = true;
     $scope.d3.config.disabled = false;
     $scope.d3.refreshDataOnly = true;
   };
@@ -247,13 +230,24 @@ angular.module('zeppelinWeb2App')
     $scope.d3.config.disabled = true;
   };
 
+  var setNewMode = function(newMode) {
+    $scope.paragraph.settings.params['_table'] = {mode: newMode, height: 300.0};
+    var parapgraphData = {
+      op: "COMMIT_PARAGRAPH",
+      data: {
+        id: $scope.paragraph.id,
+        paragraph: $scope.paragraph.text,
+        params: $scope.paragraph.settings.params
+      }};
+    $scope.$emit('sendNewData', parapgraphData);
+  };
+
   var setMultiBarChart = function(data) {
-    $scope.graphMode = 'multiBarChart';
     setD3Configuration();
     $scope.d3.options = {
       chart: {
         type: 'multiBarChart',
-        height: 450,
+        height: $scope.paragraph.settings.params['_table'].height,
         margin: {
           top: 20,
           right: 20,
@@ -293,9 +287,128 @@ angular.module('zeppelinWeb2App')
     }
 
     var newData = d3g;
-    //$scope.d3.data = newData;
-    console.log('data %o --- % o', $scope.d3.data, newData);
     $scope.d3.data = newData;
   };
+
+  var setLineChart = function(data) {
+    setD3Configuration();
+    $scope.d3.options = {
+      chart: {
+        type: 'lineChart',
+        height: $scope.paragraph.settings.params['_table'].height,
+        margin: {
+          top: 20,
+          right: 20,
+          bottom: 60,
+          left: 45
+        },
+        clipEdge: true,
+        staggerLabels: true,
+        transitionDuration: 500
+      }
+    };
+
+    var xColIndex = 0;
+    var yColIndexes = [];
+    var d3g = [];
+    // select yColumns. 
+    for (var i = 0; i < data.columnNames.length; i++) {
+      if (i !== xColIndex) {
+        yColIndexes.push(i);
+        d3g.push({
+          values: [],
+          key: data.columnNames[i]
+        });
+      }
+    }
+
+    for (i = 0; i < data.rows.length; i++) {
+      var row = data.rows[i];
+      for (var j = 0; j < yColIndexes.length; j++) {
+        var xVar = row[xColIndex];
+        var yVar = row[yColIndexes[j]];
+        d3g[j].values.push({
+          x: isNaN(xVar) ? xVar : parseFloat(xVar),
+          y: parseFloat(yVar)
+        });
+      }
+    }
+
+    var newData = d3g;
+    $scope.d3.data = newData;
+    
+    console.log('OUI >>> %', $scope.d3.data);
+  };
+
+  var setStackedAreaChart = function(data) {
+    setD3Configuration();
+    $scope.d3.options = {
+      chart: {
+        type: 'stackedAreaChart',
+        height: $scope.paragraph.settings.params['_table'].height,
+        margin: {
+          top: 20,
+          right: 20,
+          bottom: 60,
+          left: 45
+        },
+        clipEdge: true,
+        staggerLabels: true,
+        transitionDuration: 500
+      }
+    };
+
+    var xColIndex = 0;
+    var yColIndexes = [];
+    var d3g = [];
+    // select yColumns. 
+    for (var i = 0; i < data.columnNames.length; i++) {
+      if (i !== xColIndex) {
+        yColIndexes.push(i);
+        d3g.push({
+          values: [],
+          key: data.columnNames[i]
+        });
+      }
+    }
+
+    for (i = 0; i < data.rows.length; i++) {
+      var row = data.rows[i];
+      for (var j = 0; j < yColIndexes.length; j++) {
+        var xVar = row[xColIndex];
+        var yVar = row[yColIndexes[j]];
+        d3g[j].values.push({
+          x: isNaN(xVar) ? xVar : parseFloat(xVar),
+          y: parseFloat(yVar)
+        });
+      }
+    }
+
+    var newData = d3g;
+    $scope.d3.data = newData;
+    
+    console.log('OUI >>> %', $scope.d3.data);
+  };
+
+  $scope.isTable = function() {
+    if ($scope.paragraph.result) {
+      if ($scope.paragraph.result.type === 'TABLE'
+         && (!$scope.paragraph.settings.params['_table'] || $scope.paragraph.settings.params['_table'].mode === 'table')) {
+        return true;
+      }
+    }
+    return false;
+  };
+  
+  $scope.isGraphActive = function(graphName) {
+    if ($scope.paragraph.result && $scope.paragraph.settings.params['_table']) {
+      if ($scope.paragraph.settings.params['_table'].mode === graphName) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  
 
 });

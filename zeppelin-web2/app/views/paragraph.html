@@ -1,23 +1,23 @@
 <div id="{{paragraph.id}}_container" style="background: rgba(255, 255, 255, 0.9);" class="paragraph well well-sm">
   <div id="{{paragraph.id}}_control" class="control">
     <!-- Editor handler -->
-    <span class="fa fa-compress" style="cursor:pointer"
+    <span class="fa fa-compress" style="cursor:pointer" tooltip-placement="left" tooltip="Hide editor"
           ng-click="closeEditor()"
           ng-show="paragraph.isEditorOpen == true && paragraph.isOpen == true"></span>
-    <span class="fa fa-expand" style="cursor:pointer"
+    <span class="fa fa-expand" style="cursor:pointer" tooltip-placement="left" tooltip="Show editor"
           ng-click="openEditor()"
           ng-show="paragraph.isEditorOpen == false && paragraph.isOpen == true"></span>
     
     <!-- paragraph handler -->
-    <span class="glyphicon glyphicon-minus" style="cursor:pointer"
+    <span class="fa fa-sort-desc" style="cursor:pointer" tooltip-placement="left" tooltip="Hide this Paragraph"
           ng-click="closeParagraph()"
           ng-show="paragraph.isOpen == true"></span> 
-    <span class="glyphicon glyphicon-collapse-up" style="cursor:pointer"
+    <span class="fa fa-sort-up" style="cursor:pointer" tooltip-placement="left" tooltip="Show this Paragraph"
           ng-click="openParagraph()"
           ng-show="paragraph.isOpen == false"></span>
     
     <!-- remove paragraph -->
-    <span class="glyphicon glyphicon-remove" style="cursor:pointer"
+    <span class="fa fa-times" style="cursor:pointer" tooltip-placement="left" tooltip="Remove this Paragraph"
           ng-click="removeParagraph()"></span>
   </div>
   <div ng-show="paragraph.isOpen == true">
@@ -55,28 +55,43 @@
            ng-show="paragraph.result.mode"
            class="btn-group"
            style='margin-bottom: 10px;'>
-        <button type="button" class="btn btn-default" ng-click="setMode('TABLE', paragraph.result)" ><i class="fa fa-table"></i></button>
-        <button type="button" class="btn btn-default" ng-click="setMode('multiBarChart', paragraph.result)"><i class="fa fa-bar-chart"></i></button>
-        <button disabled type="button" class="btn btn-default" ng-click="setMode('pieChart', paragraph.result)"><i class="fa fa-pie-chart"></i></button>
-        <button disabled type="button" class="btn btn-default" ng-click="setMode('stackedAreaChart', paragraph.result)"><i class="fa fa-area-chart"></i></button>
-        <button disabled type="button" class="btn btn-default" ng-click="setMode('lineChart', paragraph.result)"><i class="fa fa-line-chart"></i></button>
+        <button type="button" class="btn btn-default"
+                ng-class="{'active': isTable()}"
+                ng-click="setMode('table', true)" ><i class="fa fa-table"></i>
+        </button>
+        <button type="button" class="btn btn-default"
+                ng-class="{'active': isGraphActive('multiBarChart')}"
+                ng-click="setMode('multiBarChart', true)"><i class="fa fa-bar-chart"></i>
+        </button>
+        <button disabled type="button" class="btn btn-default"
+                ng-class="{'active': isGraphActive('pieChart')}"
+                ng-click="setMode('pieChart', true)"><i class="fa fa-pie-chart"></i>
+        </button>
+        <button type="button" class="btn btn-default"
+                ng-class="{'active': isGraphActive('stackedAreaChart')}"
+                ng-click="setMode('stackedAreaChart', true)"><i class="fa fa-area-chart"></i>
+        </button>
+        <button type="button" class="btn btn-default"
+                ng-class="{'active': isGraphActive('lineChart')}"
+                ng-click="setMode('lineChart', true)"><i class="fa fa-line-chart"></i>
+        </button>
       </div>
 
       <table class="table table-hover table-condensed"
-             ng-show="graphMode == 'TABLE'">
+             ng-show="isTable()">
         <thead>
           <tr style="background-color: #EFEFEF; font-weight: bold;">
             <th ng-repeat="val in paragraph.result.columnNames track by $index">{{val}}</th>
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="item in paragraph.result.msg track by $index">
+          <tr ng-repeat="item in paragraph.result.msgTable track by $index">
             <td ng-repeat="val in item track by $index">{{val.value}}</td>
           </tr>
         </tbody>
       </table>
       <!-- ng-show="paragraph.result.mode == 'LINE'" -->
-      <nvd3 ng-show="graphMode != 'TABLE' && graphMode != ''" 
+      <nvd3 ng-show="paragraph.settings.params['_table'].mode != 'table'" 
             options='d3.options' 
             config='d3.config' 
             data='d3.data'>

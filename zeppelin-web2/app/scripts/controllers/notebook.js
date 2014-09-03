@@ -8,19 +8,23 @@
  * Controller of the zeppelinWeb2App
  */
 angular.module('zeppelinWeb2App')
-        .controller('NotebookCtrl', function($scope, WebSocket) {
+        .controller('NotebookCtrl', function($scope, WebSocket, $routeParams, $location) {
 
+  $scope.noteId = $routeParams.noteId;
   // Controller init
   $scope.init = function() {
     getAllNotes();
   };
-
-  $scope.updateParagrapheInformation = [];
-
+  
   // Native Functions
   WebSocket.onopen(function() {
     console.log('Websocket created');
     getAllNotes();
+    if ($routeParams.noteId) {
+      $scope.getNote($routeParams.noteId);
+      $location.path('/notebook/'+$routeParams.noteId);
+      $scope.$apply();
+    }
   });
 
   WebSocket.onmessage(function(event) {
@@ -28,7 +32,7 @@ angular.module('zeppelinWeb2App')
     if (event.data) {
       payload = angular.fromJson(event.data);
     }
-    console.log('Receive << %o, %o, %o', payload.op, payload);
+    console.log('Receive << %o, %o', payload.op, payload);
     var op = payload.op;
     var data = payload.data;
     if (op === 'NOTE') {
@@ -41,9 +45,7 @@ angular.module('zeppelinWeb2App')
       }
       $scope.noteInfo = data.notes;
     } else if (op === 'PARAGRAPH') {
-      // TODO send Event
-      //$scope.$broadcast('updateParagraph', data.paragraph);
-      //updateParagraph(data.paragraph);
+      $scope.$broadcast('updateParagraph', data);
     }
   });
 
@@ -63,6 +65,11 @@ angular.module('zeppelinWeb2App')
     send({op: 'GET_NOTE', data: {id: noteId}});
   };
 
+  $scope.goToNote = function(noteId) {
+      $scope.getNote(noteId);
+      $location.path('/notebook/'+noteId);
+  };
+
   $scope.removeNote = function(noteId) {
     send({op: 'DEL_NOTE', data: {id: noteId}});
   };
@@ -76,9 +83,8 @@ angular.module('zeppelinWeb2App')
     WebSocket.send(JSON.stringify(data));
   };
 
-  $scope.$on('sendNewData', function(event, data, info) {
+  $scope.$on('sendNewData', function(event, data) {
     if (!event.defaultPrevented) {
-      $scope.updateParagrapheInformation[info.id] = info.graphMode;
       send(data);
       event.preventDefault();
     }
