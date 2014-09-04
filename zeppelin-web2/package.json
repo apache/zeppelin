@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "dependencies": {},
   "devDependencies": {
+    "bower": "",
     "grunt": "^0.4.1",
     "grunt-autoprefixer": "^0.7.3",
     "grunt-concurrent": "^0.5.0",
@@ -36,6 +37,7 @@
     "node": ">=0.10.0"
   },
   "scripts": {
+    "postinstall" : "./node_modules/bower/bin/bower --allow-root install",
     "test": "grunt test"
   }
 }
