@@ -19,7 +19,9 @@
  * @name zeppelinWeb2App.controller:NotebookCtrl
  * @description
  * # NotebookCtrl
- * Controller of the zeppelinWeb2App
+ * Controller of notes, manage the note (update)
+ * 
+ * @author anthonycorbacho
  */
 angular.module('zeppelinWeb2App').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope) {
 
@@ -33,21 +35,24 @@ angular.module('zeppelinWeb2App').controller('NotebookCtrl', function($scope, $r
     $rootScope.$emit('sendNewEvent', {op: 'GET_NOTE', data: {id: $scope.noteId}});
   };
   
+  initNotebook();
+  
+  /** Remove the note and go back tot he main page */
+  /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
   $scope.removeNote = function(noteId) {
     $rootScope.$emit('sendNewEvent', {op: 'DEL_NOTE', data: {id: noteId}});
     $location.path('/#');
   };
   
+  /** Update the note name */
   $scope.sendNewName = function() {
-    console.log('----------- %o', $scope.noteName);
     $scope.showEditor = false;
     if ($scope.noteName) {
       $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.noteId, name: $scope.noteName}});
     }
   };
   
-  initNotebook();
-  
+  /** update the current note */
   $rootScope.$on('setNoteContent', function(event, note) {
       $scope.note = note;
       if ($scope.note !== note.id) {

@@ -19,7 +19,9 @@
  * @name zeppelinWeb2App.controller:ParagraphCtrl
  * @description
  * # ParagraphCtrl
- * Controller of the zeppelinWeb2App
+ * Controller of the paragraph, manage everything related to the paragraph
+ * 
+ * @author anthonycorbacho
  */
 angular.module('zeppelinWeb2App')
         .controller('ParagraphCtrl', function($scope, $rootScope) {

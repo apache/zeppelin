@@ -20,6 +20,8 @@
  * @description
  * # MainCtrl
  * Controller of the zeppelinWeb2App
+ * 
+ * @author anthonycorbacho
  */
 angular.module('zeppelinWeb2App')
         .controller('MainCtrl', function($scope, WebSocket, $rootScope) {
@@ -37,12 +39,6 @@ angular.module('zeppelinWeb2App')
         WebSocket.send(JSON.stringify($scope.WebSocketWaitingList[o]));
       }
     }
-
-    /*if ($routeParams.noteId) {
-      $scope.getNote($routeParams.noteId);
-      $location.path('/notebook/' + $routeParams.noteId);
-      //$scope.$apply();
-    }*/
   });
 
   WebSocket.onmessage(function(event) {
@@ -70,8 +66,9 @@ angular.module('zeppelinWeb2App')
     console.log('message: ', event.data);
   });
   
+  /** Send info to the websocket server */
   var send = function(data) {
-    if (WebSocket.currentState() !== "OPEN") {
+    if (WebSocket.currentState() !== 'OPEN') {
       $scope.WebSocketWaitingList.push(data);
     } else {
       console.log('Send >> %o, %o', data.op, data);
@@ -79,17 +76,12 @@ angular.module('zeppelinWeb2App')
     }
   };
 
-  /**
-   * Functions
-   */
+  /** Get a list of note */
   var getAllNotes = function() {
     send({op: 'LIST_NOTES'});
   };
   
-  var getNote = function(noteId) {
-    send({op: 'GET_NOTE', data: {id: noteId}});
-  };
-
+  /** get the childs event and sebd to the websocket server */
   $rootScope.$on('sendNewEvent', function(event, data) {
     if (!event.defaultPrevented) {
       send(data);

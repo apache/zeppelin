@@ -15,6 +15,7 @@
 
 'use strict';
 
+/** get the current port pf the websocket */
 function getPort() {
   var port = Number(location.port);
   // brunch port
@@ -31,6 +32,8 @@ function getPort() {
  * # zeppelinWeb2App
  *
  * Main module of the application.
+ * 
+ * @author anthonycorbacho
  */
 angular
   .module('zeppelinWeb2App', [

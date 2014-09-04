@@ -19,11 +19,15 @@
  * @name zeppelinWeb2App.controller:NavCtrl
  * @description
  * # NavCtrl
- * Controller of the zeppelinWeb2App
+ * Controller of the top navigation, mainly use for the dropdown menu
+ * 
+ * @author anthonycorbacho
  */
 angular.module('zeppelinWeb2App').controller('NavCtrl', function($scope, $rootScope, $routeParams) {
+  /** Current list of notes (ids) */
   $scope.notes = [];
 
+  /** Set the new menu */
   $rootScope.$on('setNoteMenu', function(event, notes) {
     if (!event.defaultPrevented) {
       $scope.notes = notes;
@@ -31,10 +35,12 @@ angular.module('zeppelinWeb2App').controller('NavCtrl', function($scope, $rootSc
     }
   });
   
+  /** Create a new note */
   $scope.createNewNote = function() {
     $rootScope.$emit('sendNewEvent', {op: 'NEW_NOTE'});
   };
   
+  /** Check if the note url is equal to the current note */
   $scope.isActive = function(noteId) {
     if ($routeParams.noteId === noteId) {
       return true;

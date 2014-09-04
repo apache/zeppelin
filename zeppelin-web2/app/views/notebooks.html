@@ -13,15 +13,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+<!-- Here the controller <NotebookCtrl> is not needed because explicitly set in the app.js (route) -->
 <div>
   <div class="noteAction" ng-show="note.id">
-    <h3> <input type="text" class="form-control2" placeholder="{{note.name || 'Note ' + note.id}}" style="width:200px;" ng-show="showEditor" ng-model="noteName" ng-enter="sendNewName()"/>
+    <h3> <input type="text" class="form-control2" placeholder="{{note.name || 'Note ' + note.id}}" style="width:200px;"
+                ng-show="showEditor" ng-model="noteName" ng-enter="sendNewName()" ng-delete="showEditor = false" autofocus/>
          <p class="form-control-static2" ng-click="showEditor = true" ng-show="!showEditor">{{note.name || 'Note ' + note.id}}</p>
       <span class="label">
-        <button type="button" class="btn btn-default btn-xs" ng-click="removeNote(note.id)"><span class="fa fa-times"></span> remove</button>
+        <button style="margin-bottom: 9px;" type="button" class="btn btn-default btn-xs" ng-click="removeNote(note.id)">remove <span class="fa fa-trash"></span></button>
       </span>
     </h3>
   </div>
+  <!-- Include the paragraphs according to the note -->
   <div ng-repeat="currentParagraph in note.paragraphs"
        ng-controller="ParagraphCtrl"
        ng-Init="init(currentParagraph)"
