@@ -72,7 +72,7 @@ ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 function addJarInDir(){
     if [ -d "${1}" ]; then
 	for jar in `find ${1} -maxdepth 1 -name '*jar'`; do
-	    ZEPPELIN_CLASSPATH+=:$jar
+	    ZEPPELIN_CLASSPATH=$jar:$ZEPPELIN_CLASSPATH
 	done
     fi
 }
@@ -92,6 +92,14 @@ if [ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]; then
     ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
 fi
 
+
+if [ "x$SPARK_HOME" != "x" ] && [ -d "${SPARK_HOME}" ]; then
+    addJarInDir "${SPARK_HOME}"
+fi
+
+if [ "x$HADOOP_HOME" != "x" ] && [ -d "${HADOOP_HOME}" ]; then
+    addJarInDir "${HADOOP_HOME}"
+fi
 
 export ZEPPELIN_CLASSPATH
 export CLASSPATH+=${ZEPPELIN_CLASSPATH}
