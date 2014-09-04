@@ -22,6 +22,7 @@ import org.apache.spark.sql.SQLContext;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 
 import scala.None;
 import scala.Some;
@@ -38,6 +39,7 @@ public class SparkInterpreter extends Interpreter {
 	private SparkContext sc;
 	private ByteArrayOutputStream out;
 	private SQLContext sqlc;
+	private DependencyResolver dep;
 	
 
 	public SparkInterpreter(Properties property) {
@@ -59,7 +61,29 @@ public class SparkInterpreter extends Interpreter {
 	}
 	
 	public SQLContext getSQLContext(){
-		return sqlc;
+		if(sqlc==null){
+			// save / load sc from common share
+			Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
+			sqlc = (SQLContext) share.get("sqlc");
+			if(sqlc==null) {
+				sqlc = new SQLContext(sc);
+				share.put("sqlc", sqlc);				
+			}
+		}
+		return sqlc;			
+	}
+	
+	public DependencyResolver getDependencyResolver(){
+		if(dep==null){
+			// save / load sc from common share
+			Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
+			dep = (DependencyResolver) share.get("dep");
+			if(dep==null) {
+				dep = new DependencyResolver(intp.global(), sc);
+				share.put("dep", dep);				
+			}
+		}
+		return dep;		
 	}
 	
 	public SparkContext createSparkContext(){
@@ -87,6 +111,7 @@ public class SparkInterpreter extends Interpreter {
 		if(propMaster!=null) return propMaster;
 		return "local[*]";
 	}
+	
 
 	@Override
 	public void initialize(){
@@ -149,18 +174,23 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 
 
 		sc = getSparkContext();
-
-		sqlc = new SQLContext(sc);
+		sqlc = getSQLContext();
+		
+		dep = getDependencyResolver();
 		
 		intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
 		Map<String, Object> binder = (Map<String, Object>) getValue("_binder");
 		binder.put("out", printStream);
 		binder.put("sc", sc);
 		binder.put("sqlc", sqlc);
-
+		binder.put("dep", dep);
+		binder.put("intp", intp);
+		
+		intp.interpret("@transient val dep = _binder.get(\"dep\").asInstanceOf[com.nflabs.zeppelin.spark.dep.DependencyResolver]");
 		intp.interpret("@transient val sc = _binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
 		intp.interpret("import org.apache.spark.SparkContext._");
 		intp.interpret("@transient val sqlc = _binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
+		
 		intp.interpret("import sqlc.createSchemaRDD");
 	}
 
@@ -192,6 +222,7 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		return paths;
 	}
 	
+	
 	public void bindValue(String name, Object o){
 		getResultCode(intp.bindValue(name, o));
 	}
@@ -206,7 +237,6 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 			return ret;
 		}
 	}
-	
 	
 	private final String jobGroup = "zeppelin-"+this.hashCode();
 
