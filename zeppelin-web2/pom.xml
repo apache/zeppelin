@@ -97,7 +97,7 @@
           </execution>
         </executions>
         <configuration>
-          <executable>grunt</executable>
+          <executable>./grunt</executable>
           <arguments>
             <argument>build</argument>
           </arguments>
