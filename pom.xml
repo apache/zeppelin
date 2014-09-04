@@ -543,6 +543,11 @@
           </exclusion>
         </exclusions>
       </dependency>
+      <dependency>
+        <groupId>org.apache.zookeeper</groupId>
+        <artifactId>zookeeper</artifactId>
+        <version>${zookeeper.version}</version>
+      </dependency>
       <!-- See SPARK-1556 for info on this dependency: -->
       <dependency>
         <groupId>net.java.dev.jets3t</groupId>
