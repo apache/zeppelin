@@ -43,8 +43,8 @@ if [ "x$ZEPPELIN_PID_DIR" == "x" ]; then
 fi
 
 if [ "x$ZEPPELIN_WAR" == "x" ]; then
-    if [ -d "${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp" ]; then
-	    export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp"
+    if [ -d "${ZEPPELIN_HOME}/zeppelin-web2/src/main/webapp" ]; then
+	    export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web2/src/main/webapp"
     else
         export ZEPPELIN_WAR=`find ${ZEPPELIN_HOME} -name "zeppelin-web-*.war"`
     fi

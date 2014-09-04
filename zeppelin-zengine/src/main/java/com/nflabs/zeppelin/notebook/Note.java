@@ -20,6 +20,7 @@ import com.google.gson.GsonBuilder;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
+import com.nflabs.zeppelin.notebook.utility.IdHashes;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.JobListener;
@@ -49,7 +50,9 @@ public class Note implements Serializable, JobListener {
 	}
 	
 	private void generateId(){
-		id = "note_"+System.currentTimeMillis()+"_"+new Random(System.currentTimeMillis()).nextInt();
+		//id = "note_"+System.currentTimeMillis()+"_"+new Random(System.currentTimeMillis()).nextInt();
+	  /** This is actually more humain readable */
+	  id = IdHashes.encode(System.currentTimeMillis() + new Random(System.currentTimeMillis()).nextInt());
 	}
 	
 	public String id(){
@@ -122,6 +125,19 @@ public class Note implements Serializable, JobListener {
 		}
 		return null;
 	}
+	
+  public boolean isLastParagraph(String paragraphId) {
+    if (!paragraphs.isEmpty()) {
+      synchronized (paragraphs) {
+        if (paragraphId.equals(paragraphs.get(paragraphs.size() - 1).getId())) {
+          return true;
+        }
+      }
+      return false;
+    }
+    /** because empty list, cannot remove nothing right? */
+    return true;
+  }
 	
 	public Paragraph getParagraph(String paragraphId) {
 		synchronized(paragraphs) {

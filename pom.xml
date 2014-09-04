@@ -62,7 +62,7 @@
       <organizationUrl>http://www.nflabs.com</organizationUrl>
     </developer>
     <developer>
-      <id>anthony</id>
+      <id>anthonycorbacho</id>
       <name>Anthony Corbacho</name>
       <organization>NFLabs</organization>
       <organizationUrl>http://www.nflabs.com</organizationUrl>
@@ -76,7 +76,7 @@
     <module>spark</module>
     <module>markdown</module>
     <module>shell</module>
-    <module>zeppelin-web</module>
+    <module>zeppelin-web2</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
     <module>zeppelin-docs</module>

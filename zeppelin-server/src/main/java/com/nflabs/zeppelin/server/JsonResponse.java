@@ -109,6 +109,10 @@ public class JsonResponse<T> {
 			for (NewCookie nc : cookies)
 				r.cookie(nc);
 		}
+		r.header("Access-Control-Allow-Origin", "*") 
+		 .header("Access-Control-Allow-Credentials", "true")
+         .header("Access-Control-Allow-Headers", "authorization,Content-Type")
+         .header("Access-Control-Allow-Methods", "POST, GET, OPTIONS , PUT, HEAD, DELETE");
 		return r.build();
 	}
 }

@@ -17,6 +17,7 @@ public class Message {
 		NEW_NOTE,      // [c-s] create new notebook
 		DEL_NOTE,	   // [c-s] delete notebook
 		               // @param id note id
+		NOTE_UPDATE,
 		
 		RUN_PARAGRAPH, // [c-s] run paragraph
 		               // @param id paragraph id
@@ -36,9 +37,12 @@ public class Message {
 		PARAGRAPH_PARAM, // [c-s] set parameters
 		                 // @param id paragraph id
 		                 // @param params parameter map
+
+		PARAGRAPH_UPDATE_STATE,
+		PARAGRAPH_REMOVE,
 	}	
 	public OP op;
-	public Map<String, Object> data = new HashMap<String, Object>();;
+	public Map<String, Object> data = new HashMap<String, Object>();
 	
 	public Message(OP op){
 		this.op = op;

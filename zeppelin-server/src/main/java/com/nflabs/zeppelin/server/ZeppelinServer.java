@@ -130,7 +130,6 @@ public class ZeppelinServer extends Application {
     private static WebAppContext setupWebAppContext(ZeppelinConfiguration conf) {
         WebAppContext webApp = new WebAppContext();
         File webapp = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
-
         if(webapp.isDirectory()){ // Development mode, read from FS
             //webApp.setDescriptor(webapp+"/WEB-INF/web.xml");
             webApp.setResourceBase(webapp.getPath());

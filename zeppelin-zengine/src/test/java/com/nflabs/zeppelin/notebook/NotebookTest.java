@@ -52,14 +52,14 @@ public class NotebookTest {
 		
 		// run with defatul repl
 		Paragraph p1 = note.addParagraph();
-		p1.setParagraph("hello world");
+		p1.setText("hello world");
 		note.run(p1.getId());
 		while(p1.isTerminated()==false) Thread.yield();
 		assertEquals("repl1: hello world", p1.getResult().message());
 		
 		// run with specific repl
 		Paragraph p2 = note.addParagraph();
-		p2.setParagraph("%MockRepl2 hello world");
+		p2.setText("%MockRepl2 hello world");
 		note.run(p2.getId());
 		while(p2.isTerminated()==false) Thread.yield();
 		assertEquals("repl2: hello world", p2.getResult().message());
@@ -71,7 +71,7 @@ public class NotebookTest {
 		
 		// run with defatul repl
 		Paragraph p1 = note.addParagraph();
-		p1.setParagraph("hello world");
+		p1.setText("hello world");
 		note.persist();
 		
 		Notebook notebook2 = new Notebook(conf, schedulerFactory, new MockInterpreterFactory(conf));
