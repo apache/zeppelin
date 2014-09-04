@@ -98,6 +98,9 @@ public class NotebookServer extends WebSocketServer {
         case PARAGRAPH_REMOVE:
           removeParagraph(conn, notebook, messagereceived);
           break;
+        case NOTE_UPDATE:
+          updateNote(conn, notebook, messagereceived);
+          break;
         default:
           broadcastNoteList();
           break;
@@ -232,8 +235,27 @@ public class NotebookServer extends WebSocketServer {
       return ;
     }
     Note note = notebook.getNote(noteId);
-    addConnectionToNote(note.id(), conn);
-    conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
+    if (note != null) {
+      addConnectionToNote(note.id(), conn);
+      conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
+    }
+  }
+  
+  private void updateNote(WebSocket conn, Notebook notebook, Message fromMessage) {
+    String noteId = (String) fromMessage.get("id");
+    String name = (String) fromMessage.get("name");
+    if (noteId == null) {
+      return ;
+    }
+    if (name == null) {
+      return ;
+    }
+    Note note = notebook.getNote(noteId);
+    if (note != null) {
+      note.setName(name);
+      broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
+      broadcastNoteList();
+    }
   }
 
   private void createNote(WebSocket conn, Notebook notebook) throws IOException {
@@ -317,7 +339,7 @@ public class NotebookServer extends WebSocketServer {
       broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
     }
   }
-  
+
   private void runParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
