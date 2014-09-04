@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="styles/font-awesome.min.css">
     <!-- endbuild -->
   </head>
-  <body ng-app="zeppelinWeb2App" ng-controller="MainCtrl" ng-Init="init()">
+  <body ng-app="zeppelinWeb2App" ng-controller="MainCtrl">
     <!--[if lt IE 7]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
@@ -31,18 +31,25 @@
             <span class="icon-bar"></span>
           </button>
           <a class="navbar-brand" href="#"><img style="margin-top: -7px;s" src="images/zepLogoW.png" width="50" alt="I'm zeppelin"> Zeppelin</a>
-
         </div>
-        <div class="collapse navbar-collapse">
+        
+        <div class="collapse navbar-collapse" ng-controller="NavCtrl">
           <ul class="nav navbar-nav">
-            <li><a href="#/notebooks">Notebooks</a></li>
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle">Notebooks <span class="caret"></span></a>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="javascrip:void(0);" ng-click="createNewNote()">Create new note</a></li>
+                <li class="divider"></li>
+                <li ng-repeat="note in notes track by $index" ng-class="{'active' : isActive(note.id)}"><a href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}} </a></li>
+              </ul>
+            </li>
           </ul>
-        </div><!--/.nav-collapse -->
+        </div>
       </div>
     </div>
     <!-- Add your site or application content here -->
-    <div id="main" class="container" ng-class="{'fullMain': hiddenMenu == false}">
-      <div ng-view=""></div>
+    <div id="main" class="container">
+      <div ng-view></div>
     </div>
     <!-- build:js(.) scripts/oldieshim.js -->
     <!--[if lt IE 9]>
@@ -77,6 +84,7 @@
     <script src="scripts/controllers/notebook.js"></script>
     <script src="scripts/directives/ngenter.js"></script>
     <script src="scripts/controllers/paragraph.js"></script>
+    <script src="scripts/controllers/nav.js"></script>
     <!-- endbuild -->
   </body>
 </html>

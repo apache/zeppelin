@@ -20,6 +20,11 @@ body {
   font-size: 18px;
 }
 
+.navbar-inverse .navbar-nav > .open > a, .navbar-inverse .navbar-nav > .open > a:hover, .navbar-inverse .navbar-nav > .open > a:focus {
+  color: #fff;
+  background-color: #3071a9;
+}
+
 .navbar-inverse .navbar-toggle:hover, .navbar-inverse .navbar-toggle:focus {
   background-color: #3071a9;
 }
@@ -56,13 +61,8 @@ a.navbar-brand:hover {
 
 
 #main {
-  margin-left: 190px;
   padding-left: 15px;
   padding-right: 15px;
   height: 100%;
-}
-
-.fullMain {
-  margin-left:0px !important;
 }
 

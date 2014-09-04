@@ -7,23 +7,78 @@
  * Controller of the zeppelinWeb2App
  */
 angular.module('zeppelinWeb2App')
-       .controller('MainCtrl', function($scope) {
-  $scope.awesomeThings = [
-    'HTML5 Boilerplate',
-    'AngularJS',
-    'Karma'
-  ];
+        .controller('MainCtrl', function($scope, WebSocket, $rootScope) {
+  
+  $scope.WebSocketWaitingList = [];
 
-  // Controller init
-  $scope.init = function() {
-  };
+  /**
+   * Web socket
+   */
+  WebSocket.onopen(function() {
+    console.log('Websocket created');
+    getAllNotes();
+    if ($scope.WebSocketWaitingList.length > 0) {
+      for (var o in $scope.WebSocketWaitingList) {
+        WebSocket.send(JSON.stringify($scope.WebSocketWaitingList[o]));
+      }
+    }
 
-  $scope.hiddenMenu = false;
-  $scope.hideMenu = function() {
-    if ($scope.hiddenMenu === true) {
-      $scope.hiddenMenu = false;
+    /*if ($routeParams.noteId) {
+      $scope.getNote($routeParams.noteId);
+      $location.path('/notebook/' + $routeParams.noteId);
+      //$scope.$apply();
+    }*/
+  });
+
+  WebSocket.onmessage(function(event) {
+    var payload;
+    if (event.data) {
+      payload = angular.fromJson(event.data);
+    }
+    console.log('Receive << %o, %o', payload.op, payload);
+    var op = payload.op;
+    var data = payload.data;
+    if (op === 'NOTE') {
+      $rootScope.$emit('setNoteContent', data.note);
+    } else if (op === 'NOTES_INFO') {
+      $rootScope.$emit('setNoteMenu', data.notes);
+    } else if (op === 'PARAGRAPH') {
+      $rootScope.$emit('updateParagraph', data);
+    }
+  });
+
+  WebSocket.onerror(function(event) {
+    console.log('message: ', event.data);
+  });
+
+  WebSocket.onclose(function(event) {
+    console.log('message: ', event.data);
+  });
+  
+  var send = function(data) {
+    if (WebSocket.currentState() !== "OPEN") {
+      $scope.WebSocketWaitingList.push(data);
     } else {
-      $scope.hiddenMenu = true;
+      console.log('Send >> %o, %o', data.op, data);
+      WebSocket.send(JSON.stringify(data));
     }
   };
+
+  /**
+   * Functions
+   */
+  var getAllNotes = function() {
+    send({op: 'LIST_NOTES'});
+  };
+  
+  var getNote = function(noteId) {
+    send({op: 'GET_NOTE', data: {id: noteId}});
+  };
+
+  $rootScope.$on('sendNewEvent', function(event, data) {
+    if (!event.defaultPrevented) {
+      send(data);
+      event.preventDefault();
+    }
+  });
 });

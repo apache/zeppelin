@@ -30,14 +30,13 @@ angular
     'ngTouch'
   ])
   .config(function ($routeProvider, WebSocketProvider) {
+    WebSocketProvider
+      .prefix('')
+      .uri('ws://localhost:' + getPort());
+      
     $routeProvider
       .when('/', {
-        templateUrl: 'views/main.html',
-        controller: 'MainCtrl'
-      })
-      .when('/notebooks', {
-        templateUrl: 'views/notebooks.html',
-        controller: 'NotebookCtrl'
+        templateUrl: 'views/main.html'
       })
       .when('/notebook/:noteId', {
         templateUrl: 'views/notebooks.html',
@@ -46,11 +45,6 @@ angular
       .otherwise({
         redirectTo: '/'
       });
-      
-    WebSocketProvider
-      .prefix('')
-      .uri('ws://localhost:' + getPort());
-
   });
 
   
