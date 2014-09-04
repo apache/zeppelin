@@ -87,12 +87,6 @@
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-repl_2.10</artifactId>
       <version>${spark.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.thoughtworks.paranamer</groupId>
-          <artifactId>paranamer</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
    <dependency>
@@ -101,13 +95,6 @@
       <version>${spark.version}</version>
     </dependency>
             
-    <dependency>
-      <groupId>com.thoughtworks.paranamer</groupId>
-      <artifactId>paranamer</artifactId>
-      <version>2.6</version>
-    </dependency>
-    
-    
     <!-- Aether :: maven dependency resolution -->
     <dependency>
       <groupId>org.apache.maven</groupId>
