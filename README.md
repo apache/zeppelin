@@ -2,35 +2,38 @@
 [![Build Status](https://secure.travis-ci.org/NFLabs/zeppelin.png?branch=master)](https://travis-ci.org/NFLabs/zeppelin)
 
 
-**Zeppelin** is complete large scale data analysis environment, including
+**Zeppelin** is data analytics environment
 
-   * Web based GUI
-   * With interactive visualization
-   * Super easy SQL like analysis language called **ZQL**
-   * Custom user routine support 
-   * Central archive of library called **ZAN** (Zeppelin Archivce Network)
-   * On top of Hive (or any Hive compatible system like Shark)
+   * Web based notebook style editor.
+   * Built-in Apache Spark support
 
 
 To know more about Zeppelin, visit our web site http://zeppelin-project.org
 
 ###Build
-
       mvn clean package
 
-###Run UnitTests
-      mvn test
+with specific spark version
+
+      mvn clean package -Dspark.version=1.0.1
+
+###Configure
+
+Configure following configuration files
+
+      ./conf/zeppelin-env.sh
+      ./conf/zeppelin-site.xml
 
 ###Run
-To run Zeppelin in _local-mode_ using hive 0.9 + embedded derby metastore:
+    ./bin/zeppelin-daemon.sh start
 
-    #make sure hadoop is availavle thorugh PATH or HADOOP_HOME
-    ./bin/zeppelin.sh
+    browse localhost:8080 in your browser.
 
 For configuration details check __./conf__ subdirectory.
 
 ###Package
 To package final distribution do:
+
       mvn clean package -P build-distr
 
 The archive is generated under _zeppelin-distribution/target_ directory

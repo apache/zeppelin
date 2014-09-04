@@ -38,6 +38,7 @@ exports.config =
           'vendor/scripts/jquery-1.8.3.min.js',
           'vendor/scripts/jquery-ui-1.10.4.custom.min.js',
           'vendor/scripts/jquery-nestable.js',
+          'vendor/scripts/jquery.atmosphere.js',
 
           'vendor/scripts/handlebars-1.1.2.js',
           'vendor/scripts/ember-latest.js',
@@ -52,6 +53,8 @@ exports.config =
           'vendor/scripts/ace/ace.js',
           'vendor/scripts/ace/mode-sql.js',
           'vendor/scripts/ace/theme-terminal.js',
+
+          'vendor/scripts/d3.v3.min.js',
           ]
 
     stylesheets:
@@ -59,7 +62,8 @@ exports.config =
       joinTo: 'stylesheets/app.css'
       order:
         before: [
-          'vendor/styles/bootstrap.css',
+          # This conflict with the bootstrap theme
+          # 'vendor/styles/bootstrap.css',
           'vendor/styles/bootstrap-theme.css',
           'vendor/styles/jquery-ui-bootstrap/jquery-ui-1.10.4.custom.css',
           'vendor/styles/font-awesome.css',

@@ -34,8 +34,8 @@ if [ "x$ZEPPELIN_LOG_DIR" == "x" ]; then
     export ZEPPELIN_LOG_DIR="$ZEPPELIN_HOME/logs"
 fi
 
-if [ "x$ZEPPELIN_DATA_DIR" == "x" ]; then
-    export ZEPPELIN_DATA_DIR="$ZEPPELIN_HOME/data"
+if [ "x$ZEPPELIN_NOTEBOOK_DIR" == "x" ]; then
+    export ZEPPELIN_NOTEBOOK_DIR="$ZEPPELIN_HOME/notebook"
 fi
 
 if [ "x$ZEPPELIN_PID_DIR" == "x" ]; then
@@ -43,8 +43,8 @@ if [ "x$ZEPPELIN_PID_DIR" == "x" ]; then
 fi
 
 if [ "x$ZEPPELIN_WAR" == "x" ]; then
-    if [ -d "${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp" ]; then
-	    export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp"
+    if [ -d "${ZEPPELIN_HOME}/zeppelin-web2/src/main/webapp" ]; then
+	    export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web2/src/main/webapp"
     else
         export ZEPPELIN_WAR=`find ${ZEPPELIN_HOME} -name "zeppelin-web-*.war"`
     fi
@@ -58,16 +58,8 @@ if [ "x$ZEPPELIN_API_WAR" == "x" ]; then
     fi
 fi
 
-if [ "x$ZEPPELIN_JOB_DIR" == "x" ]; then
-    export ZEPPELIN_JOB_DIR="$ZEPPELIN_HOME/jobs"
-fi
-
-if [ "x$ZEPPELIN_ZAN_LOCAL_REPO" == "x" ]; then
-    export ZEPPELIN_ZAN_LOCAL_REPO="$ZEPPELIN_HOME/zan-repo"
-fi
-
-if [ "x$ZEPPELIN_DRIVER_DIR" == "x" ]; then
-    export ZEPPELIN_DRIVER_DIR="$ZEPPELIN_HOME/drivers"
+if [ "x$ZEPPELIN_REPL_DIR" == "x" ]; then
+    export ZEPPELIN_REPL_DIR="$ZEPPELIN_HOME/repl"
 fi
 
 
@@ -80,32 +72,34 @@ ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 function addJarInDir(){
     if [ -d "${1}" ]; then
 	for jar in `find ${1} -maxdepth 1 -name '*jar'`; do
-	    ZEPPELIN_CLASSPATH+=:$jar
+	    ZEPPELIN_CLASSPATH=$jar:$ZEPPELIN_CLASSPATH
 	done
     fi
 }
 
 addJarInDir ${ZEPPELIN_HOME}
 
-addJarInDir ${ZEPPELIN_HOME}/zeppelin-cli/target/lib
-addJarInDir ${ZEPPELIN_HOME}/zeppelin-zan/target/lib
+addJarInDir ${ZEPPELIN_HOME}/zeppelin-zengine/target/lib
 addJarInDir ${ZEPPELIN_HOME}/zeppelin-server/target/lib
 addJarInDir ${ZEPPELIN_HOME}/zeppelin-web/target/lib
 
 
-
-if [ -d "${ZEPPELIN_HOME}/zeppelin-cli/target/classes" ]; then
-    ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-cli/target/classes"
-fi
-
-if [ -d "${ZEPPELIN_HOME}/zeppelin-zan/target/classes" ]; then
-    ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-zan/target/classes"
+if [ -d "${ZEPPELIN_HOME}/zeppelin-zengine/target/classes" ]; then
+    ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-zengine/target/classes"
 fi
 
 if [ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]; then
     ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
 fi
 
+
+if [ "x$SPARK_HOME" != "x" ] && [ -d "${SPARK_HOME}" ]; then
+    addJarInDir "${SPARK_HOME}"
+fi
+
+if [ "x$HADOOP_HOME" != "x" ] && [ -d "${HADOOP_HOME}" ]; then
+    addJarInDir "${HADOOP_HOME}"
+fi
 
 export ZEPPELIN_CLASSPATH
 export CLASSPATH+=${ZEPPELIN_CLASSPATH}

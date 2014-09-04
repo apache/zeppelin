@@ -32,3 +32,5 @@ module.exports = Ember.Application.create({
   isAdmin: false,
 });
 
+require('notebook');
+

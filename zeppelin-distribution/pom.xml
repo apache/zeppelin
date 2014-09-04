@@ -17,22 +17,7 @@
     -->
   <dependencies>
     <dependency>
-      <artifactId>zeppelin-driver-hive11</artifactId>
-      <groupId>${project.groupId}</groupId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <artifactId>zeppelin-driver-exec</artifactId>
-      <groupId>${project.groupId}</groupId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
       <artifactId>zeppelin-server</artifactId>
-      <groupId>${project.groupId}</groupId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <artifactId>zeppelin-cli</artifactId>
       <groupId>${project.groupId}</groupId>
       <version>${project.version}</version>
     </dependency>

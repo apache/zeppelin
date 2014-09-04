@@ -206,26 +206,35 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		}
 		return getBooleanValue(propertyName, defaultValue);
 	}
+	
+	public String getNotebookDir(){
+		return getRelativeDir(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
+	}
+	
+	public String getInterpreterDir(){
+		return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_DIR);
+	}
+	
+	private String getRelativeDir(ConfVars c){
+		String path = getString(c);
+		if(path!=null && path.startsWith("/")){
+			return path;
+		} else {
+			return getString(ConfVars.ZEPPELIN_HOME)+"/"+getString(c);
+		}
+	}
 
 
 	public static enum ConfVars {
 		ZEPPELIN_HOME				("zeppelin.home", "../"),
 		ZEPPELIN_PORT				("zeppelin.server.port", 8080),
-		ZEPPELIN_WAR				("zeppelin.war", "../zeppelin-web/src/main/webapp"),
-	        ZEPPELIN_API_WAR                        ("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),
-		ZEPPELIN_JOB_DIR			("zeppelin.job.dir", "../jobs"),
-		ZEPPELIN_ZAN_REPO			("zeppelin.zan.repo", "https://github.com/NFLabs/zan.git"),
-		ZEPPELIN_ZAN_LOCAL_REPO		("zeppelin.zan.localrepo", "../zan-repo"),
-		ZEPPELIN_ZAN_SHARED_REPO	("zeppelin.zan.sharedrepo", null),
-		ZEPPELIN_JOB_SCHEDULER	    ("zeppelin.job.scheduler", "PARALLEL"), // FIFO or PARALLEL
-		ZEPPELIN_MAX_RESULT			("zeppelin.max.result", 10000),     // max num result taken by result class
-		ZEPPELIN_MAX_HISTORY		("zeppelin.max.history", 100),      // max num of job history
-		ZEPPELIN_DRIVERS			("zeppelin.drivers", "hive:hive2://,exec:exec://"),
-		ZEPPELIN_DRIVER_DIR			("zeppelin.driver.dir", "../drivers"),
-		ZEPPELIN_ENCODING			("zeppelin.encoding", "UTF-8"),
+		ZEPPELIN_WAR				("zeppelin.war", "../zeppelin-web2/src/main/webapp"),
+	    ZEPPELIN_API_WAR            ("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),
+		ZEPPELIN_INTERPRETERS		("zeppelin.interpreters", "spark:com.nflabs.zeppelin.spark.SparkInterpreter,sql:com.nflabs.zeppelin.spark.SparkSqlInterpreter,md:com.nflabs.zeppelin.markdown.Markdown,sh:com.nflabs.zeppelin.shell.ShellInterpreter"),
+		ZEPPELIN_INTERPRETER_DIR	("zeppelin.interpreter.dir", "interpreter"),
+		ZEPPELIN_ENCODING			("zeppelin.encoding", "UTF-8"), 
+		ZEPPELIN_NOTEBOOK_DIR       ("zeppelin.notebook.dir", "notebook")		
 		;
-
-
 
 		private String varName;
 		@SuppressWarnings("rawtypes")

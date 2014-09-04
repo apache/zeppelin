@@ -1,8 +1,8 @@
 <div class="container-fluid">
-  <br />
-  Checkout <a href="http://zeppelin-project.org">http://zeppelin-project.org</a> to get useful documentations and news.<br />
-  <br />
-  Are you ready?
-  </p>
-  {{#link-to "zql" classNames="btn btn-lg btn-info"}}Start &raquo;{{/link-to}}
+  <button type="button" class="btn btn-link" id="newNotebookButton" style="font-size: 16px;text-decoration: none;">
+    <span style="color:#999;" class="glyphicon glyphicon-plus"></span> 
+    New Notebook
+  </button><br \>
+  <div id="notebookList" class="notebookList"></div>
+  <div id="notebook" class="note"></div>
 </div>

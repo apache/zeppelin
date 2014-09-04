@@ -1,0 +1,71 @@
+.notebookList {
+
+}
+
+.paragraph {
+    /*border-top: 1px solid #CCCCCC;*/
+    margin-top:5px;
+    margin-bottom: 5px;
+    padding: 5px 5px 5px 5px;
+}
+
+.paragraph .control {
+  float: right;
+  color: #999;
+  margin-right: 5px;
+  margin-top: -3px;
+}
+
+.paragraph .form {
+    margin-top : 20px;
+}
+
+.paragraph .form p {
+    margin-left: 10px;
+    display:inline;
+}
+
+.paragraph .editor {
+    width : 100%;
+    height: 20px;
+    border-left: 4px solid #EEEEEE;
+}
+
+.paragraph .status {
+    font-size : 10px;
+    color : #AAAAAA;
+    background-color: white;
+    width: 100%;
+    text-align : right;
+}
+
+.paragraph .result {
+    margin-top:5px;
+    overflow : auto;
+    max-height: 400px;
+}
+
+.paragraph .result error{
+    color: #DC143C;
+}
+
+.paragraph .result pre{
+    font-size : 12px;
+    border : 0px;
+    background-color: white;
+    line-height: 1.0;
+}
+
+
+.paragraph .result table {
+    width: 100%;
+}
+
+.paragraph .result table th {
+    font-weight : bold;
+    background-color : #EFEFEF;
+}
+
+.paragraph .result table td {
+
+}

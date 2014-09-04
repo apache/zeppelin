@@ -1,0 +1,118 @@
+package com.nflabs.zeppelin.interpreter;
+
+import java.util.Properties;
+
+public class ClassloaderInterpreter extends Interpreter {
+
+	private ClassLoader cl;
+	private Interpreter intp;
+
+	public ClassloaderInterpreter(Interpreter intp, ClassLoader cl, Properties property) {
+		super(property);
+		this.cl = cl;
+		this.intp = intp;
+	}
+	
+	public Interpreter getInnerRepl(){
+		return intp;
+	}
+
+	@Override
+	public Object getValue(String name) {
+		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(cl);
+		try {
+			return intp.getValue(name);
+		} catch (Exception e){
+			throw new InterpreterException(e);
+		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
+			Thread.currentThread().setContextClassLoader(oldcl);
+		}
+	}
+
+	@Override
+	public InterpreterResult interpret(String st) {
+		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(cl);
+		try {
+			return intp.interpret(st);
+		} catch (Exception e){
+			e.printStackTrace();
+			throw new InterpreterException(e);
+		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
+			Thread.currentThread().setContextClassLoader(oldcl);
+		}
+	}
+
+	@Override
+	public void bindValue(String name, Object o) {
+		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(cl);
+		try {
+			intp.bindValue(name, o);
+		} catch (Exception e){
+			throw new InterpreterException(e);
+		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
+			Thread.currentThread().setContextClassLoader(oldcl);
+		}
+	}
+
+	@Override
+	public void initialize() {
+		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(cl);
+		try {
+			intp.initialize();
+		} catch (Exception e){
+			throw new InterpreterException(e);
+		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
+			Thread.currentThread().setContextClassLoader(oldcl);
+		}		
+	}
+
+	@Override
+	public void destroy() {
+		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(cl);
+		try {
+			intp.destroy();
+		} catch (Exception e){
+			throw new InterpreterException(e);
+		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
+			Thread.currentThread().setContextClassLoader(oldcl);
+		}	
+	}
+
+	@Override
+	public void cancel() {
+		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(cl);
+		try {
+			intp.cancel();
+		} catch (Exception e){
+			throw new InterpreterException(e);
+		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
+			Thread.currentThread().setContextClassLoader(oldcl);
+		}	
+	}
+
+	@Override
+	public FormType getFormType() {
+		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(cl);
+		try {
+			return intp.getFormType();
+		} catch (Exception e){
+			throw new InterpreterException(e);
+		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
+			Thread.currentThread().setContextClassLoader(oldcl);
+		}	
+	}
+}
