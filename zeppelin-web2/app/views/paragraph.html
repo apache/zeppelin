@@ -60,7 +60,7 @@ limitations under the License.
     </div>
     <!-- Rendering -->
     <div class='tableDisplay'>
-      <pre id="{{paragraph.id}}_msg"
+      <pre id="{{paragraph.id}}_msg" ng-class="{'pre2': paragraph.result.type == 'TEXT'}"
            ng-show="paragraph.result.type == 'TEXT'" 
            ng-Init="loadResultType(paragraph.result)"
            ng-bind-html="paragraph.result.msg">

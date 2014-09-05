@@ -83,7 +83,7 @@
   display: inline-block;
 }
 
-.paragraph pre {
+.paragraph .pre2 {
  display: block!important;
 /* padding: 9.5px; */
  margin: 0 0 10px!important;
