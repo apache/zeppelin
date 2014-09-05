@@ -79,8 +79,21 @@ angular.module('zeppelinWeb2App')
   $scope.sendParagraph = function(data) {
     //TODO: check if contnet changed
     console.log('send new paragraph: %o with %o', $scope.paragraph.id, data);
+    /** check if  we change the type %sql -> %md then remove (if exist) the params._table object */
+    if (!data.startsWith('%sql')) {
+      flushTableData();
+    }
     var parapgraphData = {op: 'RUN_PARAGRAPH', data: {id: $scope.paragraph.id, paragraph: data, params: $scope.paragraph.settings.params}};
     $rootScope.$emit('sendNewEvent', parapgraphData);
+  };
+  
+  var flushTableData = function() {
+    if ($scope.paragraph.settings.params._table) {
+        delete $scope.paragraph.settings.params._table;
+        if ($scope.paragraph.result) {
+          delete $scope.paragraph.result;
+        }
+      }
   };
   
   $scope.closeParagraph = function() {
@@ -163,7 +176,7 @@ angular.module('zeppelinWeb2App')
     if (!result) {
       return;
     }
-    if (result.type === 'TABLE') {
+    if (result.type === 'TABLE' && String($scope.paragraph.text).startsWith('%sql')) {
       var columnNames = [];
       var rows = [];
       var array = [];
@@ -399,4 +412,11 @@ angular.module('zeppelinWeb2App')
     }
     return false;
   };
+  
+  /** Utility function */
+  if (typeof String.prototype.startsWith !== 'function') {
+    String.prototype.startsWith = function(str) {
+      return this.slice(0, str.length) === str;
+    };
+  }
 });
