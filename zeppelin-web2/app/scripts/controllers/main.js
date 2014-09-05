@@ -33,7 +33,7 @@ angular.module('zeppelinWeb2App')
    */
   WebSocket.onopen(function() {
     console.log('Websocket created');
-    getAllNotes();
+
     if ($scope.WebSocketWaitingList.length > 0) {
       for (var o in $scope.WebSocketWaitingList) {
         WebSocket.send(JSON.stringify($scope.WebSocketWaitingList[o]));

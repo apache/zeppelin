@@ -29,12 +29,14 @@ angular.module('zeppelinWeb2App').controller('NavCtrl', function($scope, $rootSc
 
   /** Set the new menu */
   $rootScope.$on('setNoteMenu', function(event, notes) {
-    if (!event.defaultPrevented) {
       $scope.notes = notes;
-      event.preventDefault();
-    }
   });
-  
+
+  var loadNotes = function() {
+    $rootScope.$emit('sendNewEvent', {op: 'LIST_NOTES'});
+  };
+  loadNotes();
+
   /** Create a new note */
   $scope.createNewNote = function() {
     $rootScope.$emit('sendNewEvent', {op: 'NEW_NOTE'});
