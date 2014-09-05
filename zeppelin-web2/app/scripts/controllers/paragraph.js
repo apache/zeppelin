@@ -127,6 +127,7 @@ angular.module('zeppelinWeb2App')
 
       $scope.editor.renderer.setShowGutter(false);
       $scope.editor.setHighlightActiveLine(false);
+      $scope.editor.focus();
       var hight = $scope.editor.getSession().getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
       setEditorHeight(_editor.container.id, hight);
       $scope.editor.getSession().on('change', function(e, editSession) {
