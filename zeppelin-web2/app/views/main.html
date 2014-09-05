@@ -15,7 +15,14 @@ limitations under the License.
 -->
 <div class="row">
   <div class="col-md-10">
-    <h1>Welcome to Zeppelin</h1>
-    Some fancy text here
+    <div ng-controller="NavCtrl">
+      <h4>Notebook</h4>
+      <ul>
+        <li ng-repeat="note in notes track by $index">
+          <a href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}}</a>
+        </li>
+      </ul>
+      <a href="javascrip:void(0);" ng-click="createNewNote()"><i class="fa fa-plus"></i> Create new note</a>
+    </div>
   </div>
 </div>
