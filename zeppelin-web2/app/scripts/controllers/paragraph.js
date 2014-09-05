@@ -28,7 +28,7 @@ angular.module('zeppelinWeb2App')
 
   $scope.paragraph = null;
   $scope.editor = null;
-  var editorMode = {scala: 'ace/mode/scala'};
+  var editorMode = {scala: 'ace/mode/scala', sql: 'ace/mode/sql', markdown: 'ace/mode/markdown'};
 
   $scope.forms = {};
 
@@ -149,6 +149,13 @@ angular.module('zeppelinWeb2App')
         $scope.editor.resize();
       });
       $scope.editor.getSession().setMode(editorMode.scala);
+      var code = $scope.editor.getSession().getValue();
+      if ( String(code).startsWith('%sql')) {
+        $scope.editor.getSession().setMode(editorMode.sql);
+      } else if ( String(code).startsWith('%md')) {
+        $scope.editor.getSession().setMode(editorMode.markdown);
+      }
+      
       $scope.editor.commands.addCommand({
         name: 'run',
         bindKey: {win: 'Shift-Enter', mac: 'Shift-Enter'},

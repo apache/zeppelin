@@ -37,6 +37,8 @@
   direction: ltr;
 }
 
+.ace_hidden-cursors {opacity:0} 
+
 .paragraph .status {
   font-size: 10px;
   color: #AAAAAA;
