@@ -43,28 +43,31 @@ limitations under the License.
            ng-model="paragraph.text"
            ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">
       </div>
-      <form id="{{paragraph.id}}_form" role="form" class="form-horizontal" style="margin-top: 15px;">
-        <div class="form-group"
-             ng-repeat="formulaire in paragraph.settings.forms"
-             ng-Init="loardForm(formulaire, paragraph.settings.params)">
-          <label class="col-sm-1 control-label">{{formulaire.name}}</label>
-          <div class="col-sm-3">
-            <input class="form-control" 
-                   ng-enter="sendParagraph(getEditorValue())"
-                   ng-model="paragraph.settings.params[formulaire.name]"
-                   name="{{formulaire.name}}">
-            </input>
-          </div>
-        </div>
-      </form>
     </div>
+
+    <form id="{{paragraph.id}}_form" role="form" class="form-horizontal" style="margin-top: 15px;">
+      <div class="form-group"
+           ng-repeat="formulaire in paragraph.settings.forms"
+           ng-Init="loardForm(formulaire, paragraph.settings.params)">
+        <label class="col-sm-1 control-label">{{formulaire.name}}</label>
+        <div class="col-sm-3">
+          <input class="form-control" 
+                 ng-enter="sendParagraph(getEditorValue())"
+                 ng-model="paragraph.settings.params[formulaire.name]"
+                 name="{{formulaire.name}}">
+          </input>
+        </div>
+      </div>
+    </form>
+
     <!-- Rendering -->
     <div class='tableDisplay'>
-      <pre id="{{paragraph.id}}_msg"
+      <div id="{{paragraph.id}}_msg"
+           class="text"
            ng-show="paragraph.result.type == 'TEXT'" 
            ng-Init="loadResultType(paragraph.result)"
            ng-bind-html="paragraph.result.msg">
-      </pre>
+      </div>
 
       <div id="{{paragraph.id}}_msg"
            ng-show="paragraph.result.type == 'HTML'" 

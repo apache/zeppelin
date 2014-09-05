@@ -24,6 +24,18 @@
   background: rgba(255, 255, 255, 0.9);
 }
 
+.paragraph .text {
+  white-space: pre;
+  display: block;
+  unicode-bidi: embed
+  display: block!important;
+  margin: 0 0 10px!important;
+  font-size: 13px!important;
+  line-height: 1.42857143!important;
+  word-break: break-all!important;
+  word-wrap: break-word!important;
+}
+
 .ace-tm {
   background-color: #FFFFFF;
   color: black;
@@ -83,16 +95,3 @@
   display: inline-block;
 }
 
-.paragraph pre {
- display: block!important;
-/* padding: 9.5px; */
- margin: 0 0 10px!important;
- font-size: 13px!important;
- line-height: 1.42857143!important;
- color: #333; 
- word-break: break-all!important;
- word-wrap: break-word!important;
- background-color: rgba(255, 255, 255, 0.9); 
- border: 1px solid rgba(255, 255, 255, 0.9);
-/* border-radius: 4px; */
-}
