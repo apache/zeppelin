@@ -60,9 +60,11 @@ angular.module('zeppelinWeb2App')
   // Controller init
   $scope.init = function(newParagraph) {
     $scope.paragraph = newParagraph;
-    if ($scope.paragraph.settings.params._table && $scope.paragraph.result) {
+    if ($scope.paragraph.result) {
       $scope.loadResultType($scope.paragraph.result);
-      $scope.setMode($scope.paragraph.settings.params._table.mode, false);
+      if($scope.paragraph.settings.params._table) {
+        $scope.setMode($scope.paragraph.settings.params._table.mode, false);
+      }
     }
   };
 
@@ -71,7 +73,9 @@ angular.module('zeppelinWeb2App')
       //debugger;
       $scope.paragraph = data.paragraph;
       $scope.loadResultType($scope.paragraph.result);
-      $scope.setMode($scope.paragraph.settings.params._table.mode, false);
+      if($scope.paragraph.settings.params._table) {
+        $scope.setMode($scope.paragraph.settings.params._table.mode, false);
+      }
     }
   });
   
@@ -214,7 +218,6 @@ angular.module('zeppelinWeb2App')
       result.msgTable = array;
       result.columnNames = columnNames;
       result.rows = rows;
-      result.mode = 'TABLE';
     }
   };
 

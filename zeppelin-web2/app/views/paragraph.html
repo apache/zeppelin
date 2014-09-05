@@ -60,14 +60,20 @@ limitations under the License.
     </div>
     <!-- Rendering -->
     <div class='tableDisplay'>
+      <pre id="{{paragraph.id}}_msg"
+           ng-show="paragraph.result.type == 'TEXT'" 
+           ng-Init="loadResultType(paragraph.result)"
+           ng-bind-html="paragraph.result.msg">
+      </pre>
+
       <div id="{{paragraph.id}}_msg"
-           ng-hide="paragraph.result.type == 'TABLE'" 
+           ng-show="paragraph.result.type == 'HTML'" 
            ng-Init="loadResultType(paragraph.result)"
            ng-bind-html="paragraph.result.msg">
       </div>
 
       <div id="{{paragraph.id}}_switch"
-           ng-show="paragraph.result.mode"
+           ng-show="paragraph.result.type == 'TABLE'"
            class="btn-group"
            style='margin-bottom: 10px;'>
         <button type="button" class="btn btn-default"
@@ -105,7 +111,7 @@ limitations under the License.
           </tr>
         </tbody>
       </table>
-      <!-- ng-show="paragraph.result.mode == 'LINE'" -->
+      <!-- ng-show="paragraph.result.type == 'LINE'" -->
       <nvd3 ng-show="paragraph.settings.params['_table'].mode != 'table'" 
             options='d3.options' 
             config='d3.config' 
