@@ -49,11 +49,12 @@ limitations under the License.
       <div class="form-group"
            ng-repeat="formulaire in paragraph.settings.forms"
            ng-Init="loardForm(formulaire, paragraph.settings.params)">
-        <label class="col-sm-1 control-label">{{formulaire.name}}</label>
+        <label class="col-sm-1 control-label" ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">{{formulaire.name}}</label>
         <div class="col-sm-3">
           <input class="form-control" 
                  ng-enter="sendParagraph(getEditorValue())"
                  ng-model="paragraph.settings.params[formulaire.name]"
+                 ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
                  name="{{formulaire.name}}">
           </input>
         </div>

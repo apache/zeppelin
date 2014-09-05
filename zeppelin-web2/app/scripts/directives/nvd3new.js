@@ -55,12 +55,14 @@ angular.module('zeppelinWeb2App')
           scope.api.clearElement();
 
           // Exit if options are not yet bound
-          if (angular.isDefined(options) === false)
+          if (angular.isDefined(options) === false) {
             return;
+          }
 
           // Exit if chart is hidden
-          if (!scope._config.visible)
+          if (!scope._config.visible) {
             return;
+          }
 
           // Initialize chart with specific type
           if (options.chart.type !== '') {
@@ -72,8 +74,9 @@ angular.module('zeppelinWeb2App')
 
               else if (key === 'dispatch') {
                 if (options.chart[key] === undefined || options.chart[key] === null) {
-                  if (scope._config.extended)
+                  if (scope._config.extended) {
                     options.chart[key] = {};
+                  }
                 }
                 configureEvents(scope.chart[key], options.chart[key]);
               }
@@ -109,54 +112,46 @@ angular.module('zeppelinWeb2App')
                 'controls'
               ].indexOf(key) >= 0) {
                 if (options.chart[key] === undefined || options.chart[key] === null) {
-                  if (scope._config.extended)
+                  if (scope._config.extended) {
                     options.chart[key] = {};
+                  }
                 }
                 configure(scope.chart[key], options.chart[key], options.chart.type);
               }
 
               else if (//TODO: need to fix bug in nvd3
-                      (key === 'clipEdge' && options.chart.type === 'multiBarHorizontalChart')
-                      || (key === 'clipVoronoi' && options.chart.type === 'historicalBarChart')
-                      || (key === 'color' && options.chart.type === 'indentedTreeChart')
-                      || (key === 'defined' && (options.chart.type === 'historicalBarChart' || options.chart.type === 'cumulativeLineChart' || options.chart.type === 'lineWithFisheyeChart'))
-                      || (key === 'forceX' && (options.chart.type === 'multiBarChart' || options.chart.type === 'discreteBarChart' || options.chart.type === 'multiBarHorizontalChart'))
-                      || (key === 'interpolate' && options.chart.type === 'historicalBarChart')
-                      || (key === 'isArea' && options.chart.type === 'historicalBarChart')
-                      || (key === 'size' && options.chart.type === 'historicalBarChart')
-                      || (key === 'stacked' && options.chart.type === 'stackedAreaChart')
-                      || (key === 'values' && options.chart.type === 'pieChart')
-                      || (key === 'xScale' && options.chart.type === 'scatterChart')
-                      || (key === 'yScale' && options.chart.type === 'scatterChart')
-                      || (key === 'x' && (options.chart.type === 'lineWithFocusChart' || options.chart.type === 'multiChart'))
-                      || (key === 'y' && options.chart.type === 'lineWithFocusChart' || options.chart.type === 'multiChart')
-                      )
+                      (key === 'clipEdge' && options.chart.type === 'multiBarHorizontalChart') || (key === 'clipVoronoi' && options.chart.type === 'historicalBarChart') || (key === 'color' && options.chart.type === 'indentedTreeChart') || (key === 'defined' && (options.chart.type === 'historicalBarChart' || options.chart.type === 'cumulativeLineChart' || options.chart.type === 'lineWithFisheyeChart')) || (key === 'forceX' && (options.chart.type === 'multiBarChart' || options.chart.type === 'discreteBarChart' || options.chart.type === 'multiBarHorizontalChart')) || (key === 'interpolate' && options.chart.type === 'historicalBarChart') || (key === 'isArea' && options.chart.type === 'historicalBarChart') || (key === 'size' && options.chart.type === 'historicalBarChart') || (key === 'stacked' && options.chart.type === 'stackedAreaChart') || (key === 'values' && options.chart.type === 'pieChart') || (key === 'xScale' && options.chart.type === 'scatterChart') || (key === 'yScale' && options.chart.type === 'scatterChart') || (key === 'x' && (options.chart.type === 'lineWithFocusChart' || options.chart.type === 'multiChart')) || (key === 'y' && options.chart.type === 'lineWithFocusChart' || options.chart.type === 'multiChart'))
                 ;
 
               else if (options.chart[key] === undefined || options.chart[key] === null) {
-                if (scope._config.extended)
+                if (scope._config.extended) {
                   options.chart[key] = value();
+                }
               }
-
-              else
+              else {
                 scope.chart[key](options.chart[key]);
+              }
             });
 
             // Update with data
             scope.api.updateWithData(scope.data);
 
             // Configure wrappers
-            if (options['title'] || scope._config.extended)
+            if (options['title'] || scope._config.extended) {
               configureWrapper('title');
-            if (options['subtitle'] || scope._config.extended)
+            }
+            if (options['subtitle'] || scope._config.extended) {
               configureWrapper('subtitle');
-            if (options['caption'] || scope._config.extended)
+            }
+            if (options['caption'] || scope._config.extended) {
               configureWrapper('caption');
+            }
 
 
             // Configure styles
-            if (options['styles'] || scope._config.extended)
+            if (options['styles'] || scope._config.extended) {
               configureStyles();
+            }
 
             nv.addGraph(function() {
               // Update the chart when window resizes
@@ -210,15 +205,14 @@ angular.module('zeppelinWeb2App')
           angular.forEach(chart, function(value, key) {
             if (key === 'dispatch') {
               if (options[key] === undefined || options[key] === null) {
-                if (scope._config.extended)
+                if (scope._config.extended) {
                   options[key] = {};
+                }
               }
               configureEvents(value, options[key]);
             }
             else if (//TODO: need to fix bug in nvd3
-                    (key === 'xScale' && chartType === 'scatterChart')
-                    || (key === 'yScale' && chartType === 'scatterChart')
-                    || (key === 'values' && chartType === 'pieChart'))
+                    (key === 'xScale' && chartType === 'scatterChart') || (key === 'yScale' && chartType === 'scatterChart') || (key === 'values' && chartType === 'pieChart'))
               ;
             else if ([
               'scatter',
@@ -229,11 +223,13 @@ angular.module('zeppelinWeb2App')
               'rangeBands'
             ].indexOf(key) < 0) {
               if (options[key] === undefined || options[key] === null) {
-                if (scope._config.extended)
+                if (scope._config.extended) {
                   options[key] = value();
+                }
               }
-              else
+              else {
                 chart[key](options[key]);
+              }
             }
           });
         }
@@ -245,8 +241,9 @@ angular.module('zeppelinWeb2App')
         if (dispatch && options) {
           angular.forEach(dispatch, function(value, key) {
             if (options[key] === undefined || options[key] === null) {
-              if (scope._config.extended)
+              if (scope._config.extended) {
                 options[key] = value.on;
+              }
             }
             else
               dispatch.on(key + '._', options[key]);
@@ -259,24 +256,29 @@ angular.module('zeppelinWeb2App')
       function configureWrapper(name) {
         var _ = extendDeep(defaultWrapper(name), scope.options[name] || {});
 
-        if (scope._config.extended)
+        if (scope._config.extended) {
           scope.options[name] = _;
+        }
 
         var wrapElement = angular.element('<div></div>').html(_['html'] || '')
                 .addClass(name).addClass(_.class)
                 .removeAttr('style')
                 .css(_.css);
 
-        if (!_['html'])
+        if (!_['html']) {
           wrapElement.text(_.text);
+        }
 
         if (_.enable) {
-          if (name === 'title')
+          if (name === 'title') {
             element.prepend(wrapElement);
-          else if (name === 'subtitle')
+          }
+          else if (name === 'subtitle') {
             element.find('.title').after(wrapElement);
-          else if (name === 'caption')
+          }
+          else if (name === 'caption') {
             element.append(wrapElement);
+          }
         }
       }
 
@@ -284,8 +286,9 @@ angular.module('zeppelinWeb2App')
       function configureStyles() {
         var _ = extendDeep(defaultStyles(), scope.options['styles'] || {});
 
-        if (scope._config.extended)
+        if (scope._config.extended) {
           scope.options['styles'] = _;
+        }
 
         angular.forEach(_.classes, function(value, key) {
           value ? element.addClass(key) : element.removeClass(key);
@@ -358,8 +361,9 @@ angular.module('zeppelinWeb2App')
 
       // Watching on options, data, config changing
       scope.$watch('options', function(options) {
-        if (!scope._config.disabled && scope._config.autorefresh)
+        if (!scope._config.disabled && scope._config.autorefresh) {
           scope.api.refresh();
+        }
       }, true);
       scope.$watch('data', function(data) {
         if (!scope._config.disabled && scope._config.autorefresh) {
