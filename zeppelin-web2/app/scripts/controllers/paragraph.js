@@ -80,7 +80,6 @@ angular.module('zeppelinWeb2App')
     //TODO: check if contnet changed
     console.log('send new paragraph: %o with %o', $scope.paragraph.id, data);
     var parapgraphData = {op: 'RUN_PARAGRAPH', data: {id: $scope.paragraph.id, paragraph: data, params: $scope.paragraph.settings.params}};
-    
     $rootScope.$emit('sendNewEvent', parapgraphData);
   };
   
