@@ -17,14 +17,10 @@ Zeppelin uses Git for it's SCM system. Hosted by github.com. https://github.com/
 
 You are free to use whatever IDE you prefer, or your favorite command line editor. 
 
-#### Apache hadoop
-
-Zeppelin is depends on Apache Hadoop. Downlaod a release from http://hadoop.apache.org/releases.html, and unarchive somewhere you can access. 
-
 #### Build Tools
 
 To build the code, install
-Oracle Java 6
+Oracle Java 7
 Apache Maven
 
 ### Getting the source code
@@ -56,12 +52,31 @@ If you want not only build Zeppelin but also make change, then you need fork Zep
 mvn install
 ```
 
+To skip test
+
+```
+mvn install -DskipTests
+```
+
+To build with specific spark / hadoop version
+
+```
+mvn install -Dspark.version=1.0.1 -Dhadoop.version=2.2.0
+```
+
 ### Run Zepplin server in development mode
 
 ```
 cd zeppelin-server
 HADOOP_HOME=YOUR_HADOOP_HOME JAVA_HOME=YOUR_JAVA_HOME mvn exec:java -Dexec.mainClass="com.nflabs.zeppelin.server.ZeppelinServer" -Dexec.args=""
 ```
+
+or use daemon script
+
+```
+bin/zeppelin-daemon start
+```
+
 
 Server will be run on http://localhost:8080
 

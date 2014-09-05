@@ -7,30 +7,26 @@ description: ""
 
 <div class="row">
      <div class="col-md-3">
-          <a href="assets/themes/zeppelin/img/screenshots/zql1.png"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/zql1.png" /></a>
-          <center>Hive query and visualization</center>
+          <a href="assets/themes/zeppelin/img/screenshots/sparksql.png"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/sparksql.png" /></a>
+          <center>SparkSQL with inline visualization</center>
      </div>
      <div class="col-md-3">
-          <a href="assets/themes/zeppelin/img/screenshots/bubble.png"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/bubble.png" /></a>
-          <center>Pluggable architecture extends visualization</center>
+          <a href="assets/themes/zeppelin/img/screenshots/spark.png"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/spark.png" /></a>
+          <center>Scala code runs with Spark</center>
      </div>
      <div class="col-md-3">
-          <a href="assets/themes/zeppelin/img/tutorial1/share.png"><img class="thumbnail" src="assets/themes/zeppelin/img/tutorial1/share.png" /></a>
-          <center>Report sharing</center>
+          <a href="assets/themes/zeppelin/img/screenshots/markdown.png"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/markdown.png" /></a>
+          <center>Markdown supported</center>
      </div>
 </div>
 <br />
 <div class="row">
      <div class="col-md-3">
-          <a href="assets/themes/zeppelin/img/screenshots/schedule.png"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/schedule.png" /></a>
-          <center>Job scheduling</center>
+          <a href="assets/themes/zeppelin/img/screenshots/notebook.png"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/notebook.png" /></a>
+          <center>Notebook</center>
      </div>
      <div class="col-md-3">
-          <a href="assets/themes/zeppelin/img/screenshots/history.png"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/history.png" /></a>
-          <center>History management</center>
      </div>
      <div class="col-md-3">
-          <a href="assets/themes/zeppelin/img/screenshots/zan.png"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/zan.png" /></a>
-          <center>Zeppelin Archive Network</center>
      </div>
 </div>

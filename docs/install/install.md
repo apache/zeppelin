@@ -6,51 +6,34 @@ group: install
 ---
 {% include JB/setup %}
 
-#### Instructions for the Impatient
 
-Install Zeppelin in local mode
 
-```
-# this scripts install hadoop and zeppelin in current directory and start zeppelin in local mode
-# download and unarchive hadoop distribution package
-curl -O http://apache.mirror.cdnetworks.com/hadoop/common/hadoop-1.2.1/hadoop-1.2.1-bin.tar.gz
-tar -xzf hadoop-1.2.1-bin.tar.gz
+## Build
 
-# download zeppelin and unarchive
-curl -O https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.3.3.tar.gz
-tar -xzf zeppelin-0.3.3.tar.gz
+Checkout source code from [https://github.com/NFLabs/zeppelin](https://github.com/NFLabs/zeppelin)
 
-# set HADOOP_HOME
-echo "export HADOOP_HOME=`pwd`/hadoop-1.2.1" >> zeppelin-0.3.3/conf/zeppelin-env.sh
+build source code using maven
 
-# start zeppelin
-./zeppelin-0.3.3/bin/zeppelin-daemon.sh start
+#### Local mode
 
 ```
+mvn install -DskipTests
+```
 
-You can access Zeppelin with browser http://localhost:8080
+#### Cluster mode
 
-------------------------
+```
+mvn install -DskipTests -Dspark.version=1.0.1 -Dhadoop.version=2.2.0
+```
 
-
-## Install
-
-Configuring Zeppelin with existing hadoop cluster, refer this section.
-
-### Prerequisites
-
-* Java 1.6 or Later
-* [Apache Hadoop](http://hadoop.apache.org/releases.html#Download) (Standalone mode)
-
-### Download
-To get Zeppelin distribution, download a recent release.
-
-### Install
-Unpack the downloaded Zeppelin distribution.
+Note that, change spark.version and hadoop.version to your cluster's one.
 
 
 ## Configure
-Configuration can be done by both environment variable and java properties. If both defined, environment vaiable is used.
+
+Configuration can be done by both environment variable(conf/zeppelin-env.sh) and java properties(conf/zeppelin-site.xml). If both defined, environment vaiable is used.
+
+
 <table class="table-configuration">
   <tr>
     <th>zepplin-env.sh</th>
@@ -59,82 +42,37 @@ Configuration can be done by both environment variable and java properties. If b
     <th>Description</th>
   </tr>
   <tr>
-    <td>ZEPPELIN\_HOME</td>
-    <td></td>
-    <td></td>
-    <td>Zeppelin Home directory</td>
-  </tr>
-  <tr>
     <td>ZEPPELIN\_PORT</td>
     <td>zeppelin.server.port</td>
     <td>8080</td>
     <td>Zeppelin server port</td>
   </tr>
   <tr>
-    <td>ZEPPELIN\_JOB\_DIR</td>
-    <td>zeppelin.job.dir</td>
-    <td>jobs</td>
-    <td>Zeppelin persist/load session in this directory. Can be a path or a URI. location on HDFS supported</td>
+    <td>ZEPPELIN\_NOTEBOOK\_DIR</td>
+    <td>zeppelin.notebook.dir</td>
+    <td>notebook</td>
+    <td>Where notebook file is saved</td>
   </tr>
   <tr>
-    <td>ZEPPELIN\_ZAN\_REPO</td>
-    <td>zeppelin.zan.repo</td>
-    <td>https://github.com/NFLabs/zan.git</td>
-    <td>Remote ZAN repository URL</td>
+    <td>ZEPPELIN\_INTERPRETERS</td>
+    <td>zeppelin.interpreters</td>
+  <description></description>
+    <td>spark:com.nflabs.zeppelin.spark.SparkInterpreter,<br />sql:com.nflabs.zeppelin.spark.SparkSqlInterpreter,<br />md:com.nflabs.zeppelin.markdown.Markdown,<br />sh:com.nflabs.zeppelin.shell.ShellInterpreter</td>
+    <td>Comma separated interpreter configurations [Name]:[Class]. First interpreter become a default</td>
   </tr>
   <tr>
-    <td>ZEPPELIN\_ZAN\_LOCAL\_REPO</td>
-    <td>zeppelin.zan.localrepo</td>
-    <td>zan-repo</td>
-    <td>Zeppelin library local repository. Local filesystem path</td>
+    <td>ZEPPELIN\_INTERPRETER\_DIR</td>
+    <td>zeppelin.interpreter.dir</td>
+    <td>interpreter</td>
+    <td>Zeppelin interpreter directory</td>
   </tr>
   <tr>
-    <td>ZEPPELIN\_ZAN\_SHARED\_REPO</td>
-    <td>zeppelin.zan.sharedrepo</td>
+    <td>MASTER</td>
     <td></td>
-    <td>Zeppelin library shared repository. Location on HDFS. Usufull when your backend (eg. hiveserver) is not running on the sam machine and want to use zeppelin library with resource file(eg. in hive 'ADD FILE 'path'). So your backend can get resource file from shared repository.</td>
-  </tr>
-  <tr>
-    <td>ZEPPELIN\_DRIVERS</td>
-    <td>zeppelin.drivers</td>
-    <td>hive:hive2://,exec:exec://</td>
-    <td>Comma separated list of [Name]:[Connection URI]</td>
-  </tr>
-  <tr>
-    <td>ZEPPELIN\_DRIVER\_DIR</td>
-    <td>zeppelin.driver.dir</td>
-    <td>drivers</td>
-    <td>Zeppelin driver directory.
-    </td>
+    <td>N/A</td>
+    <td>Spark master url. eg. spark://master_addr:7077. Leave empty if you want to use local mode</td>
   </tr>
 </table>
-
-
-### Configuring with existing Hive
-
-If you have hive already installed in your hadoop cluster, just run hive server and make Zeppelin to connect it.
-There're two different version of hive servers, [Hive Server1](https://cwiki.apache.org/confluence/display/Hive/HiveServer), [Hive Server2](https://cwiki.apache.org/confluence/display/Hive/Setting+Up+HiveServer2#SettingUpHiveServer2-HiveServer2). Make sure you have Hive server running.
-
-And then, add connection uri in zeppelin.drivers at zeppelin-site.xml
-If you have Hive Server 1 installed and running on host hiveserver1Address on port 10000, configuration property can be
-
-```
-<property>
-  <name>zeppelin.drivers</name>
-  <value>hive:hive://hiveserver1Address:10000/default,exec:exec://</value>
-  <description>Comma separated driver configurations uri. </description>
-</property>
-```
-
-If Hive Server 2 installed and running on host hiveserver2Address on port 10000, configuration will be
-
-```
-<property>
-  <name>zeppelin.drivers</name>
-  <value>hive:hive2://hiveserver2Address:10000/default,exec:exec://</value>
-  <description>Comma separated driver configurations uri. </description>
-</property>
-```
 
 
 
