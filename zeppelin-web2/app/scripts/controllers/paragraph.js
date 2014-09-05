@@ -35,26 +35,24 @@ angular.module('zeppelinWeb2App')
   $scope.d3 = {};
   $scope.d3.options = {
       chart: {
-        type: 'multiBarChart',
-        height: 450,
+        type: '',
         margin: {
           top: 20,
           right: 20,
           bottom: 60,
           left: 45
         },
-        clipEdge: true,
-        staggerLabels: true,
-        transitionDuration: 500
+        useInteractiveGuideline: true,
+        transitionDuration:500
       }
     };
-  $scope.d3.data = [];
+  $scope.d3.data = null;
   $scope.d3.config = {
-    visible: false, // default: true
+    visible: true, // default: true
     extended: false, // default: false
     disabled: false, // default: false
-    autorefresh: true, // default: true
-    refreshDataOnly: false // default: false
+    autorefresh: false, // default: true
+    refreshDataOnly: true // default: false
   };
 
   // Controller init
@@ -63,21 +61,45 @@ angular.module('zeppelinWeb2App')
     if ($scope.paragraph.result) {
       $scope.loadResultType($scope.paragraph.result);
       if($scope.paragraph.settings.params._table) {
-        $scope.setMode($scope.paragraph.settings.params._table.mode, false);
+        $scope.setMode($scope.paragraph.settings.params._table.mode, false, false);
       }
     }
   };
 
   $rootScope.$on('updateParagraph', function(event, data) {
     if (data.paragraph.id === $scope.paragraph.id) {
-      //debugger;
-      $scope.paragraph = data.paragraph;
+ 
+      if ($scope.paragraph.text !== data.paragraph.text) {
+        //$scope.paragraph = data.paragraph;
+        $scope.paragraph.text = data.paragraph.text;
+      }
+      /** push the rest */
+      $scope.paragraph.aborted = data.paragraph.aborted;
+      $scope.paragraph.dateCreated = data.paragraph.dateCreated;
+      $scope.paragraph.dateFinished = data.paragraph.dateFinished;
+      $scope.paragraph.dateStarted = data.paragraph.dateStarted;
+      $scope.paragraph.errorMessage = data.paragraph.errorMessage;
+      $scope.paragraph.isEditorOpen = data.paragraph.isEditorOpen;
+      $scope.paragraph.isOpen = data.paragraph.isOpen;
+      $scope.paragraph.jobName = data.paragraph.jobName;
+      $scope.paragraph.status = data.paragraph.status;
+      
+      $scope.paragraph.result = data.paragraph.result;
+      $scope.paragraph.settings = data.paragraph.settings;
+      
       $scope.loadResultType($scope.paragraph.result);
-      if($scope.paragraph.settings.params._table) {
-        $scope.setMode($scope.paragraph.settings.params._table.mode, false);
+      if ($scope.paragraph.settings.params._table) {
+        /** User changed the chart type? */
+        if ($scope.d3.options.chart.type !== $scope.paragraph.settings.params._table.mode) {
+          $scope.setMode($scope.paragraph.settings.params._table.mode, false, false);
+        } else {
+          $scope.setMode($scope.paragraph.settings.params._table.mode, false, true);
+        }
       }
     }
   });
+  
+
   
   
   $scope.sendParagraph = function(data) {
@@ -222,31 +244,24 @@ angular.module('zeppelinWeb2App')
   };
 
 // todo: Change the name
-  $scope.setMode = function(type, emit) {
+  $scope.setMode = function(type, emit, refresh) {
     if (emit) {
       setNewMode(type);
     } else {
       if (!type || type === 'table') {
       }
       else if (type === 'multiBarChart') {
-        setMultiBarChart($scope.paragraph.result);
+        setMultiBarChart($scope.paragraph.result, refresh);
       }
       else if (type === 'pieChart') {
       }
       else if (type === 'stackedAreaChart') {
-        setStackedAreaChart($scope.paragraph.result);
+        setStackedAreaChart($scope.paragraph.result, refresh);
       }
       else if (type === 'lineChart') {
-        setLineChart($scope.paragraph.result);
+        setLineChart($scope.paragraph.result, refresh);
       }
     }
-  };
-
-  var setD3Configuration = function() {
-    $scope.d3.config.visible = true;
-    $scope.d3.config.autorefresh = true;
-    $scope.d3.config.disabled = false;
-    $scope.d3.refreshDataOnly = true;
   };
 
   var setNewMode = function(newMode) {
@@ -261,24 +276,7 @@ angular.module('zeppelinWeb2App')
     $rootScope.$emit('sendNewEvent', parapgraphData);
   };
 
-  var setMultiBarChart = function(data) {
-    setD3Configuration();
-    $scope.d3.options = {
-      chart: {
-        type: 'multiBarChart',
-        height: $scope.paragraph.settings.params._table.height,
-        margin: {
-          top: 20,
-          right: 20,
-          bottom: 60,
-          left: 45
-        },
-        clipEdge: true,
-        staggerLabels: true,
-        transitionDuration: 500
-      }
-    };
-
+  var setMultiBarChart = function(data, refresh) {
     var xColIndex = 0;
     var yColIndexes = [];
     var d3g = [];
@@ -305,28 +303,25 @@ angular.module('zeppelinWeb2App')
       }
     }
 
-    var newData = d3g;
-    $scope.d3.data = newData;
+    //var newData = d3g;
+    console.log('DATA refresh? %o %o == %o', refresh, $scope.d3.data, d3g);
+    if ($scope.d3.data === null || !refresh) {
+      $scope.d3.data = d3g;
+
+      $scope.d3.options.chart.type = 'multiBarChart';
+      $scope.d3.options.chart.height = $scope.paragraph.settings.params._table.height;
+      $scope.d3.config.autorefresh = true;
+      //if ($scope.d3.api) {
+        //$scope.d3.api.updateWithOptions($scope.d3.options);
+      //}
+    } else {
+      if ($scope.d3.api) {
+        $scope.d3.api.updateWithData(d3g);
+      }
+    }
   };
 
-  var setLineChart = function(data) {
-    setD3Configuration();
-    $scope.d3.options = {
-      chart: {
-        type: 'lineChart',
-        height: $scope.paragraph.settings.params._table.height,
-        margin: {
-          top: 20,
-          right: 20,
-          bottom: 60,
-          left: 45
-        },
-        clipEdge: true,
-        staggerLabels: true,
-        transitionDuration: 500
-      }
-    };
-
+  var setLineChart = function(data, refresh) {
     var xColIndex = 0;
     var yColIndexes = [];
     var d3g = [];
@@ -352,28 +347,22 @@ angular.module('zeppelinWeb2App')
         });
       }
     }
-    var newData = d3g;
-    $scope.d3.data = newData;
+    if ($scope.d3.data === null || !refresh) {
+      $scope.d3.data = d3g;
+      $scope.d3.options.chart.type = 'lineChart';
+      $scope.d3.options.chart.height = $scope.paragraph.settings.params._table.height;
+      $scope.d3.config.autorefresh = true;
+      //if ($scope.d3.api) {
+        //$scope.d3.api.updateWithOptions($scope.d3.options);
+      //}
+    } else {
+      if ($scope.d3.api) {
+        $scope.d3.api.updateWithData(d3g);
+      }
+    }
   };
 
-  var setStackedAreaChart = function(data) {
-    setD3Configuration();
-    $scope.d3.options = {
-      chart: {
-        type: 'stackedAreaChart',
-        height: $scope.paragraph.settings.params._table.height,
-        margin: {
-          top: 20,
-          right: 20,
-          bottom: 60,
-          left: 45
-        },
-        clipEdge: true,
-        staggerLabels: true,
-        transitionDuration: 500
-      }
-    };
-
+  var setStackedAreaChart = function(data, refresh) {
     var xColIndex = 0;
     var yColIndexes = [];
     var d3g = [];
@@ -399,10 +388,21 @@ angular.module('zeppelinWeb2App')
         });
       }
     }
+    
+    if ($scope.d3.data === null || !refresh) {
+      $scope.d3.data = d3g;
 
-    var newData = d3g;
-    $scope.d3.data = newData;
-
+      $scope.d3.options.chart.type = 'stackedAreaChart';
+      $scope.d3.options.chart.height = $scope.paragraph.settings.params._table.height;
+      $scope.d3.config.autorefresh = true;
+      //if ($scope.d3.api) {
+        //$scope.d3.api.updateWithOptions($scope.d3.options);
+      //}
+    } else {
+      if ($scope.d3.api) {
+        $scope.d3.api.updateWithData(d3g);
+      }
+    }
   };
 
   $scope.isTable = function() {

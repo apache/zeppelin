@@ -25,14 +25,12 @@
  */
 angular.module('zeppelinWeb2App').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope) {
 
-  $scope.noteId = null;
-  $scope.note = {};
+  $scope.note = null;
   $scope.showEditor = false;
   
   /** Init the new controller */
   var initNotebook = function() {
-    $scope.noteId = $routeParams.noteId;
-    $rootScope.$emit('sendNewEvent', {op: 'GET_NOTE', data: {id: $scope.noteId}});
+    $rootScope.$emit('sendNewEvent', {op: 'GET_NOTE', data: {id: $routeParams.noteId}});
   };
   
   initNotebook();
@@ -40,7 +38,7 @@ angular.module('zeppelinWeb2App').controller('NotebookCtrl', function($scope, $r
   /** Remove the note and go back tot he main page */
   /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
   $scope.removeNote = function(noteId) {
-    $rootScope.$emit('sendNewEvent', {op: 'DEL_NOTE', data: {id: noteId}});
+    $rootScope.$emit('sendNewEvent', {op: 'DEL_NOTE', data: {id: $scope.note.id}});
     $location.path('/#');
   };
   
@@ -48,16 +46,54 @@ angular.module('zeppelinWeb2App').controller('NotebookCtrl', function($scope, $r
   $scope.sendNewName = function() {
     $scope.showEditor = false;
     if ($scope.noteName) {
-      $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.noteId, name: $scope.noteName}});
+      $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.note.id, name: $scope.noteName}});
     }
   };
   
   /** update the current note */
   $rootScope.$on('setNoteContent', function(event, note) {
+    if ($scope.note === null) {
       $scope.note = note;
-      if ($scope.note !== note.id) {
-        $scope.noteId = note.id;
-        $routeParams.noteId = note.id;
-      }
+    } else {
+      updateNote(note);
+    }
   });
+  
+  var updateNote = function(note) {
+    /** update Note name */
+    if (note.name !== $scope.note.name) {
+      console.log('change note name: %o to %o', $scope.note.name, note.name);
+      $scope.note.name = note.name;
+    }
+    /** add new paragraphs */
+    note.paragraphs.forEach(function(newEntry) {
+     var found = false;
+      $scope.note.paragraphs.forEach(function(currentEntry) {
+        if (currentEntry.id === newEntry.id) {
+          found = true;
+          $rootScope.$emit('updateParagraph', {paragraph: newEntry});
+        }
+      });
+      /** not found means addnewpara */
+      if(!found) {
+        $scope.note.paragraphs.push(newEntry);
+      }
+    });
+    
+    /** remove paragraphs */
+    for (var entry in $scope.note.paragraphs) {
+     var found = false;
+      note.paragraphs.forEach(function(currentEntry) {
+        if (currentEntry.id === $scope.note.paragraphs[entry].id) {
+          found = true;
+        }
+      });
+      /** not found means bye */
+      if(!found) {
+        $scope.note.paragraphs.splice(entry, 1)
+      }
+    };
+    
+  };
+  
 });

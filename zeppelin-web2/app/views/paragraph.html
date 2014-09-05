@@ -111,12 +111,15 @@ limitations under the License.
           </tr>
         </tbody>
       </table>
+
       <!-- ng-show="paragraph.result.type == 'LINE'" -->
-      <nvd3 ng-show="paragraph.settings.params['_table'].mode != 'table'" 
+      <nvd3new ng-show="paragraph.settings.params['_table'].mode != 'table'" 
             options='d3.options' 
             config='d3.config' 
-            data='d3.data'>
-      </nvd3>
+            data='d3.data'
+            api='d3.api'>
+      </nvd3new>
+
     </div>
     <div id="{{paragraph.id}}_status" class="status">Shift+Enter to Run. {{paragraph.status}}</div>
   </div> 
