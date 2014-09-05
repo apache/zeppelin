@@ -183,7 +183,7 @@ angular.module('zeppelinWeb2App')
     if (!result) {
       return;
     }
-    if (result.type === 'TABLE' && String($scope.paragraph.text).startsWith('%sql')) {
+    if (result.type === 'TABLE') {
       var columnNames = [];
       var rows = [];
       var array = [];
