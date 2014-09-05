@@ -10,6 +10,9 @@ tagline: Less Development, More analysis!
 Zeppelin is web-based notebook that enables interactive data analytics.
 You can make beautiful data-driven, interactive, collaboratable document with SQL, code, markdown, and so on.
 
+Watch [Video](http://youtu.be/_PQbVH_aO5E) and 
+Get [Zeppelin](./docs/install/install.html).
+
 
 #### Interpreter
 
