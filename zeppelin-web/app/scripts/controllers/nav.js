@@ -16,14 +16,14 @@
 
 /**
  * @ngdoc function
- * @name zeppelinWeb2App.controller:NavCtrl
+ * @name zeppelinWebApp.controller:NavCtrl
  * @description
  * # NavCtrl
  * Controller of the top navigation, mainly use for the dropdown menu
  * 
  * @author anthonycorbacho
  */
-angular.module('zeppelinWeb2App').controller('NavCtrl', function($scope, $rootScope, $routeParams) {
+angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams) {
   /** Current list of notes (ids) */
   $scope.notes = [];
 

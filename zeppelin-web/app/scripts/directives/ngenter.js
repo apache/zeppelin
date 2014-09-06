@@ -16,14 +16,14 @@
 
 /**
  * @ngdoc directive
- * @name zeppelinWeb2App.directive:ngEnter
+ * @name zeppelinWebApp.directive:ngEnter
  * @description
  * # ngEnter
  * Bind the <enter> event
  * 
  * @author anthonycorbacho
  */
-angular.module('zeppelinWeb2App').directive('ngEnter', function() {
+angular.module('zeppelinWebApp').directive('ngEnter', function() {
   return function(scope, element, attrs) {
     element.bind('keydown keypress', function(event) {
       if (event.which === 13) {

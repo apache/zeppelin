@@ -16,14 +16,14 @@
 
 /**
  * @ngdoc function
- * @name zeppelinWeb2App.controller:MainCtrl
+ * @name zeppelinWebApp.controller:MainCtrl
  * @description
  * # MainCtrl
- * Controller of the zeppelinWeb2App
+ * Controller of the zeppelinWebApp
  * 
  * @author anthonycorbacho
  */
-angular.module('zeppelinWeb2App')
+angular.module('zeppelinWebApp')
         .controller('MainCtrl', function($scope, WebSocket, $rootScope) {
   
   $scope.WebSocketWaitingList = [];

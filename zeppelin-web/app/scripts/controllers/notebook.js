@@ -16,14 +16,14 @@
 
 /**
  * @ngdoc function
- * @name zeppelinWeb2App.controller:NotebookCtrl
+ * @name zeppelinWebApp.controller:NotebookCtrl
  * @description
  * # NotebookCtrl
  * Controller of notes, manage the note (update)
  * 
  * @author anthonycorbacho
  */
-angular.module('zeppelinWeb2App').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope) {
+angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope) {
 
   $scope.note = null;
   $scope.showEditor = false;

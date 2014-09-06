@@ -27,16 +27,16 @@ function getPort() {
 
 /**
  * @ngdoc overview
- * @name zeppelinWeb2App
+ * @name zeppelinWebApp
  * @description
- * # zeppelinWeb2App
+ * # zeppelinWebApp
  *
  * Main module of the application.
  * 
  * @author anthonycorbacho
  */
 angular
-  .module('zeppelinWeb2App', [
+  .module('zeppelinWebApp', [
     'ngAnimate',
     'ngCookies',
     'ngRoute',

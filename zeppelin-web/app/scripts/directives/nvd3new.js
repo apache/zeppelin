@@ -16,13 +16,13 @@
 
 /**
  * @ngdoc directive
- * @name zeppelinWeb2App.directive:nvd3new
+ * @name zeppelinWebApp.directive:nvd3new
  * @description
  * # nvd3new
  * 
  * @author anthonycorbacho
  */
-angular.module('zeppelinWeb2App')
+angular.module('zeppelinWebApp')
         .directive('nvd3new', function() {
   return {
     restrict: 'AE',
