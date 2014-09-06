@@ -1,31 +1,38 @@
-# Zeppelin web application
+# Zeppelin web application 2
 This is a Zeppelin web frontend project.
 
+## Get started 
+The first thing you need to do is install Yeoman. We’re going to use the Node Package Manager to do this all at once.
+ * `npm install -g yo`
+ * `npm install -g generator-angular`
 
-### Build
-Web frontend uses [Brunch.io](http://brunch.io) to assemble BUT you do not need to have Node installed upfront!
-Thanks to awesome [frontend-maven-plugin](https://github.com/eirslett/frontend-maven-plugin) we have next stepse inside project build.
-    ```
-     #install Node.js to zeppelin-web/node/ and then
-     npm install -g brunch
-     rm -rf node_modules public
-     npm install
-    ```
-    _Note: if you receive a "gyp + xcodebuild" error when running "npm install", confirm you have Xcode CLI tools installed (Xcode > Preferences > Downloads)_
+### Get the application deps
+* `npm install`
 
-### Run
-To run in __isolation__ from actual Zeppelin backend server do:
-
-    brunch watch --server (or use the shorthand: brunch w -s)
-
-To run on actual zeppelin server do:
-
-    brunch watch
-    cd ../zeppelin-server
-    mvn exec:java -Dexec.mainClass="com.nflabs.zeppelin.server.ZeppelinServer"
+## Run the application in dev mode
+``./grunt serve``
 
 
+## Add composents the the web app
+ * New controller : `yo angular:controller <controlerName>`
+ * New directive : `yo angular:directive <directiveName>`
+ * New service : `yo angular:service <serviceName>`
 
-### Deployment
-To build webapplication WAR run:
-    mvn package
+ ### Add plugin
+ 
+ `./bower install <plugin> -save`
+ update the file index.html with the new bower_components 
+ 
+ ex: `./bower install angular-nvd3` 
+ ```
+ <script src="bower_components/angular-nvd3/dist/angular-nvd3.js"></script>
+ ````
+
+## Build the application
+`./grunt build`
+
+## Deployment 
+`mvn package`, will create the war file.
+
+#### More info
+http://www.sitepoint.com/kickstart-your-angularjs-development-with-yeoman-grunt-and-bower/

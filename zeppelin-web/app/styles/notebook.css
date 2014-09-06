@@ -1,71 +1,96 @@
-.notebookList {
-
-}
-
-.paragraph {
-    /*border-top: 1px solid #CCCCCC;*/
-    margin-top:5px;
-    margin-bottom: 5px;
-    padding: 5px 5px 5px 5px;
-}
-
+/* Copyright 2014 NFLabs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 .paragraph .control {
   float: right;
   color: #999;
-  margin-right: 5px;
-  margin-top: -3px;
-}
-
-.paragraph .form {
-    margin-top : 20px;
-}
-
-.paragraph .form p {
-    margin-left: 10px;
-    display:inline;
+  margin-top: -9px;
 }
 
 .paragraph .editor {
-    width : 100%;
-    height: 20px;
-    border-left: 4px solid #EEEEEE;
+  width: 90%;
+  border-left: 4px solid #EEEEEE;
+  background: rgba(255, 255, 255, 0.9);
 }
+
+.paragraph .text {
+  white-space: pre;
+  display: block;
+  unicode-bidi: embed
+  display: block!important;
+  margin: 0 0 10px!important;
+  font-size: 13px!important;
+  line-height: 1.42857143!important;
+  word-break: break-all!important;
+  word-wrap: break-word!important;
+}
+
+.ace-tm {
+  background-color: #FFFFFF;
+  color: black;
+}
+.ace_editor {
+  position: relative;
+  overflow: hidden;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 12px;
+  line-height: normal;
+  direction: ltr;
+}
+
+.ace_hidden-cursors {opacity:0} 
 
 .paragraph .status {
-    font-size : 10px;
-    color : #AAAAAA;
-    background-color: white;
-    width: 100%;
-    text-align : right;
+  font-size: 10px;
+  color: #AAAAAA;
+  background: rgba(255, 255, 255, 0.9);
+  width: 100%;
+  text-align: right;
 }
 
-.paragraph .result {
-    margin-top:5px;
-    overflow : auto;
-    max-height: 400px;
+.disable {
+  opacity:0.4!important;
+  pointer-events: none; 
 }
 
-.paragraph .result error{
-    color: #DC143C;
+.noteAction {
+  margin-bottom: 10px;
 }
 
-.paragraph .result pre{
-    font-size : 12px;
-    border : 0px;
-    background-color: white;
-    line-height: 1.0;
+.form-control2 {
+  width: 100%;
+  height: 34px;
+  padding: 6px 12px;
+  font-size: 24px;
+  line-height: 1.42857143;
+  color: #555;
+  background-color: #fff;
+  background-image: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+  -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 }
 
-
-.paragraph .result table {
-    width: 100%;
-}
-
-.paragraph .result table th {
-    font-weight : bold;
-    background-color : #EFEFEF;
-}
-
-.paragraph .result table td {
-
+.form-control-static2 {
+  padding-top: 7px;
+  font-size: 24px;
+  margin-left: 15px;
+  padding-bottom: 7px;
+  margin-bottom: 0;
+  display: inline-block;
 }

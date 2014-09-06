@@ -76,7 +76,7 @@
     <module>spark</module>
     <module>markdown</module>
     <module>shell</module>
-    <module>zeppelin-web2</module>
+    <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
     <module>zeppelin-docs</module>

@@ -12,7 +12,7 @@
   <artifactId>zeppelin-web</artifactId>
   <packaging>war</packaging>
   <version>0.4.0-SNAPSHOT</version>
-  <name>Zeppelin: Web UI</name>
+  <name>Zeppelin: web Application</name>
 
   <build>
     <finalName>zeppelin-web</finalName>
@@ -27,9 +27,11 @@
             <fileset>
               <directory>src/main/webapp</directory>
               <includes>
-                <include>src/main/webapp/stylesheets</include>
-                <include>src/main/webapp/javascripts</include>
+                <include>src/main/webapp/styles</include>
+                <include>src/main/webapp/scripts</include>
                 <include>src/main/webapp/font</include>
+                <include>src/main/webapp/images</include>
+                <include>src/main/webapp/views</include>
                 <include>src/main/webapp/*.html</include>
               </includes>
               <followSymlinks>false</followSymlinks>
@@ -41,7 +43,7 @@
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
-        <version>0.0.11</version>
+        <version>0.0.16</version>
         <executions>
           <execution>
             <id>install node and npm</id>
@@ -56,7 +58,6 @@
           </execution>
 
           <execution>
-            <!-- This is workaround for looking for wrong registry when npm installing ansi-color package, when brunch bringing ansi-color as a dependency -->
             <id>npm install ansi-color</id>
             <phase>generate-sources</phase>
             <goals>
@@ -79,15 +80,12 @@
           </execution>
         </executions>
       </plugin>
-
-     <!-- Builds Zeppelin GUI Web-App, assuming Brunch.io is installed,
-          for details see https://github.com/NFLabs/zeppelin/tree/master/zeppelin-web#build -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>brunch-build-to-src-main-webapp</id>
+            <id>grunt-build-to-src-main-webapp</id>
             <phase>generate-sources</phase>
             <goals>
               <goal>exec</goal>
@@ -95,7 +93,7 @@
           </execution>
         </executions>
         <configuration>
-          <executable>./brunch</executable>
+          <executable>./grunt</executable>
           <arguments>
             <argument>build</argument>
           </arguments>
@@ -105,7 +103,6 @@
     </plugins>
     <pluginManagement>
       <plugins>
-        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
         <plugin>
           <groupId>org.eclipse.m2e</groupId>
           <artifactId>lifecycle-mapping</artifactId>
@@ -117,7 +114,7 @@
                   <pluginExecutionFilter>
                     <groupId>com.github.eirslett</groupId>
                     <artifactId>frontend-maven-plugin</artifactId>
-                    <versionRange>[0.0.11,)</versionRange>
+                    <versionRange>[0.0.16,)</versionRange>
                     <goals>
                       <goal>npm</goal>
                       <goal>install-node-and-npm</goal>
