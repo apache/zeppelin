@@ -50,7 +50,7 @@ angular
   .config(function ($routeProvider, WebSocketProvider) {
     WebSocketProvider
       .prefix('')
-      .uri('ws://localhost:' + getPort());
+      .uri('ws://'+location.hostname+':' + getPort());
       
     $routeProvider
       .when('/', {
