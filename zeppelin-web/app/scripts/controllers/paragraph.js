@@ -66,6 +66,11 @@ angular.module('zeppelinWebApp')
 
   $rootScope.$on('updateParagraph', function(event, data) {
     if (data.paragraph.id === $scope.paragraph.id) {
+      var oldType = $scope.getResultType();
+      var newType = $scope.getResultType(data.paragraph);
+      var oldGraphMode = $scope.getGraphMode();
+      var newGraphMode = $scope.getGraphMode(data.paragraph);
+      //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
  
       if ($scope.paragraph.text !== data.paragraph.text) {
         //$scope.paragraph = data.paragraph;
@@ -83,12 +88,7 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.jobName = data.paragraph.jobName;
       $scope.paragraph.status = data.paragraph.status;
 
-      var oldType = $scope.getResultType();
-      var newType = $scope.getResultType(data.paragraph);
-      var oldGraphMode = $scope.getGraphMode();
-      var newGraphMode = $scope.getGraphMode(data.paragraph);
 
-      //console.log("updateParagraph type %o -> %o, mode %o -> %o", oldType, newType, oldGraphMode, newGraphMode);
       
       $scope.paragraph.result = data.paragraph.result;
       $scope.paragraph.settings = data.paragraph.settings;
@@ -101,8 +101,6 @@ angular.module('zeppelinWebApp')
         } else {
           $scope.setGraphMode(newGraphMode, false, true);
         }
-      } else {
-        // destroy chart chart, if chart was there
       }
     }
   });
@@ -287,13 +285,15 @@ angular.module('zeppelinWebApp')
   };
 
   var setNewMode = function(newMode) {
-    $scope.paragraph.settings.params._table = {mode: newMode, height: 300.0};
+    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    newParams._table = {mode: newMode, height: 300.0};
+
     var parapgraphData = {
       op: 'COMMIT_PARAGRAPH',
       data: {
         id: $scope.paragraph.id,
         paragraph: $scope.paragraph.text,
-        params: $scope.paragraph.settings.params
+        params: newParams
       }};
     $rootScope.$emit('sendNewEvent', parapgraphData);
   };
