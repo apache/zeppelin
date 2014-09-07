@@ -228,7 +228,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 	public static enum ConfVars {
 		ZEPPELIN_HOME				("zeppelin.home", "../"),
 		ZEPPELIN_PORT				("zeppelin.server.port", 8080),
-		ZEPPELIN_WAR				("zeppelin.war", "../zeppelin-web2/src/main/webapp"),
+		ZEPPELIN_WAR				("zeppelin.war", "../zeppelin-web/src/main/webapp"),
 	    ZEPPELIN_API_WAR            ("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),
 		ZEPPELIN_INTERPRETERS		("zeppelin.interpreters", "spark:com.nflabs.zeppelin.spark.SparkInterpreter,sql:com.nflabs.zeppelin.spark.SparkSqlInterpreter,md:com.nflabs.zeppelin.markdown.Markdown,sh:com.nflabs.zeppelin.shell.ShellInterpreter"),
 		ZEPPELIN_INTERPRETER_DIR	("zeppelin.interpreter.dir", "interpreter"),

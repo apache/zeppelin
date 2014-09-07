@@ -13,6 +13,7 @@ public class InterpreterResult implements Serializable{
 		TEXT,
 		HTML,
 		TABLE,
+		IMG,
 		NULL
 	}
 	
@@ -44,53 +45,34 @@ public class InterpreterResult implements Serializable{
 	 */
 	private String getData(String msg){
 		if(msg==null) return null;
-		if(msg.startsWith("%html ")){
-			int magicLength = "%html ".length();
-			if(msg.length()>magicLength){
-				return msg.substring(magicLength);
-			} else {
-				return "";
+		
+		Type[] types = Type.values();
+		for(Type t : types) {
+			String magic = "%"+t.name().toLowerCase();
+			if(msg.startsWith(magic+" ") || msg.startsWith(magic+"\n")){
+				int magicLength = magic.length()+1;
+				if(msg.length()>magicLength){
+					return msg.substring(magicLength);
+				} else {
+					return "";
+				}
 			}
-		} else if(msg.startsWith("%text ")){
-			int magicLength = "%text ".length();
-			if(msg.length()>magicLength){
-				return msg.substring(magicLength);
-			} else {
-				return "";
-			}
-		} else if(msg.startsWith("%table ")){
-			int magicLength = "%table ".length();
-			if(msg.length()>magicLength){
-				return msg.substring(magicLength);
-			} else {
-				return "";
-			}
-		} else if(msg.startsWith("%null ")){
-			int magicLength = "%null ".length();
-			if(msg.length()>magicLength){
-				return msg.substring(magicLength);
-			} else {
-				return "";
-			}			
-		} else {
-			return msg;
 		}
+		
+		return msg;
 	}
 	
 	
 	private Type getType(String msg){
 		if(msg==null) return Type.TEXT;
-		if(msg.startsWith("%html ")){
-			return Type.HTML;
-		} else if(msg.startsWith("%text ")){
-			return Type.TEXT;
-		} else if(msg.startsWith("%table ")){
-			return Type.TABLE;
-		} else if(msg.startsWith("%null ")){
-			return Type.NULL;
-		} else {
-			return Type.TEXT;
-		}		
+		Type[] types = Type.values();
+		for(Type t : types) {
+			String magic = "%"+t.name().toLowerCase();
+			if(msg.startsWith(magic+" ") || msg.startsWith(magic+"\n")){
+				return t;
+			}
+		}
+		return Type.TEXT;
 	}
 	
 	public Code code(){

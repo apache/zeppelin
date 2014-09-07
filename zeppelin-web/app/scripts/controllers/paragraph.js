@@ -58,11 +58,9 @@ angular.module('zeppelinWebApp')
   // Controller init
   $scope.init = function(newParagraph) {
     $scope.paragraph = newParagraph;
-    if ($scope.paragraph.result) {
-      $scope.loadResultType($scope.paragraph.result);
-      if($scope.paragraph.settings.params._table) {
-        $scope.setMode($scope.paragraph.settings.params._table.mode, false, false);
-      }
+    if ($scope.getResultType() === "TABLE") {
+      $scope.loadTableData($scope.paragraph.result);
+      $scope.setGraphMode($scope.getGraphMode(), false, false);
     }
   };
 
@@ -73,6 +71,7 @@ angular.module('zeppelinWebApp')
         //$scope.paragraph = data.paragraph;
         $scope.paragraph.text = data.paragraph.text;
       }
+
       /** push the rest */
       $scope.paragraph.aborted = data.paragraph.aborted;
       $scope.paragraph.dateCreated = data.paragraph.dateCreated;
@@ -83,18 +82,27 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.isOpen = data.paragraph.isOpen;
       $scope.paragraph.jobName = data.paragraph.jobName;
       $scope.paragraph.status = data.paragraph.status;
+
+      var oldType = $scope.getResultType();
+      var newType = $scope.getResultType(data.paragraph);
+      var oldGraphMode = $scope.getGraphMode();
+      var newGraphMode = $scope.getGraphMode(data.paragraph);
+
+      //console.log("updateParagraph type %o -> %o, mode %o -> %o", oldType, newType, oldGraphMode, newGraphMode);
       
       $scope.paragraph.result = data.paragraph.result;
       $scope.paragraph.settings = data.paragraph.settings;
       
-      $scope.loadResultType($scope.paragraph.result);
-      if ($scope.paragraph.settings.params._table) {
+      if (newType==="TABLE") {
+        $scope.loadTableData($scope.paragraph.result);
         /** User changed the chart type? */
-        if ($scope.d3.options.chart.type !== $scope.paragraph.settings.params._table.mode) {
-          $scope.setMode($scope.paragraph.settings.params._table.mode, false, false);
+        if (oldGraphMode !== newGraphMode) {
+          $scope.setGraphMode(newGraphMode, false, false);
         } else {
-          $scope.setMode($scope.paragraph.settings.params._table.mode, false, true);
+          $scope.setGraphMode(newGraphMode, false, true);
         }
+      } else {
+        // destroy chart chart, if chart was there
       }
     }
   });
@@ -103,12 +111,7 @@ angular.module('zeppelinWebApp')
   
   
   $scope.sendParagraph = function(data) {
-    //TODO: check if contnet changed
-    console.log('send new paragraph: %o with %o', $scope.paragraph.id, data);
-    /** check if  we change the type %sql -> %md then remove (if exist) the params._table object */
-    if (!data.startsWith('%sql')) {
-      flushTableData();
-    }
+    //console.log('send new paragraph: %o with %o', $scope.paragraph.id, data);
     var parapgraphData = {op: 'RUN_PARAGRAPH', data: {id: $scope.paragraph.id, paragraph: data, params: $scope.paragraph.settings.params}};
     $rootScope.$emit('sendNewEvent', parapgraphData);
   };
@@ -152,7 +155,7 @@ angular.module('zeppelinWebApp')
     $rootScope.$emit('sendNewEvent', parapgraphData);
   };
 
-  $scope.loardForm = function(formulaire, params) {
+  $scope.loadForm = function(formulaire, params) {
     var value = formulaire.defaultValue;
     if (params[formulaire.name]) {
       value = params[formulaire.name];
@@ -174,12 +177,14 @@ angular.module('zeppelinWebApp')
         setEditorHeight(_editor.container.id, hight);
         $scope.editor.resize();
       });
-      $scope.editor.getSession().setMode(editorMode.scala);
+
       var code = $scope.editor.getSession().getValue();
       if ( String(code).startsWith('%sql')) {
         $scope.editor.getSession().setMode(editorMode.sql);
       } else if ( String(code).startsWith('%md')) {
         $scope.editor.getSession().setMode(editorMode.markdown);
+      } else {
+        $scope.editor.getSession().setMode(editorMode.scala);
       }
       
       $scope.editor.commands.addCommand({
@@ -204,8 +209,25 @@ angular.module('zeppelinWebApp')
     return $scope.editor.getValue();
   };
 
+  $scope.getResultType = function(paragraph){
+    var pdata = (paragraph) ? paragraph : $scope.paragraph;
+    if (pdata.result && pdata.result.type) {
+      return pdata.result.type;
+    } else {
+      return "TEXT";
+    }
+  };
 
-  $scope.loadResultType = function(result) {
+  $scope.getGraphMode = function(paragraph){
+    var pdata = (paragraph) ? paragraph : $scope.paragraph;
+    if (pdata.settings.params && pdata.settings.params._table && pdata.settings.params._table.mode) {
+      return pdata.settings.params._table.mode;
+    } else {
+      return "table";
+    }
+  };
+
+  $scope.loadTableData = function(result) {
     if (!result) {
       return;
     }
@@ -243,8 +265,8 @@ angular.module('zeppelinWebApp')
     }
   };
 
-// todo: Change the name
-  $scope.setMode = function(type, emit, refresh) {
+  $scope.setGraphMode = function(type, emit, refresh) {
+    //console.log("setGraphMode %o %o %o", type, emit, refresh);
     if (emit) {
       setNewMode(type);
     } else {
@@ -303,17 +325,12 @@ angular.module('zeppelinWebApp')
       }
     }
 
-    //var newData = d3g;
-    console.log('DATA refresh? %o %o == %o', refresh, $scope.d3.data, d3g);
     if ($scope.d3.data === null || !refresh) {
       $scope.d3.data = d3g;
 
       $scope.d3.options.chart.type = 'multiBarChart';
       $scope.d3.options.chart.height = $scope.paragraph.settings.params._table.height;
       $scope.d3.config.autorefresh = true;
-      //if ($scope.d3.api) {
-        //$scope.d3.api.updateWithOptions($scope.d3.options);
-      //}
     } else {
       if ($scope.d3.api) {
         $scope.d3.api.updateWithData(d3g);
@@ -405,22 +422,12 @@ angular.module('zeppelinWebApp')
     }
   };
 
-  $scope.isTable = function() {
-    if ($scope.paragraph.result) {
-      if ($scope.paragraph.result.type === 'TABLE' && (!$scope.paragraph.settings.params._table || $scope.paragraph.settings.params._table.mode === 'table')) {
-        return true;
-      }
+  $scope.isGraphMode = function(graphName) {
+    if ($scope.getResultType() === "TABLE" && $scope.getGraphMode()===graphName) {
+      return true;
+    } else {
+      return false;
     }
-    return false;
-  };
-  
-  $scope.isGraphActive = function(graphName) {
-    if ($scope.paragraph.result && $scope.paragraph.settings.params._table) {
-      if ($scope.paragraph.settings.params._table.mode === graphName) {
-        return true;
-      }
-    }
-    return false;
   };
   
   /** Utility function */
