@@ -30,10 +30,11 @@
   unicode-bidi: embed
   display: block!important;
   margin: 0 0 10px!important;
-  font-size: 13px!important;
+  font-size: 12px!important;
   line-height: 1.42857143!important;
   word-break: break-all!important;
   word-wrap: break-word!important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;  
 }
 
 .ace-tm {
@@ -54,14 +55,22 @@
 .paragraph .status {
   font-size: 10px;
   color: #AAAAAA;
-  background: rgba(255, 255, 255, 0.9);
-  width: 100%;
   text-align: right;
 }
 
-.paragraph .status div {
-  display: inline;
+.paragraph .runControl {
+  font-size: 10px;
+  color: #AAAAAA;
+  margin-bottom: 10px;
 }
+
+.paragraph .runControl .progress{
+  width:200px;
+  height:4px;
+  margin-bottom: 0px;
+  border-radius: 0px;
+}
+
 
 .disable {
   opacity:0.4!important;

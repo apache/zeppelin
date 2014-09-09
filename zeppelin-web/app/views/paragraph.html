@@ -45,14 +45,9 @@ limitations under the License.
       </div>
     </div>
 
-    <div id="{{paragraph.id}}_status" class="status">
-        <div ng-if="paragraph.status == 'RUNNING'" class="">
-          Running ... {{getProgress()}}%.
-        </div>
-
-        <div>
-          Shift+Enter to Run. {{paragraph.status}}
-        </div>
+    <div id="{{paragraph.id}}_status" class="status"
+         ng-if="paragraph.isOpen == true && paragraph.isEditorOpen == true">
+      Shift+Enter to Run. {{paragraph.status}}
     </div>
 
     <form id="{{paragraph.id}}_form" role="form" class="form-horizontal" style="margin-top: 15px;">
@@ -71,12 +66,37 @@ limitations under the License.
       </div>
     </form>
 
+    <div id="{{paragraph.id}}_runControl" class="runControl"
+         ng-if="paragraph.status == 'RUNNING'">
+
+      <div ng-if="getProgress()<=0 || getProgress()>=100">
+        <div id="{{paragraph.id}}_progress"           
+             class="progress">
+            <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;"></div>
+          <span class="sr-only"></span>
+        </div>
+        <div class="inline">
+          Running ...
+        </div>
+      </div>
+      <div ng-if="getProgress()>0 && getProgress()<100">
+        <div id="{{paragraph.id}}_progress"
+             class="progress">
+          <div class="progress-bar" role="progressbar" style="width:{{getProgress()}}%;"></div>
+          <span class="sr-only">{{getProgress()}}%</span>
+        </div>
+        <div class="inline">
+          Running {{getProgress()}}%
+        </div>
+      </div>
+    </div>
+
     <!-- Rendering -->
     <div class='tableDisplay'>
       <div id="{{paragraph.id}}_msg"
            class="text"
            ng-if="paragraph.result.type == 'TEXT'" 
-           ng-Init="loadResultType(paragraph.result)"
+           ng-Init="loadResultType(paragraph.result)"           
            ng-bind-html="paragraph.result.msg">
       </div>
 
