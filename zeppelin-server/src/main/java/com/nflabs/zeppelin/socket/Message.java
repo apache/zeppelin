@@ -14,6 +14,10 @@ public class Message {
 		PARAGRAPH,	   // [s-c] paragraph info
 		               // @param paragraph serialized paragraph object
 		
+		PROGRESS,      // [s-c] progress update
+		               // @param id paragraph id
+		               // @param progress percentage progress
+		
 		NEW_NOTE,      // [c-s] create new notebook
 		DEL_NOTE,	   // [c-s] delete notebook
 		               // @param id note id

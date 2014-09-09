@@ -2,7 +2,6 @@ package com.nflabs.zeppelin.socket;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -380,6 +379,12 @@ public class NotebookServer extends WebSocketServer {
           // broadcastNote(note.id(), new Message(OP.PARAGRAPH).put("paragraph",
           // note.getParagraph(paragraphId)));
         }
+      }
+
+      @Override
+      public void onProgressUpdate(Job job, int progress){
+    	  System.err.println("NotebookServer: JOb pprogresss update "+progress);
+    	  broadcastNote(note.id(), new Message(OP.PROGRESS).put("id", paragraphId).put("progress", job.progress()));
       }
     });
   }

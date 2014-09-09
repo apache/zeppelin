@@ -22,7 +22,7 @@ public class NoteReplLoader {
 	}
 	
 	
-	public Interpreter getRepl(String replName){
+	public synchronized Interpreter getRepl(String replName){
 		String name = (replName!=null) ? replName : factory.getDefaultReplName();
 		if(loadedRepls.containsKey(name)) {
 			return loadedRepls.get(name);

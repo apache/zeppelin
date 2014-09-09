@@ -59,6 +59,10 @@
   text-align: right;
 }
 
+.paragraph .status div {
+  display: inline;
+}
+
 .disable {
   opacity:0.4!important;
   pointer-events: none; 

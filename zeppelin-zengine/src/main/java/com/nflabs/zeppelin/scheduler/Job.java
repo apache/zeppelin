@@ -54,10 +54,16 @@ public abstract class Job {
     String errorMessage;
 	transient private Throwable exception;
 	transient private JobListener listener;
+	private long progressUpdateIntervalMs;
 	
 	public Job(String jobName, JobListener listener) {
+		this(jobName, listener, JobProgressPoller.DEFAULT_INTERVAL_MSEC);
+	}
+	
+	public Job(String jobName, JobListener listener, long progressUpdateIntervalMs) {
 		this.jobName = jobName;
 		this.listener = listener;
+		this.progressUpdateIntervalMs = progressUpdateIntervalMs;
 		
 		dateCreated = new Date();		
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
@@ -112,25 +118,32 @@ public abstract class Job {
 			setStatus(Status.ABORT);
 			return;
 		}
+		JobProgressPoller progressUpdator = null;
 		try{
+
 			setStatus(Status.RUNNING);
+			progressUpdator = new JobProgressPoller(this, progressUpdateIntervalMs);
+			progressUpdator.start();
 			dateStarted = new Date();
 			result = jobRun();
 			dateFinished = new Date();
-			if(aborted){				
+			progressUpdator.terminate();
+			if(aborted){
 				setStatus(Status.ABORT);
 			} else {
 				setStatus(Status.FINISHED);
 			}			
 		} catch(NullPointerException e) {
 			e.printStackTrace();
+			progressUpdator.terminate();
 			this.exception = e;
 			result = null;
 			errorMessage = e.getMessage();
-			dateFinished = new Date();			
+			dateFinished = new Date();		
 			setStatus(Status.ERROR);
 		} catch(Throwable e){
 			e.printStackTrace();
+			progressUpdator.terminate();
 			this.exception = e;
 			result = null;
 			errorMessage = e.getMessage();

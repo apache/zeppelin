@@ -2,7 +2,6 @@ package com.nflabs.zeppelin.notebook;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Random;
 
 import org.slf4j.Logger;
@@ -132,7 +131,13 @@ public class Paragraph extends Job implements Serializable {
 
   @Override
   public int progress() {
-    return 0;
+    String replName = getRequiredReplName();
+    Interpreter repl = getRepl(replName);
+    if (repl != null) {
+    	return repl.getProgress();
+    } else {
+    	return 0;
+    }
   }
 
   @Override

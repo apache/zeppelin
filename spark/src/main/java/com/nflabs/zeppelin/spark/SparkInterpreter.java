@@ -17,7 +17,14 @@ import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.repl.SparkIMain;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
+import org.apache.spark.scheduler.Stage;
+import org.apache.spark.scheduler.StageInfo;
+import org.apache.spark.scheduler.TaskInfo;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.ui.jobs.JobProgressListener;
+import org.apache.spark.ui.jobs.TaskUIData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
@@ -26,20 +33,26 @@ import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 
 import scala.None;
 import scala.Some;
+import scala.collection.Iterable;
 import scala.collection.Iterator;
+import scala.collection.JavaConversions;
+import scala.collection.mutable.HashMap;
 import scala.collection.mutable.HashSet;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
 public class SparkInterpreter extends Interpreter {
-
+	Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
+	
 	private SparkILoop interpreter;
 	private SparkIMain intp;
 	private SparkContext sc;
 	private ByteArrayOutputStream out;
 	private SQLContext sqlc;
 	private DependencyResolver dep;
+
+	private JobProgressListener sparkListener;
 	
 
 	public SparkInterpreter(Properties property) {
@@ -52,9 +65,13 @@ public class SparkInterpreter extends Interpreter {
 			// save / load sc from common share
 			Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
 			sc = (SparkContext) share.get("sc");
+			sparkListener = (JobProgressListener) share.get("sparkListener");
 			if(sc==null) {
 				sc = createSparkContext();
-				share.put("sc", sc);				
+				sparkListener = new JobProgressListener(sc.getConf());
+				sc.listenerBus().addListener(sparkListener);
+				share.put("sc", sc);
+				share.put("sparkListener", sparkListener);
 			}
 		}
 		return sc;
@@ -277,8 +294,13 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		sc.cancelJobGroup(jobGroup);
 	}
 
-	
 	public int getProgress(){
+		// howto get progress from sparkListener? check this out
+		// https://github.com/apache/spark/blob/v1.0.1/core/src/main/scala/org/apache/spark/ui/jobs/StageTable.scala
+		
+		int completedTasks = 0;
+		int totalTasks = 0;
+
 		DAGScheduler scheduler = sc.dagScheduler();
 		HashSet<ActiveJob> jobs = scheduler.activeJobs();
 		Iterator<ActiveJob> it = jobs.iterator();
@@ -286,12 +308,34 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 			ActiveJob job = it.next();
 			String g = (String) job.properties().get("spark.jobGroup.id");
 			if (jobGroup.equals(g)) {
-				// TODO
+				int[] progressInfo = getProgressFromStage(sparkListener, job.finalStage());
+				totalTasks+=progressInfo[0];
+				completedTasks+=progressInfo[1];
 			}
 		}
-		return 0;
+
+		if(totalTasks==0) return 0;
+		return completedTasks*100/totalTasks;
 	}
 	
+	private int [] getProgressFromStage(JobProgressListener sparkListener, Stage stage){
+		int numTasks = stage.numTasks();
+		int completedTasks = 0;
+		Object completedTaskInfo = JavaConversions.asJavaMap(sparkListener.stageIdToTasksComplete()).get(stage.id());
+		if(completedTaskInfo!=null) {
+			completedTasks += (int) completedTaskInfo;
+		}
+		List<Stage> parents = JavaConversions.asJavaList(stage.parents());
+		if(parents!=null) {
+			for(Stage s : parents) {
+				int[] p = getProgressFromStage(sparkListener, s);
+				numTasks+= p[0];
+				completedTasks+= p[1];
+			}
+		}
+		
+		return new int[]{numTasks, completedTasks};		
+	}
 	private Code getResultCode(scala.tools.nsc.interpreter.Results.Result r){
 		if (r instanceof scala.tools.nsc.interpreter.Results.Success$) {
 			return Code.SUCCESS;
@@ -310,5 +354,9 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 	@Override
 	public FormType getFormType() {
 		return FormType.NATIVE;
+	}
+	
+	public JobProgressListener getJobProgressListener(){
+		return sparkListener;
 	}
 }

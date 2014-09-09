@@ -75,4 +75,9 @@ public class ShellInterpreter extends Interpreter {
 		return FormType.SIMPLE;
 	}
 
+	@Override
+	public int getProgress() {
+		return 0;
+	}
+
 }

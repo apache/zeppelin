@@ -27,6 +27,7 @@ public abstract class Interpreter {
 	public abstract void cancel();
 	public abstract void bindValue(String name, Object o);
 	public abstract FormType getFormType();
+	public abstract int getProgress();
 
 	public Properties getProperty() {
 		return property;

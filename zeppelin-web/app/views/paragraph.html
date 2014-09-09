@@ -45,6 +45,16 @@ limitations under the License.
       </div>
     </div>
 
+    <div id="{{paragraph.id}}_status" class="status">
+        <div ng-if="paragraph.status == 'RUNNING'" class="">
+          Running ... {{getProgress()}}%.
+        </div>
+
+        <div>
+          Shift+Enter to Run. {{paragraph.status}}
+        </div>
+    </div>
+
     <form id="{{paragraph.id}}_form" role="form" class="form-horizontal" style="margin-top: 15px;">
       <div class="form-group"
            ng-repeat="formulaire in paragraph.settings.forms"
@@ -131,6 +141,5 @@ limitations under the License.
       </nvd3new>
 
     </div>
-    <div id="{{paragraph.id}}_status" class="status">Shift+Enter to Run. {{paragraph.status}}</div>
   </div> 
 </div>

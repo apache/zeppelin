@@ -47,4 +47,9 @@ public class MockInterpreter extends Interpreter {
 		return FormType.SIMPLE;
 	}
 
+	@Override
+	public int getProgress() {
+		return 0;
+	}
+
 }

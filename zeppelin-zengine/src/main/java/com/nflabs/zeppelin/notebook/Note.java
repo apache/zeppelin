@@ -260,5 +260,9 @@ public class Note implements Serializable, JobListener {
 		Logger logger = LoggerFactory.getLogger(Note.class);
 		return logger;
 	}
+
+	@Override
+	public void onProgressUpdate(Job job, int progress) {
+	}
 	
 }

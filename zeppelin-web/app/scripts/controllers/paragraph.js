@@ -207,6 +207,16 @@ angular.module('zeppelinWebApp')
     return $scope.editor.getValue();
   };
 
+  $scope.getProgress = function(){
+    return ($scope.currentProgress) ? $scope.currentProgress : 0;
+  };
+
+  $rootScope.$on('updateProgress', function(event, data) {
+    if (data.id === $scope.paragraph.id) {
+      $scope.currentProgress = data.progress
+    }
+  });
+
   $scope.getResultType = function(paragraph){
     var pdata = (paragraph) ? paragraph : $scope.paragraph;
     if (pdata.result && pdata.result.type) {
