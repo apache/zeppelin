@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,6 +21,7 @@ import org.sonatype.aether.collection.CollectRequest;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.DependencyFilter;
 import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.resolution.ArtifactRequest;
 import org.sonatype.aether.resolution.ArtifactResult;
 import org.sonatype.aether.resolution.DependencyRequest;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
@@ -46,6 +48,9 @@ public class DependencyResolver {
 	                                                                                JavaScopes.RUNTIME,
 	                                                                                JavaScopes.SYSTEM);
 
+	private final String [] EXCLUSIONS = new String[]{
+		"org.scala-lang:scala-library"
+	};
 
 	public DependencyResolver(Global global, SparkContext sc){
 		this.global = global;
@@ -115,14 +120,37 @@ public class DependencyResolver {
 		load(groupId + ":" + artifactId + ":" + version);
 	}
 
+	
 	public void load(String artifact) {
+		load(artifact, false);
+	}
+	public void load(String artifact, boolean recursive) {
 		if (StringUtils.isBlank(artifact)) {
 			// Should throw here
 			return;
 		}
 
 		try {
-			List<ArtifactResult> listOfArtifact = getArtifactsFor(artifact);
+			List<ArtifactResult> listOfArtifact;
+			if (recursive) {
+				listOfArtifact = getArtifactsWithDep(artifact);
+			} else {
+				listOfArtifact = getArtifact(artifact);
+			}
+			
+			
+			Iterator<ArtifactResult> it = listOfArtifact.iterator();
+			while(it.hasNext()) {
+				Artifact a = it.next().getArtifact();
+				String gav = a.getGroupId()+":"+a.getArtifactId()+":"+a.getVersion();
+				for(String exclude : EXCLUSIONS) {
+					if(gav.startsWith(exclude)) {
+						it.remove();
+						break;
+					}
+				}
+			}
+			
 			List<URL> newClassPathList = new LinkedList<URL>();
 			List<File> files = new LinkedList<File>();
 			for (ArtifactResult artifactResult : listOfArtifact) {
@@ -140,7 +168,20 @@ public class DependencyResolver {
 		}
 	}
 
-	public List<ArtifactResult> getArtifactsFor(String dependency)
+	public List<ArtifactResult> getArtifact	(String dependency)
+			throws Exception {
+		Artifact artifact = new DefaultArtifact(dependency);
+		ArtifactRequest artifactRequest = new ArtifactRequest();
+        artifactRequest.setArtifact(artifact);
+        artifactRequest.addRepository(repo);
+
+        ArtifactResult artifactResult = system.resolveArtifact( session, artifactRequest );
+        LinkedList<ArtifactResult> results = new LinkedList<ArtifactResult>();
+        results.add(artifactResult);
+        return results;
+	}
+	
+	public List<ArtifactResult> getArtifactsWithDep(String dependency)
 			throws Exception {
 		Artifact artifact = new DefaultArtifact(dependency);
 		CollectRequest collectRequest = new CollectRequest();
