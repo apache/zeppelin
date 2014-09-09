@@ -59,6 +59,13 @@ limitations under the License.
               </ul>
             </li>
           </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><span ng-if="connected===true" 
+                      class="fa fa-circle" style="font-size:10px;margin-right:5px"> Connected</span>
+                <span ng-if="connected===false" 
+                      class="fa fa-circle" style="color:#FF4500; font-weight:bold; font-size:10px;margin-right:5px"> Disconnected</span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>

@@ -27,13 +27,14 @@ angular.module('zeppelinWebApp')
         .controller('MainCtrl', function($scope, WebSocket, $rootScope) {
   
   $scope.WebSocketWaitingList = [];
+  $scope.connected = false;
 
   /**
    * Web socket
    */
   WebSocket.onopen(function() {
     console.log('Websocket created');
-
+    $scope.connected = true;
     if ($scope.WebSocketWaitingList.length > 0) {
       for (var o in $scope.WebSocketWaitingList) {
         WebSocket.send(JSON.stringify($scope.WebSocketWaitingList[o]));
@@ -62,12 +63,14 @@ angular.module('zeppelinWebApp')
 
   WebSocket.onerror(function(event) {
     console.log('message: ', event.data);
+    $scope.connected = false;
   });
 
   WebSocket.onclose(function(event) {
     console.log('message: ', event.data);
+    $scope.connected = false;
   });
-  
+
   /** Send info to the websocket server */
   var send = function(data) {
     if (WebSocket.currentState() !== 'OPEN') {
