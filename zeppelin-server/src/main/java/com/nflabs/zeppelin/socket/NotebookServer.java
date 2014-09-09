@@ -94,6 +94,9 @@ public class NotebookServer extends WebSocketServer {
         case RUN_PARAGRAPH:
           runParagraph(conn, notebook, messagereceived);
           break;
+        case CANCEL_PARAGRAPH:
+          cancelParagraph(conn, notebook, messagereceived);
+          break;
         case PARAGRAPH_REMOVE:
           removeParagraph(conn, notebook, messagereceived);
           break;
@@ -338,9 +341,21 @@ public class NotebookServer extends WebSocketServer {
       broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
     }
   }
+  
+
+  private void cancelParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
+    final String paragraphId = (String) fromMessage.get("id");
+    if (paragraphId == null) {
+      return;
+    }
+    
+    final Note note = notebook.getNote(getOpenNoteId(conn));
+    Paragraph p = note.getParagraph(paragraphId);
+    p.abort();
+  }
 
   private void runParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
-    final String paragraphId = (String) fromMessage.get("id");
+	  final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
       return ;
     }

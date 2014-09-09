@@ -106,6 +106,11 @@ angular.module('zeppelinWebApp')
   });
   
 
+  $scope.cancelParagraph = function() {
+    console.log("Cancel %o", $scope.paragraph.id);
+    var data = {op: 'CANCEL_PARAGRAPH', data: {id: $scope.paragraph.id }};
+    $rootScope.$emit('sendNewEvent', data);      
+  };
   
   
   $scope.sendParagraph = function(data) {

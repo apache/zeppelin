@@ -32,6 +32,9 @@ public class Message {
                           // @param id paragraph id
                           // @param paragraph paragraph content.ie. script
                           // @param params paragraph params
+		
+		CANCEL_PARAGRAPH, // [c-s] cancel paragraph run
+		                  // @param id paragraph id
 
 		LIST_NOTES,    // [c-s] ask list of note
 		
