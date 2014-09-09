@@ -49,7 +49,7 @@ public abstract class Job {
     Date dateFinished;
     Status status;
 
-    boolean aborted = false;
+    transient boolean aborted = false;
 	
     String errorMessage;
 	transient private Throwable exception;
@@ -116,6 +116,7 @@ public abstract class Job {
 	public void run(){
 		if(aborted){
 			setStatus(Status.ABORT);
+			aborted = false;
 			return;
 		}
 		JobProgressPoller progressUpdator = null;
@@ -149,6 +150,8 @@ public abstract class Job {
 			errorMessage = e.getMessage();
 			dateFinished = new Date();			
 			setStatus(Status.ERROR);
+		} finally {
+			aborted = false;
 		}
 	}
 		
