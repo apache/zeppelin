@@ -12,7 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+.paragraph {
+  margin-bottom:5px;
+  padding: 8px 8px 8px 8px;
+}
+
+.outlineOnFocus{
+  border : 1px solid #FFFFFF;
+}
+
+.outlineOnFocus:hover{
+  border : 1px solid #EEEEEE;
+}
+
 .paragraph .control {
+  display: none;
   float: right;
   color: #999;
   margin-top: -9px;
@@ -56,6 +71,7 @@
   font-size: 10px;
   color: #AAAAAA;
   text-align: right;
+  visibility: hidden;
 }
 
 .paragraph .runControl {

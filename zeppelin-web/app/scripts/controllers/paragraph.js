@@ -106,6 +106,17 @@ angular.module('zeppelinWebApp')
   });
   
 
+  $scope.onMouseover = function(){
+    $('#'+$scope.paragraph.id+"_control").show(300);
+    $('#'+$scope.paragraph.id+"_status").css({"visibility":"visible"});
+  };
+
+  $scope.onMouseleave = function(){
+    $('#'+$scope.paragraph.id+"_control").hide(300);
+    $('#'+$scope.paragraph.id+"_status").css({"visibility":"hidden"});
+  };
+
+
   $scope.cancelParagraph = function() {
     console.log("Cancel %o", $scope.paragraph.id);
     var data = {op: 'CANCEL_PARAGRAPH', data: {id: $scope.paragraph.id }};
