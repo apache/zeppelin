@@ -310,7 +310,7 @@
           </execution>
         </executions>
          <configuration>
-	  <argLine>-Xmx1024m</argLine>
+	  <argLine>-Xmx2048m</argLine>
         </configuration>
       </plugin>
 
