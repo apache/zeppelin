@@ -53,7 +53,8 @@ limitations under the License.
       Shift+Enter to Run. {{paragraph.status}}
     </div>
 
-    <form id="{{paragraph.id}}_form" role="form" class="form-horizontal" style="margin-top: 15px;">
+    <form id="{{paragraph.id}}_form" role="form" 
+          class="form-horizontal" style="margin-top: 15px;">
       <div class="form-group"
            ng-repeat="formulaire in paragraph.settings.forms"
            ng-Init="loadForm(formulaire, paragraph.settings.params)">
@@ -89,7 +90,7 @@ limitations under the License.
           <span class="sr-only">{{getProgress()}}%</span>
         </div>
         <div class="inline">
-          Running {{getProgress()}}%
+          Running {{getProgress()}}% <a ng-click="cancelParagraph()" style="cursor:pointer">Cancel</a>
         </div>
       </div>
     </div>
