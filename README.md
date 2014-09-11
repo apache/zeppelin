@@ -13,9 +13,9 @@ To know more about Zeppelin, visit our web site http://zeppelin-project.org
 ###Build
       mvn clean package
 
-with specific spark version
+with specific version
 
-      mvn clean package -Dspark.version=1.0.1
+      mvn clean package -Dspark.version=1.0.1 -Dhadoop.version=2.0.0-mr1-cdh4.6.0
 
 ###Configure
 
