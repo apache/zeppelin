@@ -67,9 +67,85 @@ public class SparkSqlInterpreter extends Interpreter {
 		return null;
 	}
 
-	
 	@Override
 	public InterpreterResult interpret(String st) {
+		findSpark();
+		SparkInterpreter sparkInterpreter = ((SparkInterpreter)sparkClassloaderRepl.getInnerRepl());
+		SQLContext sqlc = sparkInterpreter.getSQLContext();
+		SparkContext sc = sqlc.sparkContext();		
+		sc.setJobGroup(jobGroup, "Zeppelin", false);
+		Map<String, Object> binder = (Map<String, Object>) sparkInterpreter.getValue("_binder");
+		binder.put("sparksqlstmt", st);
+
+		InterpreterResult ret = sparkInterpreter._interpret(new String[]{"_binder.put(\"sparksqlresult\", sqlc.sql(_binder.get(\"sparksqlstmt\").asInstanceOf[String]).asInstanceOf[Object])"});
+		if(ret.code()==Code.ERROR) {
+			sc.clearJobGroup();
+			return ret;
+		}
+		
+		SchemaRDD rdd = (SchemaRDD) binder.get("sparksqlresult");
+		if (rdd==null) {
+			sc.clearJobGroup();
+			return ret;
+		}
+		
+		Row[] rows = null;
+		try {
+			rows = rdd.take(10000);
+		} catch(Exception e){
+			e.printStackTrace(System.err);
+			sc.clearJobGroup();
+			return new InterpreterResult(Code.ERROR, e.getMessage());
+		}
+		
+		String msg = null;
+		// get field names
+		List<Attribute> columns = scala.collection.JavaConverters.asJavaListConverter(rdd.queryExecution().analyzed().output()).asJava();
+		for(Attribute col : columns) {
+			if(msg==null) {
+				msg = col.name();
+			} else {
+				msg += "\t"+col.name();
+			}
+		}
+		msg += "\n";
+		
+		// ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType, FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType, NullType, NumericType, ShortType, StringType, StructType
+		for(Row row : rows) {
+			for(int i=0; i<columns.size(); i++){
+				String type = columns.get(i).dataType().toString();
+				if ("BooleanType".equals(type)) {
+					msg += row.getBoolean(i);
+				} else if("DecimalType".equals(type)) {
+					msg += row.getInt(i);
+				} else if("DoubleType".equals(type)) {
+					msg += row.getDouble(i);
+				} else if("FloatType".equals(type)) {
+					msg += row.getFloat(i);
+				} else if("LongType".equals(type)) {
+					msg += row.getLong(i);
+				} else if("IntegerType".equals(type)) {
+					msg += row.getInt(i);
+				} else if("ShortType".equals(type)) {
+					msg += row.getShort(i);
+				} else if("StringType".equals(type)) {
+					msg += row.getString(i);
+				} else {
+					msg += row.getString(i);
+				}
+				if(i!=columns.size()-1){
+					msg += "\t";
+				}
+			}
+			msg += "\n";
+		}
+		InterpreterResult rett = new InterpreterResult(Code.SUCCESS, "%table "+msg);
+		sc.clearJobGroup();
+		return rett;
+	}
+	
+	
+	public InterpreterResult interpretB(String st) {
 		findSpark();
 		SQLContext sqlc = ((SparkInterpreter)sparkClassloaderRepl.getInnerRepl()).getSQLContext();
 		SparkContext sc = sqlc.sparkContext();
@@ -167,6 +243,8 @@ public class SparkSqlInterpreter extends Interpreter {
 		Iterator<ActiveJob> it = jobs.iterator();
 		while(it.hasNext()) {
 			ActiveJob job = it.next();
+			if(job==null || job.properties()==null) continue;
+			
 			String g = (String) job.properties().get("spark.jobGroup.id");
 			if (jobGroup.equals(g)) {
 				int[] progressInfo = getProgressFromStage(sparkListener, job.finalStage());

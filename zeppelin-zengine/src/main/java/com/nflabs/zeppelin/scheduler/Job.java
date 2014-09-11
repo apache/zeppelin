@@ -4,6 +4,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.nflabs.zeppelin.scheduler.JobListener;
 
 /**
@@ -135,24 +138,35 @@ public abstract class Job {
 				setStatus(Status.FINISHED);
 			}			
 		} catch(NullPointerException e) {
-			e.printStackTrace();
+			logger().error("Job failed", e);
 			progressUpdator.terminate();
 			this.exception = e;
-			result = null;
-			errorMessage = e.getMessage();
+			result = e.getMessage();
+			errorMessage = getStack(e);
 			dateFinished = new Date();		
 			setStatus(Status.ERROR);
 		} catch(Throwable e){
-			e.printStackTrace();
+			logger().error("Job failed", e);
 			progressUpdator.terminate();
 			this.exception = e;
-			result = null;
-			errorMessage = e.getMessage();
+			result = e.getMessage();
+			errorMessage = getStack(e);
 			dateFinished = new Date();			
 			setStatus(Status.ERROR);
 		} finally {
 			aborted = false;
 		}
+	}
+	
+	public String getStack(Throwable e){
+		StackTraceElement[] stacks = e.getStackTrace();
+		if(stacks==null)return "";
+		String ss = "";
+		for(StackTraceElement s : stacks) {
+			ss += s.toString()+"\n";
+		}
+		
+		return ss;
 	}
 		
 	public Throwable getException(){
@@ -201,5 +215,9 @@ public abstract class Job {
 
 	public Date getDateFinished() {
 		return dateFinished;
+	}
+	
+	private Logger logger(){
+		return LoggerFactory.getLogger(Job.class);
 	}
 }

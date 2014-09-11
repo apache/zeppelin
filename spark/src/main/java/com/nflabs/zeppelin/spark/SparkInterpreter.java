@@ -53,6 +53,8 @@ public class SparkInterpreter extends Interpreter {
 	private DependencyResolver dep;
 
 	private JobProgressListener sparkListener;
+
+	private Map<String, Object> binder;
 	
 
 	public SparkInterpreter(Properties property) {
@@ -196,7 +198,7 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		dep = getDependencyResolver();
 		
 		intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
-		Map<String, Object> binder = (Map<String, Object>) getValue("_binder");
+		binder = (Map<String, Object>) getValue("_binder");
 		binder.put("out", printStream);
 		binder.put("sc", sc);
 		binder.put("sqlc", sqlc);
@@ -211,7 +213,6 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		intp.interpret("import sqlc.createSchemaRDD");
 	}
 
-	
 	private List<File> currentClassPath(){
 		List<File> paths = classPath(Thread.currentThread().getContextClassLoader());
 		String[] cps = System.getProperty("java.class.path").split(File.pathSeparator);
@@ -266,27 +267,32 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 	
 	public InterpreterResult interpret(String [] lines){
 		synchronized(this){
-			intp.interpret("Console.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
-			out.reset();
 			sc.setJobGroup(jobGroup, "Zeppelin", false);			
-			Code r = null;
-			String incomplete = "";
-			for(String s : lines) {				
-				scala.tools.nsc.interpreter.Results.Result res = intp.interpret(incomplete+s);
-				r = getResultCode(res);
-				
-				if (r == Code.ERROR) {
-					sc.clearJobGroup();
-					return new InterpreterResult(r, out.toString());
-				} else if(r==Code.INCOMPLETE) {
-					incomplete += s +"\n";
-				} else {
-					incomplete = "";
-				}
-			}
+			InterpreterResult r = _interpret(lines);
 			sc.clearJobGroup();
-			return new InterpreterResult(r, out.toString());
+			return r;
 		}		
+	}
+	
+	public InterpreterResult _interpret(String [] lines){
+		intp.interpret("Console.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
+		out.reset();
+		Code r = null;
+		String incomplete = "";
+		for(String s : lines) {				
+			scala.tools.nsc.interpreter.Results.Result res = intp.interpret(incomplete+s);
+			r = getResultCode(res);
+			
+			if (r == Code.ERROR) {
+				sc.clearJobGroup();
+				return new InterpreterResult(r, out.toString());
+			} else if(r==Code.INCOMPLETE) {
+				incomplete += s +"\n";
+			} else {
+				incomplete = "";
+			}
+		}
+		return new InterpreterResult(r, out.toString());
 	}
 	
 	

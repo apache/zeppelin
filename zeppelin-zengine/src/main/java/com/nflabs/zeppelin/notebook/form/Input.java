@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.notebook.form;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -8,7 +9,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Input {
+public class Input implements Serializable {
 	public static class ParamOption{
 		String value;
 		String displayName;

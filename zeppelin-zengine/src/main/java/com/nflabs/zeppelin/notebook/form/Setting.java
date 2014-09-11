@@ -1,10 +1,11 @@
 package com.nflabs.zeppelin.notebook.form;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class Setting {
+public class Setting implements Serializable {
 
   // TODO(anthony) : this is not really needed
   Map<String, Object> params = new HashMap<String, Object>(); // actual values from client
