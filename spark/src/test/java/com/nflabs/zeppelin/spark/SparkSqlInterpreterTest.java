@@ -40,6 +40,7 @@ public class SparkSqlInterpreterTest {
 		repl.interpret("people.registerAsTable(\"people\")");
 
 		InterpreterResult ret = sql.interpret("select name, age from people where age < 40");
+		System.err.println("RET="+ret.message());
 		assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
 		assertEquals(Type.TABLE, ret.type());
 		assertEquals("name\tage\nmoon\t33\npark\t34\n", ret.message());

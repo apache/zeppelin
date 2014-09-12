@@ -13,16 +13,14 @@ import java.util.Properties;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
+import org.apache.spark.SparkEnv;
 import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.repl.SparkIMain;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Stage;
-import org.apache.spark.scheduler.StageInfo;
-import org.apache.spark.scheduler.TaskInfo;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.jobs.JobProgressListener;
-import org.apache.spark.ui.jobs.TaskUIData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,12 +29,11 @@ import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 
+
 import scala.None;
 import scala.Some;
-import scala.collection.Iterable;
 import scala.collection.Iterator;
 import scala.collection.JavaConversions;
-import scala.collection.mutable.HashMap;
 import scala.collection.mutable.HashSet;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
@@ -70,9 +67,11 @@ public class SparkInterpreter extends Interpreter {
 			sparkListener = (JobProgressListener) share.get("sparkListener");
 			if(sc==null) {
 				sc = createSparkContext();
+				SparkEnv env = SparkEnv.get();
 				sparkListener = new JobProgressListener(sc.getConf());
 				sc.listenerBus().addListener(sparkListener);
 				share.put("sc", sc);
+				share.put("sparkEnv", env);
 				share.put("sparkListener", sparkListener);
 			}
 		}
@@ -118,7 +117,8 @@ public class SparkInterpreter extends Interpreter {
 		}
 		if (System.getenv("SPARK_HOME") != null) {
 			conf.setSparkHome(System.getenv("SPARK_HOME"));
-		}
+		}		
+		conf.set("spark.scheduler.mode", "FAIR");
 		SparkContext sparkContext = new SparkContext(conf);
 		return sparkContext;
 	}
@@ -134,6 +134,7 @@ public class SparkInterpreter extends Interpreter {
 
 	@Override
 	public void initialize(){
+		Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
 		// Very nice discussion about how scala compiler handle classpath
 		// https://groups.google.com/forum/#!topic/scala-user/MlVwo2xCCI0
 		
@@ -158,7 +159,7 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		 */
 		
 		Settings settings = new Settings();
-		
+
 		// set classpath for scala compiler
 		PathSetting pathSettings = settings.classpath();
 		String classpath = "";
@@ -204,6 +205,9 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		binder.put("sqlc", sqlc);
 		binder.put("dep", dep);
 		binder.put("intp", intp);
+		binder.put("interpreter", interpreter);
+		
+		binder.put("env", share.get("sparkEnv"));
 		
 		intp.interpret("@transient val dep = _binder.get(\"dep\").asInstanceOf[com.nflabs.zeppelin.spark.dep.DependencyResolver]");
 		intp.interpret("@transient val sc = _binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
@@ -274,7 +278,8 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		}		
 	}
 	
-	public InterpreterResult _interpret(String [] lines){
+	public InterpreterResult _interpret(String [] lines){	
+		binder = (Map<String, Object>) getValue("_binder");
 		intp.interpret("Console.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
 		out.reset();
 		Code r = null;

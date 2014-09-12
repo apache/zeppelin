@@ -16,6 +16,10 @@ public class ClassloaderInterpreter extends Interpreter {
 	public Interpreter getInnerRepl(){
 		return intp;
 	}
+	
+	public ClassLoader getClassloader(){
+		return cl;
+	}
 
 	@Override
 	public Object getValue(String name) {

@@ -15,7 +15,9 @@ import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 public class NoteReplLoader {
 	private InterpreterFactory factory;
 
-	Map<String, Interpreter> loadedRepls = Collections.synchronizedMap(new HashMap<String, Interpreter>());
+	// TODO : Remove static for per notebook interpreter.
+	//        With static, single interpreter set is shared for all notebooks.
+	static Map<String, Interpreter> loadedRepls = Collections.synchronizedMap(new HashMap<String, Interpreter>());
 	
 	public NoteReplLoader(InterpreterFactory factory){
 		this.factory = factory;

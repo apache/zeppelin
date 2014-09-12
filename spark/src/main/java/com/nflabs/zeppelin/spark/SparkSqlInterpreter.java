@@ -70,30 +70,14 @@ public class SparkSqlInterpreter extends Interpreter {
 	@Override
 	public InterpreterResult interpret(String st) {
 		findSpark();
-		SparkInterpreter sparkInterpreter = ((SparkInterpreter)sparkClassloaderRepl.getInnerRepl());
-		SQLContext sqlc = sparkInterpreter.getSQLContext();
-		SparkContext sc = sqlc.sparkContext();		
-		sc.setJobGroup(jobGroup, "Zeppelin", false);
-		Map<String, Object> binder = (Map<String, Object>) sparkInterpreter.getValue("_binder");
-		binder.put("sparksqlstmt", st);
-
-		InterpreterResult ret = sparkInterpreter._interpret(new String[]{"_binder.put(\"sparksqlresult\", sqlc.sql(_binder.get(\"sparksqlstmt\").asInstanceOf[String]).asInstanceOf[Object])"});
-		if(ret.code()==Code.ERROR) {
-			sc.clearJobGroup();
-			return ret;
-		}
-		
-		SchemaRDD rdd = (SchemaRDD) binder.get("sparksqlresult");
-		if (rdd==null) {
-			sc.clearJobGroup();
-			return ret;
-		}
-		
+		SQLContext sqlc = ((SparkInterpreter)sparkClassloaderRepl.getInnerRepl()).getSQLContext();
+		SparkContext sc = sqlc.sparkContext();
+		sc.setJobGroup(jobGroup, "Zeppelin", false);	
+		SchemaRDD rdd = sqlc.sql(st);
 		Row[] rows = null;
 		try {
 			rows = rdd.take(10000);
 		} catch(Exception e){
-			e.printStackTrace(System.err);
 			sc.clearJobGroup();
 			return new InterpreterResult(Code.ERROR, e.getMessage());
 		}
@@ -109,7 +93,7 @@ public class SparkSqlInterpreter extends Interpreter {
 			}
 		}
 		msg += "\n";
-		
+			
 		// ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType, FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType, NullType, NumericType, ShortType, StringType, StructType
 		for(Row row : rows) {
 			for(int i=0; i<columns.size(); i++){
