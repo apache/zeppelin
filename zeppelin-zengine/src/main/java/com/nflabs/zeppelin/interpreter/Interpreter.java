@@ -3,6 +3,7 @@ package com.nflabs.zeppelin.interpreter;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -46,6 +47,7 @@ public abstract class Interpreter {
 	public abstract FormType getFormType();
 	public abstract int getProgress();
 	public abstract SchedulingMode getSchedulingMode();
+	public abstract List<String> completion(String buf, int cursor);
 
 	public Properties getProperty() {
 		return property;

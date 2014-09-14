@@ -35,6 +35,15 @@ public class Message {
 		
 		CANCEL_PARAGRAPH, // [c-s] cancel paragraph run
 		                  // @param id paragraph id
+		
+		COMPLETION,         // [c-s] ask completion candidates
+		                    // @param id
+		                    // @param buf current code
+		                    // @param cursor cursor position in code
+		
+		COMPLETION_LIST,    // [s-c] send back completion candidates list
+		                    // @param id
+		                    // @param completions list of string
 
 		LIST_NOTES,    // [c-s] ask list of note
 		

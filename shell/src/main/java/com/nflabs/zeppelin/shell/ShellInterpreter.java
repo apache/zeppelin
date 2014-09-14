@@ -2,6 +2,7 @@ package com.nflabs.zeppelin.shell;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.exec.CommandLine;
@@ -88,6 +89,11 @@ public class ShellInterpreter extends Interpreter {
 	@Override
 	public SchedulingMode getSchedulingMode() {
 		return SchedulingMode.FIFO;
+	}
+
+	@Override
+	public List<String> completion(String buf, int cursor) {
+		return null;
 	}
 
 }

@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.interpreter;
 
+import java.util.List;
 import java.util.Properties;
 
 public class LazyOpenInterpreter extends Interpreter{
@@ -76,4 +77,9 @@ public class LazyOpenInterpreter extends Interpreter{
 		return intp.getSchedulingMode();
 	}
 
+	@Override
+	public List<String> completion(String buf, int cursor) {
+		open();
+		return intp.completion(buf, cursor);
+	}
 }

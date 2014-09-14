@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.notebook;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -72,8 +73,11 @@ public class Paragraph extends Job implements Serializable {
   public boolean isEditorOpen() {
     return isEditorOpen;
   }
-  
   public String getRequiredReplName() {
+	  return getRequiredReplName(text);
+  }
+  
+  private String getRequiredReplName(String text) {
     if (text == null)
       return null;
 
@@ -96,12 +100,15 @@ public class Paragraph extends Job implements Serializable {
     }
   }
 
-
   private String getScriptBody() {
+    return getScriptBody(text); 
+  }
+
+  private String getScriptBody(String text) {
     if (text == null)
       return null;
 
-    String magic = getRequiredReplName();
+    String magic = getRequiredReplName(text);
     if (magic == null)
       return text;
     if (magic.length() + 2 >= text.length())
@@ -115,6 +122,20 @@ public class Paragraph extends Job implements Serializable {
 
   public Interpreter getRepl(String name) {
     return replLoader.getRepl(name);
+  }
+  
+  public List<String> completion(String buffer, int cursor) {
+	String replName = getRequiredReplName(buffer);
+	if(replName!=null) {
+      cursor -= replName.length()+1;
+	}
+	String body = getScriptBody(buffer);
+	Interpreter repl = getRepl(replName);
+	if(repl == null) {
+		return null;
+	}
+	
+	return repl.completion(body, cursor);
   }
 
   public void setNoteReplLoader(NoteInterpreterLoader repls) {

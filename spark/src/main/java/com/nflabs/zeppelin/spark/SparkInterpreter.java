@@ -19,6 +19,7 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.SparkEnv;
 import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.repl.SparkIMain;
+import org.apache.spark.repl.SparkJLineCompletion;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Stage;
@@ -44,6 +45,8 @@ import scala.collection.JavaConverters;
 import scala.collection.mutable.HashMap;
 import scala.collection.mutable.HashSet;
 import scala.tools.nsc.Settings;
+import scala.tools.nsc.interpreter.Completion.Candidates;
+import scala.tools.nsc.interpreter.Completion.ScalaCompleter;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
@@ -60,6 +63,7 @@ public class SparkInterpreter extends Interpreter {
 	private ByteArrayOutputStream out;
 	private SQLContext sqlc;
 	private DependencyResolver dep;
+	private SparkJLineCompletion completor;
 
 	private JobProgressListener sparkListener;
 
@@ -242,6 +246,7 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		intp.setContextClassLoader();
 		intp.initializeSynchronous();
 
+		completor = new SparkJLineCompletion(intp);
 
 		sc = getSparkContext();
 		sqlc = getSQLContext();
@@ -294,6 +299,11 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		return paths;
 	}
 	
+	public List<String> completion(String buf, int cursor){
+		ScalaCompleter c = completor.completer();
+		Candidates ret = c.complete(buf, cursor);
+		return scala.collection.JavaConversions.asJavaList(ret.candidates());
+	}
 	
 	public void bindValue(String name, Object o){
 		getResultCode(intp.bindValue(name, o));
