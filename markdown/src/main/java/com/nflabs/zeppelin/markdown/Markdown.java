@@ -12,17 +12,21 @@ import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 public class Markdown extends Interpreter {
 	private Markdown4jProcessor md;
 
+	static {
+		Interpreter.register("md", Markdown.class.getName());
+	}
+	
 	public Markdown(Properties property){
 		super(property);
 	}	
 	
 	@Override
-	public void initialize() {
+	public void open() {
 		md = new Markdown4jProcessor();
 	}
 
 	@Override
-	public void destroy() {
+	public void close() {
 	}
 
 	@Override

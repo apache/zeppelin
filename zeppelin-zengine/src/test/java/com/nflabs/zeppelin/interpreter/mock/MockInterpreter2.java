@@ -13,11 +13,11 @@ public class MockInterpreter2 extends Interpreter{
 	}
 
 	@Override
-	public void initialize() {
+	public void open() {
 	}
 
 	@Override
-	public void destroy() {
+	public void close() {
 	}
 
 	@Override

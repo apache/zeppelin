@@ -223,15 +223,16 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 			return getString(ConfVars.ZEPPELIN_HOME)+"/"+getString(c);
 		}
 	}
-
+	
 
 	public static enum ConfVars {
 		ZEPPELIN_HOME				("zeppelin.home", "../"),
 		ZEPPELIN_PORT				("zeppelin.server.port", 8080),
 		ZEPPELIN_WAR				("zeppelin.war", "../zeppelin-web/src/main/webapp"),
 	    ZEPPELIN_API_WAR            ("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),
-		ZEPPELIN_INTERPRETERS		("zeppelin.interpreters", "spark:com.nflabs.zeppelin.spark.SparkInterpreter,sql:com.nflabs.zeppelin.spark.SparkSqlInterpreter,md:com.nflabs.zeppelin.markdown.Markdown,sh:com.nflabs.zeppelin.shell.ShellInterpreter"),
+		ZEPPELIN_INTERPRETERS		("zeppelin.interpreters", "com.nflabs.zeppelin.spark.SparkInterpreter,com.nflabs.zeppelin.spark.SparkSqlInterpreter,com.nflabs.zeppelin.markdown.Markdown,com.nflabs.zeppelin.shell.ShellInterpreter"),
 		ZEPPELIN_INTERPRETER_DIR	("zeppelin.interpreter.dir", "interpreter"),
+		ZEPPELIN_INTERPRETER_MODE	("zeppelin.interpreter.mode", "separate"),     // 'separate', 'share'
 		ZEPPELIN_ENCODING			("zeppelin.encoding", "UTF-8"), 
 		ZEPPELIN_NOTEBOOK_DIR       ("zeppelin.notebook.dir", "notebook")		
 		;

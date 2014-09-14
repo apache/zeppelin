@@ -35,14 +35,14 @@ public class Note implements Serializable, JobListener {
 	private String name;
 	private String id;
 	
-	private transient NoteReplLoader replLoader;
+	private transient NoteInterpreterLoader replLoader;
 	private transient Scheduler scheduler;
 	private transient ZeppelinConfiguration conf;
 	
 	public Note(){		
 	}
 	
-	public Note(ZeppelinConfiguration conf, NoteReplLoader replLoader, Scheduler scheduler){
+	public Note(ZeppelinConfiguration conf, NoteInterpreterLoader replLoader, Scheduler scheduler){
 		this.conf = conf;
 		this.replLoader = replLoader;
 		this.scheduler = scheduler;
@@ -67,11 +67,11 @@ public class Note implements Serializable, JobListener {
 		this.name = name;
 	}
 
-	public NoteReplLoader getNoteReplLoader() {
+	public NoteInterpreterLoader getNoteReplLoader() {
 		return replLoader;
 	}
 
-	public void setReplLoader(NoteReplLoader replLoader) {
+	public void setReplLoader(NoteInterpreterLoader replLoader) {
 		this.replLoader = replLoader;
 	}
 	
@@ -219,7 +219,7 @@ public class Note implements Serializable, JobListener {
 		FileUtils.deleteDirectory(dir);
 	}
 	
-	public static Note load(String id, ZeppelinConfiguration conf, NoteReplLoader replLoader, Scheduler scheduler) throws IOException{
+	public static Note load(String id, ZeppelinConfiguration conf, NoteInterpreterLoader replLoader, Scheduler scheduler) throws IOException{
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		gsonBuilder.setPrettyPrinting();
 		Gson gson = gsonBuilder.create();

@@ -38,6 +38,10 @@ public class Notebook {
 		loadAllNotes();
 	}
 	
+	private boolean isLoaderStatic(){
+		return "share".equals(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_MODE));
+	}
+	
 	/**
 	 * Create new note
 	 * @param name
@@ -45,7 +49,7 @@ public class Notebook {
 	 */
 	public Note createNote() {
 		Scheduler scheduler = schedulerFactory.createOrGetFIFOScheduler("note_"+System.currentTimeMillis());		
-		Note note = new Note(conf, new NoteReplLoader(replFactory), scheduler);
+		Note note = new Note(conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()), scheduler);
 		synchronized(notes){
 			notes.put(note.id(), note);
 		}
@@ -80,7 +84,7 @@ public class Notebook {
 			if(f.isDirectory()) {
 				Scheduler scheduler = schedulerFactory.createOrGetFIFOScheduler("note_"+System.currentTimeMillis());
 				logger.info("Loading note from "+f.getName());
-				Note n = Note.load(f.getName(), conf, new NoteReplLoader(replFactory), scheduler);
+				Note n = Note.load(f.getName(), conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()), scheduler);
 				synchronized(notes){
 					notes.put(n.id(), n);
 				}

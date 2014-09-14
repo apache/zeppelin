@@ -22,7 +22,7 @@ public class SparkInterpreterTest {
 		Properties p = new Properties();
 		p.put("share", share);
 		repl = new SparkInterpreter(p);
-		repl.initialize();
+		repl.open();
 	}
 
 	@After
@@ -52,7 +52,7 @@ public class SparkInterpreterTest {
 		Properties p = new Properties();
 		p.put("share", share);
 		SparkInterpreter repl2 = new SparkInterpreter(p);
-		repl2.initialize();	
+		repl2.open();	
 		
 		repl.interpret("case class Man(name:String, age:Int)");
 		repl.interpret("val man = sc.parallelize(Seq(Man(\"moon\", 33), Man(\"jobs\", 51), Man(\"gates\", 51), Man(\"park\", 34)))");

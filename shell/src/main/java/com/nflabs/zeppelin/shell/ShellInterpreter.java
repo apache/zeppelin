@@ -20,16 +20,20 @@ public class ShellInterpreter extends Interpreter {
 	Logger logger = LoggerFactory.getLogger(ShellInterpreter.class);
 	int CMD_TIMEOUT = 600;
 	
+	static {
+		Interpreter.register("sh", ShellInterpreter.class.getName());
+	}
+	
 	public ShellInterpreter(Properties property) {
 		super(property);
 	}
 
 	@Override
-	public void initialize() {
+	public void open() {
 	}
 
 	@Override
-	public void destroy() {
+	public void close() {
 	}
 
 	@Override

@@ -1,7 +1,6 @@
 package com.nflabs.zeppelin.spark;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -9,8 +8,6 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Stage;
-import org.apache.spark.scheduler.StageInfo;
-import org.apache.spark.scheduler.TaskInfo;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SchemaRDD;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
@@ -19,17 +16,18 @@ import org.apache.spark.ui.jobs.JobProgressListener;
 
 import scala.collection.Iterator;
 import scala.collection.JavaConversions;
-import scala.collection.mutable.HashMap;
 import scala.collection.mutable.HashSet;
 
-import com.nflabs.zeppelin.interpreter.ClassloaderInterpreter;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 
 public class SparkSqlInterpreter extends Interpreter {
-	private ClassloaderInterpreter sparkClassloaderRepl;
 	AtomicInteger num = new AtomicInteger(0);
+	
+	static {
+		Interpreter.register("sql", SparkSqlInterpreter.class.getName());
+	}
 	
 	private final String jobGroup = "zeppelin-"+this.hashCode();
 	
@@ -38,28 +36,17 @@ public class SparkSqlInterpreter extends Interpreter {
 	}
 
 	@Override
-	public void initialize() {
-		Map<String, Interpreter> repls = (Map<String, Interpreter>) this.getProperty().get("repls");
-		if(repls!=null) {
-			sparkClassloaderRepl = (ClassloaderInterpreter) repls.get("spark");
-		}
+	public void open() {
+		
 	}
 	
-	public void setSparkClassloaderRepl(ClassloaderInterpreter repl) {
-		this.sparkClassloaderRepl = (ClassloaderInterpreter) repl;
-	}
 	
-	private void findSpark(){
-		if(sparkClassloaderRepl!=null) return;
-		Map<String, Interpreter> repls = (Map<String, Interpreter>) this.getProperty().get("repls");
-		if(repls!=null) {			
-			sparkClassloaderRepl = (ClassloaderInterpreter) repls.get("spark");
-		}
+	private SparkInterpreter getSparkInterpreter(){
+		return SparkInterpreter.singleton(getProperty());
 	}
-	
 
 	@Override
-	public void destroy() {
+	public void close() {
 	}
 
 	@Override
@@ -69,8 +56,7 @@ public class SparkSqlInterpreter extends Interpreter {
 
 	@Override
 	public InterpreterResult interpret(String st) {
-		findSpark();
-		SQLContext sqlc = ((SparkInterpreter)sparkClassloaderRepl.getInnerRepl()).getSQLContext();
+		SQLContext sqlc = getSparkInterpreter().getSQLContext();
 		SparkContext sc = sqlc.sparkContext();
 		sc.setJobGroup(jobGroup, "Zeppelin", false);	
 		SchemaRDD rdd = sqlc.sql(st);
@@ -128,71 +114,10 @@ public class SparkSqlInterpreter extends Interpreter {
 		return rett;
 	}
 	
-	
-	public InterpreterResult interpretB(String st) {
-		findSpark();
-		SQLContext sqlc = ((SparkInterpreter)sparkClassloaderRepl.getInnerRepl()).getSQLContext();
-		SparkContext sc = sqlc.sparkContext();
-		sc.setJobGroup(jobGroup, "Zeppelin", false);	
-		SchemaRDD rdd = sqlc.sql(st);
-		Row[] rows = null;
-		try {
-			rows = rdd.take(10000);
-		} catch(Exception e){
-			sc.clearJobGroup();
-			return new InterpreterResult(Code.ERROR, e.getMessage());
-		}
-		
-		String msg = null;
-		// get field names
-		List<Attribute> columns = scala.collection.JavaConverters.asJavaListConverter(rdd.queryExecution().analyzed().output()).asJava();
-		for(Attribute col : columns) {
-			if(msg==null) {
-				msg = col.name();
-			} else {
-				msg += "\t"+col.name();
-			}
-		}
-		msg += "\n";
-		
-		// ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType, FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType, NullType, NumericType, ShortType, StringType, StructType
-		for(Row row : rows) {
-			for(int i=0; i<columns.size(); i++){
-				String type = columns.get(i).dataType().toString();
-				if ("BooleanType".equals(type)) {
-					msg += row.getBoolean(i);
-				} else if("DecimalType".equals(type)) {
-					msg += row.getInt(i);
-				} else if("DoubleType".equals(type)) {
-					msg += row.getDouble(i);
-				} else if("FloatType".equals(type)) {
-					msg += row.getFloat(i);
-				} else if("LongType".equals(type)) {
-					msg += row.getLong(i);
-				} else if("IntegerType".equals(type)) {
-					msg += row.getInt(i);
-				} else if("ShortType".equals(type)) {
-					msg += row.getShort(i);
-				} else if("StringType".equals(type)) {
-					msg += row.getString(i);
-				} else {
-					msg += row.getString(i);
-				}
-				if(i!=columns.size()-1){
-					msg += "\t";
-				}
-			}
-			msg += "\n";
-		}
-		InterpreterResult ret = new InterpreterResult(Code.SUCCESS, "%table "+msg);
-		sc.clearJobGroup();
-		return ret;
-	}
 
 	@Override
 	public void cancel() {
-		findSpark();
-		SQLContext sqlc = ((SparkInterpreter)sparkClassloaderRepl.getInnerRepl()).getSQLContext();
+		SQLContext sqlc = getSparkInterpreter().getSQLContext();
 		SparkContext sc = sqlc.sparkContext();
 
 		sc.cancelJobGroup(jobGroup);
@@ -213,13 +138,13 @@ public class SparkSqlInterpreter extends Interpreter {
 		// howto get progress from sparkListener? check this out
 		// https://github.com/apache/spark/blob/v1.0.1/core/src/main/scala/org/apache/spark/ui/jobs/StageTable.scala
 		
-		JobProgressListener sparkListener = ((SparkInterpreter)sparkClassloaderRepl.getInnerRepl()).getJobProgressListener();
+		JobProgressListener sparkListener = getSparkInterpreter().getJobProgressListener();
 		if(sparkListener==null) return -1;
 		
 		int completedTasks = 0;
 		int totalTasks = 0;
 
-		SQLContext sqlc = ((SparkInterpreter)sparkClassloaderRepl.getInnerRepl()).getSQLContext();
+		SQLContext sqlc = getSparkInterpreter().getSQLContext();
 		SparkContext sc = sqlc.sparkContext();
 
 		DAGScheduler scheduler = sc.dagScheduler();

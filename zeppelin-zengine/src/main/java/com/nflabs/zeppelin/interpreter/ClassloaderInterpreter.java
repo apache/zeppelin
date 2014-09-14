@@ -65,11 +65,11 @@ public class ClassloaderInterpreter extends Interpreter {
 	}
 
 	@Override
-	public void initialize() {
+	public void open() {
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(cl);
 		try {
-			intp.initialize();
+			intp.open();
 		} catch (Exception e){
 			throw new InterpreterException(e);
 		} finally {
@@ -79,11 +79,11 @@ public class ClassloaderInterpreter extends Interpreter {
 	}
 
 	@Override
-	public void destroy() {
+	public void close() {
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(cl);
 		try {
-			intp.destroy();
+			intp.close();
 		} catch (Exception e){
 			throw new InterpreterException(e);
 		} finally {
