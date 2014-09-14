@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.interpreter.mock;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -55,6 +56,11 @@ public class MockInterpreter extends Interpreter {
 	@Override
 	public SchedulingMode getSchedulingMode() {
 		return SchedulingMode.FIFO;
+	}
+
+	@Override
+	public List<String> completion(String buf, int cursor) {
+		return null;
 	}
 
 }

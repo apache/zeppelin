@@ -249,4 +249,9 @@ public class SparkSqlInterpreter extends Interpreter {
 	public SchedulingMode getSchedulingMode() {
 		return SchedulingMode.FIFO;
 	}
+
+	@Override
+	public List<String> completion(String buf, int cursor) {
+		return null;
+	}
 }

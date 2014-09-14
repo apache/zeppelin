@@ -58,6 +58,8 @@ angular.module('zeppelinWebApp')
       $rootScope.$emit('updateParagraph', data);
     } else if (op === 'PROGRESS') {
       $rootScope.$emit('updateProgress', data);
+    } else if (op === 'COMPLETION_LIST') {
+      $rootScope.$emit('completionList', data);
     }
   });
 

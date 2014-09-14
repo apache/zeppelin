@@ -103,6 +103,9 @@ public class NotebookServer extends WebSocketServer {
         case NOTE_UPDATE:
           updateNote(conn, notebook, messagereceived);
           break;
+        case COMPLETION:
+          completion(conn, notebook, messagereceived);
+          break;
         default:
           broadcastNoteList();
           break;
@@ -342,6 +345,23 @@ public class NotebookServer extends WebSocketServer {
     }
   }
   
+  private void completion(WebSocket conn, Notebook notebook, Message fromMessage) {
+    String paragraphId = (String) fromMessage.get("id");
+    String buffer = (String) fromMessage.get("buf");
+    int cursor = (int)Double.parseDouble(fromMessage.get("cursor").toString());
+	Message resp = new Message(OP.COMPLETION_LIST).put("id", paragraphId);
+    
+    if (paragraphId == null) {
+      conn.send(serializeMessage(resp));
+      return;
+    }
+    
+    final Note note = notebook.getNote(getOpenNoteId(conn));
+    Paragraph p = note.getParagraph(paragraphId);
+    List<String> candidates = p.completion(buffer, cursor);
+    resp.put("completions", candidates);
+    conn.send(serializeMessage(resp));
+  }
 
   private void cancelParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");

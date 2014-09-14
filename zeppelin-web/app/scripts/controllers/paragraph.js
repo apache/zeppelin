@@ -188,6 +188,9 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.aceLoaded = function(_editor) {
+    var langTools = ace.define.modules["ace/ext/language_tools"];
+    var Range = ace.define.modules['ace/range'].Range
+
     $scope.editor = _editor;
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
       $scope.editor.renderer.setShowGutter(false);
@@ -197,6 +200,42 @@ angular.module('zeppelinWebApp')
       setEditorHeight(_editor.container.id, hight);
       
       $scope.editor.setKeyboardHandler("ace/keyboard/emacs");
+      $scope.editor.setOptions({
+          enableBasicAutocompletion: true,
+          enableSnippets: true,
+          enableLiveAutocompletion:true
+      });
+      var remoteCompleter = {
+          getCompletions : function(editor, session, pos, prefix, callback) {
+              if (!$scope.editor.isFocused() ) return;
+
+              var buf = session.getTextRange(new Range(0, 0, pos.row, pos.column))
+              $rootScope.$emit('sendNewEvent', {
+                  op : 'COMPLETION',
+                  data : {
+                      id : $scope.paragraph.id,
+                      buf : buf,
+                      cursor : buf.length
+                  }
+              });
+
+              $rootScope.$on('completionList', function(event, data) {
+                  if (data.completions) {
+                      var completions = [];
+                      for(var c in data.completions){
+                          var v = data.completions[c]
+                          completions.push({
+                              name:v,
+                              value:v,
+                              score:300
+                          });
+                      }
+                      callback(null, completions);
+                  }
+              });
+          }
+      }
+      langTools.addCompleter(remoteCompleter);
 
       $scope.editor.getSession().on('change', function(e, editSession) {
         hight = editSession.getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
@@ -225,22 +264,51 @@ angular.module('zeppelinWebApp')
         readOnly: false
       });
 
+      // autocomplete on '.'
+      /*
+      $scope.editor.commands.on("afterExec", function(e, t) {
+        if (e.command.name == "insertstring" && e.args == "." ) {
+	  var all = e.editor.completers;
+	  //e.editor.completers = [remoteCompleter];
+	  e.editor.execCommand("startAutocomplete");
+	  //e.editor.completers = all;
+	}
+      });
+      */
+
+      // autocomplete on 'ctrl+.'
+      $scope.editor.commands.addCommand({ 
+        name: "showOtherCompletions", 
+        bindKey: "Ctrl-.", 
+        exec: function(editor) { 
+          if (!editor.completer) 
+            editor.completer = new Autocomplete(editor); 
+            var all = editor.completers; 
+            //editor.completers = [remoteCompleter] 
+            editor.completer.showPopup(editor); 
+            //editor.completers = all; 
+         } 
+      }) 
+
       $scope.editor.keyBinding.origOnCommandKey = $scope.editor.keyBinding.onCommandKey;
       $scope.editor.keyBinding.onCommandKey = function(e, hashId, keyCode) {
-        if(keyCode==38){  // UP
-          var numRows = $scope.editor.getSession().getLength();
-          var currentRow = $scope.editor.getCursorPosition().row
-          if(currentRow==0){
-            // move focus to previous paragraph
-            $rootScope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
-          }
-        } else if(keyCode==40){  // DOWN
-          var numRows = $scope.editor.getSession().getLength();
-          var currentRow = $scope.editor.getCursorPosition().row
-          if(currentRow == numRows-1){
-            // move focus to next paragraph
-            $rootScope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
-          }
+        if($scope.editor.completer && $scope.editor.completer.activated) { // if autocompleter is active
+        } else {
+            if(keyCode==38){  // UP
+                var numRows = $scope.editor.getSession().getLength();
+                var currentRow = $scope.editor.getCursorPosition().row
+                if(currentRow==0){
+                    // move focus to previous paragraph
+                    $rootScope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
+                }
+            } else if(keyCode==40){  // DOWN
+                var numRows = $scope.editor.getSession().getLength();
+                var currentRow = $scope.editor.getCursorPosition().row
+                if(currentRow == numRows-1){
+                    // move focus to next paragraph
+                    $rootScope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
+                }
+            }
         }
         this.origOnCommandKey(e, hashId, keyCode);
       }

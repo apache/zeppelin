@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.interpreter;
 
+import java.util.List;
 import java.util.Properties;
 
 public class ClassloaderInterpreter extends Interpreter {
@@ -140,6 +141,20 @@ public class ClassloaderInterpreter extends Interpreter {
 		Thread.currentThread().setContextClassLoader(cl);
 		try {
 			return intp.getSchedulingMode();
+		} catch (Exception e){
+			throw new InterpreterException(e);
+		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
+			Thread.currentThread().setContextClassLoader(oldcl);
+		}	
+	}
+	
+	@Override
+	public List<String> completion(String buf, int cursor) {
+		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(cl);
+		try {
+			return intp.completion(buf, cursor);
 		} catch (Exception e){
 			throw new InterpreterException(e);
 		} finally {

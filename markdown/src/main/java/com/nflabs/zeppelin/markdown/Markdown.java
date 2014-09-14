@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.markdown;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 
 import org.markdown4j.Markdown4jProcessor;
@@ -66,5 +67,10 @@ public class Markdown extends Interpreter {
 	@Override
 	public SchedulingMode getSchedulingMode() {
 		return SchedulingMode.PARALLEL;
+	}
+
+	@Override
+	public List<String> completion(String buf, int cursor) {
+		return null;
 	}
 }
