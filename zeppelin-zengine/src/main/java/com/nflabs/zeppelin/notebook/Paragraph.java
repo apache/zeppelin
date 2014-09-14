@@ -16,10 +16,7 @@ import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.JobListener;
 
 /**
- * Paragraph is a representation of an execution unit.<p></p>
- * 
- * 
- * @author anthonycorbacho
+ * Paragraph is a representation of an execution unit
  */
 public class Paragraph extends Job implements Serializable {
   private transient static final long serialVersionUID = -6328572073497992016L;

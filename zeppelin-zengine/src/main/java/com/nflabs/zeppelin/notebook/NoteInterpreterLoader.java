@@ -9,6 +9,7 @@ import java.util.Set;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.Interpreter.SchedulingMode;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
+import com.nflabs.zeppelin.interpreter.LazyOpenInterpreter;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
@@ -49,9 +50,8 @@ public class NoteInterpreterLoader {
 		} else {
 			Properties p = new Properties();
 			Interpreter repl = factory.createRepl(name, p);
-			repl.open();
 			
-			loadedInterpreters.put(name, repl);			
+			loadedInterpreters.put(name, new LazyOpenInterpreter(repl));			
 			return repl;
 		}
 	}

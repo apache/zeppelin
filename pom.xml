@@ -83,7 +83,7 @@
   </modules>
 
   <properties>
-    <spark.version>1.0.1</spark.version>
+    <spark.version>1.1.0</spark.version>
     <scala.version>2.10.4</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
     <mesos.version>0.18.1</mesos.version>
