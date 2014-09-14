@@ -98,7 +98,11 @@ public class InterpreterFactory {
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();		
 		try {
 
-			URLClassLoader ccl = cleanCl.get(dirName);			
+			URLClassLoader ccl = cleanCl.get(dirName);
+			if(ccl==null) {
+				// classloader fallback
+				ccl = URLClassLoader.newInstance(new URL[]{}, oldcl);
+			}
 			
 			boolean separateCL = true;
 			try{ // check if server's classloader has driver already. 

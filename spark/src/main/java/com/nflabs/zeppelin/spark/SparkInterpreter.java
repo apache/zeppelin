@@ -203,11 +203,14 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 			}
 			classpath+=f.getAbsolutePath();
 		}
-		for(URL u : urls) {
-			if(classpath.length()>0){
-				classpath+=File.pathSeparator;
+		
+		if (urls!=null) {
+			for(URL u : urls) {
+				if(classpath.length()>0){
+					classpath+=File.pathSeparator;
+				}
+				classpath+=u.getFile();
 			}
-			classpath+=u.getFile();
 		}
 		
 		pathSettings.v_$eq(classpath);
