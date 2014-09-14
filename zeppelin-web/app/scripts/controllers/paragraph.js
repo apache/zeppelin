@@ -112,7 +112,6 @@ angular.module('zeppelinWebApp')
       }
     }
   });
-  
 
   $scope.onMouseover = function(){
     $('#'+$scope.paragraph.id+"_control").show(300);
@@ -123,7 +122,6 @@ angular.module('zeppelinWebApp')
     $('#'+$scope.paragraph.id+"_control").hide(300);
     $('#'+$scope.paragraph.id+"_status").css({"visibility":"hidden"});
   };
-
 
   $scope.cancelParagraph = function() {
     console.log("Cancel %o", $scope.paragraph.id);
@@ -197,6 +195,9 @@ angular.module('zeppelinWebApp')
       $scope.editor.focus();
       var hight = $scope.editor.getSession().getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
       setEditorHeight(_editor.container.id, hight);
+      
+      $scope.editor.setKeyboardHandler("ace/keyboard/emacs");
+
       $scope.editor.getSession().on('change', function(e, editSession) {
         hight = editSession.getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
         setEditorHeight(_editor.container.id, hight);
@@ -223,6 +224,26 @@ angular.module('zeppelinWebApp')
         },
         readOnly: false
       });
+
+      $scope.editor.keyBinding.origOnCommandKey = $scope.editor.keyBinding.onCommandKey;
+      $scope.editor.keyBinding.onCommandKey = function(e, hashId, keyCode) {
+        if(keyCode==38){  // UP
+          var numRows = $scope.editor.getSession().getLength();
+          var currentRow = $scope.editor.getCursorPosition().row
+          if(currentRow==0){
+            // move focus to previous paragraph
+            $rootScope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
+          }
+        } else if(keyCode==40){  // DOWN
+          var numRows = $scope.editor.getSession().getLength();
+          var currentRow = $scope.editor.getCursorPosition().row
+          if(currentRow == numRows-1){
+            // move focus to next paragraph
+            $rootScope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
+          }
+        }
+        this.origOnCommandKey(e, hashId, keyCode);
+      }
     }
   };
 
@@ -241,6 +262,12 @@ angular.module('zeppelinWebApp')
   $rootScope.$on('updateProgress', function(event, data) {
     if (data.id === $scope.paragraph.id) {
       $scope.currentProgress = data.progress
+    }
+  });
+
+  $rootScope.$on('focusParagraph', function(event, paragraphId){
+    if ($scope.paragraph.id === paragraphId) {
+      $scope.editor.focus();
     }
   });
 

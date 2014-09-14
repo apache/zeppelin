@@ -58,6 +58,42 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       updateNote(note);
     }
   });
+
+  $rootScope.$on('moveFocusToPreviousParagraph', function(event, currentParagraphId){
+    var focus = false;
+    for (var i=$scope.note.paragraphs.length-1; i>=0; i--) {
+      if (focus === false ) {
+        if ($scope.note.paragraphs[i].id === currentParagraphId) {
+            focus = true;
+            continue;
+        }
+      } else {
+        var p = $scope.note.paragraphs[i];
+        if (p.isOpen && p.isEditorOpen) {
+          $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
+          break;
+        }
+      }
+    }
+  });
+
+  $rootScope.$on('moveFocusToNextParagraph', function(event, currentParagraphId){
+    var focus = false;
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      if (focus === false ) {
+        if ($scope.note.paragraphs[i].id === currentParagraphId) {
+            focus = true;
+            continue;
+        }
+      } else {
+        var p = $scope.note.paragraphs[i];
+        if (p.isOpen && p.isEditorOpen) {
+          $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
+          break;
+        }
+      }
+    }
+  });
   
   var updateNote = function(note) {
     /** update Note name */
