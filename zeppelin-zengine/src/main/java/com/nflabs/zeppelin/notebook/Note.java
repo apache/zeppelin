@@ -36,16 +36,14 @@ public class Note implements Serializable, JobListener {
 	private String id;
 	
 	private transient NoteInterpreterLoader replLoader;
-	private transient Scheduler scheduler;
 	private transient ZeppelinConfiguration conf;
 	
 	public Note(){		
 	}
 	
-	public Note(ZeppelinConfiguration conf, NoteInterpreterLoader replLoader, Scheduler scheduler){
+	public Note(ZeppelinConfiguration conf, NoteInterpreterLoader replLoader){
 		this.conf = conf;
 		this.replLoader = replLoader;
-		this.scheduler = scheduler;
 		generateId();
 	}
 	
@@ -73,11 +71,7 @@ public class Note implements Serializable, JobListener {
 
 	public void setReplLoader(NoteInterpreterLoader replLoader) {
 		this.replLoader = replLoader;
-	}
-	
-	public void setScheduler(Scheduler scheduler) {
-		this.scheduler = scheduler;
-	}
+	}	
 	
 	public void setZeppelinConfiguration(ZeppelinConfiguration conf){
 		this.conf = conf;
@@ -164,6 +158,7 @@ public class Note implements Serializable, JobListener {
 			for (Paragraph p : paragraphs) {
 				p.setNoteReplLoader(replLoader);
 				p.setListener(this);
+				Scheduler scheduler = replLoader.getScheduler(p.getRequiredReplName());		
 				scheduler.submit(p);
 			}
 		}
@@ -177,6 +172,7 @@ public class Note implements Serializable, JobListener {
 		Paragraph p = getParagraph(paragraphId);
 		p.setNoteReplLoader(replLoader);
 		p.setListener(listener);
+		Scheduler scheduler = replLoader.getScheduler(p.getRequiredReplName());		
 		scheduler.submit(p);
 	}
 	
@@ -236,7 +232,6 @@ public class Note implements Serializable, JobListener {
 		Note note = gson.fromJson(json, Note.class);
 		note.setZeppelinConfiguration(conf);
 		note.setReplLoader(replLoader);
-		note.setScheduler(scheduler);
 		for(Paragraph p : note.paragraphs){
 			if(p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING){
 				p.setStatus(Status.ABORT);

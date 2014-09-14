@@ -62,4 +62,9 @@ public class Markdown extends Interpreter {
 	public int getProgress() {
 		return 0;
 	}
+	
+	@Override
+	public SchedulingMode getSchedulingMode() {
+		return SchedulingMode.PARALLEL;
+	}
 }

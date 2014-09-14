@@ -26,6 +26,11 @@ public abstract class Interpreter {
 		NONE
 	}
 	
+	public static enum SchedulingMode {
+		FIFO,
+		PARALLEL
+	}
+	
 	public static Map<String, String> registeredInterpreters = Collections.synchronizedMap(new HashMap<String, String>());
 	
 	public static void register(String name, String className) {
@@ -40,6 +45,7 @@ public abstract class Interpreter {
 	public abstract void bindValue(String name, Object o);
 	public abstract FormType getFormType();
 	public abstract int getProgress();
+	public abstract SchedulingMode getSchedulingMode();
 
 	public Properties getProperty() {
 		return property;
