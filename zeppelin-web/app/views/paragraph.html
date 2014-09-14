@@ -42,7 +42,7 @@ limitations under the License.
     <div ng-show="paragraph.isEditorOpen == true">
       <div id="{{paragraph.id}}_editor"
            style="opacity: 1;"
-           class="editor" ui-ace="{ onLoad : aceLoaded}"
+           class="editor" ui-ace="{ onLoad : aceLoaded, onChange: aceChanged}"
            ng-model="paragraph.text"
            ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">
       </div>

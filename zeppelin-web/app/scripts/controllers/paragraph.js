@@ -73,8 +73,16 @@ angular.module('zeppelinWebApp')
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
  
       if ($scope.paragraph.text !== data.paragraph.text) {
-        //$scope.paragraph = data.paragraph;
-        $scope.paragraph.text = data.paragraph.text;
+        if ($scope.dirtyText) {         // check if editor has local update
+          if ($scope.dirtyText === data.paragraph.text ) {  // when local update is the same from remote, clear local update
+            $scope.paragraph.text = data.paragraph.text;
+            $scope.dirtyText = undefined;
+          } else { // if there're local update, keep it.
+            $scope.paragraph.text = $scope.dirtyText;  
+          }
+        } else {
+          $scope.paragraph.text = data.paragraph.text;
+        }
       }
 
       /** push the rest */
@@ -177,10 +185,13 @@ angular.module('zeppelinWebApp')
     $scope.forms[formulaire.name] = value;
   };
 
+  $scope.aceChanged = function() {
+    $scope.dirtyText = $scope.editor.getSession().getValue();
+  };
+
   $scope.aceLoaded = function(_editor) {
     $scope.editor = _editor;
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
-
       $scope.editor.renderer.setShowGutter(false);
       $scope.editor.setHighlightActiveLine(false);
       $scope.editor.focus();
