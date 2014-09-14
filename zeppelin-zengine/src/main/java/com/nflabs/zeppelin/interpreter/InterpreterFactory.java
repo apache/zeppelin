@@ -9,8 +9,11 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
@@ -23,31 +26,65 @@ public class InterpreterFactory {
 	Logger logger = LoggerFactory.getLogger(InterpreterFactory.class);
 	
 	private Map<String, Object> share = Collections.synchronizedMap(new HashMap<String, Object>());
-	private Map<String, ClassLoader> cleanCl = Collections.synchronizedMap(new HashMap<String, ClassLoader>());
+	private Map<String, URLClassLoader> cleanCl = Collections.synchronizedMap(new HashMap<String, URLClassLoader>());
 	
 	private ZeppelinConfiguration conf;
-	Map<String, String> replNameClassMap = new HashMap<String, String>();
-	String defaultReplName;
+	String [] interpreterClassList;
+	String defaultInterpreterName;
 
 	public InterpreterFactory(ZeppelinConfiguration conf){
 		this.conf = conf;
 		String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
-		String[] confs = replsConf.split(",");
-		for(String c : confs) {
-			String [] nameAndClass = c.split(":");
-			replNameClassMap.put(nameAndClass[0], nameAndClass[1]);
-			if(defaultReplName==null){
-				defaultReplName = nameAndClass[0];
-			}
-		}
+		interpreterClassList = replsConf.split(",");
+		
+		init();
 	}
 	
-	public String getDefaultReplName(){
-		return defaultReplName;
+	
+	private void init(){
+		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		
+		File [] interpreterDirs = new File(conf.getInterpreterDir()).listFiles();
+		if(interpreterDirs!=null) {
+			for (File path : interpreterDirs) {				
+				logger.info("Reading "+path.getAbsolutePath());
+				URL[] urls = null;
+				try {
+					urls = recursiveBuildLibList(path);
+				} catch (MalformedURLException e1) {
+					logger.error("Can't load jars ", e1);
+				}
+				URLClassLoader ccl = new URLClassLoader(urls, oldcl);
+				
+				for(String className : interpreterClassList){
+					try {
+						Class.forName(className, true, ccl);
+						Set<String> keys = Interpreter.registeredInterpreters.keySet();
+						for (String intName : keys) {
+							if(className.equals(Interpreter.registeredInterpreters.get(intName))){
+								logger.info("Interpreter "+intName+" found. class="+className);
+								cleanCl.put(intName, ccl);
+							}
+							
+							if (className.equals(interpreterClassList[0])) {
+								defaultInterpreterName = intName;
+							}
+						}
+					} catch (ClassNotFoundException e) {
+						// nothing to do
+					}
+				}
+			}
+		}		
+	}
+	
+	
+	public String getDefaultInterpreterName(){
+		return defaultInterpreterName;
 	}
 	
 	public Interpreter createRepl(String replName, Properties properties) {
-		String className = replNameClassMap.get(replName!=null ? replName : defaultReplName);
+		String className = Interpreter.registeredInterpreters.get(replName!=null ? replName : defaultInterpreterName);
 		logger.info("find repl class {} = {}", replName, className);
 		if(className==null) {
 			throw new RuntimeException("Configuration not found for "+replName);
@@ -61,13 +98,10 @@ public class InterpreterFactory {
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();		
 		try {
 
-			ClassLoader ccl = cleanCl.get(dirName);			
-			if(ccl==null) { // create
-				File path = new File(conf.getInterpreterDir()+"/"+dirName);
-				logger.info("Reading "+path.getAbsolutePath());
-				URL [] urls = recursiveBuildLibList(path);
-				ccl = new URLClassLoader(urls, oldcl);
-				cleanCl.put(dirName, ccl);
+			URLClassLoader ccl = cleanCl.get(dirName);
+			if(ccl==null) {
+				// classloader fallback
+				ccl = URLClassLoader.newInstance(new URL[]{}, oldcl);
 			}
 			
 			boolean separateCL = true;
@@ -79,9 +113,9 @@ public class InterpreterFactory {
 			}
 			
 			URLClassLoader cl;
-
+			
 			if(separateCL==true) {
-				cl = URLClassLoader.newInstance(new URL[]{}, (URLClassLoader) ccl);
+				cl = URLClassLoader.newInstance(new URL[]{}, ccl);
 			} else {
 				cl = (URLClassLoader) ccl;
 			}
@@ -91,6 +125,7 @@ public class InterpreterFactory {
 			Constructor<Interpreter> constructor = replClass.getConstructor(new Class []{Properties.class});
 			Interpreter repl = constructor.newInstance(property);
 			property.put("share", share);
+			property.put("classloaderUrls", ccl.getURLs());
 			return new ClassloaderInterpreter(repl, cl, property);
 		} catch (SecurityException e) {
 			throw new InterpreterException(e);
@@ -105,8 +140,6 @@ public class InterpreterFactory {
 		} catch (InvocationTargetException e) {
 			throw new InterpreterException(e);
 		} catch (ClassNotFoundException e) {
-			throw new InterpreterException(e);
-		} catch (MalformedURLException e) {
 			throw new InterpreterException(e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(oldcl);

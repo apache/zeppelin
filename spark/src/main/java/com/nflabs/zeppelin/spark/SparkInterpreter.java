@@ -30,6 +30,7 @@ import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 
 
+import scala.Console;
 import scala.None;
 import scala.Some;
 import scala.collection.Iterator;
@@ -42,6 +43,10 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
 public class SparkInterpreter extends Interpreter {
 	Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
 	
+	static {
+		Interpreter.register("spark", SparkInterpreter.class.getName());
+	}
+	
 	private SparkILoop interpreter;
 	private SparkIMain intp;
 	private SparkContext sc;
@@ -52,28 +57,52 @@ public class SparkInterpreter extends Interpreter {
 	private JobProgressListener sparkListener;
 
 	private Map<String, Object> binder;
+	private SparkEnv env;
 	
+	
+	static SparkInterpreter _singleton;	
+	public static SparkInterpreter singleton(Properties property){
+		if(_singleton==null) {
+			new SparkInterpreter(property);
+		}
+		return _singleton;
+	}
 
 	public SparkInterpreter(Properties property) {
 		super(property);
 		out = new ByteArrayOutputStream();
+		if(_singleton==null) {
+			_singleton = this;
+		}
 	}
 
+
 	public SparkContext getSparkContext(){
+		Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
+		
 		if(sc==null){
-			// save / load sc from common share
-			Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
 			sc = (SparkContext) share.get("sc");
 			sparkListener = (JobProgressListener) share.get("sparkListener");
+
 			if(sc==null) {
 				sc = createSparkContext();
-				SparkEnv env = SparkEnv.get();
+				env = SparkEnv.get();
 				sparkListener = new JobProgressListener(sc.getConf());
 				sc.listenerBus().addListener(sparkListener);
-				share.put("sc", sc);
-				share.put("sparkEnv", env);
-				share.put("sparkListener", sparkListener);
+				
+				/* Sharing a single spark context across scala repl is not possible at the moment.
+				 * because of spark's limitation.
+				 *   1) Each SparkImain (scala repl) creates classServer but worker (executor uses only the first one)
+				 *   2) creating a SparkContext creates corresponding worker's Executor. which executes tasks and reuse classloader.
+				 *      the same Classloader can confuse classes from many different scala repl.
+				 *      
+				 * The code below is commented out until this limitation removes
+				 */
+				//share.put("sc", sc);
+				//share.put("sparkEnv", env);
+				//share.put("sparkListener", sparkListener);
 			}
+
 		}
 		return sc;
 	}
@@ -84,8 +113,10 @@ public class SparkInterpreter extends Interpreter {
 			Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
 			sqlc = (SQLContext) share.get("sqlc");
 			if(sqlc==null) {
-				sqlc = new SQLContext(sc);
-				share.put("sqlc", sqlc);				
+				sqlc = new SQLContext(getSparkContext());
+				
+				// The same reason with SparkContext, it'll not be shared, so commenting out.
+				//share.put("sqlc", sqlc);				
 			}
 		}
 		return sqlc;			
@@ -98,7 +129,7 @@ public class SparkInterpreter extends Interpreter {
 			dep = (DependencyResolver) share.get("dep");
 			if(dep==null) {
 				dep = new DependencyResolver(intp.global(), sc);
-				share.put("dep", dep);				
+				//share.put("dep", dep);				
 			}
 		}
 		return dep;		
@@ -133,8 +164,10 @@ public class SparkInterpreter extends Interpreter {
 	
 
 	@Override
-	public void initialize(){
+	public void open(){
 		Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
+		URL [] urls = (URL[]) getProperty().get("classloaderUrls");
+		
 		// Very nice discussion about how scala compiler handle classpath
 		// https://groups.google.com/forum/#!topic/scala-user/MlVwo2xCCI0
 		
@@ -170,6 +203,16 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 			}
 			classpath+=f.getAbsolutePath();
 		}
+		
+		if (urls!=null) {
+			for(URL u : urls) {
+				if(classpath.length()>0){
+					classpath+=File.pathSeparator;
+				}
+				classpath+=u.getFile();
+			}
+		}
+		
 		pathSettings.v_$eq(classpath);
 		settings.scala$tools$nsc$settings$ScalaSettings$_setter_$classpath_$eq(pathSettings);
 
@@ -279,8 +322,12 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 	}
 	
 	public InterpreterResult _interpret(String [] lines){	
-		binder = (Map<String, Object>) getValue("_binder");
-		intp.interpret("Console.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
+		//Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
+		//SparkEnv env = (SparkEnv) share.get("sparkEnv");
+		SparkEnv.set(env);
+
+		//intp.interpret("Console.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
+		Console.setOut((java.io.PrintStream) binder.get("out"));
 		out.reset();
 		Code r = null;
 		String incomplete = "";
@@ -358,8 +405,12 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 	}
 
 	@Override
-	public void destroy() {
-
+	public void close() {
+		sc.stop();
+		interpreter.closeInterpreter();
+		sc = null;
+		interpreter = null;
+		intp = null;
 	}
 
 	@Override

@@ -1,13 +1,19 @@
 package com.nflabs.zeppelin.interpreter;
 
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 
 
 public abstract class Interpreter {
-	
+	static Logger logger = LoggerFactory.getLogger(Interpreter.class);
 	private Properties property;
 	
 	public Interpreter(Properties property){
@@ -20,8 +26,14 @@ public abstract class Interpreter {
 		NONE
 	}
 	
-	public abstract void initialize();
-	public abstract void destroy();
+	public static Map<String, String> registeredInterpreters = Collections.synchronizedMap(new HashMap<String, String>());
+	
+	public static void register(String name, String className) {
+		registeredInterpreters.put(name, className);
+	}
+	
+	public abstract void open();
+	public abstract void close();
 	public abstract Object getValue(String name);
 	public abstract InterpreterResult interpret(String st);
 	public abstract void cancel();

@@ -23,10 +23,9 @@ public class SparkSqlInterpreterTest {
 		Properties p = new Properties();
 		p.put("share", new HashMap<String, Object>());
 		repl = new SparkInterpreter(p);
-		repl.initialize();
+		repl.open();
 		sql = new SparkSqlInterpreter(p);
-		sql.setSparkClassloaderRepl(new ClassloaderInterpreter(repl, Thread.currentThread().getContextClassLoader(), new Properties()));
-		sql.initialize();
+		sql.open();
 	}
 
 	@After

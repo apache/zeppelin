@@ -23,9 +23,10 @@ public class MarkdownTest {
 	@Test
 	public void test() {
 		Markdown md = new Markdown(new Properties());
-		md.initialize();
+		md.open();
 		InterpreterResult result = md.interpret("This is ~~deleted~~ text");
 		assertEquals("<p>This is <s>deleted</s> text</p>\n", result.message());
+		System.out.println(MarkdownTest.class.getName());
 	}
 
 }

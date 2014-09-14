@@ -16,11 +16,11 @@ public class MockInterpreter extends Interpreter {
 	static Map<String, Object> vars = new HashMap<String, Object>();
 
 	@Override
-	public void initialize() {
+	public void open() {
 	}
 
 	@Override
-	public void destroy() {
+	public void close() {
 	}
 
 	@Override

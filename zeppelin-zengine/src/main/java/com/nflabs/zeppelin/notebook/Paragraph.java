@@ -23,14 +23,14 @@ import com.nflabs.zeppelin.scheduler.JobListener;
  */
 public class Paragraph extends Job implements Serializable {
   private transient static final long serialVersionUID = -6328572073497992016L;
-  private transient NoteReplLoader replLoader;
+  private transient NoteInterpreterLoader replLoader;
   
   String text;
   private boolean isOpen;
   private boolean isEditorOpen;
   public final Setting settings;
   
-  public Paragraph(JobListener listener, NoteReplLoader replLoader) {
+  public Paragraph(JobListener listener, NoteInterpreterLoader replLoader) {
     super(generateId(), listener);
     this.replLoader = replLoader;
     text = null;
@@ -112,7 +112,7 @@ public class Paragraph extends Job implements Serializable {
     return text.substring(magic.length() + 2);
   }
 
-  public NoteReplLoader getNoteReplLoader() {
+  public NoteInterpreterLoader getNoteReplLoader() {
     return replLoader;
   }
 
@@ -120,7 +120,7 @@ public class Paragraph extends Job implements Serializable {
     return replLoader.getRepl(name);
   }
 
-  public void setNoteReplLoader(NoteReplLoader repls) {
+  public void setNoteReplLoader(NoteInterpreterLoader repls) {
     this.replLoader = repls;
   }
 
