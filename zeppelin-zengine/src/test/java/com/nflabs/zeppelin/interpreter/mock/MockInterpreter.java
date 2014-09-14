@@ -52,4 +52,9 @@ public class MockInterpreter extends Interpreter {
 		return 0;
 	}
 
+	@Override
+	public SchedulingMode getSchedulingMode() {
+		return SchedulingMode.FIFO;
+	}
+
 }

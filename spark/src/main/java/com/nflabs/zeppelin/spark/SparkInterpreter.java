@@ -421,4 +421,9 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 	public JobProgressListener getJobProgressListener(){
 		return sparkListener;
 	}
+
+	@Override
+	public SchedulingMode getSchedulingMode() {
+		return SchedulingMode.FIFO;
+	}
 }

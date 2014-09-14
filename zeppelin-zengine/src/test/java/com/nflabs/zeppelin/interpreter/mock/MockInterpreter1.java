@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.interpreter.Interpreter.SchedulingMode;
 
 public class MockInterpreter1 extends Interpreter{
 
@@ -45,5 +46,10 @@ public class MockInterpreter1 extends Interpreter{
 	@Override
 	public int getProgress() {
 		return 0;
+	}
+	
+	@Override
+	public SchedulingMode getSchedulingMode() {
+		return SchedulingMode.FIFO;
 	}
 }

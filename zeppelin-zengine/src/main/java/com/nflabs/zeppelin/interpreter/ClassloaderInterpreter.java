@@ -133,4 +133,18 @@ public class ClassloaderInterpreter extends Interpreter {
 			Thread.currentThread().setContextClassLoader(oldcl);
 		}	
 	}
+	
+	@Override
+	public SchedulingMode getSchedulingMode() {
+		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+		Thread.currentThread().setContextClassLoader(cl);
+		try {
+			return intp.getSchedulingMode();
+		} catch (Exception e){
+			throw new InterpreterException(e);
+		} finally {
+			cl = Thread.currentThread().getContextClassLoader();
+			Thread.currentThread().setContextClassLoader(oldcl);
+		}	
+	}
 }

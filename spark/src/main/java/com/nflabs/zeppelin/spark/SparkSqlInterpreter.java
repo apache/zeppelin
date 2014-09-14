@@ -20,6 +20,7 @@ import scala.collection.mutable.HashSet;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.interpreter.Interpreter.SchedulingMode;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 
 public class SparkSqlInterpreter extends Interpreter {
@@ -185,4 +186,8 @@ public class SparkSqlInterpreter extends Interpreter {
 		return new int[]{numTasks, completedTasks};		
 	}
 
+	@Override
+	public SchedulingMode getSchedulingMode() {
+		return SchedulingMode.FIFO;
+	}
 }

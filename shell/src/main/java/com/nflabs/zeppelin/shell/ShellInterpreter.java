@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.interpreter.Interpreter.SchedulingMode;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 
 public class ShellInterpreter extends Interpreter {
@@ -82,6 +83,11 @@ public class ShellInterpreter extends Interpreter {
 	@Override
 	public int getProgress() {
 		return 0;
+	}
+	
+	@Override
+	public SchedulingMode getSchedulingMode() {
+		return SchedulingMode.FIFO;
 	}
 
 }
