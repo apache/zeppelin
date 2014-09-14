@@ -4,12 +4,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -32,9 +35,13 @@ import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 
 import scala.Console;
 import scala.None;
+import scala.Option;
 import scala.Some;
+import scala.Tuple2;
 import scala.collection.Iterator;
 import scala.collection.JavaConversions;
+import scala.collection.JavaConverters;
+import scala.collection.mutable.HashMap;
 import scala.collection.mutable.HashSet;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
@@ -353,9 +360,6 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 	}
 
 	public int getProgress(){
-		// howto get progress from sparkListener? check this out
-		// https://github.com/apache/spark/blob/v1.0.1/core/src/main/scala/org/apache/spark/ui/jobs/StageTable.scala
-		
 		int completedTasks = 0;
 		int totalTasks = 0;
 
@@ -366,7 +370,14 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 			ActiveJob job = it.next();
 			String g = (String) job.properties().get("spark.jobGroup.id");
 			if (jobGroup.equals(g)) {
-				int[] progressInfo = getProgressFromStage(sparkListener, job.finalStage());
+				int[] progressInfo = null; 
+				if (sc.version().startsWith("1.0")) {
+					progressInfo = getProgressFromStage_1_0x(sparkListener, job.finalStage());
+				} else if (sc.version().startsWith("1.1")){
+					progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
+				} else {
+					continue;
+				}
 				totalTasks+=progressInfo[0];
 				completedTasks+=progressInfo[1];
 			}
@@ -375,18 +386,33 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		if(totalTasks==0) return 0;
 		return completedTasks*100/totalTasks;
 	}
-	
-	private int [] getProgressFromStage(JobProgressListener sparkListener, Stage stage){
+
+	private int [] getProgressFromStage_1_0x(JobProgressListener sparkListener, Stage stage){
 		int numTasks = stage.numTasks();
 		int completedTasks = 0;
-		Object completedTaskInfo = JavaConversions.asJavaMap(sparkListener.stageIdToTasksComplete()).get(stage.id());
+		
+		Method method;
+		Object completedTaskInfo = null;
+		try {
+			method = sparkListener.getClass().getMethod("stageIdToTasksComplete");
+			completedTaskInfo = JavaConversions.asJavaMap((HashMap<Object, Object>)method.invoke(sparkListener)).get(stage.id());
+		} catch (NoSuchMethodException | SecurityException e) {
+			logger.error("Error while getting progress", e);			
+		} catch (IllegalAccessException e) {
+			logger.error("Error while getting progress", e);
+		} catch (IllegalArgumentException e) {
+			logger.error("Error while getting progress", e);
+		} catch (InvocationTargetException e) {
+			logger.error("Error while getting progress", e);
+		}
+		
 		if(completedTaskInfo!=null) {
 			completedTasks += (int) completedTaskInfo;
 		}
 		List<Stage> parents = JavaConversions.asJavaList(stage.parents());
 		if(parents!=null) {
 			for(Stage s : parents) {
-				int[] p = getProgressFromStage(sparkListener, s);
+				int[] p = getProgressFromStage_1_0x(sparkListener, s);
 				numTasks+= p[0];
 				completedTasks+= p[1];
 			}
@@ -394,6 +420,40 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		
 		return new int[]{numTasks, completedTasks};		
 	}
+
+	private int [] getProgressFromStage_1_1x(JobProgressListener sparkListener, Stage stage){
+		int numTasks = stage.numTasks();
+		int completedTasks = 0;
+		
+		try {
+			Method stageIdToData = sparkListener.getClass().getMethod("stageIdToData");
+			HashMap<Tuple2<Object, Object>, Object> stageIdData = (HashMap<Tuple2<Object, Object>, Object>)stageIdToData.invoke(sparkListener);
+			Class<?> stageUIDataClass = this.getClass().forName("org.apache.spark.ui.jobs.UIData$StageUIData");
+
+			Method numCompletedTasks = stageUIDataClass.getMethod("numCompleteTasks");
+			
+			Set<Tuple2<Object, Object>> keys = JavaConverters.asJavaSetConverter(stageIdData.keySet()).asJava();
+			for(Tuple2<Object, Object> k : keys) {
+				if(stage.id() == (int)k._1()) {
+					Object uiData = stageIdData.get(k).get();
+					completedTasks += (int)numCompletedTasks.invoke(uiData);
+				}
+			}
+		} catch(Exception e) {
+			logger.error("Error on getting progress information", e);
+		}
+		
+		List<Stage> parents = JavaConversions.asJavaList(stage.parents());
+		if (parents!=null) {
+			for(Stage s : parents) {
+				int[] p = getProgressFromStage_1_1x(sparkListener, s);
+				numTasks+= p[0];
+				completedTasks+= p[1];
+			}
+		}
+		return new int[]{numTasks, completedTasks};		
+	}
+	
 	private Code getResultCode(scala.tools.nsc.interpreter.Results.Result r){
 		if (r instanceof scala.tools.nsc.interpreter.Results.Success$) {
 			return Code.SUCCESS;
