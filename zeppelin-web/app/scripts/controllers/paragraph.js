@@ -200,7 +200,7 @@ angular.module('zeppelinWebApp')
       setEditorHeight(_editor.container.id, hight);
       
       $scope.editor.setKeyboardHandler("ace/keyboard/emacs");
-/*
+
       $scope.editor.setOptions({
           enableBasicAutocompletion: true,
           enableSnippets: true,
@@ -237,7 +237,7 @@ angular.module('zeppelinWebApp')
           }
       }
       langTools.addCompleter(remoteCompleter);
-*/
+
       $scope.editor.getSession().on('change', function(e, editSession) {
         hight = editSession.getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
         setEditorHeight(_editor.container.id, hight);
@@ -276,7 +276,7 @@ angular.module('zeppelinWebApp')
 	}
       });
       */
-/*
+
       // autocomplete on 'ctrl+.'
       $scope.editor.commands.addCommand({ 
         name: "showOtherCompletions", 
@@ -290,7 +290,7 @@ angular.module('zeppelinWebApp')
             //editor.completers = all; 
          } 
       }) 
-*/
+
       $scope.editor.keyBinding.origOnCommandKey = $scope.editor.keyBinding.onCommandKey;
       $scope.editor.keyBinding.onCommandKey = function(e, hashId, keyCode) {
         if($scope.editor.completer && $scope.editor.completer.activated) { // if autocompleter is active
