@@ -139,7 +139,7 @@ public class SparkInterpreter extends Interpreter {
 			Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
 			dep = (DependencyResolver) share.get("dep");
 			if(dep==null) {
-				dep = new DependencyResolver(intp.global(), sc);
+				dep = new DependencyResolver(intp, sc);
 				//share.put("dep", dep);				
 			}
 		}
@@ -374,7 +374,9 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		int totalTasks = 0;
 
 		DAGScheduler scheduler = sc.dagScheduler();
+		if(scheduler==null) return 0;
 		HashSet<ActiveJob> jobs = scheduler.activeJobs();
+		if(jobs==null || jobs.size()==0) return 0;
 		Iterator<ActiveJob> it = jobs.iterator();
 		while(it.hasNext()) {
 			ActiveJob job = it.next();

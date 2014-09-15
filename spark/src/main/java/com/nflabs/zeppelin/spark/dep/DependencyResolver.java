@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkContext;
-import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.repl.SparkIMain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,12 +32,14 @@ import scala.collection.IndexedSeq;
 import scala.reflect.io.AbstractFile;
 import scala.tools.nsc.Global;
 import scala.tools.nsc.backend.JavaPlatform;
+import scala.tools.nsc.interpreter.AbstractFileClassLoader;
 import scala.tools.nsc.util.ClassPath;
 import scala.tools.nsc.util.MergedClassPath;
 
 public class DependencyResolver {
 	Logger logger = LoggerFactory.getLogger(DependencyResolver.class);
 	private Global global;
+	private SparkIMain intp;
 	private SparkContext sc;
 	private RepositorySystem system = Booter.newRepositorySystem();
 	private RemoteRepository repo = Booter.newCentralRepository();
@@ -51,14 +52,17 @@ public class DependencyResolver {
 	private final String [] EXCLUSIONS = new String[]{
 		"org.scala-lang:scala-library"
 	};
+	
 
-	public DependencyResolver(Global global, SparkContext sc){
-		this.global = global;
+	public DependencyResolver(SparkIMain intp, SparkContext sc){
+		this.intp = intp;
+		this.global = intp.global();
 		this.sc = sc;
 	}
 	
 
 	private void updateCompilerClassPath(URL [] urls) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+		
 		JavaPlatform platform = (JavaPlatform) global.platform();
 		MergedClassPath<AbstractFile> newClassPath = mergeUrlsIntoClassPath(platform, urls);
 		
@@ -78,6 +82,18 @@ public class DependencyResolver {
 
         // Reload all jars specified into our compiler
 		global.invalidateClassPathEntries(scala.collection.JavaConversions.asScalaBuffer(classPaths).toList());
+	}
+	
+	// Until spark 1.1.x
+	// check https://github.com/apache/spark/commit/191d7cf2a655d032f160b9fa181730364681d0e7
+	private void updateRuntimeClassPath(URL [] urls) throws SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException {
+		ClassLoader cl = intp.classLoader().getParent();
+		Method addURL;
+		addURL = cl.getClass().getDeclaredMethod("addURL", new Class[]{URL.class});
+		addURL.setAccessible(true);
+		for(URL url : urls) {
+			addURL.invoke(cl, url);
+		}
 	}
 	
 	private MergedClassPath<AbstractFile> mergeUrlsIntoClassPath(JavaPlatform platform, URL[] urls) {
@@ -159,7 +175,8 @@ public class DependencyResolver {
 			}
 			
 			updateCompilerClassPath(newClassPathList.toArray(new URL[0]));
-
+			updateRuntimeClassPath(newClassPathList.toArray(new URL[0]));
+			
 			for(File f : files) {
 				sc.addJar(f.getAbsolutePath());
 			}
