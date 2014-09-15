@@ -407,6 +407,7 @@ angular.module('zeppelinWebApp')
         setMultiBarChart($scope.paragraph.result, refresh);
       }
       else if (type === 'pieChart') {
+        setPieChart($scope.paragraph.result, refresh);
       }
       else if (type === 'stackedAreaChart') {
         setStackedAreaChart($scope.paragraph.result, refresh);
@@ -460,7 +461,6 @@ angular.module('zeppelinWebApp')
 
     if ($scope.d3.data === null || !refresh) {
       $scope.d3.data = d3g;
-
       $scope.d3.options.chart.type = 'multiBarChart';
       $scope.d3.options.chart.height = $scope.paragraph.settings.params._table.height;
       $scope.d3.config.autorefresh = true;
@@ -502,9 +502,50 @@ angular.module('zeppelinWebApp')
       $scope.d3.options.chart.type = 'lineChart';
       $scope.d3.options.chart.height = $scope.paragraph.settings.params._table.height;
       $scope.d3.config.autorefresh = true;
-      //if ($scope.d3.api) {
-        //$scope.d3.api.updateWithOptions($scope.d3.options);
-      //}
+      if ($scope.d3.api) {
+        $scope.d3.api.updateWithOptions($scope.d3.options);
+      }
+    } else {
+      if ($scope.d3.api) {
+        $scope.d3.api.updateWithData(d3g);
+      }
+    }
+  };
+
+  var setPieChart = function(data, refresh) {
+    var xColIndex = 0;
+    var yColIndexes = [];
+    var d3g = [];
+
+    // select yColumns. 
+    for (var i = 0; i < data.columnNames.length; i++) {
+      if (i !== xColIndex) {
+        yColIndexes.push(i);
+      }
+    }
+
+    for (var i = 0; i < data.rows.length; i++) {
+      var row = data.rows[i];
+      var xVar = row[xColIndex];
+      var yVar = row[yColIndexes[0]];
+
+      d3g.push({
+          label: isNaN(xVar) ? xVar : parseFloat(xVar),
+          value: parseFloat(yVar)
+      });      
+    }
+
+    if ($scope.d3.data === null || !refresh) {
+      $scope.d3.data = d3g;
+      $scope.d3.options.chart.type = 'pieChart';
+      $scope.d3.options.chart.height = $scope.paragraph.settings.params._table.height;
+      $scope.d3.options.chart.x = function (d){return d.label;}
+      $scope.d3.options.chart.y = function (d){return d.value;}
+      
+      $scope.d3.config.autorefresh = true;     
+      if ($scope.d3.api) {
+        $scope.d3.api.updateWithOptions($scope.d3.options);
+      }
     } else {
       if ($scope.d3.api) {
         $scope.d3.api.updateWithData(d3g);
