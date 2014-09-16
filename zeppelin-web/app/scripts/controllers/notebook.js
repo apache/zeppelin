@@ -72,7 +72,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         }
       } else {
         var p = $scope.note.paragraphs[i];
-        if (p.isOpen && p.isEditorOpen) {
+        if (!p.config.hide && !p.config.editorHide) {
           $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
           break;
         }
@@ -90,7 +90,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         }
       } else {
         var p = $scope.note.paragraphs[i];
-        if (p.isOpen && p.isEditorOpen) {
+        if (!p.config.hide && !p.config.editorHide) {
           $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
           break;
         }
