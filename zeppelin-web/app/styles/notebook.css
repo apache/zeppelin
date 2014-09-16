@@ -120,6 +120,16 @@
   transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 }
 
+.noteAction:hover span {
+    display: inline-block;
+    visibility: visible;
+}
+
+.noteAction span {
+    display: inline-block;
+    visibility: hidden;
+}
+
 .form-control-static2 {
   padding-top: 7px;
   font-size: 24px;

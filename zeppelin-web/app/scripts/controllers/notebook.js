@@ -44,6 +44,27 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       $location.path('/#');
     }
   };
+
+  $scope.runNote = function(noteId) {
+    var result = confirm('Run all paragraphs?');
+    if (result) {
+      for (var i=0; i<$scope.note.paragraphs.length; i++) {
+        $rootScope.$emit('runParagraph', $scope.note.paragraphs[i].id);
+      }
+    }
+  };
+
+  $scope.isNoteRunning = function() {
+    var running = false;
+    if(!$scope.note) return false;
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      if ( $scope.note.paragraphs[i].status === "PENDING" || $scope.note.paragraphs[i].status === "RUNNING") {
+        running = true;
+        break;
+      }
+    }
+    return running;
+  };
   
   /** Update the note name */
   $scope.sendNewName = function() {

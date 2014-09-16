@@ -341,14 +341,15 @@ public class NotebookServer extends WebSocketServer {
     }
     final Note note = notebook.getNote(getOpenNoteId(conn));
     Paragraph p = note.getParagraph(paragraphId);
-    p.setText((String) fromMessage.get("paragraph"));
+    String text = (String) fromMessage.get("paragraph");
+    p.setText(text);
     Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
     p.settings.setParams(params);
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
     p.setConfig(config);
-
+    
     // if it's an last pargraph, let's add new one
-    if (note.getLastParagraph().getId().equals(p.getId())) {
+    if (text!=null && text.length()>0 && note.getLastParagraph().getId().equals(p.getId())) {
       note.addParagraph();
       broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
     }
