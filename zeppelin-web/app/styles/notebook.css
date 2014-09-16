@@ -39,7 +39,7 @@
 }
 
 .paragraph .editor {
-  width: 90%;
+  width: 100%;
   border-left: 4px solid #EEEEEE;
   background: rgba(255, 255, 255, 0.9);
 }
