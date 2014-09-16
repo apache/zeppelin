@@ -82,14 +82,8 @@ public class NotebookServer extends WebSocketServer {
         case DEL_NOTE:
           removeNote(conn, notebook, messagereceived);
           break;
-        case PARAGRAPH_PARAM:
-          addParamsForParagraph(conn, notebook, messagereceived);
-          break;
         case COMMIT_PARAGRAPH:
-          updateParamsForParagraph(conn, notebook, messagereceived);
-          break;
-        case PARAGRAPH_UPDATE_STATE:
-          updateParagraphState(conn, notebook, messagereceived);
+          updateParagraph(conn, notebook, messagereceived);
           break;
         case RUN_PARAGRAPH:
           runParagraph(conn, notebook, messagereceived);
@@ -281,54 +275,20 @@ public class NotebookServer extends WebSocketServer {
     broadcastNoteList();
   }
 
-  private void addParamsForParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
+  private void updateParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
     String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
       return ;
     }
     Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
+    Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
     final Note note = notebook.getNote(getOpenNoteId(conn));
     Paragraph p = note.getParagraph(paragraphId);
     p.settings.setParams(params);
-    note.persist();
-    broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
-  }
-
-  private void updateParamsForParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
-    String paragraphId = (String) fromMessage.get("id");
-    if (paragraphId == null) {
-      return ;
-    }
-    final Note note = notebook.getNote(getOpenNoteId(conn));
-    Paragraph p = note.getParagraph(paragraphId);
+    p.setConfig(config);
     p.setText((String) fromMessage.get("paragraph"));
-    Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
-    p.settings.setParams(params);
     note.persist();
     broadcastNote(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
-  }
-  
-  private void updateParagraphState(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
-    final String paragraphId = (String) fromMessage.get("id");
-    if (paragraphId == null) {
-      return ;
-    }
-    final Note note = notebook.getNote(getOpenNoteId(conn));
-    Paragraph p = note.getParagraph(paragraphId);
-    boolean state = (boolean) fromMessage.get("isClose");
-    boolean editorState = (boolean) fromMessage.get("isEditorClose");
-    if (state) {
-      p.close();
-    } else {
-      p.open();
-    }
-    if (editorState) {
-      p.closeEditor();
-    } else {
-      p.openEditor();
-    }
-    note.persist();
-    broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
   }
   
   private void removeParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
@@ -381,12 +341,15 @@ public class NotebookServer extends WebSocketServer {
     }
     final Note note = notebook.getNote(getOpenNoteId(conn));
     Paragraph p = note.getParagraph(paragraphId);
-    p.setText((String) fromMessage.get("paragraph"));
+    String text = (String) fromMessage.get("paragraph");
+    p.setText(text);
     Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
     p.settings.setParams(params);
-
+    Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
+    p.setConfig(config);
+    
     // if it's an last pargraph, let's add new one
-    if (note.getLastParagraph().getId().equals(p.getId())) {
+    if (text!=null && text.length()>0 && note.getLastParagraph().getId().equals(p.getId())) {
       note.addParagraph();
       broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
     }

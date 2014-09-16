@@ -152,12 +152,13 @@ public class Note implements Serializable, JobListener {
 	
 	/**
 	 * Run all paragraphs sequentially
+	 * @param jobListener 
 	 */
-	public void runAll(){
+	public void runAll(JobListener jobListener){
 		synchronized(paragraphs){
 			for (Paragraph p : paragraphs) {
 				p.setNoteReplLoader(replLoader);
-				p.setListener(this);
+				p.setListener(jobListener);
 				Scheduler scheduler = replLoader.getScheduler(p.getRequiredReplName());		
 				scheduler.submit(p);
 			}

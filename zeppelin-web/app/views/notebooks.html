@@ -21,6 +21,9 @@ limitations under the License.
          <p class="form-control-static2" ng-click="showEditor = true" ng-show="!showEditor">{{note.name || 'Note ' + note.id}}</p>
       <span class="label">
         <button style="margin-bottom: 9px;" type="button" class="btn btn-default btn-xs" ng-click="removeNote(note.id)">remove <span class="fa fa-trash"></span></button>
+        <button style="margin-bottom: 9px;" type="button" class="btn btn-default btn-xs" 
+                ng-click="runNote(note.id)"
+                ng-if="!isNoteRunning()">run <span class="fa fa-play"></span></button>
       </span>
     </h3>
   </div>
@@ -28,6 +31,11 @@ limitations under the License.
   <div ng-repeat="currentParagraph in note.paragraphs"
        ng-controller="ParagraphCtrl"
        ng-Init="init(currentParagraph)"
-       ng-include src="'views/paragraph.html'">
+       ng-include src="'views/paragraph.html'"
+       id="{{currentParagraph.id}}_paragraphColumn"
+       ng-class="{
+                   'col-md-12': !currentParagraph.config.colWidth,
+                   'col-md-{{currentParagraph.config.colWidth}}': currentParagraph.config.colWidth,
+                 }">
   </div>
 </div>

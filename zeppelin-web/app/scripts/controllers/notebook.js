@@ -38,8 +38,32 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   /** Remove the note and go back tot he main page */
   /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
   $scope.removeNote = function(noteId) {
-    $rootScope.$emit('sendNewEvent', {op: 'DEL_NOTE', data: {id: $scope.note.id}});
-    $location.path('/#');
+    var result = confirm('Do you want to delete this notebook?');
+    if (result) {
+      $rootScope.$emit('sendNewEvent', {op: 'DEL_NOTE', data: {id: $scope.note.id}});
+      $location.path('/#');
+    }
+  };
+
+  $scope.runNote = function(noteId) {
+    var result = confirm('Run all paragraphs?');
+    if (result) {
+      for (var i=0; i<$scope.note.paragraphs.length; i++) {
+        $rootScope.$emit('runParagraph', $scope.note.paragraphs[i].id);
+      }
+    }
+  };
+
+  $scope.isNoteRunning = function() {
+    var running = false;
+    if(!$scope.note) return false;
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      if ( $scope.note.paragraphs[i].status === "PENDING" || $scope.note.paragraphs[i].status === "RUNNING") {
+        running = true;
+        break;
+      }
+    }
+    return running;
   };
   
   /** Update the note name */
@@ -69,7 +93,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         }
       } else {
         var p = $scope.note.paragraphs[i];
-        if (p.isOpen && p.isEditorOpen) {
+        if (!p.config.hide && !p.config.editorHide) {
           $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
           break;
         }
@@ -87,7 +111,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         }
       } else {
         var p = $scope.note.paragraphs[i];
-        if (p.isOpen && p.isEditorOpen) {
+        if (!p.config.hide && !p.config.editorHide) {
           $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
           break;
         }
