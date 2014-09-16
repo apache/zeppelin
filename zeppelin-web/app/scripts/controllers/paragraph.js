@@ -24,7 +24,7 @@
  * @author anthonycorbacho
  */
 angular.module('zeppelinWebApp')
-        .controller('ParagraphCtrl', function($scope, $rootScope) {
+        .controller('ParagraphCtrl', function($scope, $rootScope, $element) {
 
   $scope.paragraph = null;
   $scope.editor = null;
@@ -62,6 +62,18 @@ angular.module('zeppelinWebApp')
       $scope.loadTableData($scope.paragraph.result);
       $scope.setGraphMode($scope.getGraphMode(), false, false);
     }
+
+    $scope.colWidthOption = [
+        2,3,4,5,6,7,8,9,10,11,12
+    ];
+
+    initializeDefault();
+  };
+
+  var initializeDefault = function(){
+    if (!$scope.paragraph.config.colWidth) {
+      $scope.paragraph.config.colWidth = 12
+    }
   };
 
   $rootScope.$on('updateParagraph', function(event, data) {
@@ -91,15 +103,20 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.dateFinished = data.paragraph.dateFinished;
       $scope.paragraph.dateStarted = data.paragraph.dateStarted;
       $scope.paragraph.errorMessage = data.paragraph.errorMessage;
-      $scope.paragraph.isEditorOpen = data.paragraph.isEditorOpen;
-      $scope.paragraph.isOpen = data.paragraph.isOpen;
       $scope.paragraph.jobName = data.paragraph.jobName;
       $scope.paragraph.status = data.paragraph.status;
-
-
-      
       $scope.paragraph.result = data.paragraph.result;
+      $scope.paragraph.config = data.paragraph.config;
       $scope.paragraph.settings = data.paragraph.settings;
+
+      initializeDefault();
+
+      // update column class
+      // TODO : do it in angualr way
+      var el = $('#'+$scope.paragraph.id+"_paragraphColumn");
+      el.removeClass(el.attr('class'))
+      el.addClass("col-md-"+$scope.paragraph.config.colWidth);
+
       
       if (newType==="TABLE") {
         $scope.loadTableData($scope.paragraph.result);
@@ -114,12 +131,12 @@ angular.module('zeppelinWebApp')
   });
 
   $scope.onMouseover = function(){
-    $('#'+$scope.paragraph.id+"_control").show(300);
+    $('#'+$scope.paragraph.id+"_control").show();
     $('#'+$scope.paragraph.id+"_status").css({"visibility":"visible"});
   };
 
   $scope.onMouseleave = function(){
-    $('#'+$scope.paragraph.id+"_control").hide(300);
+    $('#'+$scope.paragraph.id+"_control").hide();
     $('#'+$scope.paragraph.id+"_status").css({"visibility":"hidden"});
   };
 
@@ -130,9 +147,9 @@ angular.module('zeppelinWebApp')
   };
   
   
-  $scope.sendParagraph = function(data) {
+  $scope.runParagraph = function(data) {
     //console.log('send new paragraph: %o with %o', $scope.paragraph.id, data);
-    var parapgraphData = {op: 'RUN_PARAGRAPH', data: {id: $scope.paragraph.id, paragraph: data, params: $scope.paragraph.settings.params}};
+    var parapgraphData = {op: 'RUN_PARAGRAPH', data: {id: $scope.paragraph.id, paragraph: data, config: $scope.paragraph.config, params: $scope.paragraph.settings.params}};
     $rootScope.$emit('sendNewEvent', parapgraphData);
   };
   
@@ -145,34 +162,56 @@ angular.module('zeppelinWebApp')
       }
   };
   
-  $scope.closeParagraph = function() {
-    console.log('close the note');
-    var parapgraphData = {op: 'PARAGRAPH_UPDATE_STATE', data: {id: $scope.paragraph.id, isClose: true, isEditorClose: !$scope.paragraph.isEditorOpen}};
-    $rootScope.$emit('sendNewEvent', parapgraphData);
-  };
-  
   $scope.removeParagraph = function() {
     console.log('remove the note');
     var parapgraphData = {op: 'PARAGRAPH_REMOVE', data: {id: $scope.paragraph.id}};
     $rootScope.$emit('sendNewEvent', parapgraphData);
   };
+
+  $scope.closeParagraph = function() {
+    console.log('close the note');
+    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    newConfig.hide = true;
+
+    commitParagraph($scope.paragraph.text, newConfig, newParams);
+  };  
   
   $scope.openParagraph = function() {
     console.log('open the note');
-    var parapgraphData = {op: 'PARAGRAPH_UPDATE_STATE', data: {id: $scope.paragraph.id, isClose: false, isEditorClose: !$scope.paragraph.isEditorOpen}};
-    $rootScope.$emit('sendNewEvent', parapgraphData);
+    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    newConfig.hide = false;
+
+    commitParagraph($scope.paragraph.text, newConfig, newParams);
   };
   
   $scope.closeEditor = function() {
     console.log('close the note');
-    var parapgraphData = {op: 'PARAGRAPH_UPDATE_STATE', data: {id: $scope.paragraph.id, isClose: !$scope.paragraph.isOpen, isEditorClose: true}};
-    $rootScope.$emit('sendNewEvent', parapgraphData);
+
+    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    newConfig.editorHide = true;
+
+    commitParagraph($scope.paragraph.text, newConfig, newParams);
   };
   
   $scope.openEditor = function() {
     console.log('open the note');
-    var parapgraphData = {op: 'PARAGRAPH_UPDATE_STATE', data: {id: $scope.paragraph.id, isClose: !$scope.paragraph.isOpen, isEditorClose: false}};
-    $rootScope.$emit('sendNewEvent', parapgraphData);
+
+    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    newConfig.editorHide = false;
+
+    commitParagraph($scope.paragraph.text, newConfig, newParams);
+  };
+
+  $scope.changeColWidth = function() {
+
+    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+
+    commitParagraph($scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.loadForm = function(formulaire, params) {
@@ -259,7 +298,7 @@ angular.module('zeppelinWebApp')
         exec: function(editor) {
           var editorValue = editor.getValue();
           if (editorValue) {
-            $scope.sendParagraph(editorValue);
+            $scope.runParagraph(editorValue);
           }
         },
         readOnly: false
@@ -418,15 +457,21 @@ angular.module('zeppelinWebApp')
   };
 
   var setNewMode = function(newMode) {
+    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
     var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
     newParams._table = {mode: newMode, height: 300.0};
 
+    commitParagraph($scope.paragraph.text, newConfig, newParams);
+  };
+
+  var commitParagraph = function(text, config, params) {
     var parapgraphData = {
       op: 'COMMIT_PARAGRAPH',
       data: {
         id: $scope.paragraph.id,
-        paragraph: $scope.paragraph.text,
-        params: newParams
+        paragraph: text,
+        params: params,
+        config: config
       }};
     $rootScope.$emit('sendNewEvent', parapgraphData);
   };

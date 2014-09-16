@@ -26,11 +26,13 @@ public class Message {
 		RUN_PARAGRAPH, // [c-s] run paragraph
 		               // @param id paragraph id
 			           // @param paragraph paragraph content.ie. script
+		               // @param config paragraph config
 			           // @param params paragraph params
 
 		COMMIT_PARAGRAPH, // [c-s] commit paragraph
                           // @param id paragraph id
                           // @param paragraph paragraph content.ie. script
+                          // @param config paragraph config
                           // @param params paragraph params
 		
 		CANCEL_PARAGRAPH, // [c-s] cancel paragraph run
@@ -49,12 +51,7 @@ public class Message {
 		
 		NOTES_INFO,    // [s-c] list of note infos
 		               // @param notes serialized List<NoteInfo> object
-		
-		PARAGRAPH_PARAM, // [c-s] set parameters
-		                 // @param id paragraph id
-		                 // @param params parameter map
 
-		PARAGRAPH_UPDATE_STATE,
 		PARAGRAPH_REMOVE,
 	}	
 	public OP op;
