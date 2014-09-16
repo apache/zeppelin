@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.notebook;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -24,19 +25,17 @@ public class Paragraph extends Job implements Serializable {
   private transient NoteInterpreterLoader replLoader;
   
   String text;
-  private boolean isOpen;
-  private boolean isEditorOpen;
-  public final Setting settings;
+  private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
+  public final Setting settings; // form and parameter settings
   
   public Paragraph(JobListener listener, NoteInterpreterLoader replLoader) {
     super(generateId(), listener);
     this.replLoader = replLoader;
     text = null;
-    isOpen = true;
-    isEditorOpen = true;
     settings = new Setting();
+    config = new HashMap<String, Object>();
   }
-
+  
   private static String generateId() {
     return "paragraph_" + System.currentTimeMillis() + "_"
         + new Random(System.currentTimeMillis()).nextInt();
@@ -49,30 +48,7 @@ public class Paragraph extends Job implements Serializable {
   public void setText(String newText) {
     this.text = newText;
   }
-
-  public void close() {
-    isOpen = false;
-  }
   
-  public void open() {
-    isOpen = true;
-  }
-  
-  public boolean isOpen() {
-    return isOpen;
-  }
-  
-  public void closeEditor() {
-    isEditorOpen = false;
-  }
-  
-  public void openEditor() {
-    isEditorOpen = true;
-  }
-  
-  public boolean isEditorOpen() {
-    return isEditorOpen;
-  }
   public String getRequiredReplName() {
 	  return getRequiredReplName(text);
   }
@@ -200,6 +176,15 @@ public class Paragraph extends Job implements Serializable {
   private Logger logger() {
     Logger logger = LoggerFactory.getLogger(Paragraph.class);
     return logger;
+  }
+
+
+  public Map<String, Object> getConfig() {
+    return config;
+  }
+
+  public void setConfig(Map<String, Object> config) {
+    this.config = config;
   }
 
 

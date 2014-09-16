@@ -7,9 +7,8 @@ import java.util.TreeMap;
 
 public class Setting implements Serializable {
 
-  // TODO(anthony) : this is not really needed
-  Map<String, Object> params = new HashMap<String, Object>(); // actual values from client
-  Map<String, Input> forms = new TreeMap<String, Input>();
+  Map<String, Object> params = new HashMap<String, Object>(); // form parameters from client
+  Map<String, Input> forms = new TreeMap<String, Input>();    // form configuraiton
 
   public Setting() {
 
