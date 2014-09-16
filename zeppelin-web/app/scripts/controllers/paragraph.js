@@ -379,6 +379,12 @@ angular.module('zeppelinWebApp')
     }
   });
 
+  $rootScope.$on('runParagraph', function(event, paragraphId){
+    if ($scope.paragraph.id === paragraphId) {
+        $scope.runParagraph($scope.editor.getValue());
+    }
+  });
+
   $scope.getResultType = function(paragraph){
     var pdata = (paragraph) ? paragraph : $scope.paragraph;
     if (pdata.result && pdata.result.type) {
