@@ -76,7 +76,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.sendNewName = function() {
     $scope.showEditor = false;
     if ($scope.note.name) {
-      $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.note.id, name: $scope.note.name, config: $scope.note.config}});
+      $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.note.id, name: $scope.note.name}});
     }
   };
 
