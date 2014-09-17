@@ -32,27 +32,99 @@ angular.module('zeppelinWebApp')
 
   $scope.forms = {};
 
-  $scope.d3 = {};
-  $scope.d3.options = {
-      chart: {
-        type: '',
-        margin: {
-          top: 20,
-          right: 20,
-          bottom: 60,
-          left: 45
-        },
-        useInteractiveGuideline: true,
-        transitionDuration:500
-      }
-    };
-  $scope.d3.data = null;
-  $scope.d3.config = {
-    visible: true, // default: true
-    extended: false, // default: false
-    disabled: false, // default: false
-    autorefresh: false, // default: true
-    refreshDataOnly: true // default: false
+  $scope.d3 = {
+      multiBarChart : {
+          options : {
+              chart: {
+                  type: 'multiBarChart',
+                  margin: {
+                      top: 20,
+                      right: 20,
+                      bottom: 60,
+                      left: 45
+                  },
+                  useInteractiveGuideline: true,
+                  transitionDuration:500
+              }
+          },
+          data : null,
+          config : {
+              visible: true, // default: true
+              extended: false, // default: false
+              disabled: false, // default: false
+              autorefresh: false, // default: true
+              refreshDataOnly: true // default: false
+          }              
+      },
+      pieChart : {
+          options : {
+              chart: {
+                  type: 'pieChart',
+                  margin: {
+                      top: 20,
+                      right: 20,
+                      bottom: 60,
+                      left: 45
+                  },
+                  useInteractiveGuideline: true,
+                  transitionDuration:500
+              }
+          },
+          data : null,
+          config : {
+              visible: true, // default: true
+              extended: false, // default: false
+              disabled: false, // default: false
+              autorefresh: false, // default: true
+              refreshDataOnly: true // default: false
+          }              
+      },
+      stackedAreaChart : {
+          options : {
+              chart: {
+                  type: 'stackedAreaChart',
+                  margin: {
+                      top: 20,
+                      right: 20,
+                      bottom: 60,
+                      left: 45
+                  },
+                  useInteractiveGuideline: true,
+                  transitionDuration:500
+              }
+          },
+          data : null,
+          config : {
+              visible: true, // default: true
+              extended: false, // default: false
+              disabled: false, // default: false
+              autorefresh: false, // default: true
+              refreshDataOnly: true // default: false
+          }              
+      },
+      lineChart : {
+          options : {
+              chart: {
+                  type: 'lineChart',
+                  margin: {
+                      top: 20,
+                      right: 20,
+                      bottom: 60,
+                      left: 45
+                  },
+                  useInteractiveGuideline: true,
+                  transitionDuration:500
+              }
+          },
+          data : null,
+          config : {
+              visible: true, // default: true
+              extended: false, // default: false
+              disabled: false, // default: false
+              autorefresh: false, // default: true
+              refreshDataOnly: true // default: false
+          }              
+      },
   };
 
   // Controller init
@@ -523,14 +595,13 @@ angular.module('zeppelinWebApp')
       }
     }
 
-    if ($scope.d3.data === null || !refresh) {
-      $scope.d3.data = d3g;
-      $scope.d3.options.chart.type = 'multiBarChart';
-      $scope.d3.options.chart.height = $scope.paragraph.settings.params._table.height;
-      $scope.d3.config.autorefresh = true;
+    if ($scope.d3.multiBarChart.data === null || !refresh) {
+      $scope.d3.multiBarChart.data = d3g;
+      $scope.d3.multiBarChart.options.chart.height = $scope.paragraph.settings.params._table.height;
+      $scope.d3.multiBarChart.config.autorefresh = true;
     } else {
-      if ($scope.d3.api) {
-        $scope.d3.api.updateWithData(d3g);
+      if ($scope.d3.multiBarChart.api) {
+        $scope.d3.multiBarChart.api.updateWithData(d3g);
       }
     }
   };
@@ -561,17 +632,16 @@ angular.module('zeppelinWebApp')
         });
       }
     }
-    if ($scope.d3.data === null || !refresh) {
-      $scope.d3.data = d3g;
-      $scope.d3.options.chart.type = 'lineChart';
-      $scope.d3.options.chart.height = $scope.paragraph.settings.params._table.height;
-      $scope.d3.config.autorefresh = true;
-      if ($scope.d3.api) {
-        $scope.d3.api.updateWithOptions($scope.d3.options);
+    if ($scope.d3.lineChart.data === null || !refresh) {
+      $scope.d3.lineChart.data = d3g;
+      $scope.d3.lineChart.options.chart.height = $scope.paragraph.settings.params._table.height;
+      $scope.d3.lineChart.config.autorefresh = true;
+      if ($scope.d3.lineChart.api) {
+        $scope.d3.lineChart.api.updateWithOptions($scope.d3.options);
       }
     } else {
-      if ($scope.d3.api) {
-        $scope.d3.api.updateWithData(d3g);
+      if ($scope.d3.lineChart.api) {
+        $scope.d3.lineChart.api.updateWithData(d3g);
       }
     }
   };
@@ -599,20 +669,19 @@ angular.module('zeppelinWebApp')
       });      
     }
 
-    if ($scope.d3.data === null || !refresh) {
-      $scope.d3.data = d3g;
-      $scope.d3.options.chart.type = 'pieChart';
-      $scope.d3.options.chart.height = $scope.paragraph.settings.params._table.height;
-      $scope.d3.options.chart.x = function (d){return d.label;}
-      $scope.d3.options.chart.y = function (d){return d.value;}
+    if ($scope.d3.pieChart.data === null || !refresh) {
+      $scope.d3.pieChart.data = d3g;
+      $scope.d3.pieChart.options.chart.height = $scope.paragraph.settings.params._table.height;
+      $scope.d3.pieChart.options.chart.x = function (d){return d.label;}
+      $scope.d3.pieChart.options.chart.y = function (d){return d.value;}
       
-      $scope.d3.config.autorefresh = true;     
-      if ($scope.d3.api) {
-        $scope.d3.api.updateWithOptions($scope.d3.options);
+      $scope.d3.pieChart.config.autorefresh = true;     
+      if ($scope.d3.pieChart.api) {
+        $scope.d3.pieChart.api.updateWithOptions($scope.d3.pieChart.options);
       }
     } else {
-      if ($scope.d3.api) {
-        $scope.d3.api.updateWithData(d3g);
+      if ($scope.d3.pieChart.api) {
+        $scope.d3.pieChart.api.updateWithData(d3g);
       }
     }
   };
@@ -644,18 +713,16 @@ angular.module('zeppelinWebApp')
       }
     }
     
-    if ($scope.d3.data === null || !refresh) {
-      $scope.d3.data = d3g;
-
-      $scope.d3.options.chart.type = 'stackedAreaChart';
-      $scope.d3.options.chart.height = $scope.paragraph.settings.params._table.height;
-      $scope.d3.config.autorefresh = true;
+    if ($scope.d3.stackedAreaChart.data === null || !refresh) {
+      $scope.d3.stackedAreaChart.data = d3g;
+      $scope.d3.stackedAreaChart.options.chart.height = $scope.paragraph.settings.params._table.height;
+      $scope.d3.stackedAreaChart.config.autorefresh = true;
       //if ($scope.d3.api) {
         //$scope.d3.api.updateWithOptions($scope.d3.options);
       //}
     } else {
-      if ($scope.d3.api) {
-        $scope.d3.api.updateWithData(d3g);
+      if ($scope.d3.stackedAreaChart.api) {
+        $scope.d3.stackedAreaChart.api.updateWithData(d3g);
       }
     }
   };

@@ -172,12 +172,32 @@ limitations under the License.
         </tbody>
       </table>
 
-      <!-- ng-show="paragraph.result.type == 'LINE'" -->
-      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()!='table'" 
-            options='d3.options' 
-            config='d3.config' 
-            data='d3.data'
-            api='d3.api'>
+      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()=='multiBarChart'" 
+            options='d3.multiBarChart.options' 
+            config='d3.multiBarChart.config' 
+            data='d3.multiBarChart.data'
+            api='d3.multiBarChart.api'>
+      </nvd3new>
+
+      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()=='pieChart'" 
+            options='d3.pieChart.options' 
+            config='d3.pieChart.config' 
+            data='d3.pieChart.data'
+            api='d3.pieChart.api'>
+      </nvd3new>
+
+      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()=='stackedAreaChart'" 
+            options='d3.stackedAreaChart.options' 
+            config='d3.stackedAreaChart.config' 
+            data='d3.stackedAreaChart.data'
+            api='d3.stackedAreaChart.api'>
+      </nvd3new>
+
+      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()=='lineChart'" 
+            options='d3.lineChart.options' 
+            config='d3.lineChart.config' 
+            data='d3.lineChart.data'
+            api='d3.lineChart.api'>
       </nvd3new>
     </div>
   </div> 
