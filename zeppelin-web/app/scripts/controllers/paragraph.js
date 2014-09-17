@@ -738,4 +738,35 @@ angular.module('zeppelinWebApp')
       return this.slice(0, str.length) === str;
     };
   }
+
+  // format table content
+  $scope.formatTableContent = function(d) {
+    if (isNaN(d)) {
+      var f = $scope.getTableContentFormat(d);
+      if(f !="") {
+        return d.substring(f.length+2);
+      } else {
+        return d;
+      }
+    } else {
+      var splitted = d.toString().split('.');
+      var formatted = splitted[0].replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+      if (splitted.length>1) {
+        formatted+= "."+splitted[1];
+      }
+      return formatted;
+    }
+  };
+
+  $scope.getTableContentFormat = function(d) {
+    if (isNaN(d)) {
+      if(d.length>"%html".length && "%html "===d.substring(0, "%html ".length)) {
+        return "html";
+      } else {
+        return "";
+      }
+    } else {
+      return "";
+    }
+  };
 });

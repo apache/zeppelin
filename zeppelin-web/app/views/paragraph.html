@@ -167,7 +167,13 @@ limitations under the License.
         </thead>
         <tbody>
           <tr ng-repeat="item in paragraph.result.msgTable track by $index">
-            <td ng-repeat="val in item track by $index">{{val.value}}</td>
+            <td ng-repeat="val in item track by $index">
+               <span ng-if="getTableContentFormat(val.value)=='html'"
+                     ng-bind-html="formatTableContent(val.value)"></span>
+               <span ng-if="getTableContentFormat(val.value)!='html'">
+                 {{formatTableContent(val.value)}}
+               </span>
+            </td>
           </tr>
         </tbody>
       </table>
