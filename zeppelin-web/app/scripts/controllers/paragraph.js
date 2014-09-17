@@ -448,6 +448,7 @@ angular.module('zeppelinWebApp')
   $rootScope.$on('focusParagraph', function(event, paragraphId){
     if ($scope.paragraph.id === paragraphId) {
       $scope.editor.focus();
+      $('body').scrollTo('#'+paragraphId+"_editor", 300, {offset:-60});
     }
   });
 
