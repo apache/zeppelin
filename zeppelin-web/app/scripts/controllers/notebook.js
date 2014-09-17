@@ -95,6 +95,38 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   });
 
+  $rootScope.$on('moveParagraphUp', function(event, paragraphId) {
+    var newIndex = -1;
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      if ($scope.note.paragraphs[i].id === paragraphId) {
+        newIndex = i-1;
+        break;
+      }
+    }
+
+    if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
+      return;
+    }
+
+    $rootScope.$emit('sendNewEvent', { op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
+  });
+
+  $rootScope.$on('moveParagraphDown', function(event, paragraphId) {
+    var newIndex = -1;
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      if ($scope.note.paragraphs[i].id === paragraphId) {
+        newIndex = i+1;
+        break;
+      }
+    }
+
+    if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
+      return;
+    }
+
+    $rootScope.$emit('sendNewEvent', { op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
+  });
+
   $rootScope.$on('moveFocusToPreviousParagraph', function(event, currentParagraphId){
     var focus = false;
     for (var i=$scope.note.paragraphs.length-1; i>=0; i--) {
@@ -137,19 +169,31 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       console.log('change note name: %o to %o', $scope.note.name, note.name);
       $scope.note.name = note.name;
     }
+
     /** add new paragraphs */
+    var idx = 0;
     note.paragraphs.forEach(function(newEntry) {
-     var found = false;
-      $scope.note.paragraphs.forEach(function(currentEntry) {
-        if (currentEntry.id === newEntry.id) {
+      var found = false;
+      for (var oldIdx=0; oldIdx< $scope.note.paragraphs.length; oldIdx++) {
+        if ($scope.note.paragraphs[oldIdx].id === newEntry.id) {
           found = true;
-          $rootScope.$emit('updateParagraph', {paragraph: newEntry});
+          break;
         }
-      });
-      /** not found means addnewpara */
-      if(!found) {
-        $scope.note.paragraphs.push(newEntry);
+      };
+
+      if (found) {
+        if (idx === oldIdx) {
+          $rootScope.$emit('updateParagraph', {paragraph: newEntry});
+        } else {
+          // move paragraph
+          $scope.note.paragraphs.splice(oldIdx, 1);
+          $scope.note.paragraphs.splice(idx, 0, newEntry);
+        }
+      } else {
+        // insert new paragraph
+        $scope.note.paragraphs.splice(idx, 0, newEntry);
       }
+      idx++;
     });
     
     /** remove paragraphs */

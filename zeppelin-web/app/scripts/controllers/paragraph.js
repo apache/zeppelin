@@ -162,6 +162,14 @@ angular.module('zeppelinWebApp')
       }
   };
   
+  $scope.moveUp = function() {
+    $rootScope.$emit('moveParagraphUp', $scope.paragraph.id)
+  };
+
+  $scope.moveDown = function() {
+    $rootScope.$emit('moveParagraphDown', $scope.paragraph.id)
+  };
+
   $scope.removeParagraph = function() {
     console.log('remove the note');
     var parapgraphData = {op: 'PARAGRAPH_REMOVE', data: {id: $scope.paragraph.id}};
