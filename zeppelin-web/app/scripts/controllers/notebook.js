@@ -54,6 +54,18 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
+  $scope.showAllEditor = function() {
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      $rootScope.$emit('openEditor', $scope.note.paragraphs[i].id);
+    }
+  };
+
+  $scope.hideAllEditor = function() {
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      $rootScope.$emit('closeEditor', $scope.note.paragraphs[i].id);
+    }
+  };
+
   $scope.isNoteRunning = function() {
     var running = false;
     if(!$scope.note) return false;

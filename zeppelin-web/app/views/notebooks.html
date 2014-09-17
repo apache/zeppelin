@@ -21,9 +21,28 @@ limitations under the License.
          <p class="form-control-static2" ng-click="showEditor = true" ng-show="!showEditor">{{note.name || 'Note ' + note.id}}</p>
       <span class="label">
         <button style="margin-bottom: 9px;" type="button" class="btn btn-default btn-xs" ng-click="removeNote(note.id)">remove <span class="fa fa-trash"></span></button>
-        <button style="margin-bottom: 9px;" type="button" class="btn btn-default btn-xs" 
+        <button style="margin-bottom: 9px;" 
+                type="button"
+                class="btn btn-default btn-xs" 
                 ng-click="runNote(note.id)"
-                ng-if="!isNoteRunning()">run <span class="fa fa-play"></span></button>
+                ng-if="!isNoteRunning()"
+                tooltip-placement="top"
+                tooltip="Run all paragraphs">run <span class="fa fa-play"></span>
+        </button>
+        <button style="margin-bottom: 9px;" 
+                type="button"
+                class="btn btn-default btn-xs" 
+                ng-click="showAllEditor()"
+                tooltip-placement="top"
+                tooltip="Show codes">Show code <span class="fa fa-expand"></span>
+        </button>
+        <button style="margin-bottom: 9px;" 
+                type="button"
+                class="btn btn-default btn-xs" 
+                ng-click="hideAllEditor()"
+                tooltip-placement="top"
+                tooltip="Hide codes">Hide code <span class="fa fa-compress"></span>
+        </button>
       </span>
     </h3>
   </div>
