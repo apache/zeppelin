@@ -598,7 +598,6 @@ angular.module('zeppelinWebApp')
     if ($scope.d3.multiBarChart.data === null || !refresh) {
       $scope.d3.multiBarChart.data = d3g;
       $scope.d3.multiBarChart.options.chart.height = $scope.paragraph.settings.params._table.height;
-      $scope.d3.multiBarChart.config.autorefresh = true;
     } else {
       if ($scope.d3.multiBarChart.api) {
         $scope.d3.multiBarChart.api.updateWithData(d3g);
@@ -635,7 +634,6 @@ angular.module('zeppelinWebApp')
     if ($scope.d3.lineChart.data === null || !refresh) {
       $scope.d3.lineChart.data = d3g;
       $scope.d3.lineChart.options.chart.height = $scope.paragraph.settings.params._table.height;
-      $scope.d3.lineChart.config.autorefresh = true;
       if ($scope.d3.lineChart.api) {
         $scope.d3.lineChart.api.updateWithOptions($scope.d3.options);
       }
@@ -675,7 +673,6 @@ angular.module('zeppelinWebApp')
       $scope.d3.pieChart.options.chart.x = function (d){return d.label;}
       $scope.d3.pieChart.options.chart.y = function (d){return d.value;}
       
-      $scope.d3.pieChart.config.autorefresh = true;     
       if ($scope.d3.pieChart.api) {
         $scope.d3.pieChart.api.updateWithOptions($scope.d3.pieChart.options);
       }
@@ -716,7 +713,6 @@ angular.module('zeppelinWebApp')
     if ($scope.d3.stackedAreaChart.data === null || !refresh) {
       $scope.d3.stackedAreaChart.data = d3g;
       $scope.d3.stackedAreaChart.options.chart.height = $scope.paragraph.settings.params._table.height;
-      $scope.d3.stackedAreaChart.config.autorefresh = true;
       //if ($scope.d3.api) {
         //$scope.d3.api.updateWithOptions($scope.d3.options);
       //}
