@@ -120,6 +120,38 @@ public class Note implements Serializable, JobListener {
 		return null;
 	}
 	
+	/**
+	 * Move paragraph into the new index (order from 0 ~ n-1)
+	 * @param paragraphId
+	 * @param index new index
+	 */
+	public void moveParagraph(String paragraphId, int index) {
+		synchronized(paragraphs){
+			int oldIndex = -1;
+			Paragraph p = null;
+			
+			if (index < 0 || index >= paragraphs.size()) return;
+			
+			for(int i=0; i<paragraphs.size(); i++){
+				if(paragraphs.get(i).getId().equals(paragraphId)) {
+					oldIndex = i;
+					if(oldIndex==index) return;
+					p = paragraphs.remove(i);					
+				}
+			}
+			
+			if (p==null) {
+				return;
+			} else {
+				if (oldIndex < index) {
+					paragraphs.add(index, p);	
+				} else {
+					paragraphs.add(index, p);	
+				}				
+			}
+		}
+	}
+	
   public boolean isLastParagraph(String paragraphId) {
     if (!paragraphs.isEmpty()) {
       synchronized (paragraphs) {
