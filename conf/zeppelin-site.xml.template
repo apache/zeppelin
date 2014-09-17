@@ -40,7 +40,7 @@
 
 <property>
   <name>zeppelin.interpreter.mode</name>
-  <value>separate</value>
+  <value>share</value>
   <description>Interpreter mode. separate or share. 'separate' for separate interpreter for each notebook. 'share' for share single interpreter for all notebook</description>
 </property>
 

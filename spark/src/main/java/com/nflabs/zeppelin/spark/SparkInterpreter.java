@@ -326,6 +326,7 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 	 * Interpret a single line
 	 */
 	public InterpreterResult interpret(String line){
+		if(line==null) line = "";
 		return interpret(line.split("\n"));
 	}
 	

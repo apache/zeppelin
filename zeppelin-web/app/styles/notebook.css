@@ -31,10 +31,15 @@
   float: right;
   color: #999;
   margin-top: -9px;
+  margin-right:0px;
+  position:absolute;
+  clear:both;
+  right:25px;
+  z-index:10;
 }
 
 .paragraph .editor {
-  width: 90%;
+  width: 100%;
   border-left: 4px solid #EEEEEE;
   background: rgba(255, 255, 255, 0.9);
 }
@@ -113,6 +118,16 @@
   -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
   -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
   transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+}
+
+.noteAction:hover span {
+    display: inline-block;
+    visibility: visible;
+}
+
+.noteAction span {
+    display: inline-block;
+    visibility: hidden;
 }
 
 .form-control-static2 {

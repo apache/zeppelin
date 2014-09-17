@@ -18,28 +18,39 @@ limitations under the License.
      ng-mouseover="onMouseover()"
      ng-mouseleave="onMouseleave()">
   <div id="{{paragraph.id}}_control" class="control">
+    <select ng-model="paragraph.config.colWidth"
+            ng-change="changeColWidth()"
+            ng-options="col for col in colWidthOption"></select>
+    
+
     <!-- Editor handler -->
-    <span class="fa fa-compress" style="cursor:pointer" tooltip-placement="left" tooltip="Hide editor"
+    <span class="fa fa-compress" style="cursor:pointer" tooltip-placement="top" tooltip="Hide editor"
           ng-click="closeEditor()"
-          ng-show="paragraph.isEditorOpen == true && paragraph.isOpen == true"></span>
-    <span class="fa fa-expand" style="cursor:pointer" tooltip-placement="left" tooltip="Show editor"
+          ng-show="!paragraph.config.editorHide && !paragraph.config.hide"></span>
+    <span class="fa fa-expand" style="cursor:pointer" tooltip-placement="top" tooltip="Show editor"
           ng-click="openEditor()"
-          ng-show="paragraph.isEditorOpen == false && paragraph.isOpen == true"></span>
+          ng-show="paragraph.config.editorHide && !paragraph.config.hide"></span>
     
     <!-- paragraph handler -->
-    <span class="fa fa-sort-desc" style="cursor:pointer" tooltip-placement="left" tooltip="Hide this Paragraph"
+    <span class="fa fa-sort-desc" style="cursor:pointer" tooltip-placement="top" tooltip="Hide this Paragraph"
           ng-click="closeParagraph()"
-          ng-show="paragraph.isOpen == true"></span> 
-    <span class="fa fa-sort-up" style="cursor:pointer" tooltip-placement="left" tooltip="Show this Paragraph"
+          ng-show="!paragraph.config.hide"></span> 
+    <span class="fa fa-sort-up" style="cursor:pointer" tooltip-placement="top" tooltip="Show this Paragraph"
           ng-click="openParagraph()"
-          ng-show="paragraph.isOpen == false"></span>
+          ng-show="paragraph.config.hide"></span>
+
+    <span class="fa fa-arrow-up" style="cursor:pointer" tooltip-placement="top" tooltip="Move up"
+          ng-click="moveUp()"></span>
+
+    <span class="fa fa-arrow-down" style="cursor:pointer" tooltip-placement="top" tooltip="Move down"
+          ng-click="moveDown()"></span>
     
     <!-- remove paragraph -->
-    <span class="fa fa-times" style="cursor:pointer" tooltip-placement="left" tooltip="Remove this Paragraph"
+    <span class="fa fa-times" style="cursor:pointer" tooltip-placement="top" tooltip="Remove this Paragraph"
           ng-click="removeParagraph()"></span>
   </div>
-  <div ng-show="paragraph.isOpen == true">
-    <div ng-show="paragraph.isEditorOpen == true">
+  <div ng-show="!paragraph.config.hide">
+    <div ng-show="!paragraph.config.editorHide">
       <div id="{{paragraph.id}}_editor"
            style="opacity: 1;"
            class="editor" 
@@ -54,7 +65,7 @@ limitations under the License.
     </div>
 
     <div id="{{paragraph.id}}_status" class="status"
-         ng-if="paragraph.isOpen == true && paragraph.isEditorOpen == true">
+         ng-if="!paragraph.config.hide && !paragraph.config.editorHide">
       Shift+Enter to Run. {{paragraph.status}}
     </div>
 
@@ -66,7 +77,7 @@ limitations under the License.
         <label class="col-sm-1 control-label input-sm" ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">{{formulaire.name}}</label>
         <div class="col-sm-3">
           <input class="form-control input-sm" 
-                 ng-enter="sendParagraph(getEditorValue())"
+                 ng-enter="runParagraph(getEditorValue())"
                  ng-model="paragraph.settings.params[formulaire.name]"
                  ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
                  name="{{formulaire.name}}">

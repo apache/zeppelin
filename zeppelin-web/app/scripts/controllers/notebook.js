@@ -38,8 +38,44 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   /** Remove the note and go back tot he main page */
   /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
   $scope.removeNote = function(noteId) {
-    $rootScope.$emit('sendNewEvent', {op: 'DEL_NOTE', data: {id: $scope.note.id}});
-    $location.path('/#');
+    var result = confirm('Do you want to delete this notebook?');
+    if (result) {
+      $rootScope.$emit('sendNewEvent', {op: 'DEL_NOTE', data: {id: $scope.note.id}});
+      $location.path('/#');
+    }
+  };
+
+  $scope.runNote = function(noteId) {
+    var result = confirm('Run all paragraphs?');
+    if (result) {
+      for (var i=0; i<$scope.note.paragraphs.length; i++) {
+        $rootScope.$emit('runParagraph', $scope.note.paragraphs[i].id);
+      }
+    }
+  };
+
+  $scope.showAllEditor = function() {
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      $rootScope.$emit('openEditor', $scope.note.paragraphs[i].id);
+    }
+  };
+
+  $scope.hideAllEditor = function() {
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      $rootScope.$emit('closeEditor', $scope.note.paragraphs[i].id);
+    }
+  };
+
+  $scope.isNoteRunning = function() {
+    var running = false;
+    if(!$scope.note) return false;
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      if ( $scope.note.paragraphs[i].status === "PENDING" || $scope.note.paragraphs[i].status === "RUNNING") {
+        running = true;
+        break;
+      }
+    }
+    return running;
   };
   
   /** Update the note name */
@@ -59,6 +95,38 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   });
 
+  $rootScope.$on('moveParagraphUp', function(event, paragraphId) {
+    var newIndex = -1;
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      if ($scope.note.paragraphs[i].id === paragraphId) {
+        newIndex = i-1;
+        break;
+      }
+    }
+
+    if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
+      return;
+    }
+
+    $rootScope.$emit('sendNewEvent', { op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
+  });
+
+  $rootScope.$on('moveParagraphDown', function(event, paragraphId) {
+    var newIndex = -1;
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      if ($scope.note.paragraphs[i].id === paragraphId) {
+        newIndex = i+1;
+        break;
+      }
+    }
+
+    if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
+      return;
+    }
+
+    $rootScope.$emit('sendNewEvent', { op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
+  });
+
   $rootScope.$on('moveFocusToPreviousParagraph', function(event, currentParagraphId){
     var focus = false;
     for (var i=$scope.note.paragraphs.length-1; i>=0; i--) {
@@ -69,7 +137,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         }
       } else {
         var p = $scope.note.paragraphs[i];
-        if (p.isOpen && p.isEditorOpen) {
+        if (!p.config.hide && !p.config.editorHide) {
           $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
           break;
         }
@@ -87,7 +155,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         }
       } else {
         var p = $scope.note.paragraphs[i];
-        if (p.isOpen && p.isEditorOpen) {
+        if (!p.config.hide && !p.config.editorHide) {
           $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
           break;
         }
@@ -101,19 +169,31 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       console.log('change note name: %o to %o', $scope.note.name, note.name);
       $scope.note.name = note.name;
     }
+
     /** add new paragraphs */
+    var idx = 0;
     note.paragraphs.forEach(function(newEntry) {
-     var found = false;
-      $scope.note.paragraphs.forEach(function(currentEntry) {
-        if (currentEntry.id === newEntry.id) {
+      var found = false;
+      for (var oldIdx=0; oldIdx< $scope.note.paragraphs.length; oldIdx++) {
+        if ($scope.note.paragraphs[oldIdx].id === newEntry.id) {
           found = true;
-          $rootScope.$emit('updateParagraph', {paragraph: newEntry});
+          break;
         }
-      });
-      /** not found means addnewpara */
-      if(!found) {
-        $scope.note.paragraphs.push(newEntry);
+      };
+
+      if (found) {
+        if (idx === oldIdx) {
+          $rootScope.$emit('updateParagraph', {paragraph: newEntry});
+        } else {
+          // move paragraph
+          $scope.note.paragraphs.splice(oldIdx, 1);
+          $scope.note.paragraphs.splice(idx, 0, newEntry);
+        }
+      } else {
+        // insert new paragraph
+        $scope.note.paragraphs.splice(idx, 0, newEntry);
       }
+      idx++;
     });
     
     /** remove paragraphs */
