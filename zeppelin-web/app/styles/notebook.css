@@ -29,6 +29,14 @@
     margin-left: 3px;
 }
 
+.control span {
+    margin-left: 4px;
+}
+
+.control {
+    padding: 4px;
+}
+
 .outlineOnFocus{
   border : 1px solid #FFFFFF;
 }
