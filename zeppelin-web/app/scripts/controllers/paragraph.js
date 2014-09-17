@@ -235,8 +235,8 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.aceLoaded = function(_editor) {
-    var langTools = ace.define.modules["ace/ext/language_tools"];
-    var Range = ace.define.modules['ace/range'].Range
+    var langTools = ace.require("ace/ext/language_tools");
+    var Range = ace.require('ace/range').Range
 
     $scope.editor = _editor;
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
@@ -245,13 +245,14 @@ angular.module('zeppelinWebApp')
       $scope.editor.focus();
       var hight = $scope.editor.getSession().getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
       setEditorHeight(_editor.container.id, hight);
-      
+
+      $scope.editor.getSession().setUseWrapMode(true);
       $scope.editor.setKeyboardHandler("ace/keyboard/emacs");
-/*
+
       $scope.editor.setOptions({
           enableBasicAutocompletion: true,
-          enableSnippets: true,
-          enableLiveAutocompletion:true
+          enableSnippets: false,
+          enableLiveAutocompletion:false
       });
       var remoteCompleter = {
           getCompletions : function(editor, session, pos, prefix, callback) {
@@ -284,7 +285,7 @@ angular.module('zeppelinWebApp')
           }
       }
       langTools.addCompleter(remoteCompleter);
-*/
+
       $scope.editor.getSession().on('change', function(e, editSession) {
         hight = editSession.getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
         setEditorHeight(_editor.container.id, hight);
@@ -323,33 +324,24 @@ angular.module('zeppelinWebApp')
 	}
       });
       */
-/*
+
       // autocomplete on 'ctrl+.'
-      $scope.editor.commands.addCommand({ 
-        name: "showOtherCompletions", 
-        bindKey: "Ctrl-.", 
-        exec: function(editor) { 
-          if (!editor.completer) 
-            editor.completer = new Autocomplete(editor); 
-            var all = editor.completers; 
-            //editor.completers = [remoteCompleter] 
-            editor.completer.showPopup(editor); 
-            //editor.completers = all; 
-         } 
-      }) 
-*/
+      $scope.editor.commands.bindKey("ctrl-.", "startAutocomplete") 
+      $scope.editor.commands.bindKey("ctrl-space", null)
+
+      // handle cursor moves
       $scope.editor.keyBinding.origOnCommandKey = $scope.editor.keyBinding.onCommandKey;
       $scope.editor.keyBinding.onCommandKey = function(e, hashId, keyCode) {
         if($scope.editor.completer && $scope.editor.completer.activated) { // if autocompleter is active
         } else {
-            if(keyCode==38){  // UP
+            if(keyCode==38 || (keyCode==80 && e.ctrlKey)){  // UP
                 var numRows = $scope.editor.getSession().getLength();
                 var currentRow = $scope.editor.getCursorPosition().row
                 if(currentRow==0){
                     // move focus to previous paragraph
                     $rootScope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
                 }
-            } else if(keyCode==40){  // DOWN
+            } else if(keyCode==40 || (keyCode==78 && e.ctrlKey)){  // DOWN
                 var numRows = $scope.editor.getSession().getLength();
                 var currentRow = $scope.editor.getCursorPosition().row
                 if(currentRow == numRows-1){
