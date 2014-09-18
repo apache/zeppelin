@@ -14,14 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div id="{{paragraph.id}}_container"
-     class="paragraph outlineOnFocus" 
+     class="paragraph outlineOnFocus"
      ng-mouseover="onMouseover()"
      ng-mouseleave="onMouseleave()">
   <div id="{{paragraph.id}}_control" class="control">
     <select ng-model="paragraph.config.colWidth"
             ng-change="changeColWidth()"
             ng-options="col for col in colWidthOption"></select>
-    
+
 
     <!-- Editor handler -->
     <span class="fa fa-compress" style="cursor:pointer" tooltip-placement="top" tooltip="Hide editor"
@@ -30,11 +30,11 @@ limitations under the License.
     <span class="fa fa-expand" style="cursor:pointer" tooltip-placement="top" tooltip="Show editor"
           ng-click="openEditor()"
           ng-show="paragraph.config.editorHide && !paragraph.config.hide"></span>
-    
+
     <!-- paragraph handler -->
     <span class="fa fa-sort-desc" style="cursor:pointer" tooltip-placement="top" tooltip="Hide this Paragraph"
           ng-click="closeParagraph()"
-          ng-show="!paragraph.config.hide"></span> 
+          ng-show="!paragraph.config.hide"></span>
     <span class="fa fa-sort-up" style="cursor:pointer" tooltip-placement="top" tooltip="Show this Paragraph"
           ng-click="openParagraph()"
           ng-show="paragraph.config.hide"></span>
@@ -44,7 +44,7 @@ limitations under the License.
 
     <span class="fa fa-arrow-down" style="cursor:pointer" tooltip-placement="top" tooltip="Move down"
           ng-click="moveDown()"></span>
-    
+
     <!-- remove paragraph -->
     <span class="fa fa-times" style="cursor:pointer" tooltip-placement="top" tooltip="Remove this Paragraph"
           ng-click="removeParagraph()"></span>
@@ -53,8 +53,8 @@ limitations under the License.
     <div ng-show="!paragraph.config.editorHide">
       <div id="{{paragraph.id}}_editor"
            style="opacity: 1;"
-           class="editor" 
-           ui-ace="{ 
+           class="editor"
+           ui-ace="{
                        onLoad : aceLoaded,
                        onChange: aceChanged,
                        require : ['ace/ext/language_tools']
@@ -69,14 +69,14 @@ limitations under the License.
       Shift+Enter to Run. {{paragraph.status}}
     </div>
 
-    <form id="{{paragraph.id}}_form" role="form" 
+    <form id="{{paragraph.id}}_form" role="form"
           class="form-horizontal" style="margin-top: 15px;">
       <div class="form-group"
            ng-repeat="formulaire in paragraph.settings.forms"
            ng-Init="loadForm(formulaire, paragraph.settings.params)">
         <label class="col-sm-1 control-label input-sm" ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">{{formulaire.name}}</label>
         <div class="col-sm-3">
-          <input class="form-control input-sm" 
+          <input class="form-control input-sm"
                  ng-enter="runParagraph(getEditorValue())"
                  ng-model="paragraph.settings.params[formulaire.name]"
                  ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
@@ -90,7 +90,7 @@ limitations under the License.
          ng-if="paragraph.status == 'RUNNING'">
 
       <div ng-if="getProgress()<=0 || getProgress()>=100">
-        <div id="{{paragraph.id}}_progress"           
+        <div id="{{paragraph.id}}_progress"
              class="progress">
             <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;"></div>
           <span class="sr-only"></span>
@@ -115,19 +115,19 @@ limitations under the License.
     <div class='tableDisplay'>
       <div id="{{paragraph.id}}_msg"
            class="text"
-           ng-if="paragraph.result.type == 'TEXT'" 
-           ng-Init="loadResultType(paragraph.result)"           
+           ng-if="paragraph.result.type == 'TEXT'"
+           ng-Init="loadResultType(paragraph.result)"
            ng-bind-html="paragraph.result.msg">
       </div>
 
       <div id="{{paragraph.id}}_msg"
-           ng-if="paragraph.result.type == 'HTML'" 
+           ng-if="paragraph.result.type == 'HTML'"
            ng-Init="loadResultType(paragraph.result)"
            ng-bind-html="paragraph.result.msg">
       </div>
 
       <img id="{{paragraph.id}}_msg"
-           ng-if="paragraph.result.type == 'IMG'" 
+           ng-if="paragraph.result.type == 'IMG'"
            ng-Init="loadResultType(paragraph.result)"
            ng-src="{{paragraph.result.msg}}">
       </img>
@@ -172,33 +172,33 @@ limitations under the License.
         </tbody>
       </table>
 
-      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()=='multiBarChart'" 
-            options='d3.multiBarChart.options' 
-            config='d3.multiBarChart.config' 
+      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()=='multiBarChart'"
+            options='d3.multiBarChart.options'
+            config='d3.multiBarChart.config'
             data='d3.multiBarChart.data'
             api='d3.multiBarChart.api'>
       </nvd3new>
 
-      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()=='pieChart'" 
-            options='d3.pieChart.options' 
-            config='d3.pieChart.config' 
+      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()=='pieChart'"
+            options='d3.pieChart.options'
+            config='d3.pieChart.config'
             data='d3.pieChart.data'
             api='d3.pieChart.api'>
       </nvd3new>
 
-      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()=='stackedAreaChart'" 
-            options='d3.stackedAreaChart.options' 
-            config='d3.stackedAreaChart.config' 
+      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()=='stackedAreaChart'"
+            options='d3.stackedAreaChart.options'
+            config='d3.stackedAreaChart.config'
             data='d3.stackedAreaChart.data'
             api='d3.stackedAreaChart.api'>
       </nvd3new>
 
-      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()=='lineChart'" 
-            options='d3.lineChart.options' 
-            config='d3.lineChart.config' 
+      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()=='lineChart'"
+            options='d3.lineChart.options'
+            config='d3.lineChart.config'
             data='d3.lineChart.data'
             api='d3.lineChart.api'>
       </nvd3new>
     </div>
-  </div> 
+  </div>
 </div>

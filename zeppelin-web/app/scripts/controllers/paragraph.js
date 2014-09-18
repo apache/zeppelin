@@ -38,9 +38,9 @@ angular.module('zeppelinWebApp')
               chart: {
                   type: 'multiBarChart',
                   margin: {
-                      top: 20,
+                      top: 10,
                       right: 20,
-                      bottom: 60,
+                      bottom: 40,
                       left: 45
                   },
                   useInteractiveGuideline: true,
@@ -61,11 +61,13 @@ angular.module('zeppelinWebApp')
               chart: {
                   type: 'pieChart',
                   margin: {
-                      top: 20,
+                      top: 10,
                       right: 20,
-                      bottom: 60,
+                      bottom: 10,
                       left: 45
                   },
+                  x: function (d){return d.label;},
+                  y: function (d){return d.value;},
                   useInteractiveGuideline: true,
                   transitionDuration:500
               }
@@ -84,9 +86,9 @@ angular.module('zeppelinWebApp')
               chart: {
                   type: 'stackedAreaChart',
                   margin: {
-                      top: 20,
+                      top: 10,
                       right: 20,
-                      bottom: 60,
+                      bottom: 40,
                       left: 45
                   },
                   useInteractiveGuideline: true,
@@ -107,9 +109,9 @@ angular.module('zeppelinWebApp')
               chart: {
                   type: 'lineChart',
                   margin: {
-                      top: 20,
+                      top: 10,
                       right: 20,
-                      bottom: 60,
+                      bottom: 40,
                       left: 45
                   },
                   useInteractiveGuideline: true,
@@ -668,8 +670,6 @@ angular.module('zeppelinWebApp')
     if ($scope.d3.pieChart.data === null || !refresh) {
       $scope.d3.pieChart.data = d3g;
       $scope.d3.pieChart.options.chart.height = $scope.paragraph.settings.params._table.height;
-      $scope.d3.pieChart.options.chart.x = function (d){return d.label;}
-      $scope.d3.pieChart.options.chart.y = function (d){return d.value;}
 
       if ($scope.d3.pieChart.api) {
         $scope.d3.pieChart.api.updateWithOptions($scope.d3.pieChart.options);

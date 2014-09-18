@@ -46,6 +46,8 @@
 }
 
 .paragraph .control {
+  background-color: rgba(255,255,255,0.9);
+  border-top: 1px solid #EFEFEF;
   display: none;
   float: right;
   color: #999;
@@ -55,6 +57,10 @@
   clear:both;
   right:25px;
   z-index:10;
+}
+
+.paragraph table {
+  margin-bottom: 0px;
 }
 
 .paragraph .editor {

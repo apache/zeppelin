@@ -18,6 +18,10 @@ body {
   padding-top: 60px;
 }
 
+body .navbar {
+    margin-bottom: 10px;
+}
+
 .container {
   padding-right: 15px;
   padding-left: 15px;
@@ -45,7 +49,7 @@ body {
 .navbar-inverse .navbar-nav > li > a:hover, .navbar-inverse .navbar-nav > li > a:focus {
   color: #fff;
   background-color: rgba(0, 0, 0, 0.2);
-  
+
 }
 
 .navbar-inverse .navbar-toggle {
