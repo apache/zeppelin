@@ -362,7 +362,12 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 				incomplete = "";
 			}
 		}
-		return new InterpreterResult(r, out.toString());
+		
+		if (r == Code.INCOMPLETE) {
+			return new InterpreterResult(r, "Incomplete expression");
+		} else {
+			return new InterpreterResult(r, out.toString());
+		}
 	}
 	
 	
