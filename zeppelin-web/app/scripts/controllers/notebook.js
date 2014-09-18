@@ -20,21 +20,21 @@
  * @description
  * # NotebookCtrl
  * Controller of notes, manage the note (update)
- * 
+ *
  * @author anthonycorbacho
  */
 angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope) {
 
   $scope.note = null;
   $scope.showEditor = false;
-  
+
   /** Init the new controller */
   var initNotebook = function() {
     $rootScope.$emit('sendNewEvent', {op: 'GET_NOTE', data: {id: $routeParams.noteId}});
   };
-  
+
   initNotebook();
-  
+
   /** Remove the note and go back tot he main page */
   /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
   $scope.removeNote = function(noteId) {
@@ -48,22 +48,16 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.runNote = function(noteId) {
     var result = confirm('Run all paragraphs?');
     if (result) {
-      for (var i=0; i<$scope.note.paragraphs.length; i++) {
-        $rootScope.$emit('runParagraph', $scope.note.paragraphs[i].id);
-      }
+      $rootScope.$emit('runParagraph');
     }
   };
 
   $scope.showAllEditor = function() {
-    for (var i=0; i<$scope.note.paragraphs.length; i++) {
-      $rootScope.$emit('openEditor', $scope.note.paragraphs[i].id);
-    }
+    $rootScope.$emit('openEditor');
   };
 
   $scope.hideAllEditor = function() {
-    for (var i=0; i<$scope.note.paragraphs.length; i++) {
-      $rootScope.$emit('closeEditor', $scope.note.paragraphs[i].id);
-    }
+    $rootScope.$emit('closeEditor');
   };
 
   $scope.isNoteRunning = function() {
@@ -77,15 +71,15 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
     return running;
   };
-  
+
   /** Update the note name */
   $scope.sendNewName = function() {
     $scope.showEditor = false;
-    if ($scope.noteName) {
-      $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.note.id, name: $scope.noteName}});
+    if ($scope.note.name) {
+      $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.note.id, name: $scope.note.name}});
     }
   };
-  
+
   /** update the current note */
   $rootScope.$on('setNoteContent', function(event, note) {
     if ($scope.note === null) {
@@ -162,7 +156,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       }
     }
   });
-  
+
   var updateNote = function(note) {
     /** update Note name */
     if (note.name !== $scope.note.name) {
@@ -195,7 +189,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       }
       idx++;
     });
-    
+
     /** remove paragraphs */
     for (var entry in $scope.note.paragraphs) {
      var found = false;
@@ -209,7 +203,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         $scope.note.paragraphs.splice(entry, 1)
       }
     };
-    
   };
-  
+
 });

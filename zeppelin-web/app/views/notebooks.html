@@ -17,28 +17,25 @@ limitations under the License.
 <div>
   <div class="noteAction" ng-show="note.id">
     <h3> <input type="text" class="form-control2" placeholder="{{note.name || 'Note ' + note.id}}" style="width:200px;"
-                ng-show="showEditor" ng-model="noteName" ng-enter="sendNewName()" ng-delete="showEditor = false" autofocus/>
+                ng-show="showEditor" ng-model="note.name" ng-enter="sendNewName()" ng-delete="showEditor = false" autofocus/>
          <p class="form-control-static2" ng-click="showEditor = true" ng-show="!showEditor">{{note.name || 'Note ' + note.id}}</p>
       <span class="label">
-        <button style="margin-bottom: 9px;" type="button" class="btn btn-default btn-xs" ng-click="removeNote(note.id)">remove <span class="fa fa-trash"></span></button>
-        <button style="margin-bottom: 9px;" 
-                type="button"
-                class="btn btn-default btn-xs" 
+        <button type="button" class="noteBtn btn btn-default btn-xs" ng-click="removeNote(note.id)">Remove <span class="fa fa-trash"></span></button>
+        <button type="button"
+                class="noteBtn btn btn-default btn-xs"
                 ng-click="runNote(note.id)"
                 ng-if="!isNoteRunning()"
                 tooltip-placement="top"
-                tooltip="Run all paragraphs">run <span class="fa fa-play"></span>
+                tooltip="Run all paragraphs">Run <span class="fa fa-play"></span>
         </button>
-        <button style="margin-bottom: 9px;" 
-                type="button"
-                class="btn btn-default btn-xs" 
+        <button type="button"
+                class="noteBtn btn btn-default btn-xs"
                 ng-click="showAllEditor()"
                 tooltip-placement="top"
                 tooltip="Show codes">Show code <span class="fa fa-expand"></span>
         </button>
-        <button style="margin-bottom: 9px;" 
-                type="button"
-                class="btn btn-default btn-xs" 
+        <button type="button"
+                class="noteBtn btn btn-default btn-xs"
                 ng-click="hideAllEditor()"
                 tooltip-placement="top"
                 tooltip="Hide codes">Hide code <span class="fa fa-compress"></span>

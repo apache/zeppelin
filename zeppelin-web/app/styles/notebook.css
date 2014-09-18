@@ -18,6 +18,25 @@
   padding: 8px 8px 8px 8px;
 }
 
+.noteBtn {
+    margin-bottom: 9px;
+    padding: 3px;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.noteBtn .fa {
+    margin-left: 3px;
+}
+
+.control span {
+    margin-left: 4px;
+}
+
+.control {
+    padding: 4px;
+}
+
 .outlineOnFocus{
   border : 1px solid #FFFFFF;
 }
@@ -27,6 +46,8 @@
 }
 
 .paragraph .control {
+  background-color: rgba(255,255,255,0.9);
+  border-top: 1px solid #EFEFEF;
   display: none;
   float: right;
   color: #999;
@@ -36,6 +57,10 @@
   clear:both;
   right:25px;
   z-index:10;
+}
+
+.paragraph table {
+  margin-bottom: 0px;
 }
 
 .paragraph .editor {
@@ -54,7 +79,7 @@
   line-height: 1.42857143!important;
   word-break: break-all!important;
   word-wrap: break-word!important;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;  
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
 }
 
 .ace-tm {
@@ -70,7 +95,7 @@
   direction: ltr;
 }
 
-.ace_hidden-cursors {opacity:0} 
+.ace_hidden-cursors {opacity:0}
 
 .paragraph .status {
   font-size: 10px;
@@ -95,7 +120,7 @@
 
 .disable {
   opacity:0.4!important;
-  pointer-events: none; 
+  pointer-events: none;
 }
 
 .noteAction {

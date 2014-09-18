@@ -47,7 +47,7 @@ limitations under the License.
           </button>
           <a class="navbar-brand" href="#"><img style="margin-top: -7px;s" src="images/zepLogoW.png" width="50" alt="I'm zeppelin"> Zeppelin</a>
         </div>
-        
+
         <div class="collapse navbar-collapse" ng-controller="NavCtrl">
           <ul class="nav navbar-nav">
             <li class="dropdown">
@@ -59,11 +59,11 @@ limitations under the License.
               </ul>
             </li>
           </ul>
-          <ul class="nav navbar-nav navbar-right">
-            <li><span ng-if="connected===true" 
-                      class="fa fa-circle" style="font-size:10px;margin-right:5px"> Connected</span>
-                <span ng-if="connected===false" 
-                      class="fa fa-circle" style="color:#FF4500; font-weight:bold; font-size:10px;margin-right:5px"> Disconnected</span>
+          <ul class="nav navbar-nav navbar-right" style="margin-top:10px; margin-right:5px;">
+            <li><span ng-show="connected"
+                      class="fa fa-circle" style="font-size:12px;margin-right:5px;"> Connected</span>
+                <span ng-show="!connected"
+                      class="fa fa-circle" style="color:#FF4500; font-weight:bold; font-size:10px;margin-right:5px;"> Disconnected</span>
             </li>
           </ul>
         </div>
@@ -100,7 +100,7 @@ limitations under the License.
     <script src="bower_components/jquery.scrollTo/jquery.scrollTo.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
-    <!-- 
+    <!--
       <script src="bower_components/ace-builds/src-min-noconflict/ace.js"></script>
     -->
     <script src="scripts/ace/src-min-noconflict/ace.js"></script>

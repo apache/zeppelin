@@ -20,7 +20,7 @@
  * @description
  * # ParagraphCtrl
  * Controller of the paragraph, manage everything related to the paragraph
- * 
+ *
  * @author anthonycorbacho
  */
 angular.module('zeppelinWebApp')
@@ -38,9 +38,9 @@ angular.module('zeppelinWebApp')
               chart: {
                   type: 'multiBarChart',
                   margin: {
-                      top: 20,
+                      top: 10,
                       right: 20,
-                      bottom: 60,
+                      bottom: 40,
                       left: 45
                   },
                   useInteractiveGuideline: true,
@@ -54,18 +54,20 @@ angular.module('zeppelinWebApp')
               disabled: false, // default: false
               autorefresh: false, // default: true
               refreshDataOnly: true // default: false
-          }              
+          }
       },
       pieChart : {
           options : {
               chart: {
                   type: 'pieChart',
                   margin: {
-                      top: 20,
+                      top: 10,
                       right: 20,
-                      bottom: 60,
+                      bottom: 10,
                       left: 45
                   },
+                  x: function (d){return d.label;},
+                  y: function (d){return d.value;},
                   useInteractiveGuideline: true,
                   transitionDuration:500
               }
@@ -77,16 +79,16 @@ angular.module('zeppelinWebApp')
               disabled: false, // default: false
               autorefresh: false, // default: true
               refreshDataOnly: true // default: false
-          }              
+          }
       },
       stackedAreaChart : {
           options : {
               chart: {
                   type: 'stackedAreaChart',
                   margin: {
-                      top: 20,
+                      top: 10,
                       right: 20,
-                      bottom: 60,
+                      bottom: 40,
                       left: 45
                   },
                   useInteractiveGuideline: true,
@@ -100,16 +102,16 @@ angular.module('zeppelinWebApp')
               disabled: false, // default: false
               autorefresh: false, // default: true
               refreshDataOnly: true // default: false
-          }              
+          }
       },
       lineChart : {
           options : {
               chart: {
                   type: 'lineChart',
                   margin: {
-                      top: 20,
+                      top: 10,
                       right: 20,
-                      bottom: 60,
+                      bottom: 40,
                       left: 45
                   },
                   useInteractiveGuideline: true,
@@ -123,7 +125,7 @@ angular.module('zeppelinWebApp')
               disabled: false, // default: false
               autorefresh: false, // default: true
               refreshDataOnly: true // default: false
-          }              
+          }
       },
   };
 
@@ -143,7 +145,10 @@ angular.module('zeppelinWebApp')
   };
 
   var initializeDefault = function(){
-    if (!$scope.paragraph.config.colWidth) {
+    if (!$scope.paragraph.config) {
+      $scope.paragraph.config = {colWidth:12};
+    }
+    else if (!$scope.paragraph.config.colWidth) {
       $scope.paragraph.config.colWidth = 12
     }
   };
@@ -155,14 +160,14 @@ angular.module('zeppelinWebApp')
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
- 
+
       if ($scope.paragraph.text !== data.paragraph.text) {
         if ($scope.dirtyText) {         // check if editor has local update
           if ($scope.dirtyText === data.paragraph.text ) {  // when local update is the same from remote, clear local update
             $scope.paragraph.text = data.paragraph.text;
             $scope.dirtyText = undefined;
           } else { // if there're local update, keep it.
-            $scope.paragraph.text = $scope.dirtyText;  
+            $scope.paragraph.text = $scope.dirtyText;
           }
         } else {
           $scope.paragraph.text = data.paragraph.text;
@@ -189,7 +194,7 @@ angular.module('zeppelinWebApp')
       el.removeClass(el.attr('class'))
       el.addClass("col-md-"+$scope.paragraph.config.colWidth);
 
-      
+
       if (newType==="TABLE") {
         $scope.loadTableData($scope.paragraph.result);
         /** User changed the chart type? */
@@ -215,16 +220,16 @@ angular.module('zeppelinWebApp')
   $scope.cancelParagraph = function() {
     console.log("Cancel %o", $scope.paragraph.id);
     var data = {op: 'CANCEL_PARAGRAPH', data: {id: $scope.paragraph.id }};
-    $rootScope.$emit('sendNewEvent', data);      
+    $rootScope.$emit('sendNewEvent', data);
   };
-  
-  
+
+
   $scope.runParagraph = function(data) {
     //console.log('send new paragraph: %o with %o', $scope.paragraph.id, data);
     var parapgraphData = {op: 'RUN_PARAGRAPH', data: {id: $scope.paragraph.id, paragraph: data, config: $scope.paragraph.config, params: $scope.paragraph.settings.params}};
     $rootScope.$emit('sendNewEvent', parapgraphData);
   };
-  
+
   var flushTableData = function() {
     if ($scope.paragraph.settings.params._table) {
         delete $scope.paragraph.settings.params._table;
@@ -233,7 +238,7 @@ angular.module('zeppelinWebApp')
         }
       }
   };
-  
+
   $scope.moveUp = function() {
     $rootScope.$emit('moveParagraphUp', $scope.paragraph.id)
   };
@@ -255,8 +260,8 @@ angular.module('zeppelinWebApp')
     newConfig.hide = true;
 
     commitParagraph($scope.paragraph.text, newConfig, newParams);
-  };  
-  
+  };
+
   $scope.openParagraph = function() {
     console.log('open the note');
     var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
@@ -265,7 +270,7 @@ angular.module('zeppelinWebApp')
 
     commitParagraph($scope.paragraph.text, newConfig, newParams);
   };
-  
+
   $scope.closeEditor = function() {
     console.log('close the note');
 
@@ -275,7 +280,7 @@ angular.module('zeppelinWebApp')
 
     commitParagraph($scope.paragraph.text, newConfig, newParams);
   };
-  
+
   $scope.openEditor = function() {
     console.log('open the note');
 
@@ -319,6 +324,7 @@ angular.module('zeppelinWebApp')
       setEditorHeight(_editor.container.id, hight);
 
       $scope.editor.getSession().setUseWrapMode(true);
+
       $scope.editor.setKeyboardHandler("ace/keyboard/emacs");
 
       $scope.editor.setOptions({
@@ -372,7 +378,7 @@ angular.module('zeppelinWebApp')
       } else {
         $scope.editor.getSession().setMode(editorMode.scala);
       }
-      
+
       $scope.editor.commands.addCommand({
         name: 'run',
         bindKey: {win: 'Shift-Enter', mac: 'Shift-Enter'},
@@ -389,16 +395,16 @@ angular.module('zeppelinWebApp')
       /*
       $scope.editor.commands.on("afterExec", function(e, t) {
         if (e.command.name == "insertstring" && e.args == "." ) {
-	  var all = e.editor.completers;
-	  //e.editor.completers = [remoteCompleter];
-	  e.editor.execCommand("startAutocomplete");
-	  //e.editor.completers = all;
-	}
+      var all = e.editor.completers;
+      //e.editor.completers = [remoteCompleter];
+      e.editor.execCommand("startAutocomplete");
+      //e.editor.completers = all;
+    }
       });
       */
 
       // autocomplete on 'ctrl+.'
-      $scope.editor.commands.bindKey("ctrl-.", "startAutocomplete") 
+      $scope.editor.commands.bindKey("ctrl-.", "startAutocomplete")
       $scope.editor.commands.bindKey("ctrl-space", null)
 
       // handle cursor moves
@@ -452,22 +458,16 @@ angular.module('zeppelinWebApp')
     }
   });
 
-  $rootScope.$on('runParagraph', function(event, paragraphId){
-    if ($scope.paragraph.id === paragraphId) {
-        $scope.runParagraph($scope.editor.getValue());
-    }
+  $rootScope.$on('runParagraph', function(event){
+    $scope.runParagraph($scope.editor.getValue());
   });
 
-  $rootScope.$on('openEditor', function(event, paragraphId){
-    if ($scope.paragraph.id === paragraphId) {
-        $scope.openEditor();
-    }
+  $rootScope.$on('openEditor', function(event){
+    $scope.openEditor();
   });
 
-  $rootScope.$on('closeEditor', function(event, paragraphId){
-    if ($scope.paragraph.id === paragraphId) {
-        $scope.closeEditor();
-    }
+  $rootScope.$on('closeEditor', function(event){
+    $scope.closeEditor();
   });
 
 
@@ -573,7 +573,7 @@ angular.module('zeppelinWebApp')
     var xColIndex = 0;
     var yColIndexes = [];
     var d3g = [];
-    // select yColumns. 
+    // select yColumns.
     for (var i = 0; i < data.columnNames.length; i++) {
       if (i !== xColIndex) {
         yColIndexes.push(i);
@@ -610,7 +610,7 @@ angular.module('zeppelinWebApp')
     var xColIndex = 0;
     var yColIndexes = [];
     var d3g = [];
-    // select yColumns. 
+    // select yColumns.
     for (var i = 0; i < data.columnNames.length; i++) {
       if (i !== xColIndex) {
         yColIndexes.push(i);
@@ -650,7 +650,7 @@ angular.module('zeppelinWebApp')
     var yColIndexes = [];
     var d3g = [];
 
-    // select yColumns. 
+    // select yColumns.
     for (var i = 0; i < data.columnNames.length; i++) {
       if (i !== xColIndex) {
         yColIndexes.push(i);
@@ -665,15 +665,13 @@ angular.module('zeppelinWebApp')
       d3g.push({
           label: isNaN(xVar) ? xVar : parseFloat(xVar),
           value: parseFloat(yVar)
-      });      
+      });
     }
 
     if ($scope.d3.pieChart.data === null || !refresh) {
       $scope.d3.pieChart.data = d3g;
       $scope.d3.pieChart.options.chart.height = $scope.paragraph.settings.params._table.height;
-      $scope.d3.pieChart.options.chart.x = function (d){return d.label;}
-      $scope.d3.pieChart.options.chart.y = function (d){return d.value;}
-      
+
       if ($scope.d3.pieChart.api) {
         $scope.d3.pieChart.api.updateWithOptions($scope.d3.pieChart.options);
       }
@@ -688,7 +686,7 @@ angular.module('zeppelinWebApp')
     var xColIndex = 0;
     var yColIndexes = [];
     var d3g = [];
-    // select yColumns. 
+    // select yColumns.
     for (var i = 0; i < data.columnNames.length; i++) {
       if (i !== xColIndex) {
         yColIndexes.push(i);
@@ -710,7 +708,7 @@ angular.module('zeppelinWebApp')
         });
       }
     }
-    
+
     if ($scope.d3.stackedAreaChart.data === null || !refresh) {
       $scope.d3.stackedAreaChart.data = d3g;
       $scope.d3.stackedAreaChart.options.chart.height = $scope.paragraph.settings.params._table.height;
@@ -731,7 +729,7 @@ angular.module('zeppelinWebApp')
       return false;
     }
   };
-  
+
   /** Utility function */
   if (typeof String.prototype.startsWith !== 'function') {
     String.prototype.startsWith = function(str) {
