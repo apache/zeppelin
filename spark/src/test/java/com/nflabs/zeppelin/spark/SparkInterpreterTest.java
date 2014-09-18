@@ -33,6 +33,11 @@ public class SparkInterpreterTest {
 	@Test
 	public void testBasicIntp() {
 		assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("val a = 1\nval b = 2").code());
+		
+		// when interpret incomplete expression
+		InterpreterResult incomplete = repl.interpret("val a = \"\"\"");
+		assertEquals(InterpreterResult.Code.INCOMPLETE, incomplete.code());
+		assertTrue(incomplete.message().length()>0); // expecting some error message
 		/*
 		assertEquals(1, repl.getValue("a"));
 		assertEquals(2, repl.getValue("b"));
