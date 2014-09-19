@@ -17,6 +17,23 @@ public class SchedulerFactory implements SchedulerListener{
 	ScheduledExecutorService executor;
 	Map<String, Scheduler> schedulers = new LinkedHashMap<String, Scheduler>();
 	
+	private static SchedulerFactory _singleton;
+	private static Long singletonLock = new Long(0);
+	public static SchedulerFactory singleton(){
+		if (_singleton==null) {
+			synchronized(singletonLock) {
+				if (_singleton==null) {
+					try {
+						_singleton = new SchedulerFactory();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		} 
+		return _singleton;
+	}
+	
 	public SchedulerFactory() throws Exception {
 		executor = Executors.newScheduledThreadPool(100);		
 	}

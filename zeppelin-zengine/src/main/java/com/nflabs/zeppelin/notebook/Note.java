@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
@@ -19,7 +18,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.interpreter.InterpreterFactory;
+import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.notebook.utility.IdHashes;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.Job.Status;
@@ -191,8 +190,8 @@ public class Note implements Serializable, JobListener {
 			for (Paragraph p : paragraphs) {
 				p.setNoteReplLoader(replLoader);
 				p.setListener(jobListener);
-				Scheduler scheduler = replLoader.getScheduler(p.getRequiredReplName());		
-				scheduler.submit(p);
+				Interpreter intp = replLoader.getRepl(p.getRequiredReplName());		
+				intp.getScheduler().submit(p);
 			}
 		}
 	}
@@ -205,8 +204,8 @@ public class Note implements Serializable, JobListener {
 		Paragraph p = getParagraph(paragraphId);
 		p.setNoteReplLoader(replLoader);
 		p.setListener(listener);
-		Scheduler scheduler = replLoader.getScheduler(p.getRequiredReplName());		
-		scheduler.submit(p);
+		Interpreter intp = replLoader.getRepl(p.getRequiredReplName());		
+		intp.getScheduler().submit(p);
 	}
 	
 	public void run(String paragraphId){

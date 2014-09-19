@@ -2,7 +2,6 @@ package com.nflabs.zeppelin.notebook;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,7 +47,7 @@ public class Notebook {
 	 * @return
 	 */
 	public Note createNote() {
-		Note note = new Note(conf, new NoteInterpreterLoader(replFactory, schedulerFactory, isLoaderStatic()));
+		Note note = new Note(conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()));
 		synchronized(notes){
 			notes.put(note.id(), note);
 		}
@@ -83,7 +82,7 @@ public class Notebook {
 			if(f.isDirectory()) {
 				Scheduler scheduler = schedulerFactory.createOrGetFIFOScheduler("note_"+System.currentTimeMillis());
 				logger.info("Loading note from "+f.getName());
-				Note n = Note.load(f.getName(), conf, new NoteInterpreterLoader(replFactory, schedulerFactory, isLoaderStatic()), scheduler);
+				Note n = Note.load(f.getName(), conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()), scheduler);
 				synchronized(notes){
 					notes.put(n.id(), n);
 				}
