@@ -40,18 +40,18 @@ limitations under the License.
             ng-options="col for col in colWidthOption"></select>
 
     <!-- Editor handler -->
-    <span class="fa fa-compress" style="cursor:pointer" tooltip-placement="top" tooltip="Hide editor"
+    <span style="cursor:pointer;border:1px solid #BBBBBB; color:#3071A9; padding:1px 2px 0px 2px" tooltip-placement="top" tooltip="Hide editor"
           ng-click="closeEditor()"
-          ng-show="!paragraph.config.editorHide && !paragraph.config.hide"></span>
-    <span class="fa fa-expand" style="cursor:pointer" tooltip-placement="top" tooltip="Show editor"
+          ng-show="!paragraph.config.editorHide && !paragraph.config.hide">C</span>
+    <span style="cursor:pointer;padding:1px 2px 0px 2px" tooltip-placement="top" tooltip="Show editor"
           ng-click="openEditor()"
-          ng-show="paragraph.config.editorHide && !paragraph.config.hide"></span>
+          ng-show="paragraph.config.editorHide && !paragraph.config.hide">C</span>
 
     <!-- paragraph handler -->
-    <span class="fa fa-sort-desc" style="cursor:pointer" tooltip-placement="top" tooltip="Hide this Paragraph"
+    <span class="fa fa-compress" style="cursor:pointer" tooltip-placement="top" tooltip="Hide this Paragraph"
           ng-click="closeParagraph()"
           ng-show="!paragraph.config.hide"></span>
-    <span class="fa fa-sort-up" style="cursor:pointer" tooltip-placement="top" tooltip="Show this Paragraph"
+    <span class="fa fa-expand" style="cursor:pointer" tooltip-placement="top" tooltip="Show this Paragraph"
           ng-click="openParagraph()"
           ng-show="paragraph.config.hide"></span>
 
