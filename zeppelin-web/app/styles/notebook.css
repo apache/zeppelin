@@ -13,6 +13,10 @@
  * limitations under the License.
  */
 
+.paragraph-col {
+  margin: 0 0 0 0px;
+  padding: 0 0 0 0px;
+}
 .paragraph {
   padding: 0px 8px 8px 8px;
   min-height: 32px;
@@ -54,7 +58,7 @@
   margin-right:0px;
   position:absolute;
   clear:both;
-  right:25px;
+  right:5px;
   z-index:10;
   text-align:right;
   font-size:12px;
