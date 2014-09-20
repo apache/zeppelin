@@ -1,7 +1,8 @@
 package com.nflabs.zeppelin.interpreter;
 
 import java.util.List;
-import java.util.Properties;
+
+import com.nflabs.zeppelin.scheduler.Scheduler;
 
 public class LazyOpenInterpreter extends Interpreter{
 
@@ -73,8 +74,8 @@ public class LazyOpenInterpreter extends Interpreter{
 	}
 
 	@Override
-	public SchedulingMode getSchedulingMode() {
-		return intp.getSchedulingMode();
+	public Scheduler getScheduler() {
+		return intp.getScheduler();
 	}
 
 	@Override

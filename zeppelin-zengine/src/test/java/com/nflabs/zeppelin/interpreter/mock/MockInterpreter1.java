@@ -6,6 +6,8 @@ import java.util.Properties;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.Interpreter.SchedulingMode;
+import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 public class MockInterpreter1 extends Interpreter{
 
@@ -50,8 +52,8 @@ public class MockInterpreter1 extends Interpreter{
 	}
 	
 	@Override
-	public SchedulingMode getSchedulingMode() {
-		return SchedulingMode.FIFO;
+	public Scheduler getScheduler() {
+		return SchedulerFactory.singleton().createOrGetFIFOScheduler("test_"+this.hashCode());
 	}
 
 	@Override

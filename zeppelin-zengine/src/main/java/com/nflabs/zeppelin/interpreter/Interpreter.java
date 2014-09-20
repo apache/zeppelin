@@ -11,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 
 public abstract class Interpreter {
@@ -46,7 +48,15 @@ public abstract class Interpreter {
 	public abstract void bindValue(String name, Object o);
 	public abstract FormType getFormType();
 	public abstract int getProgress();
-	public abstract SchedulingMode getSchedulingMode();
+	
+	public Scheduler getScheduler() {
+		return SchedulerFactory.singleton().createOrGetFIFOScheduler("interpreter_"+this.hashCode());
+	}
+	
+	public void destroy() {
+		getScheduler().stop();
+	}
+	
 	public abstract List<String> completion(String buf, int cursor);
 
 	public Properties getProperty() {
