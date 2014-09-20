@@ -70,12 +70,14 @@ public class SparkSqlInterpreter extends Interpreter {
 	public InterpreterResult interpret(String st) {
 		SQLContext sqlc = getSparkInterpreter().getSQLContext();
 		SparkContext sc = sqlc.sparkContext();
-		sc.setJobGroup(jobGroup, "Zeppelin", false);	
-		SchemaRDD rdd = sqlc.sql(st);
+		sc.setJobGroup(jobGroup, "Zeppelin", false);
+		SchemaRDD rdd;
 		Row[] rows = null;
 		try {
+			rdd = sqlc.sql(st);
 			rows = rdd.take(10000);
 		} catch(Exception e){
+			logger.error("Error", e);
 			sc.clearJobGroup();
 			return new InterpreterResult(Code.ERROR, e.getMessage());
 		}
