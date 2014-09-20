@@ -32,6 +32,7 @@ import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.Interpreter.SchedulingMode;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.interpreter.LazyOpenInterpreter;
 
 public class SparkSqlInterpreter extends Interpreter {
 	Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);

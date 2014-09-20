@@ -3,6 +3,7 @@ package com.nflabs.zeppelin.spark.dep;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -135,7 +136,6 @@ public class DependencyResolver {
 		}
 		load(groupId + ":" + artifactId + ":" + version);
 	}
-
 	
 	public void load(String artifact) {
 		load(artifact, false);
@@ -145,7 +145,25 @@ public class DependencyResolver {
 			// Should throw here
 			return;
 		}
-
+		
+		if (artifact.split(":").length==3) {
+			loadFromMvn(artifact, recursive);
+		} else {
+			loadFromFs(artifact);
+		}
+	}
+	
+	private void loadFromFs(String artifact) {
+		File jarFile = new File(artifact);
+		try {
+			updateCompilerClassPath(new URL[]{jarFile.toURI().toURL()});
+			updateRuntimeClassPath(new URL[]{jarFile.toURI().toURL()});
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 		
+		sc.addJar(jarFile.getAbsolutePath());
+	}
+	private void loadFromMvn(String artifact, boolean recursive) {
 		try {
 			List<ArtifactResult> listOfArtifact;
 			if (recursive) {
@@ -184,7 +202,6 @@ public class DependencyResolver {
 			e.printStackTrace();
 		}
 	}
-
 	public List<ArtifactResult> getArtifact	(String dependency)
 			throws Exception {
 		Artifact artifact = new DefaultArtifact(dependency);
