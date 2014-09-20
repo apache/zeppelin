@@ -18,10 +18,26 @@ limitations under the License.
      ng-mouseover="onMouseover()"
      ng-mouseleave="onMouseleave()">
   <div id="{{paragraph.id}}_control" class="control">
+
+    <span>
+      {{paragraph.status}}
+    </span>
+
+    <span ng-if="paragraph.status=='RUNNING'">
+      {{getProgress()}}%
+    </span>
+
+    <!-- Run / Cancel button -->
+    <span class="fa fa-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run. Shift+Enter for keyboard shortcut"
+          ng-click="runParagraph(getEditorValue())"
+          ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING'"></span>
+    <span class="fa fa-stop" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top" tooltip="Cancel"
+          ng-click="cancelParagraph()"
+          ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
+
     <select ng-model="paragraph.config.colWidth"
             ng-change="changeColWidth()"
             ng-options="col for col in colWidthOption"></select>
-
 
     <!-- Editor handler -->
     <span class="fa fa-compress" style="cursor:pointer" tooltip-placement="top" tooltip="Hide editor"
@@ -48,6 +64,9 @@ limitations under the License.
     <!-- remove paragraph -->
     <span class="fa fa-times" style="cursor:pointer" tooltip-placement="top" tooltip="Remove this Paragraph"
           ng-click="removeParagraph()"></span>
+
+    <br />
+
   </div>
   <div ng-show="!paragraph.config.hide">
     <div ng-show="!paragraph.config.editorHide">
@@ -64,13 +83,25 @@ limitations under the License.
       </div>
     </div>
 
-    <div id="{{paragraph.id}}_status" class="status"
-         ng-if="!paragraph.config.hide && !paragraph.config.editorHide">
-      Shift+Enter to Run. {{paragraph.status}}
+    <div id="{{paragraph.id}}_runControl" class="runControl">
+      <div ng-if="(getProgress()<=0 || getProgress()>=100) && (paragraph.status=='RUNNING' )">
+        <div id="{{paragraph.id}}_progress"
+             class="progress">
+            <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;"></div>
+          <span class="sr-only"></span>
+        </div>
+      </div>
+      <div ng-if="getProgress()>0 && getProgress()<100 && paragraph.status=='RUNNING'">
+        <div id="{{paragraph.id}}_progress"
+             class="progress">
+          <div class="progress-bar" role="progressbar" style="width:{{getProgress()}}%;"></div>
+          <span class="sr-only">{{getProgress()}}%</span>
+        </div>
+      </div>
     </div>
 
     <form id="{{paragraph.id}}_form" role="form"
-          class="form-horizontal" style="margin-top: 15px;">
+          class="form-horizontal">
       <div class="form-group"
            ng-repeat="formulaire in paragraph.settings.forms"
            ng-Init="loadForm(formulaire, paragraph.settings.params)">
@@ -85,31 +116,6 @@ limitations under the License.
         </div>
       </div>
     </form>
-
-    <div id="{{paragraph.id}}_runControl" class="runControl"
-         ng-if="paragraph.status == 'RUNNING'">
-
-      <div ng-if="getProgress()<=0 || getProgress()>=100">
-        <div id="{{paragraph.id}}_progress"
-             class="progress">
-            <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;"></div>
-          <span class="sr-only"></span>
-        </div>
-        <div class="inline">
-          Running ... <a ng-click="cancelParagraph()" style="cursor:pointer">Cancel</a>
-        </div>
-      </div>
-      <div ng-if="getProgress()>0 && getProgress()<100">
-        <div id="{{paragraph.id}}_progress"
-             class="progress">
-          <div class="progress-bar" role="progressbar" style="width:{{getProgress()}}%;"></div>
-          <span class="sr-only">{{getProgress()}}%</span>
-        </div>
-        <div class="inline">
-          Running {{getProgress()}}% <a ng-click="cancelParagraph()" style="cursor:pointer">Cancel</a>
-        </div>
-      </div>
-    </div>
 
     <!-- Rendering -->
     <div class='tableDisplay'>

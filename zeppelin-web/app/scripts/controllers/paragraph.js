@@ -204,17 +204,34 @@ angular.module('zeppelinWebApp')
           $scope.setGraphMode(newGraphMode, false, true);
         }
       }
+
+      // show control if necessary
+      if ($scope.isRunning()) {
+        $('#'+$scope.paragraph.id+"_control").show();
+      } else {
+        $('#'+$scope.paragraph.id+"_control").hide();
+      }     
     }
   });
 
   $scope.onMouseover = function(){
     $('#'+$scope.paragraph.id+"_control").show();
-    $('#'+$scope.paragraph.id+"_status").css({"visibility":"visible"});
   };
 
   $scope.onMouseleave = function(){
-    $('#'+$scope.paragraph.id+"_control").hide();
-    $('#'+$scope.paragraph.id+"_status").css({"visibility":"hidden"});
+    if($scope.isRunning()){
+      $('#'+$scope.paragraph.id+"_control").show();
+    } else {
+      $('#'+$scope.paragraph.id+"_control").hide();
+    }
+  };
+
+  $scope.isRunning = function(){
+    if($scope.paragraph.status=='RUNNING' || $scope.paragraph.status=='PENDING') {
+      return true;
+    } else {
+      return false;
+    }
   };
 
   $scope.cancelParagraph = function() {
