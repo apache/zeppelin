@@ -15,6 +15,7 @@
 
 .paragraph {
   padding: 0px 8px 8px 8px;
+  min-height: 32px;
 }
 
 .noteBtn {
