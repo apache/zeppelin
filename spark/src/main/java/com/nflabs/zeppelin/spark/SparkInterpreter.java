@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 
 
@@ -321,7 +323,9 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 	 * Interpret a single line
 	 */
 	public InterpreterResult interpret(String line){
-		if(line==null) line = "";
+		if(line==null || line.trim().length()==0) {
+			return new InterpreterResult(Code.SUCCESS);
+		}
 		return interpret(line.split("\n"));
 	}
 	
@@ -495,7 +499,7 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 	}
 
 	@Override
-	public SchedulingMode getSchedulingMode() {
-		return SchedulingMode.FIFO;
+	public Scheduler getScheduler() {
+		return SchedulerFactory.singleton().createOrGetFIFOScheduler(SparkInterpreter.class.getName()+this.hashCode());
 	}
 }

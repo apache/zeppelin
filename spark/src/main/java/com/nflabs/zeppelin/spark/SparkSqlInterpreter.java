@@ -32,7 +32,8 @@ import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.Interpreter.SchedulingMode;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
-import com.nflabs.zeppelin.interpreter.LazyOpenInterpreter;
+import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 public class SparkSqlInterpreter extends Interpreter {
 	Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
@@ -71,12 +72,14 @@ public class SparkSqlInterpreter extends Interpreter {
 	public InterpreterResult interpret(String st) {
 		SQLContext sqlc = getSparkInterpreter().getSQLContext();
 		SparkContext sc = sqlc.sparkContext();
-		sc.setJobGroup(jobGroup, "Zeppelin", false);	
-		SchemaRDD rdd = sqlc.sql(st);
+		sc.setJobGroup(jobGroup, "Zeppelin", false);
+		SchemaRDD rdd;
 		Row[] rows = null;
 		try {
+			rdd = sqlc.sql(st);
 			rows = rdd.take(10000);
 		} catch(Exception e){
+			logger.error("Error", e);
 			sc.clearJobGroup();
 			return new InterpreterResult(Code.ERROR, e.getMessage());
 		}
@@ -247,8 +250,8 @@ public class SparkSqlInterpreter extends Interpreter {
 	}
 
 	@Override
-	public SchedulingMode getSchedulingMode() {
-		return SchedulingMode.FIFO;
+	public Scheduler getScheduler() {
+		return getSparkInterpreter().getScheduler();
 	}
 
 	@Override
