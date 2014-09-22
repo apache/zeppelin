@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.notebook.Paragraph;
+import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.spark.dep.DependencyResolver;
@@ -38,7 +40,6 @@ import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 
 import scala.Console;
 import scala.None;
-import scala.Option;
 import scala.Some;
 import scala.Tuple2;
 import scala.collection.Iterator;
@@ -59,6 +60,7 @@ public class SparkInterpreter extends Interpreter {
 		Interpreter.register("spark", SparkInterpreter.class.getName());
 	}
 	
+	private ZeppelinContext z;
 	private SparkILoop interpreter;
 	private SparkIMain intp;
 	private SparkContext sc;
@@ -90,7 +92,7 @@ public class SparkInterpreter extends Interpreter {
 	}
 
 
-	public SparkContext getSparkContext(){
+	public synchronized SparkContext getSparkContext(){
 		Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
 		
 		if(sc==null){
@@ -254,23 +256,19 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		sqlc = getSQLContext();
 		
 		dep = getDependencyResolver();
+		z = new ZeppelinContext(sc, sqlc, dep);
 		
 		intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
 		binder = (Map<String, Object>) getValue("_binder");
-		binder.put("out", printStream);
 		binder.put("sc", sc);
 		binder.put("sqlc", sqlc);
-		binder.put("dep", dep);
-		binder.put("intp", intp);
-		binder.put("interpreter", interpreter);
-		
-		binder.put("env", share.get("sparkEnv"));
-		
-		intp.interpret("@transient val dep = _binder.get(\"dep\").asInstanceOf[com.nflabs.zeppelin.spark.dep.DependencyResolver]");
+		binder.put("z", z);
+		binder.put("out", printStream);
+
+		intp.interpret("@transient val z = _binder.get(\"z\").asInstanceOf[com.nflabs.zeppelin.spark.ZeppelinContext]");
 		intp.interpret("@transient val sc = _binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
-		intp.interpret("import org.apache.spark.SparkContext._");
 		intp.interpret("@transient val sqlc = _binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
-		
+		intp.interpret("import org.apache.spark.SparkContext._");
 		intp.interpret("import sqlc.createSchemaRDD");
 	}
 
@@ -308,6 +306,9 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 	}
 	
 	public void bindValue(String name, Object o){
+		if ("form".equals(name) && o instanceof Setting) { // form controller injection from Paragraph.jobRun
+			z.setFormSetting((Setting)o);
+		}
 		getResultCode(intp.bindValue(name, o));
 	}
 	
@@ -343,12 +344,11 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		}		
 	}
 	
-	public InterpreterResult _interpret(String [] lines){	
-		//Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
-		//SparkEnv env = (SparkEnv) share.get("sparkEnv");
+	public InterpreterResult _interpret(String [] lines){
+        //Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
+        //SparkEnv env = (SparkEnv) share.get("sparkEnv");
 		SparkEnv.set(env);
 
-		//intp.interpret("Console.setOut(_binder.get(\"out\").asInstanceOf[java.io.PrintStream])");
 		Console.setOut((java.io.PrintStream) binder.get("out"));
 		out.reset();
 		Code r = null;
@@ -494,7 +494,7 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		interpreter = null;
 		intp = null;
 	}
-
+	
 	@Override
 	public FormType getFormType() {
 		return FormType.NATIVE;
