@@ -11,17 +11,17 @@ import java.util.regex.Pattern;
 
 public class Input implements Serializable {
 	public static class ParamOption{
-		String value;
+		Object value;
 		String displayName;
-		public ParamOption(String value, String displayName) {
+		public ParamOption(Object value, String displayName) {
 			super();
 			this.value = value;
 			this.displayName = displayName;
 		}
-		public String getValue() {
+		public Object getValue() {
 			return value;
 		}
-		public void setValue(String value) {
+		public void setValue(Object value) {
 			this.value = value;
 		}
 		public String getDisplayName() {
@@ -44,6 +44,13 @@ public class Input implements Serializable {
 		this.name = name;
 		this.displayName = name;
 		this.defaultValue = defaultValue;
+	}
+	
+	public Input(String name, Object defaultValue, ParamOption [] options) {
+		this.name = name;
+		this.displayName = name;
+		this.defaultValue = defaultValue;
+		this.options = options;
 	}
 	
 	
