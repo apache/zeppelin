@@ -18,6 +18,14 @@ body {
   padding-top: 60px;
 }
 
+.displayNavBar {
+  display: inline !important;
+ }
+
+ 
+ body.asIframe {
+   padding-top: 0px;
+ }
 body .navbar {
     margin-bottom: 10px;
 }

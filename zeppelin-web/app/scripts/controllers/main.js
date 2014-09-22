@@ -24,10 +24,15 @@
  * @author anthonycorbacho
  */
 angular.module('zeppelinWebApp')
-        .controller('MainCtrl', function($scope, WebSocket, $rootScope) {
+        .controller('MainCtrl', function($scope, WebSocket, $rootScope, $window) {
   
   $scope.WebSocketWaitingList = [];
   $scope.connected = false;
+
+  var init = function() {
+    $scope.asIframe = (($window.location.href.indexOf("asIframe") > -1) ? true : false);
+  };
+  init();
 
   /**
    * Web socket
