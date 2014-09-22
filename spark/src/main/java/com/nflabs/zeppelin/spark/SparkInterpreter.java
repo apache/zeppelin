@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.notebook.Paragraph;
+import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.spark.dep.DependencyResolver;
@@ -261,6 +263,7 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		binder.put("sc", sc);
 		binder.put("sqlc", sqlc);
 		binder.put("z", z);
+		binder.put("out", printStream);
 
 		intp.interpret("@transient val z = _binder.get(\"z\").asInstanceOf[com.nflabs.zeppelin.spark.ZeppelinContext]");
 		intp.interpret("@transient val sc = _binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
@@ -303,6 +306,9 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 	}
 	
 	public void bindValue(String name, Object o){
+		if ("form".equals(name) && o instanceof Setting) { // form controller injection from Paragraph.jobRun
+			z.setFormSetting((Setting)o);
+		}
 		getResultCode(intp.bindValue(name, o));
 	}
 	
@@ -488,7 +494,7 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		interpreter = null;
 		intp = null;
 	}
-
+	
 	@Override
 	public FormType getFormType() {
 		return FormType.NATIVE;

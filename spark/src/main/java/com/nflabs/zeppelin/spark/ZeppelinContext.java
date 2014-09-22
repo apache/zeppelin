@@ -4,6 +4,7 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SchemaRDD;
 
+import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 
 public class ZeppelinContext {
@@ -15,6 +16,7 @@ public class ZeppelinContext {
 	}
 	public SparkContext sc;
 	public SQLContext sqlContext;
+	private Setting form;
 	
 	public SchemaRDD sql(String sql) {
 		return sqlContext.sql(sql);
@@ -33,5 +35,17 @@ public class ZeppelinContext {
 	 */
 	public void loadR(String artifact){
 		dep.load(artifact, true);
+	}
+
+	public Object input(String name) {
+		return input(name, "");
+	}
+	
+	public Object input(String name, Object defaultValue) {
+		return form.input(name, defaultValue);
+	}
+	
+	public void setFormSetting(Setting o) {
+		this.form = o;	
 	}
 }
