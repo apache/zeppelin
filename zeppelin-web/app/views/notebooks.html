@@ -19,26 +19,23 @@ limitations under the License.
     <h3> <input type="text" class="form-control2" placeholder="{{note.name || 'Note ' + note.id}}" style="width:200px;"
                 ng-show="showEditor" ng-model="note.name" ng-enter="sendNewName()" ng-delete="showEditor = false" autofocus/>
          <p class="form-control-static2" ng-click="showEditor = true" ng-show="!showEditor">{{note.name || 'Note ' + note.id}}</p>
-      <span class="label">
-        <button type="button" class="noteBtn btn btn-default btn-xs" ng-click="removeNote(note.id)">Remove <span class="fa fa-trash"></span></button>
+         <span class="labelBtn btn-group">
         <button type="button"
-                class="noteBtn btn btn-default btn-xs"
+                class="btn btn-default btn-sm"
                 ng-click="runNote(note.id)"
-                ng-if="!isNoteRunning()"
-                tooltip-placement="top"
-                tooltip="Run all paragraphs">Run <span class="fa fa-play"></span>
+                ng-if="!isNoteRunning()">Run all notes <span class="noteBtnfa fa fa-play"></span>
         </button>
         <button type="button"
-                class="noteBtn btn btn-default btn-xs"
-                ng-click="showAllEditor()"
-                tooltip-placement="top"
-                tooltip="Show codes">Show code <span class="fa fa-expand"></span>
+                class="btn btn-default btn-sm"
+                ng-click="showAllEditor()">Show code <span class="noteBtnfa fa fa-expand"></span>
         </button>
         <button type="button"
-                class="noteBtn btn btn-default btn-xs"
-                ng-click="hideAllEditor()"
-                tooltip-placement="top"
-                tooltip="Hide codes">Hide code <span class="fa fa-compress"></span>
+                class="btn btn-default btn-sm"
+                ng-click="hideAllEditor()">Hide code <span class="noteBtnfa fa fa-compress"></span>
+        </button>
+        <button type="button"
+              class="btn btn-default btn-sm"
+              ng-click="removeNote(note.id)">Remove <span class="noteBtnfa fa fa-trash"></span>
         </button>
       </span>
     </h3>
