@@ -66,14 +66,18 @@
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
 }
 
-.noteBtn {
-    margin-bottom: 9px;
-    padding: 3px;
-    padding-left: 6px;
-    padding-right: 6px;
+.labelBtn {
+  padding: .2em .6em .3em;
+  font-size: 75%;
+  font-weight: bold;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  border-radius: .25em;
 }
 
-.noteBtn .fa {
+.noteBtnfa {
     margin-left: 3px;
 }
 
