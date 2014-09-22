@@ -82,12 +82,37 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   /** update the current note */
   $rootScope.$on('setNoteContent', function(event, note) {
+    $scope.paragraphUrl = $routeParams.paragraphId;
+    $scope.asIframe = $routeParams.asIframe;
+    if ($scope.paragraphUrl) {
+      note = cleanParagraphExcept($scope.paragraphUrl, note)
+      $rootScope.$emit('setIframe', $scope.asIframe);
+    }
     if ($scope.note === null) {
       $scope.note = note;
     } else {
       updateNote(note);
     }
   });
+  
+  var cleanParagraphExcept = function(paragraphId, note) {
+    var noteCopy = {};
+    noteCopy.id = note.id;
+    noteCopy.name = note.name;
+    noteCopy.paragraphs = [];
+    for (var i=0; i<note.paragraphs.length; i++) {
+      if (note.paragraphs[i].id === paragraphId) {
+        noteCopy.paragraphs[0] = note.paragraphs[i];
+        if (!noteCopy.paragraphs[0].config) {
+          noteCopy.paragraphs[0].config = {};
+        }
+        noteCopy.paragraphs[0].config.editorHide = true;
+        noteCopy.paragraphs[0].config.asIframe = true;
+        break;
+      }
+    }
+    return noteCopy;
+  };
 
   $rootScope.$on('moveParagraphUp', function(event, paragraphId) {
     var newIndex = -1;

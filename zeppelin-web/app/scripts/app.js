@@ -60,6 +60,10 @@ angular
         templateUrl: 'views/notebooks.html',
         controller: 'NotebookCtrl'
       })
+      .when('/notebook/:noteId/paragraph/:paragraphId?', {
+        templateUrl: 'views/notebooks.html',
+        controller: 'NotebookCtrl'
+      })
       .otherwise({
         redirectTo: '/'
       });
