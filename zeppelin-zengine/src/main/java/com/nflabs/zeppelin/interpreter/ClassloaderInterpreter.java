@@ -3,6 +3,8 @@ package com.nflabs.zeppelin.interpreter;
 import java.util.List;
 import java.util.Properties;
 
+import com.nflabs.zeppelin.scheduler.Scheduler;
+
 public class ClassloaderInterpreter extends Interpreter {
 
 	private ClassLoader cl;
@@ -136,11 +138,11 @@ public class ClassloaderInterpreter extends Interpreter {
 	}
 	
 	@Override
-	public SchedulingMode getSchedulingMode() {
+	public Scheduler getScheduler() {
 		ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(cl);
 		try {
-			return intp.getSchedulingMode();
+			return intp.getScheduler();
 		} catch (Exception e){
 			throw new InterpreterException(e);
 		} finally {

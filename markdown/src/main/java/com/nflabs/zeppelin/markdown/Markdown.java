@@ -9,6 +9,8 @@ import org.markdown4j.Markdown4jProcessor;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 public class Markdown extends Interpreter {
 	private Markdown4jProcessor md;
@@ -65,8 +67,8 @@ public class Markdown extends Interpreter {
 	}
 	
 	@Override
-	public SchedulingMode getSchedulingMode() {
-		return SchedulingMode.PARALLEL;
+	public Scheduler getScheduler() {
+		return SchedulerFactory.singleton().createOrGetParallelScheduler(Markdown.class.getName()+this.hashCode(), 5);
 	}
 
 	@Override

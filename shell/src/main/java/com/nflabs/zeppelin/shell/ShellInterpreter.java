@@ -17,6 +17,8 @@ import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.Interpreter.SchedulingMode;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 public class ShellInterpreter extends Interpreter {
 	Logger logger = LoggerFactory.getLogger(ShellInterpreter.class);
@@ -87,8 +89,8 @@ public class ShellInterpreter extends Interpreter {
 	}
 	
 	@Override
-	public SchedulingMode getSchedulingMode() {
-		return SchedulingMode.FIFO;
+	public Scheduler getScheduler() {
+		return SchedulerFactory.singleton().createOrGetFIFOScheduler(ShellInterpreter.class.getName()+this.hashCode());
 	}
 
 	@Override
