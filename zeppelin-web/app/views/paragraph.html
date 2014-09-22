@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div id="{{paragraph.id}}_container"
-     class="paragraph outlineOnFocus"
+     ng-class="{'paragraph outlineOnFocus': !asIframe, 'paragraphAsIframe': asIframe}"
      ng-mouseover="onMouseover()"
      ng-mouseleave="onMouseleave()">
-  <div id="{{paragraph.id}}_control" class="control">
+  <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
 
     <span>
       {{paragraph.status}}
@@ -39,6 +39,11 @@ limitations under the License.
             ng-change="changeColWidth()"
             ng-options="col for col in colWidthOption"></select>
 
+    <!-- single paragraph link -->
+    <span class="fa fa-link" style="cursor:pointer" tooltip-placement="top" tooltip="Go to paragraph {{paragraph.id}}"
+          ng-click="goToSingleParagraph()"
+          ng-show="!asIframe"></span>
+    
     <!-- Editor handler -->
     <span style="cursor:pointer;border:1px solid #BBBBBB; color:#3071A9; padding:1px 2px 0px 2px" tooltip-placement="top" tooltip="Hide editor"
           ng-click="closeEditor()"

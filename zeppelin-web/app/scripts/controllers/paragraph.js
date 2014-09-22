@@ -24,7 +24,7 @@
  * @author anthonycorbacho
  */
 angular.module('zeppelinWebApp')
-        .controller('ParagraphCtrl', function($scope, $rootScope, $element) {
+        .controller('ParagraphCtrl', function($scope, $rootScope, $route, $window, $element) {
 
   $scope.paragraph = null;
   $scope.editor = null;
@@ -783,5 +783,11 @@ angular.module('zeppelinWebApp')
     } else {
       return "";
     }
+  };
+  
+  $scope.goToSingleParagraph = function () {
+    var noteId = $route.current.pathParams.noteId;
+    var redirectToUrl = 'http://' + location.host + '/#/notebook/' + noteId + "/paragraph/" + $scope.paragraph.id;
+    $window.open(redirectToUrl);
   };
 });
