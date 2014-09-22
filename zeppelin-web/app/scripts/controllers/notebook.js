@@ -104,6 +104,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       if (note.paragraphs[i].id === paragraphId) {
         noteCopy.paragraphs[0] = note.paragraphs[i];
         noteCopy.paragraphs[0].config.editorHide = true;
+        noteCopy.paragraphs[0].config.asIframe = true;
         break;
       }
     }
