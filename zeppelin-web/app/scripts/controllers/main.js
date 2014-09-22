@@ -95,4 +95,16 @@ angular.module('zeppelinWebApp')
       event.preventDefault();
     }
   });
+  
+  $rootScope.$on('setIframe', function(event, data) {
+    if (!event.defaultPrevented) {
+      $scope.asIframe = data;
+      event.preventDefault();
+    }
+  });
+  
+  var setIframeOptions = function() {
+    
+  };
+  
 });

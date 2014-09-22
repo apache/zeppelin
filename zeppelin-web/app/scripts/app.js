@@ -60,7 +60,7 @@ angular
         templateUrl: 'views/notebooks.html',
         controller: 'NotebookCtrl'
       })
-      .when('/notebook/:noteId/paragraph/:paragraphId', {
+      .when('/notebook/:noteId/paragraph/:paragraphId?', {
         templateUrl: 'views/notebooks.html',
         controller: 'NotebookCtrl'
       })

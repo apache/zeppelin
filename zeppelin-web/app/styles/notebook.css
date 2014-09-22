@@ -18,6 +18,50 @@
   padding: 8px 8px 8px 8px;
 }
 
+.paragraphAsIframe{
+  padding: 8px 8px 8px 8px;
+  margin-top: -59px;
+  margin-left: -20px;
+  margin-right: -20px;
+}
+
+.paragraphAsIframe .control {
+  background-color: rgba(255,255,255,0.9);
+  border-top: 1px solid #EFEFEF;
+  display: none;
+  float: right;
+  color: #999;
+  margin-top: -9px;
+  margin-right:0px;
+  position:absolute;
+  clear:both;
+  right:25px;
+  z-index:10;
+}
+
+.paragraphAsIframe table {
+  margin-bottom: 0px;
+}
+
+.paragraphAsIframe .editor {
+  width: 100%;
+  border-left: 4px solid #EEEEEE;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.paragraphAsIframe .text {
+  white-space: pre;
+  display: block;
+  unicode-bidi: embed
+  display: block!important;
+  margin: 0 0 10px!important;
+  font-size: 12px!important;
+  line-height: 1.42857143!important;
+  word-break: break-all!important;
+  word-wrap: break-word!important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+}
+
 .noteBtn {
     margin-bottom: 9px;
     padding: 3px;

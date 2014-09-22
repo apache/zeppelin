@@ -14,10 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div id="{{paragraph.id}}_container"
-     class="paragraph outlineOnFocus"
+     ng-class="{'paragraph outlineOnFocus': !asIframe, 'paragraphAsIframe outlineOnFocus': asIframe}"
      ng-mouseover="onMouseover()"
-     ng-mouseleave="onMouseleave()">
-  <div id="{{paragraph.id}}_control" class="control">
+     ng-mouseleave="onMouseleave()"
+     >
+  <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
     <select ng-model="paragraph.config.colWidth"
             ng-change="changeColWidth()"
             ng-options="col for col in colWidthOption"></select>
