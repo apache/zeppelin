@@ -24,6 +24,11 @@ limitations under the License.
             ng-options="col for col in colWidthOption"></select>
 
 
+    <!-- single paragraph link -->
+    <span class="fa fa-link" style="cursor:pointer" tooltip-placement="top" tooltip="Go to paragraph {{paragraph.id}}"
+          ng-click="goToSingleParagraph()"
+          ng-show="!asIframe"></span>
+    
     <!-- Editor handler -->
     <span class="fa fa-compress" style="cursor:pointer" tooltip-placement="top" tooltip="Hide editor"
           ng-click="closeEditor()"
