@@ -19,12 +19,10 @@
 }
 
 .paragraphAsIframe{
-  /*padding: 8px 8px 8px 8px;
-  margin-top: -85px;
-  margin-left: -30px;
-  margin-right: -30px;*/
   padding: 0px 0px 0px 0px;
   margin-top: -60px;
+  margin-left: -30px;
+  margin-right: -30px;
 }
 
 .paragraphAsIframe .control {
