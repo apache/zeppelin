@@ -50,8 +50,8 @@ limitations under the License.
        ng-include src="'views/paragraph.html'"
        id="{{currentParagraph.id}}_paragraphColumn"
        ng-class="{
-                   'col-md-12': !currentParagraph.config.colWidth || paragraphUrl,
-                   'col-md-{{currentParagraph.config.colWidth}}': currentParagraph.config.colWidth && !paragraphUrl,
+                   'paragraph-col col-md-12': !currentParagraph.config.colWidth || paragraphUrl,
+                   'paragraph-col col-md-{{currentParagraph.config.colWidth}}': currentParagraph.config.colWidth && !paragraphUrl,
                  }">
   </div>
 </div>

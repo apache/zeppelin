@@ -192,7 +192,7 @@ angular.module('zeppelinWebApp')
       // TODO : do it in angualr way
       var el = $('#'+$scope.paragraph.id+"_paragraphColumn");
       el.removeClass(el.attr('class'))
-      el.addClass("col-md-"+$scope.paragraph.config.colWidth);
+      el.addClass("paragraph-col col-md-"+$scope.paragraph.config.colWidth);
 
 
       if (newType==="TABLE") {
@@ -204,17 +204,34 @@ angular.module('zeppelinWebApp')
           $scope.setGraphMode(newGraphMode, false, true);
         }
       }
+
+      // show control if necessary
+      if ($scope.isRunning()) {
+        $('#'+$scope.paragraph.id+"_control").show();
+      } else {
+        $('#'+$scope.paragraph.id+"_control").hide();
+      }     
     }
   });
 
   $scope.onMouseover = function(){
     $('#'+$scope.paragraph.id+"_control").show();
-    $('#'+$scope.paragraph.id+"_status").css({"visibility":"visible"});
   };
 
   $scope.onMouseleave = function(){
-    $('#'+$scope.paragraph.id+"_control").hide();
-    $('#'+$scope.paragraph.id+"_status").css({"visibility":"hidden"});
+    if($scope.isRunning()){
+      $('#'+$scope.paragraph.id+"_control").show();
+    } else {
+      $('#'+$scope.paragraph.id+"_control").hide();
+    }
+  };
+
+  $scope.isRunning = function(){
+    if($scope.paragraph.status=='RUNNING' || $scope.paragraph.status=='PENDING') {
+      return true;
+    } else {
+      return false;
+    }
   };
 
   $scope.cancelParagraph = function() {
@@ -248,9 +265,12 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.removeParagraph = function() {
-    console.log('remove the note');
-    var parapgraphData = {op: 'PARAGRAPH_REMOVE', data: {id: $scope.paragraph.id}};
-    $rootScope.$emit('sendNewEvent', parapgraphData);
+    var result = confirm('Do you want to delete this paragraph?');
+    if (result) {
+      console.log("Remove paragraph");
+      var parapgraphData = {op: 'PARAGRAPH_REMOVE', data: {id: $scope.paragraph.id}};
+      $rootScope.$emit('sendNewEvent', parapgraphData);
+    }
   };
 
   $scope.closeParagraph = function() {
@@ -770,7 +790,7 @@ angular.module('zeppelinWebApp')
   
   $scope.goToSingleParagraph = function () {
     var noteId = $route.current.pathParams.noteId;
-    var redirectToUrl = 'http://' + location.host + '/#/notebook/' + noteId + "/paragraph/" + $scope.paragraph.id;
+    var redirectToUrl = 'http://' + location.host + '/#/notebook/' + noteId + "/paragraph/" + $scope.paragraph.id+"?asIframe";
     $window.open(redirectToUrl);
   };
 });

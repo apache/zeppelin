@@ -13,16 +13,20 @@
  * limitations under the License.
  */
 
+.paragraph-col {
+  margin: 0 0 0 0px;
+  padding: 0 0 0 0px;
+}
 .paragraph {
-  margin-bottom:5px;
-  padding: 8px 8px 8px 8px;
+  padding: 0px 8px 8px 8px;
+  min-height: 32px;
 }
 
 .paragraphAsIframe{
   padding: 0px 0px 0px 0px;
   margin-top: -60px;
-  margin-left: -12px;
-  margin-right: -12px;
+  margin-left: -10px;
+  margin-right: -10px;
 }
 
 .paragraphAsIframe .control {
@@ -90,17 +94,24 @@
 }
 
 .paragraph .control {
-  background-color: rgba(255,255,255,0.9);
-  border-top: 1px solid #EFEFEF;
+  background-color: rgba(255,255,255,0.85);
   display: none;
   float: right;
   color: #999;
-  margin-top: -9px;
+  margin-top: 2px;
   margin-right:0px;
   position:absolute;
   clear:both;
-  right:25px;
+  right:5px;
   z-index:10;
+  text-align:right;
+  font-size:12px;
+}
+
+.paragraph .control li{
+  font-size:12px;
+  margin-bottom:4px;
+  color: #333333;
 }
 
 .paragraph table {
@@ -109,8 +120,9 @@
 
 .paragraph .editor {
   width: 100%;
-  border-left: 4px solid #EEEEEE;
+  border-left: 4px solid #DDDDDD;
   background: rgba(255, 255, 255, 0.9);
+  margin: 7px 0 2px 0px;
 }
 
 .paragraph .text {
@@ -118,12 +130,16 @@
   display: block;
   unicode-bidi: embed
   display: block!important;
-  margin: 0 0 10px!important;
+  margin: 0 0 0px!important;
   font-size: 12px!important;
   line-height: 1.42857143!important;
   word-break: break-all!important;
   word-wrap: break-word!important;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+}
+
+.paragraph p {
+  margin : 0 0 0 0px;
 }
 
 .ace-tm {
@@ -149,16 +165,22 @@
 }
 
 .paragraph .runControl {
-  font-size: 10px;
-  color: #AAAAAA;
-  margin-bottom: 10px;
+  font-size: 1px;
+  color: #AAAAAA;  
+  height:4px;
+  margin: 1px 0px 0px 0px;
 }
 
-.paragraph .runControl .progress{
-  width:200px;
+.paragraph .runControl .progress {
+  position: relative;
+  width:100%;
   height:4px;
-  margin-bottom: 0px;
+  z-index:100;
   border-radius: 0px;
+}
+
+.paragraph .runControl .progress .progress-bar {
+  z-index:100;
 }
 
 
