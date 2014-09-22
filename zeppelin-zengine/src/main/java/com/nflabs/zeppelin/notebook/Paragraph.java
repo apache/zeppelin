@@ -24,6 +24,7 @@ public class Paragraph extends Job implements Serializable {
   private transient static final long serialVersionUID = -6328572073497992016L;
   private transient NoteInterpreterLoader replLoader;
   
+  String title;
   String text;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final Setting settings; // form and parameter settings
@@ -31,6 +32,7 @@ public class Paragraph extends Job implements Serializable {
   public Paragraph(JobListener listener, NoteInterpreterLoader replLoader) {
     super(generateId(), listener);
     this.replLoader = replLoader;
+    title = null;
     text = null;
     settings = new Setting();
     config = new HashMap<String, Object>();
@@ -49,8 +51,17 @@ public class Paragraph extends Job implements Serializable {
     this.text = newText;
   }
   
+  
+  public String getTitle() {
+	return title;
+  }
+	
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
   public String getRequiredReplName() {
-	  return getRequiredReplName(text);
+    return getRequiredReplName(text);
   }
   
   private String getRequiredReplName(String text) {

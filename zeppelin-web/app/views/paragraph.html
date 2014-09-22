@@ -60,6 +60,17 @@ limitations under the License.
           <a class="fa fa-arrow-down" style="cursor:pointer"
           ng-click="moveDown()"> Move Down</a>
         </li>
+
+        <li>
+          <!-- paragraph handler -->
+          <a class="fa fa-font" style="cursor:pointer"
+                ng-click="hideTitle()"
+                ng-show="paragraph.config.title"> Hide title</a>
+          <a class="fa fa-font" style="cursor:pointer"
+                ng-click="showTitle()"
+                ng-show="!paragraph.config.title"> Show title</a>
+        </li>
+
         <li>
           <!-- Editor handler -->
           <a style="cursor:pointer"
@@ -94,6 +105,23 @@ limitations under the License.
       </ul>
     </span>
   </div>
+
+  <div ng-show="paragraph.config.title"
+       id="{{paragraph.id}}_title"
+       class="title">
+    <input type="text" 
+           placeholder="Edit title"
+           ng-model="paragraph.title"
+           ng-show="showTitleEditor"
+           ng-delete="showTitleEditor = false"
+           ng-enter="setTitle(); showTitleEditor = false"
+           />
+    <div ng-click="showTitleEditor = true" 
+         ng-show="!showTitleEditor"
+         ng-bind-html="paragraph.title || 'Untitled'">
+    </div>
+  </div>
+
   <div ng-show="!paragraph.config.hide">
     <div ng-show="!paragraph.config.editorHide">
       <div id="{{paragraph.id}}_editor"
