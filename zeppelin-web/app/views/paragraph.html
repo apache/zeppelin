@@ -35,43 +35,64 @@ limitations under the License.
           ng-click="cancelParagraph()"
           ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
 
-    <select ng-model="paragraph.config.colWidth"
-            ng-change="changeColWidth()"
-            ng-options="col for col in colWidthOption"></select>
+    <span class="dropdown navbar-right">
+      <span class="fa fa-cog" style="cursor:pointer" 
+            data-toggle="dropdown"
+            type="button"
+            >
+      </span>
+      <ul class="dropdown-menu" role="menu" style="width:200px;">
+        <li>
+          <a class="fa fa-arrows-h dropdown"> Width
+          <form style="display:inline">
+            <select ng-model="paragraph.config.colWidth"
+              class="selectpicker"
+              ng-change="changeColWidth()"
+              ng-options="col for col in colWidthOption"></select>
+          </form>
+          </a>
+        </li>
+        <li>
+          <a class="fa fa-arrow-up" style="cursor:pointer"
+          ng-click="moveUp()"> Move Up</a>
+        </li>
+        <li>
+          <a class="fa fa-arrow-down" style="cursor:pointer"
+          ng-click="moveDown()"> Move Down</a>
+        </li>
+        <li>
+          <!-- Editor handler -->
+          <a style="cursor:pointer"
+                class="fa fa-code"
+                ng-click="closeEditor()"
+                ng-show="!paragraph.config.editorHide && !paragraph.config.hide"> Hide code editor</a>
+          <a style="cursor:pointer"
+                class="fa fa-code"
+                ng-click="openEditor()"
+                ng-show="paragraph.config.editorHide && !paragraph.config.hide"> Show code editor</a>
+        </li>
 
-    <!-- single paragraph link -->
-    <span class="fa fa-link" style="cursor:pointer" tooltip-placement="top" tooltip="Go to paragraph {{paragraph.id}}"
+        <li>
+          <!-- paragraph handler -->
+          <a class="fa fa-compress" style="cursor:pointer"
+                ng-click="closeParagraph()"
+                ng-show="!paragraph.config.hide"> Hide paragraph</a>
+          <a class="fa fa-expand" style="cursor:pointer"
+                ng-click="openParagraph()"
+                ng-show="paragraph.config.hide"> Show paragraph</a>
+        </li>
+
+        <li><a class="fa fa-link" style="cursor:pointer"
           ng-click="goToSingleParagraph()"
-          ng-show="!asIframe"></span>
-    
-    <!-- Editor handler -->
-    <span style="cursor:pointer;border:1px solid #BBBBBB; color:#3071A9; padding:1px 2px 0px 2px" tooltip-placement="top" tooltip="Hide editor"
-          ng-click="closeEditor()"
-          ng-show="!paragraph.config.editorHide && !paragraph.config.hide">C</span>
-    <span style="cursor:pointer;padding:1px 2px 0px 2px" tooltip-placement="top" tooltip="Show editor"
-          ng-click="openEditor()"
-          ng-show="paragraph.config.editorHide && !paragraph.config.hide">C</span>
-
-    <!-- paragraph handler -->
-    <span class="fa fa-compress" style="cursor:pointer" tooltip-placement="top" tooltip="Hide this Paragraph"
-          ng-click="closeParagraph()"
-          ng-show="!paragraph.config.hide"></span>
-    <span class="fa fa-expand" style="cursor:pointer" tooltip-placement="top" tooltip="Show this Paragraph"
-          ng-click="openParagraph()"
-          ng-show="paragraph.config.hide"></span>
-
-    <span class="fa fa-arrow-up" style="cursor:pointer" tooltip-placement="top" tooltip="Move up"
-          ng-click="moveUp()"></span>
-
-    <span class="fa fa-arrow-down" style="cursor:pointer" tooltip-placement="top" tooltip="Move down"
-          ng-click="moveDown()"></span>
-
-    <!-- remove paragraph -->
-    <span class="fa fa-times" style="cursor:pointer" tooltip-placement="top" tooltip="Remove this Paragraph"
-          ng-click="removeParagraph()"></span>
-
-    <br />
-
+          ng-show="!asIframe"> Link this paragraph</a>
+        </li>
+        <li>
+          <!-- remove paragraph -->
+          <a class="fa fa-times" style="cursor:pointer"
+            ng-click="removeParagraph()"> Remove</a>
+        </li>
+      </ul>
+    </span>
   </div>
   <div ng-show="!paragraph.config.hide">
     <div ng-show="!paragraph.config.editorHide">

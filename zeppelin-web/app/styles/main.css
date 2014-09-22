@@ -88,6 +88,7 @@ a.navbar-brand:hover {
 #main {
   padding-left: 10px;
   padding-right: 10px;
+  padding-bottom: 10px;
   height: 100%;
 }
 

@@ -108,6 +108,12 @@
   font-size:12px;
 }
 
+.paragraph .control li{
+  font-size:12px;
+  margin-bottom:4px;
+  color: #333333;
+}
+
 .paragraph table {
   margin-bottom: 0px;
 }

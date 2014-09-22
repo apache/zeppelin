@@ -265,9 +265,12 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.removeParagraph = function() {
-    console.log('remove the note');
-    var parapgraphData = {op: 'PARAGRAPH_REMOVE', data: {id: $scope.paragraph.id}};
-    $rootScope.$emit('sendNewEvent', parapgraphData);
+    var result = confirm('Do you want to delete this paragraph?');
+    if (result) {
+      console.log("Remove paragraph");
+      var parapgraphData = {op: 'PARAGRAPH_REMOVE', data: {id: $scope.paragraph.id}};
+      $rootScope.$emit('sendNewEvent', parapgraphData);
+    }
   };
 
   $scope.closeParagraph = function() {
@@ -787,7 +790,7 @@ angular.module('zeppelinWebApp')
   
   $scope.goToSingleParagraph = function () {
     var noteId = $route.current.pathParams.noteId;
-    var redirectToUrl = 'http://' + location.host + '/#/notebook/' + noteId + "/paragraph/" + $scope.paragraph.id;
+    var redirectToUrl = 'http://' + location.host + '/#/notebook/' + noteId + "/paragraph/" + $scope.paragraph.id+"?asIframe";
     $window.open(redirectToUrl);
   };
 });
