@@ -102,9 +102,5 @@ angular.module('zeppelinWebApp')
       event.preventDefault();
     }
   });
-  
-  var setIframeOptions = function() {
-    
-  };
-  
+
 });
