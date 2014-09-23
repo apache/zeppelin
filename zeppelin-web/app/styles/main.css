@@ -99,12 +99,10 @@ a.navbar-brand:hover {
 
 .server-connected {
   color: #00CC00;
-  margin-right: 5px;
 }
 
 .server-disconnected {
   color: rgba(240, 48, 0, 1);
   font-size: 12px !important;
   font-weight: bold !important;
-  margin-right: 5px;
 }
