@@ -26,14 +26,14 @@ Once you have build your interpreter, you can place your interpreter under direc
 ### Configure your interpreter
 
 You can configure zeppelin.interpreters property in conf/zeppelin-site.xml
-Property value is comma separated [INTERPRETER_NAME]:[INTERPRETER_CLASS_NAME]
+Property value is comma separated [INTERPRETER_CLASS_NAME]
 
 for example, 
 
 ```
 <property>
   <name>zeppelin.interpreters</name>
-  <value>spark:com.nflabs.zeppelin.spark.SparkInterpreter,sql:com.nflabs.zeppelin.spark.SparkSqlInterpreter,md:com.nflabs.zeppelin.markdown.Markdown,sh:com.nflabs.zeppelin.shell.ShellInterpreter,myintp:com.me.MyNewInterpreter</value>
+  <value>com.nflabs.zeppelin.spark.SparkInterpreter,com.nflabs.zeppelin.spark.SparkSqlInterpreter,com.nflabs.zeppelin.markdown.Markdown,com.nflabs.zeppelin.shell.ShellInterpreter,com.me.MyNewInterpreter</value>
 </property>
 ```
 
