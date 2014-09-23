@@ -141,6 +141,8 @@ angular.module('zeppelinWebApp')
         2,3,4,5,6,7,8,9,10,11,12
     ];
 
+    $scope.showTitleEditor = false;
+
     initializeDefault();
   };
 
@@ -181,6 +183,7 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.dateStarted = data.paragraph.dateStarted;
       $scope.paragraph.errorMessage = data.paragraph.errorMessage;
       $scope.paragraph.jobName = data.paragraph.jobName;
+      $scope.paragraph.title = data.paragraph.title;
       $scope.paragraph.status = data.paragraph.status;
       $scope.paragraph.result = data.paragraph.result;
       $scope.paragraph.config = data.paragraph.config;
@@ -243,7 +246,15 @@ angular.module('zeppelinWebApp')
 
   $scope.runParagraph = function(data) {
     //console.log('send new paragraph: %o with %o', $scope.paragraph.id, data);
-    var parapgraphData = {op: 'RUN_PARAGRAPH', data: {id: $scope.paragraph.id, paragraph: data, config: $scope.paragraph.config, params: $scope.paragraph.settings.params}};
+    var parapgraphData = {op: 'RUN_PARAGRAPH', 
+                          data: {
+                              id: $scope.paragraph.id, 
+                              title: $scope.paragraph.title,
+                              paragraph: data, 
+                              config: $scope.paragraph.config, 
+                              params: $scope.paragraph.settings.params
+                          }
+                         };
     $rootScope.$emit('sendNewEvent', parapgraphData);
   };
 
@@ -279,7 +290,7 @@ angular.module('zeppelinWebApp')
     var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
     newConfig.hide = true;
 
-    commitParagraph($scope.paragraph.text, newConfig, newParams);
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.openParagraph = function() {
@@ -288,7 +299,7 @@ angular.module('zeppelinWebApp')
     var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
     newConfig.hide = false;
 
-    commitParagraph($scope.paragraph.text, newConfig, newParams);
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.closeEditor = function() {
@@ -298,7 +309,7 @@ angular.module('zeppelinWebApp')
     var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
     newConfig.editorHide = true;
 
-    commitParagraph($scope.paragraph.text, newConfig, newParams);
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.openEditor = function() {
@@ -308,7 +319,29 @@ angular.module('zeppelinWebApp')
     var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
     newConfig.editorHide = false;
 
-    commitParagraph($scope.paragraph.text, newConfig, newParams);
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+  };
+
+  $scope.showTitle = function() {
+    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    newConfig.title = true;
+
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);    
+  };
+
+  $scope.hideTitle = function() {
+    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    newConfig.title = false;
+
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);    
+  };
+
+  $scope.setTitle = function() {
+    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.changeColWidth = function() {
@@ -316,7 +349,7 @@ angular.module('zeppelinWebApp')
     var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
     var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
 
-    commitParagraph($scope.paragraph.text, newConfig, newParams);
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.loadForm = function(formulaire, params) {
@@ -574,14 +607,15 @@ angular.module('zeppelinWebApp')
     var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
     newParams._table = {mode: newMode, height: 300.0};
 
-    commitParagraph($scope.paragraph.text, newConfig, newParams);
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
-  var commitParagraph = function(text, config, params) {
+  var commitParagraph = function(title, text, config, params) {
     var parapgraphData = {
       op: 'COMMIT_PARAGRAPH',
       data: {
         id: $scope.paragraph.id,
+        title : title,
         paragraph: text,
         params: params,
         config: config

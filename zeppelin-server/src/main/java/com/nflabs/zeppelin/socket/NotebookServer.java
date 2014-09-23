@@ -289,6 +289,7 @@ public class NotebookServer extends WebSocketServer {
     Paragraph p = note.getParagraph(paragraphId);
     p.settings.setParams(params);
     p.setConfig(config);
+    p.setTitle((String) fromMessage.get("title"));
     p.setText((String) fromMessage.get("paragraph"));
     note.persist();
     broadcastNote(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
@@ -358,6 +359,7 @@ public class NotebookServer extends WebSocketServer {
     Paragraph p = note.getParagraph(paragraphId);
     String text = (String) fromMessage.get("paragraph");
     p.setText(text);
+    p.setTitle((String)fromMessage.get("title"));
     Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
     p.settings.setParams(params);
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
