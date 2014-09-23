@@ -92,3 +92,17 @@ a.navbar-brand:hover {
   height: 100%;
 }
 
+.server-status {
+  font-size:12px;
+  margin-top: 6px;
+}
+
+.server-connected {
+  color: #00CC00;
+}
+
+.server-disconnected {
+  color: rgba(240, 48, 0, 1);
+  font-size: 12px !important;
+  font-weight: bold !important;
+}
