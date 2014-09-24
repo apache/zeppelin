@@ -45,7 +45,15 @@ Zeppelin's Spark integration provies
 
 - Automatic SparkContext and SQLContext injection
 - Runtime dependency jar loading from local filesystem or maven repository
-  <img src="assets/themes/zeppelin/img/screenshots/sparksql.png" width="400px" />
+  <br />
+
+  ```
+  z.load("/path/to/your.jar")             // load artifact from local FS
+  z.load("groupId:artifactId:version")    // load artifact from Maven repository
+  z.loadR("groupId:artifactId:version")   // load artifact from Maven repository with it's dependencies
+  ```
+  Zeppelin Automatically load jar into Compiler, Runtime and distribute Spark Cluster
+
 - Displaying job progress, Caceling job
 - Code auto completion
 
@@ -57,6 +65,27 @@ Some basic charts are built-in. Not only SparkSQL's query result but also any ou
 <br />
 ### Dynamic form creation
 
+Zeppelin dynamically creates some input forms in notebook. For example,
+
+```
+%md Hello ${name=DefaultName}
+```
+
+Will print 
+
+```
+Hello DefaultName
+```
+
+With input form.
+
+Also it nativly integrated with Scala environment, so form can be programatically created.
+
+```
+println("Hello "+z.input("name", "DefaultName"));
+```
+
+
 <br />
 ### Collaboration
 
@@ -66,6 +95,7 @@ Notebook URL can be shared among collaborators. Then Zeppelin broadcasts any cha
 <br />
 ### Publish
 
+Zeppelin provides a URL that displays single result, that does not include Zeppelin's menu, buttons. So you can eaily embed it into your website.
 
 <br />
 ### 100% Opensource
