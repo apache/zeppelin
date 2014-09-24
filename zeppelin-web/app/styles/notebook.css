@@ -18,7 +18,7 @@
   padding: 0 0 0 0px;
 }
 .paragraph {
-  padding: 0px 8px 8px 8px;
+  padding: 2px 8px 4px 8px;
   min-height: 32px;
 }
 
@@ -90,11 +90,10 @@
 }
 
 .outlineOnFocus{
-  border : 1px solid #FFFFFF;
 }
 
 .outlineOnFocus:hover{
-  border : 1px solid #EEEEEE;
+  box-shadow: 2px 2px 10px #888888;
 }
 
 .paragraph .control {
