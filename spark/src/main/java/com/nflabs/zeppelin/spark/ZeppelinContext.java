@@ -28,19 +28,40 @@ public class ZeppelinContext {
 	}
 	
 	/**
-	 * Load dependency
+	 * Load dependency for interpreter and runtime (driver) 
 	 * @param artifact "group:artifact:version"
+	 * @throws Exception 
 	 */
-	public void load(String artifact){
-		dep.load(artifact, false);
+	public void load(String artifact) throws Exception{
+		dep.load(artifact, false, false);
 	}
+
+	/**
+	 * Load dependency for interpreter and runtime (driver) 
+	 * @param artifact "group:artifact:version"
+	 * @throws Exception 
+	 */
+	public void load(String artifact, boolean recursive) throws Exception{
+		dep.load(artifact, recursive, false);
+	}	
 	
 	/**
-	 * Load dependency with recursion
+	 * Load dependency for interpreter and runtime, and then add to sparkContext
+	 * @throws Exception 
 	 */
-	public void loadR(String artifact){
-		dep.load(artifact, true);
+	public void loadAndDist(String artifact) throws Exception{
+		dep.load(artifact, false, true);
 	}
+	
+	public void loadAndDist(String artifact, boolean recursive) throws Exception{
+		dep.load(artifact, true, true);
+	}	
+	
+	/**
+	 * Load dependency only interpreter
+	 * @param name
+	 * @return
+	 */
 
 	public Object input(String name) {
 		return input(name, "");
