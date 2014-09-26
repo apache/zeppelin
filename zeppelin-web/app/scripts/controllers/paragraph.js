@@ -24,7 +24,7 @@
  * @author anthonycorbacho
  */
 angular.module('zeppelinWebApp')
-        .controller('ParagraphCtrl', function($scope, $rootScope, $route, $window, $element) {
+        .controller('ParagraphCtrl', function($scope, $rootScope, $route, $window, $element, $routeParams, $location) {
 
   $scope.paragraph = null;
   $scope.editor = null;
@@ -146,6 +146,24 @@ angular.module('zeppelinWebApp')
     initializeDefault();
   };
 
+  $scope.getIframeDimensions = function () {
+    if ($scope.asIframe) {
+      var paragraphid = "#" + $routeParams.paragraphId + "_container";
+      var height = $(paragraphid).height();
+      return height;
+    }
+    return 0;
+  };
+
+  $scope.$watch($scope.getIframeDimensions, function (newValue, oldValue) {
+    if ($scope.asIframe && newValue) {
+      var message = {};
+      message.height = newValue;
+      message.url = $location.$$absUrl;
+      $window.parent.postMessage(angular.toJson(message), "*");
+    }
+  });
+
   var initializeDefault = function(){
     if (!$scope.paragraph.config) {
       $scope.paragraph.config = {colWidth:12};
@@ -213,7 +231,7 @@ angular.module('zeppelinWebApp')
         $('#'+$scope.paragraph.id+"_control").show();
       } else {
         $('#'+$scope.paragraph.id+"_control").hide();
-      }     
+      }
     }
   });
 
@@ -821,7 +839,7 @@ angular.module('zeppelinWebApp')
       return "";
     }
   };
-  
+
   $scope.goToSingleParagraph = function () {
     var noteId = $route.current.pathParams.noteId;
     var redirectToUrl = 'http://' + location.host + '/#/notebook/' + noteId + "/paragraph/" + $scope.paragraph.id+"?asIframe";
