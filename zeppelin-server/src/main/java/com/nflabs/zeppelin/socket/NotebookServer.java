@@ -268,11 +268,13 @@ public class NotebookServer extends WebSocketServer {
     broadcastNoteList();
   }
 
-  private void removeNote(WebSocket conn, Notebook notebook, Message fromMessage) {
+  private void removeNote(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.get("id");
     if (noteId == null) {
       return ;
     }
+    Note note = notebook.getNote(noteId);
+    note.unpersist();
     notebook.removeNote(noteId);
     removeNote(noteId);
     broadcastNoteList();
