@@ -215,13 +215,16 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 		return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_DIR);
 	}
 	
-	private String getRelativeDir(ConfVars c){
-		String path = getString(c);
+	public String getRelativeDir(ConfVars c){
+		return getRelativeDir(getString(c));
+	}
+	
+	public String getRelativeDir(String path){
 		if(path!=null && path.startsWith("/")){
 			return path;
 		} else {
-			return getString(ConfVars.ZEPPELIN_HOME)+"/"+getString(c);
-		}
+			return getString(ConfVars.ZEPPELIN_HOME)+"/"+path;
+		}		
 	}
 	
 

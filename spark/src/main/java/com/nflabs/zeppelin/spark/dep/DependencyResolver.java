@@ -3,7 +3,6 @@ package com.nflabs.zeppelin.spark.dep;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -228,12 +227,5 @@ public class DependencyResolver {
 				collectRequest, classpathFlter);
 		return system.resolveDependencies(session, dependencyRequest)
 				.getArtifactResults();
-	}
-
-	private void createSharedFolder() {
-		File sharedDirectory = new File("/tmp/imported");
-		if (!sharedDirectory.exists()) {
-			sharedDirectory.mkdir();
-		}
 	}
 }
