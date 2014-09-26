@@ -51,7 +51,11 @@ public class DependencyResolver {
 	                                                                                JavaScopes.SYSTEM);
 
 	private final String [] EXCLUSIONS = new String[]{
-		"org.scala-lang:scala-library"
+		"org.scala-lang:scala-library",
+		"org.scala-lang:scala-compiler",
+		"com.nflabs.zeppelin:zeppelin-zengine",
+		"com.nflabs.zeppelin:zeppelin-spark",
+		"com.nflabs.zeppelin:zeppelin-server"
 	};
 	
 
