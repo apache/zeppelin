@@ -551,6 +551,10 @@ angular.module('zeppelinWebApp')
     }
   };
 
+  $scope.getBase64ImageSrc = function(base64Data) {
+    return "data:image/png;base64,"+base64Data;
+  };
+
   $scope.getGraphMode = function(paragraph){
     var pdata = (paragraph) ? paragraph : $scope.paragraph;
     if (pdata.settings.params && pdata.settings.params._table && pdata.settings.params._table.mode) {

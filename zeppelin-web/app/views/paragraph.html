@@ -207,7 +207,7 @@ limitations under the License.
       <img id="{{paragraph.id}}_msg"
            ng-if="paragraph.result.type == 'IMG'"
            ng-Init="loadResultType(paragraph.result)"
-           ng-src="{{paragraph.result.msg}}">
+           ng-src="{{getBase64ImageSrc(paragraph.result.msg)}}">
       </img>
 
       <div id="{{paragraph.id}}_switch"
