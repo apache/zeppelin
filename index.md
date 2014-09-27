@@ -44,46 +44,28 @@ Zeppelin provies built-in Apache Spark integration. You don't need build separat
 Zeppelin's Spark integration provies
 
 - Automatic SparkContext and SQLContext injection
-- Runtime dependency jar loading from local filesystem or maven repository
-  <br />
-
-  ```
-  z.load("/path/to/your.jar")             // load artifact from local FS
-  z.load("groupId:artifactId:version")    // load artifact from Maven repository
-  z.loadR("groupId:artifactId:version")   // load artifact from Maven repository with it's dependencies
-  ```
-  Zeppelin Automatically load jar into Compiler, Runtime and distribute Spark Cluster
-
+- Runtime dependency jar loading from local filesystem or maven repository. Learn more about [dependency loader](./docs/zeppelincontext.html).
 - Displaying job progress, Caceling job
-- Code auto completion
+- Code auto completion, using Ctrl+. (experimental)
 
 <br />
 ### Data visualization
 
 Some basic charts are built-in. Not only SparkSQL's query result but also any output from any language backend can be recognized and visualized.
 
+<img src="./assets/themes/zeppelin/img/screenshots/visualization.png" />
+
+Learn more about Zeppelin's [Display system](./docs/display.html).
+
+
 <br />
 ### Dynamic form creation
 
-Zeppelin dynamically creates some input forms in notebook. For example,
+Zeppelin dynamically creates some input forms in notebook.
 
-```
-%md Hello ${name=DefaultName}
-```
+<img src="./assets/themes/zeppelin/img/screenshots/form_input.png" />
 
-Will print 
-
-```
-Hello DefaultName
-```
-
-With input form.
-
-Also it nativly integrated with Scala environment, so form can be programatically created.
-
-```
-println("Hello "+z.input("name", "DefaultName"));
-```
+Learn more about [Dynamic Form](./docs/dynamicform.html).
 
 
 <br />
@@ -91,16 +73,19 @@ println("Hello "+z.input("name", "DefaultName"));
 
 Notebook URL can be shared among collaborators. Then Zeppelin broadcasts any changes in realtime, like collaboration in Google docs.
 
+<img src="./assets/themes/zeppelin/img/screenshots/collaboration.png" />
 
 <br />
 ### Publish
 
-Zeppelin provides a URL that displays single result, that does not include Zeppelin's menu, buttons. So you can eaily embed it into your website.
+Zeppelin provides a URL that displays single result, that does not include Zeppelin's menu, buttons. So you can eaily embed it using iframe into your website.
+
+<img src="./assets/themes/zeppelin/img/screenshots/publish.png" />
 
 <br />
 ### 100% Opensource
 
-Zeppelin is Apache2 Licensed software. Checkout [source repository](https://github.com/NFLabs/zeppelin).
+Zeppelin is Apache2 Licensed software. Checkout [source repository](https://github.com/NFLabs/zeppelin) and [How to contribute](./docs/development/howtocontribute.html)
 
 Zeppelin has very active development community.
 Join [Mailing list](https://groups.google.com/forum/#!forum/zeppelin-developers) and checkout 

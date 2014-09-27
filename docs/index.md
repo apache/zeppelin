@@ -10,6 +10,13 @@ group: nav-right
 
 * [Install](./install/install.html)
 
+### Manual
+
+* [Zeppelin Context](./zeppelincontext.html)
+* [Dynamic Form](./dynamicform.html)
+* [Display System](./display.html)
+
+
 ### Development
 
 * [Writing Zeppelin Interpreter](./development/writingzeppelininterpreter.html)

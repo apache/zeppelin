@@ -5,6 +5,12 @@ description: "How to contribute"
 group: development
 ---
 
+## IMPORTANT
+
+Zeppelin is [Apache2 License](http://www.apache.org/licenses/LICENSE-2.0.html) Software.
+Contribute to Zeppelin (Source code, Documents, Image, Website) means you agree license all your contributions as Apache2 License.
+
+
 
 ### Setting up
 Here are some things you will need to build and test Zeppelin. 
