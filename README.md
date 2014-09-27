@@ -15,7 +15,7 @@ To know more about Zeppelin, visit our web site http://zeppelin-project.org
 
 with specific version
 
-      mvn clean package -Dspark.version=1.0.1 -Dhadoop.version=2.0.0-mr1-cdh4.6.0
+      mvn clean package -Dspark.version=1.1.0 -Dhadoop.version=2.0.0-mr1-cdh4.6.0
 
 ###Configure
 
@@ -58,6 +58,7 @@ Zeppelin comes with a set of end-to-end acceptnce tests driving headless seleniu
 ###License
 [Apache2](http://www.apache.org/licenses/LICENSE-2.0.html) : http://www.apache.org/licenses/LICENSE-2.0.html
 
+To contribute, please read [How to contribute](http://zeppelin-project.org/docs/development/howtocontribute.html) first.
 
 
 [![githalytics.com alpha](https://cruel-carlota.pagodabox.com/10ba60fb64e53bb1ccd0bab47abbcc4a "githalytics.com")](http://githalytics.com/NFLabs/zeppelin)
