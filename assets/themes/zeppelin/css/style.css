@@ -8,8 +8,15 @@ body {
     background-color: #3071a9;
 }
 
+.navbar {
+ background-color:#3071a9;
+ border-bottom:0px;
+ height: 50px;
+}
+
 .navbar-inverse .navbar-nav > li > a {
  color: #ffffff;
+ background-color:#3071a9;
 }
 
 .navbar-inverse .navbar-nav > li > a:hover, 
@@ -19,10 +26,23 @@ body {
 .navbar-inverse .navbar-nav > li > a.active:hover, 
 .navbar-inverse .navbar-nav > li > a.active:focus {
   text-decoration: none;
+  background-color:#123456;
 }
+
+.navbar-inverse .navbar-nav > li > a.active {
+  background-color:#123456;
+}
+
 .navbar-inverse .navbar-brand:hover,
 .navbar-inverse .navbar-brand:focus {
 }
+
+.navbar-inverse .navbar-brand {
+  color: #fff;
+  text-decoration: none;
+  font-size: 32px;
+}
+
 
 /* CUSTOMIZE THE CAROUSEL
 -------------------------------------------------- */
