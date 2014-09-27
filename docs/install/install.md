@@ -23,10 +23,26 @@ mvn install -DskipTests
 #### Cluster mode
 
 ```
-mvn install -DskipTests -Dspark.version=1.0.1 -Dhadoop.version=2.2.0
+mvn install -DskipTests -Dspark.version=1.1.0 -Dhadoop.version=2.2.0
 ```
 
-Note that, change spark.version and hadoop.version to your cluster's one.
+Change spark.version and hadoop.version to your cluster's one.
+
+#### Custom built Spark
+
+Note that is you uses custom build spark, you need build Zeppelin with custome built spark artifact. To do that, deploy spark artifact to local maven repository using
+
+```
+sbt/sbt publish-local
+```
+
+and then build Zeppelin with your custom built Spark
+
+```
+mvn install -DskipTests -Dspark.version=1.1.0-Custom -Dhadoop.version=2.2.0
+```
+
+
 
 
 ## Configure
@@ -45,7 +61,7 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
     <td>ZEPPELIN\_PORT</td>
     <td>zeppelin.server.port</td>
     <td>8080</td>
-    <td>Zeppelin server port</td>
+    <td>Zeppelin server port. Note that port+1 is used for web socket</td>
   </tr>
   <tr>
     <td>ZEPPELIN\_NOTEBOOK\_DIR</td>
@@ -82,7 +98,8 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
 ```
 bin/zeppelin-daemon.sh start
 ```
-After successful start, visit http://localhost:8080 with your web browser
+After successful start, visit http://localhost:8080 with your web browser.
+Note that port **8081** also need to be accessible for websocket connection.
 
 #### Stop Zeppelin
 

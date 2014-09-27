@@ -15,6 +15,8 @@ Zeppelin Interpreter is language backend. For example to use scala code in Zeppe
 
 Creating a new interpreter is quite simple. Just implementing [com.nflabs.zeppelin.interpreter](https://github.com/NFLabs/zeppelin/blob/master/zeppelin-zengine/src/main/java/com/nflabs/zeppelin/interpreter/Interpreter.java) interface.
 
+You can include com.nflabs.zeppelin:zeppelin-zengine:[VERSION] artifact in your build system.
+
 ### Install your interpreter binary
 
 Once you have build your interpreter, you can place your interpreter under directory with all the dependencies.
