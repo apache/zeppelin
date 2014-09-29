@@ -6,28 +6,25 @@ group: nav-right
 ---
 {% include JB/setup %}
 
+### Build from source
 
-### Stable release
+Check [install](./docs/install/install.html).
 
-Officail stable releases. Check [install](./docs/install/install.html). (standalone mode instruction included)
+
+### Current binary release
+
+
+For install and configure, check [install](./docs/install/install.html).
+
+
+
+-------------
+### Old release
 
 ##### Zeppelin-0.3.3 (2014.03.29)
 
 Download <a onclick="ga('send', 'event', 'download', 'zeppelin', '0.3.3');" href="https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.3.3.tar.gz">zeppelin-0.3.3.tar.gz</a> ([release note](https://zeppelin-project.atlassian.net/secure/ReleaseNote.jspa?projectId=10001&version=10301))
 
-
--------------
-### Nightly Build
-
-This is snapshot release. Which contains latest improvement, new features. but unproven, some may be broken.
-
-##### Snapshot 0.3.4-SNAPSHOT
-
-Download <a onclick="ga('send', 'event', 'download', 'zeppelin', '0.3.4-SNAPSHOT');" href="https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.3.4-SNAPSHOT.tar.gz">zeppelin-0.3.4-SNAPSHOT.tar.gz</a>
-
-
--------------
-### Old release
 
 ##### Zeppelin-0.3.2 (2014.03.14)
 
