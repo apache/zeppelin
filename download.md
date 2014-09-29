@@ -13,6 +13,7 @@ Check [install](./docs/install/install.html).
 
 ### Current binary release
 
+We will provide binary release pretty soon. Until then, please build your own. It's not that difficult.
 
 For install and configure, check [install](./docs/install/install.html).
 
