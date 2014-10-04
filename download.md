@@ -18,7 +18,7 @@ We will provide binary release pretty soon. Until then, please build your own. I
 For install and configure, check [install](./docs/install/install.html).
 
 
-
+<!-- 
 -------------
 ### Old release
 
@@ -43,3 +43,4 @@ Download <a onclick="ga('send', 'event', 'download', 'zeppelin', '0.3.0');" href
 
 Download Download <a onclick="ga('send', 'event', 'download', 'zeppelin', '0.2.0');" href="https://s3-ap-northeast-1.amazonaws.com/zeppel.in/zeppelin-0.2.0.tar.gz">zeppelin-0.2.0.tar.gz</a>, ([release note](https://zeppelin-project.atlassian.net/secure/ReleaseNote.jspa?projectId=10001&version=10001))
 
+-->
