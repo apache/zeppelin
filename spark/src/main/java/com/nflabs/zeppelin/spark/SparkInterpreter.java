@@ -269,7 +269,7 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		intp.interpret("@transient val sc = _binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
 		intp.interpret("@transient val sqlc = _binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
 		intp.interpret("import org.apache.spark.SparkContext._");
-		intp.interpret("import sqlc.createSchemaRDD");
+		intp.interpret("import sqlc._");
 	}
 
 	private List<File> currentClassPath(){
