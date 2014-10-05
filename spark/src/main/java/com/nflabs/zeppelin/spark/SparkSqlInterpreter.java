@@ -28,6 +28,7 @@ import scala.collection.JavaConverters;
 import scala.collection.mutable.HashMap;
 import scala.collection.mutable.HashSet;
 
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.Interpreter.SchedulingMode;
@@ -44,6 +45,7 @@ public class SparkSqlInterpreter extends Interpreter {
 	}
 	
 	private final String jobGroup = "zeppelin-"+this.hashCode();
+	private int maxResult;
 	
 	public SparkSqlInterpreter(Properties property) {
 		super(property);
@@ -51,7 +53,8 @@ public class SparkSqlInterpreter extends Interpreter {
 
 	@Override
 	public void open() {
-		
+		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+		this.maxResult = conf.getInt("ZEPPELIN_SPARK_MAX_RESULT", "zeppelin.spark.maxResult", 10000);
 	}
 	
 	
@@ -77,7 +80,7 @@ public class SparkSqlInterpreter extends Interpreter {
 		Row[] rows = null;
 		try {
 			rdd = sqlc.sql(st);
-			rows = rdd.take(10000);
+			rows = rdd.take(maxResult+1);
 		} catch(Exception e){
 			logger.error("Error", e);
 			sc.clearJobGroup();
@@ -97,7 +100,11 @@ public class SparkSqlInterpreter extends Interpreter {
 		msg += "\n";
 			
 		// ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType, FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType, NullType, NumericType, ShortType, StringType, StructType
-		for(Row row : rows) {
+		
+		int numRows=0;
+		for(int r = 0; r<maxResult && r<rows.length; r++){			
+			Row row = rows[r];
+			
 			for(int i=0; i<columns.size(); i++){
 				String type = columns.get(i).dataType().toString();
 				if ("BooleanType".equals(type)) {
@@ -124,6 +131,10 @@ public class SparkSqlInterpreter extends Interpreter {
 				}
 			}
 			msg += "\n";
+		}
+		
+		if (rows.length>maxResult) {
+			msg += "\n<font color=red>Results are limited by "+maxResult+".</font>";
 		}
 		InterpreterResult rett = new InterpreterResult(Code.SUCCESS, "%table "+msg);
 		sc.clearJobGroup();
