@@ -3,7 +3,6 @@ package com.nflabs.zeppelin.spark.dep;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -51,7 +50,11 @@ public class DependencyResolver {
 	                                                                                JavaScopes.SYSTEM);
 
 	private final String [] EXCLUSIONS = new String[]{
-		"org.scala-lang:scala-library"
+		"org.scala-lang:scala-library",
+		"org.scala-lang:scala-compiler",
+		"com.nflabs.zeppelin:zeppelin-zengine",
+		"com.nflabs.zeppelin:zeppelin-spark",
+		"com.nflabs.zeppelin:zeppelin-server"
 	};
 	
 
@@ -129,77 +132,76 @@ public class DependencyResolver {
 		return new MergedClassPath(scala.collection.JavaConversions.asScalaBuffer(cp).toIndexedSeq(), platform.classPath().context());
 	}
 
-	public void load(String groupId, String artifactId, String version) {
+	public void load(String groupId, String artifactId, String version, boolean recursive, boolean addSparkContext) throws Exception {
 		if (StringUtils.isBlank(groupId) || StringUtils.isBlank(artifactId) || StringUtils.isBlank(version)) {
 			// Should throw here
 			return;
 		}
-		load(groupId + ":" + artifactId + ":" + version);
+		load(groupId + ":" + artifactId + ":" + version, recursive, addSparkContext);
 	}
 	
-	public void load(String artifact) {
-		load(artifact, false);
-	}
-	public void load(String artifact, boolean recursive) {
+	public void load(String artifact, boolean recursive, boolean addSparkContext) throws Exception {
 		if (StringUtils.isBlank(artifact)) {
 			// Should throw here
 			return;
 		}
 		
 		if (artifact.split(":").length==3) {
-			loadFromMvn(artifact, recursive);
+			loadFromMvn(artifact, recursive, addSparkContext);
 		} else {
-			loadFromFs(artifact);
+			loadFromFs(artifact, addSparkContext);
 		}
 	}
 	
-	private void loadFromFs(String artifact) {
+	private void loadFromFs(String artifact, boolean addSparkContext) throws Exception {
 		File jarFile = new File(artifact);
-		try {
-			updateCompilerClassPath(new URL[]{jarFile.toURI().toURL()});
-			updateRuntimeClassPath(new URL[]{jarFile.toURI().toURL()});
-		} catch (Exception e) {
-			e.printStackTrace();
-		} 		
-		sc.addJar(jarFile.getAbsolutePath());
+
+		updateCompilerClassPath(new URL[]{jarFile.toURI().toURL()});
+		updateRuntimeClassPath(new URL[]{jarFile.toURI().toURL()});
+		
+		if (addSparkContext) {
+			sc.addJar(jarFile.getAbsolutePath());
+		}
 	}
-	private void loadFromMvn(String artifact, boolean recursive) {
-		try {
-			List<ArtifactResult> listOfArtifact;
-			if (recursive) {
-				listOfArtifact = getArtifactsWithDep(artifact);
-			} else {
-				listOfArtifact = getArtifact(artifact);
-			}
-			
-			
-			Iterator<ArtifactResult> it = listOfArtifact.iterator();
-			while(it.hasNext()) {
-				Artifact a = it.next().getArtifact();
-				String gav = a.getGroupId()+":"+a.getArtifactId()+":"+a.getVersion();
-				for(String exclude : EXCLUSIONS) {
-					if(gav.startsWith(exclude)) {
-						it.remove();
-						break;
-					}
+	private void loadFromMvn(String artifact, boolean recursive, boolean addSparkContext) throws Exception {
+		List<ArtifactResult> listOfArtifact;
+		if (recursive) {
+			listOfArtifact = getArtifactsWithDep(artifact);
+		} else {
+			listOfArtifact = getArtifact(artifact);
+		}
+
+		Iterator<ArtifactResult> it = listOfArtifact.iterator();
+		while (it.hasNext()) {
+			Artifact a = it.next().getArtifact();
+			String gav = a.getGroupId() + ":" + a.getArtifactId() + ":"
+					+ a.getVersion();
+			for (String exclude : EXCLUSIONS) {
+				if (gav.startsWith(exclude)) {
+					it.remove();
+					break;
 				}
 			}
-			
-			List<URL> newClassPathList = new LinkedList<URL>();
-			List<File> files = new LinkedList<File>();
-			for (ArtifactResult artifactResult : listOfArtifact) {
-				newClassPathList.add(artifactResult.getArtifact().getFile().toURI().toURL());
-				files.add(artifactResult.getArtifact().getFile());
-			}
-			
-			updateCompilerClassPath(newClassPathList.toArray(new URL[0]));
-			updateRuntimeClassPath(newClassPathList.toArray(new URL[0]));
-			
-			for(File f : files) {
+		}
+
+		List<URL> newClassPathList = new LinkedList<URL>();
+		List<File> files = new LinkedList<File>();
+		for (ArtifactResult artifactResult : listOfArtifact) {
+			logger.info("Load " + artifactResult.getArtifact().getGroupId()
+					+ ":" + artifactResult.getArtifact().getArtifactId() + ":"
+					+ artifactResult.getArtifact().getVersion());
+			newClassPathList.add(artifactResult.getArtifact().getFile().toURI()
+					.toURL());
+			files.add(artifactResult.getArtifact().getFile());
+		}
+
+		updateCompilerClassPath(newClassPathList.toArray(new URL[0]));
+		updateRuntimeClassPath(newClassPathList.toArray(new URL[0]));
+
+		if (addSparkContext) {
+			for (File f : files) {
 				sc.addJar(f.getAbsolutePath());
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 	public List<ArtifactResult> getArtifact	(String dependency)
@@ -225,12 +227,5 @@ public class DependencyResolver {
 				collectRequest, classpathFlter);
 		return system.resolveDependencies(session, dependencyRequest)
 				.getArtifactResults();
-	}
-
-	private void createSharedFolder() {
-		File sharedDirectory = new File("/tmp/imported");
-		if (!sharedDirectory.exists()) {
-			sharedDirectory.mkdir();
-		}
 	}
 }

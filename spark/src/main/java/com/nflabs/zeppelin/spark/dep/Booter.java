@@ -6,6 +6,8 @@ import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.RemoteRepository;
 
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+
 
 public class Booter {
   public static RepositorySystem newRepositorySystem() {
@@ -15,7 +17,8 @@ public class Booter {
   public static RepositorySystemSession newRepositorySystemSession(RepositorySystem system) {
     MavenRepositorySystemSession session = new MavenRepositorySystemSession();
 
-    LocalRepository localRepo = new LocalRepository("/tmp/local-repo");
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    LocalRepository localRepo = new LocalRepository(conf.getRelativeDir(conf.getString("ZEPPELIN_DEP_LOCAL_REPO", "zeppelin.dep.localrepo", "local-repo")));
     session.setLocalRepositoryManager(system.newLocalRepositoryManager(localRepo));
 
     //session.setTransferListener(new ConsoleTransferListener());
