@@ -191,25 +191,6 @@ limitations under the License.
 
     <!-- Rendering -->
     <div class='tableDisplay'>
-      <div id="{{paragraph.id}}_msg"
-           class="text"
-           ng-if="paragraph.result.type == 'TEXT'"
-           ng-Init="loadResultType(paragraph.result)"
-           ng-bind-html="paragraph.result.msg">
-      </div>
-
-      <div id="{{paragraph.id}}_msg"
-           ng-if="paragraph.result.type == 'HTML'"
-           ng-Init="loadResultType(paragraph.result)"
-           ng-bind-html="paragraph.result.msg">
-      </div>
-
-      <img id="{{paragraph.id}}_msg"
-           ng-if="paragraph.result.type == 'IMG'"
-           ng-Init="loadResultType(paragraph.result)"
-           ng-src="{{getBase64ImageSrc(paragraph.result.msg)}}">
-      </img>
-
       <div id="{{paragraph.id}}_switch"
            ng-if="paragraph.result.type == 'TABLE'"
            class="btn-group"
@@ -283,6 +264,25 @@ limitations under the License.
             data='d3.lineChart.data'
             api='d3.lineChart.api'>
       </nvd3new>
+
+      <div id="{{paragraph.id}}_msg"
+           class="text"
+           ng-if="paragraph.result.type == 'TEXT' || (paragraph.result.type == 'TABLE' && paragraph.result.msg)"
+           ng-Init="loadResultType(paragraph.result)"
+           ng-bind-html="paragraph.result.msg">
+      </div>
+
+      <div id="{{paragraph.id}}_msg"
+           ng-if="paragraph.result.type == 'HTML'"
+           ng-Init="loadResultType(paragraph.result)"
+           ng-bind-html="paragraph.result.msg">
+      </div>
+
+      <img id="{{paragraph.id}}_msg"
+           ng-if="paragraph.result.type == 'IMG'"
+           ng-Init="loadResultType(paragraph.result)"
+           ng-src="{{getBase64ImageSrc(paragraph.result.msg)}}">
+      </img>
     </div>
   </div>
 </div>
