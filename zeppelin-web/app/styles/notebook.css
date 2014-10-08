@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+@import 'printMode.css' print;
+
 .paragraph-col {
   margin: 0 0 0 0px;
   padding: 0 0 0 0px;
@@ -24,7 +26,7 @@
 
 .paragraphAsIframe{
   padding: 0px 0px 0px 0px;
-  margin-top: -80px;
+  margin-top: -79px;
   margin-left: -10px;
   margin-right: -10px;
 }
@@ -40,7 +42,7 @@
   position:absolute;
   clear:both;
   right:25px;
-  z-index:10;
+  /*z-index:10;*/
 }
 
 .paragraphAsIframe table {
@@ -56,8 +58,8 @@
 .paragraphAsIframe .text {
   white-space: pre;
   display: block;
-  unicode-bidi: embed
-  display: block!important;
+  unicode-bidi: embed;
+  display: block !important;
   margin: 0 0 10px!important;
   font-size: 12px!important;
   line-height: 1.42857143!important;
@@ -77,6 +79,10 @@
   border-radius: .25em;
 }
 
+.note-jump {
+  margin-top: 20px;
+}
+
 .noteBtnfa {
     margin-left: 3px;
 }
@@ -90,23 +96,23 @@
 }
 
 .paragraph-space {
-  margin-bottom: 20px;
+  margin-bottom: 5px;
 }
-
 
 .paragraph .control {
   background-color: rgba(255,255,255,0.85);
   /*display: none;*/
   float: right;
   color: #999;
-  margin-top: 2px;
-  margin-right:0px;
+  margin-top: 1px;
+  margin-right: 5px;
   position:absolute;
   clear:both;
   right:5px;
-  z-index:10;
+  top: 0px;
   text-align:right;
   font-size:12px;
+  
 }
 
 .paragraph .control li{
@@ -128,6 +134,9 @@
 .paragraph .title div {
   width: 80%;
   font-weight: bold;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px!important;
+  text-transform: capitalize;
 }
 
 .paragraph .title input {
@@ -143,26 +152,31 @@
   -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
   -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
   transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  text-transform: capitalize;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px!important;
 }
 
 .paragraph .editor {
   width: 100%;
   border-left: 4px solid #DDDDDD;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.0);
   margin: 7px 0 2px 0px;
 }
 
 .paragraph .text {
   white-space: pre;
   display: block;
-  unicode-bidi: embed
+  unicode-bidi: embed;
   display: block!important;
   margin: 0 0 0px!important;
-  font-size: 12px!important;
+  /*font-size: 12px!important;*/
   line-height: 1.42857143!important;
   word-break: break-all!important;
   word-wrap: break-word!important;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  /*font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;*/
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px!important;
 }
 
 .paragraph p {
@@ -211,12 +225,12 @@
   position: relative;
   width:100%;
   height:4px;
-  z-index:100;
+  /*z-index:100;*/
   border-radius: 0px;
 }
 
 .paragraph .runControl .progress .progress-bar {
-  z-index:100;
+ /*z-index:100;*/
 }
 
 
@@ -270,7 +284,8 @@
 /* panel default */
 .panel-default {
   /* border: none; */
-  border-color: #e5e5e5;
+  border-color: #DDDDDD;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .panel-group .panel-default {
@@ -302,4 +317,8 @@
   padding-left: 10px;
   padding-top: 15px;
   padding-bottom: 15px;
+}
+
+.paragraph-margin {
+  margin-right: 5px;
 }

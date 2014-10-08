@@ -37,6 +37,11 @@ limitations under the License.
                     ng-click="hideAllEditor()"
                     tooltip-placement="top" tooltip="Hide the code"><i class="fa icon-size-actual"></i>
             </button>
+           <button type="button"
+                    class="btn btn-default btn-xs"
+                    ng-click=""
+                    tooltip-placement="top" tooltip="Print the report"><i class="icon-printer"></i>
+            </button>
             <button type="button"
                   class="btn btn-default btn-xs"
                   ng-click="removeNote(note.id)"
@@ -45,18 +50,18 @@ limitations under the License.
       </span>
     </h3>
   </div>
-  <br >
-
+  
+  <div class="note-jump"></div>
+  
   <!-- Include the paragraphs according to the note -->
-  <div ng-repeat="currentParagraph in note.paragraphs"
+  <div id="{{currentParagraph.id}}_paragraphColumn_main"
+       ng-repeat="currentParagraph in note.paragraphs"
        ng-controller="ParagraphCtrl"
        ng-Init="init(currentParagraph)"
-       ng-include src="'views/paragraph.html'"
-       id="{{currentParagraph.id}}_paragraphColumn"
        ng-class="{
-                   'paragraph-col col-md-12': !currentParagraph.config.colWidth || paragraphUrl,
-                   'paragraph-col col-md-{{currentParagraph.config.colWidth}}': currentParagraph.config.colWidth && !paragraphUrl,
-                   'paragraph-space panel panel-default': !asIframe
-                 }">
+                    'paragraph-col col-md-12': !currentParagraph.config.colWidth || paragraphUrl,
+                    'paragraph-col col-md-{{currentParagraph.config.colWidth}}': currentParagraph.config.colWidth && !paragraphUrl
+                  }">
+    <div id="{{currentParagraph.id}}_paragraphColumn" ng-include src="'views/paragraph.html'" ng-class="{'paragraph-space panel panel-default paragraph-margin': !asIframe}"></div>
   </div>
 </div>

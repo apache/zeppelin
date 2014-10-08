@@ -137,9 +137,7 @@ angular.module('zeppelinWebApp')
       $scope.setGraphMode($scope.getGraphMode(), false, false);
     }
 
-    $scope.colWidthOption = [
-        2,3,4,5,6,7,8,9,10,11,12
-    ];
+    $scope.colWidthOption = [ 4, 6, 8, 12 ];
 
     $scope.showTitleEditor = false;
 
@@ -212,8 +210,15 @@ angular.module('zeppelinWebApp')
       // update column class
       // TODO : do it in angualr way
       var el = $('#'+$scope.paragraph.id+"_paragraphColumn");
+      var elMain = $('#'+$scope.paragraph.id+"_paragraphColumn_main");
+      
+      elMain.removeClass(elMain.attr('class'))
+      elMain.addClass("paragraph-col col-md-"+$scope.paragraph.config.colWidth);
+      
       el.removeClass(el.attr('class'))
-      el.addClass("paragraph-space panel panel-default paragraph-col col-md-"+$scope.paragraph.config.colWidth);
+      el.addClass("paragraph-space panel panel-default paragraph-margin");
+      
+      
 
 
       if (newType==="TABLE") {
