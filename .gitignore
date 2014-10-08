@@ -10,12 +10,12 @@ conf/zeppelin-env.sh
 conf/zeppelin-site.xml
 
 #webapp
-zeppelin-web2/node_modules
-zeppelin-web2/dist
-zeppelin-web2/.tmp
-zeppelin-web2/.sass-cache
-zeppelin-web2/bower_components
-zeppelin-web2/src
+zeppelin-web/node_modules
+zeppelin-web/dist
+zeppelin-web/.tmp
+zeppelin-web/.sass-cache
+zeppelin-web/bower_components
+zeppelin-web/src
 **nbproject/
 **node/
 
