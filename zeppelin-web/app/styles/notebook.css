@@ -24,7 +24,7 @@
 
 .paragraphAsIframe{
   padding: 0px 0px 0px 0px;
-  margin-top: -60px;
+  margin-top: -80px;
   margin-left: -10px;
   margin-right: -10px;
 }
@@ -89,16 +89,14 @@
     padding: 4px;
 }
 
-.outlineOnFocus{
+.paragraph-space {
+  margin-bottom: 20px;
 }
 
-.outlineOnFocus:hover{
-  box-shadow: 2px 2px 10px #888888;
-}
 
 .paragraph .control {
   background-color: rgba(255,255,255,0.85);
-  display: none;
+  /*display: none;*/
   float: right;
   color: #999;
   margin-top: 2px;
@@ -186,6 +184,15 @@
 
 .ace_hidden-cursors {opacity:0}
 
+.ace-tm .ace_print-margin {
+  background: none !important;
+}
+
+.emacs-mode .ace_cursor {
+  background-color:#C0C0C0!important;
+  border: none;
+}
+
 .paragraph .status {
   font-size: 10px;
   color: #AAAAAA;
@@ -219,14 +226,25 @@
 }
 
 .noteAction {
-  margin-bottom: 10px;
+  margin-left: -10px;
+  margin-right: -10px;
+  margin-top: -10px;
+  background-color: white;
+  font-family: 'Roboto', sans-serif;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  color: #2c3e50;
+  border-bottom: 1px solid #E5E5E5;
+}
+
+.new_h3 {
+  margin-top: 1px;
+  padding-top: 7px;
 }
 
 .form-control2 {
   width: 100%;
-  height: 34px;
-  padding: 6px 12px;
-  font-size: 24px;
+  margin-left: 15px;
+  font-size: 29px;
   line-height: 1.42857143;
   color: #555;
   background-color: #fff;
@@ -240,21 +258,48 @@
   transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 }
 
-.noteAction:hover span {
-    display: inline-block;
-    visibility: visible;
-}
-
-.noteAction span {
-    display: inline-block;
-    visibility: hidden;
-}
-
 .form-control-static2 {
   padding-top: 7px;
-  font-size: 24px;
+  font-size: 29px;
   margin-left: 15px;
   padding-bottom: 7px;
   margin-bottom: 0;
   display: inline-block;
+}
+
+/* panel default */
+.panel-default {
+  /* border: none; */
+  border-color: #e5e5e5;
+}
+
+.panel-group .panel-default {
+  /*border: solid #e5e5e5;
+  border-width: 1px 1px 2px;*/
+}
+
+.panel-default > .panel-heading {
+  color: #34495e;
+  background-color: #ffffff;
+  border-color: #e5e5e5;
+}
+
+.panel-default > .panel-heading + .panel-collapse .panel-body {
+  border-top-color: #e5e5e5;
+}
+
+.panel-default > .panel-heading > .dropdown .caret {
+  border-color: #ecf0f1 transparent;
+}
+
+.panel-default > .panel-footer + .panel-collapse .panel-body {
+  border-bottom-color: #e5e5e5;
+}
+
+.panel-body-heading {
+  position: relative;
+  display: block;
+  padding-left: 10px;
+  padding-top: 15px;
+  padding-bottom: 15px;
 }

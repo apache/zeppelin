@@ -213,7 +213,7 @@ angular.module('zeppelinWebApp')
       // TODO : do it in angualr way
       var el = $('#'+$scope.paragraph.id+"_paragraphColumn");
       el.removeClass(el.attr('class'))
-      el.addClass("paragraph-col col-md-"+$scope.paragraph.config.colWidth);
+      el.addClass("paragraph-space panel panel-default paragraph-col col-md-"+$scope.paragraph.config.colWidth);
 
 
       if (newType==="TABLE") {
@@ -225,27 +225,8 @@ angular.module('zeppelinWebApp')
           $scope.setGraphMode(newGraphMode, false, true);
         }
       }
-
-      // show control if necessary
-      if ($scope.isRunning()) {
-        $('#'+$scope.paragraph.id+"_control").show();
-      } else {
-        $('#'+$scope.paragraph.id+"_control").hide();
-      }
     }
   });
-
-  $scope.onMouseover = function(){
-    $('#'+$scope.paragraph.id+"_control").show();
-  };
-
-  $scope.onMouseleave = function(){
-    if($scope.isRunning()){
-      $('#'+$scope.paragraph.id+"_control").show();
-    } else {
-      $('#'+$scope.paragraph.id+"_control").hide();
-    }
-  };
 
   $scope.isRunning = function(){
     if($scope.paragraph.status=='RUNNING' || $scope.paragraph.status=='PENDING') {
