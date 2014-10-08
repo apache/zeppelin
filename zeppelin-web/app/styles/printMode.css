@@ -56,3 +56,7 @@ body {
 svg {
   margin-left: -20px;
 }
+
+.btn-link {
+  display: none;
+}
