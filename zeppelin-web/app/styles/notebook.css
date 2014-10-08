@@ -97,6 +97,7 @@
 
 .paragraph-space {
   margin-bottom: 5px;
+  padding: 10px !important;
 }
 
 .paragraph .control {
@@ -109,7 +110,7 @@
   position:absolute;
   clear:both;
   right:5px;
-  top: 0px;
+  top: 12px;
   text-align:right;
   font-size:12px;
   

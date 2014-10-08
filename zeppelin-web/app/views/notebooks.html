@@ -62,6 +62,6 @@ limitations under the License.
                     'paragraph-col col-md-12': !currentParagraph.config.colWidth || paragraphUrl,
                     'paragraph-col col-md-{{currentParagraph.config.colWidth}}': currentParagraph.config.colWidth && !paragraphUrl
                   }">
-    <div id="{{currentParagraph.id}}_paragraphColumn" ng-include src="'views/paragraph.html'" ng-class="{'paragraph-space panel panel-default paragraph-margin': !asIframe}"></div>
+    <div id="{{currentParagraph.id}}_paragraphColumn" ng-include src="'views/paragraph.html'" ng-class="{'paragraph-space box paragraph-margin': !asIframe}"></div>
   </div>
 </div>

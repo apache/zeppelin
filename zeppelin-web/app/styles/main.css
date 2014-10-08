@@ -23,20 +23,22 @@ body {
   background: #ecf0f1;
 }
 
+html,body { height: 100%;}
+
 .bodyAsIframe {
   background: white;
 }
 
 .displayNavBar {
   display: inline !important;
- }
+}
 
- 
- body.asIframe {
-   padding-top: 0px;
- }
+
+body.asIframe {
+  padding-top: 0px;
+}
 body .navbar {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 .container {
@@ -114,4 +116,56 @@ a.navbar-brand:hover {
   color: rgba(240, 48, 0, 1);
   font-size: 12px !important;
   font-weight: bold !important;
+}
+
+
+/**
+ * Box and well
+ */
+.box{
+  border-style: solid;
+  min-height: 20px;
+  padding: 19px;
+  margin-bottom: 20px;
+}
+
+.box, 
+.well {
+  background-color: #ffffff;
+  border-color: #e5e5e5;
+  border-width: 1px 1px 2px;
+  border-radius: 3px;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+.box-heading{
+  position:relative;
+  max-width: 100%;
+  font-size: 20px;
+  font-weight:300;
+  white-space: nowrap;
+  /*overflow:hidden;*/
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  margin: 0 0 15px;
+  padding-bottom: 2px;
+}
+h1.box-heading,
+h2.box-heading,
+h3.box-heading,
+h4.box-heading,
+h5.box-heading,
+h6.box-heading{
+  font-size: 20px;
+}
+.box-heading > .btn-group,
+.box-heading > .btn{
+  margin-top: -3px;
+}
+
+
+.icheck-label{
+  position: relative;
+  top: 0;
 }

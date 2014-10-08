@@ -216,7 +216,7 @@ angular.module('zeppelinWebApp')
       elMain.addClass("paragraph-col col-md-"+$scope.paragraph.config.colWidth);
       
       el.removeClass(el.attr('class'))
-      el.addClass("paragraph-space panel panel-default paragraph-margin");
+      el.addClass("paragraph-space box paragraph-margin");
       
       
 
