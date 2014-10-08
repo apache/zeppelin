@@ -75,6 +75,29 @@ limitations under the License.
     <div id="main" class="container">
       <div ng-view></div>
     </div>
+    <!-- Modal ::  Keyboard shortcuts -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title" id="myModalLabel">Keyboard shortcuts</h4>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="keys">
+                  <kbd class="kbd-dark">Shift</kbd> + <kbd class="kbd-dark">Enter</kbd>
+                </div>
+              </div>
+              <div class="col-md-6">
+                Run the note
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- build:js(.) scripts/oldieshim.js -->
     <!--[if lt IE 9]>
     <script src="bower_components/es5-shim/es5-shim.js"></script>
