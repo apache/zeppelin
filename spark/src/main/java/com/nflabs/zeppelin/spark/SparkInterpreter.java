@@ -353,8 +353,16 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		out.reset();
 		Code r = null;
 		String incomplete = "";
-		for(String s : lines) {				
-			scala.tools.nsc.interpreter.Results.Result res = intp.interpret(incomplete+s);
+		for(String s : lines) {		
+			scala.tools.nsc.interpreter.Results.Result res = null;
+			try {
+				res = intp.interpret(incomplete+s);
+			} catch (Exception e) {
+				sc.clearJobGroup();
+				logger.info("Interpreter exception", e);				
+				return new InterpreterResult(Code.ERROR, e.getMessage());
+			}
+			
 			r = getResultCode(res);
 			
 			if (r == Code.ERROR) {
