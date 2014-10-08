@@ -169,3 +169,21 @@ h6.box-heading{
   position: relative;
   top: 0;
 }
+
+
+.zeppelin {
+  background-image: url('../images/zepLogo.png'); 
+  background-repeat: no-repeat;
+  background-position: right;
+  height: 380px;
+  opacity: 0.2;
+}
+
+.zeppelin2 {
+  background-image: url('../images/zepLogo.png'); 
+  background-repeat: no-repeat;
+  background-position: right;
+  background-position-y: 12px;
+  height: 380px;
+  opacity: 0.2;
+}

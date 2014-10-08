@@ -13,16 +13,37 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<div class="row">
-  <div class="col-md-10">
-    <div ng-controller="NavCtrl">
-      <h4>Notebook</h4>
-      <ul>
-        <li ng-repeat="note in notes track by $index">
-          <a href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}}</a>
-        </li>
-      </ul>
-      <a href="javascrip:void(0);" ng-click="createNewNote()"><i class="fa fa-plus"></i> Create new note</a>
+
+<div class="box width-full">
+  <div class="zeppelin"><div class="zeppelin2"></div></div>
+  <div style="top:0px;position: absolute; margin-top: 80px;">
+    <h1 class="box-heading">
+      Welcome to Zeppelin!
+    </h1>
+    Zeppelin is web-based notebook that enables interactive data analytics.<br >You can make beautiful data-driven, interactive, collaborative document with SQL, code and even more!
+    <div class="row">
+      <div class="col-md-6">
+        <h3>Notebook</h3>
+        <div ng-controller="NavCtrl">
+          <h5><a href="javascrip:void(0);" ng-click="createNewNote()" style="text-decoration: none;"><i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
+          <ul>
+            <li ng-repeat="note in notes track by $index">
+              <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}}</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <h3>Help</h3>
+        Get started with <a style="text-decoration: none;" href="http://zeppelin-project.org/docs/index.html" target="_blank">Zeppelin documentation</a><br>
+        
+        <h3>Community</h3>
+        Please feel free to help us to improve Zeppelin, <br>
+        Any contribution are welcome!<br><br>
+        <a style="text-decoration: none;" href="https://groups.google.com/forum/#!forum/zeppelin-developers" target="_blank"><i style="font-size: 15px;" class="fa fa-users"></i> Mailing list</a><br>
+        <a style="text-decoration: none;" href="https://zeppelin-project.atlassian.net/browse/ZEPPELIN" target="_blank"><i style="font-size: 15px;" class="fa fa-bug"></i> Issues tracking</a><br>
+        <a style="text-decoration: none;" href="https://zeppelin-project.atlassian.net/browse/ZEPPELIN" target="_blank"><i style="font-size: 20px;" class="fa fa-github"></i> Github</a>
+      </div>
     </div>
   </div>
 </div>
