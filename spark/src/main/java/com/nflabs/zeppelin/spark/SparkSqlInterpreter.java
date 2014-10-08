@@ -98,7 +98,6 @@ public class SparkSqlInterpreter extends Interpreter {
 			
 		// ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType, FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType, NullType, NumericType, ShortType, StringType, StructType
 		
-		int numRows=0;
 		for(int r = 0; r<maxResult && r<rows.length; r++){			
 			Row row = rows[r];
 			
