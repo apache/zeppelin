@@ -13,21 +13,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
 <div class="box width-full">
   <div class="zeppelin"><div class="zeppelin2"></div></div>
-  <div style="top:0px;position: absolute; margin-top: 80px;">
+  <div style="margin-top: -380px;">
     <h1 class="box-heading">
       Welcome to Zeppelin!
     </h1>
     Zeppelin is web-based notebook that enables interactive data analytics.<br >You can make beautiful data-driven, interactive, collaborative document with SQL, code and even more!<br>
     <div class="row">
-      <div class="col-md-6">
+      <div class="col-md-4">
         <h3>Notebook</h3>
         <div ng-controller="NavCtrl">
           <h5><a href="javascrip:void(0);" ng-click="createNewNote()" style="text-decoration: none;"><i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
-          <ul>
-            <li ng-repeat="note in notes track by $index">
+          <ul style="list-style-type: none;">
+            <li ng-repeat="note in notes track by $index"><i style="font-size: 10px;" class="icon-doc"></i> 
               <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}}</a>
             </li>
           </ul>
