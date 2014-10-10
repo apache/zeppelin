@@ -10,9 +10,15 @@ group: install
 
 ## Build
 
-Checkout source code from [https://github.com/NFLabs/zeppelin](https://github.com/NFLabs/zeppelin)
+#### Prerequisites
 
-build source code using maven
+ * Java 1.7
+ * None root account
+ * Apache Maven
+
+Build tested on OSX, CentOS 6.
+
+Checkout source code from [https://github.com/NFLabs/zeppelin](https://github.com/NFLabs/zeppelin)
 
 #### Local mode
 
@@ -58,26 +64,26 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
     <th>Description</th>
   </tr>
   <tr>
-    <td>ZEPPELIN\_PORT</td>
+    <td>ZEPPELIN_PORT</td>
     <td>zeppelin.server.port</td>
     <td>8080</td>
     <td>Zeppelin server port. Note that port+1 is used for web socket</td>
   </tr>
   <tr>
-    <td>ZEPPELIN\_NOTEBOOK\_DIR</td>
+    <td>ZEPPELIN_NOTEBOOK_DIR</td>
     <td>zeppelin.notebook.dir</td>
     <td>notebook</td>
     <td>Where notebook file is saved</td>
   </tr>
   <tr>
-    <td>ZEPPELIN\_INTERPRETERS</td>
+    <td>ZEPPELIN_INTERPRETERS</td>
     <td>zeppelin.interpreters</td>
   <description></description>
     <td>spark:com.nflabs.zeppelin.spark.SparkInterpreter,<br />sql:com.nflabs.zeppelin.spark.SparkSqlInterpreter,<br />md:com.nflabs.zeppelin.markdown.Markdown,<br />sh:com.nflabs.zeppelin.shell.ShellInterpreter</td>
     <td>Comma separated interpreter configurations [Name]:[Class]. First interpreter become a default</td>
   </tr>
   <tr>
-    <td>ZEPPELIN\_INTERPRETER\_DIR</td>
+    <td>ZEPPELIN_INTERPRETER_DIR</td>
     <td>zeppelin.interpreter.dir</td>
     <td>interpreter</td>
     <td>Zeppelin interpreter directory</td>
@@ -88,8 +94,21 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
     <td>N/A</td>
     <td>Spark master url. eg. spark://master_addr:7077. Leave empty if you want to use local mode</td>
   </tr>
+  <tr>
+    <td>ZEPPELIN_JAVA_OPTS</td>
+    <td></td>
+    <td>N/A</td>
+    <td>JVM Options</td>
 </table>
 
+#### Add jars, files
+
+spark.jars, spark.files property in *ZEPPELIN\_JAVA\_OPTS* adds jars, files into SparkContext.
+for example, 
+
+    ZEPPELIN_JAVA_OPTS="-Dspark.jars=/mylib1.jar,/mylib2.jar -Dspark.files=/myfile1.dat,/myfile2.dat"
+
+or you can do it dynamically with [dependency loader](http://localhost:4000/docs/zeppelincontext.html)
 
 
 ## Start/Stop
