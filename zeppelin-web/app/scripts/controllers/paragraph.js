@@ -381,7 +381,13 @@ angular.module('zeppelinWebApp')
 
       $scope.editor.getSession().setUseWrapMode(true);
 
-      $scope.editor.setKeyboardHandler("ace/keyboard/emacs");
+      if (navigator.appVersion.indexOf("Mac")!=-1 ||
+          navigator.appVersion.indexOf("X11")!=-1 ||
+          navigator.appVersion.indexOf("Linux")!=-1) {
+        $scope.editor.setKeyboardHandler("ace/keyboard/emacs");
+      } else if (navigator.appVersion.indexOf("Win")!=-1) {
+        // not applying emacs key binding while the binding override Ctrl-v. default behavior of paste text on windows.
+      }
 
       $scope.editor.setOptions({
           enableBasicAutocompletion: true,
