@@ -21,7 +21,7 @@ function getPort() {
   /** case of binding default port (80 / 443) */
   if (port === 'undifined' || port === 0) {
     port = 80;
-    if (location.location === 'https:') {
+    if (location.protocol === 'https:') {
       port = 443;
     }
   }
