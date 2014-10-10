@@ -215,3 +215,7 @@ kbd {
   border: 1px solid #cfcfcf;
   border-radius: 2px;
 }
+
+.home {
+  min-height: 420px;
+}
