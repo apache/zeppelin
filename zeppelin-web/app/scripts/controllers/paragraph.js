@@ -167,7 +167,7 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.config = {colWidth:12};
     }
     else if (!$scope.paragraph.config.colWidth) {
-      $scope.paragraph.config.colWidth = 12
+      $scope.paragraph.config.colWidth = 12;
     }
   };
 
@@ -202,25 +202,24 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.title = data.paragraph.title;
       $scope.paragraph.status = data.paragraph.status;
       $scope.paragraph.result = data.paragraph.result;
-      $scope.paragraph.config = data.paragraph.config;
       $scope.paragraph.settings = data.paragraph.settings;
-
-      initializeDefault();
-
-      // update column class
-      // TODO : do it in angualr way
-      var el = $('#'+$scope.paragraph.id+"_paragraphColumn");
-      var elMain = $('#'+$scope.paragraph.id+"_paragraphColumn_main");
       
-      elMain.removeClass(elMain.attr('class'))
-      elMain.addClass("paragraph-col col-md-"+$scope.paragraph.config.colWidth);
-      
-      el.removeClass(el.attr('class'))
-      el.addClass("paragraph-space box paragraph-margin");
-      
-      
+      if (!data.paragraph.config.asIframe) {
+        initializeDefault();
+        $scope.paragraph.config = data.paragraph.config;
+        
+        // update column class
+        // TODO : do it in angualr way
+        var el = $('#' + $scope.paragraph.id + "_paragraphColumn");
+        var elMain = $('#' + $scope.paragraph.id + "_paragraphColumn_main");
 
+        elMain.removeClass(elMain.attr('class'))
+        elMain.addClass("paragraph-col col-md-" + $scope.paragraph.config.colWidth);
 
+        el.removeClass(el.attr('class'))
+        el.addClass("paragraph-space box paragraph-margin");
+      }
+      
       if (newType==="TABLE") {
         $scope.loadTableData($scope.paragraph.result);
         /** User changed the chart type? */
