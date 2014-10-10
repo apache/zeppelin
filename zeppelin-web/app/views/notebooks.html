@@ -16,39 +16,54 @@ limitations under the License.
 <!-- Here the controller <NotebookCtrl> is not needed because explicitly set in the app.js (route) -->
 <div>
   <div class="noteAction" ng-show="note.id && !paragraphUrl">
-    <h3> <input type="text" class="form-control2" placeholder="{{note.name || 'Note ' + note.id}}" style="width:200px;"
-                ng-show="showEditor" ng-model="note.name" ng-enter="sendNewName()" ng-delete="showEditor = false" autofocus/>
+    <h3 class="new_h3">
+      <input type="text" class="form-control2" placeholder="{{note.name || 'Note ' + note.id}}" style="width:200px;"
+             ng-show="showEditor" ng-model="note.name" ng-enter="sendNewName()" ng-delete="showEditor = false" autofocus/>
          <p class="form-control-static2" ng-click="showEditor = true" ng-show="!showEditor">{{note.name || 'Note ' + note.id}}</p>
          <span class="labelBtn btn-group">
-        <button type="button"
-                class="btn btn-default btn-sm"
-                ng-click="runNote(note.id)"
-                ng-if="!isNoteRunning()">Run all notes <span class="noteBtnfa fa fa-play"></span>
-        </button>
-        <button type="button"
-                class="btn btn-default btn-sm"
-                ng-click="showAllEditor()">Show code <span class="noteBtnfa fa fa-expand"></span>
-        </button>
-        <button type="button"
-                class="btn btn-default btn-sm"
-                ng-click="hideAllEditor()">Hide code <span class="noteBtnfa fa fa-compress"></span>
-        </button>
-        <button type="button"
-              class="btn btn-default btn-sm"
-              ng-click="removeNote(note.id)">Remove <span class="noteBtnfa fa fa-trash"></span>
-        </button>
+            <button type="button"
+                    class="btn btn-default btn-xs"
+                    ng-click="runNote(note.id)"
+                    ng-if="!isNoteRunning()"
+                    tooltip-placement="top" tooltip="Run all the note"><i class="icon-control-play"></i>
+            </button>
+            <button type="button"
+                    class="btn btn-default btn-xs"
+                    ng-click="showAllEditor()"
+                    tooltip-placement="top" tooltip="Show the code"><i class="fa icon-size-fullscreen"></i>
+            </button>
+            <button type="button"
+                    class="btn btn-default btn-xs"
+                    ng-click="hideAllEditor()"
+                    tooltip-placement="top" tooltip="Hide the code"><i class="fa icon-size-actual"></i>
+            </button>
+            <button type="button"
+                  class="btn btn-default btn-xs"
+                  ng-click="removeNote(note.id)"
+                  tooltip-placement="top" tooltip="Remove the notebook"><i class="icon-trash"></i>
+            </button>
       </span>
+         <button class="btn btn-link navbar-right"
+            style="margin-right: 20px; margin-top: 8px;font-size: 15px; color: black; text-decoration: none;"
+            data-toggle="modal"
+            data-target="#myModal"
+            tooltip-placement="top" tooltip="List of shortcut"><i class="icon-question"></i>
+    </button>
     </h3>
+    
   </div>
+  
+  <div class="note-jump"></div>
+  
   <!-- Include the paragraphs according to the note -->
-  <div ng-repeat="currentParagraph in note.paragraphs"
+  <div id="{{currentParagraph.id}}_paragraphColumn_main"
+       ng-repeat="currentParagraph in note.paragraphs"
        ng-controller="ParagraphCtrl"
        ng-Init="init(currentParagraph)"
-       ng-include src="'views/paragraph.html'"
-       id="{{currentParagraph.id}}_paragraphColumn"
        ng-class="{
-                   'paragraph-col col-md-12': !currentParagraph.config.colWidth || paragraphUrl,
-                   'paragraph-col col-md-{{currentParagraph.config.colWidth}}': currentParagraph.config.colWidth && !paragraphUrl,
-                 }">
+                    'paragraph-col col-md-12': !currentParagraph.config.colWidth || paragraphUrl,
+                    'paragraph-col col-md-{{currentParagraph.config.colWidth}}': currentParagraph.config.colWidth && !paragraphUrl
+                  }">
+    <div id="{{currentParagraph.id}}_paragraphColumn" ng-include src="'views/paragraph.html'" ng-class="{'paragraph-space box paragraph-margin': !asIframe}"></div>
   </div>
 </div>
