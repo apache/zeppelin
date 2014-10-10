@@ -113,7 +113,6 @@
   top: 16px;
   text-align:right;
   font-size:12px;
-  
 }
 
 .paragraph .control li{
@@ -201,6 +200,13 @@
 
 .ace-tm .ace_print-margin {
   background: none !important;
+}
+
+/** Remove z-index to ace */
+.ace_text-input, .ace_gutter, .ace_layer,
+.emacs-mode, .ace_text-layer, .ace_cursor-layer,
+.ace_cursor, .ace_scrollbar {
+  z-index:auto !important;
 }
 
 .emacs-mode .ace_cursor {
