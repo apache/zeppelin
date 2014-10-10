@@ -188,7 +188,7 @@ limitations under the License.
            ng-bind-html="paragraph.result.msg">
       </div>
 
-      <img id="{{paragraph.id}}_msg"
+      <img class="img-responsive" id="{{paragraph.id}}_msg"
            ng-if="paragraph.result.type == 'IMG'"
            ng-Init="loadResultType(paragraph.result)"
            ng-src="{{getBase64ImageSrc(paragraph.result.msg)}}">

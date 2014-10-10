@@ -323,3 +323,9 @@
 .paragraph-margin {
   margin-right: 5px;
 }
+
+.tableDisplay img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
