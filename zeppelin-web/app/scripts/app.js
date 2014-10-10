@@ -18,6 +18,13 @@
 /** get the current port pf the websocket */
 function getPort() {
   var port = Number(location.port);
+  /** case of binding default port (80 / 443) */
+  if (port === 'undifined' || port === 0) {
+    port = 80;
+    if (location.location === 'https:') {
+      port = 443;
+    }
+  }
   // brunch port
   if (port === 3333 || port === 9000) {
     port = 8080; 
