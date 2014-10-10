@@ -32,6 +32,14 @@ function getPort() {
   return port+1;
 }
 
+function getWebsocketProtocol() {
+  var protocol = 'ws';
+  if (location.protocol === 'https:') {
+    protocol = 'wss';
+  }
+  return protocol;
+}
+
 /**
  * @ngdoc overview
  * @name zeppelinWebApp
@@ -57,7 +65,7 @@ angular
   .config(function ($routeProvider, WebSocketProvider) {
     WebSocketProvider
       .prefix('')
-      .uri('ws://'+location.hostname+':' + getPort());
+      .uri(getWebsocketProtocol() + '://' + location.hostname + ':' + getPort());
       
     $routeProvider
       .when('/', {
