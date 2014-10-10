@@ -110,7 +110,7 @@
   position:absolute;
   clear:both;
   right:15px;
-  top: 12px;
+  top: 16px;
   text-align:right;
   font-size:12px;
   
@@ -226,12 +226,12 @@
   position: relative;
   width:100%;
   height:4px;
-  /*z-index:100;*/
+  z-index:100;
   border-radius: 0px;
 }
 
 .paragraph .runControl .progress .progress-bar {
- /*z-index:100;*/
+  z-index:100;
 }
 
 
