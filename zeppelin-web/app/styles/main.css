@@ -208,7 +208,7 @@ kbd {
   background-image: linear-gradient(#fefefe, #e7e7e7);
   background-repeat: repeat-x;
   display: inline-block;
-  padding: 3px 5px;
+  padding: 4px 5px;
   font: 11px Consolas, "Liberation Mono", Menlo, Courier, monospace;
   line-height: 10px;
   color: #000;
