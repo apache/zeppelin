@@ -57,6 +57,7 @@ public class NoteInterpreterLoader {
 			Interpreter repl = loadedInterpreters.get(k);
 			repl.close();
 			repl.destroy();
+			loadedInterpreters.remove(k);
 		}
 	}
 	
