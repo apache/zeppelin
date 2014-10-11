@@ -47,6 +47,11 @@ public class NoteInterpreterLoader {
 	}
 	
 	public void destroyAll(){
+		if(staticMode){
+			// not destroying when it is static mode
+			return;
+		}
+		
 		Set<String> keys = loadedInterpreters.keySet();
 		for(String k : keys) {
 			Interpreter repl = loadedInterpreters.get(k);
