@@ -7,7 +7,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="/"><img style="margin-top: -7px;s" src="/assets/themes/zeppelin/img/zeppelin_logo.png" width="50" alt="I'm zeppelin"> Zeppelin</a>
+          <a class="navbar-brand" style="font-family: 'Patua One', cursive;" href="/"><img style="margin-top: -7px;s" src="/assets/themes/zeppelin/img/zeppelin_logo.png" width="50" alt="I'm zeppelin"> Zeppelin</a>
         </div>
         <nav class="navbar-collapse collapse" role="navigation">
           <ul class="nav navbar-nav">
@@ -24,3 +24,15 @@
         </nav><!--/.navbar-collapse -->
       </div>
     </div>
+{% if page.title == "Zeppelin" %}
+<div class="jumbotron">
+  <div class="container">
+    <h1 style="font-family: 'Patua One', cursive;">Zeppelin</h1>
+    <p> A web-based notebook that enables interactive data analytics. <br />
+      You can make beautiful data-driven, interactive and collaborative documents with SQL, Scala and more.
+    </p>
+    <p><a href="http://youtu.be/_PQbVH_aO5E" target="_zeppelinVideo" class="btn btn-primary btn-lg" role="button">Watch the video</a> 
+       <a href="./download.html" class="btn btn-primary btn-lg" role="button">Get Zeppelin</a></p>
+  </div>
+</div>
+{% endif %}

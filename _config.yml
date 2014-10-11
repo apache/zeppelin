@@ -2,9 +2,10 @@
 # For more see: http://jekyllrb.com/docs/permalinks/
 permalink: /:categories/:year/:month/:day/:title 
 
-exclude: [".rvmrc", ".rbenv-version", "README.md", "Rakefile", "changelog.md", "vendor"]
+exclude: [".rvmrc", ".rbenv-version", "README.md", "Rakefile", "changelog.md", "vendor", "node_modules", "scss"]
 pygments: true
 markdown: redcarpet
+encoding: utf-8
 
 # Themes are encouraged to use these universal variables 
 # so be sure to set them if your theme uses them.
@@ -27,7 +28,6 @@ author :
 # Finally if you are pushing to a GitHub project page, include the project name at the end.
 #
 production_url : http://zeppelin-project.org
-
 # All Jekyll-Bootstrap specific configurations are namespaced into this hash
 #
 JB :

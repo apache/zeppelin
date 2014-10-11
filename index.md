@@ -5,90 +5,97 @@ tagline: Less Development, More analysis!
 ---
 {% include JB/setup %}
 
-### Zeppelin
+<div class="row">
+ <div class="col-md-5">
+<h2>Multi-purpose Notebook</h2>
 
-Zeppelin is web-based notebook that enables interactive data analytics.
-You can make beautiful data-driven, interactive, collaboratable document with SQL, code, markdown, and so on.
+<p style="font-size:16px; color:#555555;font-style:italic;margin-bottom: 15px;">The Notebook is the place for all your needs</p>
+<ul style="list-style-type: none;padding-left:10px;" >
+  <li style="font-size:20px; margin: 5px;"><span class="glyphicon glyphicon-import"></span> Data Ingestion</li>
+  <li style="font-size:20px; margin: 5px;"><span class="glyphicon glyphicon-eye-open"></span> Data Discovery</li>
+  <li style="font-size:20px; margin: 5px;"><span class="glyphicon glyphicon-wrench"></span> Data Analytics</li>
+  <li style="font-size:20px; margin: 5px;"><span class="glyphicon glyphicon-dashboard"></span> Data Visualization & Collaboration</li>
+</ul>
 
-Watch [Video](http://youtu.be/_PQbVH_aO5E) and 
-[Get Zeppelin](./docs/install/install.html).
+ </div>
+ <div class="col-md-7"><img class="img-responsive" style="border: 1px solid #ecf0f1;" height="auto" src="assets/themes/zeppelin/img/notebook.png" /></div>
+</div>
 
-<br />
-### Beautiful notebook
-Notebook is where you do your analysis, collaborate, publish.
-
-It features inline code editor, configurable layout and many more.
-
-<img src="assets/themes/zeppelin/img/screenshots/notebook.png" />
-
-Checkout more [screenshots](./screenshots.html).
 
 <br />
 ### Multiple language backend
 
-Zeppelin interpreter concept allow any language/data-processing-backend can be plugged into the Zeppelin.
-Currently Scala(with Apache Spark), SparkSQL, Markdown, Shell are included as Zeppelin interpreter.
+Zeppelin interpreter concept allows any language/data-processing-backend to be plugged into Zeppelin.
+Current languages included in the Zeppelin interpreter are: Scala(with Apache Spark), SparkSQL, Markdown and Shell.
 
 <img src="assets/themes/zeppelin/img/screenshots/multiple_language_backend.png" />
 
-Adding new language-backend is really simple. checkout [writing zeppelin interpreter](./docs/development/writingzeppelininterpreter.html).
+Adding new language-backend is really simple. Learn [how to write a zeppelin interpreter](./docs/development/writingzeppelininterpreter.html).
 
 
 <br />
 ### Apache Spark integration
 
-Zeppelin provies built-in Apache Spark integration. You don't need build separate module/plugins/libraries for it.
+Zeppelin provides built-in Apache Spark integration. You don't need to build a separate module, plugin or library for it.
 
 <img src="assets/themes/zeppelin/img/spark_logo.jpg" width="80px" />
 
-Zeppelin's Spark integration provies
+Zeppelin's Spark integration provides
 
 - Automatic SparkContext and SQLContext injection
-- Runtime dependency jar loading from local filesystem or maven repository. Learn more about [dependency loader](./docs/zeppelincontext.html).
-- Displaying job progress, Caceling job
-- Code auto completion, using Ctrl+. (experimental)
+- Runtime jar dependency loading from local filesystem or maven repository. Learn more about [dependency loader](./docs/zeppelincontext.html).
+- Canceling job and displaying its progress
 
 <br />
 ### Data visualization
 
-Some basic charts are built-in. Not only SparkSQL's query result but also any output from any language backend can be recognized and visualized.
+Some basic charts are already included in Zeppelin. Visualizations are not limited to SparkSQL's query, any output from any language backend can be recognized and visualized.
 
-<img src="./assets/themes/zeppelin/img/screenshots/visualization.png" />
+<div class="row">
+  <div class="col-md-6">
+    <img class="img-responsive" src="./assets/themes/zeppelin/img/graph1.png" />
+  </div>
+  <div class="col-md-6">
+    <img class="img-responsive" src="./assets/themes/zeppelin/img/graph2.png" />
+  </div>
+</div>
 
 Learn more about Zeppelin's [Display system](./docs/display.html).
 
 
 <br />
-### Dynamic form creation
+### Dynamic forms
 
-Zeppelin dynamically creates some input forms in notebook.
+Zeppelin can dynamically create some input forms into your notebook.
 
 <img src="./assets/themes/zeppelin/img/screenshots/form_input.png" />
 
-Learn more about [Dynamic Form](./docs/dynamicform.html).
+Learn more about [Dynamic Forms](./docs/dynamicform.html).
 
 
 <br />
 ### Collaboration
 
-Notebook URL can be shared among collaborators. Then Zeppelin broadcasts any changes in realtime, like collaboration in Google docs.
+Notebook URL can be shared among collaborators. Zeppelin can then broadcast any changes in realtime, just like the collaboration in Google docs.
 
 <img src="./assets/themes/zeppelin/img/screenshots/collaboration.png" />
 
 <br />
 ### Publish
 
-Zeppelin provides a URL that displays single result, that does not include Zeppelin's menu, buttons. So you can eaily embed it using iframe into your website.
-
-<img src="./assets/themes/zeppelin/img/screenshots/publish.png" />
+<p>Zeppelin provides an URL to display the result only, that page does not include Zeppelin's menu and buttons.
+This way, you can easily embed it as an iframe inside of your website.</p>
+<div style="margin:auto;text-align:center;">
+  <img src="./assets/themes/zeppelin/img/screenshots/publish.png" />
+</div>
 
 <br />
 ### 100% Opensource
 
-Zeppelin is Apache2 Licensed software. Checkout [source repository](https://github.com/NFLabs/zeppelin) and [How to contribute](./docs/development/howtocontribute.html)
+Zeppelin is Apache2 Licensed software. Checkout the [source repository](https://github.com/NFLabs/zeppelin) and [How to contribute](./docs/development/howtocontribute.html)
 
-Zeppelin has very active development community.
-Join [Mailing list](https://groups.google.com/forum/#!forum/zeppelin-developers) and checkout 
+Zeppelin has a very active development community.
+Join the [Mailing list](https://groups.google.com/forum/#!forum/zeppelin-developers) and report issues on our 
 [Issue tracker](https://zeppelin-project.atlassian.net/browse/ZEPPELIN).
 
 
