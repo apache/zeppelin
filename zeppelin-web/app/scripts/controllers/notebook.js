@@ -85,7 +85,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $scope.paragraphUrl = $routeParams.paragraphId;
     $scope.asIframe = $routeParams.asIframe;
     if ($scope.paragraphUrl) {
-      note = cleanParagraphExcept($scope.paragraphUrl, note)
+      note = cleanParagraphExcept($scope.paragraphUrl, note);
       $rootScope.$emit('setIframe', $scope.asIframe);
     }
     if ($scope.note === null) {

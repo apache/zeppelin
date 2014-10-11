@@ -172,12 +172,13 @@ angular.module('zeppelinWebApp')
   };
 
   $rootScope.$on('updateParagraph', function(event, data) {
+    
     if (data.paragraph.id === $scope.paragraph.id) {
       var oldType = $scope.getResultType();
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
-      //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
+      console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
 
       if ($scope.paragraph.text !== data.paragraph.text) {
         if ($scope.dirtyText) {         // check if editor has local update
@@ -213,8 +214,12 @@ angular.module('zeppelinWebApp')
         var el = $('#' + $scope.paragraph.id + "_paragraphColumn");
         var elMain = $('#' + $scope.paragraph.id + "_paragraphColumn_main");
 
-        elMain.removeClass(elMain.attr('class'))
-        elMain.addClass("paragraph-col col-md-" + $scope.paragraph.config.colWidth);
+        elMain.removeClass(elMain.attr('class'));
+        var col_width = 12;
+        if ($scope.paragraph.config.colWidth) {
+          col_width = $scope.paragraph.config.colWidth;
+        }
+        elMain.addClass("paragraph-col col-md-" + col_width);
 
         el.removeClass(el.attr('class'))
         el.addClass("paragraph-space box paragraph-margin");
@@ -380,7 +385,6 @@ angular.module('zeppelinWebApp')
       setEditorHeight(_editor.container.id, hight);
 
       $scope.editor.getSession().setUseWrapMode(true);
-
       if (navigator.appVersion.indexOf("Mac")!=-1 ||
           navigator.appVersion.indexOf("X11")!=-1 ||
           navigator.appVersion.indexOf("Linux")!=-1) {
