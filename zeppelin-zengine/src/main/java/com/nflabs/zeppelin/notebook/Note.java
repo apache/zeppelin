@@ -5,8 +5,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
@@ -36,7 +38,9 @@ public class Note implements Serializable, JobListener {
 	
 	private transient NoteInterpreterLoader replLoader;
 	private transient ZeppelinConfiguration conf;
-	
+
+    private Map<String, Object> config = new HashMap<String, Object>(); // note config like looknfeel, etc.
+
 	public Note(){		
 	}
 	
@@ -271,6 +275,14 @@ public class Note implements Serializable, JobListener {
 		}
 		
 		return note;
+	}
+
+	public Map<String, Object> getConfig() {
+		return config;
+	}
+
+	public void setConfig(Map<String, Object> config) {
+		this.config = config;
 	}
 	
 	@Override
