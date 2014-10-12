@@ -13,8 +13,6 @@
  * limitations under the License.
  */
 
-@import 'printMode.css' print;
-
 .paragraph-col {
   margin: 0 0 0 0px;
   padding: 0 0 0 0px;

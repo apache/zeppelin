@@ -42,13 +42,20 @@ limitations under the License.
                   ng-click="removeNote(note.id)"
                   tooltip-placement="top" tooltip="Remove the notebook"><i class="icon-trash"></i>
             </button>
+
       </span>
          <button class="btn btn-link navbar-right"
-            style="margin-right: 20px; margin-top: 8px;font-size: 15px; color: black; text-decoration: none;"
+            style="margin-right: 20px; margin-top: 2px;font-size: 15px; color: black; text-decoration: none;"
             data-toggle="modal"
             data-target="#myModal"
             tooltip-placement="top" tooltip="List of shortcut"><i class="icon-question"></i>
-    </button>
+        </button>
+        <form class="navbar-right" style="display:inline">
+            <select ng-model="note.config.looknfeel"
+            class="selectpicker"
+            ng-change="setLookAndFeel()"
+            ng-options="col for col in looknfeelOption"></select>
+        </form>
     </h3>
     
   </div>

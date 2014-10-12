@@ -28,6 +28,7 @@ angular.module('zeppelinWebApp')
   
   $scope.WebSocketWaitingList = [];
   $scope.connected = false;
+  $scope.looknfeel = "default";
 
   var init = function() {
     $scope.asIframe = (($window.location.href.indexOf("asIframe") > -1) ? true : false);
@@ -104,6 +105,13 @@ angular.module('zeppelinWebApp')
   $rootScope.$on('setIframe', function(event, data) {
     if (!event.defaultPrevented) {
       $scope.asIframe = data;
+      event.preventDefault();
+    }
+  });
+
+  $rootScope.$on('setLookAndFeel', function(event, data) {
+    if (!event.defaultPrevented) {
+      $scope.looknfeel = data;
       event.preventDefault();
     }
   });
