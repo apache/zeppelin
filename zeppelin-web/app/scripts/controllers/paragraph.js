@@ -568,13 +568,13 @@ angular.module('zeppelinWebApp')
       var rows = [];
       var array = [];
       var textRows = result.msg.split('\n');
-      result.msg = "";
+      result.comment = "";
       var comment = false;
 
       for (var i = 0; i < textRows.length; i++) {
         var textRow = textRows[i];
         if (comment) {
-          result.msg += textRow;
+          result.comment += textRow;
           continue;
         }
 
