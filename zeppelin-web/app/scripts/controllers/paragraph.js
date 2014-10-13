@@ -137,9 +137,7 @@ angular.module('zeppelinWebApp')
       $scope.setGraphMode($scope.getGraphMode(), false, false);
     }
 
-    $scope.colWidthOption = [
-        2,3,4,5,6,7,8,9,10,11,12
-    ];
+    $scope.colWidthOption = [ 4, 6, 8, 12 ];
 
     $scope.showTitleEditor = false;
 
@@ -169,11 +167,12 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.config = {colWidth:12};
     }
     else if (!$scope.paragraph.config.colWidth) {
-      $scope.paragraph.config.colWidth = 12
+      $scope.paragraph.config.colWidth = 12;
     }
   };
 
   $rootScope.$on('updateParagraph', function(event, data) {
+    
     if (data.paragraph.id === $scope.paragraph.id) {
       var oldType = $scope.getResultType();
       var newType = $scope.getResultType(data.paragraph);
@@ -204,18 +203,28 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.title = data.paragraph.title;
       $scope.paragraph.status = data.paragraph.status;
       $scope.paragraph.result = data.paragraph.result;
-      $scope.paragraph.config = data.paragraph.config;
       $scope.paragraph.settings = data.paragraph.settings;
+      
+      if (!data.paragraph.config.asIframe) {
+        initializeDefault();
+        $scope.paragraph.config = data.paragraph.config;
+        
+        // update column class
+        // TODO : do it in angualr way
+        var el = $('#' + $scope.paragraph.id + "_paragraphColumn");
+        var elMain = $('#' + $scope.paragraph.id + "_paragraphColumn_main");
 
-      initializeDefault();
+        elMain.removeClass(elMain.attr('class'));
+        var col_width = 12;
+        if ($scope.paragraph.config.colWidth) {
+          col_width = $scope.paragraph.config.colWidth;
+        }
+        elMain.addClass("paragraph-col col-md-" + col_width);
 
-      // update column class
-      // TODO : do it in angualr way
-      var el = $('#'+$scope.paragraph.id+"_paragraphColumn");
-      el.removeClass(el.attr('class'))
-      el.addClass("paragraph-col col-md-"+$scope.paragraph.config.colWidth);
-
-
+        el.removeClass(el.attr('class'))
+        el.addClass("paragraph-space box paragraph-margin");
+      }
+      
       if (newType==="TABLE") {
         $scope.loadTableData($scope.paragraph.result);
         /** User changed the chart type? */
@@ -225,27 +234,8 @@ angular.module('zeppelinWebApp')
           $scope.setGraphMode(newGraphMode, false, true);
         }
       }
-
-      // show control if necessary
-      if ($scope.isRunning()) {
-        $('#'+$scope.paragraph.id+"_control").show();
-      } else {
-        $('#'+$scope.paragraph.id+"_control").hide();
-      }
     }
   });
-
-  $scope.onMouseover = function(){
-    $('#'+$scope.paragraph.id+"_control").show();
-  };
-
-  $scope.onMouseleave = function(){
-    if($scope.isRunning()){
-      $('#'+$scope.paragraph.id+"_control").show();
-    } else {
-      $('#'+$scope.paragraph.id+"_control").hide();
-    }
-  };
 
   $scope.isRunning = function(){
     if($scope.paragraph.status=='RUNNING' || $scope.paragraph.status=='PENDING') {
@@ -395,8 +385,13 @@ angular.module('zeppelinWebApp')
       setEditorHeight(_editor.container.id, hight);
 
       $scope.editor.getSession().setUseWrapMode(true);
-
-      $scope.editor.setKeyboardHandler("ace/keyboard/emacs");
+      if (navigator.appVersion.indexOf("Mac")!=-1 ||
+          navigator.appVersion.indexOf("X11")!=-1 ||
+          navigator.appVersion.indexOf("Linux")!=-1) {
+        $scope.editor.setKeyboardHandler("ace/keyboard/emacs");
+      } else if (navigator.appVersion.indexOf("Win")!=-1) {
+        // not applying emacs key binding while the binding override Ctrl-v. default behavior of paste text on windows.
+      }
 
       $scope.editor.setOptions({
           enableBasicAutocompletion: true,
@@ -856,7 +851,7 @@ angular.module('zeppelinWebApp')
 
   $scope.goToSingleParagraph = function () {
     var noteId = $route.current.pathParams.noteId;
-    var redirectToUrl = 'http://' + location.host + '/#/notebook/' + noteId + "/paragraph/" + $scope.paragraph.id+"?asIframe";
+    var redirectToUrl = location.protocol + '//' + location.host + '/#/notebook/' + noteId + "/paragraph/" + $scope.paragraph.id+"?asIframe";
     $window.open(redirectToUrl);
   };
 });

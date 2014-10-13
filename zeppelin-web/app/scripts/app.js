@@ -18,11 +18,26 @@
 /** get the current port pf the websocket */
 function getPort() {
   var port = Number(location.port);
+  /** case of binding default port (80 / 443) */
+  if (port === 'undifined' || port === 0) {
+    port = 80;
+    if (location.protocol === 'https:') {
+      port = 443;
+    }
+  }
   // brunch port
   if (port === 3333 || port === 9000) {
     port = 8080; 
   }
   return port+1;
+}
+
+function getWebsocketProtocol() {
+  var protocol = 'ws';
+  if (location.protocol === 'https:') {
+    protocol = 'wss';
+  }
+  return protocol;
 }
 
 /**
@@ -50,7 +65,7 @@ angular
   .config(function ($routeProvider, WebSocketProvider) {
     WebSocketProvider
       .prefix('')
-      .uri('ws://'+location.hostname+':' + getPort());
+      .uri(getWebsocketProtocol() + '://' + location.hostname + ':' + getPort());
       
     $routeProvider
       .when('/', {

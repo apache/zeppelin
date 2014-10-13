@@ -48,4 +48,13 @@ public class SparkSqlInterpreterTest {
 		assertEquals(InterpreterResult.Code.ERROR, sql.interpret("select case when name==\"aa\" then name else name end from people").code());
 	}
 
+	@Test
+	public void testStruct(){
+		repl.interpret("case class Person(name:String, age:Int)");
+		repl.interpret("case class People(group:String, person:Person)");
+		repl.interpret("val gr = sc.parallelize(Seq(People(\"g1\", Person(\"moon\",33)), People(\"g2\", Person(\"sun\",11))))");
+		repl.interpret("gr.registerAsTable(\"gr\")");
+		InterpreterResult ret = sql.interpret("select * from gr");
+		System.err.println("RET="+ret.message());
+	}
 }

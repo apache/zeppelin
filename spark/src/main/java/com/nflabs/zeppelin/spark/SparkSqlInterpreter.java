@@ -19,9 +19,7 @@ import org.apache.spark.ui.jobs.JobProgressListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import scala.Option;
 import scala.Tuple2;
-import scala.collection.Iterable;
 import scala.collection.Iterator;
 import scala.collection.JavaConversions;
 import scala.collection.JavaConverters;
@@ -31,7 +29,6 @@ import scala.collection.mutable.HashSet;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
-import com.nflabs.zeppelin.interpreter.Interpreter.SchedulingMode;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
@@ -101,31 +98,11 @@ public class SparkSqlInterpreter extends Interpreter {
 			
 		// ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType, FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType, NullType, NumericType, ShortType, StringType, StructType
 		
-		int numRows=0;
 		for(int r = 0; r<maxResult && r<rows.length; r++){			
 			Row row = rows[r];
 			
 			for(int i=0; i<columns.size(); i++){
-				String type = columns.get(i).dataType().toString();
-				if ("BooleanType".equals(type)) {
-					msg += row.getBoolean(i);
-				} else if("DecimalType".equals(type)) {
-					msg += row.getInt(i);
-				} else if("DoubleType".equals(type)) {
-					msg += row.getDouble(i);
-				} else if("FloatType".equals(type)) {
-					msg += row.getFloat(i);
-				} else if("LongType".equals(type)) {
-					msg += row.getLong(i);
-				} else if("IntegerType".equals(type)) {
-					msg += row.getInt(i);
-				} else if("ShortType".equals(type)) {
-					msg += row.getShort(i);
-				} else if("StringType".equals(type)) {
-					msg += row.getString(i);
-				} else {
-					msg += row.getString(i);
-				}
+				msg += row.apply(i).toString();
 				if(i!=columns.size()-1){
 					msg += "\t";
 				}
@@ -140,7 +117,6 @@ public class SparkSqlInterpreter extends Interpreter {
 		sc.clearJobGroup();
 		return rett;
 	}
-	
 
 	@Override
 	public void cancel() {

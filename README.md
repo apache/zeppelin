@@ -11,6 +11,9 @@
 To know more about Zeppelin, visit our web site http://zeppelin-project.org
 
 ###Build
+
+To build Zeppelin, Java 1.7 and none-root account is required. (Tested on OSX, CentOS 6)
+
       mvn clean package
 
 with specific version
@@ -27,7 +30,8 @@ Configure following configuration files
 ###Run
     ./bin/zeppelin-daemon.sh start
 
-    browse localhost:8080 in your browser.
+    browse localhost:8080 in your browser. 8081 port should be accessible for websocket connection.
+
 
 For configuration details check __./conf__ subdirectory.
 

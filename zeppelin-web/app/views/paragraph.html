@@ -14,98 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div id="{{paragraph.id}}_container"
-     ng-class="{'paragraph outlineOnFocus': !asIframe, 'paragraphAsIframe': asIframe}"
-     ng-mouseover="onMouseover()"
-     ng-mouseleave="onMouseleave()">
-  <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
-
-    <span>
-      {{paragraph.status}}
-    </span>
-
-    <span ng-if="paragraph.status=='RUNNING'">
-      {{getProgress()}}%
-    </span>
-
-    <!-- Run / Cancel button -->
-    <span class="fa fa-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run. Shift+Enter for keyboard shortcut"
-          ng-click="runParagraph(getEditorValue())"
-          ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING'"></span>
-    <span class="fa fa-stop" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top" tooltip="Cancel"
-          ng-click="cancelParagraph()"
-          ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
-
-    <span class="dropdown navbar-right">
-      <span class="fa fa-cog" style="cursor:pointer" 
-            data-toggle="dropdown"
-            type="button"
-            >
-      </span>
-      <ul class="dropdown-menu" role="menu" style="width:200px;">
-        <li>
-          <a class="fa fa-arrows-h dropdown"> Width
-          <form style="display:inline">
-            <select ng-model="paragraph.config.colWidth"
-              class="selectpicker"
-              ng-change="changeColWidth()"
-              ng-options="col for col in colWidthOption"></select>
-          </form>
-          </a>
-        </li>
-        <li>
-          <a class="fa fa-arrow-up" style="cursor:pointer"
-          ng-click="moveUp()"> Move Up</a>
-        </li>
-        <li>
-          <a class="fa fa-arrow-down" style="cursor:pointer"
-          ng-click="moveDown()"> Move Down</a>
-        </li>
-
-        <li>
-          <!-- paragraph handler -->
-          <a class="fa fa-font" style="cursor:pointer"
-                ng-click="hideTitle()"
-                ng-show="paragraph.config.title"> Hide title</a>
-          <a class="fa fa-font" style="cursor:pointer"
-                ng-click="showTitle()"
-                ng-show="!paragraph.config.title"> Show title</a>
-        </li>
-
-        <li>
-          <!-- Editor handler -->
-          <a style="cursor:pointer"
-                class="fa fa-code"
-                ng-click="closeEditor()"
-                ng-show="!paragraph.config.editorHide && !paragraph.config.hide"> Hide code editor</a>
-          <a style="cursor:pointer"
-                class="fa fa-code"
-                ng-click="openEditor()"
-                ng-show="paragraph.config.editorHide && !paragraph.config.hide"> Show code editor</a>
-        </li>
-
-        <li>
-          <!-- paragraph handler -->
-          <a class="fa fa-compress" style="cursor:pointer"
-                ng-click="closeParagraph()"
-                ng-show="!paragraph.config.hide"> Hide paragraph</a>
-          <a class="fa fa-expand" style="cursor:pointer"
-                ng-click="openParagraph()"
-                ng-show="paragraph.config.hide"> Show paragraph</a>
-        </li>
-
-        <li><a class="fa fa-link" style="cursor:pointer"
-          ng-click="goToSingleParagraph()"
-          ng-show="!asIframe"> Link this paragraph</a>
-        </li>
-        <li>
-          <!-- remove paragraph -->
-          <a class="fa fa-times" style="cursor:pointer"
-            ng-click="removeParagraph()"> Remove</a>
-        </li>
-      </ul>
-    </span>
-  </div>
-
+     ng-class="{'paragraph outlineOnFocus': !asIframe, 'paragraphAsIframe': asIframe}">
+    
   <div ng-show="paragraph.config.title"
        id="{{paragraph.id}}_title"
        class="title">
@@ -269,7 +179,7 @@ limitations under the License.
            class="text"
            ng-if="paragraph.result.type == 'TEXT' || (paragraph.result.type == 'TABLE' && paragraph.result.msg)"
            ng-Init="loadResultType(paragraph.result)"
-           ng-bind-html="paragraph.result.msg">
+           ng-bind="paragraph.result.msg">
       </div>
 
       <div id="{{paragraph.id}}_msg"
@@ -284,5 +194,92 @@ limitations under the License.
            ng-src="{{getBase64ImageSrc(paragraph.result.msg)}}">
       </img>
     </div>
+  </div>
+  <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
+
+    <span>
+      {{paragraph.status}}
+    </span>
+
+    <span ng-if="paragraph.status=='RUNNING'">
+      {{getProgress()}}%
+    </span>
+
+    <!-- Run / Cancel button -->
+    <span class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph"
+          ng-click="runParagraph(getEditorValue())"
+          ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING'"></span>
+    <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top" tooltip="Cancel"
+          ng-click="cancelParagraph()"
+          ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
+
+    <span class="dropdown navbar-right">
+      <span class="icon-settings" style="cursor:pointer" 
+            data-toggle="dropdown"
+            type="button">
+      </span>
+      <ul class="dropdown-menu" role="menu" style="width:200px;">
+        <li>
+          <a class="fa fa-arrows-h dropdown"> Width
+          <form style="display:inline">
+            <select ng-model="paragraph.config.colWidth"
+              class="selectpicker"
+              ng-change="changeColWidth()"
+              ng-options="col for col in colWidthOption"></select>
+          </form>
+          </a>
+        </li>
+        <li>
+          <a class="icon-arrow-up" style="cursor:pointer"
+          ng-click="moveUp()"> Move Up</a>
+        </li>
+        <li>
+          <a class="icon-arrow-down" style="cursor:pointer"
+          ng-click="moveDown()"> Move Down</a>
+        </li>
+
+        <li>
+          <!-- paragraph handler -->
+          <a class="fa fa-font" style="cursor:pointer"
+                ng-click="hideTitle()"
+                ng-show="paragraph.config.title"> Hide title</a>
+          <a class="fa fa-font" style="cursor:pointer"
+                ng-click="showTitle()"
+                ng-show="!paragraph.config.title"> Show title</a>
+        </li>
+
+        <li>
+          <!-- Editor handler -->
+          <a style="cursor:pointer"
+                class="fa fa-code"
+                ng-click="closeEditor()"
+                ng-show="!paragraph.config.editorHide && !paragraph.config.hide"> Hide code editor</a>
+          <a style="cursor:pointer"
+                class="fa fa-code"
+                ng-click="openEditor()"
+                ng-show="paragraph.config.editorHide && !paragraph.config.hide"> Show code editor</a>
+        </li>
+
+        <li>
+          <!-- paragraph handler -->
+          <a class="fa fa-compress" style="cursor:pointer"
+                ng-click="closeParagraph()"
+                ng-show="!paragraph.config.hide"> Hide paragraph</a>
+          <a class="fa fa-expand" style="cursor:pointer"
+                ng-click="openParagraph()"
+                ng-show="paragraph.config.hide"> Show paragraph</a>
+        </li>
+
+        <li><a class="icon-share-alt" style="cursor:pointer"
+          ng-click="goToSingleParagraph()"
+          ng-show="!asIframe"> Link this paragraph</a>
+        </li>
+        <li>
+          <!-- remove paragraph -->
+          <a class="fa fa-times" style="cursor:pointer"
+            ng-click="removeParagraph()"> Remove</a>
+        </li>
+      </ul>
+    </span>
   </div>
 </div>

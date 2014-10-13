@@ -65,4 +65,12 @@ public class SparkInterpreterTest {
 		repl2.getSparkContext().stop();
 	}
 
+	@Test
+	public void testReferencingUndefinedVal(){
+		InterpreterResult result = repl.interpret("def category(min: Int) = {" +
+				       "    if (0 <= value) \"error\"" +
+                       "}");
+		assertEquals(Code.ERROR, result.code());
+		System.out.println("msg="+result.message());
+	}
 }
