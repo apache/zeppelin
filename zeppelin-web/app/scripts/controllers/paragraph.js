@@ -137,7 +137,7 @@ angular.module('zeppelinWebApp')
       $scope.setGraphMode($scope.getGraphMode(), false, false);
     }
 
-    $scope.colWidthOption = [ 4, 6, 8, 12 ];
+    $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
 
     $scope.showTitleEditor = false;
 
