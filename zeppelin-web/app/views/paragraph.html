@@ -177,7 +177,14 @@ limitations under the License.
 
       <div id="{{paragraph.id}}_msg"
            class="text"
-           ng-if="paragraph.result.type == 'TEXT' || (paragraph.result.type == 'TABLE' && paragraph.result.msg)"
+           ng-if="paragraph.result.type == 'TABLE'"
+           ng-Init="loadResultType(paragraph.result)"
+           ng-bind-html="paragraph.result.comment">
+      </div>
+
+      <div id="{{paragraph.id}}_msg"
+           class="text"
+           ng-if="paragraph.result.type == 'TEXT'"
            ng-Init="loadResultType(paragraph.result)"
            ng-bind="paragraph.result.msg">
       </div>

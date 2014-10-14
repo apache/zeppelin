@@ -385,11 +385,11 @@ angular.module('zeppelinWebApp')
       setEditorHeight(_editor.container.id, hight);
 
       $scope.editor.getSession().setUseWrapMode(true);
-      if (navigator.appVersion.indexOf("Mac")!=-1 ||
-          navigator.appVersion.indexOf("X11")!=-1 ||
-          navigator.appVersion.indexOf("Linux")!=-1) {
+      if (navigator.appVersion.indexOf("Mac")!=-1 ) {
         $scope.editor.setKeyboardHandler("ace/keyboard/emacs");
-      } else if (navigator.appVersion.indexOf("Win")!=-1) {
+      } else if (navigator.appVersion.indexOf("Win")!=-1 ||
+                 navigator.appVersion.indexOf("X11")!=-1 ||
+                 navigator.appVersion.indexOf("Linux")!=-1) {
         // not applying emacs key binding while the binding override Ctrl-v. default behavior of paste text on windows.
       }
 
@@ -568,13 +568,13 @@ angular.module('zeppelinWebApp')
       var rows = [];
       var array = [];
       var textRows = result.msg.split('\n');
-      result.msg = "";
+      result.comment = "";
       var comment = false;
 
       for (var i = 0; i < textRows.length; i++) {
         var textRow = textRows[i];
         if (comment) {
-          result.msg += textRow;
+          result.comment += textRow;
           continue;
         }
 
