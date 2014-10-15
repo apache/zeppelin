@@ -13,10 +13,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Arrays;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkEnv;
+import org.apache.spark.repl.SparkCommandLine;
 import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.repl.SparkIMain;
 import org.apache.spark.repl.SparkJLineCompletion;
@@ -37,7 +39,6 @@ import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 
-
 import scala.Console;
 import scala.None;
 import scala.Some;
@@ -52,6 +53,7 @@ import scala.tools.nsc.interpreter.Completion.Candidates;
 import scala.tools.nsc.interpreter.Completion.ScalaCompleter;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
+import scala.collection.immutable.*;
 
 public class SparkInterpreter extends Interpreter {
 	Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
@@ -176,7 +178,6 @@ public class SparkInterpreter extends Interpreter {
 		if(propMaster!=null) return propMaster;
 		return "local[*]";
 	}
-	
 
 	@Override
 	public void open(){
@@ -205,8 +206,9 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 
 
 		 */
-		
-		Settings settings = new Settings();
+        SparkCommandLine command = new SparkCommandLine(scala.collection.JavaConversions.asScalaBuffer((List<String>)getProperty().get("args")).toList());
+		Settings settings = command.settings();
+		//Settings settings = new Settings();
 
 		// set classpath for scala compiler
 		PathSetting pathSettings = settings.classpath();
@@ -257,7 +259,9 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		
 		dep = getDependencyResolver();
 		z = new ZeppelinContext(sc, sqlc, dep);
-		
+
+        this.interpreter.loadFiles(settings);
+
 		intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
 		binder = (Map<String, Object>) getValue("_binder");
 		binder.put("sc", sc);
