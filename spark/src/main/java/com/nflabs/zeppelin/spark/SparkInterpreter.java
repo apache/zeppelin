@@ -204,9 +204,11 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 
 
 		 */
-        SparkCommandLine command = new SparkCommandLine(scala.collection.JavaConversions.asScalaBuffer((List<String>)getProperty().get("args")).toList());
-		Settings settings = command.settings();
-		//Settings settings = new Settings();
+        Settings settings = new Settings();
+        if(getProperty().containsKey("args")) {
+            SparkCommandLine command = new SparkCommandLine(scala.collection.JavaConversions.asScalaBuffer((List<String>) getProperty().get("args")).toList());
+            settings = command.settings();
+        }
 
 		// set classpath for scala compiler
 		PathSetting pathSettings = settings.classpath();
