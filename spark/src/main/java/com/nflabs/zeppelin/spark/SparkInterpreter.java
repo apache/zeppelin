@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Arrays;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -53,7 +52,6 @@ import scala.tools.nsc.interpreter.Completion.Candidates;
 import scala.tools.nsc.interpreter.Completion.ScalaCompleter;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
-import scala.collection.immutable.*;
 
 public class SparkInterpreter extends Interpreter {
 	Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
