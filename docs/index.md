@@ -10,6 +10,10 @@ group: nav-right
 
 * [Install](./install/install.html)
 
+### Tutorial
+
+* [Tutorial](./tutorial/tutorial.html)
+
 ### Manual
 
 * [Zeppelin Context](./zeppelincontext.html)
