@@ -173,7 +173,19 @@ angular.module('zeppelinWebApp')
 
   $rootScope.$on('updateParagraph', function(event, data) {
     
-    if (data.paragraph.id === $scope.paragraph.id) {
+    if (data.paragraph.id === $scope.paragraph.id &&
+         (
+             data.paragraph.dateCreated != $scope.paragraph.dateCreated ||
+             data.paragraph.dateFinished != $scope.paragraph.dateFinished ||
+             data.paragraph.dateStarted != $scope.paragraph.dateStarted ||
+             data.paragraph.status != $scope.paragraph.status ||
+             data.paragraph.jobName != $scope.paragraph.jobName ||
+             data.paragraph.title != $scope.paragraph.title ||
+             data.paragraph.errorMessage != $scope.paragraph.errorMessage ||
+             !angular.equals(data.paragraph.settings, $scope.paragraph.settings) ||
+             !angular.equals(data.paragraph.config, $scope.paragraph.config)
+         )
+       ) {
       var oldType = $scope.getResultType();
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
@@ -192,6 +204,7 @@ angular.module('zeppelinWebApp')
           $scope.paragraph.text = data.paragraph.text;
         }
       }
+
 
       /** push the rest */
       $scope.paragraph.aborted = data.paragraph.aborted;
@@ -854,4 +867,5 @@ angular.module('zeppelinWebApp')
     var redirectToUrl = location.protocol + '//' + location.host + '/#/notebook/' + noteId + "/paragraph/" + $scope.paragraph.id+"?asIframe";
     $window.open(redirectToUrl);
   };
+
 });
