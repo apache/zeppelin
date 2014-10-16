@@ -165,14 +165,16 @@ angular.module('zeppelinWebApp')
   var initializeDefault = function(){
     if (!$scope.paragraph.config) {
       $scope.paragraph.config = {colWidth:12};
-    }
-    else if (!$scope.paragraph.config.colWidth) {
+    } else if (!$scope.paragraph.config.colWidth) {
       $scope.paragraph.config.colWidth = 12;
+    }
+
+    if (!$scope.lastData) {
+      $scope.lastData = {};
     }
   };
 
   $rootScope.$on('updateParagraph', function(event, data) {
-    
     if (data.paragraph.id === $scope.paragraph.id &&
          (
              data.paragraph.dateCreated != $scope.paragraph.dateCreated ||
@@ -182,10 +184,15 @@ angular.module('zeppelinWebApp')
              data.paragraph.jobName != $scope.paragraph.jobName ||
              data.paragraph.title != $scope.paragraph.title ||
              data.paragraph.errorMessage != $scope.paragraph.errorMessage ||
-             !angular.equals(data.paragraph.settings, $scope.paragraph.settings) ||
-             !angular.equals(data.paragraph.config, $scope.paragraph.config)
+             !angular.equals(data.paragraph.settings, $scope.lastData.settings) ||
+             !angular.equals(data.paragraph.config, $scope.lastData.config)
          )
        ) {
+      
+      // store original data for comparison
+      $scope.lastData.settings = jQuery.extend(true, {}, data.paragraph.settings);
+      $scope.lastData.config = jQuery.extend(true, {}, data.paragraph.config);
+
       var oldType = $scope.getResultType();
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
