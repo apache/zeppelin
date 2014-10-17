@@ -30,16 +30,11 @@ bin=`cd "$bin">/dev/null; pwd`
 
 . $bin/common.sh
 
-source $SPARK_HOME/bin/utils.sh
-SUBMIT_USAGE_FUNCTION=usage
-gatherSparkSubmitOpts "$@"
-
 HOSTNAME=`hostname`
 ZEPPELIN_LOGFILE=$ZEPPELIN_LOG_DIR/zeppelin-$ZEPPELIN_IDENT_STRING-$HOSTNAME.log
 log=$ZEPPELIN_LOG_DIR/zeppelin-cli-$ZEPPELIN_IDENT_STRING-$HOSTNAME.out
 pid=$ZEPPELIN_PID_DIR/zeppelin-cli-$ZEPPELIN_IDENT_STRING-$HOSTNAME.pid
-
-ZEPPELIN_RUNNER=$SPARK_HOME/bin/spark-submit
+  
 ZEPPELIN_SERVER=com.nflabs.zeppelin.server.ZeppelinServer
 JAVA_OPTS+=" -Dzeppelin.log.file=$ZEPPELIN_LOGFILE"
 
@@ -58,4 +53,13 @@ if [[ ! -d "$ZEPPELIN_NOTEBOOK_DIR" ]]; then
   mkdir -p "$ZEPPELIN_NOTEBOOK_DIR"
 fi
 
-exec $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER --class $ZEPPELIN_SERVER "${SUBMISSION_OPTS[@]}" --driver-java-options -Dzeppelin.log.file=$ZEPPELIN_LOGFILE spark-shell "${APPLICATION_OPTS[@]}"
+if [ "x$SPARK_HOME" != "x" ]; then
+  source $SPARK_HOME/bin/utils.sh
+  SUBMIT_USAGE_FUNCTION=usage
+  gatherSparkSubmitOpts "$@"
+  ZEPPELIN_RUNNER=$SPARK_HOME/bin/spark-submit
+
+  exec $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER --class $ZEPPELIN_SERVER "${SUBMISSION_OPTS[@]}" --driver-java-options -Dzeppelin.log.file=$ZEPPELIN_LOGFILE spark-shell "${APPLICATION_OPTS[@]}"
+else
+  $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_SERVER "$@"
+fi
