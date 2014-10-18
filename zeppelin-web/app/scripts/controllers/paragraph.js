@@ -140,11 +140,10 @@ angular.module('zeppelinWebApp')
         var elMain = $('#' + $scope.paragraph.id + "_paragraphColumn_main");
 
         elMain.removeClass(elMain.attr('class'));
-        var col_width = 12;
-        if ($scope.paragraph.config.colWidth) {
-          col_width = $scope.paragraph.config.colWidth;
+        if (!$scope.paragraph.config.colWidth) {
+          $scope.paragraph.config.colWidth = 12;
         }
-        elMain.addClass("paragraph-col col-md-" + col_width);
+        elMain.addClass("paragraph-col col-md-" + $scope.paragraph.config.colWidth);
 
         el.removeClass(el.attr('class'))
         el.addClass("paragraph-space box paragraph-margin");
