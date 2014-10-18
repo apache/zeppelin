@@ -183,6 +183,11 @@
   margin : 0 0 0 0px;
 }
 
+.paragraph div svg {
+  width : 100%;
+  height : 300px;
+}
+
 .ace-tm {
   background-color: #FFFFFF;
   color: black;
