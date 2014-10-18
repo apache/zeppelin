@@ -93,7 +93,6 @@ angular.module('zeppelinWebApp')
              !angular.equals(data.paragraph.config, $scope.lastData.config)
          )
        ) {
-      console.log("UPDATE PARAGAPH %o %o", data.paragraph.settings, $scope.lastData.settings);
       // store original data for comparison
       $scope.lastData.settings = jQuery.extend(true, {}, data.paragraph.settings);
       $scope.lastData.config = jQuery.extend(true, {}, data.paragraph.config);
@@ -154,7 +153,6 @@ angular.module('zeppelinWebApp')
       if (newType==="TABLE") {
         $scope.loadTableData($scope.paragraph.result);
         /** User changed the chart type? */
-        console.log("graphMode = %o -> %o", oldGraphMode, newGraphMode);
         if (oldGraphMode !== newGraphMode) {
           $scope.setGraphMode(newGraphMode, false, false);
         } else {
@@ -535,7 +533,6 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.setGraphMode = function(type, emit, refresh) {
-    console.log("setGraphMode %o %o %o", type, emit, refresh);
     if (emit) {
       setNewMode(type);
     } else {
@@ -609,11 +606,6 @@ angular.module('zeppelinWebApp')
         });
       }
     } else {
-      $scope.chart[type].xAxis.tickFormat(function(d) {
-        console.log("d=%o", d);
-        return d.label;
-      });
-
       for (var i = 0; i < data.columnNames.length; i++) {
         if (i !== xColIndex) {
           yColIndexes.push(i);
@@ -624,18 +616,42 @@ angular.module('zeppelinWebApp')
         }
       }
 
+      var xLabels = {};
+
+      var xValue = function(x,i) {
+        if (isNaN(x)) {
+          if (type==="multiBarChart" || type==="pieChart") {
+            return x;
+          } else {
+            xLabels[i] = x;
+            return i;
+          }
+        } else {
+          return parseFloat(x);           
+        }
+      };
+
       for (i = 0; i < data.rows.length; i++) {
         var row = data.rows[i];
         for (var j = 0; j < yColIndexes.length; j++) {
           var xVar = row[xColIndex];
           var yVar = row[yColIndexes[j]];
           d3g[j].values.push({
-            x: isNaN(xVar) ? xVar : parseFloat(xVar),
-            y: parseFloat(yVar),
-            label: ""+xVar
+            x: xValue(xVar, i),
+            y: parseFloat(yVar)
           });
         }
       }
+
+      $scope.chart[type].xAxis.tickFormat(function(d) {
+        if (xLabels[d] ) {
+          return xLabels[d]
+        } else {
+          return d;
+        }
+      });
+
+
     }
 
     var renderChart = function(){
