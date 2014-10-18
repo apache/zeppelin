@@ -1,0 +1,338 @@
+/* Copyright 2014 NFLabs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.paragraph-col {
+  margin: 0 0 0 0px;
+  padding: 0 0 0 0px;
+}
+
+.paragraph {
+  padding: 2px 8px 4px 8px;
+  min-height: 32px;
+}
+
+.paragraphAsIframe{
+  padding: 0px 0px 0px 0px;
+  margin-top: -79px;
+  margin-left: -10px;
+  margin-right: -10px;
+}
+
+.paragraphAsIframe .control {
+  background-color: rgba(255,255,255,0.9);
+  border-top: 1px solid #EFEFEF;
+  display: none;
+  float: right;
+  color: #999;
+  margin-top: -9px;
+  margin-right:0px;
+  position:absolute;
+  clear:both;
+  right:25px;
+  /*z-index:10;*/
+}
+
+.paragraphAsIframe table {
+  margin-bottom: 0px;
+}
+
+.paragraphAsIframe .editor {
+  width: 100%;
+  border-left: 4px solid #EEEEEE;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.paragraphAsIframe .text {
+  white-space: pre;
+  display: block;
+  unicode-bidi: embed;
+  display: block !important;
+  margin: 0 0 10px!important;
+  font-size: 12px!important;
+  line-height: 1.42857143!important;
+  word-break: break-all!important;
+  word-wrap: break-word!important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+}
+
+.labelBtn {
+  padding: .2em .6em .3em;
+  font-size: 75%;
+  font-weight: bold;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  border-radius: .25em;
+}
+
+.note-jump {
+  margin-top: 20px;
+}
+
+.noteBtnfa {
+    margin-left: 3px;
+}
+
+.control span {
+    margin-left: 4px;
+}
+
+.control {
+    padding: 4px;
+}
+
+.paragraph-space {
+  margin-bottom: 5px;
+  padding: 10px !important;
+}
+
+.paragraph .control {
+  background-color: rgba(255,255,255,0.85);
+  /*display: none;*/
+  float: right;
+  color: #999;
+  margin-top: 1px;
+  margin-right: 5px;
+  position:absolute;
+  clear:both;
+  right:15px;
+  top: 16px;
+  text-align:right;
+  font-size:12px;
+}
+
+.paragraph .control li{
+  font-size:12px;
+  margin-bottom:4px;
+  color: #333333;
+}
+
+.paragraph table {
+  margin-bottom: 0px;
+}
+
+.paragraph .title {
+  margin: 3px 0px 0px 0px;
+  height: 20px;
+  font-size: 12px;
+}
+
+.paragraph .title div {
+  width: 80%;
+  font-weight: bold;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px!important;
+  text-transform: capitalize;
+}
+
+.paragraph .title input {
+  width: 80%;
+  line-height: 1.42857143;
+  color: #555;
+  background-color: #fff;
+  background-image: none;
+  border: 1px solid #ccc;
+  border-radius: 0px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+  -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  text-transform: capitalize;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px!important;
+}
+
+.paragraph .editor {
+  width: 100%;
+  border-left: 4px solid #DDDDDD;
+  background: rgba(255, 255, 255, 0.0);
+  margin: 7px 0 2px 0px;
+}
+
+.paragraph .text {
+  white-space: pre;
+  display: block;
+  unicode-bidi: embed;
+  display: block!important;
+  margin: 0 0 0px!important;
+  /*font-size: 12px!important;*/
+  line-height: 1.42857143!important;
+  word-break: break-all!important;
+  word-wrap: break-word!important;
+  /*font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;*/
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px!important;
+}
+
+.paragraph p {
+  margin : 0 0 0 0px;
+}
+
+.paragraph div svg {
+  width : 100%;
+  height : 300px;
+}
+
+.ace-tm {
+  background-color: #FFFFFF;
+  color: black;
+}
+.ace_editor {
+  position: relative;
+  overflow: hidden;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 12px;
+  line-height: normal;
+  direction: ltr;
+}
+
+.ace_hidden-cursors {opacity:0}
+
+.ace-tm .ace_print-margin {
+  background: none !important;
+}
+
+/** Remove z-index to ace */
+.ace_text-input, .ace_gutter, .ace_layer,
+.emacs-mode, .ace_text-layer, .ace_cursor-layer,
+.ace_cursor, .ace_scrollbar {
+  z-index:auto !important;
+}
+
+.emacs-mode .ace_cursor {
+  background-color:#C0C0C0!important;
+  border: none;
+}
+
+.paragraph .status {
+  font-size: 10px;
+  color: #AAAAAA;
+  text-align: right;
+  visibility: hidden;
+}
+
+.paragraph .runControl {
+  font-size: 1px;
+  color: #AAAAAA;  
+  height:4px;
+  margin: 1px 0px 0px 0px;
+}
+
+.paragraph .runControl .progress {
+  position: relative;
+  width:100%;
+  height:4px;
+  z-index:100;
+  border-radius: 0px;
+}
+
+.paragraph .runControl .progress .progress-bar {
+  z-index:100;
+}
+
+
+.disable {
+  opacity:0.4!important;
+  pointer-events: none;
+}
+
+.noteAction {
+  margin-left: -10px;
+  margin-right: -10px;
+  margin-top: -10px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.new_h3 {
+  margin-top: 1px;
+  padding-top: 7px;
+}
+
+.form-control2 {
+  width: 100%;
+  margin-left: 15px;
+  font-size: 29px;
+  line-height: 1.42857143;
+  color: #555;
+  background-color: #fff;
+  background-image: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+  -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+}
+
+.form-control-static2 {
+  padding-top: 7px;
+  font-size: 29px;
+  margin-left: 15px;
+  padding-bottom: 7px;
+  margin-bottom: 0;
+  display: inline-block;
+}
+
+/* panel default */
+.panel-default {
+  /* border: none; */
+  border-color: #DDDDDD;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.panel-group .panel-default {
+  /*border: solid #e5e5e5;
+  border-width: 1px 1px 2px;*/
+}
+
+.panel-default > .panel-heading {
+  color: #34495e;
+  background-color: #ffffff;
+  border-color: #e5e5e5;
+}
+
+.panel-default > .panel-heading + .panel-collapse .panel-body {
+  border-top-color: #e5e5e5;
+}
+
+.panel-default > .panel-heading > .dropdown .caret {
+  border-color: #ecf0f1 transparent;
+}
+
+.panel-default > .panel-footer + .panel-collapse .panel-body {
+  border-bottom-color: #e5e5e5;
+}
+
+.panel-body-heading {
+  position: relative;
+  display: block;
+  padding-left: 10px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+.paragraph-margin {
+  margin-right: 2px;
+  margin-left: 2px;
+}
+
+.tableDisplay img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}

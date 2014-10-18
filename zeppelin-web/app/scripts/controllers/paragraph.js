@@ -352,6 +352,17 @@ angular.module('zeppelinWebApp')
           }
       }
       langTools.addCompleter(remoteCompleter);
+      
+      $scope.editor.on("focus", function(){
+        var el = $('#' + $scope.paragraph.id + "_paragraphColumn");
+        el.addClass("focused");
+      });
+
+      $scope.editor.on("blur", function(){
+        var el = $('#' + $scope.paragraph.id + "_paragraphColumn");
+        el.removeClass("focused");
+      });
+
 
       $scope.editor.getSession().on('change', function(e, editSession) {
         hight = editSession.getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
