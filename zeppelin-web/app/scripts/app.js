@@ -59,7 +59,6 @@ angular
     'angular-websocket',
     'ui.ace',
     'ui.bootstrap',
-    'nvd3',
     'ngTouch'
   ])
   .config(function ($routeProvider, WebSocketProvider) {
