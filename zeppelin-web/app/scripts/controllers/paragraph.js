@@ -39,7 +39,15 @@ angular.module('zeppelinWebApp')
     $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
     $scope.showTitleEditor = false;
 
+    if (!$scope.paragraph.config) {
+      $scope.paragraph.config = {}
+    }
+
     initializeDefault();
+
+    if (!$scope.lastData) {
+      $scope.lastData = {};
+    }
 
     if ($scope.getResultType() === "TABLE") {
       $scope.lastData.settings = $scope.paragraph.settings;
@@ -68,14 +76,8 @@ angular.module('zeppelinWebApp')
   });
 
   var initializeDefault = function(){
-    if (!$scope.paragraph.config) {
-      $scope.paragraph.config = {colWidth:12};
-    } else if (!$scope.paragraph.config.colWidth) {
+    if (!$scope.paragraph.config.colWidth) {
       $scope.paragraph.config.colWidth = 12;
-    }
-
-    if (!$scope.lastData) {
-      $scope.lastData = {};
     }
   };
 
@@ -131,18 +133,15 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.settings = data.paragraph.settings;
       
       if (!data.paragraph.config.asIframe) {
-        initializeDefault();
         $scope.paragraph.config = data.paragraph.config;
-        
+        initializeDefault();
+
         // update column class
         // TODO : do it in angualr way
         var el = $('#' + $scope.paragraph.id + "_paragraphColumn");
         var elMain = $('#' + $scope.paragraph.id + "_paragraphColumn_main");
 
         elMain.removeClass(elMain.attr('class'));
-        if (!$scope.paragraph.config.colWidth) {
-          $scope.paragraph.config.colWidth = 12;
-        }
         elMain.addClass("paragraph-col col-md-" + $scope.paragraph.config.colWidth);
 
         el.removeClass(el.attr('class'))

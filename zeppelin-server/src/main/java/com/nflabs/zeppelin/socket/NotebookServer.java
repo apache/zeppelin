@@ -250,9 +250,6 @@ public class NotebookServer extends WebSocketServer {
     if (noteId == null) {
       return ;
     }
-    if (name == null) {
-      return ;
-    }
     if (config == null) {
       return ;
     }

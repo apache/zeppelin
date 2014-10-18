@@ -24,7 +24,6 @@
  * @author anthonycorbacho
  */
 angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope) {
-
   $scope.note = null;
   $scope.showEditor = false;
   $scope.looknfeelOption = [ "default", "simple" ];
@@ -105,15 +104,22 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       $rootScope.$emit('setIframe', $scope.asIframe);
     }
 
-    /** set look n feel */
-    $rootScope.$emit('setLookAndFeel', note.config.looknfeel);
-
     if ($scope.note === null) {
       $scope.note = note;
+      initialize();
     } else {
       updateNote(note);
     }
+
+    /** set look n feel */
+    $rootScope.$emit('setLookAndFeel', note.config.looknfeel);
   });
+
+  var initialize = function() {
+    if(!$scope.note.config.looknfeel) {
+      $scope.note.config.looknfeel = 'default';
+    }
+  };
   
   var cleanParagraphExcept = function(paragraphId, note) {
     var noteCopy = {};
