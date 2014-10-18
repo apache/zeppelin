@@ -709,6 +709,14 @@ angular.module('zeppelinWebApp')
         }
       };
 
+      var yValue = function(y) {
+        if (isNaN(y)) {
+          return 0; 
+        } else {
+          return parseFloat(y);
+        }
+      }
+
       for (i = 0; i < data.rows.length; i++) {
         var row = data.rows[i];
         for (var j = 0; j < yColIndexes.length; j++) {
@@ -716,7 +724,7 @@ angular.module('zeppelinWebApp')
           var yVar = row[yColIndexes[j]];
           d3g[j].values.push({
             x: xValue(xVar, i),
-            y: parseFloat(yVar)
+            y: yValue(yVar)
           });
         }
       }
