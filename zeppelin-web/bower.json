@@ -15,15 +15,12 @@
     "angular-websocket": "~0.0.5",
     "ace-builds": "1.1.6",
     "angular-ui-ace": "~0.1.1",
-    "angular-nvd3": "#master",
-    "jquery.scrollTo": "~1.4.13"
+    "jquery.scrollTo": "~1.4.13",
+    "nvd3": "~1.1.15-beta"
   },
   "devDependencies": {
     "angular-mocks": "1.2.16",
     "angular-scenario": "1.2.16"
   },
-  "appPath": "app",
-  "resolutions": {
-    "d3": "~3.3.13"
-  }
+  "appPath": "app"
 }

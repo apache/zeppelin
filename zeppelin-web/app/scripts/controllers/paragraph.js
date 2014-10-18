@@ -24,7 +24,7 @@
  * @author anthonycorbacho
  */
 angular.module('zeppelinWebApp')
-        .controller('ParagraphCtrl', function($scope, $rootScope, $route, $window, $element, $routeParams, $location) {
+        .controller('ParagraphCtrl', function($scope, $rootScope, $route, $window, $element, $routeParams, $location, $timeout) {
 
   $scope.paragraph = null;
   $scope.editor = null;
@@ -32,116 +32,21 @@ angular.module('zeppelinWebApp')
 
   $scope.forms = {};
 
-  $scope.d3 = {
-      multiBarChart : {
-          options : {
-              chart: {
-                  type: 'multiBarChart',
-                  margin: {
-                      top: 10,
-                      right: 20,
-                      bottom: 40,
-                      left: 45
-                  },
-                  useInteractiveGuideline: true,
-                  transitionDuration:500
-              }
-          },
-          data : null,
-          config : {
-              visible: true, // default: true
-              extended: false, // default: false
-              disabled: false, // default: false
-              autorefresh: false, // default: true
-              refreshDataOnly: true // default: false
-          }
-      },
-      pieChart : {
-          options : {
-              chart: {
-                  type: 'pieChart',
-                  margin: {
-                      top: 10,
-                      right: 20,
-                      bottom: 10,
-                      left: 45
-                  },
-                  x: function (d){return d.label;},
-                  y: function (d){return d.value;},
-                  useInteractiveGuideline: true,
-                  transitionDuration:500
-              }
-          },
-          data : null,
-          config : {
-              visible: true, // default: true
-              extended: false, // default: false
-              disabled: false, // default: false
-              autorefresh: false, // default: true
-              refreshDataOnly: true // default: false
-          }
-      },
-      stackedAreaChart : {
-          options : {
-              chart: {
-                  type: 'stackedAreaChart',
-                  margin: {
-                      top: 10,
-                      right: 20,
-                      bottom: 40,
-                      left: 45
-                  },
-                  useInteractiveGuideline: true,
-                  transitionDuration:500
-              }
-          },
-          data : null,
-          config : {
-              visible: true, // default: true
-              extended: false, // default: false
-              disabled: false, // default: false
-              autorefresh: false, // default: true
-              refreshDataOnly: true // default: false
-          }
-      },
-      lineChart : {
-          options : {
-              chart: {
-                  type: 'lineChart',
-                  margin: {
-                      top: 10,
-                      right: 20,
-                      bottom: 40,
-                      left: 45
-                  },
-                  useInteractiveGuideline: true,
-                  transitionDuration:500
-              }
-          },
-          data : null,
-          config : {
-              visible: true, // default: true
-              extended: false, // default: false
-              disabled: false, // default: false
-              autorefresh: false, // default: true
-              refreshDataOnly: true // default: false
-          }
-      },
-  };
-
   // Controller init
   $scope.init = function(newParagraph) {
     $scope.paragraph = newParagraph;
-    if ($scope.getResultType() === "TABLE") {
-      $scope.loadTableData($scope.paragraph.result);
-      $scope.setGraphMode($scope.getGraphMode(), false, false);
-    }
-
+    $scope.chart = {};
     $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
-
     $scope.showTitleEditor = false;
 
     initializeDefault();
+
+    if ($scope.getResultType() === "TABLE") {
+      $scope.lastData.settings = $scope.paragraph.settings;
+      $scope.lastData.config = $scope.paragraph.config;
+      $scope.loadTableData($scope.paragraph.result);
+      $scope.setGraphMode($scope.getGraphMode(), false, false);
+    }
   };
 
   $scope.getIframeDimensions = function () {
@@ -177,18 +82,18 @@ angular.module('zeppelinWebApp')
   $rootScope.$on('updateParagraph', function(event, data) {
     if (data.paragraph.id === $scope.paragraph.id &&
          (
-             data.paragraph.dateCreated != $scope.paragraph.dateCreated ||
-             data.paragraph.dateFinished != $scope.paragraph.dateFinished ||
-             data.paragraph.dateStarted != $scope.paragraph.dateStarted ||
-             data.paragraph.status != $scope.paragraph.status ||
-             data.paragraph.jobName != $scope.paragraph.jobName ||
-             data.paragraph.title != $scope.paragraph.title ||
-             data.paragraph.errorMessage != $scope.paragraph.errorMessage ||
+             data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
+             data.paragraph.dateFinished !== $scope.paragraph.dateFinished ||
+             data.paragraph.dateStarted !== $scope.paragraph.dateStarted ||
+             data.paragraph.status !== $scope.paragraph.status ||
+             data.paragraph.jobName !== $scope.paragraph.jobName ||
+             data.paragraph.title !== $scope.paragraph.title ||
+             data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
              !angular.equals(data.paragraph.settings, $scope.lastData.settings) ||
              !angular.equals(data.paragraph.config, $scope.lastData.config)
          )
        ) {
-      
+      console.log("UPDATE PARAGAPH %o %o", data.paragraph.settings, $scope.lastData.settings);
       // store original data for comparison
       $scope.lastData.settings = jQuery.extend(true, {}, data.paragraph.settings);
       $scope.lastData.config = jQuery.extend(true, {}, data.paragraph.config);
@@ -197,6 +102,7 @@ angular.module('zeppelinWebApp')
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
+
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
 
       if ($scope.paragraph.text !== data.paragraph.text) {
@@ -248,6 +154,7 @@ angular.module('zeppelinWebApp')
       if (newType==="TABLE") {
         $scope.loadTableData($scope.paragraph.result);
         /** User changed the chart type? */
+        console.log("graphMode = %o -> %o", oldGraphMode, newGraphMode);
         if (oldGraphMode !== newGraphMode) {
           $scope.setGraphMode(newGraphMode, false, false);
         } else {
@@ -628,23 +535,23 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.setGraphMode = function(type, emit, refresh) {
-    //console.log("setGraphMode %o %o %o", type, emit, refresh);
+    console.log("setGraphMode %o %o %o", type, emit, refresh);
     if (emit) {
       setNewMode(type);
     } else {
       if (!type || type === 'table') {
       }
       else if (type === 'multiBarChart') {
-        setMultiBarChart($scope.paragraph.result, refresh);
+        setD3Chart(type, $scope.paragraph.result, refresh);
       }
       else if (type === 'pieChart') {
-        setPieChart($scope.paragraph.result, refresh);
+        setD3Chart(type, $scope.paragraph.result, refresh);
       }
       else if (type === 'stackedAreaChart') {
-        setStackedAreaChart($scope.paragraph.result, refresh);
+        setD3Chart(type, $scope.paragraph.result, refresh);
       }
       else if (type === 'lineChart') {
-        setLineChart($scope.paragraph.result, refresh);
+        setD3Chart(type, $scope.paragraph.result, refresh);
       }
     }
   };
@@ -670,80 +577,96 @@ angular.module('zeppelinWebApp')
     $rootScope.$emit('sendNewEvent', parapgraphData);
   };
 
-  var setMultiBarChart = function(data, refresh) {
+  var setD3Chart = function(type, data, refresh) {
+    if (!$scope.chart[type]) {
+      var chart = nv.models[type]();
+      $scope.chart[type] = chart;
+    }
+
     var xColIndex = 0;
     var yColIndexes = [];
     var d3g = [];
     // select yColumns.
-    for (var i = 0; i < data.columnNames.length; i++) {
-      if (i !== xColIndex) {
-        yColIndexes.push(i);
-        d3g.push({
-          values: [],
-          key: data.columnNames[i]
-        });
-      }
-    }
 
-    for (i = 0; i < data.rows.length; i++) {
-      var row = data.rows[i];
-      for (var j = 0; j < yColIndexes.length; j++) {
+    if (type=="pieChart") {
+      $scope.chart[type].x(function(d){ return d.label;})
+                        .y(function(d){ return d.value;});
+
+      for (var i = 0; i < data.columnNames.length; i++) {
+        if (i !== xColIndex) {
+          yColIndexes.push(i);
+        }
+      }
+
+      for (var i = 0; i < data.rows.length; i++) {
+        var row = data.rows[i];
         var xVar = row[xColIndex];
-        var yVar = row[yColIndexes[j]];
-        d3g[j].values.push({
-          x: isNaN(xVar) ? xVar : parseFloat(xVar),
-          y: parseFloat(yVar)
-        });
-      }
-    }
+        var yVar = row[yColIndexes[0]];
 
-    if ($scope.d3.multiBarChart.data === null || !refresh) {
-      $scope.d3.multiBarChart.data = d3g;
-      $scope.d3.multiBarChart.options.chart.height = $scope.paragraph.settings.params._table.height;
-    } else {
-      if ($scope.d3.multiBarChart.api) {
-        $scope.d3.multiBarChart.api.updateWithData(d3g);
-      }
-    }
-  };
-
-  var setLineChart = function(data, refresh) {
-    var xColIndex = 0;
-    var yColIndexes = [];
-    var d3g = [];
-    // select yColumns.
-    for (var i = 0; i < data.columnNames.length; i++) {
-      if (i !== xColIndex) {
-        yColIndexes.push(i);
         d3g.push({
-          values: [],
-          key: data.columnNames[i]
+            label: isNaN(xVar) ? xVar : parseFloat(xVar),
+            value: parseFloat(yVar)
         });
-      }
-    }
-
-    for (i = 0; i < data.rows.length; i++) {
-      var row = data.rows[i];
-      for (var j = 0; j < yColIndexes.length; j++) {
-        var xVar = row[xColIndex];
-        var yVar = row[yColIndexes[j]];
-        d3g[j].values.push({
-          x: isNaN(xVar) ? xVar : parseFloat(xVar),
-          y: parseFloat(yVar)
-        });
-      }
-    }
-    if ($scope.d3.lineChart.data === null || !refresh) {
-      $scope.d3.lineChart.data = d3g;
-      $scope.d3.lineChart.options.chart.height = $scope.paragraph.settings.params._table.height;
-      if ($scope.d3.lineChart.api) {
-        $scope.d3.lineChart.api.updateWithOptions($scope.d3.options);
       }
     } else {
-      if ($scope.d3.lineChart.api) {
-        $scope.d3.lineChart.api.updateWithData(d3g);
+      $scope.chart[type].xAxis.tickFormat(function(d) {
+        console.log("d=%o", d);
+        return d.label;
+      });
+
+      for (var i = 0; i < data.columnNames.length; i++) {
+        if (i !== xColIndex) {
+          yColIndexes.push(i);
+          d3g.push({
+            values: [],
+            key: data.columnNames[i]
+          });
+        }
+      }
+
+      for (i = 0; i < data.rows.length; i++) {
+        var row = data.rows[i];
+        for (var j = 0; j < yColIndexes.length; j++) {
+          var xVar = row[xColIndex];
+          var yVar = row[yColIndexes[j]];
+          d3g[j].values.push({
+            x: isNaN(xVar) ? xVar : parseFloat(xVar),
+            y: parseFloat(yVar),
+            label: ""+xVar
+          });
+        }
       }
     }
+
+    var renderChart = function(){
+      if (!refresh) {
+        // TODO force destroy previous chart
+      }
+
+      var height = $scope.paragraph.settings.params._table.height;
+
+      var chartEl = d3.select("#p"+$scope.paragraph.id+"_"+type+" svg")
+          .attr('height', $scope.paragraph.settings.params._table.height)
+          .datum(d3g) 
+          .transition()
+          .duration(300)
+          .call($scope.chart[type]);
+      d3.select("#p"+$scope.paragraph.id+"_"+type+" svg").style.height = height+"px";
+      nv.utils.windowResize($scope.chart[type].update);
+    };
+
+    var retryRenderer = function(){
+      if($('#p'+$scope.paragraph.id+"_"+type+" svg").length!==0){
+        try {
+          renderChart();
+        } catch(err) {
+          console.log("Chart drawing error %o", err);
+        }
+      } else {
+        $timeout(retryRenderer,10);
+      }
+    };
+    $timeout(retryRenderer);
   };
 
   var setPieChart = function(data, refresh) {
@@ -783,45 +706,6 @@ angular.module('zeppelinWebApp')
     }
   };
 
-  var setStackedAreaChart = function(data, refresh) {
-    var xColIndex = 0;
-    var yColIndexes = [];
-    var d3g = [];
-    // select yColumns.
-    for (var i = 0; i < data.columnNames.length; i++) {
-      if (i !== xColIndex) {
-        yColIndexes.push(i);
-        d3g.push({
-          values: [],
-          key: data.columnNames[i]
-        });
-      }
-    }
-
-    for (i = 0; i < data.rows.length; i++) {
-      var row = data.rows[i];
-      for (var j = 0; j < yColIndexes.length; j++) {
-        var xVar = row[xColIndex];
-        var yVar = row[yColIndexes[j]];
-        d3g[j].values.push({
-          x: isNaN(xVar) ? xVar : parseFloat(xVar),
-          y: parseFloat(yVar)
-        });
-      }
-    }
-
-    if ($scope.d3.stackedAreaChart.data === null || !refresh) {
-      $scope.d3.stackedAreaChart.data = d3g;
-      $scope.d3.stackedAreaChart.options.chart.height = $scope.paragraph.settings.params._table.height;
-      //if ($scope.d3.api) {
-        //$scope.d3.api.updateWithOptions($scope.d3.options);
-      //}
-    } else {
-      if ($scope.d3.stackedAreaChart.api) {
-        $scope.d3.stackedAreaChart.api.updateWithData(d3g);
-      }
-    }
-  };
 
   $scope.isGraphMode = function(graphName) {
     if ($scope.getResultType() === "TABLE" && $scope.getGraphMode()===graphName) {
