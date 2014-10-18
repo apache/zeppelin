@@ -17,6 +17,7 @@ import java.util.Set;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkEnv;
+import org.apache.spark.repl.SparkCommandLine;
 import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.repl.SparkIMain;
 import org.apache.spark.repl.SparkJLineCompletion;
@@ -36,7 +37,6 @@ import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.spark.dep.DependencyResolver;
-
 
 import scala.Console;
 import scala.None;
@@ -176,7 +176,6 @@ public class SparkInterpreter extends Interpreter {
 		if(propMaster!=null) return propMaster;
 		return "local[*]";
 	}
-	
 
 	@Override
 	public void open(){
@@ -205,8 +204,11 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 
 
 		 */
-		
-		Settings settings = new Settings();
+        Settings settings = new Settings();
+        if(getProperty().containsKey("args")) {
+            SparkCommandLine command = new SparkCommandLine(scala.collection.JavaConversions.asScalaBuffer((List<String>) getProperty().get("args")).toList());
+            settings = command.settings();
+        }
 
 		// set classpath for scala compiler
 		PathSetting pathSettings = settings.classpath();
@@ -257,7 +259,9 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		
 		dep = getDependencyResolver();
 		z = new ZeppelinContext(sc, sqlc, dep);
-		
+
+        this.interpreter.loadFiles(settings);
+
 		intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
 		binder = (Map<String, Object>) getValue("_binder");
 		binder.put("sc", sc);

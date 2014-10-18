@@ -102,6 +102,7 @@ if [ "x$HADOOP_HOME" != "x" ] && [ -d "${HADOOP_HOME}" ]; then
 fi
 
 export ZEPPELIN_CLASSPATH
+export SPARK_CLASSPATH+=${ZEPPELIN_CLASSPATH}
 export CLASSPATH+=${ZEPPELIN_CLASSPATH}
 
 # Text encoding for 

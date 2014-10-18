@@ -127,57 +127,40 @@ limitations under the License.
         </button>
       </div>
 
-      <table class="table table-hover table-condensed"
-             ng-if="isGraphMode('table')">
-        <thead>
-          <tr style="background-color: #EFEFEF; font-weight: bold;">
-            <th ng-repeat="val in paragraph.result.columnNames track by $index">{{val}}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr ng-repeat="item in paragraph.result.msgTable track by $index">
-            <td ng-repeat="val in item track by $index">
-               <span ng-if="getTableContentFormat(val.value)=='html'"
-                     ng-bind-html="formatTableContent(val.value)"></span>
-               <span ng-if="getTableContentFormat(val.value)!='html'">
-                 {{formatTableContent(val.value)}}
-               </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div ng-if="isGraphMode('table')"
+           id="p{{paragraph.id}}_table">
+      </div>
 
-      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()=='multiBarChart'"
-            options='d3.multiBarChart.options'
-            config='d3.multiBarChart.config'
-            data='d3.multiBarChart.data'
-            api='d3.multiBarChart.api'>
-      </nvd3new>
+      <div ng-if="getResultType()=='TABLE' && getGraphMode()=='multiBarChart'"
+           id="p{{paragraph.id}}_multiBarChart">
+        <svg></svg>
+      </div>
 
-      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()=='pieChart'"
-            options='d3.pieChart.options'
-            config='d3.pieChart.config'
-            data='d3.pieChart.data'
-            api='d3.pieChart.api'>
-      </nvd3new>
+      <div ng-if="getResultType()=='TABLE' && getGraphMode()=='lineChart'"
+           id="p{{paragraph.id}}_lineChart">
+        <svg></svg>
+      </div>
 
-      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()=='stackedAreaChart'"
-            options='d3.stackedAreaChart.options'
-            config='d3.stackedAreaChart.config'
-            data='d3.stackedAreaChart.data'
-            api='d3.stackedAreaChart.api'>
-      </nvd3new>
+      <div ng-if="getResultType()=='TABLE' && getGraphMode()=='stackedAreaChart'"
+           id="p{{paragraph.id}}_stackedAreaChart">
+        <svg></svg>
+      </div>
 
-      <nvd3new ng-if="getResultType()=='TABLE' && getGraphMode()=='lineChart'"
-            options='d3.lineChart.options'
-            config='d3.lineChart.config'
-            data='d3.lineChart.data'
-            api='d3.lineChart.api'>
-      </nvd3new>
+      <div ng-if="getResultType()=='TABLE' && getGraphMode()=='pieChart'"
+           id="p{{paragraph.id}}_pieChart">
+        <svg></svg>
+      </div>
 
       <div id="{{paragraph.id}}_msg"
            class="text"
-           ng-if="paragraph.result.type == 'TEXT' || (paragraph.result.type == 'TABLE' && paragraph.result.msg)"
+           ng-if="paragraph.result.type == 'TABLE'"
+           ng-Init="loadResultType(paragraph.result)"
+           ng-bind-html="paragraph.result.comment">
+      </div>
+
+      <div id="{{paragraph.id}}_msg"
+           class="text"
+           ng-if="paragraph.result.type == 'TEXT'"
            ng-Init="loadResultType(paragraph.result)"
            ng-bind="paragraph.result.msg">
       </div>

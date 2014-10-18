@@ -52,6 +52,10 @@ Thumbs.db
 .project
 .settings/
 
+#intelliJ IDEA project files
+.idea/
+*.iml
+
 # maven target files
 target/
 **/target/

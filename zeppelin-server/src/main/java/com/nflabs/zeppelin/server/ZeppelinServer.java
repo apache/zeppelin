@@ -37,6 +37,7 @@ public class ZeppelinServer extends Application {
 
 	public static void main(String [] args) throws Exception{
 		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+        conf.setProperty("args",args);
 
 		int port = conf.getInt(ConfVars.ZEPPELIN_PORT);
         final Server server = setupJettyServer(port);

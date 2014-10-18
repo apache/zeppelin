@@ -124,6 +124,9 @@ public class InterpreterFactory {
 			Class<Interpreter> replClass = (Class<Interpreter>) cl.loadClass(className);
 			Constructor<Interpreter> constructor = replClass.getConstructor(new Class []{Properties.class});
 			Interpreter repl = constructor.newInstance(property);
+            if(conf.containsKey("args")) {
+                property.put("args", conf.getProperty("args"));
+            }
 			property.put("share", share);
 			property.put("classloaderUrls", ccl.getURLs());
 			return new ClassloaderInterpreter(repl, cl, property);
