@@ -537,6 +537,7 @@ angular.module('zeppelinWebApp')
       setNewMode(type);
     } else {
       if (!type || type === 'table') {
+        setTable($scope.paragraph.result, refresh);
       }
       else if (type === 'multiBarChart') {
         setD3Chart(type, $scope.paragraph.result, refresh);
@@ -574,6 +575,81 @@ angular.module('zeppelinWebApp')
     $rootScope.$emit('sendNewEvent', parapgraphData);
   };
 
+  var setTable = function(type, data, refresh) {
+
+    var getTableContentFormat = function(d) {
+      if (isNaN(d)) {
+        if(d.length>"%html".length && "%html "===d.substring(0, "%html ".length)) {
+          return "html";
+        } else {
+          return "";
+        }
+      } else {
+        return "";
+      }
+    };
+
+    var formatTableContent = function(d) {
+      if (isNaN(d)) {
+        var f = getTableContentFormat(d);
+        if(f !="") {
+          return d.substring(f.length+2);
+        } else {
+          return d;
+        }
+      } else {
+        return d;
+      }
+    };
+
+
+    var renderTable = function(){
+      var html = "";
+      html += '<table class="table table-hover table-condensed">';
+      html += '  <thead>'
+      html += '    <tr style="background-color: #EFEFEF; font-weight: bold;">';
+      for (var c in $scope.paragraph.result.columnNames) {
+        html += "<th>"+$scope.paragraph.result.columnNames[c]+"</th>";
+      }
+      html += '    </tr>';
+      html += '  </thead>';
+
+      for (var r in $scope.paragraph.result.msgTable) {
+        var row = $scope.paragraph.result.msgTable[r];
+        html += '    <tr>';
+        for (var c in row) {
+          var v = row[c].value;
+          if(getTableContentFormat(v)!=="html") {
+            v = v.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
+                return '&#'+i.charCodeAt(0)+';';
+            });
+          }
+          html += '      <td>'+formatTableContent(v)+'</td>';
+        }
+        html += '    </tr>';
+      }
+
+
+      html += '</table>';
+
+      $('#p'+$scope.paragraph.id+"_table").html(html);
+    };
+
+    var retryRenderer = function(){
+      if($('#p'+$scope.paragraph.id+"_table").length){
+        try {
+          renderTable();
+        } catch(err) {
+          console.log("Chart drawing error %o", err);
+        }
+      } else {
+        $timeout(retryRenderer,10);
+      }
+    };
+    $timeout(retryRenderer);
+
+  };
+
   var setD3Chart = function(type, data, refresh) {
     if (!$scope.chart[type]) {
       var chart = nv.models[type]();
@@ -606,6 +682,8 @@ angular.module('zeppelinWebApp')
         });
       }
     } else {
+      $scope.chart[type].yAxis.axisLabelDistance(50);
+
       for (var i = 0; i < data.columnNames.length; i++) {
         if (i !== xColIndex) {
           yColIndexes.push(i);
@@ -737,37 +815,6 @@ angular.module('zeppelinWebApp')
       return this.slice(0, str.length) === str;
     };
   }
-
-  // format table content
-  $scope.formatTableContent = function(d) {
-    if (isNaN(d)) {
-      var f = $scope.getTableContentFormat(d);
-      if(f !="") {
-        return d.substring(f.length+2);
-      } else {
-        return d;
-      }
-    } else {
-      var splitted = d.toString().split('.');
-      var formatted = splitted[0].replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
-      if (splitted.length>1) {
-        formatted+= "."+splitted[1];
-      }
-      return formatted;
-    }
-  };
-
-  $scope.getTableContentFormat = function(d) {
-    if (isNaN(d)) {
-      if(d.length>"%html".length && "%html "===d.substring(0, "%html ".length)) {
-        return "html";
-      } else {
-        return "";
-      }
-    } else {
-      return "";
-    }
-  };
 
   $scope.goToSingleParagraph = function () {
     var noteId = $route.current.pathParams.noteId;

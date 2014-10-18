@@ -127,25 +127,9 @@ limitations under the License.
         </button>
       </div>
 
-      <table class="table table-hover table-condensed"
-             ng-if="isGraphMode('table')">
-        <thead>
-          <tr style="background-color: #EFEFEF; font-weight: bold;">
-            <th ng-repeat="val in paragraph.result.columnNames track by $index">{{val}}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr ng-repeat="item in paragraph.result.msgTable track by $index">
-            <td ng-repeat="val in item track by $index">
-               <span ng-if="getTableContentFormat(val.value)=='html'"
-                     ng-bind-html="formatTableContent(val.value)"></span>
-               <span ng-if="getTableContentFormat(val.value)!='html'">
-                 {{formatTableContent(val.value)}}
-               </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div ng-if="isGraphMode('table')"
+           id="p{{paragraph.id}}_table">
+      </div>
 
       <div ng-if="getResultType()=='TABLE' && getGraphMode()=='multiBarChart'"
            id="p{{paragraph.id}}_multiBarChart">
