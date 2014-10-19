@@ -125,7 +125,69 @@ limitations under the License.
                 ng-class="{'active': isGraphMode('lineChart')}"
                 ng-click="setGraphMode('lineChart', true)"><i class="fa fa-line-chart"></i>
         </button>
+        <span>
+          <a ng-if="paragraph.config.graph.optionOpen"
+             ng-click="toggleGraphOption()">
+            <b>Options</b>
+          </a>
+          <a ng-if="!paragraph.config.graph.optionOpen"
+             ng-click="toggleGraphOption()">
+            Options
+          </a>          
+        </span>
       </div>
+      <div ng-if="paragraph.config.graph.optionOpen"
+           class="option">
+        Columns
+        <div>
+          <ul>
+            <li ng-repeat="col in paragraph.result.columnNames"
+                data-drag="true"
+                data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
+                ng-model="paragraph.result.columnNames"
+                jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}">{{col.name}}
+            </li>
+          </ul>
+        </div>
+        
+
+        <span style="float:left">
+          Keys
+          <ol data-drop="true"
+              ng-model="paragraph.config.graph.keys"
+              jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
+              style="width:100px;height:100px;border:1px solid gray">
+            <li ng-repeat="item in paragraph.config.graph.keys">
+              {{item.name}} <span ng-click="removeGraphOptionKeys($index)">[x]</span>
+            </li>
+          </ol>
+        </span>
+
+        <span style="float:left">
+          Groups
+          <ol data-drop="true"
+              ng-model="paragraph.config.graph.groups"
+              jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
+              style="width:100px;height:100px;border:1px solid gray">
+            <li ng-repeat="item in paragraph.config.graph.groups">
+              {{item.name}} <span ng-click="removeGraphOptionGroups($index)">[x]</span>
+            </li>
+          </ol>
+        </span>
+
+        <span style="float:left">
+          Values
+          <ol data-drop="true"
+              ng-model="paragraph.config.graph.values"
+              jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
+              style="width:100px;height:100px;border:1px solid gray">
+            <li ng-repeat="item in paragraph.config.graph.values">
+              {{item.name}} <span ng-click="removeGraphOptionValues($index)">[x]</span>
+            </li>
+          </ol>
+        </span>
+      </div>
+
 
       <div ng-if="isGraphMode('table')"
            id="p{{paragraph.id}}_table">

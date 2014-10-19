@@ -336,3 +336,18 @@
   max-width: 100%;
   height: auto;
 }
+
+.tableDisplay .btn-group span {
+  margin: 10px 0px 0px 10px;
+  font-size:12px;
+}
+.tableDisplay .btn-group span a {
+  cursor:pointer;
+}
+
+.tableDisplay .option {
+  border:1px solid blue;
+  font-size:12px;
+  height:200px;
+}
+
