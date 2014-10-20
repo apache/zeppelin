@@ -1010,7 +1010,7 @@ angular.module('zeppelinWebApp')
         // add value to row
         if (!p[valueKey]) {
           p[valueKey] = { 
-              value : row[valueKey],
+              value : row[value.index],
               count: 1
           };
         } else {
