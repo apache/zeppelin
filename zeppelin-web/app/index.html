@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <!doctype html>
-<html class="no-js">
+<html ng-app="zeppelinWebApp" ng-controller="MainCtrl" class="no-js">
   <head>
     <meta charset="utf-8">
     <title></title>
@@ -37,11 +37,12 @@ limitations under the License.
     <!-- build:css(.tmp) styles/main.css -->
     <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="styles/notebook.css">
+    <link rel="stylesheet" ng-href="styles/looknfeel/{{looknfeel}}.css">
     <link rel="stylesheet" href="styles/font-awesome.min.css">
     <link rel="stylesheet" href="styles/simple-line-icons.css">
     <!-- endbuild -->
   </head>
-  <body ng-app="zeppelinWebApp" ng-controller="MainCtrl" ng-class="{'bodyAsIframe': asIframe}" >
+  <body ng-class="{'bodyAsIframe': asIframe}" >
     <!--[if lt IE 7]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->

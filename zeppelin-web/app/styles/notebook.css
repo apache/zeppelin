@@ -13,12 +13,11 @@
  * limitations under the License.
  */
 
-@import 'printMode.css' print;
-
 .paragraph-col {
   margin: 0 0 0 0px;
   padding: 0 0 0 0px;
 }
+
 .paragraph {
   padding: 2px 8px 4px 8px;
   min-height: 32px;
@@ -255,11 +254,7 @@
   margin-left: -10px;
   margin-right: -10px;
   margin-top: -10px;
-  background-color: white;
   font-family: 'Roboto', sans-serif;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  color: #2c3e50;
-  border-bottom: 1px solid #E5E5E5;
 }
 
 .new_h3 {

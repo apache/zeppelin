@@ -246,15 +246,17 @@ public class NotebookServer extends WebSocketServer {
   private void updateNote(WebSocket conn, Notebook notebook, Message fromMessage) {
     String noteId = (String) fromMessage.get("id");
     String name = (String) fromMessage.get("name");
+    Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
     if (noteId == null) {
       return ;
     }
-    if (name == null) {
+    if (config == null) {
       return ;
     }
     Note note = notebook.getNote(noteId);
     if (note != null) {
       note.setName(name);
+      note.setConfig(config);
       broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
       broadcastNoteList();
     }
