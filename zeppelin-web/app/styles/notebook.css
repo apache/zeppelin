@@ -346,8 +346,49 @@
 }
 
 .tableDisplay .option {
-  border:1px solid blue;
+  padding: 10px 10px 10px 10px;
   font-size:12px;
   height:200px;
+  background-color: #ecf0f1;
 }
 
+.tableDisplay .option .columns {
+  border:1px solid green;
+  overflow: auto;
+  height: 100%;
+  float:left;
+  margin-right:10px;
+  padding: 3px 3px 3px 3px;
+}
+
+.tableDisplay .option .columns ul {
+  background-color: white;
+  height:100%;
+  min-width: 100px;
+  padding: 3px 3px 3px 3px;
+}
+
+.tableDisplay .option .columns ul li{
+  margin: 3px 3px 3px 3px;
+  padding: 3px 3px 3px 3px;
+  border: 1px solid #DDDDDD;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  border-radius: 3px; /* future proofing */
+  -khtml-border-radius: 3px; /* for old Konqueror browsers */
+}
+
+.tableDisplay .option .columns ul li:hover{
+  background-color: #EEEEEE;
+}
+
+
+.tableDisplay .option .columns ul li span{
+  float:right;
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+.tableDisplay .option .columns ul li div{
+  float:right;
+}

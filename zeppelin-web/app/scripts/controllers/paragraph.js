@@ -185,6 +185,9 @@ angular.module('zeppelinWebApp')
       
       if (newType==="TABLE") {
         $scope.loadTableData($scope.paragraph.result);
+        if (oldType!=="TABLE") {
+          selectDefaultColsForGraphOption();
+        }
         /** User changed the chart type? */
         if (oldGraphMode !== newGraphMode) {
           $scope.setGraphMode(newGraphMode, false, false);
@@ -564,7 +567,7 @@ angular.module('zeppelinWebApp')
         for (var j = 0; j < textCols.length; j++) {
           var col = textCols[j];
           if (i === 0) {
-            columnNames.push({name:col, index:j});
+            columnNames.push({name:col, index:j, aggr:"sum"});
           } else {
             cols.push(col);
             cols2.push({key: (columnNames[i]) ? columnNames[i].name: undefined, value: col});
@@ -840,6 +843,12 @@ angular.module('zeppelinWebApp')
     $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
   }
 
+  $scope.setGraphOptionValueAggr = function(idx, aggr) {
+    $scope.paragraph.config.graph.values[idx].aggr = aggr;
+    clearUnknownColsFromGraphOption();
+    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+  }
+
   /* Clear unkonwn columns from graph option */
   var clearUnknownColsFromGraphOption = function() {
     var unique = function(list) {
@@ -857,7 +866,9 @@ angular.module('zeppelinWebApp')
         // remove non existing column
         var found = false;
         for (var j=0; j<$scope.paragraph.result.columnNames.length; j++) {
-          if (angular.equals(list[i], $scope.paragraph.result.columnNames[j])) {
+          var a = list[i];
+          var b = $scope.paragraph.result.columnNames[j];
+          if (a.index === b.index && a.name === b.name) {
             found = true;
             break;
           }
@@ -895,13 +906,27 @@ angular.module('zeppelinWebApp')
 
     var aggrFunc = {
       sum : function(a,b) {
-        var varA = isNaN(a) ? 1 : parseFloat(a);
-        var varB = isNaN(b) ? 1 : parseFloat(b);
+        var varA = (a!==undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
+        var varB = (b!==undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
         return varA+varB;
+      },
+      count : function(a,b) {
+        var varA = (a!==undefined) ? 1 : 0;
+        var varB = (b!==undefined) ? 1 : 0;
+        return varA+varB;
+      },
+      min : function(a,b) {
+        var varA = (a!==undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
+        var varB = (b!==undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
+        return Math.min(varA,varB);
+      },
+      max : function(a,b) {
+        var varA = (a!==undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
+        var varB = (b!==undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
+        return Math.max(varA,varB);
       }
     }
 
-    var aggr = "sum";
     var schema = {};
     var rows = {};
 
@@ -971,7 +996,7 @@ angular.module('zeppelinWebApp')
         if (!p[value.name]) {
           p[value.name] = row[value.index];
         } else {
-          p[value.name] = aggrFunc[aggr](p[value.name], row[value.index]);
+          p[value.name] = aggrFunc[(value.aggr) ? value.aggr : "sum"](p[value.name], row[value.index]);
         }
       }
     }
