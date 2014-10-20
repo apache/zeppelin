@@ -911,7 +911,7 @@ angular.module('zeppelinWebApp')
         return varA+varB;
       },
       count : function(a,b) {
-        var varA = (a!==undefined) ? 1 : 0;
+        var varA = (a!==undefined) ? a : 0;      
         var varB = (b!==undefined) ? 1 : 0;
         return varA+varB;
       },
@@ -924,8 +924,21 @@ angular.module('zeppelinWebApp')
         var varA = (a!==undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
         var varB = (b!==undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
         return Math.max(varA,varB);
+      },
+      avg : function(a,b,c) {
+        var varA = (a!==undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
+        var varB = (b!==undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
+        return varA+varB;
       }
-    }
+    };
+
+    var aggrFuncDiv = {
+      sum : false,
+      count : false,
+      min : false,
+      max : false,
+      avg : true
+    };
 
     var schema = {};
     var rows = {};
@@ -982,10 +995,11 @@ angular.module('zeppelinWebApp')
 
       for (var v=0; v < values.length; v++) {       
         var value = values[v];
+        var valueKey = value.name+"("+value.aggr+")";
 
         // add value to schema
-        if (!s[value.name]) {
-          s[value.name] = {
+        if (!s[valueKey]) {
+          s[valueKey] = {
             type : "value",
             order : v,         
             index : value.index
@@ -993,10 +1007,16 @@ angular.module('zeppelinWebApp')
         }
 
         // add value to row
-        if (!p[value.name]) {
-          p[value.name] = row[value.index];
+        if (!p[valueKey]) {
+          p[valueKey] = { 
+              value : row[valueKey],
+              count: 1
+          };
         } else {
-          p[value.name] = aggrFunc[(value.aggr) ? value.aggr : "sum"](p[value.name], row[value.index]);
+          p[valueKey] = { 
+              value : aggrFunc[value.aggr](p[valueKey].value, row[value.index], p[valueKey].count+1),
+              count : (aggrFuncDiv[value.aggr]) ?  p[valueKey].count+1 : p[valueKey].count
+          }
         }
       }
     }
@@ -1078,13 +1098,36 @@ angular.module('zeppelinWebApp')
         }
 
         var xVar = isNaN(rowValue) ? ((allowTextXAxis) ? rowValue : rowNameIndex[rowValue]) : parseFloat(rowValue);
+        var yVar = 0;
         if(xVar===undefined) xVar = colName;
-
+        if(value!==undefined){       
+            yVar = isNaN(value.value) ? 0 : parseFloat(value.value) / parseFloat(value.count);
+        }
         d3g[i].values.push({
           x : xVar,
-          y : isNaN(value) ? 0 : parseFloat(value)
+          y : yVar
         });
       });
+    }
+
+    // clear aggregation name, if possible
+    var namesWithoutAggr = {};
+
+    for(var colName in colNameIndex) {
+      var withoutAggr = colName.substring(0, colName.lastIndexOf('('));
+      if (!namesWithoutAggr[withoutAggr]) {
+        namesWithoutAggr[withoutAggr] = 1;
+      } else {
+        namesWithoutAggr[withoutAggr]++;
+      }
+    }
+
+    for (var i=0; i<d3g.length; i++) {
+      var colName = d3g[i].key;
+      var withoutAggr = colName.substring(0, colName.lastIndexOf('('));
+      if (namesWithoutAggr[withoutAggr] <= 1 ) {
+        d3g[i].key = withoutAggr;
+      }
     }
 
     return d3g;
