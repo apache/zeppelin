@@ -586,7 +586,6 @@ angular.module('zeppelinWebApp')
       setNewMode(type);
     } else {
       clearUnknownColsFromGraphOption();
-      selectDefaultColsForGraphOption();
 
       if (!type || type === 'table') {
         setTable($scope.paragraph.result, refresh);
@@ -710,6 +709,8 @@ angular.module('zeppelinWebApp')
       $scope.chart[type] = chart;
     }
 
+    var p = pivot(data);
+
     var xColIndexes = $scope.paragraph.config.graph.keys;
     var yColIndexes = $scope.paragraph.config.graph.values;
     
@@ -730,60 +731,12 @@ angular.module('zeppelinWebApp')
             value: parseFloat(yVar)
         });
       }
-    } else {
+    } else if(type=="multiBarChart") {
+      d3g = pivotDataToD3ChartFormat(p, true);
       $scope.chart[type].yAxis.axisLabelDistance(50);
-
-      for (var i = 0; i < yColIndexes.length; i++) {
-        d3g.push({
-          values: [],
-          key: yColIndexes[i].name
-        });
-      }
-
-      var xLabels = {};
-
-      var xValue = function(x,i) {
-        if (isNaN(x)) {
-          if (type==="multiBarChart" || type==="pieChart") {
-            return x;
-          } else {
-            xLabels[i] = x;
-            return i;
-          }
-        } else {
-          return parseFloat(x);           
-        }
-      };
-
-      var yValue = function(y) {
-        if (isNaN(y)) {
-          return 0; 
-        } else {
-          return parseFloat(y);
-        }
-      }
-
-      for (i = 0; i < data.rows.length; i++) {
-        var row = data.rows[i];
-        for (var j = 0; j < yColIndexes.length; j++) {
-          var xVar = row[xColIndexes[0].index];
-          var yVar = row[yColIndexes[j].index];
-          d3g[j].values.push({
-            x: xValue(xVar, i),
-            y: yValue(yVar)
-          });
-        }
-      }
-
-      $scope.chart[type].xAxis.tickFormat(function(d) {
-        if (xLabels[d] ) {
-          return xLabels[d]
-        } else {
-          return d;
-        }
-      });
-
-
+    } else {
+      d3g = pivotDataToD3ChartFormat(p);
+      $scope.chart[type].yAxis.axisLabelDistance(50);
     }
 
     var renderChart = function(){
@@ -871,19 +824,19 @@ angular.module('zeppelinWebApp')
 
   $scope.removeGraphOptionKeys = function(idx) {
     $scope.paragraph.config.graph.keys.splice(idx, 1);
-    selectDefaultColsForGraphOption();
+    clearUnknownColsFromGraphOption();
     $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
   }
 
   $scope.removeGraphOptionValues = function(idx) {
     $scope.paragraph.config.graph.values.splice(idx, 1);
-    selectDefaultColsForGraphOption();
+    clearUnknownColsFromGraphOption();
     $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
   }
 
   $scope.removeGraphOptionGroups = function(idx) {
     $scope.paragraph.config.graph.groups.splice(idx, 1);
-    selectDefaultColsForGraphOption();
+    clearUnknownColsFromGraphOption();
     $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
   }
 
@@ -940,35 +893,176 @@ angular.module('zeppelinWebApp')
     var groups = $scope.paragraph.config.graph.groups;
     var values = $scope.paragraph.config.graph.values;
 
-    // select aggr(value1), aggr(value2) from data group by key1, key2
     var aggrFunc = {
       sum : function(a,b) {
-        return a+b;
+        var varA = isNaN(a) ? 1 : parseFloat(a);
+        var varB = isNaN(b) ? 1 : parseFloat(b);
+        return varA+varB;
       }
     }
 
     var aggr = "sum";
+    var schema = {};
+    var rows = {};
 
-    var p = {}
+    for (var i=0; i < data.rows.length; i++) {
+      var row = data.rows[i];
+      var newRow = {};
+      var s = schema;
+      var p = rows;
 
-    //p[k][key] = group1[sum(value1), sum(value2)], group2[sum(value1), sum(value2)];
+      for (var k=0; k < keys.length; k++) {
+        var key = keys[k];
 
-    // assume there're only one groups
-    for (var k=0; k < keys.length; k++) {
-      var key = keys[k];
-      p[k] = {};
+        // add key to schema
+        if (!s[key.name]) {
+          s[key.name] = {
+             order : k,
+             index : key.index,
+             type : "key",
+             children : {}
+          };
+        }
+        s = s[key.name].children;
 
-      for (var i=0; i < data.rows.length; i++) {
-        for (var g=0; g < data.groups.length; g++) {
+        // add key to row
+        var keyKey = row[key.index];
+        if (!p[keyKey]) {
+          p[keyKey] = {};
+        }
+        p = p[keyKey];
+      }
+
+      for (var g=0; g < groups.length; g++) {
+        var group = groups[g];
+        var groupKey = row[group.index];
+
+        // add group to schema
+        if (!s[groupKey]) {
+          s[groupKey] = {
+             order : g,
+             index : group.index,
+             type : "group",
+             children : {}
+          };
+        }
+        s = s[groupKey].children;
+
+        // add key to row
+        if (!p[groupKey]) {
+          p[groupKey] = {};
+        }
+        p = p[groupKey];
+      }
+
+      for (var v=0; v < values.length; v++) {       
+        var value = values[v];
+
+        // add value to schema
+        if (!s[value.name]) {
+          s[value.name] = {
+            type : "value",
+            order : v,         
+            index : value.index
+          }
+        }
+
+        // add value to row
+        if (!p[value.name]) {
+          p[value.name] = row[value.index];
+        } else {
+          p[value.name] = aggrFunc[aggr](p[value.name], row[value.index]);
         }
       }
+    }
 
+    //console.log("schema=%o, rows=%o", schema, rows);
 
-      for (var v=0; v < values.length; v++) {
-        values[v];
+    return {
+      schema : schema,
+      rows : rows
+    }
+  };
+
+  var pivotDataToD3ChartFormat = function(data, allowTextXAxis) {
+    // construct d3 data
+    var d3g = [];
+
+    var schema = data.schema;
+    var rows = data.rows;
+    var values = $scope.paragraph.config.graph.values;
+
+    var d = {};
+    var concat = function(o, n) {
+      if(!o) {
+        return n;
+      } else {
+        return o+"."+n;
       }
     }
-      data.rows[i]
+
+    var traverse = function(sKey, s, rKey, r, func, rowName, rowValue, colName) {
+      //console.log("TRAVERSE sKey=%o, s=%o, rKey=%o, r=%o, rowName=%o, rowValue=%o, colName=%o", sKey, s, rKey, r, rowName, rowValue, colName);
+
+      if (s.type==="key") {
+        rowName = concat(rowName, sKey);
+        rowValue = concat(rowValue, rKey);
+      } else if(s.type==="group") {
+        colName = concat(colName, sKey);
+      } else if(s.type==="value") {
+        colName = concat(colName, rKey);
+        func(rowName, rowValue, colName, r);
+      }
+
+      for (var c in s.children) {
+        if (s.type==="group" && sKey!==rKey) {
+          traverse(c, s.children[c], c, undefined, func, rowName, rowValue, colName);
+          continue;
+        }
+
+        for (var j in r) {
+          traverse(c, s.children[c], j, r[j], func, rowName, rowValue, colName);
+        }
+      }
+    };
+
+    var sKey = Object.keys(schema)[0];
+
+    var rowNameIndex = {};
+    var rowIdx = 0;
+    var colNameIndex = {};
+    var colIdx = 0;
+
+    for (var k in rows) {
+      traverse(sKey, schema[sKey], k, rows[k], function(rowName, rowValue, colName, value){
+        //console.log("RowName=%o, row=%o, col=%o, value=%o", rowName, rowValue, colName, value);
+        if (rowNameIndex[rowValue]===undefined) {
+          rowNameIndex[rowValue] = rowIdx++;
+        }
+
+        if (colNameIndex[colName]===undefined) {
+          colNameIndex[colName] = colIdx++;
+        }
+        var i = colNameIndex[colName];
+
+        if(!d3g[i]){
+          d3g[i] = {
+            values : [],
+            key : colName
+          }
+        }
+
+        var xVar = isNaN(rowValue) ? ((allowTextXAxis) ? rowValue : rowNameIndex[rowValue]) : parseFloat(rowValue);
+        if(xVar===undefined) xVar = colName;
+
+        d3g[i].values.push({
+          x : xVar,
+          y : isNaN(value) ? 0 : parseFloat(value)
+        });
+      });
+    }
+
+    return d3g;
   };
 
 
