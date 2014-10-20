@@ -721,18 +721,19 @@ angular.module('zeppelinWebApp')
     // select yColumns.
 
     if (type=="pieChart") {
+      var d = pivotDataToD3ChartFormat(p, true);
+
       $scope.chart[type].x(function(d){ return d.label;})
                         .y(function(d){ return d.value;});
 
-      for (var i = 0; i < data.rows.length; i++) {
-        var row = data.rows[i];
-        var xVar = row[xColIndexes[0].index];
-        var yVar = row[yColIndexes[0].index];
-
-        d3g.push({
-            label: isNaN(xVar) ? xVar : parseFloat(xVar),
-            value: parseFloat(yVar)
-        });
+      if ( d.length > 0 ) {
+        for ( var i=0; i<d[0].values.length ; i++) {
+          var e = d[0].values[i];
+          d3g.push({
+            label : e.x,
+            value : e.y
+          });
+        }
       }
     } else if(type=="multiBarChart") {
       d3g = pivotDataToD3ChartFormat(p, true);
