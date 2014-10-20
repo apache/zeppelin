@@ -73,8 +73,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     return running;
   };
 
-  $scope.setLookAndFeel = function() {
-    console.log("set look and feel");
+  $scope.setLookAndFeel = function(looknfeel) {
+    $scope.note.config.looknfeel = looknfeel;
     $scope.setConfig();
     $rootScope.$emit('setLookAndFeel', $scope.note.config.looknfeel);
   };
