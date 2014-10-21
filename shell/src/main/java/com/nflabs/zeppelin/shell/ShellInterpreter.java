@@ -22,7 +22,7 @@ import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 public class ShellInterpreter extends Interpreter {
 	Logger logger = LoggerFactory.getLogger(ShellInterpreter.class);
-	int CMD_TIMEOUT = 600;
+	int CMD_TIMEOUT = 600000;
 	
 	static {
 		Interpreter.register("sh", ShellInterpreter.class.getName());
