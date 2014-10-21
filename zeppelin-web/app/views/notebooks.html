@@ -50,12 +50,20 @@ limitations under the License.
             data-target="#myModal"
             tooltip-placement="top" tooltip="List of shortcut"><i class="icon-question"></i>
         </button>
-        <form class="navbar-right" style="display:inline">
-            <select ng-model="note.config.looknfeel"
-            class="selectpicker"
-            ng-change="setLookAndFeel()"
-            ng-options="col for col in looknfeelOption"></select>
-        </form>
+        <div class="btn-group navbar-right"
+             style="top:8px;">
+          <button type="button"
+                  class="btn btn-default btn-xs dropdown-toggle"
+                  data-toggle="dropdown">
+            {{note.config.looknfeel}} <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+            <li ng-repeat="looknfeel in looknfeelOption">
+              <a style="cursor:pointer"
+                 ng-click="setLookAndFeel(looknfeel)">{{looknfeel}}</a>
+            </li>
+          </ul>
+        </div>
     </h3>
     
   </div>
