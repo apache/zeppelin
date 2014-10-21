@@ -26,7 +26,7 @@
 angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope) {
   $scope.note = null;
   $scope.showEditor = false;
-  $scope.looknfeelOption = [ "default", "simple" ];
+  $scope.looknfeelOption = [ 'default', 'simple' ];
   
 
   /** Init the new controller */
@@ -63,9 +63,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.isNoteRunning = function() {
     var running = false;
-    if(!$scope.note) return false;
+    if(!$scope.note){ return false; }
     for (var i=0; i<$scope.note.paragraphs.length; i++) {
-      if ( $scope.note.paragraphs[i].status === "PENDING" || $scope.note.paragraphs[i].status === "RUNNING") {
+      if ( $scope.note.paragraphs[i].status === 'PENDING' || $scope.note.paragraphs[i].status === 'RUNNING') {
         running = true;
         break;
       }
@@ -74,7 +74,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   $scope.setLookAndFeel = function() {
-    console.log("set look and feel");
+    console.log('set look and feel');
     $scope.setConfig();
     $rootScope.$emit('setLookAndFeel', $scope.note.config.looknfeel);
   };
@@ -224,7 +224,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
           found = true;
           break;
         }
-      };
+      }
 
       if (found) {
         if (idx === oldIdx) {
@@ -248,12 +248,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         if (currentEntry.id === $scope.note.paragraphs[entry].id) {
           found = true;
         }
-      });
+      })
       /** not found means bye */
       if(!found) {
-        $scope.note.paragraphs.splice(entry, 1)
+        $scope.note.paragraphs.splice(entry, 1);
       }
-    };
+    }
   };
 
 });

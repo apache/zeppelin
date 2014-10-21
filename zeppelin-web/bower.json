@@ -23,8 +23,5 @@
     "angular-mocks": "1.2.16",
     "angular-scenario": "1.2.16"
   },
-  "appPath": "app",
-  "resolutions": {
-    "angular-dragdrop": "~1.0.8"
-  }
+  "appPath": "app"
 }
