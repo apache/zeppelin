@@ -126,6 +126,93 @@ limitations under the License.
                 ng-click="setGraphMode('lineChart', true)"><i class="fa fa-line-chart"></i>
         </button>
       </div>
+      <span ng-if="paragraph.result.type == 'TABLE'"
+            style="margin-left:10px; font-size: 13px; cursor:pointer">
+        <a ng-if="paragraph.config.graph.optionOpen"
+           ng-click="toggleGraphOption()">
+          Options <span class="fa fa-caret-up"></span>
+        </a>
+        <a ng-if="!paragraph.config.graph.optionOpen"
+           ng-click="toggleGraphOption()">
+          Options <span class="fa fa-caret-down"></span>
+        </a>          
+      </span>
+
+      <div ng-if="paragraph.result.type == 'TABLE' && paragraph.config.graph.optionOpen"
+           class="option">
+
+        <div class="columns">
+          All Columns
+          <ul class="list-unstyled">
+            <li ng-repeat="col in paragraph.result.columnNames">
+              <div class="btn btn-default btn-xs"
+                      data-drag="true"
+                      data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
+                      ng-model="paragraph.result.columnNames"
+                      jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}"
+              >
+                {{col.name}}
+              </div>
+            </li>
+          </ul>
+        </div>
+        
+
+        <span class="columns">
+          Keys
+          <ul data-drop="true"
+              ng-model="paragraph.config.graph.keys"
+              jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
+              class="list-unstyled">
+            <li ng-repeat="item in paragraph.config.graph.keys">
+              <button class="btn btn-primary btn-xs">
+                {{item.name}} <span class="fa fa-close" ng-click="removeGraphOptionKeys($index)"></span>
+              </button>
+            </li>
+          </ul>
+        </span>
+
+        <span class="columns">
+          Groups
+          <ul data-drop="true"
+              ng-model="paragraph.config.graph.groups"
+              jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
+              class="list-unstyled">
+            <li ng-repeat="item in paragraph.config.graph.groups">
+              <button class="btn btn-success btn-xs">
+                {{item.name}} <span class="fa fa-close" ng-click="removeGraphOptionGroups($index)"></span>
+              </button>
+            </li>
+          </ul>
+        </span>
+
+        <span class="columns">
+          Values
+          <ul data-drop="true"
+              ng-model="paragraph.config.graph.values"
+              jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
+              class="list-unstyled">
+            <li ng-repeat="item in paragraph.config.graph.values">
+              <div class="btn-group">
+                <div class="btn btn-info btn-xs dropdown-toggle"
+                        type="button"
+                        data-toggle="dropdown">
+                  {{item.name}} <font style="color:#EEEEEE">{{item.aggr}}</font>
+                  <span class="fa fa-close" ng-click="removeGraphOptionValues($index)"></span>
+                </div>
+                <ul class="dropdown-menu" role="menu">
+                  <li ng-click="setGraphOptionValueAggr($index, 'sum')"><a>sum</a></li>
+                  <li ng-click="setGraphOptionValueAggr($index, 'count')"><a>count</a></li>
+                  <li ng-click="setGraphOptionValueAggr($index, 'avg')"><a>avg</a></li>
+                  <li ng-click="setGraphOptionValueAggr($index, 'min')"><a>min</a></li>
+                  <li ng-click="setGraphOptionValueAggr($index, 'max')"><a>max</a></li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </span>
+      </div>
+
 
       <div ng-if="isGraphMode('table')"
            id="p{{paragraph.id}}_table">

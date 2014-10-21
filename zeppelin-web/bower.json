@@ -16,7 +16,8 @@
     "ace-builds": "1.1.6",
     "angular-ui-ace": "~0.1.1",
     "jquery.scrollTo": "~1.4.13",
-    "nvd3": "~1.1.15-beta"
+    "nvd3": "~1.1.15-beta",
+    "angular-dragdrop": "~1.0.8"
   },
   "devDependencies": {
     "angular-mocks": "1.2.16",

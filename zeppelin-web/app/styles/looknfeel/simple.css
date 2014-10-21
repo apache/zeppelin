@@ -13,6 +13,11 @@
  * limitations under the License.
  */
 
+body {
+  background: white;
+}
+
+
 /**
  * Box and well
  */

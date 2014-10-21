@@ -28,10 +28,10 @@ angular.module('zeppelinWebApp')
   
   $scope.WebSocketWaitingList = [];
   $scope.connected = false;
-  $scope.looknfeel = "default";
+  $scope.looknfeel = 'default';
 
   var init = function() {
-    $scope.asIframe = (($window.location.href.indexOf("asIframe") > -1) ? true : false);
+    $scope.asIframe = (($window.location.href.indexOf('asIframe') > -1) ? true : false);
   };
   init();
 
