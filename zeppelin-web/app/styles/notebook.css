@@ -351,22 +351,19 @@
   height:auto;
   overflow : auto;
   min-height: 200px;
-  border: 1px solid #DDDDDD;
-  border-radius: 5px;
+  border-top: 1px solid #ecf0f1;
+
 }
 
 .tableDisplay .option .columns {
   height: 100%;
-  float:left;
-  margin-right:10px;
-  padding: 3px 3px 3px 3px;
 }
 
 .tableDisplay .option .columns ul {
-  overflow-y: auto;
-  overflow-x: visible;
+
   background-color: white;
-  min-width: 100px;
+  /*min-width: 100px;*/
+  width:auto;
   padding: 3px 3px 3px 3px;
   height : 150px;
   border: 1px solid #CCC;
@@ -377,18 +374,18 @@
 
 }
 
-.tableDisplay .option .columns ul li{
+.tableDisplay .option .columns ul li {
   margin: 3px 3px 3px 3px;
 }
 
-.tableDisplay .option .columns ul li span{
+.tableDisplay .option .columns ul li span {
   cursor: pointer;
   margin-left: 3px;
   margin-top: 3px;
 }
 
 .tableDisplay .option .columns ul li div ul { /* aggregation menu */
-  min-width:50px;
+  width:auto;
   height:auto;
 }
 
@@ -398,5 +395,30 @@
   cursor: pointer;
 }
 
+.tableContainer {
+  overflow-y: auto;
+  max-height: 300px;
+  position:relative;
+  overflow: hidden; 
+}
 
+.allFields {
+  margin-bottom: 10px;
+}
+.noDot {
+  list-style-type: none;
+  padding-left:5px;
+}
 
+.liVertical {
+  display:block;
+  float:left;
+  padding: 5px;
+}
+.row {
+  margin-right: 0px !important
+}
+
+.lightBold {
+  font-weight: 500;
+}

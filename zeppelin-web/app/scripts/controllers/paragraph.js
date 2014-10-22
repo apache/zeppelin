@@ -663,7 +663,7 @@ angular.module('zeppelinWebApp')
       var html = '';
       html += '<table class="table table-hover table-condensed">';
       html += '  <thead>'
-      html += '    <tr style="background-color: #EFEFEF; font-weight: bold;">';
+      html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
       for (var c in $scope.paragraph.result.columnNames) {
         html += '<th>'+$scope.paragraph.result.columnNames[c].name+'</th>';
       }
@@ -688,7 +688,8 @@ angular.module('zeppelinWebApp')
 
       html += '</table>';
 
-      $('#p'+$scope.paragraph.id+'_table').html(html);
+      $('#p' + $scope.paragraph.id + '_table').html(html);
+      $('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
     };
 
     var retryRenderer = function(){
