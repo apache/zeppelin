@@ -39,3 +39,9 @@ h5 {
 h6 {
   font-size: 1em;
 }
+
+.btnText {
+  text-transform: uppercase;
+  font-size: 12px;
+  text-decoration: none!important;
+}
