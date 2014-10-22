@@ -17,11 +17,15 @@
     "angular-ui-ace": "~0.1.1",
     "jquery.scrollTo": "~1.4.13",
     "nvd3": "~1.1.15-beta",
-    "angular-dragdrop": "~1.0.8"
+    "angular-dragdrop": "~1.0.8",
+    "perfect-scrollbar": "~0.5.4"
   },
   "devDependencies": {
     "angular-mocks": "1.2.16",
     "angular-scenario": "1.2.16"
   },
-  "appPath": "app"
+  "appPath": "app",
+  "resolutions": {
+    "perfect-scrollbar": "~0.5.4"
+  }
 }

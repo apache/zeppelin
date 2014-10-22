@@ -18,6 +18,7 @@
 
 body {
   padding-top: 60px;
+  color: #212121;
 }
 
 html,body { height: 100%;}
@@ -139,7 +140,7 @@ a.navbar-brand:hover {
 .box-heading{
   position:relative;
   max-width: 100%;
-  font-size: 20px;
+  /*font-size: 20px;*/
   font-weight:300;
   white-space: nowrap;
   /*overflow:hidden;*/
@@ -148,6 +149,7 @@ a.navbar-brand:hover {
   margin: 0 0 15px;
   padding-bottom: 2px;
 }
+/**
 h1.box-heading,
 h2.box-heading,
 h3.box-heading,
@@ -155,7 +157,7 @@ h4.box-heading,
 h5.box-heading,
 h6.box-heading{
   font-size: 20px;
-}
+}*/
 .box-heading > .btn-group,
 .box-heading > .btn{
   margin-top: -3px;

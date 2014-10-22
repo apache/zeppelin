@@ -213,9 +213,8 @@ limitations under the License.
         </span>
       </div>
 
-
-      <div ng-if="isGraphMode('table')"
-           id="p{{paragraph.id}}_table">
+      
+      <div id="p{{paragraph.id}}_table" class="tableContainer" ng-if="isGraphMode('table')">
       </div>
 
       <div ng-if="getResultType()=='TABLE' && getGraphMode()=='multiBarChart'"

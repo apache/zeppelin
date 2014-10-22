@@ -398,5 +398,10 @@
   cursor: pointer;
 }
 
-
-
+.tableContainer {
+  overflow-y: auto;
+  max-height: 300px;
+  
+  position:relative;
+  overflow: hidden; 
+}
