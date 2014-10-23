@@ -100,7 +100,7 @@ limitations under the License.
     </form>
 
     <!-- Rendering -->
-    <div class='tableDisplay'>
+    <div class='tableDisplay' ng-show="!paragraph.config.tableHide">
       <div id="{{paragraph.id}}_switch"
            ng-if="paragraph.result.type == 'TABLE'"
            class="btn-group"
@@ -338,6 +338,18 @@ limitations under the License.
                 class="fa fa-code"
                 ng-click="openEditor()"
                 ng-show="paragraph.config.editorHide && !paragraph.config.hide"> Show code editor</a>
+        </li>
+
+        <li>
+          <!-- Table handler -->
+          <a style="cursor:pointer"
+                class="fa fa-comment-o"
+                ng-click="closeTable()"
+                ng-show="!paragraph.config.tableHide && !paragraph.config.hide"> Hide output</a>
+          <a style="cursor:pointer"
+                class="fa fa-comment-o"
+                ng-click="openTable()"
+                ng-show="paragraph.config.tableHide && !paragraph.config.hide"> Show output</a>
         </li>
 
         <li>

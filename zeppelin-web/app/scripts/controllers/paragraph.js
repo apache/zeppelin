@@ -282,6 +282,26 @@ angular.module('zeppelinWebApp')
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
+  $scope.closeTable = function() {
+    console.log('close the output');
+
+    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    newConfig.tableHide = true;
+
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+  };
+
+  $scope.openTable = function() {
+    console.log('open the output');
+
+    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    newConfig.tableHide = false;
+
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+  };
+
   $scope.showTitle = function() {
     var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
     var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
@@ -511,6 +531,14 @@ angular.module('zeppelinWebApp')
 
   $rootScope.$on('closeEditor', function(event){
     $scope.closeEditor();
+  });
+
+  $rootScope.$on('openTable', function(event){
+    $scope.openTable();
+  });
+
+  $rootScope.$on('closeTable', function(event){
+    $scope.closeTable();
   });
 
 
