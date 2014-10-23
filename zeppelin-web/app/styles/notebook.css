@@ -67,6 +67,10 @@
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
 }
 
+.ace-tm .ace_marker-layer .ace_selection {
+    background: rgba(98, 157, 233, 0.2) !important;
+}
+
 .labelBtn {
   padding: .2em .6em .3em;
   font-size: 75%;
@@ -227,7 +231,7 @@
 
 .paragraph .runControl {
   font-size: 1px;
-  color: #AAAAAA;  
+  color: #AAAAAA;
   height:4px;
   margin: 1px 0px 0px 0px;
 }
@@ -399,7 +403,7 @@
   overflow-y: auto;
   max-height: 300px;
   position:relative;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 .allFields {
