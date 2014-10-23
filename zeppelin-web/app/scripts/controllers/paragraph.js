@@ -345,6 +345,13 @@ angular.module('zeppelinWebApp')
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
+  $scope.toggleOutput = function() {
+    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    newConfig.tableHide = !newConfig.tableHide;
+    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+  };
 
   $scope.loadForm = function(formulaire, params) {
     var value = formulaire.defaultValue;
