@@ -361,12 +361,20 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
         //Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
         //SparkEnv env = (SparkEnv) share.get("sparkEnv");
 		SparkEnv.set(env);
+		
+		// add println("") on line line to not make finishing with comment
+		// see https://github.com/NFLabs/zeppelin/issues/151
+		String [] linesToRun = new String[lines.length+1];
+		for (int i=0; i<lines.length; i++) {
+			linesToRun[i] = lines[i];
+		}
+		linesToRun[lines.length] = "print(\"\")";
 
 		Console.setOut((java.io.PrintStream) binder.get("out"));
 		out.reset();
 		Code r = null;
 		String incomplete = "";
-		for(String s : lines) {		
+		for(String s : linesToRun) {		
 			scala.tools.nsc.interpreter.Results.Result res = null;
 			try {
 				res = intp.interpret(incomplete+s);
