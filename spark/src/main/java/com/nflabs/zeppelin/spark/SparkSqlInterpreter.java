@@ -102,7 +102,11 @@ public class SparkSqlInterpreter extends Interpreter {
 			Row row = rows[r];
 			
 			for(int i=0; i<columns.size(); i++){
-				msg += row.apply(i).toString();
+				if(!row.isNullAt(i)){
+					msg += row.apply(i).toString();
+				}else{
+					msg += "null";
+				}
 				if(i!=columns.size()-1){
 					msg += "\t";
 				}
