@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.notebook.NoteInterpreterLoader;
 import com.nflabs.zeppelin.notebook.Paragraph;
 import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.scheduler.Scheduler;
@@ -267,7 +268,9 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
 		sqlc = getSQLContext();
 		
 		dep = getDependencyResolver();
-		z = new ZeppelinContext(sc, sqlc, dep);
+		
+		NoteInterpreterLoader noteInterpreterLoader = (NoteInterpreterLoader) getProperty().get("noteIntpLoader");
+		z = new ZeppelinContext(sc, sqlc, dep, noteInterpreterLoader, printStream);
 
         this.interpreter.loadFiles(settings);
 
