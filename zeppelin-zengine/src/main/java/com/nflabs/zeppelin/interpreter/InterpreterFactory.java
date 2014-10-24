@@ -64,10 +64,10 @@ public class InterpreterFactory {
 							if(className.equals(Interpreter.registeredInterpreters.get(intName))){
 								logger.info("Interpreter "+intName+" found. class="+className);
 								cleanCl.put(intName, ccl);
-							}
 							
-							if (className.equals(interpreterClassList[0])) {
-								defaultInterpreterName = intName;
+								if (className.equals(interpreterClassList[0])) {
+									defaultInterpreterName = intName;
+								}
 							}
 						}
 					} catch (ClassNotFoundException e) {
