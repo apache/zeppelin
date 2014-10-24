@@ -656,9 +656,9 @@ angular.module('zeppelinWebApp')
       } else {
         var dStr = d.toString();
         var splitted = dStr.split('.');
-        var formatted = splitted[0].replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+        var formatted = splitted[0].replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
         if (splitted.length>1) {
-          formatted+= "."+splitted[1];
+          formatted+= '.'+splitted[1];
         }
         return formatted;
       }
