@@ -362,7 +362,7 @@ Alternatively you can set the class path throuh nsc.Settings.classpath.
         //SparkEnv env = (SparkEnv) share.get("sparkEnv");
 		SparkEnv.set(env);
 		
-		// add println("") on line line to not make finishing with comment
+		// add print("") to make sure not finishing with comment
 		// see https://github.com/NFLabs/zeppelin/issues/151
 		String [] linesToRun = new String[lines.length+1];
 		for (int i=0; i<lines.length; i++) {
