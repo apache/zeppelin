@@ -1,20 +1,21 @@
 package com.nflabs.zeppelin.notebook;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Consist of Notes 
@@ -43,7 +44,6 @@ public class Notebook {
 	
 	/**
 	 * Create new note
-	 * @param name
 	 * @return
 	 */
 	public Note createNote() {
@@ -82,9 +82,9 @@ public class Notebook {
 			if(f.isDirectory()) {
 				Scheduler scheduler = schedulerFactory.createOrGetFIFOScheduler("note_"+System.currentTimeMillis());
 				logger.info("Loading note from "+f.getName());
-				Note n = Note.load(f.getName(), conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()), scheduler);
+				Note note = Note.load(f.getName(), conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()), scheduler);
 				synchronized(notes){
-					notes.put(n.id(), n);
+					notes.put(note.id(), note);
 				}
 			}
 		}
@@ -92,7 +92,14 @@ public class Notebook {
 	
 	public List<Note> getAllNotes(){
 		synchronized(notes){
-			return new LinkedList<Note>(notes.values());
+            List<Note> noteList = new ArrayList<Note>(notes.values());
+            Collections.sort(noteList, new Comparator() {
+                @Override
+                public int compare(Object one, Object two) {
+                    return ((Note) one).getName().compareTo(((Note) two).getName());
+                }
+            });
+            return noteList;
 		}
 	}
 }
