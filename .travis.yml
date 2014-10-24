@@ -15,3 +15,7 @@ script:
 after_failure:
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.log
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.out
+
+notifications:
+  slack:
+    secure: dtIkPwlf5uTun19p9TtPEAFmrLOMK2COE8TL9m8LXX/N2WzJaKYvAnovMObEV6KEgK2oZ+72Cke7eBI+Hp4FmHZ2B7mQI/PNCfRZthI3cc3zVmMd25yvLH9AlCRa2bC6R885z2copvzaoZtLBkHnPa8bUrUkbmRp40qkDPQpgO4=

@@ -24,9 +24,10 @@
  * @author anthonycorbacho
  */
 angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope) {
-
   $scope.note = null;
   $scope.showEditor = false;
+  $scope.looknfeelOption = [ 'default', 'simple' ];
+  
 
   /** Init the new controller */
   var initNotebook = function() {
@@ -62,9 +63,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.isNoteRunning = function() {
     var running = false;
-    if(!$scope.note) return false;
+    if(!$scope.note){ return false; }
     for (var i=0; i<$scope.note.paragraphs.length; i++) {
-      if ( $scope.note.paragraphs[i].status === "PENDING" || $scope.note.paragraphs[i].status === "RUNNING") {
+      if ( $scope.note.paragraphs[i].status === 'PENDING' || $scope.note.paragraphs[i].status === 'RUNNING') {
         running = true;
         break;
       }
@@ -72,11 +73,25 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     return running;
   };
 
+  $scope.setLookAndFeel = function(looknfeel) {
+    $scope.note.config.looknfeel = looknfeel;
+    $scope.setConfig();
+    $rootScope.$emit('setLookAndFeel', $scope.note.config.looknfeel);
+  };
+
+  /** Update note config **/
+  $scope.setConfig = function(config) {
+    if(config) {
+      $scope.note.config = config;
+    }
+    $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.note.id, name: $scope.note.name, config : $scope.note.config}});
+  };
+
   /** Update the note name */
   $scope.sendNewName = function() {
     $scope.showEditor = false;
     if ($scope.note.name) {
-      $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.note.id, name: $scope.note.name}});
+      $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.note.id, name: $scope.note.name, config : $scope.note.config}});
     }
   };
 
@@ -88,12 +103,23 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       note = cleanParagraphExcept($scope.paragraphUrl, note);
       $rootScope.$emit('setIframe', $scope.asIframe);
     }
+
     if ($scope.note === null) {
       $scope.note = note;
+      initialize();
     } else {
       updateNote(note);
     }
+
+    /** set look n feel */
+    $rootScope.$emit('setLookAndFeel', note.config.looknfeel);
   });
+
+  var initialize = function() {
+    if(!$scope.note.config.looknfeel) {
+      $scope.note.config.looknfeel = 'default';
+    }
+  };
   
   var cleanParagraphExcept = function(paragraphId, note) {
     var noteCopy = {};
@@ -198,7 +224,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
           found = true;
           break;
         }
-      };
+      }
 
       if (found) {
         if (idx === oldIdx) {
@@ -222,12 +248,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         if (currentEntry.id === $scope.note.paragraphs[entry].id) {
           found = true;
         }
-      });
+      })
       /** not found means bye */
       if(!found) {
-        $scope.note.paragraphs.splice(entry, 1)
+        $scope.note.paragraphs.splice(entry, 1);
       }
-    };
+    }
   };
 
 });

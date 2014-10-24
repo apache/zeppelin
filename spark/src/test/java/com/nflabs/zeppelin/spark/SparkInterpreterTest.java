@@ -20,9 +20,13 @@ public class SparkInterpreterTest {
 	@Before
 	public void setUp() throws Exception {
 		Properties p = new Properties();
-		p.put("share", share);
-		repl = new SparkInterpreter(p);
-		repl.open();
+		p.put("share", new HashMap<String, Object>());
+	    repl = SparkInterpreter.singleton();
+	    if (repl == null) {
+	    	repl = new SparkInterpreter(p);
+			SparkInterpreter.setSingleton(repl);
+			repl.open();
+	    }
 	}
 
 	@After

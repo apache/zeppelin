@@ -13,12 +13,11 @@
  * limitations under the License.
  */
 
-@import 'printMode.css' print;
-
 .paragraph-col {
   margin: 0 0 0 0px;
   padding: 0 0 0 0px;
 }
+
 .paragraph {
   padding: 2px 8px 4px 8px;
   min-height: 32px;
@@ -66,6 +65,10 @@
   word-break: break-all!important;
   word-wrap: break-word!important;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+}
+
+.ace-tm .ace_marker-layer .ace_selection {
+    background: rgba(98, 157, 233, 0.2) !important;
 }
 
 .labelBtn {
@@ -228,7 +231,7 @@
 
 .paragraph .runControl {
   font-size: 1px;
-  color: #AAAAAA;  
+  color: #AAAAAA;
   height:4px;
   margin: 1px 0px 0px 0px;
 }
@@ -255,11 +258,7 @@
   margin-left: -10px;
   margin-right: -10px;
   margin-top: -10px;
-  background-color: white;
   font-family: 'Roboto', sans-serif;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  color: #2c3e50;
-  border-bottom: 1px solid #E5E5E5;
 }
 
 .new_h3 {
@@ -340,4 +339,90 @@
   display: block;
   max-width: 100%;
   height: auto;
+}
+
+.tableDisplay .btn-group span {
+  margin: 10px 0px 0px 10px;
+  font-size:12px;
+}
+.tableDisplay .btn-group span a {
+  cursor:pointer;
+}
+
+.tableDisplay .option {
+  padding: 5px 5px 5px 5px;
+  font-size:12px;
+  height:auto;
+  overflow : auto;
+  min-height: 200px;
+  border-top: 1px solid #ecf0f1;
+
+}
+
+.tableDisplay .option .columns {
+  height: 100%;
+}
+
+.tableDisplay .option .columns ul {
+
+  background-color: white;
+  /*min-width: 100px;*/
+  width:auto;
+  padding: 3px 3px 3px 3px;
+  height : 150px;
+  border: 1px solid #CCC;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+  -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+
+}
+
+.tableDisplay .option .columns ul li {
+  margin: 3px 3px 3px 3px;
+}
+
+.tableDisplay .option .columns ul li span {
+  cursor: pointer;
+  margin-left: 3px;
+  margin-top: 3px;
+}
+
+.tableDisplay .option .columns ul li div ul { /* aggregation menu */
+  width:auto;
+  height:auto;
+}
+
+.tableDisplay .option .columns ul li div ul li a {
+  padding: 0px;
+  margin: 0px;
+  cursor: pointer;
+}
+
+.tableContainer {
+  overflow-y: auto;
+  max-height: 300px;
+  position:relative;
+  overflow: hidden;
+}
+
+.allFields {
+  margin-bottom: 10px;
+}
+.noDot {
+  list-style-type: none;
+  padding-left:5px;
+}
+
+.liVertical {
+  display:block;
+  float:left;
+  padding: 5px;
+}
+.row {
+  margin-right: 0px !important
+}
+
+.lightBold {
+  font-weight: 500;
 }
