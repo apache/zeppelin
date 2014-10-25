@@ -100,7 +100,7 @@ limitations under the License.
     </form>
 
     <!-- Rendering -->
-    <div class='tableDisplay'>
+    <div class='tableDisplay' ng-show="!paragraph.config.tableHide">
       <div id="{{paragraph.id}}_switch"
            ng-if="paragraph.result.type == 'TABLE'"
            class="btn-group"
@@ -292,6 +292,8 @@ limitations under the License.
     <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top" tooltip="Cancel"
           ng-click="cancelParagraph()"
           ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
+  <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
+	  ng-click="toggleOutput()"></span>
 
     <span class="dropdown navbar-right">
       <span class="icon-settings" style="cursor:pointer" 

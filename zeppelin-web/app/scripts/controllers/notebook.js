@@ -61,6 +61,14 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $rootScope.$emit('closeEditor');
   };
 
+  $scope.showAllTable = function() {
+    $rootScope.$emit('openTable');
+  };
+
+  $scope.hideAllTable = function() {
+    $rootScope.$emit('closeTable');
+  };
+
   $scope.isNoteRunning = function() {
     var running = false;
     if(!$scope.note){ return false; }
@@ -133,6 +141,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
           noteCopy.paragraphs[0].config = {};
         }
         noteCopy.paragraphs[0].config.editorHide = true;
+        noteCopy.paragraphs[0].config.tableHide = true;
         noteCopy.paragraphs[0].config.asIframe = true;
         break;
       }
@@ -182,7 +191,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         }
       } else {
         var p = $scope.note.paragraphs[i];
-        if (!p.config.hide && !p.config.editorHide) {
+        if (!p.config.hide && !p.config.editorHide && !p.config.tableHide) {
           $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
           break;
         }
@@ -200,7 +209,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         }
       } else {
         var p = $scope.note.paragraphs[i];
-        if (!p.config.hide && !p.config.editorHide) {
+        if (!p.config.hide && !p.config.editorHide && !p.config.tableHide) {
           $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
           break;
         }

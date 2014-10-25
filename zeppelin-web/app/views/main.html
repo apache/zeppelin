@@ -24,7 +24,7 @@ limitations under the License.
       <div class="col-md-4">
         <h4>Notebook</h4>
         <div ng-controller="NavCtrl">
-          <h5><a href="javascrip:void(0);" ng-click="createNewNote()" style="text-decoration: none;"><i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
+          <h5><a href="javascript:void(0);" ng-click="createNewNote()" style="text-decoration: none;"><i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
           <ul style="list-style-type: none;">
             <li ng-repeat="note in notes track by $index"><i style="font-size: 10px;" class="icon-doc"></i> 
               <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}}</a>

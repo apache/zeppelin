@@ -38,6 +38,16 @@ limitations under the License.
                     tooltip-placement="top" tooltip="Hide the code"><i class="fa icon-size-actual"></i>
             </button>
             <button type="button"
+                    class="btn btn-default btn-xs"
+                    ng-click="showAllTable()"
+                    tooltip-placement="top" tooltip="Show the output"><i class="fa icon-book-open"></i>
+            </button>
+            <button type="button"
+                    class="btn btn-default btn-xs"
+                    ng-click="hideAllTable()"
+                    tooltip-placement="top" tooltip="Hide the output"><i class="fa icon-notebook"></i>
+            </button>
+            <button type="button"
                   class="btn btn-default btn-xs"
                   ng-click="removeNote(note.id)"
                   tooltip-placement="top" tooltip="Remove the notebook"><i class="icon-trash"></i>
