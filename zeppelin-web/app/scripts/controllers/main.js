@@ -110,7 +110,7 @@ angular.module('zeppelinWebApp')
   });
 
   $rootScope.$on('setLookAndFeel', function(event, data) {
-    if (!event.defaultPrevented) {
+    if (!event.defaultPrevented && data && data !== "") {
       $scope.looknfeel = data;
       event.preventDefault();
     }
