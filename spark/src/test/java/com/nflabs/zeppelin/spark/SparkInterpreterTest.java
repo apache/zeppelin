@@ -50,6 +50,11 @@ public class SparkInterpreterTest {
 		assertEquals("HELLO\n", repl.interpret("println(\"HELLO\")").message());
 		*/
 	}
+	
+	@Test
+	public void testEndWithComment() {
+		assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("val c=1\n//comment").code());
+	}
 
 	@Test
 	public void testSparkSql(){
