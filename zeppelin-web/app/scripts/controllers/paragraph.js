@@ -767,7 +767,7 @@ angular.module('zeppelinWebApp')
     // select yColumns.
 
     if (type==='pieChart') {
-      var d = pivotDataToD3ChartFormat(p, true);
+      var d = pivotDataToD3ChartFormat(p, true).d3g;
 
       $scope.chart[type].x(function(d){ return d.label;})
                         .y(function(d){ return d.value;});
@@ -782,10 +782,19 @@ angular.module('zeppelinWebApp')
         }
       }
     } else if(type==='multiBarChart') {
-      d3g = pivotDataToD3ChartFormat(p, true);
+      d3g = pivotDataToD3ChartFormat(p, true).d3g;
       $scope.chart[type].yAxis.axisLabelDistance(50);
     } else {
-      d3g = pivotDataToD3ChartFormat(p);
+      var data = pivotDataToD3ChartFormat(p);
+      var xLabels = data.xLabels;
+      d3g = data.d3g;
+      $scope.chart[type].xAxis.tickFormat(function(d) {
+        if (xLabels[d] ) {
+          return xLabels[d]
+        } else {
+          return d;
+        }
+      });
       $scope.chart[type].yAxis.axisLabelDistance(50);
     }
 
@@ -1124,11 +1133,13 @@ angular.module('zeppelinWebApp')
     var rowIdx = 0;
     var colNameIndex = {};
     var colIdx = 0;
+    var rowIndexValue = {};
 
     for (var k in rows) {
       traverse(sKey, schema[sKey], k, rows[k], function(rowName, rowValue, colName, value){
         //console.log("RowName=%o, row=%o, col=%o, value=%o", rowName, rowValue, colName, value);
         if (rowNameIndex[rowValue]===undefined) {
+          rowIndexValue[rowIdx] = rowValue;
           rowNameIndex[rowValue] = rowIdx++;
         }
 
@@ -1190,7 +1201,10 @@ angular.module('zeppelinWebApp')
       }
     }
 
-    return d3g;
+    return {
+      xLabels : rowIndexValue,
+      d3g : d3g
+    }
   };
 
 
