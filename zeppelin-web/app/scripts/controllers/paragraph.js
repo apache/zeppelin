@@ -1177,6 +1177,19 @@ angular.module('zeppelinWebApp')
       }
     }
 
+    // use group name instead of group.value as a column name, if there're only one group and one value selected.
+    var groups = $scope.paragraph.config.graph.groups;
+    var values = $scope.paragraph.config.graph.values;
+
+    if (groups.length===1 && values.length===1) {
+
+      for (var i=0; i<d3g.length; i++) {
+        var colName = d3g[i].key;
+        colName = colName.split('.')[0];
+        d3g[i].key = colName;
+      }
+    }
+
     return d3g;
   };
 
