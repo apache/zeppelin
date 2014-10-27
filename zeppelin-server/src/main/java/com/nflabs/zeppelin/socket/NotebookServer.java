@@ -1,19 +1,5 @@
 package com.nflabs.zeppelin.socket;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.java_websocket.WebSocket;
-import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.server.WebSocketServer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.gson.Gson;
 import com.nflabs.zeppelin.notebook.Note;
 import com.nflabs.zeppelin.notebook.Notebook;
@@ -23,6 +9,19 @@ import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.server.ZeppelinServer;
 import com.nflabs.zeppelin.socket.Message.OP;
+import org.java_websocket.WebSocket;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.WebSocketServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Zeppelin websocket service.
@@ -93,7 +92,10 @@ public class NotebookServer extends WebSocketServer {
           break;
         case MOVE_PARAGRAPH:
             moveParagraph(conn, notebook, messagereceived);
-            break;         
+            break;
+        case INSERT_PARAGRAPH:
+            insertParagraph(conn, notebook, messagereceived);
+            break;
         case PARAGRAPH_REMOVE:
           removeParagraph(conn, notebook, messagereceived);
           break;
@@ -330,6 +332,7 @@ public class NotebookServer extends WebSocketServer {
     resp.put("completions", candidates);
     conn.send(serializeMessage(resp));
   }
+
   private void moveParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
@@ -342,6 +345,16 @@ public class NotebookServer extends WebSocketServer {
     note.persist();
     broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
   }
+
+  private void insertParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
+    final int index = (int)Double.parseDouble(fromMessage.get("index").toString());
+
+    final Note note = notebook.getNote(getOpenNoteId(conn));
+    note.insertParagraph(index);
+    note.persist();
+    broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
+  }
+
   
   private void cancelParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
