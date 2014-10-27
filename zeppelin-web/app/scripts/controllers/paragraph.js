@@ -138,6 +138,7 @@ angular.module('zeppelinWebApp')
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
+      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished);
 
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
 
@@ -185,7 +186,8 @@ angular.module('zeppelinWebApp')
       
       if (newType==='TABLE') {
         $scope.loadTableData($scope.paragraph.result);
-        if (oldType!=='TABLE') {
+        if (oldType!=='TABLE' || resultRefreshed) {
+          clearUnknownColsFromGraphOption();
           selectDefaultColsForGraphOption();
         }
         /** User changed the chart type? */
