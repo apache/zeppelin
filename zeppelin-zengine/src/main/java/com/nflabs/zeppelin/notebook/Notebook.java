@@ -93,10 +93,23 @@ public class Notebook {
 	public List<Note> getAllNotes(){
 		synchronized(notes){
             List<Note> noteList = new ArrayList<Note>(notes.values());
+            logger.info(""+noteList.size());
             Collections.sort(noteList, new Comparator() {
                 @Override
                 public int compare(Object one, Object two) {
-                    return ((Note) one).getName().compareTo(((Note) two).getName());
+                    Note note1 = (Note) one;
+                    Note note2 = (Note) two;
+
+                    String name1 = note1.id();
+                    if (note1.getName() != null) {
+                        name1 = note1.getName();
+                    }
+                    String name2 = note2.id();
+                    if (note2.getName() != null) {
+                        name2 = note2.getName();
+                    }
+                    ((Note) one).getName();
+                    return name1.compareTo(name2);
                 }
             });
             return noteList;
