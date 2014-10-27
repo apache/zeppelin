@@ -39,10 +39,11 @@ public class NoteInterpreterLoader {
 			return loadedInterpreters.get(name);
 		} else {
 			Properties p = new Properties();
+			p.put("noteIntpLoader", this);
 			Interpreter repl = factory.createRepl(name, p);
-			
-			loadedInterpreters.put(name, new LazyOpenInterpreter(repl));			
-			return repl;
+			LazyOpenInterpreter lazyIntp = new LazyOpenInterpreter(repl);
+			loadedInterpreters.put(name, lazyIntp);			
+			return lazyIntp;
 		}
 	}
 	

@@ -64,7 +64,7 @@ public class Paragraph extends Job implements Serializable {
     return getRequiredReplName(text);
   }
   
-  private String getRequiredReplName(String text) {
+  public static String getRequiredReplName(String text) {
     if (text == null)
       return null;
 
@@ -91,7 +91,7 @@ public class Paragraph extends Job implements Serializable {
     return getScriptBody(text); 
   }
 
-  private String getScriptBody(String text) {
+  public static String getScriptBody(String text) {
     if (text == null)
       return null;
 
