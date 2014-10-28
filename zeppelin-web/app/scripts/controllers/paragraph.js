@@ -791,8 +791,8 @@ angular.module('zeppelinWebApp')
       var xLabels = data.xLabels;
       d3g = data.d3g;
       $scope.chart[type].xAxis.tickFormat(function(d) {
-        if (xLabels[d] ) {
-          return xLabels[d]
+        if (xLabels[d]) {
+          return xLabels[d];
         } else {
           return d;
         }
