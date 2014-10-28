@@ -1193,6 +1193,8 @@ angular.module('zeppelinWebApp')
     if (valueOnly) {
       for (var i=0; i<d3g[0].values.length; i++) {
         var colName = d3g[0].values[i].x;
+        if (!colName) continue;
+
         var withoutAggr = colName.substring(0, colName.lastIndexOf('('));      
         if (namesWithoutAggr[withoutAggr] <= 1 ) {
           d3g[0].values[i].x = withoutAggr;
