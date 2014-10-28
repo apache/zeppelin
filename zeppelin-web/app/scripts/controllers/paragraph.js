@@ -1129,6 +1129,11 @@ angular.module('zeppelinWebApp')
       }
     };
 
+    var keys = $scope.paragraph.config.graph.keys;
+    var groups = $scope.paragraph.config.graph.groups;
+    var values = $scope.paragraph.config.graph.values;
+    var valueOnly = (keys.length===0 && groups.length===0 && values.length>0);
+
     var sKey = Object.keys(schema)[0];
 
     var rowNameIndex = {};
@@ -1149,11 +1154,14 @@ angular.module('zeppelinWebApp')
           colNameIndex[colName] = colIdx++;
         }
         var i = colNameIndex[colName];
+        if (valueOnly) {
+          i = 0;
+        }
 
         if(!d3g[i]){
           d3g[i] = {
             values : [],
-            key : colName
+            key : (valueOnly) ? 'values' : colName
           };
         }
 
@@ -1182,26 +1190,35 @@ angular.module('zeppelinWebApp')
       }
     }
 
-    for (var i=0; i<d3g.length; i++) {
-      var colName = d3g[i].key;
-      var withoutAggr = colName.substring(0, colName.lastIndexOf('('));
-      if (namesWithoutAggr[withoutAggr] <= 1 ) {
-        d3g[i].key = withoutAggr;
+    if (valueOnly) {
+      for (var i=0; i<d3g[0].values.length; i++) {
+        var colName = d3g[0].values[i].x;
+        var withoutAggr = colName.substring(0, colName.lastIndexOf('('));      
+        if (namesWithoutAggr[withoutAggr] <= 1 ) {
+          d3g[0].values[i].x = withoutAggr;
+        }
       }
-    }
-
-    // use group name instead of group.value as a column name, if there're only one group and one value selected.
-    var groups = $scope.paragraph.config.graph.groups;
-    var values = $scope.paragraph.config.graph.values;
-
-    if (groups.length===1 && values.length===1) {
-
+    } else {
       for (var i=0; i<d3g.length; i++) {
         var colName = d3g[i].key;
-        colName = colName.split('.')[0];
-        d3g[i].key = colName;
+        var withoutAggr = colName.substring(0, colName.lastIndexOf('('));      
+        if (namesWithoutAggr[withoutAggr] <= 1 ) {
+          d3g[i].key = withoutAggr;
+        }
       }
+
+      // use group name instead of group.value as a column name, if there're only one group and one value selected.
+      if (groups.length===1 && values.length===1) {
+
+        for (var i=0; i<d3g.length; i++) {
+          var colName = d3g[i].key;
+          colName = colName.split('.')[0];
+          d3g[i].key = colName;
+        }
+      }
+
     }
+
 
     return {
       xLabels : rowIndexValue,
