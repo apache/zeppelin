@@ -1,5 +1,7 @@
 package com.nflabs.zeppelin.spark;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.Iterator;
 
 import org.apache.spark.SparkContext;
@@ -8,16 +10,24 @@ import org.apache.spark.sql.SchemaRDD;
 
 import scala.Tuple2;
 
+import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.notebook.NoteInterpreterLoader;
+import com.nflabs.zeppelin.notebook.Paragraph;
 import com.nflabs.zeppelin.notebook.form.Input.ParamOption;
 import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 
 public class ZeppelinContext {
 	private DependencyResolver dep;
-	public ZeppelinContext(SparkContext sc, SQLContext sql, DependencyResolver dep) {
+	private NoteInterpreterLoader noteInterpreterLoader;
+	private PrintStream out;
+	public ZeppelinContext(SparkContext sc, SQLContext sql, DependencyResolver dep, NoteInterpreterLoader noteInterpreterLoader, PrintStream printStream) {
 		this.sc = sc;
 		this.sqlContext = sql;
 		this.dep = dep;
+		this.noteInterpreterLoader = noteInterpreterLoader;
+		this.out = printStream;
 	}
 	public SparkContext sc;
 	public SQLContext sqlContext;
@@ -91,5 +101,21 @@ public class ZeppelinContext {
 	
 	public void setFormSetting(Setting o) {
 		this.form = o;	
+	}
+	
+	public void run(String lines) {
+		String intpName = Paragraph.getRequiredReplName(lines);
+		String scriptBody = Paragraph.getScriptBody(lines);
+		Interpreter intp = noteInterpreterLoader.getRepl(intpName);
+		InterpreterResult ret = intp.interpret(scriptBody);
+		if (ret.code() == InterpreterResult.Code.SUCCESS) {
+			out.println("%"+ret.type().toString().toLowerCase()+" "+ret.message());
+		} else if (ret.code() == InterpreterResult.Code.ERROR) {
+			out.println("Error: "+ret.message());
+		} else if (ret.code() == InterpreterResult.Code.INCOMPLETE) {
+			out.println("Incomplete");
+		} else {
+			out.println("Unknown error");
+		}
 	}
 }

@@ -1,20 +1,21 @@
 package com.nflabs.zeppelin.notebook;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Consist of Notes 
@@ -43,7 +44,6 @@ public class Notebook {
 	
 	/**
 	 * Create new note
-	 * @param name
 	 * @return
 	 */
 	public Note createNote() {
@@ -93,7 +93,27 @@ public class Notebook {
 
     public List<Note> getAllNotes() {
 		synchronized(notes){
-			return new LinkedList<Note>(notes.values());
+            List<Note> noteList = new ArrayList<Note>(notes.values());
+            logger.info(""+noteList.size());
+            Collections.sort(noteList, new Comparator() {
+                @Override
+                public int compare(Object one, Object two) {
+                    Note note1 = (Note) one;
+                    Note note2 = (Note) two;
+
+                    String name1 = note1.id();
+                    if (note1.getName() != null) {
+                        name1 = note1.getName();
+                    }
+                    String name2 = note2.id();
+                    if (note2.getName() != null) {
+                        name2 = note2.getName();
+                    }
+                    ((Note) one).getName();
+                    return name1.compareTo(name2);
+                }
+            });
+            return noteList;
 		}
 	}
 }

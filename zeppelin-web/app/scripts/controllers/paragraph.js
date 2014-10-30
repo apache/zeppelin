@@ -138,6 +138,7 @@ angular.module('zeppelinWebApp')
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
+      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished);
 
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
 
@@ -185,7 +186,8 @@ angular.module('zeppelinWebApp')
       
       if (newType==='TABLE') {
         $scope.loadTableData($scope.paragraph.result);
-        if (oldType!=='TABLE') {
+        if (oldType!=='TABLE' || resultRefreshed) {
+          clearUnknownColsFromGraphOption();
           selectDefaultColsForGraphOption();
         }
         /** User changed the chart type? */
@@ -233,6 +235,10 @@ angular.module('zeppelinWebApp')
 
   $scope.moveDown = function() {
     $rootScope.$emit('moveParagraphDown', $scope.paragraph.id);
+  };
+
+  $scope.insertNew = function() {
+    $rootScope.$emit('insertParagraph', $scope.paragraph.id);
   };
 
   $scope.removeParagraph = function() {
@@ -763,7 +769,7 @@ angular.module('zeppelinWebApp')
     // select yColumns.
 
     if (type==='pieChart') {
-      var d = pivotDataToD3ChartFormat(p, true);
+      var d = pivotDataToD3ChartFormat(p, true).d3g;
 
       $scope.chart[type].x(function(d){ return d.label;})
                         .y(function(d){ return d.value;});
@@ -778,10 +784,19 @@ angular.module('zeppelinWebApp')
         }
       }
     } else if(type==='multiBarChart') {
-      d3g = pivotDataToD3ChartFormat(p, true);
+      d3g = pivotDataToD3ChartFormat(p, true).d3g;
       $scope.chart[type].yAxis.axisLabelDistance(50);
     } else {
-      d3g = pivotDataToD3ChartFormat(p);
+      var data = pivotDataToD3ChartFormat(p);
+      var xLabels = data.xLabels;
+      d3g = data.d3g;
+      $scope.chart[type].xAxis.tickFormat(function(d) {
+        if (xLabels[d]) {
+          return xLabels[d];
+        } else {
+          return d;
+        }
+      });
       $scope.chart[type].yAxis.axisLabelDistance(50);
     }
 
@@ -1114,17 +1129,24 @@ angular.module('zeppelinWebApp')
       }
     };
 
+    var keys = $scope.paragraph.config.graph.keys;
+    var groups = $scope.paragraph.config.graph.groups;
+    var values = $scope.paragraph.config.graph.values;
+    var valueOnly = (keys.length===0 && groups.length===0 && values.length>0);
+
     var sKey = Object.keys(schema)[0];
 
     var rowNameIndex = {};
     var rowIdx = 0;
     var colNameIndex = {};
     var colIdx = 0;
+    var rowIndexValue = {};
 
     for (var k in rows) {
       traverse(sKey, schema[sKey], k, rows[k], function(rowName, rowValue, colName, value){
         //console.log("RowName=%o, row=%o, col=%o, value=%o", rowName, rowValue, colName, value);
         if (rowNameIndex[rowValue]===undefined) {
+          rowIndexValue[rowIdx] = rowValue;
           rowNameIndex[rowValue] = rowIdx++;
         }
 
@@ -1132,11 +1154,14 @@ angular.module('zeppelinWebApp')
           colNameIndex[colName] = colIdx++;
         }
         var i = colNameIndex[colName];
+        if (valueOnly) {
+          i = 0;
+        }
 
         if(!d3g[i]){
           d3g[i] = {
             values : [],
-            key : colName
+            key : (valueOnly) ? 'values' : colName
           };
         }
 
@@ -1165,15 +1190,42 @@ angular.module('zeppelinWebApp')
       }
     }
 
-    for (var i=0; i<d3g.length; i++) {
-      var colName = d3g[i].key;
-      var withoutAggr = colName.substring(0, colName.lastIndexOf('('));
-      if (namesWithoutAggr[withoutAggr] <= 1 ) {
-        d3g[i].key = withoutAggr;
+    if (valueOnly) {
+      for (var i=0; i<d3g[0].values.length; i++) {
+        var colName = d3g[0].values[i].x;
+        if (!colName) continue;
+
+        var withoutAggr = colName.substring(0, colName.lastIndexOf('('));      
+        if (namesWithoutAggr[withoutAggr] <= 1 ) {
+          d3g[0].values[i].x = withoutAggr;
+        }
       }
+    } else {
+      for (var i=0; i<d3g.length; i++) {
+        var colName = d3g[i].key;
+        var withoutAggr = colName.substring(0, colName.lastIndexOf('('));      
+        if (namesWithoutAggr[withoutAggr] <= 1 ) {
+          d3g[i].key = withoutAggr;
+        }
+      }
+
+      // use group name instead of group.value as a column name, if there're only one group and one value selected.
+      if (groups.length===1 && values.length===1) {
+
+        for (var i=0; i<d3g.length; i++) {
+          var colName = d3g[i].key;
+          colName = colName.split('.')[0];
+          d3g[i].key = colName;
+        }
+      }
+
     }
 
-    return d3g;
+
+    return {
+      xLabels : rowIndexValue,
+      d3g : d3g
+    }
   };
 
 

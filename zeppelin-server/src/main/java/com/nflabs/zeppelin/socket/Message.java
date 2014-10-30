@@ -38,12 +38,15 @@ public class Message {
 		
 		CANCEL_PARAGRAPH, // [c-s] cancel paragraph run
 		                  // @param id paragraph id
-		
+
 		MOVE_PARAGRAPH,	  // [c-s] move paragraph order
 		                  // @param id paragraph id
 		                  // @param index index the paragraph want to go
-		
-		COMPLETION,         // [c-s] ask completion candidates
+
+        INSERT_PARAGRAPH,   // [c-s] create new paragraph below current paragraph
+		                    // @param target index
+
+        COMPLETION,         // [c-s] ask completion candidates
 		                    // @param id
 		                    // @param buf current code
 		                    // @param cursor cursor position in code
