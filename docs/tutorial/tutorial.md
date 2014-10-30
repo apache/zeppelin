@@ -33,6 +33,8 @@ val bank = bankText.map(s=>s.split(";")).filter(s=>s(0)!="\"age\"").map(
             s(5).replaceAll("\"", "").toInt
         )
 )
+
+bank.registerTempTable("bank")
 ```
 
 <br />
