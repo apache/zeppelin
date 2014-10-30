@@ -55,13 +55,13 @@ public class Notebook {
 	}
 
 	
-	public Note getNote(String id){
+	public Note getNote(String id) {
 		synchronized(notes){
 			return notes.get(id);
 		}
 	}
 	
-	public void removeNote(String id){
+	public void removeNote(String id) {
 		Note note;
 		synchronized(notes){
 			note = notes.remove(id);
@@ -73,24 +73,25 @@ public class Notebook {
 			e.printStackTrace();
 		}
 	}
-	
-	private void loadAllNotes() throws IOException{
-		File notebookDir = new File(conf.getNotebookDir());
-		File[] dirs = notebookDir.listFiles();
-		if(dirs==null) return;
-		for(File f : dirs) {
-			if(f.isDirectory()) {
-				Scheduler scheduler = schedulerFactory.createOrGetFIFOScheduler("note_"+System.currentTimeMillis());
-				logger.info("Loading note from "+f.getName());
-				Note note = Note.load(f.getName(), conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()), scheduler);
-				synchronized(notes){
-					notes.put(note.id(), note);
-				}
-			}
-		}
-	}
-	
-	public List<Note> getAllNotes(){
+
+    private void loadAllNotes() throws IOException {
+        File notebookDir = new File(conf.getNotebookDir());
+        File[] dirs = notebookDir.listFiles();
+        if (dirs == null) return;
+        for (File f : dirs) {
+            boolean isHidden = !f.getName().startsWith(".");
+            if (f.isDirectory() && isHidden) {
+                Scheduler scheduler = schedulerFactory.createOrGetFIFOScheduler("note_" + System.currentTimeMillis());
+                logger.info("Loading note from " + f.getName());
+                Note note = Note.load(f.getName(), conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()), scheduler);
+                synchronized (notes) {
+                    notes.put(note.id(), note);
+                }
+            }
+        }
+    }
+
+    public List<Note> getAllNotes() {
 		synchronized(notes){
             List<Note> noteList = new ArrayList<Note>(notes.values());
             logger.info(""+noteList.size());
