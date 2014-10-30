@@ -64,6 +64,7 @@ limitations under the License.
       </div>
     </div>
 
+
     <form id="{{paragraph.id}}_form" role="form"
           class="form-horizontal">
       <div class="form-group"
@@ -272,6 +273,9 @@ limitations under the License.
            class="error"
            ng-if="paragraph.status == 'ERROR'"
            ng-bind="paragraph.errorMessage">
+      </div>
+      <div id="{{paragraph.id}}_executionTime" class="executionTime" ng-if="paragraph.status == 'FINISHED'">
+        {{getExecutionTime()}}
       </div>
     </div>
   </div>

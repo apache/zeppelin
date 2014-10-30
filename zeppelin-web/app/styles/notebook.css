@@ -248,6 +248,12 @@
   z-index:100;
 }
 
+.paragraph .executionTime {
+  color: #999;
+  font-size: 10px;
+  font-family: 'Roboto', sans-serif;
+}
+
 
 .disable {
   opacity:0.4!important;
