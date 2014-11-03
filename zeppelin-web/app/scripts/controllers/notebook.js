@@ -26,6 +26,8 @@
 angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope) {
   $scope.note = null;
   $scope.showEditor = false;
+  $scope.editorToggled = false;
+  $scope.tableToggled = false;
   $scope.looknfeelOption = [ 'default', 'simple' ];
   
 
@@ -53,6 +55,15 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
+  $scope.toggleAllEditor = function() {
+    if ($scope.editorToggled) {
+        $rootScope.$emit('closeEditor');        
+    } else {
+        $rootScope.$emit('openEditor');        
+    }
+    $scope.editorToggled = !$scope.editorToggled;
+  }
+
   $scope.showAllEditor = function() {
     $rootScope.$emit('openEditor');
   };
@@ -60,6 +71,15 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.hideAllEditor = function() {
     $rootScope.$emit('closeEditor');
   };
+
+  $scope.toggleAllTable = function() {
+    if ($scope.tableToggled) {
+        $rootScope.$emit('closeTable');        
+    } else {
+        $rootScope.$emit('openTable');        
+    }
+    $scope.tableToggled = !$scope.tableToggled;
+  }
 
   $scope.showAllTable = function() {
     $rootScope.$emit('openTable');
