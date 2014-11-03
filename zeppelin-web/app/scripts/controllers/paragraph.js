@@ -359,6 +359,7 @@ angular.module('zeppelinWebApp')
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
+
   $scope.loadForm = function(formulaire, params) {
     var value = formulaire.defaultValue;
     if (params[formulaire.name]) {
@@ -520,6 +521,13 @@ angular.module('zeppelinWebApp')
   $scope.getProgress = function(){
     return ($scope.currentProgress) ? $scope.currentProgress : 0;
   };
+
+  $scope.getExecutionTime = function() {
+    var pdata = $scope.paragraph;
+    var timeMs = Date.parse(pdata.dateFinished) - Date.parse(pdata.dateStarted);
+    return 'Took ' + (timeMs/1000) +  ' seconds';
+
+  }
 
   $rootScope.$on('updateProgress', function(event, data) {
     if (data.id === $scope.paragraph.id) {
