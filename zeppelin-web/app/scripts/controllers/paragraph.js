@@ -807,11 +807,20 @@ angular.module('zeppelinWebApp')
 
       var height = $scope.paragraph.config.graph.height;
 
+      var animationDuration = 300;
+      var numberOfDataThreshold = 150;
+      // turn off animation when dataset is too large. (for performance issue)
+      // still, since dataset is large, the chart content sequentially appears like animated.
+      try {
+        if (d3g[0].values.length > numberOfDataThreshold) animationDuration = 0;
+      } catch(ignoreErr) {
+      }
+
       var chartEl = d3.select('#p'+$scope.paragraph.id+'_'+type+' svg')
           .attr('height', $scope.paragraph.config.graph.height)
           .datum(d3g) 
           .transition()
-          .duration(300)
+          .duration(animationDuration)
           .call($scope.chart[type]);
       d3.select('#p'+$scope.paragraph.id+'_'+type+' svg').style.height = height+'px';
       nv.utils.windowResize($scope.chart[type].update);
