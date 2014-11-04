@@ -268,6 +268,12 @@ limitations under the License.
            ng-Init="loadResultType(paragraph.result)"
            ng-src="{{getBase64ImageSrc(paragraph.result.msg)}}">
       </img>
+      
+      <img id="{{paragraph.id}}_msg"
+           ng-if="paragraph.result.type == 'SVG'"
+           ng-Init="loadResultType(paragraph.result)"
+           ng-src="{{getBase64ImageSvg(paragraph.result.msg)}}">
+      </img>
 
       <div id="{{paragraph.id}}_error"
            class="error"

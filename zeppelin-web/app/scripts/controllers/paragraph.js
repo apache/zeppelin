@@ -575,6 +575,10 @@ angular.module('zeppelinWebApp')
   $scope.getBase64ImageSrc = function(base64Data) {
     return 'data:image/png;base64,'+base64Data;
   };
+  
+  $scope.getBase64ImageSvg = function(base64Data) {
+    return 'data:image/svg+xml;utf8,'+base64Data;
+  };
 
   $scope.getGraphMode = function(paragraph){
     var pdata = (paragraph) ? paragraph : $scope.paragraph;
