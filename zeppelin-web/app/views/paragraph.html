@@ -274,7 +274,7 @@ limitations under the License.
            ng-if="paragraph.status == 'ERROR'"
            ng-bind="paragraph.errorMessage">
       </div>
-      <div id="{{paragraph.id}}_executionTime" class="executionTime" ng-if="paragraph.status == 'FINISHED'">
+      <div id="{{paragraph.id}}_executionTime" class="executionTime" ng-if="paragraph.status == 'FINISHED' && !paragraph.config.editorHide ">
         {{getExecutionTime()}}
       </div>
     </div>
