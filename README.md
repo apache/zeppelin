@@ -4,7 +4,7 @@
 **Documentation:** [User Guide](http://zeppelin-project.org/docs/index.html)<br/>
 **Mailing List:** [Mailing List](https://groups.google.com/forum/#!forum/zeppelin-developers) <br/>
 **Continuous Integration:** [![Build Status](https://secure.travis-ci.org/NFLabs/zeppelin.png?branch=master)](https://travis-ci.org/NFLabs/zeppelin) <br/>
-**Contributing:** [Contribution Guide](https://github.com/NFLabs/zeppelin/blob/master/CONTRIBUTING)<br/>
+**Contributing:** [Contribution Guide](https://github.com/NFLabs/zeppelin/blob/master/CONTRIBUTING.md)<br/>
 **License:** [Apache 2.0](https://github.com/NFLabs/zeppelin/blob/master/LICENSE)
 
 
