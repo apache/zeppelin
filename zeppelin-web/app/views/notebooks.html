@@ -27,26 +27,19 @@ limitations under the License.
                     ng-if="!isNoteRunning()"
                     tooltip-placement="top" tooltip="Run all the note"><i class="icon-control-play"></i>
             </button>
+
             <button type="button"
-                    class="btn btn-default btn-xs"
-                    ng-click="showAllEditor()"
-                    tooltip-placement="top" tooltip="Show the code"><i class="fa icon-size-fullscreen"></i>
-            </button>
-            <button type="button"
-                    class="btn btn-default btn-xs"
-                    ng-click="hideAllEditor()"
-                    tooltip-placement="top" tooltip="Hide the code"><i class="fa icon-size-actual"></i>
-            </button>
-            <button type="button"
-                    class="btn btn-default btn-xs"
-                    ng-click="showAllTable()"
-                    tooltip-placement="top" tooltip="Show the output"><i class="fa icon-book-open"></i>
-            </button>
-            <button type="button"
-                    class="btn btn-default btn-xs"
-                    ng-click="hideAllTable()"
-                    tooltip-placement="top" tooltip="Hide the output"><i class="fa icon-notebook"></i>
-            </button>
+                   class="btn btn-default btn-xs"
+                   ng-click="toggleAllEditor()"
+                   tooltip-placement="top" tooltip="Show/hide the code"><i ng-class="editorToggled ? 'fa icon-size-actual' : 'fa icon-size-fullscreen'"></i>
+           </button>
+
+           <button type="button"
+                   class="btn btn-default btn-xs"
+                   ng-click="toggleAllTable()"
+                   tooltip-placement="top" tooltip="Show/hide the output"><i ng-class="tableToggled ? 'fa icon-notebook' : 'fa icon-book-open'"></i>
+           </button>  
+
             <button type="button"
                   class="btn btn-default btn-xs"
                   ng-click="removeNote(note.id)"
