@@ -268,6 +268,14 @@ angular.module('zeppelinWebApp')
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
+  $scope.toggleEditor = function() {
+    if ($scope.paragraph.config.editorHide) {
+      $scope.openEditor();
+    } else {
+      $scope.closeEditor();
+    }
+  };
+
   $scope.closeEditor = function() {
     console.log('close the note');
 
