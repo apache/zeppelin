@@ -257,10 +257,9 @@ limitations under the License.
            ng-bind="paragraph.result.msg">
       </div>
 
-      <div id="{{paragraph.id}}_msg"
+      <div id="p{{paragraph.id}}_msg"
            ng-if="paragraph.result.type == 'HTML'"
-           ng-Init="loadResultType(paragraph.result)"
-           ng-bind-html="paragraph.result.msg">
+           ng-Init="loadResultType(paragraph.result)">
       </div>
 
       <img id="{{paragraph.id}}_msg"
@@ -269,12 +268,6 @@ limitations under the License.
            ng-src="{{getBase64ImageSrc(paragraph.result.msg)}}">
       </img>
       
-      <img id="{{paragraph.id}}_msg"
-           ng-if="paragraph.result.type == 'SVG'"
-           ng-Init="loadResultType(paragraph.result)"
-           ng-src="{{getBase64ImageSvg(paragraph.result.msg)}}">
-      </img>
-
       <div id="{{paragraph.id}}_error"
            class="error"
            ng-if="paragraph.status == 'ERROR'"
