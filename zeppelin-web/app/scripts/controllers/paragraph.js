@@ -54,9 +54,26 @@ angular.module('zeppelinWebApp')
       $scope.lastData.config = jQuery.extend(true, {}, $scope.paragraph.config);
       $scope.loadTableData($scope.paragraph.result);
       $scope.setGraphMode($scope.getGraphMode(), false, false);
+    } else if ($scope.getResultType() === 'HTML') {
+      $scope.renderHtml();
     }
   };
 
+  $scope.renderHtml = function() {
+    var retryRenderer = function(){
+      if($('#p'+$scope.paragraph.id+'_msg').length){
+        try {
+          $('#p'+$scope.paragraph.id+'_msg').html($scope.paragraph.result.msg);
+        } catch(err) {
+          console.log('HTML rendering error %o', err);
+        }
+      } else {
+        $timeout(retryRenderer,10);
+      }
+    };
+    $timeout(retryRenderer);
+
+  };
 
   var initializeDefault = function(){
     if (!$scope.paragraph.config.looknfeel) {
@@ -196,6 +213,8 @@ angular.module('zeppelinWebApp')
         } else {
           $scope.setGraphMode(newGraphMode, false, true);
         }
+      } else if (newType==='HTML') {
+        $scope.renderHtml();
       }
     }
   });
@@ -583,7 +602,7 @@ angular.module('zeppelinWebApp')
   $scope.getBase64ImageSrc = function(base64Data) {
     return 'data:image/png;base64,'+base64Data;
   };
-
+  
   $scope.getGraphMode = function(paragraph){
     var pdata = (paragraph) ? paragraph : $scope.paragraph;
     if (pdata.config.graph && pdata.config.graph.mode) {

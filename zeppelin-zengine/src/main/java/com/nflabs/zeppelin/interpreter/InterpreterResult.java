@@ -14,6 +14,7 @@ public class InterpreterResult implements Serializable{
 		HTML,
 		TABLE,
 		IMG,
+		SVG,
 		NULL
 	}
 	
