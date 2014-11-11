@@ -29,7 +29,27 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.editorToggled = false;
   $scope.tableToggled = false;
   $scope.looknfeelOption = [ 'default', 'simple' ];
-  
+  $scope.cronOption = [
+    {name: "None", value : undefined},
+    {name: "1m", value: "0 0/1 * * * ?"},
+    {name: "5m", value: "0 0/5 * * * ?"},
+    {name: "1h", value: "0 0 0/1 * * ?"},
+    {name: "3h", value: "0 0 0/3 * * ?"},
+    {name: "6h", value: "0 0 0/6 * * ?"},
+    {name: "12h", value: "0 0 0/12 * * ?"},
+    {name: "1d", value: "0 0 0 * * ?"}
+  ];
+
+  $scope.getCronOptionNameFromValue = function(value) {
+    if (!value) return "";
+
+    for (var o in $scope.cronOption) {
+      if ($scope.cronOption[o].value===value) {
+        return $scope.cronOption[o].name;
+      }
+    }
+    return value;
+  };
 
   /** Init the new controller */
   var initNotebook = function() {
@@ -105,6 +125,13 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $scope.note.config.looknfeel = looknfeel;
     $scope.setConfig();
     $rootScope.$emit('setLookAndFeel', $scope.note.config.looknfeel);
+  };
+
+  /** Set cron expression for this note **/
+  $scope.setCronScheduler = function(cronExpr) {
+    // TODO validate cronExpr and propagate error to UI
+    $scope.note.config.cron = cronExpr;
+    $scope.setConfig();
   };
 
   /** Update note config **/
