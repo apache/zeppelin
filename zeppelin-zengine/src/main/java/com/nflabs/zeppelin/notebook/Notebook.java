@@ -5,6 +5,17 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
+
+import org.quartz.CronScheduleBuilder;
+import org.quartz.CronTrigger;
+import org.quartz.JobBuilder;
+import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
+import org.quartz.JobKey;
+import org.quartz.SchedulerException;
+import org.quartz.TriggerBuilder;
+import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,10 +42,22 @@ public class Notebook {
 
 	private ZeppelinConfiguration conf;
 
-	public Notebook(ZeppelinConfiguration conf, SchedulerFactory schedulerFactory, InterpreterFactory replFactory) throws IOException {
+	private StdSchedulerFactory quertzSchedFact;
+
+	private org.quartz.Scheduler quartzSched;
+
+	private JobListenerFactory jobListenerFactory;
+
+	public Notebook(ZeppelinConfiguration conf, SchedulerFactory schedulerFactory, InterpreterFactory replFactory, JobListenerFactory jobListenerFactory) throws IOException, SchedulerException {
 		this.conf = conf;
 		this.schedulerFactory = schedulerFactory;
 		this.replFactory = replFactory;
+		this.jobListenerFactory = jobListenerFactory;
+		quertzSchedFact = new org.quartz.impl.StdSchedulerFactory();
+		quartzSched = quertzSchedFact.getScheduler();
+		quartzSched.start();
+		CronJob.notebook = this;
+		
 		loadAllNotes();
 	}
 	
@@ -47,7 +70,7 @@ public class Notebook {
 	 * @return
 	 */
 	public Note createNote() {
-		Note note = new Note(conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()));
+		Note note = new Note(conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()), jobListenerFactory, quartzSched);
 		synchronized(notes){
 			notes.put(note.id(), note);
 		}
@@ -74,7 +97,7 @@ public class Notebook {
 		}
 	}
 
-    private void loadAllNotes() throws IOException {
+    private void loadAllNotes() throws IOException, SchedulerException {
         File notebookDir = new File(conf.getNotebookDir());
         File[] dirs = notebookDir.listFiles();
         if (dirs == null) return;
@@ -83,7 +106,8 @@ public class Notebook {
             if (f.isDirectory() && isHidden) {
                 Scheduler scheduler = schedulerFactory.createOrGetFIFOScheduler("note_" + System.currentTimeMillis());
                 logger.info("Loading note from " + f.getName());
-                Note note = Note.load(f.getName(), conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()), scheduler);
+                Note note = Note.load(f.getName(), conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()), scheduler, jobListenerFactory, quartzSched);
+                refreshCron(note.id());
                 synchronized (notes) {
                     notes.put(note.id(), note);
                 }
@@ -116,4 +140,64 @@ public class Notebook {
             return noteList;
 		}
 	}
+
+	public JobListenerFactory getJobListenerFactory() {
+		return jobListenerFactory;
+	}
+
+	public void setJobListenerFactory(JobListenerFactory jobListenerFactory) {
+		this.jobListenerFactory = jobListenerFactory;
+	}
+    
+	
+	public static class CronJob implements org.quartz.Job {
+		public static Notebook notebook;
+		@Override
+		public void execute(JobExecutionContext context)
+				throws JobExecutionException {
+			
+			String noteId = context.getJobDetail().getJobDataMap().getString("noteId");
+			Note note = notebook.getNote(noteId);
+			note.runAll();
+		}
+	}
+	
+	public void refreshCron(String id) throws SchedulerException{
+		removeCron(id);
+		synchronized(notes) {
+			
+			Note note = notes.get(id);
+			if (note==null) return;
+			Map<String, Object> config = note.getConfig();
+			if(config==null) return;
+
+			String cronExpr = (String) note.getConfig().get("cron");
+			if (cronExpr==null || cronExpr.trim().length()==0) {
+				return;
+			}
+			
+			
+			JobDetail newJob = JobBuilder.newJob(CronJob.class)
+							     .withIdentity(id, "note")
+							     .usingJobData("noteId", id)
+							     .build();
+			
+			CronTrigger trigger = TriggerBuilder.newTrigger()
+								 .withIdentity("trigger_"+id, "note")
+								 .withSchedule(CronScheduleBuilder.cronSchedule(cronExpr))
+								 .forJob(id, "note")
+								 .build();
+			quartzSched.scheduleJob(newJob, trigger);
+		}
+	}
+	
+	private void removeCron(String id){
+		try {
+			quartzSched.deleteJob(new JobKey(id, "note"));
+		} catch (SchedulerException e) {
+			logger.error("Can't remove quertz "+id, e);
+		}		
+	}
+	
+    
 }

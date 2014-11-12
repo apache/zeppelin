@@ -32,6 +32,7 @@ public class ZeppelinServer extends Application {
 
 	private SchedulerFactory schedulerFactory;
 	public static Notebook notebook;
+	static com.nflabs.zeppelin.socket.NotebookServer websocket;
 
 	private InterpreterFactory replFactory;
 
@@ -41,7 +42,7 @@ public class ZeppelinServer extends Application {
 
 		int port = conf.getInt(ConfVars.ZEPPELIN_PORT);
         final Server server = setupJettyServer(port);
-        final com.nflabs.zeppelin.socket.NotebookServer websocket = new com.nflabs.zeppelin.socket.NotebookServer(port+1);
+        websocket = new com.nflabs.zeppelin.socket.NotebookServer(port+1);
 
         //REST api
 		final ServletContextHandler restApi = setupRestApiContextHandler();
@@ -171,7 +172,7 @@ public class ZeppelinServer extends Application {
 		this.schedulerFactory = new SchedulerFactory();
 
 		this.replFactory = new InterpreterFactory(conf);
-		notebook = new Notebook(conf, schedulerFactory, replFactory);
+		notebook = new Notebook(conf, schedulerFactory, replFactory, websocket);
 	}
 
 	@Override

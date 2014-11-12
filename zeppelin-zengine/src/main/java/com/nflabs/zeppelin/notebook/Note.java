@@ -13,6 +13,7 @@ import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,21 +33,26 @@ import com.nflabs.zeppelin.scheduler.Scheduler;
  *
  */
 public class Note implements Serializable, JobListener {
+	transient Logger logger = LoggerFactory.getLogger(Note.class);
 	List<Paragraph> paragraphs = new LinkedList<Paragraph>();
 	private String name;
 	private String id;
 	
 	private transient NoteInterpreterLoader replLoader;
 	private transient ZeppelinConfiguration conf;
-
+	private transient JobListenerFactory jobListenerFactory;
+	
     private Map<String, Object> config = new HashMap<String, Object>(); // note config like looknfeel, etc.
+
+
 
 	public Note(){		
 	}
 	
-	public Note(ZeppelinConfiguration conf, NoteInterpreterLoader replLoader){
+	public Note(ZeppelinConfiguration conf, NoteInterpreterLoader replLoader, JobListenerFactory jobListenerFactory, org.quartz.Scheduler quartzSched){
 		this.conf = conf;
 		this.replLoader = replLoader;
+		this.jobListenerFactory = jobListenerFactory;
 		generateId();
 	}
 	
@@ -189,11 +195,11 @@ public class Note implements Serializable, JobListener {
 	 * Run all paragraphs sequentially
 	 * @param jobListener 
 	 */
-	public void runAll(JobListener jobListener){
+	public void runAll(){
 		synchronized(paragraphs){
 			for (Paragraph p : paragraphs) {
 				p.setNoteReplLoader(replLoader);
-				p.setListener(jobListener);
+				p.setListener(jobListenerFactory.getParagraphJobListener(this));
 				Interpreter intp = replLoader.getRepl(p.getRequiredReplName());		
 				intp.getScheduler().submit(p);
 			}
@@ -204,18 +210,13 @@ public class Note implements Serializable, JobListener {
 	 * Run a single paragraph
 	 * @param paragraphId
 	 */
-	public void run(String paragraphId, JobListener listener) {
+	public void run(String paragraphId) {
 		Paragraph p = getParagraph(paragraphId);
 		p.setNoteReplLoader(replLoader);
-		p.setListener(listener);
+		p.setListener(jobListenerFactory.getParagraphJobListener(this));
 		Interpreter intp = replLoader.getRepl(p.getRequiredReplName());		
 		intp.getScheduler().submit(p);
 	}
-	
-	public void run(String paragraphId){
-		run(paragraphId, this);
-	}
-
 	
 	public List<Paragraph> getParagraphs(){
 		synchronized(paragraphs) {
@@ -251,7 +252,7 @@ public class Note implements Serializable, JobListener {
 		FileUtils.deleteDirectory(dir);
 	}
 	
-	public static Note load(String id, ZeppelinConfiguration conf, NoteInterpreterLoader replLoader, Scheduler scheduler) throws IOException{
+	public static Note load(String id, ZeppelinConfiguration conf, NoteInterpreterLoader replLoader, Scheduler scheduler, JobListenerFactory jobListenerFactory, org.quartz.Scheduler quartzSched) throws IOException {
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		gsonBuilder.setPrettyPrinting();
 		Gson gson = gsonBuilder.create();
@@ -268,6 +269,7 @@ public class Note implements Serializable, JobListener {
 		Note note = gson.fromJson(json, Note.class);
 		note.setZeppelinConfiguration(conf);
 		note.setReplLoader(replLoader);
+		note.jobListenerFactory = jobListenerFactory;
 		for(Paragraph p : note.paragraphs){
 			if(p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING){
 				p.setStatus(Status.ABORT);

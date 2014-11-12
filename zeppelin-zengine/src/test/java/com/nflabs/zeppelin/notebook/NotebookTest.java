@@ -8,6 +8,7 @@ import java.io.IOException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.quartz.SchedulerException;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -15,10 +16,12 @@ import com.nflabs.zeppelin.interpreter.mock.MockInterpreterFactory;
 import com.nflabs.zeppelin.notebook.Note;
 import com.nflabs.zeppelin.notebook.Notebook;
 import com.nflabs.zeppelin.notebook.Paragraph;
+import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.Job.Status;
+import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
-public class NotebookTest {
+public class NotebookTest implements JobListenerFactory{
 
 	private File tmpDir;
 	private ZeppelinConfiguration conf;
@@ -39,7 +42,7 @@ public class NotebookTest {
         
 		this.schedulerFactory = new SchedulerFactory();
 		
-		notebook = new Notebook(conf, schedulerFactory, new MockInterpreterFactory(conf));
+		notebook = new Notebook(conf, schedulerFactory, new MockInterpreterFactory(conf), this);
 	}
 
 	@After
@@ -67,7 +70,7 @@ public class NotebookTest {
 	}
 	
 	@Test
-	public void testPersist() throws IOException{
+	public void testPersist() throws IOException, SchedulerException{
 		Note note = notebook.createNote();
 		
 		// run with defatul repl
@@ -75,8 +78,22 @@ public class NotebookTest {
 		p1.setText("hello world");
 		note.persist();
 		
-		Notebook notebook2 = new Notebook(conf, schedulerFactory, new MockInterpreterFactory(conf));
+		Notebook notebook2 = new Notebook(conf, schedulerFactory, new MockInterpreterFactory(conf), this);
 		assertEquals(1, notebook2.getAllNotes().size());
+	}
+	
+	@Test
+	public void testRunAll() {
+		Note note = notebook.createNote();
+		Paragraph p1 = note.addParagraph();
+		p1.setText("p1");
+		Paragraph p2 = note.addParagraph();
+		p2.setText("p2");
+		assertEquals(null, p2.getResult());
+		note.runAll();
+		
+		while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
+		assertEquals("repl1: p2", p2.getResult().message());
 	}
 	
 	private void delete(File file){
@@ -90,5 +107,23 @@ public class NotebookTest {
 			}
 			file.delete();
 		}
+	}
+
+	@Override
+	public JobListener getParagraphJobListener(Note note) {
+		return new JobListener(){
+
+			@Override
+			public void onProgressUpdate(Job job, int progress) {
+			}
+
+			@Override
+			public void beforeStatusChange(Job job, Status before, Status after) {
+			}
+
+			@Override
+			public void afterStatusChange(Job job, Status before, Status after) {
+			}			
+		};
 	}
 }
