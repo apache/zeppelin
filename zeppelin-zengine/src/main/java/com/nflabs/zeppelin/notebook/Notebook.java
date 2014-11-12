@@ -97,7 +97,7 @@ public class Notebook {
 		}
 	}
 
-    private void loadAllNotes() throws IOException, SchedulerException {
+    private void loadAllNotes() throws IOException {
         File notebookDir = new File(conf.getNotebookDir());
         File[] dirs = notebookDir.listFiles();
         if (dirs == null) return;
@@ -162,7 +162,7 @@ public class Notebook {
 		}
 	}
 	
-	public void refreshCron(String id) throws SchedulerException{
+	public void refreshCron(String id) {
 		removeCron(id);
 		synchronized(notes) {
 			
@@ -181,13 +181,31 @@ public class Notebook {
 							     .withIdentity(id, "note")
 							     .usingJobData("noteId", id)
 							     .build();
+
+			Map<String, Object> info = note.getInfo();
+			info.put("cron", null);
 			
-			CronTrigger trigger = TriggerBuilder.newTrigger()
-								 .withIdentity("trigger_"+id, "note")
-								 .withSchedule(CronScheduleBuilder.cronSchedule(cronExpr))
-								 .forJob(id, "note")
-								 .build();
-			quartzSched.scheduleJob(newJob, trigger);
+			CronTrigger trigger = null;
+			try {
+			    trigger = TriggerBuilder.newTrigger()
+							 .withIdentity("trigger_"+id, "note")
+							 .withSchedule(CronScheduleBuilder.cronSchedule(cronExpr))
+							 .forJob(id, "note")
+							 .build();
+			} catch (Exception e){
+				logger.error("Error", e);
+				info.put("cron", e.getMessage());				
+			}
+			
+			
+			try {
+				if (trigger!=null) {
+					quartzSched.scheduleJob(newJob, trigger);					
+				}
+			} catch (SchedulerException e) {				
+				logger.error("Error", e);
+				info.put("cron", "Scheduler Exception");
+			}
 		}
 	}
 	

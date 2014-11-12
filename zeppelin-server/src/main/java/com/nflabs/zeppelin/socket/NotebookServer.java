@@ -263,12 +263,13 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
       boolean cronUpdated = isCronUpdated(config, note.getConfig());
       note.setName(name);
 	  note.setConfig(config);
-      broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
-      broadcastNoteList();
-      
+	  
 	  if (cronUpdated) {
 		  notebook.refreshCron(note.id());
 	  }
+	  
+      broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
+      broadcastNoteList();
     }
   }
   

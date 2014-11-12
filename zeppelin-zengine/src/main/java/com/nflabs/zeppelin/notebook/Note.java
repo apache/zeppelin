@@ -42,9 +42,20 @@ public class Note implements Serializable, JobListener {
 	private transient ZeppelinConfiguration conf;
 	private transient JobListenerFactory jobListenerFactory;
 	
-    private Map<String, Object> config = new HashMap<String, Object>(); // note config like looknfeel, etc.
-
-
+	/**
+	 * note configurations
+	 *
+	 *  - looknfeel
+	 *  - cron
+	 */
+    private Map<String, Object> config = new HashMap<String, Object>();
+    
+    /**
+     * note information
+     * 
+     *  - cron : cron expression validity.
+     */
+    private Map<String, Object> info = new HashMap<String, Object>();
 
 	public Note(){		
 	}
@@ -280,13 +291,27 @@ public class Note implements Serializable, JobListener {
 	}
 
 	public Map<String, Object> getConfig() {
+		if (config==null) {
+			config = new HashMap<String, Object>();
+		}
 		return config;
 	}
 
 	public void setConfig(Map<String, Object> config) {
 		this.config = config;
-	}
+	}	
 	
+	public Map<String, Object> getInfo() {
+		if (info==null) {
+			info = new HashMap<String, Object>();
+		}
+		return info;
+	}
+
+	public void setInfo(Map<String, Object> info) {
+		this.info = info;
+	}
+
 	@Override
 	public void beforeStatusChange(Job job, Status before, Status after) {
 		Paragraph p = (Paragraph) job;
