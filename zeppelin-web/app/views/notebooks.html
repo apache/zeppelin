@@ -48,33 +48,43 @@ limitations under the License.
       </span>
 
       <span>
-            <div class="btn-group">
+            <div class="labelBtn btn-group">
               <div class="btn btn-default btn-xs dropdown-toggle"
                    type="button"
                    data-toggle="dropdown"
                    ng-class="{ 'btn-info' : note.config.cron, 'btn-danger' : note.info.cron, 'btn-default' : !note.config.cron}">
                 <span class="fa fa-clock-o"></span> {{getCronOptionNameFromValue(note.config.cron)}}
               </div>
-              <ul class="dropdown-menu" role="menu">
-                <li ng-repeat="cr in cronOption">
-                  <a ng-click="setCronScheduler(cr.value)"
-                     style="cursor:pointer">{{cr.name}}</a>
-                </li>
+              <ul class="dropdown-menu" role="menu" style="width:300px">
                 <li>
-                  <a>Cron expression<br />
+                  <div style="padding:10px 20px 0 20px;font-weight:normal;word-wrap:break-word">
+                    Run note with cron scheduler.
+                    Either choose from<br />preset or write your own  <a href="http://www.quartz-scheduler.org/documentation/quartz-1.x/tutorials/crontrigger" target=_blank>cron expression</a>.
+                    <br /><br />
+                    <span>- Preset</span>
+                    <a
+                      ng-repeat="cr in cronOption"
+                      type="button"
+                      ng-click="setCronScheduler(cr.value)"
+                      style="cursor:pointer"
+                      dropdown-input
+                     >{{cr.name}}
+                    </a>
+                    <br /><br />
+                    <span>- Cron expression</span>
                     <input type="text" 
                            ng-model="note.config.cron"
                            ng-change="setCronScheduler(note.config.cron)"
-                           dropdown-input
-                           style="width:100px">
+                           dropdown-input>
                     </input>
                     <p ng-show="note.info.cron"
                        style="color:red">
                       {{note.info.cron}}
                     </p>
-                  </a>
-                  <a href="http://www.quartz-scheduler.org/documentation/quartz-1.x/tutorials/crontrigger" target=_blank>Help</a>
+                   
+                  </div>
                 </li>
+
               </ul>
             </div>
       </span>
