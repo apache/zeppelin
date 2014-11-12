@@ -129,7 +129,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   /** Set cron expression for this note **/
   $scope.setCronScheduler = function(cronExpr) {
-    // TODO validate cronExpr and propagate error to UI
     $scope.note.config.cron = cronExpr;
     $scope.setConfig();
   };
@@ -180,6 +179,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     var noteCopy = {};
     noteCopy.id = note.id;
     noteCopy.name = note.name;
+    noteCopy.config = note.config;
+    noteCopy.info = note.info;
     noteCopy.paragraphs = [];
     for (var i=0; i<note.paragraphs.length; i++) {
       if (note.paragraphs[i].id === paragraphId) {
@@ -291,6 +292,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       console.log('change note name: %o to %o', $scope.note.name, note.name);
       $scope.note.name = note.name;
     }
+
+    $scope.note.config = note.config;
+    $scope.note.info = note.info;
 
     /** add new paragraphs */
     var idx = 0;

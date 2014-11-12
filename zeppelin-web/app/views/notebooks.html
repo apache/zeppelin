@@ -52,7 +52,7 @@ limitations under the License.
               <div class="btn btn-default btn-xs dropdown-toggle"
                    type="button"
                    data-toggle="dropdown"
-                   ng-class="{ 'btn-info' : note.config.cron, 'btn-default' : !note.config.cron}">
+                   ng-class="{ 'btn-info' : note.config.cron, 'btn-danger' : note.info.cron, 'btn-default' : !note.config.cron}">
                 <span class="fa fa-clock-o"></span> {{getCronOptionNameFromValue(note.config.cron)}}
               </div>
               <ul class="dropdown-menu" role="menu">
@@ -64,9 +64,14 @@ limitations under the License.
                   <a>Cron expression<br />
                     <input type="text" 
                            ng-model="note.config.cron"
+                           ng-change="setCronScheduler(note.config.cron)"
                            dropdown-input
                            style="width:100px">
                     </input>
+                    <p ng-show="note.info.cron"
+                       style="color:red">
+                      {{note.info.cron}}
+                    </p>
                   </a>
                   <a href="http://www.quartz-scheduler.org/documentation/quartz-1.x/tutorials/crontrigger" target=_blank>Help</a>
                 </li>
