@@ -107,10 +107,10 @@ public class Notebook {
                 Scheduler scheduler = schedulerFactory.createOrGetFIFOScheduler("note_" + System.currentTimeMillis());
                 logger.info("Loading note from " + f.getName());
                 Note note = Note.load(f.getName(), conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()), scheduler, jobListenerFactory, quartzSched);
-                refreshCron(note.id());
                 synchronized (notes) {
                     notes.put(note.id(), note);
-                }
+                    refreshCron(note.id());
+                }                
             }
         }
     }
