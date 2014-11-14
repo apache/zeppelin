@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.socket;
 
 import com.google.gson.Gson;
+import com.nflabs.zeppelin.notebook.JobListenerFactory;
 import com.nflabs.zeppelin.notebook.Note;
 import com.nflabs.zeppelin.notebook.Notebook;
 import com.nflabs.zeppelin.notebook.Paragraph;
@@ -9,9 +10,11 @@ import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.server.ZeppelinServer;
 import com.nflabs.zeppelin.socket.Message.OP;
+
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +31,7 @@ import java.util.Set;
  * 
  * @author anthonycorbacho
  */
-public class NotebookServer extends WebSocketServer {
+public class NotebookServer extends WebSocketServer implements JobListenerFactory {
 
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
   private static final int DEFAULT_PORT = 8282;
@@ -245,7 +248,7 @@ public class NotebookServer extends WebSocketServer {
     }
   }
   
-  private void updateNote(WebSocket conn, Notebook notebook, Message fromMessage) {
+  private void updateNote(WebSocket conn, Notebook notebook, Message fromMessage) throws SchedulerException {
     String noteId = (String) fromMessage.get("id");
     String name = (String) fromMessage.get("name");
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
@@ -257,12 +260,32 @@ public class NotebookServer extends WebSocketServer {
     }
     Note note = notebook.getNote(noteId);
     if (note != null) {
+      boolean cronUpdated = isCronUpdated(config, note.getConfig());
       note.setName(name);
-      note.setConfig(config);
+	  note.setConfig(config);
+	  
+	  if (cronUpdated) {
+		  notebook.refreshCron(note.id());
+	  }
+	  
       broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
       broadcastNoteList();
     }
   }
+  
+	private boolean isCronUpdated(Map<String, Object> configA,
+			Map<String, Object> configB) {		
+		boolean cronUpdated = false;
+		if (configA.get("cron") != null && configB.get("cron") != null
+				&& configA.get("cron").equals(configB.get("cron"))) {
+			cronUpdated = true;
+		} else if (configA.get("cron") == null && configB.get("cron") == null) {
+			cronUpdated = false;
+		} else if (configA.get("cron") != null || configB.get("cron") != null) {
+			cronUpdated = true;
+		}
+		return cronUpdated;
+	}
 
   private void createNote(WebSocket conn, Notebook notebook) throws IOException {
     Note note = notebook.createNote();
@@ -389,35 +412,50 @@ public class NotebookServer extends WebSocketServer {
     }
     note.persist();
     broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
-    note.run(paragraphId, new JobListener() {
-      @Override
-      public void beforeStatusChange(Job job, Status before, Status after) {}
+    
+    note.run(paragraphId);
+  }
+  
+  public static class ParagraphJobListener implements JobListener {
+	  private NotebookServer notebookServer;
+	private Note note;
 
-      @Override
-      public void afterStatusChange(Job job, Status before, Status after) {
-        if (after == Status.ERROR) {
-          job.getException().printStackTrace();
-        }
-        if (job.isTerminated()) {
-          LOG.info("Job {} is finished", job.getId());
-          try {
-            note.persist();
-          } catch (IOException e) {
-            e.printStackTrace();
-          }
-          broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
-        } else {
-          broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
-          // broadcastNote(note.id(), new Message(OP.PARAGRAPH).put("paragraph",
-          // note.getParagraph(paragraphId)));
-        }
-      }
+	public ParagraphJobListener(NotebookServer notebookServer, Note note){
+	  this.notebookServer = notebookServer;
+      this.note = note;
+	}
 
-      @Override
-      public void onProgressUpdate(Job job, int progress){
-    	  System.err.println("NotebookServer: JOb pprogresss update "+progress);
-    	  broadcastNote(note.id(), new Message(OP.PROGRESS).put("id", paragraphId).put("progress", job.progress()));
+	@Override
+	public void onProgressUpdate(Job job, int progress) {
+      notebookServer.broadcastNote(note.id(), new Message(OP.PROGRESS).put("id", job.getId()).put("progress", job.progress()));	
+	}
+
+	@Override
+	public void beforeStatusChange(Job job, Status before, Status after) {
+
+	}
+
+	@Override
+	public void afterStatusChange(Job job, Status before, Status after) {
+      if (after == Status.ERROR) {
+        job.getException().printStackTrace();
       }
-    });
+      if (job.isTerminated()) {
+        LOG.info("Job {} is finished", job.getId());
+        try {
+          note.persist();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+        notebookServer.broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
+      } else {
+    	notebookServer.broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
+      }
+	}
+  }
+
+  @Override
+  public JobListener getParagraphJobListener(Note note) {
+    return new ParagraphJobListener(this, note);
   }
 }

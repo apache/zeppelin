@@ -29,7 +29,27 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.editorToggled = false;
   $scope.tableToggled = false;
   $scope.looknfeelOption = [ 'default', 'simple' ];
-  
+  $scope.cronOption = [
+    {name: 'None', value : undefined},
+    {name: '1m', value: '0 0/1 * * * ?'},
+    {name: '5m', value: '0 0/5 * * * ?'},
+    {name: '1h', value: '0 0 0/1 * * ?'},
+    {name: '3h', value: '0 0 0/3 * * ?'},
+    {name: '6h', value: '0 0 0/6 * * ?'},
+    {name: '12h', value: '0 0 0/12 * * ?'},
+    {name: '1d', value: '0 0 0 * * ?'}
+  ];
+
+  $scope.getCronOptionNameFromValue = function(value) {
+    if (!value) return '';
+
+    for (var o in $scope.cronOption) {
+      if ($scope.cronOption[o].value===value) {
+        return $scope.cronOption[o].name;
+      }
+    }
+    return value;
+  };
 
   /** Init the new controller */
   var initNotebook = function() {
@@ -107,6 +127,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $rootScope.$emit('setLookAndFeel', $scope.note.config.looknfeel);
   };
 
+  /** Set cron expression for this note **/
+  $scope.setCronScheduler = function(cronExpr) {
+    $scope.note.config.cron = cronExpr;
+    $scope.setConfig();
+  };
+
   /** Update note config **/
   $scope.setConfig = function(config) {
     if(config) {
@@ -153,6 +179,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     var noteCopy = {};
     noteCopy.id = note.id;
     noteCopy.name = note.name;
+    noteCopy.config = note.config;
+    noteCopy.info = note.info;
     noteCopy.paragraphs = [];
     for (var i=0; i<note.paragraphs.length; i++) {
       if (note.paragraphs[i].id === paragraphId) {
@@ -264,6 +292,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       console.log('change note name: %o to %o', $scope.note.name, note.name);
       $scope.note.name = note.name;
     }
+
+    $scope.note.config = note.config;
+    $scope.note.info = note.info;
 
     /** add new paragraphs */
     var idx = 0;

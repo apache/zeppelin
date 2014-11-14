@@ -267,6 +267,12 @@
   font-family: 'Roboto', sans-serif;
 }
 
+.noteAction li{
+  font-size:12px;
+  margin-bottom:4px;
+  color: #333333;
+}
+
 .new_h3 {
   margin-top: 1px;
   padding-top: 7px;
