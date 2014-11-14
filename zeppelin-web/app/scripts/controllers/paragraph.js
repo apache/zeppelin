@@ -269,24 +269,6 @@ angular.module('zeppelinWebApp')
     }
   };
 
-  $scope.closeParagraph = function() {
-    console.log('close the note');
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
-    newConfig.hide = true;
-
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
-
-  $scope.openParagraph = function() {
-    console.log('open the note');
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
-    newConfig.hide = false;
-
-    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
-  };
-
   $scope.toggleEditor = function() {
     if ($scope.paragraph.config.editorHide) {
       $scope.openEditor();

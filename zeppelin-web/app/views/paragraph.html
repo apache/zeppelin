@@ -32,7 +32,7 @@ limitations under the License.
     </div>
   </div>
 
-  <div ng-show="!paragraph.config.hide">
+  <div>
     <div ng-show="!paragraph.config.editorHide">
       <div id="{{paragraph.id}}_editor"
            style="opacity: 1;"
@@ -66,6 +66,7 @@ limitations under the License.
 
 
     <form id="{{paragraph.id}}_form" role="form"
+          ng-show="!paragraph.config.tableHide"
           class="form-horizontal">
       <div class="form-group"
            ng-repeat="formulaire in paragraph.settings.forms"
@@ -337,16 +338,6 @@ limitations under the License.
           <a class="fa fa-font" style="cursor:pointer"
                 ng-click="showTitle()"
                 ng-show="!paragraph.config.title"> Show title</a>
-        </li>
-
-        <li>
-          <!-- paragraph handler -->
-          <a class="fa fa-compress" style="cursor:pointer"
-                ng-click="closeParagraph()"
-                ng-show="!paragraph.config.hide"> Hide paragraph</a>
-          <a class="fa fa-expand" style="cursor:pointer"
-                ng-click="openParagraph()"
-                ng-show="paragraph.config.hide"> Show paragraph</a>
         </li>
 
         <li><a class="icon-share-alt" style="cursor:pointer"
