@@ -30,18 +30,18 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.tableToggled = false;
   $scope.looknfeelOption = [ 'default', 'simple' ];
   $scope.cronOption = [
-    {name: "None", value : undefined},
-    {name: "1m", value: "0 0/1 * * * ?"},
-    {name: "5m", value: "0 0/5 * * * ?"},
-    {name: "1h", value: "0 0 0/1 * * ?"},
-    {name: "3h", value: "0 0 0/3 * * ?"},
-    {name: "6h", value: "0 0 0/6 * * ?"},
-    {name: "12h", value: "0 0 0/12 * * ?"},
-    {name: "1d", value: "0 0 0 * * ?"}
+    {name: 'None', value : undefined},
+    {name: '1m', value: '0 0/1 * * * ?'},
+    {name: '5m', value: '0 0/5 * * * ?'},
+    {name: '1h', value: '0 0 0/1 * * ?'},
+    {name: '3h', value: '0 0 0/3 * * ?'},
+    {name: '6h', value: '0 0 0/6 * * ?'},
+    {name: '12h', value: '0 0 0/12 * * ?'},
+    {name: '1d', value: '0 0 0 * * ?'}
   ];
 
   $scope.getCronOptionNameFromValue = function(value) {
-    if (!value) return "";
+    if (!value) return '';
 
     for (var o in $scope.cronOption) {
       if ($scope.cronOption[o].value===value) {
