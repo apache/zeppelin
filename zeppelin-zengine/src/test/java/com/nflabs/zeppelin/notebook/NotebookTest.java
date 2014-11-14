@@ -4,6 +4,9 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -94,6 +97,32 @@ public class NotebookTest implements JobListenerFactory{
 		
 		while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
 		assertEquals("repl1: p2", p2.getResult().message());
+	}
+	
+	@Test
+	public void testSchedule() throws InterruptedException{
+		// create a note and a paragraph
+		Note note = notebook.createNote();
+		Paragraph p = note.addParagraph();
+		p.setText("p1");
+		Date dateFinished = p.getDateFinished();
+		assertNull(dateFinished);
+		
+		// set cron scheduler, once a second
+		Map<String, Object> config = note.getConfig();
+		config.put("cron", "* * * * * ?");
+		note.setConfig(config);
+		notebook.refreshCron(note.id());
+		Thread.sleep(1*1000);
+		dateFinished = p.getDateFinished();
+		assertNotNull(dateFinished);
+		
+		// remove cron scheduler.
+		config.put("cron", null);
+		note.setConfig(config);
+		notebook.refreshCron(note.id());
+		Thread.sleep(1*1000);
+		assertEquals(dateFinished, p.getDateFinished());
 	}
 	
 	private void delete(File file){
