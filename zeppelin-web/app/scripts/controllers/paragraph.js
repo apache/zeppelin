@@ -134,11 +134,6 @@ angular.module('zeppelinWebApp')
   });
 
   $rootScope.$on('updateParagraph', function(event, data) {
-    // do not update when it's iframe mode
-    if ($scope.asIframe) {
-      return;
-    }
-
     if (data.paragraph.id === $scope.paragraph.id &&
          (
              data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
@@ -190,7 +185,7 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.result = data.paragraph.result;
       $scope.paragraph.settings = data.paragraph.settings;
       
-      if (!data.paragraph.config.asIframe) {
+      if (!$scope.asIframe) {
         $scope.paragraph.config = data.paragraph.config;
         initializeDefault();
 
@@ -204,6 +199,10 @@ angular.module('zeppelinWebApp')
 
         el.removeClass(el.attr('class'));
         el.addClass('paragraph-space box paragraph-margin');
+      } else {
+        data.paragraph.config.editorHide = true;
+        data.paragraph.config.tableHide = false;
+        $scope.paragraph.config = data.paragraph.config;
       }
       
       if (newType==='TABLE') {

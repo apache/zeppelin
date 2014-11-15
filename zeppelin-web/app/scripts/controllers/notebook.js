@@ -190,7 +190,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         }
         noteCopy.paragraphs[0].config.editorHide = true;
         noteCopy.paragraphs[0].config.tableHide = false;
-        noteCopy.paragraphs[0].config.asIframe = true;
         break;
       }
     }
