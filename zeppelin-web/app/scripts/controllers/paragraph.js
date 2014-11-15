@@ -134,6 +134,11 @@ angular.module('zeppelinWebApp')
   });
 
   $rootScope.$on('updateParagraph', function(event, data) {
+    // do not update when it's iframe mode
+    if ($scope.asIframe) {
+      return;
+    }
+
     if (data.paragraph.id === $scope.paragraph.id &&
          (
              data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||

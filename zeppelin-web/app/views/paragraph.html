@@ -66,7 +66,7 @@ limitations under the License.
 
 
     <form id="{{paragraph.id}}_form" role="form"
-          ng-show="!paragraph.config.tableHide"
+          ng-show="!paragraph.config.tableHide && !asIframe"
           class="form-horizontal">
       <div class="form-group"
            ng-repeat="formulaire in paragraph.settings.forms"
@@ -104,7 +104,7 @@ limitations under the License.
     <!-- Rendering -->
     <div class='tableDisplay' ng-show="!paragraph.config.tableHide">
       <div id="{{paragraph.id}}_switch"
-           ng-if="paragraph.result.type == 'TABLE'"
+           ng-if="paragraph.result.type == 'TABLE' && !asIframe"
            class="btn-group"
            style='margin-bottom: 10px;'>
         <button type="button" class="btn btn-default btn-sm"
@@ -128,7 +128,7 @@ limitations under the License.
                 ng-click="setGraphMode('lineChart', true)"><i class="fa fa-line-chart"></i>
         </button>
       </div>
-      <span ng-if="getResultType()=='TABLE' && getGraphMode()!='table'"
+      <span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && !asIframe"
             style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
         <a class="btnText" ng-if="paragraph.config.graph.optionOpen"
            ng-click="toggleGraphOption()">
@@ -140,7 +140,7 @@ limitations under the License.
         </a>          
       </span>
 
-      <div class="option lightBold" style="overflow: visible;" ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && paragraph.config.graph.optionOpen">
+      <div class="option lightBold" style="overflow: visible;" ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && paragraph.config.graph.optionOpen && !asIframe">
         All fields:
         <div class="allFields row">
           <ul class="noDot">
