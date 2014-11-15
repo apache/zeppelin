@@ -221,59 +221,69 @@ limitations under the License.
       </div>
 
       
-      <div id="p{{paragraph.id}}_table" class="tableContainer" ng-if="isGraphMode('table')">
+      <div id="p{{paragraph.id}}_graph"
+           class="graphContainer"
+           ng-if="getResultType()=='TABLE'"
+           resizable on-resize="setGraphHeight();">
+        <div ng-if="getGraphMode()=='multiBarChart'"
+             id="p{{paragraph.id}}_multiBarChart">
+          <svg></svg>
+        </div>
+
+        <div ng-if="getGraphMode()=='lineChart'"
+             id="p{{paragraph.id}}_lineChart">
+          <svg></svg>
+        </div>
+
+        <div ng-if="getGraphMode()=='stackedAreaChart'"
+             id="p{{paragraph.id}}_stackedAreaChart">
+          <svg></svg>
+        </div>
+
+        <div ng-if="getGraphMode()=='pieChart'"
+             id="p{{paragraph.id}}_pieChart">
+          <svg></svg>
+        </div>
+
+        <div id="p{{paragraph.id}}_table"
+             class="table"
+             ng-if="paragraph.result.type == 'TABLE'"
+             ng-Init="loadResultType(paragraph.result)"
+             ng-bind-html="paragraph.result.comment">
+        </div>
+
+        <div id="p{{paragraph.id}}_comment"
+             class="text"
+             ng-if="paragraph.result.comment"
+             ng-Init="loadResultType(paragraph.result)"
+             ng-bind-html="paragraph.result.comment">
+        </div>
       </div>
 
-      <div ng-if="getResultType()=='TABLE' && getGraphMode()=='multiBarChart'"
-           id="p{{paragraph.id}}_multiBarChart">
-        <svg></svg>
-      </div>
-
-      <div ng-if="getResultType()=='TABLE' && getGraphMode()=='lineChart'"
-           id="p{{paragraph.id}}_lineChart">
-        <svg></svg>
-      </div>
-
-      <div ng-if="getResultType()=='TABLE' && getGraphMode()=='stackedAreaChart'"
-           id="p{{paragraph.id}}_stackedAreaChart">
-        <svg></svg>
-      </div>
-
-      <div ng-if="getResultType()=='TABLE' && getGraphMode()=='pieChart'"
-           id="p{{paragraph.id}}_pieChart">
-        <svg></svg>
-      </div>
-
-      <div id="{{paragraph.id}}_msg"
-           class="text"
-           ng-if="paragraph.result.type == 'TABLE'"
-           ng-Init="loadResultType(paragraph.result)"
-           ng-bind-html="paragraph.result.comment">
-      </div>
-
-      <div id="{{paragraph.id}}_msg"
+      <div id="{{paragraph.id}}_text"
            class="text"
            ng-if="paragraph.result.type == 'TEXT'"
            ng-Init="loadResultType(paragraph.result)"
            ng-bind="paragraph.result.msg">
       </div>
 
-      <div id="p{{paragraph.id}}_msg"
+      <div id="p{{paragraph.id}}_html"
            ng-if="paragraph.result.type == 'HTML'"
            ng-Init="loadResultType(paragraph.result)">
       </div>
 
-      <img id="{{paragraph.id}}_msg"
+      <img id="{{paragraph.id}}_img"
            ng-if="paragraph.result.type == 'IMG'"
            ng-Init="loadResultType(paragraph.result)"
            ng-src="{{getBase64ImageSrc(paragraph.result.msg)}}">
       </img>
-      
+
       <div id="{{paragraph.id}}_error"
            class="error"
            ng-if="paragraph.status == 'ERROR'"
            ng-bind="paragraph.errorMessage">
       </div>
+
       <div id="{{paragraph.id}}_executionTime" class="executionTime" ng-if="paragraph.status == 'FINISHED' && !paragraph.config.editorHide ">
         {{getExecutionTime()}}
       </div>

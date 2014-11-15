@@ -61,9 +61,9 @@ angular.module('zeppelinWebApp')
 
   $scope.renderHtml = function() {
     var retryRenderer = function(){
-      if($('#p'+$scope.paragraph.id+'_msg').length){
+      if($('#p'+$scope.paragraph.id+'_html').length){
         try {
-          $('#p'+$scope.paragraph.id+'_msg').html($scope.paragraph.result.msg);
+          $('#p'+$scope.paragraph.id+'_html').html($scope.paragraph.result.msg);
         } catch(err) {
           console.log('HTML rendering error %o', err);
         }
@@ -651,6 +651,9 @@ angular.module('zeppelinWebApp')
       setNewMode(type);
     } else {
       clearUnknownColsFromGraphOption();
+      // set graph height
+      var height = $scope.paragraph.config.graph.height;
+      $('#p'+$scope.paragraph.id+'_graph').height(height);
 
       if (!type || type === 'table') {
         setTable($scope.paragraph.result, refresh);
@@ -694,7 +697,6 @@ angular.module('zeppelinWebApp')
   };
 
   var setTable = function(type, data, refresh) {
-
     var getTableContentFormat = function(d) {
       if (isNaN(d)) {
         if(d.length>'%html'.length && '%html '===d.substring(0, '%html '.length)) {
@@ -758,6 +760,10 @@ angular.module('zeppelinWebApp')
 
       $('#p' + $scope.paragraph.id + '_table').html(html);
       $('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
+
+      // set table height
+      var height = $scope.paragraph.config.graph.height;
+      $('#p'+$scope.paragraph.id+'_table').height(height);
     };
 
     var retryRenderer = function(){
@@ -1258,6 +1264,16 @@ angular.module('zeppelinWebApp')
     }
   };
 
+  $scope.setGraphHeight = function() {
+    var height = $('#p'+$scope.paragraph.id+'_graph').height();
+
+    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+
+    newConfig.graph.height = height;
+
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);    
+  };
 
   /** Utility function */
   if (typeof String.prototype.startsWith !== 'function') {
