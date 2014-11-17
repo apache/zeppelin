@@ -264,8 +264,8 @@ angular.module('zeppelinWebApp')
     var result = confirm('Do you want to delete this paragraph?');
     if (result) {
       console.log('Remove paragraph');
-      var parapgraphData = {op: 'PARAGRAPH_REMOVE', data: {id: $scope.paragraph.id}};
-      $rootScope.$emit('sendNewEvent', parapgraphData);
+      var paragraphData = {op: 'PARAGRAPH_REMOVE', data: {id: $scope.paragraph.id}};
+      $rootScope.$emit('sendNewEvent', paragraphData);
     }
   };
 
