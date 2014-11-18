@@ -112,7 +112,12 @@ if [ "x$ZEPPELIN_ENCODING" == "x" ]; then
   export ZEPPELIN_ENCODING="UTF-8"
 fi
 
-JAVA_OPTS+="$ZEPPELIN_JAVA_OPTS -Dfile.encoding=${ZEPPELIN_ENCODING} -Xmx1024m -XX:MaxPermSize=512m"
+if [ "x$ZEPPELIN_MEM" == "x" ]; then
+  export ZEPPELIN_MEM="-Xmx1024m -XX:MaxPermSize=512m"
+fi
+
+
+JAVA_OPTS+="$ZEPPELIN_JAVA_OPTS -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"
 export JAVA_OPTS
 
 if [ -n "$JAVA_HOME" ]; then
