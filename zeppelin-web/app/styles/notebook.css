@@ -188,7 +188,6 @@
 
 .paragraph div svg {
   width : 100%;
-  height : 300px;
 }
 
 .ace-tm {
@@ -411,11 +410,13 @@
   cursor: pointer;
 }
 
-.tableContainer {
-  overflow-y: auto;
-  max-height: 300px;
+.graphContainer {
   position:relative;
   overflow: hidden;
+}
+
+.graphContainer .table{
+  overflow-y : auto;
 }
 
 .allFields {

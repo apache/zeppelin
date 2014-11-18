@@ -32,7 +32,7 @@ limitations under the License.
     </div>
   </div>
 
-  <div ng-show="!paragraph.config.hide">
+  <div>
     <div ng-show="!paragraph.config.editorHide">
       <div id="{{paragraph.id}}_editor"
            style="opacity: 1;"
@@ -66,6 +66,7 @@ limitations under the License.
 
 
     <form id="{{paragraph.id}}_form" role="form"
+          ng-show="!paragraph.config.tableHide && !asIframe"
           class="form-horizontal">
       <div class="form-group"
            ng-repeat="formulaire in paragraph.settings.forms"
@@ -103,7 +104,7 @@ limitations under the License.
     <!-- Rendering -->
     <div class='tableDisplay' ng-show="!paragraph.config.tableHide">
       <div id="{{paragraph.id}}_switch"
-           ng-if="paragraph.result.type == 'TABLE'"
+           ng-if="paragraph.result.type == 'TABLE' && !asIframe"
            class="btn-group"
            style='margin-bottom: 10px;'>
         <button type="button" class="btn btn-default btn-sm"
@@ -127,7 +128,7 @@ limitations under the License.
                 ng-click="setGraphMode('lineChart', true)"><i class="fa fa-line-chart"></i>
         </button>
       </div>
-      <span ng-if="getResultType()=='TABLE' && getGraphMode()!='table'"
+      <span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && !asIframe"
             style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
         <a class="btnText" ng-if="paragraph.config.graph.optionOpen"
            ng-click="toggleGraphOption()">
@@ -139,7 +140,7 @@ limitations under the License.
         </a>          
       </span>
 
-      <div class="option lightBold" style="overflow: visible;" ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && paragraph.config.graph.optionOpen">
+      <div class="option lightBold" style="overflow: visible;" ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && paragraph.config.graph.optionOpen && !asIframe">
         All fields:
         <div class="allFields row">
           <ul class="noDot">
@@ -220,59 +221,68 @@ limitations under the License.
       </div>
 
       
-      <div id="p{{paragraph.id}}_table" class="tableContainer" ng-if="isGraphMode('table')">
+      <div id="p{{paragraph.id}}_graph"
+           class="graphContainer"
+           ng-if="getResultType()=='TABLE'"
+           resizable on-resize="setGraphHeight();">
+
+        <div ng-if="getGraphMode()=='table'"
+             id="p{{paragraph.id}}_table"
+             class="table">
+        </div>
+
+        <div ng-if="getGraphMode()=='multiBarChart'"
+             id="p{{paragraph.id}}_multiBarChart">
+          <svg></svg>
+        </div>
+
+        <div ng-if="getGraphMode()=='pieChart'"
+             id="p{{paragraph.id}}_pieChart">
+          <svg></svg>
+        </div>
+
+        <div ng-if="getGraphMode()=='stackedAreaChart'"
+             id="p{{paragraph.id}}_stackedAreaChart">
+          <svg></svg>
+        </div>
+
+        <div ng-if="getGraphMode()=='lineChart'"
+             id="p{{paragraph.id}}_lineChart">
+          <svg></svg>
+        </div>
       </div>
 
-      <div ng-if="getResultType()=='TABLE' && getGraphMode()=='multiBarChart'"
-           id="p{{paragraph.id}}_multiBarChart">
-        <svg></svg>
-      </div>
-
-      <div ng-if="getResultType()=='TABLE' && getGraphMode()=='lineChart'"
-           id="p{{paragraph.id}}_lineChart">
-        <svg></svg>
-      </div>
-
-      <div ng-if="getResultType()=='TABLE' && getGraphMode()=='stackedAreaChart'"
-           id="p{{paragraph.id}}_stackedAreaChart">
-        <svg></svg>
-      </div>
-
-      <div ng-if="getResultType()=='TABLE' && getGraphMode()=='pieChart'"
-           id="p{{paragraph.id}}_pieChart">
-        <svg></svg>
-      </div>
-
-      <div id="{{paragraph.id}}_msg"
+      <div id="{{paragraph.id}}_comment"
            class="text"
-           ng-if="paragraph.result.type == 'TABLE'"
+           ng-if="getResultType()=='TABLE' && paragraph.result.comment"
            ng-Init="loadResultType(paragraph.result)"
            ng-bind-html="paragraph.result.comment">
       </div>
 
-      <div id="{{paragraph.id}}_msg"
+      <div id="{{paragraph.id}}_text"
            class="text"
            ng-if="paragraph.result.type == 'TEXT'"
            ng-Init="loadResultType(paragraph.result)"
            ng-bind="paragraph.result.msg">
       </div>
 
-      <div id="p{{paragraph.id}}_msg"
+      <div id="p{{paragraph.id}}_html"
            ng-if="paragraph.result.type == 'HTML'"
            ng-Init="loadResultType(paragraph.result)">
       </div>
 
-      <img id="{{paragraph.id}}_msg"
+      <img id="{{paragraph.id}}_img"
            ng-if="paragraph.result.type == 'IMG'"
            ng-Init="loadResultType(paragraph.result)"
            ng-src="{{getBase64ImageSrc(paragraph.result.msg)}}">
       </img>
-      
+
       <div id="{{paragraph.id}}_error"
            class="error"
            ng-if="paragraph.status == 'ERROR'"
            ng-bind="paragraph.errorMessage">
       </div>
+
       <div id="{{paragraph.id}}_executionTime" class="executionTime" ng-if="paragraph.status == 'FINISHED' && !paragraph.config.editorHide ">
         {{getExecutionTime()}}
       </div>
@@ -337,16 +347,6 @@ limitations under the License.
           <a class="fa fa-font" style="cursor:pointer"
                 ng-click="showTitle()"
                 ng-show="!paragraph.config.title"> Show title</a>
-        </li>
-
-        <li>
-          <!-- paragraph handler -->
-          <a class="fa fa-compress" style="cursor:pointer"
-                ng-click="closeParagraph()"
-                ng-show="!paragraph.config.hide"> Hide paragraph</a>
-          <a class="fa fa-expand" style="cursor:pointer"
-                ng-click="openParagraph()"
-                ng-show="paragraph.config.hide"> Show paragraph</a>
         </li>
 
         <li><a class="icon-share-alt" style="cursor:pointer"
