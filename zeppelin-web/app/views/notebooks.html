@@ -23,7 +23,7 @@ limitations under the License.
          <span class="labelBtn btn-group">
             <button type="button"
                     class="btn btn-default btn-xs"
-                    ng-click="runNote(note.id)"
+                    ng-click="runNote()"
                     ng-if="!isNoteRunning()"
                     tooltip-placement="top" tooltip="Run all the note"><i class="icon-control-play"></i>
             </button>
@@ -38,7 +38,7 @@ limitations under the License.
                    class="btn btn-default btn-xs"
                    ng-click="toggleAllTable()"
                    tooltip-placement="top" tooltip="Show/hide the output"><i ng-class="tableToggled ? 'fa icon-notebook' : 'fa icon-book-open'"></i>
-           </button>  
+           </button>
 
             <button type="button"
                   class="btn btn-default btn-xs"
@@ -72,7 +72,7 @@ limitations under the License.
                     </a>
                     <br /><br />
                     <span>- Cron expression</span>
-                    <input type="text" 
+                    <input type="text"
                            ng-model="note.config.cron"
                            ng-change="setCronScheduler(note.config.cron)"
                            dropdown-input>
@@ -81,7 +81,7 @@ limitations under the License.
                        style="color:red">
                       {{note.info.cron}}
                     </p>
-                   
+
                   </div>
                 </li>
 
@@ -110,11 +110,11 @@ limitations under the License.
           </ul>
         </div>
     </h3>
-    
+
   </div>
-  
+
   <div class="note-jump"></div>
-  
+
   <!-- Include the paragraphs according to the note -->
   <div id="{{currentParagraph.id}}_paragraphColumn_main"
        ng-repeat="currentParagraph in note.paragraphs"

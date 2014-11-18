@@ -20,12 +20,12 @@
  * @description
  * # MainCtrl
  * Controller of the zeppelinWebApp
- * 
+ *
  * @author anthonycorbacho
  */
 angular.module('zeppelinWebApp')
         .controller('MainCtrl', function($scope, WebSocket, $rootScope, $window) {
-  
+
   $scope.WebSocketWaitingList = [];
   $scope.connected = false;
   $scope.looknfeel = 'default';
@@ -89,11 +89,6 @@ angular.module('zeppelinWebApp')
     }
   };
 
-  /** Get a list of note */
-  var getAllNotes = function() {
-    send({op: 'LIST_NOTES'});
-  };
-  
   /** get the childs event and sebd to the websocket server */
   $rootScope.$on('sendNewEvent', function(event, data) {
     if (!event.defaultPrevented) {
@@ -101,7 +96,7 @@ angular.module('zeppelinWebApp')
       event.preventDefault();
     }
   });
-  
+
   $rootScope.$on('setIframe', function(event, data) {
     if (!event.defaultPrevented) {
       $scope.asIframe = data;

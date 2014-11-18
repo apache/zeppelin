@@ -1,3 +1,5 @@
+/* global confirm:false, alert:false */
+/* jshint loopfunc: true */
 /* Copyright 2014 NFLabs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,7 +43,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   ];
 
   $scope.getCronOptionNameFromValue = function(value) {
-    if (!value) return '';
+    if (!value) {
+      return '';
+    }
 
     for (var o in $scope.cronOption) {
       if ($scope.cronOption[o].value===value) {
@@ -63,12 +67,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.removeNote = function(noteId) {
     var result = confirm('Do you want to delete this notebook?');
     if (result) {
-      $rootScope.$emit('sendNewEvent', {op: 'DEL_NOTE', data: {id: $scope.note.id}});
+      $rootScope.$emit('sendNewEvent', {op: 'DEL_NOTE', data: {id: noteId}});
       $location.path('/#');
     }
   };
 
-  $scope.runNote = function(noteId) {
+  $scope.runNote = function() {
     var result = confirm('Run all paragraphs?');
     if (result) {
       $rootScope.$emit('runParagraph');
@@ -77,12 +81,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.toggleAllEditor = function() {
     if ($scope.editorToggled) {
-        $rootScope.$emit('closeEditor');        
+        $rootScope.$emit('closeEditor');
     } else {
-        $rootScope.$emit('openEditor');        
+        $rootScope.$emit('openEditor');
     }
     $scope.editorToggled = !$scope.editorToggled;
-  }
+  };
 
   $scope.showAllEditor = function() {
     $rootScope.$emit('openEditor');
@@ -94,12 +98,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.toggleAllTable = function() {
     if ($scope.tableToggled) {
-        $rootScope.$emit('closeTable');        
+        $rootScope.$emit('closeTable');
     } else {
-        $rootScope.$emit('openTable');        
+        $rootScope.$emit('openTable');
     }
     $scope.tableToggled = !$scope.tableToggled;
-  }
+  };
 
   $scope.showAllTable = function() {
     $rootScope.$emit('openTable');
@@ -174,7 +178,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       $scope.note.config.looknfeel = 'default';
     }
   };
-  
+
   var cleanParagraphExcept = function(paragraphId, note) {
     var noteCopy = {};
     noteCopy.id = note.id;
@@ -222,7 +226,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       }
     }
 
-    if (newIndex == $scope.note.paragraphs.length) {
+    if (newIndex === $scope.note.paragraphs.length) {
       alert('Cannot insert after the last paragraph.');
       return;
     }
@@ -328,7 +332,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         if (currentEntry.id === $scope.note.paragraphs[entry].id) {
           found = true;
         }
-      })
+      });
       /** not found means bye */
       if(!found) {
         $scope.note.paragraphs.splice(entry, 1);
