@@ -94,11 +94,11 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
           cancelParagraph(conn, notebook, messagereceived);
           break;
         case MOVE_PARAGRAPH:
-            moveParagraph(conn, notebook, messagereceived);
-            break;
+          moveParagraph(conn, notebook, messagereceived);
+          break;
         case INSERT_PARAGRAPH:
-            insertParagraph(conn, notebook, messagereceived);
-            break;
+          insertParagraph(conn, notebook, messagereceived);
+          break;
         case PARAGRAPH_REMOVE:
           removeParagraph(conn, notebook, messagereceived);
           break;
