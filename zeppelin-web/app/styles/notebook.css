@@ -180,6 +180,7 @@
   /*font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;*/
   font-family: 'Roboto', sans-serif;
   font-size: 14px!important;
+  margin-bottom: 5px !important;
 }
 
 .paragraph p {
@@ -413,6 +414,7 @@
 .graphContainer {
   position:relative;
   overflow: hidden;
+  margin-bottom: 5px;
 }
 
 .graphContainer .table{
