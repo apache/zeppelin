@@ -18,7 +18,6 @@
     "grunt-contrib-uglify": "^0.4.0",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-filerev": "^0.2.1",
-    "grunt-google-cdn": "^0.4.0",
     "grunt-newer": "^0.7.0",
     "grunt-ngmin": "^0.0.3",
     "grunt-svgmin": "^0.4.0",
