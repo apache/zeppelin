@@ -419,6 +419,7 @@
 
 .graphContainer .table{
   overflow-y : auto;
+  margin-bottom: 5px !important;
 }
 
 .allFields {
