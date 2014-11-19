@@ -504,16 +504,18 @@ angular.module('zeppelinWebApp')
       $scope.editor.keyBinding.onCommandKey = function(e, hashId, keyCode) {
         if($scope.editor.completer && $scope.editor.completer.activated) { // if autocompleter is active
         } else {
+            var numRows;
+            var currentRow;
             if(keyCode===38 || (keyCode===80 && e.ctrlKey)){  // UP
-                var numRows = $scope.editor.getSession().getLength();
-                var currentRow = $scope.editor.getCursorPosition().row;
+                numRows = $scope.editor.getSession().getLength();
+                currentRow = $scope.editor.getCursorPosition().row;
                 if(currentRow===0){
                     // move focus to previous paragraph
                     $rootScope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
                 }
             } else if(keyCode===40 || (keyCode===78 && e.ctrlKey)){  // DOWN
-                var numRows = $scope.editor.getSession().getLength();
-                var currentRow = $scope.editor.getCursorPosition().row;
+                numRows = $scope.editor.getSession().getLength();
+                currentRow = $scope.editor.getCursorPosition().row;
                 if(currentRow === numRows-1){
                     // move focus to next paragraph
                     $rootScope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
@@ -745,8 +747,8 @@ angular.module('zeppelinWebApp')
       for (var r in $scope.paragraph.result.msgTable) {
         var row = $scope.paragraph.result.msgTable[r];
         html += '    <tr>';
-        for (var c in row) {
-          var v = row[c].value;
+        for (var index in row) {
+          var v = row[index].value;
           if(getTableContentFormat(v) !== 'html') {
             v = v.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
                 return '&#'+i.charCodeAt(0)+';';
@@ -816,9 +818,9 @@ angular.module('zeppelinWebApp')
       d3g = pivotDataToD3ChartFormat(p, true).d3g;
       $scope.chart[type].yAxis.axisLabelDistance(50);
     } else {
-      var data = pivotDataToD3ChartFormat(p);
-      var xLabels = data.xLabels;
-      d3g = data.d3g;
+      var pivotdata = pivotDataToD3ChartFormat(p);
+      var xLabels = pivotdata.xLabels;
+      d3g = pivotdata.d3g;
       $scope.chart[type].xAxis.tickFormat(function(d) {
         if (xLabels[d]) {
           return xLabels[d];
@@ -877,14 +879,14 @@ angular.module('zeppelinWebApp')
     var d3g = [];
 
     // select yColumns.
-    for (var i = 0; i < data.columnNames.length; i++) {
-      if (i !== xColIndex) {
-        yColIndexes.push(i);
+    for (var colIndex = 0; colIndex < data.columnNames.length; colIndex++) {
+      if (colIndex !== xColIndex) {
+        yColIndexes.push(colIndex);
       }
     }
 
-    for (var i = 0; i < data.rows.length; i++) {
-      var row = data.rows[i];
+    for (var rowIndex = 0; rowIndex < data.rows.length; rowIndex++) {
+      var row = data.rows[rowIndex];
       var xVar = row[xColIndex];
       var yVar = row[yColIndexes[0]];
 
@@ -1220,7 +1222,7 @@ angular.module('zeppelinWebApp')
 
     // clear aggregation name, if possible
     var namesWithoutAggr = {};
-
+    // TODO - This part could use som refactoring - Weird if/else with similar actions and variable names
     for(var colName in colNameIndex) {
       var withoutAggr = colName.substring(0, colName.lastIndexOf('('));
       if (!namesWithoutAggr[withoutAggr]) {
@@ -1231,38 +1233,36 @@ angular.module('zeppelinWebApp')
     }
 
     if (valueOnly) {
-      for (var i=0; i<d3g[0].values.length; i++) {
-        var colName = d3g[0].values[i].x;
+      for (var valueIndex = 0; valueIndex < d3g[0].values.length; valueIndex++) {
+        var colName = d3g[0].values[valueIndex].x;
         if (!colName) {
           continue;
         }
 
         var withoutAggr = colName.substring(0, colName.lastIndexOf('('));
         if (namesWithoutAggr[withoutAggr] <= 1 ) {
-          d3g[0].values[i].x = withoutAggr;
+          d3g[0].values[valueIndex].x = withoutAggr;
         }
       }
     } else {
-      for (var i=0; i<d3g.length; i++) {
-        var colName = d3g[i].key;
+      for (var d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
+        var colName = d3g[d3gIndex].key;
         var withoutAggr = colName.substring(0, colName.lastIndexOf('('));
         if (namesWithoutAggr[withoutAggr] <= 1 ) {
-          d3g[i].key = withoutAggr;
+          d3g[d3gIndex].key = withoutAggr;
         }
       }
 
       // use group name instead of group.value as a column name, if there're only one group and one value selected.
-      if (groups.length===1 && values.length===1) {
-
-        for (var i=0; i<d3g.length; i++) {
-          var colName = d3g[i].key;
+      if (groups.length === 1 && values.length === 1) {
+        for (d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
+          var colName = d3g[d3gIndex].key;
           colName = colName.split('.')[0];
-          d3g[i].key = colName;
+          d3g[d3gIndex].key = colName;
         }
       }
 
     }
-
 
     return {
       xLabels : rowIndexValue,
