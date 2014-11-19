@@ -46,7 +46,7 @@ if [ "x$ZEPPELIN_WAR" == "x" ]; then
     if [ -d "${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp" ]; then
 	    export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp"
     else
-        export ZEPPELIN_WAR=`find ${ZEPPELIN_HOME}/zeppelin-web -name "zeppelin-web*.war"`
+        export ZEPPELIN_WAR=`find ${ZEPPELIN_HOME} -name "zeppelin-web*.war"`
     fi
 fi
 
@@ -54,7 +54,7 @@ if [ "x$ZEPPELIN_API_WAR" == "x" ]; then
     if [ -d "${ZEPPELIN_HOME}/zeppelin-docs/src/main/swagger" ]; then
 	    export ZEPPELIN_API_WAR="${ZEPPELIN_HOME}/zeppelin-docs/src/main/swagger"
     else
-        export ZEPPELIN_API_WAR=`find ${ZEPPELIN_HOME}/zeppelin-docs -name "zeppelin-api-ui*.war"`
+        export ZEPPELIN_API_WAR=`find ${ZEPPELIN_HOME}/ -name "zeppelin-api-ui*.war"`
     fi
 fi
 
@@ -112,7 +112,12 @@ if [ "x$ZEPPELIN_ENCODING" == "x" ]; then
   export ZEPPELIN_ENCODING="UTF-8"
 fi
 
-JAVA_OPTS+="$ZEPPELIN_JAVA_OPTS -Dfile.encoding=${ZEPPELIN_ENCODING} -Xmx1024m -XX:MaxPermSize=512m"
+if [ "x$ZEPPELIN_MEM" == "x" ]; then
+  export ZEPPELIN_MEM="-Xmx1024m -XX:MaxPermSize=512m"
+fi
+
+
+JAVA_OPTS+="$ZEPPELIN_JAVA_OPTS -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"
 export JAVA_OPTS
 
 if [ -n "$JAVA_HOME" ]; then
