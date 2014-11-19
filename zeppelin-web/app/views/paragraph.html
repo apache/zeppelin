@@ -15,18 +15,18 @@ limitations under the License.
 -->
 <div id="{{paragraph.id}}_container"
      ng-class="{'paragraph outlineOnFocus': !asIframe, 'paragraphAsIframe': asIframe}">
-    
+
   <div ng-show="paragraph.config.title"
        id="{{paragraph.id}}_title"
        class="title">
-    <input type="text" 
+    <input type="text"
            placeholder="Edit title"
            ng-model="paragraph.title"
            ng-show="showTitleEditor"
            ng-delete="showTitleEditor = false"
            ng-enter="setTitle(); showTitleEditor = false"
            />
-    <div ng-click="showTitleEditor = true" 
+    <div ng-click="showTitleEditor = true"
          ng-show="!showTitleEditor"
          ng-bind-html="paragraph.title || 'Untitled'">
     </div>
@@ -137,7 +137,7 @@ limitations under the License.
         <a class="btnText" ng-if="!paragraph.config.graph.optionOpen"
            ng-click="toggleGraphOption()" >
           settings <span class="fa fa-caret-down"></span>
-        </a>          
+        </a>
       </span>
 
       <div class="option lightBold" style="overflow: visible;" ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && paragraph.config.graph.optionOpen && !asIframe">
@@ -156,7 +156,7 @@ limitations under the License.
             </li>
           </ul>
         </div>
-        
+
         <div class="row">
           <div class="col-md-4">
             <span class="columns lightBold">
@@ -217,10 +217,10 @@ limitations under the License.
             </span>
           </div>
         </div>
-        
+
       </div>
 
-      
+
       <div id="p{{paragraph.id}}_graph"
            class="graphContainer"
            ng-if="getResultType()=='TABLE'"
@@ -307,19 +307,19 @@ limitations under the License.
           ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
 
     <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" tooltip-placement="top" tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide') + ' editor'}}"
-	  ng-click="toggleEditor()"></span>
+      ng-click="toggleEditor()"></span>
     <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
-	  ng-click="toggleOutput()"></span>
+      ng-click="toggleOutput()"></span>
 
     <span class="dropdown navbar-right">
-      <span class="icon-settings" style="cursor:pointer" 
+      <span class="icon-settings" style="cursor:pointer"
             data-toggle="dropdown"
             type="button">
       </span>
       <ul class="dropdown-menu" role="menu" style="width:200px;">
         <li>
           <a class="fa fa-arrows-h dropdown"> Width
-          <form style="display:inline">
+          <form style="display:inline; margin-left:5px;">
             <select ng-model="paragraph.config.colWidth"
               class="selectpicker"
               ng-change="changeColWidth()"
