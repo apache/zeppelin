@@ -121,10 +121,10 @@ limitations under the License.
        ng-controller="ParagraphCtrl"
        ng-Init="init(currentParagraph)"
        ng-class="{
-                    'lastParagraph': $last,
                     'paragraph-col col-md-12': !currentParagraph.config.colWidth || paragraphUrl,
                     'paragraph-col col-md-{{currentParagraph.config.colWidth}}': currentParagraph.config.colWidth && !paragraphUrl
                   }">
     <div id="{{currentParagraph.id}}_paragraphColumn" ng-include src="'views/paragraph.html'" ng-class="{'paragraph-space box paragraph-margin': !asIframe}"></div>
   </div>
+  <div style="clear:both;height:10px"></div>
 </div>
