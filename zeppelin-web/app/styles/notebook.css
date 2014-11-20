@@ -413,12 +413,16 @@
 
 .graphContainer {
   position:relative;
-  overflow: visible;
   margin-bottom: 5px;
+  overflow: visible;
+}
+
+.noOverflow {
+    overflow: hidden !important;
 }
 
 .graphContainer .table {
-  overflow-y : auto;
+  overflow: hidden;
   margin-bottom: 5px !important;
 }
 

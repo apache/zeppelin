@@ -223,6 +223,7 @@ limitations under the License.
 
       <div id="p{{paragraph.id}}_graph"
            class="graphContainer"
+           ng-class="{'noOverflow': getGraphMode()=='table'}"
            ng-if="getResultType()=='TABLE'"
            resizable on-resize="setGraphHeight();">
 
