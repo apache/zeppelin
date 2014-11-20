@@ -413,7 +413,7 @@
 
 .graphContainer {
   position:relative;
-  overflow: hidden;
+  overflow: visible;
   margin-bottom: 5px;
 }
 
