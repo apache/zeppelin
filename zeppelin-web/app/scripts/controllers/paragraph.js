@@ -135,6 +135,7 @@ angular.module('zeppelinWebApp')
     }
   });
 
+  // TODO: this may have impact on performance when there are many paragraphs in a note.
   $rootScope.$on('updateParagraph', function(event, data) {
     if (data.paragraph.id === $scope.paragraph.id &&
          (
@@ -173,7 +174,6 @@ angular.module('zeppelinWebApp')
           $scope.paragraph.text = data.paragraph.text;
         }
       }
-
 
       /** push the rest */
       $scope.paragraph.aborted = data.paragraph.aborted;
@@ -270,8 +270,8 @@ angular.module('zeppelinWebApp')
     var result = confirm('Do you want to delete this paragraph?');
     if (result) {
       console.log('Remove paragraph');
-      var parapgraphData = {op: 'PARAGRAPH_REMOVE', data: {id: $scope.paragraph.id}};
-      $rootScope.$emit('sendNewEvent', parapgraphData);
+      var paragraphData = {op: 'PARAGRAPH_REMOVE', data: {id: $scope.paragraph.id}};
+      $rootScope.$emit('sendNewEvent', paragraphData);
     }
   };
 
@@ -759,7 +759,6 @@ angular.module('zeppelinWebApp')
         html += '    </tr>';
       }
 
-
       html += '</table>';
 
       $('#p' + $scope.paragraph.id + '_table').html(html);
@@ -814,7 +813,7 @@ angular.module('zeppelinWebApp')
           });
         }
       }
-    } else if(type==='multiBarChart') {
+    } else if (type==='multiBarChart') {
       d3g = pivotDataToD3ChartFormat(p, true).d3g;
       $scope.chart[type].yAxis.axisLabelDistance(50);
     } else {
@@ -949,7 +948,7 @@ angular.module('zeppelinWebApp')
     $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
   };
 
-  /* Clear unkonwn columns from graph option */
+  /* Clear unknown columns from graph option */
   var clearUnknownColsFromGraphOption = function() {
     var unique = function(list) {
       for (var i = 0; i<list.length; i++) {

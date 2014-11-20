@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.socket;
 
+import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.nflabs.zeppelin.notebook.JobListenerFactory;
 import com.nflabs.zeppelin.notebook.Note;
@@ -10,7 +11,6 @@ import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.server.ZeppelinServer;
 import com.nflabs.zeppelin.socket.Message.OP;
-
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -52,9 +52,12 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
   public NotebookServer(int port) {
     super(new InetSocketAddress(port));
     creatingwebSocketServerLog(port);
-
   }
-  
+
+  private Notebook notebook() {
+    return ZeppelinServer.notebook;
+  }
+
   @Override
   public void onOpen(WebSocket conn, ClientHandshake handshake) {
     LOG.info("New connection from {} : {}", conn.getRemoteSocketAddress().getHostName(), conn
@@ -94,11 +97,11 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
           cancelParagraph(conn, notebook, messagereceived);
           break;
         case MOVE_PARAGRAPH:
-            moveParagraph(conn, notebook, messagereceived);
-            break;
+          moveParagraph(conn, notebook, messagereceived);
+          break;
         case INSERT_PARAGRAPH:
-            insertParagraph(conn, notebook, messagereceived);
-            break;
+          insertParagraph(conn, notebook, messagereceived);
+          break;
         case PARAGRAPH_REMOVE:
           removeParagraph(conn, notebook, messagereceived);
           break;
@@ -184,7 +187,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
   }
 
   private String getOpenNoteId(WebSocket socket) {
-    String id = null;;
+    String id = null;
     synchronized (noteSocketMap) {
       Set<String> keys = noteSocketMap.keySet();
       for (String noteId : keys) {
@@ -194,11 +197,10 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
         }
       }
     }
-
     return id;
   }
 
-  private void broadcastNote(String noteId, Message m) {
+  private void broadcast(String noteId, Message m) {
     LOG.info("SEND >> " + m.op);
     synchronized (noteSocketMap) {
       List<WebSocket> socketLists = noteSocketMap.get(noteId);
@@ -218,8 +220,8 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     }
   }
 
-  private Notebook notebook() {
-    return ZeppelinServer.notebook;
+  private void broadcastNote(Note note) {
+    broadcast(note.id(), new Message(OP.NOTE).put("note", note));
   }
 
   private void broadcastNoteList() {
@@ -232,14 +234,13 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
       info.put("name", note.getName());
       notesInfo.add(info);
     }
-
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
   }
   
   private void sendNote(WebSocket conn, Notebook notebook, Message fromMessage) {
     String noteId = (String) fromMessage.get("id");
     if (noteId == null) {
-      return ;
+      return;
     }
     Note note = notebook.getNote(noteId);
     if (note != null) {
@@ -253,10 +254,10 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     String name = (String) fromMessage.get("name");
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
     if (noteId == null) {
-      return ;
+      return;
     }
     if (config == null) {
-      return ;
+      return;
     }
     Note note = notebook.getNote(noteId);
     if (note != null) {
@@ -265,10 +266,10 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
 	  note.setConfig(config);
 	  
 	  if (cronUpdated) {
-		  notebook.refreshCron(note.id());
+	    notebook.refreshCron(note.id());
 	  }
-	  
-      broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
+
+      broadcastNote(note);
       broadcastNoteList();
     }
   }
@@ -291,7 +292,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     Note note = notebook.createNote();
     note.addParagraph(); // it's an empty note. so add one paragraph
     note.persist();
-    broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
+    broadcastNote(note);
     broadcastNoteList();
   }
 
@@ -321,7 +322,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     p.setTitle((String) fromMessage.get("title"));
     p.setText((String) fromMessage.get("paragraph"));
     note.persist();
-    broadcastNote(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
+    broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
   }
   
   private void removeParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
@@ -334,7 +335,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     if (!note.isLastParagraph(paragraphId)) {
       note.removeParagraph(paragraphId);
       note.persist();
-      broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
+      broadcastNote(note);
     }
   }
   
@@ -366,7 +367,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     final Note note = notebook.getNote(getOpenNoteId(conn));
     note.moveParagraph(paragraphId, newIndex);
     note.persist();
-    broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
+    broadcastNote(note);
   }
 
   private void insertParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
@@ -375,7 +376,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     final Note note = notebook.getNote(getOpenNoteId(conn));
     note.insertParagraph(index);
     note.persist();
-    broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
+    broadcastNote(note);
   }
 
   
@@ -393,32 +394,32 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
   private void runParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
 	  final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
-      return ;
+      return;
     }
     final Note note = notebook.getNote(getOpenNoteId(conn));
     Paragraph p = note.getParagraph(paragraphId);
     String text = (String) fromMessage.get("paragraph");
     p.setText(text);
-    p.setTitle((String)fromMessage.get("title"));
+    p.setTitle((String) fromMessage.get("title"));
     Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
     p.settings.setParams(params);
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
     p.setConfig(config);
     
-    // if it's an last pargraph, let's add new one
-    if (text!=null && text.length()>0 && note.getLastParagraph().getId().equals(p.getId())) {
+    // if it's the last paragraph, let's add a new one
+    boolean isTheLastParagraph = note.getLastParagraph().getId().equals(p.getId());
+    if (!Strings.isNullOrEmpty(text) && isTheLastParagraph) {
       note.addParagraph();
-      broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
     }
     note.persist();
-    broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
+    broadcastNote(note);
     
     note.run(paragraphId);
   }
   
   public static class ParagraphJobListener implements JobListener {
-	  private NotebookServer notebookServer;
-	private Note note;
+    private NotebookServer notebookServer;
+    private Note note;
 
 	public ParagraphJobListener(NotebookServer notebookServer, Note note){
 	  this.notebookServer = notebookServer;
@@ -427,12 +428,11 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
 
 	@Override
 	public void onProgressUpdate(Job job, int progress) {
-      notebookServer.broadcastNote(note.id(), new Message(OP.PROGRESS).put("id", job.getId()).put("progress", job.progress()));	
+      notebookServer.broadcast(note.id(), new Message(OP.PROGRESS).put("id", job.getId()).put("progress", job.progress()));
 	}
 
 	@Override
 	public void beforeStatusChange(Job job, Status before, Status after) {
-
 	}
 
 	@Override
@@ -447,11 +447,9 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
         } catch (IOException e) {
           e.printStackTrace();
         }
-        notebookServer.broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
-      } else {
-    	notebookServer.broadcastNote(note.id(), new Message(OP.NOTE).put("note", note));
       }
-	}
+      notebookServer.broadcastNote(note);
+    }
   }
 
   @Override

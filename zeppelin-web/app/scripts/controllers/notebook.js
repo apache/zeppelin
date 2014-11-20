@@ -299,43 +299,46 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $scope.note.config = note.config;
     $scope.note.info = note.info;
 
-    /** add new paragraphs */
-    var idx = 0;
-    note.paragraphs.forEach(function(newEntry) {
-      var found = false;
-      for (var oldIdx=0; oldIdx< $scope.note.paragraphs.length; oldIdx++) {
-        if ($scope.note.paragraphs[oldIdx].id === newEntry.id) {
-          found = true;
+    var newParagraphIds = note.paragraphs.map(function(x) {return x.id;});
+    var oldParagraphIds = $scope.note.paragraphs.map(function(x) {return x.id;});
+
+    var numNewParagraphs = newParagraphIds.length;
+    var numOldParagraphs = oldParagraphIds.length;
+
+    /** add a new paragraph */
+    if (numNewParagraphs > numOldParagraphs) {
+      for (var index in newParagraphIds) {
+        if (oldParagraphIds[index] !== newParagraphIds[index]) {
+          $scope.note.paragraphs.splice(index, 0, note.paragraphs[index]);
           break;
         }
       }
+    }
 
-      if (found) {
-        if (idx === oldIdx) {
+    /** update or move paragraph */
+    if (numNewParagraphs === numOldParagraphs) {
+      for (var idx in newParagraphIds) {
+        var newEntry = note.paragraphs[idx];
+        if (oldParagraphIds[idx] === newParagraphIds[idx]) {
           $rootScope.$emit('updateParagraph', {paragraph: newEntry});
         } else {
           // move paragraph
+          var oldIdx = oldParagraphIds.indexOf(newParagraphIds[idx]);
           $scope.note.paragraphs.splice(oldIdx, 1);
           $scope.note.paragraphs.splice(idx, 0, newEntry);
+          // rebuild id list since paragraph has moved.
+          oldParagraphIds = $scope.note.paragraphs.map(function(x) {return x.id;});
         }
-      } else {
-        // insert new paragraph
-        $scope.note.paragraphs.splice(idx, 0, newEntry);
       }
-      idx++;
-    });
+    }
 
-    /** remove paragraphs */
-    for (var entry in $scope.note.paragraphs) {
-     var found = false;
-      note.paragraphs.forEach(function(currentEntry) {
-        if (currentEntry.id === $scope.note.paragraphs[entry].id) {
-          found = true;
+    /** remove paragraph */
+    if (numNewParagraphs < numOldParagraphs) {
+      for (var oldidx in oldParagraphIds) {
+        if(oldParagraphIds[oldidx] !== newParagraphIds[oldidx]) {
+          $scope.note.paragraphs.splice(oldidx, 1);
+          break;
         }
-      });
-      /** not found means bye */
-      if(!found) {
-        $scope.note.paragraphs.splice(entry, 1);
       }
     }
   };

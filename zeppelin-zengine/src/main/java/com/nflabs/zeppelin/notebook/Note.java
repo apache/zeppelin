@@ -234,8 +234,7 @@ public class Note implements Serializable, JobListener {
 			return new LinkedList<Paragraph>(paragraphs);
 		}
 	}
-	
-	
+
 	public void persist() throws IOException{
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		gsonBuilder.setPrettyPrinting();
