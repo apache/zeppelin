@@ -121,6 +121,7 @@ limitations under the License.
        ng-controller="ParagraphCtrl"
        ng-Init="init(currentParagraph)"
        ng-class="{
+                    'lastParagraph': $last,
                     'paragraph-col col-md-12': !currentParagraph.config.colWidth || paragraphUrl,
                     'paragraph-col col-md-{{currentParagraph.config.colWidth}}': currentParagraph.config.colWidth && !paragraphUrl
                   }">

@@ -417,9 +417,13 @@
   margin-bottom: 5px;
 }
 
-.graphContainer .table{
+.graphContainer .table {
   overflow-y : auto;
   margin-bottom: 5px !important;
+}
+
+.lastParagraph {
+    margin-bottom: 10px;
 }
 
 .allFields {
