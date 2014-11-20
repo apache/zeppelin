@@ -14,42 +14,36 @@ import org.atmosphere.jersey.JerseyBroadcaster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import com.nflabs.zeppelin.notebook.Notebook;
 
+/**
+ * Rest api endpoint for the noteBook.
+ * 
+ * @author Leemoonsoo
+ * @author anthonycorbacho
+ */
 @Path("/notebook")
-/*
-@AtmosphereService(
-        dispatch = false,
-        interceptors = {AtmosphereResourceLifecycleInterceptor.class},
-        path = "/notebook",
-        servlet = "org.glassfish.jersey.servlet.ServletContainer")
-        */
 @Produces("application/json")
-//@AtmosphereService(path="/")
-@AtmosphereService (broadcaster = JerseyBroadcaster.class)
+@AtmosphereService(broadcaster = JerseyBroadcaster.class)
 public class NotebookApi {
-	Logger logger = LoggerFactory.getLogger(NotebookApi.class);
+  Logger logger = LoggerFactory.getLogger(NotebookApi.class);
+  private Notebook notebook;
+  public NotebookApi() {}
 
-	private Notebook notebook;
+  public NotebookApi(Notebook notebook) {
+    this.notebook = notebook;
+  }
 
-	public NotebookApi(){
-	}
-	
-	public NotebookApi(Notebook notebook) {
-		this.notebook = notebook;
-	}
+  @Suspend
+  @GET
+  public String suspend() {
+    return "";
+  }
 
-	@Suspend	
-	@GET
-	public String suspend(){
-		return "";
-	}
-	
-	@Broadcast(writeEntity = false)
-	@POST
-	@Produces("application/json")
-	public NotebookResponse broadcast(String message) {
-		return new NotebookResponse("hello");
-	}
+  @Broadcast(writeEntity = false)
+  @POST
+  @Produces("application/json")
+  public NotebookResponse broadcast(String message) {
+    return new NotebookResponse("hello");
+  }
 }

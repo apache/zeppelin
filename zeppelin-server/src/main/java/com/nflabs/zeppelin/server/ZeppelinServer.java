@@ -26,127 +26,135 @@ import com.nflabs.zeppelin.notebook.Notebook;
 import com.nflabs.zeppelin.rest.ZeppelinRestApi;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
-
+/**
+ * Main class of Zeppelin.
+ * 
+ * @author Leemoonsoo
+ *
+ */
 public class ZeppelinServer extends Application {
-	private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
 
-	private SchedulerFactory schedulerFactory;
-	public static Notebook notebook;
-	static com.nflabs.zeppelin.socket.NotebookServer websocket;
+  private SchedulerFactory schedulerFactory;
+  public static Notebook notebook;
+  static com.nflabs.zeppelin.socket.NotebookServer websocket;
 
-	private InterpreterFactory replFactory;
+  private InterpreterFactory replFactory;
 
-	public static void main(String [] args) throws Exception{
-		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-        conf.setProperty("args",args);
+  public static void main(String[] args) throws Exception {
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    conf.setProperty("args", args);
 
-		int port = conf.getInt(ConfVars.ZEPPELIN_PORT);
-        final Server server = setupJettyServer(port);
-        websocket = new com.nflabs.zeppelin.socket.NotebookServer(port+1);
+    int port = conf.getInt(ConfVars.ZEPPELIN_PORT);
+    final Server server = setupJettyServer(port);
+    websocket = new com.nflabs.zeppelin.socket.NotebookServer(port + 1);
 
-        //REST api
-		final ServletContextHandler restApi = setupRestApiContextHandler();
-		/** NOTE: Swagger-core is included via the web.xml in zeppelin-web
-		 * But the rest of swagger is configured here
-		 */
-		final ServletContextHandler swagger = setupSwaggerContextHandler(port);
-		//Web UI
-		final WebAppContext webApp = setupWebAppContext(conf);
-		final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
-
-        // add all handlers
-	    ContextHandlerCollection contexts = new ContextHandlerCollection();
-	    contexts.setHandlers(new Handler[]{swagger, restApi, webApp, webAppSwagg});
-	    server.setHandler(contexts);
-
-	    
-        websocket.start();
-	    LOG.info("Start zeppelin server");
-        server.start();
-        LOG.info("Started");
-
-		Runtime.getRuntime().addShutdownHook(new Thread(){
-		    @Override public void run() {
-		        LOG.info("Shutting down Zeppelin Server ... ");
-            	try {
-					server.stop();
-					websocket.stop();
-				} catch (Exception e) {
-					LOG.error("Error while stopping servlet container", e);
-				}
-            	LOG.info("Bye");
-            }
-        });
-		server.join();
-	}
-
-    private static Server setupJettyServer(int port) {
-        int timeout = 1000*30;
-        final Server server = new Server();
-        SocketConnector connector = new SocketConnector();
-
-        // Set some timeout options to make debugging easier.
-        connector.setMaxIdleTime(timeout);
-        connector.setSoLingerTime(-1);
-        connector.setPort(port);
-        server.addConnector(connector);
-        return server;
-    }
-
-    private static ServletContextHandler setupRestApiContextHandler() {
-        final ServletHolder cxfServletHolder = new ServletHolder( new CXFNonSpringJaxrsServlet() );
-		cxfServletHolder.setInitParameter("javax.ws.rs.Application", ZeppelinServer.class.getName());
-		cxfServletHolder.setName("rest");
-		cxfServletHolder.setForcedPath("rest");
-
-		final ServletContextHandler cxfContext = new ServletContextHandler();
-		cxfContext.setSessionHandler(new SessionHandler());
-		cxfContext.setContextPath("/api");
-		cxfContext.addServlet( cxfServletHolder, "/*" );
-        return cxfContext;
-    }
-
+    // REST api
+    final ServletContextHandler restApi = setupRestApiContextHandler();
     /**
-     * Swagger core handler - Needed for the RestFul api documentation
-     *
-     * @return ServletContextHandler of Swagger
+     * NOTE: Swagger-core is included via the web.xml in zeppelin-web But the rest of swagger is
+     * configured here
      */
-    private static ServletContextHandler setupSwaggerContextHandler(int port) {
-      // Configure Swagger-core
-      final ServletHolder SwaggerServlet = new ServletHolder( new com.wordnik.swagger.jersey.config.JerseyJaxrsConfig() );
-      SwaggerServlet.setName("JerseyJaxrsConfig");
-      SwaggerServlet.setInitParameter("api.version", "1.0.0");
-      SwaggerServlet.setInitParameter("swagger.api.basepath", "http://localhost:"+port+"/api");
-      SwaggerServlet.setInitOrder(2);
+    final ServletContextHandler swagger = setupSwaggerContextHandler(port);
+    // Web UI
+    final WebAppContext webApp = setupWebAppContext(conf);
+    final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
 
-      // Setup the handler
-      final ServletContextHandler handler = new ServletContextHandler();
-      handler.setSessionHandler(new SessionHandler());
-      // Bind Swagger-core to the url HOST/api-docs
-      handler.addServlet(SwaggerServlet, "/api-docs/*");
+    // add all handlers
+    ContextHandlerCollection contexts = new ContextHandlerCollection();
+    contexts.setHandlers(new Handler[] {swagger, restApi, webApp, webAppSwagg});
+    server.setHandler(contexts);
 
-      // And we are done
-      return handler;
-    }
 
-    private static WebAppContext setupWebAppContext(ZeppelinConfiguration conf) {
-        WebAppContext webApp = new WebAppContext();
-        File webapp = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
-        if(webapp.isDirectory()){ // Development mode, read from FS
-            //webApp.setDescriptor(webapp+"/WEB-INF/web.xml");
-            webApp.setResourceBase(webapp.getPath());
-            webApp.setContextPath("/");
-            webApp.setParentLoaderPriority(true);
-        } else { //use packaged WAR
-            webApp.setWar(webapp.getAbsolutePath());
+    websocket.start();
+    LOG.info("Start zeppelin server");
+    server.start();
+    LOG.info("Started");
+
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        LOG.info("Shutting down Zeppelin Server ... ");
+        try {
+          server.stop();
+          websocket.stop();
+        } catch (Exception e) {
+          LOG.error("Error while stopping servlet container", e);
         }
-        // Explicit bind to root
-        webApp.addServlet(new ServletHolder(new DefaultServlet()), "/*");
-        return webApp;
-    }
+        LOG.info("Bye");
+      }
+    });
+    server.join();
+  }
+
+  private static Server setupJettyServer(int port) {
+    int timeout = 1000 * 30;
+    final Server server = new Server();
+    SocketConnector connector = new SocketConnector();
+
+    // Set some timeout options to make debugging easier.
+    connector.setMaxIdleTime(timeout);
+    connector.setSoLingerTime(-1);
+    connector.setPort(port);
+    server.addConnector(connector);
+    return server;
+  }
+
+  private static ServletContextHandler setupRestApiContextHandler() {
+    final ServletHolder cxfServletHolder = new ServletHolder(new CXFNonSpringJaxrsServlet());
+    cxfServletHolder.setInitParameter("javax.ws.rs.Application", ZeppelinServer.class.getName());
+    cxfServletHolder.setName("rest");
+    cxfServletHolder.setForcedPath("rest");
+
+    final ServletContextHandler cxfContext = new ServletContextHandler();
+    cxfContext.setSessionHandler(new SessionHandler());
+    cxfContext.setContextPath("/api");
+    cxfContext.addServlet(cxfServletHolder, "/*");
+    return cxfContext;
+  }
 
   /**
-   * Handles the WebApplication for Swagger-ui
+   * Swagger core handler - Needed for the RestFul api documentation.
+   *
+   * @return ServletContextHandler of Swagger
+   */
+  private static ServletContextHandler setupSwaggerContextHandler(int port) {
+    // Configure Swagger-core
+    final ServletHolder swaggerServlet =
+        new ServletHolder(new com.wordnik.swagger.jersey.config.JerseyJaxrsConfig());
+    swaggerServlet.setName("JerseyJaxrsConfig");
+    swaggerServlet.setInitParameter("api.version", "1.0.0");
+    swaggerServlet.setInitParameter("swagger.api.basepath", "http://localhost:" + port + "/api");
+    swaggerServlet.setInitOrder(2);
+
+    // Setup the handler
+    final ServletContextHandler handler = new ServletContextHandler();
+    handler.setSessionHandler(new SessionHandler());
+    // Bind Swagger-core to the url HOST/api-docs
+    handler.addServlet(swaggerServlet, "/api-docs/*");
+
+    // And we are done
+    return handler;
+  }
+
+  private static WebAppContext setupWebAppContext(ZeppelinConfiguration conf) {
+    WebAppContext webApp = new WebAppContext();
+    File webapp = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
+    if (webapp.isDirectory()) { // Development mode, read from FS
+      // webApp.setDescriptor(webapp+"/WEB-INF/web.xml");
+      webApp.setResourceBase(webapp.getPath());
+      webApp.setContextPath("/");
+      webApp.setParentLoaderPriority(true);
+    } else { // use packaged WAR
+      webApp.setWar(webapp.getAbsolutePath());
+    }
+    // Explicit bind to root
+    webApp.addServlet(new ServletHolder(new DefaultServlet()), "/*");
+    return webApp;
+  }
+
+  /**
+   * Handles the WebApplication for Swagger-ui.
    *
    * @return WebAppContext with swagger ui context
    */
@@ -166,30 +174,30 @@ public class ZeppelinServer extends Application {
     return webApp;
   }
 
-	public ZeppelinServer() throws Exception {
-		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-		
-		this.schedulerFactory = new SchedulerFactory();
+  public ZeppelinServer() throws Exception {
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
-		this.replFactory = new InterpreterFactory(conf);
-		notebook = new Notebook(conf, schedulerFactory, replFactory, websocket);
-	}
+    this.schedulerFactory = new SchedulerFactory();
 
-	@Override
-    public Set<Class<?>> getClasses() {
-        Set<Class<?>> classes = new HashSet<Class<?>>();
-        return classes;
-    }
+    this.replFactory = new InterpreterFactory(conf);
+    notebook = new Notebook(conf, schedulerFactory, replFactory, websocket);
+  }
 
-	@Override
-    public java.util.Set<java.lang.Object> getSingletons(){
-    	Set<Object> singletons = new HashSet<Object>();
+  @Override
+  public Set<Class<?>> getClasses() {
+    Set<Class<?>> classes = new HashSet<Class<?>>();
+    return classes;
+  }
 
-    	/** Rest-api root endpoint */
-    	ZeppelinRestApi root = new ZeppelinRestApi();
-    	singletons.add(root);
-    	
-    	return singletons;
-    }
+  @Override
+  public java.util.Set<java.lang.Object> getSingletons() {
+    Set<Object> singletons = new HashSet<Object>();
+
+    /** Rest-api root endpoint */
+    ZeppelinRestApi root = new ZeppelinRestApi();
+    singletons.add(root);
+
+    return singletons;
+  }
 
 }
