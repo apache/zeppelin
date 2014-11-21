@@ -58,7 +58,7 @@ module.exports = function (grunt) {
         files: [
           '<%= yeoman.app %>/{,*/}*.html',
           '.tmp/styles/{,*/}*.css',
-          '<%= yeoman.app %>/images/{,*/}*.{png,jpg,jpeg,gif,webp,svg}'
+          '<%= yeoman.app %>/{,*/}*.{png,jpg,jpeg,gif,webp,svg}'
         ]
       }
     },
@@ -245,6 +245,14 @@ module.exports = function (grunt) {
           src: '{,*/}*.{png,jpg,jpeg,gif}',
           dest: '<%= yeoman.dist %>/images'
         }]
+      },
+      jqueryui: {
+        files: [{
+          expand: true,
+          cwd: 'bower_components/jquery-ui/themes/base/images',
+          src: '{,*/}*.{png,jpg,jpeg,gif}',
+          dest: '<%= yeoman.dist %>/styles/images'
+        }]
       }
     },
 
@@ -288,13 +296,6 @@ module.exports = function (grunt) {
           src: '*.js',
           dest: '.tmp/concat/scripts'
         }]
-      }
-    },
-
-    // Replace Google CDN references
-    cdnify: {
-      dist: {
-        html: ['<%= yeoman.dist %>/*.html']
       }
     },
 
@@ -353,6 +354,7 @@ module.exports = function (grunt) {
       dist: [
         'copy:styles',
         'imagemin',
+        'imagemin:jqueryui',
         'svgmin'
       ]
     },
@@ -378,6 +380,7 @@ module.exports = function (grunt) {
       'concurrent:server',
       'autoprefixer',
       'connect:livereload',
+      /*'newer:jshint'*/
       'watch'
     ]);
   });
@@ -404,10 +407,9 @@ module.exports = function (grunt) {
     'concat',
     'ngmin',
     'copy:dist',
-    'cdnify',
     'cssmin',
     'uglify',
-    'filerev',
+    /*'filerev',*/
     'usemin',
     'htmlmin'
   ]);

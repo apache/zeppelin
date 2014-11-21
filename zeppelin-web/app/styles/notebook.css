@@ -71,6 +71,10 @@
     background: rgba(98, 157, 233, 0.2) !important;
 }
 
+.ace-tm .ace_marker-layer .ace_selected-word {
+    background: rgba(250, 250, 255, 0.2) !important;
+}
+
 .labelBtn {
   padding: .2em .6em .3em;
   font-size: 75%;
@@ -180,6 +184,7 @@
   /*font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;*/
   font-family: 'Roboto', sans-serif;
   font-size: 14px!important;
+  margin-bottom: 5px !important;
 }
 
 .paragraph p {
@@ -412,11 +417,17 @@
 
 .graphContainer {
   position:relative;
-  overflow: hidden;
+  margin-bottom: 5px;
+  overflow: visible;
 }
 
-.graphContainer .table{
-  overflow-y : auto;
+.noOverflow {
+    overflow: hidden !important;
+}
+
+.graphContainer .table {
+  overflow: hidden;
+  margin-bottom: 5px !important;
 }
 
 .allFields {
