@@ -824,6 +824,7 @@ angular.module('zeppelinWebApp')
         }
       });
       $scope.chart[type].yAxis.axisLabelDistance(50);
+      $scope.chart[type].forceY([0]); // force y-axis minimum to 0 for line chart.
     }
 
     var renderChart = function(){
