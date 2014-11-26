@@ -241,14 +241,13 @@ angular.module('zeppelinWebApp')
 
 
   $scope.runParagraph = function(data) {
-    //console.log('send new paragraph: %o with %o', $scope.paragraph.id, data);
     var parapgraphData = {op: 'RUN_PARAGRAPH',
                           data: {
                               id: $scope.paragraph.id,
                               title: $scope.paragraph.title,
                               paragraph: data,
                               config: $scope.paragraph.config,
-                              params: $scope.paragraph.settings.params
+                              params: $scope.forms
                           }
                          };
     $rootScope.$emit('sendNewEvent', parapgraphData);
