@@ -29,149 +29,158 @@ import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 
 /**
- * Consist of Paragraphs with independent context
+ * Consist of Paragraphs with independent context.
  *
+ * @author Leemoonsoo
  */
 public class Note implements Serializable, JobListener {
-	transient Logger logger = LoggerFactory.getLogger(Note.class);
-	List<Paragraph> paragraphs = new LinkedList<Paragraph>();
-	private String name;
-	private String id;
-	
-	private transient NoteInterpreterLoader replLoader;
-	private transient ZeppelinConfiguration conf;
-	private transient JobListenerFactory jobListenerFactory;
-	
-	/**
-	 * note configurations
-	 *
-	 *  - looknfeel
-	 *  - cron
-	 */
-    private Map<String, Object> config = new HashMap<String, Object>();
-    
-    /**
-     * note information
-     * 
-     *  - cron : cron expression validity.
-     */
-    private Map<String, Object> info = new HashMap<String, Object>();
+  transient Logger logger = LoggerFactory.getLogger(Note.class);
+  List<Paragraph> paragraphs = new LinkedList<Paragraph>();
+  private String name;
+  private String id;
 
-	public Note(){		
-	}
-	
-	public Note(ZeppelinConfiguration conf, NoteInterpreterLoader replLoader, JobListenerFactory jobListenerFactory, org.quartz.Scheduler quartzSched){
-		this.conf = conf;
-		this.replLoader = replLoader;
-		this.jobListenerFactory = jobListenerFactory;
-		generateId();
-	}
-	
-	private void generateId(){
-		//id = "note_"+System.currentTimeMillis()+"_"+new Random(System.currentTimeMillis()).nextInt();
-	  /** This is actually more humain readable */
-	  id = IdHashes.encode(System.currentTimeMillis() + new Random(System.currentTimeMillis()).nextInt());
-	}
-	
-	public String id(){
-		return id;
-	}
-	
-	public String getName() {
-		return name;
-	}
+  private transient NoteInterpreterLoader replLoader;
+  private transient ZeppelinConfiguration conf;
+  private transient JobListenerFactory jobListenerFactory;
 
-	public void setName(String name) {
-		this.name = name;
-	}
+  /**
+   * note configurations.
+   *
+   * - looknfeel - cron
+   */
+  private Map<String, Object> config = new HashMap<String, Object>();
 
-	public NoteInterpreterLoader getNoteReplLoader() {
-		return replLoader;
-	}
+  /**
+   * note information.
+   * 
+   * - cron : cron expression validity.
+   */
+  private Map<String, Object> info = new HashMap<String, Object>();
 
-	public void setReplLoader(NoteInterpreterLoader replLoader) {
-		this.replLoader = replLoader;
-	}	
-	
-	public void setZeppelinConfiguration(ZeppelinConfiguration conf){
-		this.conf = conf;
-	}
-	
-	/**
-	 * Add paragraph last
-	 * @param p
-	 */
-	public Paragraph addParagraph() {
-		Paragraph p = new Paragraph(this, replLoader);
-		synchronized(paragraphs){
-			paragraphs.add(p);
-		}
-		return p;
-	}
-	
-	/**
-	 * Insert paragraph in given index
-	 * @param index
-	 * @param p
-	 */
-	public Paragraph insertParagraph(int index) {
-		Paragraph p = new Paragraph(this, replLoader);
-		synchronized(paragraphs){
-			paragraphs.add(index, p);
-		}
-		return p;
-	}
-	
-	/**
-	 * Remove paragraph by id
-	 * @param paragraphId
-	 * @return
-	 */
-	public Paragraph removeParagraph(String paragraphId) {
-		synchronized(paragraphs){
-			for(int i=0; i<paragraphs.size(); i++){
-				Paragraph p = paragraphs.get(i);
-				if(p.getId().equals(paragraphId)) {
-					paragraphs.remove(i);
-					return p;
-				}
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * Move paragraph into the new index (order from 0 ~ n-1)
-	 * @param paragraphId
-	 * @param index new index
-	 */
-	public void moveParagraph(String paragraphId, int index) {
-		synchronized(paragraphs){
-			int oldIndex = -1;
-			Paragraph p = null;
-			
-			if (index < 0 || index >= paragraphs.size()) return;
-			
-			for(int i=0; i<paragraphs.size(); i++){
-				if(paragraphs.get(i).getId().equals(paragraphId)) {
-					oldIndex = i;
-					if(oldIndex==index) return;
-					p = paragraphs.remove(i);					
-				}
-			}
-			
-			if (p==null) {
-				return;
-			} else {
-				if (oldIndex < index) {
-					paragraphs.add(index, p);	
-				} else {
-					paragraphs.add(index, p);	
-				}				
-			}
-		}
-	}
-	
+  public Note() {}
+
+  public Note(ZeppelinConfiguration conf, NoteInterpreterLoader replLoader,
+      JobListenerFactory jobListenerFactory, org.quartz.Scheduler quartzSched) {
+    this.conf = conf;
+    this.replLoader = replLoader;
+    this.jobListenerFactory = jobListenerFactory;
+    generateId();
+  }
+
+  private void generateId() {
+    // id = "note_"+System.currentTimeMillis()+"_"+new Random(System.currentTimeMillis()).nextInt();
+    /** This is actually more humain readable */
+    id = IdHashes.encode(System.currentTimeMillis()
+                         + new Random(System.currentTimeMillis()).nextInt());
+  }
+
+  public String id() {
+    return id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public NoteInterpreterLoader getNoteReplLoader() {
+    return replLoader;
+  }
+
+  public void setReplLoader(NoteInterpreterLoader replLoader) {
+    this.replLoader = replLoader;
+  }
+
+  public void setZeppelinConfiguration(ZeppelinConfiguration conf) {
+    this.conf = conf;
+  }
+
+  /**
+   * Add paragraph last.
+   * 
+   * @param p
+   */
+  public Paragraph addParagraph() {
+    Paragraph p = new Paragraph(this, replLoader);
+    synchronized (paragraphs) {
+      paragraphs.add(p);
+    }
+    return p;
+  }
+
+  /**
+   * Insert paragraph in given index.
+   * 
+   * @param index
+   * @param p
+   */
+  public Paragraph insertParagraph(int index) {
+    Paragraph p = new Paragraph(this, replLoader);
+    synchronized (paragraphs) {
+      paragraphs.add(index, p);
+    }
+    return p;
+  }
+
+  /**
+   * Remove paragraph by id.
+   * 
+   * @param paragraphId
+   * @return
+   */
+  public Paragraph removeParagraph(String paragraphId) {
+    synchronized (paragraphs) {
+      for (int i = 0; i < paragraphs.size(); i++) {
+        Paragraph p = paragraphs.get(i);
+        if (p.getId().equals(paragraphId)) {
+          paragraphs.remove(i);
+          return p;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Move paragraph into the new index (order from 0 ~ n-1).
+   * 
+   * @param paragraphId
+   * @param index new index
+   */
+  public void moveParagraph(String paragraphId, int index) {
+    synchronized (paragraphs) {
+      int oldIndex = -1;
+      Paragraph p = null;
+
+      if (index < 0 || index >= paragraphs.size()) {
+        return;
+      }
+
+      for (int i = 0; i < paragraphs.size(); i++) {
+        if (paragraphs.get(i).getId().equals(paragraphId)) {
+          oldIndex = i;
+          if (oldIndex == index) {
+            return;
+          }
+          p = paragraphs.remove(i);
+        }
+      }
+
+      if (p == null) {
+        return;
+      } else {
+        if (oldIndex < index) {
+          paragraphs.add(index, p);
+        } else {
+          paragraphs.add(index, p);
+        }
+      }
+    }
+  }
+
   public boolean isLastParagraph(String paragraphId) {
     if (!paragraphs.isEmpty()) {
       synchronized (paragraphs) {
@@ -184,150 +193,153 @@ public class Note implements Serializable, JobListener {
     /** because empty list, cannot remove nothing right? */
     return true;
   }
-	
-	public Paragraph getParagraph(String paragraphId) {
-		synchronized(paragraphs) {
-			for(Paragraph p : paragraphs) {
-				if(p.getId().equals(paragraphId)) {
-					return p;
-				}
-			}
-		}
-		return null;
-	}
-	
-	public Paragraph getLastParagraph(){
-		synchronized(paragraphs) {
-			return paragraphs.get(paragraphs.size()-1);
-		}
-	}
-	
-	/**
-	 * Run all paragraphs sequentially
-	 * @param jobListener 
-	 */
-	public void runAll(){
-		synchronized(paragraphs){
-			for (Paragraph p : paragraphs) {
-				p.setNoteReplLoader(replLoader);
-				p.setListener(jobListenerFactory.getParagraphJobListener(this));
-				Interpreter intp = replLoader.getRepl(p.getRequiredReplName());		
-				intp.getScheduler().submit(p);
-			}
-		}
-	}
-	
-	/**
-	 * Run a single paragraph
-	 * @param paragraphId
-	 */
-	public void run(String paragraphId) {
-		Paragraph p = getParagraph(paragraphId);
-		p.setNoteReplLoader(replLoader);
-		p.setListener(jobListenerFactory.getParagraphJobListener(this));
-		Interpreter intp = replLoader.getRepl(p.getRequiredReplName());		
-		intp.getScheduler().submit(p);
-	}
-	
-	public List<Paragraph> getParagraphs(){
-		synchronized(paragraphs) {
-			return new LinkedList<Paragraph>(paragraphs);
-		}
-	}
 
-	public void persist() throws IOException{
-		GsonBuilder gsonBuilder = new GsonBuilder();
-		gsonBuilder.setPrettyPrinting();
-		Gson gson = gsonBuilder.create();
-		
-		File dir = new File(conf.getNotebookDir()+"/"+id);
-		if(!dir.exists()){
-			dir.mkdirs();
-		} else if(dir.isFile()) {
-			throw new RuntimeException("File already exists"+dir.toString());
-		}
-				
-		File file = new File(conf.getNotebookDir()+"/"+id+"/note.json");
-		logger().info("Persist note {} into {}", id, file.getAbsolutePath());
-		
-		String json = gson.toJson(this);
-		FileOutputStream out = new FileOutputStream(file);
-		out.write(json.getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)));
-		out.close();
-	}
-	
-	public void unpersist() throws IOException{
-		File dir = new File(conf.getNotebookDir()+"/"+id);
+  public Paragraph getParagraph(String paragraphId) {
+    synchronized (paragraphs) {
+      for (Paragraph p : paragraphs) {
+        if (p.getId().equals(paragraphId)) {
+          return p;
+        }
+      }
+    }
+    return null;
+  }
 
-		FileUtils.deleteDirectory(dir);
-	}
-	
-	public static Note load(String id, ZeppelinConfiguration conf, NoteInterpreterLoader replLoader, Scheduler scheduler, JobListenerFactory jobListenerFactory, org.quartz.Scheduler quartzSched) throws IOException {
-		GsonBuilder gsonBuilder = new GsonBuilder();
-		gsonBuilder.setPrettyPrinting();
-		Gson gson = gsonBuilder.create();
-		
-		File file = new File(conf.getNotebookDir()+"/"+id+"/note.json");
-		logger().info("Load note {} from {}", id, file.getAbsolutePath());
-		
-		if(!file.isFile()){
-			return null;
-		}
-		
-		FileInputStream ins = new FileInputStream(file);
-		String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
-		Note note = gson.fromJson(json, Note.class);
-		note.setZeppelinConfiguration(conf);
-		note.setReplLoader(replLoader);
-		note.jobListenerFactory = jobListenerFactory;
-		for(Paragraph p : note.paragraphs){
-			if(p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING){
-				p.setStatus(Status.ABORT);
-			}
-		}
-		
-		return note;
-	}
+  public Paragraph getLastParagraph() {
+    synchronized (paragraphs) {
+      return paragraphs.get(paragraphs.size() - 1);
+    }
+  }
 
-	public Map<String, Object> getConfig() {
-		if (config==null) {
-			config = new HashMap<String, Object>();
-		}
-		return config;
-	}
+  /**
+   * Run all paragraphs sequentially.
+   * 
+   * @param jobListener
+   */
+  public void runAll() {
+    synchronized (paragraphs) {
+      for (Paragraph p : paragraphs) {
+        p.setNoteReplLoader(replLoader);
+        p.setListener(jobListenerFactory.getParagraphJobListener(this));
+        Interpreter intp = replLoader.getRepl(p.getRequiredReplName());
+        intp.getScheduler().submit(p);
+      }
+    }
+  }
 
-	public void setConfig(Map<String, Object> config) {
-		this.config = config;
-	}	
-	
-	public Map<String, Object> getInfo() {
-		if (info==null) {
-			info = new HashMap<String, Object>();
-		}
-		return info;
-	}
+  /**
+   * Run a single paragraph.
+   * 
+   * @param paragraphId
+   */
+  public void run(String paragraphId) {
+    Paragraph p = getParagraph(paragraphId);
+    p.setNoteReplLoader(replLoader);
+    p.setListener(jobListenerFactory.getParagraphJobListener(this));
+    Interpreter intp = replLoader.getRepl(p.getRequiredReplName());
+    intp.getScheduler().submit(p);
+  }
 
-	public void setInfo(Map<String, Object> info) {
-		this.info = info;
-	}
+  public List<Paragraph> getParagraphs() {
+    synchronized (paragraphs) {
+      return new LinkedList<Paragraph>(paragraphs);
+    }
+  }
 
-	@Override
-	public void beforeStatusChange(Job job, Status before, Status after) {
-		Paragraph p = (Paragraph) job;
-	}
+  public void persist() throws IOException {
+    GsonBuilder gsonBuilder = new GsonBuilder();
+    gsonBuilder.setPrettyPrinting();
+    Gson gson = gsonBuilder.create();
 
-	@Override
-	public void afterStatusChange(Job job, Status before, Status after) {
-		Paragraph p = (Paragraph) job;
-	}
-	
-	private static Logger logger(){
-		Logger logger = LoggerFactory.getLogger(Note.class);
-		return logger;
-	}
+    File dir = new File(conf.getNotebookDir() + "/" + id);
+    if (!dir.exists()) {
+      dir.mkdirs();
+    } else if (dir.isFile()) {
+      throw new RuntimeException("File already exists" + dir.toString());
+    }
 
-	@Override
-	public void onProgressUpdate(Job job, int progress) {
-	}
-	
+    File file = new File(conf.getNotebookDir() + "/" + id + "/note.json");
+    logger().info("Persist note {} into {}", id, file.getAbsolutePath());
+
+    String json = gson.toJson(this);
+    FileOutputStream out = new FileOutputStream(file);
+    out.write(json.getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)));
+    out.close();
+  }
+
+  public void unpersist() throws IOException {
+    File dir = new File(conf.getNotebookDir() + "/" + id);
+
+    FileUtils.deleteDirectory(dir);
+  }
+
+  public static Note load(String id, ZeppelinConfiguration conf, NoteInterpreterLoader replLoader,
+      Scheduler scheduler, JobListenerFactory jobListenerFactory, org.quartz.Scheduler quartzSched)
+      throws IOException {
+    GsonBuilder gsonBuilder = new GsonBuilder();
+    gsonBuilder.setPrettyPrinting();
+    Gson gson = gsonBuilder.create();
+
+    File file = new File(conf.getNotebookDir() + "/" + id + "/note.json");
+    logger().info("Load note {} from {}", id, file.getAbsolutePath());
+
+    if (!file.isFile()) {
+      return null;
+    }
+
+    FileInputStream ins = new FileInputStream(file);
+    String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
+    Note note = gson.fromJson(json, Note.class);
+    note.setZeppelinConfiguration(conf);
+    note.setReplLoader(replLoader);
+    note.jobListenerFactory = jobListenerFactory;
+    for (Paragraph p : note.paragraphs) {
+      if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
+        p.setStatus(Status.ABORT);
+      }
+    }
+
+    return note;
+  }
+
+  public Map<String, Object> getConfig() {
+    if (config == null) {
+      config = new HashMap<String, Object>();
+    }
+    return config;
+  }
+
+  public void setConfig(Map<String, Object> config) {
+    this.config = config;
+  }
+
+  public Map<String, Object> getInfo() {
+    if (info == null) {
+      info = new HashMap<String, Object>();
+    }
+    return info;
+  }
+
+  public void setInfo(Map<String, Object> info) {
+    this.info = info;
+  }
+
+  @Override
+  public void beforeStatusChange(Job job, Status before, Status after) {
+    Paragraph p = (Paragraph) job;
+  }
+
+  @Override
+  public void afterStatusChange(Job job, Status before, Status after) {
+    Paragraph p = (Paragraph) job;
+  }
+
+  private static Logger logger() {
+    Logger logger = LoggerFactory.getLogger(Note.class);
+    return logger;
+  }
+
+  @Override
+  public void onProgressUpdate(Job job, int progress) {}
+
 }

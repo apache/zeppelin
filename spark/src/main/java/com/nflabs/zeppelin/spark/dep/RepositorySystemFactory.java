@@ -9,6 +9,12 @@ import org.sonatype.aether.connector.wagon.WagonProvider;
 import org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 
+/**
+ * Get maven repository instance.
+ * 
+ * @author anthonycorbacho
+ *
+ */
 public class RepositorySystemFactory {
   public static RepositorySystem newRepositorySystem() {
     DefaultServiceLocator locator = new DefaultServiceLocator();
@@ -18,20 +24,22 @@ public class RepositorySystemFactory {
 
     return locator.getService(RepositorySystem.class);
   }
-  
+
+  /**
+   * ManualWagonProvider 
+   */
   public static class ManualWagonProvider implements WagonProvider {
 
-		public Wagon lookup(String roleHint) throws Exception {
-			if ("http".equals(roleHint)) {
-				return new LightweightHttpWagon();
-			}
-			return null;
-		}
+    public Wagon lookup(String roleHint) throws Exception {
+      if ("http".equals(roleHint)) {
+        return new LightweightHttpWagon();
+      }
+      return null;
+    }
 
-		@Override
-		public void release(Wagon arg0) {
-			// TODO Auto-generated method stub
+    @Override
+    public void release(Wagon arg0) {
 
-		}
-	}
+    }
+  }
 }

@@ -18,17 +18,19 @@ import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.JobListener;
 
 /**
- * Paragraph is a representation of an execution unit
+ * Paragraph is a representation of an execution unit.
+ * 
+ * @author Leemoonsoo
  */
 public class Paragraph extends Job implements Serializable {
-  private transient static final long serialVersionUID = -6328572073497992016L;
+  private static final transient long serialVersionUID = -6328572073497992016L;
   private transient NoteInterpreterLoader replLoader;
-  
+
   String title;
   String text;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final Setting settings; // form and parameter settings
-  
+
   public Paragraph(JobListener listener, NoteInterpreterLoader replLoader) {
     super(generateId(), listener);
     this.replLoader = replLoader;
@@ -37,10 +39,10 @@ public class Paragraph extends Job implements Serializable {
     settings = new Setting();
     config = new HashMap<String, Object>();
   }
-  
+
   private static String generateId() {
     return "paragraph_" + System.currentTimeMillis() + "_"
-        + new Random(System.currentTimeMillis()).nextInt();
+           + new Random(System.currentTimeMillis()).nextInt();
   }
 
   public String getText() {
@@ -50,12 +52,12 @@ public class Paragraph extends Job implements Serializable {
   public void setText(String newText) {
     this.text = newText;
   }
-  
-  
+
+
   public String getTitle() {
-	return title;
+    return title;
   }
-	
+
   public void setTitle(String title) {
     this.title = title;
   }
@@ -63,10 +65,11 @@ public class Paragraph extends Job implements Serializable {
   public String getRequiredReplName() {
     return getRequiredReplName(text);
   }
-  
+
   public static String getRequiredReplName(String text) {
-    if (text == null)
+    if (text == null) {
       return null;
+    }
 
     // get script head
     int scriptHeadIndex = 0;
@@ -77,8 +80,9 @@ public class Paragraph extends Job implements Serializable {
         break;
       }
     }
-    if (scriptHeadIndex == 0)
+    if (scriptHeadIndex == 0) {
       return null;
+    }
     String head = text.substring(0, scriptHeadIndex);
     if (head.startsWith("%")) {
       return head.substring(1);
@@ -88,18 +92,21 @@ public class Paragraph extends Job implements Serializable {
   }
 
   private String getScriptBody() {
-    return getScriptBody(text); 
+    return getScriptBody(text);
   }
 
   public static String getScriptBody(String text) {
-    if (text == null)
+    if (text == null) {
       return null;
+    }
 
     String magic = getRequiredReplName(text);
-    if (magic == null)
+    if (magic == null) {
       return text;
-    if (magic.length() + 2 >= text.length())
+    }
+    if (magic.length() + 2 >= text.length()) {
       return "";
+    }
     return text.substring(magic.length() + 2);
   }
 
@@ -110,19 +117,19 @@ public class Paragraph extends Job implements Serializable {
   public Interpreter getRepl(String name) {
     return replLoader.getRepl(name);
   }
-  
+
   public List<String> completion(String buffer, int cursor) {
-	String replName = getRequiredReplName(buffer);
-	if(replName!=null) {
-      cursor -= replName.length()+1;
-	}
-	String body = getScriptBody(buffer);
-	Interpreter repl = getRepl(replName);
-	if(repl == null) {
-		return null;
-	}
-	
-	return repl.completion(body, cursor);
+    String replName = getRequiredReplName(buffer);
+    if (replName != null) {
+      cursor -= replName.length() + 1;
+    }
+    String body = getScriptBody(buffer);
+    Interpreter repl = getRepl(replName);
+    if (repl == null) {
+      return null;
+    }
+
+    return repl.completion(body, cursor);
   }
 
   public void setNoteReplLoader(NoteInterpreterLoader repls) {
@@ -139,9 +146,9 @@ public class Paragraph extends Job implements Serializable {
     String replName = getRequiredReplName();
     Interpreter repl = getRepl(replName);
     if (repl != null) {
-    	return repl.getProgress();
+      return repl.getProgress();
     } else {
-    	return 0;
+      return 0;
     }
   }
 
@@ -197,6 +204,4 @@ public class Paragraph extends Job implements Serializable {
   public void setConfig(Map<String, Object> config) {
     this.config = config;
   }
-
-
 }

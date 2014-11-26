@@ -14,6 +14,13 @@ Zeppelin uses Git for it's SCM system. Hosted by github.com. https://github.com/
 
 You are free to use whatever IDE you prefer, or your favorite command line editor. 
 
+### Code convention
+We are following Google Code style:
+* [Java style](http://google-styleguide.googlecode.com/svn/trunk/javaguide.html) 
+* [Shell style](https://google-styleguide.googlecode.com/svn/trunk/shell.xml)
+
+Checkstyle report location are in `${submodule}/target/site/checkstyle.html`
+
 #### Build Tools
 
 To build the code, install

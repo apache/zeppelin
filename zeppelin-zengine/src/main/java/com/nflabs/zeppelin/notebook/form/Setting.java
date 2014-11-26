@@ -7,10 +7,16 @@ import java.util.TreeMap;
 
 import com.nflabs.zeppelin.notebook.form.Input.ParamOption;
 
+/**
+ * Settings of a form. 
+ * 
+ * @author Leemoonsoo
+ *
+ */
 public class Setting implements Serializable {
 
   Map<String, Object> params = new HashMap<String, Object>(); // form parameters from client
-  Map<String, Input> forms = new TreeMap<String, Input>();    // form configuraiton
+  Map<String, Input> forms = new TreeMap<String, Input>(); // form configuraiton
 
   public Setting() {
 
@@ -48,14 +54,14 @@ public class Setting implements Serializable {
   public Object input(String id) {
     return input(id, "");
   }
-  
-  public Object select(String id, Object defaultValue, ParamOption [] options) {
-	Object value = params.get(id);
-	if (value == null) {
-		value = defaultValue;
-	}
-	forms.put(id, new Input(id, defaultValue, options));
-	return value;
+
+  public Object select(String id, Object defaultValue, ParamOption[] options) {
+    Object value = params.get(id);
+    if (value == null) {
+      value = defaultValue;
+    }
+    forms.put(id, new Input(id, defaultValue, options));
+    return value;
   }
 
   public void clear() {

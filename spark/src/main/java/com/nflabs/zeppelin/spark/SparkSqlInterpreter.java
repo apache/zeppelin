@@ -33,220 +33,236 @@ import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
+/**
+ * Spark SQL interpreter for Zeppelin.
+ * 
+ * @author Leemoonsoo
+ *
+ */
 public class SparkSqlInterpreter extends Interpreter {
-	Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
-	AtomicInteger num = new AtomicInteger(0);
-	
-	static {
-		Interpreter.register("sql", SparkSqlInterpreter.class.getName());
-	}
-	
-	private final String jobGroup = "zeppelin-"+this.hashCode();
-	private int maxResult;
-	
-	public SparkSqlInterpreter(Properties property) {
-		super(property);
-	}
+  Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
+  AtomicInteger num = new AtomicInteger(0);
 
-	@Override
-	public void open() {
-		ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-		this.maxResult = conf.getInt("ZEPPELIN_SPARK_MAX_RESULT", "zeppelin.spark.maxResult", 10000);
-	}
-	
-	
-	private SparkInterpreter getSparkInterpreter(){
-		return SparkInterpreter.singleton(getProperty());
-	}
+  static {
+    Interpreter.register("sql", SparkSqlInterpreter.class.getName());
+  }
 
-	@Override
-	public void close() {
-	}
+  private final String jobGroup = "zeppelin-" + this.hashCode();
+  private int maxResult;
 
-	@Override
-	public Object getValue(String name) {
-		return null;
-	}
+  public SparkSqlInterpreter(Properties property) {
+    super(property);
+  }
 
-	@Override
-	public InterpreterResult interpret(String st) {
-		SQLContext sqlc = getSparkInterpreter().getSQLContext();
-		SparkContext sc = sqlc.sparkContext();
-		sc.setJobGroup(jobGroup, "Zeppelin", false);
-		SchemaRDD rdd;
-		Row[] rows = null;
-		try {
-			rdd = sqlc.sql(st);
-			rows = rdd.take(maxResult+1);
-		} catch(Exception e){
-			logger.error("Error", e);
-			sc.clearJobGroup();
-			return new InterpreterResult(Code.ERROR, e.getMessage());
-		}
-		
-		String msg = null;
-		// get field names
-		List<Attribute> columns = scala.collection.JavaConverters.asJavaListConverter(rdd.queryExecution().analyzed().output()).asJava();
-		for(Attribute col : columns) {
-			if(msg==null) {
-				msg = col.name();
-			} else {
-				msg += "\t"+col.name();
-			}
-		}
-		msg += "\n";
-			
-		// ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType, FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType, NullType, NumericType, ShortType, StringType, StructType
-		
-		for(int r = 0; r<maxResult && r<rows.length; r++){			
-			Row row = rows[r];
-			
-			for(int i=0; i<columns.size(); i++){
-				if(!row.isNullAt(i)){
-					msg += row.apply(i).toString();
-				}else{
-					msg += "null";
-				}
-				if(i!=columns.size()-1){
-					msg += "\t";
-				}
-			}
-			msg += "\n";
-		}
-		
-		if (rows.length>maxResult) {
-			msg += "\n<font color=red>Results are limited by "+maxResult+".</font>";
-		}
-		InterpreterResult rett = new InterpreterResult(Code.SUCCESS, "%table "+msg);
-		sc.clearJobGroup();
-		return rett;
-	}
-
-	@Override
-	public void cancel() {
-		SQLContext sqlc = getSparkInterpreter().getSQLContext();
-		SparkContext sc = sqlc.sparkContext();
-
-		sc.cancelJobGroup(jobGroup);
-	}
-
-	@Override
-	public void bindValue(String name, Object o) {
-		
-	}
-
-	@Override
-	public FormType getFormType() {
-		return FormType.SIMPLE;
-	}
+  @Override
+  public void open() {
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    this.maxResult = conf.getInt("ZEPPELIN_SPARK_MAX_RESULT", "zeppelin.spark.maxResult", 10000);
+  }
 
 
-	public int getProgress(){
-		SQLContext sqlc = getSparkInterpreter().getSQLContext();
-		SparkContext sc = sqlc.sparkContext();
-		JobProgressListener sparkListener = getSparkInterpreter().getJobProgressListener();
-		int completedTasks = 0;
-		int totalTasks = 0;
+  private SparkInterpreter getSparkInterpreter() {
+    return SparkInterpreter.singleton(getProperty());
+  }
 
-		DAGScheduler scheduler = sc.dagScheduler();
-		HashSet<ActiveJob> jobs = scheduler.activeJobs();
-		Iterator<ActiveJob> it = jobs.iterator();
-		while(it.hasNext()) {
-			ActiveJob job = it.next();
-			String g = (String) job.properties().get("spark.jobGroup.id");
-			if (jobGroup.equals(g)) {
-				int[] progressInfo = null; 
-				if (sc.version().startsWith("1.0")) {
-					progressInfo = getProgressFromStage_1_0x(sparkListener, job.finalStage());
-				} else if (sc.version().startsWith("1.1")){
-					progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
-				} else {
-					logger.warn("Spark {} getting progress information not supported"+sc.version());
-					continue;
-				}
-				totalTasks+=progressInfo[0];
-				completedTasks+=progressInfo[1];
-			}
-		}
+  @Override
+  public void close() {}
 
-		if(totalTasks==0) return 0;
-		return completedTasks*100/totalTasks;
-	}
+  @Override
+  public Object getValue(String name) {
+    return null;
+  }
 
-	private int [] getProgressFromStage_1_0x(JobProgressListener sparkListener, Stage stage){
-		int numTasks = stage.numTasks();
-		int completedTasks = 0;
-		
-		Method method;
-		Object completedTaskInfo = null;
-		try {
-			method = sparkListener.getClass().getMethod("stageIdToTasksComplete");
-			completedTaskInfo = JavaConversions.asJavaMap((HashMap<Object, Object>)method.invoke(sparkListener)).get(stage.id());
-		} catch (NoSuchMethodException | SecurityException e) {
-			logger.error("Error while getting progress", e);			
-		} catch (IllegalAccessException e) {
-			logger.error("Error while getting progress", e);
-		} catch (IllegalArgumentException e) {
-			logger.error("Error while getting progress", e);
-		} catch (InvocationTargetException e) {
-			logger.error("Error while getting progress", e);
-		}
-		
-		if(completedTaskInfo!=null) {
-			completedTasks += (int) completedTaskInfo;
-		}
-		List<Stage> parents = JavaConversions.asJavaList(stage.parents());
-		if(parents!=null) {
-			for(Stage s : parents) {
-				int[] p = getProgressFromStage_1_0x(sparkListener, s);
-				numTasks+= p[0];
-				completedTasks+= p[1];
-			}
-		}
-		
-		return new int[]{numTasks, completedTasks};		
-	}
+  @Override
+  public InterpreterResult interpret(String st) {
+    SQLContext sqlc = getSparkInterpreter().getSQLContext();
+    SparkContext sc = sqlc.sparkContext();
+    sc.setJobGroup(jobGroup, "Zeppelin", false);
+    SchemaRDD rdd;
+    Row[] rows = null;
+    try {
+      rdd = sqlc.sql(st);
+      rows = rdd.take(maxResult + 1);
+    } catch (Exception e) {
+      logger.error("Error", e);
+      sc.clearJobGroup();
+      return new InterpreterResult(Code.ERROR, e.getMessage());
+    }
 
-	private int [] getProgressFromStage_1_1x(JobProgressListener sparkListener, Stage stage){
-		int numTasks = stage.numTasks();
-		int completedTasks = 0;
-		
-		try {
-			Method stageIdToData = sparkListener.getClass().getMethod("stageIdToData");
-			HashMap<Tuple2<Object, Object>, Object> stageIdData = (HashMap<Tuple2<Object, Object>, Object>)stageIdToData.invoke(sparkListener);
-			Class<?> stageUIDataClass = this.getClass().forName("org.apache.spark.ui.jobs.UIData$StageUIData");
+    String msg = null;
+    // get field names
+    List<Attribute> columns =
+        scala.collection.JavaConverters.asJavaListConverter(
+            rdd.queryExecution().analyzed().output()).asJava();
+    for (Attribute col : columns) {
+      if (msg == null) {
+        msg = col.name();
+      } else {
+        msg += "\t" + col.name();
+      }
+    }
+    msg += "\n";
 
-			Method numCompletedTasks = stageUIDataClass.getMethod("numCompleteTasks");
-			
-			Set<Tuple2<Object, Object>> keys = JavaConverters.asJavaSetConverter(stageIdData.keySet()).asJava();
-			for(Tuple2<Object, Object> k : keys) {
-				if(stage.id() == (int)k._1()) {
-					Object uiData = stageIdData.get(k).get();
-					completedTasks += (int)numCompletedTasks.invoke(uiData);
-				}
-			}
-		} catch(Exception e) {
-			logger.error("Error on getting progress information", e);
-		}
-		
-		List<Stage> parents = JavaConversions.asJavaList(stage.parents());
-		if (parents!=null) {
-			for(Stage s : parents) {
-				int[] p = getProgressFromStage_1_1x(sparkListener, s);
-				numTasks+= p[0];
-				completedTasks+= p[1];
-			}
-		}
-		return new int[]{numTasks, completedTasks};		
-	}
+    // ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType,
+    // FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType,
+    // NullType, NumericType, ShortType, StringType, StructType
 
-	@Override
-	public Scheduler getScheduler() {
-		return getSparkInterpreter().getScheduler();
-	}
+    for (int r = 0; r < maxResult && r < rows.length; r++) {
+      Row row = rows[r];
 
-	@Override
-	public List<String> completion(String buf, int cursor) {
-		return null;
-	}
+      for (int i = 0; i < columns.size(); i++) {
+        if (!row.isNullAt(i)) {
+          msg += row.apply(i).toString();
+        } else {
+          msg += "null";
+        }
+        if (i != columns.size() - 1) {
+          msg += "\t";
+        }
+      }
+      msg += "\n";
+    }
+
+    if (rows.length > maxResult) {
+      msg += "\n<font color=red>Results are limited by " + maxResult + ".</font>";
+    }
+    InterpreterResult rett = new InterpreterResult(Code.SUCCESS, "%table " + msg);
+    sc.clearJobGroup();
+    return rett;
+  }
+
+  @Override
+  public void cancel() {
+    SQLContext sqlc = getSparkInterpreter().getSQLContext();
+    SparkContext sc = sqlc.sparkContext();
+
+    sc.cancelJobGroup(jobGroup);
+  }
+
+  @Override
+  public void bindValue(String name, Object o) {
+
+  }
+
+  @Override
+  public FormType getFormType() {
+    return FormType.SIMPLE;
+  }
+
+
+  public int getProgress() {
+    SQLContext sqlc = getSparkInterpreter().getSQLContext();
+    SparkContext sc = sqlc.sparkContext();
+    JobProgressListener sparkListener = getSparkInterpreter().getJobProgressListener();
+    int completedTasks = 0;
+    int totalTasks = 0;
+
+    DAGScheduler scheduler = sc.dagScheduler();
+    HashSet<ActiveJob> jobs = scheduler.activeJobs();
+    Iterator<ActiveJob> it = jobs.iterator();
+    while (it.hasNext()) {
+      ActiveJob job = it.next();
+      String g = (String) job.properties().get("spark.jobGroup.id");
+      if (jobGroup.equals(g)) {
+        int[] progressInfo = null;
+        if (sc.version().startsWith("1.0")) {
+          progressInfo = getProgressFromStage_1_0x(sparkListener, job.finalStage());
+        } else if (sc.version().startsWith("1.1")) {
+          progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
+        } else {
+          logger.warn("Spark {} getting progress information not supported" + sc.version());
+          continue;
+        }
+        totalTasks += progressInfo[0];
+        completedTasks += progressInfo[1];
+      }
+    }
+
+    if (totalTasks == 0) {
+      return 0;
+    }
+    return completedTasks * 100 / totalTasks;
+  }
+
+  private int[] getProgressFromStage_1_0x(JobProgressListener sparkListener, Stage stage) {
+    int numTasks = stage.numTasks();
+    int completedTasks = 0;
+
+    Method method;
+    Object completedTaskInfo = null;
+    try {
+      method = sparkListener.getClass().getMethod("stageIdToTasksComplete");
+      completedTaskInfo =
+          JavaConversions.asJavaMap((HashMap<Object, Object>) method.invoke(sparkListener)).get(
+              stage.id());
+    } catch (NoSuchMethodException | SecurityException e) {
+      logger.error("Error while getting progress", e);
+    } catch (IllegalAccessException e) {
+      logger.error("Error while getting progress", e);
+    } catch (IllegalArgumentException e) {
+      logger.error("Error while getting progress", e);
+    } catch (InvocationTargetException e) {
+      logger.error("Error while getting progress", e);
+    }
+
+    if (completedTaskInfo != null) {
+      completedTasks += (int) completedTaskInfo;
+    }
+    List<Stage> parents = JavaConversions.asJavaList(stage.parents());
+    if (parents != null) {
+      for (Stage s : parents) {
+        int[] p = getProgressFromStage_1_0x(sparkListener, s);
+        numTasks += p[0];
+        completedTasks += p[1];
+      }
+    }
+
+    return new int[] {numTasks, completedTasks};
+  }
+
+  private int[] getProgressFromStage_1_1x(JobProgressListener sparkListener, Stage stage) {
+    int numTasks = stage.numTasks();
+    int completedTasks = 0;
+
+    try {
+      Method stageIdToData = sparkListener.getClass().getMethod("stageIdToData");
+      HashMap<Tuple2<Object, Object>, Object> stageIdData =
+          (HashMap<Tuple2<Object, Object>, Object>) stageIdToData.invoke(sparkListener);
+      Class<?> stageUIDataClass =
+          this.getClass().forName("org.apache.spark.ui.jobs.UIData$StageUIData");
+
+      Method numCompletedTasks = stageUIDataClass.getMethod("numCompleteTasks");
+
+      Set<Tuple2<Object, Object>> keys =
+          JavaConverters.asJavaSetConverter(stageIdData.keySet()).asJava();
+      for (Tuple2<Object, Object> k : keys) {
+        if (stage.id() == (int) k._1()) {
+          Object uiData = stageIdData.get(k).get();
+          completedTasks += (int) numCompletedTasks.invoke(uiData);
+        }
+      }
+    } catch (Exception e) {
+      logger.error("Error on getting progress information", e);
+    }
+
+    List<Stage> parents = JavaConversions.asJavaList(stage.parents());
+    if (parents != null) {
+      for (Stage s : parents) {
+        int[] p = getProgressFromStage_1_1x(sparkListener, s);
+        numTasks += p[0];
+        completedTasks += p[1];
+      }
+    }
+    return new int[] {numTasks, completedTasks};
+  }
+
+  @Override
+  public Scheduler getScheduler() {
+    return getSparkInterpreter().getScheduler();
+  }
+
+  @Override
+  public List<String> completion(String buf, int cursor) {
+    return null;
+  }
 }

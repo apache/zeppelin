@@ -66,7 +66,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
       connectedSockets.add(conn);
     }
   }
-  
+
   @Override
   public void onMessage(WebSocket conn, String msg) {
     Notebook notebook = notebook();
@@ -75,45 +75,45 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
       LOG.info("RECEIVE << " + messagereceived.op);
       /** Lets be elegant here */
       switch (messagereceived.op) {
-        case LIST_NOTES:
-          broadcastNoteList();
-          break;
-        case GET_NOTE:
-          sendNote(conn, notebook, messagereceived);
-          break;
-        case NEW_NOTE:
-          createNote(conn, notebook);
-          break;
-        case DEL_NOTE:
-          removeNote(conn, notebook, messagereceived);
-          break;
-        case COMMIT_PARAGRAPH:
-          updateParagraph(conn, notebook, messagereceived);
-          break;
-        case RUN_PARAGRAPH:
-          runParagraph(conn, notebook, messagereceived);
-          break;
-        case CANCEL_PARAGRAPH:
-          cancelParagraph(conn, notebook, messagereceived);
-          break;
-        case MOVE_PARAGRAPH:
-          moveParagraph(conn, notebook, messagereceived);
-          break;
-        case INSERT_PARAGRAPH:
-          insertParagraph(conn, notebook, messagereceived);
-          break;
-        case PARAGRAPH_REMOVE:
-          removeParagraph(conn, notebook, messagereceived);
-          break;
-        case NOTE_UPDATE:
-          updateNote(conn, notebook, messagereceived);
-          break;
-        case COMPLETION:
-          completion(conn, notebook, messagereceived);
-          break;
-        default:
-          broadcastNoteList();
-          break;
+          case LIST_NOTES:
+            broadcastNoteList();
+            break;
+          case GET_NOTE:
+            sendNote(conn, notebook, messagereceived);
+            break;
+          case NEW_NOTE:
+            createNote(conn, notebook);
+            break;
+          case DEL_NOTE:
+            removeNote(conn, notebook, messagereceived);
+            break;
+          case COMMIT_PARAGRAPH:
+            updateParagraph(conn, notebook, messagereceived);
+            break;
+          case RUN_PARAGRAPH:
+            runParagraph(conn, notebook, messagereceived);
+            break;
+          case CANCEL_PARAGRAPH:
+            cancelParagraph(conn, notebook, messagereceived);
+            break;
+          case MOVE_PARAGRAPH:
+            moveParagraph(conn, notebook, messagereceived);
+            break;
+          case INSERT_PARAGRAPH:
+            insertParagraph(conn, notebook, messagereceived);
+            break;
+          case PARAGRAPH_REMOVE:
+            removeParagraph(conn, notebook, messagereceived);
+            break;
+          case NOTE_UPDATE:
+            updateNote(conn, notebook, messagereceived);
+            break;
+          case COMPLETION:
+            completion(conn, notebook, messagereceived);
+            break;
+          default:
+            broadcastNoteList();
+            break;
       }
     } catch (Exception e) {
       LOG.error("Can't handle message", e);
@@ -122,8 +122,8 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
 
   @Override
   public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-    LOG.info("Closed connection to {} : {}", conn.getRemoteSocketAddress().getHostName(),
-                                             conn.getRemoteSocketAddress().getPort());
+    LOG.info("Closed connection to {} : {}", conn.getRemoteSocketAddress().getHostName(), conn
+        .getRemoteSocketAddress().getPort());
     removeConnectionFromAllNote(conn);
     synchronized (connectedSockets) {
       connectedSockets.remove(conn);
@@ -204,8 +204,9 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     LOG.info("SEND >> " + m.op);
     synchronized (noteSocketMap) {
       List<WebSocket> socketLists = noteSocketMap.get(noteId);
-      if (socketLists == null || socketLists.size() == 0)
+      if (socketLists == null || socketLists.size() == 0) {
         return;
+      }
       for (WebSocket conn : socketLists) {
         conn.send(serializeMessage(m));
       }
@@ -236,7 +237,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     }
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
   }
-  
+
   private void sendNote(WebSocket conn, Notebook notebook, Message fromMessage) {
     String noteId = (String) fromMessage.get("id");
     if (noteId == null) {
@@ -248,8 +249,9 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
     }
   }
-  
-  private void updateNote(WebSocket conn, Notebook notebook, Message fromMessage) throws SchedulerException {
+
+  private void updateNote(WebSocket conn, Notebook notebook, Message fromMessage)
+      throws SchedulerException {
     String noteId = (String) fromMessage.get("id");
     String name = (String) fromMessage.get("name");
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
@@ -263,30 +265,29 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     if (note != null) {
       boolean cronUpdated = isCronUpdated(config, note.getConfig());
       note.setName(name);
-	  note.setConfig(config);
-	  
-	  if (cronUpdated) {
-	    notebook.refreshCron(note.id());
-	  }
+      note.setConfig(config);
+
+      if (cronUpdated) {
+        notebook.refreshCron(note.id());
+      }
 
       broadcastNote(note);
       broadcastNoteList();
     }
   }
-  
-	private boolean isCronUpdated(Map<String, Object> configA,
-			Map<String, Object> configB) {		
-		boolean cronUpdated = false;
-		if (configA.get("cron") != null && configB.get("cron") != null
-				&& configA.get("cron").equals(configB.get("cron"))) {
-			cronUpdated = true;
-		} else if (configA.get("cron") == null && configB.get("cron") == null) {
-			cronUpdated = false;
-		} else if (configA.get("cron") != null || configB.get("cron") != null) {
-			cronUpdated = true;
-		}
-		return cronUpdated;
-	}
+
+  private boolean isCronUpdated(Map<String, Object> configA, Map<String, Object> configB) {
+    boolean cronUpdated = false;
+    if (configA.get("cron") != null && configB.get("cron") != null
+        && configA.get("cron").equals(configB.get("cron"))) {
+      cronUpdated = true;
+    } else if (configA.get("cron") == null && configB.get("cron") == null) {
+      cronUpdated = false;
+    } else if (configA.get("cron") != null || configB.get("cron") != null) {
+      cronUpdated = true;
+    }
+    return cronUpdated;
+  }
 
   private void createNote(WebSocket conn, Notebook notebook) throws IOException {
     Note note = notebook.createNote();
@@ -296,10 +297,11 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     broadcastNoteList();
   }
 
-  private void removeNote(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
+  private void removeNote(WebSocket conn, Notebook notebook, Message fromMessage)
+      throws IOException {
     String noteId = (String) fromMessage.get("id");
     if (noteId == null) {
-      return ;
+      return;
     }
     Note note = notebook.getNote(noteId);
     note.unpersist();
@@ -308,10 +310,11 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     broadcastNoteList();
   }
 
-  private void updateParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
+  private void updateParagraph(WebSocket conn, Notebook notebook, Message fromMessage)
+      throws IOException {
     String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
-      return ;
+      return;
     }
     Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
@@ -324,11 +327,12 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     note.persist();
     broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
   }
-  
-  private void removeParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
+
+  private void removeParagraph(WebSocket conn, Notebook notebook, Message fromMessage)
+      throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
-      return ;
+      return;
     }
     final Note note = notebook.getNote(getOpenNoteId(conn));
     /** We dont want to remove the last paragraph */
@@ -338,18 +342,18 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
       broadcastNote(note);
     }
   }
-  
+
   private void completion(WebSocket conn, Notebook notebook, Message fromMessage) {
     String paragraphId = (String) fromMessage.get("id");
     String buffer = (String) fromMessage.get("buf");
-    int cursor = (int)Double.parseDouble(fromMessage.get("cursor").toString());
-	Message resp = new Message(OP.COMPLETION_LIST).put("id", paragraphId);
-    
+    int cursor = (int) Double.parseDouble(fromMessage.get("cursor").toString());
+    Message resp = new Message(OP.COMPLETION_LIST).put("id", paragraphId);
+
     if (paragraphId == null) {
       conn.send(serializeMessage(resp));
       return;
     }
-    
+
     final Note note = notebook.getNote(getOpenNoteId(conn));
     Paragraph p = note.getParagraph(paragraphId);
     List<String> candidates = p.completion(buffer, cursor);
@@ -357,21 +361,23 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     conn.send(serializeMessage(resp));
   }
 
-  private void moveParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
+  private void moveParagraph(WebSocket conn, Notebook notebook, Message fromMessage)
+      throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
       return;
     }
-    
-    final int newIndex = (int)Double.parseDouble(fromMessage.get("index").toString());
+
+    final int newIndex = (int) Double.parseDouble(fromMessage.get("index").toString());
     final Note note = notebook.getNote(getOpenNoteId(conn));
     note.moveParagraph(paragraphId, newIndex);
     note.persist();
     broadcastNote(note);
   }
 
-  private void insertParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
-    final int index = (int)Double.parseDouble(fromMessage.get("index").toString());
+  private void insertParagraph(WebSocket conn, Notebook notebook, Message fromMessage)
+      throws IOException {
+    final int index = (int) Double.parseDouble(fromMessage.get("index").toString());
 
     final Note note = notebook.getNote(getOpenNoteId(conn));
     note.insertParagraph(index);
@@ -379,20 +385,22 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     broadcastNote(note);
   }
 
-  
-  private void cancelParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
+
+  private void cancelParagraph(WebSocket conn, Notebook notebook, Message fromMessage)
+      throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
       return;
     }
-    
+
     final Note note = notebook.getNote(getOpenNoteId(conn));
     Paragraph p = note.getParagraph(paragraphId);
     p.abort();
   }
 
-  private void runParagraph(WebSocket conn, Notebook notebook, Message fromMessage) throws IOException {
-	  final String paragraphId = (String) fromMessage.get("id");
+  private void runParagraph(WebSocket conn, Notebook notebook, Message fromMessage)
+      throws IOException {
+    final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
       return;
     }
@@ -405,7 +413,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     p.settings.setParams(params);
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
     p.setConfig(config);
-    
+
     // if it's the last paragraph, let's add a new one
     boolean isTheLastParagraph = note.getLastParagraph().getId().equals(p.getId());
     if (!Strings.isNullOrEmpty(text) && isTheLastParagraph) {
@@ -413,30 +421,34 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     }
     note.persist();
     broadcastNote(note);
-    
+
     note.run(paragraphId);
   }
   
+  /**
+   * Need description here.
+   *
+   */
   public static class ParagraphJobListener implements JobListener {
     private NotebookServer notebookServer;
     private Note note;
 
-	public ParagraphJobListener(NotebookServer notebookServer, Note note){
-	  this.notebookServer = notebookServer;
+    public ParagraphJobListener(NotebookServer notebookServer, Note note) {
+      this.notebookServer = notebookServer;
       this.note = note;
-	}
+    }
 
-	@Override
-	public void onProgressUpdate(Job job, int progress) {
-      notebookServer.broadcast(note.id(), new Message(OP.PROGRESS).put("id", job.getId()).put("progress", job.progress()));
-	}
+    @Override
+    public void onProgressUpdate(Job job, int progress) {
+      notebookServer.broadcast(note.id(),
+          new Message(OP.PROGRESS).put("id", job.getId()).put("progress", job.progress()));
+    }
 
-	@Override
-	public void beforeStatusChange(Job job, Status before, Status after) {
-	}
+    @Override
+    public void beforeStatusChange(Job job, Status before, Status after) {}
 
-	@Override
-	public void afterStatusChange(Job job, Status before, Status after) {
+    @Override
+    public void afterStatusChange(Job job, Status before, Status after) {
       if (after == Status.ERROR) {
         job.getException().printStackTrace();
       }

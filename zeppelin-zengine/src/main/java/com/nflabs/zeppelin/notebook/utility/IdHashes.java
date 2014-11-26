@@ -2,20 +2,18 @@ package com.nflabs.zeppelin.notebook.utility;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Generate Tiny ID
+ * Generate Tiny ID.
  * 
  * @author anthonycorbacho
  *
  */
 public class IdHashes {
-  public static final char[] DICTIONARY = new char[] {'1', '2', '3', '4', '5', '6', '7', '8',
-      '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'M', 'N', 'P', 'Q', 'R', 'S', 'T',
-      'U', 'V', 'W', 'X', 'Y', 'Z'};
+  public static final char[] DICTIONARY = new char[] {'1', '2', '3', '4', '5', '6', '7', '8', '9',
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U',
+    'V', 'W', 'X', 'Y', 'Z'};
 
   /**
    * encodes the given string into the base of the dictionary provided in the constructor.

@@ -12,67 +12,72 @@ import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
+/**
+ * Markdown interpreter for Zeppelin.
+ * 
+ * @author Leemoonsoo
+ * @author anthonycorbacho
+ *
+ */
 public class Markdown extends Interpreter {
-	private Markdown4jProcessor md;
+  private Markdown4jProcessor md;
 
-	static {
-		Interpreter.register("md", Markdown.class.getName());
-	}
-	
-	public Markdown(Properties property){
-		super(property);
-	}	
-	
-	@Override
-	public void open() {
-		md = new Markdown4jProcessor();
-	}
+  static {
+    Interpreter.register("md", Markdown.class.getName());
+  }
 
-	@Override
-	public void close() {
-	}
+  public Markdown(Properties property) {
+    super(property);
+  }
 
-	@Override
-	public Object getValue(String name) {
-		return null;
-	}
+  @Override
+  public void open() {
+    md = new Markdown4jProcessor();
+  }
 
-	@Override
-	public InterpreterResult interpret(String st) {
-		String html;
-		try {
-			html = md.process(st);
-		} catch (IOException e) {
-			return new InterpreterResult(Code.ERROR, e.getMessage());
-		}
-		return new InterpreterResult(Code.SUCCESS, "%html "+html);
-	}
+  @Override
+  public void close() {}
 
-	@Override
-	public void cancel() {
-	}
+  @Override
+  public Object getValue(String name) {
+    return null;
+  }
 
-	@Override
-	public void bindValue(String name, Object o) {
-	}
+  @Override
+  public InterpreterResult interpret(String st) {
+    String html;
+    try {
+      html = md.process(st);
+    } catch (IOException e) {
+      return new InterpreterResult(Code.ERROR, e.getMessage());
+    }
+    return new InterpreterResult(Code.SUCCESS, "%html " + html);
+  }
 
-	@Override
-	public FormType getFormType() {
-		return FormType.SIMPLE;
-	}
+  @Override
+  public void cancel() {}
 
-	@Override
-	public int getProgress() {
-		return 0;
-	}
-	
-	@Override
-	public Scheduler getScheduler() {
-		return SchedulerFactory.singleton().createOrGetParallelScheduler(Markdown.class.getName()+this.hashCode(), 5);
-	}
+  @Override
+  public void bindValue(String name, Object o) {}
 
-	@Override
-	public List<String> completion(String buf, int cursor) {
-		return null;
-	}
+  @Override
+  public FormType getFormType() {
+    return FormType.SIMPLE;
+  }
+
+  @Override
+  public int getProgress() {
+    return 0;
+  }
+
+  @Override
+  public Scheduler getScheduler() {
+    return SchedulerFactory.singleton().createOrGetParallelScheduler(
+        Markdown.class.getName() + this.hashCode(), 5);
+  }
+
+  @Override
+  public List<String> completion(String buf, int cursor) {
+    return null;
+  }
 }
