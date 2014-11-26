@@ -259,5 +259,9 @@
 			<property name="severity" value="warning" />
 		</module>
 
+                <module name="Indentation">
+                        <!-- Checks code indentation -->
+                        <property name="basicOffset" value="2" />
+                </module>
 	</module>
 </module>

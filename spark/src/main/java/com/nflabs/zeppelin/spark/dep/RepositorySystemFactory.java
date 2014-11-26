@@ -25,6 +25,9 @@ public class RepositorySystemFactory {
     return locator.getService(RepositorySystem.class);
   }
 
+  /**
+   * ManualWagonProvider 
+   */
   public static class ManualWagonProvider implements WagonProvider {
 
     public Wagon lookup(String roleHint) throws Exception {
