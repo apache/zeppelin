@@ -378,7 +378,7 @@ angular.module('zeppelinWebApp')
       value = params[formulaire.name];
     }
 
-    if (value === "") {
+    if (value === '') {
       value = formulaire.options[0].value;
     }
 
