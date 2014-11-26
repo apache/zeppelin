@@ -69,6 +69,11 @@
 
 .ace-tm .ace_marker-layer .ace_selection {
     background: rgba(98, 157, 233, 0.2) !important;
+    color: black;
+}
+
+.ace_active-line {
+    background: rgba(98, 157, 233, 0.2) !important;
 }
 
 .ace-tm .ace_marker-layer .ace_selected-word {
