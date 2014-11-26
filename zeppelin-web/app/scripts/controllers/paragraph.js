@@ -239,8 +239,6 @@ angular.module('zeppelinWebApp')
 
 
   $scope.runParagraph = function(data) {
-
-
     $scope.paragraph.settings.params
     var parapgraphData = {op: 'RUN_PARAGRAPH',
                           data: {
