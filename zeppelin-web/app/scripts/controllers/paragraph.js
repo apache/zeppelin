@@ -239,7 +239,6 @@ angular.module('zeppelinWebApp')
 
 
   $scope.runParagraph = function(data) {
-    $scope.paragraph.settings.params
     var parapgraphData = {op: 'RUN_PARAGRAPH',
                           data: {
                               id: $scope.paragraph.id,
@@ -378,6 +377,11 @@ angular.module('zeppelinWebApp')
     if (params[formulaire.name]) {
       value = params[formulaire.name];
     }
+
+    if (value === "") {
+      value = formulaire.options[0].value;
+    }
+
     $scope.paragraph.settings.params[formulaire.name] = value;
   };
 
