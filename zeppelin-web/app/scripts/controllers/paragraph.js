@@ -32,8 +32,6 @@ angular.module('zeppelinWebApp')
   $scope.editor = null;
   var editorMode = {scala: 'ace/mode/scala', sql: 'ace/mode/sql', markdown: 'ace/mode/markdown'};
 
-  $scope.forms = {};
-
   // Controller init
   $scope.init = function(newParagraph) {
     $scope.paragraph = newParagraph;
@@ -241,7 +239,6 @@ angular.module('zeppelinWebApp')
 
 
   $scope.runParagraph = function(data) {
-    //console.log('send new paragraph: %o with %o', $scope.paragraph.id, data);
     var parapgraphData = {op: 'RUN_PARAGRAPH',
                           data: {
                               id: $scope.paragraph.id,
@@ -380,7 +377,12 @@ angular.module('zeppelinWebApp')
     if (params[formulaire.name]) {
       value = params[formulaire.name];
     }
-    $scope.forms[formulaire.name] = value;
+
+    if (value === '') {
+      value = formulaire.options[0].value;
+    }
+
+    $scope.paragraph.settings.params[formulaire.name] = value;
   };
 
   $scope.aceChanged = function() {
