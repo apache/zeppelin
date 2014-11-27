@@ -455,3 +455,7 @@
 .lightBold {
   font-weight: 500;
 }
+
+.resizable-helper {
+  border: 3px solid #DDDDDD;
+}
