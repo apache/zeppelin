@@ -4,6 +4,7 @@ angular.module('zeppelinWebApp').directive('resizable', function () {
     var resizableConfig = {
         autoHide: true,
         handles: 'se',
+        helper: 'resizable-helper',
         minHeight:100,
         grid: [10000, 10]  // allow only vertical
     };
