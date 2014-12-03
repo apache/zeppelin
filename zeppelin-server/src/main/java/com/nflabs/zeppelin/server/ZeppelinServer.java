@@ -1,8 +1,14 @@
 package com.nflabs.zeppelin.server;
-
 import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
+import java.security.KeyStore;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 import javax.ws.rs.core.Application;
 
@@ -12,10 +18,13 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.session.SessionHandler;
+import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +33,10 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.notebook.Notebook;
 import com.nflabs.zeppelin.rest.ZeppelinRestApi;
+import com.nflabs.zeppelin.socket.NotebookServer;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
+
+import com.nflabs.zeppelin.socket.SSLWebSocketServerFactory;
 
 /**
  * Main class of Zeppelin.
@@ -32,12 +44,13 @@ import com.nflabs.zeppelin.scheduler.SchedulerFactory;
  * @author Leemoonsoo
  *
  */
+
 public class ZeppelinServer extends Application {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
 
   private SchedulerFactory schedulerFactory;
   public static Notebook notebook;
-  static com.nflabs.zeppelin.socket.NotebookServer websocket;
+  static NotebookServer notebookServer;
 
   private InterpreterFactory replFactory;
 
@@ -45,59 +58,109 @@ public class ZeppelinServer extends Application {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     conf.setProperty("args", args);
 
-    int port = conf.getInt(ConfVars.ZEPPELIN_PORT);
-    final Server server = setupJettyServer(port);
-    websocket = new com.nflabs.zeppelin.socket.NotebookServer(port + 1);
+    final Server jettyServer = setupJettyServer(conf);
+    notebookServer = setupNotebookServer(conf);
 
     // REST api
     final ServletContextHandler restApi = setupRestApiContextHandler();
-    /**
-     * NOTE: Swagger-core is included via the web.xml in zeppelin-web But the rest of swagger is
-     * configured here
+    /** NOTE: Swagger-core is included via the web.xml in zeppelin-web
+     * But the rest of swagger is configured here
      */
-    final ServletContextHandler swagger = setupSwaggerContextHandler(port);
+    final ServletContextHandler swagger = setupSwaggerContextHandler(conf.getServerPort());
+
     // Web UI
     final WebAppContext webApp = setupWebAppContext(conf);
     final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
 
     // add all handlers
     ContextHandlerCollection contexts = new ContextHandlerCollection();
-    contexts.setHandlers(new Handler[] {swagger, restApi, webApp, webAppSwagg});
-    server.setHandler(contexts);
+    contexts.setHandlers(new Handler[]{swagger, restApi, webApp, webAppSwagg});
+    jettyServer.setHandler(contexts);
 
 
-    websocket.start();
+    notebookServer.start();
     LOG.info("Start zeppelin server");
-    server.start();
+    jettyServer.start();
     LOG.info("Started");
 
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
+    Runtime.getRuntime().addShutdownHook(new Thread(){
+      @Override public void run() {
         LOG.info("Shutting down Zeppelin Server ... ");
         try {
-          server.stop();
-          websocket.stop();
+          jettyServer.stop();
+          notebookServer.stop();
         } catch (Exception e) {
           LOG.error("Error while stopping servlet container", e);
         }
         LOG.info("Bye");
       }
     });
-    server.join();
+    jettyServer.join();
   }
 
-  private static Server setupJettyServer(int port) {
-    int timeout = 1000 * 30;
-    final Server server = new Server();
-    SocketConnector connector = new SocketConnector();
+  private static Server setupJettyServer(ZeppelinConfiguration conf)
+      throws Exception
+  {
+    SocketConnector connector;
+    if (conf.useSSL()) {
+      connector = new SslSocketConnector(getSSLContextFactory(conf));
+    }
+    else {
+      connector = new SocketConnector();
+    }
 
     // Set some timeout options to make debugging easier.
+    int timeout = 1000 * 30;
     connector.setMaxIdleTime(timeout);
     connector.setSoLingerTime(-1);
-    connector.setPort(port);
+    connector.setPort(conf.getServerPort());
+
+    final Server server = new Server();
     server.addConnector(connector);
+
     return server;
+  }
+
+  private static NotebookServer setupNotebookServer(ZeppelinConfiguration conf)
+      throws Exception
+  {
+    NotebookServer server = new NotebookServer(conf.getWebSocketPort());
+
+    // Default WebSocketServer uses unecrypted connector, so only need to
+    // change the connector if SSL should be used.
+    if (conf.useSSL()) {
+      SSLWebSocketServerFactory wsf = new SSLWebSocketServerFactory(getSSLContext(conf));
+      wsf.setNeedClientAuth(conf.useClientAuth());
+      server.setWebSocketFactory(wsf);
+    }
+
+    return server;
+  }
+
+  private static SslContextFactory getSSLContextFactory(ZeppelinConfiguration conf)
+      throws Exception
+  {
+    // Note that the API for the SslContextFactory is different for
+    // Jetty version 9
+    SslContextFactory sslContextFactory = new SslContextFactory();
+    sslContextFactory.setKeyStore(conf.getKeyStorePath());
+    sslContextFactory.setKeyStorePassword(conf.getKeyStorePassword());
+    sslContextFactory.setKeyManagerPassword(conf.getKeyManagerPassword());
+    sslContextFactory.setTrustStore(conf.getTrustStorePath());
+    sslContextFactory.setTrustStorePassword(conf.getTrustStorePassword());
+    sslContextFactory.setNeedClientAuth(conf.useClientAuth());
+
+    return sslContextFactory;
+  }
+
+  private static SSLContext getSSLContext(ZeppelinConfiguration conf)
+      throws Exception
+  {
+    SslContextFactory scf = getSSLContextFactory(conf);
+    if (!scf.isStarted()) {
+      scf.start();
+    }
+    return scf.getSslContext();
   }
 
   private static ServletContextHandler setupRestApiContextHandler() {
@@ -180,7 +243,7 @@ public class ZeppelinServer extends Application {
     this.schedulerFactory = new SchedulerFactory();
 
     this.replFactory = new InterpreterFactory(conf);
-    notebook = new Notebook(conf, schedulerFactory, replFactory, websocket);
+    notebook = new Notebook(conf, schedulerFactory, replFactory, notebookServer);
   }
 
   @Override

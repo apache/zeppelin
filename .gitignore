@@ -8,6 +8,8 @@
 # conf file
 conf/zeppelin-env.sh
 conf/zeppelin-site.xml
+conf/keystore
+conf/truststore
 
 #webapp
 zeppelin-web/node_modules
@@ -19,6 +21,7 @@ zeppelin-web/src
 **nbproject/
 **node/
 
+etc/
 logs/
 run/
 metastore_db/
@@ -68,3 +71,4 @@ target/
 auto-save-list
 tramp
 .\#*
+*.swp

@@ -22,7 +22,7 @@
 FWDIR="$(cd `dirname $0`; pwd)"
 
 if [[ -z "${ZEPPELIN_HOME}" ]]; then
-  export ZEPPELIN_HOME="${FWDIR}/.."
+  export ZEPPELIN_HOME=$(cd "$FWDIR/.."; pwd)
 fi
 
 if [[ -z "${ZEPPELIN_CONF_DIR}" ]]; then

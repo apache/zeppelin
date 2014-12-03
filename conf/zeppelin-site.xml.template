@@ -26,6 +26,17 @@
   <description>Server port. port+1 is used for web socket.</description>
 </property>
 
+<!-- Changing the websocket port requires a manual change to
+     to the port value returned by app.js in zeppelin-web. Then
+     rebuild the changes. If the port value is negative, then
+     it'll default to the server port + 1
+  -->
+<property>
+  <name>zeppelin.websocket.port</name>
+  <value>-1</value>
+  <description>Testing websocket port</description>
+</property>
+
 <property>
   <name>zeppelin.notebook.dir</name>
   <value>notebook</value>
@@ -49,5 +60,51 @@
   <value>com.nflabs.zeppelin.spark.SparkInterpreter,com.nflabs.zeppelin.spark.SparkSqlInterpreter,com.nflabs.zeppelin.markdown.Markdown,com.nflabs.zeppelin.shell.ShellInterpreter</value>
   <description>Comma separated interpreter configurations. First interpreter become a default</description>
 </property>
+
+<property>
+  <name>zeppelin.ssl</name>
+  <value>false</value>
+  <description>Should SSL be used by the servers?</description>
+</property>
+
+<property>
+  <name>zeppelin.ssl.client.auth</name>
+  <value>false</value>
+  <description>Should client authentication be used for SSL connections?</description>
+</property>
+
+<property>
+  <name>zeppelin.ssl.keystore.path</name>
+  <value>etc/keystore</value>
+  <description>Path to keystore relative to Zeppelin home</description>
+</property>
+
+<property>
+  <name>zeppelin.ssl.keystore.password</name>
+  <value>change me</value>
+  <description>Keystore password. Can be obfuscated by the Jetty Password tool</description>
+</property>
+
+<!--
+<property>
+  <name>zeppelin.ssl.key.manager.password</name>
+  <value>change me</value>
+  <description>Key Manager password. Defaults to keystore password. Can be obfuscated.</description>
+</property>
+-->
+
+<property>
+  <name>zeppelin.ssl.truststore.path</name>
+  <value>etc/truststore</value>
+  <description>Path to truststore relative to Zeppelin home. Defaults to the keystore path</description>
+</property>
+
+<!--
+<property>
+  <name>zeppelin.ssl.truststore.password</name>
+  <value>change me</value>
+  <description>Truststore password. Can be obfuscated by the Jetty Password tool. Defaults to the keystore password</description>
+</property>
+-->
 
 </configuration>
