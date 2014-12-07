@@ -29,9 +29,7 @@ import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 
 /**
- * Consist of Paragraphs with independent context.
- *
- * @author Leemoonsoo
+ * Binded interpreters for a note
  */
 public class Note implements Serializable, JobListener {
   transient Logger logger = LoggerFactory.getLogger(Note.class);
@@ -68,10 +66,7 @@ public class Note implements Serializable, JobListener {
   }
 
   private void generateId() {
-    // id = "note_"+System.currentTimeMillis()+"_"+new Random(System.currentTimeMillis()).nextInt();
-    /** This is actually more humain readable */
-    id = IdHashes.encode(System.currentTimeMillis()
-                         + new Random(System.currentTimeMillis()).nextInt());
+    id = IdHashes.encode(System.currentTimeMillis() + new Random().nextInt());
   }
 
   public String id() {
@@ -221,7 +216,7 @@ public class Note implements Serializable, JobListener {
       for (Paragraph p : paragraphs) {
         p.setNoteReplLoader(replLoader);
         p.setListener(jobListenerFactory.getParagraphJobListener(this));
-        Interpreter intp = replLoader.getRepl(p.getRequiredReplName());
+        Interpreter intp = replLoader.get(p.getRequiredReplName());
         intp.getScheduler().submit(p);
       }
     }
@@ -236,7 +231,7 @@ public class Note implements Serializable, JobListener {
     Paragraph p = getParagraph(paragraphId);
     p.setNoteReplLoader(replLoader);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
-    Interpreter intp = replLoader.getRepl(p.getRequiredReplName());
+    Interpreter intp = replLoader.get(p.getRequiredReplName());
     intp.getScheduler().submit(p);
   }
 

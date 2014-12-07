@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.After;
@@ -15,7 +14,9 @@ import org.quartz.SchedulerException;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.interpreter.mock.MockInterpreterFactory;
+import com.nflabs.zeppelin.interpreter.InterpreterFactory;
+import com.nflabs.zeppelin.interpreter.mock.MockInterpreter1;
+import com.nflabs.zeppelin.interpreter.mock.MockInterpreter2;
 import com.nflabs.zeppelin.notebook.Note;
 import com.nflabs.zeppelin.notebook.Notebook;
 import com.nflabs.zeppelin.notebook.Paragraph;
@@ -40,12 +41,18 @@ public class NotebookTest implements JobListenerFactory{
 		notebookDir.mkdirs();
 
 		System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
-
+		System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "com.nflabs.zeppelin.interpreter.mock.MockInterpreter1,com.nflabs.zeppelin.interpreter.mock.MockInterpreter2");
+		
 		conf = ZeppelinConfiguration.create();
         
 		this.schedulerFactory = new SchedulerFactory();
 		
-		notebook = new Notebook(conf, schedulerFactory, new MockInterpreterFactory(conf), this);
+    MockInterpreter1.register("mock1", "com.nflabs.zeppelin.interpreter.mock.MockInterpreter1");
+    MockInterpreter2.register("mock2", "com.nflabs.zeppelin.interpreter.mock.MockInterpreter2");
+    
+    InterpreterFactory factory = new InterpreterFactory(conf);
+		
+		notebook = new Notebook(conf, schedulerFactory, factory, this);
 	}
 
 	@After
@@ -66,7 +73,7 @@ public class NotebookTest implements JobListenerFactory{
 		
 		// run with specific repl
 		Paragraph p2 = note.addParagraph();
-		p2.setText("%MockRepl2 hello world");
+		p2.setText("%mock2 hello world");
 		note.run(p2.getId());
 		while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
 		assertEquals("repl2: hello world", p2.getResult().message());
@@ -75,14 +82,25 @@ public class NotebookTest implements JobListenerFactory{
 	@Test
 	public void testPersist() throws IOException, SchedulerException{
 		Note note = notebook.createNote();
+		String noteId = note.id();
 		
 		// run with defatul repl
 		Paragraph p1 = note.addParagraph();
+		String pId = p1.getId();
 		p1.setText("hello world");
+		p1.run();
+		while (p1.isTerminated() == false || p1.getResult() == null) Thread.yield();
+		assertEquals("repl1: hello world", p1.getResult().message());
 		note.persist();
 		
-		Notebook notebook2 = new Notebook(conf, schedulerFactory, new MockInterpreterFactory(conf), this);
+		Notebook notebook2 = new Notebook(conf, schedulerFactory, new InterpreterFactory(conf), this);
 		assertEquals(1, notebook2.getAllNotes().size());
+		Note note2 = notebook2.getNote(noteId);
+		Paragraph p2 = note2.getParagraph(pId);
+		assertEquals("hello world", p2.getText());
+		p2.run();
+		//while (p2.isTerminated() == false || p2.getResult() == null) Thread.yield();
+		assertEquals("repl1: hello world", p2.getResult().message());
 	}
 	
 	@Test

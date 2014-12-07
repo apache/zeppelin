@@ -1,16 +1,18 @@
 package com.nflabs.zeppelin.interpreter.mock;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
-import com.nflabs.zeppelin.interpreter.Interpreter.SchedulingMode;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 public class MockInterpreter1 extends Interpreter{
-
+  Map<String, Object> vars = new HashMap<String, Object>();
+  
 	public MockInterpreter1(Properties property) {
 		super(property);
 	}
@@ -25,7 +27,7 @@ public class MockInterpreter1 extends Interpreter{
 
 	@Override
 	public Object getValue(String name) {
-		return null;
+    return vars.get(name);
 	}
 
 	@Override
@@ -39,6 +41,7 @@ public class MockInterpreter1 extends Interpreter{
 
 	@Override
 	public void bindValue(String name, Object o) {
+    vars.put(name, o);	  
 	}
 
 	@Override

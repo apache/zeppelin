@@ -1,6 +1,5 @@
 package com.nflabs.zeppelin.interpreter;
 
-
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -23,9 +22,7 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 
 /**
- * Manager interpreter creation.
- * 
- * @author Leemoonsoo
+ * Manage interpreters.
  *
  */
 public class InterpreterFactory {
@@ -37,8 +34,10 @@ public class InterpreterFactory {
 
   private ZeppelinConfiguration conf;
   String[] interpreterClassList;
-  String defaultInterpreterName;
 
+  private Map<String, InterpreterSetting> loadedInterpreters = 
+      new HashMap<String, InterpreterSetting>();
+  
   public InterpreterFactory(ZeppelinConfiguration conf) {
     this.conf = conf;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
@@ -51,6 +50,7 @@ public class InterpreterFactory {
   private void init() {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 
+    // Load classes
     File[] interpreterDirs = new File(conf.getInterpreterDir()).listFiles();
     if (interpreterDirs != null) {
       for (File path : interpreterDirs) {
@@ -71,10 +71,6 @@ public class InterpreterFactory {
               if (className.equals(Interpreter.registeredInterpreters.get(intName))) {
                 logger.info("Interpreter " + intName + " found. class=" + className);
                 cleanCl.put(intName, ccl);
-
-                if (className.equals(interpreterClassList[0])) {
-                  defaultInterpreterName = intName;
-                }
               }
             }
           } catch (ClassNotFoundException e) {
@@ -83,25 +79,154 @@ public class InterpreterFactory {
         }
       }
     }
-  }
 
+    loadFromFile();
 
-  public String getDefaultInterpreterName() {
-    return defaultInterpreterName;
-  }
-
-  public Interpreter createRepl(String replName, Properties properties) {
-    String className =
-        Interpreter.registeredInterpreters
-            .get(replName != null ? replName : defaultInterpreterName);
-    logger.info("find repl class {} = {}", replName, className);
-    if (className == null) {
-      throw new RuntimeException("Configuration not found for " + replName);
+    // if no interpreter settings are loaded, create default set
+    synchronized (loadedInterpreters) {
+      if (loadedInterpreters.size() == 0) {
+        for (String className : interpreterClassList) {
+          Set<String> keys = Interpreter.registeredInterpreters.keySet();
+          for (String intName : keys) {
+            if (className.equals(Interpreter.registeredInterpreters.get(intName))) {
+              Properties p = new Properties();
+              add(intName, className, p);
+              break;
+            }
+          }
+        }
+      }
     }
-    return createRepl(replName, className, properties);
+  }
+  
+  private void loadFromFile() {
+   // TODO(moon): Implement
+  }
+  
+  private void saveToFile() {
+    // TODO(moon): Implement
   }
 
-  public Interpreter createRepl(String dirName, String className, Properties property) {
+  private String getReplNameFromClassName(String clsName) {
+    Set<String> keys = Interpreter.registeredInterpreters.keySet();
+    for (String intName : keys) {
+      if (clsName.equals(Interpreter.registeredInterpreters.get(intName))) {
+        return intName;
+      }
+    }
+    return null;
+  }
+
+  public Interpreter add(String description, String className, Properties properties)
+      throws InterpreterException {
+    synchronized (loadedInterpreters) {
+      String name = getReplNameFromClassName(className);
+      if (name == null) {
+        throw new InterpreterException("Interpreter class " + className + " not found");
+      }
+      Interpreter intp = createRepl(name, className, properties);
+      InterpreterSetting intpSetting = new InterpreterSetting(name, description, className, intp);
+      loadedInterpreters.put(intpSetting.id(), intpSetting);
+      saveToFile();
+      return intp;
+    }
+  }  
+  
+  public void remove(String id) {
+    synchronized (loadedInterpreters) {
+      if (loadedInterpreters.containsKey(id)) {
+        InterpreterSetting intp = loadedInterpreters.remove(id);
+        intp.getInterpreter().close();
+        intp.getInterpreter().destroy();
+        saveToFile();
+      }
+    }
+  }
+
+  /**
+   * Get loaded interpreters
+   * @return
+   */
+  public Map<String, InterpreterSetting> get() {
+    return loadedInterpreters;
+  }
+  
+  public InterpreterSetting get(String name) {
+    synchronized (loadedInterpreters) {
+      return loadedInterpreters.get(name);
+    }
+  }
+  
+  /**
+   * Get default interpreter possible list order by zeppelin.intepreters property
+   * @return
+   */
+  public List<String> getDefaultInterpreterList() {
+    synchronized (loadedInterpreters) {
+      List<String> defaultList = new LinkedList<String>();
+      
+      for (String cls : interpreterClassList) {
+        for (String intpId : loadedInterpreters.keySet()) {
+          InterpreterSetting intpSetting = loadedInterpreters.get(intpId);
+          if (intpSetting.getClassName().equals(cls)) {
+            defaultList.add(intpId);
+            break;
+          }
+        }
+      }
+      return defaultList;
+    }
+  }
+  
+  /**
+   * Change interpreter property and restart
+   * @param name
+   * @param properties
+   */
+  public void setProperty(String id, Properties properties) {
+    synchronized (loadedInterpreters) {
+      InterpreterSetting intpsetting = loadedInterpreters.get(id);
+      
+      Set<String> replNames = Interpreter.registeredInterpreters.keySet();
+      for (String replName : replNames) {
+        String className = Interpreter.registeredInterpreters.get(replName);
+        if (className.equals(intpsetting.getClassName())) {
+          Interpreter oldIntp = intpsetting.getInterpreter();
+          oldIntp.close();
+          oldIntp.destroy();
+          
+          Interpreter newIntp = createRepl(replName, className, properties);          
+          intpsetting.setInterpreter(newIntp);
+          return;
+        }
+      }
+      throw new InterpreterException("Interpreter setting id " + id + " not found");
+    }
+  }
+  
+  public void restart(String id) {
+    synchronized (loadedInterpreters) {
+      InterpreterSetting intpsetting = loadedInterpreters.get(id);
+      
+      Set<String> replNames = Interpreter.registeredInterpreters.keySet();
+      for (String replName : replNames) {
+        String className = Interpreter.registeredInterpreters.get(replName);
+        if (className.equals(intpsetting.getClassName())) {
+          Interpreter oldIntp = intpsetting.getInterpreter();
+          oldIntp.close();
+          oldIntp.destroy();
+          
+          Interpreter newIntp = createRepl(replName, className, oldIntp.getProperty());          
+          intpsetting.setInterpreter(newIntp);
+          return;
+        }
+      }
+      throw new InterpreterException("Interpreter setting id " + id + " not found");
+    }     
+  }
+
+  private Interpreter createRepl(String dirName, String className, Properties property)
+      throws InterpreterException {
     logger.info("Create repl {} from {}", className, dirName);
 
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
@@ -141,7 +266,7 @@ public class InterpreterFactory {
       }
       property.put("share", share);
       property.put("classloaderUrls", ccl.getURLs());
-      return new ClassloaderInterpreter(repl, cl, property);
+      return new LazyOpenInterpreter(new ClassloaderInterpreter(repl, cl, property));
     } catch (SecurityException e) {
       throw new InterpreterException(e);
     } catch (NoSuchMethodException e) {

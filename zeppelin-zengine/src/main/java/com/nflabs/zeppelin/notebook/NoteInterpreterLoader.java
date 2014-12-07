@@ -2,67 +2,79 @@ package com.nflabs.zeppelin.notebook;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterException;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
+import com.nflabs.zeppelin.interpreter.InterpreterSetting;
 import com.nflabs.zeppelin.interpreter.LazyOpenInterpreter;
 
 /**
  * Repl loader per note.
- * 
- * @author Leemoonsoo
  */
 public class NoteInterpreterLoader {
-  private InterpreterFactory factory;
-  Map<String, Interpreter> loadedInterpreters;
-  static Map<String, Interpreter> loadedInterpretersStatic = Collections
-      .synchronizedMap(new HashMap<String, Interpreter>());
-  private boolean staticMode;
-
-  public NoteInterpreterLoader(InterpreterFactory factory, boolean staticMode) {
+  static transient Logger logger = LoggerFactory.getLogger(NoteInterpreterLoader.class);
+  private transient InterpreterFactory factory;
+  List<String> interpreterSettingIds;
+  
+  public NoteInterpreterLoader(InterpreterFactory factory) {
     this.factory = factory;
-    this.staticMode = staticMode;
-    if (staticMode) {
-      loadedInterpreters = loadedInterpretersStatic;
-    } else {
-      loadedInterpreters = Collections.synchronizedMap(new HashMap<String, Interpreter>());
+    interpreterSettingIds = Collections.synchronizedList(new LinkedList<String>());
+    setInterpreters(factory.getDefaultInterpreterList());
+  }
+  
+  /**
+   * set interpreter ids
+   * @param ids InterpreterSetting id list
+   */
+  public void setInterpreters(List<String> ids) {
+    synchronized (interpreterSettingIds) {
+      interpreterSettingIds.clear();
+      interpreterSettingIds.addAll(ids);
     }
   }
-
-  public boolean isStaticMode() {
-    return staticMode;
+  
+  public List<InterpreterSetting> getInterpreterSettings() {
+    LinkedList<InterpreterSetting> settings = new LinkedList<InterpreterSetting>();
+    synchronized (interpreterSettingIds) {
+      for (String id : interpreterSettingIds) {
+        InterpreterSetting setting = factory.get(id);
+        if (setting == null) {
+          // interpreter setting is removed from factory. remove id from here, too
+          interpreterSettingIds.remove(id);
+        } else {
+          settings.add(setting);
+        }
+      }
+    }
+    return settings;
   }
 
-  public synchronized Interpreter getRepl(String replName) {
-    String name = (replName != null) ? replName : factory.getDefaultInterpreterName();
-    if (loadedInterpreters.containsKey(name)) {
-      return loadedInterpreters.get(name);
-    } else {
-      Properties p = new Properties();
-      p.put("noteIntpLoader", this);
-      Interpreter repl = factory.createRepl(name, p);
-      LazyOpenInterpreter lazyIntp = new LazyOpenInterpreter(repl);
-      loadedInterpreters.put(name, lazyIntp);
-      return lazyIntp;
+  public Interpreter get(String replName) {
+    List<InterpreterSetting> settings = getInterpreterSettings();
+    
+    if (settings == null || settings.size() == 0) {
+      return null;
     }
+    
+    if (replName == null) {
+      return settings.get(0).getInterpreter();
+    }
+    
+    for (InterpreterSetting setting : settings) {
+      if (setting.getName().equals(replName)) {
+        return setting.getInterpreter();
+      }
+    }
+    
+    return null;
   }
-
-  public void destroyAll() {
-    if (staticMode) {
-      // not destroying when it is static mode
-      return;
-    }
-
-    Set<String> keys = loadedInterpreters.keySet();
-    for (String k : keys) {
-      Interpreter repl = loadedInterpreters.get(k);
-      repl.close();
-      repl.destroy();
-      loadedInterpreters.remove(k);
-    }
-  }
-
 }

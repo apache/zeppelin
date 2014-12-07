@@ -30,9 +30,6 @@ import java.util.Map;
 
 /**
  * Collection of Notes.
- *
- * @author Leemoonsoo
- * @author anthonycorbacho
  */
 public class Notebook {
   Logger logger = LoggerFactory.getLogger(Notebook.class);
@@ -60,23 +57,39 @@ public class Notebook {
     loadAllNotes();
   }
 
-  private boolean isLoaderStatic() {
-    return "share".equals(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_MODE));
-  }
-
   /**
    * Create new note.
    * 
    * @return
    */
   public Note createNote() {
-    Note note =
-        new Note(conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()),
-            jobListenerFactory, quartzSched);
+    NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
+    List<String> intpIdList = replFactory.getDefaultInterpreterList();
+    Note note = new Note(conf, intpLoader, jobListenerFactory, quartzSched);
     synchronized (notes) {
       notes.put(note.id(), note);
     }
     return note;
+  }
+  
+  /**
+   * Create new note.
+   * 
+   * @return
+   */
+  public Note createNote(List<String> interpreterIds) {
+    NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
+    intpLoader.setInterpreters(interpreterIds);
+    Note note = new Note(conf, intpLoader, jobListenerFactory, quartzSched);
+    synchronized (notes) {
+      notes.put(note.id(), note);
+    }
+    return note;
+  }
+  
+  public void bindInterpretersToNote(String id, List<String> interpreterIds) {
+    Note note = getNote(id);
+    note.getNoteReplLoader().setInterpreters(interpreterIds);
   }
 
 
@@ -91,12 +104,16 @@ public class Notebook {
     synchronized (notes) {
       note = notes.remove(id);
     }
-    note.getNoteReplLoader().destroyAll();
+    persistNoteReplLoaderInfo();
     try {
       note.unpersist();
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  private void persistNoteReplLoaderInfo() {
+    // TODO(moon): Auto-generated method stub    
   }
 
   private void loadAllNotes() throws IOException {
@@ -112,7 +129,7 @@ public class Notebook {
             schedulerFactory.createOrGetFIFOScheduler("note_" + System.currentTimeMillis());
         logger.info("Loading note from " + f.getName());
         Note note =
-            Note.load(f.getName(), conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()),
+            Note.load(f.getName(), conf, new NoteInterpreterLoader(replFactory),
                 scheduler, jobListenerFactory, quartzSched);
         synchronized (notes) {
           notes.put(note.id(), note);

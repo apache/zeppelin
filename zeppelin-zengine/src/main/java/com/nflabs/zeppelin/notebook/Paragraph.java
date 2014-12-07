@@ -115,7 +115,7 @@ public class Paragraph extends Job implements Serializable {
   }
 
   public Interpreter getRepl(String name) {
-    return replLoader.getRepl(name);
+    return replLoader.get(name);
   }
 
   public List<String> completion(String buffer, int cursor) {

@@ -120,7 +120,7 @@ public class ZeppelinContext {
   public void run(String lines) {
     String intpName = Paragraph.getRequiredReplName(lines);
     String scriptBody = Paragraph.getScriptBody(lines);
-    Interpreter intp = noteInterpreterLoader.getRepl(intpName);
+    Interpreter intp = noteInterpreterLoader.get(intpName);
     InterpreterResult ret = intp.interpret(scriptBody);
     if (ret.code() == InterpreterResult.Code.SUCCESS) {
       out.println("%" + ret.type().toString().toLowerCase() + " " + ret.message());
