@@ -119,4 +119,8 @@ public abstract class Interpreter {
   public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
     this.interpreterGroup = interpreterGroup;
   }
+  
+  public String getClassName() {
+    return this.getClass().getName();
+  }
 }

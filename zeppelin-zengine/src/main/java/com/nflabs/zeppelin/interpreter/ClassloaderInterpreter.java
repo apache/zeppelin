@@ -170,4 +170,19 @@ public class ClassloaderInterpreter extends Interpreter {
       Thread.currentThread().setContextClassLoader(oldcl);
     }
   }
+  
+  
+  @Override
+  public String getClassName() {
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(cl);
+    try {
+      return intp.getClassName();
+    } catch (Exception e) {
+      throw new InterpreterException(e);
+    } finally {
+      cl = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
 }

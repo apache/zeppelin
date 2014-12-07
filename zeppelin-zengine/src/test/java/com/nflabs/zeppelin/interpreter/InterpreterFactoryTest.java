@@ -3,8 +3,6 @@ package com.nflabs.zeppelin.interpreter;
 import static org.junit.Assert.*;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
@@ -38,7 +36,7 @@ public class InterpreterFactoryTest {
 	  List<String> all = factory.getDefaultInterpreterList();
 	  
 		// get interpreter
-		Interpreter repl1 = factory.get(all.get(0)).getInterpreter();
+		Interpreter repl1 = factory.get(all.get(0)).getInterpreterGroup().getFirst();
 		repl1.bindValue("a", 1);		
 		assertEquals(repl1.getValue("a"), 1);
 		
@@ -47,7 +45,7 @@ public class InterpreterFactoryTest {
 		
 		// restart interpreter
 		factory.restart(all.get(0));
-		repl1 = factory.get(all.get(0)).getInterpreter();
+		repl1 = factory.get(all.get(0)).getInterpreterGroup().getFirst();
 		assertEquals(repl1.getValue("a"), null);
 	}
 
@@ -55,7 +53,7 @@ public class InterpreterFactoryTest {
   public void testFactoryDefaultList() {
     List<String> all = factory.getDefaultInterpreterList();
     assertEquals(2, all.size());
-    assertEquals(factory.get(all.get(0)).getClassName(), "com.nflabs.zeppelin.interpreter.mock.MockInterpreter1");
+    assertEquals(factory.get(all.get(0)).getInterpreterGroup().getFirst().getClassName(), "com.nflabs.zeppelin.interpreter.mock.MockInterpreter1");
   }
 
 }

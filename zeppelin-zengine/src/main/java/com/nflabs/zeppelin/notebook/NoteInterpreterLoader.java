@@ -5,7 +5,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterException;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
+import com.nflabs.zeppelin.interpreter.InterpreterGroup;
 import com.nflabs.zeppelin.interpreter.InterpreterSetting;
 
 /**
@@ -56,12 +58,20 @@ public class NoteInterpreterLoader {
     }
     
     if (replName == null) {
-      return settings.get(0).getInterpreter();
+      return settings.get(0).getInterpreterGroup().getFirst();
+    }
+    
+    String interpreterClassName = Interpreter.registeredInterpreters.get(replName).getClassName();
+    if (interpreterClassName == null) {
+      throw new InterpreterException(replName + " interpreter not found");
     }
     
     for (InterpreterSetting setting : settings) {
-      if (setting.getName().equals(replName)) {
-        return setting.getInterpreter();
+      InterpreterGroup intpGroup = setting.getInterpreterGroup();
+      for (Interpreter interpreter : intpGroup) {
+        if (interpreterClassName.equals(interpreter.getClassName())) {
+          return interpreter;
+        }
       }
     }
     

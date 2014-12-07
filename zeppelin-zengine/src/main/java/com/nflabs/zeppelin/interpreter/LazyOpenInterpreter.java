@@ -89,4 +89,9 @@ public class LazyOpenInterpreter extends Interpreter {
     open();
     return intp.completion(buf, cursor);
   }
+  
+  @Override
+  public String getClassName() {
+    return intp.getClassName();
+  }
 }

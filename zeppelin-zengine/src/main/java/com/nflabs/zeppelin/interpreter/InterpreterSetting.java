@@ -13,22 +13,17 @@ public class InterpreterSetting {
   private String name;
   private String group;
   private String description;
-  private String className;
   private Properties properties;
-  private transient Interpreter interpreter;
+  private transient InterpreterGroup interpreterGroup;
   
   public InterpreterSetting(String name,
       String group,
-      String className,
-      String description,
-      Interpreter interpreter) {
+      InterpreterGroup interpreterGroup) {
     this.id = generateId();
     this.name = name;
     this.group = group;
-    this.className = className;
-    this.description = description;    
-    this.properties = interpreter.getProperty();
-    this.interpreter = interpreter;
+    this.properties = interpreterGroup.getProperty();
+    this.interpreterGroup = interpreterGroup;
   }
 
   public String id() {
@@ -62,17 +57,13 @@ public class InterpreterSetting {
   public String getGroup() {
     return group;
   }
-  
-  public String getClassName() {
-    return className;
+
+  public InterpreterGroup getInterpreterGroup() {
+    return interpreterGroup;
   }
   
-  public Interpreter getInterpreter() {
-    return interpreter;
-  }
-  
-  public void setInterpreter(Interpreter interpreter) {
-    this.interpreter = interpreter;
-    this.properties = interpreter.getProperty();
+  public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
+    this.interpreterGroup = interpreterGroup;
+    this.properties = interpreterGroup.getProperty();
   }
 }
