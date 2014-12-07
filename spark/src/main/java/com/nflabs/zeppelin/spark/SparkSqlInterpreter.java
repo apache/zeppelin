@@ -31,7 +31,6 @@ import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.scheduler.Scheduler;
-import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 /**
  * Spark SQL interpreter for Zeppelin.
@@ -44,7 +43,7 @@ public class SparkSqlInterpreter extends Interpreter {
   AtomicInteger num = new AtomicInteger(0);
 
   static {
-    Interpreter.register("sql", SparkSqlInterpreter.class.getName());
+    Interpreter.register("sql", "spark", SparkSqlInterpreter.class.getName());
   }
 
   private final String jobGroup = "zeppelin-" + this.hashCode();

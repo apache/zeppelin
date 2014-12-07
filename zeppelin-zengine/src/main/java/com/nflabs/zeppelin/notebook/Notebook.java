@@ -1,7 +1,6 @@
 package com.nflabs.zeppelin.notebook;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
@@ -64,7 +63,6 @@ public class Notebook {
    */
   public Note createNote() {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    List<String> intpIdList = replFactory.getDefaultInterpreterList();
     Note note = new Note(conf, intpLoader, jobListenerFactory, quartzSched);
     synchronized (notes) {
       notes.put(note.id(), note);
@@ -128,9 +126,13 @@ public class Notebook {
         Scheduler scheduler =
             schedulerFactory.createOrGetFIFOScheduler("note_" + System.currentTimeMillis());
         logger.info("Loading note from " + f.getName());
-        Note note =
-            Note.load(f.getName(), conf, new NoteInterpreterLoader(replFactory),
-                scheduler, jobListenerFactory, quartzSched);
+        
+        Note note = Note.load(f.getName(),
+            conf,
+            new NoteInterpreterLoader(replFactory),
+            scheduler,
+            jobListenerFactory, quartzSched);
+        
         synchronized (notes) {
           notes.put(note.id(), note);
           refreshCron(note.id());

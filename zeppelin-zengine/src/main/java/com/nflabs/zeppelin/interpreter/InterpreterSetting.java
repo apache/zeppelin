@@ -11,19 +11,22 @@ import com.nflabs.zeppelin.notebook.utility.IdHashes;
 public class InterpreterSetting {
   private String id;
   private String name;
+  private String group;
   private String description;
   private String className;
   private Properties properties;
   private transient Interpreter interpreter;
   
   public InterpreterSetting(String name,
-      String description,
+      String group,
       String className,
+      String description,
       Interpreter interpreter) {
     this.id = generateId();
     this.name = name;
-    this.description = description;
+    this.group = group;
     this.className = className;
+    this.description = description;    
     this.properties = interpreter.getProperty();
     this.interpreter = interpreter;
   }
@@ -54,6 +57,10 @@ public class InterpreterSetting {
   
   public void setDescription(String desc) {
     this.description = desc;
+  }
+  
+  public String getGroup() {
+    return group;
   }
   
   public String getClassName() {

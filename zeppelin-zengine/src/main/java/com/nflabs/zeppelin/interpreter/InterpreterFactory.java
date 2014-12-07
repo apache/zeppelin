@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 
 /**
  * Manage interpreters.
@@ -68,7 +69,8 @@ public class InterpreterFactory {
             Class.forName(className, true, ccl);
             Set<String> keys = Interpreter.registeredInterpreters.keySet();
             for (String intName : keys) {
-              if (className.equals(Interpreter.registeredInterpreters.get(intName))) {
+              if (className.equals(
+                  Interpreter.registeredInterpreters.get(intName).getClassName())) {
                 logger.info("Interpreter " + intName + " found. class=" + className);
                 cleanCl.put(intName, ccl);
               }
@@ -88,7 +90,7 @@ public class InterpreterFactory {
         for (String className : interpreterClassList) {
           Set<String> keys = Interpreter.registeredInterpreters.keySet();
           for (String intName : keys) {
-            if (className.equals(Interpreter.registeredInterpreters.get(intName))) {
+            if (className.equals(Interpreter.registeredInterpreters.get(intName).getClassName())) {
               Properties p = new Properties();
               add(intName, className, p);
               break;
@@ -107,11 +109,12 @@ public class InterpreterFactory {
     // TODO(moon): Implement
   }
 
-  private String getReplNameFromClassName(String clsName) {
+  private RegisteredInterpreter getRegisteredReplInfoFromClassName(String clsName) {
     Set<String> keys = Interpreter.registeredInterpreters.keySet();
     for (String intName : keys) {
-      if (clsName.equals(Interpreter.registeredInterpreters.get(intName))) {
-        return intName;
+      RegisteredInterpreter info = Interpreter.registeredInterpreters.get(intName);
+      if (clsName.equals(info.getClassName())) {
+        return info;
       }
     }
     return null;
@@ -120,12 +123,18 @@ public class InterpreterFactory {
   public Interpreter add(String description, String className, Properties properties)
       throws InterpreterException {
     synchronized (loadedInterpreters) {
-      String name = getReplNameFromClassName(className);
-      if (name == null) {
+      RegisteredInterpreter registeredInterpreterInfo =
+          getRegisteredReplInfoFromClassName(className);
+      if (registeredInterpreterInfo == null) {
         throw new InterpreterException("Interpreter class " + className + " not found");
       }
-      Interpreter intp = createRepl(name, className, properties);
-      InterpreterSetting intpSetting = new InterpreterSetting(name, description, className, intp);
+      Interpreter intp = createRepl(registeredInterpreterInfo.getName(), className, properties);
+      InterpreterSetting intpSetting = new InterpreterSetting(
+          registeredInterpreterInfo.getName(),
+          registeredInterpreterInfo.getGroup(),
+          registeredInterpreterInfo.getClassName(),
+          description,
+          intp);
       loadedInterpreters.put(intpSetting.id(), intpSetting);
       saveToFile();
       return intp;
@@ -189,7 +198,7 @@ public class InterpreterFactory {
       
       Set<String> replNames = Interpreter.registeredInterpreters.keySet();
       for (String replName : replNames) {
-        String className = Interpreter.registeredInterpreters.get(replName);
+        String className = Interpreter.registeredInterpreters.get(replName).getClassName();
         if (className.equals(intpsetting.getClassName())) {
           Interpreter oldIntp = intpsetting.getInterpreter();
           oldIntp.close();
@@ -210,7 +219,7 @@ public class InterpreterFactory {
       
       Set<String> replNames = Interpreter.registeredInterpreters.keySet();
       for (String replName : replNames) {
-        String className = Interpreter.registeredInterpreters.get(replName);
+        String className = Interpreter.registeredInterpreters.get(replName).getClassName();
         if (className.equals(intpsetting.getClassName())) {
           Interpreter oldIntp = intpsetting.getInterpreter();
           oldIntp.close();

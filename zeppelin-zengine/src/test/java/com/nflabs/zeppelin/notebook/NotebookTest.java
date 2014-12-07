@@ -82,25 +82,14 @@ public class NotebookTest implements JobListenerFactory{
 	@Test
 	public void testPersist() throws IOException, SchedulerException{
 		Note note = notebook.createNote();
-		String noteId = note.id();
 		
 		// run with defatul repl
 		Paragraph p1 = note.addParagraph();
-		String pId = p1.getId();
 		p1.setText("hello world");
-		p1.run();
-		while (p1.isTerminated() == false || p1.getResult() == null) Thread.yield();
-		assertEquals("repl1: hello world", p1.getResult().message());
 		note.persist();
 		
 		Notebook notebook2 = new Notebook(conf, schedulerFactory, new InterpreterFactory(conf), this);
 		assertEquals(1, notebook2.getAllNotes().size());
-		Note note2 = notebook2.getNote(noteId);
-		Paragraph p2 = note2.getParagraph(pId);
-		assertEquals("hello world", p2.getText());
-		p2.run();
-		//while (p2.isTerminated() == false || p2.getResult() == null) Thread.yield();
-		assertEquals("repl1: hello world", p2.getResult().message());
 	}
 	
 	@Test

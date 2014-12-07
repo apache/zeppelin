@@ -33,7 +33,6 @@ import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.notebook.NoteInterpreterLoader;
-import com.nflabs.zeppelin.notebook.Paragraph;
 import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
@@ -64,7 +63,7 @@ public class SparkInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
 
   static {
-    Interpreter.register("spark", SparkInterpreter.class.getName());
+    Interpreter.register("spark", "spark", SparkInterpreter.class.getName());
   }
 
   private ZeppelinContext z;

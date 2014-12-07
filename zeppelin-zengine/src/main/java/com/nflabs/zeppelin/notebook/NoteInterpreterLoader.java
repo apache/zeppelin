@@ -1,27 +1,17 @@
 package com.nflabs.zeppelin.notebook;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
-import com.nflabs.zeppelin.interpreter.InterpreterException;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.interpreter.InterpreterSetting;
-import com.nflabs.zeppelin.interpreter.LazyOpenInterpreter;
 
 /**
  * Repl loader per note.
  */
 public class NoteInterpreterLoader {
-  static transient Logger logger = LoggerFactory.getLogger(NoteInterpreterLoader.class);
   private transient InterpreterFactory factory;
   List<String> interpreterSettingIds;
   

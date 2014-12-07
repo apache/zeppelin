@@ -15,13 +15,11 @@ import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 /**
  * Interface for interpreters.
- * 
- * @author Leemoonsoo
- *
  */
 public abstract class Interpreter {
   static Logger logger = LoggerFactory.getLogger(Interpreter.class);
   private Properties property;
+  private InterpreterGroup interpreterGroup;
 
   public Interpreter(Properties property) {
     this.property = property;
@@ -29,31 +27,57 @@ public abstract class Interpreter {
 
   /**
    * Type of interpreter.
-   * 
-   * @author Leemoonsoo
-   *
    */
   public static enum FormType {
     NATIVE, SIMPLE, NONE
   }
+  
+  /**
+   * Represent registered interpreter class
+   */
+  public static class RegisteredInterpreter {
+    private String name;
+    private String group;
+    private String className;
+    
+    public RegisteredInterpreter(String name, String group, String className) {
+      super();
+      this.name = name;
+      this.group = group;
+      this.className = className;
+    }
+    
+    public String getName() {
+      return name;
+    }
+    
+    public String getGroup() {
+      return group;
+    }
+    
+    public String getClassName() {
+      return className;
+    }        
+  }
 
   /**
    * Type of Scheduling.
-   * 
-   * @author Leemoonsoo
-   *
    */
   public static enum SchedulingMode {
     FIFO, PARALLEL
   }
 
-  public static Map<String, String> registeredInterpreters = Collections
-      .synchronizedMap(new HashMap<String, String>());
+  public static Map<String, RegisteredInterpreter> registeredInterpreters = Collections
+      .synchronizedMap(new HashMap<String, RegisteredInterpreter>());
 
   public static void register(String name, String className) {
-    registeredInterpreters.put(name, className);
+    register(name, name, className);
   }
-
+  
+  public static void register(String name, String group, String className) {
+    registeredInterpreters.put(name, new RegisteredInterpreter(name, group, className));
+  }
+  
   public abstract void open();
 
   public abstract void close();
@@ -86,5 +110,13 @@ public abstract class Interpreter {
 
   public void setProperty(Properties property) {
     this.property = property;
+  }
+  
+  public InterpreterGroup getInterpreterGroup() {
+    return interpreterGroup;
+  }
+  
+  public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
+    this.interpreterGroup = interpreterGroup;
   }
 }
