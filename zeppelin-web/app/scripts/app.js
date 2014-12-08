@@ -40,6 +40,22 @@ function getWebsocketProtocol() {
   return protocol;
 }
 
+function getRestApiBase() {
+  console.log("location=%o", location);
+  var port = Number(location.port);
+  if (port === 'undefined' || port === 0) {
+    port = 80;
+    if (location.protocol === 'https:') {
+      port = 443;
+    }
+  }
+
+  if (port === 3333 || port === 9000) {
+    port = 8080;
+  }
+  return location.protocol+"//"+location.hostname+":"+port+"/api";
+}
+
 /**
  * @ngdoc overview
  * @name zeppelinWebApp
@@ -78,6 +94,10 @@ angular
       .when('/notebook/:noteId/paragraph/:paragraphId?', {
         templateUrl: 'views/notebooks.html',
         controller: 'NotebookCtrl'
+      })
+      .when('/interpreter', {
+        templateUrl: 'views/interpreter.html',
+        controller: 'InterpreterCtrl'
       })
       .otherwise({
         redirectTo: '/'
