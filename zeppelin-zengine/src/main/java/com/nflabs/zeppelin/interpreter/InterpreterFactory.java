@@ -29,7 +29,6 @@ import com.nflabs.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 public class InterpreterFactory {
   Logger logger = LoggerFactory.getLogger(InterpreterFactory.class);
 
-  private Map<String, Object> share = Collections.synchronizedMap(new HashMap<String, Object>());
   private Map<String, URLClassLoader> cleanCl = Collections
       .synchronizedMap(new HashMap<String, URLClassLoader>());
 
@@ -337,7 +336,6 @@ public class InterpreterFactory {
       if (conf.containsKey("args")) {
         property.put("args", conf.getProperty("args"));
       }
-      property.put("share", share);
       property.put("classloaderUrls", ccl.getURLs());
       LazyOpenInterpreter intp = new LazyOpenInterpreter(
           new ClassloaderInterpreter(repl, cl, property));

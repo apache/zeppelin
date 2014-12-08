@@ -2,7 +2,6 @@ package com.nflabs.zeppelin.spark;
 
 import static org.junit.Assert.*;
 
-import java.util.HashMap;
 import java.util.Properties;
 
 import org.junit.After;
@@ -15,13 +14,11 @@ import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 
 public class SparkInterpreterTest {
 	public static SparkInterpreter repl;
-	HashMap<String, Object> share = new HashMap<String, Object>();
 	
 	@Before
 	public void setUp() throws Exception {  
 	  if (repl == null) {
 		  Properties p = new Properties();
-		  p.put("share", new HashMap<String, Object>());
 		
 	    repl = new SparkInterpreter(p);
   	  repl.open();
@@ -62,7 +59,6 @@ public class SparkInterpreterTest {
 	
 		// create new interpreter
 		Properties p = new Properties();
-		p.put("share", share);
 		SparkInterpreter repl2 = new SparkInterpreter(p);
 		repl2.open();	
 		

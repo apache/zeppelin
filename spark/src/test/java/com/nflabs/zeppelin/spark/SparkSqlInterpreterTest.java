@@ -2,7 +2,6 @@ package com.nflabs.zeppelin.spark;
 
 import static org.junit.Assert.*;
 
-import java.util.HashMap;
 import java.util.Properties;
 
 import org.junit.After;
@@ -21,7 +20,6 @@ public class SparkSqlInterpreterTest {
 	@Before
 	public void setUp() throws Exception {
 		Properties p = new Properties();
-		p.put("share", new HashMap<String, Object>());
 		
 		if (repl == null) {
 		  

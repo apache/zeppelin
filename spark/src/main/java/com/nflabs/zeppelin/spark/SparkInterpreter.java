@@ -88,60 +88,25 @@ public class SparkInterpreter extends Interpreter {
 
 
   public synchronized SparkContext getSparkContext() {
-    Map<String, Object> share = (Map<String, Object>) getProperty().get("share");
-
     if (sc == null) {
-      sc = (SparkContext) share.get("sc");
-      sparkListener = (JobProgressListener) share.get("sparkListener");
-
-      if (sc == null) {
-        sc = createSparkContext();
-        env = SparkEnv.get();
-        sparkListener = new JobProgressListener(sc.getConf());
-        sc.listenerBus().addListener(sparkListener);
-
-        /*
-         * Sharing a single spark context across scala repl is not possible at the moment. because
-         * of spark's limitation. 1) Each SparkImain (scala repl) creates classServer but worker
-         * (executor uses only the first one) 2) creating a SparkContext creates corresponding
-         * worker's Executor. which executes tasks and reuse classloader. the same Classloader can
-         * confuse classes from many different scala repl.
-         * 
-         * The code below is commented out until this limitation removes
-         */
-        // share.put("sc", sc);
-        // share.put("sparkEnv", env);
-        // share.put("sparkListener", sparkListener);
-      }
-
+      sc = createSparkContext();
+      env = SparkEnv.get();
+      sparkListener = new JobProgressListener(sc.getConf());
+      sc.listenerBus().addListener(sparkListener);
     }
     return sc;
   }
 
   public SQLContext getSQLContext() {
     if (sqlc == null) {
-      // save / load sc from common share
-      Map<String, Object> share = (Map<String, Object>) getProperty().get("share");
-      sqlc = (SQLContext) share.get("sqlc");
-      if (sqlc == null) {
-        sqlc = new SQLContext(getSparkContext());
-
-        // The same reason with SparkContext, it'll not be shared, so commenting out.
-        // share.put("sqlc", sqlc);
-      }
+      sqlc = new SQLContext(getSparkContext());
     }
     return sqlc;
   }
 
   public DependencyResolver getDependencyResolver() {
     if (dep == null) {
-      // save / load sc from common share
-      Map<String, Object> share = (Map<String, Object>) getProperty().get("share");
-      dep = (DependencyResolver) share.get("dep");
-      if (dep == null) {
-        dep = new DependencyResolver(intp, sc);
-        // share.put("dep", dep);
-      }
+      dep = new DependencyResolver(intp, sc);
     }
     return dep;
   }
@@ -179,7 +144,6 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    Map<String, Object> share = (Map<String, Object>) getProperty().get("share");
     URL[] urls = (URL[]) getProperty().get("classloaderUrls");
 
     // Very nice discussion about how scala compiler handle classpath
@@ -352,8 +316,6 @@ public class SparkInterpreter extends Interpreter {
   }
 
   public InterpreterResult interpretInput(String[] lines) {
-    // Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
-    // SparkEnv env = (SparkEnv) share.get("sparkEnv");
     SparkEnv.set(env);
 
     // add print("") to make sure not finishing with comment

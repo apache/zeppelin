@@ -270,7 +270,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
                                                  + "com.nflabs.zeppelin.markdown.Markdown,"
                                                  + "com.nflabs.zeppelin.shell.ShellInterpreter"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
-    ZEPPELIN_INTERPRETER_MODE("zeppelin.interpreter.mode", "share"), // 'separate', 'share'
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook");
 
