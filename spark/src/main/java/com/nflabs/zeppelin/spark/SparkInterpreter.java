@@ -80,29 +80,10 @@ public class SparkInterpreter extends Interpreter {
   private Map<String, Object> binder;
   private SparkEnv env;
 
-  static SparkInterpreter singleton;
-
-  public static SparkInterpreter singleton() {
-    return singleton;
-  }
-
-  public static SparkInterpreter singleton(Properties property) {
-    if (singleton == null) {
-      new SparkInterpreter(property);
-    }
-    return singleton;
-  }
-
-  public static void setSingleton(SparkInterpreter si) {
-    singleton = si;
-  }
 
   public SparkInterpreter(Properties property) {
     super(property);
     out = new ByteArrayOutputStream();
-    if (singleton == null) {
-      singleton = this;
-    }
   }
 
 

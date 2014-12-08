@@ -14,24 +14,22 @@ import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 
 
 public class SparkInterpreterTest {
-	private SparkInterpreter repl;
+	public static SparkInterpreter repl;
 	HashMap<String, Object> share = new HashMap<String, Object>();
 	
 	@Before
-	public void setUp() throws Exception {
-		Properties p = new Properties();
-		p.put("share", new HashMap<String, Object>());
-	    repl = SparkInterpreter.singleton();
-	    if (repl == null) {
-	    	repl = new SparkInterpreter(p);
-			SparkInterpreter.setSingleton(repl);
-			repl.open();
-	    }
+	public void setUp() throws Exception {  
+	  if (repl == null) {
+		  Properties p = new Properties();
+		  p.put("share", new HashMap<String, Object>());
+		
+	    repl = new SparkInterpreter(p);
+  	  repl.open();
+	  }
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		repl.getSparkContext().stop();
 	}
 
 	@Test

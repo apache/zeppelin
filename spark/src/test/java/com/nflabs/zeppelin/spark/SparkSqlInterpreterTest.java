@@ -9,27 +9,38 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.nflabs.zeppelin.interpreter.ClassloaderInterpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterGroup;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Type;
 
 public class SparkSqlInterpreterTest {
 
-	private SparkInterpreter repl;
 	private SparkSqlInterpreter sql;
+  private SparkInterpreter repl;
 
 	@Before
 	public void setUp() throws Exception {
 		Properties p = new Properties();
 		p.put("share", new HashMap<String, Object>());
-	    repl = SparkInterpreter.singleton();
-	    if (repl == null) {
-	    	repl = new SparkInterpreter(p);
-			SparkInterpreter.setSingleton(repl);
-			repl.open();
-	    }
-		sql = new SparkSqlInterpreter(p);
-		sql.open();
+		
+		if (repl == null) {
+		  
+		  if (SparkInterpreterTest.repl == null) {
+		    repl = new SparkInterpreter(p);
+		    repl.open();
+		    SparkInterpreterTest.repl = repl;
+		  } else {
+		    repl = SparkInterpreterTest.repl;
+		  }
+    
+  		sql = new SparkSqlInterpreter(p);
+		  sql.open();
+	
+  		InterpreterGroup intpGroup = new InterpreterGroup();
+		  intpGroup.add(repl);
+		  intpGroup.add(sql);
+		  sql.setInterpreterGroup(intpGroup);
+		}
 	}
 
 	@After
