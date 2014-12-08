@@ -14,7 +14,7 @@ public class InterpreterSetting {
   private String group;
   private String description;
   private Properties properties;
-  private transient InterpreterGroup interpreterGroup;
+  private InterpreterGroup interpreterGroup;
   
   public InterpreterSetting(String name,
       String group,
