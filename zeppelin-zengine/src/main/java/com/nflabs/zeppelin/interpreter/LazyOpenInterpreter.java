@@ -10,7 +10,9 @@ import com.nflabs.zeppelin.scheduler.Scheduler;
  * @author Leemoonsoo
  *
  */
-public class LazyOpenInterpreter extends Interpreter {
+public class LazyOpenInterpreter
+    extends Interpreter 
+    implements WrappedInterpreter {
 
   private Interpreter intp;
   boolean opened = false;
@@ -18,6 +20,10 @@ public class LazyOpenInterpreter extends Interpreter {
   public LazyOpenInterpreter(Interpreter intp) {
     super(intp.getProperty());
     this.intp = intp;
+  }
+  
+  public Interpreter getInnerInterpreter() {
+    return intp;
   }
 
   @Override
@@ -93,5 +99,15 @@ public class LazyOpenInterpreter extends Interpreter {
   @Override
   public String getClassName() {
     return intp.getClassName();
+  }
+  
+  @Override
+  public InterpreterGroup getInterpreterGroup() {
+    return intp.getInterpreterGroup();
+  }
+  
+  @Override
+  public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
+    intp.setInterpreterGroup(interpreterGroup);
   }
 }

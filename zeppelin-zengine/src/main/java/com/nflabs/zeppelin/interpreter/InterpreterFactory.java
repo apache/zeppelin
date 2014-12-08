@@ -124,6 +124,15 @@ public class InterpreterFactory {
         }
       }
     }
+    
+    for (String settingId : interpreterSettings.keySet()) {
+      InterpreterSetting setting = interpreterSettings.get(settingId);
+      logger.info("Interpreter setting group {} : id={}, name={}", 
+          setting.getGroup(), settingId, setting.getName()); 
+      for (Interpreter interpreter : setting.getInterpreterGroup()) {
+        logger.info("  className = {}", interpreter.getClassName());
+      }
+    }
   }
   
   private void loadFromFile() {
@@ -170,19 +179,25 @@ public class InterpreterFactory {
   
   private InterpreterGroup createInterpreterGroup(String groupName, Properties properties)
       throws InterpreterException {
-    synchronized (interpreterSettings) {      
-      InterpreterGroup interpreterGroup = new InterpreterGroup();
-      
+    InterpreterGroup interpreterGroup = new InterpreterGroup();
+
+    for (String className : interpreterClassList) {
       Set<String> keys = Interpreter.registeredInterpreters.keySet();
       for (String intName : keys) {
-        RegisteredInterpreter info = Interpreter.registeredInterpreters.get(intName);
-        if (info.getGroup().equals(groupName)) {
-          Interpreter intp = createRepl(info.getName(), info.getClassName(), properties);
+        RegisteredInterpreter info = Interpreter.registeredInterpreters
+            .get(intName);
+        if (info.getClassName().equals(className)
+            && info.getGroup().equals(groupName)) {
+          Interpreter intp = createRepl(info.getName(),
+              info.getClassName(),
+              properties,
+              interpreterGroup);
           interpreterGroup.add(intp);
+          break;
         }
-      }      
-      return interpreterGroup;
+      }
     }
+    return interpreterGroup;
   }    
   
   public void remove(String id) {
@@ -211,7 +226,8 @@ public class InterpreterFactory {
   }
   
   /**
-   * Get default interpreter possible list order by zeppelin.intepreters property
+   * Get default interpreter possible list
+   *  order by zeppelin.intepreters property
    * @return
    */
   public List<String> getDefaultInterpreterList() {
@@ -222,14 +238,20 @@ public class InterpreterFactory {
         for (String intpId : interpreterSettings.keySet()) {
           InterpreterSetting intpSetting = interpreterSettings.get(intpId);
           InterpreterGroup intpGroup = intpSetting.getInterpreterGroup();
+          boolean found = false;
           for (Interpreter intp : intpGroup) {
             if (intp.getClassName().equals(cls)) {
               defaultList.add(intpId);
+              found = true;
               break;
             }            
           }
+          if (found) {
+            break;
+          }
         }
       }
+      
       return defaultList;
     }
   }
@@ -275,7 +297,8 @@ public class InterpreterFactory {
     }     
   }
 
-  private Interpreter createRepl(String dirName, String className, Properties property)
+  private Interpreter createRepl(String dirName, String className,
+      Properties property, InterpreterGroup interpreterGroup)
       throws InterpreterException {
     logger.info("Create repl {} from {}", className, dirName);
 
@@ -316,7 +339,10 @@ public class InterpreterFactory {
       }
       property.put("share", share);
       property.put("classloaderUrls", ccl.getURLs());
-      return new LazyOpenInterpreter(new ClassloaderInterpreter(repl, cl, property));
+      LazyOpenInterpreter intp = new LazyOpenInterpreter(
+          new ClassloaderInterpreter(repl, cl, property));
+      intp.setInterpreterGroup(interpreterGroup);
+      return intp;
     } catch (SecurityException e) {
       throw new InterpreterException(e);
     } catch (NoSuchMethodException e) {

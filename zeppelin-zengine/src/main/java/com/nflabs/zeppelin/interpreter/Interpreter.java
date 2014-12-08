@@ -111,16 +111,16 @@ public abstract class Interpreter {
   public void setProperty(Properties property) {
     this.property = property;
   }
-  
-  public InterpreterGroup getInterpreterGroup() {
-    return interpreterGroup;
+ 
+  public String getClassName() {
+    return this.getClass().getName();
   }
   
   public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
     this.interpreterGroup = interpreterGroup;
   }
-  
-  public String getClassName() {
-    return this.getClass().getName();
+
+  public InterpreterGroup getInterpreterGroup() {
+    return this.interpreterGroup;
   }
 }

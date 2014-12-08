@@ -11,7 +11,9 @@ import com.nflabs.zeppelin.scheduler.Scheduler;
  * @author Leemoonsoo
  *
  */
-public class ClassloaderInterpreter extends Interpreter {
+public class ClassloaderInterpreter
+    extends Interpreter
+    implements WrappedInterpreter {
 
   private ClassLoader cl;
   private Interpreter intp;
@@ -22,7 +24,7 @@ public class ClassloaderInterpreter extends Interpreter {
     this.intp = intp;
   }
 
-  public Interpreter getInnerRepl() {
+  public Interpreter getInnerInterpreter() {
     return intp;
   }
 
@@ -178,6 +180,34 @@ public class ClassloaderInterpreter extends Interpreter {
     Thread.currentThread().setContextClassLoader(cl);
     try {
       return intp.getClassName();
+    } catch (Exception e) {
+      throw new InterpreterException(e);
+    } finally {
+      cl = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
+  
+  @Override
+  public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(cl);
+    try {
+      intp.setInterpreterGroup(interpreterGroup);
+    } catch (Exception e) {
+      throw new InterpreterException(e);
+    } finally {
+      cl = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
+  
+  @Override
+  public InterpreterGroup getInterpreterGroup() {
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(cl);
+    try {
+      return intp.getInterpreterGroup();
     } catch (Exception e) {
       throw new InterpreterException(e);
     } finally {
