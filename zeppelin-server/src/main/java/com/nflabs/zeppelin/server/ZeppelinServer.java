@@ -1,9 +1,11 @@
 package com.nflabs.zeppelin.server;
 
 import java.io.File;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.servlet.DispatcherType;
 import javax.ws.rs.core.Application;
 
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
@@ -13,6 +15,7 @@ import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -23,6 +26,7 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.notebook.Notebook;
+import com.nflabs.zeppelin.rest.InterpreterRestApi;
 import com.nflabs.zeppelin.rest.ZeppelinRestApi;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
@@ -110,6 +114,9 @@ public class ZeppelinServer extends Application {
     cxfContext.setSessionHandler(new SessionHandler());
     cxfContext.setContextPath("/api");
     cxfContext.addServlet(cxfServletHolder, "/*");
+    
+    cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
+        EnumSet.allOf(DispatcherType.class));
     return cxfContext;
   }
 
@@ -196,6 +203,9 @@ public class ZeppelinServer extends Application {
     /** Rest-api root endpoint */
     ZeppelinRestApi root = new ZeppelinRestApi();
     singletons.add(root);
+    
+    InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory);
+    singletons.add(interpreterApi);
 
     return singletons;
   }
