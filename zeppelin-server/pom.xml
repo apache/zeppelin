@@ -242,18 +242,6 @@
           <groupId>org.apache.httpcomponents</groupId>
           <artifactId>httpclient</artifactId>
         </exclusion>
-        <exclusion>
-          <groupId>org.eclipse.jetty</groupId>
-          <artifactId>jetty-websocket</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.eclipse.jetty</groupId>
-          <artifactId>jetty-http</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>io.netty</groupId>
-          <artifactId>netty</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
 
