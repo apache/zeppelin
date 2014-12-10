@@ -127,11 +127,6 @@
     </dependency>
 
     <dependency>
-       <groupId>xml-apis</groupId>
-       <artifactId>xml-apis</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-api</artifactId>
       <version>${cxf.version}</version>
@@ -216,7 +211,7 @@
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-java</artifactId>
-      <version>2.37.1</version>
+      <version>2.44.0</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -261,6 +256,7 @@
         </exclusion>
       </exclusions>
     </dependency>
+
     <dependency> <!-- because there are two of them above  -->
       <groupId>xml-apis</groupId>
       <artifactId>xml-apis</artifactId>
@@ -271,7 +267,6 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -297,39 +292,15 @@
 	</dependency>
 
     <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>${guava.version}</version>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-library</artifactId>
+        <scope>test</scope>
     </dependency>
 
     <dependency>
-        <groupId>org.scala-lang</groupId>
-        <artifactId>scala-library</artifactId>
-    </dependency>
-
-      <dependency>
         <groupId>org.scalatest</groupId>
         <artifactId>scalatest_${scala.binary.version}</artifactId>
-        <scope>test</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-lang3</artifactId>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpcore</artifactId>
-        <scope>test</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>org.seleniumhq.selenium</groupId>
-        <artifactId>selenium-java</artifactId>
-        <version>2.35.0</version>
-        <scope>test</scope>
-      </dependency>
+    </dependency>
 
   </dependencies>
 
