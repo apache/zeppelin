@@ -35,10 +35,6 @@ ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.
 ZEPPELIN_MAIN=com.nflabs.zeppelin.server.ZeppelinServer
 JAVA_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
-if [[ "${ZEPPELIN_NICENESS}" = "" ]]; then
-  export ZEPPELIN_NICENESS=0
-fi
-
 function initialize_default_directories() {
   if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
     echo "Log dir doesn't exist, create ${ZEPPELIN_LOG_DIR}"
@@ -57,39 +53,57 @@ function initialize_default_directories() {
 }
 
 function wait_zeppelin_is_up_for_ci() {
-  local count=0;
-  while [[ "${count}" -lt 30 ]]; do
-    curl -v localhost:8080 2>&1 | grep '200 OK'
-    if [ $? -ne 0 ]; then
-      sleep 1
-      continue
-    else
-      break
-	fi
-	let "count+=1"
-  done
+  if [[ "${CI}" == "true" ]]; then
+    local count=0;
+    while [[ "${count}" -lt 30 ]]; do
+      curl -v localhost:8080 2>&1 | grep '200 OK'
+      if [[ $? -ne 0 ]]; then
+        sleep 1
+        continue
+      else
+        break
+      fi
+        let "count+=1"
+    done
+  fi
+}
+
+function print_log_for_ci() {
+  if [[ "${CI}" == "true" ]]; then
+    tail -1000 "${ZEPPELIN_LOGFILE}" | sed 's/^/  /'
+  fi
+}
+
+function check_if_process_is_alive() {
+  local pid
+  pid=$(cat ${ZEPPELIN_PID})
+  if ! kill -0 ${pid} >/dev/null 2>&1; then
+    action_msg "${ZEPPELIN_NAME} process died" "${SET_ERROR}"
+    print_log_for_ci
+  fi
 }
 
 function start() {
   local pid
+
   if [[ -f "${ZEPPELIN_PID}" ]]; then
     action_msg "${ZEPPELIN_NAME} is already running" "${SET_ERROR}"
     exit 1;
   fi
   
   initialize_default_directories
-  pid="`$ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_MAIN > /dev/null 2>&1 & echo $!`"
+
+  pid=$(exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_MAIN > /dev/null 2>&1 & echo $!)
   if [[ -z "${pid}" ]]; then
     action_msg "${ZEPPELIN_NAME}" "${SET_ERROR}"
   else
     action_msg "${ZEPPELIN_NAME}" "${SET_OK}"
     echo ${pid} > ${ZEPPELIN_PID}
   fi
-  
-  if [[ "${CI}" == "true" ]]; then
-    wait_zeppelin_is_up_for_ci
-  fi
 
+  wait_zeppelin_is_up_for_ci
+  sleep 2
+  check_if_process_is_alive
 }
 
 function stop() {
@@ -98,12 +112,12 @@ function stop() {
     action_msg "${ZEPPELIN_NAME} is not running" "${SET_ERROR}"
      exit 1;
   fi
-  pid="`cat ${ZEPPELIN_PID}`"
+  pid=$(cat ${ZEPPELIN_PID})
   if [[ -z "${pid}" ]]; then
     action_msg "${ZEPPELIN_NAME} is not running" "${SET_ERROR}"
   else
-    kill ${pid}
-    rm -f ${ZEPPELIN_PID}
+    $(kill ${pid})
+    $(rm -f ${ZEPPELIN_PID})
     action_msg "${ZEPPELIN_NAME}" "${SET_OK}"
   fi
 }
@@ -112,8 +126,8 @@ function find_zeppelin_process() {
   local pid
 
   if [[ -f "${ZEPPELIN_PID}" ]]; then
-    pid="`cat ${ZEPPELIN_PID}`"
-    if [[ -z "`ps aux | grep ${pid} | grep -v grep`" ]]; then
+    pid=$(cat ${ZEPPELIN_PID})
+    if ! kill -0 ${pid} > /dev/null 2>&1; then
       action_msg "${ZEPPELIN_NAME} running but process is dead" "${SET_ERROR}"
     else
       action_msg "${ZEPPELIN_NAME} is running" "${SET_OK}"
@@ -122,7 +136,6 @@ function find_zeppelin_process() {
     action_msg "${ZEPPELIN_NAME} is not running" "${SET_ERROR}"
   fi
 }
-
 
 case "${1}" in
   start)
