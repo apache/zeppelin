@@ -58,7 +58,7 @@ if [[ ! -z "${SPARK_HOME}" ]]; then
   SUBMIT_USAGE_FUNCTION=usage
   gatherSparkSubmitOpts "$@"
   ZEPPELIN_RUNNER="${SPARK_HOME}/bin/spark-submit"
-  $(exec $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER --class $ZEPPELIN_SERVER $SUBMISSION_OPTS[@] --driver-java-options -Dzeppelin.log.file=$ZEPPELIN_LOGFILE spark-shell $APPLICATION_OPTS[@])
+  $(exec $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER --class $ZEPPELIN_SERVER "${SUBMISSION_OPTS[@]}" --driver-java-options -Dzeppelin.log.file=$ZEPPELIN_LOGFILE spark-shell "${APPLICATION_OPTS[@]}")
 else
   $(exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_SERVER "$@")
 fi
