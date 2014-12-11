@@ -35,6 +35,10 @@ ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.
 ZEPPELIN_MAIN=com.nflabs.zeppelin.server.ZeppelinServer
 JAVA_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
+if [[ "${ZEPPELIN_NICENESS}" = "" ]]; then
+    export ZEPPELIN_NICENESS=0
+fi
+
 function initialize_default_directories() {
   if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
     echo "Log dir doesn't exist, create ${ZEPPELIN_LOG_DIR}"
@@ -50,6 +54,25 @@ function initialize_default_directories() {
     echo "Notbook dir doesn't exist, create ${ZEPPELIN_NOTEBOOK_DIR}"
     $(mkdir -p "${ZEPPELIN_NOTEBOOK_DIR}")
   fi
+}
+
+function wait_for_zeppelin_to_die() {
+  local pid
+  local count
+  pid=$1
+  count=0
+  while [[ "${count}" -lt 10 ]]; do
+    $(kill ${pid} > /dev/null 2> /dev/null)
+    if kill -0 ${pid} > /dev/null 2>&1; then
+      sleep 3
+      let "count+=1"
+    else
+      break
+    fi
+  if [[ "${count}" == "5" ]]; then
+    $(kill -9 ${pid} > /dev/null 2> /dev/null)
+  fi
+  done
 }
 
 function wait_zeppelin_is_up_for_ci() {
@@ -93,7 +116,8 @@ function start() {
   
   initialize_default_directories
 
-  pid=$(exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_MAIN > /dev/null 2>&1 & echo $!)
+  nohup nice -n $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_MAIN >> "${ZEPPELIN_OUTFILE}" 2>&1 < /dev/null &
+  pid=$!
   if [[ -z "${pid}" ]]; then
     action_msg "${ZEPPELIN_NAME}" "${SET_ERROR}"
   else
@@ -116,7 +140,7 @@ function stop() {
   if [[ -z "${pid}" ]]; then
     action_msg "${ZEPPELIN_NAME} is not running" "${SET_ERROR}"
   else
-    $(kill ${pid})
+    wait_for_zeppelin_to_die $pid
     $(rm -f ${ZEPPELIN_PID})
     action_msg "${ZEPPELIN_NAME}" "${SET_OK}"
   fi
