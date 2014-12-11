@@ -40,17 +40,17 @@ JAVA_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   echo "Log dir doesn't exist, create ${ZEPPELIN_LOG_DIR}"
-  mkdir -p "${ZEPPELIN_LOG_DIR}"
+  $(mkdir -p "${ZEPPELIN_LOG_DIR}")
 fi
 
 if [[ ! -d "${ZEPPELIN_PID_DIR}" ]]; then
   echo "Pid dir doesn't exist, create ${ZEPPELIN_PID_DIR}"
-  mkdir -p "${ZEPPELIN_PID_DIR}"
+  $(mkdir -p "${ZEPPELIN_PID_DIR}")
 fi
 
 if [[ ! -d "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
   echo "Pid dir doesn't exist, create ${ZEPPELIN_NOTEBOOK_DIR}"
-  mkdir -p "${ZEPPELIN_NOTEBOOK_DIR}"
+  $(mkdir -p "${ZEPPELIN_NOTEBOOK_DIR}")
 fi
 
 if [[ ! -z "${SPARK_HOME}" ]]; then
@@ -60,5 +60,5 @@ if [[ ! -z "${SPARK_HOME}" ]]; then
   ZEPPELIN_RUNNER="${SPARK_HOME}/bin/spark-submit"
   $(exec $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER --class $ZEPPELIN_SERVER $SUBMISSION_OPTS[@] --driver-java-options -Dzeppelin.log.file=$ZEPPELIN_LOGFILE spark-shell $APPLICATION_OPTS[@])
 else
-  $($ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_SERVER "$@")
+  $(exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_SERVER "$@")
 fi
