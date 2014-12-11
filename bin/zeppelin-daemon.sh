@@ -102,7 +102,7 @@ function stop() {
   if [[ -z "${pid}" ]]; then
     action_msg "${ZEPPELIN_NAME} is not running" "${SET_ERROR}"
   else
-    kill -9 ${pid}
+    kill ${pid}
     rm -f ${ZEPPELIN_PID}
     action_msg "${ZEPPELIN_NAME}" "${SET_OK}"
   fi
