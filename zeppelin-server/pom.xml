@@ -56,7 +56,7 @@
 	    <version>1.3.0</version>
 	</dependency>
 
-    <!-- Swagger -->
+<!-- Swagger -->
     <dependency>
       <groupId>com.wordnik</groupId>
       <artifactId>swagger-jersey-jaxrs_2.10</artifactId>
@@ -288,6 +288,28 @@
     <dependency>
         <groupId>org.scalatest</groupId>
         <artifactId>scalatest_${scala.binary.version}</artifactId>
+        <scope>test</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>15.0</version>
+        <scope>test</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>4.3.6</version>
+        <scope>test</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpcore</artifactId>
+        <version>4.3.3</version>
+        <scope>test</scope>
     </dependency>
 
   </dependencies>
@@ -326,7 +348,6 @@
             <executions>
                 <execution>
                     <goals>
-                        <goal>compile</goal>
                         <goal>testCompile</goal>
                     </goals>
                 </execution>
