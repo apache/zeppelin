@@ -22,6 +22,8 @@
 FWDIR="$(cd `dirname $0`; pwd)"
 
 if [[ -z "${ZEPPELIN_HOME}" ]]; then
+  # Calling pwd at the Zeppelin home removes the extra ../ in the
+  # ZEPPELIN_HOME variable, which makes it look nicer in logs
   export ZEPPELIN_HOME=$(cd "$FWDIR/.."; pwd)
 fi
 
@@ -65,6 +67,7 @@ if [[ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]]; then
   . "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh"
 fi
 
+ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}"
 ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 
 function addJarInDir(){
@@ -115,13 +118,9 @@ fi
 JAVA_OPTS+="${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"
 export JAVA_OPTS
 
-if [[ -n "${JAVA_HOME}" ]]; then
-  ZEPPELIN_RUNNER="${JAVA_HOME}/bin/java"
-else
-  ZEPPELIN_RUNNER=java
-fi
+ZEPPELIN_RUNNER="${SPARK_HOME}/bin/spark-submit"
 
-export RUNNER
+export ZEPPELIN_RUNNER
 
 if [[ -z "$ZEPPELIN_IDENT_STRING" ]]; then
   export ZEPPELIN_IDENT_STRING="${USER}"
