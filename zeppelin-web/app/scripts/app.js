@@ -15,20 +15,14 @@
 
 'use strict';
 
-/** get the current port pf the websocket */
+/** get the current port pf the websocket 
+  * The body of this function is just filler. It will be dynamically
+  * overridden with the zeppelin-site.xml config value when the client
+  * requests the script. If the config value is not defined, it defaults
+  * to the HTTP port + 1
+  */
 function getPort() {
   var port = Number(location.port);
-  /** case of binding default port (80 / 443) */
-  if (port === 'undifined' || port === 0) {
-    port = 80;
-    if (location.protocol === 'https:') {
-      port = 443;
-    }
-  }
-  // brunch port
-  if (port === 3333 || port === 9000) {
-    port = 8080; 
-  }
   return port+1;
 }
 

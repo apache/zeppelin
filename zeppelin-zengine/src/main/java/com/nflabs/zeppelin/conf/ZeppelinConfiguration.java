@@ -257,6 +257,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_SSL_KEYSTORE_PATH);
   }
 
+  public String getKeyStoreType() {
+    return getString(ConfVars.ZEPPELIN_SSL_KEYSTORE_TYPE);
+  }
+
   public String getKeyStorePassword() {
     return getString(ConfVars.ZEPPELIN_SSL_KEYSTORE_PASSWORD);
   }
@@ -276,6 +280,15 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       return getKeyStorePath();
     } else {
       return getRelativeDir(path);
+    }
+  }
+
+  public String getTrustStoreType() {
+    String type = getString(ConfVars.ZEPPELIN_SSL_TRUSTSTORE_TYPE);
+    if (type == null) {
+      return getKeyStoreType();
+    } else {
+      return type;
     }
   }
 
@@ -322,10 +335,12 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_WEBSOCKET_PORT("zeppelin.websocket.port", -1),
     ZEPPELIN_SSL("zeppelin.ssl", false),
     ZEPPELIN_SSL_CLIENT_AUTH("zeppelin.ssl.client.auth", false),
-    ZEPPELIN_SSL_KEYSTORE_PATH("zeppelin.ssl.keystore.path", "etc/keystore"),
+    ZEPPELIN_SSL_KEYSTORE_PATH("zeppelin.ssl.keystore.path", "conf/keystore"),
+    ZEPPELIN_SSL_KEYSTORE_TYPE("zeppelin.ssl.keystore.type", "JKS"),
     ZEPPELIN_SSL_KEYSTORE_PASSWORD("zeppelin.ssl.keystore.password", ""),
     ZEPPELIN_SSL_KEY_MANAGER_PASSWORD("zeppelin.ssl.key.manager.password", null),
     ZEPPELIN_SSL_TRUSTSTORE_PATH("zeppelin.ssl.truststore.path", null),
+    ZEPPELIN_SSL_TRUSTSTORE_TYPE("zeppelin.ssl.truststore.type", null),
     ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
     ZEPPELIN_WAR("zeppelin.war", "../zeppelin-web/src/main/webapp"),
     ZEPPELIN_API_WAR("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),

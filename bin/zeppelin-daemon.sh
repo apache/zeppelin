@@ -153,7 +153,6 @@ function start() {
   fi
 
   check_if_process_is_alive
-  echo $CLASSPATH
 }
 
 function stop() {

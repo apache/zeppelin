@@ -77,7 +77,6 @@ public class ZeppelinServer extends Application {
     contexts.setHandlers(new Handler[]{swagger, restApi, webApp, webAppSwagg});
     jettyServer.setHandler(contexts);
 
-
     notebookServer.start();
     LOG.info("Start zeppelin server");
     jettyServer.start();
@@ -143,11 +142,18 @@ public class ZeppelinServer extends Application {
     // Note that the API for the SslContextFactory is different for
     // Jetty version 9
     SslContextFactory sslContextFactory = new SslContextFactory();
+
+    // Set keystore
     sslContextFactory.setKeyStore(conf.getKeyStorePath());
+    sslContextFactory.setKeyStoreType(conf.getKeyStoreType());
     sslContextFactory.setKeyStorePassword(conf.getKeyStorePassword());
     sslContextFactory.setKeyManagerPassword(conf.getKeyManagerPassword());
+
+    // Set truststore
     sslContextFactory.setTrustStore(conf.getTrustStorePath());
+    sslContextFactory.setTrustStoreType(conf.getTrustStoreType());
     sslContextFactory.setTrustStorePassword(conf.getTrustStorePassword());
+
     sslContextFactory.setNeedClientAuth(conf.useClientAuth());
 
     return sslContextFactory;
@@ -202,17 +208,23 @@ public class ZeppelinServer extends Application {
 
   private static WebAppContext setupWebAppContext(ZeppelinConfiguration conf) {
     WebAppContext webApp = new WebAppContext();
-    File webapp = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
-    if (webapp.isDirectory()) { // Development mode, read from FS
-      // webApp.setDescriptor(webapp+"/WEB-INF/web.xml");
-      webApp.setResourceBase(webapp.getPath());
+    File warPath = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
+    if (warPath.isDirectory()) {
+      // Development mode, read from FS
+      // webApp.setDescriptor(warPath+"/WEB-INF/web.xml");
+      webApp.setResourceBase(warPath.getPath());
       webApp.setContextPath("/");
       webApp.setParentLoaderPriority(true);
-    } else { // use packaged WAR
-      webApp.setWar(webapp.getAbsolutePath());
+    } else {
+      // use packaged WAR
+      webApp.setWar(warPath.getAbsolutePath());
     }
     // Explicit bind to root
-    webApp.addServlet(new ServletHolder(new DefaultServlet()), "/*");
+    String scriptPath = "/scripts/scripts.js";
+    webApp.addServlet(
+      new ServletHolder(new AppScriptServlet(conf.getWebSocketPort(), scriptPath)),
+      "/*"
+    );
     return webApp;
   }
 
@@ -223,12 +235,12 @@ public class ZeppelinServer extends Application {
    */
   private static WebAppContext setupWebAppSwagger(ZeppelinConfiguration conf) {
     WebAppContext webApp = new WebAppContext();
-    File webapp = new File(conf.getString(ConfVars.ZEPPELIN_API_WAR));
+    File warPath = new File(conf.getString(ConfVars.ZEPPELIN_API_WAR));
 
-    if (webapp.isDirectory()) {
-      webApp.setResourceBase(webapp.getPath());
+    if (warPath.isDirectory()) {
+      webApp.setResourceBase(warPath.getPath());
     } else {
-      webApp.setWar(webapp.getAbsolutePath());
+      webApp.setWar(warPath.getAbsolutePath());
     }
     webApp.setContextPath("/docs");
     webApp.setParentLoaderPriority(true);

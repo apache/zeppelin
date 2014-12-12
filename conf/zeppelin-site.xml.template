@@ -17,7 +17,6 @@
    limitations under the License.
 -->
 
-
 <configuration>
 
 <property>
@@ -26,10 +25,8 @@
   <description>Server port. port+1 is used for web socket.</description>
 </property>
 
-<!-- Changing the websocket port requires a manual change to
-     to the port value returned by app.js in zeppelin-web. Then
-     rebuild the changes. If the port value is negative, then
-     it'll default to the server port + 1
+<!-- If the port value is negative, then it'll default to the server
+     port + 1.
   -->
 <property>
   <name>zeppelin.websocket.port</name>
@@ -75,8 +72,14 @@
 
 <property>
   <name>zeppelin.ssl.keystore.path</name>
-  <value>etc/keystore</value>
+  <value>conf/keystore</value>
   <description>Path to keystore relative to Zeppelin home</description>
+</property>
+
+<property>
+  <name>zeppelin.ssl.keystore.type</name>
+  <value>JKS</value>
+  <description>The format of the given keystore (e.g. JKS or PKCS12)</description>
 </property>
 
 <property>
@@ -95,8 +98,14 @@
 
 <property>
   <name>zeppelin.ssl.truststore.path</name>
-  <value>etc/truststore</value>
+  <value>conf/truststore</value>
   <description>Path to truststore relative to Zeppelin home. Defaults to the keystore path</description>
+</property>
+
+<property>
+  <name>zeppelin.ssl.truststore.type</name>
+  <value>JKS</value>
+  <description>The format of the given truststore (e.g. JKS or PKCS12). Defaults to the same type as the keystore type</description>
 </property>
 
 <!--
@@ -108,3 +117,4 @@
 -->
 
 </configuration>
+
