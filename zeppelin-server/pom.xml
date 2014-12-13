@@ -223,27 +223,12 @@
           <artifactId>commons-logging</artifactId>
         </exclusion>
         <exclusion>
-          <groupId>commons-io</groupId>
-          <artifactId>commons-io</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-lang3</artifactId>
-        </exclusion>
-        <exclusion>
           <groupId>xml-apis</groupId>
           <artifactId>xml-apis</artifactId>
         </exclusion>
-	<exclusion> <!-- hive-service::hive-exec::hive-metastore::hive-serde brings -->
-	  <groupId>commons-codec</groupId>
-	  <artifactId>commons-codec</artifactId>
-	</exclusion>
-        <exclusion>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpclient</artifactId>
-        </exclusion>
       </exclusions>
     </dependency>
+
     <dependency> <!-- because there are two of them above  -->
       <groupId>xml-apis</groupId>
       <artifactId>xml-apis</artifactId>
