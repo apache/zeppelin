@@ -1,16 +1,4 @@
 package com.nflabs.zeppelin.server;
-import java.io.File;
-import java.io.InputStream;
-import java.net.URL;
-import java.security.KeyStore;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-
-import javax.ws.rs.core.Application;
 
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
 import org.eclipse.jetty.server.Handler;
@@ -34,9 +22,22 @@ import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.notebook.Notebook;
 import com.nflabs.zeppelin.rest.ZeppelinRestApi;
 import com.nflabs.zeppelin.socket.NotebookServer;
+import com.nflabs.zeppelin.socket.SslWebSocketServerFactory;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
-import com.nflabs.zeppelin.socket.SSLWebSocketServerFactory;
+import com.wordnik.swagger.jersey.config.JerseyJaxrsConfig;
+
+import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
+import java.security.KeyStore;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import javax.ws.rs.core.Application;
 
 /**
  * Main class of Zeppelin.
@@ -66,7 +67,7 @@ public class ZeppelinServer extends Application {
     /** NOTE: Swagger-core is included via the web.xml in zeppelin-web
      * But the rest of swagger is configured here
      */
-    final ServletContextHandler swagger = setupSwaggerContextHandler(conf.getServerPort());
+    final ServletContextHandler swagger = setupSwaggerContextHandler(conf);
 
     // Web UI
     final WebAppContext webApp = setupWebAppContext(conf);
@@ -98,11 +99,11 @@ public class ZeppelinServer extends Application {
   }
 
   private static Server setupJettyServer(ZeppelinConfiguration conf)
-      throws Exception
-  {
+      throws Exception {
+
     SocketConnector connector;
-    if (conf.useSSL()) {
-      connector = new SslSocketConnector(getSSLContextFactory(conf));
+    if (conf.useSsl()) {
+      connector = new SslSocketConnector(getSslContextFactory(conf));
     }
     else {
       connector = new SocketConnector();
@@ -121,14 +122,14 @@ public class ZeppelinServer extends Application {
   }
 
   private static NotebookServer setupNotebookServer(ZeppelinConfiguration conf)
-      throws Exception
-  {
+      throws Exception {
+
     NotebookServer server = new NotebookServer(conf.getWebSocketPort());
 
     // Default WebSocketServer uses unecrypted connector, so only need to
     // change the connector if SSL should be used.
-    if (conf.useSSL()) {
-      SSLWebSocketServerFactory wsf = new SSLWebSocketServerFactory(getSSLContext(conf));
+    if (conf.useSsl()) {
+      SslWebSocketServerFactory wsf = new SslWebSocketServerFactory(getSslContext(conf));
       wsf.setNeedClientAuth(conf.useClientAuth());
       server.setWebSocketFactory(wsf);
     }
@@ -136,9 +137,9 @@ public class ZeppelinServer extends Application {
     return server;
   }
 
-  private static SslContextFactory getSSLContextFactory(ZeppelinConfiguration conf)
-      throws Exception
-  {
+  private static SslContextFactory getSslContextFactory(ZeppelinConfiguration conf)
+      throws Exception {
+
     // Note that the API for the SslContextFactory is different for
     // Jetty version 9
     SslContextFactory sslContextFactory = new SslContextFactory();
@@ -159,10 +160,10 @@ public class ZeppelinServer extends Application {
     return sslContextFactory;
   }
 
-  private static SSLContext getSSLContext(ZeppelinConfiguration conf)
-      throws Exception
-  {
-    SslContextFactory scf = getSSLContextFactory(conf);
+  private static SSLContext getSslContext(ZeppelinConfiguration conf)
+      throws Exception {
+
+    SslContextFactory scf = getSslContextFactory(conf);
     if (!scf.isStarted()) {
       scf.start();
     }
@@ -187,13 +188,17 @@ public class ZeppelinServer extends Application {
    *
    * @return ServletContextHandler of Swagger
    */
-  private static ServletContextHandler setupSwaggerContextHandler(int port) {
+  private static ServletContextHandler setupSwaggerContextHandler(
+    ZeppelinConfiguration conf) {
+  
     // Configure Swagger-core
     final ServletHolder swaggerServlet =
-        new ServletHolder(new com.wordnik.swagger.jersey.config.JerseyJaxrsConfig());
+        new ServletHolder(new JerseyJaxrsConfig());
     swaggerServlet.setName("JerseyJaxrsConfig");
     swaggerServlet.setInitParameter("api.version", "1.0.0");
-    swaggerServlet.setInitParameter("swagger.api.basepath", "http://localhost:" + port + "/api");
+    swaggerServlet.setInitParameter(
+        "swagger.api.basepath", 
+        "http://localhost:" + conf.getServerPort() + "/api");
     swaggerServlet.setInitOrder(2);
 
     // Setup the handler
@@ -206,7 +211,9 @@ public class ZeppelinServer extends Application {
     return handler;
   }
 
-  private static WebAppContext setupWebAppContext(ZeppelinConfiguration conf) {
+  private static WebAppContext setupWebAppContext(
+      ZeppelinConfiguration conf) {
+    
     WebAppContext webApp = new WebAppContext();
     File warPath = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
     if (warPath.isDirectory()) {
@@ -233,7 +240,9 @@ public class ZeppelinServer extends Application {
    *
    * @return WebAppContext with swagger ui context
    */
-  private static WebAppContext setupWebAppSwagger(ZeppelinConfiguration conf) {
+  private static WebAppContext setupWebAppSwagger(
+      ZeppelinConfiguration conf) {
+
     WebAppContext webApp = new WebAppContext();
     File warPath = new File(conf.getString(ConfVars.ZEPPELIN_API_WAR));
 
@@ -274,5 +283,5 @@ public class ZeppelinServer extends Application {
 
     return singletons;
   }
-
 }
+

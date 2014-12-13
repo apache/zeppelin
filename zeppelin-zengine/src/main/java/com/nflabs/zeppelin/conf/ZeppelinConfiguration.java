@@ -1,13 +1,15 @@
 package com.nflabs.zeppelin.conf;
 
-import java.net.URL;
-import java.util.List;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URL;
+import java.util.List;
+
 
 /**
  * Zeppelin configuration.
@@ -232,7 +234,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBooleanValue(propertyName, defaultValue);
   }
 
-  public boolean useSSL() {
+  public boolean useSsl() {
     return getBoolean(ConfVars.ZEPPELIN_SSL);
   }
 

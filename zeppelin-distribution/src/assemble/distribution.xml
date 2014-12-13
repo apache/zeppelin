@@ -51,9 +51,6 @@
       <directory>../conf</directory>
     </fileSet>
     <fileSet>
-      <directory>../etc</directory>
-    </fileSet>
-    <fileSet>
       <directory>../interpreter</directory>
     </fileSet>
     <fileSet>

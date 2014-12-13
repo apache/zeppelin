@@ -1,5 +1,8 @@
 package com.nflabs.zeppelin.socket;
 
+import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
+import org.java_websocket.SSLSocketChannel2;
+
 import java.io.IOException;
 
 import java.nio.channels.ByteChannel;
@@ -11,23 +14,24 @@ import java.util.concurrent.ExecutorService;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 
-import org.java_websocket.server.DefaultSSLWebSocketServerFactory;
-import org.java_websocket.SSLSocketChannel2;
-
 /**
- * Extension of the java_websocket library's DefaultSSLWebSocketServerFactory
+ * Extension of the java_websocket library's DefaultSslWebSocketServerFactory
  * to require client side authentication during the SSL handshake
  */
-public class SSLWebSocketServerFactory extends DefaultSSLWebSocketServerFactory {
+public class SslWebSocketServerFactory 
+    extends DefaultSSLWebSocketServerFactory {
 
   protected boolean needClientAuth;
 
-  public SSLWebSocketServerFactory(SSLContext sslcontext) {
+  public SslWebSocketServerFactory(SSLContext sslcontext) {
     super(sslcontext);
     initAttributes();
   }
 
-  public SSLWebSocketServerFactory(SSLContext sslcontext, ExecutorService exec) {
+  public SslWebSocketServerFactory(
+      SSLContext sslcontext,
+      ExecutorService exec) {
+
     super(sslcontext, exec);
     initAttributes();
   }
@@ -37,7 +41,9 @@ public class SSLWebSocketServerFactory extends DefaultSSLWebSocketServerFactory 
   }
 
   @Override
-  public ByteChannel wrapChannel( SocketChannel channel, SelectionKey key ) throws IOException {
+  public ByteChannel wrapChannel(SocketChannel channel, SelectionKey key)
+      throws IOException {
+
     SSLEngine sslEngine = sslcontext.createSSLEngine();
     sslEngine.setUseClientMode(false);
     sslEngine.setNeedClientAuth(needClientAuth);
@@ -52,3 +58,4 @@ public class SSLWebSocketServerFactory extends DefaultSSLWebSocketServerFactory 
     this.needClientAuth = needClientAuth;
   }
 }
+

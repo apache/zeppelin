@@ -1,14 +1,14 @@
 package com.nflabs.zeppelin.server;
 
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.util.resource.Resource;
+
 import java.io.InputStream;
 import java.io.IOException;
  
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.eclipse.jetty.servlet.DefaultServlet;
-import org.eclipse.jetty.util.resource.Resource;
 
 /**
  * Simple servlet to dynamically set the Websocket port
@@ -24,13 +24,11 @@ public class AppScriptServlet extends DefaultServlet {
     this.scriptPath = scriptPath;
   }
 
-  protected void doGet(
-    HttpServletRequest request,
-    HttpServletResponse response
-  ) throws
-      ServletException,
-      IOException 
-  {
+  @Override
+  protected void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException,
+          IOException {
+    
     // Process all requests not for the app script to the parent
     // class
     String uri = request.getRequestURI();
@@ -63,7 +61,6 @@ public class AppScriptServlet extends DefaultServlet {
     }
 
     response.getWriter().println(script.toString());
-
   }
 }
 
