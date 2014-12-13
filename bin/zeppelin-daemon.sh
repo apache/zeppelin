@@ -144,7 +144,8 @@ function start() {
   wait_zeppelin_is_up_for_ci
   sleep 2
 
-  app_pid=$(pgrep -P ${driver_pid})
+  # Avoiding pgrep for compatibility
+  app_pid=$(ps --no-headers --ppid ${driver_pid} | awk '{print $1}')
   if [[ -z "${app_pid}" ]]; then
     action_msg "${ZEPPELIN_NAME}" "${SET_ERROR}"
   else
