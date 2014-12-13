@@ -56,7 +56,7 @@ function initialize_default_directories() {
   fi
 }
 
-function wait_for_process_to_die() {
+function wait_for_zeppelin_to_die() {
   local pid
   local count
   pid=$1
@@ -98,24 +98,16 @@ function print_log_for_ci() {
 }
 
 function check_if_process_is_alive() {
-  local driver_pid app_pid
-
-  driver_pid=$(sed -n '1p' ${ZEPPELIN_PID})
-  app_pid=$(sed -n '2p' ${ZEPPELIN_PID})
-
-  if ! kill -0 ${driver_pid} >/dev/null 2>&1; then
-    action_msg "${ZEPPELIN_RUNNER} process died" "${SET_ERROR}"
-    print_log_for_ci
-  fi
-
-  if ! kill -0 ${app_pid} >/dev/null 2>&1; then
+  local pid
+  pid=$(cat ${ZEPPELIN_PID})
+  if ! kill -0 ${pid} >/dev/null 2>&1; then
     action_msg "${ZEPPELIN_NAME} process died" "${SET_ERROR}"
     print_log_for_ci
   fi
 }
 
 function start() {
-  local driver_pid app_pid
+  local pid
 
   if [[ -f "${ZEPPELIN_PID}" ]]; then
     action_msg "${ZEPPELIN_NAME} is already running" "${SET_ERROR}"
@@ -124,56 +116,32 @@ function start() {
   
   initialize_default_directories
 
-  # Spark is deprecating manual setting of the CLASSPATH. The recommended
-  # route is to invoke spark-submit to deal with the expansion
-  nohup nice -n "${ZEPPELIN_NICENESS}" "${ZEPPELIN_RUNNER}" --class "${ZEPPELIN_MAIN}" --driver-java-options "-Dzeppelin.log.file=${ZEPPELIN_LOGFILE}" spark-shell >> "${ZEPPELIN_OUTFILE}" 2>&1 < /dev/null &
-
-  # Output two PIDs to the pid file. The first line
-  # contains the driver pid and the second contains the
-  # zeppelin app pid
-  driver_pid=$!
-  if [[ -z "${driver_pid}" ]]; then
-    action_msg "${ZEPPELIN_RUNNER}" "${SET_ERROR}"
-  else
-    action_msg "${ZEPPELIN_RUNNER}" "${SET_OK}"
-    echo ${driver_pid} > ${ZEPPELIN_PID}
-  fi
-
-  # Wait for Zeppelin app to be spawned by driver
-  # Before trying to get the app PID
-  wait_zeppelin_is_up_for_ci
-  sleep 2
-
-  # Avoiding pgrep for compatibility
-  app_pid=$(ps --no-headers --ppid ${driver_pid} | awk '{print $1}')
-  if [[ -z "${app_pid}" ]]; then
+  nohup nice -n $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_MAIN >> "${ZEPPELIN_OUTFILE}" 2>&1 < /dev/null &
+  pid=$!
+  if [[ -z "${pid}" ]]; then
     action_msg "${ZEPPELIN_NAME}" "${SET_ERROR}"
   else
     action_msg "${ZEPPELIN_NAME}" "${SET_OK}"
-    echo ${app_pid} >> ${ZEPPELIN_PID}
+    echo ${pid} > ${ZEPPELIN_PID}
   fi
 
+  wait_zeppelin_is_up_for_ci
+  sleep 2
   check_if_process_is_alive
 }
 
 function stop() {
-  local driver_pid app_pid
-
+  local pid
   if [[ ! -f "${ZEPPELIN_PID}" ]]; then
     action_msg "${ZEPPELIN_NAME} is not running" "${SET_ERROR}"
      exit 1;
   fi
-  
-  driver_pid=$(sed -n '1p' "${ZEPPELIN_PID}")
-  app_pid=$(sed -n '2p' "${ZEPPELIN_PID}")
-  
-  if [[ -z "${app_pid}" ]] && [[ -z "${driver_pid}" ]]; then
+  pid=$(cat ${ZEPPELIN_PID})
+  if [[ -z "${pid}" ]]; then
     action_msg "${ZEPPELIN_NAME} is not running" "${SET_ERROR}"
   else
-    wait_for_process_to_die "${app_pid}"
-    wait_for_process_to_die "${driver_pid}"
-    $(rm -f "${ZEPPELIN_PID}")
-    action_msg "${ZEPPELIN_RUNNER}" "${SET_OK}"
+    wait_for_zeppelin_to_die $pid
+    $(rm -f ${ZEPPELIN_PID})
     action_msg "${ZEPPELIN_NAME}" "${SET_OK}"
   fi
 }
@@ -182,7 +150,7 @@ function find_zeppelin_process() {
   local pid
 
   if [[ -f "${ZEPPELIN_PID}" ]]; then
-    pid=$(sed -n '1p' ${ZEPPELIN_PID})
+    pid=$(cat ${ZEPPELIN_PID})
     if ! kill -0 ${pid} > /dev/null 2>&1; then
       action_msg "${ZEPPELIN_NAME} running but process is dead" "${SET_ERROR}"
     else
