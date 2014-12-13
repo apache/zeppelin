@@ -8,6 +8,7 @@ before_install:
 
 before_script:
   - mvn package -Pbuild-distr -B
+  - ./testing/startSparkCluster.sh
 
 script:
   - mvn verify -Pusing-packaged-distr -B
@@ -15,6 +16,9 @@ script:
 after_failure:
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.log
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.out
+
+after_script:
+  - ./testing/stopSparkCluster.sh
 
 notifications:
   slack:
