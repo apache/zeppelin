@@ -100,7 +100,7 @@
 		<codahale.metrics.version>3.0.0</codahale.metrics.version>
 		<avro.version>1.7.6</avro.version>
 		<jets3t.version>0.7.1</jets3t.version>
-		<guava.version>14.0.1</guava.version>
+		<guava.version>15.0</guava.version>
 		<scalatest.version>2.2.1</scalatest.version>
 
 		<PermGen>64m</PermGen>

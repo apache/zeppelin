@@ -294,12 +294,6 @@
         <scope>test</scope>
     </dependency>
 
-      <dependency>
-          <groupId>org.seleniumhq.selenium</groupId>
-          <artifactId>selenium-safari-driver</artifactId>
-          <version>2.37.0</version>
-      </dependency>
-
   </dependencies>
 
   <build>
