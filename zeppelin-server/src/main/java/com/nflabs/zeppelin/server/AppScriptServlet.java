@@ -5,6 +5,9 @@ import org.eclipse.jetty.util.resource.Resource;
 
 import java.io.InputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
  
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -16,12 +19,19 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class AppScriptServlet extends DefaultServlet {
 
-  private int port;
-  private String scriptPath;
+  // Hash containing the possible scripts that contain the getPort()
+  // function originially defined in app.js
+  private static Set<String> scriptPaths = new HashSet<String>(
+    Arrays.asList(
+      "/scripts/scripts.js",
+      "/scripts/app.js"
+    )
+  );
 
-  public AppScriptServlet(int port, String scriptPath) {
-    this.port = port;
-    this.scriptPath = scriptPath;
+  private int websocketPort;
+
+  public AppScriptServlet(int websocketPort) {
+    this.websocketPort = websocketPort;
   }
 
   @Override
@@ -32,13 +42,13 @@ public class AppScriptServlet extends DefaultServlet {
     // Process all requests not for the app script to the parent
     // class
     String uri = request.getRequestURI();
-    if (scriptPath == null || !scriptPath.equals(uri)) {
+    if (!scriptPaths.contains(uri)) {
       super.doGet(request, response);
       return;
     }
 
     // Read the script file chunk by chunk
-    Resource scriptFile = getResource(scriptPath);
+    Resource scriptFile = getResource(uri);
     InputStream is = scriptFile.getInputStream();
     StringBuffer script = new StringBuffer();
     byte[] buffer = new byte[1024];
@@ -56,7 +66,7 @@ public class AppScriptServlet extends DefaultServlet {
     int endIndex = script.indexOf("}", startIndex);
 
     if (startIndex >= 0 && endIndex >= 0) {
-      String replaceString = "function getPort(){return " + port + "}";
+      String replaceString = "function getPort(){return " + websocketPort + "}";
       script.replace(startIndex, endIndex + 1, replaceString);
     }
 

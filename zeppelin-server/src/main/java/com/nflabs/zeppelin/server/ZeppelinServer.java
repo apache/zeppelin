@@ -227,9 +227,8 @@ public class ZeppelinServer extends Application {
       webApp.setWar(warPath.getAbsolutePath());
     }
     // Explicit bind to root
-    String scriptPath = "/scripts/scripts.js";
     webApp.addServlet(
-      new ServletHolder(new AppScriptServlet(conf.getWebSocketPort(), scriptPath)),
+      new ServletHolder(new AppScriptServlet(conf.getWebSocketPort())),
       "/*"
     );
     return webApp;

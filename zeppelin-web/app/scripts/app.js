@@ -15,7 +15,7 @@
 
 'use strict';
 
-/** get the current port pf the websocket 
+/** get the current port of the websocket 
   * The body of this function is just filler. It will be dynamically
   * overridden with the zeppelin-site.xml config value when the client
   * requests the script. If the config value is not defined, it defaults
