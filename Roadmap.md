@@ -7,6 +7,7 @@ This document explains the list of planned and work to be done in Zeppelin. It i
 
 * Support for multiple separate clusters (one per-notebook)
 * Apache Tajo interpreter
+* Apache Flink interpreter
 * Python interpreter
 * Package Zeppelin (RPM,DEB)
 * Apache BigTop integration
