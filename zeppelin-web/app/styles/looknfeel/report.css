@@ -52,7 +52,7 @@ body {
 }
 
 .paragraph:hover .control {
-  visibility : visible;
+  visibility : hidden;
 }
 
 .noteAction span, .noteAction button, .noteAction form {
