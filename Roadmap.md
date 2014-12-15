@@ -13,3 +13,4 @@ This document explains the list of planned and work to be done in Zeppelin. It i
 * Notebook read-only mode
 * R interpreter
 * Pluggable notebook persistence layer with supporting directory structure
+* Printing output with stream
