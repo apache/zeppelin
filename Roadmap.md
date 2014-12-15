@@ -12,3 +12,4 @@ This document explains the list of planned and work to be done in Zeppelin. It i
 * Apache BigTop integration
 * Notebook read-only mode
 * R interpreter
+* Pluggable notebook persistence layer with supporting directory structure
