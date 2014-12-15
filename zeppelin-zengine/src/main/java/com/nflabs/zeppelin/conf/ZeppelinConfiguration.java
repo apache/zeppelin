@@ -1,13 +1,15 @@
 package com.nflabs.zeppelin.conf;
 
-import java.net.URL;
-import java.util.List;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URL;
+import java.util.List;
+
 
 /**
  * Zeppelin configuration.
@@ -217,7 +219,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getFloatValue(propertyName, defaultValue);
   }
 
-
   public boolean getBoolean(ConfVars c) {
     return getBoolean(c.name(), c.getVarName(), c.getBooleanValue());
   }
@@ -231,6 +232,75 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       return Boolean.parseBoolean(System.getProperty(propertyName));
     }
     return getBooleanValue(propertyName, defaultValue);
+  }
+
+  public boolean useSsl() {
+    return getBoolean(ConfVars.ZEPPELIN_SSL);
+  }
+
+  public boolean useClientAuth() {
+    return getBoolean(ConfVars.ZEPPELIN_SSL_CLIENT_AUTH);
+  }
+
+  public int getServerPort() {
+    return getInt(ConfVars.ZEPPELIN_PORT);
+  }
+
+  public int getWebSocketPort() {
+    int port = getInt(ConfVars.ZEPPELIN_WEBSOCKET_PORT);
+    if (port < 0) {
+      return getServerPort() + 1;
+    } else {
+      return port;
+    }
+  }
+
+  public String getKeyStorePath() {
+    return getRelativeDir(ConfVars.ZEPPELIN_SSL_KEYSTORE_PATH);
+  }
+
+  public String getKeyStoreType() {
+    return getString(ConfVars.ZEPPELIN_SSL_KEYSTORE_TYPE);
+  }
+
+  public String getKeyStorePassword() {
+    return getString(ConfVars.ZEPPELIN_SSL_KEYSTORE_PASSWORD);
+  }
+
+  public String getKeyManagerPassword() {
+    String password = getString(ConfVars.ZEPPELIN_SSL_KEY_MANAGER_PASSWORD);
+    if (password == null) {
+      return getKeyStorePassword();
+    } else {
+      return password;
+    }
+  }
+
+  public String getTrustStorePath() {
+    String path = getString(ConfVars.ZEPPELIN_SSL_TRUSTSTORE_PATH);
+    if (path == null) {
+      return getKeyStorePath();
+    } else {
+      return getRelativeDir(path);
+    }
+  }
+
+  public String getTrustStoreType() {
+    String type = getString(ConfVars.ZEPPELIN_SSL_TRUSTSTORE_TYPE);
+    if (type == null) {
+      return getKeyStoreType();
+    } else {
+      return type;
+    }
+  }
+
+  public String getTrustStorePassword() {
+    String password = getString(ConfVars.ZEPPELIN_SSL_TRUSTSTORE_PASSWORD);
+    if (password == null) {
+      return getKeyStorePassword();
+    } else {
+      return password;
+    }
   }
 
   public String getNotebookDir() {
@@ -263,6 +333,17 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public static enum ConfVars {
     ZEPPELIN_HOME("zeppelin.home", "../"),
     ZEPPELIN_PORT("zeppelin.server.port", 8080),
+    // negative websocket port denotes that server port + 1 should be used
+    ZEPPELIN_WEBSOCKET_PORT("zeppelin.websocket.port", -1),
+    ZEPPELIN_SSL("zeppelin.ssl", false),
+    ZEPPELIN_SSL_CLIENT_AUTH("zeppelin.ssl.client.auth", false),
+    ZEPPELIN_SSL_KEYSTORE_PATH("zeppelin.ssl.keystore.path", "conf/keystore"),
+    ZEPPELIN_SSL_KEYSTORE_TYPE("zeppelin.ssl.keystore.type", "JKS"),
+    ZEPPELIN_SSL_KEYSTORE_PASSWORD("zeppelin.ssl.keystore.password", ""),
+    ZEPPELIN_SSL_KEY_MANAGER_PASSWORD("zeppelin.ssl.key.manager.password", null),
+    ZEPPELIN_SSL_TRUSTSTORE_PATH("zeppelin.ssl.truststore.path", null),
+    ZEPPELIN_SSL_TRUSTSTORE_TYPE("zeppelin.ssl.truststore.type", null),
+    ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
     ZEPPELIN_WAR("zeppelin.war", "../zeppelin-web/src/main/webapp"),
     ZEPPELIN_API_WAR("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),
     ZEPPELIN_INTERPRETERS("zeppelin.interpreters", "com.nflabs.zeppelin.spark.SparkInterpreter,"
@@ -419,5 +500,4 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       abstract void checkType(String value) throws Exception;
     }
   }
-
 }

@@ -15,20 +15,28 @@
 
 'use strict';
 
-/** get the current port pf the websocket */
+/** get the current port of the websocket 
+  * In the case of running the zeppelin-server normally, 
+  * The body of this function is just filler. It will be dynamically
+  * overridden with the zeppelin-site.xml config value when the client
+  * requests the script. If the config value is not defined, it defaults
+  * to the HTTP port + 1
+  *
+  * At the moment, the key delimiter denoting the end of this function
+  * during the replacement is the '}' character. Avoid using this
+  * character inside the function body  
+  *
+  * In the case of running "grunt serve", this function will appear
+  * as is.
+  */
 function getPort() {
   var port = Number(location.port);
-  /** case of binding default port (80 / 443) */
-  if (port === 'undifined' || port === 0) {
-    port = 80;
-    if (location.protocol === 'https:') {
-      port = 443;
-    }
-  }
-  // brunch port
-  if (port === 3333 || port === 9000) {
-    port = 8080; 
-  }
+  if (location.protocol !== 'https:' && (port === 'undifined' || port === 0)) 
+     port = 80;
+  if (location.protocol === 'https:' && (port === 'undifined' || port === 0))
+    port = 443;
+  if (port === 3333 || port === 9000)
+    port = 8080;
   return port+1;
 }
 
