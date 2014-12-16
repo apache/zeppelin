@@ -14,11 +14,15 @@ angular.module('zeppelinWebApp').directive('resizable', function () {
         scope: {
             callback: '&onResize'
         },
-        link: function postLink(scope, elem) {
-            elem.resizable(resizableConfig);
-            elem.on('resizestop', function () {
-                if (scope.callback) { scope.callback(); }
-            });
+        link: function postLink(scope, elem, attrs) {
+            attrs.$observe('allowresize', function(isAllowed) {
+                if (isAllowed == 'true') {
+                    elem.resizable(resizableConfig);
+                    elem.on('resizestop', function () {
+                        if (scope.callback) { scope.callback(); }
+                    });
+                }
+            })
         }
     };
 });

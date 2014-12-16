@@ -26,7 +26,7 @@ limitations under the License.
            ng-delete="showTitleEditor = false"
            ng-enter="setTitle(); showTitleEditor = false"
            />
-    <div ng-click="showTitleEditor = true"
+    <div ng-click="showTitleEditor = !asIframe && !viewOnly"
          ng-show="!showTitleEditor"
          ng-bind-html="paragraph.title || 'Untitled'">
     </div>
@@ -104,7 +104,7 @@ limitations under the License.
     <!-- Rendering -->
     <div class='tableDisplay' ng-show="!paragraph.config.tableHide">
       <div id="{{paragraph.id}}_switch"
-           ng-if="paragraph.result.type == 'TABLE' && !asIframe"
+           ng-if="paragraph.result.type == 'TABLE' && !asIframe && !viewOnly"
            class="btn-group"
            style='margin-bottom: 10px;'>
         <button type="button" class="btn btn-default btn-sm"
@@ -128,7 +128,7 @@ limitations under the License.
                 ng-click="setGraphMode('lineChart', true)"><i class="fa fa-line-chart"></i>
         </button>
       </div>
-      <span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && !asIframe"
+      <span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && !asIframe && !viewOnly"
             style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
         <a class="btnText" ng-if="paragraph.config.graph.optionOpen"
            ng-click="toggleGraphOption()">
@@ -140,7 +140,9 @@ limitations under the License.
         </a>
       </span>
 
-      <div class="option lightBold" style="overflow: visible;" ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && paragraph.config.graph.optionOpen && !asIframe">
+      <div class="option lightBold" style="overflow: visible;"
+         ng-if="getResultType()=='TABLE' && getGraphMode()!='table'
+         && paragraph.config.graph.optionOpen && !asIframe && !viewOnly">
         All fields:
         <div class="allFields row">
           <ul class="noDot">
@@ -225,7 +227,9 @@ limitations under the License.
            class="graphContainer"
            ng-class="{'noOverflow': getGraphMode()=='table'}"
            ng-if="getResultType()=='TABLE'"
-           resizable on-resize="setGraphHeight();">
+           allowresize="{{!asIframe && !viewOnly}}"
+           resizable on-resize="setGraphHeight();"
+           >
 
         <div ng-if="getGraphMode()=='table'"
              id="p{{paragraph.id}}_table"
