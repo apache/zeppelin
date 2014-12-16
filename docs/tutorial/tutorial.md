@@ -9,7 +9,7 @@ group: tutorial
 
 We will assume you have Zeppelin installed already. If that's not the case, see [Install](../../install/install.md).
 
-Zeppelin uses [Scala](http://www.scala-lang.org) for data analytics. If you're new to the language, you might want to start by getting an idea of what the language is like to get the most out of Zeppelin.
+Zeppelin's current main backend processing engine is [Apache Spark](https://spark.apache.org). If you're new to the system, you might want to start by getting an idea of how it processes data to get the most out of Zeppelin.
 
 <br />
 ### Tutorial with Local File
