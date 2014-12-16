@@ -103,6 +103,7 @@ function check_if_process_is_alive() {
   if ! kill -0 ${pid} >/dev/null 2>&1; then
     action_msg "${ZEPPELIN_NAME} process died" "${SET_ERROR}"
     print_log_for_ci
+    return 1
   fi
 }
 
@@ -110,8 +111,11 @@ function start() {
   local pid
 
   if [[ -f "${ZEPPELIN_PID}" ]]; then
-    action_msg "${ZEPPELIN_NAME} is already running" "${SET_ERROR}"
-    exit 1;
+    pid=$(cat ${ZEPPELIN_PID})
+    if kill -0 ${pid} >/dev/null 2>&1; then
+      echo "${ZEPPELIN_NAME} is already running"
+      return 0;
+    fi
   fi
   
   initialize_default_directories
@@ -119,9 +123,10 @@ function start() {
   nohup nice -n $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_MAIN >> "${ZEPPELIN_OUTFILE}" 2>&1 < /dev/null &
   pid=$!
   if [[ -z "${pid}" ]]; then
-    action_msg "${ZEPPELIN_NAME}" "${SET_ERROR}"
+    action_msg "${ZEPPELIN_NAME} start" "${SET_ERROR}"
+    return 1;
   else
-    action_msg "${ZEPPELIN_NAME}" "${SET_OK}"
+    action_msg "${ZEPPELIN_NAME} start" "${SET_OK}"
     echo ${pid} > ${ZEPPELIN_PID}
   fi
 
@@ -133,16 +138,16 @@ function start() {
 function stop() {
   local pid
   if [[ ! -f "${ZEPPELIN_PID}" ]]; then
-    action_msg "${ZEPPELIN_NAME} is not running" "${SET_ERROR}"
-     exit 1;
+    echo "${ZEPPELIN_NAME} is not running"
+    return 0
   fi
   pid=$(cat ${ZEPPELIN_PID})
   if [[ -z "${pid}" ]]; then
-    action_msg "${ZEPPELIN_NAME} is not running" "${SET_ERROR}"
+    echo "${ZEPPELIN_NAME} is not running"
   else
     wait_for_zeppelin_to_die $pid
     $(rm -f ${ZEPPELIN_PID})
-    action_msg "${ZEPPELIN_NAME}" "${SET_OK}"
+    action_msg "${ZEPPELIN_NAME} stop" "${SET_OK}"
   fi
 }
 
@@ -153,11 +158,13 @@ function find_zeppelin_process() {
     pid=$(cat ${ZEPPELIN_PID})
     if ! kill -0 ${pid} > /dev/null 2>&1; then
       action_msg "${ZEPPELIN_NAME} running but process is dead" "${SET_ERROR}"
+      return 1
     else
       action_msg "${ZEPPELIN_NAME} is running" "${SET_OK}"
     fi
   else
     action_msg "${ZEPPELIN_NAME} is not running" "${SET_ERROR}"
+    return 1
   fi
 }
 
@@ -183,4 +190,3 @@ case "${1}" in
     echo "Usage: $0 {start|stop|restart|reload|status}"
 esac
 
-exit 0
