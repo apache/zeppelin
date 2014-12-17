@@ -56,6 +56,7 @@ public class InterpreterRestApi {
   @Path("setting/remove/{settingId}")
   public Response removeSetting(@PathParam("settingId") String settingId) {
     logger.info("Remove interpreterSetting {}", settingId);
+    interpreterFactory.remove(settingId);
     return new JsonResponse(Status.OK).build();
   }
 
@@ -63,7 +64,9 @@ public class InterpreterRestApi {
   @Path("setting/restart/{settingId}")
   public Response restartSetting(@PathParam("settingId") String settingId) {
     logger.info("Restart interpreterSetting {}", settingId);
-    return new JsonResponse(Status.OK).build();
+    interpreterFactory.restart(settingId);
+    InterpreterSetting setting = interpreterFactory.get(settingId);
+    return new JsonResponse(Status.OK, "", setting).build();
   }
   
   /**

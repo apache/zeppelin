@@ -41,7 +41,6 @@ function getWebsocketProtocol() {
 }
 
 function getRestApiBase() {
-  console.log("location=%o", location);
   var port = Number(location.port);
   if (port === 'undefined' || port === 0) {
     port = 80;

@@ -24,6 +24,17 @@
  * Controller of interpreter, manage the note (update)
  */
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http) {
+
+  var remoteSettingToLocalSetting = function(settingId, setting) {
+    return {
+      id : settingId,
+      name : setting.name,
+      group : setting.group,
+      properties : setting.properties,
+      interpreters : setting.interpreterGroup
+    }
+  };
+
   var getInterpreterSettings = function() {
     $http.get(getRestApiBase()+"/interpreter/setting").
       success(function(data, status, headers, config) {
@@ -32,13 +43,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
 
         for (var settingId in data.body) {
           var setting = data.body[settingId];
-          interpreterSettings.push({
-              id : settingId,
-              name : setting.name,
-              group : setting.group,
-              properties : setting.properties,
-              interpreters : setting.interpreterGroup
-          });
+          interpreterSettings.push(remoteSettingToLocalSetting(settingId, setting));
         }
 
         $scope.interpreterSettings = interpreterSettings;
@@ -74,9 +79,21 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   };
 
   $scope.removeInterpreterSetting = function(settingId) {
+    var result = confirm('Do you want to delete this interpreter setting?');
+    if (!result) {
+      return;
+    }
+
     console.log("Delete setting %o", settingId);
-    $http.get(getRestApiBase()+"/setting/remove/"+settingId).
+    $http.get(getRestApiBase()+"/interpreter/setting/remove/"+settingId).
       success(function(data, status, headers, config) {
+        for (var i=0; i < $scope.interpreterSettings.length; i++) {
+          var setting = $scope.interpreterSettings[i];
+          if (setting.id === settingId) {
+            $scope.interpreterSettings.splice(i, 1);
+            break;
+          }
+        }
       }).
       error(function(data, status, headers, config) {
         console.log("Error %o %o", status, data.message);
@@ -84,7 +101,28 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   };
 
   $scope.restartInterpreterSetting = function(settingId) {
+    var result = confirm('Do you want to restart this interpreter setting?');
+    if (!result) {
+      return;
+    }
+
     console.log("Restart setting %o", settingId);
+    $http.get(getRestApiBase()+"/interpreter/setting/restart/"+settingId).
+      success(function(data, status, headers, config) {
+        for (var i=0; i < $scope.interpreterSettings.length; i++) {
+          var setting = $scope.interpreterSettings[i];
+          if (setting.id === settingId) {
+            $scope.interpreterSettings.splice(i, 1);
+            console.log("body=%o", data.body);
+            $scope.interpreterSettings.splice(i, 0, remoteSettingToLocalSetting(settingId, data.body));
+            break;
+          }
+        }
+      }).
+      error(function(data, status, headers, config) {
+        console.log("Error %o %o", status, data.message);
+      })    
+
   };
 
   var init = function() {
@@ -96,7 +134,4 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   };
 
   init();
-
-
-
 });
