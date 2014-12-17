@@ -19,22 +19,40 @@ limitations under the License.
     <h1 class="box-heading">
       Interpreters
     </h1>
-    Create interpreters
-    <div class="row">
-      <div class="col-md-6">
-        <h4>Available Interpreters</h4>
+    <div class="row interpreter">
+      <div class="col-md-12">
+        <span><h4>Settings</h4></span> 
+        <span class="btn btn-default fa fa-plus"> Add new setting</span>
         <ul>
-          <li ng-repeat="setting in interpreterSettings">
-            {{setting.name}}
+          <li class="setting"
+               ng-repeat="setting in interpreterSettings">
+            <h5>{{setting.name}}</h5>
+            <div>
+              <button class="btn btn-default btn-xs"
+                      ng-click="restartInterpreterSetting(setting.id)">restart</button>
+              <button class="btn btn-default btn-xs"
+                      ng-click="removeInterpreterSetting(setting.id)">remove</button>
+            </div>
+            <b>Interpreters</b>
             <ul>
-              <li ng-repeat="interpreter in setting.interpreters">
+              <li class="interpreterInfo"
+                  ng-repeat="interpreter in setting.interpreters">
                 {{interpreter.class}}
               </li>
             </ul>
+
+            <br />
+            <b>Properties</b>            
+            <table>
+              <tr class="interpreterProperty"
+                  ng-repeat="(key, value) in setting.properties">
+                <td class="interpreterPropertyKey">{{key}}</td>
+                <td class="interpreterPropertyValue">{{value}}</td>
+              </tr>
+            </table>
+            <br /><br />
           </li>
         </ul>
-      </div>
-      <div class="col-md-6">
       </div>
     </div>
   </div>

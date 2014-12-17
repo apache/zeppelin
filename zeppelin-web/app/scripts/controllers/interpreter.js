@@ -25,16 +25,18 @@
  */
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http) {
   var getInterpreterSettings = function() {
-    $http.get(getRestApiBase()+"/interpreter/settings/list").
+    $http.get(getRestApiBase()+"/interpreter/setting").
       success(function(data, status, headers, config) {
         var interpreterSettings = [];
-        console.log("data=%o", data);
+        console.log("getInterpreterSettings=%o", data);
+
         for (var settingId in data.body) {
           var setting = data.body[settingId];
           interpreterSettings.push({
               id : settingId,
               name : setting.name,
               group : setting.group,
+              properties : setting.properties,
               interpreters : setting.interpreterGroup
           });
         }
@@ -46,10 +48,51 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       })
   };
 
+
+  var getAvailableInterpreters = function() {
+    $http.get(getRestApiBase()+"/interpreter/interpreter").
+      success(function(data, status, headers, config) {
+        var groupedInfo = {};
+        var info;
+        for (var k in data.body) {
+          info = data.body[k];
+          if (!groupedInfo[info.group]) {
+            groupedInfo[info.group] = [];
+          }
+          groupedInfo[info.group].push({
+            name : info.name,
+            className : info.className
+          });
+        }
+
+        $scope.availableInterpreters = groupedInfo;
+        console.log("getAvailableInterpreters=%o", data);
+      }).
+      error(function(data, status, headers, config) {
+        console.log("Error %o %o", status, data.message);
+      })
+  };
+
+  $scope.removeInterpreterSetting = function(settingId) {
+    console.log("Delete setting %o", settingId);
+    $http.get(getRestApiBase()+"/setting/remove/"+settingId).
+      success(function(data, status, headers, config) {
+      }).
+      error(function(data, status, headers, config) {
+        console.log("Error %o %o", status, data.message);
+      })    
+  };
+
+  $scope.restartInterpreterSetting = function(settingId) {
+    console.log("Restart setting %o", settingId);
+  };
+
   var init = function() {
     $scope.interpreterSettings = [];
-    console.log("Get interp settings");
+    $scope.availableInterpreters = {};
+
     getInterpreterSettings();
+    getAvailableInterpreters();
   };
 
   init();

@@ -1,0 +1,29 @@
+.interpreter ul {
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+}
+
+.interpreter .setting {
+  list-style-type: none;
+  border-top: 1px solid gray;
+  margin: 5px 0px 5px 0px;
+}
+
+.interpreter .interpreterInfo {
+  list-style-type: none;
+}
+
+.interpreter table tr td {
+  border:1px solid #EFEFEF;
+}
+
+.interpreter table tr .interpreterPropertyKey {
+  padding : 5px 5px 5px 5px;
+}
+
+.interpreter table tr .interpreterPropertyValue {
+  padding : 5px 5px 5px 5px;
+  display: block;
+  max-height: 200px;
+  overflow-y: auto;
+}

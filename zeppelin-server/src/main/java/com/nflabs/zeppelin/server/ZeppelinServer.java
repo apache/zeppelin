@@ -42,8 +42,7 @@ public class ZeppelinServer extends Application {
   private SchedulerFactory schedulerFactory;
   public static Notebook notebook;
   static com.nflabs.zeppelin.socket.NotebookServer websocket;
-
-  private InterpreterFactory replFactory;
+  private static InterpreterFactory replFactory;
 
   public static void main(String[] args) throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -186,7 +185,7 @@ public class ZeppelinServer extends Application {
 
     this.schedulerFactory = new SchedulerFactory();
 
-    this.replFactory = new InterpreterFactory(conf);
+    replFactory = new InterpreterFactory(conf);
     notebook = new Notebook(conf, schedulerFactory, replFactory, websocket);
   }
 
