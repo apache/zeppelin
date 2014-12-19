@@ -1,6 +1,12 @@
 package com.nflabs.zeppelin.interpreter;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
@@ -18,6 +24,9 @@ import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
@@ -37,17 +46,24 @@ public class InterpreterFactory {
 
   private Map<String, InterpreterSetting> interpreterSettings = 
       new HashMap<String, InterpreterSetting>();
+
+  private Gson gson;
   
-  public InterpreterFactory(ZeppelinConfiguration conf) {
+  public InterpreterFactory(ZeppelinConfiguration conf) throws InterpreterException, IOException {
     this.conf = conf;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
     interpreterClassList = replsConf.split(",");
 
+    GsonBuilder builder = new GsonBuilder();
+    builder.setPrettyPrinting();
+    builder.registerTypeAdapter(Interpreter.class, new InterpreterSerializer()); 
+    gson = builder.create();
+    
     init();
   }
 
 
-  private void init() {
+  private void init() throws InterpreterException, IOException {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 
     // Load classes
@@ -134,12 +150,64 @@ public class InterpreterFactory {
     }
   }
   
-  private void loadFromFile() {
-   // TODO(moon): Implement
+  private void loadFromFile() throws IOException {
+    GsonBuilder builder = new GsonBuilder();
+    builder.setPrettyPrinting();
+    builder.registerTypeAdapter(Interpreter.class, new InterpreterSerializer()); 
+    Gson gson = builder.create();
+
+    File settingFile = new File(conf.getInterpreterSettingPath());
+    if (!settingFile.exists()) {
+      // nothing to read
+      return;
+    }
+    FileInputStream fis = new FileInputStream(settingFile);
+    InputStreamReader isr = new InputStreamReader(fis);
+    BufferedReader bufferedReader = new BufferedReader(isr);
+    StringBuilder sb = new StringBuilder();
+    String line;
+    while ((line = bufferedReader.readLine()) != null) {
+        sb.append(line);
+    }
+    isr.close();
+    fis.close();
+
+    String json = sb.toString();
+    Map<String, Map<String, Object>> settings = gson.fromJson(json, new TypeToken<Map<String, Object>>(){}.getType());
+
+    for (String k : settings.keySet()) {
+      Map<String, Object> set = settings.get(k);
+
+      String id = (String)set.get("id");
+      String name = (String)set.get("name");
+      String group = (String)set.get("group");
+      Properties properties = new Properties();
+      properties.putAll((Map<String, String>) set.get("properties"));
+
+      InterpreterGroup interpreterGroup = createInterpreterGroup(group, properties);
+      InterpreterSetting intpSetting = new InterpreterSetting(id, name, group, interpreterGroup);
+      interpreterSettings.put(k, intpSetting);
+    }
   }
+
   
-  private void saveToFile() {
-    // TODO(moon): Implement
+  private void saveToFile() throws IOException {
+    String jsonString;
+    
+    synchronized (interpreterSettings) {
+      jsonString = gson.toJson(interpreterSettings);
+    }
+    
+    File settingFile = new File(conf.getInterpreterSettingPath());
+    if (!settingFile.exists()) {
+      settingFile.createNewFile();
+    }
+    
+    FileOutputStream fos = new FileOutputStream(settingFile, false);
+    OutputStreamWriter out = new OutputStreamWriter(fos);
+    out.append(jsonString);
+    out.close();
+    fos.close();
   }
 
   private RegisteredInterpreter getRegisteredReplInfoFromClassName(String clsName) {
@@ -159,9 +227,10 @@ public class InterpreterFactory {
    * @param properties
    * @return
    * @throws InterpreterException
+   * @throws IOException
    */
   public InterpreterGroup add(String name, String groupName, Properties properties)
-      throws InterpreterException {
+      throws InterpreterException, IOException {
     synchronized (interpreterSettings) {      
       InterpreterGroup interpreterGroup = createInterpreterGroup(groupName, properties);
 
@@ -199,7 +268,7 @@ public class InterpreterFactory {
     return interpreterGroup;
   }    
   
-  public void remove(String id) {
+  public void remove(String id) throws IOException {
     synchronized (interpreterSettings) {
       if (interpreterSettings.containsKey(id)) {
         InterpreterSetting intp = interpreterSettings.remove(id);

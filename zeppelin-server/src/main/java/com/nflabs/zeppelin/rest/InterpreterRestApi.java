@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.rest;
 
+import java.io.IOException;
 import java.util.Map;
 
 import javax.ws.rs.DELETE;
@@ -54,7 +55,7 @@ public class InterpreterRestApi {
 
   @GET
   @Path("setting/remove/{settingId}")
-  public Response removeSetting(@PathParam("settingId") String settingId) {
+  public Response removeSetting(@PathParam("settingId") String settingId) throws IOException {
     logger.info("Remove interpreterSetting {}", settingId);
     interpreterFactory.remove(settingId);
     return new JsonResponse(Status.OK).build();

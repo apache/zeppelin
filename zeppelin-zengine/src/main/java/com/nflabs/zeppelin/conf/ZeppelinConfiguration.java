@@ -241,6 +241,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_DIR);
   }
 
+  public String getInterpreterSettingPath() {
+    return getRelativeDir("conf/interpreter-settings.json");
+  }
+
   public String getRelativeDir(ConfVars c) {
     return getRelativeDir(getString(c));
   }

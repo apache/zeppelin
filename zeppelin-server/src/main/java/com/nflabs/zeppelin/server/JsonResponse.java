@@ -8,6 +8,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterSerializer;
 
 /**
  * Json response builder.
