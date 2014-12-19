@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
+
 <div id="{{paragraph.id}}_container"
      ng-class="{'paragraph outlineOnFocus': !asIframe, 'paragraphAsIframe': asIframe}">
 
@@ -24,9 +25,8 @@ limitations under the License.
            ng-model="paragraph.title"
            ng-show="showTitleEditor"
            ng-delete="showTitleEditor = false"
-           ng-enter="setTitle(); showTitleEditor = false"
-           />
-    <div ng-click="showTitleEditor = true"
+           ng-enter="setTitle(); showTitleEditor = false"/>
+    <div ng-click="showTitleEditor = !asIframe && !viewOnly"
          ng-show="!showTitleEditor"
          ng-bind-html="paragraph.title || 'Untitled'">
     </div>
@@ -38,9 +38,9 @@ limitations under the License.
            style="opacity: 1;"
            class="editor"
            ui-ace="{
-                       onLoad : aceLoaded,
-                       onChange: aceChanged,
-                       require : ['ace/ext/language_tools']
+                     onLoad : aceLoaded,
+                     onChange: aceChanged,
+                     require : ['ace/ext/language_tools']
                    }"
            ng-model="paragraph.text"
            ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">
@@ -63,7 +63,6 @@ limitations under the License.
         </div>
       </div>
     </div>
-
 
     <form id="{{paragraph.id}}_form" role="form"
           ng-show="!paragraph.config.tableHide && !asIframe"
@@ -104,7 +103,7 @@ limitations under the License.
     <!-- Rendering -->
     <div class='tableDisplay' ng-show="!paragraph.config.tableHide">
       <div id="{{paragraph.id}}_switch"
-           ng-if="paragraph.result.type == 'TABLE' && !asIframe"
+           ng-if="paragraph.result.type == 'TABLE' && !asIframe && !viewOnly"
            class="btn-group"
            style='margin-bottom: 10px;'>
         <button type="button" class="btn btn-default btn-sm"
@@ -128,7 +127,7 @@ limitations under the License.
                 ng-click="setGraphMode('lineChart', true)"><i class="fa fa-line-chart"></i>
         </button>
       </div>
-      <span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && !asIframe"
+      <span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && !asIframe && !viewOnly"
             style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
         <a class="btnText" ng-if="paragraph.config.graph.optionOpen"
            ng-click="toggleGraphOption()">
@@ -140,17 +139,18 @@ limitations under the License.
         </a>
       </span>
 
-      <div class="option lightBold" style="overflow: visible;" ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && paragraph.config.graph.optionOpen && !asIframe">
+      <div class="option lightBold" style="overflow: visible;"
+         ng-if="getResultType()=='TABLE' && getGraphMode()!='table'
+         && paragraph.config.graph.optionOpen && !asIframe && !viewOnly">
         All fields:
         <div class="allFields row">
           <ul class="noDot">
             <li class="liVertical" ng-repeat="col in paragraph.result.columnNames">
               <div class="btn btn-default btn-xs"
-                      data-drag="true"
-                      data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
-                      ng-model="paragraph.result.columnNames"
-                      jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}"
-              >
+                   data-drag="true"
+                   data-jqyoui-options="{revert: 'invalid', helper: 'clone'}"
+                   ng-model="paragraph.result.columnNames"
+                   jqyoui-draggable="{index: {{$index}}, placeholder: 'keep'}">
                  {{col.name | limitTo: 30}}{{col.name.length > 30 ? '...' : ''}}
               </div>
             </li>
@@ -225,6 +225,7 @@ limitations under the License.
            class="graphContainer"
            ng-class="{'noOverflow': getGraphMode()=='table'}"
            ng-if="getResultType()=='TABLE'"
+           allowresize="{{!asIframe && !viewOnly}}"
            resizable on-resize="setGraphHeight();">
 
         <div ng-if="getGraphMode()=='table'"
@@ -308,9 +309,9 @@ limitations under the License.
           ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
 
     <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" tooltip-placement="top" tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide') + ' editor'}}"
-      ng-click="toggleEditor()"></span>
+          ng-click="toggleEditor()"></span>
     <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
-      ng-click="toggleOutput()"></span>
+          ng-click="toggleOutput()"></span>
 
     <span class="dropdown navbar-right">
       <span class="icon-settings" style="cursor:pointer"
@@ -322,42 +323,41 @@ limitations under the License.
           <a class="fa fa-arrows-h dropdown"> Width
           <form style="display:inline; margin-left:5px;">
             <select ng-model="paragraph.config.colWidth"
-              class="selectpicker"
-              ng-change="changeColWidth()"
-              ng-options="col for col in colWidthOption"></select>
+                    class="selectpicker"
+                    ng-change="changeColWidth()"
+                    ng-options="col for col in colWidthOption"></select>
           </form>
           </a>
         </li>
         <li>
           <a class="icon-arrow-up" style="cursor:pointer"
-          ng-click="moveUp()"> Move Up</a>
+             ng-click="moveUp()"> Move Up</a>
         </li>
         <li>
           <a class="icon-arrow-down" style="cursor:pointer"
-          ng-click="moveDown()"> Move Down</a>
+             ng-click="moveDown()"> Move Down</a>
         </li>
         <li>
           <a class="icon-plus" style="cursor:pointer"
-          ng-click="insertNew()"> Insert New</a>
+             ng-click="insertNew()"> Insert New</a>
         </li>
         <li>
           <!-- paragraph handler -->
           <a class="fa fa-font" style="cursor:pointer"
-                ng-click="hideTitle()"
-                ng-show="paragraph.config.title"> Hide title</a>
+             ng-click="hideTitle()"
+             ng-show="paragraph.config.title"> Hide title</a>
           <a class="fa fa-font" style="cursor:pointer"
-                ng-click="showTitle()"
-                ng-show="!paragraph.config.title"> Show title</a>
+             ng-click="showTitle()"
+             ng-show="!paragraph.config.title"> Show title</a>
         </li>
 
         <li><a class="icon-share-alt" style="cursor:pointer"
-          ng-click="goToSingleParagraph()"
-          ng-show="!asIframe"> Link this paragraph</a>
+               ng-click="goToSingleParagraph()"> Link this paragraph</a>
         </li>
         <li>
           <!-- remove paragraph -->
           <a class="fa fa-times" style="cursor:pointer"
-            ng-click="removeParagraph()"> Remove</a>
+             ng-click="removeParagraph()"> Remove</a>
         </li>
       </ul>
     </span>

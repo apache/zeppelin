@@ -1,23 +1,17 @@
 package com.nflabs.zeppelin.server;
 
-import java.io.File;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.servlet.DispatcherType;
-import javax.ws.rs.core.Application;
-
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.session.SessionHandler;
+import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +22,19 @@ import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.notebook.Notebook;
 import com.nflabs.zeppelin.rest.InterpreterRestApi;
 import com.nflabs.zeppelin.rest.ZeppelinRestApi;
+import com.nflabs.zeppelin.socket.NotebookServer;
+import com.nflabs.zeppelin.socket.SslWebSocketServerFactory;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
+import com.wordnik.swagger.jersey.config.JerseyJaxrsConfig;
+
+import java.io.File;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.net.ssl.SSLContext;
+import javax.servlet.DispatcherType;
+import javax.ws.rs.core.Application;
 
 /**
  * Main class of Zeppelin.
@@ -36,71 +42,130 @@ import com.nflabs.zeppelin.scheduler.SchedulerFactory;
  * @author Leemoonsoo
  *
  */
+
 public class ZeppelinServer extends Application {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
 
   private SchedulerFactory schedulerFactory;
   public static Notebook notebook;
-  static com.nflabs.zeppelin.socket.NotebookServer websocket;
-  private static InterpreterFactory replFactory;
+
+  static NotebookServer notebookServer;
+
+  private InterpreterFactory replFactory;
 
   public static void main(String[] args) throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     conf.setProperty("args", args);
 
-    int port = conf.getInt(ConfVars.ZEPPELIN_PORT);
-    final Server server = setupJettyServer(port);
-    websocket = new com.nflabs.zeppelin.socket.NotebookServer(port + 1);
+    final Server jettyServer = setupJettyServer(conf);
+    notebookServer = setupNotebookServer(conf);
 
     // REST api
     final ServletContextHandler restApi = setupRestApiContextHandler();
-    /**
-     * NOTE: Swagger-core is included via the web.xml in zeppelin-web But the rest of swagger is
-     * configured here
+    /** NOTE: Swagger-core is included via the web.xml in zeppelin-web
+     * But the rest of swagger is configured here
      */
-    final ServletContextHandler swagger = setupSwaggerContextHandler(port);
+    final ServletContextHandler swagger = setupSwaggerContextHandler(conf);
+
     // Web UI
     final WebAppContext webApp = setupWebAppContext(conf);
     final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
 
     // add all handlers
     ContextHandlerCollection contexts = new ContextHandlerCollection();
-    contexts.setHandlers(new Handler[] {swagger, restApi, webApp, webAppSwagg});
-    server.setHandler(contexts);
+    contexts.setHandlers(new Handler[]{swagger, restApi, webApp, webAppSwagg});
+    jettyServer.setHandler(contexts);
 
-
-    websocket.start();
+    notebookServer.start();
     LOG.info("Start zeppelin server");
-    server.start();
+    jettyServer.start();
     LOG.info("Started");
 
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
+    Runtime.getRuntime().addShutdownHook(new Thread(){
+      @Override public void run() {
         LOG.info("Shutting down Zeppelin Server ... ");
         try {
-          server.stop();
-          websocket.stop();
+          jettyServer.stop();
+          notebookServer.stop();
         } catch (Exception e) {
           LOG.error("Error while stopping servlet container", e);
         }
         LOG.info("Bye");
       }
     });
-    server.join();
+    jettyServer.join();
   }
 
-  private static Server setupJettyServer(int port) {
-    int timeout = 1000 * 30;
-    final Server server = new Server();
-    SocketConnector connector = new SocketConnector();
+  private static Server setupJettyServer(ZeppelinConfiguration conf)
+      throws Exception {
+
+    SocketConnector connector;
+    if (conf.useSsl()) {
+      connector = new SslSocketConnector(getSslContextFactory(conf));
+    }
+    else {
+      connector = new SocketConnector();
+    }
 
     // Set some timeout options to make debugging easier.
+    int timeout = 1000 * 30;
     connector.setMaxIdleTime(timeout);
     connector.setSoLingerTime(-1);
-    connector.setPort(port);
+    connector.setPort(conf.getServerPort());
+
+    final Server server = new Server();
     server.addConnector(connector);
+
     return server;
+  }
+
+  private static NotebookServer setupNotebookServer(ZeppelinConfiguration conf)
+      throws Exception {
+
+    NotebookServer server = new NotebookServer(conf.getWebSocketPort());
+
+    // Default WebSocketServer uses unecrypted connector, so only need to
+    // change the connector if SSL should be used.
+    if (conf.useSsl()) {
+      SslWebSocketServerFactory wsf = new SslWebSocketServerFactory(getSslContext(conf));
+      wsf.setNeedClientAuth(conf.useClientAuth());
+      server.setWebSocketFactory(wsf);
+    }
+
+    return server;
+  }
+
+  private static SslContextFactory getSslContextFactory(ZeppelinConfiguration conf)
+      throws Exception {
+
+    // Note that the API for the SslContextFactory is different for
+    // Jetty version 9
+    SslContextFactory sslContextFactory = new SslContextFactory();
+
+    // Set keystore
+    sslContextFactory.setKeyStore(conf.getKeyStorePath());
+    sslContextFactory.setKeyStoreType(conf.getKeyStoreType());
+    sslContextFactory.setKeyStorePassword(conf.getKeyStorePassword());
+    sslContextFactory.setKeyManagerPassword(conf.getKeyManagerPassword());
+
+    // Set truststore
+    sslContextFactory.setTrustStore(conf.getTrustStorePath());
+    sslContextFactory.setTrustStoreType(conf.getTrustStoreType());
+    sslContextFactory.setTrustStorePassword(conf.getTrustStorePassword());
+
+    sslContextFactory.setNeedClientAuth(conf.useClientAuth());
+
+    return sslContextFactory;
+  }
+
+  private static SSLContext getSslContext(ZeppelinConfiguration conf)
+      throws Exception {
+
+    SslContextFactory scf = getSslContextFactory(conf);
+    if (!scf.isStarted()) {
+      scf.start();
+    }
+    return scf.getSslContext();
   }
 
   private static ServletContextHandler setupRestApiContextHandler() {
@@ -124,13 +189,17 @@ public class ZeppelinServer extends Application {
    *
    * @return ServletContextHandler of Swagger
    */
-  private static ServletContextHandler setupSwaggerContextHandler(int port) {
+  private static ServletContextHandler setupSwaggerContextHandler(
+    ZeppelinConfiguration conf) {
+  
     // Configure Swagger-core
     final ServletHolder swaggerServlet =
-        new ServletHolder(new com.wordnik.swagger.jersey.config.JerseyJaxrsConfig());
+        new ServletHolder(new JerseyJaxrsConfig());
     swaggerServlet.setName("JerseyJaxrsConfig");
     swaggerServlet.setInitParameter("api.version", "1.0.0");
-    swaggerServlet.setInitParameter("swagger.api.basepath", "http://localhost:" + port + "/api");
+    swaggerServlet.setInitParameter(
+        "swagger.api.basepath", 
+        "http://localhost:" + conf.getServerPort() + "/api");
     swaggerServlet.setInitOrder(2);
 
     // Setup the handler
@@ -143,19 +212,26 @@ public class ZeppelinServer extends Application {
     return handler;
   }
 
-  private static WebAppContext setupWebAppContext(ZeppelinConfiguration conf) {
+  private static WebAppContext setupWebAppContext(
+      ZeppelinConfiguration conf) {
+    
     WebAppContext webApp = new WebAppContext();
-    File webapp = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
-    if (webapp.isDirectory()) { // Development mode, read from FS
-      // webApp.setDescriptor(webapp+"/WEB-INF/web.xml");
-      webApp.setResourceBase(webapp.getPath());
+    File warPath = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
+    if (warPath.isDirectory()) {
+      // Development mode, read from FS
+      // webApp.setDescriptor(warPath+"/WEB-INF/web.xml");
+      webApp.setResourceBase(warPath.getPath());
       webApp.setContextPath("/");
       webApp.setParentLoaderPriority(true);
-    } else { // use packaged WAR
-      webApp.setWar(webapp.getAbsolutePath());
+    } else {
+      // use packaged WAR
+      webApp.setWar(warPath.getAbsolutePath());
     }
     // Explicit bind to root
-    webApp.addServlet(new ServletHolder(new DefaultServlet()), "/*");
+    webApp.addServlet(
+      new ServletHolder(new AppScriptServlet(conf.getWebSocketPort())),
+      "/*"
+    );
     return webApp;
   }
 
@@ -164,14 +240,16 @@ public class ZeppelinServer extends Application {
    *
    * @return WebAppContext with swagger ui context
    */
-  private static WebAppContext setupWebAppSwagger(ZeppelinConfiguration conf) {
-    WebAppContext webApp = new WebAppContext();
-    File webapp = new File(conf.getString(ConfVars.ZEPPELIN_API_WAR));
+  private static WebAppContext setupWebAppSwagger(
+      ZeppelinConfiguration conf) {
 
-    if (webapp.isDirectory()) {
-      webApp.setResourceBase(webapp.getPath());
+    WebAppContext webApp = new WebAppContext();
+    File warPath = new File(conf.getString(ConfVars.ZEPPELIN_API_WAR));
+
+    if (warPath.isDirectory()) {
+      webApp.setResourceBase(warPath.getPath());
     } else {
-      webApp.setWar(webapp.getAbsolutePath());
+      webApp.setWar(warPath.getAbsolutePath());
     }
     webApp.setContextPath("/docs");
     webApp.setParentLoaderPriority(true);
@@ -185,8 +263,8 @@ public class ZeppelinServer extends Application {
 
     this.schedulerFactory = new SchedulerFactory();
 
-    replFactory = new InterpreterFactory(conf);
-    notebook = new Notebook(conf, schedulerFactory, replFactory, websocket);
+    this.replFactory = new InterpreterFactory(conf);
+    notebook = new Notebook(conf, schedulerFactory, replFactory, notebookServer);
   }
 
   @Override
@@ -208,5 +286,5 @@ public class ZeppelinServer extends Application {
 
     return singletons;
   }
-
 }
+

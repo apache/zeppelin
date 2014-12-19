@@ -20,6 +20,7 @@ We are following Google Code style:
 * [Shell style](https://google-styleguide.googlecode.com/svn/trunk/shell.xml)
 
 Checkstyle report location are in `${submodule}/target/site/checkstyle.html`
+Test coverage report location are in `${submodule}/target/site/cobertura/index.html`
 
 #### Build Tools
 

@@ -66,3 +66,9 @@ body {
 .noteAction:hover span, .noteAction:hover button, .noteAction:hover form {
   visibility : visible;
 }
+
+.editor,
+.executionTime,
+.nv-controlsWrap {
+  display:block;
+}
