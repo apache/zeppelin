@@ -32,23 +32,26 @@ limitations under the License.
             <button type="button"
                     class="btn btn-default btn-xs"
                     ng-click="toggleAllEditor()"
+                    ng-hide="viewOnly"
                     tooltip-placement="top" tooltip="Show/hide the code">
               <i ng-class="editorToggled ? 'fa icon-size-actual' : 'fa icon-size-fullscreen'"></i></button>
 
             <button type="button"
                     class="btn btn-default btn-xs"
                     ng-click="toggleAllTable()"
+                    ng-hide="viewOnly"
                     tooltip-placement="top" tooltip="Show/hide the output">
               <i ng-class="tableToggled ? 'fa icon-notebook' : 'fa icon-book-open'"></i></button>
 
             <button type="button"
                     class="btn btn-default btn-xs"
                     ng-click="removeNote(note.id)"
+                    ng-hide="viewOnly"
                     tooltip-placement="top" tooltip="Remove the notebook">
               <i class="icon-trash"></i></button>
           </span>
 
-          <span>
+          <span ng-hide="viewOnly">
             <div class="labelBtn btn-group">
               <div class="btn btn-default btn-xs dropdown-toggle"
                    type="button"
@@ -116,14 +119,12 @@ limitations under the License.
        ng-repeat="currentParagraph in note.paragraphs"
        ng-controller="ParagraphCtrl"
        ng-Init="init(currentParagraph)"
-       ng-class="{
-                    'paragraph-col col-md-12': !currentParagraph.config.colWidth || paragraphUrl,
-                    'paragraph-col col-md-{{currentParagraph.config.colWidth}}': currentParagraph.config.colWidth && !paragraphUrl
-                  }">
+       ng-class="columnWidthClass(currentParagraph.config.colWidth)"
+       class="paragraph-col">
     <div id="{{currentParagraph.id}}_paragraphColumn"
          ng-include src="'views/paragraph.html'"
          ng-class="{'paragraph-space box paragraph-margin': !asIframe}"
-         ng-show="!(currentParagraph.config.tableHide && viewOnly)">
+         ng-hide="currentParagraph.config.tableHide && viewOnly">
     </div>
   </div>
   <div style="clear:both;height:10px"></div>
