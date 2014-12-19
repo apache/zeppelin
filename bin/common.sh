@@ -22,6 +22,8 @@
 FWDIR="$(cd $(dirname "$0"); pwd)"
 
 if [[ -z "${ZEPPELIN_HOME}" ]]; then
+  # Make ZEPPELIN_HOME look cleaner in logs by getting rid of the
+  # extra ../
   export ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
 fi
 
@@ -69,7 +71,9 @@ ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 
 function addJarInDir(){
   if [[ -d "${1}" ]]; then
-    for jar in $(find -L "${1}" -maxdepth 1 -name '*jar'); do
+    # Add jars such that they appear in sorted order in the classpath, which
+    # makes dependency resolution more predictable
+    for jar in $(find -L "${1}" -maxdepth 1 -name '*jar' | sort -r); do
       ZEPPELIN_CLASSPATH=$jar:$ZEPPELIN_CLASSPATH
     done
   fi
