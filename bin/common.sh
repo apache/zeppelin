@@ -47,7 +47,7 @@ if [[ -z "${ZEPPELIN_WAR}" ]]; then
   if [[ -d "${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp" ]]; then
     export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp"
   else
-    export ZEPPELIN_WAR=$(find -L ${ZEPPELIN_HOME} -name "zeppelin-web*.war")
+    export ZEPPELIN_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web*.war")
   fi
 fi
 
@@ -55,7 +55,7 @@ if [[ -z "${ZEPPELIN_API_WAR}" ]]; then
   if [[ -d "${ZEPPELIN_HOME}/zeppelin-docs/src/main/swagger" ]]; then
     export ZEPPELIN_API_WAR="${ZEPPELIN_HOME}/zeppelin-docs/src/main/swagger"
   else
-    export ZEPPELIN_API_WAR=$(find -L ${ZEPPELIN_HOME}/ -name "zeppelin-api-ui*.war")
+    export ZEPPELIN_API_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-api-ui*.war")
   fi
 fi
 
@@ -71,14 +71,12 @@ ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 
 function addJarInDir(){
   if [[ -d "${1}" ]]; then
-    # Add jars such that they appear in sorted order in the classpath, which
-    # makes dependency resolution more predictable
-    for jar in $(find -L "${1}" -maxdepth 1 -name '*jar' | sort -r); do
-      ZEPPELIN_CLASSPATH=$jar:$ZEPPELIN_CLASSPATH
+    for jar in $(find -L "${1}" -maxdepth 1 -name '*jar'); do
+      ZEPPELIN_CLASSPATH="$jar:$ZEPPELIN_CLASSPATH"
     done
   fi
 }
-
+  
 addJarInDir "${ZEPPELIN_HOME}"
 addJarInDir "${ZEPPELIN_HOME}/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
@@ -93,18 +91,17 @@ if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
   ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
 fi
 
+if [[ ! -z "${SPARK_HOME}" ]] && [[ -d "${SPARK_HOME}" ]]; then
+  addJarInDir "${SPARK_HOME}"
+fi
+
 if [[ ! -z "${HADOOP_HOME}" ]] && [[ -d "${HADOOP_HOME}" ]]; then
   addJarInDir "${HADOOP_HOME}"
 fi
 
-if [[ ! -z "${SPARK_HOME}" ]] && [[ -d "${SPARK_HOME}" ]]; then
-  addJarInDir "${SPARK_HOME}"
-  addJarInDir "${SPARK_HOME}/lib"
-fi
-
 export ZEPPELIN_CLASSPATH
-export SPARK_CLASSPATH+=${ZEPPELIN_CLASSPATH}
-export CLASSPATH+=${ZEPPELIN_CLASSPATH}
+export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+export CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
 # Text encoding for 
 # read/write job into files,
@@ -126,7 +123,7 @@ else
   ZEPPELIN_RUNNER=java
 fi
 
-export RUNNER
+export ZEPPELIN_RUNNER
 
 if [[ -z "$ZEPPELIN_IDENT_STRING" ]]; then
   export ZEPPELIN_IDENT_STRING="${USER}"
