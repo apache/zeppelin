@@ -167,20 +167,21 @@ public class InterpreterFactory {
     StringBuilder sb = new StringBuilder();
     String line;
     while ((line = bufferedReader.readLine()) != null) {
-        sb.append(line);
+      sb.append(line);
     }
     isr.close();
     fis.close();
 
     String json = sb.toString();
-    Map<String, Map<String, Object>> settings = gson.fromJson(json, new TypeToken<Map<String, Object>>(){}.getType());
+    Map<String, Map<String, Object>> settings = gson.fromJson(json,
+        new TypeToken<Map<String, Object>>() {}.getType());
 
     for (String k : settings.keySet()) {
       Map<String, Object> set = settings.get(k);
 
-      String id = (String)set.get("id");
-      String name = (String)set.get("name");
-      String group = (String)set.get("group");
+      String id = (String) set.get("id");
+      String name = (String) set.get("name");
+      String group = (String) set.get("group");
       Properties properties = new Properties();
       properties.putAll((Map<String, String>) set.get("properties"));
 

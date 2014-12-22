@@ -13,8 +13,19 @@
   list-style-type: none;
 }
 
-.interpreter table tr td {
-  border:1px solid #EFEFEF;
+.interpreter .properties {
+}
+
+.interpreter .properties tr td {
+}
+
+
+.interpreter .properties textarea {
+  padding : 5px 5px 5px 5px;
+  width: 100%;
+  display: block;
+  max-height: 100px;
+  overflow-y: auto;
 }
 
 .interpreter table tr .interpreterPropertyKey {
@@ -26,4 +37,9 @@
   display: block;
   max-height: 200px;
   overflow-y: auto;
+}
+
+.interpreterSettingAdd {
+  margin : 5px 5px 5px 5px;
+  padding : 10px 10px 10px 10px;
 }

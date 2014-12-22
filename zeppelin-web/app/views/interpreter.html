@@ -22,7 +22,62 @@ limitations under the License.
     <div class="row interpreter">
       <div class="col-md-12">
         <span><h4>Settings</h4></span> 
-        <span class="btn btn-default fa fa-plus"> Add new setting</span>
+        <span class="btn btn-default fa fa-plus"
+              ng-click="showAddNewSetting = !showAddNewSetting">
+          Add new setting
+        </span>
+        <div class="interpreterSettingAdd"
+             ng-show="!showAddNewSetting">
+          <div>
+            Name
+            <input ng-model="newInterpreterSetting.name">
+            </input>
+          </div>
+
+          <br />
+          <div>
+            Interpreter
+            <select ng-model="newInterpreterSetting.group">
+              <option ng-repeat="(groupName, interpreterGroup) in availableInterpreters">{{groupName}}</option>
+            </select>
+          </div>
+
+          <br />
+          <div>
+            Properties
+            <table class="table properties">
+              <tr>
+                <th width="300px">name</th>
+                <th>value</th>
+                <th></th>
+              </tr>
+              <tr ng-repeat="(key, value) in newInterpreterSetting.properties">
+                <td>{{key}}</td>
+                <td>{{value}}</td>
+                <td>
+                  <div class="btn btn-default fa fa-remove"
+                       ng-click="removeNewInterpreterProperty(key)">
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td><input style="width:280px" ng-model="newInterpreterSetting.propertyKey"></input></td>
+                <td><textarea ng-model="newInterpreterSetting.propertyValue"></textarea></td>
+                <td>
+                  <div class="btn btn-default fa fa-plus"
+                       ng-click="addNewInterpreterProperty()">
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <span class="btn btn-default fa fa-save"
+                ng-click="addNewInterpreterSetting()">
+            Save
+          </span>
+        </div>
         <ul>
           <li class="setting"
                ng-repeat="setting in interpreterSettings">
