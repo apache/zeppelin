@@ -76,44 +76,43 @@ angular.module('zeppelinWebApp')
   };
 
   var initializeDefault = function(){
-    if (!$scope.paragraph.config.looknfeel) {
-      $scope.paragraph.config.looknfeel = 'default';
+    var config = $scope.paragraph.config;
+    if (!config.looknfeel) {
+      config.looknfeel = 'default';
     }
 
-    if (!$scope.paragraph.config.colWidth) {
-      $scope.paragraph.config.colWidth = 12;
+    if (!config.colWidth) {
+      config.colWidth = 12;
     }
 
-    if(!$scope.paragraph.config.graph){
-      $scope.paragraph.config.graph = {};
+    if(!config.graph){
+      config.graph = {};
     }
 
-    if (!$scope.paragraph.config.graph.mode) {
-      $scope.paragraph.config.graph.mode = 'table';
+    if (!config.graph.mode) {
+      config.graph.mode = 'table';
     }
 
-    if (!$scope.paragraph.config.graph.height) {
-      $scope.paragraph.config.graph.height = 300;
+    if (!config.graph.height) {
+      config.graph.height = 300;
     }
 
-    if (!$scope.paragraph.config.graph.optionOpen) {
-      $scope.paragraph.config.graph.optionOpen = false;
+    if (!config.graph.optionOpen) {
+      config.graph.optionOpen = false;
     }
 
-    if (!$scope.paragraph.config.graph.keys) {
-      $scope.paragraph.config.graph.keys = [];
+    if (!config.graph.keys) {
+      config.graph.keys = [];
     }
 
-    if (!$scope.paragraph.config.graph.values) {
-      $scope.paragraph.config.graph.values = [];
+    if (!config.graph.values) {
+      config.graph.values = [];
     }
 
-    if (!$scope.paragraph.config.graph.groups) {
-      $scope.paragraph.config.graph.groups = [];
+    if (!config.graph.groups) {
+      config.graph.groups = [];
     }
-
   };
-
 
   $scope.getIframeDimensions = function () {
     if ($scope.asIframe) {
@@ -188,17 +187,6 @@ angular.module('zeppelinWebApp')
       if (!$scope.asIframe) {
         $scope.paragraph.config = data.paragraph.config;
         initializeDefault();
-
-        // update column class
-        // TODO : do it in angualr way
-        var el = $('#' + $scope.paragraph.id + '_paragraphColumn');
-        var elMain = $('#' + $scope.paragraph.id + '_paragraphColumn_main');
-
-        elMain.removeClass(elMain.attr('class'));
-        elMain.addClass('paragraph-col col-md-' + $scope.paragraph.config.colWidth);
-
-        el.removeClass(el.attr('class'));
-        el.addClass('paragraph-space box paragraph-margin');
       } else {
         data.paragraph.config.editorHide = true;
         data.paragraph.config.tableHide = false;
@@ -342,6 +330,14 @@ angular.module('zeppelinWebApp')
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
+  $scope.columnWidthClass = function(n){
+    if($scope.asIframe){
+      return 'col-md-12';
+    } else {
+      return 'col-md-' + n;
+    }
+  }
+
   $scope.changeColWidth = function() {
 
     var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
@@ -349,7 +345,6 @@ angular.module('zeppelinWebApp')
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
-
 
   $scope.toggleGraphOption = function() {
     var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
