@@ -818,7 +818,7 @@ angular.module('zeppelinWebApp')
       var xLabels = pivotdata.xLabels;
       d3g = pivotdata.d3g;
       $scope.chart[type].xAxis.tickFormat(function(d) {
-        if (xLabels[d]) {
+        if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
           return xLabels[d];
         } else {
           return d;
