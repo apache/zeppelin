@@ -88,9 +88,16 @@ limitations under the License.
       <button class="btn btn-link navbar-right"
               style="margin-right: 20px; margin-top: 2px;font-size: 15px; color: black; text-decoration: none;"
               data-toggle="modal"
-              data-target="#myModal"
+              data-target="#shortcutModal"
               tooltip-placement="top" tooltip="List of shortcut"><i class="icon-question"></i>
       </button>
+
+      <button class="btn btn-link navbar-right"
+              style="margin-top: 2px;font-size: 15px; color: black; text-decoration: none;"
+              ng-click="toggleSetting()"
+              tooltip-placement="top" tooltip="Interpreter binding"><i class="fa fa-cog"></i>
+      </button>
+
       <div class="btn-group navbar-right"
            style="top:8px;">
         <button type="button"
@@ -107,6 +114,30 @@ limitations under the License.
       </div>
     </h3>
 
+    <!-- interpreter selection modal -->
+    <div ng-show="showSetting"
+         class="setting">
+      <div class="modal-header">
+        <h4>Settings</h4>
+      </div>
+      <div class="modal-body">
+        Bind interpreters
+
+        <ul class="interpreterSettings"
+            data-as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
+          <li data-ng-repeat="item in interpreterBindings" data-as-sortable-item>
+            <div data-as-sortable-item-handle
+                 ng-click="item.selected = !item.selected"
+                 class="btn btn-sm"
+                 ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">{{item.name}} ({{item.group}})</div>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success" ng-click="saveSetting()">Okay</button>
+        <button class="btn" ng-click="closeSetting()">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <div class="note-jump"></div>

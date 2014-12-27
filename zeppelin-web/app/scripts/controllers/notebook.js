@@ -25,7 +25,7 @@
  *
  * @author anthonycorbacho
  */
-angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope) {
+angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -42,6 +42,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     {name: '12h', value: '0 0 0/12 * * ?'},
     {name: '1d', value: '0 0 0 * * ?'}
   ];
+
+  $scope.interpreterSettings = [];
+  $scope.interpreterBindings = [];
 
   $scope.getCronOptionNameFromValue = function(value) {
     if (!value) {
@@ -347,4 +350,56 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
+  var getInterpreterBindings = function() {
+    $http.get(getRestApiBase()+"/notebook/interpreter/bind/"+$scope.note.id).
+      success(function(data, status, headers, config) {
+        $scope.interpreterBindings = data.body;
+      }).
+      error(function(data, status, headers, config) {
+        console.log("Error %o %o", status, data.message);
+      });
+  };
+
+  $scope.interpreterSelectionListeners = {
+    accept : function(sourceItemHandleScope, destSortableScope) {return true;},
+    itemMoved: function (event) {},
+    orderChanged: function(event) {}
+  };
+
+  $scope.openSetting = function() {
+    $scope.showSetting = true;
+    getInterpreterBindings();
+  };
+
+  $scope.closeSetting = function() {
+    $scope.showSetting = false;
+  };
+
+  $scope.saveSetting = function() {
+    var selectedSettingIds = [];
+    for (var no in $scope.interpreterBindings) {
+      var setting = $scope.interpreterBindings[no];
+      if (setting.selected) {
+        selectedSettingIds.push(setting.id);
+      }
+    }
+
+    $http.put(getRestApiBase()+"/notebook/interpreter/bind/"+$scope.note.id,
+             selectedSettingIds).
+      success(function(data, status, headers, config) {
+        console.log("Interpreter binding %o saved", selectedSettingIds);
+        $scope.closeSetting();
+      }).
+      error(function(data, status, headers, config) {
+        console.log("Error %o %o", status, data.message);
+      });
+  };
+
+  $scope.toggleSetting = function() {
+    if ($scope.showSetting) {
+      $scope.closeSetting();
+    } else {
+      $scope.openSetting();
+    }
+  };
 });

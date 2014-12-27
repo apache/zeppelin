@@ -157,8 +157,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = $scope.newInterpreterSetting.propertyValue;
   };
 
-
-
   var init = function() {
     $scope.interpreterSettings = [];
     $scope.availableInterpreters = {};

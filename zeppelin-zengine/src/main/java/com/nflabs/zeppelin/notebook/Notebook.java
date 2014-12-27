@@ -2,6 +2,7 @@ package com.nflabs.zeppelin.notebook;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
+import com.nflabs.zeppelin.interpreter.InterpreterSetting;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -85,11 +87,30 @@ public class Notebook {
     return note;
   }
   
-  public void bindInterpretersToNote(String id, List<String> interpreterIds) {
+  public void bindInterpretersToNote(String id, List<String> interpreterSettingIds) {
     Note note = getNote(id);
-    note.getNoteReplLoader().setInterpreters(interpreterIds);
+    if (note != null) {
+      note.getNoteReplLoader().setInterpreters(interpreterSettingIds);
+    }
   }
 
+  public List<String> getBindedInterpreterSettingsIds(String id) {
+    Note note = getNote(id);
+    if (note != null) {
+      return note.getNoteReplLoader().getInterpreters();
+    } else {
+      return new LinkedList<String>();
+    }
+  }
+
+  public List<InterpreterSetting> getBindedInterpreterSettings(String id) {
+    Note note = getNote(id);
+    if (note != null) {
+      return note.getNoteReplLoader().getInterpreterSettings();
+    } else {
+      return new LinkedList<InterpreterSetting>();
+    }
+  }
 
   public Note getNote(String id) {
     synchronized (notes) {
@@ -248,6 +269,10 @@ public class Notebook {
     } catch (SchedulerException e) {
       logger.error("Can't remove quertz " + id, e);
     }
+  }
+
+  public InterpreterFactory getInterpreterFactory() {
+    return replFactory;
   }
 
 

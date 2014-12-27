@@ -82,8 +82,9 @@ angular
     'angular-websocket',
     'ui.ace',
     'ui.bootstrap',
+    'ui.sortable',
     'ngTouch',
-    'ngDragDrop'
+    'ngDragDrop',
   ])
   .config(function ($routeProvider, WebSocketProvider) {
     WebSocketProvider

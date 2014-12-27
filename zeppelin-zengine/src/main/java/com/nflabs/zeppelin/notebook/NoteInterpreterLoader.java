@@ -20,7 +20,9 @@ public class NoteInterpreterLoader {
   public NoteInterpreterLoader(InterpreterFactory factory) {
     this.factory = factory;
     interpreterSettingIds = Collections.synchronizedList(new LinkedList<String>());
-    setInterpreters(factory.getDefaultInterpreterList());
+    
+    // if no saved setting found, take default settings.
+    interpreterSettingIds.addAll(factory.getDefaultInterpreterList());
   }
   
   /**
@@ -32,6 +34,22 @@ public class NoteInterpreterLoader {
       interpreterSettingIds.clear();
       interpreterSettingIds.addAll(ids);
     }
+  }
+  
+  public List<String> getInterpreters() {
+    LinkedList<String> settingIds = new LinkedList<String>();
+    synchronized (interpreterSettingIds) {
+      for (String id : interpreterSettingIds) {
+        InterpreterSetting setting = factory.get(id);
+        if (setting == null) {
+          // interpreter setting is removed from factory. remove id from here, too
+          interpreterSettingIds.remove(id);
+        } else {
+          settingIds.add(id);
+        }
+      }
+    }
+    return settingIds;
   }
   
   public List<InterpreterSetting> getInterpreterSettings() {

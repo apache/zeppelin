@@ -21,6 +21,7 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.notebook.Notebook;
 import com.nflabs.zeppelin.rest.InterpreterRestApi;
+import com.nflabs.zeppelin.rest.NotebookApi;
 import com.nflabs.zeppelin.rest.ZeppelinRestApi;
 import com.nflabs.zeppelin.socket.NotebookServer;
 import com.nflabs.zeppelin.socket.SslWebSocketServerFactory;
@@ -281,6 +282,9 @@ public class ZeppelinServer extends Application {
     ZeppelinRestApi root = new ZeppelinRestApi();
     singletons.add(root);
     
+    NotebookApi notebookApi = new NotebookApi(notebook);
+    singletons.add(notebookApi);
+
     InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory);
     singletons.add(interpreterApi);
 

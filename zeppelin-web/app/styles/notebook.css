@@ -459,3 +459,17 @@
 .resizable-helper {
   border: 3px solid #DDDDDD;
 }
+
+/* note setting panel */
+.setting {
+
+}
+
+
+.setting .interpreterSettings {
+  list-style-type: none;
+}
+
+.setting .interpreterSettings li div {
+  cursor: pointer;
+}

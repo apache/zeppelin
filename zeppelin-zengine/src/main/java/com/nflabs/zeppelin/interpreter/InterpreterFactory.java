@@ -222,6 +222,29 @@ public class InterpreterFactory {
     return null;
   }
 
+  /** 
+   * Return ordered interpreter setting list.
+   * Order is decided by ZEPPELIN_INTERPRETERS
+   * @return
+   */
+  public List<String> getDefaultInterpreterList() {
+    List<String> defaultSettings = new LinkedList<String>();
+    for (String className : interpreterClassList) {
+      for (String settingId : interpreterSettings.keySet()) {
+        if (defaultSettings.contains(settingId)) {
+          continue;
+        }
+        InterpreterSetting setting = interpreterSettings.get(settingId);
+        for (Interpreter intp : setting.getInterpreterGroup()) {
+          if (className.equals(intp.getClassName())) {
+            defaultSettings.add(settingId);
+          }
+        }
+      }
+    }
+    return defaultSettings;
+  }
+
   /**
    * @param name user defined name
    * @param groupName interpreter group name to instantiate
@@ -285,43 +308,16 @@ public class InterpreterFactory {
    * @return
    */
   public Map<String, InterpreterSetting> get() {
-    return interpreterSettings;
+    synchronized (interpreterSettings) {
+      Map<String, InterpreterSetting> settings = new HashMap<String, InterpreterSetting>();
+      settings.putAll(interpreterSettings);
+      return settings;
+    }
   }
   
   public InterpreterSetting get(String name) {
     synchronized (interpreterSettings) {
       return interpreterSettings.get(name);
-    }
-  }
-  
-  /**
-   * Get default interpreter possible list
-   *  order by zeppelin.intepreters property
-   * @return
-   */
-  public List<String> getDefaultInterpreterList() {
-    synchronized (interpreterSettings) {
-      List<String> defaultList = new LinkedList<String>();
-      
-      for (String cls : interpreterClassList) {
-        for (String intpId : interpreterSettings.keySet()) {
-          InterpreterSetting intpSetting = interpreterSettings.get(intpId);
-          InterpreterGroup intpGroup = intpSetting.getInterpreterGroup();
-          boolean found = false;
-          for (Interpreter intp : intpGroup) {
-            if (intp.getClassName().equals(cls)) {
-              defaultList.add(intpId);
-              found = true;
-              break;
-            }            
-          }
-          if (found) {
-            break;
-          }
-        }
-      }
-      
-      return defaultList;
     }
   }
   

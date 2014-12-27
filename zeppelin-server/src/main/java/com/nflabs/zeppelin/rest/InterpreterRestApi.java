@@ -36,6 +36,7 @@ public class InterpreterRestApi {
   Logger logger = LoggerFactory.getLogger(InterpreterRestApi.class);
   
   private InterpreterFactory interpreterFactory;
+
   Gson gson = new Gson();
 
   public InterpreterRestApi() {
@@ -91,7 +92,7 @@ public class InterpreterRestApi {
     InterpreterSetting setting = interpreterFactory.get(settingId);
     return new JsonResponse(Status.OK, "", setting).build();
   }
-  
+
   /**
    * List all available interpreters by group
    */
@@ -102,4 +103,5 @@ public class InterpreterRestApi {
     Map<String, RegisteredInterpreter> m = Interpreter.registeredInterpreters;    
     return new JsonResponse(Status.OK, "", m).build();
   }
+  
 }
