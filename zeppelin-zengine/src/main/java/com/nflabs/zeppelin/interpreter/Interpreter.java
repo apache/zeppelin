@@ -78,6 +78,15 @@ public abstract class Interpreter {
     registeredInterpreters.put(name, new RegisteredInterpreter(name, group, className));
   }
   
+  public static RegisteredInterpreter findRegisteredInterpreterByClassName(String className) {
+    for (RegisteredInterpreter ri : registeredInterpreters.values()) {
+      if (ri.getClassName().equals(className)) {
+        return ri;
+      }
+    }
+    return null;
+  }
+
   public abstract void open();
 
   public abstract void close();

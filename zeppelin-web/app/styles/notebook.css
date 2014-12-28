@@ -462,12 +462,14 @@
 
 /* note setting panel */
 .setting {
-
 }
-
 
 .setting .interpreterSettings {
   list-style-type: none;
+  background-color: #EFEFEF;
+  padding: 10px 10px 10px 10px;
+  box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.15);
+  border: 1px solid #E5E5E5;
 }
 
 .setting .interpreterSettings li div {

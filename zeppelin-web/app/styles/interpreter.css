@@ -1,12 +1,12 @@
+.interpreter .interpreter-title {
+  font-size:20px;
+  font-weight:bold;
+  color:#3071a9;
+}
+
 .interpreter ul {
   margin: 0px 0px 0px 0px;
   padding: 0px 0px 0px 0px;
-}
-
-.interpreter .setting {
-  list-style-type: none;
-  border-top: 1px solid gray;
-  margin: 5px 0px 5px 0px;
 }
 
 .interpreter .interpreterInfo {
@@ -35,7 +35,7 @@
 .interpreter table tr .interpreterPropertyValue {
   padding : 5px 5px 5px 5px;
   display: block;
-  max-height: 200px;
+  max-height: 100px;
   overflow-y: auto;
 }
 

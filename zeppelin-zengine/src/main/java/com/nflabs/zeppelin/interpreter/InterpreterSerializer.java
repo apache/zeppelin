@@ -19,7 +19,10 @@ public class InterpreterSerializer implements JsonSerializer<Interpreter> {
       JsonSerializationContext context) {
     JsonObject json = new JsonObject();
     json.addProperty("class", interpreter.getClassName());
-    
+    json.addProperty(
+        "name",
+        Interpreter.findRegisteredInterpreterByClassName(
+            interpreter.getClassName()).getName());
     return json;
   }
 

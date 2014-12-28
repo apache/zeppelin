@@ -17,6 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterSetting;
 import com.nflabs.zeppelin.notebook.Notebook;
 import com.nflabs.zeppelin.rest.message.InterpreterSettingListForNoteBind;
@@ -55,11 +57,18 @@ public class NotebookApi {
   @GET
   @Path("interpreter/bind/{noteId}")
   public Response bind(@PathParam("noteId") String noteId) {
-    List<InterpreterSettingListForNoteBind> settingList = new LinkedList<InterpreterSettingListForNoteBind>();
+    List<InterpreterSettingListForNoteBind> settingList
+      = new LinkedList<InterpreterSettingListForNoteBind>();
 
     List<InterpreterSetting> selectedSettings = notebook.getBindedInterpreterSettings(noteId);
     for (InterpreterSetting setting : selectedSettings) {
-      settingList.add(new InterpreterSettingListForNoteBind(setting.id(), setting.getName(), setting.getGroup(), true));
+      settingList.add(new InterpreterSettingListForNoteBind(
+          setting.id(),
+          setting.getName(),
+          setting.getGroup(),
+          setting.getInterpreterGroup(),
+          true)
+      );
     }
 
     Map<String, InterpreterSetting> availableSettings = notebook.getInterpreterFactory().get();
@@ -73,9 +82,27 @@ public class NotebookApi {
       }
 
       if (!selected) {
-        settingList.add(new InterpreterSettingListForNoteBind(setting.id(), setting.getName(), setting.getGroup(), false));
+        settingList.add(new InterpreterSettingListForNoteBind(
+            setting.id(),
+            setting.getName(),
+            setting.getGroup(),
+            setting.getInterpreterGroup(),
+            false)
+        );
       }
     }
     return new JsonResponse(Status.OK, "", settingList).build();
+  }
+
+  private List<String> getInterpreterNamesFromInterpreters(List<Interpreter> interpreters) {
+    List<String> intpNames = new LinkedList<String>();
+    for (Interpreter intp : interpreters) {
+      RegisteredInterpreter ri
+        = Interpreter.findRegisteredInterpreterByClassName(intp.getClassName());
+      if (ri != null) {
+        intpNames.add(ri.getName());
+      }
+    }
+    return intpNames;
   }
 }

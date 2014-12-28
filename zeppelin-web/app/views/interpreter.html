@@ -14,102 +14,120 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div class="box width-full home">
-  <div class="zeppelin"><div class="zeppelin2"></div></div>
-  <div style="margin-top: -380px;">
+  <div>
     <h1 class="box-heading">
       Interpreters
     </h1>
     <div class="row interpreter">
       <div class="col-md-12">
-        <span><h4>Settings</h4></span> 
+        Manage interpreters settings. You can create create / remove settings. Note can bind/unbind these interpreter settings.
         <span class="btn btn-default fa fa-plus"
-              ng-click="showAddNewSetting = !showAddNewSetting">
-          Add new setting
+              ng-click="showAddNewSetting = !showAddNewSetting"
+              style="float:right">
+          Create
         </span>
+
         <div class="interpreterSettingAdd"
-             ng-show="!showAddNewSetting">
-          <div>
-            Name
-            <input ng-model="newInterpreterSetting.name">
+             ng-show="showAddNewSetting">
+          <hr />
+          <h4>Create new interpreter setting</h4>
+          Interpreter setting name
+          <div class="input-group input-group-sm"
+               style="width:400px">
+            <span class="input-group-addon">Name</span>
+            <input class="form-control"
+                   ng-model="newInterpreterSetting.name">
             </input>
           </div>
 
           <br />
-          <div>
-            Interpreter
-            <select ng-model="newInterpreterSetting.group">
-              <option ng-repeat="(groupName, interpreterGroup) in availableInterpreters">{{groupName}}</option>
+          Interpreter set want to use
+          <div class="input-group input-group-sm"
+               style="width:400px">
+            <span class="input-group-addon">Interpreter</span>
+            <select class="form-control"
+                    ng-model="newInterpreterSetting.group">
+              <option ng-repeat="(groupName, interpreterGroup) in availableInterpreters" value="{{groupName}}">{{groupName}}</option>
             </select>
           </div>
 
           <br />
-          <div>
-            Properties
-            <table class="table properties">
-              <tr>
-                <th width="300px">name</th>
-                <th>value</th>
-                <th></th>
-              </tr>
-              <tr ng-repeat="(key, value) in newInterpreterSetting.properties">
-                <td>{{key}}</td>
-                <td>{{value}}</td>
-                <td>
-                  <div class="btn btn-default fa fa-remove"
-                       ng-click="removeNewInterpreterProperty(key)">
-                  </div>
-                </td>
-              </tr>
+          Properties
+          <table class="table properties">
+            <tr>
+              <th width="300px">name</th>
+              <th>value</th>
+              <th></th>
+            </tr>
+            <tr ng-repeat="(key, value) in newInterpreterSetting.properties">
+              <td>{{key}}</td>
+              <td>{{value}}</td>
+              <td>
+                <div class="btn btn-default fa fa-remove"
+                     ng-click="removeNewInterpreterProperty(key)">
+                </div>
+              </td>
+            </tr>
 
-              <tr>
-                <td><input style="width:280px" ng-model="newInterpreterSetting.propertyKey"></input></td>
-                <td><textarea ng-model="newInterpreterSetting.propertyValue"></textarea></td>
-                <td>
-                  <div class="btn btn-default fa fa-plus"
-                       ng-click="addNewInterpreterProperty()">
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
+            <tr>
+              <td><input style="width:280px" ng-model="newInterpreterSetting.propertyKey"></input></td>
+              <td><textarea ng-model="newInterpreterSetting.propertyValue"></textarea></td>
+              <td>
+                <div class="btn btn-default fa fa-plus"
+                     ng-click="addNewInterpreterProperty()">
+                </div>
+              </td>
+            </tr>
+          </table>
 
           <span class="btn btn-default fa fa-save"
                 ng-click="addNewInterpreterSetting()">
             Save
           </span>
         </div>
-        <ul>
-          <li class="setting"
-               ng-repeat="setting in interpreterSettings">
-            <h5>{{setting.name}}</h5>
-            <div>
-              <button class="btn btn-default btn-xs"
-                      ng-click="restartInterpreterSetting(setting.id)">restart</button>
-              <button class="btn btn-default btn-xs"
-                      ng-click="removeInterpreterSetting(setting.id)">remove</button>
-            </div>
-            <b>Interpreters</b>
-            <ul>
-              <li class="interpreterInfo"
-                  ng-repeat="interpreter in setting.interpreters">
-                {{interpreter.class}}
-              </li>
-            </ul>
-
-            <br />
-            <b>Properties</b>            
-            <table>
-              <tr class="interpreterProperty"
-                  ng-repeat="(key, value) in setting.properties">
-                <td class="interpreterPropertyKey">{{key}}</td>
-                <td class="interpreterPropertyValue">{{value}}</td>
-              </tr>
-            </table>
-            <br /><br />
-          </li>
-        </ul>
       </div>
     </div>
   </div>
-  <br /><br /><br />
+</div>
+<div class="box width-full home"
+     ng-repeat="setting in interpreterSettings">
+  <div>
+    <div class="row interpreter">
+      <div class="col-md-12">
+        <span class="interpreter-title">{{setting.name}}</span>
+        <span style="float:right">
+          <button class="btn btn-default btn-xs"
+                  ng-click="restartInterpreterSetting(setting.id)"><span class="fa fa-refresh"></span> restart</button>
+          <button class="btn btn-default btn-xs"
+                  ng-click="removeInterpreterSetting(setting.id)"><span class="fa fa-remove"></span> remove</button>
+        </span>
+      </div>
+    </div>
+    <br />
+    <div class="row interpreter">
+      <div class="col-md-12">
+        <b>Interpreter</b>
+        <table class="table">
+          <tr class="interpreterProperty"
+              ng-repeat="interpreter in setting.interpreters">
+            <td class="interpreterPropertyKey">%{{interpreter.name}}</td>
+            <td class="interpreterPropertyValue">{{interpreter.class}}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <br />
+    <div class="row interpreter">
+      <div class="col-md-12">
+        <b>Properties</b>
+        <table class="table">
+          <tr class="interpreterProperty"
+              ng-repeat="(key, value) in setting.properties">
+            <td class="interpreterPropertyKey">{{key}}</td>
+            <td class="interpreterPropertyValue">{{value}}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>

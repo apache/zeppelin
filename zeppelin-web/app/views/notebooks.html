@@ -121,15 +121,21 @@ limitations under the License.
         <h4>Settings</h4>
       </div>
       <div class="modal-body">
-        Bind interpreters
+        <h5>Interpreter binding</h5>
+        <p>
+          Bind interpreter for this note.
+          Click to Bind/Unbind interpreter.
+          Drag and drop to reorder interpreters. <br />
+          The first interpreter on the list becomes default.
+        </p>
 
         <ul class="interpreterSettings"
             data-as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
-          <li data-ng-repeat="item in interpreterBindings" data-as-sortable-item>
+          <li data-ng-repeat="item in interpreterBindings track by $index" data-as-sortable-item>
             <div data-as-sortable-item-handle
                  ng-click="item.selected = !item.selected"
                  class="btn btn-sm"
-                 ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">{{item.name}} ({{item.group}})</div>
+                 ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">{{item.name}} - <span ng-repeat="intp in item.interpreters"><span ng-show="!$first">, </span>%{{intp.name}}</span></div>
           </li>
         </ul>
       </div>
