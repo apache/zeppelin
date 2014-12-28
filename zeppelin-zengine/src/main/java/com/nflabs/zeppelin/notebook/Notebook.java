@@ -66,6 +66,7 @@ public class Notebook {
   public Note createNote() {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
     Note note = new Note(conf, intpLoader, jobListenerFactory, quartzSched);
+    intpLoader.setNoteId(note.id());
     synchronized (notes) {
       notes.put(note.id(), note);
     }
@@ -76,21 +77,25 @@ public class Notebook {
    * Create new note.
    * 
    * @return
+   * @throws IOException 
    */
-  public Note createNote(List<String> interpreterIds) {
+  public Note createNote(List<String> interpreterIds) throws IOException {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
     intpLoader.setInterpreters(interpreterIds);
     Note note = new Note(conf, intpLoader, jobListenerFactory, quartzSched);
+    intpLoader.setNoteId(note.id());
     synchronized (notes) {
       notes.put(note.id(), note);
     }
     return note;
   }
   
-  public void bindInterpretersToNote(String id, List<String> interpreterSettingIds) {
+  public void bindInterpretersToNote(String id,
+      List<String> interpreterSettingIds) throws IOException {
     Note note = getNote(id);
     if (note != null) {
       note.getNoteReplLoader().setInterpreters(interpreterSettingIds);
+      replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
     }
   }
 
@@ -147,13 +152,13 @@ public class Notebook {
         Scheduler scheduler =
             schedulerFactory.createOrGetFIFOScheduler("note_" + System.currentTimeMillis());
         logger.info("Loading note from " + f.getName());
-        
+        NoteInterpreterLoader noteInterpreterLoader = new NoteInterpreterLoader(replFactory);
         Note note = Note.load(f.getName(),
             conf,
-            new NoteInterpreterLoader(replFactory),
+            noteInterpreterLoader,
             scheduler,
             jobListenerFactory, quartzSched);
-        
+        noteInterpreterLoader.setNoteId(note.id());
         synchronized (notes) {
           notes.put(note.id(), note);
           refreshCron(note.id());

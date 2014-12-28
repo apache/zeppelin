@@ -14,6 +14,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,9 @@ public class InterpreterFactory {
 
   private Map<String, InterpreterSetting> interpreterSettings = 
       new HashMap<String, InterpreterSetting>();
+
+  // Map <NoteId, InterpreterSettingList>
+  private Map<String, List<String>> interpreterBindings = new HashMap<String, List<String>>();
 
   private Gson gson;
   
@@ -173,8 +177,13 @@ public class InterpreterFactory {
     fis.close();
 
     String json = sb.toString();
-    Map<String, Map<String, Object>> settings = gson.fromJson(json,
-        new TypeToken<Map<String, Object>>() {}.getType());
+    Map<String, Object> savedObject = gson.fromJson(json,
+        new TypeToken<Map<String, Object>>() {}.getType()); 
+
+    Map<String, Map<String, Object>> settings = (Map<String, Map<String, Object>>) savedObject
+        .get("interpreterSettings");
+    Map<String, List<String>> bindings = (Map<String, List<String>>) savedObject
+        .get("interpreterBindings");
 
     for (String k : settings.keySet()) {
       Map<String, Object> set = settings.get(k);
@@ -189,14 +198,20 @@ public class InterpreterFactory {
       InterpreterSetting intpSetting = new InterpreterSetting(id, name, group, interpreterGroup);
       interpreterSettings.put(k, intpSetting);
     }
+
+    this.interpreterBindings = bindings;
   }
 
   
   private void saveToFile() throws IOException {
     String jsonString;
-    
+
     synchronized (interpreterSettings) {
-      jsonString = gson.toJson(interpreterSettings);
+      Map<String, Object> saveObject = new HashMap<String, Object>();
+      saveObject.put("interpreterSettings", interpreterSettings);
+      saveObject.put("interpreterBindings", interpreterBindings);
+
+      jsonString = gson.toJson(saveObject);
     }
     
     File settingFile = new File(conf.getInterpreterSettingPath());
@@ -295,9 +310,20 @@ public class InterpreterFactory {
   public void remove(String id) throws IOException {
     synchronized (interpreterSettings) {
       if (interpreterSettings.containsKey(id)) {
-        InterpreterSetting intp = interpreterSettings.remove(id);
+        InterpreterSetting intp = interpreterSettings.get(id);
         intp.getInterpreterGroup().close();
         intp.getInterpreterGroup().destroy();
+
+        interpreterSettings.remove(id);
+        for (List<String> settings : interpreterBindings.values()) {
+          Iterator<String> it = settings.iterator();
+          while (it.hasNext()) {
+            String settingId = it.next();
+            if (settingId.equals(id)) {
+              it.remove();
+            }
+          }
+        }
         saveToFile();
       }
     }
@@ -320,13 +346,38 @@ public class InterpreterFactory {
       return interpreterSettings.get(name);
     }
   }
-  
+
+  public void putNoteInterpreterSettingBinding(String noteId,
+      List<String> settingList) throws IOException {
+    synchronized (interpreterSettings) {
+      interpreterBindings.put(noteId, settingList);
+      saveToFile();
+    }
+  }
+
+  public void removeNoteInterpreterSettingBinding(String noteId) {
+    synchronized (interpreterSettings) {
+      interpreterBindings.remove(noteId);
+    }
+  }
+
+  public List<String> getNoteInterpreterSettingBinding(String noteId) {
+    LinkedList<String> bindings = new LinkedList<String>();
+    synchronized (interpreterSettings) {
+      List<String> settingIds = interpreterBindings.get(noteId);
+      if (settingIds != null) {
+        bindings.addAll(settingIds);
+      }
+    }
+    return bindings;
+  }
+
   /**
    * Change interpreter property and restart
    * @param name
    * @param properties
    */
-  public void setProperty(String id, Properties properties) {
+  public void setPropertyAndRestart(String id, Properties properties) {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
       if (intpsetting != null) {

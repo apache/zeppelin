@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.rest;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -42,10 +43,11 @@ public class NotebookApi {
 
   /**
    * bind a setting to note
+   * @throws IOException 
    */
   @PUT
   @Path("interpreter/bind/{noteId}")
-  public Response bind(@PathParam("noteId") String noteId, String req) {
+  public Response bind(@PathParam("noteId") String noteId, String req) throws IOException {
     List<String> settingIdList = gson.fromJson(req, new TypeToken<List<String>>(){}.getType());
     notebook.bindInterpretersToNote(noteId, settingIdList);
     return new JsonResponse(Status.OK).build();
@@ -92,17 +94,5 @@ public class NotebookApi {
       }
     }
     return new JsonResponse(Status.OK, "", settingList).build();
-  }
-
-  private List<String> getInterpreterNamesFromInterpreters(List<Interpreter> interpreters) {
-    List<String> intpNames = new LinkedList<String>();
-    for (Interpreter intp : interpreters) {
-      RegisteredInterpreter ri
-        = Interpreter.findRegisteredInterpreterByClassName(intp.getClassName());
-      if (ri != null) {
-        intpNames.add(ri.getName());
-      }
-    }
-    return intpNames;
   }
 }

@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.notebook;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,44 +16,31 @@ import com.nflabs.zeppelin.interpreter.InterpreterSetting;
  */
 public class NoteInterpreterLoader {
   private transient InterpreterFactory factory;
-  List<String> interpreterSettingIds;
-  
+  String noteId;
+
   public NoteInterpreterLoader(InterpreterFactory factory) {
     this.factory = factory;
-    interpreterSettingIds = Collections.synchronizedList(new LinkedList<String>());
-    
-    // if no saved setting found, take default settings.
-    interpreterSettingIds.addAll(factory.getDefaultInterpreterList());
   }
-  
+
+  public void setNoteId(String noteId) {
+    this.noteId = noteId;
+  }
+
   /**
    * set interpreter ids
    * @param ids InterpreterSetting id list
+   * @throws IOException 
    */
-  public void setInterpreters(List<String> ids) {
-    synchronized (interpreterSettingIds) {
-      interpreterSettingIds.clear();
-      interpreterSettingIds.addAll(ids);
-    }
+  public void setInterpreters(List<String> ids) throws IOException {
+    factory.putNoteInterpreterSettingBinding(noteId, ids);
   }
   
   public List<String> getInterpreters() {
-    LinkedList<String> settingIds = new LinkedList<String>();
-    synchronized (interpreterSettingIds) {
-      for (String id : interpreterSettingIds) {
-        InterpreterSetting setting = factory.get(id);
-        if (setting == null) {
-          // interpreter setting is removed from factory. remove id from here, too
-          interpreterSettingIds.remove(id);
-        } else {
-          settingIds.add(id);
-        }
-      }
-    }
-    return settingIds;
+    return factory.getNoteInterpreterSettingBinding(noteId);
   }
   
   public List<InterpreterSetting> getInterpreterSettings() {
+    List<String> interpreterSettingIds = factory.getNoteInterpreterSettingBinding(noteId);
     LinkedList<InterpreterSetting> settings = new LinkedList<InterpreterSetting>();
     synchronized (interpreterSettingIds) {
       for (String id : interpreterSettingIds) {
