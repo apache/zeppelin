@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.interpreter;
 
+import java.net.URL;
 import java.util.List;
 
 import com.nflabs.zeppelin.scheduler.Scheduler;
@@ -109,5 +110,15 @@ public class LazyOpenInterpreter
   @Override
   public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
     intp.setInterpreterGroup(interpreterGroup);
+  }
+
+  @Override
+  public URL [] getClassloaderUrls() {
+    return intp.getClassloaderUrls();
+  }
+
+  @Override
+  public void setClassloaderUrls(URL [] urls) {
+    intp.setClassloaderUrls(urls);
   }
 }

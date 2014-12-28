@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.interpreter;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
@@ -208,6 +209,34 @@ public class ClassloaderInterpreter
     Thread.currentThread().setContextClassLoader(cl);
     try {
       return intp.getInterpreterGroup();
+    } catch (Exception e) {
+      throw new InterpreterException(e);
+    } finally {
+      cl = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
+
+  @Override
+  public void setClassloaderUrls(URL [] urls) {
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(cl);
+    try {
+      intp.setClassloaderUrls(urls);
+    } catch (Exception e) {
+      throw new InterpreterException(e);
+    } finally {
+      cl = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
+
+  @Override
+  public URL [] getClassloaderUrls() {
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(cl);
+    try {
+      return intp.getClassloaderUrls();
     } catch (Exception e) {
       throw new InterpreterException(e);
     } finally {

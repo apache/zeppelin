@@ -144,7 +144,7 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    URL[] urls = (URL[]) getProperty().get("classloaderUrls");
+    URL[] urls = getClassloaderUrls();
 
     // Very nice discussion about how scala compiler handle classpath
     // https://groups.google.com/forum/#!topic/scala-user/MlVwo2xCCI0

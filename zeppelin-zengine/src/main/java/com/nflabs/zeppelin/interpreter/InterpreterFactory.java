@@ -402,7 +402,7 @@ public class InterpreterFactory {
       if (conf.containsKey("args")) {
         property.put("args", conf.getProperty("args"));
       }
-      property.put("classloaderUrls", ccl.getURLs());
+      repl.setClassloaderUrls(ccl.getURLs());
       LazyOpenInterpreter intp = new LazyOpenInterpreter(
           new ClassloaderInterpreter(repl, cl, property));
       intp.setInterpreterGroup(interpreterGroup);

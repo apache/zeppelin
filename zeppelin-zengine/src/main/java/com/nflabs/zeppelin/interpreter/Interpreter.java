@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.interpreter;
 
 
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ public abstract class Interpreter {
   static Logger logger = LoggerFactory.getLogger(Interpreter.class);
   private Properties property;
   private InterpreterGroup interpreterGroup;
+  private URL [] classloaderUrls;
 
   public Interpreter(Properties property) {
     this.property = property;
@@ -131,5 +133,13 @@ public abstract class Interpreter {
 
   public InterpreterGroup getInterpreterGroup() {
     return this.interpreterGroup;
+  }
+
+  public URL[] getClassloaderUrls() {
+    return classloaderUrls;
+  }
+
+  public void setClassloaderUrls(URL[] classloaderUrls) {
+    this.classloaderUrls = classloaderUrls;
   }
 }
