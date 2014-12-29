@@ -479,6 +479,10 @@
 }
 
 .setting .interpreterSettings li div {
+  margin: 2px 0px 2px 0px;
+}
+
+.setting .interpreterSettings li div {
   cursor: pointer;
 }
 
