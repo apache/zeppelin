@@ -30,14 +30,14 @@ import com.nflabs.zeppelin.server.JsonResponse;
  */
 @Path("/notebook")
 @Produces("application/json")
-public class NotebookApi {
-  Logger logger = LoggerFactory.getLogger(NotebookApi.class);
+public class NotebookRestApi {
+  Logger logger = LoggerFactory.getLogger(NotebookRestApi.class);
   Gson gson = new Gson();
   private Notebook notebook;
 
-  public NotebookApi() {}
+  public NotebookRestApi() {}
 
-  public NotebookApi(Notebook notebook) {
+  public NotebookRestApi(Notebook notebook) {
     this.notebook = notebook;
   }
 
