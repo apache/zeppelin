@@ -107,8 +107,8 @@ public class InterpreterFactory {
     synchronized (interpreterSettings) {
       if (interpreterSettings.size() == 0) {
         HashMap<String, List<RegisteredInterpreter>> groupClassNameMap =
-            new HashMap<String, List<RegisteredInterpreter>>();        
-        
+            new HashMap<String, List<RegisteredInterpreter>>();
+
         for (String k : Interpreter.registeredInterpreters.keySet()) {
           RegisteredInterpreter info = Interpreter.registeredInterpreters.get(k);
           
@@ -124,18 +124,20 @@ public class InterpreterFactory {
             List<RegisteredInterpreter> infos = groupClassNameMap.get(groupName);
             
             boolean found = false;
+            Properties p = new Properties();
             for (RegisteredInterpreter info : infos) {
-              if (info.getClassName().equals(className)) {
+              if (found == false && info.getClassName().equals(className)) {
                 found = true;
-                break;
+              }
+
+              for (String k : info.getProperties().keySet()) {
+                p.put(k, info.getProperties().get(k).getDefaultValue());
               }
             }
 
             if (found) {
               // add all interpreters in group
-              Properties p = new Properties();
-              add(groupName, groupName, p);             
-              
+              add(groupName, groupName, p);
               groupClassNameMap.remove(groupName);
               break;
             }
