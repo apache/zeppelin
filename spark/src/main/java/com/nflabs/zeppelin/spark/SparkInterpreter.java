@@ -66,9 +66,11 @@ public class SparkInterpreter extends Interpreter {
         "spark",
         SparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add("args", "", "spark commandline args")
             .add("master", getMaster(),
-                "spark master uri. ex) spark://masterhost:7077").build());
+                "spark master uri. ex) spark://masterhost:7077")
+            .add("spark.executor.memory", "1g", "executor memory per worker instance")
+            .add("spark.cores.max", "1", "total number of cores to use")
+            .add("args", "", "spark commandline args").build());
 
   }
 
@@ -125,6 +127,7 @@ public class SparkInterpreter extends Interpreter {
     SparkConf conf =
         new SparkConf().setMaster(getProperty("master")).setAppName("Zeppelin").setJars(jars)
             .set("spark.repl.class.uri", interpreter.intp().classServer().uri());
+
     if (execUri != null) {
       conf.set("spark.executor.uri", execUri);
     }
@@ -132,6 +135,14 @@ public class SparkInterpreter extends Interpreter {
       conf.setSparkHome(System.getenv("SPARK_HOME"));
     }
     conf.set("spark.scheduler.mode", "FAIR");
+
+    Properties intpProperty = getProperty();
+    for (Object k : intpProperty.keySet()) {
+      String key = (String) k;
+      if (key.startsWith("spark.")) {
+        conf.set(key, intpProperty.getProperty(key));
+      }
+    }
     SparkContext sparkContext = new SparkContext(conf);
     return sparkContext;
   }
