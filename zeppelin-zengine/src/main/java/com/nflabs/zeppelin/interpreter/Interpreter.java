@@ -11,6 +11,7 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nflabs.zeppelin.notebook.NoteInterpreterLoader;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
@@ -19,13 +20,47 @@ import com.nflabs.zeppelin.scheduler.SchedulerFactory;
  */
 public abstract class Interpreter {
   static Logger logger = LoggerFactory.getLogger(Interpreter.class);
-  private Properties property;
   private InterpreterGroup interpreterGroup;
   private URL [] classloaderUrls;
+  protected Properties property;
 
   public Interpreter(Properties property) {
     this.property = property;
   }
+
+  public void setProperty(Properties property) {
+    this.property = property;
+  }
+
+  public Properties getProperty() {
+    Properties p = new Properties();
+    p.putAll(property);
+
+    Map<String, InterpreterProperty> defaultProperties = Interpreter
+        .findRegisteredInterpreterByClassName(getClassName()).getProperties();
+    for (String k : defaultProperties.keySet()) {
+      if (!p.contains(k)) {
+        p.put(k, defaultProperties.get(k).getDefaultValue());
+      }
+    }
+
+    return property;
+  }
+
+  public String getProperty(String key) {
+    if (property.containsKey(key)) {
+      return property.getProperty(key);
+    }
+
+    Map<String, InterpreterProperty> defaultProperties = Interpreter
+        .findRegisteredInterpreterByClassName(getClassName()).getProperties();
+    if (defaultProperties.containsKey(key)) {
+      return defaultProperties.get(key).getDefaultValue();
+    }
+
+    return null;
+  }
+
 
   /**
    * Type of interpreter.
@@ -41,12 +76,15 @@ public abstract class Interpreter {
     private String name;
     private String group;
     private String className;
-    
-    public RegisteredInterpreter(String name, String group, String className) {
+    private Map<String, InterpreterProperty> properties;
+
+    public RegisteredInterpreter(String name, String group, String className,
+        Map<String, InterpreterProperty> properties) {
       super();
       this.name = name;
       this.group = group;
       this.className = className;
+      this.properties = properties;
     }
     
     public String getName() {
@@ -59,7 +97,12 @@ public abstract class Interpreter {
     
     public String getClassName() {
       return className;
-    }        
+    }
+
+    public Map<String, InterpreterProperty> getProperties() {
+      return properties;
+    }
+
   }
 
   /**
@@ -75,9 +118,14 @@ public abstract class Interpreter {
   public static void register(String name, String className) {
     register(name, name, className);
   }
-  
+
   public static void register(String name, String group, String className) {
-    registeredInterpreters.put(name, new RegisteredInterpreter(name, group, className));
+    register(name, group, className, new HashMap<String, InterpreterProperty>());
+  }
+
+  public static void register(String name, String group, String className,
+      Map<String, InterpreterProperty> properties) {
+    registeredInterpreters.put(name, new RegisteredInterpreter(name, group, className, properties));
   }
   
   public static RegisteredInterpreter findRegisteredInterpreterByClassName(String className) {
@@ -115,14 +163,6 @@ public abstract class Interpreter {
 
   public abstract List<String> completion(String buf, int cursor);
 
-  public Properties getProperty() {
-    return property;
-  }
-
-  public void setProperty(Properties property) {
-    this.property = property;
-  }
- 
   public String getClassName() {
     return this.getClass().getName();
   }

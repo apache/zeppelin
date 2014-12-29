@@ -24,7 +24,7 @@
   padding : 5px 5px 5px 5px;
   width: 100%;
   display: block;
-  max-height: 100px;
+  height: 27px;
   overflow-y: auto;
 }
 

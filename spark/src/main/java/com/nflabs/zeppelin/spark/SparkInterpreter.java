@@ -30,9 +30,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
-import com.nflabs.zeppelin.notebook.NoteInterpreterLoader;
 import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
@@ -56,14 +56,20 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
 /**
  * Spark interpreter for Zeppelin.
  * 
- * @author Leemoonsoo
- *
  */
 public class SparkInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
 
   static {
-    Interpreter.register("spark", "spark", SparkInterpreter.class.getName());
+    Interpreter.register(
+        "spark",
+        "spark",
+        SparkInterpreter.class.getName(),
+        new InterpreterPropertyBuilder()
+            .add("args", "", "spark commandline args")
+            .add("master", getMaster(),
+                "spark master uri. ex) spark://masterhost:7077").build());
+
   }
 
   private ZeppelinContext z;
@@ -112,12 +118,12 @@ public class SparkInterpreter extends Interpreter {
   }
 
   public SparkContext createSparkContext() {
-    System.err.println("------ Create new SparkContext " + getMaster() + " -------");
+    System.err.println("------ Create new SparkContext " + getProperty("master") + " -------");
 
     String execUri = System.getenv("SPARK_EXECUTOR_URI");
     String[] jars = SparkILoop.getAddedJars();
     SparkConf conf =
-        new SparkConf().setMaster(getMaster()).setAppName("Zeppelin").setJars(jars)
+        new SparkConf().setMaster(getProperty("master")).setAppName("Zeppelin").setJars(jars)
             .set("spark.repl.class.uri", interpreter.intp().classServer().uri());
     if (execUri != null) {
       conf.set("spark.executor.uri", execUri);
@@ -130,7 +136,7 @@ public class SparkInterpreter extends Interpreter {
     return sparkContext;
   }
 
-  public String getMaster() {
+  public static String getMaster() {
     String envMaster = System.getenv().get("MASTER");
     if (envMaster != null) {
       return envMaster;
@@ -160,10 +166,16 @@ public class SparkInterpreter extends Interpreter {
      * getClass.getClassLoader >> } >> in.setContextClassLoader()
      */
     Settings settings = new Settings();
-    if (getProperty().containsKey("args")) {
+    if (getProperty("args") != null) {
+      String[] argsArray = getProperty("args").split(" ");
+      LinkedList<String> argList = new LinkedList<String>();
+      for (String arg : argsArray) {
+        argList.add(arg);
+      }
+
       SparkCommandLine command =
           new SparkCommandLine(scala.collection.JavaConversions.asScalaBuffer(
-              (List<String>) getProperty().get("args")).toList());
+              argList).toList());
       settings = command.settings();
     }
 
@@ -217,9 +229,7 @@ public class SparkInterpreter extends Interpreter {
 
     dep = getDependencyResolver();
 
-    NoteInterpreterLoader noteInterpreterLoader =
-        (NoteInterpreterLoader) getProperty().get("noteIntpLoader");
-    z = new ZeppelinContext(sc, sqlc, dep, noteInterpreterLoader, printStream);
+    z = new ZeppelinContext(sc, sqlc, dep, printStream);
 
     this.interpreter.loadFiles(settings);
 

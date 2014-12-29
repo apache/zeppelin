@@ -25,15 +25,13 @@ import com.nflabs.zeppelin.spark.dep.DependencyResolver;
  */
 public class ZeppelinContext {
   private DependencyResolver dep;
-  private NoteInterpreterLoader noteInterpreterLoader;
   private PrintStream out;
 
-  public ZeppelinContext(SparkContext sc, SQLContext sql, DependencyResolver dep,
-      NoteInterpreterLoader noteInterpreterLoader, PrintStream printStream) {
+  public ZeppelinContext(SparkContext sc, SQLContext sql,
+      DependencyResolver dep, PrintStream printStream) {
     this.sc = sc;
     this.sqlContext = sql;
     this.dep = dep;
-    this.noteInterpreterLoader = noteInterpreterLoader;
     this.out = printStream;
   }
 
@@ -116,7 +114,7 @@ public class ZeppelinContext {
   public void setFormSetting(Setting o) {
     this.form = o;
   }
-
+  /*
   public void run(String lines) {
     String intpName = Paragraph.getRequiredReplName(lines);
     String scriptBody = Paragraph.getScriptBody(lines);
@@ -132,4 +130,5 @@ public class ZeppelinContext {
       out.println("Unknown error");
     }
   }
+  */
 }

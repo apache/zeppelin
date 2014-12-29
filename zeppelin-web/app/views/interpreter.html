@@ -46,7 +46,8 @@ limitations under the License.
                style="width:400px">
             <span class="input-group-addon">Interpreter</span>
             <select class="form-control"
-                    ng-model="newInterpreterSetting.group">
+                    ng-model="newInterpreterSetting.group"
+                    ng-change="newInterpreterGroupChange()">
               <option ng-repeat="(groupName, interpreterGroup) in availableInterpreters" value="{{groupName}}">{{groupName}}</option>
             </select>
           </div>
@@ -55,13 +56,15 @@ limitations under the License.
           Properties
           <table class="table properties">
             <tr>
-              <th width="300px">name</th>
+              <th>name</th>
               <th>value</th>
+              <th>description</th>
               <th></th>
             </tr>
             <tr ng-repeat="(key, value) in newInterpreterSetting.properties">
               <td>{{key}}</td>
-              <td>{{value}}</td>
+              <td><textarea ng-model="value.value"></textarea></td>
+              <td>{{value.description}}</td>
               <td>
                 <div class="btn btn-default fa fa-remove"
                      ng-click="removeNewInterpreterProperty(key)">
@@ -70,8 +73,10 @@ limitations under the License.
             </tr>
 
             <tr>
-              <td><input style="width:280px" ng-model="newInterpreterSetting.propertyKey"></input></td>
+              <td><input style="width:200px" ng-model="newInterpreterSetting.propertyKey"></input></td>
               <td><textarea ng-model="newInterpreterSetting.propertyValue"></textarea></td>
+              <td>
+              </td>
               <td>
                 <div class="btn btn-default fa fa-plus"
                      ng-click="addNewInterpreterProperty()">
@@ -125,10 +130,13 @@ limitations under the License.
       <div class="col-md-12">
         <b>Properties</b>
         <table class="table">
-          <tr class="interpreterProperty"
-              ng-repeat="(key, value) in setting.properties">
-            <td class="interpreterPropertyKey">{{key}}</td>
-            <td class="interpreterPropertyValue">{{value}}</td>
+          <tr>
+            <th>name</th>
+            <th>value</th>
+          </tr>
+          <tr ng-repeat="(key, value) in setting.properties">
+            <td>{{key}}</td>
+            <td>{{value}}</td>
           </tr>
         </table>
       </div>

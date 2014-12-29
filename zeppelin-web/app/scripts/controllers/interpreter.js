@@ -43,7 +43,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
 
         for (var settingId in data.body) {
           var setting = data.body[settingId];
-          interpreterSettings.push(remoteSettingToLocalSetting(settingId, setting));
+          interpreterSettings.push(remoteSettingToLocalSetting(setting.id, setting));
         }
 
         $scope.interpreterSettings = interpreterSettings;
@@ -67,6 +67,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
           groupedInfo[info.group].push({
             name : info.name,
             className : info.className,
+            properties : info.properties
           });
         }
 
@@ -100,6 +101,21 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       });
   };
 
+  $scope.newInterpreterGroupChange = function() {
+    var property = {};
+    var intpGroupInfo = $scope.availableInterpreters[$scope.newInterpreterSetting.group];
+    for (var i=0; i<intpGroupInfo.length; i++) {
+      var intpInfo = intpGroupInfo[i];
+      for (var key in intpInfo.properties) {
+        property[key] = {
+          value : intpInfo.properties[key].defaultValue,
+          description : intpInfo.properties[key].description
+        }
+      }
+    }
+    $scope.newInterpreterSetting.properties = property;
+  };
+
   $scope.restartInterpreterSetting = function(settingId) {
     var result = confirm('Do you want to restart this interpreter setting?');
     if (!result) {
@@ -129,7 +145,17 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       return;
     }
 
-    $http.put(getRestApiBase()+"/interpreter/setting", $scope.newInterpreterSetting).
+    var newSetting = {
+      name : $scope.newInterpreterSetting.name,
+      group : $scope.newInterpreterSetting.group,
+      properties : {}
+    };
+
+    for (var p in $scope.newInterpreterSetting.properties) {
+      newSetting.properties[p] = $scope.newInterpreterSetting.properties[p].value;
+    };
+
+    $http.put(getRestApiBase()+"/interpreter/setting", newSetting).
       success(function(data, status, headers, config) {
         $scope.resetNewInterpreterSetting();
         getInterpreterSettings();
@@ -148,6 +174,8 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       group : undefined,
       properties : {}
     };
+    $scope.newInterpreterSetting.propertyValue = "";
+    $scope.newInterpreterSetting.propertyKey = "";
   }
 
   $scope.removeNewInterpreterProperty = function(key) {
@@ -155,7 +183,9 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   }
 
   $scope.addNewInterpreterProperty = function() {
-    $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = $scope.newInterpreterSetting.propertyValue;
+    $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = { value : $scope.newInterpreterSetting.propertyValue};
+    $scope.newInterpreterSetting.propertyValue = "";
+    $scope.newInterpreterSetting.propertyKey = "";
   };
 
   var init = function() {

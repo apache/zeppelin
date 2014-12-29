@@ -484,12 +484,9 @@ public class InterpreterFactory {
       Constructor<Interpreter> constructor =
           replClass.getConstructor(new Class[] {Properties.class});
       Interpreter repl = constructor.newInstance(property);
-      if (conf.containsKey("args")) {
-        property.put("args", conf.getProperty("args"));
-      }
       repl.setClassloaderUrls(ccl.getURLs());
       LazyOpenInterpreter intp = new LazyOpenInterpreter(
-          new ClassloaderInterpreter(repl, cl, property));
+          new ClassloaderInterpreter(repl, cl));
       intp.setInterpreterGroup(interpreterGroup);
       return intp;
     } catch (SecurityException e) {

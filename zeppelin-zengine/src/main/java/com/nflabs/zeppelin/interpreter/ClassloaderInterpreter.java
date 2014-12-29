@@ -2,6 +2,7 @@ package com.nflabs.zeppelin.interpreter;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import com.nflabs.zeppelin.scheduler.Scheduler;
@@ -9,8 +10,6 @@ import com.nflabs.zeppelin.scheduler.Scheduler;
 /**
  * Add to the classpath interperters.
  * 
- * @author Leemoonsoo
- *
  */
 public class ClassloaderInterpreter
     extends Interpreter
@@ -19,8 +18,8 @@ public class ClassloaderInterpreter
   private ClassLoader cl;
   private Interpreter intp;
 
-  public ClassloaderInterpreter(Interpreter intp, ClassLoader cl, Properties property) {
-    super(property);
+  public ClassloaderInterpreter(Interpreter intp, ClassLoader cl) {
+    super(new Properties());
     this.cl = cl;
     this.intp = intp;
   }
@@ -237,6 +236,48 @@ public class ClassloaderInterpreter
     Thread.currentThread().setContextClassLoader(cl);
     try {
       return intp.getClassloaderUrls();
+    } catch (Exception e) {
+      throw new InterpreterException(e);
+    } finally {
+      cl = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
+
+  @Override
+  public void setProperty(Properties property) {
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(cl);
+    try {
+      intp.setProperty(property);
+    } catch (Exception e) {
+      throw new InterpreterException(e);
+    } finally {
+      cl = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
+
+  @Override
+  public Properties getProperty() {
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(cl);
+    try {
+      return intp.getProperty();
+    } catch (Exception e) {
+      throw new InterpreterException(e);
+    } finally {
+      cl = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
+
+  @Override
+  public String getProperty(String key) {
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(cl);
+    try {
+      return intp.getProperty(key);
     } catch (Exception e) {
       throw new InterpreterException(e);
     } finally {

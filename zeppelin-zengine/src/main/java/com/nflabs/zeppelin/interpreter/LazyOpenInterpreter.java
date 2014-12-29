@@ -2,14 +2,12 @@ package com.nflabs.zeppelin.interpreter;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Properties;
 
 import com.nflabs.zeppelin.scheduler.Scheduler;
 
 /**
- * TODO(moon): provite description.
- * 
- * @author Leemoonsoo
- *
+ * Interpreter wrapper for lazy initialization
  */
 public class LazyOpenInterpreter
     extends Interpreter 
@@ -19,12 +17,27 @@ public class LazyOpenInterpreter
   boolean opened = false;
 
   public LazyOpenInterpreter(Interpreter intp) {
-    super(intp.getProperty());
+    super(new Properties());
     this.intp = intp;
   }
   
   public Interpreter getInnerInterpreter() {
     return intp;
+  }
+
+  @Override
+  public void setProperty(Properties property) {
+    intp.setProperty(property);
+  }
+
+  @Override
+  public Properties getProperty() {
+    return intp.getProperty();
+  }
+
+  @Override
+  public String getProperty(String key) {
+    return intp.getProperty(key);
   }
 
   @Override
