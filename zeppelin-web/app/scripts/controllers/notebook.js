@@ -23,7 +23,6 @@
  * # NotebookCtrl
  * Controller of notes, manage the note (update)
  *
- * @author anthonycorbacho
  */
 angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http) {
   $scope.note = null;
@@ -181,9 +180,33 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   });
 
   var initialize = function() {
-    if(!$scope.note.config.looknfeel) {
+    if (!$scope.note.config.looknfeel) {
       $scope.note.config.looknfeel = 'default';
     }
+
+    // open interpreter binding setting when there're none selected
+    getInterpreterBindings(function(){
+      var selected = false;
+      for (var i in $scope.interpreterBindings) {
+        var setting = $scope.interpreterBindings[i];
+        if (setting.selected) {
+          selected = true;
+          break;
+        }
+      }
+
+      if (!selected) {
+        var selectedIntp = {};
+        for (var i in $scope.interpreterBindings) {
+          var setting = $scope.interpreterBindings[i];
+          if (!selectedIntp[setting.group]) {
+            setting.selected = true;
+            selectedIntp[setting.group] = true;
+          }
+        }
+        $scope.showSetting = true;
+      }
+    });
   };
 
   var cleanParagraphExcept = function(paragraphId, note) {
@@ -350,10 +373,13 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
-  var getInterpreterBindings = function() {
+  var getInterpreterBindings = function(callback) {
     $http.get(getRestApiBase()+"/notebook/interpreter/bind/"+$scope.note.id).
       success(function(data, status, headers, config) {
         $scope.interpreterBindings = data.body;
+        if (callback) {
+          callback();
+        }
       }).
       error(function(data, status, headers, config) {
         console.log("Error %o %o", status, data.message);

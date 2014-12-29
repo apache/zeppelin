@@ -39,7 +39,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     $http.get(getRestApiBase()+"/interpreter/setting").
       success(function(data, status, headers, config) {
         var interpreterSettings = [];
-        console.log("getInterpreterSettings=%o", data);
+        //console.log("getInterpreterSettings=%o", data);
 
         for (var settingId in data.body) {
           var setting = data.body[settingId];
@@ -66,12 +66,12 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
           }
           groupedInfo[info.group].push({
             name : info.name,
-            className : info.className
+            className : info.className,
           });
         }
 
         $scope.availableInterpreters = groupedInfo;
-        console.log("getAvailableInterpreters=%o", data);
+        //console.log("getAvailableInterpreters=%o", data);
       }).
       error(function(data, status, headers, config) {
         console.log("Error %o %o", status, data.message);
@@ -134,6 +134,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
         $scope.resetNewInterpreterSetting();
         getInterpreterSettings();
         alert("Interpreter setting created");
+        $scope.showAddNewSetting = false;
       }).
       error(function(data, status, headers, config) {
         console.log("Error %o %o", status, data.message);

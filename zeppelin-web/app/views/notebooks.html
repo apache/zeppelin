@@ -130,9 +130,9 @@ limitations under the License.
         </p>
 
         <ul class="interpreterSettings"
-            data-as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
-          <li data-ng-repeat="item in interpreterBindings track by $index" data-as-sortable-item>
-            <div data-as-sortable-item-handle
+            as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
+          <li data-ng-repeat="item in interpreterBindings" as-sortable-item>
+            <div as-sortable-item-handle
                  ng-click="item.selected = !item.selected"
                  class="btn btn-sm"
                  ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">{{item.name}} - <span ng-repeat="intp in item.interpreters"><span ng-show="!$first">, </span>%{{intp.name}}</span></div>

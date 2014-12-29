@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.rest;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -54,7 +55,7 @@ public class InterpreterRestApi {
   @GET
   @Path("setting")
   public Response listSettings() {
-    Map<String, InterpreterSetting> interpreterSettings = interpreterFactory.get();
+    List<InterpreterSetting> interpreterSettings = interpreterFactory.get();
     return new JsonResponse(Status.OK, "", interpreterSettings).build();
   }
 
@@ -99,9 +100,7 @@ public class InterpreterRestApi {
   @GET
   @Path("interpreter")
   public Response listInterpreter(String message) {
-    Map<String, InterpreterSetting> interpreterSettings = interpreterFactory.get();
     Map<String, RegisteredInterpreter> m = Interpreter.registeredInterpreters;    
     return new JsonResponse(Status.OK, "", m).build();
   }
-  
 }

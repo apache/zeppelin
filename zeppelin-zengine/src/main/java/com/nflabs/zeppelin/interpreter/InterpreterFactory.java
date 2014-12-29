@@ -260,6 +260,16 @@ public class InterpreterFactory {
     return defaultSettings;
   }
 
+  public List<RegisteredInterpreter> getRegisteredInterpreterList() {
+    List<RegisteredInterpreter> registeredInterpreters = new LinkedList<RegisteredInterpreter>();
+
+    for (String className : interpreterClassList) {
+      registeredInterpreters.add(Interpreter.findRegisteredInterpreterByClassName(className));
+    }
+
+    return registeredInterpreters;
+  }
+
   /**
    * @param name user defined name
    * @param groupName interpreter group name to instantiate
@@ -333,10 +343,34 @@ public class InterpreterFactory {
    * Get loaded interpreters
    * @return
    */
-  public Map<String, InterpreterSetting> get() {
+  public List<InterpreterSetting> get() {
     synchronized (interpreterSettings) {
-      Map<String, InterpreterSetting> settings = new HashMap<String, InterpreterSetting>();
-      settings.putAll(interpreterSettings);
+      List<InterpreterSetting> settings = new LinkedList<InterpreterSetting>();
+
+      for (String className : interpreterClassList) {
+        for (String settingId : interpreterSettings.keySet()) {
+          for (InterpreterSetting setting : settings) {
+            if (settingId.equals(setting.id())) {
+              continue;
+            }
+          }
+
+          InterpreterSetting setting = interpreterSettings.get(settingId);
+          for (Interpreter intp : setting.getInterpreterGroup()) {
+            if (className.equals(intp.getClassName())) {
+              boolean alreadyAdded = false;
+              for (InterpreterSetting st : settings) {
+                if (setting.id().equals(st.id())) {
+                  alreadyAdded = true;
+                }
+              }
+              if (alreadyAdded == false) {
+                settings.add(setting);
+              }
+            }
+          }
+        }
+      }
       return settings;
     }
   }

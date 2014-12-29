@@ -73,8 +73,8 @@ public class NotebookApi {
       );
     }
 
-    Map<String, InterpreterSetting> availableSettings = notebook.getInterpreterFactory().get();
-    for (InterpreterSetting setting : availableSettings.values()) {
+    List<InterpreterSetting> availableSettings = notebook.getInterpreterFactory().get();
+    for (InterpreterSetting setting : availableSettings) {
       boolean selected = false;
       for (InterpreterSetting selectedSetting : selectedSettings) {
         if (selectedSetting.id().equals(setting.id())) {
