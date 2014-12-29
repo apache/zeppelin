@@ -113,36 +113,36 @@ limitations under the License.
         </ul>
       </div>
     </h3>
+  </div>
 
-    <!-- interpreter selection modal -->
-    <div ng-show="showSetting"
-         class="setting">
-      <div class="modal-header">
-        <h4>Settings</h4>
-      </div>
-      <div class="modal-body">
-        <h5>Interpreter binding</h5>
-        <p>
-          Bind interpreter for this note.
-          Click to Bind/Unbind interpreter.
-          Drag and drop to reorder interpreters. <br />
-          The first interpreter on the list becomes default.
-        </p>
+  <!-- settings -->
+  <div ng-show="showSetting"
+       class="setting">
+    <div class="modal-header">
+      <h4>Settings</h4>
+    </div>
+    <div class="modal-body">
+      <h5>Interpreter binding</h5>
+      <p>
+        Bind interpreter for this note.
+        Click to Bind/Unbind interpreter.
+        Drag and drop to reorder interpreters. <br />
+        The first interpreter on the list becomes default.
+      </p>
 
-        <ul class="interpreterSettings"
-            as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
-          <li data-ng-repeat="item in interpreterBindings" as-sortable-item>
-            <div as-sortable-item-handle
-                 ng-click="item.selected = !item.selected"
-                 class="btn btn-sm"
-                 ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">{{item.name}} - <span ng-repeat="intp in item.interpreters"><span ng-show="!$first">, </span>%{{intp.name}}</span></div>
-          </li>
-        </ul>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-success" ng-click="saveSetting()">Okay</button>
-        <button class="btn" ng-click="closeSetting()">Cancel</button>
-      </div>
+      <ul class="interpreterSettings"
+          as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
+        <li data-ng-repeat="item in interpreterBindings" as-sortable-item>
+          <div as-sortable-item-handle
+          ng-click="item.selected = !item.selected"
+          class="btn btn-sm"
+          ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">{{item.name}} - <span ng-repeat="intp in item.interpreters"><span ng-show="!$first">, </span>%{{intp.name}}</span></div>
+        </li>
+      </ul>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-success" ng-click="saveSetting()">Okay</button>
+      <button class="btn" ng-click="closeSetting()">Cancel</button>
     </div>
   </div>
 
