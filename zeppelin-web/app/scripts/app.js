@@ -85,7 +85,14 @@ angular
     'ui.sortable',
     'ngTouch',
     'ngDragDrop',
+    'monospaced.elastic',
+    'puElasticInput'
   ])
+  .filter('breakFilter', function() {
+    return function (text) {
+      if (text !== undefined) return text.replace(/\n/g, '<br />');
+    };
+  })
   .config(function ($routeProvider, WebSocketProvider) {
     WebSocketProvider
       .prefix('')

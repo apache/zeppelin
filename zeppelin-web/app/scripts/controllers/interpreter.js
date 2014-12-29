@@ -117,7 +117,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   };
 
   $scope.restartInterpreterSetting = function(settingId) {
-    var result = confirm('Do you want to restart this interpreter setting?');
+    var result = confirm('Do you want to restart this interpreter?');
     if (!result) {
       return;
     }
@@ -144,6 +144,16 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       alert("Please determine name and interpreter");
       return;
     }
+
+    for (var i=0; i<$scope.interpreterSettings.length; i++) {
+      var setting = $scope.interpreterSettings[i];
+      if (setting.name === $scope.newInterpreterSetting.name) {
+        alert("Name '"+setting.name+"' already exists");
+        return;
+      }
+    }
+
+    $scope.addNewInterpreterProperty();
 
     var newSetting = {
       name : $scope.newInterpreterSetting.name,

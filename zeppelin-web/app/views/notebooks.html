@@ -118,31 +118,33 @@ limitations under the License.
   <!-- settings -->
   <div ng-show="showSetting"
        class="setting">
-    <div class="modal-header">
+    <div>
       <h4>Settings</h4>
     </div>
-    <div class="modal-body">
+    <hr />
+    <div>
       <h5>Interpreter binding</h5>
       <p>
         Bind interpreter for this note.
         Click to Bind/Unbind interpreter.
         Drag and drop to reorder interpreters. <br />
-        The first interpreter on the list becomes default.
+        The first interpreter on the list becomes default. To create/remove interpreters, go to <a href="/#/interpreter">Interpreter</a> menu.
       </p>
 
-      <ul class="interpreterSettings"
-          as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
-        <li data-ng-repeat="item in interpreterBindings" as-sortable-item>
+      <div class="interpreterSettings"
+           as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
+        <div data-ng-repeat="item in interpreterBindings" as-sortable-item>
           <div as-sortable-item-handle
-          ng-click="item.selected = !item.selected"
-          class="btn btn-sm"
-          ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">{{item.name}} - <span ng-repeat="intp in item.interpreters"><span ng-show="!$first">, </span>%{{intp.name}}</span></div>
-        </li>
-      </ul>
+               ng-click="item.selected = !item.selected"
+               class="btn btn-sm"
+               ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">{{item.name}} - <span ng-repeat="intp in item.interpreters"><span ng-show="!$first">, </span>%{{intp.name}}</span></div>
+        </div>
+      </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-success" ng-click="saveSetting()">Okay</button>
-      <button class="btn" ng-click="closeSetting()">Cancel</button>
+    <br />
+    <div>
+      <button class="btn btn-primary" ng-click="saveSetting()">Save</button>
+      <button class="btn btn-default" ng-click="closeSetting()">Cancel</button>
     </div>
   </div>
 

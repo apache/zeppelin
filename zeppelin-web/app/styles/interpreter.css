@@ -1,7 +1,33 @@
+.interpreterHead {
+  margin-left: -10px;
+  margin-right: -10px;
+  margin-top: -10px;
+  margin-bottom: 20px;
+  padding: 10px 15px 15px 15px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid #E5E5E5;
+}
+
+.interpreterHead .header {
+  font-family: 'Roboto', sans-serif;
+}
+
+.interpreterHead textarea {
+  width: 100%;
+  display: block;
+  height: 20px;
+  resize: none;
+  border: 1px solid #CCCCCC;
+  font-size: 12px;
+}
+
 .interpreter .interpreter-title {
   font-size:20px;
   font-weight:bold;
   color:#3071a9;
+  float:left;
+  margin-top:0px;
 }
 
 .interpreter ul {
@@ -13,20 +39,6 @@
   list-style-type: none;
 }
 
-.interpreter .properties {
-}
-
-.interpreter .properties tr td {
-}
-
-
-.interpreter .properties textarea {
-  padding : 5px 5px 5px 5px;
-  width: 100%;
-  display: block;
-  height: 27px;
-  overflow-y: auto;
-}
 
 .interpreter table tr .interpreterPropertyKey {
   padding : 5px 5px 5px 5px;

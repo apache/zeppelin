@@ -463,6 +463,7 @@
 /* note setting panel */
 .setting {
   background-color: white;
+  padding: 10px 15px 15px 15px;
   margin-left: -10px;
   margin-right: -10px;
   font-family: 'Roboto', sans-serif;
@@ -478,11 +479,11 @@
   border: 1px solid #E5E5E5;
 }
 
-.setting .interpreterSettings li div {
+.setting .interpreterSettings div div {
   margin: 2px 0px 2px 0px;
 }
 
-.setting .interpreterSettings li div {
+.setting .interpreterSettings div div {
   cursor: pointer;
 }
 
