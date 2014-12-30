@@ -1148,7 +1148,7 @@ angular.module('zeppelinWebApp')
         s[c] = {};
         getSchemaUnderKey(key.children[c], s[c]);
       }
-    }
+    };
 
     var traverse = function(sKey, s, rKey, r, func, rowName, rowValue, colName) {
       //console.log("TRAVERSE sKey=%o, s=%o, rKey=%o, r=%o, rowName=%o, rowValue=%o, colName=%o", sKey, s, rKey, r, rowName, rowValue, colName);
@@ -1158,14 +1158,14 @@ angular.module('zeppelinWebApp')
         rowValue = concat(rowValue, rKey);
       } else if(s.type==='group') {
         colName = concat(colName, sKey);
-      } else if(s.type==='value' && sKey===rKey) {
+      } else if(s.type==='value' && sKey===rKey || valueOnly) {
         colName = concat(colName, rKey);
         func(rowName, rowValue, colName, r);
       }
 
       for (var c in s.children) {
         if (fillMissingValues && s.children[c].type==='group' && r[c]===undefined) {
-          var cs={};
+          var cs = {};
           getSchemaUnderKey(s.children[c], cs);
           traverse(c, s.children[c], c, cs, func, rowName, rowValue, colName);
           continue;
