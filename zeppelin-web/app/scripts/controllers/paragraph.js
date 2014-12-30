@@ -814,7 +814,7 @@ angular.module('zeppelinWebApp')
       d3g = pivotDataToD3ChartFormat(p, true).d3g;
       $scope.chart[type].yAxis.axisLabelDistance(50);
     } else {
-      var pivotdata = pivotDataToD3ChartFormat(p);
+      var pivotdata = pivotDataToD3ChartFormat(p, false, true);
       var xLabels = pivotdata.xLabels;
       d3g = pivotdata.d3g;
       $scope.chart[type].xAxis.tickFormat(function(d) {
@@ -1127,7 +1127,7 @@ angular.module('zeppelinWebApp')
     };
   };
 
-  var pivotDataToD3ChartFormat = function(data, allowTextXAxis) {
+  var pivotDataToD3ChartFormat = function(data, allowTextXAxis, fillMissingValues) {
     // construct d3 data
     var d3g = [];
 
@@ -1135,7 +1135,6 @@ angular.module('zeppelinWebApp')
     var rows = data.rows;
     var values = $scope.paragraph.config.graph.values;
 
-    var d = {};
     var concat = function(o, n) {
       if(!o) {
         return n;
@@ -1143,6 +1142,13 @@ angular.module('zeppelinWebApp')
         return o+'.'+n;
       }
     };
+
+    var getSchemaUnderKey = function(key, s) {
+      for (var c in key.children) {
+        s[c] = {};
+        getSchemaUnderKey(key.children[c], s[c]);
+      }
+    }
 
     var traverse = function(sKey, s, rKey, r, func, rowName, rowValue, colName) {
       //console.log("TRAVERSE sKey=%o, s=%o, rKey=%o, r=%o, rowName=%o, rowValue=%o, colName=%o", sKey, s, rKey, r, rowName, rowValue, colName);
@@ -1152,19 +1158,23 @@ angular.module('zeppelinWebApp')
         rowValue = concat(rowValue, rKey);
       } else if(s.type==='group') {
         colName = concat(colName, sKey);
-      } else if(s.type==='value') {
+      } else if(s.type==='value' && sKey===rKey) {
         colName = concat(colName, rKey);
         func(rowName, rowValue, colName, r);
       }
 
       for (var c in s.children) {
-        if (s.type==='group' && sKey!==rKey) {
-          traverse(c, s.children[c], c, undefined, func, rowName, rowValue, colName);
+        if (fillMissingValues && s.children[c].type==='group' && r[c]===undefined) {
+          var cs={};
+          getSchemaUnderKey(s.children[c], cs);
+          traverse(c, s.children[c], c, cs, func, rowName, rowValue, colName);
           continue;
         }
 
         for (var j in r) {
-          traverse(c, s.children[c], j, r[j], func, rowName, rowValue, colName);
+          if (s.children[c].type==='key' || c===j) {
+            traverse(c, s.children[c], j, r[j], func, rowName, rowValue, colName);
+          }
         }
       }
     };
@@ -1207,9 +1217,9 @@ angular.module('zeppelinWebApp')
 
         var xVar = isNaN(rowValue) ? ((allowTextXAxis) ? rowValue : rowNameIndex[rowValue]) : parseFloat(rowValue);
         var yVar = 0;
-        if(xVar===undefined){ xVar = colName; }
-        if(value!==undefined){
-            yVar = isNaN(value.value) ? 0 : parseFloat(value.value) / parseFloat(value.count);
+        if(xVar===undefined) { xVar = colName; }
+        if(value!==undefined) {
+          yVar = isNaN(value.value) ? 0 : parseFloat(value.value) / parseFloat(value.count);
         }
         d3g[i].values.push({
           x : xVar,
