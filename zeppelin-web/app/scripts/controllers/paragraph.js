@@ -671,6 +671,9 @@ angular.module('zeppelinWebApp')
       else if (type === 'lineChart') {
         setD3Chart(type, $scope.paragraph.result, refresh);
       }
+      else if (type === 'scatterChart') {
+        setD3Chart(type, $scope.paragraph.result, refresh);
+      }
     }
   };
 
@@ -795,7 +798,7 @@ angular.module('zeppelinWebApp')
     var d3g = [];
     // select yColumns.
 
-    if (type==='pieChart') {
+    if (type === 'pieChart') {
       var d = pivotDataToD3ChartFormat(p, true).d3g;
 
       $scope.chart[type].x(function(d) { return d.label;})
@@ -810,22 +813,35 @@ angular.module('zeppelinWebApp')
           });
         }
       }
-    } else if (type==='multiBarChart') {
-      d3g = pivotDataToD3ChartFormat(p, true).d3g;
+    } else if (type === 'multiBarChart') {
+      d3g = pivotDataToD3ChartFormat(p, true, false).d3g;
       $scope.chart[type].yAxis.axisLabelDistance(50);
     } else {
-      var pivotdata = pivotDataToD3ChartFormat(p, false, true);
+      var fillMissingValues = (type === 'lineChart' || type === 'stackedAreaChart');
+      var pivotdata = pivotDataToD3ChartFormat(p, false, fillMissingValues);
       var xLabels = pivotdata.xLabels;
       d3g = pivotdata.d3g;
+
+      // handle string type xlabel
       $scope.chart[type].xAxis.tickFormat(function(d) {
-        if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
+        if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) {
           return xLabels[d];
         } else {
           return d;
         }
       });
+      if (type === 'scatterChart'){
+        // handle the problem of tooltip not showing when muliple points have same value. (https://github.com/novus/nvd3/issues/330)
+        $scope.chart[type].scatter.useVoronoi(false);
+        // configure how the tooltip looks.
+        $scope.chart[type].tooltipContent(function(key) {
+          return '<h3>' + key + '</h3>';
+        });
+      } else {
+        // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
+        $scope.chart[type].useInteractiveGuideline(true);
+      }
       $scope.chart[type].yAxis.axisLabelDistance(50);
-      $scope.chart[type].useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
       $scope.chart[type].forceY([0]); // force y-axis minimum to 0 for line chart.
     }
 
