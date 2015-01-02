@@ -811,7 +811,7 @@ angular.module('zeppelinWebApp')
         }
       }
     } else if (type==='multiBarChart') {
-      d3g = pivotDataToD3ChartFormat(p, true).d3g;
+      d3g = pivotDataToD3ChartFormat(p, true, false, type).d3g;
       $scope.chart[type].yAxis.axisLabelDistance(50);
     } else {
       var pivotdata = pivotDataToD3ChartFormat(p, false, true);
@@ -1127,7 +1127,7 @@ angular.module('zeppelinWebApp')
     };
   };
 
-  var pivotDataToD3ChartFormat = function(data, allowTextXAxis, fillMissingValues) {
+  var pivotDataToD3ChartFormat = function(data, allowTextXAxis, fillMissingValues, chartType) {
     // construct d3 data
     var d3g = [];
 
@@ -1157,7 +1157,7 @@ angular.module('zeppelinWebApp')
         rowName = concat(rowName, sKey);
         rowValue = concat(rowValue, rKey);
       } else if (s.type==='group') {
-        colName = concat(colName, sKey);
+        colName = concat(colName, rKey);
       } else if (s.type==='value' && sKey===rKey || valueOnly) {
         colName = concat(colName, rKey);
         func(rowName, rowValue, colName, r);
@@ -1182,7 +1182,9 @@ angular.module('zeppelinWebApp')
     var keys = $scope.paragraph.config.graph.keys;
     var groups = $scope.paragraph.config.graph.groups;
     var values = $scope.paragraph.config.graph.values;
-    var valueOnly = (keys.length===0 && groups.length===0 && values.length>0);
+    var valueOnly = (keys.length === 0 && groups.length === 0 && values.length > 0);
+    var noKey = (keys.length === 0);
+    var isMultiBarChart = (chartType === 'multiBarChart');
 
     var sKey = Object.keys(schema)[0];
 
@@ -1204,14 +1206,14 @@ angular.module('zeppelinWebApp')
           colNameIndex[colName] = colIdx++;
         }
         var i = colNameIndex[colName];
-        if (valueOnly) {
+        if (noKey && isMultiBarChart) {
           i = 0;
         }
 
         if (!d3g[i]) {
           d3g[i] = {
             values : [],
-            key : (valueOnly) ? 'values' : colName
+            key : (noKey && isMultiBarChart) ? 'values' : colName
           };
         }
 
