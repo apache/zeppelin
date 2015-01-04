@@ -196,6 +196,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       }
 
       if (!selected) {
+        // make default selection
         var selectedIntp = {};
         for (var i in $scope.interpreterBindings) {
           var setting = $scope.interpreterBindings[i];
@@ -204,6 +205,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
             selectedIntp[setting.group] = true;
           }
         }
+
         $scope.showSetting = true;
       }
     });
@@ -377,6 +379,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $http.get(getRestApiBase()+"/notebook/interpreter/bind/"+$scope.note.id).
       success(function(data, status, headers, config) {
         $scope.interpreterBindings = data.body;
+        $scope.interpreterBindingsOrig = jQuery.extend(true, [], $scope.interpreterBindings); // to check dirty
         if (callback) {
           callback();
         }
@@ -398,6 +401,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   $scope.closeSetting = function() {
+    if (isSettingDirty()) {
+      var result = confirm('Changes will be discarded');
+      if (!result) {
+        return;
+      }
+    }
     $scope.showSetting = false;
   };
 
@@ -426,6 +435,14 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       $scope.closeSetting();
     } else {
       $scope.openSetting();
+    }
+  };
+
+  var isSettingDirty = function() {
+    if (angular.equals($scope.interpreterBindings, $scope.interpreterBindingsOrig)) {
+      return false;
+    } else {
+      return true;
     }
   };
 });
