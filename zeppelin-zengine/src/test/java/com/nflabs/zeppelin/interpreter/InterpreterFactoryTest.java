@@ -59,7 +59,7 @@ public class InterpreterFactoryTest {
 
 	@Test
 	public void testBasic() {
-	  List<String> all = factory.getDefaultInterpreterList();
+	  List<String> all = factory.getDefaultInterpreterSettingList();
 	  
 		// get interpreter
 		Interpreter repl1 = factory.get(all.get(0)).getInterpreterGroup().getFirst();
@@ -76,10 +76,18 @@ public class InterpreterFactoryTest {
 	}
 
   @Test
-  public void testFactoryDefaultList() {
-    List<String> all = factory.getDefaultInterpreterList();
+  public void testFactoryDefaultList() throws InterpreterException, IOException {
+    // get default list from default setting
+    List<String> all = factory.getDefaultInterpreterSettingList();
     assertEquals(2, all.size());
     assertEquals(factory.get(all.get(0)).getInterpreterGroup().getFirst().getClassName(), "com.nflabs.zeppelin.interpreter.mock.MockInterpreter1");
+
+    // add setting
+    factory.add("a mock", "mock2", new Properties());
+    all = factory.getDefaultInterpreterSettingList();
+    assertEquals(2, all.size());
+    assertEquals("mock1", factory.get(all.get(0)).getName());
+    assertEquals("a mock", factory.get(all.get(1)).getName());
   }
   
   @Test

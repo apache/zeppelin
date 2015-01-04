@@ -66,7 +66,7 @@ public class NotebookTest implements JobListenerFactory{
 	@Test
 	public void testSelectingReplImplementation() throws IOException {
 		Note note = notebook.createNote();
-		note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterList());
+		note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 		
 		// run with defatul repl
 		Paragraph p1 = note.addParagraph();
@@ -99,7 +99,7 @@ public class NotebookTest implements JobListenerFactory{
 	@Test
 	public void testRunAll() throws IOException {
 		Note note = notebook.createNote();
-    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterList());
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
 		Paragraph p1 = note.addParagraph();
 		p1.setText("p1");
@@ -116,7 +116,7 @@ public class NotebookTest implements JobListenerFactory{
 	public void testSchedule() throws InterruptedException, IOException{
 		// create a note and a paragraph
 		Note note = notebook.createNote();
-    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterList());
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
 		Paragraph p = note.addParagraph();
 		p.setText("p1");

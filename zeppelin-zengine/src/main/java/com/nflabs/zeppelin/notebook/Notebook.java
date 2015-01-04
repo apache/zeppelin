@@ -1,10 +1,14 @@
 package com.nflabs.zeppelin.notebook;
 
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
-import com.nflabs.zeppelin.interpreter.InterpreterFactory;
-import com.nflabs.zeppelin.interpreter.InterpreterSetting;
-import com.nflabs.zeppelin.scheduler.Scheduler;
-import com.nflabs.zeppelin.scheduler.SchedulerFactory;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
@@ -19,15 +23,12 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.interpreter.InterpreterFactory;
+import com.nflabs.zeppelin.interpreter.InterpreterSetting;
+import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 /**
  * Collection of Notes.
@@ -60,36 +61,38 @@ public class Notebook {
 
   /**
    * Create new note.
-   * 
+   *
    * @return
+   * @throws IOException
    */
-  public Note createNote() {
-    NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    Note note = new Note(conf, intpLoader, jobListenerFactory, quartzSched);
-    intpLoader.setNoteId(note.id());
-    synchronized (notes) {
-      notes.put(note.id(), note);
+  public Note createNote() throws IOException {
+    if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
+      return createNote(replFactory.getDefaultInterpreterSettingList());
+    } else {
+      return createNote(null);
     }
-    return note;
   }
-  
+
   /**
    * Create new note.
-   * 
+   *
    * @return
-   * @throws IOException 
+   * @throws IOException
    */
   public Note createNote(List<String> interpreterIds) throws IOException {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    intpLoader.setInterpreters(interpreterIds);
     Note note = new Note(conf, intpLoader, jobListenerFactory, quartzSched);
     intpLoader.setNoteId(note.id());
     synchronized (notes) {
       notes.put(note.id(), note);
     }
+    if (interpreterIds != null) {
+      bindInterpretersToNote(note.id(), interpreterIds);
+    }
+
     return note;
   }
-  
+
   public void bindInterpretersToNote(String id,
       List<String> interpreterSettingIds) throws IOException {
     Note note = getNote(id);
@@ -128,16 +131,11 @@ public class Notebook {
     synchronized (notes) {
       note = notes.remove(id);
     }
-    persistNoteReplLoaderInfo();
     try {
       note.unpersist();
     } catch (IOException e) {
       e.printStackTrace();
     }
-  }
-
-  private void persistNoteReplLoaderInfo() {
-    // TODO(moon): Auto-generated method stub    
   }
 
   private void loadAllNotes() throws IOException {
@@ -159,6 +157,7 @@ public class Notebook {
             scheduler,
             jobListenerFactory, quartzSched);
         noteInterpreterLoader.setNoteId(note.id());
+
         synchronized (notes) {
           notes.put(note.id(), note);
           refreshCron(note.id());
@@ -203,7 +202,7 @@ public class Notebook {
 
   /**
    * Cron task for the note.
-   * 
+   *
    * @author Leemoonsoo
    *
    */
@@ -240,7 +239,7 @@ public class Notebook {
 
       JobDetail newJob =
           JobBuilder.newJob(CronJob.class).withIdentity(id, "note").usingJobData("noteId", id)
-              .build();
+          .build();
 
       Map<String, Object> info = note.getInfo();
       info.put("cron", null);
@@ -249,8 +248,8 @@ public class Notebook {
       try {
         trigger =
             TriggerBuilder.newTrigger().withIdentity("trigger_" + id, "note")
-                .withSchedule(CronScheduleBuilder.cronSchedule(cronExpr)).forJob(id, "note")
-                .build();
+            .withSchedule(CronScheduleBuilder.cronSchedule(cronExpr)).forJob(id, "note")
+            .build();
       } catch (Exception e) {
         logger.error("Error", e);
         info.put("cron", e.getMessage());

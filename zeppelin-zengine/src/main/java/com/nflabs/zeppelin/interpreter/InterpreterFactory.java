@@ -13,6 +13,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -45,14 +46,13 @@ public class InterpreterFactory {
   private ZeppelinConfiguration conf;
   String[] interpreterClassList;
 
-  private Map<String, InterpreterSetting> interpreterSettings = 
+  private Map<String, InterpreterSetting> interpreterSettings =
       new HashMap<String, InterpreterSetting>();
 
-  // Map <NoteId, InterpreterSettingList>
   private Map<String, List<String>> interpreterBindings = new HashMap<String, List<String>>();
 
   private Gson gson;
-  
+
   public InterpreterFactory(ZeppelinConfiguration conf) throws InterpreterException, IOException {
     this.conf = conf;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
@@ -60,9 +60,9 @@ public class InterpreterFactory {
 
     GsonBuilder builder = new GsonBuilder();
     builder.setPrettyPrinting();
-    builder.registerTypeAdapter(Interpreter.class, new InterpreterSerializer()); 
+    builder.registerTypeAdapter(Interpreter.class, new InterpreterSerializer());
     gson = builder.create();
-    
+
     init();
   }
 
@@ -111,18 +111,18 @@ public class InterpreterFactory {
 
         for (String k : Interpreter.registeredInterpreters.keySet()) {
           RegisteredInterpreter info = Interpreter.registeredInterpreters.get(k);
-          
+
           if (!groupClassNameMap.containsKey(info.getGroup())) {
             groupClassNameMap.put(info.getGroup(), new LinkedList<RegisteredInterpreter>());
           }
-          
+
           groupClassNameMap.get(info.getGroup()).add(info);
         }
-        
+
         for (String className : interpreterClassList) {
           for (String groupName : groupClassNameMap.keySet()) {
             List<RegisteredInterpreter> infos = groupClassNameMap.get(groupName);
-            
+
             boolean found = false;
             Properties p = new Properties();
             for (RegisteredInterpreter info : infos) {
@@ -141,25 +141,25 @@ public class InterpreterFactory {
               groupClassNameMap.remove(groupName);
               break;
             }
-          }         
+          }
         }
       }
     }
-    
+
     for (String settingId : interpreterSettings.keySet()) {
       InterpreterSetting setting = interpreterSettings.get(settingId);
-      logger.info("Interpreter setting group {} : id={}, name={}", 
-          setting.getGroup(), settingId, setting.getName()); 
+      logger.info("Interpreter setting group {} : id={}, name={}",
+          setting.getGroup(), settingId, setting.getName());
       for (Interpreter interpreter : setting.getInterpreterGroup()) {
         logger.info("  className = {}", interpreter.getClassName());
       }
     }
   }
-  
+
   private void loadFromFile() throws IOException {
     GsonBuilder builder = new GsonBuilder();
     builder.setPrettyPrinting();
-    builder.registerTypeAdapter(Interpreter.class, new InterpreterSerializer()); 
+    builder.registerTypeAdapter(Interpreter.class, new InterpreterSerializer());
     Gson gson = builder.create();
 
     File settingFile = new File(conf.getInterpreterSettingPath());
@@ -180,7 +180,7 @@ public class InterpreterFactory {
 
     String json = sb.toString();
     Map<String, Object> savedObject = gson.fromJson(json,
-        new TypeToken<Map<String, Object>>() {}.getType()); 
+        new TypeToken<Map<String, Object>>() {}.getType());
 
     Map<String, Map<String, Object>> settings = (Map<String, Map<String, Object>>) savedObject
         .get("interpreterSettings");
@@ -204,7 +204,7 @@ public class InterpreterFactory {
     this.interpreterBindings = bindings;
   }
 
-  
+
   private void saveToFile() throws IOException {
     String jsonString;
 
@@ -215,12 +215,12 @@ public class InterpreterFactory {
 
       jsonString = gson.toJson(saveObject);
     }
-    
+
     File settingFile = new File(conf.getInterpreterSettingPath());
     if (!settingFile.exists()) {
       settingFile.createNewFile();
     }
-    
+
     FileOutputStream fos = new FileOutputStream(settingFile, false);
     OutputStreamWriter out = new OutputStreamWriter(fos);
     out.append(jsonString);
@@ -239,24 +239,29 @@ public class InterpreterFactory {
     return null;
   }
 
-  /** 
+  /**
    * Return ordered interpreter setting list.
-   * Order is decided by ZEPPELIN_INTERPRETERS
+   * The list does not contain more than one setting from the same interpreter class.
+   * Order by InterpreterClass (order defined by ZEPPELIN_INTERPRETERS), Interpreter setting name
    * @return
    */
-  public List<String> getDefaultInterpreterList() {
+  public List<String> getDefaultInterpreterSettingList() {
+    // this list will contain default interpreter setting list
     List<String> defaultSettings = new LinkedList<String>();
-    for (String className : interpreterClassList) {
-      for (String settingId : interpreterSettings.keySet()) {
-        if (defaultSettings.contains(settingId)) {
-          continue;
-        }
-        InterpreterSetting setting = interpreterSettings.get(settingId);
-        for (Interpreter intp : setting.getInterpreterGroup()) {
-          if (className.equals(intp.getClassName())) {
-            defaultSettings.add(settingId);
-          }
-        }
+
+    // to ignore the same interpreter group
+    Map<String, Boolean> interpreterGroupCheck = new HashMap<String, Boolean>();
+
+    List<InterpreterSetting> sortedSettings = get();
+
+    for (InterpreterSetting setting : sortedSettings) {
+      if (defaultSettings.contains(setting.id())) {
+        continue;
+      }
+
+      if (!interpreterGroupCheck.containsKey(setting.getGroup())) {
+        defaultSettings.add(setting.id());
+        interpreterGroupCheck.put(setting.getGroup(), true);
       }
     }
     return defaultSettings;
@@ -282,7 +287,7 @@ public class InterpreterFactory {
    */
   public InterpreterGroup add(String name, String groupName, Properties properties)
       throws InterpreterException, IOException {
-    synchronized (interpreterSettings) {      
+    synchronized (interpreterSettings) {
       InterpreterGroup interpreterGroup = createInterpreterGroup(groupName, properties);
 
       InterpreterSetting intpSetting = new InterpreterSetting(
@@ -295,7 +300,7 @@ public class InterpreterFactory {
       return interpreterGroup;
     }
   }
-  
+
   private InterpreterGroup createInterpreterGroup(String groupName, Properties properties)
       throws InterpreterException {
     InterpreterGroup interpreterGroup = new InterpreterGroup();
@@ -317,8 +322,8 @@ public class InterpreterFactory {
       }
     }
     return interpreterGroup;
-  }    
-  
+  }
+
   public void remove(String id) throws IOException {
     synchronized (interpreterSettings) {
       if (interpreterSettings.containsKey(id)) {
@@ -347,36 +352,43 @@ public class InterpreterFactory {
    */
   public List<InterpreterSetting> get() {
     synchronized (interpreterSettings) {
-      List<InterpreterSetting> settings = new LinkedList<InterpreterSetting>();
+      List<InterpreterSetting> orderedSettings = new LinkedList<InterpreterSetting>();
+      List<InterpreterSetting> settings = new LinkedList<InterpreterSetting>(
+          interpreterSettings.values());
+      Collections.sort(settings, new Comparator<InterpreterSetting>(){
+        @Override
+        public int compare(InterpreterSetting o1, InterpreterSetting o2) {
+          return o1.getName().compareTo(o2.getName());
+        }
+      });
 
       for (String className : interpreterClassList) {
-        for (String settingId : interpreterSettings.keySet()) {
-          for (InterpreterSetting setting : settings) {
-            if (settingId.equals(setting.id())) {
+        for (InterpreterSetting setting : settings) {
+          for (InterpreterSetting orderedSetting : orderedSettings) {
+            if (orderedSetting.id().equals(setting.id())) {
               continue;
             }
           }
 
-          InterpreterSetting setting = interpreterSettings.get(settingId);
           for (Interpreter intp : setting.getInterpreterGroup()) {
             if (className.equals(intp.getClassName())) {
               boolean alreadyAdded = false;
-              for (InterpreterSetting st : settings) {
+              for (InterpreterSetting st : orderedSettings) {
                 if (setting.id().equals(st.id())) {
                   alreadyAdded = true;
                 }
               }
               if (alreadyAdded == false) {
-                settings.add(setting);
+                orderedSettings.add(setting);
               }
             }
           }
         }
       }
-      return settings;
+      return orderedSettings;
     }
   }
-  
+
   public InterpreterSetting get(String name) {
     synchronized (interpreterSettings) {
       return interpreterSettings.get(name);
@@ -429,7 +441,7 @@ public class InterpreterFactory {
       }
     }
   }
-  
+
   public void restart(String id) {
     synchronized (interpreterSettings) {
       synchronized (interpreterSettings) {
@@ -446,7 +458,7 @@ public class InterpreterFactory {
               + " not found");
         }
       }
-    }     
+    }
   }
 
   private Interpreter createRepl(String dirName, String className,
@@ -478,7 +490,7 @@ public class InterpreterFactory {
       if (separateCL == true) {
         cl = URLClassLoader.newInstance(new URL[] {}, ccl);
       } else {
-        cl = (URLClassLoader) ccl;
+        cl = ccl;
       }
       Thread.currentThread().setContextClassLoader(cl);
 
