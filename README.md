@@ -1,6 +1,5 @@
 #Zeppelin 
 
-**Now, out in [Version 0.4.0](https://github.com/NFLabs/zeppelin/releases/tag/release-0.4.0)!**<br/>
 **Documentation:** [User Guide](http://zeppelin-project.org/docs/index.html)<br/>
 **Mailing List:** [Mailing List](https://groups.google.com/forum/#!forum/zeppelin-developers) <br/>
 **Continuous Integration:** [![Build Status](https://secure.travis-ci.org/NFLabs/zeppelin.png?branch=master)](https://travis-ci.org/NFLabs/zeppelin) <br/>
