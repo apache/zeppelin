@@ -92,5 +92,4 @@ Zeppelin manages it's issues in Jira. [https://zeppelin-project.atlassian.net/br
 ### Stay involved
 Contributors should join the Zeppelin mailing lists.
 
-* [https://groups.google.com/forum/#!forum/zeppelin-users](https://groups.google.com/forum/#!forum/zeppelin-users)
-* [https://groups.google.com/forum/#!forum/zeppelin-developers](https://groups.google.com/forum/#!forum/zeppelin-developers)
+* [dev@zeppelin.incubator.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-dev/) is for people who want to contribute code to Zeppelin. [subscribe](mailto:dev-subscribe@zeppelin.incubator.apache.org?subject=send this email to subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.incubator.apache.org?subject=send this email to unsubscribe), [archives](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-dev/)
