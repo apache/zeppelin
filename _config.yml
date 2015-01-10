@@ -13,7 +13,7 @@ encoding: utf-8
 title : Zeppelin
 tagline: Simplify bigdata analytics
 author :
-  name : NFLabs Inc
+  name : The Apache Software Foundation
   email : contacts@nflabs.com
   github : zeppelin
   twitter : username
