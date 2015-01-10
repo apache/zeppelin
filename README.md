@@ -15,7 +15,7 @@ See https://help.github.com/articles/using-jekyll-with-pages#installing-jekyll
 ## On local machine
 
 ### Run
-    jekyll serve --watch
+    bundle exec jekyll serve --watch
 
 ### Deploy
 Simply commit gh-pages and Github will do the actuall job of generating static HTML pages
