@@ -19,10 +19,12 @@
 # limitations under the License.
 #
 
-FWDIR="$(cd `dirname $0`; pwd)"
+FWDIR="$(cd $(dirname "$0"); pwd)"
 
 if [[ -z "${ZEPPELIN_HOME}" ]]; then
-  export ZEPPELIN_HOME="${FWDIR}/.."
+  # Make ZEPPELIN_HOME look cleaner in logs by getting rid of the
+  # extra ../
+  export ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
 fi
 
 if [[ -z "${ZEPPELIN_CONF_DIR}" ]]; then
@@ -45,7 +47,7 @@ if [[ -z "${ZEPPELIN_WAR}" ]]; then
   if [[ -d "${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp" ]]; then
     export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web/src/main/webapp"
   else
-    export ZEPPELIN_WAR=`find ${ZEPPELIN_HOME} -name "zeppelin-web*.war"`
+    export ZEPPELIN_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web*.war")
   fi
 fi
 
@@ -53,7 +55,7 @@ if [[ -z "${ZEPPELIN_API_WAR}" ]]; then
   if [[ -d "${ZEPPELIN_HOME}/zeppelin-docs/src/main/swagger" ]]; then
     export ZEPPELIN_API_WAR="${ZEPPELIN_HOME}/zeppelin-docs/src/main/swagger"
   else
-    export ZEPPELIN_API_WAR=`find ${ZEPPELIN_HOME}/ -name "zeppelin-api-ui*.war"`
+    export ZEPPELIN_API_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-api-ui*.war")
   fi
 fi
 
@@ -69,17 +71,17 @@ ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 
 function addJarInDir(){
   if [[ -d "${1}" ]]; then
-    for jar in $(find ${1} -maxdepth 1 -name '*jar'); do
-      ZEPPELIN_CLASSPATH=$jar:$ZEPPELIN_CLASSPATH
+    for jar in $(find -L "${1}" -maxdepth 1 -name '*jar'); do
+      ZEPPELIN_CLASSPATH="$jar:$ZEPPELIN_CLASSPATH"
     done
   fi
 }
-
-addJarInDir ${ZEPPELIN_HOME}
-addJarInDir ${ZEPPELIN_HOME}/lib
-addJarInDir ${ZEPPELIN_HOME}/zeppelin-zengine/target/lib
-addJarInDir ${ZEPPELIN_HOME}/zeppelin-server/target/lib
-addJarInDir ${ZEPPELIN_HOME}/zeppelin-web/target/lib
+  
+addJarInDir "${ZEPPELIN_HOME}"
+addJarInDir "${ZEPPELIN_HOME}/lib"
+addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
+addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
+addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
 
 if [[ -d "${ZEPPELIN_HOME}/zeppelin-zengine/target/classes" ]]; then
   ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-zengine/target/classes"
@@ -98,8 +100,8 @@ if [[ ! -z "${HADOOP_HOME}" ]] && [[ -d "${HADOOP_HOME}" ]]; then
 fi
 
 export ZEPPELIN_CLASSPATH
-export SPARK_CLASSPATH+=${ZEPPELIN_CLASSPATH}
-export CLASSPATH+=${ZEPPELIN_CLASSPATH}
+export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+export CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
 # Text encoding for 
 # read/write job into files,
@@ -121,7 +123,7 @@ else
   ZEPPELIN_RUNNER=java
 fi
 
-export RUNNER
+export ZEPPELIN_RUNNER
 
 if [[ -z "$ZEPPELIN_IDENT_STRING" ]]; then
   export ZEPPELIN_IDENT_STRING="${USER}"

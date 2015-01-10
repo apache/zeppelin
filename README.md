@@ -1,8 +1,15 @@
 #Zeppelin 
 
-**Now, out in [Version 0.4.0](https://github.com/NFLabs/zeppelin/releases/tag/release-0.4.0)!**<br/>
 **Documentation:** [User Guide](http://zeppelin-project.org/docs/index.html)<br/>
-**Mailing List:** [Mailing List](https://groups.google.com/forum/#!forum/zeppelin-developers) <br/>
+**Mailing List:** Get help using Zeppelin or contribute to the project on out mailing lists <br />
+* [users@zeppelin.incubator.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-users/) is for usage questions, help, and announcements.
+
+  [subscribe](mailto:user-subscribe@zeppelin.incubator.apache.org?subject=(send this email to subscribe)),     [unsubscribe](mailto:user-unsubscribe@zeppelin.incubator.apache.org?subject=(send this email to unsubscribe)), [archives](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-users/)
+
+* [dev@zeppelin.incubator.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-dev/) is for people who want to contribute code to Zeppelin.
+
+  [subscribe](mailto:dev-subscribe@zeppelin.incubator.apache.org?subject=(send this email to subscribe)), [unsubscribe](mailto:dev-unsubscribe@zeppelin.incubator.apache.org?subject=(send this email to unsubscribe)), [archives](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-dev/)<br />
+
 **Continuous Integration:** [![Build Status](https://secure.travis-ci.org/NFLabs/zeppelin.png?branch=master)](https://travis-ci.org/NFLabs/zeppelin) <br/>
 **Contributing:** [Contribution Guide](https://github.com/NFLabs/zeppelin/blob/master/CONTRIBUTING.md)<br/>
 **License:** [Apache 2.0](https://github.com/NFLabs/zeppelin/blob/master/LICENSE)

@@ -60,8 +60,8 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.renderHtml = function() {
-    var retryRenderer = function(){
-      if($('#p'+$scope.paragraph.id+'_html').length){
+    var retryRenderer = function() {
+      if ($('#p'+$scope.paragraph.id+'_html').length) {
         try {
           $('#p'+$scope.paragraph.id+'_html').html($scope.paragraph.result.msg);
         } catch(err) {
@@ -75,45 +75,44 @@ angular.module('zeppelinWebApp')
 
   };
 
-  var initializeDefault = function(){
-    if (!$scope.paragraph.config.looknfeel) {
-      $scope.paragraph.config.looknfeel = 'default';
+  var initializeDefault = function() {
+    var config = $scope.paragraph.config;
+    if (!config.looknfeel) {
+      config.looknfeel = 'default';
     }
 
-    if (!$scope.paragraph.config.colWidth) {
-      $scope.paragraph.config.colWidth = 12;
+    if (!config.colWidth) {
+      config.colWidth = 12;
     }
 
-    if(!$scope.paragraph.config.graph){
-      $scope.paragraph.config.graph = {};
+    if (!config.graph) {
+      config.graph = {};
     }
 
-    if (!$scope.paragraph.config.graph.mode) {
-      $scope.paragraph.config.graph.mode = 'table';
+    if (!config.graph.mode) {
+      config.graph.mode = 'table';
     }
 
-    if (!$scope.paragraph.config.graph.height) {
-      $scope.paragraph.config.graph.height = 300;
+    if (!config.graph.height) {
+      config.graph.height = 300;
     }
 
-    if (!$scope.paragraph.config.graph.optionOpen) {
-      $scope.paragraph.config.graph.optionOpen = false;
+    if (!config.graph.optionOpen) {
+      config.graph.optionOpen = false;
     }
 
-    if (!$scope.paragraph.config.graph.keys) {
-      $scope.paragraph.config.graph.keys = [];
+    if (!config.graph.keys) {
+      config.graph.keys = [];
     }
 
-    if (!$scope.paragraph.config.graph.values) {
-      $scope.paragraph.config.graph.values = [];
+    if (!config.graph.values) {
+      config.graph.values = [];
     }
 
-    if (!$scope.paragraph.config.graph.groups) {
-      $scope.paragraph.config.graph.groups = [];
+    if (!config.graph.groups) {
+      config.graph.groups = [];
     }
-
   };
-
 
   $scope.getIframeDimensions = function () {
     if ($scope.asIframe) {
@@ -188,26 +187,15 @@ angular.module('zeppelinWebApp')
       if (!$scope.asIframe) {
         $scope.paragraph.config = data.paragraph.config;
         initializeDefault();
-
-        // update column class
-        // TODO : do it in angualr way
-        var el = $('#' + $scope.paragraph.id + '_paragraphColumn');
-        var elMain = $('#' + $scope.paragraph.id + '_paragraphColumn_main');
-
-        elMain.removeClass(elMain.attr('class'));
-        elMain.addClass('paragraph-col col-md-' + $scope.paragraph.config.colWidth);
-
-        el.removeClass(el.attr('class'));
-        el.addClass('paragraph-space box paragraph-margin');
       } else {
         data.paragraph.config.editorHide = true;
         data.paragraph.config.tableHide = false;
         $scope.paragraph.config = data.paragraph.config;
       }
 
-      if (newType==='TABLE') {
+      if (newType === 'TABLE') {
         $scope.loadTableData($scope.paragraph.result);
-        if (oldType!=='TABLE' || resultRefreshed) {
+        if (oldType !== 'TABLE' || resultRefreshed) {
           clearUnknownColsFromGraphOption();
           selectDefaultColsForGraphOption();
         }
@@ -217,14 +205,14 @@ angular.module('zeppelinWebApp')
         } else {
           $scope.setGraphMode(newGraphMode, false, true);
         }
-      } else if (newType==='HTML') {
+      } else if (newType === 'HTML') {
         $scope.renderHtml();
       }
     }
   });
 
-  $scope.isRunning = function(){
-    if($scope.paragraph.status==='RUNNING' || $scope.paragraph.status==='PENDING') {
+  $scope.isRunning = function() {
+    if ($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING') {
       return true;
     } else {
       return false;
@@ -342,6 +330,14 @@ angular.module('zeppelinWebApp')
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
+  $scope.columnWidthClass = function(n) {
+    if ($scope.asIframe) {
+      return 'col-md-12';
+    } else {
+      return 'col-md-' + n;
+    }
+  };
+
   $scope.changeColWidth = function() {
 
     var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
@@ -349,7 +345,6 @@ angular.module('zeppelinWebApp')
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
-
 
   $scope.toggleGraphOption = function() {
     var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
@@ -432,7 +427,7 @@ angular.module('zeppelinWebApp')
               $rootScope.$on('completionList', function(event, data) {
                   if (data.completions) {
                       var completions = [];
-                      for(var c in data.completions){
+                      for (var c in data.completions) {
                           var v = data.completions[c];
                           completions.push({
                               name:v,
@@ -447,12 +442,12 @@ angular.module('zeppelinWebApp')
       };
       langTools.addCompleter(remoteCompleter);
 
-      $scope.editor.on('focus', function(){
+      $scope.editor.on('focus', function() {
         var el = $('#' + $scope.paragraph.id + '_paragraphColumn');
         el.addClass('focused');
       });
 
-      $scope.editor.on('blur', function(){
+      $scope.editor.on('blur', function() {
         var el = $('#' + $scope.paragraph.id + '_paragraphColumn');
         el.removeClass('focused');
       });
@@ -504,21 +499,21 @@ angular.module('zeppelinWebApp')
       // handle cursor moves
       $scope.editor.keyBinding.origOnCommandKey = $scope.editor.keyBinding.onCommandKey;
       $scope.editor.keyBinding.onCommandKey = function(e, hashId, keyCode) {
-        if($scope.editor.completer && $scope.editor.completer.activated) { // if autocompleter is active
+        if ($scope.editor.completer && $scope.editor.completer.activated) { // if autocompleter is active
         } else {
             var numRows;
             var currentRow;
-            if(keyCode===38 || (keyCode===80 && e.ctrlKey)){  // UP
+            if (keyCode === 38 || (keyCode === 80 && e.ctrlKey)) {  // UP
                 numRows = $scope.editor.getSession().getLength();
                 currentRow = $scope.editor.getCursorPosition().row;
-                if(currentRow===0){
+                if (currentRow === 0) {
                     // move focus to previous paragraph
                     $rootScope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
                 }
-            } else if(keyCode===40 || (keyCode===78 && e.ctrlKey)){  // DOWN
+            } else if (keyCode === 40 || (keyCode === 78 && e.ctrlKey)) {  // DOWN
                 numRows = $scope.editor.getSession().getLength();
                 currentRow = $scope.editor.getCursorPosition().row;
-                if(currentRow === numRows-1){
+                if (currentRow === numRows-1) {
                     // move focus to next paragraph
                     $rootScope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
                 }
@@ -537,7 +532,7 @@ angular.module('zeppelinWebApp')
     return $scope.editor.getValue();
   };
 
-  $scope.getProgress = function(){
+  $scope.getProgress = function() {
     return ($scope.currentProgress) ? $scope.currentProgress : 0;
   };
 
@@ -554,35 +549,35 @@ angular.module('zeppelinWebApp')
     }
   });
 
-  $rootScope.$on('focusParagraph', function(event, paragraphId){
+  $rootScope.$on('focusParagraph', function(event, paragraphId) {
     if ($scope.paragraph.id === paragraphId) {
       $scope.editor.focus();
       $('body').scrollTo('#'+paragraphId+'_editor', 300, {offset:-60});
     }
   });
 
-  $rootScope.$on('runParagraph', function(event){
+  $rootScope.$on('runParagraph', function(event) {
     $scope.runParagraph($scope.editor.getValue());
   });
 
-  $rootScope.$on('openEditor', function(event){
+  $rootScope.$on('openEditor', function(event) {
     $scope.openEditor();
   });
 
-  $rootScope.$on('closeEditor', function(event){
+  $rootScope.$on('closeEditor', function(event) {
     $scope.closeEditor();
   });
 
-  $rootScope.$on('openTable', function(event){
+  $rootScope.$on('openTable', function(event) {
     $scope.openTable();
   });
 
-  $rootScope.$on('closeTable', function(event){
+  $rootScope.$on('closeTable', function(event) {
     $scope.closeTable();
   });
 
 
-  $scope.getResultType = function(paragraph){
+  $scope.getResultType = function(paragraph) {
     var pdata = (paragraph) ? paragraph : $scope.paragraph;
     if (pdata.result && pdata.result.type) {
       return pdata.result.type;
@@ -595,7 +590,7 @@ angular.module('zeppelinWebApp')
     return 'data:image/png;base64,'+base64Data;
   };
 
-  $scope.getGraphMode = function(paragraph){
+  $scope.getGraphMode = function(paragraph) {
     var pdata = (paragraph) ? paragraph : $scope.paragraph;
     if (pdata.config.graph && pdata.config.graph.mode) {
       return pdata.config.graph.mode;
@@ -705,7 +700,7 @@ angular.module('zeppelinWebApp')
   var setTable = function(type, data, refresh) {
     var getTableContentFormat = function(d) {
       if (isNaN(d)) {
-        if(d.length>'%html'.length && '%html '===d.substring(0, '%html '.length)) {
+        if (d.length>'%html'.length && '%html ' === d.substring(0, '%html '.length)) {
           return 'html';
         } else {
           return '';
@@ -718,7 +713,7 @@ angular.module('zeppelinWebApp')
     var formatTableContent = function(d) {
       if (isNaN(d)) {
         var f = getTableContentFormat(d);
-        if(f !=='') {
+        if (f !== '') {
           return d.substring(f.length+2);
         } else {
           return d;
@@ -735,7 +730,7 @@ angular.module('zeppelinWebApp')
     };
 
 
-    var renderTable = function(){
+    var renderTable = function() {
       var html = '';
       html += '<table class="table table-hover table-condensed">';
       html += '  <thead>';
@@ -751,7 +746,7 @@ angular.module('zeppelinWebApp')
         html += '    <tr>';
         for (var index in row) {
           var v = row[index].value;
-          if(getTableContentFormat(v) !== 'html') {
+          if (getTableContentFormat(v) !== 'html') {
             v = v.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
                 return '&#'+i.charCodeAt(0)+';';
             });
@@ -771,8 +766,8 @@ angular.module('zeppelinWebApp')
       $('#p'+$scope.paragraph.id+'_table').height(height);
     };
 
-    var retryRenderer = function(){
-      if($('#p'+$scope.paragraph.id+'_table').length){
+    var retryRenderer = function() {
+      if ($('#p'+$scope.paragraph.id+'_table').length) {
         try {
           renderTable();
         } catch(err) {
@@ -803,8 +798,8 @@ angular.module('zeppelinWebApp')
     if (type==='pieChart') {
       var d = pivotDataToD3ChartFormat(p, true).d3g;
 
-      $scope.chart[type].x(function(d){ return d.label;})
-                        .y(function(d){ return d.value;});
+      $scope.chart[type].x(function(d) { return d.label;})
+                        .y(function(d) { return d.value;});
 
       if ( d.length > 0 ) {
         for ( var i=0; i<d[0].values.length ; i++) {
@@ -816,14 +811,14 @@ angular.module('zeppelinWebApp')
         }
       }
     } else if (type==='multiBarChart') {
-      d3g = pivotDataToD3ChartFormat(p, true).d3g;
+      d3g = pivotDataToD3ChartFormat(p, true, false, type).d3g;
       $scope.chart[type].yAxis.axisLabelDistance(50);
     } else {
-      var pivotdata = pivotDataToD3ChartFormat(p);
+      var pivotdata = pivotDataToD3ChartFormat(p, false, true);
       var xLabels = pivotdata.xLabels;
       d3g = pivotdata.d3g;
       $scope.chart[type].xAxis.tickFormat(function(d) {
-        if (xLabels[d]) {
+        if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
           return xLabels[d];
         } else {
           return d;
@@ -834,7 +829,7 @@ angular.module('zeppelinWebApp')
       $scope.chart[type].forceY([0]); // force y-axis minimum to 0 for line chart.
     }
 
-    var renderChart = function(){
+    var renderChart = function() {
       if (!refresh) {
         // TODO force destroy previous chart
       }
@@ -862,8 +857,8 @@ angular.module('zeppelinWebApp')
       nv.utils.windowResize($scope.chart[type].update);
     };
 
-    var retryRenderer = function(){
-      if($('#p'+$scope.paragraph.id+'_'+type+' svg').length!==0){
+    var retryRenderer = function() {
+      if ($('#p'+$scope.paragraph.id+'_'+type+' svg').length !== 0) {
         try {
           renderChart();
         } catch(err) {
@@ -1009,28 +1004,28 @@ angular.module('zeppelinWebApp')
 
     var aggrFunc = {
       sum : function(a,b) {
-        var varA = (a!==undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
-        var varB = (b!==undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
+        var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
+        var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
         return varA+varB;
       },
       count : function(a,b) {
-        var varA = (a!==undefined) ? a : 0;
-        var varB = (b!==undefined) ? 1 : 0;
+        var varA = (a !== undefined) ? a : 0;
+        var varB = (b !== undefined) ? 1 : 0;
         return varA+varB;
       },
       min : function(a,b) {
-        var varA = (a!==undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
-        var varB = (b!==undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
+        var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
+        var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
         return Math.min(varA,varB);
       },
       max : function(a,b) {
-        var varA = (a!==undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
-        var varB = (b!==undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
+        var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
+        var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
         return Math.max(varA,varB);
       },
       avg : function(a,b,c) {
-        var varA = (a!==undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
-        var varB = (b!==undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
+        var varA = (a !== undefined) ? (isNaN(a) ? 1 : parseFloat(a)) : 0;
+        var varB = (b !== undefined) ? (isNaN(b) ? 1 : parseFloat(b)) : 0;
         return varA+varB;
       }
     };
@@ -1132,7 +1127,7 @@ angular.module('zeppelinWebApp')
     };
   };
 
-  var pivotDataToD3ChartFormat = function(data, allowTextXAxis) {
+  var pivotDataToD3ChartFormat = function(data, allowTextXAxis, fillMissingValues, chartType) {
     // construct d3 data
     var d3g = [];
 
@@ -1140,12 +1135,18 @@ angular.module('zeppelinWebApp')
     var rows = data.rows;
     var values = $scope.paragraph.config.graph.values;
 
-    var d = {};
     var concat = function(o, n) {
-      if(!o) {
+      if (!o) {
         return n;
       } else {
         return o+'.'+n;
+      }
+    };
+
+    var getSchemaUnderKey = function(key, s) {
+      for (var c in key.children) {
+        s[c] = {};
+        getSchemaUnderKey(key.children[c], s[c]);
       }
     };
 
@@ -1155,21 +1156,25 @@ angular.module('zeppelinWebApp')
       if (s.type==='key') {
         rowName = concat(rowName, sKey);
         rowValue = concat(rowValue, rKey);
-      } else if(s.type==='group') {
-        colName = concat(colName, sKey);
-      } else if(s.type==='value') {
+      } else if (s.type==='group') {
+        colName = concat(colName, rKey);
+      } else if (s.type==='value' && sKey===rKey || valueOnly) {
         colName = concat(colName, rKey);
         func(rowName, rowValue, colName, r);
       }
 
       for (var c in s.children) {
-        if (s.type==='group' && sKey!==rKey) {
-          traverse(c, s.children[c], c, undefined, func, rowName, rowValue, colName);
+        if (fillMissingValues && s.children[c].type === 'group' && r[c] === undefined) {
+          var cs = {};
+          getSchemaUnderKey(s.children[c], cs);
+          traverse(c, s.children[c], c, cs, func, rowName, rowValue, colName);
           continue;
         }
 
         for (var j in r) {
-          traverse(c, s.children[c], j, r[j], func, rowName, rowValue, colName);
+          if (s.children[c].type === 'key' || c === j) {
+            traverse(c, s.children[c], j, r[j], func, rowName, rowValue, colName);
+          }
         }
       }
     };
@@ -1177,7 +1182,9 @@ angular.module('zeppelinWebApp')
     var keys = $scope.paragraph.config.graph.keys;
     var groups = $scope.paragraph.config.graph.groups;
     var values = $scope.paragraph.config.graph.values;
-    var valueOnly = (keys.length===0 && groups.length===0 && values.length>0);
+    var valueOnly = (keys.length === 0 && groups.length === 0 && values.length > 0);
+    var noKey = (keys.length === 0);
+    var isMultiBarChart = (chartType === 'multiBarChart');
 
     var sKey = Object.keys(schema)[0];
 
@@ -1188,33 +1195,33 @@ angular.module('zeppelinWebApp')
     var rowIndexValue = {};
 
     for (var k in rows) {
-      traverse(sKey, schema[sKey], k, rows[k], function(rowName, rowValue, colName, value){
+      traverse(sKey, schema[sKey], k, rows[k], function(rowName, rowValue, colName, value) {
         //console.log("RowName=%o, row=%o, col=%o, value=%o", rowName, rowValue, colName, value);
-        if (rowNameIndex[rowValue]===undefined) {
+        if (rowNameIndex[rowValue] === undefined) {
           rowIndexValue[rowIdx] = rowValue;
           rowNameIndex[rowValue] = rowIdx++;
         }
 
-        if (colNameIndex[colName]===undefined) {
+        if (colNameIndex[colName] === undefined) {
           colNameIndex[colName] = colIdx++;
         }
         var i = colNameIndex[colName];
-        if (valueOnly) {
+        if (noKey && isMultiBarChart) {
           i = 0;
         }
 
-        if(!d3g[i]){
+        if (!d3g[i]) {
           d3g[i] = {
             values : [],
-            key : (valueOnly) ? 'values' : colName
+            key : (noKey && isMultiBarChart) ? 'values' : colName
           };
         }
 
         var xVar = isNaN(rowValue) ? ((allowTextXAxis) ? rowValue : rowNameIndex[rowValue]) : parseFloat(rowValue);
         var yVar = 0;
-        if(xVar===undefined){ xVar = colName; }
-        if(value!==undefined){
-            yVar = isNaN(value.value) ? 0 : parseFloat(value.value) / parseFloat(value.count);
+        if (xVar === undefined) { xVar = colName; }
+        if (value !== undefined) {
+          yVar = isNaN(value.value) ? 0 : parseFloat(value.value) / parseFloat(value.count);
         }
         d3g[i].values.push({
           x : xVar,
@@ -1226,7 +1233,7 @@ angular.module('zeppelinWebApp')
     // clear aggregation name, if possible
     var namesWithoutAggr = {};
     // TODO - This part could use som refactoring - Weird if/else with similar actions and variable names
-    for(var colName in colNameIndex) {
+    for (var colName in colNameIndex) {
       var withoutAggr = colName.substring(0, colName.lastIndexOf('('));
       if (!namesWithoutAggr[withoutAggr]) {
         namesWithoutAggr[withoutAggr] = 1;

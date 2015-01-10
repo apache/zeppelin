@@ -145,8 +145,8 @@ public class Notebook {
       return;
     }
     for (File f : dirs) {
-      boolean isHidden = !f.getName().startsWith(".");
-      if (f.isDirectory() && isHidden) {
+      boolean isHidden = f.getName().startsWith(".");
+      if (f.isDirectory() && !isHidden) {
         Scheduler scheduler =
             schedulerFactory.createOrGetFIFOScheduler("note_" + System.currentTimeMillis());
         logger.info("Loading note from " + f.getName());
