@@ -87,7 +87,7 @@ bin/zeppelin-daemon start
 Server will be run on http://localhost:8080
 
 ### JIRA
-Zeppelin manages it's issues in Jira. [https://zeppelin-project.atlassian.net/browse/ZEPPELIN](https://zeppelin-project.atlassian.net/browse/ZEPPELIN)
+Zeppelin manages it's issues in Jira. [https://issues.apache.org/jira/browse/ZEPPELIN](https://issues.apache.org/jira/browse/ZEPPELIN)
 
 ### Stay involved
 Contributors should join the Zeppelin mailing lists.

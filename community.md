@@ -17,4 +17,4 @@ Get help using Zeppelin or contribute to the project on our mailing lists:
 
 ### Issue tracker
 
-[https://zeppelin-project.atlassian.net/browse/ZEPPELIN](https://zeppelin-project.atlassian.net/browse/ZEPPELIN)
+  [https://issues.apache.org/jira/browse/ZEPPELIN](https://issues.apache.org/jira/browse/ZEPPELIN)
