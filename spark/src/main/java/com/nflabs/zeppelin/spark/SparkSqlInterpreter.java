@@ -28,6 +28,7 @@ import scala.collection.mutable.HashSet;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
@@ -35,7 +36,7 @@ import com.nflabs.zeppelin.scheduler.Scheduler;
 
 /**
  * Spark SQL interpreter for Zeppelin.
- * 
+ *
  * @author Leemoonsoo
  *
  */
@@ -67,7 +68,7 @@ public class SparkSqlInterpreter extends Interpreter {
         Interpreter p = intp;
         while (p instanceof WrappedInterpreter) {
           p = ((WrappedInterpreter) p).getInnerInterpreter();
-        }        
+        }
         return (SparkInterpreter) p;
       }
     }
@@ -83,7 +84,7 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st) {
+  public InterpreterResult interpret(String st, InterpreterContext context) {
     SQLContext sqlc = getSparkInterpreter().getSQLContext();
     SparkContext sc = sqlc.sparkContext();
     sc.setJobGroup(jobGroup, "Zeppelin", false);
@@ -159,6 +160,7 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
 
+  @Override
   public int getProgress() {
     SQLContext sqlc = getSparkInterpreter().getSQLContext();
     SparkContext sc = sqlc.sparkContext();

@@ -11,7 +11,6 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nflabs.zeppelin.notebook.NoteInterpreterLoader;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
@@ -68,7 +67,7 @@ public abstract class Interpreter {
   public static enum FormType {
     NATIVE, SIMPLE, NONE
   }
-  
+
   /**
    * Represent registered interpreter class
    */
@@ -86,15 +85,15 @@ public abstract class Interpreter {
       this.className = className;
       this.properties = properties;
     }
-    
+
     public String getName() {
       return name;
     }
-    
+
     public String getGroup() {
       return group;
     }
-    
+
     public String getClassName() {
       return className;
     }
@@ -127,7 +126,7 @@ public abstract class Interpreter {
       Map<String, InterpreterProperty> properties) {
     registeredInterpreters.put(name, new RegisteredInterpreter(name, group, className, properties));
   }
-  
+
   public static RegisteredInterpreter findRegisteredInterpreterByClassName(String className) {
     for (RegisteredInterpreter ri : registeredInterpreters.values()) {
       if (ri.getClassName().equals(className)) {
@@ -143,7 +142,7 @@ public abstract class Interpreter {
 
   public abstract Object getValue(String name);
 
-  public abstract InterpreterResult interpret(String st);
+  public abstract InterpreterResult interpret(String st, InterpreterContext context);
 
   public abstract void cancel();
 
@@ -166,7 +165,7 @@ public abstract class Interpreter {
   public String getClassName() {
     return this.getClass().getName();
   }
-  
+
   public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
     this.interpreterGroup = interpreterGroup;
   }

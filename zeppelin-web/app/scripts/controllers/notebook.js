@@ -423,7 +423,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
              selectedSettingIds).
       success(function(data, status, headers, config) {
         console.log("Interpreter binding %o saved", selectedSettingIds);
-        $scope.closeSetting();
+        $scope.showSetting = false;
       }).
       error(function(data, status, headers, config) {
         console.log("Error %o %o", status, data.message);

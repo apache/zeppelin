@@ -13,7 +13,6 @@ import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +49,7 @@ public class Note implements Serializable, JobListener {
 
   /**
    * note information.
-   * 
+   *
    * - cron : cron expression validity.
    */
   private Map<String, Object> info = new HashMap<String, Object>();
@@ -95,7 +94,7 @@ public class Note implements Serializable, JobListener {
 
   /**
    * Add paragraph last.
-   * 
+   *
    * @param p
    */
   public Paragraph addParagraph() {
@@ -108,7 +107,7 @@ public class Note implements Serializable, JobListener {
 
   /**
    * Insert paragraph in given index.
-   * 
+   *
    * @param index
    * @param p
    */
@@ -122,7 +121,7 @@ public class Note implements Serializable, JobListener {
 
   /**
    * Remove paragraph by id.
-   * 
+   *
    * @param paragraphId
    * @return
    */
@@ -141,7 +140,7 @@ public class Note implements Serializable, JobListener {
 
   /**
    * Move paragraph into the new index (order from 0 ~ n-1).
-   * 
+   *
    * @param paragraphId
    * @param index new index
    */
@@ -208,7 +207,7 @@ public class Note implements Serializable, JobListener {
 
   /**
    * Run all paragraphs sequentially.
-   * 
+   *
    * @param jobListener
    */
   public void runAll() {
@@ -224,7 +223,7 @@ public class Note implements Serializable, JobListener {
 
   /**
    * Run a single paragraph.
-   * 
+   *
    * @param paragraphId
    */
   public void run(String paragraphId) {

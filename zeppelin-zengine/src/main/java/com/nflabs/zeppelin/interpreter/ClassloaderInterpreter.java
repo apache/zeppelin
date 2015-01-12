@@ -2,14 +2,13 @@ package com.nflabs.zeppelin.interpreter;
 
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import com.nflabs.zeppelin.scheduler.Scheduler;
 
 /**
  * Add to the classpath interperters.
- * 
+ *
  */
 public class ClassloaderInterpreter
     extends Interpreter
@@ -24,6 +23,7 @@ public class ClassloaderInterpreter
     this.intp = intp;
   }
 
+  @Override
   public Interpreter getInnerInterpreter() {
     return intp;
   }
@@ -47,11 +47,11 @@ public class ClassloaderInterpreter
   }
 
   @Override
-  public InterpreterResult interpret(String st) {
+  public InterpreterResult interpret(String st, InterpreterContext context) {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(cl);
     try {
-      return intp.interpret(st);
+      return intp.interpret(st, context);
     } catch (Exception e) {
       e.printStackTrace();
       throw new InterpreterException(e);
@@ -172,8 +172,8 @@ public class ClassloaderInterpreter
       Thread.currentThread().setContextClassLoader(oldcl);
     }
   }
-  
-  
+
+
   @Override
   public String getClassName() {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
@@ -187,7 +187,7 @@ public class ClassloaderInterpreter
       Thread.currentThread().setContextClassLoader(oldcl);
     }
   }
-  
+
   @Override
   public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
@@ -201,7 +201,7 @@ public class ClassloaderInterpreter
       Thread.currentThread().setContextClassLoader(oldcl);
     }
   }
-  
+
   @Override
   public InterpreterGroup getInterpreterGroup() {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
