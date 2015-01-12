@@ -144,13 +144,13 @@ public abstract class Interpreter {
 
   public abstract InterpreterResult interpret(String st, InterpreterContext context);
 
-  public abstract void cancel();
+  public abstract void cancel(InterpreterContext context);
 
   public abstract void bindValue(String name, Object o);
 
   public abstract FormType getFormType();
 
-  public abstract int getProgress();
+  public abstract int getProgress(InterpreterContext context);
 
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetFIFOScheduler("interpreter_" + this.hashCode());

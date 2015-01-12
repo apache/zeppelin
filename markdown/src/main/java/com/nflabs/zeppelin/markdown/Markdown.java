@@ -56,7 +56,7 @@ public class Markdown extends Interpreter {
   }
 
   @Override
-  public void cancel() {}
+  public void cancel(InterpreterContext context) {}
 
   @Override
   public void bindValue(String name, Object o) {}
@@ -67,7 +67,7 @@ public class Markdown extends Interpreter {
   }
 
   @Override
-  public int getProgress() {
+  public int getProgress(InterpreterContext context) {
     return 0;
   }
 

@@ -234,6 +234,13 @@ public class Note implements Serializable, JobListener {
     intp.getScheduler().submit(p);
   }
 
+  public List<String> completion(String paragraphId, String buffer, int cursor) {
+    Paragraph p = getParagraph(paragraphId);
+    p.setNoteReplLoader(replLoader);
+    p.setListener(jobListenerFactory.getParagraphJobListener(this));
+    return p.completion(buffer, cursor);
+  }
+
   public List<Paragraph> getParagraphs() {
     synchronized (paragraphs) {
       return new LinkedList<Paragraph>(paragraphs);

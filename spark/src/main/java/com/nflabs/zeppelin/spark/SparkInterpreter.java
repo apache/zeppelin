@@ -67,6 +67,7 @@ public class SparkInterpreter extends Interpreter {
         "spark",
         SparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
+            .add("spark.app.name", "Zeppelin", "The name of spark application")
             .add("master", getMaster(),
                 "spark master uri. ex) spark://masterhost:7077")
             .add("spark.executor.memory", "1g", "executor memory per worker instance")
@@ -126,7 +127,10 @@ public class SparkInterpreter extends Interpreter {
     String execUri = System.getenv("SPARK_EXECUTOR_URI");
     String[] jars = SparkILoop.getAddedJars();
     SparkConf conf =
-        new SparkConf().setMaster(getProperty("master")).setAppName("Zeppelin").setJars(jars)
+        new SparkConf()
+            .setMaster(getProperty("master"))
+            .setAppName(getProperty("spark.app.name"))
+            .setJars(jars)
             .set("spark.repl.class.uri", interpreter.intp().classServer().uri());
 
     if (execUri != null) {
@@ -319,7 +323,9 @@ public class SparkInterpreter extends Interpreter {
     }
   }
 
-  private final String jobGroup = "zeppelin-" + this.hashCode();
+  private String getJobGroup(InterpreterContext context){
+    return "zeppelin-" + this.hashCode() + "-" + context.getParagraph().getId();
+  }
 
   /**
    * Interpret a single line.
@@ -330,12 +336,12 @@ public class SparkInterpreter extends Interpreter {
     if (line == null || line.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);
     }
-    return interpret(line.split("\n"));
+    return interpret(line.split("\n"), context);
   }
 
-  public InterpreterResult interpret(String[] lines) {
+  public InterpreterResult interpret(String[] lines, InterpreterContext context) {
     synchronized (this) {
-      sc.setJobGroup(jobGroup, "Zeppelin", false);
+      sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
       InterpreterResult r = interpretInput(lines);
       sc.clearJobGroup();
       return r;
@@ -388,12 +394,13 @@ public class SparkInterpreter extends Interpreter {
 
 
   @Override
-  public void cancel() {
-    sc.cancelJobGroup(jobGroup);
+  public void cancel(InterpreterContext context) {
+    sc.cancelJobGroup(getJobGroup(context));
   }
 
   @Override
-  public int getProgress() {
+  public int getProgress(InterpreterContext context) {
+    String jobGroup = getJobGroup(context);
     int completedTasks = 0;
     int totalTasks = 0;
 
@@ -409,6 +416,7 @@ public class SparkInterpreter extends Interpreter {
     while (it.hasNext()) {
       ActiveJob job = it.next();
       String g = (String) job.properties().get("spark.jobGroup.id");
+
       if (jobGroup.equals(g)) {
         int[] progressInfo = null;
         if (sc.version().startsWith("1.0")) {

@@ -78,9 +78,9 @@ public class LazyOpenInterpreter
   }
 
   @Override
-  public void cancel() {
+  public void cancel(InterpreterContext context) {
     open();
-    intp.cancel();
+    intp.cancel(context);
   }
 
   @Override
@@ -95,9 +95,9 @@ public class LazyOpenInterpreter
   }
 
   @Override
-  public int getProgress() {
+  public int getProgress(InterpreterContext context) {
     open();
-    return intp.getProgress();
+    return intp.getProgress(context);
   }
 
   @Override

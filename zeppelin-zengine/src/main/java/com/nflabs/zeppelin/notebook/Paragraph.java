@@ -147,7 +147,7 @@ public class Paragraph extends Job implements Serializable {
     String replName = getRequiredReplName();
     Interpreter repl = getRepl(replName);
     if (repl != null) {
-      return repl.getProgress();
+      return repl.getProgress(new InterpreterContext(this));
     } else {
       return 0;
     }
@@ -188,7 +188,7 @@ public class Paragraph extends Job implements Serializable {
   @Override
   protected boolean jobAbort() {
     Interpreter repl = getRepl(getRequiredReplName());
-    repl.cancel();
+    repl.cancel(new InterpreterContext(this));
     return true;
   }
 

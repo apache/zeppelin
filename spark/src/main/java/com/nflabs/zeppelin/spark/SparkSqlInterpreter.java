@@ -29,6 +29,7 @@ import scala.collection.mutable.HashSet;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
+import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
@@ -45,10 +46,19 @@ public class SparkSqlInterpreter extends Interpreter {
   AtomicInteger num = new AtomicInteger(0);
 
   static {
-    Interpreter.register("sql", "spark", SparkSqlInterpreter.class.getName());
+    Interpreter.register(
+        "sql",
+        "spark",
+        SparkSqlInterpreter.class.getName(),
+        new InterpreterPropertyBuilder()
+            .add("zeppelin.spark.maxResult", "10000", "Max number of SparkSQL result to display")
+            .build());
   }
 
-  private final String jobGroup = "zeppelin-" + this.hashCode();
+  private String getJobGroup(InterpreterContext context){
+    return "zeppelin-" + this.hashCode() + "-" + context.getParagraph().getId();
+  }
+
   private int maxResult;
 
   public SparkSqlInterpreter(Properties property) {
@@ -58,7 +68,9 @@ public class SparkSqlInterpreter extends Interpreter {
   @Override
   public void open() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    this.maxResult = conf.getInt("ZEPPELIN_SPARK_MAX_RESULT", "zeppelin.spark.maxResult", 10000);
+    this.maxResult = conf.getInt("ZEPPELIN_SPARK_MAX_RESULT",
+        "zeppelin.spark.maxResult",
+        Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
   }
 
 
@@ -87,7 +99,7 @@ public class SparkSqlInterpreter extends Interpreter {
   public InterpreterResult interpret(String st, InterpreterContext context) {
     SQLContext sqlc = getSparkInterpreter().getSQLContext();
     SparkContext sc = sqlc.sparkContext();
-    sc.setJobGroup(jobGroup, "Zeppelin", false);
+    sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
     SchemaRDD rdd;
     Row[] rows = null;
     try {
@@ -142,11 +154,11 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel() {
+  public void cancel(InterpreterContext context) {
     SQLContext sqlc = getSparkInterpreter().getSQLContext();
     SparkContext sc = sqlc.sparkContext();
 
-    sc.cancelJobGroup(jobGroup);
+    sc.cancelJobGroup(getJobGroup(context));
   }
 
   @Override
@@ -161,7 +173,8 @@ public class SparkSqlInterpreter extends Interpreter {
 
 
   @Override
-  public int getProgress() {
+  public int getProgress(InterpreterContext context) {
+    String jobGroup = getJobGroup(context);
     SQLContext sqlc = getSparkInterpreter().getSQLContext();
     SparkContext sc = sqlc.sparkContext();
     JobProgressListener sparkListener = getSparkInterpreter().getJobProgressListener();

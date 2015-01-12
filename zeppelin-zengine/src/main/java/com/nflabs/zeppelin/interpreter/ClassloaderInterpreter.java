@@ -104,11 +104,11 @@ public class ClassloaderInterpreter
   }
 
   @Override
-  public void cancel() {
+  public void cancel(InterpreterContext context) {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(cl);
     try {
-      intp.cancel();
+      intp.cancel(context);
     } catch (Exception e) {
       throw new InterpreterException(e);
     } finally {
@@ -132,11 +132,11 @@ public class ClassloaderInterpreter
   }
 
   @Override
-  public int getProgress() {
+  public int getProgress(InterpreterContext context) {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(cl);
     try {
-      return intp.getProgress();
+      return intp.getProgress(context);
     } catch (Exception e) {
       throw new InterpreterException(e);
     } finally {
