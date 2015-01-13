@@ -38,6 +38,7 @@ angular.module('zeppelinWebApp')
     $scope.chart = {};
     $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
     $scope.showTitleEditor = false;
+    $scope.paragraphFocused = false;
 
     if (!$scope.paragraph.config) {
       $scope.paragraph.config = {};
@@ -442,14 +443,22 @@ angular.module('zeppelinWebApp')
       };
       langTools.addCompleter(remoteCompleter);
 
+
+      $scope.handleFocus = function(value) {
+        $scope.paragraphFocused = value;
+        // Protect against error in case digest is already running
+        $timeout(function() {
+          // Apply changes since they come from 3rd party library
+          $scope.$digest();
+        })
+      };
+
       $scope.editor.on('focus', function() {
-        var el = $('#' + $scope.paragraph.id + '_paragraphColumn');
-        el.addClass('focused');
+        $scope.handleFocus(true);
       });
 
       $scope.editor.on('blur', function() {
-        var el = $('#' + $scope.paragraph.id + '_paragraphColumn');
-        el.removeClass('focused');
+        $scope.handleFocus(false);
       });
 
 

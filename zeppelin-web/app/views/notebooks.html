@@ -123,7 +123,7 @@ limitations under the License.
        class="paragraph-col">
     <div id="{{currentParagraph.id}}_paragraphColumn"
          ng-include src="'views/paragraph.html'"
-         ng-class="{'paragraph-space box paragraph-margin': !asIframe}"
+         ng-class="{'paragraph-space box paragraph-margin': !asIframe, 'focused': paragraphFocused}"
          ng-hide="currentParagraph.config.tableHide && viewOnly">
     </div>
   </div>
