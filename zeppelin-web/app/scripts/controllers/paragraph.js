@@ -450,7 +450,7 @@ angular.module('zeppelinWebApp')
         $timeout(function() {
           // Apply changes since they come from 3rd party library
           $scope.$digest();
-        })
+        });
       };
 
       $scope.editor.on('focus', function() {

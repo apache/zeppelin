@@ -128,7 +128,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.setLookAndFeel = function(looknfeel) {
     $scope.note.config.looknfeel = looknfeel;
-    $scope.viewOnly = looknfeel == 'report';
+    $scope.viewOnly = looknfeel === 'report' ? true : false;
     $scope.setConfig();
     $rootScope.$emit('setLookAndFeel', $scope.note.config.looknfeel);
   };
@@ -172,8 +172,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
 
     /** set look n feel */
-    var looknfeel = note.config.looknfeel
-    $scope.viewOnly = looknfeel == 'report';
+    var looknfeel = note.config.looknfeel;
     $rootScope.$emit('setLookAndFeel', looknfeel);
   });
 
