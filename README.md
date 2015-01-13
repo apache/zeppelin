@@ -31,9 +31,6 @@ To know more about Zeppelin, visit our web site [http://zeppelin-project.org](ht
 
 ## Getting Started
 
-### Installation
-Download Zeppelin from [https://github.com/NFLabs/zeppelin/releases](https://github.com/NFLabs/zeppelin/releases) and extract the content.
-
 ### Build
 If you want to build Zeppelin from the souce, please first clone this repository. And then:
 ```
