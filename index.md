@@ -28,7 +28,7 @@ tagline: Less Development, More analysis!
 Zeppelin interpreter concept allows any language/data-processing-backend to be plugged into Zeppelin.
 Current languages included in the Zeppelin interpreter are: Scala(with Apache Spark), SparkSQL, Markdown and Shell.
 
-<img src="assets/themes/zeppelin/img/screenshots/multiple_language_backend.png" />
+<img class="img-responsive" src="assets/themes/zeppelin/img/screenshots/multiple_language_backend.png" />
 
 Adding new language-backend is really simple. Learn [how to write a zeppelin interpreter](./docs/development/writingzeppelininterpreter.html).
 
@@ -68,7 +68,7 @@ Learn more about Zeppelin's [Display system](./docs/display.html).
 
 Zeppelin can dynamically create some input forms into your notebook.
 
-<img src="./assets/themes/zeppelin/img/screenshots/form_input.png" />
+<img class="img-responsive" src="./assets/themes/zeppelin/img/screenshots/form_input.png" />
 
 Learn more about [Dynamic Forms](./docs/dynamicform.html).
 
@@ -86,7 +86,7 @@ Notebook URL can be shared among collaborators. Zeppelin can then broadcast any 
 <p>Zeppelin provides an URL to display the result only, that page does not include Zeppelin's menu and buttons.
 This way, you can easily embed it as an iframe inside of your website.</p>
 <div style="margin:auto;text-align:center;">
-  <img src="./assets/themes/zeppelin/img/screenshots/publish.png" />
+  <img class="img-responsive center-block" src="./assets/themes/zeppelin/img/screenshots/publish.png" />
 </div>
 
 <br />
