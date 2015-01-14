@@ -539,8 +539,10 @@ angular.module('zeppelinWebApp')
   $scope.getExecutionTime = function() {
     var pdata = $scope.paragraph;
     var timeMs = Date.parse(pdata.dateFinished) - Date.parse(pdata.dateStarted);
-    return 'Took ' + (timeMs/1000) +  ' seconds';
-
+    if (isNaN(timeMs)) {
+      return '&nbsp;';
+    }
+    return 'Took ' + (timeMs/1000) + ' seconds';
   };
 
   $rootScope.$on('updateProgress', function(event, data) {
