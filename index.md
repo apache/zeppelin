@@ -9,7 +9,9 @@ tagline: Less Development, More analysis!
  <div class="col-md-5">
 <h2>Multi-purpose Notebook</h2>
 
-<p style="font-size:16px; color:#555555;font-style:italic;margin-bottom: 15px;">The Notebook is the place for all your needs</p>
+<p style="font-size:16px; color:#555555;font-style:italic;margin-bottom: 15px;">
+  The Notebook is the place for all your needs
+</p>
 <ul style="list-style-type: none;padding-left:10px;" >
   <li style="font-size:20px; margin: 5px;"><span class="glyphicon glyphicon-import"></span> Data Ingestion</li>
   <li style="font-size:20px; margin: 5px;"><span class="glyphicon glyphicon-eye-open"></span> Data Discovery</li>
@@ -68,7 +70,7 @@ Learn more about Zeppelin's [Display system](./docs/display.html).
 
 Zeppelin can dynamically create some input forms into your notebook.
 
-<img src="./assets/themes/zeppelin/img/screenshots/form_input.png" />
+<img class="img-responsive" src="./assets/themes/zeppelin/img/screenshots/form_input.png" />
 
 Learn more about [Dynamic Forms](./docs/dynamicform.html).
 
@@ -85,8 +87,8 @@ Notebook URL can be shared among collaborators. Zeppelin can then broadcast any 
 
 <p>Zeppelin provides an URL to display the result only, that page does not include Zeppelin's menu and buttons.
 This way, you can easily embed it as an iframe inside of your website.</p>
-<div style="margin:auto;text-align:center;">
-  <img src="./assets/themes/zeppelin/img/screenshots/publish.png" />
+<div class="row">
+  <img class="img-responsive center-block" src="./assets/themes/zeppelin/img/screenshots/publish.png" />
 </div>
 
 <br />
