@@ -4,7 +4,7 @@
 **Mailing List:** Get help using Zeppelin or contribute to the project on out mailing lists <br />
 * [users@zeppelin.incubator.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-users/) is for usage questions, help, and announcements.
 
-  [subscribe](mailto:user-subscribe@zeppelin.incubator.apache.org?subject=(send this email to subscribe)),     [unsubscribe](mailto:user-unsubscribe@zeppelin.incubator.apache.org?subject=(send this email to unsubscribe)), [archives](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-users/)
+  [subscribe](mailto:users-subscribe@zeppelin.incubator.apache.org?subject=(send this email to subscribe)),     [unsubscribe](mailto:users-unsubscribe@zeppelin.incubator.apache.org?subject=(send this email to unsubscribe)), [archives](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-users/)
 
 * [dev@zeppelin.incubator.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-dev/) is for people who want to contribute code to Zeppelin.
 
