@@ -69,7 +69,9 @@ limitations under the License.
               <ul class="dropdown-menu" role="menu">
                 <li><a href="javascript:void(0);" ng-click="createNewNote()"><i class="fa fa-plus"></i> Create new note</a></li>
                 <li class="divider"></li>
-                <li ng-repeat="note in notes track by $index" ng-class="{'active' : isActive(note.id)}"><a href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}} </a></li>
+                <div id="notebook-list" class="scrollbar-container">
+                  <li ng-repeat="note in notes track by $index" ng-class="{'active' : isActive(note.id)}"><a href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}} </a></li>
+				</div>
               </ul>
             </li>
           </ul>

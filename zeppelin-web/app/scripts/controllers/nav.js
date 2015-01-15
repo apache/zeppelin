@@ -26,6 +26,7 @@
 angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams) {
   /** Current list of notes (ids) */
   $scope.notes = [];
+  $('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
   /** Set the new menu */
   $rootScope.$on('setNoteMenu', function(event, notes) {
