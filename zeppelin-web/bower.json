@@ -27,5 +27,10 @@
   "appPath": "app",
   "resolutions": {
     "perfect-scrollbar": "~0.5.4"
+  },
+  "overrides": {
+    "ace-builds": {
+      "main": ["src-noconflict/ace.js"]
+    }
   }
 }
