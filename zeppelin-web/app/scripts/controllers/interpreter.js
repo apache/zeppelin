@@ -45,7 +45,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
           var setting = data.body[settingId];
           interpreterSettings.push(remoteSettingToLocalSetting(setting.id, setting));
         }
-
         $scope.interpreterSettings = interpreterSettings;
       }).
       error(function(data, status, headers, config) {
@@ -55,7 +54,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
 
 
   var getAvailableInterpreters = function() {
-    $http.get(getRestApiBase()+"/interpreter/interpreter").
+    $http.get(getRestApiBase()+"/interpreter").
       success(function(data, status, headers, config) {
         var groupedInfo = {};
         var info;
@@ -165,7 +164,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       newSetting.properties[p] = $scope.newInterpreterSetting.properties[p].value;
     };
 
-    $http.put(getRestApiBase()+"/interpreter/setting", newSetting).
+    $http.post(getRestApiBase()+"/interpreter/setting", newSetting).
       success(function(data, status, headers, config) {
         $scope.resetNewInterpreterSetting();
         getInterpreterSettings();
