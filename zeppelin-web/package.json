@@ -36,6 +36,7 @@
     "node": ">=0.10.0"
   },
   "scripts": {
+    "postinstall" : "./node_modules/bower/bin/bower --allow-root install",
     "test": "grunt test"
   }
 }
