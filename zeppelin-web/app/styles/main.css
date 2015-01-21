@@ -93,12 +93,70 @@ a.navbar-brand:hover {
   color: #fff !important;
 }
 
+/* bootstrap customization for scrollable dropdown menu */
+.dropdown-menu > .scrollbar-container > li > a {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: normal;
+  line-height: 1.42857143;
+  color: #333;
+  white-space: nowrap;
+}
+.dropdown-menu > .scrollbar-container > li > a:hover,
+.dropdown-menu > .scrollbar-container > li > a:focus {
+  color: #262626;
+  text-decoration: none;
+  background-color: #f5f5f5;
+}
+
+.dropdown-menu > .scrollbar-container > .active > a,
+.dropdown-menu > .scrollbar-container > .active > a:hover,
+.dropdown-menu > .scrollbar-container > .active > a:focus {
+  color: #fff;
+  text-decoration: none;
+  background-color: #428bca;
+  outline: 0;
+}
+
+@media (max-width: 767px) {
+  .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a {
+    padding: 5px 15px 5px 25px;
+    line-height: 20px;
+  }
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a {
+    color: #777;
+  }
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:hover,
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:focus {
+    color: #fff;
+    background-color: transparent;
+  }
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a,
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a:hover,
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a:focus {
+    color: #fff;
+    background-color: #080808;
+  }
+}
+
 
 #main {
   padding-left: 10px;
   padding-right: 10px;
   padding-bottom: 10px;
   height: 100%;
+}
+
+#notebook-list {
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  #notebook-list {
+    max-height: 283px;
+  }
 }
 
 .server-status {
@@ -217,4 +275,14 @@ kbd {
 
 .home {
   min-height: 400px;
+}
+
+
+/* 
+temporary fix for bootstrap issue (https://github.com/twbs/bootstrap/issues/5865) 
+This part should be removed when new version of bootstrap handles this issue. 
+*/
+.btn-group > .tooltip + .btn,
+.btn-group > .popover + .btn {
+  margin-left:-1px;
 }
