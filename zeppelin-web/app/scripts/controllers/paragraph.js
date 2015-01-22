@@ -78,9 +78,6 @@ angular.module('zeppelinWebApp')
 
   var initializeDefault = function() {
     var config = $scope.paragraph.config;
-    if (!config.looknfeel) {
-      config.looknfeel = 'default';
-    }
 
     if (!config.colWidth) {
       config.colWidth = 12;

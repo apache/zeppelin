@@ -128,9 +128,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.setLookAndFeel = function(looknfeel) {
     $scope.note.config.looknfeel = looknfeel;
-    $scope.viewOnly = looknfeel === 'report' ? true : false;
     $scope.setConfig();
-    $rootScope.$emit('setLookAndFeel', $scope.note.config.looknfeel);
   };
 
   /** Set cron expression for this note **/
@@ -166,20 +164,19 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
     if ($scope.note === null) {
       $scope.note = note;
-      initialize();
     } else {
       updateNote(note);
     }
-
-    /** set look n feel */
-    var looknfeel = note.config.looknfeel;
-    $rootScope.$emit('setLookAndFeel', looknfeel);
+    initializeLookAndFeel();
   });
 
-  var initialize = function() {
-    if(!$scope.note.config.looknfeel) {
+  var initializeLookAndFeel = function() {
+    if (!$scope.note.config.looknfeel) {
       $scope.note.config.looknfeel = 'default';
+    } else {
+      $scope.viewOnly = $scope.note.config.looknfeel === 'report' ? true : false;
     }
+    $rootScope.$emit('setLookAndFeel', $scope.note.config.looknfeel);
   };
 
   var cleanParagraphExcept = function(paragraphId, note) {
