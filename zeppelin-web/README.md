@@ -9,11 +9,18 @@ This will Download all the dependencies including node js and npm (you will find
 We also provide some **helper script** for bower and grunt (you dont need to install them).
 
 In case of the error `ECMDERR Failed to execute "git ls-remote --tags --heads git://xxxxx", exit code of #128`
+
+change your git config with `git config --global url."https://".insteadOf git://`
+
+**OR**
+
 Try to add to the `.bowerrc` file the following content:
 ```
   "proxy" : "http://<host>:<port>",
   "https-proxy" : "http://<host>:<port>"
 ```
+
+
 and retry to build again.
 
 ## Contribute on Zeppelin Web
