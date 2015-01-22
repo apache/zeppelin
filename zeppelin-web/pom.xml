@@ -90,7 +90,7 @@
               <goal>grunt</goal>
             </goals>
             <configuration>
-              <!-- TODO(Anthony) : remove --force once all JSHint are fixed! -->
+              <!-- TODO(Anthony) : remove force once all JSHint are fixed! -->
               <arguments>--no-color --force</arguments>
             </configuration>
           </execution>
