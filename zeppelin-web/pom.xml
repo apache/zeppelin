@@ -50,7 +50,7 @@
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
-        <version>0.0.16</version>
+        <version>0.0.20</version>
         <executions>
           <execution>
             <id>install node and npm</id>
@@ -65,19 +65,7 @@
           </execution>
 
           <execution>
-            <id>npm install ansi-color</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>npm</goal>
-            </goals>
-            <configuration>
-              <arguments>install http://registry.npmjs.org/ansi-color/-/ansi-color-0.2.1.tgz</arguments>
-            </configuration>
-          </execution>
-
-          <execution>
             <id>npm install</id>
-            <phase>generate-sources</phase>
             <goals>
               <goal>npm</goal>
             </goals>
@@ -85,26 +73,28 @@
               <arguments>install</arguments>
             </configuration>
           </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <executions>
+          
           <execution>
-            <id>grunt-build-to-src-main-webapp</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-          </execution>
+			<id>bower install</id>
+			<goals>
+				<goal>bower</goal>
+			</goals>
+			<configuration>
+				<arguments>install</arguments>
+			</configuration>
+		  </execution>
+
+		  <execution>
+			<id>grunt build</id>
+			<goals>
+				<goal>grunt</goal>
+			</goals>
+			<configuration>
+				<arguments>--no-color --force</arguments>
+			</configuration>
+		  </execution>
+          
         </executions>
-        <configuration>
-          <executable>./grunt</executable>
-          <arguments>
-            <argument>build</argument>
-          </arguments>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
