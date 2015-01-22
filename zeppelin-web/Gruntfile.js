@@ -237,25 +237,6 @@ module.exports = function (grunt) {
     //   dist: {}
     // },
 
-    imagemin: {
-      dist: {
-        files: [{
-          expand: true,
-          cwd: '<%= yeoman.app %>/images',
-          src: '{,*/}*.{png,jpg,jpeg,gif}',
-          dest: '<%= yeoman.dist %>/images'
-        }]
-      },
-      jqueryui: {
-        files: [{
-          expand: true,
-          cwd: 'bower_components/jquery-ui/themes/base/images',
-          src: '{,*/}*.{png,jpg,jpeg,gif}',
-          dest: '<%= yeoman.dist %>/styles/images'
-        }]
-      }
-    },
-
     svgmin: {
       dist: {
         files: [{
@@ -312,7 +293,7 @@ module.exports = function (grunt) {
             '.htaccess',
             '*.html',
             'views/{,*/}*.html',
-            'images/{,*/}*.{webp}',
+            'images/*',
             'fonts/*',
             'WEB-INF/*',
             'scripts/ace/{,*/}/{,*/}/*'
@@ -333,6 +314,11 @@ module.exports = function (grunt) {
           cwd: 'bower_components/bootstrap/dist',
           src: 'fonts/*',
           dest: '<%= yeoman.dist %>'
+        }, {
+          expand: true,
+          cwd: 'bower_components/jquery-ui/themes/base/images',
+          src: '{,*/}*.{png,jpg,jpeg,gif}',
+          dest: '<%= yeoman.dist %>/styles/images'
         }]
       },
       styles: {
@@ -353,8 +339,6 @@ module.exports = function (grunt) {
       ],
       dist: [
         'copy:styles',
-        'imagemin',
-        'imagemin:jqueryui',
         'svgmin'
       ]
     },
