@@ -226,9 +226,9 @@
   z-index:auto !important;
 }
 
-.emacs-mode .ace_cursor {
+#main .emacs-mode .ace_cursor {
   background-color:#C0C0C0!important;
-  border: none;
+  border: none !important;
 }
 
 .paragraph .status {
