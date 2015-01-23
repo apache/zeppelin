@@ -33,6 +33,7 @@
         "main": ["src-noconflict/ace.js",
                  "src-noconflict/mode-scala.js",
                  "src-noconflict/mode-sql.js",
+                 "src-noconflict/mode-markdown.js",
                  "src-noconflict/keybinding-emacs.js",
                  "src-noconflict/ext-language_tools.js"],
       "version": "1.1.8",
