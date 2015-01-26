@@ -10,6 +10,12 @@ body {
     background-color: #3071a9;
 }
 
+.navbar-brand {
+  padding: 12px 12px;
+  padding-top: 15px;
+  padding-bottom: 10px;
+}
+
 .navbar {
  background-color:#3071a9;
  border-bottom:0px;
@@ -23,16 +29,17 @@ body {
 
 .navbar-inverse .navbar-nav > li > a:hover, 
 .navbar-inverse .navbar-nav > li > a:focus {
-  text-decoration: underline;
+  color: #ffffff;
+  background-color: #2C6094;
 }
 .navbar-inverse .navbar-nav > li > a.active:hover, 
 .navbar-inverse .navbar-nav > li > a.active:focus {
   text-decoration: none;
-  background-color:#123456;
+  background-color: #265380;
 }
 
 .navbar-inverse .navbar-nav > li > a.active {
-  background-color:#123456;
+  background-color: #265380;
 }
 
 .navbar-inverse .navbar-brand:hover,
@@ -43,6 +50,43 @@ body {
   color: #fff;
   text-decoration: none;
   font-size: 32px;
+}
+
+.navbar-inverse .navbar-collapse,
+.navbar-inverse .navbar-form {
+  border-color: #265380;
+  background-color: #3071a9;
+}
+
+@media (max-width: 768px) {
+  .navbar-collapse.in {
+    box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.4);
+  }
+
+  .bigFingerButton {
+    margin-top: 12px;
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
+  }
+}
+
+.bigFingerButton {
+    margin-right: 10px;
+}
+
+.navbar-inverse .navbar-toggle {
+  border-color: #265380;
+}
+
+.navbar-inverse .navbar-toggle:hover,
+.navbar-inverse .navbar-toggle:focus {
+  border-color: #265380;
+  background-color: #265380;
+}
+
+.navbar-inverse .navbar-toggle:focus {
+  outline-width: 0px;
 }
 
 
