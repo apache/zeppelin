@@ -308,6 +308,9 @@ body {
     font-size: 60%;
     color: #FFF; }
 
+.navbar-collapse.collapse {
+    max-height: 50px;}
+
 /* Custom, iPhone Retina */ 
 @media only screen and (max-width : 480px) {
   .jumbotron h1 {
