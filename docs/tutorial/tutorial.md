@@ -20,7 +20,7 @@ Before you start Zeppelin tutorial, you will need to download [bank.zip](http://
 
 First, to transform data from csv format into RDD of `Bank` objects, run following script. This will also remove header using `filter` function.
 
-```
+```scala
 val bankText = sc.textFile("/Users/mina/Zeppelin/bank/bank-full.csv")
 
 case class Bank(age:Integer, job:String, marital : String, education : String, balance : Integer)
@@ -42,19 +42,19 @@ bank.registerTempTable("bank")
 
 Suppose we want to see age distribution from `bank`. To do this, run:
 
-```
+```sql
 %sql select age, count(1) from bank where age < 30 group by age order by age
 ```
 
 You can make input box for setting age condition by replacing `30` with `${maxAge=30}`.
 
-```
+```sql
 %sql select age, count(1) from bank where age < ${maxAge=30} group by age order by age
 ```
 
 Now we want to see age distribution with certain marital status and add combo box to select marital status. Run:
 
-```
+```sql
 %sql select age, count(1) from bank where marital="${marital=single,single|divorced|married}" group by age order by age
 ```
 
@@ -69,7 +69,7 @@ In case you run Zeppelin server using IDE not through command-line, make sure th
 
 This will create a RDD of `Tweet` objects and register these stream data as a table:
 
-```
+```scala
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.twitter._
 import org.apache.spark.storage.StorageLevel
@@ -127,20 +127,20 @@ For each following script, every time you click run button you will see differen
 
 Let's begin by extracting maximum 10 tweets which contain the word "girl".
 
-```
+```sql
 %sql select * from tweets where text like '%girl%' limit 10
 ```
 
 This time suppose we want to see how many tweets have been created per sec during last 60 sec. To do this, run:
 
-```
+```sql
 %sql select createdAt, count(1) from tweets group by createdAt order by createdAt
 ```
 
 
 You can make user-defined function and use it in Spark SQL. Let's try it by making function named `sentiment`. This function will return one of the three attitudes(positive, negative, neutral) towards the parameter.
 
-```
+```scala
 def sentiment(s:String) : String = {
     val positive = Array("like", "love", "good", "great", "happy", "cool", "the", "one", "that")
     val negative = Array("hate", "bad", "stupid", "is")
@@ -171,6 +171,6 @@ sqlc.registerFunction("sentiment", sentiment _)
 
 To check how people think about girls using `sentiment` function we've made above, run this:
 
-```
+```sql
 %sql select sentiment(text), count(1) from tweets where text like '%girl%' group by sentiment(text)
 ```
