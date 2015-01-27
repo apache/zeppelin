@@ -51,7 +51,7 @@ function initialize_default_directories() {
   fi
 
   if [[ ! -d "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
-    echo "Notbook dir doesn't exist, create ${ZEPPELIN_NOTEBOOK_DIR}"
+    echo "Notebook dir doesn't exist, create ${ZEPPELIN_NOTEBOOK_DIR}"
     $(mkdir -p "${ZEPPELIN_NOTEBOOK_DIR}")
   fi
 }
@@ -117,7 +117,7 @@ function start() {
       return 0;
     fi
   fi
-  
+
   initialize_default_directories
 
   nohup nice -n $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_MAIN >> "${ZEPPELIN_OUTFILE}" 2>&1 < /dev/null &
@@ -189,4 +189,3 @@ case "${1}" in
   *)
     echo "Usage: $0 {start|stop|restart|reload|status}"
 esac
-
