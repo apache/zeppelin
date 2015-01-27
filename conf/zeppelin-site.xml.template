@@ -47,12 +47,6 @@
 </property>
 
 <property>
-  <name>zeppelin.interpreter.mode</name>
-  <value>share</value>
-  <description>Interpreter mode. separate or share. 'separate' for separate interpreter for each notebook. 'share' for share single interpreter for all notebook</description>
-</property>
-
-<property>
   <name>zeppelin.interpreters</name>
   <value>com.nflabs.zeppelin.spark.SparkInterpreter,com.nflabs.zeppelin.spark.SparkSqlInterpreter,com.nflabs.zeppelin.markdown.Markdown,com.nflabs.zeppelin.shell.ShellInterpreter</value>
   <description>Comma separated interpreter configurations. First interpreter become a default</description>

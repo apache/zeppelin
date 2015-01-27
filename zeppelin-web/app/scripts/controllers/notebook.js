@@ -23,9 +23,8 @@
  * # NotebookCtrl
  * Controller of notes, manage the note (update)
  *
- * @author anthonycorbacho
  */
-angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope) {
+angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -42,6 +41,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     {name: '12h', value: '0 0 0/12 * * ?'},
     {name: '1d', value: '0 0 0 * * ?'}
   ];
+
+  $scope.interpreterSettings = [];
+  $scope.interpreterBindings = [];
 
   $scope.getCronOptionNameFromValue = function(value) {
     if (!value) {
@@ -168,7 +170,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       updateNote(note);
     }
     initializeLookAndFeel();
+    initializeInterpreter();
   });
+
 
   var initializeLookAndFeel = function() {
     if (!$scope.note.config.looknfeel) {
@@ -178,6 +182,33 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
     $rootScope.$emit('setLookAndFeel', $scope.note.config.looknfeel);
   };
+
+
+  var initializeInterpreter = function() {
+    //open interpreter binding setting when there're none selected
+    var selected = false;
+    for (var i in $scope.interpreterBindings) {
+      var setting = $scope.interpreterBindings[i];
+      if (setting.selected) {
+        selected = true;
+        break;
+      }
+    }
+
+    if (!selected) {
+      // make default selection
+      var selectedIntp = {};
+      for (var i in $scope.interpreterBindings) {
+        var setting = $scope.interpreterBindings[i];
+        if (!selectedIntp[setting.group]) {
+          setting.selected = true;
+          selectedIntp[setting.group] = true;
+        }
+      }
+      $scope.showSetting = true;
+    }
+  };
+
 
   var cleanParagraphExcept = function(paragraphId, note) {
     var noteCopy = {};
@@ -212,7 +243,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
       return;
     }
-
     $rootScope.$emit('sendNewEvent', { op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
   });
 
@@ -233,7 +263,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if (newIndex < 0 || newIndex > $scope.note.paragraphs.length) {
       return;
     }
-
     $rootScope.$emit('sendNewEvent', { op: 'INSERT_PARAGRAPH', data : {index: newIndex}});
   });
 
@@ -249,7 +278,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
       return;
     }
-
     $rootScope.$emit('sendNewEvent', { op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
   });
 
@@ -343,4 +371,74 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
+  var getInterpreterBindings = function(callback) {
+    $http.get(getRestApiBase()+"/notebook/interpreter/bind/"+$scope.note.id).
+      success(function(data, status, headers, config) {
+        $scope.interpreterBindings = data.body;
+        $scope.interpreterBindingsOrig = jQuery.extend(true, [], $scope.interpreterBindings); // to check dirty
+        if (callback) {
+          callback();
+        }
+      }).
+      error(function(data, status, headers, config) {
+        console.log("Error %o %o", status, data.message);
+      });
+  };
+
+  $scope.interpreterSelectionListeners = {
+    accept : function(sourceItemHandleScope, destSortableScope) {return true;},
+    itemMoved: function (event) {},
+    orderChanged: function(event) {}
+  };
+
+  $scope.openSetting = function() {
+    $scope.showSetting = true;
+    getInterpreterBindings();
+  };
+
+  $scope.closeSetting = function() {
+    if (isSettingDirty()) {
+      var result = confirm('Changes will be discarded');
+      if (!result) {
+        return;
+      }
+    }
+    $scope.showSetting = false;
+  };
+
+  $scope.saveSetting = function() {
+    var selectedSettingIds = [];
+    for (var no in $scope.interpreterBindings) {
+      var setting = $scope.interpreterBindings[no];
+      if (setting.selected) {
+        selectedSettingIds.push(setting.id);
+      }
+    }
+
+    $http.put(getRestApiBase()+"/notebook/interpreter/bind/"+$scope.note.id,
+             selectedSettingIds).
+      success(function(data, status, headers, config) {
+        console.log("Interpreter binding %o saved", selectedSettingIds);
+        $scope.showSetting = false;
+      }).
+      error(function(data, status, headers, config) {
+        console.log("Error %o %o", status, data.message);
+      });
+  };
+
+  $scope.toggleSetting = function() {
+    if ($scope.showSetting) {
+      $scope.closeSetting();
+    } else {
+      $scope.openSetting();
+    }
+  };
+
+  var isSettingDirty = function() {
+    if (angular.equals($scope.interpreterBindings, $scope.interpreterBindingsOrig)) {
+      return false;
+    } else {
+      return true;
+    }
+  };
 });

@@ -1,10 +1,14 @@
 package com.nflabs.zeppelin.notebook;
 
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.interpreter.InterpreterFactory;
-import com.nflabs.zeppelin.scheduler.Scheduler;
-import com.nflabs.zeppelin.scheduler.SchedulerFactory;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
@@ -19,20 +23,15 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
+import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import com.nflabs.zeppelin.interpreter.InterpreterFactory;
+import com.nflabs.zeppelin.interpreter.InterpreterSetting;
+import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 /**
  * Collection of Notes.
- *
- * @author Leemoonsoo
- * @author anthonycorbacho
  */
 public class Notebook {
   Logger logger = LoggerFactory.getLogger(Notebook.class);
@@ -60,25 +59,66 @@ public class Notebook {
     loadAllNotes();
   }
 
-  private boolean isLoaderStatic() {
-    return "share".equals(conf.getString(ConfVars.ZEPPELIN_INTERPRETER_MODE));
+  /**
+   * Create new note.
+   *
+   * @return
+   * @throws IOException
+   */
+  public Note createNote() throws IOException {
+    if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
+      return createNote(replFactory.getDefaultInterpreterSettingList());
+    } else {
+      return createNote(null);
+    }
   }
 
   /**
    * Create new note.
-   * 
+   *
    * @return
+   * @throws IOException
    */
-  public Note createNote() {
-    Note note =
-        new Note(conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()),
-            jobListenerFactory, quartzSched);
+  public Note createNote(List<String> interpreterIds) throws IOException {
+    NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
+    Note note = new Note(conf, intpLoader, jobListenerFactory, quartzSched);
+    intpLoader.setNoteId(note.id());
     synchronized (notes) {
       notes.put(note.id(), note);
     }
+    if (interpreterIds != null) {
+      bindInterpretersToNote(note.id(), interpreterIds);
+    }
+
     return note;
   }
 
+  public void bindInterpretersToNote(String id,
+      List<String> interpreterSettingIds) throws IOException {
+    Note note = getNote(id);
+    if (note != null) {
+      note.getNoteReplLoader().setInterpreters(interpreterSettingIds);
+      replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
+    }
+  }
+
+  public List<String> getBindedInterpreterSettingsIds(String id) {
+    Note note = getNote(id);
+    if (note != null) {
+      return note.getNoteReplLoader().getInterpreters();
+    } else {
+      return new LinkedList<String>();
+    }
+  }
+
+  public List<InterpreterSetting> getBindedInterpreterSettings(String id) {
+    Note note = getNote(id);
+    if (note != null) {
+      return note.getNoteReplLoader().getInterpreterSettings();
+    } else {
+      return new LinkedList<InterpreterSetting>();
+    }
+  }
 
   public Note getNote(String id) {
     synchronized (notes) {
@@ -91,7 +131,6 @@ public class Notebook {
     synchronized (notes) {
       note = notes.remove(id);
     }
-    note.getNoteReplLoader().destroyAll();
     try {
       note.unpersist();
     } catch (IOException e) {
@@ -111,9 +150,14 @@ public class Notebook {
         Scheduler scheduler =
             schedulerFactory.createOrGetFIFOScheduler("note_" + System.currentTimeMillis());
         logger.info("Loading note from " + f.getName());
-        Note note =
-            Note.load(f.getName(), conf, new NoteInterpreterLoader(replFactory, isLoaderStatic()),
-                scheduler, jobListenerFactory, quartzSched);
+        NoteInterpreterLoader noteInterpreterLoader = new NoteInterpreterLoader(replFactory);
+        Note note = Note.load(f.getName(),
+            conf,
+            noteInterpreterLoader,
+            scheduler,
+            jobListenerFactory, quartzSched);
+        noteInterpreterLoader.setNoteId(note.id());
+
         synchronized (notes) {
           notes.put(note.id(), note);
           refreshCron(note.id());
@@ -158,7 +202,7 @@ public class Notebook {
 
   /**
    * Cron task for the note.
-   * 
+   *
    * @author Leemoonsoo
    *
    */
@@ -195,7 +239,7 @@ public class Notebook {
 
       JobDetail newJob =
           JobBuilder.newJob(CronJob.class).withIdentity(id, "note").usingJobData("noteId", id)
-              .build();
+          .build();
 
       Map<String, Object> info = note.getInfo();
       info.put("cron", null);
@@ -204,8 +248,8 @@ public class Notebook {
       try {
         trigger =
             TriggerBuilder.newTrigger().withIdentity("trigger_" + id, "note")
-                .withSchedule(CronScheduleBuilder.cronSchedule(cronExpr)).forJob(id, "note")
-                .build();
+            .withSchedule(CronScheduleBuilder.cronSchedule(cronExpr)).forJob(id, "note")
+            .build();
       } catch (Exception e) {
         logger.error("Error", e);
         info.put("cron", e.getMessage());
@@ -229,6 +273,10 @@ public class Notebook {
     } catch (SchedulerException e) {
       logger.error("Can't remove quertz " + id, e);
     }
+  }
+
+  public InterpreterFactory getInterpreterFactory() {
+    return replFactory;
   }
 
 

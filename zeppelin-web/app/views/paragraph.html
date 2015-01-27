@@ -285,8 +285,7 @@ limitations under the License.
            ng-bind="paragraph.errorMessage">
       </div>
 
-      <div id="{{paragraph.id}}_executionTime" class="executionTime" ng-if="paragraph.status == 'FINISHED' && !paragraph.config.editorHide ">
-        {{getExecutionTime()}}
+      <div id="{{paragraph.id}}_executionTime" class="executionTime" ng-bind-html="getExecutionTime()">
       </div>
     </div>
   </div>
@@ -308,9 +307,9 @@ limitations under the License.
           ng-click="cancelParagraph()"
           ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
 
-    <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" tooltip-placement="top" tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide') + ' editor'}}"
+    <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide') + ' editor'}}"
           ng-click="toggleEditor()"></span>
-    <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
+    <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
           ng-click="toggleOutput()"></span>
 
     <span class="dropdown navbar-right">

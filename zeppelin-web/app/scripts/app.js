@@ -49,6 +49,21 @@ function getWebsocketProtocol() {
   return protocol;
 }
 
+function getRestApiBase() {
+  var port = Number(location.port);
+  if (port === 'undefined' || port === 0) {
+    port = 80;
+    if (location.protocol === 'https:') {
+      port = 443;
+    }
+  }
+
+  if (port === 3333 || port === 9000) {
+    port = 8080;
+  }
+  return location.protocol+"//"+location.hostname+":"+port+"/api";
+}
+
 /**
  * @ngdoc overview
  * @name zeppelinWebApp
@@ -68,9 +83,17 @@ angular
     'angular-websocket',
     'ui.ace',
     'ui.bootstrap',
+    'ui.sortable',
     'ngTouch',
-    'ngDragDrop'
+    'ngDragDrop',
+    'monospaced.elastic',
+    'puElasticInput'
   ])
+  .filter('breakFilter', function() {
+    return function (text) {
+      if (text !== undefined) return text.replace(/\n/g, '<br />');
+    };
+  })
   .config(function ($routeProvider, WebSocketProvider) {
     WebSocketProvider
       .prefix('')
@@ -87,6 +110,10 @@ angular
       .when('/notebook/:noteId/paragraph/:paragraphId?', {
         templateUrl: 'views/notebooks.html',
         controller: 'NotebookCtrl'
+      })
+      .when('/interpreter', {
+        templateUrl: 'views/interpreter.html',
+        controller: 'InterpreterCtrl'
       })
       .otherwise({
         redirectTo: '/'

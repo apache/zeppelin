@@ -3,8 +3,6 @@ package com.nflabs.zeppelin.interpreter;
 /**
  * Runtime Exception for interpreters.
  * 
- * @author Leemoonsoo
- *
  */
 public class InterpreterException extends RuntimeException {
 

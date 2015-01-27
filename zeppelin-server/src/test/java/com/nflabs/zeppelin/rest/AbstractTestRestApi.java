@@ -7,8 +7,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -121,10 +123,12 @@ public abstract class AbstractTestRestApi {
     return getMethod;
   }
 
-  protected static PostMethod httpPost(String path) throws IOException {
+  protected static PostMethod httpPost(String path, String body) throws IOException {
     LOG.info("Connecting to {}", url + path);
     HttpClient httpClient = new HttpClient();
     PostMethod postMethod = new PostMethod(url + path);
+    RequestEntity entity = new ByteArrayRequestEntity(body.getBytes("UTF-8"));
+    postMethod.setRequestEntity(entity);
     httpClient.executeMethod(postMethod);
     LOG.info("{} - {}", postMethod.getStatusCode(), postMethod.getStatusText());
     return postMethod;

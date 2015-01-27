@@ -74,7 +74,6 @@
 		<module>zeppelin-web</module>
 		<module>zeppelin-server</module>
 		<module>zeppelin-distribution</module>
-		<module>zeppelin-docs</module>
 	</modules>
 
 	<properties>
@@ -394,6 +393,12 @@
 				<groupId>io.netty</groupId>
 				<artifactId>netty-all</artifactId>
 				<version>4.0.17.Final</version>
+			</dependency>
+
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty</artifactId>
+				<version>3.6.6.Final</version>
 			</dependency>
 
 			<dependency>
