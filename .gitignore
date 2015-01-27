@@ -10,6 +10,7 @@ conf/zeppelin-env.sh
 conf/zeppelin-site.xml
 conf/keystore
 conf/truststore
+conf/interpreter.json
 
 #webapp
 zeppelin-web/node_modules
