@@ -52,6 +52,8 @@ public class SparkSqlInterpreter extends Interpreter {
         SparkSqlInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .add("zeppelin.spark.maxResult", "10000", "Max number of SparkSQL result to display")
+            .add("zeppelin.spark.useHiveContext", "false",
+                "use HiveContext instead of SQLContext if it is true")
             .build());
   }
 
@@ -87,6 +89,10 @@ public class SparkSqlInterpreter extends Interpreter {
     return null;
   }
 
+  private boolean useHiveContext() {
+    return Boolean.parseBoolean(getProperty("zeppelin.spark.useHiveContext"));
+  }
+
   @Override
   public void close() {}
 
@@ -97,8 +103,16 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
-    SQLContext sqlc = getSparkInterpreter().getSQLContext();
+    SQLContext sqlc = null;
+
+    if (useHiveContext()) {
+      sqlc = getSparkInterpreter().getHiveContext();
+    } else {
+      sqlc = getSparkInterpreter().getSQLContext();
+    }
+
     SparkContext sc = sqlc.sparkContext();
+
     sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
     SchemaRDD rdd;
     Row[] rows = null;
