@@ -459,3 +459,42 @@
 .resizable-helper {
   border: 3px solid #DDDDDD;
 }
+
+/* note setting panel */
+.setting {
+  background-color: white;
+  padding: 10px 15px 15px 15px;
+  margin-left: -10px;
+  margin-right: -10px;
+  font-family: 'Roboto', sans-serif;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid #E5E5E5;
+}
+
+.setting .interpreterSettings {
+  list-style-type: none;
+  background-color: #EFEFEF;
+  padding: 10px 10px 10px 10px;
+  box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.15);
+  border: 1px solid #E5E5E5;
+}
+
+.setting .interpreterSettings div div {
+  margin: 2px 0px 2px 0px;
+}
+
+.setting .interpreterSettings div div {
+  cursor: pointer;
+}
+
+.setting .modal-header {
+  border: 0px;
+}
+
+.setting .modal-body {
+  border: 0px;
+}
+
+.setting .modal-footer {
+  border: 0px;
+}

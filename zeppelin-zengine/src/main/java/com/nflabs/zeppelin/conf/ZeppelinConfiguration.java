@@ -1,19 +1,18 @@
 package com.nflabs.zeppelin.conf;
 
+import java.net.URL;
+import java.util.List;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.URL;
-import java.util.List;
 
 
 /**
  * Zeppelin configuration.
- * 
+ *
  * @author Leemoonsoo
  *
  */
@@ -51,7 +50,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   /**
    * Load from resource.
-   * 
+   *
    * @throws ConfigurationException
    */
   public static ZeppelinConfiguration create() {
@@ -149,7 +148,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   private boolean getBooleanValue(String name, boolean d) {
     List<ConfigurationNode> properties = getRootNode().getChildren();
     if (properties == null || properties.size() == 0) {
-      return d; 
+      return d;
     }
     for (ConfigurationNode p : properties) {
       if (p.getChildren("name") != null && p.getChildren("name").size() > 0
@@ -311,6 +310,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_DIR);
   }
 
+  public String getInterpreterSettingPath() {
+    return getRelativeDir("conf/interpreter.json");
+  }
+
   public String getRelativeDir(ConfVars c) {
     return getRelativeDir(getString(c));
   }
@@ -326,7 +329,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   /**
    * Wrapper class.
-   * 
+   *
    * @author Leemoonsoo
    *
    */
@@ -347,13 +350,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_WAR("zeppelin.war", "../zeppelin-web/src/main/webapp"),
     ZEPPELIN_API_WAR("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),
     ZEPPELIN_INTERPRETERS("zeppelin.interpreters", "com.nflabs.zeppelin.spark.SparkInterpreter,"
-                                                 + "com.nflabs.zeppelin.spark.SparkSqlInterpreter,"
-                                                 + "com.nflabs.zeppelin.markdown.Markdown,"
-                                                 + "com.nflabs.zeppelin.shell.ShellInterpreter"),
-    ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
-    ZEPPELIN_INTERPRETER_MODE("zeppelin.interpreter.mode", "share"), // 'separate', 'share'
-    ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
-    ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook");
+        + "com.nflabs.zeppelin.spark.SparkSqlInterpreter,"
+        + "com.nflabs.zeppelin.markdown.Markdown,"
+        + "com.nflabs.zeppelin.shell.ShellInterpreter"),
+        ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
+        ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
+        ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
+    // Decide when new note is created, interpreter settings will be binded automatically or not.
+    ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true);
 
     private String varName;
     @SuppressWarnings("rawtypes")

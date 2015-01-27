@@ -10,8 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
-import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.Interpreter.FormType;
+import com.nflabs.zeppelin.interpreter.InterpreterContext;
+import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.notebook.form.Input;
 import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.scheduler.Job;
@@ -19,7 +20,7 @@ import com.nflabs.zeppelin.scheduler.JobListener;
 
 /**
  * Paragraph is a representation of an execution unit.
- * 
+ *
  * @author Leemoonsoo
  */
 public class Paragraph extends Job implements Serializable {
@@ -115,7 +116,7 @@ public class Paragraph extends Job implements Serializable {
   }
 
   public Interpreter getRepl(String name) {
-    return replLoader.getRepl(name);
+    return replLoader.get(name);
   }
 
   public List<String> completion(String buffer, int cursor) {
@@ -146,7 +147,7 @@ public class Paragraph extends Job implements Serializable {
     String replName = getRequiredReplName();
     Interpreter repl = getRepl(replName);
     if (repl != null) {
-      return repl.getProgress();
+      return repl.getProgress(new InterpreterContext(this));
     } else {
       return 0;
     }
@@ -180,14 +181,14 @@ public class Paragraph extends Job implements Serializable {
       script = Input.getSimpleQuery(settings.getParams(), scriptBody);
     }
     logger().info("RUN : " + script);
-    InterpreterResult ret = repl.interpret(script);
+    InterpreterResult ret = repl.interpret(script, new InterpreterContext(this));
     return ret;
   }
 
   @Override
   protected boolean jobAbort() {
     Interpreter repl = getRepl(getRequiredReplName());
-    repl.cancel();
+    repl.cancel(new InterpreterContext(this));
     return true;
   }
 

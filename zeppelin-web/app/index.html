@@ -34,6 +34,7 @@ limitations under the License.
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
     <link rel="stylesheet" href="bower_components/nvd3/src/nv.d3.css" />
     <link rel="stylesheet" href="bower_components/perfect-scrollbar/src/perfect-scrollbar.css" />
+    <link rel="stylesheet" href="bower_components/ng-sortable/dist/ng-sortable.css" />
     <!-- endbower -->
     <link rel="stylesheet" href="bower_components/jquery-ui/themes/base/all.css" />
     <!-- endbuild -->
@@ -42,6 +43,7 @@ limitations under the License.
     <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="styles/typography.css">
     <link rel="stylesheet" href="styles/notebook.css">
+    <link rel="stylesheet" href="styles/interpreter.css">
     <link rel="stylesheet" href="styles/font-awesome.min.css">
     <link rel="stylesheet" href="styles/simple-line-icons.css">
     <!-- endbuild -->
@@ -59,7 +61,7 @@ limitations under the License.
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#"><img style="margin-top: -7px;s" src="images/zepLogoW.png" width="50" alt="I'm zeppelin"> Zeppelin</a>
+          <a class="navbar-brand" href="#/"><img style="margin-top: -7px;s" src="images/zepLogoW.png" width="50" alt="I'm zeppelin"> Zeppelin</a>
         </div>
 
         <div class="collapse navbar-collapse" ng-controller="NavCtrl">
@@ -74,9 +76,11 @@ limitations under the License.
 				</div>
               </ul>
             </li>
+            <li>
+              <a href="#/interpreter">Interpreter</a>
+            </li>
           </ul>
-          <ul class="nav navbar-nav navbar-right" style="margin-top:10px; margin-right:5px;">
-            
+          <ul class="nav navbar-nav navbar-right" style="margin-top:10px; margin-right:5px;">            
             <li class="server-status">
                 <i class="fa fa-circle" ng-class="{'server-connected':connected, 'server-disconnected':!connected }"></i>
                 <span ng-show="connected">Connected</span>
@@ -119,6 +123,9 @@ limitations under the License.
     <script src="bower_components/jquery-ui/jquery-ui.js"></script>
     <script src="bower_components/angular-dragdrop/src/angular-dragdrop.js"></script>
     <script src="bower_components/perfect-scrollbar/src/perfect-scrollbar.js"></script>
+    <script src="bower_components/ng-sortable/dist/ng-sortable.js"></script>
+    <script src="bower_components/angular-elastic/elastic.js"></script>
+    <script src="bower_components/angular-elastic-input/dist/angular-elastic-input.min.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
     <!--
@@ -130,6 +137,7 @@ limitations under the License.
     <script src="scripts/app.js"></script>
     <script src="scripts/controllers/main.js"></script>
     <script src="scripts/controllers/notebook.js"></script>
+    <script src="scripts/controllers/interpreter.js"></script>
     <script src="scripts/directives/ngenter.js"></script>
     <script src="scripts/directives/dropdowninput.js"></script>
     <script src="scripts/directives/resizable.js"></script>

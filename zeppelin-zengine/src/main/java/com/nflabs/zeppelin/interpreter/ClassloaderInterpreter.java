@@ -1,5 +1,6 @@
 package com.nflabs.zeppelin.interpreter;
 
+import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
@@ -7,22 +8,23 @@ import com.nflabs.zeppelin.scheduler.Scheduler;
 
 /**
  * Add to the classpath interperters.
- * 
- * @author Leemoonsoo
  *
  */
-public class ClassloaderInterpreter extends Interpreter {
+public class ClassloaderInterpreter
+    extends Interpreter
+    implements WrappedInterpreter {
 
   private ClassLoader cl;
   private Interpreter intp;
 
-  public ClassloaderInterpreter(Interpreter intp, ClassLoader cl, Properties property) {
-    super(property);
+  public ClassloaderInterpreter(Interpreter intp, ClassLoader cl) {
+    super(new Properties());
     this.cl = cl;
     this.intp = intp;
   }
 
-  public Interpreter getInnerRepl() {
+  @Override
+  public Interpreter getInnerInterpreter() {
     return intp;
   }
 
@@ -45,11 +47,11 @@ public class ClassloaderInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st) {
+  public InterpreterResult interpret(String st, InterpreterContext context) {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(cl);
     try {
-      return intp.interpret(st);
+      return intp.interpret(st, context);
     } catch (Exception e) {
       e.printStackTrace();
       throw new InterpreterException(e);
@@ -102,11 +104,11 @@ public class ClassloaderInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel() {
+  public void cancel(InterpreterContext context) {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(cl);
     try {
-      intp.cancel();
+      intp.cancel(context);
     } catch (Exception e) {
       throw new InterpreterException(e);
     } finally {
@@ -130,11 +132,11 @@ public class ClassloaderInterpreter extends Interpreter {
   }
 
   @Override
-  public int getProgress() {
+  public int getProgress(InterpreterContext context) {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(cl);
     try {
-      return intp.getProgress();
+      return intp.getProgress(context);
     } catch (Exception e) {
       throw new InterpreterException(e);
     } finally {
@@ -163,6 +165,119 @@ public class ClassloaderInterpreter extends Interpreter {
     Thread.currentThread().setContextClassLoader(cl);
     try {
       return intp.completion(buf, cursor);
+    } catch (Exception e) {
+      throw new InterpreterException(e);
+    } finally {
+      cl = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
+
+
+  @Override
+  public String getClassName() {
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(cl);
+    try {
+      return intp.getClassName();
+    } catch (Exception e) {
+      throw new InterpreterException(e);
+    } finally {
+      cl = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
+
+  @Override
+  public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(cl);
+    try {
+      intp.setInterpreterGroup(interpreterGroup);
+    } catch (Exception e) {
+      throw new InterpreterException(e);
+    } finally {
+      cl = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
+
+  @Override
+  public InterpreterGroup getInterpreterGroup() {
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(cl);
+    try {
+      return intp.getInterpreterGroup();
+    } catch (Exception e) {
+      throw new InterpreterException(e);
+    } finally {
+      cl = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
+
+  @Override
+  public void setClassloaderUrls(URL [] urls) {
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(cl);
+    try {
+      intp.setClassloaderUrls(urls);
+    } catch (Exception e) {
+      throw new InterpreterException(e);
+    } finally {
+      cl = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
+
+  @Override
+  public URL [] getClassloaderUrls() {
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(cl);
+    try {
+      return intp.getClassloaderUrls();
+    } catch (Exception e) {
+      throw new InterpreterException(e);
+    } finally {
+      cl = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
+
+  @Override
+  public void setProperty(Properties property) {
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(cl);
+    try {
+      intp.setProperty(property);
+    } catch (Exception e) {
+      throw new InterpreterException(e);
+    } finally {
+      cl = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
+
+  @Override
+  public Properties getProperty() {
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(cl);
+    try {
+      return intp.getProperty();
+    } catch (Exception e) {
+      throw new InterpreterException(e);
+    } finally {
+      cl = Thread.currentThread().getContextClassLoader();
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
+
+  @Override
+  public String getProperty(String key) {
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    Thread.currentThread().setContextClassLoader(cl);
+    try {
+      return intp.getProperty(key);
     } catch (Exception e) {
       throw new InterpreterException(e);
     } finally {

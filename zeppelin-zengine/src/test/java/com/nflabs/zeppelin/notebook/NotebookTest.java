@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.After;
@@ -15,7 +14,9 @@ import org.quartz.SchedulerException;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.interpreter.mock.MockInterpreterFactory;
+import com.nflabs.zeppelin.interpreter.InterpreterFactory;
+import com.nflabs.zeppelin.interpreter.mock.MockInterpreter1;
+import com.nflabs.zeppelin.interpreter.mock.MockInterpreter2;
 import com.nflabs.zeppelin.notebook.Note;
 import com.nflabs.zeppelin.notebook.Notebook;
 import com.nflabs.zeppelin.notebook.Paragraph;
@@ -31,21 +32,30 @@ public class NotebookTest implements JobListenerFactory{
 	private SchedulerFactory schedulerFactory;
 	private File notebookDir;
 	private Notebook notebook;
+  private InterpreterFactory factory;
 
 	@Before
 	public void setUp() throws Exception {
 		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());		
 		tmpDir.mkdirs();
+		new File(tmpDir, "conf").mkdirs();
 		notebookDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis()+"/notebook");
 		notebookDir.mkdirs();
 
+    System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
 		System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
-
+		System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "com.nflabs.zeppelin.interpreter.mock.MockInterpreter1,com.nflabs.zeppelin.interpreter.mock.MockInterpreter2");
+		
 		conf = ZeppelinConfiguration.create();
         
 		this.schedulerFactory = new SchedulerFactory();
 		
-		notebook = new Notebook(conf, schedulerFactory, new MockInterpreterFactory(conf), this);
+    MockInterpreter1.register("mock1", "com.nflabs.zeppelin.interpreter.mock.MockInterpreter1");
+    MockInterpreter2.register("mock2", "com.nflabs.zeppelin.interpreter.mock.MockInterpreter2");
+    
+    factory = new InterpreterFactory(conf);
+		
+		notebook = new Notebook(conf, schedulerFactory, factory, this);
 	}
 
 	@After
@@ -54,8 +64,9 @@ public class NotebookTest implements JobListenerFactory{
 	}
 
 	@Test
-	public void testSelectingReplImplementation() {
+	public void testSelectingReplImplementation() throws IOException {
 		Note note = notebook.createNote();
+		note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 		
 		// run with defatul repl
 		Paragraph p1 = note.addParagraph();
@@ -66,7 +77,7 @@ public class NotebookTest implements JobListenerFactory{
 		
 		// run with specific repl
 		Paragraph p2 = note.addParagraph();
-		p2.setText("%MockRepl2 hello world");
+		p2.setText("%mock2 hello world");
 		note.run(p2.getId());
 		while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
 		assertEquals("repl2: hello world", p2.getResult().message());
@@ -81,13 +92,15 @@ public class NotebookTest implements JobListenerFactory{
 		p1.setText("hello world");
 		note.persist();
 		
-		Notebook notebook2 = new Notebook(conf, schedulerFactory, new MockInterpreterFactory(conf), this);
+		Notebook notebook2 = new Notebook(conf, schedulerFactory, new InterpreterFactory(conf), this);
 		assertEquals(1, notebook2.getAllNotes().size());
 	}
 	
 	@Test
-	public void testRunAll() {
+	public void testRunAll() throws IOException {
 		Note note = notebook.createNote();
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
 		Paragraph p1 = note.addParagraph();
 		p1.setText("p1");
 		Paragraph p2 = note.addParagraph();
@@ -100,9 +113,11 @@ public class NotebookTest implements JobListenerFactory{
 	}
 	
 	@Test
-	public void testSchedule() throws InterruptedException{
+	public void testSchedule() throws InterruptedException, IOException{
 		// create a note and a paragraph
 		Note note = notebook.createNote();
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
 		Paragraph p = note.addParagraph();
 		p.setText("p1");
 		Date dateFinished = p.getDateFinished();

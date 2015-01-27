@@ -7,6 +7,7 @@ import java.util.Properties;
 import org.markdown4j.Markdown4jProcessor;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.scheduler.Scheduler;
@@ -14,7 +15,7 @@ import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 /**
  * Markdown interpreter for Zeppelin.
- * 
+ *
  * @author Leemoonsoo
  * @author anthonycorbacho
  *
@@ -44,7 +45,7 @@ public class Markdown extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st) {
+  public InterpreterResult interpret(String st, InterpreterContext interpreterContext) {
     String html;
     try {
       html = md.process(st);
@@ -55,7 +56,7 @@ public class Markdown extends Interpreter {
   }
 
   @Override
-  public void cancel() {}
+  public void cancel(InterpreterContext context) {}
 
   @Override
   public void bindValue(String name, Object o) {}
@@ -66,7 +67,7 @@ public class Markdown extends Interpreter {
   }
 
   @Override
-  public int getProgress() {
+  public int getProgress(InterpreterContext context) {
     return 0;
   }
 

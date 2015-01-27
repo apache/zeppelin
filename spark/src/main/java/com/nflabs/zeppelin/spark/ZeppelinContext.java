@@ -10,30 +10,31 @@ import org.apache.spark.sql.SchemaRDD;
 import scala.Tuple2;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
-import com.nflabs.zeppelin.notebook.NoteInterpreterLoader;
 import com.nflabs.zeppelin.notebook.Paragraph;
 import com.nflabs.zeppelin.notebook.form.Input.ParamOption;
 import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 
 /**
- * Spark context for zeppelin. 
- * 
+ * Spark context for zeppelin.
+ *
  * @author Leemoonsoo
  *
  */
 public class ZeppelinContext {
   private DependencyResolver dep;
-  private NoteInterpreterLoader noteInterpreterLoader;
   private PrintStream out;
+  private InterpreterContext interpreterContext;
 
-  public ZeppelinContext(SparkContext sc, SQLContext sql, DependencyResolver dep,
-      NoteInterpreterLoader noteInterpreterLoader, PrintStream printStream) {
+  public ZeppelinContext(SparkContext sc, SQLContext sql,
+      InterpreterContext interpreterContext,
+      DependencyResolver dep, PrintStream printStream) {
     this.sc = sc;
     this.sqlContext = sql;
+    this.interpreterContext = interpreterContext;
     this.dep = dep;
-    this.noteInterpreterLoader = noteInterpreterLoader;
     this.out = printStream;
   }
 
@@ -47,7 +48,7 @@ public class ZeppelinContext {
 
   /**
    * Load dependency for interpreter and runtime (driver).
-   * 
+   *
    * @param artifact "group:artifact:version"
    * @throws Exception
    */
@@ -57,7 +58,7 @@ public class ZeppelinContext {
 
   /**
    * Load dependency for interpreter and runtime (driver).
-   * 
+   *
    * @param artifact "group:artifact:version"
    * @throws Exception
    */
@@ -67,7 +68,7 @@ public class ZeppelinContext {
 
   /**
    * Load dependency for interpreter and runtime, and then add to sparkContext.
-   * 
+   *
    * @throws Exception
    */
   public void loadAndDist(String artifact) throws Exception {
@@ -80,7 +81,7 @@ public class ZeppelinContext {
 
   /**
    * Load dependency only interpreter.
-   * 
+   *
    * @param name
    * @return
    */
@@ -120,8 +121,8 @@ public class ZeppelinContext {
   public void run(String lines) {
     String intpName = Paragraph.getRequiredReplName(lines);
     String scriptBody = Paragraph.getScriptBody(lines);
-    Interpreter intp = noteInterpreterLoader.getRepl(intpName);
-    InterpreterResult ret = intp.interpret(scriptBody);
+    Interpreter intp = interpreterContext.getParagraph().getRepl(intpName);
+    InterpreterResult ret = intp.interpret(scriptBody, interpreterContext);
     if (ret.code() == InterpreterResult.Code.SUCCESS) {
       out.println("%" + ret.type().toString().toLowerCase() + " " + ret.message());
     } else if (ret.code() == InterpreterResult.Code.ERROR) {
@@ -132,4 +133,13 @@ public class ZeppelinContext {
       out.println("Unknown error");
     }
   }
+
+  public InterpreterContext getInterpreterContext() {
+    return interpreterContext;
+  }
+
+  public void setInterpreterContext(InterpreterContext interpreterContext) {
+    this.interpreterContext = interpreterContext;
+  }
+
 }
