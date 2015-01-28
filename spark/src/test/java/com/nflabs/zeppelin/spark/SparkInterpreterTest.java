@@ -17,14 +17,14 @@ import com.nflabs.zeppelin.notebook.Paragraph;
 
 
 public class SparkInterpreterTest {
-	public static SparkInterpreter repl;
+  public static SparkInterpreter repl;
   private InterpreterContext context;
   private File tmpDir;
 
-	@Before
-	public void setUp() throws Exception {
-    tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
-    System.setProperty("zeppelin.dep.localrepo", tmpDir.getAbsolutePath()+"/local-repo");
+  @Before
+  public void setUp() throws Exception {
+    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
+    System.setProperty("zeppelin.dep.localrepo", tmpDir.getAbsolutePath() + "/local-repo");
 
     tmpDir.mkdirs();
 
@@ -38,17 +38,17 @@ public class SparkInterpreterTest {
     context = new InterpreterContext(new Paragraph(null, null));
 	}
 
-	@After
-	public void tearDown() throws Exception {
-	  delete(tmpDir);
-	}
+  @After
+  public void tearDown() throws Exception {
+    delete(tmpDir);
+  }
 
-  private void delete(File file){
-    if(file.isFile()) file.delete();
-    else if(file.isDirectory()){
-      File [] files = file.listFiles();
-      if(files!=null && files.length>0){
-        for(File f : files){
+  private void delete(File file) {
+    if (file.isFile()) file.delete();
+    else if (file.isDirectory()) {
+      File[] files = file.listFiles();
+      if (files != null && files.length > 0) {
+        for (File f : files) {
           delete(f);
         }
       }
@@ -104,13 +104,13 @@ public class SparkInterpreterTest {
 		System.out.println("msg="+result.message());
 	}
 
-	@Test
-	public void testDependencyLoading() {
-	  // try to import library does not exist on classpath. it'll fail
+  @Test
+  public void testDependencyLoading() {
+    // try to import library does not exist on classpath. it'll fail
     assertEquals(InterpreterResult.Code.ERROR, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
 
     // load library from maven repository and try to import again
-	  repl.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
+    repl.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
     assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
-	}
+  }
 }
