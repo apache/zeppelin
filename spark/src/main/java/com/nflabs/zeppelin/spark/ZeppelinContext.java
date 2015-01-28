@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.spark;
 
 import java.io.PrintStream;
+import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.spark.SparkContext;
@@ -66,6 +67,17 @@ public class ZeppelinContext {
     dep.load(artifact, recursive, false);
   }
 
+  public void load(String artifact, scala.collection.Iterable<String> excludes)
+      throws Exception {
+    dep.load(artifact,
+        scala.collection.JavaConversions.asJavaCollection(excludes),
+        true, false);
+  }
+
+  public void load(String artifact, Collection<String> excludes) throws Exception {
+    dep.load(artifact, excludes, true, false);
+  }
+
   /**
    * Load dependency for interpreter and runtime, and then add to sparkContext.
    *
@@ -77,6 +89,17 @@ public class ZeppelinContext {
 
   public void loadAndDist(String artifact, boolean recursive) throws Exception {
     dep.load(artifact, true, true);
+  }
+
+  public void loadAndDist(String artifact, scala.collection.Iterable<String> excludes) throws Exception {
+    dep.load(artifact,
+        scala.collection.JavaConversions.asJavaCollection(excludes),
+        true, true);
+  }
+
+  public void loadAndDist(String artifact, Collection<String> excludes)
+      throws Exception {
+    dep.load(artifact, excludes, true, true);
   }
 
   /**

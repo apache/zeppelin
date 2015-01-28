@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,20 +27,20 @@ import org.sonatype.aether.resolution.DependencyRequest;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.artifact.JavaScopes;
 import org.sonatype.aether.util.filter.DependencyFilterUtils;
+import org.sonatype.aether.util.filter.ExclusionsDependencyFilter;
 
 import scala.Some;
 import scala.collection.IndexedSeq;
 import scala.reflect.io.AbstractFile;
 import scala.tools.nsc.Global;
 import scala.tools.nsc.backend.JavaPlatform;
-import scala.tools.nsc.interpreter.AbstractFileClassLoader;
 import scala.tools.nsc.util.ClassPath;
 import scala.tools.nsc.util.MergedClassPath;
 
 /**
  * Deps resolver.
  * Add new dependencies from mvn repo (at runetime) to Zeppelin.
- * 
+ *
  * @author anthonycorbacho
  *
  */
@@ -141,24 +142,19 @@ public class DependencyResolver {
         platform.classPath().context());
   }
 
-  public void load(String groupId, String artifactId, String version, boolean recursive,
-      boolean addSparkContext) throws Exception {
-    if (StringUtils.isBlank(groupId) || StringUtils.isBlank(artifactId)
-        || StringUtils.isBlank(version)) {
-      // Should throw here
-      return;
-    }
-    load(groupId + ":" + artifactId + ":" + version, recursive, addSparkContext);
+  public void load(String artifact, boolean recursive, boolean addSparkContext) throws Exception {
+    load(artifact, new LinkedList<String>(), recursive, addSparkContext);
   }
 
-  public void load(String artifact, boolean recursive, boolean addSparkContext) throws Exception {
+  public void load(String artifact, Collection<String> excludes,
+      boolean recursive, boolean addSparkContext) throws Exception {
     if (StringUtils.isBlank(artifact)) {
       // Should throw here
       return;
     }
 
     if (artifact.split(":").length == 3) {
-      loadFromMvn(artifact, recursive, addSparkContext);
+      loadFromMvn(artifact, excludes, recursive, addSparkContext);
     } else {
       loadFromFs(artifact, addSparkContext);
     }
@@ -167,19 +163,21 @@ public class DependencyResolver {
   private void loadFromFs(String artifact, boolean addSparkContext) throws Exception {
     File jarFile = new File(artifact);
 
-    updateCompilerClassPath(new URL[] {jarFile.toURI().toURL()});
+    intp.global().new Run();
+
     updateRuntimeClassPath(new URL[] {jarFile.toURI().toURL()});
+    updateCompilerClassPath(new URL[] {jarFile.toURI().toURL()});
 
     if (addSparkContext) {
       sc.addJar(jarFile.getAbsolutePath());
     }
   }
 
-  private void loadFromMvn(String artifact, boolean recursive, boolean addSparkContext)
-      throws Exception {
+  private void loadFromMvn(String artifact, Collection<String> excludes,
+      boolean recursive, boolean addSparkContext) throws Exception {
     List<ArtifactResult> listOfArtifact;
     if (recursive) {
-      listOfArtifact = getArtifactsWithDep(artifact);
+      listOfArtifact = getArtifactsWithDep(artifact, excludes);
     } else {
       listOfArtifact = getArtifact(artifact);
     }
@@ -206,8 +204,9 @@ public class DependencyResolver {
       files.add(artifactResult.getArtifact().getFile());
     }
 
-    updateCompilerClassPath(newClassPathList.toArray(new URL[0]));
+    intp.global().new Run();
     updateRuntimeClassPath(newClassPathList.toArray(new URL[0]));
+    updateCompilerClassPath(newClassPathList.toArray(new URL[0]));
 
     if (addSparkContext) {
       for (File f : files) {
@@ -228,12 +227,24 @@ public class DependencyResolver {
     return results;
   }
 
-  public List<ArtifactResult> getArtifactsWithDep(String dependency) throws Exception {
+  /**
+   *
+   * @param dependency
+   * @param excludes list of pattern can either be of the form groupId:artifactId
+   * @return
+   * @throws Exception
+   */
+  public List<ArtifactResult> getArtifactsWithDep(String dependency,
+      Collection<String> excludes) throws Exception {
     Artifact artifact = new DefaultArtifact(dependency);
+    DependencyFilter classpathFlter = DependencyFilterUtils.classpathFilter( JavaScopes.COMPILE );
+    ExclusionsDependencyFilter exclusionFilter = new ExclusionsDependencyFilter(excludes);
+
     CollectRequest collectRequest = new CollectRequest();
     collectRequest.setRoot(new Dependency(artifact, JavaScopes.COMPILE));
     collectRequest.addRepository(repo);
-    DependencyRequest dependencyRequest = new DependencyRequest(collectRequest, classpathFlter);
+    DependencyRequest dependencyRequest = new DependencyRequest(collectRequest,
+        DependencyFilterUtils.andFilter(exclusionFilter, classpathFlter));
     return system.resolveDependencies(session, dependencyRequest).getArtifactResults();
   }
 }
