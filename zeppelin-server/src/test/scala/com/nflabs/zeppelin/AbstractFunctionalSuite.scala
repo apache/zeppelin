@@ -6,6 +6,7 @@ import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.firefox.{FirefoxBinary, FirefoxDriver, FirefoxProfile}
 import org.openqa.selenium.safari.SafariDriver
 import org.scalatest.concurrent.Eventually._
+import org.scalatest.time._
 import org.scalatest.selenium.WebBrowser
 import org.scalatest.{BeforeAndAfterAll, FunSuite, Suite}
 
@@ -23,8 +24,8 @@ class AbstractFunctionalSuite extends FunSuite with WebBrowser with BeforeAndAft
   override def beforeAll() = {
     "../bin/zeppelin-daemon.sh start" !
 
-    go to SERVER_ADDRESS
-    eventually {
+    eventually (timeout(Span(20, Seconds))) {
+      go to SERVER_ADDRESS
       assert(find("welcome").isDefined)
     }
   }
