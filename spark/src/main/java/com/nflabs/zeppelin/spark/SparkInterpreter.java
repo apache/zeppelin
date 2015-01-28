@@ -68,10 +68,15 @@ public class SparkInterpreter extends Interpreter {
         SparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .add("spark.app.name", "Zeppelin", "The name of spark application")
-            .add("master", getMaster(),
+            .add("master",
+                getSystemDefault("MASTER", "spark.master", "local[*]"),
                 "spark master uri. ex) spark://masterhost:7077")
-            .add("spark.executor.memory", "1g", "executor memory per worker instance")
-            .add("spark.cores.max", "1", "total number of cores to use")
+            .add("spark.executor.memory",
+                getSystemDefault(null, "spark.executor.memory", "512m"),
+                "executor memory per worker instance. ex) 512m, 32g")
+            .add("spark.cores.max",
+                getSystemDefault(null, "spark.cores.max", null),
+                "total number of cores to use. Empty value uses all available core")
             .add("args", "", "spark commandline args").build());
 
   }
@@ -145,23 +150,37 @@ public class SparkInterpreter extends Interpreter {
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       if (key.startsWith("spark.")) {
-        conf.set(key, intpProperty.getProperty(key));
+        Object value = intpProperty.get(k);
+        if (value != null
+            && value instanceof String
+            && !((String) value).trim().isEmpty()) {
+          conf.set(key, intpProperty.getProperty(key));
+        }
       }
     }
     SparkContext sparkContext = new SparkContext(conf);
     return sparkContext;
   }
 
-  public static String getMaster() {
-    String envMaster = System.getenv().get("MASTER");
-    if (envMaster != null) {
-      return envMaster;
+  private static String getSystemDefault(
+      String envName,
+      String propertyName,
+      String defaultValue) {
+
+    if (envName != null && !envName.isEmpty()) {
+      String envValue = System.getenv().get(envName);
+      if (envValue != null) {
+        return envValue;
+      }
     }
-    String propMaster = System.getProperty("spark.master");
-    if (propMaster != null) {
-      return propMaster;
+
+    if (propertyName !=null && !propertyName.isEmpty()) {
+      String propValue = System.getProperty(propertyName);
+      if (propValue != null) {
+        return propValue;
+      }
     }
-    return "local[*]";
+    return defaultValue;
   }
 
   @Override
