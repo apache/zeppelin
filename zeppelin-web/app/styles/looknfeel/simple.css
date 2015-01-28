@@ -26,7 +26,7 @@ body {
   min-height: 20px;
 }
 
-.box:hover, 
+.box:hover,
 .well:hover {
   background-color: #ffffff;
   border: 1px solid #DDDDDD;

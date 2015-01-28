@@ -38,6 +38,7 @@ angular.module('zeppelinWebApp')
     $scope.chart = {};
     $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
     $scope.showTitleEditor = false;
+    $scope.paragraphFocused = false;
 
     if (!$scope.paragraph.config) {
       $scope.paragraph.config = {};
@@ -50,8 +51,8 @@ angular.module('zeppelinWebApp')
     }
 
     if ($scope.getResultType() === 'TABLE') {
-      $scope.lastData.settings = jQuery.extend(true, {}, $scope.paragraph.settings);
-      $scope.lastData.config = jQuery.extend(true, {}, $scope.paragraph.config);
+      $scope.lastData.settings = angular.copy($scope.paragraph.settings);
+      $scope.lastData.config = angular.copy($scope.paragraph.config);
       $scope.loadTableData($scope.paragraph.result);
       $scope.setGraphMode($scope.getGraphMode(), false, false);
     } else if ($scope.getResultType() === 'HTML') {
@@ -77,9 +78,6 @@ angular.module('zeppelinWebApp')
 
   var initializeDefault = function() {
     var config = $scope.paragraph.config;
-    if (!config.looknfeel) {
-      config.looknfeel = 'default';
-    }
 
     if (!config.colWidth) {
       config.colWidth = 12;
@@ -148,8 +146,8 @@ angular.module('zeppelinWebApp')
          )
        ) {
       // store original data for comparison
-      $scope.lastData.settings = jQuery.extend(true, {}, data.paragraph.settings);
-      $scope.lastData.config = jQuery.extend(true, {}, data.paragraph.config);
+      $scope.lastData.settings = angular.copy(data.paragraph.settings);
+      $scope.lastData.config = angular.copy(data.paragraph.config);
 
       var oldType = $scope.getResultType();
       var newType = $scope.getResultType(data.paragraph);
@@ -271,8 +269,8 @@ angular.module('zeppelinWebApp')
   $scope.closeEditor = function() {
     console.log('close the note');
 
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
     newConfig.editorHide = true;
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
@@ -281,8 +279,8 @@ angular.module('zeppelinWebApp')
   $scope.openEditor = function() {
     console.log('open the note');
 
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
     newConfig.editorHide = false;
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
@@ -291,8 +289,8 @@ angular.module('zeppelinWebApp')
   $scope.closeTable = function() {
     console.log('close the output');
 
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
     newConfig.tableHide = true;
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
@@ -301,32 +299,32 @@ angular.module('zeppelinWebApp')
   $scope.openTable = function() {
     console.log('open the output');
 
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
     newConfig.tableHide = false;
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.showTitle = function() {
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
     newConfig.title = true;
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.hideTitle = function() {
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
     newConfig.title = false;
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.setTitle = function() {
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
@@ -340,28 +338,28 @@ angular.module('zeppelinWebApp')
 
   $scope.changeColWidth = function() {
 
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.toggleGraphOption = function() {
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newConfig = angular.copy($scope.paragraph.config);
     if (newConfig.graph.optionOpen) {
       newConfig.graph.optionOpen = false;
     } else {
       newConfig.graph.optionOpen = true;
     }
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newParams = angular.copy($scope.paragraph.settings.params);
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.toggleOutput = function() {
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newConfig = angular.copy($scope.paragraph.config);
     newConfig.tableHide = !newConfig.tableHide;
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newParams = angular.copy($scope.paragraph.settings.params);
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
@@ -442,14 +440,22 @@ angular.module('zeppelinWebApp')
       };
       langTools.addCompleter(remoteCompleter);
 
+
+      $scope.handleFocus = function(value) {
+        $scope.paragraphFocused = value;
+        // Protect against error in case digest is already running
+        $timeout(function() {
+          // Apply changes since they come from 3rd party library
+          $scope.$digest();
+        });
+      };
+
       $scope.editor.on('focus', function() {
-        var el = $('#' + $scope.paragraph.id + '_paragraphColumn');
-        el.addClass('focused');
+        $scope.handleFocus(true);
       });
 
       $scope.editor.on('blur', function() {
-        var el = $('#' + $scope.paragraph.id + '_paragraphColumn');
-        el.removeClass('focused');
+        $scope.handleFocus(false);
       });
 
 
@@ -677,8 +683,8 @@ angular.module('zeppelinWebApp')
   };
 
   var setNewMode = function(newMode) {
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
 
     // graph options
     newConfig.graph.mode = newMode;
@@ -1285,8 +1291,8 @@ angular.module('zeppelinWebApp')
   $scope.setGraphHeight = function() {
     var height = $('#p'+$scope.paragraph.id+'_graph').height();
 
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
 
     newConfig.graph.height = height;
 
