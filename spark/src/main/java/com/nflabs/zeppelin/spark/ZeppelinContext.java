@@ -1,5 +1,8 @@
 package com.nflabs.zeppelin.spark;
 
+import static scala.collection.JavaConversions.asJavaCollection;
+import static scala.collection.JavaConversions.asJavaIterable;
+
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Iterator;
@@ -69,9 +72,7 @@ public class ZeppelinContext {
 
   public void load(String artifact, scala.collection.Iterable<String> excludes)
       throws Exception {
-    dep.load(artifact,
-        scala.collection.JavaConversions.asJavaCollection(excludes),
-        true, false);
+    dep.load(artifact, asJavaCollection(excludes), true, false);
   }
 
   public void load(String artifact, Collection<String> excludes) throws Exception {
@@ -94,9 +95,7 @@ public class ZeppelinContext {
 
   public void loadAndDist(String artifact,
       scala.collection.Iterable<String> excludes) throws Exception {
-    dep.load(artifact,
-        scala.collection.JavaConversions.asJavaCollection(excludes),
-        true, true);
+    dep.load(artifact, asJavaCollection(excludes), true, true);
   }
 
   public void loadAndDist(String artifact, Collection<String> excludes)
@@ -140,8 +139,7 @@ public class ZeppelinContext {
       scala.collection.Iterable<Tuple2<Object, String>> options) {
     int n = options.size();
     ParamOption[] paramOptions = new ParamOption[n];
-    Iterator<Tuple2<Object, String>> it =
-        scala.collection.JavaConversions.asJavaIterable(options).iterator();
+    Iterator<Tuple2<Object, String>> it = asJavaIterable(options).iterator();
 
     int i = 0;
     while (it.hasNext()) {
