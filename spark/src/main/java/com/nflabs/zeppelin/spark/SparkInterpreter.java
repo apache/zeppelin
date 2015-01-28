@@ -75,7 +75,7 @@ public class SparkInterpreter extends Interpreter {
                 getSystemDefault(null, "spark.executor.memory", "512m"),
                 "executor memory per worker instance. ex) 512m, 32g")
             .add("spark.cores.max",
-                getSystemDefault(null, "spark.cores.max", null),
+                getSystemDefault(null, "spark.cores.max", ""),
                 "total number of cores to use. Empty value uses all available core")
             .add("args", "", "spark commandline args").build());
 
@@ -147,17 +147,19 @@ public class SparkInterpreter extends Interpreter {
     conf.set("spark.scheduler.mode", "FAIR");
 
     Properties intpProperty = getProperty();
+
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
       if (key.startsWith("spark.")) {
-        Object value = intpProperty.get(k);
+        Object value = intpProperty.get(key);
         if (value != null
             && value instanceof String
             && !((String) value).trim().isEmpty()) {
-          conf.set(key, intpProperty.getProperty(key));
+          conf.set(key, (String) value);
         }
       }
     }
+
     SparkContext sparkContext = new SparkContext(conf);
     return sparkContext;
   }
@@ -174,7 +176,7 @@ public class SparkInterpreter extends Interpreter {
       }
     }
 
-    if (propertyName !=null && !propertyName.isEmpty()) {
+    if (propertyName != null && !propertyName.isEmpty()) {
       String propValue = System.getProperty(propertyName);
       if (propValue != null) {
         return propValue;
