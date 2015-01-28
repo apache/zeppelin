@@ -51,7 +51,7 @@ public class DependencyResolver {
   private SparkIMain intp;
   private SparkContext sc;
   private RepositorySystem system = Booter.newRepositorySystem();
-  private RemoteRepository repo = Booter.newCentralRepository();
+  private List<RemoteRepository> repos = new LinkedList<RemoteRepository>();
   private RepositorySystemSession session = Booter.newRepositorySystemSession(system);
   private DependencyFilter classpathFlter = DependencyFilterUtils.classpathFilter(
                                                                                 JavaScopes.COMPILE,
@@ -69,6 +69,30 @@ public class DependencyResolver {
     this.intp = intp;
     this.global = intp.global();
     this.sc = sc;
+    repos.add(Booter.newCentralRepository()); // add maven central
+  }
+
+  public void addRepo(String id, String url, boolean snapshot) {
+    synchronized (repos) {
+      delRepo(id);
+      RemoteRepository rr = new RemoteRepository(id, "default", url);
+      rr.setPolicy(snapshot, null);
+      repos.add(rr);
+    }
+  }
+
+  public RemoteRepository delRepo(String id) {
+    synchronized (repos) {
+      Iterator<RemoteRepository> it = repos.iterator();
+      if (it.hasNext()) {
+        RemoteRepository repo = it.next();
+        if (repo.getId().equals(id)) {
+          it.remove();
+          return repo;
+        }
+      }
+    }
+    return null;
   }
 
   private void updateCompilerClassPath(URL[] urls) throws IllegalAccessException,
@@ -224,7 +248,11 @@ public class DependencyResolver {
     Artifact artifact = new DefaultArtifact(dependency);
     ArtifactRequest artifactRequest = new ArtifactRequest();
     artifactRequest.setArtifact(artifact);
-    artifactRequest.addRepository(repo);
+    synchronized (repos) {
+      for (RemoteRepository repo : repos) {
+        artifactRequest.addRepository(repo);
+      }
+    }
 
     ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
     LinkedList<ArtifactResult> results = new LinkedList<ArtifactResult>();
@@ -247,7 +275,12 @@ public class DependencyResolver {
 
     CollectRequest collectRequest = new CollectRequest();
     collectRequest.setRoot(new Dependency(artifact, JavaScopes.COMPILE));
-    collectRequest.addRepository(repo);
+
+    synchronized (repos) {
+      for (RemoteRepository repo : repos) {
+        collectRequest.addRepository(repo);
+      }
+    }
     DependencyRequest dependencyRequest = new DependencyRequest(collectRequest,
         DependencyFilterUtils.andFilter(exclusionFilter, classpathFlter));
     return system.resolveDependencies(session, dependencyRequest).getArtifactResults();

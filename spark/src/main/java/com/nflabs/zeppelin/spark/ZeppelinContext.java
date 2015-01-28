@@ -91,6 +91,7 @@ public class ZeppelinContext {
     dep.load(artifact, true, true);
   }
 
+
   public void loadAndDist(String artifact,
       scala.collection.Iterable<String> excludes) throws Exception {
     dep.load(artifact,
@@ -101,6 +102,19 @@ public class ZeppelinContext {
   public void loadAndDist(String artifact, Collection<String> excludes)
       throws Exception {
     dep.load(artifact, excludes, true, true);
+  }
+
+
+  public void addMavenRepo(String id, String url) {
+    addMavenRepo(id, url, false);
+  }
+
+  public void addMavenRepo(String id, String url, boolean snapshot) {
+    dep.addRepo(id, url, snapshot);
+  }
+
+  public void removeMavenRepo(String id){
+    dep.delRepo(id);
   }
 
   /**
