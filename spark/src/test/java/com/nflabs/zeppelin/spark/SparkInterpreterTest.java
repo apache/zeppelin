@@ -8,14 +8,16 @@ import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.notebook.Paragraph;
 
-
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SparkInterpreterTest {
   public static SparkInterpreter repl;
   private InterpreterContext context;
@@ -80,8 +82,8 @@ public class SparkInterpreterTest {
 
 	@Test
 	public void testSparkSql(){
-		repl.interpret("case class Person(name:String, age:Int)", context);
-		repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))", context);
+		repl.interpret("case class Person(name:String, age:Int)\n", context);
+		repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
 		assertEquals(Code.SUCCESS, repl.interpret("people.take(3)", context).code());
 
 		// create new interpreter
@@ -101,11 +103,10 @@ public class SparkInterpreterTest {
 				       "    if (0 <= value) \"error\"" +
                        "}", context);
 		assertEquals(Code.ERROR, result.code());
-		System.out.println("msg="+result.message());
 	}
 
   @Test
-  public void testDependencyLoading() {
+  public void testZContextDependencyLoading() {
     // try to import library does not exist on classpath. it'll fail
     assertEquals(InterpreterResult.Code.ERROR, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
 
