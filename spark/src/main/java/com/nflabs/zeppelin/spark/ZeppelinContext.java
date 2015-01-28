@@ -53,7 +53,7 @@ public class ZeppelinContext {
   /**
    * Load dependency for interpreter and runtime (driver).
    *
-   * @param artifact "group:artifact:version"
+   * @param artifact "group:artifact:version" or file path like "/somepath/your.jar"
    * @throws Exception
    */
   public void load(String artifact) throws Exception {
@@ -63,18 +63,33 @@ public class ZeppelinContext {
   /**
    * Load dependency for interpreter and runtime (driver).
    *
-   * @param artifact "group:artifact:version"
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @param recursive load all transitive dependency when it is true
    * @throws Exception
    */
   public void load(String artifact, boolean recursive) throws Exception {
     dep.load(artifact, recursive, false);
   }
 
+  /**
+   * Load dependency and it's transitive dependencies for interpreter and runtime (driver).
+   *
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
+   * @throws Exception
+   */
   public void load(String artifact, scala.collection.Iterable<String> excludes)
       throws Exception {
     dep.load(artifact, asJavaCollection(excludes), true, false);
   }
 
+  /**
+   * Load dependency and it's transitive dependencies for interpreter and runtime (driver).
+   *
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
+   * @throws Exception
+   */
   public void load(String artifact, Collection<String> excludes) throws Exception {
     dep.load(artifact, excludes, true, false);
   }
@@ -82,36 +97,73 @@ public class ZeppelinContext {
   /**
    * Load dependency for interpreter and runtime, and then add to sparkContext.
    *
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
    * @throws Exception
    */
   public void loadAndDist(String artifact) throws Exception {
     dep.load(artifact, false, true);
   }
 
+  /**
+   * Load dependency for interpreter and runtime, and then add to sparkContext
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @param recursive load all transitive dependency when it is true
+   * @throws Exception
+   */
   public void loadAndDist(String artifact, boolean recursive) throws Exception {
     dep.load(artifact, true, true);
   }
 
-
+  /**
+   * Load dependency and it's transitive dependencies and then add to sparkContext.
+   *
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
+   * @throws Exception
+   */
   public void loadAndDist(String artifact,
       scala.collection.Iterable<String> excludes) throws Exception {
     dep.load(artifact, asJavaCollection(excludes), true, true);
   }
 
+  /**
+   * Load dependency and it's transitive dependencies and then add to sparkContext.
+   *
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
+   * @throws Exception
+   */
   public void loadAndDist(String artifact, Collection<String> excludes)
       throws Exception {
     dep.load(artifact, excludes, true, true);
   }
 
 
+  /**
+   * Add maven repository
+   *
+   * @param id id of repository ex) oss, local, snapshot
+   * @param url url of repository. supported protocol : file, http, https
+   */
   public void addMavenRepo(String id, String url) {
     addMavenRepo(id, url, false);
   }
 
+  /**
+   * Add maven repository
+   *
+   * @param id id of repository
+   * @param url url of repository. supported protocol : file, http, https
+   * @param snapshot true if it is snapshot repository
+   */
   public void addMavenRepo(String id, String url, boolean snapshot) {
     dep.addRepo(id, url, snapshot);
   }
 
+  /**
+   * Remove maven repository by id
+   * @param id id of repository
+   */
   public void removeMavenRepo(String id){
     dep.delRepo(id);
   }
