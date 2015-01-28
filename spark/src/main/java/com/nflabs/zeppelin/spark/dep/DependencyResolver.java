@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -175,9 +176,13 @@ public class DependencyResolver {
 
   private void loadFromMvn(String artifact, Collection<String> excludes,
       boolean recursive, boolean addSparkContext) throws Exception {
+    Collection<String> allExclusions = new LinkedList<String>();
+    allExclusions.addAll(excludes);
+    allExclusions.addAll(Arrays.asList(exclusions));
+
     List<ArtifactResult> listOfArtifact;
     if (recursive) {
-      listOfArtifact = getArtifactsWithDep(artifact, excludes);
+      listOfArtifact = getArtifactsWithDep(artifact, allExclusions);
     } else {
       listOfArtifact = getArtifact(artifact);
     }
@@ -186,7 +191,7 @@ public class DependencyResolver {
     while (it.hasNext()) {
       Artifact a = it.next().getArtifact();
       String gav = a.getGroupId() + ":" + a.getArtifactId() + ":" + a.getVersion();
-      for (String exclude : exclusions) {
+      for (String exclude : allExclusions) {
         if (gav.startsWith(exclude)) {
           it.remove();
           break;

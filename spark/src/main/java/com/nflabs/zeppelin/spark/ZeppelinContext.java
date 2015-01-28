@@ -91,7 +91,8 @@ public class ZeppelinContext {
     dep.load(artifact, true, true);
   }
 
-  public void loadAndDist(String artifact, scala.collection.Iterable<String> excludes) throws Exception {
+  public void loadAndDist(String artifact,
+      scala.collection.Iterable<String> excludes) throws Exception {
     dep.load(artifact,
         scala.collection.JavaConversions.asJavaCollection(excludes),
         true, true);
