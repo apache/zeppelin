@@ -3,6 +3,7 @@ package com.nflabs.zeppelin.spark;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.util.Properties;
 
 import org.junit.After;
@@ -18,9 +19,15 @@ import com.nflabs.zeppelin.notebook.Paragraph;
 public class SparkInterpreterTest {
 	public static SparkInterpreter repl;
   private InterpreterContext context;
+  private File tmpDir;
 
 	@Before
 	public void setUp() throws Exception {
+    tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
+    System.setProperty("zeppelin.dep.localrepo", tmpDir.getAbsolutePath()+"/local-repo");
+
+    tmpDir.mkdirs();
+
 	  if (repl == null) {
 		  Properties p = new Properties();
 
@@ -33,7 +40,21 @@ public class SparkInterpreterTest {
 
 	@After
 	public void tearDown() throws Exception {
+	  delete(tmpDir);
 	}
+
+  private void delete(File file){
+    if(file.isFile()) file.delete();
+    else if(file.isDirectory()){
+      File [] files = file.listFiles();
+      if(files!=null && files.length>0){
+        for(File f : files){
+          delete(f);
+        }
+      }
+      file.delete();
+    }
+  }
 
 	@Test
 	public void testBasicIntp() {
@@ -81,5 +102,15 @@ public class SparkInterpreterTest {
                        "}", context);
 		assertEquals(Code.ERROR, result.code());
 		System.out.println("msg="+result.message());
+	}
+
+	@Test
+	public void testDependencyLoading() {
+	  // try to import library does not exist on classpath. it'll fail
+    assertEquals(InterpreterResult.Code.ERROR, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
+
+    // load library from maven repository and try to import again
+	  repl.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
 	}
 }
