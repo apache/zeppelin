@@ -121,7 +121,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       return;
     }
 
-    $http.get(getRestApiBase()+"/interpreter/setting/restart/"+settingId).
+    $http.put(getRestApiBase()+"/interpreter/setting/restart/"+settingId).
       success(function(data, status, headers, config) {
         for (var i=0; i < $scope.interpreterSettings.length; i++) {
           var setting = $scope.interpreterSettings[i];
