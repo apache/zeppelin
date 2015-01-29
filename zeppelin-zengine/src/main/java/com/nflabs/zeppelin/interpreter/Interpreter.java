@@ -39,7 +39,10 @@ public abstract class Interpreter {
         .findRegisteredInterpreterByClassName(getClassName()).getProperties();
     for (String k : defaultProperties.keySet()) {
       if (!p.contains(k)) {
-        p.put(k, defaultProperties.get(k).getDefaultValue());
+        String value = defaultProperties.get(k).getDefaultValue();
+        if (value != null) {
+          p.put(k, defaultProperties.get(k).getDefaultValue());
+        }
       }
     }
 
