@@ -167,21 +167,25 @@ public class DependencyResolver {
         platform.classPath().context());
   }
 
-  public void load(String artifact, boolean recursive, boolean addSparkContext) throws Exception {
-    load(artifact, new LinkedList<String>(), recursive, addSparkContext);
+  public List<String> load(String artifact, boolean recursive,
+      boolean addSparkContext) throws Exception {
+    return load(artifact, new LinkedList<String>(), recursive, addSparkContext);
   }
 
-  public void load(String artifact, Collection<String> excludes,
+  public List<String> load(String artifact, Collection<String> excludes,
       boolean recursive, boolean addSparkContext) throws Exception {
     if (StringUtils.isBlank(artifact)) {
       // Should throw here
-      return;
+      throw new RuntimeException("Invalid artifact to load");
     }
 
     if (artifact.split(":").length == 3) {
-      loadFromMvn(artifact, excludes, recursive, addSparkContext);
+      return loadFromMvn(artifact, excludes, recursive, addSparkContext);
     } else {
       loadFromFs(artifact, addSparkContext);
+      LinkedList<String> libs = new LinkedList<String>();
+      libs.add(artifact);
+      return libs;
     }
   }
 
@@ -198,8 +202,9 @@ public class DependencyResolver {
     }
   }
 
-  private void loadFromMvn(String artifact, Collection<String> excludes,
+  private List<String> loadFromMvn(String artifact, Collection<String> excludes,
       boolean recursive, boolean addSparkContext) throws Exception {
+    List<String> loadedLibs = new LinkedList<String>();
     Collection<String> allExclusions = new LinkedList<String>();
     allExclusions.addAll(excludes);
     allExclusions.addAll(Arrays.asList(exclusions));
@@ -231,6 +236,9 @@ public class DependencyResolver {
           + artifactResult.getArtifact().getVersion());
       newClassPathList.add(artifactResult.getArtifact().getFile().toURI().toURL());
       files.add(artifactResult.getArtifact().getFile());
+      loadedLibs.add(artifactResult.getArtifact().getGroupId() + ":"
+          + artifactResult.getArtifact().getArtifactId() + ":"
+          + artifactResult.getArtifact().getVersion());
     }
 
     intp.global().new Run();
@@ -242,6 +250,8 @@ public class DependencyResolver {
         sc.addJar(f.getAbsolutePath());
       }
     }
+
+    return loadedLibs;
   }
 
   public List<ArtifactResult> getArtifact(String dependency) throws Exception {

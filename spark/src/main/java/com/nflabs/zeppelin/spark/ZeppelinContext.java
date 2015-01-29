@@ -2,6 +2,7 @@ package com.nflabs.zeppelin.spark;
 
 import static scala.collection.JavaConversions.asJavaCollection;
 import static scala.collection.JavaConversions.asJavaIterable;
+import static scala.collection.JavaConversions.collectionAsScalaIterable;
 
 import java.io.PrintStream;
 import java.util.Collection;
@@ -12,6 +13,7 @@ import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SchemaRDD;
 
 import scala.Tuple2;
+import scala.collection.Iterable;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
@@ -54,10 +56,11 @@ public class ZeppelinContext {
    * Load dependency for interpreter and runtime (driver).
    *
    * @param artifact "group:artifact:version" or file path like "/somepath/your.jar"
+   * @return
    * @throws Exception
    */
-  public void load(String artifact) throws Exception {
-    dep.load(artifact, false, false);
+  public Iterable<String> load(String artifact) throws Exception {
+    return collectionAsScalaIterable(dep.load(artifact, false, false));
   }
 
   /**
@@ -65,10 +68,11 @@ public class ZeppelinContext {
    *
    * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
    * @param recursive load all transitive dependency when it is true
+   * @return
    * @throws Exception
    */
-  public void load(String artifact, boolean recursive) throws Exception {
-    dep.load(artifact, recursive, false);
+  public Iterable<String> load(String artifact, boolean recursive) throws Exception {
+    return collectionAsScalaIterable(dep.load(artifact, recursive, false));
   }
 
   /**
@@ -76,11 +80,16 @@ public class ZeppelinContext {
    *
    * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
    * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
+   * @return
    * @throws Exception
    */
-  public void load(String artifact, scala.collection.Iterable<String> excludes)
+  public Iterable<String> load(String artifact, scala.collection.Iterable<String> excludes)
       throws Exception {
-    dep.load(artifact, asJavaCollection(excludes), true, false);
+    return collectionAsScalaIterable(
+        dep.load(artifact,
+        asJavaCollection(excludes),
+        true,
+        false));
   }
 
   /**
@@ -88,30 +97,33 @@ public class ZeppelinContext {
    *
    * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
    * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
+   * @return
    * @throws Exception
    */
-  public void load(String artifact, Collection<String> excludes) throws Exception {
-    dep.load(artifact, excludes, true, false);
+  public Iterable<String> load(String artifact, Collection<String> excludes) throws Exception {
+    return collectionAsScalaIterable(dep.load(artifact, excludes, true, false));
   }
 
   /**
    * Load dependency for interpreter and runtime, and then add to sparkContext.
    *
    * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @return
    * @throws Exception
    */
-  public void loadAndDist(String artifact) throws Exception {
-    dep.load(artifact, false, true);
+  public Iterable<String> loadAndDist(String artifact) throws Exception {
+    return collectionAsScalaIterable(dep.load(artifact, false, true));
   }
 
   /**
    * Load dependency for interpreter and runtime, and then add to sparkContext
    * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
    * @param recursive load all transitive dependency when it is true
+   * @return
    * @throws Exception
    */
-  public void loadAndDist(String artifact, boolean recursive) throws Exception {
-    dep.load(artifact, true, true);
+  public Iterable<String> loadAndDist(String artifact, boolean recursive) throws Exception {
+    return collectionAsScalaIterable(dep.load(artifact, true, true));
   }
 
   /**
@@ -119,11 +131,13 @@ public class ZeppelinContext {
    *
    * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
    * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
+   * @return
    * @throws Exception
    */
-  public void loadAndDist(String artifact,
+  public Iterable<String> loadAndDist(String artifact,
       scala.collection.Iterable<String> excludes) throws Exception {
-    dep.load(artifact, asJavaCollection(excludes), true, true);
+    return collectionAsScalaIterable(dep.load(artifact,
+        asJavaCollection(excludes), true, true));
   }
 
   /**
@@ -131,11 +145,12 @@ public class ZeppelinContext {
    *
    * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
    * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
+   * @return
    * @throws Exception
    */
-  public void loadAndDist(String artifact, Collection<String> excludes)
+  public Iterable<String> loadAndDist(String artifact, Collection<String> excludes)
       throws Exception {
-    dep.load(artifact, excludes, true, true);
+    return collectionAsScalaIterable(dep.load(artifact, excludes, true, true));
   }
 
 
