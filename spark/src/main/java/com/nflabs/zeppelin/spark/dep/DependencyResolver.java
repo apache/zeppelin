@@ -61,6 +61,8 @@ public class DependencyResolver {
 
   private final String[] exclusions = new String[] {"org.scala-lang:scala-library",
                                                     "org.scala-lang:scala-compiler",
+                                                    "org.scala-lang:scala-reflect",
+                                                    "org.scala-lang:scalap",
                                                     "com.nflabs.zeppelin:zeppelin-zengine",
                                                     "com.nflabs.zeppelin:zeppelin-spark",
                                                     "com.nflabs.zeppelin:zeppelin-server"};
