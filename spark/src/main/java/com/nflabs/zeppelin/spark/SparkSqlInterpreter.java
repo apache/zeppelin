@@ -292,9 +292,12 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    int maxConcurrency = 10;
-    return SchedulerFactory.singleton().createOrGetParallelScheduler(
-        SparkSqlInterpreter.class.getName() + this.hashCode(), maxConcurrency);
+    if (concurrentSQL()) {
+      int maxConcurrency = 10;
+      return SchedulerFactory.singleton().createOrGetParallelScheduler(
+          SparkSqlInterpreter.class.getName() + this.hashCode(), maxConcurrency);
+    }
+    return getSparkInterpreter().getScheduler();
   }
 
   @Override
