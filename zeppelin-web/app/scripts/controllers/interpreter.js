@@ -168,7 +168,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       success(function(data, status, headers, config) {
         $scope.resetNewInterpreterSetting();
         getInterpreterSettings();
-        alert("Interpreter setting created");
         $scope.showAddNewSetting = false;
       }).
       error(function(data, status, headers, config) {
