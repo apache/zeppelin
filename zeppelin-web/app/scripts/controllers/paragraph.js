@@ -667,16 +667,7 @@ angular.module('zeppelinWebApp')
       if (!type || type === 'table') {
         setTable($scope.paragraph.result, refresh);
       }
-      else if (type === 'multiBarChart') {
-        setD3Chart(type, $scope.paragraph.result, refresh);
-      }
-      else if (type === 'pieChart') {
-        setD3Chart(type, $scope.paragraph.result, refresh);
-      }
-      else if (type === 'stackedAreaChart') {
-        setD3Chart(type, $scope.paragraph.result, refresh);
-      }
-      else if (type === 'lineChart') {
+      else {
         setD3Chart(type, $scope.paragraph.result, refresh);
       }
     }
