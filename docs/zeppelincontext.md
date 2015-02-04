@@ -17,7 +17,7 @@ It provies following function and references.
 
 ZeppelinContext provides reference to SparkContext and SQLContext with some shortcut function.
 
-```
+```scala
 /* reference to SparkContext */
 z.sc
 
@@ -34,7 +34,7 @@ z.sql("select * from ...")
 
 ZeppelinContext provides series of functions that loads jar library from local FS or Remote Maven repository. Loaded library is automatically added into Scala interpreter and SparkContext.
 
-```
+```scala
 /* Load a library from local FS */
 z.load("/path/to/your.jar")
 
@@ -61,7 +61,7 @@ z.loadAndDist("groupId:artifactId:version", true)
 ZeppelinContext also provides functions for creating forms. To learn more about dynamic form, checkout [Dynamic Form](./dynamicform.html).
 
 
-```
+```scala
 /* Create text input form */
 z.input("formName")
 
