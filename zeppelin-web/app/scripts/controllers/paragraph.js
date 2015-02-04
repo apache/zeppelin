@@ -1017,7 +1017,7 @@ angular.module('zeppelinWebApp')
         return varA+varB;
       },
       count : function(a,b) {
-        var varA = (a !== undefined) ? a : 0;
+        var varA = (a !== undefined) ? parseInt(a) : 0;
         var varB = (b !== undefined) ? 1 : 0;
         return varA+varB;
       },
@@ -1115,7 +1115,7 @@ angular.module('zeppelinWebApp')
         // add value to row
         if (!p[valueKey]) {
           p[valueKey] = {
-              value : row[value.index],
+              value : (value.aggr != 'count') ? row[value.index] : 1,
               count: 1
           };
         } else {
