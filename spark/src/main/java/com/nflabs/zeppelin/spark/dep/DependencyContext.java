@@ -29,12 +29,14 @@ public class DependencyContext {
   List<Dependency> dependencies = new LinkedList<Dependency>();
   List<Repository> repositories = new LinkedList<Repository>();
 
-  List<File> files;
-  List<File> filesDist;
+  List<File> files = new LinkedList<File>();
+  List<File> filesDist = new LinkedList<File>();
   private RepositorySystem system = Booter.newRepositorySystem();
   private RepositorySystemSession session = Booter.newRepositorySystemSession(system);
   private RemoteRepository mavenCentral = new RemoteRepository("central",
       "default", "http://repo1.maven.org/maven2/");
+  private RemoteRepository mavenLocal = new RemoteRepository("local",
+      "default", "file://" + System.getProperty("user.home") + "/.m2/repository");
 
   public Dependency load(String lib) {
     Dependency dep = new Dependency(lib);
@@ -52,6 +54,14 @@ public class DependencyContext {
     return rep;
   }
 
+  public void reset() {
+    dependencies = new LinkedList<Dependency>();
+    repositories = new LinkedList<Repository>();
+
+    files = new LinkedList<File>();
+    filesDist = new LinkedList<File>();
+  }
+
 
   /**
    * fetch all artifacts
@@ -62,8 +72,6 @@ public class DependencyContext {
    */
   public List<File> fetch() throws MalformedURLException,
       DependencyResolutionException, ArtifactResolutionException {
-    files = new LinkedList<File>();
-    filesDist = new LinkedList<File>();
 
     for (Dependency dep : dependencies) {
       if (!dep.isLocalFsArtifact()) {
@@ -100,6 +108,7 @@ public class DependencyContext {
           JavaScopes.COMPILE));
 
       collectRequest.addRepository(mavenCentral);
+      collectRequest.addRepository(mavenLocal);
       for (Repository repo : repositories) {
         RemoteRepository rr = new RemoteRepository(repo.getName(), "default", repo.getUrl());
         rr.setPolicy(repo.isSnapshot(), null);
@@ -115,6 +124,7 @@ public class DependencyContext {
       artifactRequest.setArtifact(artifact);
 
       artifactRequest.addRepository(mavenCentral);
+      artifactRequest.addRepository(mavenLocal);
       for (Repository repo : repositories) {
         RemoteRepository rr = new RemoteRepository(repo.getName(), "default", repo.getUrl());
         rr.setPolicy(repo.isSnapshot(), null);

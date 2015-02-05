@@ -72,6 +72,8 @@ public class DependencyResolver {
     this.global = intp.global();
     this.sc = sc;
     repos.add(Booter.newCentralRepository()); // add maven central
+    repos.add(new RemoteRepository("local", "default", "file://"
+        + System.getProperty("user.home") + "/.m2/repository"));
   }
 
   public void addRepo(String id, String url, boolean snapshot) {
