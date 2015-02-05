@@ -351,6 +351,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_API_WAR("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),
     ZEPPELIN_INTERPRETERS("zeppelin.interpreters", "com.nflabs.zeppelin.spark.SparkInterpreter,"
         + "com.nflabs.zeppelin.spark.SparkSqlInterpreter,"
+        + "com.nflabs.zeppelin.spark.DepInterpreter,"
         + "com.nflabs.zeppelin.markdown.Markdown,"
         + "com.nflabs.zeppelin.shell.ShellInterpreter"),
         ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
