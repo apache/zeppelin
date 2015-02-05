@@ -158,6 +158,12 @@ public class DepInterpreter extends Interpreter {
     Console.setOut(printStream);
     out.reset();
 
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    if (sparkInterpreter.isSparkContextInitialized()) {
+      return new InterpreterResult(Code.ERROR,
+          "Must be used before SparkInterpreter (%spark) initialized");
+    }
+
     scala.tools.nsc.interpreter.Results.Result ret = intp.interpret(st);
     Code code = getResultCode(ret);
 

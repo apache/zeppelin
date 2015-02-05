@@ -109,6 +109,10 @@ public class SparkInterpreter extends Interpreter {
     return sc;
   }
 
+  public boolean isSparkContextInitialized() {
+    return sc != null;
+  }
+
   public SQLContext getSQLContext() {
     if (sqlc == null) {
       sqlc = new SQLContext(getSparkContext());
