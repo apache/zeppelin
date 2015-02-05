@@ -29,6 +29,7 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
+import com.nflabs.zeppelin.interpreter.InterpreterGroup;
 import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
@@ -159,6 +160,10 @@ public class DepInterpreter extends Interpreter {
     out.reset();
 
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    if (sparkInterpreter == null) {
+      return new InterpreterResult(Code.ERROR,
+          "Must be used with SparkInterpreter");
+    }
     if (sparkInterpreter.isSparkContextInitialized()) {
       return new InterpreterResult(Code.ERROR,
           "Must be used before SparkInterpreter (%spark) initialized");
@@ -248,7 +253,11 @@ public class DepInterpreter extends Interpreter {
   }
 
   private SparkInterpreter getSparkInterpreter() {
-    for (Interpreter intp : getInterpreterGroup()){
+    InterpreterGroup intpGroup = getInterpreterGroup();
+    if (intpGroup == null) {
+      return null;
+    }
+    for (Interpreter intp : intpGroup){
       if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
         Interpreter p = intp;
         while (p instanceof WrappedInterpreter) {

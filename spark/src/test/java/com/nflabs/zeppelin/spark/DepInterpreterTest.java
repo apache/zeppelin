@@ -1,5 +1,7 @@
 package com.nflabs.zeppelin.spark;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.util.Properties;
 
@@ -8,13 +10,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
+import com.nflabs.zeppelin.interpreter.InterpreterGroup;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.notebook.Paragraph;
 
 public class DepInterpreterTest {
   private DepInterpreter dep;
   private InterpreterContext context;
   private File tmpDir;
+  private SparkInterpreter repl;
 
   @Before
   public void setUp() throws Exception {
@@ -27,6 +32,11 @@ public class DepInterpreterTest {
 
     dep = new DepInterpreter(p);
     dep.open();
+
+    InterpreterGroup intpGroup = new InterpreterGroup();
+    intpGroup.add(new SparkInterpreter(p));
+    intpGroup.add(dep);
+    dep.setInterpreterGroup(intpGroup);
 
     context = new InterpreterContext(new Paragraph(null, null));
   }
@@ -52,11 +62,11 @@ public class DepInterpreterTest {
 
   @Test
   public void testBasic() {
-    //repl.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
-    //assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
-
     InterpreterResult ret = dep.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
-    System.out.println("ret="+ret.message());
+    assertEquals(Code.SUCCESS, ret.code());
+
+    assertEquals(1, dep.getDependencyContext().getFiles().size());
+    assertEquals(0, dep.getDependencyContext().getFilesDist().size());
   }
 
 }
