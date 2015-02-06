@@ -15,10 +15,18 @@ See https://help.github.com/articles/using-jekyll-with-pages#installing-jekyll
 ## On local machine
 
 ### Run
-    jekyll serve --watch
+    bundle exec jekyll serve --watch
 
 ### Deploy
-Simply commit gh-pages and Github will do the actuall job of generating static HTML pages
+ 1. generate static website in ```_site```
+
+    bundle exec jekyll build
+ 2. checkout asf repo
+
+    svn co https://svn.apache.org/repos/asf/incubator/zeppelin asf-zepplelin
+
+ 3. copy zeppelin/_site to asf-zepplelin/site
+ 4.  svn commit
 
 ### Add a new page
     rake page name="new-page.md"

@@ -7,8 +7,8 @@ group: development
 
 ## IMPORTANT
 
-Zeppelin is [Apache2 License](http://www.apache.org/licenses/LICENSE-2.0.html) Software.
-Contribute to Zeppelin (Source code, Documents, Image, Website) means you agree license all your contributions as Apache2 License.
+Apache Zeppelin (incubating) is an [Apache2 License](http://www.apache.org/licenses/LICENSE-2.0.html) Software.
+Any contribution to Zeppelin (Source code, Documents, Image, Website) means you agree license all your contributions as Apache2 License.
 
 
 
@@ -87,7 +87,7 @@ bin/zeppelin-daemon start
 Server will be run on http://localhost:8080
 
 ### JIRA
-Zeppelin manages it's issues in Jira. [https://zeppelin-project.atlassian.net/browse/ZEPPELIN](https://zeppelin-project.atlassian.net/browse/ZEPPELIN)
+Zeppelin manages it's issues in Jira. [https://issues.apache.org/jira/browse/ZEPPELIN](https://issues.apache.org/jira/browse/ZEPPELIN)
 
 ### Stay involved
 Contributors should join the Zeppelin mailing lists.

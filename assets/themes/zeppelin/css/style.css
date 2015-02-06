@@ -291,3 +291,62 @@ body {
   background: #57A957;
   border: 1px solid #4c964d;
   color: #FFF; }
+
+
+.jumbotron h1 {
+  font-family: 'Patua One', cursive; }
+
+.jumbotron small {
+    font-size: 60%;
+    color: #FFF;}
+
+.navbar-brand {
+    font-family: 'Patua One', cursive;
+}
+
+.navbar-brand small {
+    font-size: 60%;
+    color: #FFF; }
+
+.navbar-collapse.collapse {
+    max-height: 50px;}
+
+#apache .caret {
+    margin-left: 4px;
+    border-top-color: #FFF;
+}
+
+.navbar-inverse .navbar-nav > .open > a,
+.navbar-inverse .navbar-nav > .open > a:hover,
+.navbar-inverse .navbar-nav > .open > a:focus {
+  color: #ffffff;
+  background-color: #286090;
+}
+
+/* Custom, iPhone Retina */ 
+@media only screen and (max-width : 480px) {
+  .jumbotron h1 {
+    display: none;
+  }
+  .navbar-brand small {
+      display: none;
+      color: #FFF;
+  }
+}
+
+@media only screen and (max-width : 768px) {
+  .navbar .navbar-brand {
+      padding-bottom: 0;
+  }
+}
+
+@media only screen
+and (min-width : 768px)
+and (max-width : 1024px) {
+  .navbar-brand small {
+      display: none;
+  }
+  .navbar-collapse.collapse {
+      padding-right: 0;
+  }
+}
