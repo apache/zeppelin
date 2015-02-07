@@ -180,15 +180,13 @@
   white-space: pre;
   display: block;
   unicode-bidi: embed;
-  display: block!important;
-  margin: 0 0 0px!important;
-  /*font-size: 12px!important;*/
-  line-height: 1.42857143!important;
-  word-break: break-all!important;
-  word-wrap: break-word!important;
-  /*font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;*/
-  font-family: 'Roboto', sans-serif;
-  font-size: 14px!important;
+  display: block !important;
+  margin: 0 0 0px !important;
+  line-height: 1.42857143 !important;
+  word-break: break-all !important;
+  word-wrap: break-word !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 12px !important;
   margin-bottom: 5px !important;
 }
 
