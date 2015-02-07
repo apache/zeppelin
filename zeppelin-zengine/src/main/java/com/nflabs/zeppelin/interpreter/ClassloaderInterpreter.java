@@ -7,7 +7,7 @@ import java.util.Properties;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 
 /**
- * Add to the classpath interperters.
+ * Add to the classpath interpreters.
  *
  */
 public class ClassloaderInterpreter
