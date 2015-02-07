@@ -73,8 +73,8 @@ public class Dependency {
   }
 
   public boolean isLocalFsArtifact() {
-    return groupArtifactVersion.split(":").length != 3;
+    int numSplits = groupArtifactVersion.split(":").length;
+    return !(numSplits >= 3 && numSplits <= 5);
   }
-
 
 }

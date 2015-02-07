@@ -183,7 +183,9 @@ public class DependencyResolver {
       throw new RuntimeException("Invalid artifact to load");
     }
 
-    if (artifact.split(":").length == 3) {
+    // <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>
+    int numSplits = artifact.split(":").length;
+    if (numSplits >= 3 && numSplits <= 5) {
       return loadFromMvn(artifact, excludes, recursive, addSparkContext);
     } else {
       loadFromFs(artifact, addSparkContext);
