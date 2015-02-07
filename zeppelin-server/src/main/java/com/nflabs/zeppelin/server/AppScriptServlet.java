@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 public class AppScriptServlet extends DefaultServlet {
 
   // Hash containing the possible scripts that contain the getPort()
-  // function originially defined in app.js
+  // function originally defined in app.js
   private static Set<String> scriptPaths = new HashSet<String>(
     Arrays.asList(
       "/scripts/scripts.js",

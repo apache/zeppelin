@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  *  - maintains internal state: it's status
  *  - supports listeners who are updated on status change
  *  
- *  Job class is serialized/deserialized and used server<->client commnunication
+ *  Job class is serialized/deserialized and used server<->client communication
  *  and saving/loading jobs from disk.
  *  Changing/adding/deleting non transitive field name need consideration of that.
  *  

@@ -201,7 +201,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   };
 
   var init = function() {
-    // when interpeter page opened after seeing non-default looknfeel note, the css remains unchanged. that's what intepreter page want. Force set default looknfeel.
+    // when interpreter page opened after seeing non-default looknfeel note, the css remains unchanged. that's what interpreter page want. Force set default looknfeel.
     $rootScope.$emit('setLookAndFeel', 'default');
     $scope.interpreterSettings = [];
     $scope.availableInterpreters = {};

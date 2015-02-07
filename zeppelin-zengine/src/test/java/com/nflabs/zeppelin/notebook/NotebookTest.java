@@ -87,7 +87,7 @@ public class NotebookTest implements JobListenerFactory{
 	public void testPersist() throws IOException, SchedulerException{
 		Note note = notebook.createNote();
 		
-		// run with defatul repl
+		// run with default repl
 		Paragraph p1 = note.addParagraph();
 		p1.setText("hello world");
 		note.persist();
