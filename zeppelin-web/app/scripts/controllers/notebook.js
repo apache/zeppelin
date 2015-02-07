@@ -326,7 +326,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       for (var idx in newParagraphIds) {
         var newEntry = note.paragraphs[idx];
         if (oldParagraphIds[idx] === newParagraphIds[idx]) {
-          $rootScope.$emit('updateParagraph', {paragraph: newEntry});
+          $scope.$broadcast('updateParagraph', {paragraph: newEntry});
         } else {
           // move paragraph
           var oldIdx = oldParagraphIds.indexOf(newParagraphIds[idx]);
