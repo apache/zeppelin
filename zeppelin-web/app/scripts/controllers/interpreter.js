@@ -101,6 +101,8 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       return;
     }
 
+    $scope.addNewInterpreterProperty(settingId);
+
     var properties = {};
     for (var i=0; i < $scope.interpreterSettings.length; i++) {
       var setting = $scope.interpreterSettings[i];
