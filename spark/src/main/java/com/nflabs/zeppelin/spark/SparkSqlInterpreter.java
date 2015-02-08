@@ -121,6 +121,8 @@ public class SparkSqlInterpreter extends Interpreter {
     SparkContext sc = sqlc.sparkContext();
     if (concurrentSQL()) {
       sc.setLocalProperty("spark.scheduler.pool", "fair");
+    } else {
+      sc.setLocalProperty("spark.scheduler.pool", null);
     }
 
     sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
