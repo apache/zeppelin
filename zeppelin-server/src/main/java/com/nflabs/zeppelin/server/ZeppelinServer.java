@@ -125,7 +125,7 @@ public class ZeppelinServer extends Application {
 
     NotebookServer server = new NotebookServer(conf.getWebSocketPort());
 
-    // Default WebSocketServer uses unecrypted connector, so only need to
+    // Default WebSocketServer uses unencrypted connector, so only need to
     // change the connector if SSL should be used.
     if (conf.useSsl()) {
       SslWebSocketServerFactory wsf = new SslWebSocketServerFactory(getSslContext(conf));

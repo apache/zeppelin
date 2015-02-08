@@ -53,6 +53,8 @@ public class SparkSqlInterpreter extends Interpreter {
         SparkSqlInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .add("zeppelin.spark.maxResult", "10000", "Max number of SparkSQL result to display")
+            .add("zeppelin.spark.useHiveContext", "false",
+                "use HiveContext instead of SQLContext if it is true")
             .add("zeppelin.spark.concurrentSQL", "false",
                 "Execute multiple SQL concurrently if set true.")
             .build());
@@ -90,6 +92,10 @@ public class SparkSqlInterpreter extends Interpreter {
     return null;
   }
 
+  private boolean useHiveContext() {
+    return Boolean.parseBoolean(getProperty("zeppelin.spark.useHiveContext"));
+  }
+  
   public boolean concurrentSQL() {
     return Boolean.parseBoolean(getProperty("zeppelin.spark.concurrentSQL"));
   }
@@ -104,11 +110,19 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
-    SQLContext sqlc = getSparkInterpreter().getSQLContext();
+    SQLContext sqlc = null;
+
+    if (useHiveContext()) {
+      sqlc = getSparkInterpreter().getHiveContext();
+    } else {
+      sqlc = getSparkInterpreter().getSQLContext();
+    }
+
     SparkContext sc = sqlc.sparkContext();
     if (concurrentSQL()) {
       sc.setLocalProperty("spark.scheduler.pool", "fair");
     }
+
     sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
     SchemaRDD rdd;
     Row[] rows = null;

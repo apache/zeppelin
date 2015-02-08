@@ -667,16 +667,7 @@ angular.module('zeppelinWebApp')
       if (!type || type === 'table') {
         setTable($scope.paragraph.result, refresh);
       }
-      else if (type === 'multiBarChart') {
-        setD3Chart(type, $scope.paragraph.result, refresh);
-      }
-      else if (type === 'pieChart') {
-        setD3Chart(type, $scope.paragraph.result, refresh);
-      }
-      else if (type === 'stackedAreaChart') {
-        setD3Chart(type, $scope.paragraph.result, refresh);
-      }
-      else if (type === 'lineChart') {
+      else {
         setD3Chart(type, $scope.paragraph.result, refresh);
       }
     }
@@ -1017,7 +1008,7 @@ angular.module('zeppelinWebApp')
         return varA+varB;
       },
       count : function(a,b) {
-        var varA = (a !== undefined) ? a : 0;
+        var varA = (a !== undefined) ? parseInt(a) : 0;
         var varB = (b !== undefined) ? 1 : 0;
         return varA+varB;
       },
@@ -1115,7 +1106,7 @@ angular.module('zeppelinWebApp')
         // add value to row
         if (!p[valueKey]) {
           p[valueKey] = {
-              value : row[value.index],
+              value : (value.aggr !== 'count') ? row[value.index] : 1,
               count: 1
           };
         } else {

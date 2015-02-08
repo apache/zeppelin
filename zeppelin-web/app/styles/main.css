@@ -155,7 +155,7 @@ a.navbar-brand:hover {
 
 @media (min-width: 768px) {
   #notebook-list {
-    max-height: 283px;
+    max-height: 500px;
   }
 }
 
@@ -286,3 +286,4 @@ This part should be removed when new version of bootstrap handles this issue.
 .btn-group > .popover + .btn {
   margin-left:-1px;
 }
+
