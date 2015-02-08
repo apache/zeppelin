@@ -51,9 +51,9 @@ public class SparkSqlInterpreter extends Interpreter {
         "spark",
         SparkSqlInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add("zeppelin.spark.maxResult", "10000", "Max number of SparkSQL result to display")
+            .add("zeppelin.spark.maxResult", "10000", "Max number of SparkSQL result to display.")
             .add("zeppelin.spark.useHiveContext", "false",
-                "use HiveContext instead of SQLContext if it is true")
+                "Use HiveContext instead of SQLContext if it is true.")
             .build());
   }
 

@@ -68,16 +68,16 @@ public class SparkInterpreter extends Interpreter {
         "spark",
         SparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add("spark.app.name", "Zeppelin", "The name of spark application")
+            .add("spark.app.name", "Zeppelin", "The name of spark application.")
             .add("master",
                 getSystemDefault("MASTER", "spark.master", "local[*]"),
-                "spark master uri. ex) spark://masterhost:7077")
+                "Spark master uri. ex) spark://masterhost:7077")
             .add("spark.executor.memory",
                 getSystemDefault(null, "spark.executor.memory", "512m"),
-                "executor memory per worker instance. ex) 512m, 32g")
+                "Executor memory per worker instance. ex) 512m, 32g")
             .add("spark.cores.max",
                 getSystemDefault(null, "spark.cores.max", ""),
-                "total number of cores to use. Empty value uses all available core")
+                "Total number of cores to use. Empty value uses all available core.")
             .add("args", "", "spark commandline args").build());
 
   }
