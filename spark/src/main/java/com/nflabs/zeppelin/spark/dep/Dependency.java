@@ -9,7 +9,6 @@ import java.util.List;
 public class Dependency {
   private String groupArtifactVersion;
   private boolean dist = false;
-  private boolean recursive = false;
   private List<String> exclusions;
 
 
@@ -36,8 +35,8 @@ public class Dependency {
     return this;
   }
 
-  public Dependency recursive() {
-    recursive = true;
+  public Dependency excludeAll() {
+    exclude("*");
     return this;
   }
 
@@ -47,7 +46,6 @@ public class Dependency {
    * @return
    */
   public Dependency exclude(String exclusions) {
-    recursive();
     for (String item : exclusions.split(",|\n")) {
       this.exclusions.add(item);
     }
@@ -64,17 +62,12 @@ public class Dependency {
     return dist;
   }
 
-  public boolean isRecursive() {
-    return recursive;
-  }
-
   public List<String> getExclusions() {
     return exclusions;
   }
 
   public boolean isLocalFsArtifact() {
     int numSplits = groupArtifactVersion.split(":").length;
-    return !(numSplits >= 3 && numSplits <= 5);
+    return !(numSplits >= 3 && numSplits <= 6);
   }
-
 }

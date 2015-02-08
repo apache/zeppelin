@@ -60,19 +60,7 @@ public class ZeppelinContext {
    * @throws Exception
    */
   public Iterable<String> load(String artifact) throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, false, false));
-  }
-
-  /**
-   * Load dependency for interpreter and runtime (driver).
-   *
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @param recursive load all transitive dependency when it is true
-   * @return
-   * @throws Exception
-   */
-  public Iterable<String> load(String artifact, boolean recursive) throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, recursive, false));
+    return collectionAsScalaIterable(dep.load(artifact, false));
   }
 
   /**
@@ -88,7 +76,6 @@ public class ZeppelinContext {
     return collectionAsScalaIterable(
         dep.load(artifact,
         asJavaCollection(excludes),
-        true,
         false));
   }
 
@@ -101,7 +88,7 @@ public class ZeppelinContext {
    * @throws Exception
    */
   public Iterable<String> load(String artifact, Collection<String> excludes) throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, excludes, true, false));
+    return collectionAsScalaIterable(dep.load(artifact, excludes, false));
   }
 
   /**
@@ -112,19 +99,9 @@ public class ZeppelinContext {
    * @throws Exception
    */
   public Iterable<String> loadAndDist(String artifact) throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, false, true));
+    return collectionAsScalaIterable(dep.load(artifact, true));
   }
 
-  /**
-   * Load dependency for interpreter and runtime, and then add to sparkContext
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @param recursive load all transitive dependency when it is true
-   * @return
-   * @throws Exception
-   */
-  public Iterable<String> loadAndDist(String artifact, boolean recursive) throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, true, true));
-  }
 
   /**
    * Load dependency and it's transitive dependencies and then add to sparkContext.
@@ -137,7 +114,7 @@ public class ZeppelinContext {
   public Iterable<String> loadAndDist(String artifact,
       scala.collection.Iterable<String> excludes) throws Exception {
     return collectionAsScalaIterable(dep.load(artifact,
-        asJavaCollection(excludes), true, true));
+        asJavaCollection(excludes), true));
   }
 
   /**
@@ -150,7 +127,7 @@ public class ZeppelinContext {
    */
   public Iterable<String> loadAndDist(String artifact, Collection<String> excludes)
       throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, excludes, true, true));
+    return collectionAsScalaIterable(dep.load(artifact, excludes, true));
   }
 
 

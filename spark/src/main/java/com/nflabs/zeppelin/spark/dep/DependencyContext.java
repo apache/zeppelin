@@ -11,7 +11,6 @@ import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
 import org.sonatype.aether.graph.DependencyFilter;
 import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.resolution.ArtifactRequest;
 import org.sonatype.aether.resolution.ArtifactResolutionException;
 import org.sonatype.aether.resolution.ArtifactResult;
 import org.sonatype.aether.resolution.DependencyRequest;
@@ -19,7 +18,7 @@ import org.sonatype.aether.resolution.DependencyResolutionException;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.artifact.JavaScopes;
 import org.sonatype.aether.util.filter.DependencyFilterUtils;
-import org.sonatype.aether.util.filter.ExclusionsDependencyFilter;
+import org.sonatype.aether.util.filter.PatternExclusionsDependencyFilter;
 
 
 /**
@@ -95,47 +94,30 @@ public class DependencyContext {
 
   private List<ArtifactResult> fetchArtifactWithDep(Dependency dep)
       throws DependencyResolutionException, ArtifactResolutionException {
-    Artifact artifact = new DefaultArtifact(dep.getGroupArtifactVersion());
+    Artifact artifact = new DefaultArtifact(
+        DependencyResolver.inferScalaVersion(dep.getGroupArtifactVersion()));
 
-    if (dep.isRecursive()) {
-      DependencyFilter classpathFlter = DependencyFilterUtils
-          .classpathFilter(JavaScopes.COMPILE);
-      ExclusionsDependencyFilter exclusionFilter = new ExclusionsDependencyFilter(
-          dep.getExclusions());
+    DependencyFilter classpathFlter = DependencyFilterUtils
+        .classpathFilter(JavaScopes.COMPILE);
+    PatternExclusionsDependencyFilter exclusionFilter = new PatternExclusionsDependencyFilter(
+        DependencyResolver.inferScalaVersion(dep.getExclusions()));
 
-      CollectRequest collectRequest = new CollectRequest();
-      collectRequest.setRoot(new org.sonatype.aether.graph.Dependency(artifact,
-          JavaScopes.COMPILE));
+    CollectRequest collectRequest = new CollectRequest();
+    collectRequest.setRoot(new org.sonatype.aether.graph.Dependency(artifact,
+        JavaScopes.COMPILE));
 
-      collectRequest.addRepository(mavenCentral);
-      collectRequest.addRepository(mavenLocal);
-      for (Repository repo : repositories) {
-        RemoteRepository rr = new RemoteRepository(repo.getName(), "default", repo.getUrl());
-        rr.setPolicy(repo.isSnapshot(), null);
-        collectRequest.addRepository(rr);
-      }
-
-      DependencyRequest dependencyRequest = new DependencyRequest(collectRequest,
-          DependencyFilterUtils.andFilter(exclusionFilter, classpathFlter));
-
-      return system.resolveDependencies(session, dependencyRequest).getArtifactResults();
-    } else {
-      ArtifactRequest artifactRequest = new ArtifactRequest();
-      artifactRequest.setArtifact(artifact);
-
-      artifactRequest.addRepository(mavenCentral);
-      artifactRequest.addRepository(mavenLocal);
-      for (Repository repo : repositories) {
-        RemoteRepository rr = new RemoteRepository(repo.getName(), "default", repo.getUrl());
-        rr.setPolicy(repo.isSnapshot(), null);
-        artifactRequest.addRepository(rr);
-      }
-
-      ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
-      LinkedList<ArtifactResult> results = new LinkedList<ArtifactResult>();
-      results.add(artifactResult);
-      return results;
+    collectRequest.addRepository(mavenCentral);
+    collectRequest.addRepository(mavenLocal);
+    for (Repository repo : repositories) {
+      RemoteRepository rr = new RemoteRepository(repo.getName(), "default", repo.getUrl());
+      rr.setPolicy(repo.isSnapshot(), null);
+      collectRequest.addRepository(rr);
     }
+
+    DependencyRequest dependencyRequest = new DependencyRequest(collectRequest,
+        DependencyFilterUtils.andFilter(exclusionFilter, classpathFlter));
+
+    return system.resolveDependencies(session, dependencyRequest).getArtifactResults();
   }
 
   public List<File> getFiles() {
