@@ -76,7 +76,7 @@ limitations under the License.
               <td>{{value.description}}</td>
               <td>
                 <div class="btn btn-default btn-sm fa fa-remove"
-                     ng-click="removeNewInterpreterProperty(key)">
+                     ng-click="removeInterpreterProperty(key)">
                 </div>
               </td>
             </tr>
@@ -128,9 +128,15 @@ limitations under the License.
         </h3>
         <span style="float:right">
           <button class="btn btn-default btn-xs"
-                  ng-click="restartInterpreterSetting(setting.id)"><span class="fa fa-refresh"></span> restart</button>
+                  ng-click="valueform.$show();
+                  copyOriginInterpreterSettingProperties(setting.id)">
+            <span class="fa fa-pencil"></span> edit</button>
           <button class="btn btn-default btn-xs"
-                  ng-click="removeInterpreterSetting(setting.id)"><span class="fa fa-remove"></span> remove</button>
+                  ng-click="restartInterpreterSetting(setting.id)">
+            <span class="fa fa-refresh"></span> restart</button>
+          <button class="btn btn-default btn-xs"
+                  ng-click="removeInterpreterSetting(setting.id)">
+            <span class="fa fa-remove"></span> remove</button>
         </span>
       </div>
     </div>
@@ -140,14 +146,51 @@ limitations under the License.
         <b>Properties</b>
         <table class="table table-striped">
           <tr>
-            <th>name</th>
+            <th style="width:30%">name</th>
             <th>value</th>
+            <th ng-if="valueform.$visible">action</th>
           </tr>
           <tr ng-repeat="(key, value) in setting.properties">
             <td>{{key}}</td>
-            <td ng-bind-html="value | breakFilter"></td>
+            <td>
+              <span editable-textarea="value.value" e-form="valueform" e-msd-elastic>
+                {{value.value | breakFilter}}
+              </span>
+            </td>
+            <td ng-if="valueform.$visible">
+              <div class="btn btn-default btn-sm fa fa-remove"
+                   ng-click="removeInterpreterProperty(key, setting.id)">
+              </div>
+            </td>
+          </tr>
+          <tr ng-if="valueform.$visible">
+            <td>
+              <input ng-model="setting.propertyKey"
+                     pu-elastic-input
+                     pu-elastic-input-minwidth="180px">
+              </input>
+            </td>
+            <td>
+              <textarea msd-elastic ng-model="setting.propertyValue"></textarea>
+            </td>
+            <td>
+              <div class="btn btn-default btn-sm fa fa-plus"
+                   ng-click="addNewInterpreterProperty(setting.id)">
+              </div>
+            </td>
           </tr>
         </table>
+        <form editable-form name="valueform" onaftersave="updateInterpreterSetting(setting.id)" ng-show="valueform.$visible">
+          <button type="submit" class="btn btn-primary"
+                  ng-disabled="valueform.$waiting">
+            Save
+          </button>
+          <button type="button" class="btn btn-default"
+                  ng-disabled="valueform.$waiting"
+                  ng-click="valueform.$cancel(); resetInterpreterSetting(setting.id)">
+            Cancel
+          </button>
+        </form>
       </div>
     </div>
   </div>
