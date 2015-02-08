@@ -30,7 +30,7 @@ mvn clean package
 ```
 Build with specific version
 ```
-mvn clean package -Dspark.version=1.1.0 -Dhadoop.version=2.0.0-mr1-cdh4.6.0
+mvn clean package -Dspark.version=1.1.1 -Dhadoop.version=2.0.0-mr1-cdh4.6.0
 ```
 
 ### Configure
