@@ -78,42 +78,42 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.runNote = function() {
     var result = confirm('Run all paragraphs?');
     if (result) {
-      $rootScope.$emit('runParagraph');
+      $scope.$broadcast('runParagraph');
     }
   };
 
   $scope.toggleAllEditor = function() {
     if ($scope.editorToggled) {
-        $rootScope.$emit('closeEditor');
+      $scope.$broadcast('closeEditor');
     } else {
-        $rootScope.$emit('openEditor');
+      $scope.$broadcast('openEditor');
     }
     $scope.editorToggled = !$scope.editorToggled;
   };
 
   $scope.showAllEditor = function() {
-    $rootScope.$emit('openEditor');
+    $scope.$broadcast('openEditor');
   };
 
   $scope.hideAllEditor = function() {
-    $rootScope.$emit('closeEditor');
+    $scope.$broadcast('closeEditor');
   };
 
   $scope.toggleAllTable = function() {
     if ($scope.tableToggled) {
-        $rootScope.$emit('closeTable');
+      $scope.$broadcast('closeTable');
     } else {
-        $rootScope.$emit('openTable');
+      $scope.$broadcast('openTable');
     }
     $scope.tableToggled = !$scope.tableToggled;
   };
 
   $scope.showAllTable = function() {
-    $rootScope.$emit('openTable');
+    $scope.$broadcast('openTable');
   };
 
   $scope.hideAllTable = function() {
-    $rootScope.$emit('closeTable');
+    $scope.$broadcast('closeTable');
   };
 
   $scope.isNoteRunning = function() {
@@ -156,7 +156,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   /** update the current note */
-  $rootScope.$on('setNoteContent', function(event, note) {
+  $scope.$on('setNoteContent', function(event, note) {
     $scope.paragraphUrl = $routeParams.paragraphId;
     $scope.asIframe = $routeParams.asIframe;
     if ($scope.paragraphUrl) {
@@ -209,7 +209,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     return noteCopy;
   };
 
-  $rootScope.$on('moveParagraphUp', function(event, paragraphId) {
+  $scope.$on('moveParagraphUp', function(event, paragraphId) {
     var newIndex = -1;
     for (var i=0; i<$scope.note.paragraphs.length; i++) {
       if ($scope.note.paragraphs[i].id === paragraphId) {
@@ -225,7 +225,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   });
 
   // create new paragraph on current position
-  $rootScope.$on('insertParagraph', function(event, paragraphId) {
+  $scope.$on('insertParagraph', function(event, paragraphId) {
     var newIndex = -1;
     for (var i=0; i<$scope.note.paragraphs.length; i++) {
       if ($scope.note.paragraphs[i].id === paragraphId) {
@@ -244,7 +244,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $rootScope.$emit('sendNewEvent', { op: 'INSERT_PARAGRAPH', data : {index: newIndex}});
   });
 
-  $rootScope.$on('moveParagraphDown', function(event, paragraphId) {
+  $scope.$on('moveParagraphDown', function(event, paragraphId) {
     var newIndex = -1;
     for (var i=0; i<$scope.note.paragraphs.length; i++) {
       if ($scope.note.paragraphs[i].id === paragraphId) {
@@ -259,7 +259,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $rootScope.$emit('sendNewEvent', { op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
   });
 
-  $rootScope.$on('moveFocusToPreviousParagraph', function(event, currentParagraphId){
+  $scope.$on('moveFocusToPreviousParagraph', function(event, currentParagraphId){
     var focus = false;
     for (var i=$scope.note.paragraphs.length-1; i>=0; i--) {
       if (focus === false ) {
@@ -270,14 +270,14 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       } else {
         var p = $scope.note.paragraphs[i];
         if (!p.config.hide && !p.config.editorHide && !p.config.tableHide) {
-          $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
+          $scope.$broadcast('focusParagraph', $scope.note.paragraphs[i].id);
           break;
         }
       }
     }
   });
 
-  $rootScope.$on('moveFocusToNextParagraph', function(event, currentParagraphId){
+  $scope.$on('moveFocusToNextParagraph', function(event, currentParagraphId){
     var focus = false;
     for (var i=0; i<$scope.note.paragraphs.length; i++) {
       if (focus === false ) {
@@ -288,7 +288,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       } else {
         var p = $scope.note.paragraphs[i];
         if (!p.config.hide && !p.config.editorHide && !p.config.tableHide) {
-          $rootScope.$emit('focusParagraph', $scope.note.paragraphs[i].id);
+          $scope.$broadcast('focusParagraph', $scope.note.paragraphs[i].id);
           break;
         }
       }
@@ -326,7 +326,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       for (var idx in newParagraphIds) {
         var newEntry = note.paragraphs[idx];
         if (oldParagraphIds[idx] === newParagraphIds[idx]) {
-          $rootScope.$emit('updateParagraph', {paragraph: newEntry});
+          $scope.$broadcast('updateParagraph', {paragraph: newEntry});
         } else {
           // move paragraph
           var oldIdx = oldParagraphIds.indexOf(newParagraphIds[idx]);

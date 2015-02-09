@@ -53,19 +53,19 @@ angular.module('zeppelinWebApp')
     if (event.data) {
       payload = angular.fromJson(event.data);
     }
-    console.log('Receive << %o, %o', payload.op, payload);
+    console.log('Receive << %o, %o, %o', payload.op, payload, $scope);
     var op = payload.op;
     var data = payload.data;
     if (op === 'NOTE') {
-      $rootScope.$emit('setNoteContent', data.note);
+      $scope.$broadcast('setNoteContent', data.note);
     } else if (op === 'NOTES_INFO') {
-      $rootScope.$emit('setNoteMenu', data.notes);
+      $scope.$broadcast('setNoteMenu', data.notes);
     } else if (op === 'PARAGRAPH') {
-      $rootScope.$emit('updateParagraph', data);
+      $scope.$broadcast('updateParagraph', data);
     } else if (op === 'PROGRESS') {
-      $rootScope.$emit('updateProgress', data);
+      $scope.$broadcast('updateProgress', data);
     } else if (op === 'COMPLETION_LIST') {
-      $rootScope.$emit('completionList', data);
+      $scope.$broadcast('completionList', data);
     }
   });
 
@@ -88,6 +88,7 @@ angular.module('zeppelinWebApp')
       WebSocket.send(JSON.stringify(data));
     }
   };
+
 
   /** get the childs event and sebd to the websocket server */
   $rootScope.$on('sendNewEvent', function(event, data) {
