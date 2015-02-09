@@ -203,7 +203,7 @@ public class SparkInterpreter extends Interpreter {
 
     /*
      * > val env = new nsc.Settings(errLogger) > env.usejavacp.value = true > val p = new
-     * Interpreter(env) > p.setContextClassLoader > Alternatively you can set the class path throuh
+     * Interpreter(env) > p.setContextClassLoader > Alternatively you can set the class path through
      * nsc.Settings.classpath.
      *
      * >> val settings = new Settings() >> settings.usejavacp.value = true >>
