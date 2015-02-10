@@ -61,12 +61,12 @@ public class DepInterpreterTest {
   }
 
   @Test
-  public void testBasic() {
+  public void testDefault() {
+    dep.getDependencyContext().reset();
     InterpreterResult ret = dep.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
     assertEquals(Code.SUCCESS, ret.code());
 
     assertEquals(1, dep.getDependencyContext().getFiles().size());
-    assertEquals(0, dep.getDependencyContext().getFilesDist().size());
+    assertEquals(1, dep.getDependencyContext().getFilesDist().size());
   }
-
 }

@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class Dependency {
   private String groupArtifactVersion;
-  private boolean dist = false;
+  private boolean local = false;
   private List<String> exclusions;
 
 
@@ -27,11 +27,11 @@ public class Dependency {
   }
 
   /**
-   * Add artifact into SparkContext (sc.addJar())
+   * Don't add artifact into SparkContext (sc.addJar())
    * @return
    */
-  public Dependency dist() {
-    dist = true;
+  public Dependency local() {
+    local = true;
     return this;
   }
 
@@ -59,7 +59,7 @@ public class Dependency {
   }
 
   public boolean isDist() {
-    return dist;
+    return !local;
   }
 
   public List<String> getExclusions() {

@@ -54,17 +54,19 @@ public class ZeppelinContext {
 
   /**
    * Load dependency for interpreter and runtime (driver).
+   * And distribute them to spark cluster (sc.add())
    *
    * @param artifact "group:artifact:version" or file path like "/somepath/your.jar"
    * @return
    * @throws Exception
    */
   public Iterable<String> load(String artifact) throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, false));
+    return collectionAsScalaIterable(dep.load(artifact, true));
   }
 
   /**
    * Load dependency and it's transitive dependencies for interpreter and runtime (driver).
+   * And distribute them to spark cluster (sc.add())
    *
    * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
    * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
@@ -76,11 +78,12 @@ public class ZeppelinContext {
     return collectionAsScalaIterable(
         dep.load(artifact,
         asJavaCollection(excludes),
-        false));
+        true));
   }
 
   /**
    * Load dependency and it's transitive dependencies for interpreter and runtime (driver).
+   * And distribute them to spark cluster (sc.add())
    *
    * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
    * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
@@ -88,46 +91,49 @@ public class ZeppelinContext {
    * @throws Exception
    */
   public Iterable<String> load(String artifact, Collection<String> excludes) throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, excludes, false));
+    return collectionAsScalaIterable(dep.load(artifact, excludes, true));
   }
 
   /**
    * Load dependency for interpreter and runtime, and then add to sparkContext.
+   * But not adding them to spark cluster
    *
    * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
    * @return
    * @throws Exception
    */
-  public Iterable<String> loadAndDist(String artifact) throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, true));
+  public Iterable<String> loadLocal(String artifact) throws Exception {
+    return collectionAsScalaIterable(dep.load(artifact, false));
   }
 
 
   /**
    * Load dependency and it's transitive dependencies and then add to sparkContext.
+   * But not adding them to spark cluster
    *
    * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
    * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
    * @return
    * @throws Exception
    */
-  public Iterable<String> loadAndDist(String artifact,
+  public Iterable<String> loadLocal(String artifact,
       scala.collection.Iterable<String> excludes) throws Exception {
     return collectionAsScalaIterable(dep.load(artifact,
-        asJavaCollection(excludes), true));
+        asJavaCollection(excludes), false));
   }
 
   /**
    * Load dependency and it's transitive dependencies and then add to sparkContext.
+   * But not adding them to spark cluster
    *
    * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
    * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
    * @return
    * @throws Exception
    */
-  public Iterable<String> loadAndDist(String artifact, Collection<String> excludes)
+  public Iterable<String> loadLocal(String artifact, Collection<String> excludes)
       throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, excludes, true));
+    return collectionAsScalaIterable(dep.load(artifact, excludes, false));
   }
 
 
@@ -137,8 +143,8 @@ public class ZeppelinContext {
    * @param id id of repository ex) oss, local, snapshot
    * @param url url of repository. supported protocol : file, http, https
    */
-  public void addMavenRepo(String id, String url) {
-    addMavenRepo(id, url, false);
+  public void addRepo(String id, String url) {
+    addRepo(id, url, false);
   }
 
   /**
@@ -148,7 +154,7 @@ public class ZeppelinContext {
    * @param url url of repository. supported protocol : file, http, https
    * @param snapshot true if it is snapshot repository
    */
-  public void addMavenRepo(String id, String url, boolean snapshot) {
+  public void addRepo(String id, String url, boolean snapshot) {
     dep.addRepo(id, url, snapshot);
   }
 
@@ -156,7 +162,7 @@ public class ZeppelinContext {
    * Remove maven repository by id
    * @param id id of repository
    */
-  public void removeMavenRepo(String id){
+  public void removeRepo(String id){
     dep.delRepo(id);
   }
 
