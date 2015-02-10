@@ -1239,7 +1239,7 @@
                         </dependencies>
                         <properties>
                                 <akka.version>2.3.4-spark</akka.version>
-                                <spark.version>1.2.0</spark.version>
+                                <spark.version>1.2.1</spark.version>
 		                <hive.version>0.13.1a</hive.version>
                                 <derby.version>10.10.1.1</derby.version>
 		                <parquet.version>1.6.0rc3</parquet.version>
