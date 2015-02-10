@@ -23,6 +23,7 @@ import org.apache.spark.repl.SparkIMain;
 import org.apache.spark.repl.SparkJLineCompletion;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
+import org.apache.spark.scheduler.Pool;
 import org.apache.spark.scheduler.Stage;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.hive.HiveContext;
@@ -31,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import scala.Console;
+import scala.Enumeration.Value;
 import scala.None;
 import scala.Some;
 import scala.Tuple2;
@@ -271,6 +273,14 @@ public class SparkInterpreter extends Interpreter {
     completor = new SparkJLineCompletion(intp);
 
     sc = getSparkContext();
+    if (sc.getPoolForName("fair").isEmpty()) {
+      Value schedulingMode = org.apache.spark.scheduler.SchedulingMode.FAIR();
+      int minimumShare = 0;
+      int weight = 1;
+      Pool pool = new Pool("fair", schedulingMode, minimumShare, weight);
+      sc.taskScheduler().rootPool().addSchedulable(pool);
+    }
+
     sqlc = getSQLContext();
 
     dep = getDependencyResolver();
