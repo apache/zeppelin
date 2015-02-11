@@ -536,6 +536,8 @@ public class SparkInterpreter extends Interpreter {
           progressInfo = getProgressFromStage_1_0x(sparkListener, job.finalStage());
         } else if (sc.version().startsWith("1.1")) {
           progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
+        } else if (sc.version().startsWith("1.2")) {
+          progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
         } else {
           continue;
         }
