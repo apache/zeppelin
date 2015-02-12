@@ -105,15 +105,27 @@ public class SparkInterpreter extends Interpreter {
     out = new ByteArrayOutputStream();
   }
 
+  public SparkInterpreter(Properties property, SparkContext sc) {
+    this(property);
+
+    this.sc = sc;
+    env = SparkEnv.get();
+    sparkListener = setupListeners(this.sc);
+  }
 
   public synchronized SparkContext getSparkContext() {
     if (sc == null) {
       sc = createSparkContext();
       env = SparkEnv.get();
-      sparkListener = new JobProgressListener(sc.getConf());
-      sc.listenerBus().addListener(sparkListener);
+      sparkListener = setupListeners(sc);
     }
     return sc;
+  }
+
+  private static JobProgressListener setupListeners(SparkContext context) {
+    JobProgressListener pl = new JobProgressListener(context.getConf());
+    context.listenerBus().addListener(pl);
+    return pl;
   }
 
   public SQLContext getSQLContext() {
