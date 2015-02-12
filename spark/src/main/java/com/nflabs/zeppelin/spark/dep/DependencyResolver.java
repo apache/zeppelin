@@ -4,6 +4,8 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -20,26 +22,25 @@ import org.sonatype.aether.collection.CollectRequest;
 import org.sonatype.aether.graph.Dependency;
 import org.sonatype.aether.graph.DependencyFilter;
 import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.resolution.ArtifactRequest;
 import org.sonatype.aether.resolution.ArtifactResult;
 import org.sonatype.aether.resolution.DependencyRequest;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.artifact.JavaScopes;
 import org.sonatype.aether.util.filter.DependencyFilterUtils;
+import org.sonatype.aether.util.filter.PatternExclusionsDependencyFilter;
 
 import scala.Some;
 import scala.collection.IndexedSeq;
 import scala.reflect.io.AbstractFile;
 import scala.tools.nsc.Global;
 import scala.tools.nsc.backend.JavaPlatform;
-import scala.tools.nsc.interpreter.AbstractFileClassLoader;
 import scala.tools.nsc.util.ClassPath;
 import scala.tools.nsc.util.MergedClassPath;
 
 /**
  * Deps resolver.
  * Add new dependencies from mvn repo (at runetime) to Zeppelin.
- * 
+ *
  * @author anthonycorbacho
  *
  */
@@ -49,7 +50,7 @@ public class DependencyResolver {
   private SparkIMain intp;
   private SparkContext sc;
   private RepositorySystem system = Booter.newRepositorySystem();
-  private RemoteRepository repo = Booter.newCentralRepository();
+  private List<RemoteRepository> repos = new LinkedList<RemoteRepository>();
   private RepositorySystemSession session = Booter.newRepositorySystemSession(system);
   private DependencyFilter classpathFlter = DependencyFilterUtils.classpathFilter(
                                                                                 JavaScopes.COMPILE,
@@ -59,6 +60,8 @@ public class DependencyResolver {
 
   private final String[] exclusions = new String[] {"org.scala-lang:scala-library",
                                                     "org.scala-lang:scala-compiler",
+                                                    "org.scala-lang:scala-reflect",
+                                                    "org.scala-lang:scalap",
                                                     "com.nflabs.zeppelin:zeppelin-zengine",
                                                     "com.nflabs.zeppelin:zeppelin-spark",
                                                     "com.nflabs.zeppelin:zeppelin-server"};
@@ -67,6 +70,32 @@ public class DependencyResolver {
     this.intp = intp;
     this.global = intp.global();
     this.sc = sc;
+    repos.add(Booter.newCentralRepository()); // add maven central
+    repos.add(new RemoteRepository("local", "default", "file://"
+        + System.getProperty("user.home") + "/.m2/repository"));
+  }
+
+  public void addRepo(String id, String url, boolean snapshot) {
+    synchronized (repos) {
+      delRepo(id);
+      RemoteRepository rr = new RemoteRepository(id, "default", url);
+      rr.setPolicy(snapshot, null);
+      repos.add(rr);
+    }
+  }
+
+  public RemoteRepository delRepo(String id) {
+    synchronized (repos) {
+      Iterator<RemoteRepository> it = repos.iterator();
+      if (it.hasNext()) {
+        RemoteRepository repo = it.next();
+        if (repo.getId().equals(id)) {
+          it.remove();
+          return repo;
+        }
+      }
+    }
+    return null;
   }
 
   private void updateCompilerClassPath(URL[] urls) throws IllegalAccessException,
@@ -141,54 +170,58 @@ public class DependencyResolver {
         platform.classPath().context());
   }
 
-  public void load(String groupId, String artifactId, String version, boolean recursive,
+  public List<String> load(String artifact,
       boolean addSparkContext) throws Exception {
-    if (StringUtils.isBlank(groupId) || StringUtils.isBlank(artifactId)
-        || StringUtils.isBlank(version)) {
-      // Should throw here
-      return;
-    }
-    load(groupId + ":" + artifactId + ":" + version, recursive, addSparkContext);
+    return load(artifact, new LinkedList<String>(), addSparkContext);
   }
 
-  public void load(String artifact, boolean recursive, boolean addSparkContext) throws Exception {
+  public List<String> load(String artifact, Collection<String> excludes,
+      boolean addSparkContext) throws Exception {
     if (StringUtils.isBlank(artifact)) {
       // Should throw here
-      return;
+      throw new RuntimeException("Invalid artifact to load");
     }
 
-    if (artifact.split(":").length == 3) {
-      loadFromMvn(artifact, recursive, addSparkContext);
+    // <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>
+    int numSplits = artifact.split(":").length;
+    if (numSplits >= 3 && numSplits <= 6) {
+      return loadFromMvn(artifact, excludes, addSparkContext);
     } else {
       loadFromFs(artifact, addSparkContext);
+      LinkedList<String> libs = new LinkedList<String>();
+      libs.add(artifact);
+      return libs;
     }
   }
 
   private void loadFromFs(String artifact, boolean addSparkContext) throws Exception {
     File jarFile = new File(artifact);
 
-    updateCompilerClassPath(new URL[] {jarFile.toURI().toURL()});
+    intp.global().new Run();
+
     updateRuntimeClassPath(new URL[] {jarFile.toURI().toURL()});
+    updateCompilerClassPath(new URL[] {jarFile.toURI().toURL()});
 
     if (addSparkContext) {
       sc.addJar(jarFile.getAbsolutePath());
     }
   }
 
-  private void loadFromMvn(String artifact, boolean recursive, boolean addSparkContext)
-      throws Exception {
+  private List<String> loadFromMvn(String artifact, Collection<String> excludes,
+      boolean addSparkContext) throws Exception {
+    List<String> loadedLibs = new LinkedList<String>();
+    Collection<String> allExclusions = new LinkedList<String>();
+    allExclusions.addAll(excludes);
+    allExclusions.addAll(Arrays.asList(exclusions));
+
     List<ArtifactResult> listOfArtifact;
-    if (recursive) {
-      listOfArtifact = getArtifactsWithDep(artifact);
-    } else {
-      listOfArtifact = getArtifact(artifact);
-    }
+    listOfArtifact = getArtifactsWithDep(artifact, allExclusions);
 
     Iterator<ArtifactResult> it = listOfArtifact.iterator();
     while (it.hasNext()) {
       Artifact a = it.next().getArtifact();
       String gav = a.getGroupId() + ":" + a.getArtifactId() + ":" + a.getVersion();
-      for (String exclude : exclusions) {
+      for (String exclude : allExclusions) {
         if (gav.startsWith(exclude)) {
           it.remove();
           break;
@@ -204,36 +237,96 @@ public class DependencyResolver {
           + artifactResult.getArtifact().getVersion());
       newClassPathList.add(artifactResult.getArtifact().getFile().toURI().toURL());
       files.add(artifactResult.getArtifact().getFile());
+      loadedLibs.add(artifactResult.getArtifact().getGroupId() + ":"
+          + artifactResult.getArtifact().getArtifactId() + ":"
+          + artifactResult.getArtifact().getVersion());
     }
 
-    updateCompilerClassPath(newClassPathList.toArray(new URL[0]));
+    intp.global().new Run();
     updateRuntimeClassPath(newClassPathList.toArray(new URL[0]));
+    updateCompilerClassPath(newClassPathList.toArray(new URL[0]));
 
     if (addSparkContext) {
       for (File f : files) {
         sc.addJar(f.getAbsolutePath());
       }
     }
+
+    return loadedLibs;
   }
 
-  public List<ArtifactResult> getArtifact(String dependency) throws Exception {
-    Artifact artifact = new DefaultArtifact(dependency);
-    ArtifactRequest artifactRequest = new ArtifactRequest();
-    artifactRequest.setArtifact(artifact);
-    artifactRequest.addRepository(repo);
+  /**
+   *
+   * @param dependency
+   * @param excludes list of pattern can either be of the form groupId:artifactId
+   * @return
+   * @throws Exception
+   */
+  public List<ArtifactResult> getArtifactsWithDep(String dependency,
+      Collection<String> excludes) throws Exception {
+    Artifact artifact = new DefaultArtifact(inferScalaVersion(dependency));
+    DependencyFilter classpathFlter = DependencyFilterUtils.classpathFilter( JavaScopes.COMPILE );
+    PatternExclusionsDependencyFilter exclusionFilter =
+        new PatternExclusionsDependencyFilter(inferScalaVersion(excludes));
 
-    ArtifactResult artifactResult = system.resolveArtifact(session, artifactRequest);
-    LinkedList<ArtifactResult> results = new LinkedList<ArtifactResult>();
-    results.add(artifactResult);
-    return results;
-  }
-
-  public List<ArtifactResult> getArtifactsWithDep(String dependency) throws Exception {
-    Artifact artifact = new DefaultArtifact(dependency);
     CollectRequest collectRequest = new CollectRequest();
     collectRequest.setRoot(new Dependency(artifact, JavaScopes.COMPILE));
-    collectRequest.addRepository(repo);
-    DependencyRequest dependencyRequest = new DependencyRequest(collectRequest, classpathFlter);
+
+    synchronized (repos) {
+      for (RemoteRepository repo : repos) {
+        collectRequest.addRepository(repo);
+      }
+    }
+    DependencyRequest dependencyRequest = new DependencyRequest(collectRequest,
+        DependencyFilterUtils.andFilter(exclusionFilter, classpathFlter));
     return system.resolveDependencies(session, dependencyRequest).getArtifactResults();
+  }
+
+  public static Collection<String> inferScalaVersion(Collection<String> artifact) {
+    List<String> list = new LinkedList<String>();
+    for (String a : artifact) {
+      list.add(inferScalaVersion(a));
+    }
+    return list;
+  }
+
+  public static String inferScalaVersion(String artifact) {
+    int pos = artifact.indexOf(":");
+    if (pos < 0 || pos + 2 >= artifact.length()) {
+      // failed to infer
+      return artifact;
+    }
+
+    if (':' == artifact.charAt(pos + 1)) {
+      String restOfthem = "";
+      String versionSep = ":";
+
+      String groupId = artifact.substring(0, pos);
+      int nextPos = artifact.indexOf(":", pos + 2);
+      if (nextPos < 0) {
+        if (artifact.charAt(artifact.length() - 1) == '*') {
+          nextPos = artifact.length() - 1;
+          versionSep = "";
+          restOfthem = "*";
+        } else {
+          versionSep = "";
+          nextPos = artifact.length();
+        }
+      }
+
+      String artifactId = artifact.substring(pos + 2, nextPos);
+      if (nextPos < artifact.length()) {
+        if (!restOfthem.equals("*")) {
+          restOfthem = artifact.substring(nextPos + 1);
+        }
+      }
+
+      String [] version = scala.util.Properties.versionNumberString().split("[.]");
+      String scalaVersion = version[0] + "." + version[1];
+
+      return groupId + ":" + artifactId + "_" + scalaVersion + versionSep + restOfthem;
+    } else {
+      return artifact;
+    }
   }
 }

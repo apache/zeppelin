@@ -83,14 +83,6 @@
       	  <artifactId>jackson-module-scala_2.10</artifactId>
 	</exclusion>
 	<exclusion>
-      	  <groupId>org.json4s</groupId>
-      	  <artifactId>json4s-jackson_2.10</artifactId>
-	</exclusion>
-	<exclusion>
-      	  <groupId>org.json4s</groupId>
-      	  <artifactId>json4s-core_2.10</artifactId>
-	</exclusion>
-	<exclusion>
       	  <groupId>com.thoughtworks.paranamer</groupId>
       	  <artifactId>paranamer</artifactId>
 	</exclusion>

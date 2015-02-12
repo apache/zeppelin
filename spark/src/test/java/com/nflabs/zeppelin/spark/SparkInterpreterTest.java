@@ -3,24 +3,33 @@ package com.nflabs.zeppelin.spark;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.notebook.Paragraph;
 
-
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SparkInterpreterTest {
-	public static SparkInterpreter repl;
+  public static SparkInterpreter repl;
   private InterpreterContext context;
+  private File tmpDir;
 
-	@Before
-	public void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
+    tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
+    System.setProperty("zeppelin.dep.localrepo", tmpDir.getAbsolutePath() + "/local-repo");
+
+    tmpDir.mkdirs();
+
 	  if (repl == null) {
 		  Properties p = new Properties();
 
@@ -31,9 +40,23 @@ public class SparkInterpreterTest {
     context = new InterpreterContext(new Paragraph(null, null));
 	}
 
-	@After
-	public void tearDown() throws Exception {
-	}
+  @After
+  public void tearDown() throws Exception {
+    delete(tmpDir);
+  }
+
+  private void delete(File file) {
+    if (file.isFile()) file.delete();
+    else if (file.isDirectory()) {
+      File[] files = file.listFiles();
+      if (files != null && files.length > 0) {
+        for (File f : files) {
+          delete(f);
+        }
+      }
+      file.delete();
+    }
+  }
 
 	@Test
 	public void testBasicIntp() {
@@ -59,8 +82,8 @@ public class SparkInterpreterTest {
 
 	@Test
 	public void testSparkSql(){
-		repl.interpret("case class Person(name:String, age:Int)", context);
-		repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))", context);
+		repl.interpret("case class Person(name:String, age:Int)\n", context);
+		repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
 		assertEquals(Code.SUCCESS, repl.interpret("people.take(3)", context).code());
 
 		// create new interpreter
@@ -80,6 +103,15 @@ public class SparkInterpreterTest {
 				       "    if (0 <= value) \"error\"" +
                        "}", context);
 		assertEquals(Code.ERROR, result.code());
-		System.out.println("msg="+result.message());
 	}
+
+  @Test
+  public void testZContextDependencyLoading() {
+    // try to import library does not exist on classpath. it'll fail
+    assertEquals(InterpreterResult.Code.ERROR, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
+
+    // load library from maven repository and try to import again
+    repl.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
+    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
+  }
 }

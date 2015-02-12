@@ -95,6 +95,7 @@
 		<parquet.version>1.4.3</parquet.version>
 		<jblas.version>1.2.3</jblas.version>
 		<jetty.version>8.1.14.v20131031</jetty.version>
+                <json4s.version>3.2.10</json4s.version>
 		<chill.version>0.3.6</chill.version>
 		<codahale.metrics.version>3.0.0</codahale.metrics.version>
 		<avro.version>1.7.6</avro.version>
@@ -793,6 +794,32 @@
 				<artifactId>jaxb-impl</artifactId>
 				<version>2.2.6</version>
 			</dependency>
+
+
+                        <!-- json4s -->
+                        <dependency>
+                                <groupId>org.json4s</groupId>
+                                <artifactId>json4s-core_2.10</artifactId>
+                                <version>${json4s.version}</version>
+                        </dependency>
+
+                        <dependency>
+                                <groupId>org.json4s</groupId>
+                                <artifactId>json4s-native_2.10</artifactId>
+                                <version>${json4s.version}</version>
+                        </dependency>
+
+                        <dependency>
+                                <groupId>org.json4s</groupId>
+                                <artifactId>json4s-jackson_2.10</artifactId>
+                                <version>${json4s.version}</version>
+                        </dependency>
+
+                        <dependency>
+                                <groupId>org.json4s</groupId>
+                                <artifactId>json4s-ext_2.10</artifactId>
+                                <version>${json4s.version}</version>
+	                </dependency>
 
 		</dependencies>
 	</dependencyManagement>
