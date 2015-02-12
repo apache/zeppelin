@@ -46,12 +46,15 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
+import com.nflabs.zeppelin.interpreter.InterpreterGroup;
 import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
 import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
+import com.nflabs.zeppelin.spark.dep.DependencyContext;
 import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 
 /**
@@ -107,6 +110,10 @@ public class SparkInterpreter extends Interpreter {
     return sc;
   }
 
+  public boolean isSparkContextInitialized() {
+    return sc != null;
+  }
+
   public SQLContext getSQLContext() {
     if (sqlc == null) {
       sqlc = new SQLContext(getSparkContext());
@@ -119,6 +126,21 @@ public class SparkInterpreter extends Interpreter {
       dep = new DependencyResolver(intp, sc);
     }
     return dep;
+  }
+
+  private DepInterpreter getDepInterpreter() {
+    InterpreterGroup intpGroup = getInterpreterGroup();
+    if (intpGroup == null) return null;
+    for (Interpreter intp : intpGroup) {
+      if (intp.getClassName().equals(DepInterpreter.class.getName())) {
+        Interpreter p = intp;
+        while (p instanceof WrappedInterpreter) {
+          p = ((WrappedInterpreter) p).getInnerInterpreter();
+        }
+        return (DepInterpreter) p;
+      }
+    }
+    return null;
   }
 
   public SparkContext createSparkContext() {
@@ -215,6 +237,23 @@ public class SparkInterpreter extends Interpreter {
       }
     }
 
+    // add dependency from DepInterpreter
+    DepInterpreter depInterpreter = getDepInterpreter();
+    if (depInterpreter != null) {
+      DependencyContext depc = depInterpreter.getDependencyContext();
+      if (depc != null) {
+        List<File> files = depc.getFiles();
+        if (files != null) {
+          for (File f : files) {
+            if (classpath.length() > 0) {
+              classpath += File.pathSeparator;
+            }
+            classpath += f.getAbsolutePath();
+          }
+        }
+      }
+    }
+
     pathSettings.v_$eq(classpath);
     settings.scala$tools$nsc$settings$ScalaSettings$_setter_$classpath_$eq(pathSettings);
 
@@ -264,6 +303,25 @@ public class SparkInterpreter extends Interpreter {
                  + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
     intp.interpret("import org.apache.spark.SparkContext._");
     intp.interpret("import sqlc._");
+
+    // add jar
+    if (depInterpreter != null) {
+      DependencyContext depc = depInterpreter.getDependencyContext();
+      if (depc != null) {
+        List<File> files = depc.getFilesDist();
+        if (files != null) {
+          for (File f : files) {
+            if (f.getName().toLowerCase().endsWith(".jar")) {
+              sc.addJar(f.getAbsolutePath());
+              logger.info("sc.addJar(" + f.getAbsolutePath() + ")");
+            } else {
+              sc.addFile(f.getAbsolutePath());
+              logger.info("sc.addFile(" + f.getAbsolutePath() + ")");
+            }
+          }
+        }
+      }
+    }
   }
 
   private List<File> currentClassPath() {
