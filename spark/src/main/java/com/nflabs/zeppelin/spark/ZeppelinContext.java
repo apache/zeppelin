@@ -11,6 +11,7 @@ import java.util.Iterator;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SchemaRDD;
+import org.apache.spark.sql.hive.HiveContext;
 
 import scala.Tuple2;
 import scala.collection.Iterable;
@@ -35,10 +36,12 @@ public class ZeppelinContext {
   private InterpreterContext interpreterContext;
 
   public ZeppelinContext(SparkContext sc, SQLContext sql,
+      HiveContext hiveContext,
       InterpreterContext interpreterContext,
       DependencyResolver dep, PrintStream printStream) {
     this.sc = sc;
     this.sqlContext = sql;
+    this.hiveContext = hiveContext;
     this.interpreterContext = interpreterContext;
     this.dep = dep;
     this.out = printStream;
@@ -46,6 +49,7 @@ public class ZeppelinContext {
 
   public SparkContext sc;
   public SQLContext sqlContext;
+  public HiveContext hiveContext;
   private Setting form;
 
   public SchemaRDD sql(String sql) {
@@ -218,6 +222,9 @@ public class ZeppelinContext {
     } else {
       out.println("Unknown error");
     }
+  }
+
+  private void restartInterpreter() {
   }
 
   public InterpreterContext getInterpreterContext() {

@@ -38,6 +38,7 @@ angular.module('zeppelinWebApp')
     $scope.chart = {};
     $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
     $scope.showTitleEditor = false;
+    $scope.paragraphFocused = false;
 
     if (!$scope.paragraph.config) {
       $scope.paragraph.config = {};
@@ -50,8 +51,8 @@ angular.module('zeppelinWebApp')
     }
 
     if ($scope.getResultType() === 'TABLE') {
-      $scope.lastData.settings = jQuery.extend(true, {}, $scope.paragraph.settings);
-      $scope.lastData.config = jQuery.extend(true, {}, $scope.paragraph.config);
+      $scope.lastData.settings = angular.copy($scope.paragraph.settings);
+      $scope.lastData.config = angular.copy($scope.paragraph.config);
       $scope.loadTableData($scope.paragraph.result);
       $scope.setGraphMode($scope.getGraphMode(), false, false);
     } else if ($scope.getResultType() === 'HTML') {
@@ -77,9 +78,6 @@ angular.module('zeppelinWebApp')
 
   var initializeDefault = function() {
     var config = $scope.paragraph.config;
-    if (!config.looknfeel) {
-      config.looknfeel = 'default';
-    }
 
     if (!config.colWidth) {
       config.colWidth = 12;
@@ -133,7 +131,7 @@ angular.module('zeppelinWebApp')
   });
 
   // TODO: this may have impact on performance when there are many paragraphs in a note.
-  $rootScope.$on('updateParagraph', function(event, data) {
+  $scope.$on('updateParagraph', function(event, data) {
     if (data.paragraph.id === $scope.paragraph.id &&
          (
              data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
@@ -148,8 +146,8 @@ angular.module('zeppelinWebApp')
          )
        ) {
       // store original data for comparison
-      $scope.lastData.settings = jQuery.extend(true, {}, data.paragraph.settings);
-      $scope.lastData.config = jQuery.extend(true, {}, data.paragraph.config);
+      $scope.lastData.settings = angular.copy(data.paragraph.settings);
+      $scope.lastData.config = angular.copy(data.paragraph.config);
 
       var oldType = $scope.getResultType();
       var newType = $scope.getResultType(data.paragraph);
@@ -240,15 +238,15 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.moveUp = function() {
-    $rootScope.$emit('moveParagraphUp', $scope.paragraph.id);
+    $scope.$emit('moveParagraphUp', $scope.paragraph.id);
   };
 
   $scope.moveDown = function() {
-    $rootScope.$emit('moveParagraphDown', $scope.paragraph.id);
+    $scope.$emit('moveParagraphDown', $scope.paragraph.id);
   };
 
   $scope.insertNew = function() {
-    $rootScope.$emit('insertParagraph', $scope.paragraph.id);
+    $scope.$emit('insertParagraph', $scope.paragraph.id);
   };
 
   $scope.removeParagraph = function() {
@@ -271,8 +269,8 @@ angular.module('zeppelinWebApp')
   $scope.closeEditor = function() {
     console.log('close the note');
 
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
     newConfig.editorHide = true;
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
@@ -281,8 +279,8 @@ angular.module('zeppelinWebApp')
   $scope.openEditor = function() {
     console.log('open the note');
 
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
     newConfig.editorHide = false;
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
@@ -291,8 +289,8 @@ angular.module('zeppelinWebApp')
   $scope.closeTable = function() {
     console.log('close the output');
 
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
     newConfig.tableHide = true;
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
@@ -301,32 +299,32 @@ angular.module('zeppelinWebApp')
   $scope.openTable = function() {
     console.log('open the output');
 
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
     newConfig.tableHide = false;
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.showTitle = function() {
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
     newConfig.title = true;
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.hideTitle = function() {
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
     newConfig.title = false;
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.setTitle = function() {
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
@@ -340,28 +338,28 @@ angular.module('zeppelinWebApp')
 
   $scope.changeColWidth = function() {
 
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.toggleGraphOption = function() {
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newConfig = angular.copy($scope.paragraph.config);
     if (newConfig.graph.optionOpen) {
       newConfig.graph.optionOpen = false;
     } else {
       newConfig.graph.optionOpen = true;
     }
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newParams = angular.copy($scope.paragraph.settings.params);
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.toggleOutput = function() {
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newConfig = angular.copy($scope.paragraph.config);
     newConfig.tableHide = !newConfig.tableHide;
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newParams = angular.copy($scope.paragraph.settings.params);
 
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
@@ -424,7 +422,7 @@ angular.module('zeppelinWebApp')
                   }
               });
 
-              $rootScope.$on('completionList', function(event, data) {
+              $scope.$on('completionList', function(event, data) {
                   if (data.completions) {
                       var completions = [];
                       for (var c in data.completions) {
@@ -442,14 +440,22 @@ angular.module('zeppelinWebApp')
       };
       langTools.addCompleter(remoteCompleter);
 
+
+      $scope.handleFocus = function(value) {
+        $scope.paragraphFocused = value;
+        // Protect against error in case digest is already running
+        $timeout(function() {
+          // Apply changes since they come from 3rd party library
+          $scope.$digest();
+        });
+      };
+
       $scope.editor.on('focus', function() {
-        var el = $('#' + $scope.paragraph.id + '_paragraphColumn');
-        el.addClass('focused');
+        $scope.handleFocus(true);
       });
 
       $scope.editor.on('blur', function() {
-        var el = $('#' + $scope.paragraph.id + '_paragraphColumn');
-        el.removeClass('focused');
+        $scope.handleFocus(false);
       });
 
 
@@ -508,14 +514,14 @@ angular.module('zeppelinWebApp')
                 currentRow = $scope.editor.getCursorPosition().row;
                 if (currentRow === 0) {
                     // move focus to previous paragraph
-                    $rootScope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
+                    $scope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
                 }
             } else if (keyCode === 40 || (keyCode === 78 && e.ctrlKey)) {  // DOWN
                 numRows = $scope.editor.getSession().getLength();
                 currentRow = $scope.editor.getCursorPosition().row;
                 if (currentRow === numRows-1) {
                     // move focus to next paragraph
-                    $rootScope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
+                    $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
                 }
             }
         }
@@ -545,36 +551,36 @@ angular.module('zeppelinWebApp')
     return 'Took ' + (timeMs/1000) + ' seconds';
   };
 
-  $rootScope.$on('updateProgress', function(event, data) {
+  $scope.$on('updateProgress', function(event, data) {
     if (data.id === $scope.paragraph.id) {
       $scope.currentProgress = data.progress;
     }
   });
 
-  $rootScope.$on('focusParagraph', function(event, paragraphId) {
+  $scope.$on('focusParagraph', function(event, paragraphId) {
     if ($scope.paragraph.id === paragraphId) {
       $scope.editor.focus();
       $('body').scrollTo('#'+paragraphId+'_editor', 300, {offset:-60});
     }
   });
 
-  $rootScope.$on('runParagraph', function(event) {
+  $scope.$on('runParagraph', function(event) {
     $scope.runParagraph($scope.editor.getValue());
   });
 
-  $rootScope.$on('openEditor', function(event) {
+  $scope.$on('openEditor', function(event) {
     $scope.openEditor();
   });
 
-  $rootScope.$on('closeEditor', function(event) {
+  $scope.$on('closeEditor', function(event) {
     $scope.closeEditor();
   });
 
-  $rootScope.$on('openTable', function(event) {
+  $scope.$on('openTable', function(event) {
     $scope.openTable();
   });
 
-  $rootScope.$on('closeTable', function(event) {
+  $scope.$on('closeTable', function(event) {
     $scope.closeTable();
   });
 
@@ -661,24 +667,15 @@ angular.module('zeppelinWebApp')
       if (!type || type === 'table') {
         setTable($scope.paragraph.result, refresh);
       }
-      else if (type === 'multiBarChart') {
-        setD3Chart(type, $scope.paragraph.result, refresh);
-      }
-      else if (type === 'pieChart') {
-        setD3Chart(type, $scope.paragraph.result, refresh);
-      }
-      else if (type === 'stackedAreaChart') {
-        setD3Chart(type, $scope.paragraph.result, refresh);
-      }
-      else if (type === 'lineChart') {
+      else {
         setD3Chart(type, $scope.paragraph.result, refresh);
       }
     }
   };
 
   var setNewMode = function(newMode) {
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
 
     // graph options
     newConfig.graph.mode = newMode;
@@ -1011,7 +1008,7 @@ angular.module('zeppelinWebApp')
         return varA+varB;
       },
       count : function(a,b) {
-        var varA = (a !== undefined) ? a : 0;
+        var varA = (a !== undefined) ? parseInt(a) : 0;
         var varB = (b !== undefined) ? 1 : 0;
         return varA+varB;
       },
@@ -1109,7 +1106,7 @@ angular.module('zeppelinWebApp')
         // add value to row
         if (!p[valueKey]) {
           p[valueKey] = {
-              value : row[value.index],
+              value : (value.aggr !== 'count') ? row[value.index] : 1,
               count: 1
           };
         } else {
@@ -1285,8 +1282,8 @@ angular.module('zeppelinWebApp')
   $scope.setGraphHeight = function() {
     var height = $('#p'+$scope.paragraph.id+'_graph').height();
 
-    var newParams = jQuery.extend(true, {}, $scope.paragraph.settings.params);
-    var newConfig = jQuery.extend(true, {}, $scope.paragraph.config);
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
 
     newConfig.graph.height = height;
 

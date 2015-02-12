@@ -1,3 +1,4 @@
+/* global $:false */
 /* Copyright 2014 NFLabs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +21,7 @@
  * @description
  * # NavCtrl
  * Controller of the top navigation, mainly use for the dropdown menu
- * 
+ *
  * @author anthonycorbacho
  */
 angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams) {
@@ -29,7 +30,7 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   $('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
   /** Set the new menu */
-  $rootScope.$on('setNoteMenu', function(event, notes) {
+  $scope.$on('setNoteMenu', function(event, notes) {
       $scope.notes = notes;
   });
 
@@ -42,7 +43,7 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   $scope.createNewNote = function() {
     $rootScope.$emit('sendNewEvent', {op: 'NEW_NOTE'});
   };
-  
+
   /** Check if the note url is equal to the current note */
   $scope.isActive = function(noteId) {
     if ($routeParams.noteId === noteId) {
@@ -50,5 +51,5 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
     }
     return false;
   };
-  
+
 });

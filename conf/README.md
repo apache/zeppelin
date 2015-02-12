@@ -1,7 +1,7 @@
 ## Enabling SSL
 Enabling SSL requires a few changes. The first is to set zeppelin.ssl to true. If you'll like to use client side certificate authentication as well, then set zeppelin.ssl.client.auth to true too.
 
-Information how about to generate certifcates and a keystore can be found [here](https://wiki.eclipse.org/Jetty/Howto/Configure_SSL).
+Information how about to generate certificates and a keystore can be found [here](https://wiki.eclipse.org/Jetty/Howto/Configure_SSL).
 
 A condensed example can be found in the top answer to this [StackOverflow post](http://stackoverflow.com/questions/4008837/configure-ssl-on-jetty).
 
