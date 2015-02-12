@@ -76,11 +76,11 @@ public class SparkSqlInterpreter extends Interpreter {
     this.maxResult = conf.getInt("ZEPPELIN_SPARK_MAX_RESULT",
         "zeppelin.spark.maxResult",
         Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
-    OpenSparkInterpreter(true);
+    openSparkInterpreter(true);
   }
 
   private SparkInterpreter getSparkInterpreter(){
-    return OpenSparkInterpreter(false);
+    return openSparkInterpreter(false);
   }
 
   private SparkInterpreter openSparkInterpreter(boolean open) {
