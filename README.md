@@ -58,7 +58,7 @@ If you wish to configure Zeppelin option (like port number), configure the follo
 ./conf/zeppelin-site.xml
 ```
 (You can copy ```./conf/zeppelin-env.sh.template``` into ```./conf/zeppelin-env.sh```. 
-Same for ```zeppein-stie.xml```.)
+Same for ```zeppein-site.xml```.)
 
 ### Run
     ./bin/zeppelin-daemon.sh start
