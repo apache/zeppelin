@@ -18,10 +18,22 @@ To know more about Zeppelin, visit our web site [http://zeppelin-project.org](ht
 
 ## Requirements
  * Java 1.7
- * Tested on Mac OSX, CentOS 6.X
+ * Tested on Mac OSX, Ubuntu 14.X, CentOS 6.X
  * Maven (if you want to build from the source code)
+ * Node.js Package Manager
 
 ## Getting Started
+
+### Before Build
+If you don't have requirements prepared, install it. 
+(The installation method may vary according to your environment, example is for Ubuntu.)
+```
+sudo apt-get update
+sudo apt-get install openjdk-7-jdk
+sudo apt-get install git
+sudo apt-get install maven
+sudo apt-get install npm
+```
 
 ### Build
 If you want to build Zeppelin from the source, please first clone this repository. And then:
@@ -29,8 +41,14 @@ If you want to build Zeppelin from the source, please first clone this repositor
 mvn clean package
 ```
 Build with specific version
+
+Spark 1.1.x (more stable with Zeppelin for this moment.)
 ```
-mvn clean package -Dspark.version=1.1.1 -Dhadoop.version=2.0.0-mr1-cdh4.6.0
+mvn clean package -Pspark-1.1 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests 
+```
+Spark 1.2.x
+```
+mvn clean package -Pspark-1.2 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests 
 ```
 
 ### Configure
@@ -39,6 +57,8 @@ If you wish to configure Zeppelin option (like port number), configure the follo
 ./conf/zeppelin-env.sh
 ./conf/zeppelin-site.xml
 ```
+(You can copy ```./conf/zeppelin-env.sh.template``` into ```./conf/zeppelin-env.sh```. 
+Same for ```zeppein-stie.xml```.)
 
 ### Run
     ./bin/zeppelin-daemon.sh start
