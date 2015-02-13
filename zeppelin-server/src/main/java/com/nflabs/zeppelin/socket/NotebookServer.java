@@ -252,7 +252,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
   }
 
   private void updateNote(WebSocket conn, Notebook notebook, Message fromMessage)
-      throws SchedulerException,IOException {
+      throws SchedulerException, IOException {
     String noteId = (String) fromMessage.get("id");
     String name = (String) fromMessage.get("name");
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
