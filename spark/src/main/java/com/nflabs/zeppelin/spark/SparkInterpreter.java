@@ -437,7 +437,7 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private String getJobGroup(InterpreterContext context){
-    return "zeppelin-" + this.hashCode() + "-" + context.getParagraph().getId();
+    return "zeppelin-" + this.hashCode() + "-" + context.getParagraphId();
   }
 
   /**

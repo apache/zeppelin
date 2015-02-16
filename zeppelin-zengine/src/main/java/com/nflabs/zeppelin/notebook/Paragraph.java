@@ -147,7 +147,7 @@ public class Paragraph extends Job implements Serializable {
     String replName = getRequiredReplName();
     Interpreter repl = getRepl(replName);
     if (repl != null) {
-      return repl.getProgress(new InterpreterContext(this));
+      return repl.getProgress(getInterpreterContext());
     } else {
       return 0;
     }
@@ -181,15 +181,23 @@ public class Paragraph extends Job implements Serializable {
       script = Input.getSimpleQuery(settings.getParams(), scriptBody);
     }
     logger().info("RUN : " + script);
-    InterpreterResult ret = repl.interpret(script, new InterpreterContext(this));
+    InterpreterResult ret = repl.interpret(script, getInterpreterContext());
     return ret;
   }
 
   @Override
   protected boolean jobAbort() {
     Interpreter repl = getRepl(getRequiredReplName());
-    repl.cancel(new InterpreterContext(this));
+    repl.cancel(getInterpreterContext());
     return true;
+  }
+
+  private InterpreterContext getInterpreterContext() {
+    InterpreterContext interpreterContext = new InterpreterContext(getId(),
+            this.getTitle(),
+            this.getText(),
+            this.getConfig());
+    return interpreterContext;
   }
 
   private Logger logger() {

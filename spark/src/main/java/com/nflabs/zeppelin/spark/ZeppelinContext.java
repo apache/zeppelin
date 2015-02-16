@@ -209,6 +209,7 @@ public class ZeppelinContext {
   }
 
   public void run(String lines) {
+    /*
     String intpName = Paragraph.getRequiredReplName(lines);
     String scriptBody = Paragraph.getScriptBody(lines);
     Interpreter intp = interpreterContext.getParagraph().getRepl(intpName);
@@ -222,6 +223,8 @@ public class ZeppelinContext {
     } else {
       out.println("Unknown error");
     }
+    */
+    throw new RuntimeException("Missing implementation");
   }
 
   private void restartInterpreter() {
