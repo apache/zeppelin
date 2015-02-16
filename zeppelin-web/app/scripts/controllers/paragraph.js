@@ -131,7 +131,7 @@ angular.module('zeppelinWebApp')
   });
 
   // TODO: this may have impact on performance when there are many paragraphs in a note.
-  $rootScope.$on('updateParagraph', function(event, data) {
+  $scope.$on('updateParagraph', function(event, data) {
     if (data.paragraph.id === $scope.paragraph.id &&
          (
              data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
@@ -238,15 +238,15 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.moveUp = function() {
-    $rootScope.$emit('moveParagraphUp', $scope.paragraph.id);
+    $scope.$emit('moveParagraphUp', $scope.paragraph.id);
   };
 
   $scope.moveDown = function() {
-    $rootScope.$emit('moveParagraphDown', $scope.paragraph.id);
+    $scope.$emit('moveParagraphDown', $scope.paragraph.id);
   };
 
   $scope.insertNew = function() {
-    $rootScope.$emit('insertParagraph', $scope.paragraph.id);
+    $scope.$emit('insertParagraph', $scope.paragraph.id);
   };
 
   $scope.removeParagraph = function() {
@@ -422,7 +422,7 @@ angular.module('zeppelinWebApp')
                   }
               });
 
-              $rootScope.$on('completionList', function(event, data) {
+              $scope.$on('completionList', function(event, data) {
                   if (data.completions) {
                       var completions = [];
                       for (var c in data.completions) {
@@ -514,14 +514,14 @@ angular.module('zeppelinWebApp')
                 currentRow = $scope.editor.getCursorPosition().row;
                 if (currentRow === 0) {
                     // move focus to previous paragraph
-                    $rootScope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
+                    $scope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
                 }
             } else if (keyCode === 40 || (keyCode === 78 && e.ctrlKey)) {  // DOWN
                 numRows = $scope.editor.getSession().getLength();
                 currentRow = $scope.editor.getCursorPosition().row;
                 if (currentRow === numRows-1) {
                     // move focus to next paragraph
-                    $rootScope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
+                    $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
                 }
             }
         }
@@ -551,36 +551,36 @@ angular.module('zeppelinWebApp')
     return 'Took ' + (timeMs/1000) + ' seconds';
   };
 
-  $rootScope.$on('updateProgress', function(event, data) {
+  $scope.$on('updateProgress', function(event, data) {
     if (data.id === $scope.paragraph.id) {
       $scope.currentProgress = data.progress;
     }
   });
 
-  $rootScope.$on('focusParagraph', function(event, paragraphId) {
+  $scope.$on('focusParagraph', function(event, paragraphId) {
     if ($scope.paragraph.id === paragraphId) {
       $scope.editor.focus();
       $('body').scrollTo('#'+paragraphId+'_editor', 300, {offset:-60});
     }
   });
 
-  $rootScope.$on('runParagraph', function(event) {
+  $scope.$on('runParagraph', function(event) {
     $scope.runParagraph($scope.editor.getValue());
   });
 
-  $rootScope.$on('openEditor', function(event) {
+  $scope.$on('openEditor', function(event) {
     $scope.openEditor();
   });
 
-  $rootScope.$on('closeEditor', function(event) {
+  $scope.$on('closeEditor', function(event) {
     $scope.closeEditor();
   });
 
-  $rootScope.$on('openTable', function(event) {
+  $scope.$on('openTable', function(event) {
     $scope.openTable();
   });
 
-  $rootScope.$on('closeTable', function(event) {
+  $scope.$on('closeTable', function(event) {
     $scope.closeTable();
   });
 

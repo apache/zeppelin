@@ -2,6 +2,7 @@ package com.nflabs.zeppelin.spark.dep;
 
 import org.apache.maven.repository.internal.DefaultServiceLocator;
 import org.apache.maven.wagon.Wagon;
+import org.apache.maven.wagon.providers.http.HttpWagon;
 import org.apache.maven.wagon.providers.http.LightweightHttpWagon;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.connector.file.FileRepositoryConnectorFactory;
@@ -11,7 +12,7 @@ import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 
 /**
  * Get maven repository instance.
- * 
+ *
  * @author anthonycorbacho
  *
  */
@@ -26,14 +27,20 @@ public class RepositorySystemFactory {
   }
 
   /**
-   * ManualWagonProvider 
+   * ManualWagonProvider
    */
   public static class ManualWagonProvider implements WagonProvider {
 
+    @Override
     public Wagon lookup(String roleHint) throws Exception {
       if ("http".equals(roleHint)) {
         return new LightweightHttpWagon();
       }
+
+      if ("https".equals(roleHint)) {
+        return new HttpWagon();
+      }
+
       return null;
     }
 

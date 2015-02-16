@@ -80,6 +80,7 @@
 		<spark.version>1.1.1</spark.version>
 		<scala.version>2.10.4</scala.version>
 		<scala.binary.version>2.10</scala.binary.version>
+                <scala.macros.version>2.0.1</scala.macros.version>
 		<mesos.version>0.18.1</mesos.version>
 		<mesos.classifier>shaded-protobuf</mesos.classifier>
 		<akka.group>org.spark-project.akka</akka.group>
@@ -92,16 +93,21 @@
 		<hbase.version>0.94.6</hbase.version>
 		<zookeeper.version>3.4.5</zookeeper.version>
 		<hive.version>0.12.0</hive.version>
+                <derby.version>10.4.2.0</derby.version>
 		<parquet.version>1.4.3</parquet.version>
 		<jblas.version>1.2.3</jblas.version>
 		<jetty.version>8.1.14.v20131031</jetty.version>
+                <json4s.version>3.2.10</json4s.version>
 		<chill.version>0.3.6</chill.version>
 		<codahale.metrics.version>3.0.0</codahale.metrics.version>
 		<avro.version>1.7.6</avro.version>
 		<jets3t.version>0.7.1</jets3t.version>
+                <commons.math3.version>3.2</commons.math3.version>
+                <commons.httpclient.version>4.3.6</commons.httpclient.version>
+                <io.netty.version>4.0.17.Final</io.netty.version>
+
 		<guava.version>15.0</guava.version>
 		<scalatest.version>2.2.1</scalatest.version>
-
 		<PermGen>64m</PermGen>
 		<MaxPermGen>512m</MaxPermGen>
 
@@ -162,7 +168,7 @@
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
 				<artifactId>httpclient</artifactId>
-				<version>4.3.6</version>
+				<version>${commons.httpclient.version}</version>
 			</dependency>
 
 			<dependency>
@@ -192,7 +198,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-math3</artifactId>
-				<version>3.2</version>
+				<version>${commons.math3.version}</version>
 			</dependency>
 
 			<dependency>
@@ -392,7 +398,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-all</artifactId>
-				<version>4.0.17.Final</version>
+				<version>${io.netty.version}</version>
 			</dependency>
 
 			<dependency>
@@ -404,7 +410,7 @@
 			<dependency>
 				<groupId>org.apache.derby</groupId>
 				<artifactId>derby</artifactId>
-				<version>10.4.2.0</version>
+				<version>${derby.version}</version>
 			</dependency>
 
 			<dependency>
@@ -793,6 +799,32 @@
 				<artifactId>jaxb-impl</artifactId>
 				<version>2.2.6</version>
 			</dependency>
+
+
+                        <!-- json4s -->
+                        <dependency>
+                                <groupId>org.json4s</groupId>
+                                <artifactId>json4s-core_2.10</artifactId>
+                                <version>${json4s.version}</version>
+                        </dependency>
+
+                        <dependency>
+                                <groupId>org.json4s</groupId>
+                                <artifactId>json4s-native_2.10</artifactId>
+                                <version>${json4s.version}</version>
+                        </dependency>
+
+                        <dependency>
+                                <groupId>org.json4s</groupId>
+                                <artifactId>json4s-jackson_2.10</artifactId>
+                                <version>${json4s.version}</version>
+                        </dependency>
+
+                        <dependency>
+                                <groupId>org.json4s</groupId>
+                                <artifactId>json4s-ext_2.10</artifactId>
+                                <version>${json4s.version}</version>
+	                </dependency>
 
 		</dependencies>
 	</dependencyManagement>
@@ -1190,6 +1222,33 @@
 				</plugins>
 			</build>
 		</profile>
+
+                <profile>
+                        <id>spark-1.1</id>
+                        <dependencies>
+                               
+                        </dependencies>
+                        <properties>
+                                <spark.version>1.1.1</spark.version>
+                        </properties>
+                </profile>
+
+                <profile>
+                        <id>spark-1.2</id>
+                        <dependencies>
+                        </dependencies>
+                        <properties>
+                                <akka.version>2.3.4-spark</akka.version>
+                                <spark.version>1.2.1</spark.version>
+		                <hive.version>0.13.1a</hive.version>
+                                <derby.version>10.10.1.1</derby.version>
+		                <parquet.version>1.6.0rc3</parquet.version>
+		                <chill.version>0.5.0</chill.version>
+                                <commons.httpclient.version>4.2.6</commons.httpclient.version>
+                                <commons.math3.version>3.1.1</commons.math3.version>
+                                <io.netty.version>4.0.23.Final</io.netty.version>
+                        </properties>
+                </profile>
 
 		<profile>
 			<id>hadoop-0.23</id>

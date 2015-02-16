@@ -1,6 +1,11 @@
 package com.nflabs.zeppelin.spark;
 
+import static scala.collection.JavaConversions.asJavaCollection;
+import static scala.collection.JavaConversions.asJavaIterable;
+import static scala.collection.JavaConversions.collectionAsScalaIterable;
+
 import java.io.PrintStream;
+import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.spark.SparkContext;
@@ -9,6 +14,7 @@ import org.apache.spark.sql.SchemaRDD;
 import org.apache.spark.sql.hive.HiveContext;
 
 import scala.Tuple2;
+import scala.collection.Iterable;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
@@ -52,35 +58,116 @@ public class ZeppelinContext {
 
   /**
    * Load dependency for interpreter and runtime (driver).
+   * And distribute them to spark cluster (sc.add())
    *
-   * @param artifact "group:artifact:version"
+   * @param artifact "group:artifact:version" or file path like "/somepath/your.jar"
+   * @return
    * @throws Exception
    */
-  public void load(String artifact) throws Exception {
-    dep.load(artifact, false, false);
+  public Iterable<String> load(String artifact) throws Exception {
+    return collectionAsScalaIterable(dep.load(artifact, true));
   }
 
   /**
-   * Load dependency for interpreter and runtime (driver).
+   * Load dependency and it's transitive dependencies for interpreter and runtime (driver).
+   * And distribute them to spark cluster (sc.add())
    *
-   * @param artifact "group:artifact:version"
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
+   * @return
    * @throws Exception
    */
-  public void load(String artifact, boolean recursive) throws Exception {
-    dep.load(artifact, recursive, false);
+  public Iterable<String> load(String artifact, scala.collection.Iterable<String> excludes)
+      throws Exception {
+    return collectionAsScalaIterable(
+        dep.load(artifact,
+        asJavaCollection(excludes),
+        true));
+  }
+
+  /**
+   * Load dependency and it's transitive dependencies for interpreter and runtime (driver).
+   * And distribute them to spark cluster (sc.add())
+   *
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
+   * @return
+   * @throws Exception
+   */
+  public Iterable<String> load(String artifact, Collection<String> excludes) throws Exception {
+    return collectionAsScalaIterable(dep.load(artifact, excludes, true));
   }
 
   /**
    * Load dependency for interpreter and runtime, and then add to sparkContext.
+   * But not adding them to spark cluster
    *
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @return
    * @throws Exception
    */
-  public void loadAndDist(String artifact) throws Exception {
-    dep.load(artifact, false, true);
+  public Iterable<String> loadLocal(String artifact) throws Exception {
+    return collectionAsScalaIterable(dep.load(artifact, false));
   }
 
-  public void loadAndDist(String artifact, boolean recursive) throws Exception {
-    dep.load(artifact, true, true);
+
+  /**
+   * Load dependency and it's transitive dependencies and then add to sparkContext.
+   * But not adding them to spark cluster
+   *
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
+   * @return
+   * @throws Exception
+   */
+  public Iterable<String> loadLocal(String artifact,
+      scala.collection.Iterable<String> excludes) throws Exception {
+    return collectionAsScalaIterable(dep.load(artifact,
+        asJavaCollection(excludes), false));
+  }
+
+  /**
+   * Load dependency and it's transitive dependencies and then add to sparkContext.
+   * But not adding them to spark cluster
+   *
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
+   * @return
+   * @throws Exception
+   */
+  public Iterable<String> loadLocal(String artifact, Collection<String> excludes)
+      throws Exception {
+    return collectionAsScalaIterable(dep.load(artifact, excludes, false));
+  }
+
+
+  /**
+   * Add maven repository
+   *
+   * @param id id of repository ex) oss, local, snapshot
+   * @param url url of repository. supported protocol : file, http, https
+   */
+  public void addRepo(String id, String url) {
+    addRepo(id, url, false);
+  }
+
+  /**
+   * Add maven repository
+   *
+   * @param id id of repository
+   * @param url url of repository. supported protocol : file, http, https
+   * @param snapshot true if it is snapshot repository
+   */
+  public void addRepo(String id, String url, boolean snapshot) {
+    dep.addRepo(id, url, snapshot);
+  }
+
+  /**
+   * Remove maven repository by id
+   * @param id id of repository
+   */
+  public void removeRepo(String id){
+    dep.delRepo(id);
   }
 
   /**
@@ -106,8 +193,7 @@ public class ZeppelinContext {
       scala.collection.Iterable<Tuple2<Object, String>> options) {
     int n = options.size();
     ParamOption[] paramOptions = new ParamOption[n];
-    Iterator<Tuple2<Object, String>> it =
-        scala.collection.JavaConversions.asJavaIterable(options).iterator();
+    Iterator<Tuple2<Object, String>> it = asJavaIterable(options).iterator();
 
     int i = 0;
     while (it.hasNext()) {

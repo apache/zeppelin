@@ -34,6 +34,7 @@ import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
 import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 /**
  * Spark SQL interpreter for Zeppelin.
@@ -54,6 +55,8 @@ public class SparkSqlInterpreter extends Interpreter {
             .add("zeppelin.spark.maxResult", "10000", "Max number of SparkSQL result to display.")
             .add("zeppelin.spark.useHiveContext", "false",
                 "Use HiveContext instead of SQLContext if it is true.")
+            .add("zeppelin.spark.concurrentSQL", "false",
+                "Execute multiple SQL concurrently if set true.")
             .build());
   }
 
@@ -92,6 +95,10 @@ public class SparkSqlInterpreter extends Interpreter {
   private boolean useHiveContext() {
     return Boolean.parseBoolean(getProperty("zeppelin.spark.useHiveContext"));
   }
+  
+  public boolean concurrentSQL() {
+    return Boolean.parseBoolean(getProperty("zeppelin.spark.concurrentSQL"));
+  }
 
   @Override
   public void close() {}
@@ -112,6 +119,11 @@ public class SparkSqlInterpreter extends Interpreter {
     }
 
     SparkContext sc = sqlc.sparkContext();
+    if (concurrentSQL()) {
+      sc.setLocalProperty("spark.scheduler.pool", "fair");
+    } else {
+      sc.setLocalProperty("spark.scheduler.pool", null);
+    }
 
     sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
     SchemaRDD rdd;
@@ -207,6 +219,8 @@ public class SparkSqlInterpreter extends Interpreter {
           progressInfo = getProgressFromStage_1_0x(sparkListener, job.finalStage());
         } else if (sc.version().startsWith("1.1")) {
           progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
+        } else if (sc.version().startsWith("1.2")) {
+          progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
         } else {
           logger.warn("Spark {} getting progress information not supported" + sc.version());
           continue;
@@ -296,6 +310,11 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
+    if (concurrentSQL()) {
+      int maxConcurrency = 10;
+      return SchedulerFactory.singleton().createOrGetParallelScheduler(
+          SparkSqlInterpreter.class.getName() + this.hashCode(), maxConcurrency);
+    }
     return getSparkInterpreter().getScheduler();
   }
 

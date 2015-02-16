@@ -31,6 +31,7 @@ zan-repo/
 drivers/
 warehouse/
 notebook/
+local-repo/
 
 **/sessions/
 **/data/

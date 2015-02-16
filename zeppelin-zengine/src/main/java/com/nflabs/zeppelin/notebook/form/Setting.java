@@ -16,7 +16,7 @@ import com.nflabs.zeppelin.notebook.form.Input.ParamOption;
 public class Setting implements Serializable {
 
   Map<String, Object> params = new HashMap<String, Object>(); // form parameters from client
-  Map<String, Input> forms = new TreeMap<String, Input>(); // form configuraiton
+  Map<String, Input> forms = new TreeMap<String, Input>(); // form configuration
 
   public Setting() {
 
@@ -41,7 +41,7 @@ public class Setting implements Serializable {
   }
 
   public Object input(String id, Object defaultValue) {
-    // first find values from client and then use defualt
+    // first find values from client and then use default
     Object value = params.get(id);
     if (value == null) {
       value = defaultValue;
