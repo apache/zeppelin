@@ -87,6 +87,23 @@ public class InterpreterRestApi {
     return new JsonResponse(Status.CREATED, "").build();
   }
 
+  @PUT
+  @Path("setting/{settingId}")
+  public Response updateSetting(String message, @PathParam("settingId") String settingId) {
+    logger.info("Update interpreterSetting {}", settingId);
+    try {
+      Properties p = gson.fromJson(message, Properties.class);
+      interpreterFactory.setPropertyAndRestart(settingId, p);
+    } catch (InterpreterException e) {
+      return new JsonResponse(Status.NOT_FOUND, e.getMessage(), e).build();
+    }
+    InterpreterSetting setting = interpreterFactory.get(settingId);
+    if (setting == null) {
+      return new JsonResponse(Status.NOT_FOUND, "", settingId).build();
+    }
+    return new JsonResponse(Status.OK, "", setting).build();
+  }
+
   @DELETE
   @Path("setting/{settingId}")
   @ApiOperation(httpMethod = "GET", value = "Remove interpreter setting")

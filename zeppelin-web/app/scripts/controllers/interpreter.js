@@ -26,17 +26,23 @@
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http) {
 
   var remoteSettingToLocalSetting = function(settingId, setting) {
+    var property = {};
+    for (var key in setting.properties) {
+      property[key] = {
+        value : setting.properties[key]
+      };
+    }
     return {
       id : settingId,
       name : setting.name,
       group : setting.group,
-      properties : setting.properties,
+      properties : property,
       interpreters : setting.interpreterGroup
-    }
+    };
   };
 
   var getInterpreterSettings = function() {
-    $http.get(getRestApiBase()+"/interpreter/setting").
+    $http.get(getRestApiBase()+'/interpreter/setting').
       success(function(data, status, headers, config) {
         var interpreterSettings = [];
         //console.log("getInterpreterSettings=%o", data);
@@ -48,13 +54,12 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
         $scope.interpreterSettings = interpreterSettings;
       }).
       error(function(data, status, headers, config) {
-        console.log("Error %o %o", status, data.message);
+        console.log('Error %o %o', status, data.message);
       });
   };
 
-
   var getAvailableInterpreters = function() {
-    $http.get(getRestApiBase()+"/interpreter").
+    $http.get(getRestApiBase()+'/interpreter').
       success(function(data, status, headers, config) {
         var groupedInfo = {};
         var info;
@@ -74,8 +79,65 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
         //console.log("getAvailableInterpreters=%o", data);
       }).
       error(function(data, status, headers, config) {
-        console.log("Error %o %o", status, data.message);
+        console.log('Error %o %o', status, data.message);
       });
+  };
+
+  $scope.copyOriginInterpreterSettingProperties = function(settingId) {
+    $scope.interpreterSettingProperties = {};
+    for (var i=0; i < $scope.interpreterSettings.length; i++) {
+      var setting = $scope.interpreterSettings[i];
+      if(setting.id === settingId) {
+        angular.copy(setting.properties, $scope.interpreterSettingProperties);
+        break;
+      }
+    }
+    console.log('%o, %o', $scope.interpreterSettings[i], $scope.interpreterSettingProperties);
+  };
+
+  $scope.updateInterpreterSetting = function(settingId) {
+    var result = confirm('Do you want to update this interpreter and restart with new settings?');
+    if (!result) {
+      return;
+    }
+
+    $scope.addNewInterpreterProperty(settingId);
+
+    var properties = {};
+    for (var i=0; i < $scope.interpreterSettings.length; i++) {
+      var setting = $scope.interpreterSettings[i];
+      if(setting.id === settingId) {
+        for (var p in setting.properties) {
+          properties[p] = setting.properties[p].value;
+        }
+        break;
+      }
+    }
+
+    $http.put(getRestApiBase()+'/interpreter/setting/'+settingId, properties).
+    success(function(data, status, headers, config) {
+      for (var i=0; i < $scope.interpreterSettings.length; i++) {
+        var setting = $scope.interpreterSettings[i];
+        if (setting.id === settingId) {
+          $scope.interpreterSettings.splice(i, 1);
+          $scope.interpreterSettings.splice(i, 0, remoteSettingToLocalSetting(settingId, data.body));
+          break;
+        }
+      }
+    }).
+    error(function(data, status, headers, config) {
+      console.log('Error %o %o', status, data.message);
+    });
+  };
+
+  $scope.resetInterpreterSetting = function(settingId){
+    for (var i=0; i<$scope.interpreterSettings.length; i++) {
+      var setting = $scope.interpreterSettings[i];
+      if (setting.id ===settingId) {
+        angular.copy($scope.interpreterSettingProperties, setting.properties);
+        break;
+      }
+    }
   };
 
   $scope.removeInterpreterSetting = function(settingId) {
@@ -84,8 +146,8 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       return;
     }
 
-    console.log("Delete setting %o", settingId);
-    $http.delete(getRestApiBase()+"/interpreter/setting/"+settingId).
+    console.log('Delete setting %o', settingId);
+    $http.delete(getRestApiBase()+'/interpreter/setting/'+settingId).
       success(function(data, status, headers, config) {
         for (var i=0; i < $scope.interpreterSettings.length; i++) {
           var setting = $scope.interpreterSettings[i];
@@ -96,7 +158,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
         }
       }).
       error(function(data, status, headers, config) {
-        console.log("Error %o %o", status, data.message);
+        console.log('Error %o %o', status, data.message);
       });
   };
 
@@ -109,7 +171,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
         property[key] = {
           value : intpInfo.properties[key].defaultValue,
           description : intpInfo.properties[key].description
-        }
+        };
       }
     }
     $scope.newInterpreterSetting.properties = property;
@@ -121,7 +183,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       return;
     }
 
-    $http.put(getRestApiBase()+"/interpreter/setting/restart/"+settingId).
+    $http.put(getRestApiBase()+'/interpreter/setting/restart/'+settingId).
       success(function(data, status, headers, config) {
         for (var i=0; i < $scope.interpreterSettings.length; i++) {
           var setting = $scope.interpreterSettings[i];
@@ -133,21 +195,20 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
         }
       }).
       error(function(data, status, headers, config) {
-        console.log("Error %o %o", status, data.message);
+        console.log('Error %o %o', status, data.message);
       });
-
   };
 
   $scope.addNewInterpreterSetting = function() {
     if (!$scope.newInterpreterSetting.name || !$scope.newInterpreterSetting.group) {
-      alert("Please determine name and interpreter");
+      alert('Please determine name and interpreter');
       return;
     }
 
     for (var i=0; i<$scope.interpreterSettings.length; i++) {
       var setting = $scope.interpreterSettings[i];
       if (setting.name === $scope.newInterpreterSetting.name) {
-        alert("Name '"+setting.name+"' already exists");
+        alert('Name ' + setting.name + ' already exists');
         return;
       }
     }
@@ -162,16 +223,16 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
 
     for (var p in $scope.newInterpreterSetting.properties) {
       newSetting.properties[p] = $scope.newInterpreterSetting.properties[p].value;
-    };
+    }
 
-    $http.post(getRestApiBase()+"/interpreter/setting", newSetting).
+    $http.post(getRestApiBase()+'/interpreter/setting', newSetting).
       success(function(data, status, headers, config) {
         $scope.resetNewInterpreterSetting();
         getInterpreterSettings();
         $scope.showAddNewSetting = false;
       }).
       error(function(data, status, headers, config) {
-        console.log("Error %o %o", status, data.message);
+        console.log('Error %o %o', status, data.message);
       });
   };
 
@@ -182,22 +243,48 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       group : undefined,
       properties : {}
     };
-    $scope.newInterpreterSetting.propertyValue = "";
-    $scope.newInterpreterSetting.propertyKey = "";
-  }
+    $scope.newInterpreterSetting.propertyValue = '';
+    $scope.newInterpreterSetting.propertyKey = '';
+  };
 
-  $scope.removeNewInterpreterProperty = function(key) {
-    delete $scope.newInterpreterSetting.properties[key];
-  }
-
-  $scope.addNewInterpreterProperty = function() {
-    if (!$scope.newInterpreterSetting.propertyKey || $scope.newInterpreterSetting.propertyKey === "") {
-      return;
+  $scope.removeInterpreterProperty = function(key, settingId) {
+    if (settingId === undefined) {
+      delete $scope.newInterpreterSetting.properties[key];
     }
+    else {
+      for (var i=0; i < $scope.interpreterSettings.length; i++) {
+        var setting = $scope.interpreterSettings[i];
+        if (setting.id === settingId) {
+          delete $scope.interpreterSettings[i].properties[key]
+          break;
+        }
+      }
+    }
+  };
 
-    $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = { value : $scope.newInterpreterSetting.propertyValue};
-    $scope.newInterpreterSetting.propertyValue = "";
-    $scope.newInterpreterSetting.propertyKey = "";
+  $scope.addNewInterpreterProperty = function(settingId) {
+    if(settingId === undefined) {
+      if (!$scope.newInterpreterSetting.propertyKey || $scope.newInterpreterSetting.propertyKey === '') {
+        return;
+      }
+      $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = { value : $scope.newInterpreterSetting.propertyValue};
+      $scope.newInterpreterSetting.propertyValue = '';
+      $scope.newInterpreterSetting.propertyKey = '';
+    }
+    else {
+      for (var i=0; i < $scope.interpreterSettings.length; i++) {
+        var setting = $scope.interpreterSettings[i];
+        if (setting.id === settingId){
+          if (!setting.propertyKey || setting.propertyKey === '') {
+            return;
+          }
+          setting.properties[setting.propertyKey] = { value : setting.propertyValue };
+          setting.propertyValue = '';
+          setting.propertyKey = '';
+          break;
+        }
+      }
+    }
   };
 
   var init = function() {

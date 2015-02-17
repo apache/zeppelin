@@ -87,7 +87,8 @@ angular
     'ngTouch',
     'ngDragDrop',
     'monospaced.elastic',
-    'puElasticInput'
+    'puElasticInput',
+    'xeditable'
   ])
   .filter('breakFilter', function() {
     return function (text) {
