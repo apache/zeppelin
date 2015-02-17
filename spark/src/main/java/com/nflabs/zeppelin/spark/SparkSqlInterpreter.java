@@ -26,7 +26,6 @@ import scala.collection.JavaConverters;
 import scala.collection.mutable.HashMap;
 import scala.collection.mutable.HashSet;
 
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
@@ -72,10 +71,7 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    this.maxResult = conf.getInt("ZEPPELIN_SPARK_MAX_RESULT",
-        "zeppelin.spark.maxResult",
-        Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
+    this.maxResult = Integer.parseInt(getProperty("zeppelin.spark.maxResult"));
   }
 
 

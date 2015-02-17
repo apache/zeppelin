@@ -108,6 +108,20 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
     return convert(intp.interpret(st, convert(interpreterContext)));
   }
 
+  @Override
+  public void cancel(int intpId, RemoteInterpreterContext interpreterContext)
+      throws TException {
+    Interpreter intp = getInterpreter(intpId);
+    intp.cancel(convert(interpreterContext));
+  }
+
+  @Override
+  public int getProgress(int intpId, RemoteInterpreterContext interpreterContext)
+      throws TException {
+    Interpreter intp = getInterpreter(intpId);
+    return intp.getProgress(convert(interpreterContext));
+  }
+
   private InterpreterContext convert(RemoteInterpreterContext ric) {
     return new InterpreterContext(
         ric.getParagraphId(),
@@ -138,4 +152,5 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
         InterpreterResult.Code.valueOf(result.getCode()),
         result.getMsg());
   }
+
 }

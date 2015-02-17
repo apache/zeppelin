@@ -150,7 +150,7 @@ public class SparkInterpreter extends Interpreter {
 
   public DependencyResolver getDependencyResolver() {
     if (dep == null) {
-      dep = new DependencyResolver(intp, sc);
+      dep = new DependencyResolver(intp, sc, getProperty("zeppelin.dep.localrepo"));
     }
     return dep;
   }

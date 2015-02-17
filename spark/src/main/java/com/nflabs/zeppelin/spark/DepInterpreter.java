@@ -51,6 +51,7 @@ public class DepInterpreter extends Interpreter {
         "spark",
         DepInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
+            .add("zeppelin.dep.localrepo", "local-repo", "local repository for dependency loader")
             .build());
 
   }
@@ -129,7 +130,7 @@ public class DepInterpreter extends Interpreter {
     intp.setContextClassLoader();
     intp.initializeSynchronous();
 
-    depc = new DependencyContext();
+    depc = new DependencyContext(getProperty("zeppelin.dep.localrepo"));
     completor = new SparkJLineCompletion(intp);
 
     intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");

@@ -18,10 +18,7 @@ import scala.collection.Iterable;
 
 import com.nflabs.zeppelin.display.GUI;
 import com.nflabs.zeppelin.display.Input.ParamOption;
-import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
-import com.nflabs.zeppelin.interpreter.InterpreterResult;
-import com.nflabs.zeppelin.notebook.Paragraph;
 import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 
 /**

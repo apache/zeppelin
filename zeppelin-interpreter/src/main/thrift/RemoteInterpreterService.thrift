@@ -19,11 +19,7 @@ service RemoteInterpreterService {
 
   void open(1: i32 intpId);
   void close(1: i32 intpId);
-
-
   RemoteInterpreterResult interpret(1: i32 intpId, 2: string st, 3: RemoteInterpreterContext interpreterContext);
-
-
-
-
+  void cancel(1: i32 intpId, 2: RemoteInterpreterContext interpreterContext);
+  i32 getProgress(1: i32 intpId, 2: RemoteInterpreterContext interpreterContext);
 }

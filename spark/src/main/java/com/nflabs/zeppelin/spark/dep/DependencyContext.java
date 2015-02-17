@@ -31,11 +31,15 @@ public class DependencyContext {
   List<File> files = new LinkedList<File>();
   List<File> filesDist = new LinkedList<File>();
   private RepositorySystem system = Booter.newRepositorySystem();
-  private RepositorySystemSession session = Booter.newRepositorySystemSession(system);
+  private RepositorySystemSession session;
   private RemoteRepository mavenCentral = new RemoteRepository("central",
       "default", "http://repo1.maven.org/maven2/");
   private RemoteRepository mavenLocal = new RemoteRepository("local",
       "default", "file://" + System.getProperty("user.home") + "/.m2/repository");
+
+  public DependencyContext(String localRepoPath) {
+    session =  Booter.newRepositorySystemSession(system, localRepoPath);
+  }
 
   public Dependency load(String lib) {
     Dependency dep = new Dependency(lib);

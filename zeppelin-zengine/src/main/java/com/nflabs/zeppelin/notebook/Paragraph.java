@@ -30,14 +30,14 @@ public class Paragraph extends Job implements Serializable {
   String title;
   String text;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
-  public final GUI gui;          // form and parameter settings
+  public final GUI settings;          // form and parameter settings
 
   public Paragraph(JobListener listener, NoteInterpreterLoader replLoader) {
     super(generateId(), listener);
     this.replLoader = replLoader;
     title = null;
     text = null;
-    gui = new GUI();
+    settings = new GUI();
     config = new HashMap<String, Object>();
   }
 
@@ -171,13 +171,13 @@ public class Paragraph extends Job implements Serializable {
     String script = getScriptBody();
     // inject form
     if (repl.getFormType() == FormType.NATIVE) {
-      gui.clear();
+      settings.clear();
     } else if (repl.getFormType() == FormType.SIMPLE) {
       String scriptBody = getScriptBody();
       Map<String, Input> inputs = Input.extractSimpleQueryParam(scriptBody); // inputs will be built
                                                                              // from script body
-      gui.setForms(inputs);
-      script = Input.getSimpleQuery(gui.getParams(), scriptBody);
+      settings.setForms(inputs);
+      script = Input.getSimpleQuery(settings.getParams(), scriptBody);
     }
     logger().info("RUN : " + script);
     InterpreterResult ret = repl.interpret(script, getInterpreterContext());
@@ -196,7 +196,7 @@ public class Paragraph extends Job implements Serializable {
             this.getTitle(),
             this.getText(),
             this.getConfig(),
-            this.gui);
+            this.settings);
     return interpreterContext;
   }
 
