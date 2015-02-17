@@ -65,11 +65,6 @@ public class LazyOpenInterpreter
     }
   }
 
-  @Override
-  public Object getValue(String name) {
-    open();
-    return intp.getValue(name);
-  }
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
@@ -81,12 +76,6 @@ public class LazyOpenInterpreter
   public void cancel(InterpreterContext context) {
     open();
     intp.cancel(context);
-  }
-
-  @Override
-  public void bindValue(String name, Object o) {
-    open();
-    intp.bindValue(name, o);
   }
 
   @Override

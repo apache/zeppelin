@@ -1,4 +1,4 @@
-package com.nflabs.zeppelin.notebook.form;
+package com.nflabs.zeppelin.display;
 
 import java.io.Serializable;
 import java.util.ArrayList;

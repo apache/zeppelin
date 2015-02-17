@@ -322,7 +322,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
     final Note note = notebook.getNote(getOpenNoteId(conn));
     Paragraph p = note.getParagraph(paragraphId);
-    p.settings.setParams(params);
+    p.gui.setParams(params);
     p.setConfig(config);
     p.setTitle((String) fromMessage.get("title"));
     p.setText((String) fromMessage.get("paragraph"));
@@ -411,7 +411,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     p.setText(text);
     p.setTitle((String) fromMessage.get("title"));
     Map<String, Object> params = (Map<String, Object>) fromMessage.get("params");
-    p.settings.setParams(params);
+    p.gui.setParams(params);
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
     p.setConfig(config);
 

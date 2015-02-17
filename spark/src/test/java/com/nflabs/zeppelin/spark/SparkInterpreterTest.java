@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.junit.After;
@@ -12,10 +13,10 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+import com.nflabs.zeppelin.display.GUI;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
-import com.nflabs.zeppelin.notebook.Paragraph;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SparkInterpreterTest {
@@ -37,7 +38,7 @@ public class SparkInterpreterTest {
   	  repl.open();
 	  }
 
-    context = new InterpreterContext(new Paragraph(null, null));
+    context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI());
 	}
 
   @After

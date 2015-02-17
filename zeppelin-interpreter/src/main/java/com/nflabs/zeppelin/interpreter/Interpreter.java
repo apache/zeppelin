@@ -143,13 +143,9 @@ public abstract class Interpreter {
 
   public abstract void close();
 
-  public abstract Object getValue(String name);
-
   public abstract InterpreterResult interpret(String st, InterpreterContext context);
 
   public abstract void cancel(InterpreterContext context);
-
-  public abstract void bindValue(String name, Object o);
 
   public abstract FormType getFormType();
 

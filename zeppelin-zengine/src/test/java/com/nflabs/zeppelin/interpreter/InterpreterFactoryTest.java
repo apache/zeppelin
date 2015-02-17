@@ -1,6 +1,8 @@
 package com.nflabs.zeppelin.interpreter;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,8 +15,6 @@ import org.junit.Test;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.interpreter.Interpreter;
-import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.interpreter.mock.MockInterpreter1;
 import com.nflabs.zeppelin.interpreter.mock.MockInterpreter2;
 
@@ -60,11 +60,9 @@ public class InterpreterFactoryTest {
 	@Test
 	public void testBasic() {
 	  List<String> all = factory.getDefaultInterpreterSettingList();
-	  
+
 		// get interpreter
 		Interpreter repl1 = factory.get(all.get(0)).getInterpreterGroup().getFirst();
-		repl1.bindValue("a", 1);		
-		assertEquals(repl1.getValue("a"), 1);
 
 		// try to get unavailable interpreter
 		assertNull(factory.get("unknown"));
@@ -72,7 +70,6 @@ public class InterpreterFactoryTest {
 		// restart interpreter
 		factory.restart(all.get(0));
 		repl1 = factory.get(all.get(0)).getInterpreterGroup().getFirst();
-		assertEquals(repl1.getValue("a"), null);
 	}
 
   @Test
@@ -89,7 +86,7 @@ public class InterpreterFactoryTest {
     assertEquals("mock1", factory.get(all.get(0)).getName());
     assertEquals("a mock", factory.get(all.get(1)).getName());
   }
-  
+
   @Test
   public void testSaveLoad() throws InterpreterException, IOException {
     // interpreter settings

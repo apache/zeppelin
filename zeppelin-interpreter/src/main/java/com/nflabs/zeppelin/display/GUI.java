@@ -1,11 +1,11 @@
-package com.nflabs.zeppelin.notebook.form;
+package com.nflabs.zeppelin.display;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.nflabs.zeppelin.notebook.form.Input.ParamOption;
+import com.nflabs.zeppelin.display.Input.ParamOption;
 
 /**
  * Settings of a form. 
@@ -13,12 +13,12 @@ import com.nflabs.zeppelin.notebook.form.Input.ParamOption;
  * @author Leemoonsoo
  *
  */
-public class Setting implements Serializable {
+public class GUI implements Serializable {
 
   Map<String, Object> params = new HashMap<String, Object>(); // form parameters from client
   Map<String, Input> forms = new TreeMap<String, Input>(); // form configuration
 
-  public Setting() {
+  public GUI() {
 
   }
 

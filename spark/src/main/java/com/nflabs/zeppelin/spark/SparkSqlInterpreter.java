@@ -95,7 +95,7 @@ public class SparkSqlInterpreter extends Interpreter {
   private boolean useHiveContext() {
     return Boolean.parseBoolean(getProperty("zeppelin.spark.useHiveContext"));
   }
-  
+
   public boolean concurrentSQL() {
     return Boolean.parseBoolean(getProperty("zeppelin.spark.concurrentSQL"));
   }
@@ -103,10 +103,6 @@ public class SparkSqlInterpreter extends Interpreter {
   @Override
   public void close() {}
 
-  @Override
-  public Object getValue(String name) {
-    return null;
-  }
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
@@ -185,11 +181,6 @@ public class SparkSqlInterpreter extends Interpreter {
     SparkContext sc = sqlc.sparkContext();
 
     sc.cancelJobGroup(getJobGroup(context));
-  }
-
-  @Override
-  public void bindValue(String name, Object o) {
-
   }
 
   @Override

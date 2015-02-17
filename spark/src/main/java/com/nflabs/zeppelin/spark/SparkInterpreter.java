@@ -54,7 +54,6 @@ import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
-import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.spark.dep.DependencyContext;
@@ -415,16 +414,10 @@ public class SparkInterpreter extends Interpreter {
     return scala.collection.JavaConversions.asJavaList(ret.candidates());
   }
 
-  @Override
   public void bindValue(String name, Object o) {
-    if ("form".equals(name) && o instanceof Setting) { // form controller injection from
-                                                       // Paragraph.jobRun
-      z.setFormSetting((Setting) o);
-    }
     getResultCode(intp.bindValue(name, o));
   }
 
-  @Override
   public Object getValue(String name) {
     Object ret = intp.valueOfTerm(name);
     if (ret instanceof None) {
@@ -454,6 +447,7 @@ public class SparkInterpreter extends Interpreter {
 
   public InterpreterResult interpret(String[] lines, InterpreterContext context) {
     synchronized (this) {
+      z.setGui(context.getGui());
       sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
       InterpreterResult r = interpretInput(lines);
       sc.clearJobGroup();

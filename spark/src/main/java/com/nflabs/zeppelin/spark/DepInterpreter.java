@@ -141,7 +141,6 @@ public class DepInterpreter extends Interpreter {
 
   }
 
-  @Override
   public Object getValue(String name) {
     Object ret = intp.valueOfTerm(name);
     if (ret instanceof None) {
@@ -202,9 +201,6 @@ public class DepInterpreter extends Interpreter {
   public void cancel(InterpreterContext context) {
   }
 
-  @Override
-  public void bindValue(String name, Object o) {
-  }
 
   @Override
   public FormType getFormType() {

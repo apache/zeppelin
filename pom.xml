@@ -879,6 +879,7 @@
 						</goals>
 						<configuration>
 							<failOnViolation>true</failOnViolation>
+                                                        <excludes>com/nflabs/zeppelin/interpreter/thrift/*</excludes>
 						</configuration>
 					</execution>
 				</executions>

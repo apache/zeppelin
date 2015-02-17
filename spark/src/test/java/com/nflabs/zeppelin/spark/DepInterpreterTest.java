@@ -3,17 +3,18 @@ package com.nflabs.zeppelin.spark;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.nflabs.zeppelin.display.GUI;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterGroup;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
-import com.nflabs.zeppelin.notebook.Paragraph;
 
 public class DepInterpreterTest {
   private DepInterpreter dep;
@@ -38,7 +39,7 @@ public class DepInterpreterTest {
     intpGroup.add(dep);
     dep.setInterpreterGroup(intpGroup);
 
-    context = new InterpreterContext(new Paragraph(null, null));
+    context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI());
   }
 
   @After

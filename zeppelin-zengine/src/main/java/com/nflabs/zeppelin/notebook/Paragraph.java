@@ -9,12 +9,12 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nflabs.zeppelin.display.GUI;
+import com.nflabs.zeppelin.display.Input;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.Interpreter.FormType;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
-import com.nflabs.zeppelin.notebook.form.Input;
-import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.JobListener;
 
@@ -30,14 +30,14 @@ public class Paragraph extends Job implements Serializable {
   String title;
   String text;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
-  public final Setting settings; // form and parameter settings
+  public final GUI gui;          // form and parameter settings
 
   public Paragraph(JobListener listener, NoteInterpreterLoader replLoader) {
     super(generateId(), listener);
     this.replLoader = replLoader;
     title = null;
     text = null;
-    settings = new Setting();
+    gui = new GUI();
     config = new HashMap<String, Object>();
   }
 
@@ -171,14 +171,13 @@ public class Paragraph extends Job implements Serializable {
     String script = getScriptBody();
     // inject form
     if (repl.getFormType() == FormType.NATIVE) {
-      settings.clear();
-      repl.bindValue("form", settings); // user code will dynamically create inputs
+      gui.clear();
     } else if (repl.getFormType() == FormType.SIMPLE) {
       String scriptBody = getScriptBody();
       Map<String, Input> inputs = Input.extractSimpleQueryParam(scriptBody); // inputs will be built
                                                                              // from script body
-      settings.setForms(inputs);
-      script = Input.getSimpleQuery(settings.getParams(), scriptBody);
+      gui.setForms(inputs);
+      script = Input.getSimpleQuery(gui.getParams(), scriptBody);
     }
     logger().info("RUN : " + script);
     InterpreterResult ret = repl.interpret(script, getInterpreterContext());
@@ -196,7 +195,8 @@ public class Paragraph extends Job implements Serializable {
     InterpreterContext interpreterContext = new InterpreterContext(getId(),
             this.getTitle(),
             this.getText(),
-            this.getConfig());
+            this.getConfig(),
+            this.gui);
     return interpreterContext;
   }
 

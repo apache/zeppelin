@@ -33,20 +33,6 @@ public class ClassloaderInterpreter
   }
 
   @Override
-  public Object getValue(String name) {
-    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
-    Thread.currentThread().setContextClassLoader(cl);
-    try {
-      return intp.getValue(name);
-    } catch (Exception e) {
-      throw new InterpreterException(e);
-    } finally {
-      cl = Thread.currentThread().getContextClassLoader();
-      Thread.currentThread().setContextClassLoader(oldcl);
-    }
-  }
-
-  @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     Thread.currentThread().setContextClassLoader(cl);
@@ -61,19 +47,6 @@ public class ClassloaderInterpreter
     }
   }
 
-  @Override
-  public void bindValue(String name, Object o) {
-    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
-    Thread.currentThread().setContextClassLoader(cl);
-    try {
-      intp.bindValue(name, o);
-    } catch (Exception e) {
-      throw new InterpreterException(e);
-    } finally {
-      cl = Thread.currentThread().getContextClassLoader();
-      Thread.currentThread().setContextClassLoader(oldcl);
-    }
-  }
 
   @Override
   public void open() {
