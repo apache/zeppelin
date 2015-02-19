@@ -1,0 +1,300 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md\n## Welcome to Zeppelin.\n##### This is a live tutorial, you can run codes by yourself. (Shift-Enter to Run)",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": []
+        },
+        "editorHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1423836981412_-1007008116",
+      "id": "20150213-231621_168813393",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch2\u003eWelcome to Zeppelin.\u003c/h2\u003e\n\u003ch5\u003eThis is a live tutorial, you can run codes by yourself. (Shift-Enter to Run)\u003c/h5\u003e\n"
+      },
+      "dateCreated": "Feb 13, 2015 11:16:21 PM",
+      "dateStarted": "Feb 13, 2015 11:23:27 PM",
+      "dateFinished": "Feb 13, 2015 11:23:27 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Prepare data",
+      "text": "import sys.process._\n//you will need \u0027wget\u0027 tool to download\n\"wget http://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank.zip\" !\n\"mkdir data\" !\n\"unzip bank.zip -d data\" !\n\"rm bank.zip\" !",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": []
+        },
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1417656535623_-196593192",
+      "id": "20141204-102855_1590713432",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "import sys.process._\nwarning: there were 1 feature warning(s); re-run with -feature for details\nres49: Int \u003d 0\nwarning: there were 1 feature warning(s); re-run with -feature for details\nres50: Int \u003d 1\nwarning: there were 1 feature warning(s); re-run with -feature for details\nres51: Int \u003d 1\nwarning: there were 1 feature warning(s); re-run with -feature for details\nres52: Int \u003d 0\n"
+      },
+      "dateCreated": "Dec 4, 2014 10:28:55 AM",
+      "dateStarted": "Feb 13, 2015 11:22:01 PM",
+      "dateFinished": "Feb 13, 2015 11:22:09 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "title": "Load data into table",
+      "text": "val zeppelinHome \u003d (\"pwd\" !!).replace(\"\\n\", \"\")\nval bankText \u003d sc.textFile(s\"$zeppelinHome/data/bank-full.csv\")\n\ncase class Bank(age: Integer, job: String, marital: String, education: String, balance: Integer)\n\nval bank \u003d bankText.map(s \u003d\u003e s.split(\";\")).filter(s \u003d\u003e s(0) !\u003d \"\\\"age\\\"\").map(\n    s \u003d\u003e Bank(s(0).toInt, \n            s(1).replaceAll(\"\\\"\", \"\"),\n            s(2).replaceAll(\"\\\"\", \"\"),\n            s(3).replaceAll(\"\\\"\", \"\"),\n            s(5).replaceAll(\"\\\"\", \"\").toInt\n        )\n)\nbank.registerTempTable(\"bank\")",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": []
+        },
+        "title": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1423500779206_-1502780787",
+      "id": "20150210-015259_1403135953",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "warning: there were 1 feature warning(s); re-run with -feature for details\nzeppelinHome: String \u003d /Users/swkim/Documents/zeppelin\nbankText: org.apache.spark.rdd.RDD[String] \u003d /Users/swkim/Documents/zeppelin/data/bank-full.csv MappedRDD[147] at textFile at \u003cconsole\u003e:24\ndefined class Bank\nbank: org.apache.spark.rdd.RDD[Bank] \u003d MappedRDD[150] at map at \u003cconsole\u003e:29\n"
+      },
+      "dateCreated": "Feb 10, 2015 1:52:59 AM",
+      "dateStarted": "Feb 13, 2015 11:15:38 PM",
+      "dateFinished": "Feb 13, 2015 11:15:42 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sql \nselect age, count(1) value\nfrom bank \nwhere age \u003c 30 \ngroup by age \norder by age",
+      "config": {
+        "colWidth": 4.0,
+        "graph": {
+          "mode": "multiBarChart",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [
+            {
+              "name": "age",
+              "index": 0.0,
+              "aggr": "sum"
+            }
+          ],
+          "values": [
+            {
+              "name": "value",
+              "index": 1.0,
+              "aggr": "sum"
+            }
+          ],
+          "groups": []
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1423500782552_-1439281894",
+      "id": "20150210-015302_1492795503",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TABLE",
+        "msg": "age\tvalue\n18\t12\n19\t35\n20\t50\n21\t79\n22\t129\n23\t202\n24\t302\n25\t527\n26\t805\n27\t909\n28\t1038\n29\t1185\n"
+      },
+      "dateCreated": "Feb 10, 2015 1:53:02 AM",
+      "dateStarted": "Feb 13, 2015 11:15:45 PM",
+      "dateFinished": "Feb 13, 2015 11:15:47 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sql \nselect age, count(1) value \nfrom bank \nwhere age \u003c ${maxAge\u003d30} \ngroup by age \norder by age",
+      "config": {
+        "colWidth": 4.0,
+        "graph": {
+          "mode": "multiBarChart",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [
+            {
+              "name": "age",
+              "index": 0.0,
+              "aggr": "sum"
+            }
+          ],
+          "values": [
+            {
+              "name": "value",
+              "index": 1.0,
+              "aggr": "sum"
+            }
+          ],
+          "groups": []
+        }
+      },
+      "settings": {
+        "params": {
+          "maxAge": "30"
+        },
+        "forms": {
+          "maxAge": {
+            "name": "maxAge",
+            "defaultValue": "30",
+            "hidden": false
+          }
+        }
+      },
+      "jobName": "paragraph_1423720444030_-1424110477",
+      "id": "20150212-145404_867439529",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TABLE",
+        "msg": "age\tvalue\n18\t12\n19\t35\n20\t50\n21\t79\n22\t129\n23\t202\n24\t302\n25\t527\n26\t805\n27\t909\n28\t1038\n29\t1185\n"
+      },
+      "dateCreated": "Feb 12, 2015 2:54:04 PM",
+      "dateStarted": "Feb 13, 2015 11:15:49 PM",
+      "dateFinished": "Feb 13, 2015 11:15:51 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sql \nselect age, count(1) value \nfrom bank \nwhere marital\u003d\"${marital\u003dsingle,single|divorced|married}\" \ngroup by age \norder by age",
+      "config": {
+        "colWidth": 4.0,
+        "graph": {
+          "mode": "multiBarChart",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [
+            {
+              "name": "age",
+              "index": 0.0,
+              "aggr": "sum"
+            }
+          ],
+          "values": [
+            {
+              "name": "value",
+              "index": 1.0,
+              "aggr": "sum"
+            }
+          ],
+          "groups": []
+        }
+      },
+      "settings": {
+        "params": {
+          "marital": "single"
+        },
+        "forms": {
+          "marital": {
+            "name": "marital",
+            "defaultValue": "single",
+            "options": [
+              {
+                "value": "single"
+              },
+              {
+                "value": "divorced"
+              },
+              {
+                "value": "married"
+              }
+            ],
+            "hidden": false
+          }
+        }
+      },
+      "jobName": "paragraph_1423836262027_-210588283",
+      "id": "20150213-230422_1600658137",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TABLE",
+        "msg": "age\tvalue\n18\t12\n19\t35\n20\t47\n21\t74\n22\t120\n23\t175\n24\t248\n25\t423\n26\t615\n27\t658\n28\t697\n29\t683\n30\t1012\n31\t1017\n32\t941\n33\t746\n34\t650\n35\t631\n36\t538\n37\t453\n38\t394\n39\t346\n40\t257\n41\t241\n42\t218\n43\t183\n44\t170\n45\t146\n46\t130\n47\t100\n48\t124\n49\t101\n50\t76\n51\t72\n52\t62\n53\t71\n54\t55\n55\t54\n56\t45\n57\t38\n58\t35\n59\t36\n60\t27\n61\t5\n63\t2\n66\t5\n67\t3\n68\t4\n69\t2\n70\t1\n71\t1\n72\t5\n73\t2\n77\t1\n83\t2\n86\t1\n"
+      },
+      "dateCreated": "Feb 13, 2015 11:04:22 PM",
+      "dateStarted": "Feb 13, 2015 11:15:51 PM",
+      "dateFinished": "Feb 13, 2015 11:15:53 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md\n## Congratulations, it\u0027s done.\n##### You can create your own notebook in \u0027Notebook\u0027 menu. Good luck!",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": []
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1423836268492_216498320",
+      "id": "20150213-230428_1231780373",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch2\u003eCongratulations, it\u0027s done.\u003c/h2\u003e\n\u003ch5\u003eYou can create your own notebook in \u0027Notebook\u0027 menu. Good luck!\u003c/h5\u003e\n"
+      },
+      "dateCreated": "Feb 13, 2015 11:04:28 PM",
+      "dateStarted": "Feb 13, 2015 11:23:16 PM",
+      "dateFinished": "Feb 13, 2015 11:23:16 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1423836471379_293523076",
+      "id": "20150213-230751_1038476812",
+      "dateCreated": "Feb 13, 2015 11:07:51 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Zeppelin Tutorial",
+  "id": "2A94M5J1Z",
+  "config": {
+    "looknfeel": "default"
+  },
+  "info": {}
+}
