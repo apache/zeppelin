@@ -26,8 +26,8 @@ done
 
 if [ -z "${PORT}" ] || [ -z "${INTERPRETER_DIR}" ]; then
     usage
+    exit 1
 fi
-
 
 . "${bin}/common.sh"
 
@@ -41,7 +41,10 @@ export CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
 HOSTNAME=$(hostname)
 ZEPPELIN_SERVER=com.nflabs.zeppelin.interpreter.remote.RemoteInterpreterServer
-ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-${INTERPRETER_DIR}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
+
+RANDOM_ID=$(cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1)
+ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-interpreter-${INTERPRETER_DIR}-${RANDOM_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.pid"
+ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-${INTERPRETER_DIR}-${RANDOM_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
 JAVA_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
@@ -49,4 +52,13 @@ if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   $(mkdir -p "${ZEPPELIN_LOG_DIR}")
 fi
 
-${ZEPPELIN_RUNNER} ${JAVA_OPTS} -cp ${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT}
+${ZEPPELIN_RUNNER} ${JAVA_OPTS} -cp ${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
+pid=$!
+if [[ -z "${pid}" ]]; then
+  return 1;
+else
+  echo ${pid} > ${ZEPPELIN_PID}
+fi
+
+
+wait
