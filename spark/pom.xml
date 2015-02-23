@@ -245,6 +245,18 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+    
+  <profiles>
+    <profile>
+      <id>yarn</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.spark</groupId>
+          <artifactId>spark-yarn_2.10</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
   
   <build>
     <plugins>
