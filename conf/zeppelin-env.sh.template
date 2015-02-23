@@ -13,5 +13,5 @@
 # export ZEPPELIN_NICENESS       # The scheduling priority for daemons. Defaults to 0.
 
 # Options read in YARN client mode
-# export SPARK_YARN_JAR          # Yarn executor need spark-assembly-*.jar for running tasks in a yarn cluster
-# export HADOOP_HOME             # yarn-site.xml is located in configuration directory in HADOOP_HOME
+# export SPARK_YARN_JAR          # Yarn executor needs spark-assembly-*.jar for running tasks in a yarn cluster.
+# export HADOOP_CONF_DIR         # yarn-site.xml is located in configuration directory in HADOOP_CONF_DIR.
