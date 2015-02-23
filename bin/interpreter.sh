@@ -42,11 +42,11 @@ export CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 HOSTNAME=$(hostname)
 ZEPPELIN_SERVER=com.nflabs.zeppelin.interpreter.remote.RemoteInterpreterServer
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-${INTERPRETER_DIR}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
-JAVA_OPTS+=" -Dzeppelin.log-file=${ZEPPELIN_LOGFILE}"
+JAVA_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   echo "Log dir doesn't exist, create ${ZEPPELIN_LOG_DIR}"
   $(mkdir -p "${ZEPPELIN_LOG_DIR}")
 fi
 
-$(exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_SERVER ${PORT})
+${ZEPPELIN_RUNNER} ${JAVA_OPTS} -cp ${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT}

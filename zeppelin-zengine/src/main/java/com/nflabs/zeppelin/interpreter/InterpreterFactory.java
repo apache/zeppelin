@@ -32,6 +32,7 @@ import com.google.gson.reflect.TypeToken;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
+import com.nflabs.zeppelin.interpreter.remote.RemoteInterpreter;
 
 /**
  * Manage interpreters.
@@ -312,7 +313,7 @@ public class InterpreterFactory {
             .get(intName);
         if (info.getClassName().equals(className)
             && info.getGroup().equals(groupName)) {
-          Interpreter intp = createRepl(info.getName(),
+          Interpreter intp = createRemoteRepl(info.getName(),
               info.getClassName(),
               properties,
               interpreterGroup);
@@ -521,6 +522,17 @@ public class InterpreterFactory {
       Thread.currentThread().setContextClassLoader(oldcl);
     }
   }
+
+
+  private Interpreter createRemoteRepl(String dirName, String className,
+      Properties property, InterpreterGroup interpreterGroup) {
+
+    LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(
+        property, className, conf.getInterpreterRemoteRunnerPath(), dirName));
+    intp.setInterpreterGroup(interpreterGroup);
+    return intp;
+  }
+
 
   private URL[] recursiveBuildLibList(File path) throws MalformedURLException {
     URL[] urls = new URL[0];

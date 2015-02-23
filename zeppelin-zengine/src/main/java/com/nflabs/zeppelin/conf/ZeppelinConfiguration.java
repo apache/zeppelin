@@ -314,6 +314,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir("conf/interpreter.json");
   }
 
+  public String getInterpreterRemoteRunnerPath() {
+    return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER);
+  }
+
   public String getRelativeDir(ConfVars c) {
     return getRelativeDir(getString(c));
   }
@@ -357,6 +361,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
         ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
         ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
+    ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner", "bin/interpreter.sh"),
     // Decide when new note is created, interpreter settings will be binded automatically or not.
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true);
 

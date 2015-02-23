@@ -55,9 +55,12 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
       throws TException {
     try {
       Class<Interpreter> replClass = (Class<Interpreter>) Object.class.forName(className);
+      Properties p = new Properties();
+      p.putAll(properties);
+
       Constructor<Interpreter> constructor =
           replClass.getConstructor(new Class[] {Properties.class});
-      Interpreter repl = constructor.newInstance(properties);
+      Interpreter repl = constructor.newInstance(p);
       repl.setClassloaderUrls(new URL[]{});
       repl.setInterpreterGroup(interpreterGroup);
 
@@ -69,6 +72,7 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
     } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
         | InstantiationException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
+      e.printStackTrace();
       throw new TException(e);
     }
   }
@@ -132,25 +136,12 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
         gson.fromJson(ric.getGui(), GUI.class));
   }
 
-  private RemoteInterpreterContext convert(InterpreterContext ic) {
-    return new RemoteInterpreterContext(
-        ic.getParagraphId(),
-        ic.getParagraphTitle(),
-        ic.getParagraphText(),
-        gson.toJson(ic.getConfig()),
-        gson.toJson(ic.getGui()));
-  }
-
   private RemoteInterpreterResult convert(InterpreterResult result) {
     return new RemoteInterpreterResult(
         result.code().name(),
         result.message());
   }
 
-  private InterpreterResult convert(RemoteInterpreterResult result) {
-    return new InterpreterResult(
-        InterpreterResult.Code.valueOf(result.getCode()),
-        result.getMsg());
-  }
+
 
 }
