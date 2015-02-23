@@ -253,6 +253,7 @@
         <dependency>
           <groupId>org.apache.spark</groupId>
           <artifactId>spark-yarn_2.10</artifactId>
+          <version>${spark.version}</version>
         </dependency>
       </dependencies>
     </profile>
