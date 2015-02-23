@@ -83,7 +83,7 @@ public class InterpreterRestApi {
         NewInterpreterSettingRequest.class);
     Properties p = new Properties();
     p.putAll(request.getProperties());
-    interpreterFactory.add(request.getName(), request.getGroup(), p);
+    interpreterFactory.add(request.getName(), request.getGroup(), false, p);
     return new JsonResponse(Status.CREATED, "").build();
   }
 

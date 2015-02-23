@@ -24,7 +24,7 @@ public class RemoteInterpreter extends Interpreter {
   private int intpId;
   Gson gson = new Gson();
   private String interpreterRunner;
-  private String interpreterDir;
+  private String interpreterPath;
   private String className;
   static Map<String, RemoteInterpreterProcess> interpreterGroupReference
     = new HashMap<String, RemoteInterpreterProcess>();
@@ -32,13 +32,12 @@ public class RemoteInterpreter extends Interpreter {
   public RemoteInterpreter(Properties property,
       String className,
       String interpreterRunner,
-      String interpreterDir) {
+      String interpreterPath) {
     super(property);
 
     this.className = className;
     this.interpreterRunner = interpreterRunner;
-    this.interpreterDir = interpreterDir;
-
+    this.interpreterPath = interpreterPath;
   }
 
   @Override
@@ -46,12 +45,16 @@ public class RemoteInterpreter extends Interpreter {
     return className;
   }
 
-  private Client getClient() {
+  private RemoteInterpreterProcess getInterpreterProcess() {
     synchronized (interpreterGroupReference) {
       if (interpreterGroupReference.containsKey(getInterpreterGroupKey(getInterpreterGroup()))) {
         RemoteInterpreterProcess interpreterProcess = interpreterGroupReference
             .get(getInterpreterGroupKey(getInterpreterGroup()));
-        return interpreterProcess.getClient();
+        try {
+          return interpreterProcess;
+        } catch (Exception e) {
+          throw new InterpreterException(e);
+        }
       } else {
         throw new InterpreterException("Unexpected error");
       }
@@ -73,38 +76,40 @@ public class RemoteInterpreter extends Interpreter {
 
     interpreterProcess.reference();
 
+    Client client = null;
     try {
-      intpId = interpreterProcess.getClient().createInterpreter(className, (Map) property);
-    } catch (TException e) {
-      e.printStackTrace();
-      throw new InterpreterException(e.getCause());
+      client = interpreterProcess.getClient();
+    } catch (Exception e1) {
+      throw new InterpreterException(e1);
     }
 
     try {
-      interpreterProcess.getClient().open(intpId);
+      intpId = client.createInterpreter(className, (Map) property);
+      client.open(intpId);
     } catch (TException e) {
-      interpreterProcess.dereference();
+      e.printStackTrace();
       throw new InterpreterException(e.getCause());
+    } finally {
+      interpreterProcess.releaseClient(client);
     }
   }
 
   @Override
   public void close() {
+    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
+    Client client = null;
     try {
-      getClient().close(intpId);
-    } catch (TException e) {
-      throw new InterpreterException(e.getCause());
+      client = interpreterProcess.getClient();
+    } catch (Exception e1) {
+      throw new InterpreterException(e1);
     }
 
-    RemoteInterpreterProcess interpreterProcess = null;
-    synchronized (interpreterGroupReference) {
-      if (interpreterGroupReference
-          .containsKey(getInterpreterGroupKey(getInterpreterGroup()))) {
-        interpreterProcess = interpreterGroupReference
-            .get(getInterpreterGroupKey(getInterpreterGroup()));
-      } else {
-        throw new InterpreterException("Unexpected error");
-      }
+    try {
+      client.close(intpId);
+    } catch (TException e) {
+      throw new InterpreterException(e.getCause());
+    } finally {
+      interpreterProcess.releaseClient(client);
     }
 
     interpreterProcess.dereference();
@@ -112,19 +117,39 @@ public class RemoteInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
+    Client client = null;
     try {
-      return convert(getClient().interpret(intpId, st, convert(context)));
+      client = interpreterProcess.getClient();
+    } catch (Exception e1) {
+      throw new InterpreterException(e1);
+    }
+
+    try {
+      return convert(client.interpret(intpId, st, convert(context)));
     } catch (TException e) {
       throw new InterpreterException(e.getCause());
+    } finally {
+      interpreterProcess.releaseClient(client);
     }
   }
 
   @Override
   public void cancel(InterpreterContext context) {
+    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
+    Client client = null;
     try {
-      getClient().cancel(intpId, convert(context));
+      client = interpreterProcess.getClient();
+    } catch (Exception e1) {
+      throw new InterpreterException(e1);
+    }
+
+    try {
+      client.cancel(intpId, convert(context));
     } catch (TException e) {
       throw new InterpreterException(e.getCause());
+    } finally {
+      interpreterProcess.releaseClient(client);
     }
   }
 
@@ -138,17 +163,20 @@ public class RemoteInterpreter extends Interpreter {
   public int getProgress(InterpreterContext context) {
     return 0;
     /*
-    if (!isInterpreterCreated()) {
-      return 0;
+    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
+    Client client = null;
+    try {
+      client = interpreterProcess.getClient();
+    } catch (Exception e1) {
+      throw new InterpreterException(e1);
     }
 
-
-
     try {
-      return getClient().getProgress(intpId, convert(context));
+      return client.getProgress(intpId, convert(context));
     } catch (TException e) {
-      e.printStackTrace();
       throw new InterpreterException(e.getCause());
+    } finally {
+      interpreterProcess.releaseClient(client);
     }
     */
   }
@@ -171,7 +199,7 @@ public class RemoteInterpreter extends Interpreter {
           .containsKey(getInterpreterGroupKey(interpreterGroup))) {
         interpreterGroupReference.put(getInterpreterGroupKey(interpreterGroup),
             new RemoteInterpreterProcess(interpreterRunner,
-                interpreterDir));
+                interpreterPath));
 
         System.out.println("create SetInterpreterGroup = "
             + getInterpreterGroupKey(interpreterGroup) + " class=" + className);

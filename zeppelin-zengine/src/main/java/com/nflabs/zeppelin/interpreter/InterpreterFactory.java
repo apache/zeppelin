@@ -91,8 +91,9 @@ public class InterpreterFactory {
             for (String intName : keys) {
               if (className.equals(
                   Interpreter.registeredInterpreters.get(intName).getClassName())) {
+                Interpreter.registeredInterpreters.get(intName).setPath(path.getAbsolutePath());
                 logger.info("Interpreter " + intName + " found. class=" + className);
-                cleanCl.put(intName, ccl);
+                cleanCl.put(path.getAbsolutePath(), ccl);
               }
             }
           } catch (ClassNotFoundException e) {
@@ -138,7 +139,7 @@ public class InterpreterFactory {
 
             if (found) {
               // add all interpreters in group
-              add(groupName, groupName, p);
+              add(groupName, groupName, false, p);
               groupClassNameMap.remove(groupName);
               break;
             }
@@ -194,11 +195,15 @@ public class InterpreterFactory {
       String id = (String) set.get("id");
       String name = (String) set.get("name");
       String group = (String) set.get("group");
+      Boolean remote = (Boolean) set.get("remote");
+      if (remote == null) {
+        remote = false;
+      }
       Properties properties = new Properties();
       properties.putAll((Map<String, String>) set.get("properties"));
 
-      InterpreterGroup interpreterGroup = createInterpreterGroup(group, properties);
-      InterpreterSetting intpSetting = new InterpreterSetting(id, name, group, interpreterGroup);
+      InterpreterGroup interpreterGroup = createInterpreterGroup(group, remote, properties);
+      InterpreterSetting intpSetting = new InterpreterSetting(id, name, group, remote, interpreterGroup);
       interpreterSettings.put(k, intpSetting);
     }
 
@@ -286,14 +291,15 @@ public class InterpreterFactory {
    * @throws InterpreterException
    * @throws IOException
    */
-  public InterpreterGroup add(String name, String groupName, Properties properties)
+  public InterpreterGroup add(String name, String groupName, boolean remote, Properties properties)
       throws InterpreterException, IOException {
     synchronized (interpreterSettings) {
-      InterpreterGroup interpreterGroup = createInterpreterGroup(groupName, properties);
+      InterpreterGroup interpreterGroup = createInterpreterGroup(groupName, remote, properties);
 
       InterpreterSetting intpSetting = new InterpreterSetting(
           name,
           groupName,
+          remote,
           interpreterGroup);
       interpreterSettings.put(intpSetting.id(), intpSetting);
 
@@ -302,7 +308,9 @@ public class InterpreterFactory {
     }
   }
 
-  private InterpreterGroup createInterpreterGroup(String groupName, Properties properties)
+  private InterpreterGroup createInterpreterGroup(String groupName,
+      boolean remote,
+      Properties properties)
       throws InterpreterException {
     InterpreterGroup interpreterGroup = new InterpreterGroup();
 
@@ -313,10 +321,18 @@ public class InterpreterFactory {
             .get(intName);
         if (info.getClassName().equals(className)
             && info.getGroup().equals(groupName)) {
-          Interpreter intp = createRemoteRepl(info.getName(),
-              info.getClassName(),
-              properties,
-              interpreterGroup);
+          Interpreter intp;
+          if (remote) {
+            intp = createRemoteRepl(info.getPath(),
+                info.getClassName(),
+                properties,
+                interpreterGroup);
+          } else {
+            intp = createRepl(info.getPath(),
+                info.getClassName(),
+                properties,
+                interpreterGroup);
+          }
           interpreterGroup.add(intp);
           break;
         }
@@ -426,7 +442,7 @@ public class InterpreterFactory {
    * @param name
    * @param properties
    */
-  public void setPropertyAndRestart(String id, Properties properties) {
+  public void setPropertyAndRestart(String id, boolean remote, Properties properties) {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
       if (intpsetting != null) {
@@ -434,7 +450,7 @@ public class InterpreterFactory {
         intpsetting.getInterpreterGroup().destroy();
 
         InterpreterGroup interpreterGroup = createInterpreterGroup(
-            intpsetting.getGroup(), properties);
+            intpsetting.getGroup(), remote, properties);
         intpsetting.setInterpreterGroup(interpreterGroup);
       } else {
         throw new InterpreterException("Interpreter setting id " + id
@@ -452,7 +468,7 @@ public class InterpreterFactory {
           intpsetting.getInterpreterGroup().destroy();
 
           InterpreterGroup interpreterGroup = createInterpreterGroup(
-              intpsetting.getGroup(), intpsetting.getProperties());
+              intpsetting.getGroup(), intpsetting.isRemote(), intpsetting.getProperties());
           intpsetting.setInterpreterGroup(interpreterGroup);
         } else {
           throw new InterpreterException("Interpreter setting id " + id
@@ -524,11 +540,11 @@ public class InterpreterFactory {
   }
 
 
-  private Interpreter createRemoteRepl(String dirName, String className,
+  private Interpreter createRemoteRepl(String interpreterPath, String className,
       Properties property, InterpreterGroup interpreterGroup) {
 
     LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(
-        property, className, conf.getInterpreterRemoteRunnerPath(), dirName));
+        property, className, conf.getInterpreterRemoteRunnerPath(), interpreterPath));
     intp.setInterpreterGroup(interpreterGroup);
     return intp;
   }

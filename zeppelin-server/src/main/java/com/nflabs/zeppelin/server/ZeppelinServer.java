@@ -1,5 +1,14 @@
 package com.nflabs.zeppelin.server;
 
+import java.io.File;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.net.ssl.SSLContext;
+import javax.servlet.DispatcherType;
+import javax.ws.rs.core.Application;
+
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -23,23 +32,14 @@ import com.nflabs.zeppelin.notebook.Notebook;
 import com.nflabs.zeppelin.rest.InterpreterRestApi;
 import com.nflabs.zeppelin.rest.NotebookRestApi;
 import com.nflabs.zeppelin.rest.ZeppelinRestApi;
+import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.socket.NotebookServer;
 import com.nflabs.zeppelin.socket.SslWebSocketServerFactory;
-import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.wordnik.swagger.jersey.config.JerseyJaxrsConfig;
-
-import java.io.File;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.net.ssl.SSLContext;
-import javax.servlet.DispatcherType;
-import javax.ws.rs.core.Application;
 
 /**
  * Main class of Zeppelin.
- * 
+ *
  * @author Leemoonsoo
  *
  */
@@ -179,7 +179,7 @@ public class ZeppelinServer extends Application {
     cxfContext.setSessionHandler(new SessionHandler());
     cxfContext.setContextPath("/api");
     cxfContext.addServlet(cxfServletHolder, "/*");
-    
+
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
         EnumSet.allOf(DispatcherType.class));
     return cxfContext;
@@ -192,14 +192,14 @@ public class ZeppelinServer extends Application {
    */
   private static ServletContextHandler setupSwaggerContextHandler(
     ZeppelinConfiguration conf) {
-  
+
     // Configure Swagger-core
     final ServletHolder swaggerServlet =
         new ServletHolder(new JerseyJaxrsConfig());
     swaggerServlet.setName("JerseyJaxrsConfig");
     swaggerServlet.setInitParameter("api.version", "1.0.0");
     swaggerServlet.setInitParameter(
-        "swagger.api.basepath", 
+        "swagger.api.basepath",
         "http://localhost:" + conf.getServerPort() + "/api");
     swaggerServlet.setInitOrder(2);
 
@@ -215,7 +215,7 @@ public class ZeppelinServer extends Application {
 
   private static WebAppContext setupWebAppContext(
       ZeppelinConfiguration conf) {
-    
+
     WebAppContext webApp = new WebAppContext();
     File warPath = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
     if (warPath.isDirectory()) {
@@ -281,7 +281,7 @@ public class ZeppelinServer extends Application {
     /** Rest-api root endpoint */
     ZeppelinRestApi root = new ZeppelinRestApi();
     singletons.add(root);
-    
+
     NotebookRestApi notebookApi = new NotebookRestApi(notebook);
     singletons.add(notebookApi);
 

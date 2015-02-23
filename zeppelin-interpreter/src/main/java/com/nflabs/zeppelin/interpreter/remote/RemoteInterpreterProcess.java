@@ -9,13 +9,9 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteResultHandler;
 import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TSocket;
-import org.apache.thrift.transport.TTransportException;
+import org.apache.commons.pool2.impl.GenericObjectPool;
 
 import com.nflabs.zeppelin.interpreter.InterpreterException;
-import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 
 /**
@@ -29,8 +25,8 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   int port = -1;
   private String interpreterRunner;
   private String interpreterDir;
-  private Client client;
-  private TSocket transport;
+
+  private GenericObjectPool<Client> clientPool;
 
   public RemoteInterpreterProcess(String intpRunner, String intpDir) {
     this.interpreterRunner = intpRunner;
@@ -82,10 +78,15 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
         }
       }
 
+      clientPool = new GenericObjectPool<Client>(new ClientFactory("localhost", port));
+
+
       try {
         Thread.sleep(5000);
       } catch (InterruptedException e1) {
-      }
+      } // waiting for launched
+
+      /*
       transport = new TSocket("localhost", port);
       try {
         transport.open();
@@ -95,20 +96,25 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
 
       TProtocol protocol = new  TBinaryProtocol(transport);
       client = new RemoteInterpreterService.Client(protocol);
+      */
 
       return referenceCount.incrementAndGet();
     }
   }
 
-  public Client getClient() {
-    return client;
+  public Client getClient() throws Exception {
+    return clientPool.borrowObject();
+  }
+
+  public void releaseClient(Client client) {
+    clientPool.returnObject(client);
   }
 
   public int dereference() {
     synchronized (referenceCount) {
       int r = referenceCount.decrementAndGet();
       if (r == 0) {
-        transport.close();
+        clientPool.close();
 
         // terminate server process
         watchdog.destroyProcess();

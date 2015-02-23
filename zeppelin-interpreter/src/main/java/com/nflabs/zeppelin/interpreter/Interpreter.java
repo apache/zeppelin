@@ -79,6 +79,7 @@ public abstract class Interpreter {
     private String group;
     private String className;
     private Map<String, InterpreterProperty> properties;
+    private String path;
 
     public RegisteredInterpreter(String name, String group, String className,
         Map<String, InterpreterProperty> properties) {
@@ -103,6 +104,14 @@ public abstract class Interpreter {
 
     public Map<String, InterpreterProperty> getProperties() {
       return properties;
+    }
+
+    public void setPath(String path) {
+      this.path = path;
+    }
+
+    public String getPath() {
+      return path;
     }
 
   }

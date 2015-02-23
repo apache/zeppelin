@@ -34,7 +34,7 @@ fi
 ZEPPELIN_CLASSPATH="${ZEPPELIN_CONF_DIR}"
 
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
-addJarInDir "${ZEPPELIN_INTERPRETER_DIR}/${INTERPRETER_DIR}"
+addJarInDir "${INTERPRETER_DIR}"
 
 export ZEPPELIN_CLASSPATH
 export CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
@@ -43,8 +43,8 @@ HOSTNAME=$(hostname)
 ZEPPELIN_SERVER=com.nflabs.zeppelin.interpreter.remote.RemoteInterpreterServer
 
 RANDOM_ID=$(cat /dev/urandom | env LC_CTYPE=C tr -dc 'a-zA-Z0-9' | fold -w 10 | head -n 1)
-ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-interpreter-${INTERPRETER_DIR}-${RANDOM_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.pid"
-ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-${INTERPRETER_DIR}-${RANDOM_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
+ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-interpreter-${RANDOM_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.pid"
+ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-interpreter-${RANDOM_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
 JAVA_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
