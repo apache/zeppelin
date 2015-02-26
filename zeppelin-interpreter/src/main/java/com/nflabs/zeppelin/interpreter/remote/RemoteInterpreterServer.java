@@ -75,10 +75,6 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
     }
   }
 
-  private int getId(Interpreter intp) {
-    return intp.hashCode();
-  }
-
   private Interpreter getInterpreter(String className) throws TException {
     synchronized (interpreterGroup) {
       for (Interpreter inp : interpreterGroup) {

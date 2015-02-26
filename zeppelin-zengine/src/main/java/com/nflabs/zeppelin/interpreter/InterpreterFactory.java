@@ -334,7 +334,7 @@ public class InterpreterFactory {
                 properties,
                 interpreterGroup);
           } else {
-            intp = createRemoteRepl(info.getPath(),
+            intp = createRepl(info.getPath(),
                 info.getClassName(),
                 properties,
                 interpreterGroup);
