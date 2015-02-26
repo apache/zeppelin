@@ -12,6 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -203,7 +204,12 @@ public class InterpreterFactory {
       properties.putAll((Map<String, String>) set.get("properties"));
 
       InterpreterGroup interpreterGroup = createInterpreterGroup(group, remote, properties);
-      InterpreterSetting intpSetting = new InterpreterSetting(id, name, group, remote, interpreterGroup);
+      InterpreterSetting intpSetting = new InterpreterSetting(
+          id,
+          name,
+          group,
+          remote,
+          interpreterGroup);
       interpreterSettings.put(k, intpSetting);
     }
 
@@ -328,7 +334,7 @@ public class InterpreterFactory {
                 properties,
                 interpreterGroup);
           } else {
-            intp = createRepl(info.getPath(),
+            intp = createRemoteRepl(info.getPath(),
                 info.getClassName(),
                 properties,
                 interpreterGroup);
@@ -473,6 +479,19 @@ public class InterpreterFactory {
         } else {
           throw new InterpreterException("Interpreter setting id " + id
               + " not found");
+        }
+      }
+    }
+  }
+
+
+  public void close() {
+    synchronized (interpreterSettings) {
+      synchronized (interpreterSettings) {
+        Collection<InterpreterSetting> intpsettings = interpreterSettings.values();
+        for (InterpreterSetting intpsetting : intpsettings) {
+          intpsetting.getInterpreterGroup().close();
+          intpsetting.getInterpreterGroup().destroy();
         }
       }
     }

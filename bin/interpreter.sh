@@ -52,6 +52,8 @@ if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   $(mkdir -p "${ZEPPELIN_LOG_DIR}")
 fi
 
+
+
 ${ZEPPELIN_RUNNER} ${JAVA_OPTS} -cp ${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
 pid=$!
 if [[ -z "${pid}" ]]; then
@@ -60,5 +62,25 @@ else
   echo ${pid} > ${ZEPPELIN_PID}
 fi
 
+
+trap 'shutdown_hook;' SIGTERM SIGINT SIGQUIT
+function shutdown_hook() {
+  local count
+  count=0
+  while [[ "${count}" -lt 10 ]]; do
+    $(kill ${pid} > /dev/null 2> /dev/null)
+    if kill -0 ${pid} > /dev/null 2>&1; then
+      sleep 3
+      let "count+=1"
+    else
+      rm -f "${ZEPPELIN_PID}"
+      break
+    fi
+  if [[ "${count}" == "5" ]]; then
+    $(kill -9 ${pid} > /dev/null 2> /dev/null)
+    rm -f "${ZEPPELIN_PID}"
+  fi
+  done
+}
 
 wait

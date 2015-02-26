@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.server;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -86,6 +87,8 @@ public class ZeppelinServer extends Application {
       @Override public void run() {
         LOG.info("Shutting down Zeppelin Server ... ");
         try {
+          notebook.getInterpreterFactory().close();
+
           jettyServer.stop();
           notebookServer.stop();
         } catch (Exception e) {
@@ -94,6 +97,15 @@ public class ZeppelinServer extends Application {
         LOG.info("Bye");
       }
     });
+
+
+
+    try {
+      System.in.read();
+    } catch (IOException e) {
+    }
+    System.exit(0);
+
     jettyServer.join();
   }
 
