@@ -51,7 +51,7 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
   Gson gson = new Gson();
 
   @Override
-  public int createInterpreter(String className, Map<String, String> properties)
+  public void createInterpreter(String className, Map<String, String> properties)
       throws TException {
     try {
       Class<Interpreter> replClass = (Class<Interpreter>) Object.class.forName(className);
@@ -67,8 +67,6 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
       synchronized (interpreterGroup) {
         interpreterGroup.add(repl);
       }
-
-      return getId(repl);
     } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
         | InstantiationException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
@@ -81,48 +79,48 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
     return intp.hashCode();
   }
 
-  private Interpreter getInterpreter(int intpId) throws TException {
+  private Interpreter getInterpreter(String className) throws TException {
     synchronized (interpreterGroup) {
       for (Interpreter inp : interpreterGroup) {
-        if (intpId == getId(inp)) {
+        if (inp.getClassName().equals(className)) {
           return inp;
         }
       }
     }
     throw new TException(new InterpreterException("Interpreter instance "
-        + intpId + " not found"));
+        + className + " not found"));
   }
 
   @Override
-  public void open(int intpId) throws TException {
-    Interpreter intp = getInterpreter(intpId);
+  public void open(String className) throws TException {
+    Interpreter intp = getInterpreter(className);
     intp.open();
   }
 
   @Override
-  public void close(int intpId) throws TException {
-    Interpreter intp = getInterpreter(intpId);
+  public void close(String className) throws TException {
+    Interpreter intp = getInterpreter(className);
     intp.close();
   }
 
   @Override
-  public RemoteInterpreterResult interpret(int intpId, String st,
+  public RemoteInterpreterResult interpret(String className, String st,
       RemoteInterpreterContext interpreterContext) throws TException {
-    Interpreter intp = getInterpreter(intpId);
+    Interpreter intp = getInterpreter(className);
     return convert(intp.interpret(st, convert(interpreterContext)));
   }
 
   @Override
-  public void cancel(int intpId, RemoteInterpreterContext interpreterContext)
+  public void cancel(String className, RemoteInterpreterContext interpreterContext)
       throws TException {
-    Interpreter intp = getInterpreter(intpId);
+    Interpreter intp = getInterpreter(className);
     intp.cancel(convert(interpreterContext));
   }
 
   @Override
-  public int getProgress(int intpId, RemoteInterpreterContext interpreterContext)
+  public int getProgress(String className, RemoteInterpreterContext interpreterContext)
       throws TException {
-    Interpreter intp = getInterpreter(intpId);
+    Interpreter intp = getInterpreter(className);
     return intp.getProgress(convert(interpreterContext));
   }
 

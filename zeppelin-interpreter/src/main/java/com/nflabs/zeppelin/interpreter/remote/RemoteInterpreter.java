@@ -21,7 +21,6 @@ import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
  *
  */
 public class RemoteInterpreter extends Interpreter {
-  private int intpId;
   Gson gson = new Gson();
   private String interpreterRunner;
   private String interpreterPath;
@@ -84,8 +83,8 @@ public class RemoteInterpreter extends Interpreter {
     }
 
     try {
-      intpId = client.createInterpreter(className, (Map) property);
-      client.open(intpId);
+      client.createInterpreter(className, (Map) property);
+      client.open(className);
     } catch (TException e) {
       e.printStackTrace();
       throw new InterpreterException(e.getCause());
@@ -105,7 +104,7 @@ public class RemoteInterpreter extends Interpreter {
     }
 
     try {
-      client.close(intpId);
+      client.close(className);
     } catch (TException e) {
       throw new InterpreterException(e.getCause());
     } finally {
@@ -126,7 +125,7 @@ public class RemoteInterpreter extends Interpreter {
     }
 
     try {
-      return convert(client.interpret(intpId, st, convert(context)));
+      return convert(client.interpret(className, st, convert(context)));
     } catch (TException e) {
       throw new InterpreterException(e.getCause());
     } finally {
@@ -145,7 +144,7 @@ public class RemoteInterpreter extends Interpreter {
     }
 
     try {
-      client.cancel(intpId, convert(context));
+      client.cancel(className, convert(context));
     } catch (TException e) {
       throw new InterpreterException(e.getCause());
     } finally {
@@ -181,9 +180,6 @@ public class RemoteInterpreter extends Interpreter {
     */
   }
 
-  private boolean isInterpreterCreated() {
-    return intpId != 0;
-  }
 
   @Override
   public List<String> completion(String buf, int cursor) {

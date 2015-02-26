@@ -15,11 +15,11 @@ struct RemoteInterpreterResult {
 }
 
 service RemoteInterpreterService {
-  i32 createInterpreter(1: string className, 2: map<string, string> properties);
+  void createInterpreter(1: string className, 2: map<string, string> properties);
 
-  void open(1: i32 intpId);
-  void close(1: i32 intpId);
-  RemoteInterpreterResult interpret(1: i32 intpId, 2: string st, 3: RemoteInterpreterContext interpreterContext);
-  void cancel(1: i32 intpId, 2: RemoteInterpreterContext interpreterContext);
-  i32 getProgress(1: i32 intpId, 2: RemoteInterpreterContext interpreterContext);
+  void open(1: string className);
+  void close(1: string className);
+  RemoteInterpreterResult interpret(1: string className, 2: string st, 3: RemoteInterpreterContext interpreterContext);
+  void cancel(1: string className, 2: RemoteInterpreterContext interpreterContext);
+  i32 getProgress(1: string className, 2: RemoteInterpreterContext interpreterContext);
 }
