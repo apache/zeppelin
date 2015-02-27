@@ -235,6 +235,7 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
   private RemoteInterpreterResult convert(InterpreterResult result) {
     return new RemoteInterpreterResult(
         result.code().name(),
+        result.type().name(),
         result.message());
   }
 }

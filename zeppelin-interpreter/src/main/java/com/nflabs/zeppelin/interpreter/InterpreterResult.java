@@ -4,15 +4,15 @@ import java.io.Serializable;
 
 /**
  * Interpreter result template.
- * 
+ *
  * @author Leemoonsoo
  *
  */
 public class InterpreterResult implements Serializable {
-  
+
   /**
    *  Type of result after code execution.
-   *  
+   *
    * @author Leemoonsoo
    *
    */
@@ -24,7 +24,7 @@ public class InterpreterResult implements Serializable {
 
   /**
    * Type of Data.
-   * 
+   *
    * @author Leemoonsoo
    *
    */
@@ -53,9 +53,15 @@ public class InterpreterResult implements Serializable {
     this.type = getType(msg);
   }
 
+  public InterpreterResult(Code code, Type type, String msg) {
+    this.code = code;
+    this.msg = msg;
+    this.type = type;
+  }
+
   /**
    * Magic is like %html %text.
-   * 
+   *
    * @param msg
    * @return
    */

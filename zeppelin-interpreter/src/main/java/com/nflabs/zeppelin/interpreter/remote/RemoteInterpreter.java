@@ -15,6 +15,7 @@ import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterException;
 import com.nflabs.zeppelin.interpreter.InterpreterGroup;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.interpreter.InterpreterResult.Type;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterResult;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
@@ -257,6 +258,7 @@ public class RemoteInterpreter extends Interpreter {
   private InterpreterResult convert(RemoteInterpreterResult result) {
     return new InterpreterResult(
         InterpreterResult.Code.valueOf(result.getCode()),
+        Type.valueOf(result.getType()),
         result.getMsg());
   }
 }

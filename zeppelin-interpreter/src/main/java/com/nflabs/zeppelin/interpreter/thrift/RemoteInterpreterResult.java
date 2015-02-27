@@ -34,7 +34,8 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("RemoteInterpreterResult");
 
   private static final org.apache.thrift.protocol.TField CODE_FIELD_DESC = new org.apache.thrift.protocol.TField("code", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField MSG_FIELD_DESC = new org.apache.thrift.protocol.TField("msg", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField MSG_FIELD_DESC = new org.apache.thrift.protocol.TField("msg", org.apache.thrift.protocol.TType.STRING, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -43,12 +44,14 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
   }
 
   public String code; // required
+  public String type; // required
   public String msg; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     CODE((short)1, "code"),
-    MSG((short)2, "msg");
+    TYPE((short)2, "type"),
+    MSG((short)3, "msg");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -65,7 +68,9 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
       switch(fieldId) {
         case 1: // CODE
           return CODE;
-        case 2: // MSG
+        case 2: // TYPE
+          return TYPE;
+        case 3: // MSG
           return MSG;
         default:
           return null;
@@ -112,6 +117,8 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.CODE, new org.apache.thrift.meta_data.FieldMetaData("code", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.MSG, new org.apache.thrift.meta_data.FieldMetaData("msg", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -123,10 +130,12 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
 
   public RemoteInterpreterResult(
     String code,
+    String type,
     String msg)
   {
     this();
     this.code = code;
+    this.type = type;
     this.msg = msg;
   }
 
@@ -136,6 +145,9 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
   public RemoteInterpreterResult(RemoteInterpreterResult other) {
     if (other.isSetCode()) {
       this.code = other.code;
+    }
+    if (other.isSetType()) {
+      this.type = other.type;
     }
     if (other.isSetMsg()) {
       this.msg = other.msg;
@@ -149,6 +161,7 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
   @Override
   public void clear() {
     this.code = null;
+    this.type = null;
     this.msg = null;
   }
 
@@ -173,6 +186,30 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
   public void setCodeIsSet(boolean value) {
     if (!value) {
       this.code = null;
+    }
+  }
+
+  public String getType() {
+    return this.type;
+  }
+
+  public RemoteInterpreterResult setType(String type) {
+    this.type = type;
+    return this;
+  }
+
+  public void unsetType() {
+    this.type = null;
+  }
+
+  /** Returns true if field type is set (has been assigned a value) and false otherwise */
+  public boolean isSetType() {
+    return this.type != null;
+  }
+
+  public void setTypeIsSet(boolean value) {
+    if (!value) {
+      this.type = null;
     }
   }
 
@@ -210,6 +247,14 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
       }
       break;
 
+    case TYPE:
+      if (value == null) {
+        unsetType();
+      } else {
+        setType((String)value);
+      }
+      break;
+
     case MSG:
       if (value == null) {
         unsetMsg();
@@ -225,6 +270,9 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
     switch (field) {
     case CODE:
       return getCode();
+
+    case TYPE:
+      return getType();
 
     case MSG:
       return getMsg();
@@ -242,6 +290,8 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
     switch (field) {
     case CODE:
       return isSetCode();
+    case TYPE:
+      return isSetType();
     case MSG:
       return isSetMsg();
     }
@@ -267,6 +317,15 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
       if (!(this_present_code && that_present_code))
         return false;
       if (!this.code.equals(that.code))
+        return false;
+    }
+
+    boolean this_present_type = true && this.isSetType();
+    boolean that_present_type = true && that.isSetType();
+    if (this_present_type || that_present_type) {
+      if (!(this_present_type && that_present_type))
+        return false;
+      if (!this.type.equals(that.type))
         return false;
     }
 
@@ -301,6 +360,16 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
     }
     if (isSetCode()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.code, typedOther.code);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetType()).compareTo(typedOther.isSetType());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetType()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.type, typedOther.type);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -340,6 +409,14 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
       sb.append("null");
     } else {
       sb.append(this.code);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("type:");
+    if (this.type == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.type);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -401,7 +478,15 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // MSG
+          case 2: // TYPE
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.type = iprot.readString();
+              struct.setTypeIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // MSG
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.msg = iprot.readString();
               struct.setMsgIsSet(true);
@@ -427,6 +512,11 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
       if (struct.code != null) {
         oprot.writeFieldBegin(CODE_FIELD_DESC);
         oprot.writeString(struct.code);
+        oprot.writeFieldEnd();
+      }
+      if (struct.type != null) {
+        oprot.writeFieldBegin(TYPE_FIELD_DESC);
+        oprot.writeString(struct.type);
         oprot.writeFieldEnd();
       }
       if (struct.msg != null) {
@@ -455,12 +545,18 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
       if (struct.isSetCode()) {
         optionals.set(0);
       }
-      if (struct.isSetMsg()) {
+      if (struct.isSetType()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetMsg()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetCode()) {
         oprot.writeString(struct.code);
+      }
+      if (struct.isSetType()) {
+        oprot.writeString(struct.type);
       }
       if (struct.isSetMsg()) {
         oprot.writeString(struct.msg);
@@ -470,12 +566,16 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, RemoteInterpreterResult struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.code = iprot.readString();
         struct.setCodeIsSet(true);
       }
       if (incoming.get(1)) {
+        struct.type = iprot.readString();
+        struct.setTypeIsSet(true);
+      }
+      if (incoming.get(2)) {
         struct.msg = iprot.readString();
         struct.setMsgIsSet(true);
       }

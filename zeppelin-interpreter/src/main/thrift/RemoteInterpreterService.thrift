@@ -11,7 +11,8 @@ struct RemoteInterpreterContext {
 
 struct RemoteInterpreterResult {
   1: string code,
-  2: string msg
+  2: string type,
+  3: string msg
 }
 
 service RemoteInterpreterService {
