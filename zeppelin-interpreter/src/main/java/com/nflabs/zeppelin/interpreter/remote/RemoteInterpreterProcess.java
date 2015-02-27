@@ -76,28 +76,36 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
           running = false;
           throw new InterpreterException(e);
         }
+
+/*
+        boolean remoteProcessDiscovered = false;
+        long startTime = System.currentTimeMillis();
+        while (System.currentTimeMillis() - startTime < 30 * 1000) { // for 30 sec
+          try {
+            Socket discover = new Socket("localhost", port);
+            discover.close();
+            remoteProcessDiscovered = true;
+          } catch (IOException e) {
+            // wait for a second and continue
+            try {
+              Thread.sleep(1000);
+            } catch (InterruptedException e1) {
+            }
+          }
+        }
+        if (!remoteProcessDiscovered) {
+          watchdog.destroyProcess();
+          throw new InterpreterException("Can not discover remote process");
+        }
+*/
+        try {
+          Thread.sleep(5 * 1000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+
+        clientPool = new GenericObjectPool<Client>(new ClientFactory("localhost", port));
       }
-
-      clientPool = new GenericObjectPool<Client>(new ClientFactory("localhost", port));
-
-
-      try {
-        Thread.sleep(5000);
-      } catch (InterruptedException e1) {
-      } // waiting for launched
-
-      /*
-      transport = new TSocket("localhost", port);
-      try {
-        transport.open();
-      } catch (TTransportException e) {
-        throw new InterpreterException(e);
-      }
-
-      TProtocol protocol = new  TBinaryProtocol(transport);
-      client = new RemoteInterpreterService.Client(protocol);
-      */
-
       return referenceCount.incrementAndGet();
     }
   }

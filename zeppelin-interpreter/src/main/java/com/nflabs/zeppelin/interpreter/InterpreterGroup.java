@@ -13,7 +13,7 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
 
   private static String generateId() {
     return "InterpreterGroup_" + System.currentTimeMillis() + "_"
-           + new Random(System.currentTimeMillis()).nextInt();
+           + new Random().nextInt();
   }
 
   public String getId() {

@@ -4,6 +4,7 @@ package com.nflabs.zeppelin.interpreter.remote;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -25,6 +26,10 @@ import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterResult;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterService;
+import com.nflabs.zeppelin.scheduler.Job;
+import com.nflabs.zeppelin.scheduler.Job.Status;
+import com.nflabs.zeppelin.scheduler.JobListener;
+import com.nflabs.zeppelin.scheduler.Scheduler;
 
 
 /**
@@ -103,8 +108,92 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
   public RemoteInterpreterResult interpret(String className, String st,
       RemoteInterpreterContext interpreterContext) throws TException {
     Interpreter intp = getInterpreter(className);
-    return convert(intp.interpret(st, convert(interpreterContext)));
+
+    Scheduler scheduler = intp.getScheduler();
+    InterpretJobListener jobListener = new InterpretJobListener();
+    InterpretJob job = new InterpretJob(
+        "remoteInterpretJob_" + System.currentTimeMillis(),
+        jobListener,
+        intp,
+        st,
+        convert(interpreterContext));
+
+    scheduler.submit(job);
+
+    while (!job.isTerminated()) {
+      synchronized (jobListener) {
+        try {
+          jobListener.wait(1000);
+        } catch (InterruptedException e) {
+        }
+      }
+    }
+
+    if (job.getStatus() == Status.ERROR) {
+      throw new TException(job.getException());
+    } else {
+      return convert((InterpreterResult) job.getReturn());
+    }
   }
+
+  class InterpretJobListener implements JobListener {
+
+    @Override
+    public void onProgressUpdate(Job job, int progress) {
+    }
+
+    @Override
+    public void beforeStatusChange(Job job, Status before, Status after) {
+    }
+
+    @Override
+    public void afterStatusChange(Job job, Status before, Status after) {
+      synchronized (this) {
+        notifyAll();
+      }
+    }
+  }
+
+  class InterpretJob extends Job {
+
+    private Interpreter interpreter;
+    private String script;
+    private InterpreterContext context;
+
+    public InterpretJob(
+        String jobName,
+        JobListener listener,
+        Interpreter interpreter,
+        String script,
+        InterpreterContext context) {
+      super(jobName, listener);
+      this.interpreter = interpreter;
+      this.script = script;
+      this.context = context;
+    }
+
+    @Override
+    public int progress() {
+      return 0;
+    }
+
+    @Override
+    public Map<String, Object> info() {
+      return null;
+    }
+
+    @Override
+    protected Object jobRun() throws Throwable {
+      InterpreterResult result = interpreter.interpret(script, context);
+      return result;
+    }
+
+    @Override
+    protected boolean jobAbort() {
+      return false;
+    }
+  }
+
 
   @Override
   public void cancel(String className, RemoteInterpreterContext interpreterContext)
@@ -118,6 +207,19 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
       throws TException {
     Interpreter intp = getInterpreter(className);
     return intp.getProgress(convert(interpreterContext));
+  }
+
+
+  @Override
+  public String getFormType(String className) throws TException {
+    Interpreter intp = getInterpreter(className);
+    return intp.getFormType().name();
+  }
+
+  @Override
+  public List<String> completion(String className, String buf, int cursor) throws TException {
+    Interpreter intp = getInterpreter(className);
+    return intp.completion(buf, cursor);
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric) {
@@ -135,7 +237,4 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
         result.code().name(),
         result.message());
   }
-
-
-
 }

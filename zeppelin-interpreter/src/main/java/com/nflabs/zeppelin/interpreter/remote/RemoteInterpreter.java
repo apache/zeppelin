@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.nflabs.zeppelin.interpreter.Interpreter;
@@ -16,11 +18,14 @@ import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterResult;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
+import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 /**
  *
  */
 public class RemoteInterpreter extends Interpreter {
+  Logger logger = LoggerFactory.getLogger(RemoteInterpreter.class);
   Gson gson = new Gson();
   private String interpreterRunner;
   private String interpreterPath;
@@ -83,6 +88,7 @@ public class RemoteInterpreter extends Interpreter {
     }
 
     try {
+      logger.info("Create remote interpreter {}", className);
       client.createInterpreter(className, (Map) property);
       client.open(className);
     } catch (TException e) {
@@ -155,13 +161,6 @@ public class RemoteInterpreter extends Interpreter {
 
   @Override
   public FormType getFormType() {
-    return null;
-  }
-
-  @Override
-  public int getProgress(InterpreterContext context) {
-    return 0;
-    /*
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
     Client client = null;
     try {
@@ -171,19 +170,57 @@ public class RemoteInterpreter extends Interpreter {
     }
 
     try {
-      return client.getProgress(intpId, convert(context));
+      return FormType.valueOf(client.getFormType(className));
     } catch (TException e) {
       throw new InterpreterException(e.getCause());
     } finally {
       interpreterProcess.releaseClient(client);
     }
-    */
+  }
+
+  @Override
+  public int getProgress(InterpreterContext context) {
+    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
+    Client client = null;
+    try {
+      client = interpreterProcess.getClient();
+    } catch (Exception e1) {
+      throw new InterpreterException(e1);
+    }
+
+    try {
+      return client.getProgress(className, convert(context));
+    } catch (TException e) {
+      throw new InterpreterException(e.getCause());
+    } finally {
+      interpreterProcess.releaseClient(client);
+    }
   }
 
 
   @Override
   public List<String> completion(String buf, int cursor) {
-    return null;
+    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
+    Client client = null;
+    try {
+      client = interpreterProcess.getClient();
+    } catch (Exception e1) {
+      throw new InterpreterException(e1);
+    }
+
+    try {
+      return client.completion(buf, buf, cursor);
+    } catch (TException e) {
+      throw new InterpreterException(e.getCause());
+    } finally {
+      interpreterProcess.releaseClient(client);
+    }
+  }
+
+  @Override
+  public Scheduler getScheduler() {
+    return SchedulerFactory.singleton().createOrGetParallelScheduler(
+        "remoteinterpreter_" + this.hashCode(), 10);
   }
 
   @Override
@@ -197,8 +234,9 @@ public class RemoteInterpreter extends Interpreter {
             new RemoteInterpreterProcess(interpreterRunner,
                 interpreterPath));
 
-        System.out.println("create SetInterpreterGroup = "
-            + getInterpreterGroupKey(interpreterGroup) + " class=" + className);
+        logger.info("setInterpreterGroup = "
+            + getInterpreterGroupKey(interpreterGroup) + " class=" + className
+            + ", path=" + interpreterPath);
       }
     }
   }

@@ -22,4 +22,6 @@ service RemoteInterpreterService {
   RemoteInterpreterResult interpret(1: string className, 2: string st, 3: RemoteInterpreterContext interpreterContext);
   void cancel(1: string className, 2: RemoteInterpreterContext interpreterContext);
   i32 getProgress(1: string className, 2: RemoteInterpreterContext interpreterContext);
+  string getFormType(1: string className);
+  list<string> completion(1: string className, 2: string buf, 3: i32 cursor);
 }
