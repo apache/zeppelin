@@ -115,8 +115,16 @@ if [[ -z "$ZEPPELIN_MEM" ]]; then
   export ZEPPELIN_MEM="-Xmx1024m -XX:MaxPermSize=512m"
 fi
 
-JAVA_OPTS+="${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"
+JAVA_OPTS+=" ${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"
 export JAVA_OPTS
+
+if [[ -z "$ZEPPELIN_INTP_MEM" ]]; then
+  export ZEPPELIN_INTP_MEM="${ZEPPELIN_MEM}"
+fi
+
+JAVA_INTP_OPTS+=" ${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_INTP_MEM}"
+export JAVA_INTP_OPTS
+
 
 if [[ -n "${JAVA_HOME}" ]]; then
   ZEPPELIN_RUNNER="${JAVA_HOME}/bin/java"
