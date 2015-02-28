@@ -104,18 +104,23 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
 
     $scope.addNewInterpreterProperty(settingId);
 
-    var properties = {};
+    var request = {
+      remote : false,
+      properties : {},
+    };
+
     for (var i=0; i < $scope.interpreterSettings.length; i++) {
       var setting = $scope.interpreterSettings[i];
       if(setting.id === settingId) {
+        request.remote = setting.remote;
         for (var p in setting.properties) {
-          properties[p] = setting.properties[p].value;
+          request.properties[p] = setting.properties[p].value;
         }
         break;
       }
     }
 
-    $http.put(getRestApiBase()+'/interpreter/setting/'+settingId, properties).
+    $http.put(getRestApiBase()+'/interpreter/setting/'+settingId, request).
     success(function(data, status, headers, config) {
       for (var i=0; i < $scope.interpreterSettings.length; i++) {
         var setting = $scope.interpreterSettings[i];

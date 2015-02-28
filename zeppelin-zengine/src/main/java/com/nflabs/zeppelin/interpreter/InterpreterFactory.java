@@ -447,17 +447,21 @@ public class InterpreterFactory {
    * Change interpreter property and restart
    * @param name
    * @param properties
+   * @throws IOException
    */
-  public void setPropertyAndRestart(String id, boolean remote, Properties properties) {
+  public void setPropertyAndRestart(String id, boolean remote, Properties properties) throws IOException {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
       if (intpsetting != null) {
         intpsetting.getInterpreterGroup().close();
         intpsetting.getInterpreterGroup().destroy();
 
+        intpsetting.setRemote(remote);
+
         InterpreterGroup interpreterGroup = createInterpreterGroup(
             intpsetting.getGroup(), remote, properties);
         intpsetting.setInterpreterGroup(interpreterGroup);
+        saveToFile();
       } else {
         throw new InterpreterException("Interpreter setting id " + id
             + " not found");

@@ -80,4 +80,8 @@ public class InterpreterSetting {
   public boolean isRemote() {
     return remote;
   }
+
+  public void setRemote(boolean remote) {
+    this.remote = remote;
+  }
 }

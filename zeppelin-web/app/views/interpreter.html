@@ -150,7 +150,15 @@ limitations under the License.
     <br />
     <div class="row interpreter">
       <div class="col-md-12">
-        <b>Fork</b> - {{setting.remote}}
+        <div ng-if="!valueform.$visible">
+          <b>Fork</b> - {{setting.remote}}
+        </div>
+        <div ng-if="valueform.$visible">
+          <b>Fork</b>
+          <input type="checkbox"
+                 ng-model="setting.remote">
+          </input>
+        </div>
       </div>
     </div>
     <br />
