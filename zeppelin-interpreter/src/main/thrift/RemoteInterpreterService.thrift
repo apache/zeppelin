@@ -12,7 +12,9 @@ struct RemoteInterpreterContext {
 struct RemoteInterpreterResult {
   1: string code,
   2: string type,
-  3: string msg
+  3: string msg,
+  4: string config,   // json serialized config
+  5: string gui       // json serialized gui
 }
 
 service RemoteInterpreterService {

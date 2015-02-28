@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.nflabs.zeppelin.display.GUI;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterException;
@@ -31,6 +33,7 @@ public class RemoteInterpreter extends Interpreter {
   private String interpreterRunner;
   private String interpreterPath;
   private String className;
+  FormType formType;
   static Map<String, RemoteInterpreterProcess> interpreterGroupReference
     = new HashMap<String, RemoteInterpreterProcess>();
 
@@ -123,6 +126,7 @@ public class RemoteInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    FormType form = getFormType();
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
     Client client = null;
     try {
@@ -132,7 +136,23 @@ public class RemoteInterpreter extends Interpreter {
     }
 
     try {
-      return convert(client.interpret(className, st, convert(context)));
+      GUI settings = context.getGui();
+      RemoteInterpreterResult remoteResult = client.interpret(className, st, convert(context));
+
+      Map<String, Object> remoteConfig = (Map<String, Object>) gson.fromJson(
+          remoteResult.getConfig(), new TypeToken<Map<String, Object>>() {
+          }.getType());
+      context.getConfig().clear();
+      context.getConfig().putAll(remoteConfig);
+
+      if (form == FormType.NATIVE) {
+        GUI remoteGui = gson.fromJson(remoteResult.getGui(), GUI.class);
+        context.getGui().clear();
+        context.getGui().setParams(remoteGui.getParams());
+        context.getGui().setForms(remoteGui.getForms());
+      }
+
+      return convert(remoteResult);
     } catch (TException e) {
       throw new InterpreterException(e.getCause());
     } finally {
@@ -162,6 +182,10 @@ public class RemoteInterpreter extends Interpreter {
 
   @Override
   public FormType getFormType() {
+    if (formType != null) {
+      return formType;
+    }
+
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
     Client client = null;
     try {
@@ -171,7 +195,8 @@ public class RemoteInterpreter extends Interpreter {
     }
 
     try {
-      return FormType.valueOf(client.getFormType(className));
+      formType = FormType.valueOf(client.getFormType(className));
+      return formType;
     } catch (TException e) {
       throw new InterpreterException(e.getCause());
     } finally {

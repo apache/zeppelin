@@ -36,6 +36,8 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
   private static final org.apache.thrift.protocol.TField CODE_FIELD_DESC = new org.apache.thrift.protocol.TField("code", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField MSG_FIELD_DESC = new org.apache.thrift.protocol.TField("msg", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField CONFIG_FIELD_DESC = new org.apache.thrift.protocol.TField("config", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField GUI_FIELD_DESC = new org.apache.thrift.protocol.TField("gui", org.apache.thrift.protocol.TType.STRING, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -46,12 +48,16 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
   public String code; // required
   public String type; // required
   public String msg; // required
+  public String config; // required
+  public String gui; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     CODE((short)1, "code"),
     TYPE((short)2, "type"),
-    MSG((short)3, "msg");
+    MSG((short)3, "msg"),
+    CONFIG((short)4, "config"),
+    GUI((short)5, "gui");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -72,6 +78,10 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
           return TYPE;
         case 3: // MSG
           return MSG;
+        case 4: // CONFIG
+          return CONFIG;
+        case 5: // GUI
+          return GUI;
         default:
           return null;
       }
@@ -121,6 +131,10 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.MSG, new org.apache.thrift.meta_data.FieldMetaData("msg", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.CONFIG, new org.apache.thrift.meta_data.FieldMetaData("config", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.GUI, new org.apache.thrift.meta_data.FieldMetaData("gui", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(RemoteInterpreterResult.class, metaDataMap);
   }
@@ -131,12 +145,16 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
   public RemoteInterpreterResult(
     String code,
     String type,
-    String msg)
+    String msg,
+    String config,
+    String gui)
   {
     this();
     this.code = code;
     this.type = type;
     this.msg = msg;
+    this.config = config;
+    this.gui = gui;
   }
 
   /**
@@ -152,6 +170,12 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
     if (other.isSetMsg()) {
       this.msg = other.msg;
     }
+    if (other.isSetConfig()) {
+      this.config = other.config;
+    }
+    if (other.isSetGui()) {
+      this.gui = other.gui;
+    }
   }
 
   public RemoteInterpreterResult deepCopy() {
@@ -163,6 +187,8 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
     this.code = null;
     this.type = null;
     this.msg = null;
+    this.config = null;
+    this.gui = null;
   }
 
   public String getCode() {
@@ -237,6 +263,54 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
     }
   }
 
+  public String getConfig() {
+    return this.config;
+  }
+
+  public RemoteInterpreterResult setConfig(String config) {
+    this.config = config;
+    return this;
+  }
+
+  public void unsetConfig() {
+    this.config = null;
+  }
+
+  /** Returns true if field config is set (has been assigned a value) and false otherwise */
+  public boolean isSetConfig() {
+    return this.config != null;
+  }
+
+  public void setConfigIsSet(boolean value) {
+    if (!value) {
+      this.config = null;
+    }
+  }
+
+  public String getGui() {
+    return this.gui;
+  }
+
+  public RemoteInterpreterResult setGui(String gui) {
+    this.gui = gui;
+    return this;
+  }
+
+  public void unsetGui() {
+    this.gui = null;
+  }
+
+  /** Returns true if field gui is set (has been assigned a value) and false otherwise */
+  public boolean isSetGui() {
+    return this.gui != null;
+  }
+
+  public void setGuiIsSet(boolean value) {
+    if (!value) {
+      this.gui = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case CODE:
@@ -263,6 +337,22 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
       }
       break;
 
+    case CONFIG:
+      if (value == null) {
+        unsetConfig();
+      } else {
+        setConfig((String)value);
+      }
+      break;
+
+    case GUI:
+      if (value == null) {
+        unsetGui();
+      } else {
+        setGui((String)value);
+      }
+      break;
+
     }
   }
 
@@ -276,6 +366,12 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
 
     case MSG:
       return getMsg();
+
+    case CONFIG:
+      return getConfig();
+
+    case GUI:
+      return getGui();
 
     }
     throw new IllegalStateException();
@@ -294,6 +390,10 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
       return isSetType();
     case MSG:
       return isSetMsg();
+    case CONFIG:
+      return isSetConfig();
+    case GUI:
+      return isSetGui();
     }
     throw new IllegalStateException();
   }
@@ -335,6 +435,24 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
       if (!(this_present_msg && that_present_msg))
         return false;
       if (!this.msg.equals(that.msg))
+        return false;
+    }
+
+    boolean this_present_config = true && this.isSetConfig();
+    boolean that_present_config = true && that.isSetConfig();
+    if (this_present_config || that_present_config) {
+      if (!(this_present_config && that_present_config))
+        return false;
+      if (!this.config.equals(that.config))
+        return false;
+    }
+
+    boolean this_present_gui = true && this.isSetGui();
+    boolean that_present_gui = true && that.isSetGui();
+    if (this_present_gui || that_present_gui) {
+      if (!(this_present_gui && that_present_gui))
+        return false;
+      if (!this.gui.equals(that.gui))
         return false;
     }
 
@@ -384,6 +502,26 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetConfig()).compareTo(typedOther.isSetConfig());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetConfig()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.config, typedOther.config);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetGui()).compareTo(typedOther.isSetGui());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetGui()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.gui, typedOther.gui);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -425,6 +563,22 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
       sb.append("null");
     } else {
       sb.append(this.msg);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("config:");
+    if (this.config == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.config);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("gui:");
+    if (this.gui == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.gui);
     }
     first = false;
     sb.append(")");
@@ -494,6 +648,22 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // CONFIG
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.config = iprot.readString();
+              struct.setConfigIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 5: // GUI
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.gui = iprot.readString();
+              struct.setGuiIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -524,6 +694,16 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
         oprot.writeString(struct.msg);
         oprot.writeFieldEnd();
       }
+      if (struct.config != null) {
+        oprot.writeFieldBegin(CONFIG_FIELD_DESC);
+        oprot.writeString(struct.config);
+        oprot.writeFieldEnd();
+      }
+      if (struct.gui != null) {
+        oprot.writeFieldBegin(GUI_FIELD_DESC);
+        oprot.writeString(struct.gui);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -551,7 +731,13 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
       if (struct.isSetMsg()) {
         optionals.set(2);
       }
-      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetConfig()) {
+        optionals.set(3);
+      }
+      if (struct.isSetGui()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
       if (struct.isSetCode()) {
         oprot.writeString(struct.code);
       }
@@ -561,12 +747,18 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
       if (struct.isSetMsg()) {
         oprot.writeString(struct.msg);
       }
+      if (struct.isSetConfig()) {
+        oprot.writeString(struct.config);
+      }
+      if (struct.isSetGui()) {
+        oprot.writeString(struct.gui);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, RemoteInterpreterResult struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(3);
+      BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
         struct.code = iprot.readString();
         struct.setCodeIsSet(true);
@@ -578,6 +770,14 @@ public class RemoteInterpreterResult implements org.apache.thrift.TBase<RemoteIn
       if (incoming.get(2)) {
         struct.msg = iprot.readString();
         struct.setMsgIsSet(true);
+      }
+      if (incoming.get(3)) {
+        struct.config = iprot.readString();
+        struct.setConfigIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.gui = iprot.readString();
+        struct.setGuiIsSet(true);
       }
     }
   }

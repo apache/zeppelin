@@ -8,8 +8,8 @@ import java.util.TreeMap;
 import com.nflabs.zeppelin.display.Input.ParamOption;
 
 /**
- * Settings of a form. 
- * 
+ * Settings of a form.
+ *
  * @author Leemoonsoo
  *
  */
@@ -29,8 +29,6 @@ public class GUI implements Serializable {
   public Map<String, Object> getParams() {
     return params;
   }
-
-
 
   public Map<String, Input> getForms() {
     return forms;

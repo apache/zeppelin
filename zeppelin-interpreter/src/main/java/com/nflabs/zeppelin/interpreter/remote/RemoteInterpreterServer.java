@@ -19,6 +19,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.nflabs.zeppelin.display.GUI;
 import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.Interpreter.FormType;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterException;
 import com.nflabs.zeppelin.interpreter.InterpreterGroup;
@@ -108,6 +109,7 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
   public RemoteInterpreterResult interpret(String className, String st,
       RemoteInterpreterContext interpreterContext) throws TException {
     Interpreter intp = getInterpreter(className);
+    InterpreterContext context = convert(interpreterContext);
 
     Scheduler scheduler = intp.getScheduler();
     InterpretJobListener jobListener = new InterpretJobListener();
@@ -116,7 +118,7 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
         jobListener,
         intp,
         st,
-        convert(interpreterContext));
+        context);
 
     scheduler.submit(job);
 
@@ -132,7 +134,14 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
     if (job.getStatus() == Status.ERROR) {
       throw new TException(job.getException());
     } else {
-      return convert((InterpreterResult) job.getReturn());
+      if (intp.getFormType() == FormType.NATIVE) {
+        // serialize dynamic form
+
+      }
+
+      return convert((InterpreterResult) job.getReturn(),
+          context.getConfig(),
+          context.getGui());
     }
   }
 
@@ -232,10 +241,13 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
         gson.fromJson(ric.getGui(), GUI.class));
   }
 
-  private RemoteInterpreterResult convert(InterpreterResult result) {
+  private RemoteInterpreterResult convert(InterpreterResult result,
+      Map<String, Object> config, GUI gui) {
     return new RemoteInterpreterResult(
         result.code().name(),
         result.type().name(),
-        result.message());
+        result.message(),
+        gson.toJson(config),
+        gson.toJson(gui));
   }
 }
