@@ -61,6 +61,13 @@ limitations under the License.
             </select>
           </div>
 
+          <div class="form-group"
+            <b>Fork</b>
+            <input type="checkbox"
+                   ng-model="newInterpreterSetting.remote">
+            </input>
+          </div>
+
           <b>Properties</b>
           <table class="table table-striped properties">
             <tr>
@@ -132,6 +139,12 @@ limitations under the License.
           <button class="btn btn-default btn-xs"
                   ng-click="removeInterpreterSetting(setting.id)"><span class="fa fa-remove"></span> remove</button>
         </span>
+      </div>
+    </div>
+    <br />
+    <div class="row interpreter">
+      <div class="col-md-12">
+        <b>Fork</b> - {{setting.remote}}
       </div>
     </div>
     <br />

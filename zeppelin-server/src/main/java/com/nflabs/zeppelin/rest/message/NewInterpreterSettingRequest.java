@@ -9,10 +9,11 @@ import java.util.Map;
 public class NewInterpreterSettingRequest {
   String name;
   String group;
+  boolean remote;
   Map<String, String> properties;
-  
+
   public NewInterpreterSettingRequest() {
-    
+
   }
 
   public String getName() {
@@ -25,5 +26,9 @@ public class NewInterpreterSettingRequest {
 
   public Map<String, String> getProperties() {
     return properties;
+  }
+
+  public boolean getRemote() {
+    return remote;
   }
 }

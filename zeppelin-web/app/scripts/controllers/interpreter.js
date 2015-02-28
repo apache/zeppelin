@@ -30,6 +30,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       id : settingId,
       name : setting.name,
       group : setting.group,
+      remote : setting.remote,
       properties : setting.properties,
       interpreters : setting.interpreterGroup
     }
@@ -157,6 +158,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     var newSetting = {
       name : $scope.newInterpreterSetting.name,
       group : $scope.newInterpreterSetting.group,
+      remote : $scope.newInterpreterSetting.remote,
       properties : {}
     };
 
@@ -180,6 +182,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     $scope.newInterpreterSetting = {
       name : undefined,
       group : undefined,
+      remote : false,
       properties : {}
     };
     $scope.newInterpreterSetting.propertyValue = "";
