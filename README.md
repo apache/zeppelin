@@ -50,6 +50,10 @@ Spark 1.2.x
 ```
 mvn clean package -Pspark-1.2 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests 
 ```
+CDH 5.X
+```
+mvn clean package -Pspark-1.2 -Dhadoop.version=2.5.0-cdh5.3.0 -Phadoop-2.4 -DskipTests
+```
 
 ### Configure
 If you wish to configure Zeppelin option (like port number), configure the following files:

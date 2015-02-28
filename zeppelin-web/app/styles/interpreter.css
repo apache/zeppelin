@@ -13,7 +13,7 @@
   font-family: 'Roboto', sans-serif;
 }
 
-.interpreterHead textarea {
+.interpreterHead textarea, .interpreter textarea {
   width: 100%;
   display: block;
   height: 20px;
@@ -51,7 +51,15 @@
   overflow-y: auto;
 }
 
+.interpreter table tr {
+  height : 45px;
+}
+
 .interpreterSettingAdd {
   margin : 5px 5px 5px 5px;
   padding : 10px 10px 10px 10px;
+}
+
+.editable-wrap {
+  width : 100%;
 }
