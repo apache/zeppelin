@@ -449,7 +449,8 @@ public class InterpreterFactory {
    * @param properties
    * @throws IOException
    */
-  public void setPropertyAndRestart(String id, boolean remote, Properties properties) throws IOException {
+  public void setPropertyAndRestart(String id, boolean remote,
+      Properties properties) throws IOException {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
       if (intpsetting != null) {
