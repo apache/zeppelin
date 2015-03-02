@@ -83,6 +83,10 @@ public class SparkInterpreter extends Interpreter {
             .add("spark.cores.max",
                 getSystemDefault(null, "spark.cores.max", ""),
                 "Total number of cores to use. Empty value uses all available core.")
+            .add("spark.yarn.jar",
+                getSystemDefault("SPARK_YARN_JAR", "spark.yarn.jar", ""),
+                "The location of the Spark jar file. If you use yarn as a cluster, "
+                + "we should set this value")
             .add("args", "", "spark commandline args").build());
 
   }
@@ -200,6 +204,7 @@ public class SparkInterpreter extends Interpreter {
         if (value != null
             && value instanceof String
             && !((String) value).trim().isEmpty()) {
+          logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, value));
           conf.set(key, (String) value);
         }
       }

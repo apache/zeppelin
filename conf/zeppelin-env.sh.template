@@ -11,3 +11,7 @@
 # export ZEPPELIN_NOTEBOOK_DIR   # Where notebook saved
 # export ZEPPELIN_IDENT_STRING   # A string representing this instance of zeppelin. $USER by default
 # export ZEPPELIN_NICENESS       # The scheduling priority for daemons. Defaults to 0.
+
+# Options read in YARN client mode
+# export SPARK_YARN_JAR          # Yarn executor needs spark-assembly-*.jar for running tasks in a yarn cluster.
+# export HADOOP_CONF_DIR         # yarn-site.xml is located in configuration directory in HADOOP_CONF_DIR.

@@ -54,6 +54,10 @@ CDH 5.X
 ```
 mvn clean package -Pspark-1.2 -Dhadoop.version=2.5.0-cdh5.3.0 -Phadoop-2.4 -DskipTests
 ```
+Yarn (Hadoop 2.2.x and later)
+```
+mvn clean package -Pspark-1.1 -Dhadoop.version=2.2.0 -Phadoop-2.2 -Pyarn -DskipTests
+```
 
 ### Configure
 If you wish to configure Zeppelin option (like port number), configure the following files:
