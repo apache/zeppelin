@@ -68,11 +68,11 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
           replClass.getConstructor(new Class[] {Properties.class});
       Interpreter repl = constructor.newInstance(p);
       repl.setClassloaderUrls(new URL[]{});
-      repl.setInterpreterGroup(interpreterGroup);
 
       synchronized (interpreterGroup) {
         interpreterGroup.add(repl);
       }
+      repl.setInterpreterGroup(interpreterGroup);
     } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
         | InstantiationException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
@@ -222,7 +222,7 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
   @Override
   public String getFormType(String className) throws TException {
     Interpreter intp = getInterpreter(className);
-    return intp.getFormType().name();
+    return intp.getFormType().toString();
   }
 
   @Override

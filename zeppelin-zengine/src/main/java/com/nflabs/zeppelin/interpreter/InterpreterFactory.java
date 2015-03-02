@@ -320,15 +320,14 @@ public class InterpreterFactory {
           if (option.isRemote()) {
             intp = createRemoteRepl(info.getPath(),
                 info.getClassName(),
-                properties,
-                interpreterGroup);
+                properties);
           } else {
             intp = createRepl(info.getPath(),
                 info.getClassName(),
-                properties,
-                interpreterGroup);
+                properties);
           }
           interpreterGroup.add(intp);
+          intp.setInterpreterGroup(interpreterGroup);
           break;
         }
       }
@@ -492,7 +491,7 @@ public class InterpreterFactory {
   }
 
   private Interpreter createRepl(String dirName, String className,
-      Properties property, InterpreterGroup interpreterGroup)
+      Properties property)
       throws InterpreterException {
     logger.info("Create repl {} from {}", className, dirName);
 
@@ -531,7 +530,6 @@ public class InterpreterFactory {
       repl.setClassloaderUrls(ccl.getURLs());
       LazyOpenInterpreter intp = new LazyOpenInterpreter(
           new ClassloaderInterpreter(repl, cl));
-      intp.setInterpreterGroup(interpreterGroup);
       return intp;
     } catch (SecurityException e) {
       throw new InterpreterException(e);
@@ -554,11 +552,10 @@ public class InterpreterFactory {
 
 
   private Interpreter createRemoteRepl(String interpreterPath, String className,
-      Properties property, InterpreterGroup interpreterGroup) {
+      Properties property) {
 
     LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(
         property, className, conf.getInterpreterRemoteRunnerPath(), interpreterPath));
-    intp.setInterpreterGroup(interpreterGroup);
     return intp;
   }
 

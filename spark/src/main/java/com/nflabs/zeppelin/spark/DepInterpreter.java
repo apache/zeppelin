@@ -35,6 +35,7 @@ import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
 import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.spark.dep.DependencyContext;
 
 
@@ -205,7 +206,7 @@ public class DepInterpreter extends Interpreter {
 
   @Override
   public FormType getFormType() {
-    return null;
+    return FormType.NATIVE;
   }
 
   @Override
@@ -254,13 +255,15 @@ public class DepInterpreter extends Interpreter {
     if (intpGroup == null) {
       return null;
     }
-    for (Interpreter intp : intpGroup){
-      if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
-        Interpreter p = intp;
-        while (p instanceof WrappedInterpreter) {
-          p = ((WrappedInterpreter) p).getInnerInterpreter();
+    synchronized (intpGroup) {
+      for (Interpreter intp : intpGroup){
+        if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
+          Interpreter p = intp;
+          while (p instanceof WrappedInterpreter) {
+            p = ((WrappedInterpreter) p).getInnerInterpreter();
+          }
+          return (SparkInterpreter) p;
         }
-        return (SparkInterpreter) p;
       }
     }
     return null;
@@ -268,7 +271,8 @@ public class DepInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return getSparkInterpreter().getScheduler();
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
+        DepInterpreter.class.getName() + this.hashCode());
   }
 
 }

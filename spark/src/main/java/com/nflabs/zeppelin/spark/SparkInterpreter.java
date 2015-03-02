@@ -158,13 +158,15 @@ public class SparkInterpreter extends Interpreter {
   private DepInterpreter getDepInterpreter() {
     InterpreterGroup intpGroup = getInterpreterGroup();
     if (intpGroup == null) return null;
-    for (Interpreter intp : intpGroup) {
-      if (intp.getClassName().equals(DepInterpreter.class.getName())) {
-        Interpreter p = intp;
-        while (p instanceof WrappedInterpreter) {
-          p = ((WrappedInterpreter) p).getInnerInterpreter();
+    synchronized (intpGroup) {
+      for (Interpreter intp : intpGroup) {
+        if (intp.getClassName().equals(DepInterpreter.class.getName())) {
+          Interpreter p = intp;
+          while (p instanceof WrappedInterpreter) {
+            p = ((WrappedInterpreter) p).getInnerInterpreter();
+          }
+          return (DepInterpreter) p;
         }
-        return (DepInterpreter) p;
       }
     }
     return null;
@@ -647,7 +649,12 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        SparkInterpreter.class.getName() + this.hashCode());
+    DepInterpreter depIntp = getDepInterpreter();
+    if (depIntp == null) {
+      return SchedulerFactory.singleton().createOrGetFIFOScheduler(
+          SparkInterpreter.class.getName() + this.hashCode());
+    } else {
+      return depIntp.getScheduler();
+    }
   }
 }

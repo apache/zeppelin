@@ -96,8 +96,7 @@ public class RemoteInterpreter extends Interpreter {
       client.createInterpreter(className, (Map) property);
       client.open(className);
     } catch (TException e) {
-      e.printStackTrace();
-      throw new InterpreterException(e.getCause());
+      throw new InterpreterException(e);
     } finally {
       interpreterProcess.releaseClient(client);
     }
@@ -116,7 +115,7 @@ public class RemoteInterpreter extends Interpreter {
     try {
       client.close(className);
     } catch (TException e) {
-      throw new InterpreterException(e.getCause());
+      throw new InterpreterException(e);
     } finally {
       interpreterProcess.releaseClient(client);
     }
@@ -154,7 +153,7 @@ public class RemoteInterpreter extends Interpreter {
 
       return convert(remoteResult);
     } catch (TException e) {
-      throw new InterpreterException(e.getCause());
+      throw new InterpreterException(e);
     } finally {
       interpreterProcess.releaseClient(client);
     }
@@ -173,7 +172,7 @@ public class RemoteInterpreter extends Interpreter {
     try {
       client.cancel(className, convert(context));
     } catch (TException e) {
-      throw new InterpreterException(e.getCause());
+      throw new InterpreterException(e);
     } finally {
       interpreterProcess.releaseClient(client);
     }
@@ -198,8 +197,7 @@ public class RemoteInterpreter extends Interpreter {
       formType = FormType.valueOf(client.getFormType(className));
       return formType;
     } catch (TException e) {
-      e.printStackTrace();
-      throw new InterpreterException(e.getCause());
+      throw new InterpreterException(e);
     } finally {
       interpreterProcess.releaseClient(client);
     }
@@ -218,7 +216,7 @@ public class RemoteInterpreter extends Interpreter {
     try {
       return client.getProgress(className, convert(context));
     } catch (TException e) {
-      throw new InterpreterException(e.getCause());
+      throw new InterpreterException(e);
     } finally {
       interpreterProcess.releaseClient(client);
     }
@@ -238,7 +236,7 @@ public class RemoteInterpreter extends Interpreter {
     try {
       return client.completion(buf, buf, cursor);
     } catch (TException e) {
-      throw new InterpreterException(e.getCause());
+      throw new InterpreterException(e);
     } finally {
       interpreterProcess.releaseClient(client);
     }
