@@ -28,6 +28,7 @@ import scala.collection.mutable.HashSet;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
+import com.nflabs.zeppelin.interpreter.InterpreterGroup;
 import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
@@ -76,13 +77,16 @@ public class SparkSqlInterpreter extends Interpreter {
 
 
   private SparkInterpreter getSparkInterpreter() {
-    for (Interpreter intp : getInterpreterGroup()){
-      if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
-        Interpreter p = intp;
-        while (p instanceof WrappedInterpreter) {
-          p = ((WrappedInterpreter) p).getInnerInterpreter();
+    InterpreterGroup intpGroup = getInterpreterGroup();
+    synchronized (intpGroup) {
+      for (Interpreter intp : getInterpreterGroup()){
+        if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
+          Interpreter p = intp;
+          while (p instanceof WrappedInterpreter) {
+            p = ((WrappedInterpreter) p).getInnerInterpreter();
+          }
+          return (SparkInterpreter) p;
         }
-        return (SparkInterpreter) p;
       }
     }
     return null;

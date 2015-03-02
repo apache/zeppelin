@@ -161,11 +161,8 @@ public class DepInterpreter extends Interpreter {
     out.reset();
 
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
-    if (sparkInterpreter == null) {
-      return new InterpreterResult(Code.ERROR,
-          "Must be used with SparkInterpreter");
-    }
-    if (sparkInterpreter.isSparkContextInitialized()) {
+
+    if (sparkInterpreter != null && sparkInterpreter.isSparkContextInitialized()) {
       return new InterpreterResult(Code.ERROR,
           "Must be used before SparkInterpreter (%spark) initialized");
     }
