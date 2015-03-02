@@ -74,6 +74,13 @@ Mesos
     
 If you set `SPARK_HOME`, you should deploy spark binary on the same location to all worker nodes. And if you set `spark.executor.uri`, every worker can read that file on its node.
 
+Yarn
+    # ./conf/zeppelin-env.sh
+    export export SPARK_YARN_JAR=/path/to/spark-assembly-*.jar
+    export HADOOP_CONF_DIR=/path/to/hadoop_conf_dir
+
+`SPARK_YARN_JAR` is deployed for running executor. `HADOOP_CONF_DIR` should contains yarn-site.xml and core-site.xml. 
+
 ### Run
     ./bin/zeppelin-daemon.sh start
 
