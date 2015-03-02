@@ -84,7 +84,7 @@ public class InterpreterRestApi {
         NewInterpreterSettingRequest.class);
     Properties p = new Properties();
     p.putAll(request.getProperties());
-    interpreterFactory.add(request.getName(), request.getGroup(), request.getRemote(), p);
+    interpreterFactory.add(request.getName(), request.getGroup(), request.getOption(), p);
     return new JsonResponse(Status.CREATED, "").build();
   }
 
@@ -96,7 +96,7 @@ public class InterpreterRestApi {
     try {
       UpdateInterpreterSettingRequest p = gson.fromJson(message,
           UpdateInterpreterSettingRequest.class);
-      interpreterFactory.setPropertyAndRestart(settingId, p.isRemote(), p.getProperties());
+      interpreterFactory.setPropertyAndRestart(settingId, p.getOption(), p.getProperties());
     } catch (InterpreterException e) {
       return new JsonResponse(Status.NOT_FOUND, e.getMessage(), e).build();
     } catch (IOException e) {

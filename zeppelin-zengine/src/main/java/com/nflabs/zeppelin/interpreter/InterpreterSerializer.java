@@ -2,17 +2,21 @@ package com.nflabs.zeppelin.interpreter;
 
 import java.lang.reflect.Type;
 
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 
 /**
- * Interpreter class serializer for gson 
+ * Interpreter class serializer for gson
  *
  */
-public class InterpreterSerializer implements JsonSerializer<Interpreter> {
+public class InterpreterSerializer implements JsonSerializer<Interpreter>,
+  JsonDeserializer<Interpreter> {
 
   @Override
   public JsonElement serialize(Interpreter interpreter, Type type,
@@ -24,6 +28,12 @@ public class InterpreterSerializer implements JsonSerializer<Interpreter> {
         Interpreter.findRegisteredInterpreterByClassName(
             interpreter.getClassName()).getName());
     return json;
+  }
+
+  @Override
+  public Interpreter deserialize(JsonElement json, Type typeOfT,
+      JsonDeserializationContext context) throws JsonParseException {
+    return null;
   }
 
 }

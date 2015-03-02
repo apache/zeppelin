@@ -36,7 +36,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       id : settingId,
       name : setting.name,
       group : setting.group,
-      remote : setting.remote,
+      option : angular.copy(setting.option),
       properties : property,
       interpreters : setting.interpreterGroup
     };
@@ -90,6 +90,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       var setting = $scope.interpreterSettings[i];
       if(setting.id === settingId) {
         angular.copy(setting.properties, $scope.interpreterSettingProperties);
+        angular.copy(setting.option, $scope.interpreterSettingOption);
         break;
       }
     }
@@ -105,14 +106,15 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     $scope.addNewInterpreterProperty(settingId);
 
     var request = {
-      remote : false,
+      option : {
+      },
       properties : {},
     };
 
     for (var i=0; i < $scope.interpreterSettings.length; i++) {
       var setting = $scope.interpreterSettings[i];
       if(setting.id === settingId) {
-        request.remote = setting.remote;
+        request.option = angular.copy(setting.option);
         for (var p in setting.properties) {
           request.properties[p] = setting.properties[p].value;
         }
@@ -139,8 +141,9 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   $scope.resetInterpreterSetting = function(settingId){
     for (var i=0; i<$scope.interpreterSettings.length; i++) {
       var setting = $scope.interpreterSettings[i];
-      if (setting.id ===settingId) {
+      if (setting.id === settingId) {
         angular.copy($scope.interpreterSettingProperties, setting.properties);
+        angular.copy($scope.interpreterSettingOption, setting.option);
         break;
       }
     }
@@ -224,7 +227,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     var newSetting = {
       name : $scope.newInterpreterSetting.name,
       group : $scope.newInterpreterSetting.group,
-      remote : $scope.newInterpreterSetting.remote,
+      option : angular.copy($scope.newInterpreterSetting.option),
       properties : {}
     };
 
@@ -248,7 +251,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     $scope.newInterpreterSetting = {
       name : undefined,
       group : undefined,
-      remote : false,
+      option : {},
       properties : {}
     };
     $scope.newInterpreterSetting.propertyValue = '';

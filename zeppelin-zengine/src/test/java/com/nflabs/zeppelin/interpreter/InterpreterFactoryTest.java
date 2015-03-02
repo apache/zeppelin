@@ -80,7 +80,7 @@ public class InterpreterFactoryTest {
     assertEquals(factory.get(all.get(0)).getInterpreterGroup().getFirst().getClassName(), "com.nflabs.zeppelin.interpreter.mock.MockInterpreter1");
 
     // add setting
-    factory.add("a mock", "mock2", false, new Properties());
+    factory.add("a mock", "mock2", new InterpreterOption(false), new Properties());
     all = factory.getDefaultInterpreterSettingList();
     assertEquals(2, all.size());
     assertEquals("mock1", factory.get(all.get(0)).getName());
@@ -95,7 +95,7 @@ public class InterpreterFactoryTest {
     // check if file saved
     assertTrue(new File(conf.getInterpreterSettingPath()).exists());
 
-    factory.add("newsetting", "mock1", false, new Properties());
+    factory.add("newsetting", "mock1", new InterpreterOption(false), new Properties());
     assertEquals(3, factory.get().size());
 
     InterpreterFactory factory2 = new InterpreterFactory(conf);

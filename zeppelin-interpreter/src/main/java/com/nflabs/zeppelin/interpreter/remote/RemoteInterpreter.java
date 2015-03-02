@@ -198,6 +198,7 @@ public class RemoteInterpreter extends Interpreter {
       formType = FormType.valueOf(client.getFormType(className));
       return formType;
     } catch (TException e) {
+      e.printStackTrace();
       throw new InterpreterException(e.getCause());
     } finally {
       interpreterProcess.releaseClient(client);

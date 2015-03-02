@@ -2,21 +2,23 @@ package com.nflabs.zeppelin.rest.message;
 
 import java.util.Properties;
 
+import com.nflabs.zeppelin.interpreter.InterpreterOption;
+
 /**
  *
  */
 public class UpdateInterpreterSettingRequest {
-  boolean remote;
+  InterpreterOption option;
   Properties properties;
 
-  public UpdateInterpreterSettingRequest(boolean remote,
+  public UpdateInterpreterSettingRequest(InterpreterOption option,
       Properties properties) {
     super();
-    this.remote = remote;
+    this.option = option;
     this.properties = properties;
   }
-  public boolean isRemote() {
-    return remote;
+  public InterpreterOption getOption() {
+    return option;
   }
   public Properties getProperties() {
     return properties;

@@ -64,7 +64,7 @@ limitations under the License.
           <div class="form-group"
             <b>Fork</b>
             <input type="checkbox"
-                   ng-model="newInterpreterSetting.remote">
+                   ng-model="newInterpreterSetting.option.remote">
             </input>
           </div>
 
@@ -151,12 +151,12 @@ limitations under the License.
     <div class="row interpreter">
       <div class="col-md-12">
         <div ng-if="!valueform.$visible">
-          <b>Fork</b> - {{setting.remote}}
+          <b>Fork</b> - {{setting.option.remote}}
         </div>
         <div ng-if="valueform.$visible">
           <b>Fork</b>
           <input type="checkbox"
-                 ng-model="setting.remote">
+                 ng-model="setting.option.remote">
           </input>
         </div>
       </div>

@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
@@ -140,7 +139,7 @@ public class InterpreterFactory {
 
             if (found) {
               // add all interpreters in group
-              add(groupName, groupName, false, p);
+              add(groupName, groupName, new InterpreterOption(false), p);
               groupClassNameMap.remove(groupName);
               break;
             }
@@ -182,38 +181,27 @@ public class InterpreterFactory {
     fis.close();
 
     String json = sb.toString();
-    Map<String, Object> savedObject = gson.fromJson(json,
-        new TypeToken<Map<String, Object>>() {}.getType());
+    InterpreterInfoSaving info = gson.fromJson(json, InterpreterInfoSaving.class);
 
-    Map<String, Map<String, Object>> settings = (Map<String, Map<String, Object>>) savedObject
-        .get("interpreterSettings");
-    Map<String, List<String>> bindings = (Map<String, List<String>>) savedObject
-        .get("interpreterBindings");
+    for (String k : info.interpreterSettings.keySet()) {
+      InterpreterSetting setting = info.interpreterSettings.get(k);
 
-    for (String k : settings.keySet()) {
-      Map<String, Object> set = settings.get(k);
+      InterpreterGroup interpreterGroup = createInterpreterGroup(
+          setting.getGroup(),
+          setting.getOption(),
+          setting.getProperties());
 
-      String id = (String) set.get("id");
-      String name = (String) set.get("name");
-      String group = (String) set.get("group");
-      Boolean remote = (Boolean) set.get("remote");
-      if (remote == null) {
-        remote = false;
-      }
-      Properties properties = new Properties();
-      properties.putAll((Map<String, String>) set.get("properties"));
-
-      InterpreterGroup interpreterGroup = createInterpreterGroup(group, remote, properties);
       InterpreterSetting intpSetting = new InterpreterSetting(
-          id,
-          name,
-          group,
-          remote,
+          setting.id(),
+          setting.getName(),
+          setting.getGroup(),
+          setting.getOption(),
           interpreterGroup);
+
       interpreterSettings.put(k, intpSetting);
     }
 
-    this.interpreterBindings = bindings;
+    this.interpreterBindings = info.interpreterBindings;
   }
 
 
@@ -221,11 +209,11 @@ public class InterpreterFactory {
     String jsonString;
 
     synchronized (interpreterSettings) {
-      Map<String, Object> saveObject = new HashMap<String, Object>();
-      saveObject.put("interpreterSettings", interpreterSettings);
-      saveObject.put("interpreterBindings", interpreterBindings);
+      InterpreterInfoSaving info = new InterpreterInfoSaving();
+      info.interpreterBindings = interpreterBindings;
+      info.interpreterSettings = interpreterSettings;
 
-      jsonString = gson.toJson(saveObject);
+      jsonString = gson.toJson(info);
     }
 
     File settingFile = new File(conf.getInterpreterSettingPath());
@@ -297,15 +285,16 @@ public class InterpreterFactory {
    * @throws InterpreterException
    * @throws IOException
    */
-  public InterpreterGroup add(String name, String groupName, boolean remote, Properties properties)
+  public InterpreterGroup add(String name, String groupName,
+      InterpreterOption option, Properties properties)
       throws InterpreterException, IOException {
     synchronized (interpreterSettings) {
-      InterpreterGroup interpreterGroup = createInterpreterGroup(groupName, remote, properties);
+      InterpreterGroup interpreterGroup = createInterpreterGroup(groupName, option, properties);
 
       InterpreterSetting intpSetting = new InterpreterSetting(
           name,
           groupName,
-          remote,
+          option,
           interpreterGroup);
       interpreterSettings.put(intpSetting.id(), intpSetting);
 
@@ -315,7 +304,7 @@ public class InterpreterFactory {
   }
 
   private InterpreterGroup createInterpreterGroup(String groupName,
-      boolean remote,
+      InterpreterOption option,
       Properties properties)
       throws InterpreterException {
     InterpreterGroup interpreterGroup = new InterpreterGroup();
@@ -328,7 +317,7 @@ public class InterpreterFactory {
         if (info.getClassName().equals(className)
             && info.getGroup().equals(groupName)) {
           Interpreter intp;
-          if (remote) {
+          if (option.isRemote()) {
             intp = createRemoteRepl(info.getPath(),
                 info.getClassName(),
                 properties,
@@ -449,7 +438,7 @@ public class InterpreterFactory {
    * @param properties
    * @throws IOException
    */
-  public void setPropertyAndRestart(String id, boolean remote,
+  public void setPropertyAndRestart(String id, InterpreterOption option,
       Properties properties) throws IOException {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
@@ -457,10 +446,10 @@ public class InterpreterFactory {
         intpsetting.getInterpreterGroup().close();
         intpsetting.getInterpreterGroup().destroy();
 
-        intpsetting.setRemote(remote);
+        intpsetting.setOption(option);
 
         InterpreterGroup interpreterGroup = createInterpreterGroup(
-            intpsetting.getGroup(), remote, properties);
+            intpsetting.getGroup(), option, properties);
         intpsetting.setInterpreterGroup(interpreterGroup);
         saveToFile();
       } else {
@@ -479,7 +468,7 @@ public class InterpreterFactory {
           intpsetting.getInterpreterGroup().destroy();
 
           InterpreterGroup interpreterGroup = createInterpreterGroup(
-              intpsetting.getGroup(), intpsetting.isRemote(), intpsetting.getProperties());
+              intpsetting.getGroup(), intpsetting.getOption(), intpsetting.getProperties());
           intpsetting.setInterpreterGroup(interpreterGroup);
         } else {
           throw new InterpreterException("Interpreter setting id " + id

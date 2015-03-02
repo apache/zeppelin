@@ -15,25 +15,25 @@ public class InterpreterSetting {
   private String description;
   private Properties properties;
   private InterpreterGroup interpreterGroup;
-  private boolean remote;
+  private InterpreterOption option;
 
   public InterpreterSetting(String id, String name,
       String group,
-      boolean remote,
+      InterpreterOption option,
       InterpreterGroup interpreterGroup) {
     this.id = id;
     this.name = name;
     this.group = group;
     this.properties = interpreterGroup.getProperty();
-    this.remote = remote;
+    this.option = option;
     this.interpreterGroup = interpreterGroup;
   }
 
   public InterpreterSetting(String name,
       String group,
-      boolean remote,
+      InterpreterOption option,
       InterpreterGroup interpreterGroup) {
-    this(generateId(), name, group, remote, interpreterGroup);
+    this(generateId(), name, group, option, interpreterGroup);
   }
 
   public String id() {
@@ -77,11 +77,15 @@ public class InterpreterSetting {
     return properties;
   }
 
-  public boolean isRemote() {
-    return remote;
+  public InterpreterOption getOption() {
+    if (option == null) {
+      option = new InterpreterOption();
+    }
+
+    return option;
   }
 
-  public void setRemote(boolean remote) {
-    this.remote = remote;
+  public void setOption(InterpreterOption option) {
+    this.option = option;
   }
 }
