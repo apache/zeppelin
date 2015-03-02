@@ -68,6 +68,24 @@ If you wish to configure Zeppelin option (like port number), configure the follo
 (You can copy ```./conf/zeppelin-env.sh.template``` into ```./conf/zeppelin-env.sh```. 
 Same for ```zeppein-site.xml```.)
 
+#### External cluster configuration
+Mesos
+
+    # ./conf/zeppelin-env.sh
+    export MASTER=mesos://...
+    export ZEPPELIN_JAVA_OPTS="-Dspark.executor.uri=/path/to/spark-*.tgz" or SPARK_HOME="/path/to/spark_home"
+    export MESOS_NATIVE_LIBRARY=/path/to/libmesos.so
+    
+If you set `SPARK_HOME`, you should deploy spark binary on the same location to all worker nodes. And if you set `spark.executor.uri`, every worker can read that file on its node.
+
+Yarn
+
+    # ./conf/zeppelin-env.sh
+    export export SPARK_YARN_JAR=/path/to/spark-assembly-*.jar
+    export HADOOP_CONF_DIR=/path/to/hadoop_conf_dir
+
+`SPARK_YARN_JAR` is deployed for running executor. `HADOOP_CONF_DIR` should contains yarn-site.xml and core-site.xml. 
+
 ### Run
     ./bin/zeppelin-daemon.sh start
 
