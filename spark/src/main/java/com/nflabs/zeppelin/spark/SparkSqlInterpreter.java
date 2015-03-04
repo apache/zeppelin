@@ -33,6 +33,7 @@ import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
+import com.nflabs.zeppelin.interpreter.LazyOpenInterpreter;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
@@ -82,8 +83,10 @@ public class SparkSqlInterpreter extends Interpreter {
     for (Interpreter intp : getInterpreterGroup()) {
       if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
         Interpreter p = intp;
-        p.open();
         while (p instanceof WrappedInterpreter) {
+          if (p instanceof LazyOpenInterpreter) {
+            p.open();
+          }
           p = ((WrappedInterpreter) p).getInnerInterpreter();
         }
         return (SparkInterpreter) p;
