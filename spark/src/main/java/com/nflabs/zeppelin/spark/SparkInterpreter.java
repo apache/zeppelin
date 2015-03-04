@@ -649,12 +649,7 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    DepInterpreter depIntp = getDepInterpreter();
-    if (depIntp == null) {
-      return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-          SparkInterpreter.class.getName() + this.hashCode());
-    } else {
-      return depIntp.getScheduler();
-    }
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
+      SparkInterpreter.class.getName() + this.hashCode());
   }
 }

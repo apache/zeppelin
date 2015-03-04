@@ -143,4 +143,8 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   public void onProcessFailed(ExecuteException e) {
     running = false;
   }
+
+  public boolean isRunning() {
+    return running;
+  }
 }

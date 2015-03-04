@@ -69,8 +69,51 @@ public class RemoteInterpreter extends Interpreter {
     }
   }
 
+  private synchronized void init() {
+    RemoteInterpreterProcess interpreterProcess = null;
+
+    synchronized (interpreterGroupReference) {
+      if (interpreterGroupReference.containsKey(getInterpreterGroupKey(getInterpreterGroup()))) {
+        interpreterProcess = interpreterGroupReference
+            .get(getInterpreterGroupKey(getInterpreterGroup()));
+      } else {
+        throw new InterpreterException("Unexpected error");
+      }
+    }
+
+    if (interpreterProcess.isRunning() == true) {
+      // already initialized
+      return;
+    }
+
+    // create all interpreter class in this interpreter group
+    interpreterProcess.reference();
+
+    Client client = null;
+    try {
+      client = interpreterProcess.getClient();
+    } catch (Exception e1) {
+      throw new InterpreterException(e1);
+    }
+
+    try {
+      logger.info("Create remote interpreter {}", className);
+      for (Interpreter intp : this.getInterpreterGroup()) {
+        client.createInterpreter(intp.getClassName(), (Map) property);
+      }
+    } catch (TException e) {
+      throw new InterpreterException(e);
+    } finally {
+      interpreterProcess.releaseClient(client);
+    }
+  }
+
+
+
   @Override
   public void open() {
+    init();
+
     RemoteInterpreterProcess interpreterProcess = null;
 
     synchronized (interpreterGroupReference) {
@@ -92,8 +135,7 @@ public class RemoteInterpreter extends Interpreter {
     }
 
     try {
-      logger.info("Create remote interpreter {}", className);
-      client.createInterpreter(className, (Map) property);
+      logger.info("open remote interpreter {}", className);
       client.open(className);
     } catch (TException e) {
       throw new InterpreterException(e);
