@@ -210,7 +210,7 @@ public class SparkInterpreter extends Interpreter {
     return sparkContext;
   }
 
-  private static String getSystemDefault(
+  public static String getSystemDefault(
       String envName,
       String propertyName,
       String defaultValue) {
