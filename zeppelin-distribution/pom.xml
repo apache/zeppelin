@@ -11,9 +11,14 @@
   <artifactId>zeppelin-distribution</artifactId>
   <packaging>pom</packaging>
   <name>Zeppelin: Packaging distribution</name>
+    
+  <properties>
+      <deb.pkg.name>zeppelin</deb.pkg.name>
+      <deb.install.path>/usr/share/zeppelin</deb.install.path>
+  </properties>
 
-  <!-- NOTE: These dependency declarations are only required to sort this project to the 
-       end of the line in the multimodule build. 
+  <!-- NOTE: These dependency declarations are only required to sort this project to the
+       end of the line in the multimodule build.
     -->
   <dependencies>
     <dependency>
@@ -139,6 +144,89 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>deb</id>
+      <build>
+        <plugins>
+          <plugin>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>buildnumber-maven-plugin</artifactId>
+              <version>1.2</version>
+              <executions>
+                  <execution>
+                      <phase>validate</phase>
+                      <goals>
+                          <goal>create</goal>
+                      </goals>
+                      <configuration>
+                          <shortRevisionLength>8</shortRevisionLength>
+                      </configuration>
+                  </execution>
+              </executions>
+          </plugin>
+          <plugin>
+              <groupId>org.vafer</groupId>
+              <artifactId>jdeb</artifactId>
+              <version>1.4</version>
+              <executions>
+                  <execution>
+                      <phase>package</phase>
+                      <goals>
+                          <goal>jdeb</goal>
+                      </goals>
+                      <configuration>
+                          <deb>${project.build.directory}/zeppelin-${project.version}-${buildNumber}_all.deb</deb>
+                          <attach>false</attach>
+                          <skipPOMs>false</skipPOMs>
+                          <dataSet>
+                              <data>
+                                  <type>files</type>
+                                  <paths>
+                                      <path>${project.parent.basedir}/LICENSE</path>
+                                      <path>${project.parent.basedir}/README.md</path>
+                                  </paths>
+                                  <dst>${deb.install.path}</dst>
+                              </data>
+                              <data>
+                                  <type>directory</type>
+                                  <src>${project.parent.basedir}/bin</src>
+                                  <mapper>
+                                      <type>perm</type>
+                                      <prefix>${deb.install.path}/bin</prefix>
+                                  </mapper>
+                              </data>
+                              <data>
+                                  <type>directory</type>
+                                  <src>${project.parent.basedir}/conf</src>
+                                  <mapper>
+                                      <type>perm</type>
+                                      <prefix>${deb.install.path}/conf</prefix>
+                                  </mapper>
+                              </data>
+                              <data>
+                                  <type>directory</type>
+                                  <src>${project.parent.basedir}/interpreter</src>
+                                  <mapper>
+                                      <type>perm</type>
+                                      <prefix>${deb.install.path}/interpreter</prefix>
+                                  </mapper>
+                              </data>
+                              <data>
+                                  <type>directory</type>
+                                  <src>${project.parent.basedir}/notebook</src>
+                                  <includes>2A94M5J1Z/note.json</includes>
+                                  <mapper>
+                                      <type>perm</type>
+                                      <prefix>${deb.install.path}/notebook</prefix>
+                                  </mapper>
+                              </data>
+                          </dataSet>
+                      </configuration>
+                  </execution>
+              </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
-
 </project>
