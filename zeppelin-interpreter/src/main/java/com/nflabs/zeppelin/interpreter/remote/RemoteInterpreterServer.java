@@ -24,6 +24,7 @@ import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterException;
 import com.nflabs.zeppelin.interpreter.InterpreterGroup;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.interpreter.LazyOpenInterpreter;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterResult;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterService;
@@ -70,7 +71,7 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
       repl.setClassloaderUrls(new URL[]{});
 
       synchronized (interpreterGroup) {
-        interpreterGroup.add(repl);
+        interpreterGroup.add(new LazyOpenInterpreter(repl));
       }
       repl.setInterpreterGroup(interpreterGroup);
     } catch (ClassNotFoundException | NoSuchMethodException | SecurityException

@@ -35,6 +35,7 @@ import com.nflabs.zeppelin.interpreter.InterpreterGroup;
 import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.interpreter.LazyOpenInterpreter;
 import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
 
 /**
@@ -300,6 +301,9 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
         if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
           Interpreter p = intp;
           while (p instanceof WrappedInterpreter) {
+            if (p instanceof LazyOpenInterpreter) {
+              ((LazyOpenInterpreter) p).open();
+            }
             p = ((WrappedInterpreter) p).getInnerInterpreter();
           }
           return (SparkInterpreter) p;
