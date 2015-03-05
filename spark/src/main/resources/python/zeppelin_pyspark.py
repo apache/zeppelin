@@ -54,11 +54,39 @@ sys.stdout = output
 sys.stderr = output
 
 while True :
-  stmts = intp.getStatements()
+  st = intp.getStatements()
   try:
-    eval(compile(stmts, "<String>", "single"))
+    stmts = st.split("\n")
+    single = None
+    incomplete = None
+
+    for s in stmts:
+      if s == None or len(s.strip()) == 0:
+        continue
+
+      if single == None:
+        single = s
+      else:
+        single += "\n" + s
+
+      try :
+        eval(compile(single, "<String>", "single"))
+        single = ""
+        incomplete = None
+      except SyntaxError as e:
+        if str(e).startswith("unexpected EOF while parsing") :
+          # incomplete expression
+          incomplete = e
+          continue
+        else :
+          # actual error
+          raise e
+
+    if incomplete != None:
+      raise incomplete
+
     intp.setStatementsFinished(output.get(), False)
   except:
-    intp.setStatementsFinished(sys.exc_info()[0], True)
-  finally:
-    output.reset()
+    intp.setStatementsFinished(str(sys.exc_info()), True)
+
+  output.reset()
