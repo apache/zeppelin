@@ -31,12 +31,11 @@ fi
 
 . "${bin}/common.sh"
 
-ZEPPELIN_CLASSPATH="${ZEPPELIN_CONF_DIR}"
+ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
 addJarInDir "${INTERPRETER_DIR}"
 
-export ZEPPELIN_CLASSPATH
 export CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
 HOSTNAME=$(hostname)

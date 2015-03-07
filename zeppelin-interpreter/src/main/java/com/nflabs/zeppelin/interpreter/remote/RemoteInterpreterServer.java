@@ -9,11 +9,11 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.thrift.TException;
-import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -36,25 +36,63 @@ import com.nflabs.zeppelin.scheduler.Scheduler;
 /**
  *
  */
-public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
-
-  public static RemoteInterpreterService.Processor<RemoteInterpreterServer> processor;
-  public static RemoteInterpreterServer handler;
-
-  public static void main(String [] args) throws TTransportException {
-    handler = new RemoteInterpreterServer();
-    processor = new RemoteInterpreterService.Processor<RemoteInterpreterServer>(handler);
-
-    int port = Integer.parseInt(args[0]);
-    TServerTransport serverTransport = new TServerSocket(port);
-    TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(
-        serverTransport).processor(processor));
-
-    server.serve();
-  }
+public class RemoteInterpreterServer
+  extends Thread
+  implements RemoteInterpreterService.Iface {
+  Logger logger = LoggerFactory.getLogger(RemoteInterpreterServer.class);
 
   InterpreterGroup interpreterGroup = new InterpreterGroup();
   Gson gson = new Gson();
+
+  RemoteInterpreterService.Processor<RemoteInterpreterServer> processor;
+  RemoteInterpreterServer handler;
+  private int port;
+  private TThreadPoolServer server;
+
+  public RemoteInterpreterServer(int port) throws TTransportException {
+    this.port = port;
+    processor = new RemoteInterpreterService.Processor<RemoteInterpreterServer>(this);
+    TServerSocket serverTransport = new TServerSocket(port);
+    server = new TThreadPoolServer(
+        new TThreadPoolServer.Args(serverTransport).processor(processor));
+  }
+
+  @Override
+  public void run() {
+    logger.info("Starting remote interpreter server on port {}", port);
+    server.serve();
+  }
+
+  @Override
+  public void shutdown() throws TException {
+    // server.stop() does not always finish server.serve() loop
+    // sometimes server.serve() is hanging even after server.stop() call.
+    // this case, need to force kill the process
+    server.stop();
+  }
+
+  public int getPort() {
+    return port;
+  }
+
+  public boolean isRunning() {
+    if (server == null) {
+      return false;
+    } else {
+      return server.isServing();
+    }
+  }
+
+
+  public static void main(String[] args)
+      throws TTransportException, InterruptedException {
+    int port = Integer.parseInt(args[0]);
+    RemoteInterpreterServer remoteInterpreterServer = new RemoteInterpreterServer(port);
+    remoteInterpreterServer.start();
+    remoteInterpreterServer.join();
+    System.exit(0);
+  }
+
 
   @Override
   public void createInterpreter(String className, Map<String, String> properties)
@@ -104,6 +142,7 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
     Interpreter intp = getInterpreter(className);
     intp.close();
   }
+
 
   @Override
   public RemoteInterpreterResult interpret(String className, String st,
