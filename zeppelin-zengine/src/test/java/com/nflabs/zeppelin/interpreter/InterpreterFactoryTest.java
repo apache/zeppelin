@@ -36,7 +36,7 @@ public class InterpreterFactoryTest {
 	  System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
 	  System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "com.nflabs.zeppelin.interpreter.mock.MockInterpreter1,com.nflabs.zeppelin.interpreter.mock.MockInterpreter2");
 	  conf = new ZeppelinConfiguration();
-	  factory = new InterpreterFactory(conf);
+	  factory = new InterpreterFactory(conf, new InterpreterOption(false));
 	}
 
 	@After

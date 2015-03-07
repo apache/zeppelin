@@ -54,8 +54,17 @@ public class InterpreterFactory {
 
   private Gson gson;
 
+  private InterpreterOption defaultOption;
+
   public InterpreterFactory(ZeppelinConfiguration conf) throws InterpreterException, IOException {
+    this(conf, new InterpreterOption(true));
+  }
+
+
+  public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption)
+      throws InterpreterException, IOException {
     this.conf = conf;
+    this.defaultOption = defaultOption;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
     interpreterClassList = replsConf.split(",");
 
@@ -66,7 +75,6 @@ public class InterpreterFactory {
 
     init();
   }
-
 
   private void init() throws InterpreterException, IOException {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
@@ -139,7 +147,7 @@ public class InterpreterFactory {
 
             if (found) {
               // add all interpreters in group
-              add(groupName, groupName, new InterpreterOption(false), p);
+              add(groupName, groupName, defaultOption, p);
               groupClassNameMap.remove(groupName);
               break;
             }
