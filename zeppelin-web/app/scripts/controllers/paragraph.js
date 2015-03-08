@@ -870,44 +870,6 @@ angular.module('zeppelinWebApp')
     $timeout(retryRenderer);
   };
 
-  var setPieChart = function(data, refresh) {
-    var xColIndex = 0;
-    var yColIndexes = [];
-    var d3g = [];
-
-    // select yColumns.
-    for (var colIndex = 0; colIndex < data.columnNames.length; colIndex++) {
-      if (colIndex !== xColIndex) {
-        yColIndexes.push(colIndex);
-      }
-    }
-
-    for (var rowIndex = 0; rowIndex < data.rows.length; rowIndex++) {
-      var row = data.rows[rowIndex];
-      var xVar = row[xColIndex];
-      var yVar = row[yColIndexes[0]];
-
-      d3g.push({
-          label: isNaN(xVar) ? xVar : parseFloat(xVar),
-          value: parseFloat(yVar)
-      });
-    }
-
-    if ($scope.d3.pieChart.data === null || !refresh) {
-      $scope.d3.pieChart.data = d3g;
-      $scope.d3.pieChart.options.chart.height = $scope.paragraph.config.graph.height;
-
-      if ($scope.d3.pieChart.api) {
-        $scope.d3.pieChart.api.updateWithOptions($scope.d3.pieChart.options);
-      }
-    } else {
-      if ($scope.d3.pieChart.api) {
-        $scope.d3.pieChart.api.updateWithData(d3g);
-      }
-    }
-  };
-
-
   $scope.isGraphMode = function(graphName) {
     if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode()===graphName) {
       return true;
