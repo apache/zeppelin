@@ -65,6 +65,11 @@ public class LazyOpenInterpreter
     }
   }
 
+  public boolean isOpen() {
+    synchronized (this) {
+      return opened;
+    }
+  }
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
