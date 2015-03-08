@@ -373,7 +373,7 @@
   font-size:12px;
   height:auto;
   overflow : auto;
-  min-height: 200px;
+  /*min-height: 200px;*/
   border-top: 1px solid #ecf0f1;
 
 }
@@ -416,6 +416,13 @@
   padding: 0px;
   margin: 0px;
   cursor: pointer;
+}
+
+.tableDisplay .option .columns a:focus,
+.tableDisplay .option .columns a:hover {
+  text-decoration: none;
+  outline: 0;
+  outline-offset: 0px;
 }
 
 .graphContainer {
