@@ -126,6 +126,10 @@ limitations under the License.
                 ng-class="{'active': isGraphMode('lineChart')}"
                 ng-click="setGraphMode('lineChart', true)"><i class="fa fa-line-chart"></i>
         </button>
+        <button type="button" class="btn btn-default btn-sm"
+                ng-class="{'active': isGraphMode('scatterChart')}"
+                ng-click="setGraphMode('scatterChart', true)"><i class="cf cf-scatter-chart"></i>
+        </button>
       </div>
       <span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && !asIframe && !viewOnly"
             style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
@@ -250,6 +254,11 @@ limitations under the License.
 
         <div ng-if="getGraphMode()=='lineChart'"
              id="p{{paragraph.id}}_lineChart">
+          <svg></svg>
+        </div>
+
+        <div ng-if="getGraphMode()=='scatterChart'"
+             id="p{{paragraph.id}}_scatterChart">
           <svg></svg>
         </div>
       </div>
