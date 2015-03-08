@@ -1,44 +1,55 @@
 package com.nflabs.zeppelin.spark;
 
+import static scala.collection.JavaConversions.asJavaCollection;
+import static scala.collection.JavaConversions.asJavaIterable;
+import static scala.collection.JavaConversions.collectionAsScalaIterable;
+
 import java.io.PrintStream;
+import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SchemaRDD;
+import org.apache.spark.sql.hive.HiveContext;
 
 import scala.Tuple2;
+import scala.collection.Iterable;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
-import com.nflabs.zeppelin.notebook.NoteInterpreterLoader;
 import com.nflabs.zeppelin.notebook.Paragraph;
 import com.nflabs.zeppelin.notebook.form.Input.ParamOption;
 import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.spark.dep.DependencyResolver;
 
 /**
- * Spark context for zeppelin. 
- * 
+ * Spark context for zeppelin.
+ *
  * @author Leemoonsoo
  *
  */
 public class ZeppelinContext {
   private DependencyResolver dep;
-  private NoteInterpreterLoader noteInterpreterLoader;
   private PrintStream out;
+  private InterpreterContext interpreterContext;
 
-  public ZeppelinContext(SparkContext sc, SQLContext sql, DependencyResolver dep,
-      NoteInterpreterLoader noteInterpreterLoader, PrintStream printStream) {
+  public ZeppelinContext(SparkContext sc, SQLContext sql,
+      HiveContext hiveContext,
+      InterpreterContext interpreterContext,
+      DependencyResolver dep, PrintStream printStream) {
     this.sc = sc;
     this.sqlContext = sql;
+    this.hiveContext = hiveContext;
+    this.interpreterContext = interpreterContext;
     this.dep = dep;
-    this.noteInterpreterLoader = noteInterpreterLoader;
     this.out = printStream;
   }
 
   public SparkContext sc;
   public SQLContext sqlContext;
+  public HiveContext hiveContext;
   private Setting form;
 
   public SchemaRDD sql(String sql) {
@@ -47,40 +58,121 @@ public class ZeppelinContext {
 
   /**
    * Load dependency for interpreter and runtime (driver).
-   * 
-   * @param artifact "group:artifact:version"
+   * And distribute them to spark cluster (sc.add())
+   *
+   * @param artifact "group:artifact:version" or file path like "/somepath/your.jar"
+   * @return
    * @throws Exception
    */
-  public void load(String artifact) throws Exception {
-    dep.load(artifact, false, false);
+  public Iterable<String> load(String artifact) throws Exception {
+    return collectionAsScalaIterable(dep.load(artifact, true));
   }
 
   /**
-   * Load dependency for interpreter and runtime (driver).
-   * 
-   * @param artifact "group:artifact:version"
+   * Load dependency and it's transitive dependencies for interpreter and runtime (driver).
+   * And distribute them to spark cluster (sc.add())
+   *
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
+   * @return
    * @throws Exception
    */
-  public void load(String artifact, boolean recursive) throws Exception {
-    dep.load(artifact, recursive, false);
+  public Iterable<String> load(String artifact, scala.collection.Iterable<String> excludes)
+      throws Exception {
+    return collectionAsScalaIterable(
+        dep.load(artifact,
+        asJavaCollection(excludes),
+        true));
+  }
+
+  /**
+   * Load dependency and it's transitive dependencies for interpreter and runtime (driver).
+   * And distribute them to spark cluster (sc.add())
+   *
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
+   * @return
+   * @throws Exception
+   */
+  public Iterable<String> load(String artifact, Collection<String> excludes) throws Exception {
+    return collectionAsScalaIterable(dep.load(artifact, excludes, true));
   }
 
   /**
    * Load dependency for interpreter and runtime, and then add to sparkContext.
-   * 
+   * But not adding them to spark cluster
+   *
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @return
    * @throws Exception
    */
-  public void loadAndDist(String artifact) throws Exception {
-    dep.load(artifact, false, true);
+  public Iterable<String> loadLocal(String artifact) throws Exception {
+    return collectionAsScalaIterable(dep.load(artifact, false));
   }
 
-  public void loadAndDist(String artifact, boolean recursive) throws Exception {
-    dep.load(artifact, true, true);
+
+  /**
+   * Load dependency and it's transitive dependencies and then add to sparkContext.
+   * But not adding them to spark cluster
+   *
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
+   * @return
+   * @throws Exception
+   */
+  public Iterable<String> loadLocal(String artifact,
+      scala.collection.Iterable<String> excludes) throws Exception {
+    return collectionAsScalaIterable(dep.load(artifact,
+        asJavaCollection(excludes), false));
+  }
+
+  /**
+   * Load dependency and it's transitive dependencies and then add to sparkContext.
+   * But not adding them to spark cluster
+   *
+   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
+   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
+   * @return
+   * @throws Exception
+   */
+  public Iterable<String> loadLocal(String artifact, Collection<String> excludes)
+      throws Exception {
+    return collectionAsScalaIterable(dep.load(artifact, excludes, false));
+  }
+
+
+  /**
+   * Add maven repository
+   *
+   * @param id id of repository ex) oss, local, snapshot
+   * @param url url of repository. supported protocol : file, http, https
+   */
+  public void addRepo(String id, String url) {
+    addRepo(id, url, false);
+  }
+
+  /**
+   * Add maven repository
+   *
+   * @param id id of repository
+   * @param url url of repository. supported protocol : file, http, https
+   * @param snapshot true if it is snapshot repository
+   */
+  public void addRepo(String id, String url, boolean snapshot) {
+    dep.addRepo(id, url, snapshot);
+  }
+
+  /**
+   * Remove maven repository by id
+   * @param id id of repository
+   */
+  public void removeRepo(String id){
+    dep.delRepo(id);
   }
 
   /**
    * Load dependency only interpreter.
-   * 
+   *
    * @param name
    * @return
    */
@@ -101,8 +193,7 @@ public class ZeppelinContext {
       scala.collection.Iterable<Tuple2<Object, String>> options) {
     int n = options.size();
     ParamOption[] paramOptions = new ParamOption[n];
-    Iterator<Tuple2<Object, String>> it =
-        scala.collection.JavaConversions.asJavaIterable(options).iterator();
+    Iterator<Tuple2<Object, String>> it = asJavaIterable(options).iterator();
 
     int i = 0;
     while (it.hasNext()) {
@@ -120,8 +211,8 @@ public class ZeppelinContext {
   public void run(String lines) {
     String intpName = Paragraph.getRequiredReplName(lines);
     String scriptBody = Paragraph.getScriptBody(lines);
-    Interpreter intp = noteInterpreterLoader.getRepl(intpName);
-    InterpreterResult ret = intp.interpret(scriptBody);
+    Interpreter intp = interpreterContext.getParagraph().getRepl(intpName);
+    InterpreterResult ret = intp.interpret(scriptBody, interpreterContext);
     if (ret.code() == InterpreterResult.Code.SUCCESS) {
       out.println("%" + ret.type().toString().toLowerCase() + " " + ret.message());
     } else if (ret.code() == InterpreterResult.Code.ERROR) {
@@ -132,4 +223,16 @@ public class ZeppelinContext {
       out.println("Unknown error");
     }
   }
+
+  private void restartInterpreter() {
+  }
+
+  public InterpreterContext getInterpreterContext() {
+    return interpreterContext;
+  }
+
+  public void setInterpreterContext(InterpreterContext interpreterContext) {
+    this.interpreterContext = interpreterContext;
+  }
+
 }

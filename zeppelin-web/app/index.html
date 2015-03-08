@@ -34,6 +34,8 @@ limitations under the License.
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
     <link rel="stylesheet" href="bower_components/nvd3/src/nv.d3.css" />
     <link rel="stylesheet" href="bower_components/perfect-scrollbar/src/perfect-scrollbar.css" />
+    <link rel="stylesheet" href="bower_components/ng-sortable/dist/ng-sortable.css" />
+    <link rel="stylesheet" href="bower_components/angular-xeditable/dist/css/xeditable.css" />
     <!-- endbower -->
     <link rel="stylesheet" href="bower_components/jquery-ui/themes/base/all.css" />
     <!-- endbuild -->
@@ -42,6 +44,7 @@ limitations under the License.
     <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="styles/typography.css">
     <link rel="stylesheet" href="styles/notebook.css">
+    <link rel="stylesheet" href="styles/interpreter.css">
     <link rel="stylesheet" href="styles/font-awesome.min.css">
     <link rel="stylesheet" href="styles/simple-line-icons.css">
     <!-- endbuild -->
@@ -59,7 +62,7 @@ limitations under the License.
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#"><img style="margin-top: -7px;s" src="images/zepLogoW.png" width="50" alt="I'm zeppelin"> Zeppelin</a>
+          <a class="navbar-brand" href="#/"><img style="margin-top: -7px;s" src="images/zepLogoW.png" width="50" alt="I'm zeppelin"> Zeppelin</a>
         </div>
 
         <div class="collapse navbar-collapse" ng-controller="NavCtrl">
@@ -69,12 +72,16 @@ limitations under the License.
               <ul class="dropdown-menu" role="menu">
                 <li><a href="javascript:void(0);" ng-click="createNewNote()"><i class="fa fa-plus"></i> Create new note</a></li>
                 <li class="divider"></li>
-                <li ng-repeat="note in notes track by $index" ng-class="{'active' : isActive(note.id)}"><a href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}} </a></li>
+                <div id="notebook-list" class="scrollbar-container">
+                  <li ng-repeat="note in notes track by $index" ng-class="{'active' : isActive(note.id)}"><a href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}} </a></li>
+				</div>
               </ul>
             </li>
+            <li>
+              <a href="#/interpreter">Interpreter</a>
+            </li>
           </ul>
-          <ul class="nav navbar-nav navbar-right" style="margin-top:10px; margin-right:5px;">
-            
+          <ul class="nav navbar-nav navbar-right" style="margin-top:10px; margin-right:5px;">            
             <li class="server-status">
                 <i class="fa fa-circle" ng-class="{'server-connected':connected, 'server-disconnected':!connected }"></i>
                 <span ng-show="connected">Connected</span>
@@ -110,6 +117,12 @@ limitations under the License.
     <script src="bower_components/angular-route/angular-route.js"></script>
     <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
     <script src="bower_components/angular-websocket/angular-websocket.js"></script>
+    <script src="bower_components/ace-builds/src-noconflict/ace.js"></script>
+    <script src="bower_components/ace-builds/src-noconflict/mode-scala.js"></script>
+    <script src="bower_components/ace-builds/src-noconflict/mode-sql.js"></script>
+    <script src="bower_components/ace-builds/src-noconflict/mode-markdown.js"></script>
+    <script src="bower_components/ace-builds/src-noconflict/keybinding-emacs.js"></script>
+    <script src="bower_components/ace-builds/src-noconflict/ext-language_tools.js"></script>
     <script src="bower_components/angular-ui-ace/ui-ace.js"></script>
     <script src="bower_components/jquery.scrollTo/jquery.scrollTo.js"></script>
     <script src="bower_components/d3/d3.js"></script>
@@ -117,17 +130,17 @@ limitations under the License.
     <script src="bower_components/jquery-ui/jquery-ui.js"></script>
     <script src="bower_components/angular-dragdrop/src/angular-dragdrop.js"></script>
     <script src="bower_components/perfect-scrollbar/src/perfect-scrollbar.js"></script>
+    <script src="bower_components/ng-sortable/dist/ng-sortable.js"></script>
+    <script src="bower_components/angular-elastic/elastic.js"></script>
+    <script src="bower_components/angular-elastic-input/dist/angular-elastic-input.min.js"></script>
+    <script src="bower_components/angular-xeditable/dist/js/xeditable.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
-    <!--
-      <script src="bower_components/ace-builds/src-min-noconflict/ace.js"></script>
-    -->
-    <script src="scripts/ace/src-min-noconflict/ace.js"></script>
-    <script src="scripts/ace/src-min-noconflict/ext-language_tools.js"></script>
     <!-- build:js({.tmp,app}) scripts/scripts.js -->
     <script src="scripts/app.js"></script>
     <script src="scripts/controllers/main.js"></script>
     <script src="scripts/controllers/notebook.js"></script>
+    <script src="scripts/controllers/interpreter.js"></script>
     <script src="scripts/directives/ngenter.js"></script>
     <script src="scripts/directives/dropdowninput.js"></script>
     <script src="scripts/directives/resizable.js"></script>

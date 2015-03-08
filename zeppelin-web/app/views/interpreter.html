@@ -1,0 +1,197 @@
+<!--
+Copyright 2014 NFLabs
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="interpreterHead">
+  <div class="header">
+    <div class="row">
+      <div class="col-md-12">
+        <h3 class="new_h3" style="float:left">
+          Interpreters
+        </h3>
+        <span class="btn btn-default fa fa-plus"
+              ng-click="showAddNewSetting = !showAddNewSetting"
+              style="float:right;margin-top:10px;">
+          Create
+        </span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        Manage interpreters settings. You can create create / remove settings. Note can bind/unbind these interpreter settings.
+      </div>
+    </div>
+  </div>
+  <div>
+    <div class="row">    
+      <div class="col-md-12">
+        <div class="interpreterSettingAdd"
+             ng-show="showAddNewSetting">
+          <hr />
+          <h4>Create new interpreter</h4>
+
+          <div class="form-group"
+               style="width:200px">
+            <b>Name</b>
+            <input id="newInterpreterSettingName"
+                   input pu-elastic-input
+                   pu-elastic-input-minwidth="180px"
+                   ng-model="newInterpreterSetting.name">
+            </input>
+          </div>
+
+          <b>Interpreter</b>
+          <div class="form-group"
+               style="width:180px">
+            <select class="form-control input-sm"
+                    ng-model="newInterpreterSetting.group"
+                    ng-change="newInterpreterGroupChange()">
+              <option ng-repeat="(groupName, interpreterGroup) in availableInterpreters" value="{{groupName}}">{{groupName}}</option>
+            </select>
+          </div>
+
+          <b>Properties</b>
+          <table class="table table-striped properties">
+            <tr>
+              <th>name</th>
+              <th>value</th>
+              <th>description</th>
+              <th>action</th>
+            </tr>
+            <tr ng-repeat="(key, value) in newInterpreterSetting.properties">
+              <td>{{key}}</td>
+              <td><textarea msd-elastic
+                            ng-model="value.value"></textarea></td>
+              <td>{{value.description}}</td>
+              <td>
+                <div class="btn btn-default btn-sm fa fa-remove"
+                     ng-click="removeInterpreterProperty(key)">
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <input pu-elastic-input
+                       pu-elastic-input-minwidth="180px"
+                       ng-model="newInterpreterSetting.propertyKey"></input>
+              </td>
+              <td><textarea msd-elastic ng-model="newInterpreterSetting.propertyValue"></textarea></td>
+              <td>
+              </td>
+              <td>
+                <div class="btn btn-default btn-sm fa fa-plus"
+                     ng-click="addNewInterpreterProperty()">
+                </div>
+              </td>
+            </tr>
+          </table>
+
+          <span class="btn btn-primary"
+                ng-click="addNewInterpreterSetting()">
+            Save
+          </span>
+          <span class="btn btn-default"
+                ng-click="showAddNewSetting=false">
+            Cancel
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="box width-full home"
+     ng-repeat="setting in interpreterSettings">
+  <div>
+    <div class="row interpreter">
+      <div class="col-md-12">
+        <h3 class="interpreter-title">{{setting.name}} 
+          <small>
+            <span ng-repeat="interpreter in setting.interpreters"
+                  title="{{interpreter.class}}">
+              <span ng-show="!$first">, </span>
+              %{{interpreter.name}}
+            </span>
+          </small>
+        </h3>
+        <span style="float:right">
+          <button class="btn btn-default btn-xs"
+                  ng-click="valueform.$show();
+                  copyOriginInterpreterSettingProperties(setting.id)">
+            <span class="fa fa-pencil"></span> edit</button>
+          <button class="btn btn-default btn-xs"
+                  ng-click="restartInterpreterSetting(setting.id)">
+            <span class="fa fa-refresh"></span> restart</button>
+          <button class="btn btn-default btn-xs"
+                  ng-click="removeInterpreterSetting(setting.id)">
+            <span class="fa fa-remove"></span> remove</button>
+        </span>
+      </div>
+    </div>
+    <br />
+    <div class="row interpreter">
+      <div class="col-md-12">
+        <b>Properties</b>
+        <table class="table table-striped">
+          <tr>
+            <th style="width:30%">name</th>
+            <th>value</th>
+            <th ng-if="valueform.$visible">action</th>
+          </tr>
+          <tr ng-repeat="(key, value) in setting.properties">
+            <td>{{key}}</td>
+            <td>
+              <span editable-textarea="value.value" e-form="valueform" e-msd-elastic>
+                {{value.value | breakFilter}}
+              </span>
+            </td>
+            <td ng-if="valueform.$visible">
+              <div class="btn btn-default btn-sm fa fa-remove"
+                   ng-click="removeInterpreterProperty(key, setting.id)">
+              </div>
+            </td>
+          </tr>
+          <tr ng-if="valueform.$visible">
+            <td>
+              <input ng-model="setting.propertyKey"
+                     pu-elastic-input
+                     pu-elastic-input-minwidth="180px">
+              </input>
+            </td>
+            <td>
+              <textarea msd-elastic ng-model="setting.propertyValue"></textarea>
+            </td>
+            <td>
+              <div class="btn btn-default btn-sm fa fa-plus"
+                   ng-click="addNewInterpreterProperty(setting.id)">
+              </div>
+            </td>
+          </tr>
+        </table>
+        <form editable-form name="valueform" onaftersave="updateInterpreterSetting(setting.id)" ng-show="valueform.$visible">
+          <button type="submit" class="btn btn-primary"
+                  ng-disabled="valueform.$waiting">
+            Save
+          </button>
+          <button type="button" class="btn btn-default"
+                  ng-disabled="valueform.$waiting"
+                  ng-click="valueform.$cancel(); resetInterpreterSetting(setting.id)">
+            Cancel
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

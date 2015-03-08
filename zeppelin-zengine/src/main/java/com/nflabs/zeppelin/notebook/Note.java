@@ -13,7 +13,6 @@ import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,9 +28,7 @@ import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 
 /**
- * Consist of Paragraphs with independent context.
- *
- * @author Leemoonsoo
+ * Binded interpreters for a note
  */
 public class Note implements Serializable, JobListener {
   transient Logger logger = LoggerFactory.getLogger(Note.class);
@@ -52,7 +49,7 @@ public class Note implements Serializable, JobListener {
 
   /**
    * note information.
-   * 
+   *
    * - cron : cron expression validity.
    */
   private Map<String, Object> info = new HashMap<String, Object>();
@@ -68,10 +65,7 @@ public class Note implements Serializable, JobListener {
   }
 
   private void generateId() {
-    // id = "note_"+System.currentTimeMillis()+"_"+new Random(System.currentTimeMillis()).nextInt();
-    /** This is actually more humain readable */
-    id = IdHashes.encode(System.currentTimeMillis()
-                         + new Random(System.currentTimeMillis()).nextInt());
+    id = IdHashes.encode(System.currentTimeMillis() + new Random().nextInt());
   }
 
   public String id() {
@@ -100,7 +94,7 @@ public class Note implements Serializable, JobListener {
 
   /**
    * Add paragraph last.
-   * 
+   *
    * @param p
    */
   public Paragraph addParagraph() {
@@ -113,7 +107,7 @@ public class Note implements Serializable, JobListener {
 
   /**
    * Insert paragraph in given index.
-   * 
+   *
    * @param index
    * @param p
    */
@@ -127,7 +121,7 @@ public class Note implements Serializable, JobListener {
 
   /**
    * Remove paragraph by id.
-   * 
+   *
    * @param paragraphId
    * @return
    */
@@ -146,7 +140,7 @@ public class Note implements Serializable, JobListener {
 
   /**
    * Move paragraph into the new index (order from 0 ~ n-1).
-   * 
+   *
    * @param paragraphId
    * @param index new index
    */
@@ -213,7 +207,7 @@ public class Note implements Serializable, JobListener {
 
   /**
    * Run all paragraphs sequentially.
-   * 
+   *
    * @param jobListener
    */
   public void runAll() {
@@ -221,7 +215,7 @@ public class Note implements Serializable, JobListener {
       for (Paragraph p : paragraphs) {
         p.setNoteReplLoader(replLoader);
         p.setListener(jobListenerFactory.getParagraphJobListener(this));
-        Interpreter intp = replLoader.getRepl(p.getRequiredReplName());
+        Interpreter intp = replLoader.get(p.getRequiredReplName());
         intp.getScheduler().submit(p);
       }
     }
@@ -229,15 +223,22 @@ public class Note implements Serializable, JobListener {
 
   /**
    * Run a single paragraph.
-   * 
+   *
    * @param paragraphId
    */
   public void run(String paragraphId) {
     Paragraph p = getParagraph(paragraphId);
     p.setNoteReplLoader(replLoader);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
-    Interpreter intp = replLoader.getRepl(p.getRequiredReplName());
+    Interpreter intp = replLoader.get(p.getRequiredReplName());
     intp.getScheduler().submit(p);
+  }
+
+  public List<String> completion(String paragraphId, String buffer, int cursor) {
+    Paragraph p = getParagraph(paragraphId);
+    p.setNoteReplLoader(replLoader);
+    p.setListener(jobListenerFactory.getParagraphJobListener(this));
+    return p.completion(buffer, cursor);
   }
 
   public List<Paragraph> getParagraphs() {

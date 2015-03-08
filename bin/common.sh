@@ -99,6 +99,10 @@ if [[ ! -z "${HADOOP_HOME}" ]] && [[ -d "${HADOOP_HOME}" ]]; then
   addJarInDir "${HADOOP_HOME}"
 fi
 
+if [[ ! -z "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
+  ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
+fi
+
 export ZEPPELIN_CLASSPATH
 export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 export CLASSPATH+=":${ZEPPELIN_CLASSPATH}"

@@ -8,11 +8,11 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,23 +20,21 @@ import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.notebook.Notebook;
+import com.nflabs.zeppelin.rest.InterpreterRestApi;
+import com.nflabs.zeppelin.rest.NotebookRestApi;
 import com.nflabs.zeppelin.rest.ZeppelinRestApi;
 import com.nflabs.zeppelin.socket.NotebookServer;
 import com.nflabs.zeppelin.socket.SslWebSocketServerFactory;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
-
 import com.wordnik.swagger.jersey.config.JerseyJaxrsConfig;
 
 import java.io.File;
-import java.io.InputStream;
-import java.net.URL;
-import java.security.KeyStore;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
+import javax.servlet.DispatcherType;
 import javax.ws.rs.core.Application;
 
 /**
@@ -51,6 +49,7 @@ public class ZeppelinServer extends Application {
 
   private SchedulerFactory schedulerFactory;
   public static Notebook notebook;
+
   static NotebookServer notebookServer;
 
   private InterpreterFactory replFactory;
@@ -71,11 +70,13 @@ public class ZeppelinServer extends Application {
 
     // Web UI
     final WebAppContext webApp = setupWebAppContext(conf);
-    final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
+    //Below is commented since zeppelin-docs module is removed.
+    //final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
 
     // add all handlers
     ContextHandlerCollection contexts = new ContextHandlerCollection();
-    contexts.setHandlers(new Handler[]{swagger, restApi, webApp, webAppSwagg});
+    //contexts.setHandlers(new Handler[]{swagger, restApi, webApp, webAppSwagg});
+    contexts.setHandlers(new Handler[]{swagger, restApi, webApp});
     jettyServer.setHandler(contexts);
 
     notebookServer.start();
@@ -126,7 +127,7 @@ public class ZeppelinServer extends Application {
 
     NotebookServer server = new NotebookServer(conf.getWebSocketPort());
 
-    // Default WebSocketServer uses unecrypted connector, so only need to
+    // Default WebSocketServer uses unencrypted connector, so only need to
     // change the connector if SSL should be used.
     if (conf.useSsl()) {
       SslWebSocketServerFactory wsf = new SslWebSocketServerFactory(getSslContext(conf));
@@ -180,6 +181,9 @@ public class ZeppelinServer extends Application {
     cxfContext.setSessionHandler(new SessionHandler());
     cxfContext.setContextPath("/api");
     cxfContext.addServlet(cxfServletHolder, "/*");
+    
+    cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
+        EnumSet.allOf(DispatcherType.class));
     return cxfContext;
   }
 
@@ -239,7 +243,7 @@ public class ZeppelinServer extends Application {
    *
    * @return WebAppContext with swagger ui context
    */
-  private static WebAppContext setupWebAppSwagger(
+  /*private static WebAppContext setupWebAppSwagger(
       ZeppelinConfiguration conf) {
 
     WebAppContext webApp = new WebAppContext();
@@ -255,7 +259,7 @@ public class ZeppelinServer extends Application {
     // Bind swagger-ui to the path HOST/docs
     webApp.addServlet(new ServletHolder(new DefaultServlet()), "/docs/*");
     return webApp;
-  }
+  }*/
 
   public ZeppelinServer() throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -279,6 +283,12 @@ public class ZeppelinServer extends Application {
     /** Rest-api root endpoint */
     ZeppelinRestApi root = new ZeppelinRestApi();
     singletons.add(root);
+    
+    NotebookRestApi notebookApi = new NotebookRestApi(notebook);
+    singletons.add(notebookApi);
+
+    InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory);
+    singletons.add(interpreterApi);
 
     return singletons;
   }

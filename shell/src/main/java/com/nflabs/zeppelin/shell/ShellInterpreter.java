@@ -14,15 +14,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
-import com.nflabs.zeppelin.interpreter.Interpreter.SchedulingMode;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 /**
  * Shell interpreter for Zeppelin.
- * 
+ *
  * @author Leemoonsoo
  * @author anthonycorbacho
  *
@@ -51,7 +51,7 @@ public class ShellInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String cmd) {
+  public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     logger.info("Run shell command '" + cmd + "'");
     long start = System.currentTimeMillis();
     CommandLine cmdLine = CommandLine.parse("bash");
@@ -75,7 +75,7 @@ public class ShellInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel() {}
+  public void cancel(InterpreterContext context) {}
 
   @Override
   public void bindValue(String name, Object o) {}
@@ -86,7 +86,7 @@ public class ShellInterpreter extends Interpreter {
   }
 
   @Override
-  public int getProgress() {
+  public int getProgress(InterpreterContext context) {
     return 0;
   }
 

@@ -28,14 +28,18 @@ import scala.collection.mutable.HashSet;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterContext;
+import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
+import com.nflabs.zeppelin.interpreter.LazyOpenInterpreter;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 /**
  * Spark SQL interpreter for Zeppelin.
- * 
+ *
  * @author Leemoonsoo
  *
  */
@@ -44,10 +48,23 @@ public class SparkSqlInterpreter extends Interpreter {
   AtomicInteger num = new AtomicInteger(0);
 
   static {
-    Interpreter.register("sql", SparkSqlInterpreter.class.getName());
+    Interpreter.register(
+        "sql",
+        "spark",
+        SparkSqlInterpreter.class.getName(),
+        new InterpreterPropertyBuilder()
+            .add("zeppelin.spark.maxResult", "10000", "Max number of SparkSQL result to display.")
+            .add("zeppelin.spark.useHiveContext", "false",
+                "Use HiveContext instead of SQLContext if it is true.")
+            .add("zeppelin.spark.concurrentSQL", "false",
+                "Execute multiple SQL concurrently if set true.")
+            .build());
   }
 
-  private final String jobGroup = "zeppelin-" + this.hashCode();
+  private String getJobGroup(InterpreterContext context){
+    return "zeppelin-" + this.hashCode() + "-" + context.getParagraph().getId();
+  }
+
   private int maxResult;
 
   public SparkSqlInterpreter(Properties property) {
@@ -57,12 +74,33 @@ public class SparkSqlInterpreter extends Interpreter {
   @Override
   public void open() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    this.maxResult = conf.getInt("ZEPPELIN_SPARK_MAX_RESULT", "zeppelin.spark.maxResult", 10000);
+    this.maxResult = conf.getInt("ZEPPELIN_SPARK_MAX_RESULT",
+        "zeppelin.spark.maxResult",
+        Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
   }
 
-
   private SparkInterpreter getSparkInterpreter() {
-    return SparkInterpreter.singleton(getProperty());
+    for (Interpreter intp : getInterpreterGroup()) {
+      if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
+        Interpreter p = intp;
+        while (p instanceof WrappedInterpreter) {
+          if (p instanceof LazyOpenInterpreter) {
+            p.open();
+          }
+          p = ((WrappedInterpreter) p).getInnerInterpreter();
+        }
+        return (SparkInterpreter) p;
+      }
+    }
+    return null;
+  }
+
+  private boolean useHiveContext() {
+    return Boolean.parseBoolean(getProperty("zeppelin.spark.useHiveContext"));
+  }
+  
+  public boolean concurrentSQL() {
+    return Boolean.parseBoolean(getProperty("zeppelin.spark.concurrentSQL"));
   }
 
   @Override
@@ -74,10 +112,23 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st) {
-    SQLContext sqlc = getSparkInterpreter().getSQLContext();
+  public InterpreterResult interpret(String st, InterpreterContext context) {
+    SQLContext sqlc = null;
+
+    if (useHiveContext()) {
+      sqlc = getSparkInterpreter().getHiveContext();
+    } else {
+      sqlc = getSparkInterpreter().getSQLContext();
+    }
+
     SparkContext sc = sqlc.sparkContext();
-    sc.setJobGroup(jobGroup, "Zeppelin", false);
+    if (concurrentSQL()) {
+      sc.setLocalProperty("spark.scheduler.pool", "fair");
+    } else {
+      sc.setLocalProperty("spark.scheduler.pool", null);
+    }
+
+    sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
     SchemaRDD rdd;
     Row[] rows = null;
     try {
@@ -132,11 +183,11 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel() {
+  public void cancel(InterpreterContext context) {
     SQLContext sqlc = getSparkInterpreter().getSQLContext();
     SparkContext sc = sqlc.sparkContext();
 
-    sc.cancelJobGroup(jobGroup);
+    sc.cancelJobGroup(getJobGroup(context));
   }
 
   @Override
@@ -150,7 +201,9 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
 
-  public int getProgress() {
+  @Override
+  public int getProgress(InterpreterContext context) {
+    String jobGroup = getJobGroup(context);
     SQLContext sqlc = getSparkInterpreter().getSQLContext();
     SparkContext sc = sqlc.sparkContext();
     JobProgressListener sparkListener = getSparkInterpreter().getJobProgressListener();
@@ -168,6 +221,8 @@ public class SparkSqlInterpreter extends Interpreter {
         if (sc.version().startsWith("1.0")) {
           progressInfo = getProgressFromStage_1_0x(sparkListener, job.finalStage());
         } else if (sc.version().startsWith("1.1")) {
+          progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
+        } else if (sc.version().startsWith("1.2")) {
           progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
         } else {
           logger.warn("Spark {} getting progress information not supported" + sc.version());
@@ -258,6 +313,11 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
+    if (concurrentSQL()) {
+      int maxConcurrency = 10;
+      return SchedulerFactory.singleton().createOrGetParallelScheduler(
+          SparkSqlInterpreter.class.getName() + this.hashCode(), maxConcurrency);
+    }
     return getSparkInterpreter().getScheduler();
   }
 

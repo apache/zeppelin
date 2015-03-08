@@ -1,23 +1,44 @@
 package com.nflabs.zeppelin.interpreter;
 
+import java.net.URL;
 import java.util.List;
+import java.util.Properties;
 
 import com.nflabs.zeppelin.scheduler.Scheduler;
 
 /**
- * TODO(moon): provite description.
- * 
- * @author Leemoonsoo
- *
+ * Interpreter wrapper for lazy initialization
  */
-public class LazyOpenInterpreter extends Interpreter {
+public class LazyOpenInterpreter
+    extends Interpreter
+    implements WrappedInterpreter {
 
   private Interpreter intp;
   boolean opened = false;
 
   public LazyOpenInterpreter(Interpreter intp) {
-    super(intp.getProperty());
+    super(new Properties());
     this.intp = intp;
+  }
+
+  @Override
+  public Interpreter getInnerInterpreter() {
+    return intp;
+  }
+
+  @Override
+  public void setProperty(Properties property) {
+    intp.setProperty(property);
+  }
+
+  @Override
+  public Properties getProperty() {
+    return intp.getProperty();
+  }
+
+  @Override
+  public String getProperty(String key) {
+    return intp.getProperty(key);
   }
 
   @Override
@@ -51,15 +72,15 @@ public class LazyOpenInterpreter extends Interpreter {
   }
 
   @Override
-  public InterpreterResult interpret(String st) {
+  public InterpreterResult interpret(String st, InterpreterContext context) {
     open();
-    return intp.interpret(st);
+    return intp.interpret(st, context);
   }
 
   @Override
-  public void cancel() {
+  public void cancel(InterpreterContext context) {
     open();
-    intp.cancel();
+    intp.cancel(context);
   }
 
   @Override
@@ -74,9 +95,9 @@ public class LazyOpenInterpreter extends Interpreter {
   }
 
   @Override
-  public int getProgress() {
+  public int getProgress(InterpreterContext context) {
     open();
-    return intp.getProgress();
+    return intp.getProgress(context);
   }
 
   @Override
@@ -88,5 +109,30 @@ public class LazyOpenInterpreter extends Interpreter {
   public List<String> completion(String buf, int cursor) {
     open();
     return intp.completion(buf, cursor);
+  }
+
+  @Override
+  public String getClassName() {
+    return intp.getClassName();
+  }
+
+  @Override
+  public InterpreterGroup getInterpreterGroup() {
+    return intp.getInterpreterGroup();
+  }
+
+  @Override
+  public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
+    intp.setInterpreterGroup(interpreterGroup);
+  }
+
+  @Override
+  public URL [] getClassloaderUrls() {
+    return intp.getClassloaderUrls();
+  }
+
+  @Override
+  public void setClassloaderUrls(URL [] urls) {
+    intp.setClassloaderUrls(urls);
   }
 }

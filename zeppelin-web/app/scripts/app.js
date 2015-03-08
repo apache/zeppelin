@@ -15,8 +15,8 @@
 
 'use strict';
 
-/** get the current port of the websocket 
-  * In the case of running the zeppelin-server normally, 
+/** get the current port of the websocket
+  * In the case of running the zeppelin-server normally,
   * The body of this function is just filler. It will be dynamically
   * overridden with the zeppelin-site.xml config value when the client
   * requests the script. If the config value is not defined, it defaults
@@ -24,19 +24,20 @@
   *
   * At the moment, the key delimiter denoting the end of this function
   * during the replacement is the '}' character. Avoid using this
-  * character inside the function body  
+  * character inside the function body
   *
   * In the case of running "grunt serve", this function will appear
   * as is.
   */
 function getPort() {
   var port = Number(location.port);
-  if (location.protocol !== 'https:' && (port === 'undifined' || port === 0)) 
-     port = 80;
-  if (location.protocol === 'https:' && (port === 'undifined' || port === 0))
+  if (location.protocol !== 'https:' && (port === 'undifined' || port === 0)) {
+    port = 80;
+  } else if (location.protocol === 'https:' && (port === 'undifined' || port === 0)) {
     port = 443;
-  if (port === 3333 || port === 9000)
+  } else if (port === 3333 || port === 9000) {
     port = 8080;
+  }
   return port+1;
 }
 
@@ -48,6 +49,21 @@ function getWebsocketProtocol() {
   return protocol;
 }
 
+function getRestApiBase() {
+  var port = Number(location.port);
+  if (port === 'undefined' || port === 0) {
+    port = 80;
+    if (location.protocol === 'https:') {
+      port = 443;
+    }
+  }
+
+  if (port === 3333 || port === 9000) {
+    port = 8080;
+  }
+  return location.protocol+"//"+location.hostname+":"+port+"/api";
+}
+
 /**
  * @ngdoc overview
  * @name zeppelinWebApp
@@ -55,7 +71,7 @@ function getWebsocketProtocol() {
  * # zeppelinWebApp
  *
  * Main module of the application.
- * 
+ *
  * @author anthonycorbacho
  */
 angular
@@ -67,14 +83,23 @@ angular
     'angular-websocket',
     'ui.ace',
     'ui.bootstrap',
+    'ui.sortable',
     'ngTouch',
-    'ngDragDrop'
+    'ngDragDrop',
+    'monospaced.elastic',
+    'puElasticInput',
+    'xeditable'
   ])
+  .filter('breakFilter', function() {
+    return function (text) {
+      if (text !== undefined) return text.replace(/\n/g, '<br />');
+    };
+  })
   .config(function ($routeProvider, WebSocketProvider) {
     WebSocketProvider
       .prefix('')
       .uri(getWebsocketProtocol() + '://' + location.hostname + ':' + getPort());
-      
+
     $routeProvider
       .when('/', {
         templateUrl: 'views/main.html'
@@ -87,10 +112,14 @@ angular
         templateUrl: 'views/notebooks.html',
         controller: 'NotebookCtrl'
       })
+      .when('/interpreter', {
+        templateUrl: 'views/interpreter.html',
+        controller: 'InterpreterCtrl'
+      })
       .otherwise({
         redirectTo: '/'
       });
   });
 
-  
-  
+
+

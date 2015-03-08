@@ -23,23 +23,16 @@ import org.apache.spark.repl.SparkIMain;
 import org.apache.spark.repl.SparkJLineCompletion;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
+import org.apache.spark.scheduler.Pool;
 import org.apache.spark.scheduler.Stage;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.hive.HiveContext;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nflabs.zeppelin.interpreter.Interpreter;
-import com.nflabs.zeppelin.interpreter.InterpreterResult;
-import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
-import com.nflabs.zeppelin.notebook.NoteInterpreterLoader;
-import com.nflabs.zeppelin.notebook.Paragraph;
-import com.nflabs.zeppelin.notebook.form.Setting;
-import com.nflabs.zeppelin.scheduler.Scheduler;
-import com.nflabs.zeppelin.scheduler.SchedulerFactory;
-import com.nflabs.zeppelin.spark.dep.DependencyResolver;
-
 import scala.Console;
+import scala.Enumeration.Value;
 import scala.None;
 import scala.Some;
 import scala.Tuple2;
@@ -54,17 +47,48 @@ import scala.tools.nsc.interpreter.Completion.ScalaCompleter;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
+import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterContext;
+import com.nflabs.zeppelin.interpreter.InterpreterGroup;
+import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
+import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
+import com.nflabs.zeppelin.notebook.form.Setting;
+import com.nflabs.zeppelin.scheduler.Scheduler;
+import com.nflabs.zeppelin.scheduler.SchedulerFactory;
+import com.nflabs.zeppelin.spark.dep.DependencyContext;
+import com.nflabs.zeppelin.spark.dep.DependencyResolver;
+
 /**
  * Spark interpreter for Zeppelin.
- * 
- * @author Leemoonsoo
  *
  */
 public class SparkInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
 
   static {
-    Interpreter.register("spark", SparkInterpreter.class.getName());
+    Interpreter.register(
+        "spark",
+        "spark",
+        SparkInterpreter.class.getName(),
+        new InterpreterPropertyBuilder()
+            .add("spark.app.name", "Zeppelin", "The name of spark application.")
+            .add("master",
+                getSystemDefault("MASTER", "spark.master", "local[*]"),
+                "Spark master uri. ex) spark://masterhost:7077")
+            .add("spark.executor.memory",
+                getSystemDefault(null, "spark.executor.memory", "512m"),
+                "Executor memory per worker instance. ex) 512m, 32g")
+            .add("spark.cores.max",
+                getSystemDefault(null, "spark.cores.max", ""),
+                "Total number of cores to use. Empty value uses all available core.")
+            .add("spark.yarn.jar",
+                getSystemDefault("SPARK_YARN_JAR", "spark.yarn.jar", ""),
+                "The location of the Spark jar file. If you use yarn as a cluster, "
+                + "we should set this value")
+            .add("args", "", "spark commandline args").build());
+
   }
 
   private ZeppelinContext z;
@@ -73,6 +97,7 @@ public class SparkInterpreter extends Interpreter {
   private SparkContext sc;
   private ByteArrayOutputStream out;
   private SQLContext sqlc;
+  private HiveContext hiveContext;
   private DependencyResolver dep;
   private SparkJLineCompletion completor;
 
@@ -81,99 +106,87 @@ public class SparkInterpreter extends Interpreter {
   private Map<String, Object> binder;
   private SparkEnv env;
 
-  static SparkInterpreter singleton;
-
-  public static SparkInterpreter singleton() {
-    return singleton;
-  }
-
-  public static SparkInterpreter singleton(Properties property) {
-    if (singleton == null) {
-      new SparkInterpreter(property);
-    }
-    return singleton;
-  }
-
-  public static void setSingleton(SparkInterpreter si) {
-    singleton = si;
-  }
 
   public SparkInterpreter(Properties property) {
     super(property);
     out = new ByteArrayOutputStream();
-    if (singleton == null) {
-      singleton = this;
-    }
   }
 
+  public SparkInterpreter(Properties property, SparkContext sc) {
+    this(property);
+
+    this.sc = sc;
+    env = SparkEnv.get();
+    sparkListener = setupListeners(this.sc);
+  }
 
   public synchronized SparkContext getSparkContext() {
-    Map<String, Object> share = (Map<String, Object>) getProperty().get("share");
-
     if (sc == null) {
-      sc = (SparkContext) share.get("sc");
-      sparkListener = (JobProgressListener) share.get("sparkListener");
-
-      if (sc == null) {
-        sc = createSparkContext();
-        env = SparkEnv.get();
-        sparkListener = new JobProgressListener(sc.getConf());
-        sc.listenerBus().addListener(sparkListener);
-
-        /*
-         * Sharing a single spark context across scala repl is not possible at the moment. because
-         * of spark's limitation. 1) Each SparkImain (scala repl) creates classServer but worker
-         * (executor uses only the first one) 2) creating a SparkContext creates corresponding
-         * worker's Executor. which executes tasks and reuse classloader. the same Classloader can
-         * confuse classes from many different scala repl.
-         * 
-         * The code below is commented out until this limitation removes
-         */
-        // share.put("sc", sc);
-        // share.put("sparkEnv", env);
-        // share.put("sparkListener", sparkListener);
-      }
-
+      sc = createSparkContext();
+      env = SparkEnv.get();
+      sparkListener = setupListeners(sc);
     }
     return sc;
   }
 
+  public boolean isSparkContextInitialized() {
+    return sc != null;
+  }
+
+  private static JobProgressListener setupListeners(SparkContext context) {
+    JobProgressListener pl = new JobProgressListener(context.getConf());
+    context.listenerBus().addListener(pl);
+    return pl;
+  }
+
   public SQLContext getSQLContext() {
     if (sqlc == null) {
-      // save / load sc from common share
-      Map<String, Object> share = (Map<String, Object>) getProperty().get("share");
-      sqlc = (SQLContext) share.get("sqlc");
-      if (sqlc == null) {
-        sqlc = new SQLContext(getSparkContext());
-
-        // The same reason with SparkContext, it'll not be shared, so commenting out.
-        // share.put("sqlc", sqlc);
-      }
+      sqlc = new SQLContext(getSparkContext());
     }
     return sqlc;
   }
 
+  public HiveContext getHiveContext() {
+    if (hiveContext == null) {
+      hiveContext = new HiveContext(getSparkContext());
+    }
+    return hiveContext;
+  }
+
   public DependencyResolver getDependencyResolver() {
     if (dep == null) {
-      // save / load sc from common share
-      Map<String, Object> share = (Map<String, Object>) getProperty().get("share");
-      dep = (DependencyResolver) share.get("dep");
-      if (dep == null) {
-        dep = new DependencyResolver(intp, sc);
-        // share.put("dep", dep);
-      }
+      dep = new DependencyResolver(intp, sc);
     }
     return dep;
   }
 
+  private DepInterpreter getDepInterpreter() {
+    InterpreterGroup intpGroup = getInterpreterGroup();
+    if (intpGroup == null) return null;
+    for (Interpreter intp : intpGroup) {
+      if (intp.getClassName().equals(DepInterpreter.class.getName())) {
+        Interpreter p = intp;
+        while (p instanceof WrappedInterpreter) {
+          p = ((WrappedInterpreter) p).getInnerInterpreter();
+        }
+        return (DepInterpreter) p;
+      }
+    }
+    return null;
+  }
+
   public SparkContext createSparkContext() {
-    System.err.println("------ Create new SparkContext " + getMaster() + " -------");
+    System.err.println("------ Create new SparkContext " + getProperty("master") + " -------");
 
     String execUri = System.getenv("SPARK_EXECUTOR_URI");
     String[] jars = SparkILoop.getAddedJars();
     SparkConf conf =
-        new SparkConf().setMaster(getMaster()).setAppName("Zeppelin").setJars(jars)
+        new SparkConf()
+            .setMaster(getProperty("master"))
+            .setAppName(getProperty("spark.app.name"))
+            .setJars(jars)
             .set("spark.repl.class.uri", interpreter.intp().classServer().uri());
+
     if (execUri != null) {
       conf.set("spark.executor.uri", execUri);
     }
@@ -181,45 +194,75 @@ public class SparkInterpreter extends Interpreter {
       conf.setSparkHome(System.getenv("SPARK_HOME"));
     }
     conf.set("spark.scheduler.mode", "FAIR");
+
+    Properties intpProperty = getProperty();
+
+    for (Object k : intpProperty.keySet()) {
+      String key = (String) k;
+      if (key.startsWith("spark.")) {
+        Object value = intpProperty.get(key);
+        if (value != null
+            && value instanceof String
+            && !((String) value).trim().isEmpty()) {
+          logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, value));
+          conf.set(key, (String) value);
+        }
+      }
+    }
+
     SparkContext sparkContext = new SparkContext(conf);
     return sparkContext;
   }
 
-  public String getMaster() {
-    String envMaster = System.getenv().get("MASTER");
-    if (envMaster != null) {
-      return envMaster;
+  private static String getSystemDefault(
+      String envName,
+      String propertyName,
+      String defaultValue) {
+
+    if (envName != null && !envName.isEmpty()) {
+      String envValue = System.getenv().get(envName);
+      if (envValue != null) {
+        return envValue;
+      }
     }
-    String propMaster = System.getProperty("spark.master");
-    if (propMaster != null) {
-      return propMaster;
+
+    if (propertyName != null && !propertyName.isEmpty()) {
+      String propValue = System.getProperty(propertyName);
+      if (propValue != null) {
+        return propValue;
+      }
     }
-    return "local[*]";
+    return defaultValue;
   }
 
   @Override
   public void open() {
-    Map<String, Object> share = (Map<String, Object>) getProperty().get("share");
-    URL[] urls = (URL[]) getProperty().get("classloaderUrls");
+    URL[] urls = getClassloaderUrls();
 
     // Very nice discussion about how scala compiler handle classpath
     // https://groups.google.com/forum/#!topic/scala-user/MlVwo2xCCI0
 
     /*
      * > val env = new nsc.Settings(errLogger) > env.usejavacp.value = true > val p = new
-     * Interpreter(env) > p.setContextClassLoader > Alternatively you can set the class path throuh
+     * Interpreter(env) > p.setContextClassLoader > Alternatively you can set the class path through
      * nsc.Settings.classpath.
-     * 
+     *
      * >> val settings = new Settings() >> settings.usejavacp.value = true >>
      * settings.classpath.value += File.pathSeparator + >> System.getProperty("java.class.path") >>
      * val in = new Interpreter(settings) { >> override protected def parentClassLoader =
      * getClass.getClassLoader >> } >> in.setContextClassLoader()
      */
     Settings settings = new Settings();
-    if (getProperty().containsKey("args")) {
+    if (getProperty("args") != null) {
+      String[] argsArray = getProperty("args").split(" ");
+      LinkedList<String> argList = new LinkedList<String>();
+      for (String arg : argsArray) {
+        argList.add(arg);
+      }
+
       SparkCommandLine command =
           new SparkCommandLine(scala.collection.JavaConversions.asScalaBuffer(
-              (List<String>) getProperty().get("args")).toList());
+              argList).toList());
       settings = command.settings();
     }
 
@@ -240,6 +283,23 @@ public class SparkInterpreter extends Interpreter {
           classpath += File.pathSeparator;
         }
         classpath += u.getFile();
+      }
+    }
+
+    // add dependency from DepInterpreter
+    DepInterpreter depInterpreter = getDepInterpreter();
+    if (depInterpreter != null) {
+      DependencyContext depc = depInterpreter.getDependencyContext();
+      if (depc != null) {
+        List<File> files = depc.getFiles();
+        if (files != null) {
+          for (File f : files) {
+            if (classpath.length() > 0) {
+              classpath += File.pathSeparator;
+            }
+            classpath += f.getAbsolutePath();
+          }
+        }
       }
     }
 
@@ -269,13 +329,19 @@ public class SparkInterpreter extends Interpreter {
     completor = new SparkJLineCompletion(intp);
 
     sc = getSparkContext();
+    if (sc.getPoolForName("fair").isEmpty()) {
+      Value schedulingMode = org.apache.spark.scheduler.SchedulingMode.FAIR();
+      int minimumShare = 0;
+      int weight = 1;
+      Pool pool = new Pool("fair", schedulingMode, minimumShare, weight);
+      sc.taskScheduler().rootPool().addSchedulable(pool);
+    }
+
     sqlc = getSQLContext();
 
     dep = getDependencyResolver();
 
-    NoteInterpreterLoader noteInterpreterLoader =
-        (NoteInterpreterLoader) getProperty().get("noteIntpLoader");
-    z = new ZeppelinContext(sc, sqlc, dep, noteInterpreterLoader, printStream);
+    z = new ZeppelinContext(sc, sqlc, getHiveContext(), null, dep, printStream);
 
     this.interpreter.loadFiles(settings);
 
@@ -283,6 +349,7 @@ public class SparkInterpreter extends Interpreter {
     binder = (Map<String, Object>) getValue("_binder");
     binder.put("sc", sc);
     binder.put("sqlc", sqlc);
+    binder.put("hiveContext", getHiveContext());
     binder.put("z", z);
     binder.put("out", printStream);
 
@@ -292,8 +359,29 @@ public class SparkInterpreter extends Interpreter {
                  + "_binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
     intp.interpret("@transient val sqlc = "
                  + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
+    intp.interpret("@transient val hiveContext = "
+        + "_binder.get(\"hiveContext\").asInstanceOf[org.apache.spark.sql.hive.HiveContext]");
     intp.interpret("import org.apache.spark.SparkContext._");
     intp.interpret("import sqlc._");
+
+    // add jar
+    if (depInterpreter != null) {
+      DependencyContext depc = depInterpreter.getDependencyContext();
+      if (depc != null) {
+        List<File> files = depc.getFilesDist();
+        if (files != null) {
+          for (File f : files) {
+            if (f.getName().toLowerCase().endsWith(".jar")) {
+              sc.addJar(f.getAbsolutePath());
+              logger.info("sc.addJar(" + f.getAbsolutePath() + ")");
+            } else {
+              sc.addFile(f.getAbsolutePath());
+              logger.info("sc.addFile(" + f.getAbsolutePath() + ")");
+            }
+          }
+        }
+      }
+    }
   }
 
   private List<File> currentClassPath() {
@@ -325,12 +413,14 @@ public class SparkInterpreter extends Interpreter {
     return paths;
   }
 
+  @Override
   public List<String> completion(String buf, int cursor) {
     ScalaCompleter c = completor.completer();
     Candidates ret = c.complete(buf, cursor);
     return scala.collection.JavaConversions.asJavaList(ret.candidates());
   }
 
+  @Override
   public void bindValue(String name, Object o) {
     if ("form".equals(name) && o instanceof Setting) { // form controller injection from
                                                        // Paragraph.jobRun
@@ -339,6 +429,7 @@ public class SparkInterpreter extends Interpreter {
     getResultCode(intp.bindValue(name, o));
   }
 
+  @Override
   public Object getValue(String name) {
     Object ret = intp.valueOfTerm(name);
     if (ret instanceof None) {
@@ -350,21 +441,25 @@ public class SparkInterpreter extends Interpreter {
     }
   }
 
-  private final String jobGroup = "zeppelin-" + this.hashCode();
+  private String getJobGroup(InterpreterContext context){
+    return "zeppelin-" + this.hashCode() + "-" + context.getParagraph().getId();
+  }
 
   /**
    * Interpret a single line.
    */
-  public InterpreterResult interpret(String line) {
+  @Override
+  public InterpreterResult interpret(String line, InterpreterContext context) {
+    z.setInterpreterContext(context);
     if (line == null || line.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);
     }
-    return interpret(line.split("\n"));
+    return interpret(line.split("\n"), context);
   }
 
-  public InterpreterResult interpret(String[] lines) {
+  public InterpreterResult interpret(String[] lines, InterpreterContext context) {
     synchronized (this) {
-      sc.setJobGroup(jobGroup, "Zeppelin", false);
+      sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
       InterpreterResult r = interpretInput(lines);
       sc.clearJobGroup();
       return r;
@@ -372,8 +467,6 @@ public class SparkInterpreter extends Interpreter {
   }
 
   public InterpreterResult interpretInput(String[] lines) {
-    // Map<String, Object> share = (Map<String, Object>)getProperty().get("share");
-    // SparkEnv env = (SparkEnv) share.get("sparkEnv");
     SparkEnv.set(env);
 
     // add print("") to make sure not finishing with comment
@@ -418,11 +511,14 @@ public class SparkInterpreter extends Interpreter {
   }
 
 
-  public void cancel() {
-    sc.cancelJobGroup(jobGroup);
+  @Override
+  public void cancel(InterpreterContext context) {
+    sc.cancelJobGroup(getJobGroup(context));
   }
 
-  public int getProgress() {
+  @Override
+  public int getProgress(InterpreterContext context) {
+    String jobGroup = getJobGroup(context);
     int completedTasks = 0;
     int totalTasks = 0;
 
@@ -438,11 +534,14 @@ public class SparkInterpreter extends Interpreter {
     while (it.hasNext()) {
       ActiveJob job = it.next();
       String g = (String) job.properties().get("spark.jobGroup.id");
+
       if (jobGroup.equals(g)) {
         int[] progressInfo = null;
         if (sc.version().startsWith("1.0")) {
           progressInfo = getProgressFromStage_1_0x(sparkListener, job.finalStage());
         } else if (sc.version().startsWith("1.1")) {
+          progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
+        } else if (sc.version().startsWith("1.2")) {
           progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
         } else {
           continue;

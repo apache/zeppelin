@@ -13,7 +13,6 @@
     "grunt-contrib-copy": "^0.5.0",
     "grunt-contrib-cssmin": "^0.9.0",
     "grunt-contrib-htmlmin": "^0.3.0",
-    "grunt-contrib-imagemin": "^0.8.1",
     "grunt-contrib-jshint": "^0.10.0",
     "grunt-contrib-uglify": "^0.4.0",
     "grunt-contrib-watch": "^0.6.1",
@@ -22,7 +21,7 @@
     "grunt-ngmin": "^0.0.3",
     "grunt-svgmin": "^0.4.0",
     "grunt-usemin": "^2.1.1",
-    "grunt-wiredep": "1.8.0",
+    "grunt-wiredep": "~2.0.0",
     "grunt-cli": "^0.1.13",
     "jshint-stylish": "^0.2.0",
     "load-grunt-tasks": "^0.4.0",
@@ -34,9 +33,5 @@
   },
   "engines": {
     "node": ">=0.10.0"
-  },
-  "scripts": {
-    "postinstall" : "./node_modules/bower/bin/bower --allow-root install",
-    "test": "grunt test"
   }
 }

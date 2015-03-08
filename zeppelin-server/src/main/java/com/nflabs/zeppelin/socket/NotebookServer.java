@@ -1,5 +1,20 @@
 package com.nflabs.zeppelin.socket;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.java_websocket.WebSocket;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.server.WebSocketServer;
+import org.quartz.SchedulerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.nflabs.zeppelin.notebook.JobListenerFactory;
@@ -11,24 +26,10 @@ import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.JobListener;
 import com.nflabs.zeppelin.server.ZeppelinServer;
 import com.nflabs.zeppelin.socket.Message.OP;
-import org.java_websocket.WebSocket;
-import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.server.WebSocketServer;
-import org.quartz.SchedulerException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Zeppelin websocket service.
- * 
+ *
  * @author anthonycorbacho
  */
 public class NotebookServer extends WebSocketServer implements JobListenerFactory {
@@ -251,7 +252,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
   }
 
   private void updateNote(WebSocket conn, Notebook notebook, Message fromMessage)
-      throws SchedulerException {
+      throws SchedulerException, IOException {
     String noteId = (String) fromMessage.get("id");
     String name = (String) fromMessage.get("name");
     Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
@@ -270,7 +271,8 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
       if (cronUpdated) {
         notebook.refreshCron(note.id());
       }
-
+      note.persist();
+      
       broadcastNote(note);
       broadcastNoteList();
     }
@@ -355,8 +357,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     }
 
     final Note note = notebook.getNote(getOpenNoteId(conn));
-    Paragraph p = note.getParagraph(paragraphId);
-    List<String> candidates = p.completion(buffer, cursor);
+    List<String> candidates = note.completion(paragraphId, buffer, cursor);
     resp.put("completions", candidates);
     conn.send(serializeMessage(resp));
   }
@@ -424,7 +425,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
 
     note.run(paragraphId);
   }
-  
+
   /**
    * Need description here.
    *

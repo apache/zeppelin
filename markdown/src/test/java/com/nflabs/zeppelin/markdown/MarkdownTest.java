@@ -1,6 +1,6 @@
 package com.nflabs.zeppelin.markdown;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 
@@ -24,7 +24,7 @@ public class MarkdownTest {
 	public void test() {
 		Markdown md = new Markdown(new Properties());
 		md.open();
-		InterpreterResult result = md.interpret("This is ~~deleted~~ text");
+		InterpreterResult result = md.interpret("This is ~~deleted~~ text", null);
 		assertEquals("<p>This is <s>deleted</s> text</p>\n", result.message());
 		System.out.println(MarkdownTest.class.getName());
 	}

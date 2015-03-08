@@ -7,6 +7,8 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.nflabs.zeppelin.interpreter.Interpreter;
+import com.nflabs.zeppelin.interpreter.InterpreterSerializer;
 
 /**
  * Json response builder.
@@ -79,12 +81,12 @@ public class JsonResponse<T> {
   }
 
   public String toString() {
-    Gson gson = null;
+    GsonBuilder gsonBuilder = new GsonBuilder()
+      .registerTypeAdapter(Interpreter.class, new InterpreterSerializer());    
     if (pretty) {
-      gson = new GsonBuilder().setPrettyPrinting().create();
-    } else {
-      gson = new Gson();
-    }
+      gsonBuilder.setPrettyPrinting(); 
+    } 
+    Gson gson = gsonBuilder.create();
     return gson.toJson(this);
   }
 
@@ -119,9 +121,6 @@ public class JsonResponse<T> {
         r.cookie(nc);
       }
     }
-    r.header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Credentials", "true")
-        .header("Access-Control-Allow-Headers", "authorization,Content-Type")
-        .header("Access-Control-Allow-Methods", "POST, GET, OPTIONS , PUT, HEAD, DELETE");
     return r.build();
   }
 }
