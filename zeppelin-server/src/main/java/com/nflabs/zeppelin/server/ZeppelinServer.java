@@ -70,11 +70,13 @@ public class ZeppelinServer extends Application {
 
     // Web UI
     final WebAppContext webApp = setupWebAppContext(conf);
-    final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
+    //Below is commented since zeppelin-docs module is removed.
+    //final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
 
     // add all handlers
     ContextHandlerCollection contexts = new ContextHandlerCollection();
-    contexts.setHandlers(new Handler[]{swagger, restApi, webApp, webAppSwagg});
+    //contexts.setHandlers(new Handler[]{swagger, restApi, webApp, webAppSwagg});
+    contexts.setHandlers(new Handler[]{swagger, restApi, webApp});
     jettyServer.setHandler(contexts);
 
     notebookServer.start();
@@ -241,7 +243,7 @@ public class ZeppelinServer extends Application {
    *
    * @return WebAppContext with swagger ui context
    */
-  private static WebAppContext setupWebAppSwagger(
+  /*private static WebAppContext setupWebAppSwagger(
       ZeppelinConfiguration conf) {
 
     WebAppContext webApp = new WebAppContext();
@@ -257,7 +259,7 @@ public class ZeppelinServer extends Application {
     // Bind swagger-ui to the path HOST/docs
     webApp.addServlet(new ServletHolder(new DefaultServlet()), "/docs/*");
     return webApp;
-  }
+  }*/
 
   public ZeppelinServer() throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
