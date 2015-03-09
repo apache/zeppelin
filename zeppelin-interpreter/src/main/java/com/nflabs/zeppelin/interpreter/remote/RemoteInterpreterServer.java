@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.nflabs.zeppelin.display.GUI;
+import com.nflabs.zeppelin.interpreter.ClassloaderInterpreter;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.Interpreter.FormType;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
@@ -105,10 +106,12 @@ public class RemoteInterpreterServer
       Constructor<Interpreter> constructor =
           replClass.getConstructor(new Class[] {Properties.class});
       Interpreter repl = constructor.newInstance(p);
+
+      ClassLoader cl = ClassLoader.getSystemClassLoader();
       repl.setClassloaderUrls(new URL[]{});
 
       synchronized (interpreterGroup) {
-        interpreterGroup.add(repl);
+        interpreterGroup.add(new ClassloaderInterpreter(repl, cl));
       }
       repl.setInterpreterGroup(interpreterGroup);
     } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
