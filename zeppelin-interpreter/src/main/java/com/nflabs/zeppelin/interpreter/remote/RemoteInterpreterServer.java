@@ -113,6 +113,8 @@ public class RemoteInterpreterServer
       synchronized (interpreterGroup) {
         interpreterGroup.add(new ClassloaderInterpreter(repl, cl));
       }
+
+      logger.info("Instantiate interpreter {}", className);
       repl.setInterpreterGroup(interpreterGroup);
     } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
         | InstantiationException | IllegalAccessException

@@ -74,7 +74,7 @@ public class RemoteInterpreterTest {
     assertEquals(1, process.getNumIdleClient());
     assertEquals(1, process.referenceCount());
 
-    intpA.interpret("hello",
+    intpA.interpret("1",
         new InterpreterContext(
             "id",
             "title",
@@ -94,4 +94,63 @@ public class RemoteInterpreterTest {
 
   }
 
+  @Test
+  public void testRemoteSchedulerSharing() throws TTransportException, IOException {
+    Properties p = new Properties();
+    InterpreterGroup intpGroup = new InterpreterGroup();
+    Map<String, String> env = new HashMap<String, String>();
+    env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
+
+    RemoteInterpreter intpA = new RemoteInterpreter(
+        p,
+        MockInterpreterA.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        env
+        );
+
+    intpGroup.add(intpA);
+    intpA.setInterpreterGroup(intpGroup);
+
+    RemoteInterpreter intpB = new RemoteInterpreter(
+        p,
+        MockInterpreterB.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        env
+        );
+
+    intpGroup.add(intpB);
+    intpB.setInterpreterGroup(intpGroup);
+
+    intpA.open();
+    intpB.open();
+
+    long start = System.currentTimeMillis();
+    intpA.interpret("500",
+        new InterpreterContext(
+            "id",
+            "title",
+            "text",
+            new HashMap<String, Object>(),
+            new GUI()));
+
+    intpB.interpret("500",
+        new InterpreterContext(
+            "id",
+            "title",
+            "text",
+            new HashMap<String, Object>(),
+            new GUI()));
+    long end = System.currentTimeMillis();
+    assertTrue(end - start >= 1000);
+
+
+    intpA.close();
+    intpB.close();
+
+    RemoteInterpreterProcess process = intpA.getInterpreterProcess();
+    assertFalse(process.isRunning());
+
+  }
 }

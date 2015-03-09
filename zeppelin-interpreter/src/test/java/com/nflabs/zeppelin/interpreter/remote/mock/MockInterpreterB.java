@@ -5,9 +5,12 @@ import java.util.Properties;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
+import com.nflabs.zeppelin.interpreter.InterpreterException;
+import com.nflabs.zeppelin.interpreter.InterpreterGroup;
 import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.scheduler.Scheduler;
 
 public class MockInterpreterB extends Interpreter {
   static {
@@ -34,6 +37,11 @@ public class MockInterpreterB extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    try {
+      Thread.sleep(Long.parseLong(st));
+    } catch (NumberFormatException | InterruptedException e) {
+      throw new InterpreterException(e);
+    }
     return new InterpreterResult(Code.SUCCESS, st);
   }
 
@@ -54,6 +62,18 @@ public class MockInterpreterB extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
+    return null;
+  }
+
+  @Override
+  public Scheduler getScheduler() {
+    InterpreterGroup interpreterGroup = getInterpreterGroup();
+    for (Interpreter intp : interpreterGroup) {
+      if (intp.getClassName().equals(MockInterpreterA.class.getName())) {
+        return intp.getScheduler();
+      }
+    }
+
     return null;
   }
 
