@@ -816,8 +816,14 @@ angular.module('zeppelinWebApp')
       });
 
       // configure how the tooltip looks.
-      $scope.chart[type].tooltipContent(function(key) {
-        return '<h3>' + key + '</h3>';
+      $scope.chart[type].tooltipContent(function(key, x, y, data) {
+        var tooltipContent = '<h3>' + key + '</h3>';
+        if ($scope.paragraph.config.graph.scatter.size &&
+            $scope.isValidSizeOption($scope.paragraph.config.graph.scatter, $scope.paragraph.result.rows)) {
+              tooltipContent += '<p>' + data.point.size + '</p>';
+        }
+
+        return tooltipContent;
       });
 
       $scope.chart[type].showDistX(true)
