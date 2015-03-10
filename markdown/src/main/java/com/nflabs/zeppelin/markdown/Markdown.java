@@ -49,7 +49,7 @@ public class Markdown extends Interpreter {
     String html;
     try {
       html = md.process(st);
-    } catch (IOException e) {
+    } catch (IOException | java.lang.RuntimeException e) {
       return new InterpreterResult(Code.ERROR, e.getMessage());
     }
     return new InterpreterResult(Code.SUCCESS, "%html " + html);
