@@ -23,6 +23,7 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.SQLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -193,7 +194,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     synchronized (statementSetNotifier) {
       while (_statements == null) {
         try {
-          logger.info("wait for statements");
           statementSetNotifier.wait(1000);
         } catch (InterruptedException e) {
         }
@@ -328,6 +328,15 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       return null;
     } else {
       return getJavaSparkContext().getConf();
+    }
+  }
+
+  public SQLContext getSQLContext() {
+    SparkInterpreter intp = getSparkInterpreter();
+    if (intp == null) {
+      return null;
+    } else {
+      return intp.getSQLContext();
     }
   }
 

@@ -34,7 +34,7 @@ jsc = intp.getJavaSparkContext()
 jconf = intp.getSparkConf()
 conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
-
+sqlc = SQLContext(sc, intp.getSQLContext())
 
 class Logger(object):
   def __init__(self):
