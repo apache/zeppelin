@@ -54,9 +54,10 @@ sys.stdout = output
 sys.stderr = output
 
 while True :
-  st = intp.getStatements()
+  req = intp.getStatements()
   try:
-    stmts = st.split("\n")
+    stmts = req.statements().split("\n")
+    jobGroup = req.jobGroup()
     single = None
     incomplete = None
 
@@ -70,6 +71,7 @@ while True :
         single += "\n" + s
 
       try :
+        sc.setJobGroup(jobGroup, "Zeppelin")
         eval(compile(single, "<String>", "single"))
         single = ""
         incomplete = None

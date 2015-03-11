@@ -9,6 +9,7 @@ import java.io.OutputStreamWriter;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.ServerSocket;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -186,21 +187,42 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     gatewayServer.shutdown();
   }
 
-  private String _statements;
+  PythonInterpretRequest pythonInterpretRequest = null;
+
+  /**
+   *
+   */
+  public class PythonInterpretRequest {
+    public String statements;
+    public String jobGroup;
+
+    public PythonInterpretRequest(String statements, String jobGroup) {
+      this.statements = statements;
+      this.jobGroup = jobGroup;
+    }
+
+    public String statements() {
+      return statements;
+    }
+
+    public String jobGroup() {
+      return jobGroup;
+    }
+  }
 
   Integer statementSetNotifier = new Integer(0);
 
-  public String getStatements() {
+  public PythonInterpretRequest getStatements() {
     synchronized (statementSetNotifier) {
-      while (_statements == null) {
+      while (pythonInterpretRequest == null) {
         try {
           statementSetNotifier.wait(1000);
         } catch (InterruptedException e) {
         }
       }
-      String st = _statements;
-      _statements = null;
-      return st;
+      PythonInterpretRequest req = pythonInterpretRequest;
+      pythonInterpretRequest = null;
+      return req;
     }
   }
 
@@ -223,7 +245,10 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       return new InterpreterResult(Code.ERROR, "python process not running");
     }
 
-    _statements = st;
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    String jobGroup = sparkInterpreter.getJobGroup(context);
+
+    pythonInterpretRequest = new PythonInterpretRequest(st, jobGroup);
     statementOutput = null;
 
     synchronized (statementSetNotifier) {
@@ -239,44 +264,18 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
         }
       }
     }
-    //System.out.println("from python = "+statementFinished);
+
     if (statementError) {
       return new InterpreterResult(Code.ERROR, statementOutput);
     } else {
       return new InterpreterResult(Code.SUCCESS, statementOutput);
     }
-
-    /*
-    //outputStream.reset();
-    try {
-      System.out.println("> is="+in.available()+", "+outputStream.size());
-      input.write((st + "\n").getBytes());
-      input.flush();
-      System.out.println("- is="+in.available()+", "+outputStream.size());
-    } catch (IOException e) {
-      throw new InterpreterException(e);
-    }
-    try {
-      Thread.sleep(1000);
-    } catch (InterruptedException e) {
-
-    }
-    try {
-      System.out.println("< is="+in.available()+", "+outputStream.size());
-    } catch (IOException e) {
-    }
-
-    outputStream.size();
-    String result = outputStream.toString();
-    System.out.println("Result = " + result);
-    logger.info("pyspark result " + result);
-    return new InterpreterResult(Code.SUCCESS, result);
-    */
   }
 
   @Override
   public void cancel(InterpreterContext context) {
-    return;
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    sparkInterpreter.cancel(context);
   }
 
   @Override
@@ -286,12 +285,14 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   @Override
   public int getProgress(InterpreterContext context) {
-    return 0;
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    return sparkInterpreter.getProgress(context);
   }
 
   @Override
   public List<String> completion(String buf, int cursor) {
-    return null;
+    // not supported
+    return new LinkedList<String>();
   }
 
   private SparkInterpreter getSparkInterpreter() {
@@ -311,6 +312,15 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       }
     }
     return null;
+  }
+
+  public ZeppelinContext getZeppelinContext() {
+    SparkInterpreter sparkIntp = getSparkInterpreter();
+    if (sparkIntp != null) {
+      return getSparkInterpreter().getZeppelinContext();
+    } else {
+      return null;
+    }
   }
 
   public JavaSparkContext getJavaSparkContext() {

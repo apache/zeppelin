@@ -436,7 +436,7 @@ public class SparkInterpreter extends Interpreter {
     }
   }
 
-  private String getJobGroup(InterpreterContext context){
+  String getJobGroup(InterpreterContext context){
     return "zeppelin-" + this.hashCode() + "-" + context.getParagraphId();
   }
 
@@ -656,5 +656,9 @@ public class SparkInterpreter extends Interpreter {
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetFIFOScheduler(
       SparkInterpreter.class.getName() + this.hashCode());
+  }
+
+  public ZeppelinContext getZeppelinContext() {
+    return z;
   }
 }
