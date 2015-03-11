@@ -20,9 +20,9 @@
 #
 
 if [ -L ${BASH_SOURCE-$0} ]; then
-FWDIR=$(dirname $(readlink "${BASH_SOURCE-$0}"))
+  FWDIR=$(dirname $(readlink "${BASH_SOURCE-$0}"))
 else
-FWDIR=$(dirname "${BASH_SOURCE-$0}")
+  FWDIR=$(dirname "${BASH_SOURCE-$0}")
 fi
 
 if [[ -z "${ZEPPELIN_HOME}" ]]; then
