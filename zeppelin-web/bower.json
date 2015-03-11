@@ -41,7 +41,7 @@
                  "src-noconflict/mode-markdown.js",
                  "src-noconflict/keybinding-emacs.js",
                  "src-noconflict/ext-language_tools.js",
-                 "src-noconflict/theme-monokai.js"],
+                 "src-noconflict/theme-github.js"],
       "version": "1.1.8",
       "name": "ace-builds"
     },
