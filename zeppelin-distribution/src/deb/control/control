@@ -3,6 +3,6 @@ Version: [[version]]-[[buildNumber]]
 Section: misc
 Priority: optional
 Architecture: all
-Maintainer: Jongyoul Lee <jongyoul@gmail.com>
+Maintainer: Lee moon soo <leemoonsoo@gmail.com>
 Description: [[name]]
 Distribution: development
