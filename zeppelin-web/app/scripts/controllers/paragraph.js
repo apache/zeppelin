@@ -392,7 +392,7 @@ angular.module('zeppelinWebApp')
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
       $scope.editor.renderer.setShowGutter(false);
       $scope.editor.setHighlightActiveLine(false);
-      $scope.editor.setTheme('ace/theme/github');
+      $scope.editor.setTheme('ace/theme/monokai');
       $scope.editor.focus();
       var hight = $scope.editor.getSession().getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
       setEditorHeight(_editor.container.id, hight);
