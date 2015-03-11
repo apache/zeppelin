@@ -281,7 +281,7 @@ public class RemoteInterpreter extends Interpreter {
     }
 
     try {
-      return client.completion(buf, buf, cursor);
+      return client.completion(className, buf, cursor);
     } catch (TException e) {
       throw new InterpreterException(e);
     } finally {
