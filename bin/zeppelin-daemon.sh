@@ -21,7 +21,11 @@
 # description: Start and stop daemon script for.
 #
 
-BIN=$(dirname "${BASH_SOURCE-$0}")
+if [ -L ${BASH_SOURCE-$0} ]; then
+  BIN=$(dirname $(readlink "${BASH_SOURCE-$0}"))
+else
+  BIN=$(dirname ${BASH_SOURCE-$0})
+fi
 BIN=$(cd "${BIN}">/dev/null; pwd)
 
 . "${BIN}/common.sh"

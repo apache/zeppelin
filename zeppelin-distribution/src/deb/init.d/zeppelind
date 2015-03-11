@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+### BEGIN INIT INFO
+# Provides:          zeppelind
+# Required-Start:    $remote_fs
+# Required-Stop:     $remote_fs
+# Should-Start:      $network $time
+# Should-Stop:       $network $time
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start and stop the zeppelin daemon
+# Description:       Controls the zeppelin daemon
+### END INIT INFO
+#
+
+test -e /usr/bin/zeppelin-daemon.sh || exit 1
+
+exec /usr/bin/zeppelin-daemon.sh $@
