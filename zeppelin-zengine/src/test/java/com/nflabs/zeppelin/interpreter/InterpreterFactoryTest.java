@@ -1,6 +1,7 @@
 package com.nflabs.zeppelin.interpreter;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -23,6 +24,7 @@ public class InterpreterFactoryTest {
 	private InterpreterFactory factory;
   private File tmpDir;
   private ZeppelinConfiguration conf;
+  private InterpreterContext context;
 
   @Before
 	public void setUp() throws Exception {
@@ -36,7 +38,9 @@ public class InterpreterFactoryTest {
 	  System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
 	  System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "com.nflabs.zeppelin.interpreter.mock.MockInterpreter1,com.nflabs.zeppelin.interpreter.mock.MockInterpreter2");
 	  conf = new ZeppelinConfiguration();
-	  factory = new InterpreterFactory(conf);
+	  factory = new InterpreterFactory(conf, new InterpreterOption(false));
+	  context = new InterpreterContext("id", "title", "text", null, null);
+
 	}
 
 	@After
@@ -63,6 +67,9 @@ public class InterpreterFactoryTest {
 
 		// get interpreter
 		Interpreter repl1 = factory.get(all.get(0)).getInterpreterGroup().getFirst();
+		assertFalse(((LazyOpenInterpreter) repl1).isOpen());
+		repl1.interpret("repl1", context);
+		assertTrue(((LazyOpenInterpreter) repl1).isOpen());
 
 		// try to get unavailable interpreter
 		assertNull(factory.get("unknown"));
@@ -70,6 +77,7 @@ public class InterpreterFactoryTest {
 		// restart interpreter
 		factory.restart(all.get(0));
 		repl1 = factory.get(all.get(0)).getInterpreterGroup().getFirst();
+		assertFalse(((LazyOpenInterpreter) repl1).isOpen());
 	}
 
   @Test

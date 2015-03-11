@@ -272,7 +272,7 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
         notebook.refreshCron(note.id());
       }
       note.persist();
-      
+
       broadcastNote(note);
       broadcastNoteList();
     }

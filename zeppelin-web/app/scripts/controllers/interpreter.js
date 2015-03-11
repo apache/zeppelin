@@ -107,6 +107,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
 
     var request = {
       option : {
+        remote : true
       },
       properties : {},
     };
@@ -251,7 +252,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     $scope.newInterpreterSetting = {
       name : undefined,
       group : undefined,
-      option : {},
+      option : { remote : true },
       properties : {}
     };
     $scope.newInterpreterSetting.propertyValue = '';

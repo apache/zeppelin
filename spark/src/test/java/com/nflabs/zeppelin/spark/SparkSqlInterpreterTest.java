@@ -36,12 +36,12 @@ public class SparkSqlInterpreterTest {
 		  }
 
   		sql = new SparkSqlInterpreter(p);
-		  sql.open();
 
   		InterpreterGroup intpGroup = new InterpreterGroup();
 		  intpGroup.add(repl);
 		  intpGroup.add(sql);
 		  sql.setInterpreterGroup(intpGroup);
+		  sql.open();
 		}
 		context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI());
 	}

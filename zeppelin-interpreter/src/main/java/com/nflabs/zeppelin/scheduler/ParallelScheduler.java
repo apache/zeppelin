@@ -9,7 +9,7 @@ import com.nflabs.zeppelin.scheduler.Job.Status;
 
 /**
  * TODO(moon) : add description.
- * 
+ *
  * @author Leemoonsoo
  *
  */
@@ -30,10 +30,12 @@ public class ParallelScheduler implements Scheduler {
     this.maxConcurrency = maxConcurrency;
   }
 
+  @Override
   public String getName() {
     return name;
   }
 
+  @Override
   public Collection<Job> getJobsWaiting() {
     List<Job> ret = new LinkedList<Job>();
     synchronized (queue) {
@@ -44,6 +46,7 @@ public class ParallelScheduler implements Scheduler {
     return ret;
   }
 
+  @Override
   public Collection<Job> getJobsRunning() {
     List<Job> ret = new LinkedList<Job>();
     synchronized (queue) {
@@ -56,6 +59,7 @@ public class ParallelScheduler implements Scheduler {
 
 
 
+  @Override
   public void submit(Job job) {
     job.setStatus(Status.PENDING);
     synchronized (queue) {
@@ -64,6 +68,7 @@ public class ParallelScheduler implements Scheduler {
     }
   }
 
+  @Override
   public void run() {
 
     synchronized (queue) {
@@ -103,14 +108,41 @@ public class ParallelScheduler implements Scheduler {
       this.job = job;
     }
 
+    @Override
     public void run() {
+      if (job.isAborted()) {
+        job.setStatus(Status.ABORT);
+        job.aborted = false;
+
+        synchronized (queue) {
+          running.remove(job);
+          queue.notify();
+        }
+
+        return;
+      }
+
+      job.setStatus(Status.RUNNING);
       if (listener != null) {
         listener.jobStarted(scheduler, job);
       }
       job.run();
+      if (job.isAborted()) {
+        job.setStatus(Status.ABORT);
+      } else {
+        if (job.getException() != null) {
+          job.setStatus(Status.ERROR);
+        } else {
+          job.setStatus(Status.FINISHED);
+        }
+      }
+
       if (listener != null) {
         listener.jobFinished(scheduler, job);
       }
+
+      // reset aborted flag to allow retry
+      job.aborted = false;
       synchronized (queue) {
         running.remove(job);
         queue.notify();
@@ -119,6 +151,7 @@ public class ParallelScheduler implements Scheduler {
   }
 
 
+  @Override
   public void stop() {
     terminate = true;
     synchronized (queue) {

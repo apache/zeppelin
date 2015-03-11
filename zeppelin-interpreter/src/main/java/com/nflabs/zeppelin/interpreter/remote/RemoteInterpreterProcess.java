@@ -1,7 +1,7 @@
 package com.nflabs.zeppelin.interpreter.remote;
 
 import java.io.IOException;
-import java.net.ServerSocket;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.exec.CommandLine;
@@ -9,7 +9,10 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteResultHandler;
 import org.apache.commons.exec.ExecuteWatchdog;
+import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nflabs.zeppelin.interpreter.InterpreterException;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
@@ -18,6 +21,7 @@ import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
  *
  */
 public class RemoteInterpreterProcess implements ExecuteResultHandler {
+  Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
   AtomicInteger referenceCount;
   private DefaultExecutor executor;
   private ExecuteWatchdog watchdog;
@@ -27,23 +31,16 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   private String interpreterDir;
 
   private GenericObjectPool<Client> clientPool;
+  private Map<String, String> env;
 
-  public RemoteInterpreterProcess(String intpRunner, String intpDir) {
+  public RemoteInterpreterProcess(String intpRunner, String intpDir, Map<String, String> env) {
     this.interpreterRunner = intpRunner;
     this.interpreterDir = intpDir;
+    this.env = env;
     referenceCount = new AtomicInteger(0);
-
   }
 
   public int getPort() {
-    return port;
-  }
-
-  private int findRandomOpenPortOnAllLocalInterfaces() throws IOException {
-    try (ServerSocket socket = new ServerSocket(0);) {
-      port = socket.getLocalPort();
-      socket.close();
-    }
     return port;
   }
 
@@ -52,7 +49,7 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
       if (executor == null) {
         // start server process
         try {
-          findRandomOpenPortOnAllLocalInterfaces();
+          port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
         } catch (IOException e1) {
           throw new InterpreterException(e1);
         }
@@ -71,37 +68,27 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
 
         running = true;
         try {
-          executor.execute(cmdLine, this);
+          Map procEnv = EnvironmentUtils.getProcEnvironment();
+          procEnv.putAll(env);
+
+          logger.info("Run interpreter process {}", cmdLine);
+          executor.execute(cmdLine, procEnv, this);
         } catch (IOException e) {
           running = false;
           throw new InterpreterException(e);
         }
 
-/*
-        boolean remoteProcessDiscovered = false;
+
         long startTime = System.currentTimeMillis();
-        while (System.currentTimeMillis() - startTime < 30 * 1000) { // for 30 sec
-          try {
-            Socket discover = new Socket("localhost", port);
-            discover.close();
-            remoteProcessDiscovered = true;
-          } catch (IOException e) {
-            // wait for a second and continue
+        while (System.currentTimeMillis() - startTime < 5 * 1000) {
+          if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", port)) {
+            break;
+          } else {
             try {
-              Thread.sleep(1000);
-            } catch (InterruptedException e1) {
+              Thread.sleep(500);
+            } catch (InterruptedException e) {
             }
           }
-        }
-        if (!remoteProcessDiscovered) {
-          watchdog.destroyProcess();
-          throw new InterpreterException("Can not discover remote process");
-        }
-*/
-        try {
-          Thread.sleep(5 * 1000);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
         }
 
         clientPool = new GenericObjectPool<Client>(new ClientFactory("localhost", port));
@@ -122,29 +109,84 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
     synchronized (referenceCount) {
       int r = referenceCount.decrementAndGet();
       if (r == 0) {
+        logger.info("shutdown interpreter process");
+        // first try shutdown
+        try {
+          Client client = getClient();
+          client.shutdown();
+          releaseClient(client);
+        } catch (Exception e) {
+          logger.error("Error", e);
+          watchdog.destroyProcess();
+        }
+
+        clientPool.clear();
         clientPool.close();
 
-        // terminate server process
-        watchdog.destroyProcess();
+        // wait for 3 sec and force kill
+        // remote process server.serve() loop is not always finishing gracefully
+        long startTime = System.currentTimeMillis();
+        while (System.currentTimeMillis() - startTime < 3 * 1000) {
+          if (this.isRunning()) {
+            try {
+              Thread.sleep(500);
+            } catch (InterruptedException e) {
+            }
+          } else {
+            break;
+          }
+        }
+
+        if (isRunning()) {
+          logger.info("kill interpreter process");
+          watchdog.destroyProcess();
+        }
+
         executor = null;
         watchdog = null;
+        running = false;
+        logger.info("Remote process terminated");
       }
       return r;
     }
   }
 
+  public int referenceCount() {
+    synchronized (referenceCount) {
+      return referenceCount.get();
+    }
+  }
+
   @Override
   public void onProcessComplete(int exitValue) {
+    logger.info("Interpreter process exited {}", exitValue);
     running = false;
 
   }
 
   @Override
   public void onProcessFailed(ExecuteException e) {
+    logger.info("Interpreter process failed {}", e);
     running = false;
   }
 
   public boolean isRunning() {
     return running;
+  }
+
+  public int getNumActiveClient() {
+    if (clientPool == null) {
+      return 0;
+    } else {
+      return clientPool.getNumActive();
+    }
+  }
+
+  public int getNumIdleClient() {
+    if (clientPool == null) {
+      return 0;
+    } else {
+      return clientPool.getNumIdle();
+    }
   }
 }

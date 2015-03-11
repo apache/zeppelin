@@ -61,8 +61,8 @@ limitations under the License.
             </select>
           </div>
 
-          <div class="form-group"
-            <b>Fork</b>
+          <div class="form-group">
+            <b toolip-placement="top" tooltip="Run interpreter in separate JVM process. If you're not sure, keep it checked.">Fork</b>
             <input type="checkbox"
                    ng-model="newInterpreterSetting.option.remote">
             </input>
@@ -154,7 +154,7 @@ limitations under the License.
           <b>Fork</b> - {{setting.option.remote}}
         </div>
         <div ng-if="valueform.$visible">
-          <b>Fork</b>
+          <b toolip-placement="top" tooltip="Run interpreter in separate JVM process. If you're not sure, keep it checked.">Fork</b>
           <input type="checkbox"
                  ng-model="setting.option.remote">
           </input>

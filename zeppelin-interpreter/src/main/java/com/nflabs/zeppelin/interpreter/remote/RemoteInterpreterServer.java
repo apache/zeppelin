@@ -9,15 +9,16 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.thrift.TException;
-import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
-import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.nflabs.zeppelin.display.GUI;
+import com.nflabs.zeppelin.interpreter.ClassloaderInterpreter;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.Interpreter.FormType;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
@@ -31,31 +32,70 @@ import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.JobListener;
+import com.nflabs.zeppelin.scheduler.JobProgressPoller;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 
 
 /**
  *
  */
-public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
-
-  public static RemoteInterpreterService.Processor<RemoteInterpreterServer> processor;
-  public static RemoteInterpreterServer handler;
-
-  public static void main(String [] args) throws TTransportException {
-    handler = new RemoteInterpreterServer();
-    processor = new RemoteInterpreterService.Processor<RemoteInterpreterServer>(handler);
-
-    int port = Integer.parseInt(args[0]);
-    TServerTransport serverTransport = new TServerSocket(port);
-    TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(
-        serverTransport).processor(processor));
-
-    server.serve();
-  }
+public class RemoteInterpreterServer
+  extends Thread
+  implements RemoteInterpreterService.Iface {
+  Logger logger = LoggerFactory.getLogger(RemoteInterpreterServer.class);
 
   InterpreterGroup interpreterGroup = new InterpreterGroup();
   Gson gson = new Gson();
+
+  RemoteInterpreterService.Processor<RemoteInterpreterServer> processor;
+  RemoteInterpreterServer handler;
+  private int port;
+  private TThreadPoolServer server;
+
+  public RemoteInterpreterServer(int port) throws TTransportException {
+    this.port = port;
+    processor = new RemoteInterpreterService.Processor<RemoteInterpreterServer>(this);
+    TServerSocket serverTransport = new TServerSocket(port);
+    server = new TThreadPoolServer(
+        new TThreadPoolServer.Args(serverTransport).processor(processor));
+  }
+
+  @Override
+  public void run() {
+    logger.info("Starting remote interpreter server on port {}", port);
+    server.serve();
+  }
+
+  @Override
+  public void shutdown() throws TException {
+    // server.stop() does not always finish server.serve() loop
+    // sometimes server.serve() is hanging even after server.stop() call.
+    // this case, need to force kill the process
+    server.stop();
+  }
+
+  public int getPort() {
+    return port;
+  }
+
+  public boolean isRunning() {
+    if (server == null) {
+      return false;
+    } else {
+      return server.isServing();
+    }
+  }
+
+
+  public static void main(String[] args)
+      throws TTransportException, InterruptedException {
+    int port = Integer.parseInt(args[0]);
+    RemoteInterpreterServer remoteInterpreterServer = new RemoteInterpreterServer(port);
+    remoteInterpreterServer.start();
+    remoteInterpreterServer.join();
+    System.exit(0);
+  }
+
 
   @Override
   public void createInterpreter(String className, Map<String, String> properties)
@@ -68,11 +108,15 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
       Constructor<Interpreter> constructor =
           replClass.getConstructor(new Class[] {Properties.class});
       Interpreter repl = constructor.newInstance(p);
+
+      ClassLoader cl = ClassLoader.getSystemClassLoader();
       repl.setClassloaderUrls(new URL[]{});
 
       synchronized (interpreterGroup) {
-        interpreterGroup.add(new LazyOpenInterpreter(repl));
+        interpreterGroup.add(new ClassloaderInterpreter(repl, cl));
       }
+
+      logger.info("Instantiate interpreter {}", className);
       repl.setInterpreterGroup(interpreterGroup);
     } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
         | InstantiationException | IllegalAccessException
@@ -106,6 +150,7 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
     intp.close();
   }
 
+
   @Override
   public RemoteInterpreterResult interpret(String className, String st,
       RemoteInterpreterContext interpreterContext) throws TException {
@@ -115,8 +160,10 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
     Scheduler scheduler = intp.getScheduler();
     InterpretJobListener jobListener = new InterpretJobListener();
     InterpretJob job = new InterpretJob(
+        interpreterContext.getParagraphId(),
         "remoteInterpretJob_" + System.currentTimeMillis(),
         jobListener,
+        JobProgressPoller.DEFAULT_INTERVAL_MSEC,
         intp,
         st,
         context);
@@ -171,12 +218,14 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
     private InterpreterContext context;
 
     public InterpretJob(
+        String jobId,
         String jobName,
         JobListener listener,
+        long progressUpdateIntervalMsec,
         Interpreter interpreter,
         String script,
         InterpreterContext context) {
-      super(jobName, listener);
+      super(jobId, jobName, listener, progressUpdateIntervalMsec);
       this.interpreter = interpreter;
       this.script = script;
       this.context = context;
@@ -250,5 +299,26 @@ public class RemoteInterpreterServer implements RemoteInterpreterService.Iface {
         result.message(),
         gson.toJson(config),
         gson.toJson(gui));
+  }
+
+  @Override
+  public String getStatus(String jobId)
+      throws TException {
+    synchronized (interpreterGroup) {
+      for (Interpreter intp : interpreterGroup) {
+        for (Job job : intp.getScheduler().getJobsRunning()) {
+          if (jobId.equals(job.getId())) {
+            return job.getStatus().name();
+          }
+        }
+
+        for (Job job : intp.getScheduler().getJobsWaiting()) {
+          if (jobId.equals(job.getId())) {
+            return job.getStatus().name();
+          }
+        }
+      }
+    }
+    return "Unknown";
   }
 }

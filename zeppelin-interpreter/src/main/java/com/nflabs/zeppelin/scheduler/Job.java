@@ -14,11 +14,11 @@ import org.slf4j.LoggerFactory;
  *  - should be run on a separate thread
  *  - maintains internal state: it's status
  *  - supports listeners who are updated on status change
- *  
+ *
  *  Job class is serialized/deserialized and used server<->client communication
  *  and saving/loading jobs from disk.
  *  Changing/adding/deleting non transitive field name need consideration of that.
- *  
+ *
  *  @author Leemoonsoo
  */
 public abstract class Job {
@@ -68,10 +68,6 @@ public abstract class Job {
   private transient JobListener listener;
   private long progressUpdateIntervalMs;
 
-  public Job(String jobName, JobListener listener) {
-    this(jobName, listener, JobProgressPoller.DEFAULT_INTERVAL_MSEC);
-  }
-
   public Job(String jobName, JobListener listener, long progressUpdateIntervalMs) {
     this.jobName = jobName;
     this.listener = listener;
@@ -84,14 +80,30 @@ public abstract class Job {
     setStatus(Status.READY);
   }
 
+  public Job(String jobName, JobListener listener) {
+    this(jobName, listener, JobProgressPoller.DEFAULT_INTERVAL_MSEC);
+  }
+
+  public Job(String jobId, String jobName, JobListener listener, long progressUpdateIntervalMs) {
+    this.jobName = jobName;
+    this.listener = listener;
+    this.progressUpdateIntervalMs = progressUpdateIntervalMs;
+
+    id = jobId;
+
+    setStatus(Status.READY);
+  }
+
   public String getId() {
     return id;
   }
 
+  @Override
   public int hashCode() {
     return id.hashCode();
   }
 
+  @Override
   public boolean equals(Object o) {
     return ((Job) o).hashCode() == hashCode();
   }
@@ -132,26 +144,16 @@ public abstract class Job {
   }
 
   public void run() {
-    if (aborted) {
-      setStatus(Status.ABORT);
-      aborted = false;
-      return;
-    }
     JobProgressPoller progressUpdator = null;
     try {
-
-      setStatus(Status.RUNNING);
       progressUpdator = new JobProgressPoller(this, progressUpdateIntervalMs);
       progressUpdator.start();
       dateStarted = new Date();
       result = jobRun();
+      this.exception = null;
+      errorMessage = null;
       dateFinished = new Date();
       progressUpdator.terminate();
-      if (aborted) {
-        setStatus(Status.ABORT);
-      } else {
-        setStatus(Status.FINISHED);
-      }
     } catch (NullPointerException e) {
       logger().error("Job failed", e);
       progressUpdator.terminate();
@@ -159,7 +161,6 @@ public abstract class Job {
       result = e.getMessage();
       errorMessage = getStack(e);
       dateFinished = new Date();
-      setStatus(Status.ERROR);
     } catch (Throwable e) {
       logger().error("Job failed", e);
       progressUpdator.terminate();
@@ -167,9 +168,8 @@ public abstract class Job {
       result = e.getMessage();
       errorMessage = getStack(e);
       dateFinished = new Date();
-      setStatus(Status.ERROR);
     } finally {
-      aborted = false;
+      //aborted = false;
     }
   }
 

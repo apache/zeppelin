@@ -9,7 +9,7 @@ import com.nflabs.zeppelin.scheduler.Job.Status;
 
 /**
  * TODO(moon) : add description.
- * 
+ *
  * @author Leemoonsoo
  *
  */
@@ -27,10 +27,12 @@ public class FIFOScheduler implements Scheduler {
     this.listener = listener;
   }
 
+  @Override
   public String getName() {
     return name;
   }
 
+  @Override
   public Collection<Job> getJobsWaiting() {
     List<Job> ret = new LinkedList<Job>();
     synchronized (queue) {
@@ -41,6 +43,7 @@ public class FIFOScheduler implements Scheduler {
     return ret;
   }
 
+  @Override
   public Collection<Job> getJobsRunning() {
     List<Job> ret = new LinkedList<Job>();
     Job job = runningJob;
@@ -54,6 +57,7 @@ public class FIFOScheduler implements Scheduler {
 
 
 
+  @Override
   public void submit(Job job) {
     job.setStatus(Status.PENDING);
     synchronized (queue) {
@@ -62,6 +66,7 @@ public class FIFOScheduler implements Scheduler {
     }
   }
 
+  @Override
   public void run() {
 
     synchronized (queue) {
@@ -78,14 +83,36 @@ public class FIFOScheduler implements Scheduler {
 
         final Scheduler scheduler = this;
         this.executor.execute(new Runnable() {
+          @Override
           public void run() {
+            if (runningJob.isAborted()) {
+              runningJob.setStatus(Status.ABORT);
+              runningJob.aborted = false;
+              synchronized (queue) {
+                queue.notify();
+              }
+              return;
+            }
+
+            runningJob.setStatus(Status.RUNNING);
             if (listener != null) {
               listener.jobStarted(scheduler, runningJob);
             }
             runningJob.run();
+            if (runningJob.isAborted()) {
+              runningJob.setStatus(Status.ABORT);
+            } else {
+              if (runningJob.getException() != null) {
+                runningJob.setStatus(Status.ERROR);
+              } else {
+                runningJob.setStatus(Status.FINISHED);
+              }
+            }
             if (listener != null) {
               listener.jobFinished(scheduler, runningJob);
             }
+            // reset aborted flag to allow retry
+            runningJob.aborted = false;
             runningJob = null;
             synchronized (queue) {
               queue.notify();
@@ -96,6 +123,7 @@ public class FIFOScheduler implements Scheduler {
     }
   }
 
+  @Override
   public void stop() {
     terminate = true;
     synchronized (queue) {

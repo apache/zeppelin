@@ -11,9 +11,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nflabs.zeppelin.interpreter.remote.RemoteInterpreterProcess;
+
 /**
  * TODO(moon) : add description.
- * 
+ *
  * @author Leemoonsoo
  *
  */
@@ -70,6 +72,26 @@ public class SchedulerFactory implements SchedulerListener {
     }
   }
 
+  public Scheduler createOrGetRemoteScheduler(
+      String name,
+      RemoteInterpreterProcess interpreterProcess,
+      int maxConcurrency) {
+
+    synchronized (schedulers) {
+      if (schedulers.containsKey(name) == false) {
+        Scheduler s = new RemoteScheduler(
+            name,
+            executor,
+            interpreterProcess,
+            this,
+            maxConcurrency);
+        schedulers.put(name, s);
+        executor.execute(s);
+      }
+      return schedulers.get(name);
+    }
+  }
+
   public Scheduler removeScheduler(String name) {
     synchronized (schedulers) {
       Scheduler s = schedulers.remove(name);
@@ -90,11 +112,13 @@ public class SchedulerFactory implements SchedulerListener {
     return s;
   }
 
+  @Override
   public void jobStarted(Scheduler scheduler, Job job) {
     logger.info("Job " + job.getJobName() + " started by scheduler " + scheduler.getName());
 
   }
 
+  @Override
   public void jobFinished(Scheduler scheduler, Job job) {
     logger.info("Job " + job.getJobName() + " finished by scheduler " + scheduler.getName());
 

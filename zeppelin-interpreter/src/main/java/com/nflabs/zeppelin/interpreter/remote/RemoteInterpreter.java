@@ -34,6 +34,7 @@ public class RemoteInterpreter extends Interpreter {
   private String interpreterPath;
   private String className;
   FormType formType;
+  private Map<String, String> env;
   static Map<String, RemoteInterpreterProcess> interpreterGroupReference
     = new HashMap<String, RemoteInterpreterProcess>();
 
@@ -46,6 +47,20 @@ public class RemoteInterpreter extends Interpreter {
     this.className = className;
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
+    env = new HashMap<String, String>();
+  }
+
+  public RemoteInterpreter(Properties property,
+      String className,
+      String interpreterRunner,
+      String interpreterPath,
+      Map<String, String> env) {
+    super(property);
+
+    this.className = className;
+    this.interpreterRunner = interpreterRunner;
+    this.interpreterPath = interpreterPath;
+    this.env = env;
   }
 
   @Override
@@ -53,7 +68,7 @@ public class RemoteInterpreter extends Interpreter {
     return className;
   }
 
-  private RemoteInterpreterProcess getInterpreterProcess() {
+  public RemoteInterpreterProcess getInterpreterProcess() {
     synchronized (interpreterGroupReference) {
       if (interpreterGroupReference.containsKey(getInterpreterGroupKey(getInterpreterGroup()))) {
         RemoteInterpreterProcess interpreterProcess = interpreterGroupReference
@@ -69,7 +84,7 @@ public class RemoteInterpreter extends Interpreter {
     }
   }
 
-  private synchronized void init() {
+  private void init() {
     RemoteInterpreterProcess interpreterProcess = null;
 
     synchronized (interpreterGroupReference) {
@@ -81,30 +96,31 @@ public class RemoteInterpreter extends Interpreter {
       }
     }
 
-    if (interpreterProcess.isRunning() == true) {
-      // already initialized
-      return;
-    }
+    int rc = interpreterProcess.reference();
 
-    // create all interpreter class in this interpreter group
-    interpreterProcess.reference();
+    synchronized (interpreterProcess) {
+      // when first process created
+      if (rc == 1) {
+        // create all interpreter class in this interpreter group
+        Client client = null;
+        try {
+          client = interpreterProcess.getClient();
+        } catch (Exception e1) {
+          throw new InterpreterException(e1);
+        }
 
-    Client client = null;
-    try {
-      client = interpreterProcess.getClient();
-    } catch (Exception e1) {
-      throw new InterpreterException(e1);
-    }
+        try {
+          for (Interpreter intp : this.getInterpreterGroup()) {
+            logger.info("Create remote interpreter {}", intp.getClassName());
+            client.createInterpreter(intp.getClassName(), (Map) property);
 
-    try {
-      logger.info("Create remote interpreter {}", className);
-      for (Interpreter intp : this.getInterpreterGroup()) {
-        client.createInterpreter(intp.getClassName(), (Map) property);
+          }
+        } catch (TException e) {
+          throw new InterpreterException(e);
+        } finally {
+          interpreterProcess.releaseClient(client);
+        }
       }
-    } catch (TException e) {
-      throw new InterpreterException(e);
-    } finally {
-      interpreterProcess.releaseClient(client);
     }
   }
 
@@ -114,18 +130,7 @@ public class RemoteInterpreter extends Interpreter {
   public void open() {
     init();
 
-    RemoteInterpreterProcess interpreterProcess = null;
-
-    synchronized (interpreterGroupReference) {
-      if (interpreterGroupReference.containsKey(getInterpreterGroupKey(getInterpreterGroup()))) {
-        interpreterProcess = interpreterGroupReference
-            .get(getInterpreterGroupKey(getInterpreterGroup()));
-      } else {
-        throw new InterpreterException("Unexpected error");
-      }
-    }
-
-    interpreterProcess.reference();
+    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
 
     Client client = null;
     try {
@@ -286,8 +291,10 @@ public class RemoteInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetParallelScheduler(
-        "remoteinterpreter_" + this.hashCode(), 10);
+    int maxConcurrency = 10;
+
+    return SchedulerFactory.singleton().createOrGetRemoteScheduler(
+        "remoteinterpreter_" + this.hashCode(), getInterpreterProcess(), maxConcurrency);
   }
 
   @Override
@@ -299,7 +306,7 @@ public class RemoteInterpreter extends Interpreter {
           .containsKey(getInterpreterGroupKey(interpreterGroup))) {
         interpreterGroupReference.put(getInterpreterGroupKey(interpreterGroup),
             new RemoteInterpreterProcess(interpreterRunner,
-                interpreterPath));
+                interpreterPath, env));
 
         logger.info("setInterpreterGroup = "
             + getInterpreterGroupKey(interpreterGroup) + " class=" + className
