@@ -291,8 +291,10 @@ public class RemoteInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetParallelScheduler(
-        "remoteinterpreter_" + this.hashCode(), 10);
+    int maxConcurrency = 10;
+
+    return SchedulerFactory.singleton().createOrGetRemoteScheduler(
+        "remoteinterpreter_" + this.hashCode(), getInterpreterProcess(), maxConcurrency);
   }
 
   @Override

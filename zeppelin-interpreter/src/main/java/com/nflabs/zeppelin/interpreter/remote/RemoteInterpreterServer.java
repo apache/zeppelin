@@ -31,6 +31,7 @@ import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.Job.Status;
 import com.nflabs.zeppelin.scheduler.JobListener;
+import com.nflabs.zeppelin.scheduler.JobProgressPoller;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 
 
@@ -158,8 +159,10 @@ public class RemoteInterpreterServer
     Scheduler scheduler = intp.getScheduler();
     InterpretJobListener jobListener = new InterpretJobListener();
     InterpretJob job = new InterpretJob(
+        interpreterContext.getParagraphId(),
         "remoteInterpretJob_" + System.currentTimeMillis(),
         jobListener,
+        JobProgressPoller.DEFAULT_INTERVAL_MSEC,
         intp,
         st,
         context);
@@ -214,12 +217,14 @@ public class RemoteInterpreterServer
     private InterpreterContext context;
 
     public InterpretJob(
+        String jobId,
         String jobName,
         JobListener listener,
+        long progressUpdateIntervalMsec,
         Interpreter interpreter,
         String script,
         InterpreterContext context) {
-      super(jobName, listener);
+      super(jobId, jobName, listener, progressUpdateIntervalMsec);
       this.interpreter = interpreter;
       this.script = script;
       this.context = context;
@@ -293,5 +298,26 @@ public class RemoteInterpreterServer
         result.message(),
         gson.toJson(config),
         gson.toJson(gui));
+  }
+
+  @Override
+  public String getStatus(String jobId)
+      throws TException {
+    synchronized (interpreterGroup) {
+      for (Interpreter intp : interpreterGroup) {
+        for (Job job : intp.getScheduler().getJobsRunning()) {
+          if (jobId.equals(job.getId())) {
+            return job.getStatus().name();
+          }
+        }
+
+        for (Job job : intp.getScheduler().getJobsWaiting()) {
+          if (jobId.equals(job.getId())) {
+            return job.getStatus().name();
+          }
+        }
+      }
+    }
+    return "Unknown";
   }
 }

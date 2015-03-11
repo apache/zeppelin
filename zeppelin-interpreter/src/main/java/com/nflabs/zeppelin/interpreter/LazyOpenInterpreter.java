@@ -12,7 +12,6 @@ import com.nflabs.zeppelin.scheduler.Scheduler;
 public class LazyOpenInterpreter
     extends Interpreter
     implements WrappedInterpreter {
-
   private Interpreter intp;
   boolean opened = false;
 
@@ -47,7 +46,7 @@ public class LazyOpenInterpreter
       return;
     }
 
-    synchronized (this) {
+    synchronized (intp) {
       if (opened == false) {
         intp.open();
         opened = true;
@@ -57,7 +56,7 @@ public class LazyOpenInterpreter
 
   @Override
   public void close() {
-    synchronized (this) {
+    synchronized (intp) {
       if (opened == true) {
         intp.close();
         opened = false;
@@ -66,7 +65,7 @@ public class LazyOpenInterpreter
   }
 
   public boolean isOpen() {
-    synchronized (this) {
+    synchronized (intp) {
       return opened;
     }
   }
