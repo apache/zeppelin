@@ -67,6 +67,10 @@ while True :
       if s == None or len(s.strip()) == 0:
         continue
 
+      # skip comment
+      if s.strip().startswith("#"):
+        continue
+
       if single == None:
         single = s
       else:
