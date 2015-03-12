@@ -36,6 +36,8 @@ conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
 sqlc = SQLContext(sc, intp.getSQLContext())
 
+z = intp.getZeppelinContext()
+
 class Logger(object):
   def __init__(self):
     self.out = ""

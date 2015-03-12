@@ -247,7 +247,9 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     String jobGroup = sparkInterpreter.getJobGroup(context);
-
+    ZeppelinContext z = sparkInterpreter.getZeppelinContext();
+    z.setInterpreterContext(context);
+    z.setGui(context.getGui());
     pythonInterpretRequest = new PythonInterpretRequest(st, jobGroup);
     statementOutput = null;
 
