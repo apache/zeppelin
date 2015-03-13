@@ -1,0 +1,8 @@
+Package: [[deb.pkg.name]]
+Version: [[version]]-[[buildNumber]]
+Section: misc
+Priority: optional
+Architecture: all
+Maintainer: Lee moon soo <leemoonsoo@gmail.com>
+Description: [[name]]
+Distribution: development
