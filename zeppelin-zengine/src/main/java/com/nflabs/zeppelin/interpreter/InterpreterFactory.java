@@ -195,7 +195,8 @@ public class InterpreterFactory {
       InterpreterSetting setting = info.interpreterSettings.get(k);
 
       // Always use separate interpreter process
-      // While we decided to turn this feature on always (without providing enable/disable option on GUI).
+      // While we decided to turn this feature on always (without providing
+      // enable/disable option on GUI).
       // previously created setting should turn this feature on here.
       setting.getOption().setRemote(true);
 
