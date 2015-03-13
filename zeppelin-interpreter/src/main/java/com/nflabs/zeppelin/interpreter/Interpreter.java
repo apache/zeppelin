@@ -16,8 +16,102 @@ import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
 /**
  * Interface for interpreters.
+ * If you want to implement new Zeppelin interpreter, extend this class
+ *
+ * Please see,
+ * http://zeppelin.incubator.apache.org/docs/development/writingzeppelininterpreter.html
+ *
+ * open(), close(), interpreter() is three the most important method you need to implement.
+ * cancel(), getProgress(), completion() is good to have
+ * getFormType(), getScheduler() determine Zeppelin's behavior
+ *
  */
 public abstract class Interpreter {
+
+  /**
+   * Opens interpreter. You may want to place your initialize routine here.
+   * open() is called only once
+   */
+  public abstract void open();
+
+  /**
+   * Closes interpreter. You may want to free your resources up here.
+   * close() is called only once
+   */
+  public abstract void close();
+
+  /**
+   * Run code and return result, in synchronous way.
+   *
+   * @param st statements to run
+   * @param context
+   * @return
+   */
+  public abstract InterpreterResult interpret(String st, InterpreterContext context);
+
+  /**
+   * Optionally implement the canceling routine to abort interpret() method
+   *
+   * @param context
+   */
+  public abstract void cancel(InterpreterContext context);
+
+  /**
+   * Dynamic form handling
+   * see http://zeppelin.incubator.apache.org/docs/dynamicform.html
+   *
+   * @return FormType.SIMPLE enables simple pattern replacement (eg. Hello ${name=world}),
+   *         FormType.NATIVE handles form in API
+   */
+  public abstract FormType getFormType();
+
+  /**
+   * get interpret() method running process in percentage.
+   *
+   * @param context
+   * @return number between 0-100
+   */
+  public abstract int getProgress(InterpreterContext context);
+
+  /**
+   * Get completion list based on cursor position.
+   * By implementing this method, it enables auto-completion.
+   *
+   * @param buf statements
+   * @param cursor cursor position in statements
+   * @return list of possible completion. Return empty list if there're nothing to return.
+   */
+  public abstract List<String> completion(String buf, int cursor);
+
+  /**
+   * Interpreter can implements it's own scheduler by overriding this method.
+   * There're two default scheduler provided, FIFO, Parallel.
+   * If your interpret() can handle concurrent request, use Parallel or use FIFO.
+   *
+   * You can get default scheduler by using
+   * SchedulerFactory.singleton().createOrGetFIFOScheduler()
+   * SchedulerFactory.singleton().createOrGetParallelScheduler()
+   *
+   *
+   * @return return scheduler instance.
+   *         This method can be called multiple times and have to return the same instance.
+   *         Can not return null.
+   */
+  public Scheduler getScheduler() {
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler("interpreter_" + this.hashCode());
+  }
+
+  /**
+   * Called when interpreter is no longer used.
+   */
+  public void destroy() {
+    getScheduler().stop();
+  }
+
+
+
+
+
   static Logger logger = LoggerFactory.getLogger(Interpreter.class);
   private InterpreterGroup interpreterGroup;
   private URL [] classloaderUrls;
@@ -61,6 +155,27 @@ public abstract class Interpreter {
     }
 
     return null;
+  }
+
+
+  public String getClassName() {
+    return this.getClass().getName();
+  }
+
+  public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
+    this.interpreterGroup = interpreterGroup;
+  }
+
+  public InterpreterGroup getInterpreterGroup() {
+    return this.interpreterGroup;
+  }
+
+  public URL[] getClassloaderUrls() {
+    return classloaderUrls;
+  }
+
+  public void setClassloaderUrls(URL[] classloaderUrls) {
+    this.classloaderUrls = classloaderUrls;
   }
 
 
@@ -148,45 +263,5 @@ public abstract class Interpreter {
     return null;
   }
 
-  public abstract void open();
 
-  public abstract void close();
-
-  public abstract InterpreterResult interpret(String st, InterpreterContext context);
-
-  public abstract void cancel(InterpreterContext context);
-
-  public abstract FormType getFormType();
-
-  public abstract int getProgress(InterpreterContext context);
-
-  public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler("interpreter_" + this.hashCode());
-  }
-
-  public void destroy() {
-    getScheduler().stop();
-  }
-
-  public abstract List<String> completion(String buf, int cursor);
-
-  public String getClassName() {
-    return this.getClass().getName();
-  }
-
-  public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
-    this.interpreterGroup = interpreterGroup;
-  }
-
-  public InterpreterGroup getInterpreterGroup() {
-    return this.interpreterGroup;
-  }
-
-  public URL[] getClassloaderUrls() {
-    return classloaderUrls;
-  }
-
-  public void setClassloaderUrls(URL[] classloaderUrls) {
-    this.classloaderUrls = classloaderUrls;
-  }
 }

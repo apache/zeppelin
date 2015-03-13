@@ -194,6 +194,12 @@ public class InterpreterFactory {
     for (String k : info.interpreterSettings.keySet()) {
       InterpreterSetting setting = info.interpreterSettings.get(k);
 
+      // Always use separate interpreter process
+      // While we decided to turn this feature on always (without providing
+      // enable/disable option on GUI).
+      // previously created setting should turn this feature on here.
+      setting.getOption().setRemote(true);
+
       InterpreterGroup interpreterGroup = createInterpreterGroup(
           setting.getGroup(),
           setting.getOption(),
@@ -325,6 +331,7 @@ public class InterpreterFactory {
         if (info.getClassName().equals(className)
             && info.getGroup().equals(groupName)) {
           Interpreter intp;
+
           if (option.isRemote()) {
             intp = createRemoteRepl(info.getPath(),
                 info.getClassName(),
