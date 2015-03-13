@@ -122,7 +122,12 @@ fi
 JAVA_OPTS+=" ${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"
 export JAVA_OPTS
 
-if [[ -z "$ZEPPELIN_INTP_MEM" ]]; then
+# jvm options for interpreter process
+if [[ -z "${ZEPPELIN_INTP_JAVA_OPTS}" ]]; then
+  export ZEPPELIN_INTP_JAVA_OPTS="${ZEPPELIN_JAVA_OPTS}"
+fi
+
+if [[ -z "${ZEPPELIN_INTP_MEM}" ]]; then
   export ZEPPELIN_INTP_MEM="${ZEPPELIN_MEM}"
 fi
 
