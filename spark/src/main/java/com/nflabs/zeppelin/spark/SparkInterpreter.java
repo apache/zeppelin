@@ -54,7 +54,6 @@ import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
 import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
-import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.spark.dep.DependencyContext;
@@ -155,7 +154,7 @@ public class SparkInterpreter extends Interpreter {
 
   public DependencyResolver getDependencyResolver() {
     if (dep == null) {
-      dep = new DependencyResolver(intp, sc);
+      dep = new DependencyResolver(intp, sc, getProperty("zeppelin.dep.localrepo"));
     }
     return dep;
   }
@@ -163,13 +162,15 @@ public class SparkInterpreter extends Interpreter {
   private DepInterpreter getDepInterpreter() {
     InterpreterGroup intpGroup = getInterpreterGroup();
     if (intpGroup == null) return null;
-    for (Interpreter intp : intpGroup) {
-      if (intp.getClassName().equals(DepInterpreter.class.getName())) {
-        Interpreter p = intp;
-        while (p instanceof WrappedInterpreter) {
-          p = ((WrappedInterpreter) p).getInnerInterpreter();
+    synchronized (intpGroup) {
+      for (Interpreter intp : intpGroup) {
+        if (intp.getClassName().equals(DepInterpreter.class.getName())) {
+          Interpreter p = intp;
+          while (p instanceof WrappedInterpreter) {
+            p = ((WrappedInterpreter) p).getInnerInterpreter();
+          }
+          return (DepInterpreter) p;
         }
-        return (DepInterpreter) p;
       }
     }
     return null;
@@ -420,16 +421,10 @@ public class SparkInterpreter extends Interpreter {
     return scala.collection.JavaConversions.asJavaList(ret.candidates());
   }
 
-  @Override
   public void bindValue(String name, Object o) {
-    if ("form".equals(name) && o instanceof Setting) { // form controller injection from
-                                                       // Paragraph.jobRun
-      z.setFormSetting((Setting) o);
-    }
     getResultCode(intp.bindValue(name, o));
   }
 
-  @Override
   public Object getValue(String name) {
     Object ret = intp.valueOfTerm(name);
     if (ret instanceof None) {
@@ -442,7 +437,7 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private String getJobGroup(InterpreterContext context){
-    return "zeppelin-" + this.hashCode() + "-" + context.getParagraph().getId();
+    return "zeppelin-" + this.hashCode() + "-" + context.getParagraphId();
   }
 
   /**
@@ -459,6 +454,7 @@ public class SparkInterpreter extends Interpreter {
 
   public InterpreterResult interpret(String[] lines, InterpreterContext context) {
     synchronized (this) {
+      z.setGui(context.getGui());
       sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
       InterpreterResult r = interpretInput(lines);
       sc.clearJobGroup();
@@ -659,6 +655,6 @@ public class SparkInterpreter extends Interpreter {
   @Override
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        SparkInterpreter.class.getName() + this.hashCode());
+      SparkInterpreter.class.getName() + this.hashCode());
   }
 }

@@ -67,6 +67,7 @@
 	<inceptionYear>2013</inceptionYear>
 
 	<modules>
+		<module>zeppelin-interpreter</module>
 		<module>zeppelin-zengine</module>
 		<module>spark</module>
 		<module>markdown</module>
@@ -878,6 +879,7 @@
 						</goals>
 						<configuration>
 							<failOnViolation>true</failOnViolation>
+                                                        <excludes>com/nflabs/zeppelin/interpreter/thrift/*</excludes>
 						</configuration>
 					</execution>
 				</executions>

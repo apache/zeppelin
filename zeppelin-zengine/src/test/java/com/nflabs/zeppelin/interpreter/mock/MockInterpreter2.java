@@ -27,22 +27,12 @@ public class MockInterpreter2 extends Interpreter{
 	}
 
 	@Override
-	public Object getValue(String name) {
-    return vars.get(name);
-	}
-
-	@Override
 	public InterpreterResult interpret(String st, InterpreterContext context) {
 		return new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl2: "+st);
 	}
 
 	@Override
 	public void cancel(InterpreterContext context) {
-	}
-
-	@Override
-	public void bindValue(String name, Object o) {
-	   vars.put(name, o);
 	}
 
 	@Override

@@ -51,6 +51,7 @@ public class DepInterpreter extends Interpreter {
         "spark",
         DepInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
+            .add("zeppelin.dep.localrepo", "local-repo", "local repository for dependency loader")
             .build());
 
   }
@@ -129,7 +130,7 @@ public class DepInterpreter extends Interpreter {
     intp.setContextClassLoader();
     intp.initializeSynchronous();
 
-    depc = new DependencyContext();
+    depc = new DependencyContext(getProperty("zeppelin.dep.localrepo"));
     completor = new SparkJLineCompletion(intp);
 
     intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
@@ -141,7 +142,6 @@ public class DepInterpreter extends Interpreter {
 
   }
 
-  @Override
   public Object getValue(String name) {
     Object ret = intp.valueOfTerm(name);
     if (ret instanceof None) {
@@ -160,11 +160,8 @@ public class DepInterpreter extends Interpreter {
     out.reset();
 
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
-    if (sparkInterpreter == null) {
-      return new InterpreterResult(Code.ERROR,
-          "Must be used with SparkInterpreter");
-    }
-    if (sparkInterpreter.isSparkContextInitialized()) {
+
+    if (sparkInterpreter != null && sparkInterpreter.isSparkContextInitialized()) {
       return new InterpreterResult(Code.ERROR,
           "Must be used before SparkInterpreter (%spark) initialized");
     }
@@ -202,13 +199,10 @@ public class DepInterpreter extends Interpreter {
   public void cancel(InterpreterContext context) {
   }
 
-  @Override
-  public void bindValue(String name, Object o) {
-  }
 
   @Override
   public FormType getFormType() {
-    return null;
+    return FormType.NATIVE;
   }
 
   @Override
@@ -257,13 +251,15 @@ public class DepInterpreter extends Interpreter {
     if (intpGroup == null) {
       return null;
     }
-    for (Interpreter intp : intpGroup){
-      if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
-        Interpreter p = intp;
-        while (p instanceof WrappedInterpreter) {
-          p = ((WrappedInterpreter) p).getInnerInterpreter();
+    synchronized (intpGroup) {
+      for (Interpreter intp : intpGroup){
+        if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
+          Interpreter p = intp;
+          while (p instanceof WrappedInterpreter) {
+            p = ((WrappedInterpreter) p).getInnerInterpreter();
+          }
+          return (SparkInterpreter) p;
         }
-        return (SparkInterpreter) p;
       }
     }
     return null;

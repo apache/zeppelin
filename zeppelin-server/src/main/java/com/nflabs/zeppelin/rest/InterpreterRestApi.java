@@ -25,6 +25,7 @@ import com.nflabs.zeppelin.interpreter.InterpreterException;
 import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.interpreter.InterpreterSetting;
 import com.nflabs.zeppelin.rest.message.NewInterpreterSettingRequest;
+import com.nflabs.zeppelin.rest.message.UpdateInterpreterSettingRequest;
 import com.nflabs.zeppelin.server.JsonResponse;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -83,7 +84,7 @@ public class InterpreterRestApi {
         NewInterpreterSettingRequest.class);
     Properties p = new Properties();
     p.putAll(request.getProperties());
-    interpreterFactory.add(request.getName(), request.getGroup(), p);
+    interpreterFactory.add(request.getName(), request.getGroup(), request.getOption(), p);
     return new JsonResponse(Status.CREATED, "").build();
   }
 
@@ -91,11 +92,15 @@ public class InterpreterRestApi {
   @Path("setting/{settingId}")
   public Response updateSetting(String message, @PathParam("settingId") String settingId) {
     logger.info("Update interpreterSetting {}", settingId);
+
     try {
-      Properties p = gson.fromJson(message, Properties.class);
-      interpreterFactory.setPropertyAndRestart(settingId, p);
+      UpdateInterpreterSettingRequest p = gson.fromJson(message,
+          UpdateInterpreterSettingRequest.class);
+      interpreterFactory.setPropertyAndRestart(settingId, p.getOption(), p.getProperties());
     } catch (InterpreterException e) {
       return new JsonResponse(Status.NOT_FOUND, e.getMessage(), e).build();
+    } catch (IOException e) {
+      return new JsonResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage(), e).build();
     }
     InterpreterSetting setting = interpreterFactory.get(settingId);
     if (setting == null) {

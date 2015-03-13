@@ -40,11 +40,6 @@ public class Markdown extends Interpreter {
   public void close() {}
 
   @Override
-  public Object getValue(String name) {
-    return null;
-  }
-
-  @Override
   public InterpreterResult interpret(String st, InterpreterContext interpreterContext) {
     String html;
     try {
@@ -57,9 +52,6 @@ public class Markdown extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {}
-
-  @Override
-  public void bindValue(String name, Object o) {}
 
   @Override
   public FormType getFormType() {

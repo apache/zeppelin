@@ -2,6 +2,8 @@ package com.nflabs.zeppelin.rest.message;
 
 import java.util.Map;
 
+import com.nflabs.zeppelin.interpreter.InterpreterOption;
+
 /**
  *  NewInterpreterSetting rest api request message
  *
@@ -9,10 +11,11 @@ import java.util.Map;
 public class NewInterpreterSettingRequest {
   String name;
   String group;
+  InterpreterOption option;
   Map<String, String> properties;
-  
+
   public NewInterpreterSettingRequest() {
-    
+
   }
 
   public String getName() {
@@ -25,5 +28,9 @@ public class NewInterpreterSettingRequest {
 
   public Map<String, String> getProperties() {
     return properties;
+  }
+
+  public InterpreterOption getOption() {
+    return option;
   }
 }

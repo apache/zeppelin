@@ -1,6 +1,5 @@
 package com.nflabs.zeppelin.interpreter;
 
-import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
@@ -16,21 +15,25 @@ public class InterpreterSetting {
   private String description;
   private Properties properties;
   private InterpreterGroup interpreterGroup;
-  
+  private InterpreterOption option;
+
   public InterpreterSetting(String id, String name,
       String group,
+      InterpreterOption option,
       InterpreterGroup interpreterGroup) {
     this.id = id;
     this.name = name;
     this.group = group;
     this.properties = interpreterGroup.getProperty();
+    this.option = option;
     this.interpreterGroup = interpreterGroup;
   }
 
   public InterpreterSetting(String name,
       String group,
+      InterpreterOption option,
       InterpreterGroup interpreterGroup) {
-    this(generateId(), name, group, interpreterGroup);
+    this(generateId(), name, group, option, interpreterGroup);
   }
 
   public String id() {
@@ -39,7 +42,7 @@ public class InterpreterSetting {
 
   private static String generateId() {
     return IdHashes.encode(System.currentTimeMillis() + new Random().nextInt());
-  }  
+  }
 
   public String getName() {
     return name;
@@ -72,5 +75,17 @@ public class InterpreterSetting {
 
   public Properties getProperties() {
     return properties;
+  }
+
+  public InterpreterOption getOption() {
+    if (option == null) {
+      option = new InterpreterOption();
+    }
+
+    return option;
+  }
+
+  public void setOption(InterpreterOption option) {
+    this.option = option;
   }
 }

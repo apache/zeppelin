@@ -1,6 +1,9 @@
 package com.nflabs.zeppelin.interpreter;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,8 +16,6 @@ import org.junit.Test;
 
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import com.nflabs.zeppelin.interpreter.Interpreter;
-import com.nflabs.zeppelin.interpreter.InterpreterFactory;
 import com.nflabs.zeppelin.interpreter.mock.MockInterpreter1;
 import com.nflabs.zeppelin.interpreter.mock.MockInterpreter2;
 
@@ -23,6 +24,7 @@ public class InterpreterFactoryTest {
 	private InterpreterFactory factory;
   private File tmpDir;
   private ZeppelinConfiguration conf;
+  private InterpreterContext context;
 
   @Before
 	public void setUp() throws Exception {
@@ -36,7 +38,9 @@ public class InterpreterFactoryTest {
 	  System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
 	  System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "com.nflabs.zeppelin.interpreter.mock.MockInterpreter1,com.nflabs.zeppelin.interpreter.mock.MockInterpreter2");
 	  conf = new ZeppelinConfiguration();
-	  factory = new InterpreterFactory(conf);
+	  factory = new InterpreterFactory(conf, new InterpreterOption(false));
+	  context = new InterpreterContext("id", "title", "text", null, null);
+
 	}
 
 	@After
@@ -60,11 +64,12 @@ public class InterpreterFactoryTest {
 	@Test
 	public void testBasic() {
 	  List<String> all = factory.getDefaultInterpreterSettingList();
-	  
+
 		// get interpreter
 		Interpreter repl1 = factory.get(all.get(0)).getInterpreterGroup().getFirst();
-		repl1.bindValue("a", 1);		
-		assertEquals(repl1.getValue("a"), 1);
+		assertFalse(((LazyOpenInterpreter) repl1).isOpen());
+		repl1.interpret("repl1", context);
+		assertTrue(((LazyOpenInterpreter) repl1).isOpen());
 
 		// try to get unavailable interpreter
 		assertNull(factory.get("unknown"));
@@ -72,7 +77,7 @@ public class InterpreterFactoryTest {
 		// restart interpreter
 		factory.restart(all.get(0));
 		repl1 = factory.get(all.get(0)).getInterpreterGroup().getFirst();
-		assertEquals(repl1.getValue("a"), null);
+		assertFalse(((LazyOpenInterpreter) repl1).isOpen());
 	}
 
   @Test
@@ -83,13 +88,13 @@ public class InterpreterFactoryTest {
     assertEquals(factory.get(all.get(0)).getInterpreterGroup().getFirst().getClassName(), "com.nflabs.zeppelin.interpreter.mock.MockInterpreter1");
 
     // add setting
-    factory.add("a mock", "mock2", new Properties());
+    factory.add("a mock", "mock2", new InterpreterOption(false), new Properties());
     all = factory.getDefaultInterpreterSettingList();
     assertEquals(2, all.size());
     assertEquals("mock1", factory.get(all.get(0)).getName());
     assertEquals("a mock", factory.get(all.get(1)).getName());
   }
-  
+
   @Test
   public void testSaveLoad() throws InterpreterException, IOException {
     // interpreter settings
@@ -98,7 +103,7 @@ public class InterpreterFactoryTest {
     // check if file saved
     assertTrue(new File(conf.getInterpreterSettingPath()).exists());
 
-    factory.add("newsetting", "mock1", new Properties());
+    factory.add("newsetting", "mock1", new InterpreterOption(false), new Properties());
     assertEquals(3, factory.get().size());
 
     InterpreterFactory factory2 = new InterpreterFactory(conf);

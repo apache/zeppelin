@@ -51,7 +51,7 @@ public class DependencyResolver {
   private SparkContext sc;
   private RepositorySystem system = Booter.newRepositorySystem();
   private List<RemoteRepository> repos = new LinkedList<RemoteRepository>();
-  private RepositorySystemSession session = Booter.newRepositorySystemSession(system);
+  private RepositorySystemSession session;
   private DependencyFilter classpathFlter = DependencyFilterUtils.classpathFilter(
                                                                                 JavaScopes.COMPILE,
                                                                                 JavaScopes.PROVIDED,
@@ -66,10 +66,11 @@ public class DependencyResolver {
                                                     "com.nflabs.zeppelin:zeppelin-spark",
                                                     "com.nflabs.zeppelin:zeppelin-server"};
 
-  public DependencyResolver(SparkIMain intp, SparkContext sc) {
+  public DependencyResolver(SparkIMain intp, SparkContext sc, String localRepoPath) {
     this.intp = intp;
     this.global = intp.global();
     this.sc = sc;
+    session = Booter.newRepositorySystemSession(system, localRepoPath);
     repos.add(Booter.newCentralRepository()); // add maven central
     repos.add(new RemoteRepository("local", "default", "file://"
         + System.getProperty("user.home") + "/.m2/repository"));

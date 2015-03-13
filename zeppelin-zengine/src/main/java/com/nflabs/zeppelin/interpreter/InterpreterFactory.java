@@ -12,6 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -28,10 +29,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import com.nflabs.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
+import com.nflabs.zeppelin.interpreter.remote.RemoteInterpreter;
 
 /**
  * Manage interpreters.
@@ -53,8 +54,17 @@ public class InterpreterFactory {
 
   private Gson gson;
 
+  private InterpreterOption defaultOption;
+
   public InterpreterFactory(ZeppelinConfiguration conf) throws InterpreterException, IOException {
+    this(conf, new InterpreterOption(true));
+  }
+
+
+  public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption)
+      throws InterpreterException, IOException {
     this.conf = conf;
+    this.defaultOption = defaultOption;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
     interpreterClassList = replsConf.split(",");
 
@@ -65,7 +75,6 @@ public class InterpreterFactory {
 
     init();
   }
-
 
   private void init() throws InterpreterException, IOException {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
@@ -90,8 +99,9 @@ public class InterpreterFactory {
             for (String intName : keys) {
               if (className.equals(
                   Interpreter.registeredInterpreters.get(intName).getClassName())) {
+                Interpreter.registeredInterpreters.get(intName).setPath(path.getAbsolutePath());
                 logger.info("Interpreter " + intName + " found. class=" + className);
-                cleanCl.put(intName, ccl);
+                cleanCl.put(path.getAbsolutePath(), ccl);
               }
             }
           } catch (ClassNotFoundException e) {
@@ -137,7 +147,7 @@ public class InterpreterFactory {
 
             if (found) {
               // add all interpreters in group
-              add(groupName, groupName, p);
+              add(groupName, groupName, defaultOption, p);
               groupClassNameMap.remove(groupName);
               break;
             }
@@ -179,29 +189,33 @@ public class InterpreterFactory {
     fis.close();
 
     String json = sb.toString();
-    Map<String, Object> savedObject = gson.fromJson(json,
-        new TypeToken<Map<String, Object>>() {}.getType());
+    InterpreterInfoSaving info = gson.fromJson(json, InterpreterInfoSaving.class);
 
-    Map<String, Map<String, Object>> settings = (Map<String, Map<String, Object>>) savedObject
-        .get("interpreterSettings");
-    Map<String, List<String>> bindings = (Map<String, List<String>>) savedObject
-        .get("interpreterBindings");
+    for (String k : info.interpreterSettings.keySet()) {
+      InterpreterSetting setting = info.interpreterSettings.get(k);
 
-    for (String k : settings.keySet()) {
-      Map<String, Object> set = settings.get(k);
+      // Always use separate interpreter process
+      // While we decided to turn this feature on always (without providing
+      // enable/disable option on GUI).
+      // previously created setting should turn this feature on here.
+      setting.getOption().setRemote(true);
 
-      String id = (String) set.get("id");
-      String name = (String) set.get("name");
-      String group = (String) set.get("group");
-      Properties properties = new Properties();
-      properties.putAll((Map<String, String>) set.get("properties"));
+      InterpreterGroup interpreterGroup = createInterpreterGroup(
+          setting.getGroup(),
+          setting.getOption(),
+          setting.getProperties());
 
-      InterpreterGroup interpreterGroup = createInterpreterGroup(group, properties);
-      InterpreterSetting intpSetting = new InterpreterSetting(id, name, group, interpreterGroup);
+      InterpreterSetting intpSetting = new InterpreterSetting(
+          setting.id(),
+          setting.getName(),
+          setting.getGroup(),
+          setting.getOption(),
+          interpreterGroup);
+
       interpreterSettings.put(k, intpSetting);
     }
 
-    this.interpreterBindings = bindings;
+    this.interpreterBindings = info.interpreterBindings;
   }
 
 
@@ -209,11 +223,11 @@ public class InterpreterFactory {
     String jsonString;
 
     synchronized (interpreterSettings) {
-      Map<String, Object> saveObject = new HashMap<String, Object>();
-      saveObject.put("interpreterSettings", interpreterSettings);
-      saveObject.put("interpreterBindings", interpreterBindings);
+      InterpreterInfoSaving info = new InterpreterInfoSaving();
+      info.interpreterBindings = interpreterBindings;
+      info.interpreterSettings = interpreterSettings;
 
-      jsonString = gson.toJson(saveObject);
+      jsonString = gson.toJson(info);
     }
 
     File settingFile = new File(conf.getInterpreterSettingPath());
@@ -285,14 +299,16 @@ public class InterpreterFactory {
    * @throws InterpreterException
    * @throws IOException
    */
-  public InterpreterGroup add(String name, String groupName, Properties properties)
+  public InterpreterGroup add(String name, String groupName,
+      InterpreterOption option, Properties properties)
       throws InterpreterException, IOException {
     synchronized (interpreterSettings) {
-      InterpreterGroup interpreterGroup = createInterpreterGroup(groupName, properties);
+      InterpreterGroup interpreterGroup = createInterpreterGroup(groupName, option, properties);
 
       InterpreterSetting intpSetting = new InterpreterSetting(
           name,
           groupName,
+          option,
           interpreterGroup);
       interpreterSettings.put(intpSetting.id(), intpSetting);
 
@@ -301,7 +317,9 @@ public class InterpreterFactory {
     }
   }
 
-  private InterpreterGroup createInterpreterGroup(String groupName, Properties properties)
+  private InterpreterGroup createInterpreterGroup(String groupName,
+      InterpreterOption option,
+      Properties properties)
       throws InterpreterException {
     InterpreterGroup interpreterGroup = new InterpreterGroup();
 
@@ -312,11 +330,19 @@ public class InterpreterFactory {
             .get(intName);
         if (info.getClassName().equals(className)
             && info.getGroup().equals(groupName)) {
-          Interpreter intp = createRepl(info.getName(),
-              info.getClassName(),
-              properties,
-              interpreterGroup);
+          Interpreter intp;
+
+          if (option.isRemote()) {
+            intp = createRemoteRepl(info.getPath(),
+                info.getClassName(),
+                properties);
+          } else {
+            intp = createRepl(info.getPath(),
+                info.getClassName(),
+                properties);
+          }
           interpreterGroup.add(intp);
+          intp.setInterpreterGroup(interpreterGroup);
           break;
         }
       }
@@ -424,17 +450,22 @@ public class InterpreterFactory {
    * Change interpreter property and restart
    * @param name
    * @param properties
+   * @throws IOException
    */
-  public void setPropertyAndRestart(String id, Properties properties) {
+  public void setPropertyAndRestart(String id, InterpreterOption option,
+      Properties properties) throws IOException {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
       if (intpsetting != null) {
         intpsetting.getInterpreterGroup().close();
         intpsetting.getInterpreterGroup().destroy();
 
+        intpsetting.setOption(option);
+
         InterpreterGroup interpreterGroup = createInterpreterGroup(
-            intpsetting.getGroup(), properties);
+            intpsetting.getGroup(), option, properties);
         intpsetting.setInterpreterGroup(interpreterGroup);
+        saveToFile();
       } else {
         throw new InterpreterException("Interpreter setting id " + id
             + " not found");
@@ -451,7 +482,7 @@ public class InterpreterFactory {
           intpsetting.getInterpreterGroup().destroy();
 
           InterpreterGroup interpreterGroup = createInterpreterGroup(
-              intpsetting.getGroup(), intpsetting.getProperties());
+              intpsetting.getGroup(), intpsetting.getOption(), intpsetting.getProperties());
           intpsetting.setInterpreterGroup(interpreterGroup);
         } else {
           throw new InterpreterException("Interpreter setting id " + id
@@ -461,8 +492,21 @@ public class InterpreterFactory {
     }
   }
 
+
+  public void close() {
+    synchronized (interpreterSettings) {
+      synchronized (interpreterSettings) {
+        Collection<InterpreterSetting> intpsettings = interpreterSettings.values();
+        for (InterpreterSetting intpsetting : intpsettings) {
+          intpsetting.getInterpreterGroup().close();
+          intpsetting.getInterpreterGroup().destroy();
+        }
+      }
+    }
+  }
+
   private Interpreter createRepl(String dirName, String className,
-      Properties property, InterpreterGroup interpreterGroup)
+      Properties property)
       throws InterpreterException {
     logger.info("Create repl {} from {}", className, dirName);
 
@@ -501,7 +545,6 @@ public class InterpreterFactory {
       repl.setClassloaderUrls(ccl.getURLs());
       LazyOpenInterpreter intp = new LazyOpenInterpreter(
           new ClassloaderInterpreter(repl, cl));
-      intp.setInterpreterGroup(interpreterGroup);
       return intp;
     } catch (SecurityException e) {
       throw new InterpreterException(e);
@@ -521,6 +564,16 @@ public class InterpreterFactory {
       Thread.currentThread().setContextClassLoader(oldcl);
     }
   }
+
+
+  private Interpreter createRemoteRepl(String interpreterPath, String className,
+      Properties property) {
+
+    LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(
+        property, className, conf.getInterpreterRemoteRunnerPath(), interpreterPath));
+    return intp;
+  }
+
 
   private URL[] recursiveBuildLibList(File path) throws MalformedURLException {
     URL[] urls = new URL[0];

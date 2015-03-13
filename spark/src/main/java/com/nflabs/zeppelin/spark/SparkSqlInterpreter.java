@@ -26,14 +26,14 @@ import scala.collection.JavaConverters;
 import scala.collection.mutable.HashMap;
 import scala.collection.mutable.HashSet;
 
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
+import com.nflabs.zeppelin.interpreter.InterpreterException;
 import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
-import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
 import com.nflabs.zeppelin.interpreter.LazyOpenInterpreter;
+import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
@@ -62,7 +62,7 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   private String getJobGroup(InterpreterContext context){
-    return "zeppelin-" + this.hashCode() + "-" + context.getParagraph().getId();
+    return "zeppelin-" + this.hashCode() + "-" + context.getParagraphId();
   }
 
   private int maxResult;
@@ -73,10 +73,7 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    this.maxResult = conf.getInt("ZEPPELIN_SPARK_MAX_RESULT",
-        "zeppelin.spark.maxResult",
-        Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
+    this.maxResult = Integer.parseInt(getProperty("zeppelin.spark.maxResult"));
   }
 
   private SparkInterpreter getSparkInterpreter() {
@@ -98,7 +95,7 @@ public class SparkSqlInterpreter extends Interpreter {
   private boolean useHiveContext() {
     return Boolean.parseBoolean(getProperty("zeppelin.spark.useHiveContext"));
   }
-  
+
   public boolean concurrentSQL() {
     return Boolean.parseBoolean(getProperty("zeppelin.spark.concurrentSQL"));
   }
@@ -106,10 +103,6 @@ public class SparkSqlInterpreter extends Interpreter {
   @Override
   public void close() {}
 
-  @Override
-  public Object getValue(String name) {
-    return null;
-  }
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
@@ -188,11 +181,6 @@ public class SparkSqlInterpreter extends Interpreter {
     SparkContext sc = sqlc.sparkContext();
 
     sc.cancelJobGroup(getJobGroup(context));
-  }
-
-  @Override
-  public void bindValue(String name, Object o) {
-
   }
 
   @Override
@@ -317,8 +305,23 @@ public class SparkSqlInterpreter extends Interpreter {
       int maxConcurrency = 10;
       return SchedulerFactory.singleton().createOrGetParallelScheduler(
           SparkSqlInterpreter.class.getName() + this.hashCode(), maxConcurrency);
+    } else {
+      // getSparkInterpreter() calls open() inside.
+      // That means if SparkInterpreter is not opened, it'll wait until SparkInterpreter open.
+      // In this moment UI displays 'READY' or 'FINISHED' instead of 'PENDING' or 'RUNNING'.
+      // It's because of scheduler is not created yet, and scheduler is created by this function.
+      // Therefore, we can still use getSparkInterpreter() here, but it's better and safe
+      // to getSparkInterpreter without opening it.
+      for (Interpreter intp : getInterpreterGroup()) {
+        if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
+          Interpreter p = intp;
+          return p.getScheduler();
+        } else {
+          continue;
+        }
+      }
+      throw new InterpreterException("Can't find SparkInterpreter");
     }
-    return getSparkInterpreter().getScheduler();
   }
 
   @Override

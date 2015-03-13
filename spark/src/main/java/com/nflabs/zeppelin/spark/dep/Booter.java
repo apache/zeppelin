@@ -1,16 +1,16 @@
 package com.nflabs.zeppelin.spark.dep;
 
+import java.io.File;
+
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.LocalRepository;
 import org.sonatype.aether.repository.RemoteRepository;
 
-import com.nflabs.zeppelin.conf.ZeppelinConfiguration;
-
 /**
  * Manage mvn repository.
- * 
+ *
  * @author anthonycorbacho
  *
  */
@@ -19,13 +19,23 @@ public class Booter {
     return RepositorySystemFactory.newRepositorySystem();
   }
 
-  public static RepositorySystemSession newRepositorySystemSession(RepositorySystem system) {
+  public static RepositorySystemSession newRepositorySystemSession(
+      RepositorySystem system, String localRepoPath) {
     MavenRepositorySystemSession session = new MavenRepositorySystemSession();
 
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    // find homedir
+    String home = System.getenv("ZEPPELIN_HOME");
+    if (home == null) {
+      home = System.getProperty("zeppelin.home");
+    }
+    if (home == null) {
+      home = "..";
+    }
+
+    String path = home + "/" + localRepoPath;
+
     LocalRepository localRepo =
-        new LocalRepository(conf.getRelativeDir(conf.getString("ZEPPELIN_DEP_LOCAL_REPO",
-             "zeppelin.dep.localrepo", "local-repo")));
+        new LocalRepository(new File(path).getAbsolutePath());
     session.setLocalRepositoryManager(system.newLocalRepositoryManager(localRepo));
 
     // session.setTransferListener(new ConsoleTransferListener());

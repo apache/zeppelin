@@ -9,12 +9,12 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nflabs.zeppelin.display.GUI;
+import com.nflabs.zeppelin.display.Input;
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.Interpreter.FormType;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
-import com.nflabs.zeppelin.notebook.form.Input;
-import com.nflabs.zeppelin.notebook.form.Setting;
 import com.nflabs.zeppelin.scheduler.Job;
 import com.nflabs.zeppelin.scheduler.JobListener;
 
@@ -30,14 +30,14 @@ public class Paragraph extends Job implements Serializable {
   String title;
   String text;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
-  public final Setting settings; // form and parameter settings
+  public final GUI settings;          // form and parameter settings
 
   public Paragraph(JobListener listener, NoteInterpreterLoader replLoader) {
     super(generateId(), listener);
     this.replLoader = replLoader;
     title = null;
     text = null;
-    settings = new Setting();
+    settings = new GUI();
     config = new HashMap<String, Object>();
   }
 
@@ -147,7 +147,7 @@ public class Paragraph extends Job implements Serializable {
     String replName = getRequiredReplName();
     Interpreter repl = getRepl(replName);
     if (repl != null) {
-      return repl.getProgress(new InterpreterContext(this));
+      return repl.getProgress(getInterpreterContext());
     } else {
       return 0;
     }
@@ -172,7 +172,6 @@ public class Paragraph extends Job implements Serializable {
     // inject form
     if (repl.getFormType() == FormType.NATIVE) {
       settings.clear();
-      repl.bindValue("form", settings); // user code will dynamically create inputs
     } else if (repl.getFormType() == FormType.SIMPLE) {
       String scriptBody = getScriptBody();
       Map<String, Input> inputs = Input.extractSimpleQueryParam(scriptBody); // inputs will be built
@@ -181,15 +180,24 @@ public class Paragraph extends Job implements Serializable {
       script = Input.getSimpleQuery(settings.getParams(), scriptBody);
     }
     logger().info("RUN : " + script);
-    InterpreterResult ret = repl.interpret(script, new InterpreterContext(this));
+    InterpreterResult ret = repl.interpret(script, getInterpreterContext());
     return ret;
   }
 
   @Override
   protected boolean jobAbort() {
     Interpreter repl = getRepl(getRequiredReplName());
-    repl.cancel(new InterpreterContext(this));
+    repl.cancel(getInterpreterContext());
     return true;
+  }
+
+  private InterpreterContext getInterpreterContext() {
+    InterpreterContext interpreterContext = new InterpreterContext(getId(),
+            this.getTitle(),
+            this.getText(),
+            this.getConfig(),
+            this.settings);
+    return interpreterContext;
   }
 
   private Logger logger() {
