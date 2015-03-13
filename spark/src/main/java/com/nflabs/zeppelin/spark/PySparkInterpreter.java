@@ -149,11 +149,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       pythonPath += getSparkHome() + "/python/lib/py4j-0.8.2.1-src.zip:"
           + getSparkHome() + "/python";
 
-//      Map<String, String> newEnv = new HashMap<String, String>(env);
-//      newEnv.put("PYTHONPATH", pythonPath);
-
       env.put("PYTHONPATH", pythonPath);
-      //EnvironmentUtils.addVariableToEnvironment(env, "PYTHONPATH="+pythonPath);
 
       executor.execute(cmd, env, this);
       pythonscriptRunning = true;
@@ -260,7 +256,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     synchronized (statementFinishedNotifier) {
       while (statementOutput == null) {
         try {
-          logger.info("wait for output");
           statementFinishedNotifier.wait(1000);
         } catch (InterruptedException e) {
         }

@@ -1,7 +1,6 @@
 import sys, getopt
 
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
-
 from pyspark.conf import SparkConf
 from pyspark.context import SparkContext
 from pyspark.rdd import RDD
@@ -55,6 +54,7 @@ output = Logger()
 sys.stdout = output
 sys.stderr = output
 
+
 while True :
   req = intp.getStatements()
   try:
@@ -62,6 +62,7 @@ while True :
     jobGroup = req.jobGroup()
     single = None
     incomplete = None
+    compiledCode = None
 
     for s in stmts:
       if s == None or len(s.strip()) == 0:
@@ -71,15 +72,24 @@ while True :
       if s.strip().startswith("#"):
         continue
 
+      if s[0] != " " and s[0] != "\t":
+        if incomplete != None:
+          raise incomplete
+
+        if compiledCode != None:
+          sc.setJobGroup(jobGroup, "Zeppelin")
+          eval(compiledCode)
+          compiledCode = None
+          single = None
+          incomplete = None
+
       if single == None:
         single = s
       else:
         single += "\n" + s
 
       try :
-        sc.setJobGroup(jobGroup, "Zeppelin")
-        eval(compile(single, "<String>", "single"))
-        single = ""
+        compiledCode = compile(single, "<string>", "single")
         incomplete = None
       except SyntaxError as e:
         if str(e).startswith("unexpected EOF while parsing") :
@@ -93,8 +103,13 @@ while True :
     if incomplete != None:
       raise incomplete
 
+    if compiledCode != None:
+      sc.setJobGroup(jobGroup, "Zeppelin")
+      eval(compiledCode)
+
     intp.setStatementsFinished(output.get(), False)
   except:
     intp.setStatementsFinished(str(sys.exc_info()), True)
 
   output.reset()
+    
