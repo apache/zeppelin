@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.spark.HttpServer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkEnv;
@@ -49,6 +50,7 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
 import com.nflabs.zeppelin.interpreter.InterpreterContext;
+import com.nflabs.zeppelin.interpreter.InterpreterException;
 import com.nflabs.zeppelin.interpreter.InterpreterGroup;
 import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
@@ -181,12 +183,34 @@ public class SparkInterpreter extends Interpreter {
 
     String execUri = System.getenv("SPARK_EXECUTOR_URI");
     String[] jars = SparkILoop.getAddedJars();
+
+    String classServerUri = null;
+
+    try { // in case of spark 1.1x, spark 1.2x
+      Method classServer = interpreter.intp().getClass().getMethod("classServer");
+      HttpServer httpServer = (HttpServer) classServer.invoke(interpreter.intp());
+      classServerUri = httpServer.uri();
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+        | IllegalArgumentException | InvocationTargetException e) {
+      // continue
+    }
+
+    if (classServerUri == null) {
+      try { // for spark 1.3x
+        Method classServer = interpreter.intp().getClass().getMethod("classServerUri");
+        classServerUri = (String) classServer.invoke(interpreter.intp());
+      } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+          | IllegalArgumentException | InvocationTargetException e) {
+        throw new InterpreterException(e);
+      }
+    }
+
     SparkConf conf =
         new SparkConf()
             .setMaster(getProperty("master"))
             .setAppName(getProperty("spark.app.name"))
             .setJars(jars)
-            .set("spark.repl.class.uri", interpreter.intp().classServer().uri());
+            .set("spark.repl.class.uri", classServerUri);
 
     if (execUri != null) {
       conf.set("spark.executor.uri", execUri);
@@ -344,7 +368,20 @@ public class SparkInterpreter extends Interpreter {
 
     z = new ZeppelinContext(sc, sqlc, getHiveContext(), null, dep, printStream);
 
-    this.interpreter.loadFiles(settings);
+    try {
+      if (sc.version().startsWith("1.1") || sc.version().startsWith("1.2")) {
+        Method loadFiles = this.interpreter.getClass().getMethod("loadFiles", Settings.class);
+        loadFiles.invoke(this.interpreter, settings);
+      } else if (sc.version().startsWith("1.3")) {
+        Method loadFiles = this.interpreter.getClass().getMethod(
+            "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
+        loadFiles.invoke(this.interpreter, settings);
+      }
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+        | IllegalArgumentException | InvocationTargetException e) {
+      throw new InterpreterException(e);
+    }
+
 
     intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
     binder = (Map<String, Object>) getValue("_binder");
@@ -363,7 +400,16 @@ public class SparkInterpreter extends Interpreter {
     intp.interpret("@transient val hiveContext = "
         + "_binder.get(\"hiveContext\").asInstanceOf[org.apache.spark.sql.hive.HiveContext]");
     intp.interpret("import org.apache.spark.SparkContext._");
-    intp.interpret("import sqlc._");
+
+    if (sc.version().startsWith("1.1")) {
+      intp.interpret("import sqlc._");
+    } else if (sc.version().startsWith("1.2")) {
+      intp.interpret("import sqlc._");
+    } else if (sc.version().startsWith("1.3")) {
+      intp.interpret("import sqlc.implicits._");
+      intp.interpret("import sqlc.sql");
+      intp.interpret("import org.apache.spark.sql.functions._");
+    }
 
     // add jar
     if (depInterpreter != null) {
@@ -419,10 +465,6 @@ public class SparkInterpreter extends Interpreter {
     ScalaCompleter c = completor.completer();
     Candidates ret = c.complete(buf, cursor);
     return scala.collection.JavaConversions.asJavaList(ret.candidates());
-  }
-
-  public void bindValue(String name, Object o) {
-    getResultCode(intp.bindValue(name, o));
   }
 
   public Object getValue(String name) {
@@ -538,6 +580,8 @@ public class SparkInterpreter extends Interpreter {
         } else if (sc.version().startsWith("1.1")) {
           progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
         } else if (sc.version().startsWith("1.2")) {
+          progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
+        } else if (sc.version().startsWith("1.3")) {
           progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
         } else {
           continue;

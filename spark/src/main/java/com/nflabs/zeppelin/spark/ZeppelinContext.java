@@ -10,7 +10,6 @@ import java.util.Iterator;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.SchemaRDD;
 import org.apache.spark.sql.hive.HiveContext;
 
 import scala.Tuple2;
@@ -49,9 +48,11 @@ public class ZeppelinContext {
   public HiveContext hiveContext;
   private GUI gui;
 
+  /* spark-1.3
   public SchemaRDD sql(String sql) {
     return sqlContext.sql(sql);
   }
+  */
 
   /**
    * Load dependency for interpreter and runtime (driver).

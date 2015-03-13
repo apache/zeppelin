@@ -12,9 +12,9 @@ import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Stage;
 import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.SchemaRDD;
+import org.apache.spark.sql.SQLContext.QueryExecution;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
-import org.apache.spark.sql.catalyst.expressions.Row;
+//import org.apache.spark.sql.catalyst.expressions.Row;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,11 +122,15 @@ public class SparkSqlInterpreter extends Interpreter {
     }
 
     sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
-    SchemaRDD rdd;
-    Row[] rows = null;
+
+    // SchemaRDD - spark 1.1, 1.2, DataFrame - spark 1.3
+    Object rdd;
+    Object[] rows = null;
     try {
       rdd = sqlc.sql(st);
-      rows = rdd.take(maxResult + 1);
+
+      Method take = rdd.getClass().getMethod("take", Integer.class);
+      rows = (Object[]) take.invoke(rdd, maxResult + 1);
     } catch (Exception e) {
       logger.error("Error", e);
       sc.clearJobGroup();
@@ -134,10 +138,22 @@ public class SparkSqlInterpreter extends Interpreter {
     }
 
     String msg = null;
+
     // get field names
+    Method queryExecution;
+    QueryExecution qe;
+    try {
+      queryExecution = rdd.getClass().getMethod("queryExecution");
+      qe = (QueryExecution) queryExecution.invoke(rdd);
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+        | IllegalArgumentException | InvocationTargetException e) {
+      throw new InterpreterException(e);
+    }
+
     List<Attribute> columns =
         scala.collection.JavaConverters.asJavaListConverter(
-            rdd.queryExecution().analyzed().output()).asJava();
+            qe.analyzed().output()).asJava();
+
     for (Attribute col : columns) {
       if (msg == null) {
         msg = col.name();
@@ -145,26 +161,34 @@ public class SparkSqlInterpreter extends Interpreter {
         msg += "\t" + col.name();
       }
     }
+
     msg += "\n";
 
     // ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType,
     // FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType,
     // NullType, NumericType, ShortType, StringType, StructType
 
-    for (int r = 0; r < maxResult && r < rows.length; r++) {
-      Row row = rows[r];
+    try {
+      for (int r = 0; r < maxResult && r < rows.length; r++) {
+        Object row = rows[r];
+        Method isNullAt = row.getClass().getMethod("isNullAt", Integer.class);
+        Method apply = row.getClass().getMethod("apply", Integer.class);
 
-      for (int i = 0; i < columns.size(); i++) {
-        if (!row.isNullAt(i)) {
-          msg += row.apply(i).toString();
-        } else {
-          msg += "null";
+        for (int i = 0; i < columns.size(); i++) {
+          if (!(Boolean) isNullAt.invoke(row, i)) {
+            msg += apply.invoke(row, i).toString();
+          } else {
+            msg += "null";
+          }
+          if (i != columns.size() - 1) {
+            msg += "\t";
+          }
         }
-        if (i != columns.size() - 1) {
-          msg += "\t";
-        }
+        msg += "\n";
       }
-      msg += "\n";
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+        | IllegalArgumentException | InvocationTargetException e) {
+      throw new InterpreterException(e);
     }
 
     if (rows.length > maxResult) {
