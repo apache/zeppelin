@@ -142,7 +142,12 @@ public class SparkInterpreter extends Interpreter {
 
   public SQLContext getSQLContext() {
     if (sqlc == null) {
-      sqlc = new SQLContext(getSparkContext());
+      // for spark 1.3x default HiveContext
+      if (getSparkContext().version().startsWith("1.3")) {
+        sqlc = getHiveContext();
+      } else {
+        sqlc = new SQLContext(getSparkContext());
+      }
     }
     return sqlc;
   }
