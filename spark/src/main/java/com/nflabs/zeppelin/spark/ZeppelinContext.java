@@ -32,12 +32,10 @@ public class ZeppelinContext {
   private InterpreterContext interpreterContext;
 
   public ZeppelinContext(SparkContext sc, SQLContext sql,
-      HiveContext hiveContext,
       InterpreterContext interpreterContext,
       DependencyResolver dep, PrintStream printStream) {
     this.sc = sc;
     this.sqlContext = sql;
-    this.hiveContext = hiveContext;
     this.interpreterContext = interpreterContext;
     this.dep = dep;
     this.out = printStream;

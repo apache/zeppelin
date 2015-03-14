@@ -14,7 +14,6 @@ import org.apache.spark.scheduler.Stage;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SQLContext.QueryExecution;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
-//import org.apache.spark.sql.catalyst.expressions.Row;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,8 +53,6 @@ public class SparkSqlInterpreter extends Interpreter {
         SparkSqlInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .add("zeppelin.spark.maxResult", "10000", "Max number of SparkSQL result to display.")
-            .add("zeppelin.spark.useHiveContext", "false",
-                "Use HiveContext instead of SQLContext if it is true.")
             .add("zeppelin.spark.concurrentSQL", "false",
                 "Execute multiple SQL concurrently if set true.")
             .build());
@@ -92,10 +89,6 @@ public class SparkSqlInterpreter extends Interpreter {
     return null;
   }
 
-  private boolean useHiveContext() {
-    return Boolean.parseBoolean(getProperty("zeppelin.spark.useHiveContext"));
-  }
-
   public boolean concurrentSQL() {
     return Boolean.parseBoolean(getProperty("zeppelin.spark.concurrentSQL"));
   }
@@ -108,11 +101,7 @@ public class SparkSqlInterpreter extends Interpreter {
   public InterpreterResult interpret(String st, InterpreterContext context) {
     SQLContext sqlc = null;
 
-    if (useHiveContext()) {
-      sqlc = getSparkInterpreter().getHiveContext();
-    } else {
-      sqlc = getSparkInterpreter().getSQLContext();
-    }
+    sqlc = getSparkInterpreter().getSQLContext();
 
     SparkContext sc = sqlc.sparkContext();
     if (concurrentSQL()) {

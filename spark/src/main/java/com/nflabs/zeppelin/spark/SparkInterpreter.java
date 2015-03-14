@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -27,7 +28,6 @@ import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
 import org.apache.spark.scheduler.Stage;
 import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.hive.HiveContext;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,7 +98,6 @@ public class SparkInterpreter extends Interpreter {
   private SparkContext sc;
   private ByteArrayOutputStream out;
   private SQLContext sqlc;
-  private HiveContext hiveContext;
   private DependencyResolver dep;
   private SparkJLineCompletion completor;
 
@@ -142,21 +141,24 @@ public class SparkInterpreter extends Interpreter {
 
   public SQLContext getSQLContext() {
     if (sqlc == null) {
-      // for spark 1.3x default HiveContext
-      if (getSparkContext().version().startsWith("1.3")) {
-        sqlc = getHiveContext();
-      } else {
+      String name = "org.apache.spark.sql.hive.HiveContext";
+      Constructor<?> hc;
+      try {
+        hc = getClass().getClassLoader().loadClass(name)
+            .getConstructor(SparkContext.class);
+        sqlc = (SQLContext) hc.newInstance(getSparkContext());
+      } catch (NoSuchMethodException | SecurityException
+          | ClassNotFoundException | InstantiationException
+          | IllegalAccessException | IllegalArgumentException
+          | InvocationTargetException e) {
+
+        // when hive dependency is not loaded, it'll fail.
+        // in this case SQLContext can be used.
         sqlc = new SQLContext(getSparkContext());
       }
     }
-    return sqlc;
-  }
 
-  public HiveContext getHiveContext() {
-    if (hiveContext == null) {
-      hiveContext = new HiveContext(getSparkContext());
-    }
-    return hiveContext;
+    return sqlc;
   }
 
   public DependencyResolver getDependencyResolver() {
@@ -371,7 +373,7 @@ public class SparkInterpreter extends Interpreter {
 
     dep = getDependencyResolver();
 
-    z = new ZeppelinContext(sc, sqlc, getHiveContext(), null, dep, printStream);
+    z = new ZeppelinContext(sc, sqlc, null, dep, printStream);
 
     try {
       if (sc.version().startsWith("1.1") || sc.version().startsWith("1.2")) {
@@ -392,7 +394,6 @@ public class SparkInterpreter extends Interpreter {
     binder = (Map<String, Object>) getValue("_binder");
     binder.put("sc", sc);
     binder.put("sqlc", sqlc);
-    binder.put("hiveContext", getHiveContext());
     binder.put("z", z);
     binder.put("out", printStream);
 
@@ -404,8 +405,6 @@ public class SparkInterpreter extends Interpreter {
                  + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
     intp.interpret("@transient val sqlContext = "
                  + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
-    intp.interpret("@transient val hiveContext = "
-        + "_binder.get(\"hiveContext\").asInstanceOf[org.apache.spark.sql.hive.HiveContext]");
     intp.interpret("import org.apache.spark.SparkContext._");
 
     if (sc.version().startsWith("1.1")) {
