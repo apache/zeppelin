@@ -397,17 +397,19 @@ public class SparkInterpreter extends Interpreter {
                  + "_binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
     intp.interpret("@transient val sqlc = "
                  + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
+    intp.interpret("@transient val sqlContext = "
+                 + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
     intp.interpret("@transient val hiveContext = "
         + "_binder.get(\"hiveContext\").asInstanceOf[org.apache.spark.sql.hive.HiveContext]");
     intp.interpret("import org.apache.spark.SparkContext._");
 
     if (sc.version().startsWith("1.1")) {
-      intp.interpret("import sqlc._");
+      intp.interpret("import sqlContext._");
     } else if (sc.version().startsWith("1.2")) {
-      intp.interpret("import sqlc._");
+      intp.interpret("import sqlContext._");
     } else if (sc.version().startsWith("1.3")) {
-      intp.interpret("import sqlc.implicits._");
-      intp.interpret("import sqlc.sql");
+      intp.interpret("import sqlContext.implicits._");
+      intp.interpret("import sqlContext.sql");
       intp.interpret("import org.apache.spark.sql.functions._");
     }
 

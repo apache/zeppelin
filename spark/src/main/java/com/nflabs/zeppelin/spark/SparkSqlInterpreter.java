@@ -129,7 +129,7 @@ public class SparkSqlInterpreter extends Interpreter {
     try {
       rdd = sqlc.sql(st);
 
-      Method take = rdd.getClass().getMethod("take", Integer.class);
+      Method take = rdd.getClass().getMethod("take", int.class);
       rows = (Object[]) take.invoke(rdd, maxResult + 1);
     } catch (Exception e) {
       logger.error("Error", e);
@@ -171,8 +171,8 @@ public class SparkSqlInterpreter extends Interpreter {
     try {
       for (int r = 0; r < maxResult && r < rows.length; r++) {
         Object row = rows[r];
-        Method isNullAt = row.getClass().getMethod("isNullAt", Integer.class);
-        Method apply = row.getClass().getMethod("apply", Integer.class);
+        Method isNullAt = row.getClass().getMethod("isNullAt", int.class);
+        Method apply = row.getClass().getMethod("apply", int.class);
 
         for (int i = 0; i < columns.size(); i++) {
           if (!(Boolean) isNullAt.invoke(row, i)) {
