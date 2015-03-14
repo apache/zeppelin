@@ -110,6 +110,10 @@ angular.module('zeppelinWebApp')
     if (!config.graph.groups) {
       config.graph.groups = [];
     }
+
+    if (!config.graph.scatter) {
+      config.graph.scatter = {};
+    }
   };
 
   $scope.getIframeDimensions = function () {
@@ -786,46 +790,81 @@ angular.module('zeppelinWebApp')
       $scope.chart[type] = chart;
     }
 
-    var p = pivot(data);
-
-    var xColIndexes = $scope.paragraph.config.graph.keys;
-    var yColIndexes = $scope.paragraph.config.graph.values;
-
     var d3g = [];
-    // select yColumns.
 
-    if (type==='pieChart') {
-      var d = pivotDataToD3ChartFormat(p, true).d3g;
+    if (type === 'scatterChart') {
+      var scatterData = setScatterChart(data, refresh);
 
-      $scope.chart[type].x(function(d) { return d.label;})
-                        .y(function(d) { return d.value;});
+      var xLabels = scatterData.xLabels;
+      var yLabels = scatterData.yLabels;
+      d3g = scatterData.d3g;
 
-      if ( d.length > 0 ) {
-        for ( var i=0; i<d[0].values.length ; i++) {
-          var e = d[0].values[i];
-          d3g.push({
-            label : e.x,
-            value : e.y
-          });
-        }
-      }
-    } else if (type==='multiBarChart') {
-      d3g = pivotDataToD3ChartFormat(p, true, false, type).d3g;
-      $scope.chart[type].yAxis.axisLabelDistance(50);
-    } else {
-      var pivotdata = pivotDataToD3ChartFormat(p, false, true);
-      var xLabels = pivotdata.xLabels;
-      d3g = pivotdata.d3g;
       $scope.chart[type].xAxis.tickFormat(function(d) {
-        if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
+        if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) {
           return xLabels[d];
         } else {
           return d;
         }
       });
-      $scope.chart[type].yAxis.axisLabelDistance(50);
-      $scope.chart[type].useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
-      $scope.chart[type].forceY([0]); // force y-axis minimum to 0 for line chart.
+
+      $scope.chart[type].yAxis.tickFormat(function(d) {
+        if (yLabels[d] && (isNaN(parseFloat(yLabels[d])) || !isFinite(yLabels[d]))) {
+          return yLabels[d];
+        } else {
+          return d;
+        }
+      });
+
+      // configure how the tooltip looks.
+      $scope.chart[type].tooltipContent(function(key, x, y, data) {
+        var tooltipContent = '<h3>' + key + '</h3>';
+        if ($scope.paragraph.config.graph.scatter.size &&
+            $scope.isValidSizeOption($scope.paragraph.config.graph.scatter, $scope.paragraph.result.rows)) {
+              tooltipContent += '<p>' + data.point.size + '</p>';
+        }
+
+        return tooltipContent;
+      });
+
+      $scope.chart[type].showDistX(true)
+                        .showDistY(true)
+                        //handle the problem of tooltip not showing when muliple points have same value.
+                        .scatter.useVoronoi(false);
+    } else {
+      var p = pivot(data);
+      if (type === 'pieChart') {
+        var d = pivotDataToD3ChartFormat(p, true).d3g;
+
+        $scope.chart[type].x(function(d) { return d.label;})
+                          .y(function(d) { return d.value;});
+
+        if ( d.length > 0 ) {
+          for ( var i=0; i<d[0].values.length ; i++) {
+            var e = d[0].values[i];
+            d3g.push({
+              label : e.x,
+              value : e.y
+            });
+          }
+        }
+      } else if (type === 'multiBarChart') {
+        d3g = pivotDataToD3ChartFormat(p, true, false, type).d3g;
+        $scope.chart[type].yAxis.axisLabelDistance(50);
+      } else if (type === 'lineChart' || type === 'stackedAreaChart') {
+        var pivotdata = pivotDataToD3ChartFormat(p, false, true);
+        var xLabels = pivotdata.xLabels;
+        d3g = pivotdata.d3g;
+        $scope.chart[type].xAxis.tickFormat(function(d) {
+          if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
+            return xLabels[d];
+          } else {
+            return d;
+          }
+        });
+        $scope.chart[type].yAxis.axisLabelDistance(50);
+        $scope.chart[type].useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
+        $scope.chart[type].forceY([0]); // force y-axis minimum to 0 for line chart.
+      }
     }
 
     var renderChart = function() {
@@ -870,44 +909,6 @@ angular.module('zeppelinWebApp')
     $timeout(retryRenderer);
   };
 
-  var setPieChart = function(data, refresh) {
-    var xColIndex = 0;
-    var yColIndexes = [];
-    var d3g = [];
-
-    // select yColumns.
-    for (var colIndex = 0; colIndex < data.columnNames.length; colIndex++) {
-      if (colIndex !== xColIndex) {
-        yColIndexes.push(colIndex);
-      }
-    }
-
-    for (var rowIndex = 0; rowIndex < data.rows.length; rowIndex++) {
-      var row = data.rows[rowIndex];
-      var xVar = row[xColIndex];
-      var yVar = row[yColIndexes[0]];
-
-      d3g.push({
-          label: isNaN(xVar) ? xVar : parseFloat(xVar),
-          value: parseFloat(yVar)
-      });
-    }
-
-    if ($scope.d3.pieChart.data === null || !refresh) {
-      $scope.d3.pieChart.data = d3g;
-      $scope.d3.pieChart.options.chart.height = $scope.paragraph.config.graph.height;
-
-      if ($scope.d3.pieChart.api) {
-        $scope.d3.pieChart.api.updateWithOptions($scope.d3.pieChart.options);
-      }
-    } else {
-      if ($scope.d3.pieChart.api) {
-        $scope.d3.pieChart.api.updateWithData(d3g);
-      }
-    }
-  };
-
-
   $scope.isGraphMode = function(graphName) {
     if ($scope.getResultType() === 'TABLE' && $scope.getGraphMode()===graphName) {
       return true;
@@ -946,6 +947,30 @@ angular.module('zeppelinWebApp')
     $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
   };
 
+  $scope.removeScatterOptionXaxis = function(idx) {
+    $scope.paragraph.config.graph.scatter.xAxis = null;
+    clearUnknownColsFromGraphOption();
+    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+  };
+
+  $scope.removeScatterOptionYaxis = function(idx) {
+    $scope.paragraph.config.graph.scatter.yAxis = null;
+    clearUnknownColsFromGraphOption();
+    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+  };
+
+  $scope.removeScatterOptionGroup = function(idx) {
+    $scope.paragraph.config.graph.scatter.group = null;
+    clearUnknownColsFromGraphOption();
+    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+  };
+
+  $scope.removeScatterOptionSize = function(idx) {
+    $scope.paragraph.config.graph.scatter.size = null;
+    clearUnknownColsFromGraphOption();
+    $scope.setGraphMode($scope.paragraph.config.graph.mode, true, false);
+  };
+
   /* Clear unknown columns from graph option */
   var clearUnknownColsFromGraphOption = function() {
     var unique = function(list) {
@@ -976,6 +1001,25 @@ angular.module('zeppelinWebApp')
       }
     };
 
+    var removeUnknownFromScatterSetting = function(fields) {
+      for (var f in fields) {
+        if (fields[f]) {
+          var found = false;
+          for (var i = 0; i < $scope.paragraph.result.columnNames.length; i++) {
+            var a = fields[f];
+            var b = $scope.paragraph.result.columnNames[i];
+            if (a.index === b.index && a.name === b.name) {
+              found = true;
+              break;
+            }
+          }
+          if (!found) {
+            fields[f] = null;
+          }
+        }
+      }
+    };
+
     unique($scope.paragraph.config.graph.keys);
     removeUnknown($scope.paragraph.config.graph.keys);
 
@@ -983,16 +1027,27 @@ angular.module('zeppelinWebApp')
 
     unique($scope.paragraph.config.graph.groups);
     removeUnknown($scope.paragraph.config.graph.groups);
+
+    removeUnknownFromScatterSetting($scope.paragraph.config.graph.scatter);
   };
 
   /* select default key and value if there're none selected */
   var selectDefaultColsForGraphOption = function() {
-    if ($scope.paragraph.config.graph.keys.length===0 && $scope.paragraph.result.columnNames.length > 0) {
+    if ($scope.paragraph.config.graph.keys.length === 0 && $scope.paragraph.result.columnNames.length > 0) {
       $scope.paragraph.config.graph.keys.push($scope.paragraph.result.columnNames[0]);
     }
 
-    if ($scope.paragraph.config.graph.values.length===0 && $scope.paragraph.result.columnNames.length > 1) {
+    if ($scope.paragraph.config.graph.values.length === 0 && $scope.paragraph.result.columnNames.length > 1) {
       $scope.paragraph.config.graph.values.push($scope.paragraph.result.columnNames[1]);
+    }
+
+    if (!$scope.paragraph.config.graph.scatter.xAxis && !$scope.paragraph.config.graph.scatter.yAxis) {
+      if ($scope.paragraph.result.columnNames.length > 1) {
+        $scope.paragraph.config.graph.scatter.xAxis = $scope.paragraph.result.columnNames[0];
+        $scope.paragraph.config.graph.scatter.yAxis = $scope.paragraph.result.columnNames[1];
+      } else if ($scope.paragraph.result.columnNames.length === 1) {
+        $scope.paragraph.config.graph.scatter.xAxis = $scope.paragraph.result.columnNames[0];
+      }
     }
   };
 
@@ -1277,6 +1332,240 @@ angular.module('zeppelinWebApp')
       xLabels : rowIndexValue,
       d3g : d3g
     };
+  };
+
+
+  var setDiscreteScatterData = function(data) {
+    var xAxis = $scope.paragraph.config.graph.scatter.xAxis;
+    var yAxis = $scope.paragraph.config.graph.scatter.yAxis;
+    var group = $scope.paragraph.config.graph.scatter.group;
+
+    var xValue;
+    var yValue;
+    var grp;
+
+    var rows = {};
+
+    for (var i = 0; i < data.rows.length; i++) {
+      var row = data.rows[i];
+      if (xAxis) {
+        xValue = row[xAxis.index];
+      }
+      if (yAxis) {
+        yValue = row[yAxis.index];
+      }
+      if (group) {
+        grp = row[group.index];
+      }
+
+      var key = xValue + ',' + yValue +  ',' + grp;
+
+      if(!rows[key]) {
+        rows[key] = {
+            x : xValue,
+            y : yValue,
+            group : grp,
+            size : 1
+        };
+      } else {
+        rows[key].size++;
+      }
+    }
+
+    // change object into array
+    var newRows = [];
+    for(var r in rows){
+      var newRow = [];
+      if (xAxis) { newRow[xAxis.index] = rows[r].x; }
+      if (yAxis) { newRow[yAxis.index] = rows[r].y; }
+      if (group) { newRow[group.index] = rows[r].group; }
+      newRow[data.rows[0].length] = rows[r].size;
+      newRows.push(newRow);
+    }
+    return newRows;
+  };
+
+  var setScatterChart = function(data, refresh) {
+    var xAxis = $scope.paragraph.config.graph.scatter.xAxis;
+    var yAxis = $scope.paragraph.config.graph.scatter.yAxis;
+    var group = $scope.paragraph.config.graph.scatter.group;
+    var size = $scope.paragraph.config.graph.scatter.size;
+
+    var xValues = [];
+    var yValues = [];
+    var rows = {};
+    var d3g = [];
+
+    var rowNameIndex = {};
+    var colNameIndex = {};
+    var grpNameIndex = {};
+    var rowIndexValue = {};
+    var colIndexValue = {};
+    var grpIndexValue = {};
+    var rowIdx = 0;
+    var colIdx = 0;
+    var grpIdx = 0;
+    var grpName = '';
+
+    var xValue;
+    var yValue;
+    var row;
+
+    if (!xAxis && !yAxis) {
+      return {
+        d3g : []
+      };
+    }
+
+    for (var i = 0; i < data.rows.length; i++) {
+      row = data.rows[i];
+      if (xAxis) {
+        xValue = row[xAxis.index];
+        xValues[i] = xValue;
+      }
+      if (yAxis) {
+        yValue = row[yAxis.index];
+        yValues[i] = yValue;
+      }
+    }
+
+    var isAllDiscrete = ((xAxis && yAxis && isDiscrete(xValues) && isDiscrete(yValues)) ||
+                         (!xAxis && isDiscrete(yValues)) ||
+                         (!yAxis && isDiscrete(xValues)));
+
+    if (isAllDiscrete) {
+      rows = setDiscreteScatterData(data);
+    } else {
+      rows = data.rows;
+    }
+
+    if (!group && isAllDiscrete) {
+      grpName = 'count';
+    } else if (!group && !size) {
+      if (xAxis && yAxis) {
+        grpName = '(' + xAxis.name + ', ' + yAxis.name + ')';
+      } else if (xAxis && !yAxis) {
+        grpName = xAxis.name;
+      } else if (!xAxis && yAxis) {
+        grpName = yAxis.name;
+      }
+    } else if (!group && size) {
+      grpName = size.name;
+    }
+
+    for (i = 0; i < rows.length; i++) {
+      row = rows[i];
+      if (xAxis) {
+        xValue = row[xAxis.index];
+      }
+      if (yAxis) {
+        yValue = row[yAxis.index];
+      }
+      if (group) {
+        grpName = row[group.index];
+      }
+      var sz = (isAllDiscrete) ? row[row.length-1] : ((size) ? row[size.index] : 1);
+
+      if (grpNameIndex[grpName] === undefined) {
+        grpIndexValue[grpIdx] = grpName;
+        grpNameIndex[grpName] = grpIdx++;
+      }
+
+      if (xAxis && rowNameIndex[xValue] === undefined) {
+        rowIndexValue[rowIdx] = xValue;
+        rowNameIndex[xValue] = rowIdx++;
+      }
+
+      if (yAxis && colNameIndex[yValue] === undefined) {
+        colIndexValue[colIdx] = yValue;
+        colNameIndex[yValue] = colIdx++;
+      }
+
+      if (!d3g[grpNameIndex[grpName]]) {
+        d3g[grpNameIndex[grpName]] = {
+          key : grpName,
+          values : []
+        };
+      }
+
+      d3g[grpNameIndex[grpName]].values.push({
+        x : xAxis ? (isNaN(xValue) ? rowNameIndex[xValue] : parseFloat(xValue)) : 0,
+        y : yAxis ? (isNaN(yValue) ? colNameIndex[yValue] : parseFloat(yValue)) : 0,
+        size : isNaN(parseFloat(sz))? 1 : parseFloat(sz)
+      });
+    }
+
+    return {
+      xLabels : rowIndexValue,
+      yLabels : colIndexValue,
+      d3g : d3g
+    };
+  };
+
+  var isDiscrete = function(field) {
+    var getUnique = function(f) {
+      var uniqObj = {};
+      var uniqArr = [];
+      var j = 0;
+      for (var i = 0; i < f.length; i++) {
+        var item = f[i];
+        if(uniqObj[item] !== 1) {
+          uniqObj[item] = 1;
+          uniqArr[j++] = item;
+        }
+      }
+      return uniqArr;
+    };
+
+    for (var i = 0; i < field.length; i++) {
+      if(isNaN(parseFloat(field[i])) &&
+         (typeof field[i] === 'string' || field[i] instanceof String)) {
+        return true;
+      }
+    }
+
+    var threshold = 0.05;
+    var unique = getUnique(field);
+    if (unique.length/field.length < threshold) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  $scope.isValidSizeOption = function (options, rows) {
+    var xValues = [];
+    var yValues = [];
+
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      var size = row[options.size.index];
+
+      //check if the field is numeric
+      if (isNaN(parseFloat(size)) || !isFinite(size)) {
+        return false;
+      }
+
+      if (options.xAxis) {
+        var x = row[options.xAxis.index];
+        xValues[i] = x;
+      }
+      if (options.yAxis) {
+        var y = row[options.yAxis.index];
+        yValues[i] = y;
+      }
+    }
+
+    //check if all existing fields are discrete
+    var isAllDiscrete = ((options.xAxis && options.yAxis && isDiscrete(xValues) && isDiscrete(yValues)) ||
+        (!options.xAxis && isDiscrete(yValues)) ||
+        (!options.yAxis && isDiscrete(xValues)));
+
+    if (isAllDiscrete) {
+      return false;
+    }
+
+    return true;
   };
 
   $scope.setGraphHeight = function() {
