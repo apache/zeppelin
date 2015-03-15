@@ -67,16 +67,12 @@
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
 }
 
-.ace-tm .ace_marker-layer .ace_selection {
-    background: rgba(98, 157, 233, 0.2) !important;
+.ace_marker-layer .ace_selection {
+    z-index: 0 !important;
 }
 
-.ace_active-line {
-    background: rgba(98, 157, 233, 0.2) !important;
-}
-
-.ace-tm .ace_marker-layer .ace_selected-word {
-    background: rgba(250, 250, 255, 0.2) !important;
+.ace_marker-layer .ace_selected-word {
+    z-index: 0 !important;
 }
 
 .labelBtn {
