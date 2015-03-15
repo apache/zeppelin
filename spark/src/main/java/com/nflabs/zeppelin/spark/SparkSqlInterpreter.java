@@ -225,6 +225,8 @@ public class SparkSqlInterpreter extends Interpreter {
           progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
         } else if (sc.version().startsWith("1.2")) {
           progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
+        } else if (sc.version().startsWith("1.3")) {
+          progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
         } else {
           logger.warn("Spark {} getting progress information not supported" + sc.version());
           continue;
