@@ -25,6 +25,7 @@ import com.nflabs.zeppelin.interpreter.InterpreterContext;
 import com.nflabs.zeppelin.interpreter.InterpreterException;
 import com.nflabs.zeppelin.interpreter.InterpreterGroup;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
+import com.nflabs.zeppelin.interpreter.LazyOpenInterpreter;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterResult;
 import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterService;
@@ -112,7 +113,7 @@ public class RemoteInterpreterServer
       repl.setClassloaderUrls(new URL[]{});
 
       synchronized (interpreterGroup) {
-        interpreterGroup.add(new ClassloaderInterpreter(repl, cl));
+        interpreterGroup.add(new LazyOpenInterpreter((new ClassloaderInterpreter(repl, cl))));
       }
 
       logger.info("Instantiate interpreter {}", className);

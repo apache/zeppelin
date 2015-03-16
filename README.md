@@ -42,13 +42,17 @@ mvn clean package
 ```
 Build with specific version
 
-Spark 1.1.x (more stable with Zeppelin for this moment.)
+Spark 1.1.x
 ```
 mvn clean package -Pspark-1.1 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests 
 ```
 Spark 1.2.x
 ```
 mvn clean package -Pspark-1.2 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests 
+```
+Spark 1.3.x
+```
+mvn clean package -Pspark-1.3 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests
 ```
 CDH 5.X
 ```
