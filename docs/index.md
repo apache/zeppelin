@@ -14,9 +14,12 @@ group: nav-right
 
 * [Tutorial](./tutorial/tutorial.html)
 
+### Interpreter
+
+* [Spark](./interpreter/spark.html)
+
 ### Manual
 
-* [Zeppelin Context](./zeppelincontext.html)
 * [Dynamic Form](./dynamicform.html)
 * [Display System](./display.html)
 

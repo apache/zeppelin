@@ -45,7 +45,7 @@ Zeppelin provides built-in Apache Spark integration. You don't need to build a s
 Zeppelin's Spark integration provides
 
 - Automatic SparkContext and SQLContext injection
-- Runtime jar dependency loading from local filesystem or maven repository. Learn more about [dependency loader](./docs/zeppelincontext.html).
+- Runtime jar dependency loading from local filesystem or maven repository. Learn more about [dependency loader](./docs/interpreter/spark.html#dependencyloading).
 - Canceling job and displaying its progress
 
 <br />
