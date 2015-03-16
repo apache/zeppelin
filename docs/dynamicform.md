@@ -48,7 +48,7 @@ Also you can separate option's display name and value, using _${formName=default
 <br />
 ### Creates Programatically
 
-Some language backend use programtic way to create form. for example, scala language backend. Function to create form is provided by [ZeppelinContext](./zeppelincontext.html).
+Some language backend use programtic way to create form. for example [ZeppelinContext](./interpreter/spark.html#zeppelincontext) provides form creation API
 
 Here're some examples.
 
