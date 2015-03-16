@@ -15,21 +15,29 @@ from pyspark.sql import SQLContext, HiveContext, SchemaRDD, Row
 
 client = GatewayClient(port=int(sys.argv[1]))
 gateway = JavaGateway(client)
+
 java_import(gateway.jvm, "org.apache.spark.SparkEnv")
 java_import(gateway.jvm, "org.apache.spark.SparkConf")
 java_import(gateway.jvm, "org.apache.spark.api.java.*")
 java_import(gateway.jvm, "org.apache.spark.api.python.*")
 java_import(gateway.jvm, "org.apache.spark.mllib.api.python.*")
-java_import(gateway.jvm, "org.apache.spark.sql.SQLContext")
-java_import(gateway.jvm, "org.apache.spark.sql.hive.HiveContext")
-java_import(gateway.jvm, "org.apache.spark.sql.hive.LocalHiveContext")
-java_import(gateway.jvm, "org.apache.spark.sql.hive.TestHiveContext")
+
+intp = gateway.entry_point
+jsc = intp.getJavaSparkContext()
+
+if jsc.version().startswith("1.2"):
+  java_import(gateway.jvm, "org.apache.spark.sql.SQLContext")
+  java_import(gateway.jvm, "org.apache.spark.sql.hive.HiveContext")
+  java_import(gateway.jvm, "org.apache.spark.sql.hive.LocalHiveContext")
+  java_import(gateway.jvm, "org.apache.spark.sql.hive.TestHiveContext")
+elif jsc.version().startswith("1.3"):
+  java_import(gateway.jvm, "org.apache.spark.sql.*")
+  java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
+
+
 java_import(gateway.jvm, "scala.Tuple2")
 
 
-intp = gateway.entry_point
-
-jsc = intp.getJavaSparkContext()
 jconf = intp.getSparkConf()
 conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
