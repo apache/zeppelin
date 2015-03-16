@@ -88,6 +88,8 @@ public class SparkInterpreter extends Interpreter {
                 getSystemDefault("SPARK_YARN_JAR", "spark.yarn.jar", ""),
                 "The location of the Spark jar file. If you use yarn as a cluster, "
                 + "we should set this value")
+            .add("zeppelin.spark.useHiveContext", "true",
+                 "Use HiveContext instead of SQLContext if it is true.")
             .add("args", "", "spark commandline args").build());
 
   }
@@ -139,21 +141,29 @@ public class SparkInterpreter extends Interpreter {
     return pl;
   }
 
+  private boolean useHiveContext() {
+    return Boolean.parseBoolean(getProperty("zeppelin.spark.useHiveContext"));
+  }
+
   public SQLContext getSQLContext() {
     if (sqlc == null) {
-      String name = "org.apache.spark.sql.hive.HiveContext";
-      Constructor<?> hc;
-      try {
-        hc = getClass().getClassLoader().loadClass(name)
-            .getConstructor(SparkContext.class);
-        sqlc = (SQLContext) hc.newInstance(getSparkContext());
-      } catch (NoSuchMethodException | SecurityException
-          | ClassNotFoundException | InstantiationException
-          | IllegalAccessException | IllegalArgumentException
-          | InvocationTargetException e) {
-
-        // when hive dependency is not loaded, it'll fail.
-        // in this case SQLContext can be used.
+      if (useHiveContext()) {
+        String name = "org.apache.spark.sql.hive.HiveContext";
+        Constructor<?> hc;
+        try {
+          hc = getClass().getClassLoader().loadClass(name)
+              .getConstructor(SparkContext.class);
+          sqlc = (SQLContext) hc.newInstance(getSparkContext());
+        } catch (NoSuchMethodException | SecurityException
+            | ClassNotFoundException | InstantiationException
+            | IllegalAccessException | IllegalArgumentException
+            | InvocationTargetException e) {
+          logger.warn("Can't create HiveContext. Fallback to SQLContext", e);
+          // when hive dependency is not loaded, it'll fail.
+          // in this case SQLContext can be used.
+          sqlc = new SQLContext(getSparkContext());
+        }
+      } else {
         sqlc = new SQLContext(getSparkContext());
       }
     }
