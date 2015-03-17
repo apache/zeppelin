@@ -18,6 +18,8 @@ Call setTheme on the editor with the theme path/name.
 #### Style for Markdown Code Blocks
 Highlight.js parses and converts &lt;pre&gt;&lt;code&gt; blocks from markdown4j into keywords and language syntax with proper styles. It also attempts to infer the best fitting language if it is not provided. The visual style can be changed by simply including the desired [stylesheet](https://github.com/components/highlightjs/tree/master/styles) into app/index.html. See the next section on build.
 
+Note that code block background color is overriden in app/styles/notebook.css (look for .paragraph .tableDisplay .hljs).
+
 #### Build changes
 bower.json  
 In the override section at the bottom, include the Highlightjs stylesheet (eg. styles/github.css)  
