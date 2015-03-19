@@ -174,7 +174,7 @@ def sentiment(s:String) : String = {
 // Below line works only in spark 1.3.0.
 // For spark 1.1.x and spark 1.2.x,
 // use sqlc.registerFunction("sentiment", sentiment _) instead.
-sqlc.udf.registerFunction("sentiment", sentiment _)
+sqlc.udf.register("sentiment", sentiment _)
 
 ```
 
