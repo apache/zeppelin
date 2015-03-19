@@ -28,7 +28,7 @@ tagline: Less Development, More analysis!
 ### Multiple language backend
 
 Zeppelin interpreter concept allows any language/data-processing-backend to be plugged into Zeppelin.
-Current languages included in the Zeppelin interpreter are: Scala(with Apache Spark), SparkSQL, Markdown and Shell.
+Current languages included in the Zeppelin interpreter are: Scala(with Apache Spark), Python(with Apache Spark), SparkSQL, Markdown and Shell.
 
 <img class="img-responsive" src="assets/themes/zeppelin/img/screenshots/multiple_language_backend.png" />
 
@@ -62,6 +62,15 @@ Some basic charts are already included in Zeppelin. Visualizations are not limit
   </div>
 </div>
 
+#### Pivot chart
+
+With simple drag and drop Zeppelin aggeregates the values and display them in pivot chart. You can easily create chart with multiple aggregated values including sum, count, average, min, max.
+
+<div class="row">
+  <div class="col-md-8">
+    <img class="img-responsive" src="./assets/themes/zeppelin/img/screenshots/pivot.png" />
+  </div>
+</div>
 Learn more about Zeppelin's [Display system](./docs/display.html).
 
 

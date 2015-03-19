@@ -21,7 +21,7 @@ Before you start Zeppelin tutorial, you will need to download [bank.zip](http://
 First, to transform data from csv format into RDD of `Bank` objects, run following script. This will also remove header using `filter` function.
 
 ```scala
-val bankText = sc.textFile("/Users/mina/Zeppelin/bank/bank-full.csv")
+val bankText = sc.textFile("yourPath/bank/bank-full.csv")
 
 case class Bank(age:Integer, job:String, marital : String, education : String, balance : Integer)
 
@@ -34,7 +34,10 @@ val bank = bankText.map(s=>s.split(";")).filter(s=>s(0)!="\"age\"").map(
         )
 )
 
-bank.registerTempTable("bank")
+// Below line works only in spark 1.3.0.
+// For spark 1.1.x and spark 1.2.x,
+// use bank.registerTempTable("bank") instead.
+bank.toDF().registerTempTable("bank")
 ```
 
 <br />
@@ -64,8 +67,6 @@ Now we want to see age distribution with certain marital status and add combo bo
 #### Data Refine
 
 Since this tutorial is based on Twitter's sample tweet stream, you must configure authentication with a Twitter account. To do this, take a look at [Twitter Credential Setup](https://databricks-training.s3.amazonaws.com/realtime-processing-with-spark-streaming.html#twitter-credential-setup). After you get API keys, you should fill out credential related values(`apiKey`, `apiSecret`, `accessToken`, `accessTokenSecret`) with your API keys on following script.
-
-In case you run Zeppelin server using IDE not through command-line, make sure that you set JVM arguments as `-XX:PermSize=512m -XX:MaxPermSize=512m -Xms256m -Xmx1024m` to prevent out of memory exception.
 
 This will create a RDD of `Tweet` objects and register these stream data as a table:
 
@@ -112,7 +113,10 @@ case class Tweet(createdAt:Long, text:String)
 twt.map(status=>
   Tweet(status.getCreatedAt().getTime()/1000, status.getText())
 ).foreachRDD(rdd=>
-  rdd.registerAsTable("tweets")
+  // Below line works only in spark 1.3.0.
+  // For spark 1.1.x and spark 1.2.x,
+  // use rdd.registerTempTable("tweets") instead.
+  rdd.toDF().registerAsTable("tweets")
 )
 
 twt.print
@@ -166,7 +170,12 @@ def sentiment(s:String) : String = {
     else
         "neutral"
 }
-sqlc.registerFunction("sentiment", sentiment _)
+
+// Below line works only in spark 1.3.0.
+// For spark 1.1.x and spark 1.2.x,
+// use sqlc.registerFunction("sentiment", sentiment _) instead.
+sqlc.udf.register("sentiment", sentiment _)
+
 ```
 
 To check how people think about girls using `sentiment` function we've made above, run this:
