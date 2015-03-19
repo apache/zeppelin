@@ -23,6 +23,14 @@
   min-height: 32px;
 }
 
+.paragraph .tableDisplay .hljs {
+  background: none;
+}
+
+.paragraph .ace_print-margin {
+  background: none !important;
+}
+
 .paragraphAsIframe{
   padding: 0px 0px 0px 0px;
   margin-top: -79px;
@@ -67,17 +75,12 @@
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
 }
 
-.ace-tm .ace_marker-layer .ace_selection {
-    background: rgba(98, 157, 233, 0.2) !important;
-    color: black;
+.ace_marker-layer .ace_selection {
+    z-index: 0 !important;
 }
 
-.ace_active-line {
-    background: rgba(98, 157, 233, 0.2) !important;
-}
-
-.ace-tm .ace_marker-layer .ace_selected-word {
-    background: rgba(250, 250, 255, 0.2) !important;
+.ace_marker-layer .ace_selected-word {
+    z-index: 0 !important;
 }
 
 .labelBtn {
@@ -212,10 +215,6 @@
 }
 
 .ace_hidden-cursors {opacity:0}
-
-.ace-tm .ace_print-margin {
-  background: none !important;
-}
 
 /** Remove z-index to ace */
 .ace_text-input, .ace_gutter, .ace_layer,
