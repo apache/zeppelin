@@ -113,7 +113,8 @@ public class RemoteInterpreterServer
       repl.setClassloaderUrls(new URL[]{});
 
       synchronized (interpreterGroup) {
-        interpreterGroup.add(new LazyOpenInterpreter((new ClassloaderInterpreter(repl, cl))));
+        interpreterGroup.add(new LazyOpenInterpreter(
+            new ClassloaderInterpreter(repl, cl)));
       }
 
       logger.info("Instantiate interpreter {}", className);

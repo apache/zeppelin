@@ -6,6 +6,7 @@ import static scala.collection.JavaConversions.collectionAsScalaIterable;
 
 import java.io.PrintStream;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.spark.SparkContext;
@@ -26,7 +27,7 @@ import com.nflabs.zeppelin.spark.dep.DependencyResolver;
  * @author Leemoonsoo
  *
  */
-public class ZeppelinContext {
+public class ZeppelinContext extends HashMap<String, Object> {
   private DependencyResolver dep;
   private PrintStream out;
   private InterpreterContext interpreterContext;
