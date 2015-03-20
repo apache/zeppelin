@@ -1,1440 +1,1440 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
-	<!-- Licensed to the Apache Software Foundation (ASF) under one or more 
-		contributor license agreements. See the NOTICE file distributed with this 
-		work for additional information regarding copyright ownership. The ASF licenses 
-		this file to You under the Apache License, Version 2.0 (the "License"); you 
-		may not use this file except in compliance with the License. You may obtain 
-		a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless 
-		required by applicable law or agreed to in writing, software distributed 
-		under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES 
-		OR CONDITIONS OF ANY KIND, either express or implied. See the License for 
-		the specific language governing permissions and limitations under the License. -->
-
-	<modelVersion>4.0.0</modelVersion>
-
-	<groupId>com.nflabs.zeppelin</groupId>
-	<artifactId>zeppelin</artifactId>
-	<packaging>pom</packaging>
-	<version>0.5.0-SNAPSHOT</version>
-	<name>Zeppelin</name>
-	<description>Zeppelin project</description>
-	<url>http://zeppelin-project.org/</url>
-
-	<parent>
-		<groupId>org.sonatype.oss</groupId>
-		<artifactId>oss-parent</artifactId>
-		<version>7</version>
-	</parent>
-
-	<licenses>
-		<license>
-			<name>The Apache Software License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-
-	<scm>
-		<url>http://www.github.com/NFLabs/zeppelin</url>
-		<connection>scm:git:git:git@github.com:NFLabs/zeppelin.git</connection>
-		<developerConnection>scm:git:git@github.com:NFLabs/zeppelin.git</developerConnection>
-	</scm>
-
-	<developers>
-		<developer>
-			<id>moon</id>
-			<name>Lee moon soo</name>
-			<organization>NFLabs</organization>
-			<organizationUrl>http://www.nflabs.com</organizationUrl>
-		</developer>
-		<developer>
-			<id>alex</id>
-			<name>Alexander Bezzubov</name>
-			<organization>NFLabs</organization>
-			<organizationUrl>http://www.nflabs.com</organizationUrl>
-		</developer>
-		<developer>
-			<id>anthonycorbacho</id>
-			<name>Anthony Corbacho</name>
-			<organization>NFLabs</organization>
-			<organizationUrl>http://www.nflabs.com</organizationUrl>
-		</developer>
-	</developers>
-
-	<inceptionYear>2013</inceptionYear>
-
-	<modules>
-		<module>zeppelin-interpreter</module>
-		<module>zeppelin-zengine</module>
-		<module>spark</module>
-		<module>markdown</module>
-		<module>shell</module>
-		<module>zeppelin-web</module>
-		<module>zeppelin-server</module>
-		<module>zeppelin-distribution</module>
-	</modules>
-
-	<properties>
-		<spark.version>1.1.1</spark.version>
-		<scala.version>2.10.4</scala.version>
-		<scala.binary.version>2.10</scala.binary.version>
-                <scala.macros.version>2.0.1</scala.macros.version>
-		<mesos.version>0.18.1</mesos.version>
-		<mesos.classifier>shaded-protobuf</mesos.classifier>
-		<akka.group>org.spark-project.akka</akka.group>
-		<akka.version>2.2.3-shaded-protobuf</akka.version>
-		<slf4j.version>1.7.10</slf4j.version>
-		<log4j.version>1.2.17</log4j.version>
-		<hadoop.version>1.0.4</hadoop.version>
-		<protobuf.version>2.4.1</protobuf.version>
-		<yarn.version>${hadoop.version}</yarn.version>
-		<hbase.version>0.94.6</hbase.version>
-		<zookeeper.version>3.4.5</zookeeper.version>
-		<hive.version>0.12.0</hive.version>
-                <derby.version>10.4.2.0</derby.version>
-		<parquet.version>1.4.3</parquet.version>
-		<jblas.version>1.2.3</jblas.version>
-		<jetty.version>8.1.14.v20131031</jetty.version>
-                <json4s.version>3.2.10</json4s.version>
-		<chill.version>0.3.6</chill.version>
-		<codahale.metrics.version>3.0.0</codahale.metrics.version>
-		<avro.version>1.7.6</avro.version>
-		<jets3t.version>0.7.1</jets3t.version>
-                <commons.math3.version>3.2</commons.math3.version>
-                <commons.httpclient.version>4.3.6</commons.httpclient.version>
-                <codehaus.jackson.version>1.8.8</codehaus.jackson.version>
-                <snappy.version>1.0.5</snappy.version>
-                <io.netty.version>4.0.17.Final</io.netty.version>
-
-		<guava.version>15.0</guava.version>
-		<scalatest.version>2.2.1</scalatest.version>
-		<PermGen>64m</PermGen>
-		<MaxPermGen>512m</MaxPermGen>
-
-		<java.version>1.7</java.version>
-		<cxf.version>2.7.7</cxf.version>
-		<gson.version>2.2</gson.version>
-	</properties>
-
-	<dependencyManagement>
-		<dependencies>
-
-            <!-- Jetty -->
-			<dependency>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-util</artifactId>
-				<version>${jetty.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-security</artifactId>
-				<version>${jetty.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-plus</artifactId>
-				<version>${jetty.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-server</artifactId>
-				<version>${jetty.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.eclipse.jetty.aggregate</groupId>
-				<artifactId>jetty-all-server</artifactId>
-				<version>${jetty.version}</version>
-			</dependency>
-
-
-            <!-- Commons -->
-
-			<dependency>
-				<groupId>com.google.code.gson</groupId>
-				<artifactId>gson</artifactId>
-				<version>${gson.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.google.guava</groupId>
-				<artifactId>guava</artifactId>
-				<version>${guava.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.httpcomponents</groupId>
-				<artifactId>httpclient</artifactId>
-				<version>${commons.httpclient.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.httpcomponents</groupId>
-				<artifactId>httpcore</artifactId>
-				<version>4.3.3</version>
-			</dependency>
-
-			<dependency>
-				<groupId>commons-collections</groupId>
-				<artifactId>commons-collections</artifactId>
-				<version>3.2.1</version>
-			</dependency>
-
-			<dependency>
-				<groupId>commons-lang</groupId>
-				<artifactId>commons-lang</artifactId>
-				<version>2.5</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-lang3</artifactId>
-				<version>3.3.2</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-math3</artifactId>
-				<version>${commons.math3.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>commons-codec</groupId>
-				<artifactId>commons-codec</artifactId>
-				<version>1.5</version>
-			</dependency>
-
-			<dependency>
-				<groupId>commons-configuration</groupId>
-				<artifactId>commons-configuration</artifactId>
-				<version>1.9</version>
-				<exclusions>
-					<exclusion>
-						<groupId>commons-logging</groupId>
-						<artifactId>commons-logging</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>commons-io</groupId>
-				<artifactId>commons-io</artifactId>
-				<version>2.4</version>
-				<exclusions>
-					<exclusion>
-						<groupId>org.slf4j</groupId>
-						<artifactId>*</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-				<version>1.1.1</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.google.code.findbugs</groupId>
-				<artifactId>jsr305</artifactId>
-				<version>1.3.9</version>
-			</dependency>
-
-            <!-- Logging -->
-
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>${slf4j.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-log4j12</artifactId>
-				<version>${slf4j.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>jul-to-slf4j</artifactId>
-				<version>${slf4j.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>jcl-over-slf4j</artifactId>
-				<version>${slf4j.version}</version>
-				<!-- <scope>runtime</scope> --> <!-- more correct, but scalac 2.10.3 doesn't like it -->
-			</dependency>
-
-			<dependency>
-				<groupId>log4j</groupId>
-				<artifactId>log4j</artifactId>
-				<version>${log4j.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.ning</groupId>
-				<artifactId>compress-lzf</artifactId>
-				<version>1.0.0</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.xerial.snappy</groupId>
-				<artifactId>snappy-java</artifactId>
-				<version>${snappy.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.clearspring.analytics</groupId>
-				<artifactId>stream</artifactId>
-				<version>2.5.1</version>
-				<exclusions>
-					<!-- Only HyperLogLog is used, which doesn't depend on fastutil -->
-					<exclusion>
-						<groupId>it.unimi.dsi</groupId>
-						<artifactId>fastutil</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<!-- In theory we need not directly depend on protobuf since Spark does 
-				not directly use it. However, when building with Hadoop/YARN 2.2 Maven doesn't 
-				correctly bump the protobuf version up from the one Mesos gives. For now 
-				we include this variable to explicitly bump the version when building with 
-				YARN. It would be nice to figure out why Maven can't resolve this correctly 
-				(like SBT does). -->
-			<dependency>
-				<groupId>com.google.protobuf</groupId>
-				<artifactId>protobuf-java</artifactId>
-				<version>${protobuf.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.twitter</groupId>
-				<artifactId>parquet-hadoop-bundle</artifactId>
-				<version>${parquet.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.twitter</groupId>
-				<artifactId>chill_${scala.binary.version}</artifactId>
-				<version>${chill.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>org.ow2.asm</groupId>
-						<artifactId>asm</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.ow2.asm</groupId>
-						<artifactId>asm-commons</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>com.twitter</groupId>
-				<artifactId>chill-java</artifactId>
-				<version>${chill.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>org.ow2.asm</groupId>
-						<artifactId>asm</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.ow2.asm</groupId>
-						<artifactId>asm-commons</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-            <!-- Akka -->
-
-			<dependency>
-				<groupId>${akka.group}</groupId>
-				<artifactId>akka-actor_${scala.binary.version}</artifactId>
-				<version>${akka.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>${akka.group}</groupId>
-				<artifactId>akka-remote_${scala.binary.version}</artifactId>
-				<version>${akka.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>${akka.group}</groupId>
-				<artifactId>akka-slf4j_${scala.binary.version}</artifactId>
-				<version>${akka.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>${akka.group}</groupId>
-				<artifactId>akka-testkit_${scala.binary.version}</artifactId>
-				<version>${akka.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>colt</groupId>
-				<artifactId>colt</artifactId>
-				<version>1.2.0</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.mesos</groupId>
-				<artifactId>mesos</artifactId>
-				<version>${mesos.version}</version>
-				<classifier>${mesos.classifier}</classifier>
-				<exclusions>
-					<exclusion>
-						<groupId>com.google.protobuf</groupId>
-						<artifactId>protobuf-java</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>commons-net</groupId>
-				<artifactId>commons-net</artifactId>
-				<version>2.2</version>
-			</dependency>
-
-			<dependency>
-				<groupId>io.netty</groupId>
-				<artifactId>netty-all</artifactId>
-				<version>${io.netty.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>io.netty</groupId>
-				<artifactId>netty</artifactId>
-				<version>3.6.6.Final</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.derby</groupId>
-				<artifactId>derby</artifactId>
-				<version>${derby.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.codahale.metrics</groupId>
-				<artifactId>metrics-core</artifactId>
-				<version>${codahale.metrics.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.codahale.metrics</groupId>
-				<artifactId>metrics-jvm</artifactId>
-				<version>${codahale.metrics.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.codahale.metrics</groupId>
-				<artifactId>metrics-json</artifactId>
-				<version>${codahale.metrics.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.codahale.metrics</groupId>
-				<artifactId>metrics-ganglia</artifactId>
-				<version>${codahale.metrics.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.codahale.metrics</groupId>
-				<artifactId>metrics-graphite</artifactId>
-				<version>${codahale.metrics.version}</version>
-			</dependency>
-
-            <!-- Scala -->
-
-			<dependency>
-				<groupId>org.scala-lang</groupId>
-				<artifactId>scala-compiler</artifactId>
-				<version>${scala.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.scala-lang</groupId>
-				<artifactId>scala-reflect</artifactId>
-				<version>${scala.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.scala-lang</groupId>
-				<artifactId>jline</artifactId>
-				<version>${scala.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.scala-lang</groupId>
-				<artifactId>scala-library</artifactId>
-				<version>${scala.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.scala-lang</groupId>
-				<artifactId>scala-actors</artifactId>
-				<version>${scala.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.scala-lang</groupId>
-				<artifactId>scalap</artifactId>
-				<version>${scala.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.scalatest</groupId>
-				<artifactId>scalatest_${scala.binary.version}</artifactId>
-				<version>2.1.5</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.easymock</groupId>
-				<artifactId>easymockclassextension</artifactId>
-				<version>3.1</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-all</artifactId>
-				<version>1.9.0</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.scalacheck</groupId>
-				<artifactId>scalacheck_${scala.binary.version}</artifactId>
-				<version>1.11.3</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>4.11</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>com.novocode</groupId>
-				<artifactId>junit-interface</artifactId>
-				<version>0.10</version>
-				<scope>test</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.curator</groupId>
-				<artifactId>curator-recipes</artifactId>
-				<version>2.4.0</version>
-				<exclusions>
-					<exclusion>
-						<groupId>org.jboss.netty</groupId>
-						<artifactId>netty</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.hadoop</groupId>
-				<artifactId>hadoop-client</artifactId>
-				<version>${hadoop.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>asm</groupId>
-						<artifactId>asm</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.ow2.asm</groupId>
-						<artifactId>asm</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.jboss.netty</groupId>
-						<artifactId>netty</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>commons-logging</groupId>
-						<artifactId>commons-logging</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.mortbay.jetty</groupId>
-						<artifactId>servlet-api-2.5</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>junit</groupId>
-						<artifactId>junit</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.avro</groupId>
-				<artifactId>avro</artifactId>
-				<version>${avro.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.avro</groupId>
-				<artifactId>avro-ipc</artifactId>
-				<version>${avro.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>io.netty</groupId>
-						<artifactId>netty</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.mortbay.jetty</groupId>
-						<artifactId>jetty</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.mortbay.jetty</groupId>
-						<artifactId>jetty-util</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.mortbay.jetty</groupId>
-						<artifactId>servlet-api</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.apache.velocity</groupId>
-						<artifactId>velocity</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.avro</groupId>
-				<artifactId>avro-mapred</artifactId>
-				<version>${avro.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>io.netty</groupId>
-						<artifactId>netty</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.mortbay.jetty</groupId>
-						<artifactId>jetty</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.mortbay.jetty</groupId>
-						<artifactId>jetty-util</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.mortbay.jetty</groupId>
-						<artifactId>servlet-api</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.apache.velocity</groupId>
-						<artifactId>velocity</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.zookeeper</groupId>
-				<artifactId>zookeeper</artifactId>
-				<version>${zookeeper.version}</version>
-			</dependency>
-
-			<!-- See SPARK-1556 for info on this dependency: -->
-			<dependency>
-				<groupId>net.java.dev.jets3t</groupId>
-				<artifactId>jets3t</artifactId>
-				<version>${jets3t.version}</version>
-				<scope>runtime</scope>
-				<exclusions>
-					<exclusion>
-						<groupId>commons-logging</groupId>
-						<artifactId>commons-logging</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.hadoop</groupId>
-				<artifactId>hadoop-yarn-api</artifactId>
-				<version>${yarn.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>asm</groupId>
-						<artifactId>asm</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.ow2.asm</groupId>
-						<artifactId>asm</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.jboss.netty</groupId>
-						<artifactId>netty</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>commons-logging</groupId>
-						<artifactId>commons-logging</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.hadoop</groupId>
-				<artifactId>hadoop-yarn-common</artifactId>
-				<version>${yarn.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>asm</groupId>
-						<artifactId>asm</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.ow2.asm</groupId>
-						<artifactId>asm</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.jboss.netty</groupId>
-						<artifactId>netty</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>javax.servlet</groupId>
-						<artifactId>servlet-api</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>commons-logging</groupId>
-						<artifactId>commons-logging</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.hadoop</groupId>
-				<artifactId>hadoop-yarn-server-web-proxy</artifactId>
-				<version>${yarn.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>asm</groupId>
-						<artifactId>asm</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.ow2.asm</groupId>
-						<artifactId>asm</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.jboss.netty</groupId>
-						<artifactId>netty</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>javax.servlet</groupId>
-						<artifactId>servlet-api</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>commons-logging</groupId>
-						<artifactId>commons-logging</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.hadoop</groupId>
-				<artifactId>hadoop-yarn-client</artifactId>
-				<version>${yarn.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>asm</groupId>
-						<artifactId>asm</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.ow2.asm</groupId>
-						<artifactId>asm</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.jboss.netty</groupId>
-						<artifactId>netty</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>javax.servlet</groupId>
-						<artifactId>servlet-api</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>commons-logging</groupId>
-						<artifactId>commons-logging</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>org.codehaus.jackson</groupId>
-				<artifactId>jackson-mapper-asl</artifactId>
-				<version>${codehaus.jackson.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.codehaus.jackson</groupId>
-				<artifactId>jackson-core-asl</artifactId>
-				<version>${codehaus.jackson.version}</version>
-			</dependency>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <!-- Licensed to the Apache Software Foundation (ASF) under one or more
+    contributor license agreements. See the NOTICE file distributed with this
+    work for additional information regarding copyright ownership. The ASF licenses
+    this file to You under the Apache License, Version 2.0 (the "License"); you
+    may not use this file except in compliance with the License. You may obtain
+    a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless
+    required by applicable law or agreed to in writing, software distributed
+    under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES
+    OR CONDITIONS OF ANY KIND, either express or implied. See the License for
+    the specific language governing permissions and limitations under the License. -->
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.nflabs.zeppelin</groupId>
+  <artifactId>zeppelin</artifactId>
+  <packaging>pom</packaging>
+  <version>0.5.0-SNAPSHOT</version>
+  <name>Zeppelin</name>
+  <description>Zeppelin project</description>
+  <url>http://zeppelin-project.org/</url>
+
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>http://www.github.com/NFLabs/zeppelin</url>
+    <connection>scm:git:git:git@github.com:NFLabs/zeppelin.git</connection>
+    <developerConnection>scm:git:git@github.com:NFLabs/zeppelin.git</developerConnection>
+  </scm>
+
+  <developers>
+    <developer>
+      <id>moon</id>
+      <name>Lee moon soo</name>
+      <organization>NFLabs</organization>
+      <organizationUrl>http://www.nflabs.com</organizationUrl>
+    </developer>
+    <developer>
+      <id>alex</id>
+      <name>Alexander Bezzubov</name>
+      <organization>NFLabs</organization>
+      <organizationUrl>http://www.nflabs.com</organizationUrl>
+    </developer>
+    <developer>
+      <id>anthonycorbacho</id>
+      <name>Anthony Corbacho</name>
+      <organization>NFLabs</organization>
+      <organizationUrl>http://www.nflabs.com</organizationUrl>
+    </developer>
+  </developers>
+
+  <inceptionYear>2013</inceptionYear>
+
+  <modules>
+    <module>zeppelin-interpreter</module>
+    <module>zeppelin-zengine</module>
+    <module>spark</module>
+    <module>markdown</module>
+    <module>shell</module>
+    <module>zeppelin-web</module>
+    <module>zeppelin-server</module>
+    <module>zeppelin-distribution</module>
+  </modules>
+
+  <properties>
+    <spark.version>1.1.1</spark.version>
+    <scala.version>2.10.4</scala.version>
+    <scala.binary.version>2.10</scala.binary.version>
+    <scala.macros.version>2.0.1</scala.macros.version>
+    <mesos.version>0.18.1</mesos.version>
+    <mesos.classifier>shaded-protobuf</mesos.classifier>
+    <akka.group>org.spark-project.akka</akka.group>
+    <akka.version>2.2.3-shaded-protobuf</akka.version>
+    <slf4j.version>1.7.10</slf4j.version>
+    <log4j.version>1.2.17</log4j.version>
+    <hadoop.version>1.0.4</hadoop.version>
+    <protobuf.version>2.4.1</protobuf.version>
+    <yarn.version>${hadoop.version}</yarn.version>
+    <hbase.version>0.94.6</hbase.version>
+    <zookeeper.version>3.4.5</zookeeper.version>
+    <hive.version>0.12.0</hive.version>
+    <derby.version>10.4.2.0</derby.version>
+    <parquet.version>1.4.3</parquet.version>
+    <jblas.version>1.2.3</jblas.version>
+    <jetty.version>8.1.14.v20131031</jetty.version>
+    <json4s.version>3.2.10</json4s.version>
+    <chill.version>0.3.6</chill.version>
+    <codahale.metrics.version>3.0.0</codahale.metrics.version>
+    <avro.version>1.7.6</avro.version>
+    <jets3t.version>0.7.1</jets3t.version>
+    <commons.math3.version>3.2</commons.math3.version>
+    <commons.httpclient.version>4.3.6</commons.httpclient.version>
+    <codehaus.jackson.version>1.8.8</codehaus.jackson.version>
+    <snappy.version>1.0.5</snappy.version>
+    <io.netty.version>4.0.17.Final</io.netty.version>
+
+    <guava.version>15.0</guava.version>
+    <scalatest.version>2.2.1</scalatest.version>
+    <PermGen>64m</PermGen>
+    <MaxPermGen>512m</MaxPermGen>
+
+    <java.version>1.7</java.version>
+    <cxf.version>2.7.7</cxf.version>
+    <gson.version>2.2</gson.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+
+      <!-- Jetty -->
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-util</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-security</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-plus</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.eclipse.jetty</groupId>
+        <artifactId>jetty-server</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.eclipse.jetty.aggregate</groupId>
+        <artifactId>jetty-all-server</artifactId>
+        <version>${jetty.version}</version>
+      </dependency>
+
+
+      <!-- Commons -->
+
+      <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>${gson.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>${commons.httpclient.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpcore</artifactId>
+        <version>4.3.3</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-collections</groupId>
+        <artifactId>commons-collections</artifactId>
+        <version>3.2.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-lang</groupId>
+        <artifactId>commons-lang</artifactId>
+        <version>2.5</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>3.3.2</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-math3</artifactId>
+        <version>${commons.math3.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.5</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-configuration</groupId>
+        <artifactId>commons-configuration</artifactId>
+        <version>1.9</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.4</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>1.1.1</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.google.code.findbugs</groupId>
+        <artifactId>jsr305</artifactId>
+        <version>1.3.9</version>
+      </dependency>
+
+      <!-- Logging -->
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jul-to-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+        <!-- <scope>runtime</scope> --> <!-- more correct, but scalac 2.10.3 doesn't like it -->
+      </dependency>
+
+      <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>${log4j.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.ning</groupId>
+        <artifactId>compress-lzf</artifactId>
+        <version>1.0.0</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.xerial.snappy</groupId>
+        <artifactId>snappy-java</artifactId>
+        <version>${snappy.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.clearspring.analytics</groupId>
+        <artifactId>stream</artifactId>
+        <version>2.5.1</version>
+        <exclusions>
+          <!-- Only HyperLogLog is used, which doesn't depend on fastutil -->
+          <exclusion>
+            <groupId>it.unimi.dsi</groupId>
+            <artifactId>fastutil</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <!-- In theory we need not directly depend on protobuf since Spark does
+        not directly use it. However, when building with Hadoop/YARN 2.2 Maven doesn't
+        correctly bump the protobuf version up from the one Mesos gives. For now
+        we include this variable to explicitly bump the version when building with
+        YARN. It would be nice to figure out why Maven can't resolve this correctly
+        (like SBT does). -->
+      <dependency>
+        <groupId>com.google.protobuf</groupId>
+        <artifactId>protobuf-java</artifactId>
+        <version>${protobuf.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.twitter</groupId>
+        <artifactId>parquet-hadoop-bundle</artifactId>
+        <version>${parquet.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.twitter</groupId>
+        <artifactId>chill_${scala.binary.version}</artifactId>
+        <version>${chill.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-commons</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>com.twitter</groupId>
+        <artifactId>chill-java</artifactId>
+        <version>${chill.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm-commons</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <!-- Akka -->
+
+      <dependency>
+        <groupId>${akka.group}</groupId>
+        <artifactId>akka-actor_${scala.binary.version}</artifactId>
+        <version>${akka.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>${akka.group}</groupId>
+        <artifactId>akka-remote_${scala.binary.version}</artifactId>
+        <version>${akka.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>${akka.group}</groupId>
+        <artifactId>akka-slf4j_${scala.binary.version}</artifactId>
+        <version>${akka.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>${akka.group}</groupId>
+        <artifactId>akka-testkit_${scala.binary.version}</artifactId>
+        <version>${akka.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>colt</groupId>
+        <artifactId>colt</artifactId>
+        <version>1.2.0</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.mesos</groupId>
+        <artifactId>mesos</artifactId>
+        <version>${mesos.version}</version>
+        <classifier>${mesos.classifier}</classifier>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-net</groupId>
+        <artifactId>commons-net</artifactId>
+        <version>2.2</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-all</artifactId>
+        <version>${io.netty.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty</artifactId>
+        <version>3.6.6.Final</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.derby</groupId>
+        <artifactId>derby</artifactId>
+        <version>${derby.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.codahale.metrics</groupId>
+        <artifactId>metrics-core</artifactId>
+        <version>${codahale.metrics.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.codahale.metrics</groupId>
+        <artifactId>metrics-jvm</artifactId>
+        <version>${codahale.metrics.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.codahale.metrics</groupId>
+        <artifactId>metrics-json</artifactId>
+        <version>${codahale.metrics.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.codahale.metrics</groupId>
+        <artifactId>metrics-ganglia</artifactId>
+        <version>${codahale.metrics.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.codahale.metrics</groupId>
+        <artifactId>metrics-graphite</artifactId>
+        <version>${codahale.metrics.version}</version>
+      </dependency>
+
+      <!-- Scala -->
+
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-compiler</artifactId>
+        <version>${scala.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-reflect</artifactId>
+        <version>${scala.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>jline</artifactId>
+        <version>${scala.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-library</artifactId>
+        <version>${scala.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-actors</artifactId>
+        <version>${scala.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scalap</artifactId>
+        <version>${scala.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest_${scala.binary.version}</artifactId>
+        <version>2.1.5</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.easymock</groupId>
+        <artifactId>easymockclassextension</artifactId>
+        <version>3.1</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-all</artifactId>
+        <version>1.9.0</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.scalacheck</groupId>
+        <artifactId>scalacheck_${scala.binary.version}</artifactId>
+        <version>1.11.3</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.11</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>com.novocode</groupId>
+        <artifactId>junit-interface</artifactId>
+        <version>0.10</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.curator</groupId>
+        <artifactId>curator-recipes</artifactId>
+        <version>2.4.0</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.jboss.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-client</artifactId>
+        <version>${hadoop.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>asm</groupId>
+            <artifactId>asm</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.jboss.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>servlet-api-2.5</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro</artifactId>
+        <version>${avro.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro-ipc</artifactId>
+        <version>${avro.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro-mapred</artifactId>
+        <version>${avro.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.zookeeper</groupId>
+        <artifactId>zookeeper</artifactId>
+        <version>${zookeeper.version}</version>
+      </dependency>
+
+      <!-- See SPARK-1556 for info on this dependency: -->
+      <dependency>
+        <groupId>net.java.dev.jets3t</groupId>
+        <artifactId>jets3t</artifactId>
+        <version>${jets3t.version}</version>
+        <scope>runtime</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-api</artifactId>
+        <version>${yarn.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>asm</groupId>
+            <artifactId>asm</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.jboss.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-common</artifactId>
+        <version>${yarn.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>asm</groupId>
+            <artifactId>asm</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.jboss.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-server-web-proxy</artifactId>
+        <version>${yarn.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>asm</groupId>
+            <artifactId>asm</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.jboss.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-yarn-client</artifactId>
+        <version>${yarn.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>asm</groupId>
+            <artifactId>asm</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.jboss.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.codehaus.jackson</groupId>
+        <artifactId>jackson-mapper-asl</artifactId>
+        <version>${codehaus.jackson.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.codehaus.jackson</groupId>
+        <artifactId>jackson-core-asl</artifactId>
+        <version>${codehaus.jackson.version}</version>
+      </dependency>
 
       <dependency>
         <groupId>org.codehaus.jackson</groupId>
         <artifactId>jackson-xc</artifactId>
         <version>${codehaus.jackson.version}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.codehaus.jackson</groupId>
         <artifactId>jackson-jaxrs</artifactId>
         <version>${codehaus.jackson.version}</version>
       </dependency>
-      
-			<dependency>
-				<groupId>com.thoughtworks.paranamer</groupId>
-				<artifactId>paranamer</artifactId>
-				<version>2.6</version>
-			</dependency>
 
-			<dependency>
-				<groupId>com.sun.jersey</groupId>
-				<artifactId>jersey-server</artifactId>
-				<version>1.9</version>
-			</dependency>
+      <dependency>
+        <groupId>com.thoughtworks.paranamer</groupId>
+        <artifactId>paranamer</artifactId>
+        <version>2.6</version>
+      </dependency>
 
-			<dependency>
-				<groupId>com.sun.jersey</groupId>
-				<artifactId>jersey-core</artifactId>
-				<version>1.9</version>
-			</dependency>
+      <dependency>
+        <groupId>com.sun.jersey</groupId>
+        <artifactId>jersey-server</artifactId>
+        <version>1.9</version>
+      </dependency>
 
-			<dependency>
-				<groupId>com.sun.jersey</groupId>
-				<artifactId>jersey-client</artifactId>
-				<version>1.9</version>
-			</dependency>
+      <dependency>
+        <groupId>com.sun.jersey</groupId>
+        <artifactId>jersey-core</artifactId>
+        <version>1.9</version>
+      </dependency>
 
-			<dependency>
-				<groupId>com.sun.xml.bind</groupId>
-				<artifactId>jaxb-impl</artifactId>
-				<version>2.2.6</version>
-			</dependency>
+      <dependency>
+        <groupId>com.sun.jersey</groupId>
+        <artifactId>jersey-client</artifactId>
+        <version>1.9</version>
+      </dependency>
 
-
-                        <!-- json4s -->
-                        <dependency>
-                                <groupId>org.json4s</groupId>
-                                <artifactId>json4s-core_2.10</artifactId>
-                                <version>${json4s.version}</version>
-                        </dependency>
-
-                        <dependency>
-                                <groupId>org.json4s</groupId>
-                                <artifactId>json4s-native_2.10</artifactId>
-                                <version>${json4s.version}</version>
-                        </dependency>
-
-                        <dependency>
-                                <groupId>org.json4s</groupId>
-                                <artifactId>json4s-jackson_2.10</artifactId>
-                                <version>${json4s.version}</version>
-                        </dependency>
-
-                        <dependency>
-                                <groupId>org.json4s</groupId>
-                                <artifactId>json4s-ext_2.10</artifactId>
-                                <version>${json4s.version}</version>
-	                </dependency>
-
-		</dependencies>
-	</dependencyManagement>
-
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
-				</configuration>
-			</plugin>
-			<!-- Test coverage plugin -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-			    <artifactId>cobertura-maven-plugin</artifactId>
-			    <configuration>
-					<formats>
-					  <format>html</format>
-			       </formats>
-			    </configuration>
-			    <executions>
-					<execution>
-						<id>covertura</id>
-						<phase>package</phase>
-						<goals>
-							<goal>cobertura</goal>
-						</goals>
-						<configuration>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<!-- Checkstyle plugin -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-				<configuration>
-					<configLocation>_tools/checkstyle.xml</configLocation>
-					<enableRSS>false</enableRSS>
-				</configuration>
-				<executions>
-					<execution>
-						<id>checkstyle</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>checkstyle</goal>
-							<goal>check</goal>
-						</goals>
-						<configuration>
-							<failOnViolation>true</failOnViolation>
-                                                        <excludes>com/nflabs/zeppelin/interpreter/thrift/*</excludes>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.7</version>
-				<executions>
-					<execution>
-						<id>copy-resources</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${basedir}/target/site</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${basedir}/../_tools/site</directory>
-									<filtering>true</filtering>
-									<includes>
-										<include>**/*</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.8</version>
-				<executions>
-					<execution>
-						<id>copy-dependencies</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/lib</outputDirectory>
-							<overWriteReleases>false</overWriteReleases>
-							<overWriteSnapshots>false</overWriteSnapshots>
-							<overWriteIfNewer>true</overWriteIfNewer>
-							<includeScope>runtime</includeScope>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<addClasspath>true</addClasspath>
-							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>theMainClass</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
-				<configuration><!-- Default configuration for all reports -->
-				</configuration>
-				<executions>
-					<execution>
-						<id>aggregate</id>
-						<goals>
-							<goal>aggregate</goal>
-						</goals>
-						<phase>site</phase>
-						<configuration><!-- Specific configuration for the aggregate report -->
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-scm-plugin</artifactId>
-				<version>1.8.1</version>
-				<configuration>
-					<connectionType>developerConnection</connectionType>
-					<scmVersion>branch-0.1</scmVersion>
-					<scmVersionType>branch</scmVersionType>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>1.3.1</version>
-				<executions>
-					<execution>
-						<id>enforce</id>
-						<configuration>
-							<rules>
-								<DependencyConvergence />
-							</rules>
-							<failFast>true</failFast>
-						</configuration>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!--TODO(alex): make part of the build and reconcile conflicts <plugin> 
-				<groupId>com.ning.maven.plugins</groupId> <artifactId>maven-duplicate-finder-plugin</artifactId> 
-				<version>1.0.4</version> <executions> <execution> <id>default</id> <phase>verify</phase> 
-				<goals> <goal>check</goal> </goals> </execution> </executions> <configuration> 
-				<failBuildInCaseOfConflict>true</failBuildInCaseOfConflict> </configuration> 
-				</plugin> -->
-		</plugins>
-
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-checkstyle-plugin</artifactId>
-					<version>2.13</version>
-				</plugin>
-				<plugin>
-					<artifactId>maven-dependency-plugin</artifactId>
-					<version>2.8</version>
-				</plugin>
-				<plugin>
-					<artifactId>maven-surefire-plugin</artifactId>
-					<version>2.17</version>
-					<configuration combine.children="append">
-						<argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
-						<encoding>UTF-8</encoding>
-						<inputEncoding>UTF-8</inputEncoding>
-						<outputEncoding>UTF-8</outputEncoding>
-					</configuration>
-					<!-- <excludes> <exclude>**/itest/**</exclude> </excludes> <executions> 
-						<execution> <id>surefire-itest</id> <phase>integration-test</phase> <goals> 
-						<goal>test</goal> </goals> <configuration> <excludes> <exclude>none</exclude> 
-						</excludes> <includes> <include>**/itest/**</include> </includes> </configuration> 
-						</execution> </executions> -->
-				</plugin>
-				<plugin>
-					<artifactId>maven-assembly-plugin</artifactId>
-					<version>2.4</version>
-				</plugin>
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>exec-maven-plugin</artifactId>
-					<version>1.2.1</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-clean-plugin</artifactId>
-					<version>2.4.1</version>
-					<configuration>
-						<filesets>
-							<fileset>
-								<directory>interpreter</directory>
-								<followSymlinks>false</followSymlinks>
-							</fileset>
-						</filesets>
-					</configuration>
-				</plugin>
+      <dependency>
+        <groupId>com.sun.xml.bind</groupId>
+        <artifactId>jaxb-impl</artifactId>
+        <version>2.2.6</version>
+      </dependency>
 
 
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself. -->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.apache.maven.plugins
-										</groupId>
-										<artifactId>
-											maven-dependency-plugin
-										</artifactId>
-										<versionRange>
-											[2.8,)
-										</versionRange>
-										<goals>
-											<goal>copy-dependencies</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore />
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.apache.maven.plugins
-										</groupId>
-										<artifactId>
-											maven-checkstyle-plugin
-										</artifactId>
-										<versionRange>
-											[2.13,)
-										</versionRange>
-										<goals>
-											<goal>checkstyle</goal>
-											<goal>check</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
+      <!-- json4s -->
+      <dependency>
+        <groupId>org.json4s</groupId>
+        <artifactId>json4s-core_2.10</artifactId>
+        <version>${json4s.version}</version>
+      </dependency>
 
-	<repositories>
-		<!-- For dependency recosiled version of hive_test -->
-		<repository>
-			<id>nflabs public repository</id>
-			<url>https://raw.github.com/NFLabs/mvn-repo/master/releases</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
+      <dependency>
+        <groupId>org.json4s</groupId>
+        <artifactId>json4s-native_2.10</artifactId>
+        <version>${json4s.version}</version>
+      </dependency>
 
-		<!-- for for jdo/jdo2-api/2.3-ec -->
-		<repository>
-			<id>cdh-repository</id>
-			<name>CDH Repository</name>
-			<url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
+      <dependency>
+        <groupId>org.json4s</groupId>
+        <artifactId>json4s-jackson_2.10</artifactId>
+        <version>${json4s.version}</version>
+      </dependency>
 
-	<pluginRepositories>
-		<!-- for s3-upload-maven-pugin 1.2-SNAPSHOT until this one merged https://github.com/bazaarvoice/s3-upload-maven-plugin/pull/2 -->
-		<pluginRepository>
-			<id>nflabs public repository snspshots</id>
-			<url>https://github.com/NFLabs/mvn-repo/raw/master/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
+      <dependency>
+        <groupId>org.json4s</groupId>
+        <artifactId>json4s-ext_2.10</artifactId>
+        <version>${json4s.version}</version>
+      </dependency>
 
-	<profiles>
-		<profile>
-			<id>build-distr</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<build>
-				<pluginManagement>
-					<plugins>
-						<plugin>
-							<artifactId>maven-surefire-plugin</artifactId>
-							<configuration>
-								<skipTests>true</skipTests>
-							</configuration>
-						</plugin>
-						<plugin>
-							<artifactId>maven-assembly-plugin</artifactId>
-							<executions>
-								<execution>
-									<id>make-assembly</id>
-									<phase>package</phase>
-									<goals>
-										<goal>single</goal>
-									</goals>
-								</execution>
-							</executions>
-						</plugin>
-					</plugins>
-				</pluginManagement>
-			</build>
-		</profile>
+    </dependencies>
+  </dependencyManagement>
 
-		<profile>
-			<id>publish-distr</id>
-			<activation>
-				<activeByDefault>false</activeByDefault>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<skipTests>true</skipTests>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <source>1.7</source>
+          <target>1.7</target>
+        </configuration>
+      </plugin>
+      <!-- Test coverage plugin -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <configuration>
+          <formats>
+            <format>html</format>
+          </formats>
+        </configuration>
+        <executions>
+          <execution>
+            <id>covertura</id>
+            <phase>package</phase>
+            <goals>
+              <goal>cobertura</goal>
+            </goals>
+            <configuration>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Checkstyle plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <configLocation>_tools/checkstyle.xml</configLocation>
+          <enableRSS>false</enableRSS>
+        </configuration>
+        <executions>
+          <execution>
+            <id>checkstyle</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>checkstyle</goal>
+              <goal>check</goal>
+            </goals>
+            <configuration>
+              <failOnViolation>true</failOnViolation>
+              <excludes>com/nflabs/zeppelin/interpreter/thrift/*</excludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
-		<profile>
-			<id>release-sign-artifacts</id>
-			<activation>
-				<property>
-					<name>performRelease</name>
-					<value>true</value>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.4</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.7</version>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${basedir}/target/site</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${basedir}/../_tools/site</directory>
+                  <filtering>true</filtering>
+                  <includes>
+                    <include>**/*</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
-                <profile>
-                        <id>spark-1.1</id>
-                        <dependencies>
-                               
-                        </dependencies>
-                        <properties>
-                                <spark.version>1.1.1</spark.version>
-                        </properties>
-                </profile>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>2.8</version>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>false</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+              <includeScope>runtime</includeScope>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
-                <profile>
-                        <id>spark-1.2</id>
-                        <dependencies>
-                        </dependencies>
-                        <properties>
-                                <akka.version>2.3.4-spark</akka.version>
-                                <spark.version>1.2.1</spark.version>
-		                <hive.version>0.13.1a</hive.version>
-                                <derby.version>10.10.1.1</derby.version>
-		                <parquet.version>1.6.0rc3</parquet.version>
-		                <chill.version>0.5.0</chill.version>
-                                <commons.httpclient.version>4.2.6</commons.httpclient.version>
-                                <commons.math3.version>3.1.1</commons.math3.version>
-                                <io.netty.version>4.0.23.Final</io.netty.version>
-                        </properties>
-                </profile>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.4</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix>lib/</classpathPrefix>
+              <mainClass>theMainClass</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
 
-                <profile>
-                        <id>spark-1.3</id>
-                        <dependencies>
-                        </dependencies>
-                        <properties>
-                                <akka.version>2.3.4-spark</akka.version>
-                                <spark.version>1.3.0</spark.version>
-                                <mesos.version>0.21.0</mesos.version>
-                                <hbase.version>0.98.7</hbase.version>
-                                <hbase.artifact>hbase</hbase.artifact>
-                                <hive.group>org.spark-project.hive</hive.group>
-                                <hive.version>0.13.1a</hive.version>
-                                <derby.version>10.10.1.1</derby.version>
-                                <orbit.version>3.0.0.v201112011016</orbit.version>
-                                <parquet.version>1.6.0rc3</parquet.version>
-                                <chill.version>0.5.0</chill.version>
-                                <ivy.version>2.4.0</ivy.version>
-                                <oro.version>2.0.8</oro.version>
-                                <avro.mapred.classifier></avro.mapred.classifier>
-                                <codahale.metrics.version>3.1.0</codahale.metrics.version>
-                                <commons.httpclient.version>4.2.6</commons.httpclient.version>
-                                <commons.math3.version>3.1.1</commons.math3.version>
-                                <io.netty.version>4.0.23.Final</io.netty.version>
-                                <codehaus.jackson.version>1.9.13</codehaus.jackson.version>
-                                <fasterxml.jackson.version>2.4.4</fasterxml.jackson.version>
-                                <snappy.version>1.1.1.6</snappy.version>
-                          <mesos.version>0.21.0</mesos.version>
-                        </properties>
-                </profile>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9.1</version>
+        <configuration><!-- Default configuration for all reports -->
+        </configuration>
+        <executions>
+          <execution>
+            <id>aggregate</id>
+            <goals>
+              <goal>aggregate</goal>
+            </goals>
+            <phase>site</phase>
+            <configuration><!-- Specific configuration for the aggregate report -->
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
-		<profile>
-			<id>hadoop-0.23</id>
-			<!-- SPARK-1121: Adds an explicit dependency on Avro to work around a 
-				Hadoop 0.23.X issue -->
-			<dependencies>
-				<dependency>
-					<groupId>org.apache.avro</groupId>
-					<artifactId>avro</artifactId>
-				</dependency>
-			</dependencies>
-			<properties>
-				<hadoop.version>0.23.10</hadoop.version>
-			</properties>
-		</profile>
+      <plugin>
+        <artifactId>maven-scm-plugin</artifactId>
+        <version>1.8.1</version>
+        <configuration>
+          <connectionType>developerConnection</connectionType>
+          <scmVersion>branch-0.1</scmVersion>
+          <scmVersionType>branch</scmVersionType>
+        </configuration>
+      </plugin>
 
-		<profile>
-			<id>hadoop-2.2</id>
-			<properties>
-				<hadoop.version>2.2.0</hadoop.version>
-				<protobuf.version>2.5.0</protobuf.version>
-			</properties>
-		</profile>
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>1.3.1</version>
+        <executions>
+          <execution>
+            <id>enforce</id>
+            <configuration>
+              <rules>
+                <DependencyConvergence/>
+              </rules>
+              <failFast>true</failFast>
+            </configuration>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
-		<profile>
-			<id>hadoop-2.3</id>
-			<properties>
-				<hadoop.version>2.3.0</hadoop.version>
-				<protobuf.version>2.5.0</protobuf.version>
-				<jets3t.version>0.9.0</jets3t.version>
-			</properties>
-		</profile>
+      <!--TODO(alex): make part of the build and reconcile conflicts <plugin>
+        <groupId>com.ning.maven.plugins</groupId> <artifactId>maven-duplicate-finder-plugin</artifactId>
+        <version>1.0.4</version> <executions> <execution> <id>default</id> <phase>verify</phase>
+        <goals> <goal>check</goal> </goals> </execution> </executions> <configuration>
+        <failBuildInCaseOfConflict>true</failBuildInCaseOfConflict> </configuration>
+        </plugin> -->
+    </plugins>
 
-		<profile>
-			<id>hadoop-2.4</id>
-			<properties>
-				<hadoop.version>2.4.0</hadoop.version>
-				<protobuf.version>2.5.0</protobuf.version>
-				<jets3t.version>0.9.3</jets3t.version>
-			</properties>
-		</profile>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-checkstyle-plugin</artifactId>
+          <version>2.13</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.8</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.17</version>
+          <configuration combine.children="append">
+            <argLine>-Xmx2g -Xms1g -Dfile.encoding=UTF-8</argLine>
+            <encoding>UTF-8</encoding>
+            <inputEncoding>UTF-8</inputEncoding>
+            <outputEncoding>UTF-8</outputEncoding>
+          </configuration>
+          <!-- <excludes> <exclude>**/itest/**</exclude> </excludes> <executions>
+            <execution> <id>surefire-itest</id> <phase>integration-test</phase> <goals>
+            <goal>test</goal> </goals> <configuration> <excludes> <exclude>none</exclude>
+            </excludes> <includes> <include>**/itest/**</include> </includes> </configuration>
+            </execution> </executions> -->
+        </plugin>
+        <plugin>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>1.2.1</version>
+        </plugin>
 
-                <profile>
-                        <id>mapr3</id>
-                        <activation>
-                                <activeByDefault>false</activeByDefault>
-                                </activation>
-                        <properties>
-                                <hadoop.version>1.0.3-mapr-3.0.3</hadoop.version>
-                                <yarn.version>2.3.0-mapr-4.0.0-FCS</yarn.version>
-                                <hbase.version>0.94.17-mapr-1405</hbase.version>
-                                <zookeeper.version>3.4.5-mapr-1406</zookeeper.version>
-                        </properties>
-                </profile>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>2.4.1</version>
+          <configuration>
+            <filesets>
+              <fileset>
+                <directory>interpreter</directory>
+                <followSymlinks>false</followSymlinks>
+              </fileset>
+            </filesets>
+          </configuration>
+        </plugin>
 
-                <profile>
-                        <id>mapr4</id>
-                        <activation>
-                                <activeByDefault>false</activeByDefault>
-                        </activation>
-                        <properties>
-                                <hadoop.version>2.3.0-mapr-4.0.0-FCS</hadoop.version>
-                                <yarn.version>2.3.0-mapr-4.0.0-FCS</yarn.version>
-                                <hbase.version>0.94.17-mapr-1405-4.0.0-FCS</hbase.version>
-                                <zookeeper.version>3.4.5-mapr-1406</zookeeper.version>
-                        </properties>
-                        <dependencies>
-                                <dependency>
-                                        <groupId>org.apache.curator</groupId>
-                                        <artifactId>curator-recipes</artifactId>
-                                        <version>2.4.0</version>
-                                        <exclusions>
-                                                <exclusion>
-                                                        <groupId>org.apache.zookeeper</groupId>
-                                                        <artifactId>zookeeper</artifactId>
-                                                </exclusion>
-                                        </exclusions>
-                                </dependency>
-                                <dependency>
-                                        <groupId>org.apache.zookeeper</groupId>
-                                        <artifactId>zookeeper</artifactId>
-                                        <version>3.4.5-mapr-1406</version>
-                                </dependency>
-                        </dependencies>
-                </profile>
 
-                <!-- Build without Hadoop dependencies that are included in some runtime environments. -->
-                <profile>
-                        <id>hadoop-provided</id>
-                        <activation>
-                                <activeByDefault>false</activeByDefault>
-                        </activation>
-                        <dependencies>
-                                <dependency>
-                                        <groupId>org.apache.hadoop</groupId>
-                                        <artifactId>hadoop-client</artifactId>
-                                        <scope>provided</scope>
-                                </dependency>
-                                <dependency>
-                                        <groupId>org.apache.hadoop</groupId>
-                                        <artifactId>hadoop-yarn-api</artifactId>
-                                        <scope>provided</scope>
-                                </dependency>
-                                <dependency>
-                                        <groupId>org.apache.hadoop</groupId>
-                                        <artifactId>hadoop-yarn-common</artifactId>
-                                        <scope>provided</scope>
-                                </dependency>
-                                <dependency>
-                                        <groupId>org.apache.hadoop</groupId>
-                                        <artifactId>hadoop-yarn-server-web-proxy</artifactId>
-                                        <scope>provided</scope>
-                                </dependency>
-                                <dependency>
-                                        <groupId>org.apache.hadoop</groupId>
-                                        <artifactId>hadoop-yarn-client</artifactId>
-                                        <scope>provided</scope>
-                                </dependency>
-                                <dependency>
-                                        <groupId>org.apache.avro</groupId>
-                                        <artifactId>avro</artifactId>
-                                        <scope>provided</scope>
-                                </dependency>
-                                <dependency>
-                                        <groupId>org.apache.avro</groupId>
-                                        <artifactId>avro-ipc</artifactId>
-                                        <scope>provided</scope>
-                                </dependency>
-                                <dependency>
-                                        <groupId>org.apache.zookeeper</groupId>
-                                        <artifactId>zookeeper</artifactId>
-                                        <version>${zookeeper.version}</version>
-                                        <scope>provided</scope>
-                                </dependency>
-                        </dependencies>
-                </profile>
-        </profiles>
+        <!--This plugin's configuration is used to store Eclipse m2e settings
+          only. It has no influence on the Maven build itself. -->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>
+                      org.apache.maven.plugins
+                    </groupId>
+                    <artifactId>
+                      maven-dependency-plugin
+                    </artifactId>
+                    <versionRange>
+                      [2.8,)
+                    </versionRange>
+                    <goals>
+                      <goal>copy-dependencies</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore/>
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>
+                      org.apache.maven.plugins
+                    </groupId>
+                    <artifactId>
+                      maven-checkstyle-plugin
+                    </artifactId>
+                    <versionRange>
+                      [2.13,)
+                    </versionRange>
+                    <goals>
+                      <goal>checkstyle</goal>
+                      <goal>check</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <repositories>
+    <!-- For dependency recosiled version of hive_test -->
+    <repository>
+      <id>nflabs public repository</id>
+      <url>https://raw.github.com/NFLabs/mvn-repo/master/releases</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+
+    <!-- for for jdo/jdo2-api/2.3-ec -->
+    <repository>
+      <id>cdh-repository</id>
+      <name>CDH Repository</name>
+      <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <!-- for s3-upload-maven-pugin 1.2-SNAPSHOT until this one merged https://github.com/bazaarvoice/s3-upload-maven-plugin/pull/2 -->
+    <pluginRepository>
+      <id>nflabs public repository snspshots</id>
+      <url>https://github.com/NFLabs/mvn-repo/raw/master/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <profiles>
+    <profile>
+      <id>build-distr</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                <skipTests>true</skipTests>
+              </configuration>
+            </plugin>
+            <plugin>
+              <artifactId>maven-assembly-plugin</artifactId>
+              <executions>
+                <execution>
+                  <id>make-assembly</id>
+                  <phase>package</phase>
+                  <goals>
+                    <goal>single</goal>
+                  </goals>
+                </execution>
+              </executions>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+
+    <profile>
+      <id>publish-distr</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <skipTests>true</skipTests>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>release-sign-artifacts</id>
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.4</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <profile>
+      <id>spark-1.1</id>
+      <dependencies>
+
+      </dependencies>
+      <properties>
+        <spark.version>1.1.1</spark.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>spark-1.2</id>
+      <dependencies>
+      </dependencies>
+      <properties>
+        <akka.version>2.3.4-spark</akka.version>
+        <spark.version>1.2.1</spark.version>
+        <hive.version>0.13.1a</hive.version>
+        <derby.version>10.10.1.1</derby.version>
+        <parquet.version>1.6.0rc3</parquet.version>
+        <chill.version>0.5.0</chill.version>
+        <commons.httpclient.version>4.2.6</commons.httpclient.version>
+        <commons.math3.version>3.1.1</commons.math3.version>
+        <io.netty.version>4.0.23.Final</io.netty.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>spark-1.3</id>
+      <dependencies>
+      </dependencies>
+      <properties>
+        <akka.version>2.3.4-spark</akka.version>
+        <spark.version>1.3.0</spark.version>
+        <mesos.version>0.21.0</mesos.version>
+        <hbase.version>0.98.7</hbase.version>
+        <hbase.artifact>hbase</hbase.artifact>
+        <hive.group>org.spark-project.hive</hive.group>
+        <hive.version>0.13.1a</hive.version>
+        <derby.version>10.10.1.1</derby.version>
+        <orbit.version>3.0.0.v201112011016</orbit.version>
+        <parquet.version>1.6.0rc3</parquet.version>
+        <chill.version>0.5.0</chill.version>
+        <ivy.version>2.4.0</ivy.version>
+        <oro.version>2.0.8</oro.version>
+        <avro.mapred.classifier></avro.mapred.classifier>
+        <codahale.metrics.version>3.1.0</codahale.metrics.version>
+        <commons.httpclient.version>4.2.6</commons.httpclient.version>
+        <commons.math3.version>3.1.1</commons.math3.version>
+        <io.netty.version>4.0.23.Final</io.netty.version>
+        <codehaus.jackson.version>1.9.13</codehaus.jackson.version>
+        <fasterxml.jackson.version>2.4.4</fasterxml.jackson.version>
+        <snappy.version>1.1.1.6</snappy.version>
+        <mesos.version>0.21.0</mesos.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>hadoop-0.23</id>
+      <!-- SPARK-1121: Adds an explicit dependency on Avro to work around a
+        Hadoop 0.23.X issue -->
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro</artifactId>
+        </dependency>
+      </dependencies>
+      <properties>
+        <hadoop.version>0.23.10</hadoop.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>hadoop-2.2</id>
+      <properties>
+        <hadoop.version>2.2.0</hadoop.version>
+        <protobuf.version>2.5.0</protobuf.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>hadoop-2.3</id>
+      <properties>
+        <hadoop.version>2.3.0</hadoop.version>
+        <protobuf.version>2.5.0</protobuf.version>
+        <jets3t.version>0.9.0</jets3t.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>hadoop-2.4</id>
+      <properties>
+        <hadoop.version>2.4.0</hadoop.version>
+        <protobuf.version>2.5.0</protobuf.version>
+        <jets3t.version>0.9.3</jets3t.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>mapr3</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <hadoop.version>1.0.3-mapr-3.0.3</hadoop.version>
+        <yarn.version>2.3.0-mapr-4.0.0-FCS</yarn.version>
+        <hbase.version>0.94.17-mapr-1405</hbase.version>
+        <zookeeper.version>3.4.5-mapr-1406</zookeeper.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>mapr4</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <hadoop.version>2.3.0-mapr-4.0.0-FCS</hadoop.version>
+        <yarn.version>2.3.0-mapr-4.0.0-FCS</yarn.version>
+        <hbase.version>0.94.17-mapr-1405-4.0.0-FCS</hbase.version>
+        <zookeeper.version>3.4.5-mapr-1406</zookeeper.version>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.curator</groupId>
+          <artifactId>curator-recipes</artifactId>
+          <version>2.4.0</version>
+          <exclusions>
+            <exclusion>
+              <groupId>org.apache.zookeeper</groupId>
+              <artifactId>zookeeper</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.zookeeper</groupId>
+          <artifactId>zookeeper</artifactId>
+          <version>3.4.5-mapr-1406</version>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <!-- Build without Hadoop dependencies that are included in some runtime environments. -->
+    <profile>
+      <id>hadoop-provided</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-client</artifactId>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-yarn-api</artifactId>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-yarn-common</artifactId>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-yarn-server-web-proxy</artifactId>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-yarn-client</artifactId>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro</artifactId>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro-ipc</artifactId>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.zookeeper</groupId>
+          <artifactId>zookeeper</artifactId>
+          <version>${zookeeper.version}</version>
+          <scope>provided</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
 </project>
