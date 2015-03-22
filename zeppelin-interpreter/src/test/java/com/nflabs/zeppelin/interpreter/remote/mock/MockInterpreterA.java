@@ -22,23 +22,31 @@ public class MockInterpreterA extends Interpreter {
             .add("p1", "v1", "property1").build());
 
   }
+
+  private String lastSt;
+
   public MockInterpreterA(Properties property) {
     super(property);
   }
 
   @Override
   public void open() {
-
+    //new RuntimeException().printStackTrace();
   }
 
   @Override
   public void close() {
   }
 
+  public String getLastStatement() {
+    return lastSt;
+  }
+
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     try {
       Thread.sleep(Long.parseLong(st));
+      this.lastSt = st;
     } catch (NumberFormatException | InterruptedException e) {
       throw new InterpreterException(e);
     }
@@ -67,6 +75,10 @@ public class MockInterpreterA extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler("interpreter_" + this.hashCode());
+    if (getProperty("parallel") != null && getProperty("parallel").equals("true")) {
+      return SchedulerFactory.singleton().createOrGetParallelScheduler("interpreter_" + this.hashCode(), 10);
+    } else {
+      return SchedulerFactory.singleton().createOrGetFIFOScheduler("interpreter_" + this.hashCode());
+    }
   }
 }
