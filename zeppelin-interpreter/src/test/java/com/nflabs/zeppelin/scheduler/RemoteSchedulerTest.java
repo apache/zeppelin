@@ -53,7 +53,7 @@ public class RemoteSchedulerTest {
         intpA.getInterpreterProcess(),
         10);
 
-    scheduler.submit(new Job("jobName", null) {
+    Job job = new Job("jobId", "jobName", null, 200) {
 
       @Override
       public int progress() {
@@ -68,7 +68,7 @@ public class RemoteSchedulerTest {
       @Override
       protected Object jobRun() throws Throwable {
         intpA.interpret("500", new InterpreterContext(
-            "id",
+            "jobId",
             "title",
             "text",
             new HashMap<String, Object>(),
@@ -80,8 +80,12 @@ public class RemoteSchedulerTest {
       protected boolean jobAbort() {
         return false;
       }
+    };
+    scheduler.submit(job);
 
-    });
+    while (job.isTerminated() == false) {
+      Thread.sleep(200);
+    }
 
     intpA.close();
     schedulerSvc.removeScheduler("test");
