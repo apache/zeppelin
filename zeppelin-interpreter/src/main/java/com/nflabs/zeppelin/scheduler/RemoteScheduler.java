@@ -40,8 +40,10 @@ public class RemoteScheduler implements Scheduler {
 
   @Override
   public void run() {
-    synchronized (queue) {
-      while (terminate == false) {
+    while (terminate == false) {
+      Job job = null;
+
+      synchronized (queue) {
         if (running.size() >= maxConcurrency || queue.isEmpty() == true) {
           try {
             queue.wait(500);
@@ -50,21 +52,21 @@ public class RemoteScheduler implements Scheduler {
           continue;
         }
 
-        Job job = queue.remove(0);
+        job = queue.remove(0);
         running.add(job);
+      }
 
-        // run
-        Scheduler scheduler = this;
-        JobRunner jobRunner = new JobRunner(scheduler, job);
-        executor.execute(jobRunner);
+      // run
+      Scheduler scheduler = this;
+      JobRunner jobRunner = new JobRunner(scheduler, job);
+      executor.execute(jobRunner);
 
-        // wait until it is submitted to the remote
-        synchronized (job) {
-          while (!jobRunner.isJobSubmittedInRemote()) {
-            try {
-              job.wait(200);
-            } catch (InterruptedException e) {
-            }
+      // wait until it is submitted to the remote
+      while (!jobRunner.isJobSubmittedInRemote()) {
+        synchronized (queue) {
+          try {
+            queue.wait(500);
+          } catch (InterruptedException e) {
           }
         }
       }
@@ -78,12 +80,24 @@ public class RemoteScheduler implements Scheduler {
 
   @Override
   public Collection<Job> getJobsWaiting() {
-    return null;
+    List<Job> ret = new LinkedList<Job>();
+    synchronized (queue) {
+      for (Job job : queue) {
+        ret.add(job);
+      }
+    }
+    return ret;
   }
 
   @Override
   public Collection<Job> getJobsRunning() {
-    return null;
+    List<Job> ret = new LinkedList<Job>();
+    synchronized (queue) {
+      for (Job job : running) {
+        ret.add(job);
+      }
+    }
+    return ret;
   }
 
   @Override
@@ -114,6 +128,7 @@ public class RemoteScheduler implements Scheduler {
     private boolean terminate;
     private JobListener listener;
     private Job job;
+    Status lastStatus;
 
     public JobStatusPoller(long initialPeriodMsec,
         long initialPeriodCheckIntervalMsec, long checkIntervalMsec, Job job,
@@ -165,9 +180,18 @@ public class RemoteScheduler implements Scheduler {
       }
     }
 
+
+    private Status getLastStatus() {
+      if (lastStatus == null) {
+        return Status.FINISHED;
+      } else {
+        return lastStatus;
+      }
+    }
+
     public synchronized Job.Status getStatus() {
       if (interpreterProcess.referenceCount() <= 0) {
-        return null;
+        return getLastStatus();
       }
 
       Client client;
@@ -175,7 +199,8 @@ public class RemoteScheduler implements Scheduler {
         client = interpreterProcess.getClient();
       } catch (Exception e) {
         logger.error("Can't get status information", e);
-        return Status.FINISHED;
+        lastStatus = Status.ERROR;
+        return Status.ERROR;
       }
 
       try {
@@ -183,18 +208,23 @@ public class RemoteScheduler implements Scheduler {
         if ("Unknown".equals(statusStr)) {
           // not found this job in the remote schedulers.
           // maybe not submitted, maybe already finished
-          listener.afterStatusChange(job, null, null);
-          return null;
+          listener.afterStatusChange(job, null, getLastStatus());
+          Status status = getLastStatus();
+          lastStatus = null;
+          return status;
         }
         Status status = Status.valueOf(statusStr);
+        lastStatus = status;
         listener.afterStatusChange(job, null, status);
         return status;
       } catch (TException e) {
         logger.error("Can't get status information", e);
-        return Status.FINISHED;
+        lastStatus = Status.ERROR;
+        return Status.ERROR;
       } catch (Exception e) {
         logger.error("Unknown status", e);
-        return null;
+        lastStatus = Status.ERROR;
+        return Status.ERROR;
       } finally {
         interpreterProcess.releaseClient(client);
       }
@@ -241,11 +271,11 @@ public class RemoteScheduler implements Scheduler {
       }
       job.run();
       jobExecuted = true;
+      jobSubmittedRemotely = true;
 
       jobStatusPoller.shutdown();
 
       job.setStatus(jobStatusPoller.getStatus());
-
       if (listener != null) {
         listener.jobFinished(scheduler, job);
       }
@@ -301,10 +331,6 @@ public class RemoteScheduler implements Scheduler {
       // status polled by status poller
       if (job.getStatus() != after) {
         job.setStatus(after);
-      }
-
-      synchronized (job) {
-        job.notify();
       }
     }
   }
