@@ -85,10 +85,11 @@ If you set `SPARK_HOME`, you should deploy spark binary on the same location to 
 Yarn
 
     # ./conf/zeppelin-env.sh
-    export export SPARK_YARN_JAR=/path/to/spark-assembly-*.jar
+    export SPARK_YARN_JAR=/path/to/spark-assembly-*.jar
     export HADOOP_CONF_DIR=/path/to/hadoop_conf_dir
 
-`SPARK_YARN_JAR` is deployed for running executor. `HADOOP_CONF_DIR` should contains yarn-site.xml and core-site.xml. 
+`SPARK_YARN_JAR` is deployed for running executor, this could be a local path or HDFS. HDFS allows YARN to cache it on nodes so that it doesn't need to be distributed each time an application runs. To point to a jar on HDFS, for example, set this configuration to "hdfs:///some/path".  
+`HADOOP_CONF_DIR` should contains yarn-site.xml and core-site.xml.
 
 ### Run
     ./bin/zeppelin-daemon.sh start
