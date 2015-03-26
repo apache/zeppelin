@@ -243,7 +243,7 @@ def resolve_jira_issue(merge_branches, comment, default_jira_id=""):
     print ("summary\t\t%s\nassignee\t%s\nstatus\t\t%s\nurl\t\t%s/%s\n" % (
         cur_summary, cur_assignee, cur_status, JIRA_BASE, jira_id))
 
-    versions = asf_jira.project_versions("SPARK")
+    versions = asf_jira.project_versions("ZEPPELIN")
     versions = sorted(versions, key=lambda x: x.name, reverse=True)
     versions = filter(lambda x: x.raw['released'] is False, versions)
     # Consider only x.y.z versions
@@ -280,7 +280,7 @@ def resolve_jira_issue(merge_branches, comment, default_jira_id=""):
 
 
 def resolve_jira_issues(title, merge_branches, comment):
-    jira_ids = re.findall("SPARK-[0-9]{4,5}", title)
+    jira_ids = re.findall("ZEPPELIN-[0-9]{4,5}", title)
 
     if len(jira_ids) == 0:
         resolve_jira_issue(merge_branches, comment)
