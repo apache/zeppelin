@@ -318,6 +318,16 @@ module.exports = function (grunt) {
           cwd: 'bower_components/jquery-ui/themes/base/images',
           src: '{,*/}*.{png,jpg,jpeg,gif}',
           dest: '<%= yeoman.dist %>/styles/images'
+        }, {
+          expand: true,
+          cwd: 'bower_components/datatables/media/images',
+          src: '{,*/}*.{png,jpg,jpeg,gif}',
+          dest: '<%= yeoman.dist %>/images'
+        }, {
+          expand: true,
+          cwd: 'bower_components/datatables-tabletools/swf',
+          src: '{,*/}*.swf',
+          dest: '<%= yeoman.dist %>/images'
         }]
       },
       styles: {
