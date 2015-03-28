@@ -1,5 +1,7 @@
 package com.nflabs.zeppelin.scheduler;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +55,7 @@ public class RemoteSchedulerTest {
         intpA.getInterpreterProcess(),
         10);
 
-    scheduler.submit(new Job("jobName", null) {
+    Job job = new Job("jobId", "jobName", null, 200) {
 
       @Override
       public int progress() {
@@ -67,21 +69,34 @@ public class RemoteSchedulerTest {
 
       @Override
       protected Object jobRun() throws Throwable {
-        intpA.interpret("500", new InterpreterContext(
-            "id",
+        intpA.interpret("1000", new InterpreterContext(
+            "jobId",
             "title",
             "text",
             new HashMap<String, Object>(),
             new GUI()));
-        return "500";
+        return "1000";
       }
 
       @Override
       protected boolean jobAbort() {
         return false;
       }
+    };
+    scheduler.submit(job);
 
-    });
+    while (job.isRunning() == false) {
+      Thread.sleep(100);
+    }
+
+    Thread.sleep(500);
+    assertEquals(0, scheduler.getJobsWaiting().size());
+    assertEquals(1, scheduler.getJobsRunning().size());
+
+    Thread.sleep(500);
+
+    assertEquals(0, scheduler.getJobsWaiting().size());
+    assertEquals(0, scheduler.getJobsRunning().size());
 
     intpA.close();
     schedulerSvc.removeScheduler("test");

@@ -10,6 +10,7 @@ import com.nflabs.zeppelin.interpreter.InterpreterGroup;
 import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
 import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 
 public class MockInterpreterB extends Interpreter {
@@ -28,7 +29,7 @@ public class MockInterpreterB extends Interpreter {
 
   @Override
   public void open() {
-
+    //new RuntimeException().printStackTrace();
   }
 
   @Override
@@ -37,12 +38,18 @@ public class MockInterpreterB extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    MockInterpreterA intpA = getInterpreterA();
+    String intpASt = intpA.getLastStatement();
+    long timeToSleep = Long.parseLong(st);
+    if (intpASt != null) {
+      timeToSleep += Long.parseLong(intpASt);
+    }
     try {
-      Thread.sleep(Long.parseLong(st));
+      Thread.sleep(timeToSleep);
     } catch (NumberFormatException | InterruptedException e) {
       throw new InterpreterException(e);
     }
-    return new InterpreterResult(Code.SUCCESS, st);
+    return new InterpreterResult(Code.SUCCESS, Long.toString(timeToSleep));
   }
 
   @Override
@@ -62,6 +69,20 @@ public class MockInterpreterB extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
+    return null;
+  }
+
+  public MockInterpreterA getInterpreterA() {
+    InterpreterGroup interpreterGroup = getInterpreterGroup();
+    for (Interpreter intp : interpreterGroup) {
+      if (intp.getClassName().equals(MockInterpreterA.class.getName())) {
+        Interpreter p = intp;
+        while (p instanceof WrappedInterpreter) {
+          p = ((WrappedInterpreter) p).getInnerInterpreter();
+        }
+        return (MockInterpreterA) p;
+      }
+    }
     return null;
   }
 
