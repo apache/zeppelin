@@ -182,10 +182,16 @@ public class RemoteScheduler implements Scheduler {
 
 
     private Status getLastStatus() {
-      if (lastStatus == null) {
-        return Status.FINISHED;
+      if (terminate == true) {
+        if (lastStatus != Status.FINISHED &&
+            lastStatus != Status.ERROR &&
+            lastStatus != Status.ABORT) {
+          return Status.FINISHED;
+        } else {
+          return (lastStatus == null) ? Status.FINISHED : lastStatus;
+        }
       } else {
-        return lastStatus;
+        return (lastStatus == null) ? Status.FINISHED : lastStatus;
       }
     }
 
@@ -208,9 +214,8 @@ public class RemoteScheduler implements Scheduler {
         if ("Unknown".equals(statusStr)) {
           // not found this job in the remote schedulers.
           // maybe not submitted, maybe already finished
-          listener.afterStatusChange(job, null, getLastStatus());
           Status status = getLastStatus();
-          lastStatus = null;
+          listener.afterStatusChange(job, null, status);
           return status;
         }
         Status status = Status.valueOf(statusStr);
@@ -274,6 +279,11 @@ public class RemoteScheduler implements Scheduler {
       jobSubmittedRemotely = true;
 
       jobStatusPoller.shutdown();
+      try {
+        jobStatusPoller.join();
+      } catch (InterruptedException e) {
+        logger.error("JobStatusPoller interrupted", e);
+      }
 
       job.setStatus(jobStatusPoller.getStatus());
       if (listener != null) {
