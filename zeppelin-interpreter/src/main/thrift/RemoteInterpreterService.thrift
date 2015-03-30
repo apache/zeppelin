@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-namespace java com.nflabs.zeppelin.interpreter.thrift
+namespace java org.apache.zeppelin.interpreter.thrift
 
 
 struct RemoteInterpreterContext {

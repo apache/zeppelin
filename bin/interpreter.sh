@@ -55,7 +55,7 @@ addJarInDir "${INTERPRETER_DIR}"
 export CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
 HOSTNAME=$(hostname)
-ZEPPELIN_SERVER=com.nflabs.zeppelin.interpreter.remote.RemoteInterpreterServer
+ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
 
 INTERPRETER_ID=$(basename "${INTERPRETER_DIR}")
 ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-interpreter-${INTERPRETER_ID}-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.pid"
