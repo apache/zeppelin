@@ -1,7 +1,23 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.nflabs.zeppelin.notebook;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,16 +45,16 @@ public class NoteInterpreterLoader {
   /**
    * set interpreter ids
    * @param ids InterpreterSetting id list
-   * @throws IOException 
+   * @throws IOException
    */
   public void setInterpreters(List<String> ids) throws IOException {
     factory.putNoteInterpreterSettingBinding(noteId, ids);
   }
-  
+
   public List<String> getInterpreters() {
     return factory.getNoteInterpreterSettingBinding(noteId);
   }
-  
+
   public List<InterpreterSetting> getInterpreterSettings() {
     List<String> interpreterSettingIds = factory.getNoteInterpreterSettingBinding(noteId);
     LinkedList<InterpreterSetting> settings = new LinkedList<InterpreterSetting>();
@@ -58,11 +74,11 @@ public class NoteInterpreterLoader {
 
   public Interpreter get(String replName) {
     List<InterpreterSetting> settings = getInterpreterSettings();
-    
+
     if (settings == null || settings.size() == 0) {
       return null;
     }
-    
+
     if (replName == null) {
       return settings.get(0).getInterpreterGroup().getFirst();
     }
@@ -76,6 +92,7 @@ public class NoteInterpreterLoader {
       throw new InterpreterException(replName + " interpreter not found");
     }
     String interpreterClassName = registeredInterpreter.getClassName();
+
     for (InterpreterSetting setting : settings) {
       InterpreterGroup intpGroup = setting.getInterpreterGroup();
       for (Interpreter interpreter : intpGroup) {
@@ -84,7 +101,7 @@ public class NoteInterpreterLoader {
         }
       }
     }
-    
+
     return null;
   }
 }
