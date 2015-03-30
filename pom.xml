@@ -1059,6 +1059,7 @@
               <exclude>**/*.patch</exclude>
               <exclude>**/*.avsc</exclude>
               <exclude>**/*.avro</exclude>
+              <exclude>**/*.log</exclude>
               <exclude>**/docs/**</exclude>
               <exclude>**/test/resources/**</exclude>
               <exclude>**/.settings/*</exclude>
