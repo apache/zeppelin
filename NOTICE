@@ -1,6 +1,54 @@
-Zeppelin
-Copyright 2013-2014 NFLabs, inc.
+Apache Zeppelin (incubating)
+Copyright 2015 The Apache Software Foundation
 
-This product includes software developed by The Apache Software
-Foundation (http://www.apache.org/).
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
 
+
+Portions of this software were developed at NFLabs, Inc. (http://www.nflabs.com)
+Copyright (c) 2010-2015 NFLabs Inc.
+
+
+
+This product contains webfonts from 'Font Awesome', which can be obtains at:
+
+  * LICENSE:
+    * SIL OFL 1.1 (http://scripts.sil.org/OFL)
+  * HOMEPAGE:
+    * http://fortawesome.github.io/Font-Awesome/
+
+
+
+This product contains a stylesheet from 'Font Awesome', which can be obtains at:
+
+  * LICENSE:
+    * MIT License (http://opensource.org/licenses/mit-license.html)
+  * HOMEPAGE:
+    * http://fortawesome.github.io/Font-Awesome/
+
+
+
+This product contains embeddable code editor 'Ace', which can be obtains at:
+
+  * LICENSE:
+    * BSD (https://github.com/ajaxorg/ace/blob/master/LICENSE)
+      Copyright (c) 2010, Ajax.org B.V.
+      All rights reserved. 
+  * HOMEPAGE:
+    * http://ace.c9.io/
+
+
+
+This product contains 'Simple line icons', which can be obtains at:
+
+  * LICENSE:
+    * MIT License (http://opensource.org/licenses/mit-license.html)
+  * HOMEPAGE:
+    * http://thesabbir.github.io/simple-line-icons/
+
+
+from https://code.google.com/p/selenium/issues/detail?id=1361
+
+
+The com.webautomation package contains software developed by Ivan Vasiliev
+(https://groups.google.com/forum/#!msg/selenium-developers/PTR_j4xLVRM/k2yVq01Fa7oJ)
