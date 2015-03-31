@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
+import com.nflabs.zeppelin.interpreter.InterpreterUtils;
 import org.markdown4j.Markdown4jProcessor;
 
 import com.nflabs.zeppelin.interpreter.Interpreter;
@@ -45,7 +46,7 @@ public class Markdown extends Interpreter {
     try {
       html = md.process(st);
     } catch (IOException | java.lang.RuntimeException e) {
-      return new InterpreterResult(Code.ERROR, e.getMessage());
+      return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
     }
     return new InterpreterResult(Code.SUCCESS, "%html " + html);
   }
