@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import com.nflabs.zeppelin.interpreter.*;
 import org.apache.spark.HttpServer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -48,14 +49,7 @@ import scala.tools.nsc.interpreter.Completion.ScalaCompleter;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
-import com.nflabs.zeppelin.interpreter.Interpreter;
-import com.nflabs.zeppelin.interpreter.InterpreterContext;
-import com.nflabs.zeppelin.interpreter.InterpreterException;
-import com.nflabs.zeppelin.interpreter.InterpreterGroup;
-import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
-import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
-import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 import com.nflabs.zeppelin.spark.dep.DependencyContext;
@@ -542,7 +536,7 @@ public class SparkInterpreter extends Interpreter {
       } catch (Exception e) {
         sc.clearJobGroup();
         logger.info("Interpreter exception", e);
-        return new InterpreterResult(Code.ERROR, e.getMessage());
+        return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
       }
 
       r = getResultCode(res);
