@@ -71,7 +71,7 @@ mvn install -DskipTests
 To build with specific spark / hadoop version
 
 ```
-mvn install -Dspark.version=1.0.1 -Dhadoop.version=2.2.0
+mvn install -Phadoop-2.2 -Dhadoop.version=2.2.0 -Pspark-1.3 -Dspark.version=1.3.0
 ```
 
 ## Run Zepplin server in development mode
