@@ -64,7 +64,10 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
         new InterpreterPropertyBuilder()
           .add("spark.home",
                SparkInterpreter.getSystemDefault("SPARK_HOME", "spark.home", ""),
-               "Spark home path. Should be provided for pyspark").build());
+               "Spark home path. Should be provided for pyspark")
+          .add("zeppelin.pyspark.python",
+               SparkInterpreter.getSystemDefault("PYSPARK_PYTHON", null, "python"),
+               "Python command to run pyspark with").build());
   }
 
   public PySparkInterpreter(Properties property) {
@@ -115,7 +118,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     gatewayServer.start();
 
     // Run python shell
-    CommandLine cmd = CommandLine.parse("python");
+    CommandLine cmd = CommandLine.parse(getProperty("zeppelin.pyspark.python"));
     cmd.addArgument(scriptPath, false);
     cmd.addArgument(Integer.toString(port), false);
     executor = new DefaultExecutor();
