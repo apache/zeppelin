@@ -19,6 +19,9 @@ package com.nflabs.zeppelin.interpreter;
 
 import java.lang.reflect.InvocationTargetException;
 
+/**
+ * Interpreter utility functions
+ */
 public class InterpreterUtils {
 
   public static String getMostRelevantMessage(Exception ex) {
