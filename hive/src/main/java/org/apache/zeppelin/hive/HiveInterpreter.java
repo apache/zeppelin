@@ -59,6 +59,16 @@ public class HiveInterpreter extends Interpreter {
   Connection jdbcConnection;
   Exception exceptionOnConnect;
 
+  //Test only method
+  public Connection getJdbcConnection()
+      throws SQLException {
+    String url = getProperty(HIVESERVER_URL);
+    String user = getProperty(HIVESERVER_USER);
+    String password = getProperty(HIVESERVER_PASSWORD);
+
+    return DriverManager.getConnection(url, user, password);
+  }
+
   @Override
   public void open() {
     logger.info("Jdbc open connection called!");
@@ -71,11 +81,7 @@ public class HiveInterpreter extends Interpreter {
       return;
     }
     try {
-      String url = getProperty(HIVESERVER_URL);
-      String user = getProperty(HIVESERVER_USER);
-      String password = getProperty(HIVESERVER_PASSWORD);
-
-      jdbcConnection = DriverManager.getConnection(url, user, password);
+      jdbcConnection = getJdbcConnection();
       exceptionOnConnect = null;
       logger.info("Successfully created Jdbc connection");
     }
@@ -109,7 +115,7 @@ public class HiveInterpreter extends Interpreter {
       }
       currentStatement = jdbcConnection.createStatement();
       StringBuilder msg = null;
-      if (StringUtils.containsIgnoreCase(sql, "EXPLAIN")) {
+      if (StringUtils.containsIgnoreCase(sql, "EXPLAIN ")) {
         //return the explain as text, make this visual explain later
         msg = new StringBuilder();
       }
