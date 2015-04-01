@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -423,7 +424,19 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     note.persist();
     broadcastNote(note);
 
-    note.run(paragraphId);
+    try {
+      note.run(paragraphId);
+    }
+    catch (Exception ex) {
+      LOG.error("Exception from run", ex);
+      if (p != null) {
+        p.setReturn(new InterpreterResult(
+          InterpreterResult.Code.ERROR, ex.getMessage()));
+        p.setStatus(Status.FINISHED);
+        note.persist();
+        broadcastNote(note);
+      }
+    }
   }
 
   /**

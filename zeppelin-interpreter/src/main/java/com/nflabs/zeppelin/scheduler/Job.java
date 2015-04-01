@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
+import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -236,5 +237,9 @@ public abstract class Job {
 
   private Logger logger() {
     return LoggerFactory.getLogger(Job.class);
+  }
+
+  protected void setResult(InterpreterResult result) {
+    this.result = result;
   }
 }

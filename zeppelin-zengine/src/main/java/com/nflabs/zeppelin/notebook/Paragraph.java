@@ -141,7 +141,6 @@ public class Paragraph extends Job implements Serializable {
     return (InterpreterResult) getReturn();
   }
 
-
   @Override
   public int progress() {
     String replName = getRequiredReplName();
@@ -212,5 +211,9 @@ public class Paragraph extends Job implements Serializable {
 
   public void setConfig(Map<String, Object> config) {
     this.config = config;
+  }
+
+  public void setReturn(InterpreterResult value) {
+    setResult(value);
   }
 }
