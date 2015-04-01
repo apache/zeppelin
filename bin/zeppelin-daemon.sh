@@ -28,13 +28,6 @@ if [ $# -le 1 ]; then
   exit 1
 fi
 
-if [ -L ${BASH_SOURCE-$0} ]; then
-  BIN=$(dirname $(readlink "${BASH_SOURCE-$0}"))
-else
-  BIN=$(dirname ${BASH_SOURCE-$0})
-fi
-BIN=$(cd "${BIN}">/dev/null; pwd)
-
 if [ "$1" == "--config" ]
 then
   shift
@@ -50,6 +43,12 @@ then
   shift
 fi
 
+if [ -L ${BASH_SOURCE-$0} ]; then
+  BIN=$(dirname $(readlink "${BASH_SOURCE-$0}"))
+else
+  BIN=$(dirname ${BASH_SOURCE-$0})
+fi
+BIN=$(cd "${BIN}">/dev/null; pwd)
 
 . "${BIN}/common.sh"
 . "${BIN}/functions.sh"
