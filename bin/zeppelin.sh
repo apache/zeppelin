@@ -22,9 +22,29 @@
 #
 
 function usage() {
-  echo "Usage: bin/zeppelin.sh [spark options] [application options]"
+  echo "Usage: bin/zeppelin.sh [--config <conf-dir>] [spark options] [application options]"
   exit 0
 }
+
+if [ $# -le 1 ]; then
+  echo $USAGE
+  exit 1
+fi
+
+if [ "$1" == "--config" ]
+then
+  shift
+  conf_dir="$1"
+  if [ ! -d "$conf_dir" ]
+  then
+    echo "ERROR : $conf_dir is not a directory"
+    echo ${USAGE}
+    exit 1
+  else
+    export ZEPPELIN_CONF_DIR="$conf_dir"
+  fi
+  shift
+fi
 
 bin=$(dirname "${BASH_SOURCE-$0}")
 bin=$(cd "${bin}">/dev/null; pwd)

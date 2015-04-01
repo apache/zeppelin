@@ -21,12 +21,35 @@
 # description: Start and stop daemon script for.
 #
 
+USAGE="Usage: zeppelin-daemon.sh [--config <conf-dir>] {start|stop|restart|reload|status}"
+
+if [ $# -le 1 ]; then
+  echo $USAGE
+  exit 1
+fi
+
 if [ -L ${BASH_SOURCE-$0} ]; then
   BIN=$(dirname $(readlink "${BASH_SOURCE-$0}"))
 else
   BIN=$(dirname ${BASH_SOURCE-$0})
 fi
 BIN=$(cd "${BIN}">/dev/null; pwd)
+
+if [ "$1" == "--config" ]
+then
+  shift
+  conf_dir="$1"
+  if [ ! -d "$conf_dir" ]
+  then
+    echo "ERROR : $conf_dir is not a directory"
+    echo ${USAGE}
+    exit 1
+  else
+    export ZEPPELIN_CONF_DIR="$conf_dir"
+  fi
+  shift
+fi
+
 
 . "${BIN}/common.sh"
 . "${BIN}/functions.sh"
@@ -205,5 +228,5 @@ case "${1}" in
     find_zeppelin_process
     ;;
   *)
-    echo "Usage: $0 {start|stop|restart|reload|status}"
+    echo ${USAGE}
 esac
