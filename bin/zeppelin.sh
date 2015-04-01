@@ -26,11 +26,6 @@ function usage() {
   exit 0
 }
 
-if [ $# -le 1 ]; then
-  echo $USAGE
-  exit 1
-fi
-
 if [ "$1" == "--config" ]
 then
   shift

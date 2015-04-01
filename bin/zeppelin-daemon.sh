@@ -23,11 +23,6 @@
 
 USAGE="Usage: zeppelin-daemon.sh [--config <conf-dir>] {start|stop|restart|reload|status}"
 
-if [ $# -le 1 ]; then
-  echo $USAGE
-  exit 1
-fi
-
 if [ "$1" == "--config" ]
 then
   shift
