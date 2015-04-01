@@ -279,19 +279,7 @@
       "progressUpdateIntervalMs": 500
     },
     {
-      "text": "%pyspark\nprint \"hello, world\"",
-      "config": {
-        "colWidth": 12.0,
-        "graph": {
-          "mode": "table",
-          "height": 300.0,
-          "optionOpen": false,
-          "keys": [],
-          "values": [],
-          "groups": [],
-          "scatter": {}
-        }
-      },
+      "config": {},
       "settings": {
         "params": {},
         "forms": {}
@@ -299,18 +287,6 @@
       "jobName": "paragraph_1423836471379_293523076",
       "id": "20150213-230751_1038476812",
       "dateCreated": "Feb 13, 2015 11:07:51 PM",
-      "status": "READY",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "config": {},
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "jobName": "paragraph_1427850802691_-422382127",
-      "id": "20150401-101322_1217450604",
-      "dateCreated": "Apr 1, 2015 10:13:22 AM",
       "status": "READY",
       "progressUpdateIntervalMs": 500
     }
