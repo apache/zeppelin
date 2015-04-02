@@ -431,10 +431,8 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
       LOG.error("Exception from run", ex);
       if (p != null) {
         p.setReturn(new InterpreterResult(
-          InterpreterResult.Code.ERROR, ex.getMessage()));
-        p.setStatus(Status.FINISHED);
-        note.persist();
-        broadcastNote(note);
+          InterpreterResult.Code.ERROR, ex.getMessage()), ex);
+        p.setStatus(Status.ERROR);
       }
     }
   }

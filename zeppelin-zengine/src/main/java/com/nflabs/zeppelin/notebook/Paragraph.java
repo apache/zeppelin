@@ -213,7 +213,8 @@ public class Paragraph extends Job implements Serializable {
     this.config = config;
   }
 
-  public void setReturn(InterpreterResult value) {
+  public void setReturn(InterpreterResult value, Throwable t) {
     setResult(value);
+    setException(t);
   }
 }
