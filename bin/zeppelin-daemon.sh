@@ -26,12 +26,12 @@ USAGE="Usage: zeppelin-daemon.sh [--config <conf-dir>] {start|stop|restart|reloa
 if [[ "$1" == "--config" ]]; then
   shift
   conf_dir="$1"
-  if [[ ! -d "$conf_dir" ]]; then
-    echo "ERROR : $conf_dir is not a directory"
+  if [[ ! -d "${conf_dir}" ]]; then
+    echo "ERROR : ${conf_dir} is not a directory"
     echo ${USAGE}
     exit 1
   else
-    export ZEPPELIN_CONF_DIR="$conf_dir"
+    export ZEPPELIN_CONF_DIR="${conf_dir}"
   fi
   shift
 fi
