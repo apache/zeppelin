@@ -1,14 +1,19 @@
-# IMPORTANT
+# How to contribute
 
-**Zeppelin** is [Apache2 License](https://github.com/NFLabs/zeppelin/blob/master/LICENSE) Software.
+**Zeppelin** is [Apache2 License](https://github.com/apache/incubator-zeppelin/blob/master/CONTRIBUTING.md) Software.
 Contributing to Zeppelin (Source code, Documents, Image, Website) means you agree to the Apache2 License.
+
+1. Make sure your issue is not already in the [Jira issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN)
+2. If not, create a ticket describing the change you're proposing in the [Jira issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN)
+3. Contribute your patch via Pull Request.
+
 
 ## Setting up
 Here are some things you will need to build and test Zeppelin. 
 
 ### Software Configuration Management(SCM)
 
-Zeppelin uses Git for it's SCM system. Hosted by github.com. https://github.com/nflabs/zeppelin You'll need git client installed in your development machine. 
+Zeppelin uses Git for it's SCM system. Hosted by github.com. `https://github.com/apache/incubator-zeppelin` You'll need git client installed in your development machine.
 
 ### Integrated Development Environment(IDE)
 
@@ -29,20 +34,20 @@ To build the code, install
  * Apache Maven
 
 ## Getting the source code
-First of all, you need the Zeppelin source code. The official location for Zeppelin is [https://github.com/nflabs/zeppelin](https://github.com/nflabs/zeppelin)
+First of all, you need the Zeppelin source code. The official location for Zeppelin is [https://github.com/apache/incubator-zeppelin](https://github.com/apache/incubator-zeppelin)
 
 ### git access
 
 Get the source code on your development machine using git.
 
 ```
-git clone https://github.com/NFLabs/zeppelin.git zeppelin
+git clone git@github.com:apache/incubator-zeppelin.git zeppelin
 ```
 
 You may also want to develop against a specific release. For example, for branch-0.1
 
 ```
-git clone -b branch-0.1 https://github.com/NFLabs/zeppelin.git zeppelin
+git clone -b branch-0.1 git@github.com:apache/incubator-zeppelin.git zeppelin
 ```
 
 
@@ -66,7 +71,7 @@ mvn install -DskipTests
 To build with specific spark / hadoop version
 
 ```
-mvn install -Dspark.version=1.0.1 -Dhadoop.version=2.2.0
+mvn install -Phadoop-2.2 -Dhadoop.version=2.2.0 -Pspark-1.3 -Dspark.version=1.3.0
 ```
 
 ## Run Zepplin server in development mode
@@ -86,10 +91,11 @@ bin/zeppelin-daemon start
 Server will be run on http://localhost:8080
 
 ## JIRA
-Zeppelin manages it's issues in Jira. [https://zeppelin-project.atlassian.net/browse/ZEPPELIN](https://zeppelin-project.atlassian.net/browse/ZEPPELIN)
+Zeppelin manages it's issues in Jira. [https://issues.apache.org/jira/browse/ZEPPELIN](https://issues.apache.org/jira/browse/ZEPPELIN)
 
 ## Stay involved
-Contributors should join the Zeppelin mailing lists.
+Everyone is welcome to join our mailling list:
 
-* [https://groups.google.com/forum/#!forum/zeppelin-users](https://groups.google.com/forum/#!forum/zeppelin-users)
-* [https://groups.google.com/forum/#!forum/zeppelin-developers](https://groups.google.com/forum/#!forum/zeppelin-developers)
+ * [users@zeppelin.incubator.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-users/) is for usage questions, help, and announcements [ [subscribe](mailto:users-subscribe@zeppelin.incubator.apache.org?subject=send%20this%20email%20to%20subscribe), [unsubscribe](mailto:users-unsubscribe@zeppelin.incubator.apache.org?subject=send%20this%20email%20to%20unsubscribe), [archive](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-users/) ]
+ * [dev@zeppelin.incubator.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-users/) is for people who want to contribute code to Zeppelin.[ [subscribe](mailto:dev-subscribe@zeppelin.incubator.apache.org?subject=send%20this%20email%20to%20subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.incubator.apache.org?subject=send%20this%20email%20to%20unsubscribe), [archive](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-dev/) ]
+ * [commits@zeppelin.incubator.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-commits/) is for commit messages and patches to Zeppelin. [ [subscribe](mailto:commits-subscribe@zeppelin.incubator.apache.org?subject=send%20this%20email%20to%20subscribe), [unsubscribe](mailto:commits-unsubscribe@zeppelin.incubator.apache.org?subject=send%20this%20email%20to%20unsubscribe), [archive](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-commits/) ]

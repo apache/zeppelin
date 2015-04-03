@@ -34,6 +34,7 @@ public class RemoteInterpreter extends Interpreter {
   private String interpreterPath;
   private String className;
   FormType formType;
+  boolean initialized;
   private Map<String, String> env;
   static Map<String, RemoteInterpreterProcess> interpreterGroupReference
     = new HashMap<String, RemoteInterpreterProcess>();
@@ -45,6 +46,7 @@ public class RemoteInterpreter extends Interpreter {
     super(property);
 
     this.className = className;
+    initialized = false;
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
     env = new HashMap<String, String>();
@@ -84,7 +86,11 @@ public class RemoteInterpreter extends Interpreter {
     }
   }
 
-  private void init() {
+  private synchronized void init() {
+    if (initialized == true) {
+      return;
+    }
+
     RemoteInterpreterProcess interpreterProcess = null;
 
     synchronized (interpreterGroupReference) {
@@ -122,6 +128,7 @@ public class RemoteInterpreter extends Interpreter {
         }
       }
     }
+    initialized = true;
   }
 
 
@@ -129,24 +136,6 @@ public class RemoteInterpreter extends Interpreter {
   @Override
   public void open() {
     init();
-
-    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
-
-    Client client = null;
-    try {
-      client = interpreterProcess.getClient();
-    } catch (Exception e1) {
-      throw new InterpreterException(e1);
-    }
-
-    try {
-      logger.info("open remote interpreter {}", className);
-      client.open(className);
-    } catch (TException e) {
-      throw new InterpreterException(e);
-    } finally {
-      interpreterProcess.releaseClient(client);
-    }
   }
 
   @Override
@@ -228,6 +217,8 @@ public class RemoteInterpreter extends Interpreter {
 
   @Override
   public FormType getFormType() {
+    init();
+
     if (formType != null) {
       return formType;
     }
@@ -292,9 +283,11 @@ public class RemoteInterpreter extends Interpreter {
   @Override
   public Scheduler getScheduler() {
     int maxConcurrency = 10;
-
+    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
     return SchedulerFactory.singleton().createOrGetRemoteScheduler(
-        "remoteinterpreter_" + this.hashCode(), getInterpreterProcess(), maxConcurrency);
+        "remoteinterpreter_" + interpreterProcess.hashCode(),
+        getInterpreterProcess(),
+        maxConcurrency);
   }
 
   @Override

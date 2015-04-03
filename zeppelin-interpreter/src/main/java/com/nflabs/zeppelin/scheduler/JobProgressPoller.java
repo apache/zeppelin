@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * TODO(moon) : add description.
- * 
+ *
  * @author Leemoonsoo
  *
  */
@@ -21,6 +21,7 @@ public class JobProgressPoller extends Thread {
     this.intervalMs = intervalMs;
   }
 
+  @Override
   public void run() {
     if (intervalMs < 0) {
       return;
@@ -32,7 +33,9 @@ public class JobProgressPoller extends Thread {
       JobListener listener = job.getListener();
       if (listener != null) {
         try {
-          listener.onProgressUpdate(job, job.progress());
+          if (job.isRunning()) {
+            listener.onProgressUpdate(job, job.progress());
+          }
         } catch (Exception e) {
           logger.error("Can not get or update progress", e);
         }

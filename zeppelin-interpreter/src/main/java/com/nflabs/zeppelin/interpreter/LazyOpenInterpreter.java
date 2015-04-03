@@ -84,7 +84,6 @@ public class LazyOpenInterpreter
 
   @Override
   public FormType getFormType() {
-    open();
     return intp.getFormType();
   }
 

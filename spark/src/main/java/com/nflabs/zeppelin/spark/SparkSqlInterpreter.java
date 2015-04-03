@@ -7,6 +7,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.nflabs.zeppelin.interpreter.*;
 import org.apache.spark.SparkContext;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
@@ -25,14 +26,7 @@ import scala.collection.JavaConverters;
 import scala.collection.mutable.HashMap;
 import scala.collection.mutable.HashSet;
 
-import com.nflabs.zeppelin.interpreter.Interpreter;
-import com.nflabs.zeppelin.interpreter.InterpreterContext;
-import com.nflabs.zeppelin.interpreter.InterpreterException;
-import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
-import com.nflabs.zeppelin.interpreter.InterpreterResult;
 import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
-import com.nflabs.zeppelin.interpreter.LazyOpenInterpreter;
-import com.nflabs.zeppelin.interpreter.WrappedInterpreter;
 import com.nflabs.zeppelin.scheduler.Scheduler;
 import com.nflabs.zeppelin.scheduler.SchedulerFactory;
 
@@ -96,7 +90,6 @@ public class SparkSqlInterpreter extends Interpreter {
   @Override
   public void close() {}
 
-
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     SQLContext sqlc = null;
@@ -123,7 +116,7 @@ public class SparkSqlInterpreter extends Interpreter {
     } catch (Exception e) {
       logger.error("Error", e);
       sc.clearJobGroup();
-      return new InterpreterResult(Code.ERROR, e.getMessage());
+      return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
     }
 
     String msg = null;
