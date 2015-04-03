@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import com.nflabs.zeppelin.interpreter.InterpreterException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -231,6 +232,9 @@ public class Note implements Serializable, JobListener {
     p.setNoteReplLoader(replLoader);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
     Interpreter intp = replLoader.get(p.getRequiredReplName());
+    if (intp == null) {
+      throw new InterpreterException("Interpreter " + p.getRequiredReplName() + " not found");
+    }
     intp.getScheduler().submit(p);
   }
 
