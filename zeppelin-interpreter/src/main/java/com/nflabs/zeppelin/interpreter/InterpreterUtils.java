@@ -17,6 +17,7 @@
  */
 package com.nflabs.zeppelin.interpreter;
 
+
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -31,6 +32,10 @@ public class InterpreterUtils {
         return cause.getMessage();
       }
     }
-    return ex.getMessage();
+    String message = ex.getMessage();
+    if (message == null || message == "") {
+      return ex.toString();
+    }
+    return message;
   }
 }

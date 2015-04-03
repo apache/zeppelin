@@ -193,6 +193,7 @@ public abstract class Job {
 
   protected void setException(Throwable t) {
     exception = t;
+    errorMessage = getStack(t);
   }
 
   public Object getReturn() {
@@ -239,7 +240,7 @@ public abstract class Job {
     return LoggerFactory.getLogger(Job.class);
   }
 
-  protected void setResult(InterpreterResult result) {
+  protected void setResult(Object result) {
     this.result = result;
   }
 }

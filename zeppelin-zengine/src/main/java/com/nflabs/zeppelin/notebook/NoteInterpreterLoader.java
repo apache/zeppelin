@@ -66,12 +66,16 @@ public class NoteInterpreterLoader {
     if (replName == null) {
       return settings.get(0).getInterpreterGroup().getFirst();
     }
-    
-    String interpreterClassName = Interpreter.registeredInterpreters.get(replName).getClassName();
-    if (interpreterClassName == null) {
+
+    if (Interpreter.registeredInterpreters == null) {
+      return null;
+    }
+    Interpreter.RegisteredInterpreter registeredInterpreter
+      = Interpreter.registeredInterpreters.get(replName);
+    if (registeredInterpreter == null || registeredInterpreter.getClassName() == null) {
       throw new InterpreterException(replName + " interpreter not found");
     }
-    
+    String interpreterClassName = registeredInterpreter.getClassName();
     for (InterpreterSetting setting : settings) {
       InterpreterGroup intpGroup = setting.getInterpreterGroup();
       for (Interpreter interpreter : intpGroup) {
