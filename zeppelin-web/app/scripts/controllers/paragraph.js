@@ -25,7 +25,7 @@
  * @author anthonycorbacho
  */
 angular.module('zeppelinWebApp')
-        .controller('ParagraphCtrl', function($scope, $rootScope, $route, $window, $element, $routeParams, $location, $timeout) {
+        .controller('ParagraphCtrl', function($scope, $rootScope, $route, $window, $element, $routeParams, $location, $timeout, $compile) {
 
   $scope.paragraph = null;
   $scope.editor = null;
@@ -56,6 +56,8 @@ angular.module('zeppelinWebApp')
       $scope.setGraphMode($scope.getGraphMode(), false, false);
     } else if ($scope.getResultType() === 'HTML') {
       $scope.renderHtml();
+    } else if ($scope.getResultType() === 'ANGULAR') {
+      $scope.renderAngular();
     }
   };
 
@@ -76,6 +78,24 @@ angular.module('zeppelinWebApp')
     $timeout(retryRenderer);
 
   };
+
+  $scope.renderAngular = function() {
+    var retryRenderer = function() {
+      if ($('#p'+$scope.paragraph.id+'_angular').length) {
+        try {
+          $('#p'+$scope.paragraph.id+'_angular').html($scope.paragraph.result.msg);
+          $compile($('#p'+$scope.paragraph.id+'_angular').contents())($scope);
+        } catch(err) {
+          console.log('ANGULAR rendering error %o', err);
+        }
+      } else {
+        $timeout(retryRenderer,10);
+      }
+    };
+    $timeout(retryRenderer);
+
+  };
+
 
   var initializeDefault = function() {
     var config = $scope.paragraph.config;
@@ -210,6 +230,8 @@ angular.module('zeppelinWebApp')
         }
       } else if (newType === 'HTML') {
         $scope.renderHtml();
+      } else if (newType === 'ANGULAR') {
+        $scope.renderAngular();
       }
     }
   });
