@@ -23,6 +23,8 @@ java_import(gateway.jvm, "org.apache.spark.api.python.*")
 java_import(gateway.jvm, "org.apache.spark.mllib.api.python.*")
 
 intp = gateway.entry_point
+intp.onPythonScriptInitialized()
+
 jsc = intp.getJavaSparkContext()
 
 if jsc.version().startswith("1.2"):
@@ -36,7 +38,6 @@ elif jsc.version().startswith("1.3"):
 
 
 java_import(gateway.jvm, "scala.Tuple2")
-
 
 jconf = intp.getSparkConf()
 conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
@@ -61,7 +62,6 @@ class Logger(object):
 output = Logger()
 sys.stdout = output
 sys.stderr = output
-
 
 while True :
   req = intp.getStatements()

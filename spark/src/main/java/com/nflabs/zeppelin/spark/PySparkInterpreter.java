@@ -238,10 +238,46 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   }
 
+  boolean pythonScriptInitialized = false;
+  Integer pythonScriptInitializeNotifier = new Integer(0);
+
+  public void onPythonScriptInitialized() {
+    synchronized (pythonScriptInitializeNotifier) {
+      pythonScriptInitialized = true;
+      pythonScriptInitializeNotifier.notifyAll();
+    }
+  }
+
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     if (!pythonscriptRunning) {
-      return new InterpreterResult(Code.ERROR, "python process not running");
+      return new InterpreterResult(Code.ERROR, "python process not running"
+          + outputStream.toString());
+    }
+
+    outputStream.reset();
+
+    synchronized (pythonScriptInitializeNotifier) {
+      long startTime = System.currentTimeMillis();
+      while (pythonScriptInitialized == false
+          && pythonscriptRunning
+          && System.currentTimeMillis() - startTime < 10 * 1000) {
+        try {
+          pythonScriptInitializeNotifier.wait(1000);
+        } catch (InterruptedException e) {
+        }
+      }
+    }
+
+    if (pythonscriptRunning == false) {
+      // python script failed to initialize and terminated
+      return new InterpreterResult(Code.ERROR, "failed to start pyspark"
+          + outputStream.toString());
+    }
+    if (pythonScriptInitialized == false) {
+      // timeout. didn't get initialized message
+      return new InterpreterResult(Code.ERROR, "pyspark is not responding "
+          + outputStream.toString());
     }
 
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
