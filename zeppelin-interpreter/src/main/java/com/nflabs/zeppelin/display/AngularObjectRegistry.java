@@ -18,6 +18,8 @@
 package com.nflabs.zeppelin.display;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -71,6 +73,14 @@ public class AngularObjectRegistry implements AngularObjectListener {
     synchronized (registry) {
       return registry.get(name);
     }
+  }
+
+  public List<AngularObject> getAll() {
+    List<AngularObject> all = new LinkedList<AngularObject>();
+    synchronized (registry) {
+      all.addAll(registry.values());
+    }
+    return all;
   }
 
   @Override

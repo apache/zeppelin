@@ -448,24 +448,28 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       var scope = $rootScope.compiledScope;
       var varName = data.angularObject.name;
 
-      $rootScope.angularObjectRegistry[varName] = {
-        interpreterGroupId : data.interpreterGroupId
-      };
-      scope[varName] = data.angularObject.object;
-
-      scope.$watch(varName, function(newValue, oldValue) {
-        console.log("value updated to %o %o", varName, newValue);
-        $rootScope.$emit('sendNewEvent', {
-            op: 'ANGULAR_OBJECT_UPDATED',
-            data: {
-                noteId: $routeParams.noteId,
-                name:varName,
-                value:newValue,
-                interpreterGroupId:$rootScope.angularObjectRegistry[varName].interpreterGroupId
-            }
+      if (!$rootScope.angularObjectRegistry[varName]) {
+        var clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
+          console.log("value updated to %o %o", varName, newValue);
+          $rootScope.$emit('sendNewEvent', {
+              op: 'ANGULAR_OBJECT_UPDATED',
+              data: {
+                  noteId: $routeParams.noteId,
+                  name:varName,
+                  value:newValue,
+                  interpreterGroupId:$rootScope.angularObjectRegistry[varName].interpreterGroupId
+              }
+          });
         });
-      });
+
+        $rootScope.angularObjectRegistry[varName] = {
+          interpreterGroupId : data.interpreterGroupId,
+          clearWatcher : clearWatcher
+        };
+      }
+      scope[varName] = data.angularObject.object;
     }
+      
   });
 
   var isFunction = function(functionToCheck) {

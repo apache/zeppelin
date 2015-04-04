@@ -227,6 +227,19 @@ public class NotebookServer extends WebSocketServer implements
     return id;
   }
 
+  private void broadcastToNoteBindedInterpreter(String interpreterGroupId, Message m) {
+    Notebook notebook = notebook();
+    List<Note> notes = notebook.getAllNotes();
+    for (Note note : notes) {
+      List<String> ids = note.getNoteReplLoader().getInterpreters();
+      for (String id : ids) {
+        if (id.equals(interpreterGroupId)) {
+          broadcast(note.id(), m);
+        }
+      }
+    }
+  }
+
   private void broadcast(String noteId, Message m) {
     LOG.info("SEND >> " + m.op);
     synchronized (noteSocketMap) {
@@ -271,9 +284,11 @@ public class NotebookServer extends WebSocketServer implements
       return;
     }
     Note note = notebook.getNote(noteId);
+
     if (note != null) {
       addConnectionToNote(note.id(), conn);
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
+      sendAllAngularObjects(note, conn);
     }
   }
 
@@ -417,6 +432,21 @@ public class NotebookServer extends WebSocketServer implements
         } else {
           // path from client -> server
           ao.set(varValue, false);
+
+          synchronized (noteSocketMap) {
+            List<WebSocket> socketLists = noteSocketMap.get(noteId);
+            if (socketLists == null || socketLists.size() == 0) {
+              return;
+            }
+            for (WebSocket c : socketLists) {
+              if (c.equals(conn)) continue;
+
+              c.send(serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
+                .put("angularObject", ao)
+                .put("interpreterGroupId", interpreterGroupId)
+                .put("noteId", noteId)));
+            }
+          }
         }
       }
     }
@@ -539,6 +569,24 @@ public class NotebookServer extends WebSocketServer implements
   @Override
   public JobListener getParagraphJobListener(Note note) {
     return new ParagraphJobListener(this, note);
+  }
+
+  private void sendAllAngularObjects(Note note, WebSocket conn) {
+    List<InterpreterSetting> settings = note.getNoteReplLoader().getInterpreterSettings();
+    if (settings == null || settings.size() ==0) {
+      return;
+    }
+
+    for (InterpreterSetting intpSetting : settings) {
+      AngularObjectRegistry registry = intpSetting.getInterpreterGroup().getAngularObjectRegistry();
+      List<AngularObject> objects = registry.getAll();
+      for (AngularObject object : objects) {
+        conn.send(serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
+        .put("angularObject", object)
+        .put("interpreterGroupId", intpSetting.getInterpreterGroup().getId())
+        .put("noteId", note.id())));
+      }
+    }
   }
 
   @Override
