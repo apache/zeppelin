@@ -23,11 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
@@ -207,11 +209,19 @@ public class Paragraph extends Job implements Serializable {
   }
 
   private InterpreterContext getInterpreterContext() {
+    AngularObjectRegistry registry = null;
+
+    if (!getNoteReplLoader().getInterpreterSettings().isEmpty()) {
+      InterpreterSetting intpGroup = getNoteReplLoader().getInterpreterSettings().get(0);
+      registry = intpGroup.getInterpreterGroup().getAngularObjectRegistry();
+    }
+
     InterpreterContext interpreterContext = new InterpreterContext(getId(),
             this.getTitle(),
             this.getText(),
             this.getConfig(),
-            this.settings);
+            this.settings,
+            registry);
     return interpreterContext;
   }
 

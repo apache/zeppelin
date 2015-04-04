@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.thrift.transport.TTransportException;
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -109,7 +110,8 @@ public class RemoteInterpreterTest {
             "title",
             "text",
             new HashMap<String, Object>(),
-            new GUI()));
+            new GUI(),
+            new AngularObjectRegistry(intpGroup.getId(), null)));
 
     intpB.open();
     assertEquals(2, process.referenceCount());
@@ -159,7 +161,8 @@ public class RemoteInterpreterTest {
             "title",
             "text",
             new HashMap<String, Object>(),
-            new GUI()));
+            new GUI(),
+            new AngularObjectRegistry(intpGroup.getId(), null)));
     assertEquals("500", ret.message());
 
     ret = intpB.interpret("500",
@@ -168,7 +171,8 @@ public class RemoteInterpreterTest {
             "title",
             "text",
             new HashMap<String, Object>(),
-            new GUI()));
+            new GUI(),
+            new AngularObjectRegistry(intpGroup.getId(), null)));
     assertEquals("1000", ret.message());
     long end = System.currentTimeMillis();
     assertTrue(end - start >= 1000);
@@ -231,7 +235,8 @@ public class RemoteInterpreterTest {
                 "title",
                 "text",
                 new HashMap<String, Object>(),
-                new GUI()));
+                new GUI(),
+                new AngularObjectRegistry(intpGroup.getId(), null)));
       }
 
       @Override
@@ -262,7 +267,8 @@ public class RemoteInterpreterTest {
                 "title",
                 "text",
                 new HashMap<String, Object>(),
-                new GUI()));
+                new GUI(),
+                new AngularObjectRegistry(intpGroup.getId(), null)));
       }
 
       @Override
@@ -333,7 +339,8 @@ public class RemoteInterpreterTest {
               "title",
               "text",
               new HashMap<String, Object>(),
-              new GUI()));
+              new GUI(),
+              new AngularObjectRegistry(intpGroup.getId(), null)));
 
           synchronized (results) {
             results.add(ret.message());
@@ -413,7 +420,8 @@ public class RemoteInterpreterTest {
               "title",
               "text",
               new HashMap<String, Object>(),
-              new GUI()));
+              new GUI(),
+              new AngularObjectRegistry(intpGroup.getId(), null)));
 
           synchronized (results) {
             results.add(ret.message());

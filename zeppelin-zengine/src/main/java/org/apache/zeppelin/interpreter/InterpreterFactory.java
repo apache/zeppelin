@@ -43,7 +43,10 @@ import java.util.Set;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
+import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,15 +76,21 @@ public class InterpreterFactory {
 
   private InterpreterOption defaultOption;
 
-  public InterpreterFactory(ZeppelinConfiguration conf) throws InterpreterException, IOException {
-    this(conf, new InterpreterOption(true));
+  AngularObjectRegistryListener angularObjectRegistryListener;
+
+  public InterpreterFactory(ZeppelinConfiguration conf,
+      AngularObjectRegistryListener angularObjectRegistryListener)
+      throws InterpreterException, IOException {
+    this(conf, new InterpreterOption(true), angularObjectRegistryListener);
   }
 
 
-  public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption)
+  public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
+      AngularObjectRegistryListener angularObjectRegistryListener)
       throws InterpreterException, IOException {
     this.conf = conf;
     this.defaultOption = defaultOption;
+    this.angularObjectRegistryListener = angularObjectRegistryListener;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
     interpreterClassList = replsConf.split(",");
 
@@ -338,7 +347,24 @@ public class InterpreterFactory {
       InterpreterOption option,
       Properties properties)
       throws InterpreterException {
+
+    AngularObjectRegistry angularObjectRegistry;
+
     InterpreterGroup interpreterGroup = new InterpreterGroup();
+    if (option.isRemote()) {
+      angularObjectRegistry = new RemoteAngularObjectRegistry(
+          interpreterGroup.getId(),
+          angularObjectRegistryListener,
+          interpreterGroup
+      );
+    } else {
+      angularObjectRegistry = new AngularObjectRegistry(
+          interpreterGroup.getId(),
+          angularObjectRegistryListener);
+    }
+
+    interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
+
 
     for (String className : interpreterClassList) {
       Set<String> keys = Interpreter.registeredInterpreters.keySet();

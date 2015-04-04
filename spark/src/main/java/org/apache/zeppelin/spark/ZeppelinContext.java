@@ -251,4 +251,22 @@ public class ZeppelinContext extends HashMap<String, Object> {
     this.interpreterContext = interpreterContext;
   }
 
+
+/*
+  public void angularBind(String name, sObject o) {
+
+  }
+
+  public void angularBind(String name, sObject o, sWatcher w) {
+
+  }
+
+  public void angularBind(String name, Function f) {
+
+  }
+
+  public void angularUnbind(sString name) {
+
+  }
+  */
 }

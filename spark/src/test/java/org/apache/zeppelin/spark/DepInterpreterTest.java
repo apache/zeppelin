@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -57,7 +58,8 @@ public class DepInterpreterTest {
     intpGroup.add(dep);
     dep.setInterpreterGroup(intpGroup);
 
-    context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI());
+    context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null));
   }
 
   @After

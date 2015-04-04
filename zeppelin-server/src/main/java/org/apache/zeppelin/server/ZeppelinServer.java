@@ -297,7 +297,7 @@ public class ZeppelinServer extends Application {
 
     this.schedulerFactory = new SchedulerFactory();
 
-    this.replFactory = new InterpreterFactory(conf);
+    this.replFactory = new InterpreterFactory(conf, notebookServer);
     notebook = new Notebook(conf, schedulerFactory, replFactory, notebookServer);
   }
 

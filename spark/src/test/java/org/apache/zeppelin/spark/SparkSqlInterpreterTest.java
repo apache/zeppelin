@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -38,6 +39,7 @@ public class SparkSqlInterpreterTest {
 	private SparkSqlInterpreter sql;
   private SparkInterpreter repl;
   private InterpreterContext context;
+  private InterpreterGroup intpGroup;
 
 	@Before
 	public void setUp() throws Exception {
@@ -55,13 +57,14 @@ public class SparkSqlInterpreterTest {
 
   		sql = new SparkSqlInterpreter(p);
 
-  		InterpreterGroup intpGroup = new InterpreterGroup();
+  		intpGroup = new InterpreterGroup();
 		  intpGroup.add(repl);
 		  intpGroup.add(sql);
 		  sql.setInterpreterGroup(intpGroup);
 		  sql.open();
 		}
-		context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI());
+		context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI(),
+		    new AngularObjectRegistry(intpGroup.getId(), null));
 	}
 
 	@After

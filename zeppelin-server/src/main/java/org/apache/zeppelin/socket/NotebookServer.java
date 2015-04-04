@@ -25,7 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
@@ -50,7 +54,8 @@ import com.google.gson.Gson;
  *
  * @author anthonycorbacho
  */
-public class NotebookServer extends WebSocketServer implements JobListenerFactory {
+public class NotebookServer extends WebSocketServer implements
+    JobListenerFactory, AngularObjectRegistryListener {
 
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
   private static final int DEFAULT_PORT = 8282;
@@ -129,6 +134,9 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
             break;
           case COMPLETION:
             completion(conn, notebook, messagereceived);
+            break;
+          case ANGULAR_OBJECT_UPDATED:
+            angularObjectUpdated(conn, notebook, messagereceived);
             break;
           default:
             broadcastNoteList();
@@ -380,6 +388,41 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
     conn.send(serializeMessage(resp));
   }
 
+  /**
+   * When angular object updated from client
+   * @param conn
+   * @param notebook
+   * @param fromMessage
+   */
+  private void angularObjectUpdated(WebSocket conn, Notebook notebook,
+      Message fromMessage) {
+    String noteId = (String) fromMessage.get("noteId");
+    String interpreterGroupId = (String) fromMessage.get("interpreterGroupId");
+    String varName = (String) fromMessage.get("name");
+    Object varValue = fromMessage.get("value");
+
+    Note note = notebook.getNote(noteId);
+    List<InterpreterSetting> settings = note.getNoteReplLoader().getInterpreterSettings();
+    for (InterpreterSetting setting : settings) {
+      if (setting.getInterpreterGroup() == null) {
+        continue;
+      }
+
+      if (interpreterGroupId.equals(setting.getInterpreterGroup().getId())) {
+        AngularObjectRegistry angularObjectRegistry = setting
+            .getInterpreterGroup().getAngularObjectRegistry();
+        AngularObject ao = angularObjectRegistry.get(varName);
+        if (ao == null) {
+          LOG.warn("Object {} is not binded", varName);
+        } else {
+          // path from client -> server
+          ao.set(varValue, false);
+        }
+      }
+    }
+  }
+
+
   private void moveParagraph(WebSocket conn, Notebook notebook, Message fromMessage)
       throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
@@ -496,5 +539,49 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
   @Override
   public JobListener getParagraphJobListener(Note note) {
     return new ParagraphJobListener(this, note);
+  }
+
+  @Override
+  public void onAdd(String interpreterGroupId, AngularObject object) {
+    onUpdate(interpreterGroupId, object);
+  }
+
+  @Override
+  public void onUpdate(String interpreterGroupId, AngularObject object) {
+    Notebook notebook = notebook();
+    List<Note> notes = notebook.getAllNotes();
+    for (Note note : notes) {
+      List<InterpreterSetting> intpSettings = note.getNoteReplLoader()
+          .getInterpreterSettings();
+
+      if (intpSettings.isEmpty()) continue;
+
+      for (InterpreterSetting setting : intpSettings) {
+
+        if (setting.getInterpreterGroup().getId().equals(interpreterGroupId)) {
+          broadcast(note.id(), new Message(OP.ANGULAR_OBJECT_UPDATE)
+            .put("angularObject", object)
+            .put("interpreterGroupId", interpreterGroupId)
+            .put("noteId", note.id()));
+        }
+      }
+    }
+  }
+
+  @Override
+  public void onRemove(String interpreterGroupId, AngularObject object) {
+    Notebook notebook = notebook();
+    List<Note> notes = notebook.getAllNotes();
+    for (Note note : notes) {
+      List<String> ids = note.getNoteReplLoader().getInterpreters();
+      for (String id : ids) {
+        if (id.equals(interpreterGroupId)) {
+          broadcast(
+              note.id(),
+              new Message(OP.ANGULAR_OBJECT_REMOVE).put("name",
+                  object.getName()));
+        }
+      }
+    }
   }
 }

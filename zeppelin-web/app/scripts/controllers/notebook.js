@@ -442,4 +442,35 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       return true;
     }
   };
+
+  $scope.$on('angularObjectUpdate', function(event, data) {
+    if (data.noteId === $scope.note.id) {
+      var scope = $rootScope.compiledScope;
+      var varName = data.angularObject.name;
+
+      $rootScope.angularObjectRegistry[varName] = {
+        interpreterGroupId : data.interpreterGroupId
+      };
+      scope[varName] = data.angularObject.object;
+
+      scope.$watch(varName, function(newValue, oldValue) {
+        console.log("value updated to %o %o", varName, newValue);
+        $rootScope.$emit('sendNewEvent', {
+            op: 'ANGULAR_OBJECT_UPDATED',
+            data: {
+                noteId: $routeParams.noteId,
+                name:varName,
+                value:newValue,
+                interpreterGroupId:$rootScope.angularObjectRegistry[varName].interpreterGroupId
+            }
+        });
+      });
+    }
+  });
+
+  var isFunction = function(functionToCheck) {
+    var getType = {};
+    return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
+  }
+
 });

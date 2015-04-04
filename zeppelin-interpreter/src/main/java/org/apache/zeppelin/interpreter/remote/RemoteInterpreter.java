@@ -119,7 +119,7 @@ public class RemoteInterpreter extends Interpreter {
       }
     }
 
-    int rc = interpreterProcess.reference();
+    int rc = interpreterProcess.reference(getInterpreterGroup());
 
     synchronized (interpreterProcess) {
       // when first process created

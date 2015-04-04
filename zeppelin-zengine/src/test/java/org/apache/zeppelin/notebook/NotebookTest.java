@@ -69,7 +69,7 @@ public class NotebookTest implements JobListenerFactory{
     MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
-    factory = new InterpreterFactory(conf, new InterpreterOption(false));
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
 
 		notebook = new Notebook(conf, schedulerFactory, factory, this);
 	}
@@ -108,7 +108,7 @@ public class NotebookTest implements JobListenerFactory{
 		p1.setText("hello world");
 		note.persist();
 
-		Notebook notebook2 = new Notebook(conf, schedulerFactory, new InterpreterFactory(conf), this);
+		Notebook notebook2 = new Notebook(conf, schedulerFactory, new InterpreterFactory(conf, null), this);
 		assertEquals(1, notebook2.getAllNotes().size());
 	}
 

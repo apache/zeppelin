@@ -21,12 +21,20 @@ import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Random;
 
+import com.nflabs.zeppelin.display.AngularObjectRegistry;
+
 /**
  * InterpreterGroup is list of interpreters in the same group.
  * And unit of interpreter instantiate, restart, bind, unbind.
  */
 public class InterpreterGroup extends LinkedList<Interpreter>{
   String id;
+
+  AngularObjectRegistry angularObjectRegistry;
+
+  public InterpreterGroup() {
+    this.id = getId();
+  }
 
   private static String generateId() {
     return "InterpreterGroup_" + System.currentTimeMillis() + "_"
@@ -49,6 +57,14 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
       p.putAll(intp.getProperty());
     }
     return p;
+  }
+
+  public AngularObjectRegistry getAngularObjectRegistry() {
+    return angularObjectRegistry;
+  }
+
+  public void setAngularObjectRegistry(AngularObjectRegistry angularObjectRegistry) {
+    this.angularObjectRegistry = angularObjectRegistry;
   }
 
   public void close() {

@@ -84,7 +84,8 @@ angular.module('zeppelinWebApp')
       if ($('#p'+$scope.paragraph.id+'_angular').length) {
         try {
           $('#p'+$scope.paragraph.id+'_angular').html($scope.paragraph.result.msg);
-          $compile($('#p'+$scope.paragraph.id+'_angular').contents())($scope);
+
+          $compile($('#p'+$scope.paragraph.id+'_angular').contents())($rootScope.compiledScope);
         } catch(err) {
           console.log('ANGULAR rendering error %o', err);
         }
@@ -1615,5 +1616,4 @@ angular.module('zeppelinWebApp')
     var redirectToUrl = location.protocol + '//' + location.host + '/#/notebook/' + noteId + '/paragraph/' + $scope.paragraph.id+'?asIframe';
     $window.open(redirectToUrl);
   };
-
 });

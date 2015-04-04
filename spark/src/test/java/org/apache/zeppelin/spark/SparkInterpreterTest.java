@@ -24,8 +24,10 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.spark.SparkInterpreter;
@@ -55,7 +57,9 @@ public class SparkInterpreterTest {
   	  repl.open();
 	  }
 
-    context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI());
+	  InterpreterGroup intpGroup = new InterpreterGroup();
+    context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null));
 	}
 
   @After
