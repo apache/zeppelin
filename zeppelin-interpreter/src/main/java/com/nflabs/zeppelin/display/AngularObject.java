@@ -17,7 +17,15 @@
 
 package com.nflabs.zeppelin.display;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.nflabs.zeppelin.scheduler.ExecutorFactory;
 
 /**
  *
@@ -38,6 +46,8 @@ public class AngularObject<T> {
   private String name;
   private T object;
   private transient AngularObjectListener listener;
+  private transient List<AngularObjectWatcher> watchers
+    = new LinkedList<AngularObjectWatcher>();
   private AngularObjectType type;
 
   protected AngularObject(String name, T o,
@@ -91,9 +101,27 @@ public class AngularObject<T> {
   }
 
   public void set(T o, boolean emit) {
+    final T before = object;
+    final T after = o;
     object = o;
     if (emit) {
       emit();
+    }
+
+    List<AngularObjectWatcher> ws = new LinkedList<AngularObjectWatcher>();
+    synchronized (watchers) {
+      ws.addAll(watchers);
+    }
+
+    ExecutorService executor = ExecutorFactory.singleton().createOrGet("angularObjectWatcher", 50);
+    for (final AngularObjectWatcher w : ws) {
+      Logger logger = LoggerFactory.getLogger(AngularObject.class);
+      executor.submit(new Runnable() {
+        @Override
+        public void run() {
+          w.watch(before, after);
+        }
+      });
     }
   }
 
@@ -104,4 +132,23 @@ public class AngularObject<T> {
   public AngularObjectListener getListener() {
     return listener;
   }
+
+  public void addWatcher(AngularObjectWatcher watcher) {
+    synchronized (watchers) {
+      watchers.add(watcher);
+    }
+  }
+
+  public void removeWatcher(AngularObjectWatcher watcher) {
+    synchronized (watchers) {
+      watchers.remove(watcher);
+    }
+  }
+
+  public void clearAllWatchers() {
+    synchronized (watchers) {
+      watchers.clear();
+    }
+  }
+
 }

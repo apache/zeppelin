@@ -29,6 +29,9 @@ import java.util.Iterator;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.hive.HiveContext;
+import com.nflabs.zeppelin.display.AngularObject;
+import com.nflabs.zeppelin.display.AngularObjectRegistry;
+import com.nflabs.zeppelin.display.AngularObjectWatcher;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input.ParamOption;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -251,22 +254,58 @@ public class ZeppelinContext extends HashMap<String, Object> {
     this.interpreterContext = interpreterContext;
   }
 
-
-/*
-  public void angularBind(String name, sObject o) {
-
+  public Object angular(String name) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    AngularObject ao = registry.get(name);
+    if (ao == null) {
+      return null;
+    } else {
+      return ao.get();
+    }
   }
 
-  public void angularBind(String name, sObject o, sWatcher w) {
-
+  public void angularBind(String name, Object o) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    if (registry.get(name) == null) {
+      registry.add(name, o);
+    } else {
+      registry.get(name).set(o);
+    }
   }
 
-  public void angularBind(String name, Function f) {
-
+  public void angularBind(String name, Object o, AngularObjectWatcher w) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    if (registry.get(name) == null) {
+      registry.add(name, o);
+    } else {
+      registry.get(name).set(o);
+    }
+    angularWatch(name, w);
   }
 
-  public void angularUnbind(sString name) {
-
+  public void angularWatch(String name, AngularObjectWatcher w) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    if (registry.get(name) != null) {
+      registry.get(name).addWatcher(w);
+    }
   }
-  */
+
+  public void angularUnwatch(String name, AngularObjectWatcher w) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    if (registry.get(name) != null) {
+      registry.get(name).removeWatcher(w);
+    }
+  }
+
+  public void angularUnwatch(String name) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    if (registry.get(name) != null) {
+      registry.get(name).clearAllWatchers();
+    }
+  }
+
+  public void angularUnbind(String name) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    registry.remove(name);
+  }
 }

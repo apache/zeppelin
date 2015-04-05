@@ -241,12 +241,14 @@ public class NotebookServer extends WebSocketServer implements
   }
 
   private void broadcast(String noteId, Message m) {
-    LOG.info("SEND >> " + m.op);
     synchronized (noteSocketMap) {
       List<WebSocket> socketLists = noteSocketMap.get(noteId);
       if (socketLists == null || socketLists.size() == 0) {
         return;
       }
+
+      LOG.info("SEND >> " + m.op);
+
       for (WebSocket conn : socketLists) {
         conn.send(serializeMessage(m));
       }
@@ -563,7 +565,7 @@ public class NotebookServer extends WebSocketServer implements
 
   private void sendAllAngularObjects(Note note, WebSocket conn) {
     List<InterpreterSetting> settings = note.getNoteReplLoader().getInterpreterSettings();
-    if (settings == null || settings.size() ==0) {
+    if (settings == null || settings.size() == 0) {
       return;
     }
 
@@ -572,9 +574,9 @@ public class NotebookServer extends WebSocketServer implements
       List<AngularObject> objects = registry.getAll();
       for (AngularObject object : objects) {
         conn.send(serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
-        .put("angularObject", object)
-        .put("interpreterGroupId", intpSetting.getInterpreterGroup().getId())
-        .put("noteId", note.id())));
+          .put("angularObject", object)
+            .put("interpreterGroupId", intpSetting.getInterpreterGroup().getId())
+            .put("noteId", note.id())));
       }
     }
   }
@@ -596,7 +598,6 @@ public class NotebookServer extends WebSocketServer implements
       if (intpSettings.isEmpty()) continue;
 
       for (InterpreterSetting setting : intpSettings) {
-
         if (setting.getInterpreterGroup().getId().equals(interpreterGroupId)) {
           broadcast(note.id(), new Message(OP.ANGULAR_OBJECT_UPDATE)
             .put("angularObject", object)

@@ -261,7 +261,6 @@ public class Notebook {
   public List<Note> getAllNotes() {
     synchronized (notes) {
       List<Note> noteList = new ArrayList<Note>(notes.values());
-      logger.info("" + noteList.size());
       Collections.sort(noteList, new Comparator() {
         @Override
         public int compare(Object one, Object two) {
