@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import com.nflabs.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
