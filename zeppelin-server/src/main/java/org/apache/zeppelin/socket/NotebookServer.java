@@ -455,7 +455,7 @@ public class NotebookServer extends WebSocketServer implements
           AngularObjectRegistry angularObjectRegistry = setting
               .getInterpreterGroup().getAngularObjectRegistry();
           AngularObject ao = angularObjectRegistry.get(varName);
-            this.broadcast(n.id(), new Message(OP.ANGULAR_OBJECT_UPDATE)
+          this.broadcast(n.id(), new Message(OP.ANGULAR_OBJECT_UPDATE)
                               .put("angularObject", ao)
                               .put("interpreterGroupId", interpreterGroupId)
                               .put("noteId", n.id()));

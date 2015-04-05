@@ -21,7 +21,7 @@ import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Random;
 
-import com.nflabs.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.AngularObjectRegistry;
 
 /**
  * InterpreterGroup is list of interpreters in the same group.

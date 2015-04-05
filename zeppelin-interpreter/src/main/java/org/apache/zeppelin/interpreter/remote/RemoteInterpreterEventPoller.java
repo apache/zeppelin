@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
-package com.nflabs.zeppelin.interpreter.remote;
+package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
-import com.nflabs.zeppelin.display.AngularObject;
-import com.nflabs.zeppelin.display.AngularObjectRegistry;
-import com.nflabs.zeppelin.interpreter.InterpreterGroup;
-import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
-import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
-import com.nflabs.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
+import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 
 /**
  *

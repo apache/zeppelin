@@ -15,19 +15,19 @@
  * limitations under the License.
  */
 
-package com.nflabs.zeppelin.interpreter.remote.mock;
+package org.apache.zeppelin.interpreter.remote.mock;
 
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.nflabs.zeppelin.display.AngularObjectRegistry;
-import com.nflabs.zeppelin.display.AngularObjectWatcher;
-import com.nflabs.zeppelin.interpreter.Interpreter;
-import com.nflabs.zeppelin.interpreter.InterpreterContext;
-import com.nflabs.zeppelin.interpreter.InterpreterPropertyBuilder;
-import com.nflabs.zeppelin.interpreter.InterpreterResult;
-import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.AngularObjectWatcher;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 
 public class MockInterpreterAngular extends Interpreter implements AngularObjectWatcher {
   static {

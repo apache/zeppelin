@@ -4,7 +4,7 @@
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  *  @generated
  */
-package com.nflabs.zeppelin.interpreter.thrift;
+package org.apache.zeppelin.interpreter.thrift;
 
 import org.apache.thrift.scheme.IScheme;
 import org.apache.thrift.scheme.SchemeFactory;

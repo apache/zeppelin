@@ -465,8 +465,8 @@ public class SparkInterpreter extends Interpreter {
 
     // add some implicit conversion
     intp.interpret("implicit def watcherConversion(watcher: (Object, Object) => Unit):"
-        + "com.nflabs.zeppelin.display.AngularObjectWatcher = {"
-        + "  new com.nflabs.zeppelin.display.AngularObjectWatcher() {"
+        + "org.apache.zeppelin.display.AngularObjectWatcher = {"
+        + "  new org.apache.zeppelin.display.AngularObjectWatcher() {"
         + "    def watch(before:Object, after:Object) = {"
         + "      watcher(before, after)"
         + "    }"

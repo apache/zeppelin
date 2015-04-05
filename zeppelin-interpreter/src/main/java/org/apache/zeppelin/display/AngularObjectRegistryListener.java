@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.nflabs.zeppelin.display;
+package org.apache.zeppelin.display;
 
 /**
  *

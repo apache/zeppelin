@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.nflabs.zeppelin.display;
+package org.apache.zeppelin.display;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-import com.nflabs.zeppelin.scheduler.ExecutorFactory;
+import org.apache.zeppelin.scheduler.ExecutorFactory;
 
 /**
  *

@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.nflabs.zeppelin.interpreter.remote;
+package org.apache.zeppelin.interpreter.remote;
 
-import com.nflabs.zeppelin.display.AngularObject;
-import com.nflabs.zeppelin.display.AngularObjectListener;
+import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.AngularObjectListener;
 
 /**
  *

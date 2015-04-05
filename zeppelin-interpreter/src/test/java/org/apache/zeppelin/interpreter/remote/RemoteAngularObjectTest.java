@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.nflabs.zeppelin.interpreter.remote;
+package org.apache.zeppelin.interpreter.remote;
 
 import static org.junit.Assert.assertEquals;
 
@@ -28,14 +28,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.nflabs.zeppelin.display.AngularObject;
-import com.nflabs.zeppelin.display.AngularObjectRegistry;
-import com.nflabs.zeppelin.display.AngularObjectRegistryListener;
-import com.nflabs.zeppelin.display.GUI;
-import com.nflabs.zeppelin.interpreter.InterpreterContext;
-import com.nflabs.zeppelin.interpreter.InterpreterGroup;
-import com.nflabs.zeppelin.interpreter.InterpreterResult;
-import com.nflabs.zeppelin.interpreter.remote.mock.MockInterpreterAngular;
+import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterAngular;
 
 public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
   private InterpreterGroup intpGroup;

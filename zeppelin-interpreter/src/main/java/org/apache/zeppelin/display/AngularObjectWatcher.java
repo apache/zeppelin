@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.nflabs.zeppelin.display;
+package org.apache.zeppelin.display;
 
 /**
  *
  */
-public interface AngularObjectListener {
-  public void updated(AngularObject updatedObject);
+public interface AngularObjectWatcher {
+  public void watch(Object oldObject, Object newObject);
 }
