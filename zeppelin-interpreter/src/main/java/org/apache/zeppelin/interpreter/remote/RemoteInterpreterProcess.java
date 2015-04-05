@@ -226,6 +226,9 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
     Client client = null;
     try {
       client = getClient();
+    } catch (NullPointerException e) {
+      // remote process not started
+      return;
     } catch (Exception e) {
       logger.error("Can't update angular object", e);
     }

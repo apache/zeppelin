@@ -43,11 +43,15 @@ public class AngularObjectRegistry implements AngularObjectListener {
   }
 
   public AngularObject add(String name, Object o) {
+    return add(name, o, true);
+  }
+
+  public AngularObject add(String name, Object o, boolean emit) {
     AngularObject ao = createNewAngularObject(name, o);
 
     synchronized (registry) {
       registry.put(name, ao);
-      if (listener != null) {
+      if (listener != null && emit) {
         listener.onAdd(interpreterId, ao);
       }
     }

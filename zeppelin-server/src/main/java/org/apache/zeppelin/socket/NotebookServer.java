@@ -597,6 +597,7 @@ public class NotebookServer extends WebSocketServer implements
   @Override
   public void onUpdate(String interpreterGroupId, AngularObject object) {
     Notebook notebook = notebook();
+
     List<Note> notes = notebook.getAllNotes();
     for (Note note : notes) {
       List<InterpreterSetting> intpSettings = note.getNoteReplLoader()

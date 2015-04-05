@@ -32,8 +32,12 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
 
   AngularObjectRegistry angularObjectRegistry;
 
+  public InterpreterGroup(String id) {
+    this.id = id;
+  }
+
   public InterpreterGroup() {
-    this.id = getId();
+    getId();
   }
 
   private static String generateId() {
@@ -49,7 +53,6 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
       return id;
     }
   }
-
 
   public Properties getProperty() {
     Properties p = new Properties();

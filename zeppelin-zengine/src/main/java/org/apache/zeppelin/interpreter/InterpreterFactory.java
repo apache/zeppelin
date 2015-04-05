@@ -226,17 +226,20 @@ public class InterpreterFactory {
       // previously created setting should turn this feature on here.
       setting.getOption().setRemote(true);
 
-      InterpreterGroup interpreterGroup = createInterpreterGroup(
-          setting.getGroup(),
-          setting.getOption(),
-          setting.getProperties());
+
 
       InterpreterSetting intpSetting = new InterpreterSetting(
           setting.id(),
           setting.getName(),
           setting.getGroup(),
+          setting.getOption());
+
+      InterpreterGroup interpreterGroup = createInterpreterGroup(
+          setting.id(),
+          setting.getGroup(),
           setting.getOption(),
-          interpreterGroup);
+          setting.getProperties());
+      intpSetting.setInterpreterGroup(interpreterGroup);
 
       interpreterSettings.put(k, intpSetting);
     }
@@ -329,37 +332,41 @@ public class InterpreterFactory {
       InterpreterOption option, Properties properties)
       throws InterpreterException, IOException {
     synchronized (interpreterSettings) {
-      InterpreterGroup interpreterGroup = createInterpreterGroup(groupName, option, properties);
 
       InterpreterSetting intpSetting = new InterpreterSetting(
           name,
           groupName,
-          option,
-          interpreterGroup);
-      interpreterSettings.put(intpSetting.id(), intpSetting);
+          option);
 
+      InterpreterGroup interpreterGroup = createInterpreterGroup(
+          intpSetting.id(), groupName, option, properties);
+
+      intpSetting.setInterpreterGroup(interpreterGroup);
+
+      interpreterSettings.put(intpSetting.id(), intpSetting);
       saveToFile();
       return interpreterGroup;
     }
   }
 
-  private InterpreterGroup createInterpreterGroup(String groupName,
+  private InterpreterGroup createInterpreterGroup(String id,
+      String groupName,
       InterpreterOption option,
       Properties properties)
       throws InterpreterException {
 
     AngularObjectRegistry angularObjectRegistry;
 
-    InterpreterGroup interpreterGroup = new InterpreterGroup();
+    InterpreterGroup interpreterGroup = new InterpreterGroup(id);
     if (option.isRemote()) {
       angularObjectRegistry = new RemoteAngularObjectRegistry(
-          interpreterGroup.getId(),
+          id,
           angularObjectRegistryListener,
           interpreterGroup
       );
     } else {
       angularObjectRegistry = new AngularObjectRegistry(
-          interpreterGroup.getId(),
+          id,
           angularObjectRegistryListener);
     }
 
@@ -506,6 +513,7 @@ public class InterpreterFactory {
         intpsetting.setOption(option);
 
         InterpreterGroup interpreterGroup = createInterpreterGroup(
+            intpsetting.id(),
             intpsetting.getGroup(), option, properties);
         intpsetting.setInterpreterGroup(interpreterGroup);
         saveToFile();
@@ -525,6 +533,7 @@ public class InterpreterFactory {
           intpsetting.getInterpreterGroup().destroy();
 
           InterpreterGroup interpreterGroup = createInterpreterGroup(
+              intpsetting.id(),
               intpsetting.getGroup(), intpsetting.getOption(), intpsetting.getProperties());
           intpsetting.setInterpreterGroup(interpreterGroup);
         } else {
