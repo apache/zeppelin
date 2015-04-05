@@ -416,36 +416,26 @@ public class NotebookServer extends WebSocketServer implements
     String varName = (String) fromMessage.get("name");
     Object varValue = fromMessage.get("value");
 
-    Note note = notebook.getNote(noteId);
-    List<InterpreterSetting> settings = note.getNoteReplLoader().getInterpreterSettings();
-    for (InterpreterSetting setting : settings) {
-      if (setting.getInterpreterGroup() == null) {
-        continue;
-      }
+    for (Note note : notebook.getAllNotes()) {
+      List<InterpreterSetting> settings = note.getNoteReplLoader().getInterpreterSettings();
+      for (InterpreterSetting setting : settings) {
+        if (setting.getInterpreterGroup() == null) {
+          continue;
+        }
 
-      if (interpreterGroupId.equals(setting.getInterpreterGroup().getId())) {
-        AngularObjectRegistry angularObjectRegistry = setting
-            .getInterpreterGroup().getAngularObjectRegistry();
-        AngularObject ao = angularObjectRegistry.get(varName);
-        if (ao == null) {
-          LOG.warn("Object {} is not binded", varName);
-        } else {
-          // path from client -> server
-          ao.set(varValue, false);
-
-          synchronized (noteSocketMap) {
-            List<WebSocket> socketLists = noteSocketMap.get(noteId);
-            if (socketLists == null || socketLists.size() == 0) {
-              return;
-            }
-            for (WebSocket c : socketLists) {
-              if (c.equals(conn)) continue;
-
-              c.send(serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
-                .put("angularObject", ao)
-                .put("interpreterGroupId", interpreterGroupId)
-                .put("noteId", noteId)));
-            }
+        if (interpreterGroupId.equals(setting.getInterpreterGroup().getId())) {
+          AngularObjectRegistry angularObjectRegistry = setting
+              .getInterpreterGroup().getAngularObjectRegistry();
+          AngularObject ao = angularObjectRegistry.get(varName);
+          if (ao == null) {
+            LOG.warn("Object {} is not binded", varName);
+          } else {
+            // path from client -> server
+            ao.set(varValue, false);
+            this.broadcast(note.id(), new Message(OP.ANGULAR_OBJECT_UPDATE)
+                              .put("angularObject", ao)
+                              .put("interpreterGroupId", interpreterGroupId)
+                              .put("noteId", note.id()));
           }
         }
       }
