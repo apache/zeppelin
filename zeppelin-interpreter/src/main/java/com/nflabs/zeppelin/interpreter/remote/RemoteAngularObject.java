@@ -36,9 +36,15 @@ public class RemoteAngularObject extends AngularObject {
 
   @Override
   public void set(Object o, boolean emit) {
-    super.set(o,  emit);
+    set(o,  emit, true);
+  }
 
-    // send updated value to remote interpreter
-    remoteInterpreterProcess.updateRemoteAngularObject(getName(), o);
+  public void set(Object o, boolean emitWeb, boolean emitRemoteProcess) {
+    super.set(o, emitWeb);
+
+    if (emitRemoteProcess) {
+      // send updated value to remote interpreter
+      remoteInterpreterProcess.updateRemoteAngularObject(getName(), o);
+    }
   }
 }

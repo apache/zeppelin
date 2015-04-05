@@ -44,6 +44,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.interpreterSettings = [];
   $scope.interpreterBindings = [];
 
+  var angularObjectRegistry = {};
+
   $scope.getCronOptionNameFromValue = function(value) {
     if (!value) {
       return '';
@@ -448,24 +450,36 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       var scope = $rootScope.compiledScope;
       var varName = data.angularObject.name;
 
-      if (!$rootScope.angularObjectRegistry[varName]) {
-        var clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
-          console.log("value updated to %o %o", varName, newValue);
+      if (angular.equals(data.angularObject.object, scope[varName])) {
+        // return when update has no change
+        return;
+      }
+
+      if (!angularObjectRegistry[varName]) {
+        angularObjectRegistry[varName] = {
+          interpreterGroupId : data.interpreterGroupId,
+        }
+      }
+
+      angularObjectRegistry[varName].skipEmit = true;
+
+      if (!angularObjectRegistry[varName].clearWatcher) {
+        angularObjectRegistry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
+          if (angularObjectRegistry[varName].skipEmit) {
+            angularObjectRegistry[varName].skipEmit = false;
+            return;
+          }
+
           $rootScope.$emit('sendNewEvent', {
               op: 'ANGULAR_OBJECT_UPDATED',
               data: {
                   noteId: $routeParams.noteId,
                   name:varName,
                   value:newValue,
-                  interpreterGroupId:$rootScope.angularObjectRegistry[varName].interpreterGroupId
+                  interpreterGroupId:angularObjectRegistry[varName].interpreterGroupId
               }
           });
         });
-
-        $rootScope.angularObjectRegistry[varName] = {
-          interpreterGroupId : data.interpreterGroupId,
-          clearWatcher : clearWatcher
-        };
       }
       scope[varName] = data.angularObject.object;
     }

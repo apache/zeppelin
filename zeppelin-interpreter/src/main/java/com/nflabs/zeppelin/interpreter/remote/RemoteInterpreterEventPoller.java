@@ -93,7 +93,13 @@ public class RemoteInterpreterEventPoller extends Thread {
         } else if (event.getType() == RemoteInterpreterEventType.ANGULAR_OBJECT_UPDATE) {
           AngularObject angularObject = gson.fromJson(event.getData(), AngularObject.class);
           AngularObject localAngularObject = angularObjectRegistry.get(angularObject.getName());
-          localAngularObject.set(angularObject.get());
+          if (localAngularObject instanceof RemoteAngularObject) {
+            // to avoid ping-pong loop
+            ((RemoteAngularObject) localAngularObject).set(
+                angularObject.get(), true, false);
+          } else {
+            localAngularObject.set(angularObject.get());
+          }
         } else if (event.getType() == RemoteInterpreterEventType.ANGULAR_OBJECT_REMOVE) {
           AngularObject angularObject = gson.fromJson(event.getData(), AngularObject.class);
           angularObjectRegistry.remove(angularObject.getName());

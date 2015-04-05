@@ -17,13 +17,61 @@
 
 package com.nflabs.zeppelin.display;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.Test;
 
 public class AngularObjectTest {
 
   @Test
-  public void test() {
+  public void testListener() {
+    final AtomicInteger updated = new AtomicInteger(0);
+    AngularObject ao = new AngularObject("name", "value", new AngularObjectListener() {
 
+      @Override
+      public void updated(AngularObject updatedObject) {
+        updated.incrementAndGet();
+      }
+
+    });
+
+    assertEquals(0, updated.get());
+    ao.set("newValue");
+    assertEquals(1, updated.get());
+    assertEquals("newValue", ao.get());
+
+    ao.set("newValue");
+    assertEquals(2, updated.get());
+
+    ao.set("newnewValue", false);
+    assertEquals(2, updated.get());
+    assertEquals("newnewValue", ao.get());
   }
 
+  @Test
+  public void testWatcher() throws InterruptedException {
+    final AtomicInteger updated = new AtomicInteger(0);
+    final AtomicInteger onWatch = new AtomicInteger(0);
+    AngularObject ao = new AngularObject("name", "value", new AngularObjectListener() {
+      @Override
+      public void updated(AngularObject updatedObject) {
+        updated.incrementAndGet();
+      }
+    });
+
+    ao.addWatcher(new AngularObjectWatcher() {
+      @Override
+      public void watch(Object oldObject, Object newObject) {
+        onWatch.incrementAndGet();
+      }
+    });
+
+    assertEquals(0, onWatch.get());
+    ao.set("newValue");
+
+    Thread.sleep(500);
+    assertEquals(1, onWatch.get());
+  }
 }

@@ -26,16 +26,25 @@ import java.util.Map;
  *
  *
  */
-public class AngularObjectRegistry implements AngularObjectListener {
+public class AngularObjectRegistry {
   Map<String, AngularObject> registry = new HashMap<String, AngularObject>();
   private AngularObjectRegistryListener listener;
   private String interpreterId;
 
-  public AngularObjectRegistry(String interpreterId,
-      AngularObjectRegistryListener listener) {
+  AngularObjectListener angularObjectListener;
+
+  public AngularObjectRegistry(final String interpreterId,
+      final AngularObjectRegistryListener listener) {
     this.interpreterId = interpreterId;
     this.listener = listener;
-
+    angularObjectListener = new AngularObjectListener() {
+      @Override
+      public void updated(AngularObject updatedObject) {
+        if (listener != null) {
+          listener.onUpdate(interpreterId, updatedObject);
+        }
+      }
+    };
   }
 
   public AngularObjectRegistryListener getListener() {
@@ -60,7 +69,11 @@ public class AngularObjectRegistry implements AngularObjectListener {
   }
 
   protected AngularObject createNewAngularObject(String name, Object o) {
-    return new AngularObject(name, o, this);
+    return new AngularObject(name, o, angularObjectListener);
+  }
+
+  protected AngularObjectListener getAngularObjectListener() {
+    return angularObjectListener;
   }
 
   public AngularObject remove(String name) {
@@ -85,13 +98,6 @@ public class AngularObjectRegistry implements AngularObjectListener {
       all.addAll(registry.values());
     }
     return all;
-  }
-
-  @Override
-  public void updated(AngularObject updatedObject) {
-    if (listener != null) {
-      listener.onUpdate(interpreterId, updatedObject);
-    }
   }
 
   public String getInterpreterGroupId() {

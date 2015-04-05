@@ -22,9 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.nflabs.zeppelin.scheduler.ExecutorFactory;
 
 /**
@@ -115,7 +112,6 @@ public class AngularObject<T> {
 
     ExecutorService executor = ExecutorFactory.singleton().createOrGet("angularObjectWatcher", 50);
     for (final AngularObjectWatcher w : ws) {
-      Logger logger = LoggerFactory.getLogger(AngularObject.class);
       executor.submit(new Runnable() {
         @Override
         public void run() {

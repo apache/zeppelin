@@ -418,7 +418,9 @@ public class NotebookServer extends WebSocketServer implements
     String varName = (String) fromMessage.get("name");
     Object varValue = fromMessage.get("value");
 
-    for (Note note : notebook.getAllNotes()) {
+    // propagate change to (Remote) AngularObjectRegistry
+    Note note = notebook.getNote(noteId);
+    if (note != null) {
       List<InterpreterSetting> settings = note.getNoteReplLoader().getInterpreterSettings();
       for (InterpreterSetting setting : settings) {
         if (setting.getInterpreterGroup() == null) {
@@ -434,11 +436,29 @@ public class NotebookServer extends WebSocketServer implements
           } else {
             // path from client -> server
             ao.set(varValue, false);
-            this.broadcast(note.id(), new Message(OP.ANGULAR_OBJECT_UPDATE)
+          }
+
+          break;
+        }
+      }
+    }
+
+    // broadcast change to all web session that uses related interpreter.
+    for (Note n : notebook.getAllNotes()) {
+      List<InterpreterSetting> settings = note.getNoteReplLoader().getInterpreterSettings();
+      for (InterpreterSetting setting : settings) {
+        if (setting.getInterpreterGroup() == null) {
+          continue;
+        }
+
+        if (interpreterGroupId.equals(setting.getInterpreterGroup().getId())) {
+          AngularObjectRegistry angularObjectRegistry = setting
+              .getInterpreterGroup().getAngularObjectRegistry();
+          AngularObject ao = angularObjectRegistry.get(varName);
+            this.broadcast(n.id(), new Message(OP.ANGULAR_OBJECT_UPDATE)
                               .put("angularObject", ao)
                               .put("interpreterGroupId", interpreterGroupId)
-                              .put("noteId", note.id()));
-          }
+                              .put("noteId", n.id()));
         }
       }
     }

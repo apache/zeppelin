@@ -60,7 +60,8 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
     if (remoteInterpreterProcess == null) {
       throw new RuntimeException("Remote Interpreter process not found");
     }
-    return new RemoteAngularObject(name, o, getInterpreterGroupId(), this,
+    return new RemoteAngularObject(name, o, getInterpreterGroupId(),
+        getAngularObjectListener(),
         getRemoteInterpreterProcess());
   }
 }
