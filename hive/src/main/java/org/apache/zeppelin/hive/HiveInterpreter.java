@@ -21,14 +21,14 @@ import java.sql.*;
 import java.util.List;
 import java.util.Properties;
 
-import com.nflabs.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nflabs.zeppelin.interpreter.InterpreterResult.Code;
-import com.nflabs.zeppelin.scheduler.Scheduler;
-import com.nflabs.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
 
 /**
  * Hive interpreter for Zeppelin.
