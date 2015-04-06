@@ -48,7 +48,7 @@ HOSTNAME=$(hostname)
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
 LOG="${ZEPPELIN_LOG_DIR}/zeppelin-cli-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.out"
   
-ZEPPELIN_SERVER=com.nflabs.zeppelin.server.ZeppelinServer
+ZEPPELIN_SERVER=org.apache.zeppelin.server.ZeppelinServer
 JAVA_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
