@@ -88,6 +88,7 @@
     <module>zeppelin-zengine</module>
     <module>spark</module>
     <module>markdown</module>
+    <module>angular</module>
     <module>shell</module>
     <module>hive</module>
     <module>zeppelin-web</module>
