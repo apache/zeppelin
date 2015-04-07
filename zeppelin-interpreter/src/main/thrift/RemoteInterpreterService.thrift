@@ -24,7 +24,8 @@ struct RemoteInterpreterContext {
   2: string paragraphTitle,
   3: string paragraphText,
   4: string config,   // json serialized config
-  5: string gui       // json serialized gui
+  5: string gui,      // json serialized gui
+  6: string runners   // json serialized runner
 }
 
 struct RemoteInterpreterResult {
@@ -39,7 +40,8 @@ enum RemoteInterpreterEventType {
   NO_OP = 1,
   ANGULAR_OBJECT_ADD = 2,
   ANGULAR_OBJECT_UPDATE = 3,
-  ANGULAR_OBJECT_REMOVE = 4
+  ANGULAR_OBJECT_REMOVE = 4,
+  RUN_INTERPRETER_CONTEXT_RUNNER = 5
 }
 
 struct RemoteInterpreterEvent {

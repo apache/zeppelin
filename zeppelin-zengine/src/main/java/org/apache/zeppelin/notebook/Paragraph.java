@@ -19,6 +19,7 @@ package org.apache.zeppelin.notebook;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -27,10 +28,11 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.slf4j.Logger;
@@ -44,14 +46,16 @@ import org.slf4j.LoggerFactory;
 public class Paragraph extends Job implements Serializable {
   private static final transient long serialVersionUID = -6328572073497992016L;
   private transient NoteInterpreterLoader replLoader;
+  private transient Note note;
 
   String title;
   String text;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
 
-  public Paragraph(JobListener listener, NoteInterpreterLoader replLoader) {
+  public Paragraph(Note note, JobListener listener, NoteInterpreterLoader replLoader) {
     super(generateId(), listener);
+    this.note = note;
     this.replLoader = replLoader;
     title = null;
     text = null;
@@ -79,6 +83,14 @@ public class Paragraph extends Job implements Serializable {
 
   public void setTitle(String title) {
     this.title = title;
+  }
+
+  public void setNote(Note note) {
+    this.note = note;
+  }
+
+  public Note getNote() {
+    return note;
   }
 
   public String getRequiredReplName() {
@@ -216,14 +228,35 @@ public class Paragraph extends Job implements Serializable {
       registry = intpGroup.getInterpreterGroup().getAngularObjectRegistry();
     }
 
+    List<InterpreterContextRunner> runners = new LinkedList<InterpreterContextRunner>();
+    for (Paragraph p : note.getParagraphs()) {
+      runners.add(new ParagraphRunner(note, note.id(), p.getId()));
+    }
+
     InterpreterContext interpreterContext = new InterpreterContext(getId(),
             this.getTitle(),
             this.getText(),
             this.getConfig(),
             this.settings,
-            registry);
+            registry,
+            runners);
     return interpreterContext;
   }
+
+  static class ParagraphRunner extends InterpreterContextRunner {
+    private Note note;
+
+    public ParagraphRunner(Note note, String noteId, String paragraphId) {
+      super(noteId, paragraphId);
+      this.note = note;
+    }
+
+    @Override
+    public void run() {
+      note.run(getParagraphId());
+    }
+  }
+
 
   private Logger logger() {
     Logger logger = LoggerFactory.getLogger(Paragraph.class);

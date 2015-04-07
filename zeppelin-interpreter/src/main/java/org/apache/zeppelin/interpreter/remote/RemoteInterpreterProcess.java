@@ -28,10 +28,10 @@ import org.apache.commons.exec.ExecuteResultHandler;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.thrift.TException;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
-import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,11 +53,16 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   private GenericObjectPool<Client> clientPool;
   private Map<String, String> env;
   private RemoteInterpreterEventPoller remoteInterpreterEventPoller;
+  private InterpreterContextRunnerPool interpreterContextRunnerPool;
 
-  public RemoteInterpreterProcess(String intpRunner, String intpDir, Map<String, String> env) {
+  public RemoteInterpreterProcess(String intpRunner,
+      String intpDir,
+      Map<String, String> env,
+      InterpreterContextRunnerPool interpreterContextRunnerPool) {
     this.interpreterRunner = intpRunner;
     this.interpreterDir = intpDir;
     this.env = env;
+    this.interpreterContextRunnerPool = interpreterContextRunnerPool;
     referenceCount = new AtomicInteger(0);
   }
 
@@ -241,5 +246,9 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
     } finally {
       releaseClient(client);
     }
+  }
+
+  public InterpreterContextRunnerPool getInterpreterContextRunnerPool() {
+    return interpreterContextRunnerPool;
   }
 }

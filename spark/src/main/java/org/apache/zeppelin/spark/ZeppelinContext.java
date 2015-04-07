@@ -25,6 +25,8 @@ import java.io.PrintStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
@@ -35,6 +37,8 @@ import org.apache.zeppelin.display.AngularObjectWatcher;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input.ParamOption;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.spark.dep.DependencyResolver;
 
 import scala.Tuple2;
@@ -65,12 +69,6 @@ public class ZeppelinContext extends HashMap<String, Object> {
   public SQLContext sqlContext;
   public HiveContext hiveContext;
   private GUI gui;
-
-  /* spark-1.3
-  public SchemaRDD sql(String sql) {
-    return sqlContext.sql(sql);
-  }
-  */
 
   /**
    * Load dependency for interpreter and runtime (driver).
@@ -224,25 +222,6 @@ public class ZeppelinContext extends HashMap<String, Object> {
     this.gui = o;
   }
 
-  public void run(String lines) {
-    /*
-    String intpName = Paragraph.getRequiredReplName(lines);
-    String scriptBody = Paragraph.getScriptBody(lines);
-    Interpreter intp = interpreterContext.getParagraph().getRepl(intpName);
-    InterpreterResult ret = intp.interpret(scriptBody, interpreterContext);
-    if (ret.code() == InterpreterResult.Code.SUCCESS) {
-      out.println("%" + ret.type().toString().toLowerCase() + " " + ret.message());
-    } else if (ret.code() == InterpreterResult.Code.ERROR) {
-      out.println("Error: " + ret.message());
-    } else if (ret.code() == InterpreterResult.Code.INCOMPLETE) {
-      out.println("Incomplete");
-    } else {
-      out.println("Unknown error");
-    }
-    */
-    throw new RuntimeException("Missing implementation");
-  }
-
   private void restartInterpreter() {
   }
 
@@ -253,6 +232,86 @@ public class ZeppelinContext extends HashMap<String, Object> {
   public void setInterpreterContext(InterpreterContext interpreterContext) {
     this.interpreterContext = interpreterContext;
   }
+
+  /**
+   * Run paragraph by id
+   * @param id
+   */
+  public void run(String id) {
+    if (id.equals(interpreterContext.getParagraphId())) {
+      throw new InterpreterException("Can not run current Paragraph");
+    }
+
+    for (InterpreterContextRunner r : interpreterContext.getRunners()) {
+      if (id.equals(r.getParagraphId())) {
+        r.run();
+        return;
+      }
+    }
+
+    throw new InterpreterException("Paragraph " + id + " not found");
+  }
+
+  /**
+   * Run paragraph at index
+   * @param idx index starting from 0
+   */
+  public void run(int idx) {
+    if (idx >= interpreterContext.getRunners().size()) {
+      throw new InterpreterException("Index out of bound");
+    }
+
+    InterpreterContextRunner runner = interpreterContext.getRunners().get(idx);
+    if (runner.getParagraphId().equals(interpreterContext.getParagraphId())) {
+      throw new InterpreterException("Can not run current Paragraph");
+    }
+
+    runner.run();
+  }
+
+  /**
+   * Run paragraphs
+   * @param paragraphIdOrIdxs list of paragraph id or idx
+   */
+  public void run(List<Object> paragraphIdOrIdx) {
+    for (Object idOrIdx : paragraphIdOrIdx) {
+      if (idOrIdx instanceof String) {
+        String id = (String) idOrIdx;
+        run(id);
+      } else if (idOrIdx instanceof Integer) {
+        Integer idx = (Integer) idOrIdx;
+        run(idx);
+      } else {
+        throw new InterpreterException("Paragraph " + idOrIdx + " not found");
+      }
+    }
+  }
+
+
+  /**
+   * Run all paragraphs. except this.
+   */
+  public void runAll() {
+    for (InterpreterContextRunner r : interpreterContext.getRunners()) {
+      if (r.getParagraphId().equals(interpreterContext.getParagraphId())) {
+        // skip itself
+        continue;
+      }
+      r.run();
+    }
+  }
+
+  public List<String> listParagraphs() {
+    List<String> paragraphs = new LinkedList<String>();
+
+    for (InterpreterContextRunner r : interpreterContext.getRunners()) {
+      paragraphs.add(r.getParagraphId());
+    }
+
+    return paragraphs;
+  }
+
+
 
   public Object angular(String name) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();

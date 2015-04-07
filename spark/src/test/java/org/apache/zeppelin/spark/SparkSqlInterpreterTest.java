@@ -20,16 +20,16 @@ package org.apache.zeppelin.spark;
 import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
-import org.apache.zeppelin.spark.SparkInterpreter;
-import org.apache.zeppelin.spark.SparkSqlInterpreter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,7 +64,8 @@ public class SparkSqlInterpreterTest {
 		  sql.open();
 		}
 		context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI(),
-		    new AngularObjectRegistry(intpGroup.getId(), null));
+		    new AngularObjectRegistry(intpGroup.getId(), null),
+		    new LinkedList<InterpreterContextRunner>());
 	}
 
 	@After

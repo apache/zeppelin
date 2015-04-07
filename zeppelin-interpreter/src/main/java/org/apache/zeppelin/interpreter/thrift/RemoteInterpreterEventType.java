@@ -15,7 +15,8 @@ public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
   NO_OP(1),
   ANGULAR_OBJECT_ADD(2),
   ANGULAR_OBJECT_UPDATE(3),
-  ANGULAR_OBJECT_REMOVE(4);
+  ANGULAR_OBJECT_REMOVE(4),
+  RUN_INTERPRETER_CONTEXT_RUNNER(5);
 
   private final int value;
 
@@ -44,6 +45,8 @@ public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
         return ANGULAR_OBJECT_UPDATE;
       case 4:
         return ANGULAR_OBJECT_REMOVE;
+      case 5:
+        return RUN_INTERPRETER_CONTEXT_RUNNER;
       default:
         return null;
     }

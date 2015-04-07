@@ -37,22 +37,23 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.ClassloaderInterpreter;
 import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
-import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.scheduler.Job;
+import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.JobProgressPoller;
 import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.Job.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +70,6 @@ public class RemoteInterpreterServer
 
   InterpreterGroup interpreterGroup;
   AngularObjectRegistry angularObjectRegistry;
-
   Gson gson = new Gson();
 
   RemoteInterpreterService.Processor<RemoteInterpreterServer> processor;
@@ -314,6 +314,14 @@ public class RemoteInterpreterServer
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric) {
+    List<InterpreterContextRunner> contextRunners = new LinkedList<InterpreterContextRunner>();
+    List<InterpreterContextRunner> runners = gson.fromJson(ric.getRunners(),
+        new TypeToken<List<RemoteInterpreterContextRunner>>(){}.getType());
+
+    for (InterpreterContextRunner r : runners) {
+      contextRunners.add(new ParagraphRunner(this, r.getNoteId(), r.getParagraphId()));
+    }
+
     return new InterpreterContext(
         ric.getParagraphId(),
         ric.getParagraphTitle(),
@@ -321,7 +329,27 @@ public class RemoteInterpreterServer
         (Map<String, Object>) gson.fromJson(ric.getConfig(),
             new TypeToken<Map<String, Object>>() {}.getType()),
         gson.fromJson(ric.getGui(), GUI.class),
-        interpreterGroup.getAngularObjectRegistry());
+        interpreterGroup.getAngularObjectRegistry(),
+        contextRunners);
+  }
+
+
+  static class ParagraphRunner extends InterpreterContextRunner {
+
+    private transient RemoteInterpreterServer server;
+
+    public ParagraphRunner(RemoteInterpreterServer server, String noteId, String paragraphId) {
+      super(noteId, paragraphId);
+      this.server = server;
+    }
+
+    @Override
+    public void run() {
+      Gson gson = new Gson();
+      server.sendEvent(new RemoteInterpreterEvent(
+          RemoteInterpreterEventType.RUN_INTERPRETER_CONTEXT_RUNNER,
+          gson.toJson(this)));
+    }
   }
 
   private RemoteInterpreterResult convert(InterpreterResult result,

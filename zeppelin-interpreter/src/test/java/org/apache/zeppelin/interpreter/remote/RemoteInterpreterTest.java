@@ -33,10 +33,9 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterB;
 import org.apache.zeppelin.scheduler.Job;
@@ -111,7 +110,8 @@ public class RemoteInterpreterTest {
             "text",
             new HashMap<String, Object>(),
             new GUI(),
-            new AngularObjectRegistry(intpGroup.getId(), null)));
+            new AngularObjectRegistry(intpGroup.getId(), null),
+            new LinkedList<InterpreterContextRunner>()));
 
     intpB.open();
     assertEquals(2, process.referenceCount());
@@ -162,7 +162,8 @@ public class RemoteInterpreterTest {
             "text",
             new HashMap<String, Object>(),
             new GUI(),
-            new AngularObjectRegistry(intpGroup.getId(), null)));
+            new AngularObjectRegistry(intpGroup.getId(), null),
+            new LinkedList<InterpreterContextRunner>()));
     assertEquals("500", ret.message());
 
     ret = intpB.interpret("500",
@@ -172,7 +173,8 @@ public class RemoteInterpreterTest {
             "text",
             new HashMap<String, Object>(),
             new GUI(),
-            new AngularObjectRegistry(intpGroup.getId(), null)));
+            new AngularObjectRegistry(intpGroup.getId(), null),
+            new LinkedList<InterpreterContextRunner>()));
     assertEquals("1000", ret.message());
     long end = System.currentTimeMillis();
     assertTrue(end - start >= 1000);
@@ -236,7 +238,8 @@ public class RemoteInterpreterTest {
                 "text",
                 new HashMap<String, Object>(),
                 new GUI(),
-                new AngularObjectRegistry(intpGroup.getId(), null)));
+                new AngularObjectRegistry(intpGroup.getId(), null),
+                new LinkedList<InterpreterContextRunner>()));
       }
 
       @Override
@@ -268,7 +271,8 @@ public class RemoteInterpreterTest {
                 "text",
                 new HashMap<String, Object>(),
                 new GUI(),
-                new AngularObjectRegistry(intpGroup.getId(), null)));
+                new AngularObjectRegistry(intpGroup.getId(), null),
+                new LinkedList<InterpreterContextRunner>()));
       }
 
       @Override
@@ -340,7 +344,8 @@ public class RemoteInterpreterTest {
               "text",
               new HashMap<String, Object>(),
               new GUI(),
-              new AngularObjectRegistry(intpGroup.getId(), null)));
+              new AngularObjectRegistry(intpGroup.getId(), null),
+              new LinkedList<InterpreterContextRunner>()));
 
           synchronized (results) {
             results.add(ret.message());
@@ -421,7 +426,8 @@ public class RemoteInterpreterTest {
               "text",
               new HashMap<String, Object>(),
               new GUI(),
-              new AngularObjectRegistry(intpGroup.getId(), null)));
+              new AngularObjectRegistry(intpGroup.getId(), null),
+              new LinkedList<InterpreterContextRunner>()));
 
           synchronized (results) {
             results.add(ret.message());

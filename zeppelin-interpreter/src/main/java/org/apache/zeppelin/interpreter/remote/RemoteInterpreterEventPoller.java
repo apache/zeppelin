@@ -18,16 +18,17 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.thrift.TException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
 
 /**
  *
@@ -103,6 +104,12 @@ public class RemoteInterpreterEventPoller extends Thread {
         } else if (event.getType() == RemoteInterpreterEventType.ANGULAR_OBJECT_REMOVE) {
           AngularObject angularObject = gson.fromJson(event.getData(), AngularObject.class);
           angularObjectRegistry.remove(angularObject.getName());
+        } else if (event.getType() == RemoteInterpreterEventType.RUN_INTERPRETER_CONTEXT_RUNNER) {
+          InterpreterContextRunner runnerFromRemote = gson.fromJson(
+              event.getData(), RemoteInterpreterContextRunner.class);
+
+          interpreterProcess.getInterpreterContextRunnerPool().run(
+              runnerFromRemote.getNoteId(), runnerFromRemote.getParagraphId());
         }
       } catch (Exception e) {
         logger.error("Can't handle event " + event, e);

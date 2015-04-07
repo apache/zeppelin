@@ -21,21 +21,22 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterAngular;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
   private InterpreterGroup intpGroup;
@@ -79,7 +80,8 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
         "text",
         new HashMap<String, Object>(),
         new GUI(),
-        new AngularObjectRegistry(intpGroup.getId(), null));
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        new LinkedList<InterpreterContextRunner>());
 
     intp.open();
   }

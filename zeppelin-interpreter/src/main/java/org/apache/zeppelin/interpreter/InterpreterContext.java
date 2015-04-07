@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -32,14 +33,15 @@ public class InterpreterContext {
   private final Map<String, Object> config;
   private GUI gui;
   private AngularObjectRegistry angularObjectRegistry;
-
+  private List<InterpreterContextRunner> runners;
 
   public InterpreterContext(String paragraphId,
                             String paragraphTitle,
                             String paragraphText,
                             Map<String, Object> config,
                             GUI gui,
-                            AngularObjectRegistry angularObjectRegistry
+                            AngularObjectRegistry angularObjectRegistry,
+                            List<InterpreterContextRunner> runners
                             ) {
     this.paragraphId = paragraphId;
     this.paragraphTitle = paragraphTitle;
@@ -47,6 +49,7 @@ public class InterpreterContext {
     this.config = config;
     this.gui = gui;
     this.angularObjectRegistry = angularObjectRegistry;
+    this.runners = runners;
   }
 
   public String getParagraphId() {
@@ -71,6 +74,10 @@ public class InterpreterContext {
 
   public AngularObjectRegistry getAngularObjectRegistry() {
     return angularObjectRegistry;
+  }
+
+  public List<InterpreterContextRunner> getRunners() {
+    return runners;
   }
 
 }
