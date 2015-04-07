@@ -62,7 +62,7 @@ function getRestApiBase() {
   if (port === 3333 || port === 9000) {
     port = 8080;
   }
-  return location.protocol+"//"+location.hostname+":"+port+"/api";
+  return location.protocol+"//"+location.hostname+":"+port + location.pathname + "/api";
 }
 
 /**
