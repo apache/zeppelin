@@ -366,11 +366,20 @@ public class ZeppelinContext extends HashMap<String, Object> {
    * @param id
    */
   public void run(String id) {
-    if (id.equals(interpreterContext.getParagraphId())) {
+    run(id, interpreterContext);
+  }
+
+  /**
+   * Run paragraph by id
+   * @param id
+   * @param context
+   */
+  public void run(String id, InterpreterContext context) {
+    if (id.equals(context.getParagraphId())) {
       throw new InterpreterException("Can not run current Paragraph");
     }
 
-    for (InterpreterContextRunner r : interpreterContext.getRunners()) {
+    for (InterpreterContextRunner r : context.getRunners()) {
       if (id.equals(r.getParagraphId())) {
         r.run();
         return;
@@ -381,47 +390,63 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Run paragraph at index
-   * @param idx index starting from 0
+   * Run paragraph at idx
+   * @param idx
    */
   public void run(int idx) {
-    if (idx >= interpreterContext.getRunners().size()) {
+    run(idx, interpreterContext);
+  }
+
+  /**
+   * Run paragraph at index
+   * @param idx index starting from 0
+   * @param context interpreter context
+   */
+  public void run(int idx, InterpreterContext context) {
+    if (idx >= context.getRunners().size()) {
       throw new InterpreterException("Index out of bound");
     }
 
-    InterpreterContextRunner runner = interpreterContext.getRunners().get(idx);
-    if (runner.getParagraphId().equals(interpreterContext.getParagraphId())) {
+    InterpreterContextRunner runner = context.getRunners().get(idx);
+    if (runner.getParagraphId().equals(context.getParagraphId())) {
       throw new InterpreterException("Can not run current Paragraph");
     }
 
     runner.run();
   }
 
+  public void run(List<Object> paragraphIdOrIdx) {
+    run(paragraphIdOrIdx, interpreterContext);
+  }
+
   /**
    * Run paragraphs
    * @param paragraphIdOrIdxs list of paragraph id or idx
    */
-  public void run(List<Object> paragraphIdOrIdx) {
+  public void run(List<Object> paragraphIdOrIdx, InterpreterContext context) {
     for (Object idOrIdx : paragraphIdOrIdx) {
       if (idOrIdx instanceof String) {
         String id = (String) idOrIdx;
-        run(id);
+        run(id, context);
       } else if (idOrIdx instanceof Integer) {
         Integer idx = (Integer) idOrIdx;
-        run(idx);
+        run(idx, context);
       } else {
         throw new InterpreterException("Paragraph " + idOrIdx + " not found");
       }
     }
   }
 
+  public void runAll() {
+    runAll(interpreterContext);
+  }
 
   /**
    * Run all paragraphs. except this.
    */
-  public void runAll() {
-    for (InterpreterContextRunner r : interpreterContext.getRunners()) {
-      if (r.getParagraphId().equals(interpreterContext.getParagraphId())) {
+  public void runAll(InterpreterContext context) {
+    for (InterpreterContextRunner r : context.getRunners()) {
+      if (r.getParagraphId().equals(context.getParagraphId())) {
         // skip itself
         continue;
       }
