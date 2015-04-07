@@ -22,6 +22,8 @@ import static scala.collection.JavaConversions.asJavaIterable;
 import static scala.collection.JavaConversions.collectionAsScalaIterable;
 
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,6 +32,8 @@ import java.util.List;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.SQLContext.QueryExecution;
+import org.apache.spark.sql.catalyst.expressions.Attribute;
 import org.apache.spark.sql.hive.HiveContext;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -54,15 +58,18 @@ public class ZeppelinContext extends HashMap<String, Object> {
   private DependencyResolver dep;
   private PrintStream out;
   private InterpreterContext interpreterContext;
+  private int maxResult;
 
   public ZeppelinContext(SparkContext sc, SQLContext sql,
       InterpreterContext interpreterContext,
-      DependencyResolver dep, PrintStream printStream) {
+      DependencyResolver dep, PrintStream printStream,
+      int maxResult) {
     this.sc = sc;
     this.sqlContext = sql;
     this.interpreterContext = interpreterContext;
     this.dep = dep;
     this.out = printStream;
+    this.maxResult = maxResult;
   }
 
   public SparkContext sc;
@@ -231,6 +238,127 @@ public class ZeppelinContext extends HashMap<String, Object> {
 
   public void setInterpreterContext(InterpreterContext interpreterContext) {
     this.interpreterContext = interpreterContext;
+  }
+
+  public void setMaxResult(int maxResult) {
+    this.maxResult = maxResult;
+  }
+
+  /**
+   * show DataFrame or SchemaRDD
+   * @param o DataFrame or SchemaRDD object
+   */
+  public void show(Object o) {
+    show(o, maxResult);
+  }
+
+  /**
+   * show DataFrame or SchemaRDD
+   * @param o DataFrame or SchemaRDD object
+   * @param maxResult maximum number of rows to display
+   */
+  public void show(Object o, int maxResult) {
+    Class cls = null;
+    try {
+      cls = this.getClass().forName("org.apache.spark.sql.DataFrame");
+    } catch (ClassNotFoundException e) {
+    }
+
+    if (cls == null) {
+      try {
+        cls = this.getClass().forName("org.apache.spark.sql.SchemaRDD");
+      } catch (ClassNotFoundException e) {
+      }
+    }
+
+    if (cls == null) {
+      throw new InterpreterException("Can not road DataFrame/SchemaRDD class");
+    }
+
+    if (cls.isInstance(o)) {
+      out.print(showRDD(sc, interpreterContext, o, maxResult));
+    } else {
+      out.print(o.toString());
+    }
+  }
+
+  public static String showRDD(SparkContext sc,
+      InterpreterContext interpreterContext,
+      Object rdd, int maxResult) {
+    Object[] rows = null;
+    Method take;
+    String jobGroup = "zeppelin-" + interpreterContext.getParagraphId();
+    sc.setJobGroup(jobGroup, "Zeppelin", false);
+
+    try {
+      take = rdd.getClass().getMethod("take", int.class);
+      rows = (Object[]) take.invoke(rdd, maxResult + 1);
+
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+        | IllegalArgumentException | InvocationTargetException e) {
+      sc.clearJobGroup();
+      throw new InterpreterException(e);
+    }
+
+    String msg = null;
+
+    // get field names
+    Method queryExecution;
+    QueryExecution qe;
+    try {
+      queryExecution = rdd.getClass().getMethod("queryExecution");
+      qe = (QueryExecution) queryExecution.invoke(rdd);
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+        | IllegalArgumentException | InvocationTargetException e) {
+      throw new InterpreterException(e);
+    }
+
+    List<Attribute> columns =
+        scala.collection.JavaConverters.asJavaListConverter(
+            qe.analyzed().output()).asJava();
+
+    for (Attribute col : columns) {
+      if (msg == null) {
+        msg = col.name();
+      } else {
+        msg += "\t" + col.name();
+      }
+    }
+
+    msg += "\n";
+
+    // ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType,
+    // FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType,
+    // NullType, NumericType, ShortType, StringType, StructType
+
+    try {
+      for (int r = 0; r < maxResult && r < rows.length; r++) {
+        Object row = rows[r];
+        Method isNullAt = row.getClass().getMethod("isNullAt", int.class);
+        Method apply = row.getClass().getMethod("apply", int.class);
+
+        for (int i = 0; i < columns.size(); i++) {
+          if (!(Boolean) isNullAt.invoke(row, i)) {
+            msg += apply.invoke(row, i).toString();
+          } else {
+            msg += "null";
+          }
+          if (i != columns.size() - 1) {
+            msg += "\t";
+          }
+        }
+        msg += "\n";
+      }
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+        | IllegalArgumentException | InvocationTargetException e) {
+      throw new InterpreterException(e);
+    }
+
+    if (rows.length > maxResult) {
+      msg += "\n<font color=red>Results are limited by " + maxResult + ".</font>";
+    }
+    sc.clearJobGroup();
+    return "%table " + msg;
   }
 
   /**
