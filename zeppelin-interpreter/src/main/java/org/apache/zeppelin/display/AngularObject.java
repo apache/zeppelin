@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.zeppelin.scheduler.ExecutorFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -105,6 +107,7 @@ public class AngularObject<T> {
       emit();
     }
 
+    final Logger logger = LoggerFactory.getLogger(AngularObject.class);
     List<AngularObjectWatcher> ws = new LinkedList<AngularObjectWatcher>();
     synchronized (watchers) {
       ws.addAll(watchers);
@@ -115,7 +118,11 @@ public class AngularObject<T> {
       executor.submit(new Runnable() {
         @Override
         public void run() {
-          w.watch(before, after);
+          try {
+            w.watch(before, after);
+          } catch (Exception e) {
+            logger.error("Exception on watch", e);
+          }
         }
       });
     }
