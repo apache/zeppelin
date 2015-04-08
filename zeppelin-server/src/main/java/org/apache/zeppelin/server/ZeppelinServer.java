@@ -145,6 +145,7 @@ public class ZeppelinServer extends Application {
     int timeout = 1000 * 30;
     connector.setMaxIdleTime(timeout);
     connector.setSoLingerTime(-1);
+    connector.setHost(conf.getServerAddress());
     connector.setPort(conf.getServerPort());
 
     final Server server = new Server();
@@ -156,7 +157,7 @@ public class ZeppelinServer extends Application {
   private static NotebookServer setupNotebookServer(ZeppelinConfiguration conf)
       throws Exception {
 
-    NotebookServer server = new NotebookServer(conf.getWebSocketPort());
+    NotebookServer server = new NotebookServer(conf.getWebSocketAddress(), conf.getWebSocketPort());
 
     // Default WebSocketServer uses unencrypted connector, so only need to
     // change the connector if SSL should be used.
@@ -233,7 +234,7 @@ public class ZeppelinServer extends Application {
     swaggerServlet.setInitParameter("api.version", "1.0.0");
     swaggerServlet.setInitParameter(
         "swagger.api.basepath",
-        "http://localhost:" + conf.getServerPort() + "/api");
+        "http://" + conf.getServerAddress() + ":" + conf.getServerPort() + "/api");
     swaggerServlet.setInitOrder(2);
 
     // Setup the handler

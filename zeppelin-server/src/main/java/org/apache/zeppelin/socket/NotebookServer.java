@@ -53,10 +53,11 @@ import com.google.gson.Gson;
 public class NotebookServer extends WebSocketServer implements JobListenerFactory {
 
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
+  private static final String DEFAULT_ADDR = "0.0.0.0";
   private static final int DEFAULT_PORT = 8282;
 
-  private static void creatingwebSocketServerLog(int port) {
-    LOG.info("Create zeppelin websocket on port {}", port);
+  private static void creatingwebSocketServerLog(String address, int port) {
+    LOG.info("Create zeppelin websocket on {}:{}", address, port);
   }
 
   Gson gson = new Gson();
@@ -64,13 +65,13 @@ public class NotebookServer extends WebSocketServer implements JobListenerFactor
   List<WebSocket> connectedSockets = new LinkedList<WebSocket>();
 
   public NotebookServer() {
-    super(new InetSocketAddress(DEFAULT_PORT));
-    creatingwebSocketServerLog(DEFAULT_PORT);
+    super(new InetSocketAddress(DEFAULT_ADDR, DEFAULT_PORT));
+    creatingwebSocketServerLog(DEFAULT_ADDR, DEFAULT_PORT);
   }
 
-  public NotebookServer(int port) {
-    super(new InetSocketAddress(port));
-    creatingwebSocketServerLog(port);
+  public NotebookServer(String address, int port) {
+    super(new InetSocketAddress(address, port));
+    creatingwebSocketServerLog(address, port);
   }
 
   private Notebook notebook() {
