@@ -20,9 +20,21 @@
 <configuration>
 
 <property>
+  <name>zeppelin.server.addr</name>
+  <value>0.0.0.0</value>
+  <description>Server address</description>
+</property>
+
+<property>
   <name>zeppelin.server.port</name>
   <value>8080</value>
   <description>Server port. port+1 is used for web socket.</description>
+</property>
+
+<property>
+  <name>zeppelin.websocket.addr</name>
+  <value>0.0.0.0</value>
+  <description>Testing websocket address</description>
 </property>
 
 <!-- If the port value is negative, then it'll default to the server

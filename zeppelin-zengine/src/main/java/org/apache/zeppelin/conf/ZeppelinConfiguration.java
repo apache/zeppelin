@@ -258,8 +258,16 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_SSL_CLIENT_AUTH);
   }
 
+  public String getServerAddress() {
+    return getString(ConfVars.ZEPPELIN_ADDR);
+  }
+
   public int getServerPort() {
     return getInt(ConfVars.ZEPPELIN_PORT);
+  }
+
+  public String getWebSocketAddress() {
+    return getString(ConfVars.ZEPPELIN_WEBSOCKET_ADDR);
   }
 
   public int getWebSocketPort() {
@@ -356,8 +364,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
    */
   public static enum ConfVars {
     ZEPPELIN_HOME("zeppelin.home", "../"),
+    ZEPPELIN_ADDR("zeppelin.server.addr", "0.0.0.0"),
     ZEPPELIN_PORT("zeppelin.server.port", 8080),
     // negative websocket port denotes that server port + 1 should be used
+    ZEPPELIN_WEBSOCKET_ADDR("zeppelin.websocket.addr", "0.0.0.0"),
     ZEPPELIN_WEBSOCKET_PORT("zeppelin.websocket.port", -1),
     ZEPPELIN_SSL("zeppelin.ssl", false),
     ZEPPELIN_SSL_CLIENT_AUTH("zeppelin.ssl.client.auth", false),
