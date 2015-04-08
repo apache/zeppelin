@@ -123,11 +123,13 @@ public class SparkSqlInterpreter extends Interpreter {
       sc.setLocalProperty("spark.scheduler.pool", null);
     }
 
-    Object rdd = sqlc.sql(st);
-    String msg = ZeppelinContext.showRDD(sc, context, rdd, maxResult);
-
-    InterpreterResult rett = new InterpreterResult(Code.SUCCESS, msg);
-    return rett;
+    try {
+      Object rdd = sqlc.sql(st);
+      String msg = ZeppelinContext.showRDD(sc, context, rdd, maxResult);
+      return new InterpreterResult(Code.SUCCESS, msg);
+    } catch (Exception e) {
+      return new InterpreterResult(Code.ERROR, e.getMessage());
+    }
   }
 
   @Override
