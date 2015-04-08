@@ -18,7 +18,7 @@ group: install
 
 Build tested on OSX, CentOS 6.
 
-Checkout source code from [https://github.com/NFLabs/zeppelin](https://github.com/NFLabs/zeppelin)
+Checkout source code from [https://github.com/apache/incubator-zeppelin](https://github.com/apache/incubator-zeppelin)
 
 #### Local mode
 
@@ -79,7 +79,7 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
     <td>ZEPPELIN_INTERPRETERS</td>
     <td>zeppelin.interpreters</td>
   <description></description>
-    <td>spark:com.nflabs.zeppelin.spark.SparkInterpreter,<br />sql:com.nflabs.zeppelin.spark.SparkSqlInterpreter,<br />md:com.nflabs.zeppelin.markdown.Markdown,<br />sh:com.nflabs.zeppelin.shell.ShellInterpreter</td>
+    <td>spark:org.apache.zeppelin.spark.SparkInterpreter,<br />sql:org.apache.zeppelin.spark.SparkSqlInterpreter,<br />md:org.apache.zeppelin.markdown.Markdown,<br />sh:org.apache.zeppelin.shell.ShellInterpreter</td>
     <td>Comma separated interpreter configurations [Name]:[Class]. First interpreter become a default</td>
   </tr>
   <tr>

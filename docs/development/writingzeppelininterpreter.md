@@ -18,9 +18,9 @@ Interpreter can be launched either using separate classloader or separate JVM pr
 
 ### Make your own Interpreter
 
-Creating a new interpreter is quite simple. Just extends [com.nflabs.zeppelin.interpreter](https://github.com/NFLabs/zeppelin/blob/master/zeppelin-interpreter/src/main/java/com/nflabs/zeppelin/interpreter/Interpreter.java) abstract class and implement some methods.
+Creating a new interpreter is quite simple. Just extends [org.apache.zeppelin.interpreter](https://github.com/apache/incubator-zeppelin/blob/master/zeppelin-interpreter/src/main/java/org/apache/zeppelin/interpreter/Interpreter.java) abstract class and implement some methods.
 
-You can include com.nflabs.zeppelin:zeppelin-interpreter:[VERSION] artifact in your build system.
+You can include org.apache.zeppelin:zeppelin-interpreter:[VERSION] artifact in your build system.
 
 ### Install your interpreter binary
 
@@ -40,7 +40,7 @@ for example,
 ```
 <property>
   <name>zeppelin.interpreters</name>
-  <value>com.nflabs.zeppelin.spark.SparkInterpreter,com.nflabs.zeppelin.spark.SparkSqlInterpreter,com.nflabs.zeppelin.markdown.Markdown,com.nflabs.zeppelin.shell.ShellInterpreter,com.me.MyNewInterpreter</value>
+  <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.shell.ShellInterpreter,com.me.MyNewInterpreter</value>
 </property>
 ```
 
@@ -63,7 +63,7 @@ println(a)
 
 Check some interpreters shipped by default.
 
- - [spark](https://github.com/NFLabs/zeppelin/tree/master/spark)
- - [markdown](https://github.com/NFLabs/zeppelin/tree/master/markdown)
- - [shell](https://github.com/NFLabs/zeppelin/tree/master/shell)
+ - [spark](https://github.com/apache/incubator-zeppelin/tree/master/spark)
+ - [markdown](https://github.com/apache/incubator-zeppelin/tree/master/markdown)
+ - [shell](https://github.com/apache/incubator-zeppelin/tree/master/shell)
 
