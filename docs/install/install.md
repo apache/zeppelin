@@ -79,7 +79,7 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
     <td>ZEPPELIN_INTERPRETERS</td>
     <td>zeppelin.interpreters</td>
   <description></description>
-    <td>spark:org.apache.zeppelin.spark.SparkInterpreter,<br />sql:org.apache.zeppelin.spark.SparkSqlInterpreter,<br />md:org.apache.zeppelin.markdown.Markdown,<br />sh:org.apache.zeppelin.shell.ShellInterpreter</td>
+    <td>spark:org.apache.zeppelin.spark.SparkInterpreter,<br />sql:org.apache.zeppelin.spark.SparkSqlInterpreter,<br />md:org.apache.zeppelin.markdown.Markdown,<br />sh:org.apache.zeppelin.shell.ShellInterpreter,<br />hive:org.apache.zeppelin.hive.HiveInterpreter</td>
     <td>Comma separated interpreter configurations [Name]:[Class]. First interpreter become a default</td>
   </tr>
   <tr>

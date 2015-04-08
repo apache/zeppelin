@@ -40,7 +40,7 @@ for example,
 ```
 <property>
   <name>zeppelin.interpreters</name>
-  <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.shell.ShellInterpreter,com.me.MyNewInterpreter</value>
+  <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.hive.HiveInterpreter,com.me.MyNewInterpreter</value>
 </property>
 ```
 
@@ -66,4 +66,5 @@ Check some interpreters shipped by default.
  - [spark](https://github.com/apache/incubator-zeppelin/tree/master/spark)
  - [markdown](https://github.com/apache/incubator-zeppelin/tree/master/markdown)
  - [shell](https://github.com/apache/incubator-zeppelin/tree/master/shell)
+ - [hive](https://github.com/apache/incubator-zeppelin/tree/master/hive)
 
