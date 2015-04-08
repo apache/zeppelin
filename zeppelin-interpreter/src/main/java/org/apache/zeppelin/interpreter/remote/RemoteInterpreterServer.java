@@ -31,7 +31,6 @@ import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.AngularObject;
-import org.apache.zeppelin.display.AngularObject.AngularObjectType;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.display.GUI;
@@ -445,16 +444,27 @@ public class RemoteInterpreterServer
       return;
     }
 
-    if (ao.getType() == AngularObjectType.STRING) {
-      String value = gson.fromJson(object, String.class);
-      ao.set(value, false);
-    } else if (ao.getType() == AngularObjectType.MAP) {
-      Map<String, Object> value = gson.fromJson(object,
-          new TypeToken<Map<String, Object>>() {
-          }.getType());
-      ao.set(value, false);
-    } else {
-      logger.error("Update angular object type {} not supported", ao.getType());
+    if (object == null) {
+      ao.set(null, false);
+      return;
     }
+
+    Object oldObject = ao.get();
+    if (oldObject != null) {  // first try with previous object's type
+      Object value;
+      try {
+        value = gson.fromJson(object, oldObject.getClass());
+        ao.set(value, false);
+        return;
+      } catch (Exception e) {
+        // no luck
+      }
+    }
+
+    // Generic java object type for json.
+    Map<String, Object> value = gson.fromJson(object,
+        new TypeToken<Map<String, Object>>() {
+        }.getType());
+    ao.set(value, false);
   }
 }

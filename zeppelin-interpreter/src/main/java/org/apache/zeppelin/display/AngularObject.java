@@ -19,7 +19,6 @@ package org.apache.zeppelin.display;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.zeppelin.scheduler.ExecutorFactory;
@@ -32,44 +31,17 @@ import org.slf4j.LoggerFactory;
  * @param <T>
  */
 public class AngularObject<T> {
-
-  /**
-   *
-   */
-  public static enum AngularObjectType {
-    STRING,
-    MAP,
-    FUNCTION
-  };
-
   private String name;
   private T object;
   private transient AngularObjectListener listener;
   private transient List<AngularObjectWatcher> watchers
     = new LinkedList<AngularObjectWatcher>();
-  private AngularObjectType type;
 
   protected AngularObject(String name, T o,
       AngularObjectListener listener) {
     this.name = name;
     this.listener = listener;
     object = o;
-    type = checkType();
-  }
-
-  public AngularObjectType getType() {
-    return type;
-  }
-
-  public AngularObjectType checkType() {
-    if (object == null) {
-      return AngularObjectType.STRING;
-    } else if (object instanceof Map) {
-      return AngularObjectType.MAP;
-    } else if (object instanceof String) {
-      return AngularObjectType.STRING;
-    }
-    return AngularObjectType.STRING;
   }
 
   public String getName() {
