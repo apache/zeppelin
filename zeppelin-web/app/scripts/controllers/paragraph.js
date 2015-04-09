@@ -81,11 +81,11 @@ angular.module('zeppelinWebApp')
 
   $scope.renderAngular = function() {
     var retryRenderer = function() {
-      if ($('#p'+$scope.paragraph.id+'_angular').length) {
+      if (angular.element('#p'+$scope.paragraph.id+'_angular').length) {
         try {
-          $('#p'+$scope.paragraph.id+'_angular').html($scope.paragraph.result.msg);
+          angular.element('#p'+$scope.paragraph.id+'_angular').html($scope.paragraph.result.msg);
 
-          $compile($('#p'+$scope.paragraph.id+'_angular').contents())($rootScope.compiledScope);
+          $compile(angular.element('#p'+$scope.paragraph.id+'_angular').contents())($rootScope.compiledScope);
         } catch(err) {
           console.log('ANGULAR rendering error %o', err);
         }
