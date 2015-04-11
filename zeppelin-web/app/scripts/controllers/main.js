@@ -24,7 +24,7 @@
  */
 angular.module('zeppelinWebApp')
         .controller('MainCtrl', function($scope, WebSocket, $rootScope, $window) {
-
+  $rootScope.compiledScope = $scope.$new(true, $rootScope);  
   $scope.WebSocketWaitingList = [];
   $scope.connected = false;
   $scope.looknfeel = 'default';
@@ -65,6 +65,8 @@ angular.module('zeppelinWebApp')
       $scope.$broadcast('updateProgress', data);
     } else if (op === 'COMPLETION_LIST') {
       $scope.$broadcast('completionList', data);
+    } else if (op === 'ANGULAR_OBJECT_UPDATE') {
+      $scope.$broadcast('angularObjectUpdate', data);
     }
   });
 

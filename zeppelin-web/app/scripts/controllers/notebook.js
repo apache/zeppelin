@@ -44,6 +44,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.interpreterSettings = [];
   $scope.interpreterBindings = [];
 
+  var angularObjectRegistry = {};
+
   $scope.getCronOptionNameFromValue = function(value) {
     if (!value) {
       return '';
@@ -442,4 +444,51 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       return true;
     }
   };
+
+  $scope.$on('angularObjectUpdate', function(event, data) {
+    if (data.noteId === $scope.note.id) {
+      var scope = $rootScope.compiledScope;
+      var varName = data.angularObject.name;
+
+      if (angular.equals(data.angularObject.object, scope[varName])) {
+        // return when update has no change
+        return;
+      }
+
+      if (!angularObjectRegistry[varName]) {
+        angularObjectRegistry[varName] = {
+          interpreterGroupId : data.interpreterGroupId,
+        }
+      }
+
+      angularObjectRegistry[varName].skipEmit = true;
+
+      if (!angularObjectRegistry[varName].clearWatcher) {
+        angularObjectRegistry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
+          if (angularObjectRegistry[varName].skipEmit) {
+            angularObjectRegistry[varName].skipEmit = false;
+            return;
+          }
+
+          $rootScope.$emit('sendNewEvent', {
+              op: 'ANGULAR_OBJECT_UPDATED',
+              data: {
+                  noteId: $routeParams.noteId,
+                  name:varName,
+                  value:newValue,
+                  interpreterGroupId:angularObjectRegistry[varName].interpreterGroupId
+              }
+          });
+        });
+      }
+      scope[varName] = data.angularObject.object;
+    }
+      
+  });
+
+  var isFunction = function(functionToCheck) {
+    var getType = {};
+    return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
+  }
+
 });

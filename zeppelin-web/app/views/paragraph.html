@@ -353,6 +353,11 @@ limitations under the License.
            ng-Init="loadResultType(paragraph.result)">
       </div>
 
+      <div id="p{{paragraph.id}}_angular"
+           ng-if="paragraph.result.type == 'ANGULAR'"
+           ng-Init="loadResultType(paragraph.result)">
+      </div>
+
       <img id="{{paragraph.id}}_img"
            ng-if="paragraph.result.type == 'IMG'"
            ng-Init="loadResultType(paragraph.result)"

@@ -28,17 +28,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.scheduler.Job;
+import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.Job.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +57,8 @@ public class Note implements Serializable, JobListener {
   List<Paragraph> paragraphs = new LinkedList<Paragraph>();
   private String name;
   private String id;
+
+  Map<String, List<AngularObject>> angularObjects = new HashMap<String, List<AngularObject>>();
 
   private transient NoteInterpreterLoader replLoader;
   private transient ZeppelinConfiguration conf;
@@ -110,13 +116,17 @@ public class Note implements Serializable, JobListener {
     this.conf = conf;
   }
 
+  public Map<String, List<AngularObject>> getAngularObjects() {
+    return angularObjects;
+  }
+
   /**
    * Add paragraph last.
    *
    * @param p
    */
   public Paragraph addParagraph() {
-    Paragraph p = new Paragraph(this, replLoader);
+    Paragraph p = new Paragraph(this, this, replLoader);
     synchronized (paragraphs) {
       paragraphs.add(p);
     }
@@ -130,7 +140,7 @@ public class Note implements Serializable, JobListener {
    * @param p
    */
   public Paragraph insertParagraph(int index) {
-    Paragraph p = new Paragraph(this, replLoader);
+    Paragraph p = new Paragraph(this, this, replLoader);
     synchronized (paragraphs) {
       paragraphs.add(index, p);
     }
@@ -268,6 +278,21 @@ public class Note implements Serializable, JobListener {
     }
   }
 
+  private void snapshotAngularObjectRegistry() {
+    angularObjects = new HashMap<String, List<AngularObject>>();
+
+    List<InterpreterSetting> settings = replLoader.getInterpreterSettings();
+    if (settings == null || settings.size() == 0) {
+      return;
+    }
+
+    for (InterpreterSetting setting : settings) {
+      InterpreterGroup intpGroup = setting.getInterpreterGroup();
+      AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
+      angularObjects.put(intpGroup.getId(), registry.getAll());
+    }
+  }
+
   public void persist() throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
@@ -283,6 +308,7 @@ public class Note implements Serializable, JobListener {
     File file = new File(conf.getNotebookDir() + "/" + id + "/note.json");
     logger().info("Persist note {} into {}", id, file.getAbsolutePath());
 
+    snapshotAngularObjectRegistry();
     String json = gson.toJson(this);
     FileOutputStream out = new FileOutputStream(file);
     out.write(json.getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)));
@@ -316,11 +342,12 @@ public class Note implements Serializable, JobListener {
     note.setReplLoader(replLoader);
     note.jobListenerFactory = jobListenerFactory;
     for (Paragraph p : note.paragraphs) {
+      p.setNote(note);
+
       if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
         p.setStatus(Status.ABORT);
       }
     }
-
     return note;
   }
 

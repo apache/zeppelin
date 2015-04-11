@@ -107,6 +107,7 @@ public class SparkInterpreter extends Interpreter {
                 + "we should set this value")
             .add("zeppelin.spark.useHiveContext", "true",
                  "Use HiveContext instead of SQLContext if it is true.")
+            .add("zeppelin.spark.maxResult", "1000", "Max number of SparkSQL result to display.")
             .add("args", "", "spark commandline args").build());
 
   }
@@ -398,7 +399,8 @@ public class SparkInterpreter extends Interpreter {
 
     dep = getDependencyResolver();
 
-    z = new ZeppelinContext(sc, sqlc, null, dep, printStream);
+    z = new ZeppelinContext(sc, sqlc, null, dep, printStream,
+        Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
     try {
       if (sc.version().startsWith("1.1") || sc.version().startsWith("1.2")) {
@@ -510,7 +512,7 @@ public class SparkInterpreter extends Interpreter {
   }
 
   String getJobGroup(InterpreterContext context){
-    return "zeppelin-" + this.hashCode() + "-" + context.getParagraphId();
+    return "zeppelin-" + context.getParagraphId();
   }
 
   /**

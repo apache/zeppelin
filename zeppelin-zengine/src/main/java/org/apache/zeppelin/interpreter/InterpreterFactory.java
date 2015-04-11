@@ -43,7 +43,10 @@ import java.util.Set;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
+import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,15 +76,21 @@ public class InterpreterFactory {
 
   private InterpreterOption defaultOption;
 
-  public InterpreterFactory(ZeppelinConfiguration conf) throws InterpreterException, IOException {
-    this(conf, new InterpreterOption(true));
+  AngularObjectRegistryListener angularObjectRegistryListener;
+
+  public InterpreterFactory(ZeppelinConfiguration conf,
+      AngularObjectRegistryListener angularObjectRegistryListener)
+      throws InterpreterException, IOException {
+    this(conf, new InterpreterOption(true), angularObjectRegistryListener);
   }
 
 
-  public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption)
+  public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
+      AngularObjectRegistryListener angularObjectRegistryListener)
       throws InterpreterException, IOException {
     this.conf = conf;
     this.defaultOption = defaultOption;
+    this.angularObjectRegistryListener = angularObjectRegistryListener;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
     interpreterClassList = replsConf.split(",");
 
@@ -217,17 +226,20 @@ public class InterpreterFactory {
       // previously created setting should turn this feature on here.
       setting.getOption().setRemote(true);
 
-      InterpreterGroup interpreterGroup = createInterpreterGroup(
-          setting.getGroup(),
-          setting.getOption(),
-          setting.getProperties());
+
 
       InterpreterSetting intpSetting = new InterpreterSetting(
           setting.id(),
           setting.getName(),
           setting.getGroup(),
+          setting.getOption());
+
+      InterpreterGroup interpreterGroup = createInterpreterGroup(
+          setting.id(),
+          setting.getGroup(),
           setting.getOption(),
-          interpreterGroup);
+          setting.getProperties());
+      intpSetting.setInterpreterGroup(interpreterGroup);
 
       interpreterSettings.put(k, intpSetting);
     }
@@ -320,25 +332,46 @@ public class InterpreterFactory {
       InterpreterOption option, Properties properties)
       throws InterpreterException, IOException {
     synchronized (interpreterSettings) {
-      InterpreterGroup interpreterGroup = createInterpreterGroup(groupName, option, properties);
 
       InterpreterSetting intpSetting = new InterpreterSetting(
           name,
           groupName,
-          option,
-          interpreterGroup);
-      interpreterSettings.put(intpSetting.id(), intpSetting);
+          option);
 
+      InterpreterGroup interpreterGroup = createInterpreterGroup(
+          intpSetting.id(), groupName, option, properties);
+
+      intpSetting.setInterpreterGroup(interpreterGroup);
+
+      interpreterSettings.put(intpSetting.id(), intpSetting);
       saveToFile();
       return interpreterGroup;
     }
   }
 
-  private InterpreterGroup createInterpreterGroup(String groupName,
+  private InterpreterGroup createInterpreterGroup(String id,
+      String groupName,
       InterpreterOption option,
       Properties properties)
       throws InterpreterException {
-    InterpreterGroup interpreterGroup = new InterpreterGroup();
+
+    AngularObjectRegistry angularObjectRegistry;
+
+    InterpreterGroup interpreterGroup = new InterpreterGroup(id);
+    if (option.isRemote()) {
+      angularObjectRegistry = new RemoteAngularObjectRegistry(
+          id,
+          angularObjectRegistryListener,
+          interpreterGroup
+      );
+    } else {
+      angularObjectRegistry = new AngularObjectRegistry(
+          id,
+          angularObjectRegistryListener);
+    }
+
+    interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
+
 
     for (String className : interpreterClassList) {
       Set<String> keys = Interpreter.registeredInterpreters.keySet();
@@ -480,6 +513,7 @@ public class InterpreterFactory {
         intpsetting.setOption(option);
 
         InterpreterGroup interpreterGroup = createInterpreterGroup(
+            intpsetting.id(),
             intpsetting.getGroup(), option, properties);
         intpsetting.setInterpreterGroup(interpreterGroup);
         saveToFile();
@@ -499,6 +533,7 @@ public class InterpreterFactory {
           intpsetting.getInterpreterGroup().destroy();
 
           InterpreterGroup interpreterGroup = createInterpreterGroup(
+              intpsetting.id(),
               intpsetting.getGroup(), intpsetting.getOption(), intpsetting.getProperties());
           intpsetting.setInterpreterGroup(interpreterGroup);
         } else {

@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,7 +31,10 @@ import java.util.Map;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -160,6 +165,10 @@ public class Notebook {
     if (dirs == null) {
       return;
     }
+
+    Map<String, SnapshotAngularObject> angularObjectSnapshot =
+        new HashMap<String, SnapshotAngularObject>();
+
     for (File f : dirs) {
       boolean isHidden = f.getName().startsWith(".");
       if (f.isDirectory() && !isHidden) {
@@ -174,18 +183,84 @@ public class Notebook {
             jobListenerFactory, quartzSched);
         noteInterpreterLoader.setNoteId(note.id());
 
+        // restore angular object --------------
+        Date lastUpdatedDate = new Date(0);
+        for (Paragraph p : note.getParagraphs()) {
+          if (p.getDateFinished() != null &&
+              lastUpdatedDate.before(p.getDateFinished())) {
+            lastUpdatedDate = p.getDateFinished();
+          }
+        }
+
+        Map<String, List<AngularObject>> savedObjects = note.getAngularObjects();
+
+        if (savedObjects != null) {
+          for (String intpGroupName : savedObjects.keySet()) {
+            List<AngularObject> objectList = savedObjects.get(intpGroupName);
+
+            for (AngularObject savedObject : objectList) {
+              SnapshotAngularObject snapshot = angularObjectSnapshot.get(savedObject.getName());
+              if (snapshot == null || snapshot.getLastUpdate().before(lastUpdatedDate)) {
+                angularObjectSnapshot.put(
+                    savedObject.getName(),
+                    new SnapshotAngularObject(
+                        intpGroupName,
+                        savedObject,
+                        lastUpdatedDate));
+              }
+            }
+          }
+        }
+
         synchronized (notes) {
           notes.put(note.id(), note);
           refreshCron(note.id());
         }
       }
     }
+
+    for (String name : angularObjectSnapshot.keySet()) {
+      SnapshotAngularObject snapshot = angularObjectSnapshot.get(name);
+      List<InterpreterSetting> settings = replFactory.get();
+      for (InterpreterSetting setting : settings) {
+        InterpreterGroup intpGroup = setting.getInterpreterGroup();
+        if (intpGroup.getId().equals(snapshot.getIntpGroupId())) {
+          AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
+          if (registry.get(name) == null) {
+            registry.add(name, snapshot.getAngularObject().get(), false);
+          }
+        }
+      }
+    }
+  }
+
+  class SnapshotAngularObject {
+    String intpGroupId;
+    AngularObject angularObject;
+    Date lastUpdate;
+
+    public SnapshotAngularObject(String intpGroupId,
+        AngularObject angularObject, Date lastUpdate) {
+      super();
+      this.intpGroupId = intpGroupId;
+      this.angularObject = angularObject;
+      this.lastUpdate = lastUpdate;
+    }
+
+    public String getIntpGroupId() {
+      return intpGroupId;
+    }
+    public AngularObject getAngularObject() {
+      return angularObject;
+    }
+    public Date getLastUpdate() {
+      return lastUpdate;
+    }
   }
 
   public List<Note> getAllNotes() {
     synchronized (notes) {
       List<Note> noteList = new ArrayList<Note>(notes.values());
-      logger.info("" + noteList.size());
       Collections.sort(noteList, new Comparator() {
         @Override
         public int compare(Object one, Object two) {
