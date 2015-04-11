@@ -79,8 +79,8 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
     <td>ZEPPELIN_INTERPRETERS</td>
     <td>zeppelin.interpreters</td>
   <description></description>
-    <td>spark:org.apache.zeppelin.spark.SparkInterpreter,<br />sql:org.apache.zeppelin.spark.SparkSqlInterpreter,<br />md:org.apache.zeppelin.markdown.Markdown,<br />sh:org.apache.zeppelin.shell.ShellInterpreter,<br />hive:org.apache.zeppelin.hive.HiveInterpreter</td>
-    <td>Comma separated interpreter configurations [Name]:[Class]. First interpreter become a default</td>
+    <td>org.apache.zeppelin.spark.SparkInterpreter,<br />org.apache.zeppelin.spark.PySparkInterpreter,<br />org.apache.zeppelin.spark.SparkSqlInterpreter,<br />org.apache.zeppelin.spark.DepInterpreter,<br />org.apache.zeppelin.markdown.Markdown,<br />org.apache.zeppelin.shell.ShellInterpreter,<br />org.apache.zeppelin.hive.HiveInterpreter</td>
+    <td>Comma separated interpreter configurations [Class]. First interpreter become a default</td>
   </tr>
   <tr>
     <td>ZEPPELIN_INTERPRETER_DIR</td>
