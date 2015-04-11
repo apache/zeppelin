@@ -29,7 +29,7 @@ import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 
-public class MockInterpreterAngular extends Interpreter implements AngularObjectWatcher {
+public class MockInterpreterAngular extends Interpreter {
   static {
     Interpreter.register(
         "angularTest",
@@ -72,7 +72,15 @@ public class MockInterpreterAngular extends Interpreter implements AngularObject
 
     if (cmd.equals("add")) {
       registry.add(name, value);
-      registry.get(name).addWatcher(this);
+      registry.get(name).addWatcher(new AngularObjectWatcher(null) {
+
+        @Override
+        public void watch(Object oldObject, Object newObject,
+            InterpreterContext context) {
+          numWatch.incrementAndGet();
+        }
+
+      });
     } else if (cmd.equalsIgnoreCase("update")) {
       registry.get(name).set(value);
     } else if (cmd.equals("remove")) {
@@ -106,10 +114,4 @@ public class MockInterpreterAngular extends Interpreter implements AngularObject
   public List<String> completion(String buf, int cursor) {
     return null;
   }
-
-  @Override
-  public void watch(Object oldObject, Object newObject) {
-    numWatch.incrementAndGet();
-  }
-
 }

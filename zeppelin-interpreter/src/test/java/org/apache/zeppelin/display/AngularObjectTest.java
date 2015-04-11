@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.junit.Test;
 
 public class AngularObjectTest {
@@ -61,9 +62,9 @@ public class AngularObjectTest {
       }
     });
 
-    ao.addWatcher(new AngularObjectWatcher() {
+    ao.addWatcher(new AngularObjectWatcher(null) {
       @Override
-      public void watch(Object oldObject, Object newObject) {
+      public void watch(Object oldObject, Object newObject, InterpreterContext context) {
         onWatch.incrementAndGet();
       }
     });

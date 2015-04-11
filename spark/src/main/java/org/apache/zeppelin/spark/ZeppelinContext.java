@@ -46,6 +46,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.spark.dep.DependencyResolver;
 
 import scala.Tuple2;
+import scala.Unit;
 import scala.collection.Iterable;
 
 /**
@@ -500,6 +501,32 @@ public class ZeppelinContext extends HashMap<String, Object> {
     if (registry.get(name) != null) {
       registry.get(name).addWatcher(w);
     }
+  }
+
+
+  public void angularWatch(String name,
+      final scala.Function2<Object, Object, Unit> func) {
+    AngularObjectWatcher w = new AngularObjectWatcher(getInterpreterContext()) {
+      @Override
+      public void watch(Object oldObject, Object newObject,
+          InterpreterContext context) {
+        func.apply(newObject, newObject);
+      }
+    };
+    angularWatch(name, w);
+  }
+
+  public void angularWatch(
+      String name,
+      final scala.Function3<Object, Object, InterpreterContext, Unit> func) {
+    AngularObjectWatcher w = new AngularObjectWatcher(getInterpreterContext()) {
+      @Override
+      public void watch(Object oldObject, Object newObject,
+          InterpreterContext context) {
+        func.apply(oldObject, newObject, context);
+      }
+    };
+    angularWatch(name, w);
   }
 
   public void angularUnwatch(String name, AngularObjectWatcher w) {

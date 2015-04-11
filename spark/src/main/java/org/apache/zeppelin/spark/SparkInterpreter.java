@@ -464,16 +464,6 @@ public class SparkInterpreter extends Interpreter {
         }
       }
     }
-
-    // add some implicit conversion
-    intp.interpret("implicit def watcherConversion(watcher: (Object, Object) => Unit):"
-        + "org.apache.zeppelin.display.AngularObjectWatcher = {"
-        + "  new org.apache.zeppelin.display.AngularObjectWatcher() {"
-        + "    def watch(before:Object, after:Object) = {"
-        + "      watcher(before, after)"
-        + "    }"
-        + "  }"
-        + "}");
   }
 
   private List<File> currentClassPath() {
