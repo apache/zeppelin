@@ -120,7 +120,7 @@ public class HiveInterpreter extends Interpreter {
         msg = new StringBuilder();
       }
       else {
-        msg = new StringBuilder("%table " + msg);
+        msg = new StringBuilder("%table ");
       }
       ResultSet res = currentStatement.executeQuery(sql);
       try {
