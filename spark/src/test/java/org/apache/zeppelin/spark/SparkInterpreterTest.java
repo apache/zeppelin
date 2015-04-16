@@ -18,6 +18,7 @@
 package org.apache.zeppelin.spark;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -37,6 +38,8 @@ import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+
+import scala.Tuple2;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SparkInterpreterTest {
@@ -138,4 +141,13 @@ public class SparkInterpreterTest {
     repl.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
     assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
   }
+
+  @Test
+  public void emptyConfigurationVariablesOnlyForNonSparkProperties() {
+    for (Tuple2<String, String> tuple2 : repl.getSparkContext().getConf().getAll()) {
+      if (tuple2._1().startsWith("spark."))
+        assertFalse(String.format("configuration starting from 'spark.' should not be empty. [%s]: [%s]", tuple2._1(), tuple2._2()), tuple2._2().isEmpty());
+    }
+  }
+
 }
