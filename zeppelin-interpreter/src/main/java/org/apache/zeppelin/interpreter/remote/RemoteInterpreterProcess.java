@@ -17,15 +17,8 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.ExecuteResultHandler;
-import org.apache.commons.exec.ExecuteWatchdog;
+import com.google.gson.Gson;
+import org.apache.commons.exec.*;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.thrift.TException;
@@ -35,36 +28,50 @@ import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
  */
 public class RemoteInterpreterProcess implements ExecuteResultHandler {
-  Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
-  AtomicInteger referenceCount;
+  private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
+  
+  private final AtomicInteger referenceCount;
   private DefaultExecutor executor;
   private ExecuteWatchdog watchdog;
   boolean running = false;
-  int port = -1;
-  private String interpreterRunner;
-  private String interpreterDir;
+  private int port = -1;
+  private final String interpreterRunner;
+  private final String interpreterDir;
 
   private GenericObjectPool<Client> clientPool;
   private Map<String, String> env;
-  private RemoteInterpreterEventPoller remoteInterpreterEventPoller;
-  private InterpreterContextRunnerPool interpreterContextRunnerPool;
+  private final RemoteInterpreterEventPoller remoteInterpreterEventPoller;
+  private final InterpreterContextRunnerPool interpreterContextRunnerPool;
 
   public RemoteInterpreterProcess(String intpRunner,
       String intpDir,
       Map<String, String> env,
       InterpreterContextRunnerPool interpreterContextRunnerPool) {
+    this(intpRunner, intpDir, env, interpreterContextRunnerPool, 
+        new RemoteInterpreterEventPoller());
+  }
+
+  RemoteInterpreterProcess(String intpRunner,
+      String intpDir,
+      Map<String, String> env,
+      InterpreterContextRunnerPool interpreterContextRunnerPool,
+      RemoteInterpreterEventPoller remoteInterpreterEventPoller) {
     this.interpreterRunner = intpRunner;
     this.interpreterDir = intpDir;
     this.env = env;
     this.interpreterContextRunnerPool = interpreterContextRunnerPool;
     referenceCount = new AtomicInteger(0);
+    this.remoteInterpreterEventPoller = remoteInterpreterEventPoller;
   }
+
 
   public int getPort() {
     return port;
@@ -119,7 +126,8 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
 
         clientPool = new GenericObjectPool<Client>(new ClientFactory("localhost", port));
 
-        remoteInterpreterEventPoller = new RemoteInterpreterEventPoller(interpreterGroup, this);
+        remoteInterpreterEventPoller.setInterpreterGroup(interpreterGroup);
+        remoteInterpreterEventPoller.setInterpreterProcess(this);
         remoteInterpreterEventPoller.start();
       }
       return referenceCount.incrementAndGet();

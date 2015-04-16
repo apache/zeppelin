@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
+import com.google.gson.Gson;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -28,40 +29,39 @@ import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-
 /**
  *
  */
 public class RemoteInterpreterEventPoller extends Thread {
-  Logger logger = LoggerFactory.getLogger(RemoteInterpreterEventPoller.class);
+  private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterEventPoller.class);
+
+  private volatile boolean shutdown;
+
   private RemoteInterpreterProcess interpreterProcess;
-  boolean shutdown;
   private InterpreterGroup interpreterGroup;
 
-  public RemoteInterpreterEventPoller(
-      InterpreterGroup interpreterGroup,
-      RemoteInterpreterProcess interpreterProcess) {
-    this.interpreterGroup = interpreterGroup;
-    this.interpreterProcess = interpreterProcess;
+  public RemoteInterpreterEventPoller() {
     shutdown = false;
+  }
+
+  public void setInterpreterProcess(RemoteInterpreterProcess interpreterProcess) {
+    this.interpreterProcess = interpreterProcess;
+  }
+
+  public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
+    this.interpreterGroup = interpreterGroup;
   }
 
   @Override
   public void run() {
     Client client = null;
 
-    while (shutdown == false) {
+    while (!shutdown) {
       try {
         client = interpreterProcess.getClient();
       } catch (Exception e1) {
         logger.error("Can't get RemoteInterpreterEvent", e1);
-        try {
-          synchronized (this) {
-            wait(1000);
-          }
-        } catch (InterruptedException e) {
-        }
+        waitQuietly();
         continue;
       }
 
@@ -70,12 +70,7 @@ public class RemoteInterpreterEventPoller extends Thread {
         event = client.getEvent();
       } catch (TException e) {
         logger.error("Can't get RemoteInterpreterEvent", e);
-        try {
-          synchronized (this) {
-            wait(1000);
-          }
-        } catch (InterruptedException e1) {
-        }
+        waitQuietly();
         continue;
       }
 
@@ -114,6 +109,15 @@ public class RemoteInterpreterEventPoller extends Thread {
       } catch (Exception e) {
         logger.error("Can't handle event " + event, e);
       }
+    }
+  }
+
+  private void waitQuietly() {
+    try {
+      synchronized (this) {
+        wait(1000);
+      }
+    } catch (InterruptedException ignored) {
     }
   }
 
