@@ -386,7 +386,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.spark.DepInterpreter,"
         + "org.apache.zeppelin.markdown.Markdown,"
         + "org.apache.zeppelin.angular.AngularInterpreter,"
-        + "org.apache.zeppelin.shell.ShellInterpreter"),
+        + "org.apache.zeppelin.shell.ShellInterpreter,"
+        + "org.apache.zeppelin.hive.HiveInterpreter"),
         ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
         ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
         ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
