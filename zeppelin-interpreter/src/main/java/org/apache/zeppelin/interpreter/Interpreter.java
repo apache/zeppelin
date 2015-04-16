@@ -156,7 +156,7 @@ public abstract class Interpreter {
       }
     }
 
-    return property;
+    return p;
   }
 
   public String getProperty(String key) {
