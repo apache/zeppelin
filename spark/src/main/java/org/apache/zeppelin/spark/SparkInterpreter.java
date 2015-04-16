@@ -259,17 +259,20 @@ public class SparkInterpreter extends Interpreter {
 
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
-      Object value = intpProperty.get(key);
-      logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, value));
-      conf.set(key, (String) value);
+      String val = toString(intpProperty.get(key));
+
+      if (!val.startsWith("spark.") || !val.trim().isEmpty()) {
+        logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
+        conf.set(key, val);
+      }
     }
 
     SparkContext sparkContext = new SparkContext(conf);
     return sparkContext;
   }
 
-  public static boolean isEmptyString(Object val) {
-    return val instanceof String && ((String) val).trim().isEmpty();
+  static final String toString(Object o) {
+    return (o instanceof String) ? (String) o : "";
   }
 
   public static String getSystemDefault(
