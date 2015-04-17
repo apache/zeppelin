@@ -149,11 +149,11 @@ public class SparkInterpreterTest {
     SparkConf sparkConf = repl.getSparkContext().getConf();
     for (Object oKey : intpProperty.keySet()) {
       String key = (String) oKey;
-      String value = (String)intpProperty.get(key);
+      String value = (String) intpProperty.get(key);
       repl.logger.debug(String.format("[%s]: [%s]", key, value));
       if (key.startsWith("spark.") && value.isEmpty()) {
-				assertTrue(String.format("configuration starting from 'spark.' should not be empty. [%s]", key), !sparkConf.contains(key) || !sparkConf.get(key).isEmpty());
-			}
+        assertTrue(String.format("configuration starting from 'spark.' should not be empty. [%s]", key), !sparkConf.contains(key) || !sparkConf.get(key).isEmpty());
+      }
     }
   }
 }
