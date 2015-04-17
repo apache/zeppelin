@@ -145,7 +145,7 @@ public class SparkInterpreterTest {
   @Test
   public void emptyConfigurationVariablesOnlyForNonSparkProperties() {
     for (Tuple2<String, String> tuple2 : repl.getSparkContext().getConf().getAll()) {
-      if (tuple2._1().startsWith("spark."))
+      if (tuple2._1().startsWith("spark.") && !tuple2._1().equals("spark.jars")) //is empty in local Spark
         assertFalse(String.format("configuration starting from 'spark.' should not be empty. [%s]: [%s]", tuple2._1(), tuple2._2()), tuple2._2().isEmpty());
     }
   }
