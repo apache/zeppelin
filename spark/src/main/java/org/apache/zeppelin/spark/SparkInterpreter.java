@@ -246,7 +246,7 @@ public class SparkInterpreter extends Interpreter {
             .setAppName(getProperty("spark.app.name"))
             .set("spark.repl.class.uri", classServerUri);
 
-    if(0 < jars.length) {
+    if (jars.length > 0) {
       conf.setJars(jars);
     }
 
