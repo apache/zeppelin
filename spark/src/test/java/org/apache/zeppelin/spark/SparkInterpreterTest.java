@@ -18,7 +18,6 @@
 package org.apache.zeppelin.spark;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -26,6 +25,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Properties;
 
+import org.apache.spark.SparkConf;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -38,8 +38,6 @@ import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-
-import scala.Tuple2;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SparkInterpreterTest {
@@ -144,10 +142,15 @@ public class SparkInterpreterTest {
 
   @Test
   public void emptyConfigurationVariablesOnlyForNonSparkProperties() {
-    for (Tuple2<String, String> tuple2 : repl.getSparkContext().getConf().getAll()) {
-      if (tuple2._1().startsWith("spark.") && !tuple2._1().equals("spark.jars")) //is empty in local Spark
-        assertFalse(String.format("configuration starting from 'spark.' should not be empty. [%s]: [%s]", tuple2._1(), tuple2._2()), tuple2._2().isEmpty());
+    Properties intpProperty = repl.getProperty();
+    SparkConf sparkConf = repl.getSparkContext().getConf();
+    for (Object oKey : intpProperty.keySet()) {
+      String key = (String) oKey;
+      String value = (String) intpProperty.get(key);
+      repl.logger.debug(String.format("[%s]: [%s]", key, value));
+      if (key.startsWith("spark.") && value.isEmpty()) {
+        assertTrue(String.format("configuration starting from 'spark.' should not be empty. [%s]", key), !sparkConf.contains(key) || !sparkConf.get(key).isEmpty());
+      }
     }
   }
-
 }

@@ -244,8 +244,11 @@ public class SparkInterpreter extends Interpreter {
         new SparkConf()
             .setMaster(getProperty("master"))
             .setAppName(getProperty("spark.app.name"))
-            .setJars(jars)
             .set("spark.repl.class.uri", classServerUri);
+
+    if(0 < jars.length) {
+      conf.setJars(jars);
+    }
 
     if (execUri != null) {
       conf.set("spark.executor.uri", execUri);
