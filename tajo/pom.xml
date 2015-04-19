@@ -31,6 +31,10 @@
   <name>Zeppelin: Tajo interpreter</name>
   <url>http://www.apache.org</url>
 
+  <properties>
+    <protobuf.version>2.5.0</protobuf.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
@@ -50,9 +54,61 @@
     </dependency>
 
     <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>${protobuf.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.tajo</groupId>
+      <artifactId>tajo-common</artifactId>
+      <version>${tajo.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.protobuf</groupId>
+          <artifactId>protobuf-java</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.tajo</groupId>
+      <artifactId>tajo-rpc</artifactId>
+      <version>${tajo.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.protobuf</groupId>
+          <artifactId>protobuf-java</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.tajo</groupId>
+      <artifactId>tajo-client</artifactId>
+      <version>${tajo.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.google.protobuf</groupId>
+          <artifactId>protobuf-java</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
       <groupId>org.apache.tajo</groupId>
       <artifactId>tajo-jdbc</artifactId>
       <version>${tajo.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.tajo</groupId>
+          <artifactId>tajo-common</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
