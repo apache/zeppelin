@@ -31,6 +31,10 @@
   <name>Zeppelin: Tajo interpreter</name>
   <url>http://www.apache.org</url>
 
+  <properties>
+    <protobuf.version>2.5.0</protobuf.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
