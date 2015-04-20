@@ -91,10 +91,10 @@
     <module>angular</module>
     <module>shell</module>
     <module>hive</module>
+    <module>tajo</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
-    <module>tajo</module>
   </modules>
 
   <properties>
