@@ -13,7 +13,7 @@ Any contribution to Zeppelin (Source code, Documents, Image, Website) means you 
 
 
 ### Setting up
-Here are some things you will need to build and test Zeppelin. 
+Here are some things you will need to do to build and test Zeppelin. 
 
 #### Software Configuration Management(SCM)
 
@@ -49,7 +49,7 @@ git clone -b branch-0.1 https://github.com/apache/incubator-zeppelin.git zeppeli
 
 #### Fork repository
 
-If you want not only build Zeppelin but also make change, then you need fork Zeppelin repository and make pull request.
+If you want not only build Zeppelin but also make changes, then you need to fork Zeppelin repository and make pull request.
 
 
 ###Build

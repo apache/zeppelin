@@ -36,7 +36,7 @@ Spark Interpreter group, which consisted of 4 interpreters.
   <tr>
     <td>%dep</td>
     <td>DepInterpreter</td>
-    <td>Depdency loader</td>
+    <td>Dependency loader</td>
   </tr>
 </table>
 
@@ -46,7 +46,7 @@ Spark Interpreter group, which consisted of 4 interpreters.
 
 ### SparkContext, SQLContext, ZeppelinContext
 
-SparkContext, SQLContext, ZeppelinContext are automatically created and exposed as variable name 'sc', 'sqlContext' and 'z' respectively, Both scala and python environment.
+SparkContext, SQLContext, ZeppelinContext are automatically created and exposed as variable names 'sc', 'sqlContext' and 'z', respectively, both in scala and python environments.
 
 Note that scala / python environment shares the same SparkContext, SQLContext, ZeppelinContext instance.
 
@@ -107,7 +107,7 @@ Note that %dep interpreter should be used before %spark, %pyspark, %sql.
 ### ZeppelinContext
 
 
-Zeppelin automatically inject ZeppelinContext as variable 'z' in your scala/python environment. ZeppelinContext provides some addtional functions and utility.
+Zeppelin automatically injects ZeppelinContext as variable 'z' in your scala/python environment. ZeppelinContext provides some addtional functions and utility.
 
 <br />
 #### Object exchange
@@ -134,7 +134,7 @@ myObject = z.get("objName")
 #### Form creation
 
 ZeppelinContext provides functions for creating forms. 
-In scala and python environment, you can create forms programtically.
+In scala and python environments, you can create forms programmatically.
 
 ```scala
 %spark

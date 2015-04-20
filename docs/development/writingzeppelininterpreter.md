@@ -8,17 +8,17 @@ group: development
 
 ### What is Zeppelin Interpreter
 
-Zeppelin Interpreter is language backend. For example to use scala code in Zeppelin, you need scala interpreter.
-Every Interpreter's are belongs to InterpreterGroup. InterpreterGroup is unit of start/stop interpreter.
-Interpreters in the same InterpreterGroup can reference each other. For example, SparkSqlInterpreter can refernece SparkInterpreter to get SparkContext from it while they're in the same group. 
+Zeppelin Interpreter is a language backend. For example to use scala code in Zeppelin, you need scala interpreter.
+Every Interpreter belongs to an InterpreterGroup. InterpreterGroup is a unit of start/stop interpreter.
+Interpreters in the same InterpreterGroup can reference each other. For example, SparkSqlInterpreter can reference SparkInterpreter to get SparkContext from it while they're in the same group. 
 
 <img class="img-responsive" style="width:50%; border: 1px solid #ecf0f1;" height="auto" src="../../assets/themes/zeppelin/img/interpreter.png" />
 
-Interpreter can be launched either using separate classloader or separate JVM process. Sometimes separate classloader cause problem especially when your interpreter uses reflections or trying to grab standard out/err. In this case, separate JVM process is the option you can select. (by checking 'fork' in Interpreter menu, which is default value) When Interpreter is running in separate JVM process, it's communicating with Zeppelin via thrift.
+Interpreter can be launched either using separate classloader or separate JVM process. Sometimes separate classloader causes problem especially when your interpreter uses reflections or trying to grab standard out/err. In this case, separate JVM process is the option you can select. (by checking 'fork' in Interpreter menu, which is default value) When Interpreter is running in separate JVM process, it's communicating with Zeppelin via thrift.
 
 ### Make your own Interpreter
 
-Creating a new interpreter is quite simple. Just extends [org.apache.zeppelin.interpreter](https://github.com/apache/incubator-zeppelin/blob/master/zeppelin-interpreter/src/main/java/org/apache/zeppelin/interpreter/Interpreter.java) abstract class and implement some methods.
+Creating a new interpreter is quite simple. Just extend [org.apache.zeppelin.interpreter](https://github.com/apache/incubator-zeppelin/blob/master/zeppelin-interpreter/src/main/java/org/apache/zeppelin/interpreter/Interpreter.java) abstract class and implement some methods.
 
 You can include org.apache.zeppelin:zeppelin-interpreter:[VERSION] artifact in your build system.
 
