@@ -9,8 +9,8 @@ group: manual
 
 ### Display
 
-Zeppelin prints output of langauge backend in text, default.
-However, if output contains some magic keyword, Zeppelin automatically formatting the output as Table, Chart, Image, Html.
+Zeppelin prints output of language backend in text, by default.
+However, if output contains some magic keyword, Zeppelin automatically formatting the output as Table, Chart, Image, or Html.
 
 <br />
 #### Display as Text
@@ -22,20 +22,20 @@ If output has no magic keyword provided Zeppelin print the output in text.
 <br />
 #### Display as Html
 
-If ouput starts with %html, it interpreted as a html code.
+If output starts with %html, it is interpreted as an html code.
 
 <img src="../assets/themes/zeppelin/img/screenshots/display_html.png" />
 
 <br />
 #### Display as Table, Chart
 
-If ouput starts with %table, it interpreted as a table. Table can be seen as chart.
+If output starts with %table, it is interpreted as a table. Table can be seen as chart.
 
 Output's format should be, row separated by '\n' (newline) and column separated by '\t' (tab). First row is header.
 
 <img src="../assets/themes/zeppelin/img/screenshots/display_table.png" />
 
-If table contents start with %html, it is interpreted as a HTML.
+If table contents start with %html, it is interpreted as an HTML.
 
 <img src="../assets/themes/zeppelin/img/screenshots/display_table_html.png" />
 
