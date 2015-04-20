@@ -9,8 +9,8 @@ group: manual
 
 ## Dynamic Form
 
-Zeppelin dynamically creates input forms. Depend on language backend, there're two different way to create dynamic form.
-Custom lanaugage backend can select which type of form creation he want to use.
+Zeppelin dynamically creates input forms. Depending on language backend, there're two different ways to create dynamic form.
+Custom language backend can select which type of form creation it wants to use.
 
 <br />
 ### Using form Templates
@@ -46,9 +46,9 @@ Also you can separate option's display name and value, using _${formName=default
 <img src="../assets/themes/zeppelin/img/screenshots/form_select_displayname.png" />
 
 <br />
-### Creates Programatically
+### Creates Programmatically
 
-Some language backend use programtic way to create form. for example [ZeppelinContext](./interpreter/spark.html#zeppelincontext) provides form creation API
+Some language backend uses programmatic way to create form. For example [ZeppelinContext](./interpreter/spark.html#zeppelincontext) provides form creation API
 
 Here're some examples.
 
