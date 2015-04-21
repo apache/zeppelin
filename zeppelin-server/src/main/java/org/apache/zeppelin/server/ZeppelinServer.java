@@ -19,6 +19,7 @@ package org.apache.zeppelin.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -33,7 +34,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.rest.InterpreterRestApi;
 import org.apache.zeppelin.rest.NotebookRestApi;
 import org.apache.zeppelin.rest.ZeppelinRestApi;
@@ -73,7 +74,7 @@ public class ZeppelinServer extends Application {
 
   private InterpreterFactory replFactory;
 
-  private VFSNotebookRepo notebookRepo;
+  private NotebookRepo notebookRepo;
 
   public static void main(String[] args) throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -303,8 +304,12 @@ public class ZeppelinServer extends Application {
     this.schedulerFactory = new SchedulerFactory();
 
     this.replFactory = new InterpreterFactory(conf, notebookServer);
-    this.notebookRepo = new VFSNotebookRepo(conf, new URI(conf.getNotebookDir()));
-
+    Class<?> notebookStorageClass = getClass().forName(
+        conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE));
+    Constructor<?> constructor = notebookStorageClass.getConstructor(
+        ZeppelinConfiguration.class, URI.class);
+    this.notebookRepo = (NotebookRepo) constructor.newInstance(conf, new URI(
+        conf.getNotebookDir()));
     notebook = new Notebook(conf, notebookRepo, schedulerFactory, replFactory, notebookServer);
   }
 
