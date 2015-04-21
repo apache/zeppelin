@@ -32,6 +32,8 @@ import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
@@ -48,6 +50,7 @@ public class NotebookTest implements JobListenerFactory{
 	private SchedulerFactory schedulerFactory;
 	private File notebookDir;
 	private Notebook notebook;
+	private NotebookRepo notebookRepo;
   private InterpreterFactory factory;
 
 	@Before
@@ -71,7 +74,8 @@ public class NotebookTest implements JobListenerFactory{
 
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
 
-		notebook = new Notebook(conf, schedulerFactory, factory, this);
+    notebookRepo = new VFSNotebookRepo(conf, notebookDir.toURI());
+		notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this);
 	}
 
 	@After
@@ -108,7 +112,7 @@ public class NotebookTest implements JobListenerFactory{
 		p1.setText("hello world");
 		note.persist();
 
-		Notebook notebook2 = new Notebook(conf, schedulerFactory, new InterpreterFactory(conf, null), this);
+		Notebook notebook2 = new Notebook(conf, notebookRepo, schedulerFactory, new InterpreterFactory(conf, null), this);
 		assertEquals(1, notebook2.getAllNotes().size());
 	}
 

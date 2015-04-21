@@ -19,6 +19,7 @@ package org.apache.zeppelin.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.apache.zeppelin.rest.InterpreterRestApi;
 import org.apache.zeppelin.rest.NotebookRestApi;
 import org.apache.zeppelin.rest.ZeppelinRestApi;
@@ -70,6 +72,8 @@ public class ZeppelinServer extends Application {
   static NotebookServer notebookServer;
 
   private InterpreterFactory replFactory;
+
+  private VFSNotebookRepo notebookRepo;
 
   public static void main(String[] args) throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -299,7 +303,9 @@ public class ZeppelinServer extends Application {
     this.schedulerFactory = new SchedulerFactory();
 
     this.replFactory = new InterpreterFactory(conf, notebookServer);
-    notebook = new Notebook(conf, schedulerFactory, replFactory, notebookServer);
+    this.notebookRepo = new VFSNotebookRepo(conf, new URI(conf.getNotebookDir()));
+
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, replFactory, notebookServer);
   }
 
   @Override
