@@ -893,7 +893,7 @@
         </configuration>
         <executions>
           <execution>
-            <id>covertura</id>
+            <id>cobertura</id>
             <phase>package</phase>
             <goals>
               <goal>cobertura</goal>
