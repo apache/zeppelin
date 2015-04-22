@@ -55,7 +55,7 @@
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</value>
-  <description>notebook persistence layer implementation</description>
+  <description>notebook persistence layer implementation. (e.g. HDFSNotebookRepo or VFSNotebookRepo)</description>
 </property>
 
 <property>

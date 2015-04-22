@@ -27,6 +27,7 @@ import org.apache.zeppelin.notebook.NoteInfo;
  * Notebook repository (persistence layer) abstraction
  */
 public interface NotebookRepo {
+  public static final String NOTE_FILENAME = "note.json";
   public List<NoteInfo> list() throws IOException;
   public Note get(String noteId) throws IOException;
   public void save(Note note) throws IOException;

@@ -136,7 +136,7 @@ public class VFSNotebookRepo implements NotebookRepo {
       throw new IOException(noteDir.getName().toString() + " is not a directory");
     }
 
-    FileObject noteJson = noteDir.resolveFile("note.json", NameScope.CHILD);
+    FileObject noteJson = noteDir.resolveFile(NOTE_FILENAME, NameScope.CHILD);
     if (!noteJson.exists()) {
       throw new IOException(noteJson.getName().toString() + " not found");
     }
@@ -208,7 +208,7 @@ public class VFSNotebookRepo implements NotebookRepo {
       throw new IOException(noteDir.getName().toString() + " is not a directory");
     }
 
-    FileObject noteJson = noteDir.resolveFile("note.json", NameScope.CHILD);
+    FileObject noteJson = noteDir.resolveFile(NOTE_FILENAME, NameScope.CHILD);
     // false means not appending. creates file if not exists
     OutputStream out = noteJson.getContent().getOutputStream(false);
     out.write(json.getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)));
