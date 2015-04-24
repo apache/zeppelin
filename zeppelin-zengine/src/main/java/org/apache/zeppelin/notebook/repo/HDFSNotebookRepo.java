@@ -56,10 +56,12 @@ public class HDFSNotebookRepo implements NotebookRepo {
       Configuration configuration = new Configuration();
 
       // add hadoop config, so that we can visit hdfs using ha
-      String hadoopConfDir = conf.getString("HADOOP_CONF_DIR");
+      String hadoopConfDir = System.getenv("HADOOP_CONF_DIR");
       if (hadoopConfDir != null && !hadoopConfDir.equals("")) {
+        logger.info("Add hadoop config...");
         configuration.addResource(hadoopConfDir + "/core-site.xml");
         configuration.addResource(hadoopConfDir + "/hdfs-site.xml");
+        configuration.reloadConfiguration();
       }
       this.fs = FileSystem.get(filesystemRoot, configuration);
     } else {
