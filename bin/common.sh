@@ -68,7 +68,7 @@ if [[ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]]; then
   . "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh"
 fi
 
-ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
+ZEPPELIN_CLASSPATH=":${ZEPPELIN_CONF_DIR}"
 
 function addJarInDir(){
   if [[ -d "${1}" ]]; then

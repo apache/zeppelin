@@ -52,7 +52,7 @@ ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
 addJarInDir "${INTERPRETER_DIR}"
 
-export CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+export CLASSPATH=":${ZEPPELIN_CLASSPATH}"
 
 HOSTNAME=$(hostname)
 ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
