@@ -29,7 +29,7 @@ function usage() {
 if [[ "$1" == "--config" ]]; then
   shift
   conf_dir="$1"
-  if [[ ! -d "{$conf_dir}" ]]; then
+  if [[ ! -d "${conf_dir}" ]]; then
     echo "ERROR : ${conf_dir} is not a directory"
     echo ${USAGE}
     exit 1
