@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.junit.AfterClass;
@@ -79,7 +80,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertThat(get, isAllowed());
     Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>(){}.getType());
     Map<String, Object> body = (Map<String, Object>) resp.get("body");
-    assertEquals(8, body.size());
+    assertEquals(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getStringValue().split(",").length, body.size());
     get.releaseConnection();
   }
 
