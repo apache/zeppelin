@@ -74,7 +74,7 @@ public class NotebookTest implements JobListenerFactory{
 
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
 
-    notebookRepo = new VFSNotebookRepo(conf, notebookDir.toURI());
+    notebookRepo = new VFSNotebookRepo(conf);
 		notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this);
 	}
 

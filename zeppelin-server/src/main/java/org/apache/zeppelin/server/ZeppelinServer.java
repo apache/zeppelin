@@ -20,7 +20,6 @@ package org.apache.zeppelin.server;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.net.URI;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -307,9 +306,8 @@ public class ZeppelinServer extends Application {
     Class<?> notebookStorageClass = getClass().forName(
         conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE));
     Constructor<?> constructor = notebookStorageClass.getConstructor(
-        ZeppelinConfiguration.class, URI.class);
-    this.notebookRepo = (NotebookRepo) constructor.newInstance(conf, new URI(
-        conf.getNotebookDir()));
+        ZeppelinConfiguration.class);
+    this.notebookRepo = (NotebookRepo) constructor.newInstance(conf);
     notebook = new Notebook(conf, notebookRepo, schedulerFactory, replFactory, notebookServer);
   }
 

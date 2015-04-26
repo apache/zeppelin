@@ -57,8 +57,14 @@ public class VFSNotebookRepo implements NotebookRepo {
 
   private ZeppelinConfiguration conf;
 
-  public VFSNotebookRepo(ZeppelinConfiguration conf, URI filesystemRoot) throws IOException {
+  public VFSNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
+
+    try {
+      filesystemRoot = new URI(conf.getNotebookDir());
+    } catch (URISyntaxException e1) {
+      throw new IOException(e1);
+    }
 
     if (filesystemRoot.getScheme() == null) { // it is local path
       try {
