@@ -57,6 +57,7 @@ public class Note implements Serializable, JobListener {
   List<Paragraph> paragraphs = new LinkedList<Paragraph>();
   private String name;
   private String id;
+  private String owner;
 
   Map<String, List<AngularObject>> angularObjects = new HashMap<String, List<AngularObject>>();
 
@@ -81,10 +82,13 @@ public class Note implements Serializable, JobListener {
   public Note() {}
 
   public Note(ZeppelinConfiguration conf, NoteInterpreterLoader replLoader,
-      JobListenerFactory jobListenerFactory, org.quartz.Scheduler quartzSched) {
+              JobListenerFactory jobListenerFactory,
+              org.quartz.Scheduler quartzSched,
+              String owner) {
     this.conf = conf;
     this.replLoader = replLoader;
     this.jobListenerFactory = jobListenerFactory;
+    this.owner = owner;
     generateId();
   }
 
@@ -95,6 +99,8 @@ public class Note implements Serializable, JobListener {
   public String id() {
     return id;
   }
+
+  public String owner() { return this.owner; }
 
   public String getName() {
     return name;
@@ -298,14 +304,14 @@ public class Note implements Serializable, JobListener {
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
 
-    File dir = new File(conf.getNotebookDir() + "/" + id);
+    File dir = new File(conf.getNotebookDir() + File.separator + owner + File.separator + id);
     if (!dir.exists()) {
       dir.mkdirs();
     } else if (dir.isFile()) {
       throw new RuntimeException("File already exists" + dir.toString());
     }
 
-    File file = new File(conf.getNotebookDir() + "/" + id + "/note.json");
+    File file = new File(dir, "note.json");
     logger().info("Persist note {} into {}", id, file.getAbsolutePath());
 
     snapshotAngularObjectRegistry();
@@ -316,19 +322,21 @@ public class Note implements Serializable, JobListener {
   }
 
   public void unpersist() throws IOException {
-    File dir = new File(conf.getNotebookDir() + "/" + id);
+    File dir = new File(conf.getNotebookDir() + File.separator + owner + File.separator + id);
 
     FileUtils.deleteDirectory(dir);
   }
 
   public static Note load(String id, ZeppelinConfiguration conf, NoteInterpreterLoader replLoader,
-      Scheduler scheduler, JobListenerFactory jobListenerFactory, org.quartz.Scheduler quartzSched)
+                          Scheduler scheduler, JobListenerFactory jobListenerFactory,
+                          org.quartz.Scheduler quartzSched, String principal)
       throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
 
-    File file = new File(conf.getNotebookDir() + "/" + id + "/note.json");
+    File file = new File(conf.getNotebookDir() + File.separator + principal +
+            File.separator + id + File.separator + "note.json");
     logger().info("Load note {} from {}", id, file.getAbsolutePath());
 
     if (!file.isFile()) {
