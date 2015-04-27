@@ -189,6 +189,7 @@ public class Notebook {
     // restore angular object --------------
     Date lastUpdatedDate = new Date(0);
     for (Paragraph p : note.getParagraphs()) {
+      p.setNote(note);
       if (p.getDateFinished() != null &&
           lastUpdatedDate.before(p.getDateFinished())) {
         lastUpdatedDate = p.getDateFinished();
