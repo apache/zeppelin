@@ -45,6 +45,9 @@ public class TicketContainer {
   public static final TicketContainer instance = new TicketContainer();
 
   public boolean isValid(String principal, String ticket) {
+    // Always accept anonymous with ticket anonymous
+    if ("anonymous".equals(principal) && "anonymous".equals(ticket))
+      return true;
     Entry entry = sessions.get(principal);
     return entry != null && entry.ticket.equals(ticket);
   }
