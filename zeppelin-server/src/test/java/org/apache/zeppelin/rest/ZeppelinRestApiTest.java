@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.junit.AfterClass;
@@ -99,10 +98,10 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   @Test
   public void testInterpreterAutoBinding() throws IOException {
     // create note
-    Note note = ZeppelinServer.notebook.createNote();
+    Note note = ZeppelinServer.notebook.createNote("anonymous");
 
     // check interpreter is bindded
-    GetMethod get = httpGet("/notebook/interpreter/bind/"+note.id());
+    GetMethod get = httpGet("/notebook/interpreter/bind/"+note.id()+"/anonymous/anonymous");
     assertThat(get, isAllowed());
     Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>(){}.getType());
     List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
