@@ -23,7 +23,7 @@
  *
  * @author anthonycorbacho
  */
-angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams) {
+angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams, $http) {
   /** Current list of notes (ids) */
   $scope.notes = [];
   $('#notebook-list').perfectScrollbar({suppressScrollX: true});
@@ -36,7 +36,18 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   var loadNotes = function() {
     $rootScope.$emit('sendNewEvent', {op: 'LIST_NOTES'});
   };
-  loadNotes();
+  /** ask for a ticket for websocket access
+   * Shiro will require credentials here
+   * */
+  $http.get('/api/security/ticket').
+    success(function(ticket, status, headers, config) {
+      $rootScope.ticket = angular.fromJson(ticket).body;
+      loadNotes();
+    }).
+    error(function(data, status, headers, config) {
+      console.log("Could not get ticket");
+    });
+
 
   /** Create a new note */
   $scope.createNewNote = function() {
