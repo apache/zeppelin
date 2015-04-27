@@ -24,7 +24,7 @@
  */
 angular.module('zeppelinWebApp')
         .controller('MainCtrl', function($scope, WebSocket, $rootScope, $window) {
-  $rootScope.compiledScope = $scope.$new(true, $rootScope);  
+  $rootScope.compiledScope = $scope.$new(true, $rootScope);
   $scope.WebSocketWaitingList = [];
   $scope.connected = false;
   $scope.looknfeel = 'default';
@@ -80,16 +80,19 @@ angular.module('zeppelinWebApp')
     $scope.connected = false;
   });
 
-  /** Send info to the websocket server */
+    /** Send info to the websocket server
+     * including the username & ticket
+     */
   var send = function(data) {
+    data.principal = $scope.ticket.principal;
+    data.ticket = $scope.ticket.ticket;
     if (WebSocket.currentState() !== 'OPEN') {
       $scope.WebSocketWaitingList.push(data);
     } else {
-      console.log('Send >> %o, %o', data.op, data);
+      console.log('Send >> %o, %o, %o, %o', data.op, data.principal, data.ticket, data);
       WebSocket.send(JSON.stringify(data));
     }
   };
-
 
   /** get the childs event and sebd to the websocket server */
   $rootScope.$on('sendNewEvent', function(event, data) {
