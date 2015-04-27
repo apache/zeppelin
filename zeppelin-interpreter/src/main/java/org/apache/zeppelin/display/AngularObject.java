@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 public class AngularObject<T> {
   private String name;
   private T object;
+  private String principal;
   private transient AngularObjectListener listener;
   private transient List<AngularObjectWatcher> watchers
     = new LinkedList<AngularObjectWatcher>();
@@ -47,6 +48,10 @@ public class AngularObject<T> {
   public String getName() {
     return name;
   }
+
+  public String getPrincipal() { return principal; }
+
+  public void setPrincipal(String principal) { this.principal = principal; }
 
   @Override
   public boolean equals(Object o) {
