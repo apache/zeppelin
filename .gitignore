@@ -12,6 +12,9 @@ conf/keystore
 conf/truststore
 conf/interpreter.json
 
+# other generated files
+spark/dependency-reduced-pom.xml
+
 #webapp
 zeppelin-web/node_modules
 zeppelin-web/dist
