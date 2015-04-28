@@ -112,18 +112,18 @@ angular
 
     $routeProvider
       .when('/', {
-        templateUrl: 'views/main.html'
+        templateUrl: 'app/home/home.html'
       })
       .when('/notebook/:noteId', {
-        templateUrl: 'views/notebooks.html',
+        templateUrl: 'app/notebook/notebooks.html',
         controller: 'NotebookCtrl'
       })
       .when('/notebook/:noteId/paragraph/:paragraphId?', {
-        templateUrl: 'views/notebooks.html',
+        templateUrl: 'app/notebook/notebooks.html',
         controller: 'NotebookCtrl'
       })
       .when('/interpreter', {
-        templateUrl: 'views/interpreter.html',
+        templateUrl: 'app/interpreter/interpreter.html',
         controller: 'InterpreterCtrl'
       })
       .otherwise({

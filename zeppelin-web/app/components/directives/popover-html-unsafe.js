@@ -19,10 +19,10 @@ angular.module('zeppelinWebApp')
       restrict: 'EA',
       replace: true,
       scope: { title: '@', content: '@', placement: '@', animation: '&', isOpen: '&' },
-      templateUrl: 'views/popover-html-unsafe-popup.html'
+      templateUrl: 'components/popover-html-unsafe/popover-html-unsafe-popup.html'
     };
   })
-  
+
   .directive('popoverHtmlUnsafe', ['$tooltip', function($tooltip) {
     return $tooltip('popoverHtmlUnsafe', 'popover', 'click');
   }]);

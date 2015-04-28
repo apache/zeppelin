@@ -50,7 +50,7 @@
             <exclude>**/.settings/*</exclude>
             <exclude>**/.classpath</exclude>
             <exclude>**/.project</exclude>
-            <exclude>**/target/**</exclude>            
+            <exclude>**/target/**</exclude>
             <exclude>node/**</exclude>
             <exclude>node_modules/**</exclude>
             <exclude>bower_components/**</exclude>
@@ -93,7 +93,7 @@
               <goal>npm</goal>
             </goals>
           </execution>
-          
+
           <execution>
             <id>bower install</id>
             <goals>

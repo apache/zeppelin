@@ -3,7 +3,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -40,20 +40,20 @@ limitations under the License.
     <!-- endbuild -->
     <!-- build:css(.tmp) styles/main.css -->
     <link href='https://fonts.googleapis.com/css?family=RobotoDraft:400,500,700,400italic' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="styles/typography.css">
-    <link rel="stylesheet" href="styles/notebook.css">
-    <link rel="stylesheet" href="styles/interpreter.css">
-    <link rel="stylesheet" href="styles/font-awesome.min.css">
-    <link rel="stylesheet" href="styles/simple-line-icons.css">
-    <link rel="stylesheet" href="styles/custom-font.css">
+    <link rel="stylesheet" href="app/home/home.css">
+    <link rel="stylesheet" href="app/typography.css">
+    <link rel="stylesheet" href="app/notebook/notebook.css">
+    <link rel="stylesheet" href="app/interpreter/interpreter.css">
+    <link rel="stylesheet" href="app/font-awesome.min.css">
+    <link rel="stylesheet" href="app/simple-line-icons.css">
+    <link rel="stylesheet" href="app/custom-font.css">
     <!-- endbuild -->
-    <link rel="stylesheet" ng-href="styles/looknfeel/{{looknfeel}}.css">
+    <link rel="stylesheet" ng-href="assets/styles/looknfeel/{{looknfeel}}.css">
   </head>
   <body ng-class="{'bodyAsIframe': asIframe}" >
     <!--[if lt IE 7]>
-      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-    <![endif]-->
+<p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+<![endif]-->
     <div class="navbar navbar-inverse navbar-fixed-top" style="display: none;" role="navigation" ng-class="{'displayNavBar': !asIframe}">
       <div class="container">
         <div class="navbar-header">
@@ -62,7 +62,7 @@ limitations under the License.
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#/"><img style="margin-top: -7px;s" src="images/zepLogoW.png" width="50" alt="I'm zeppelin"> Zeppelin</a>
+          <a class="navbar-brand" href="#/"><img style="margin-top: -7px;s" src="assets/images/zepLogoW.png" width="50" alt="I'm zeppelin"> Zeppelin</a>
         </div>
 
         <div class="collapse navbar-collapse" ng-controller="NavCtrl">
@@ -73,19 +73,21 @@ limitations under the License.
                 <li><a href="javascript:void(0);" ng-click="createNewNote()"><i class="fa fa-plus"></i> Create new note</a></li>
                 <li class="divider"></li>
                 <div id="notebook-list" class="scrollbar-container">
-                  <li ng-repeat="note in notes track by $index" ng-class="{'active' : isActive(note.id)}"><a href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}} </a></li>
-				</div>
+                  <li ng-repeat="note in notes track by $index" ng-class="{'active' : isActive(note.id)}">
+                    <a href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}} </a>
+                  </li>
+                </div>
               </ul>
             </li>
             <li>
               <a href="#/interpreter">Interpreter</a>
             </li>
           </ul>
-          <ul class="nav navbar-nav navbar-right" style="margin-top:10px; margin-right:5px;">            
+          <ul class="nav navbar-nav navbar-right" style="margin-top:10px; margin-right:5px;">
             <li class="server-status">
-                <i class="fa fa-circle" ng-class="{'server-connected':connected, 'server-disconnected':!connected }"></i>
-                <span ng-show="connected">Connected</span>
-                <span ng-show="!connected">Disconnected</span>
+              <i class="fa fa-circle" ng-class="{'server-connected':connected, 'server-disconnected':!connected }"></i>
+              <span ng-show="connected">Connected</span>
+              <span ng-show="!connected">Disconnected</span>
             </li>
           </ul>
         </div>
@@ -96,12 +98,12 @@ limitations under the License.
       <div ng-view></div>
     </div>
     <!-- Modal ::  Keyboard shortcuts -->
-    <div ng-include src="'views/modal-shortcut.html'"></div>
+    <div ng-include src="'components/modal-shortcut/modal-shortcut.html'"></div>
     <!-- build:js(.) scripts/oldieshim.js -->
     <!--[if lt IE 9]>
-    <script src="bower_components/es5-shim/es5-shim.js"></script>
-    <script src="bower_components/json3/lib/json3.min.js"></script>
-    <![endif]-->
+<script src="bower_components/es5-shim/es5-shim.js"></script>
+<script src="bower_components/json3/lib/json3.min.js"></script>
+<![endif]-->
     <!-- endbuild -->
 
     <!-- build:js(.) scripts/vendor.js -->
@@ -139,17 +141,17 @@ limitations under the License.
     <!-- endbower -->
     <!-- endbuild -->
     <!-- build:js({.tmp,app}) scripts/scripts.js -->
-    <script src="scripts/app.js"></script>
-    <script src="scripts/controllers/main.js"></script>
-    <script src="scripts/controllers/notebook.js"></script>
-    <script src="scripts/controllers/interpreter.js"></script>
-    <script src="scripts/directives/ngenter.js"></script>
-    <script src="scripts/directives/dropdowninput.js"></script>
-    <script src="scripts/directives/resizable.js"></script>
-    <script src="scripts/controllers/paragraph.js"></script>
-    <script src="scripts/controllers/nav.js"></script>
-    <script src="scripts/directives/ngdelete.js"></script>
-    <script src="scripts/directives/popover-html-unsafe.js"></script>
+    <script src="app/app.js"></script>
+    <script src="app/home/home.controller.js"></script>
+    <script src="app/notebook/notebook.controller.js"></script>
+    <script src="app/interpreter/interpreter.controller.js"></script>
+    <script src="app/notebook/paragraph/paragraph.controller.js"></script>
+    <script src="components/navbar/navbar.controller.js"></script>
+    <script src="components/directives/ngdelete.js"></script>
+    <script src="components/directives/popover-html-unsafe.js"></script>
+    <script src="components/scripts/directives/ngenter.js"></script>
+    <script src="components/scripts/directives/dropdowninput.js"></script>
+    <script src="components/scripts/directives/resizable.js"></script>
     <!-- endbuild -->
   </body>
 </html>

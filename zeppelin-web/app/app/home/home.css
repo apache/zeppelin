@@ -184,7 +184,7 @@ a.navbar-brand:hover {
   margin-bottom: 20px;
 }
 
-.box, 
+.box,
 .well {
   background-color: #ffffff;
   border-color: #e5e5e5;
@@ -228,7 +228,7 @@ h6.box-heading{
 
 
 .zeppelin {
-  background-image: url('../images/zepLogo.png'); 
+  background-image: url('/assets/images/zepLogo.png');
   background-repeat: no-repeat;
   background-position: right;
   height: 380px;
@@ -236,7 +236,7 @@ h6.box-heading{
 }
 
 .zeppelin2 {
-  background-image: url('../images/zepLogo.png'); 
+  background-image: url('/assets/images/zepLogo.png');
   background-repeat: no-repeat;
   background-position: right;
   background-position-y: 12px;
@@ -277,9 +277,9 @@ kbd {
 }
 
 
-/* 
-temporary fix for bootstrap issue (https://github.com/twbs/bootstrap/issues/5865) 
-This part should be removed when new version of bootstrap handles this issue. 
+/*
+temporary fix for bootstrap issue (https://github.com/twbs/bootstrap/issues/5865)
+This part should be removed when new version of bootstrap handles this issue.
 */
 .btn-group > .tooltip + .btn,
 .btn-group > .popover + .btn {
