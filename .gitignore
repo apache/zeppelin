@@ -21,7 +21,6 @@ zeppelin-web/dist
 zeppelin-web/.tmp
 zeppelin-web/.sass-cache
 zeppelin-web/bower_components
-zeppelin-web/src
 **nbproject/
 **node/
 

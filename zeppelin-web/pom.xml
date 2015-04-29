@@ -34,6 +34,13 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <webXml>dist\WEB-INF\web.xml</webXml>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
         <version>0.11</version>
@@ -55,7 +62,7 @@
             <exclude>node_modules/**</exclude>
             <exclude>bower_components/**</exclude>
             <exclude>test/**</exclude>
-            <exclude>src/main/webapp/**</exclude>
+            <exclude>dist/**</exclude>
             <exclude>app/.buildignore</exclude>
             <exclude>app/fonts/fontawesome*</exclude>
             <exclude>app/fonts/font-awesome*</exclude>
