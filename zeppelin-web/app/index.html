@@ -62,15 +62,17 @@ limitations under the License.
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#/"><img style="margin-top: -7px;s" src="assets/images/zepLogoW.png" width="50" alt="I'm zeppelin"> Zeppelin</a>
+          <a class="navbar-brand" href="#/">
+            <img style="margin-top: -7px;s" src="assets/images/zepLogoW.png" width="50" alt="I'm zeppelin">Zeppelin
+          </a>
         </div>
 
         <div class="collapse navbar-collapse" ng-controller="NavCtrl">
           <ul class="nav navbar-nav">
             <li class="dropdown">
-              <a href="#" class="dropdown-toggle">Notebook <span class="caret"></span></a>
+              <a href="#" class="dropdown-toggle">Notebook<span class="caret"></span></a>
               <ul class="dropdown-menu" role="menu">
-                <li><a href="javascript:void(0);" ng-click="createNewNote()"><i class="fa fa-plus"></i> Create new note</a></li>
+                <li><a href="javascript:void(0);" ng-click="createNewNote()"><i class="fa fa-plus"></i>Create new note</a></li>
                 <li class="divider"></li>
                 <div id="notebook-list" class="scrollbar-container">
                   <li ng-repeat="note in notes track by $index" ng-class="{'active' : isActive(note.id)}">
@@ -149,9 +151,9 @@ limitations under the License.
     <script src="components/navbar/navbar.controller.js"></script>
     <script src="components/directives/ngdelete.js"></script>
     <script src="components/directives/popover-html-unsafe.js"></script>
-    <script src="components/scripts/directives/ngenter.js"></script>
-    <script src="components/scripts/directives/dropdowninput.js"></script>
-    <script src="components/scripts/directives/resizable.js"></script>
+    <script src="components/directives/ngenter.js"></script>
+    <script src="components/directives/dropdowninput.js"></script>
+    <script src="components/directives/resizable.js"></script>
     <!-- endbuild -->
   </body>
 </html>

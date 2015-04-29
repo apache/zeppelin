@@ -63,7 +63,10 @@ module.exports = function (grunt) {
         tasks: ['wiredep']
       },
       js: {
-        files: ['<%= yeoman.app %>/{app, components}/**/*.js'],
+        files: [
+          '<%= yeoman.app %>/app/**/*.js',
+          '<%= yeoman.app %>/components/**/*.js'
+        ],
         tasks: ['newer:jshint:all'],
         options: {
           livereload: '<%= connect.options.livereload %>'
@@ -74,7 +77,11 @@ module.exports = function (grunt) {
         tasks: ['newer:jshint:test', 'karma']
       },
       styles: {
-        files: ['<%= yeoman.app %>/{app, components, assets/styles}/**/*.css'],
+        files: [
+          '<%= yeoman.app %>/app/**/*.css',
+          '<%= yeoman.app %>/components/**/*.css',
+          '<%= yeoman.app %>/assets/styles/**/*.css'
+        ],
         tasks: ['newer:copy:styles', 'autoprefixer']
       },
       gruntfile: {
@@ -85,7 +92,9 @@ module.exports = function (grunt) {
           livereload: '<%= connect.options.livereload %>'
         },
         files: [
-          '<%= yeoman.app %>/{app, components}/**/*.html',
+          '<%= yeoman.app %>/app/**/*.html',
+          '<%= yeoman.app %>/*.html',
+          '<%= yeoman.app %>/components/**/*.html',
           '.tmp/styles/{,*/}*.css',
           '<%= yeoman.app %>/assets/images/**/*.{png,jpg,jpeg,gif,webp,svg}'
         ]
@@ -297,18 +306,13 @@ module.exports = function (grunt) {
             'assets/styles/**/*',
             'assets/images/**/*',
             'WEB-INF/*',
+            'fonts/*'
           ]
         }, {
           expand : true,
           cwd: '<%= yeoman.app %>',
           dest: '<%= yeoman.dist %>',
           src: ['app/**/*.html', 'components/**/*.html']
-        }, {
-          expand : true,
-          flatten: true,
-          cwd: '<%= yeoman.app %>',
-          dest: '<%= yeoman.dist %>/fonts/',
-          src: ['assets/fonts/**/*']
         }, {
           expand: true,
           cwd: '.tmp/images',
