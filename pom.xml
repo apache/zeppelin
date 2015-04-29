@@ -91,6 +91,7 @@
     <module>angular</module>
     <module>shell</module>
     <module>hive</module>
+    <module>hbase</module>
     <module>tajo</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
