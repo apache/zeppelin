@@ -98,6 +98,10 @@ while True :
         continue
 
       if s[0] != " " and s[0] != "\t":
+        if s.replace(" ", "").startswith("else:") or s.replace(" ", "").startswith("elif") or s.replace(" ", "").startswith("except"):
+          single += "\n" + s
+          continue
+
         if incomplete != None:
           raise incomplete
 
@@ -117,7 +121,7 @@ while True :
         compiledCode = compile(single, "<string>", "single")
         incomplete = None
       except SyntaxError as e:
-        if str(e).startswith("unexpected EOF while parsing") :
+        if str(e).startswith("unexpected EOF while parsing") or str(e).startswith("expected an indented block") :
           # incomplete expression
           incomplete = e
           continue
