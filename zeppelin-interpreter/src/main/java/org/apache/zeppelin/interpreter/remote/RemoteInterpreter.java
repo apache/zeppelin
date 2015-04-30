@@ -324,11 +324,11 @@ public class RemoteInterpreter extends Interpreter {
     super.setInterpreterGroup(interpreterGroup);
 
     synchronized (interpreterGroupReference) {
-      if (!interpreterGroupReference
-          .containsKey(getInterpreterGroupKey(interpreterGroup))
-          || (!interpreterGroupReference.get(
-              getInterpreterGroupKey(interpreterGroup)).isRunning() && interpreterGroupReference
-              .get(getInterpreterGroupKey(interpreterGroup)).getPort() > 0)) {
+      RemoteInterpreterProcess intpProcess = interpreterGroupReference
+          .get(getInterpreterGroupKey(interpreterGroup));
+
+      // when interpreter process is not created or terminated
+      if (intpProcess == null || (!intpProcess.isRunning() && intpProcess.getPort() > 0)) {
         interpreterGroupReference.put(getInterpreterGroupKey(interpreterGroup),
             new RemoteInterpreterProcess(interpreterRunner,
                 interpreterPath, env, interpreterContextRunnerPool));
