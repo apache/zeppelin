@@ -38,7 +38,7 @@ public class HbaseInterpreterTest {
   public static void setUp() throws NullPointerException {
     BasicConfigurator.configure();
     Properties properties = new Properties();
-    properties.put("hbase.home", HbaseInterpreterTest.class.getClassLoader().getResource("ruby/").toString());
+    properties.put("hbase.home", "");
     properties.put("hbase.ruby.sources", "");
     properties.put("hbase.irb.load", "false");
     logger.info("Resource: " + properties.getProperty("hbase.home"));
