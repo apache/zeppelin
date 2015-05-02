@@ -130,6 +130,7 @@
     <codehaus.jackson.version>1.8.8</codehaus.jackson.version>
     <snappy.version>1.0.5</snappy.version>
     <io.netty.version>4.0.17.Final</io.netty.version>
+    <jruby.version>1.6.8</jruby.version>
 
     <guava.version>15.0</guava.version>
     <scalatest.version>2.2.1</scalatest.version>
@@ -1421,6 +1422,17 @@
     <profile>
       <id>hadoop-2.6</id>
       <properties>
+        <hadoop.version>2.6.0</hadoop.version>
+        <protobuf.version>2.5.0</protobuf.version>
+        <jets3t.version>0.9.3</jets3t.version>
+        <codehaus.jackson.version>1.9.13</codehaus.jackson.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>hbase-1.0</id>
+      <properties>
+        <hbase.version>1.0.0</hbase.version>
         <hadoop.version>2.6.0</hadoop.version>
         <protobuf.version>2.5.0</protobuf.version>
         <jets3t.version>0.9.3</jets3t.version>
