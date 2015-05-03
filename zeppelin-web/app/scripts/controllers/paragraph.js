@@ -792,6 +792,22 @@ angular.module('zeppelinWebApp')
       // set table height
       var height = $scope.paragraph.config.graph.height;
       $('#p'+$scope.paragraph.id+'_table').height(height);
+
+      // use datatables
+      $('#p'+$scope.paragraph.id+'_table .table').DataTable( {
+        dom: 'Tt',
+        tableTools: {
+          "sSwfPath": "images/copy_csv_xls_pdf.swf",
+          "aButtons": [
+                         { "sExtends": "csv", "sTitle": "CSV", "sFileName": "" },
+                         { "sExtends": "pdf", "sTitle": "PDF", "sFileName": "" }
+        ]},
+        lengthChange: false,
+        searching: false,
+        ordering:  false,
+        paging: false
+      });
+
     };
 
     var retryRenderer = function() {
