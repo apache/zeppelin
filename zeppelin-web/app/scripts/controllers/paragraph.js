@@ -799,9 +799,17 @@ angular.module('zeppelinWebApp')
         tableTools: {
           "sSwfPath": "images/copy_csv_xls_pdf.swf",
           "aButtons": [
-                         { "sExtends": "csv", "sTitle": "CSV", "sFileName": "" },
-                         { "sExtends": "pdf", "sTitle": "PDF", "sFileName": "" }
-        ]},
+                         {
+                           "sExtends":    "collection",
+                           "sButtonText": "Download",
+                           "aButtons": [
+                                         { "sExtends": "csv", "sFileName": "" },
+                                         { "sExtends": "pdf", "sFileName": "" }
+                           ]
+                         }
+
+          ]
+        },
         lengthChange: false,
         searching: false,
         ordering:  false,
