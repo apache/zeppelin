@@ -1202,20 +1202,6 @@
     </pluginManagement>
   </build>
 
-  <pluginRepositories>
-    <!-- for s3-upload-maven-pugin 1.2-SNAPSHOT until this one merged https://github.com/bazaarvoice/s3-upload-maven-plugin/pull/2 -->
-    <pluginRepository>
-      <id>nflabs public repository snspshots</id>
-      <url>https://github.com/NFLabs/mvn-repo/raw/master/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
-
   <profiles>
     <profile>
       <id>build-distr</id>
