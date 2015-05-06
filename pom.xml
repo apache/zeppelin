@@ -1202,47 +1202,6 @@
     </pluginManagement>
   </build>
 
-  <repositories>
-    <!-- For dependency recosiled version of hive_test -->
-    <repository>
-      <id>nflabs public repository</id>
-      <url>https://raw.github.com/NFLabs/mvn-repo/master/releases</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-
-    <!-- for for jdo/jdo2-api/2.3-ec -->
-    <repository>
-      <id>cdh-repository</id>
-      <name>CDH Repository</name>
-      <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <!-- for s3-upload-maven-pugin 1.2-SNAPSHOT until this one merged https://github.com/bazaarvoice/s3-upload-maven-plugin/pull/2 -->
-    <pluginRepository>
-      <id>nflabs public repository snspshots</id>
-      <url>https://github.com/NFLabs/mvn-repo/raw/master/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
-
   <profiles>
     <profile>
       <id>build-distr</id>
