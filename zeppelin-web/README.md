@@ -28,7 +28,7 @@ This will launch a Zeppelin WebApplication on port **9000** and update on code c
 (You will need Zeppelin running on the side)
 
 
-#### Troubleshooting 
+#### Troubleshooting
 
 In case of the error `ECMDERR Failed to execute "git ls-remote --tags --heads git://xxxxx", exit code of #128`
 
@@ -46,4 +46,4 @@ Try to add to the `.bowerrc` file the following content:
 and retry to build again.
 
 ## Contribute on Zeppelin Web
-If you wish to help us and contribute to Zeppelin WebApplication, please look at [Zeppelin WebApplication's contribution guideline](contributing.md).
+If you wish to help us and contribute to Zeppelin WebApplication, please look at [Zeppelin WebApplication's contribution guideline](CONTRIBUTING.md).
