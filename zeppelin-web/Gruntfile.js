@@ -80,7 +80,8 @@ module.exports = function (grunt) {
         files: [
           '<%= yeoman.app %>/app/**/*.css',
           '<%= yeoman.app %>/components/**/*.css',
-          '<%= yeoman.app %>/assets/styles/**/*.css'
+          '<%= yeoman.app %>/assets/styles/**/*.css',
+          '<%= yeoman.app %>/fonts/**/*.css'
         ],
         tasks: ['newer:copy:styles', 'autoprefixer']
       },
@@ -310,9 +311,14 @@ module.exports = function (grunt) {
             '*.html',
             'assets/styles/**/*',
             'assets/images/**/*',
-            'WEB-INF/*',
-            'fonts/*'
+            'WEB-INF/*'
           ]
+        }, {
+          // copy fonts
+          expand : true,
+          cwd: '<%= yeoman.app %>',
+          dest: '<%= yeoman.dist %>',
+          src: ['fonts/**/*.{eot,svg,ttf,woff}']
         }, {
           expand : true,
           cwd: '<%= yeoman.app %>',
@@ -340,7 +346,7 @@ module.exports = function (grunt) {
         flatten: true,
         cwd: '<%= yeoman.app %>',
         dest: '.tmp/styles/',
-        src: '{app, components}/**/*.css'
+        src: '{fonts,components,app}/**/*.css'
       }
     },
 
