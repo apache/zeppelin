@@ -154,17 +154,19 @@ limitations under the License.
   <div class="note-jump"></div>
 
   <!-- Include the paragraphs according to the note -->
-  <div id="{{currentParagraph.id}}_paragraphColumn_main"
-       ng-repeat="currentParagraph in note.paragraphs"
-       ng-controller="ParagraphCtrl"
-       ng-Init="init(currentParagraph)"
-       ng-class="columnWidthClass(currentParagraph.config.colWidth)"
-       class="paragraph-col">
-    <div id="{{currentParagraph.id}}_paragraphColumn"
-         ng-include src="'views/paragraph.html'"
-         ng-class="{'paragraph-space box paragraph-margin': !asIframe, 'focused': paragraphFocused}"
-         ng-hide="currentParagraph.config.tableHide && viewOnly">
+  <div infinite-scroll='loadMoreParagraph()' infinite-scroll-distance='0'>
+    <div id="{{currentParagraph.id}}_paragraphColumn_main"
+         ng-repeat="currentParagraph in notebookParagraphs track by currentParagraph.id"
+         ng-controller="ParagraphCtrl"
+         ng-Init="init(currentParagraph)"
+         ng-class="columnWidthClass(currentParagraph.config.colWidth)"
+         class="paragraph-col">
+      <div id="{{currentParagraph.id}}_paragraphColumn"
+           ng-include src="'views/paragraph.html'"
+           ng-class="{'paragraph-space box paragraph-margin': !asIframe, 'focused': paragraphFocused}"
+           ng-hide="currentParagraph.config.tableHide && viewOnly">
+      </div>
     </div>
+    <div style="clear:both"></div>
   </div>
-  <div style="clear:both;height:10px"></div>
 </div>
