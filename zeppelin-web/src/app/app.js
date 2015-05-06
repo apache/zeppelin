@@ -67,11 +67,7 @@ function getRestApiBase() {
   if (port === 3333 || port === 9000) {
     port = 8080;
   }
-  return location.protocol+"//"+location.hostname+":"+port + skipTrailingSlash(location.pathname) + "/api";
-}
-
-function skipTrailingSlash(path) {
-  return path.slice(-1) === "/" ? path.substring(0, path.length-1) : path;
+  return location.protocol + '//' + location.hostname + ':' + port + '/api';
 }
 
 /**
@@ -102,7 +98,9 @@ angular
   ])
   .filter('breakFilter', function() {
     return function (text) {
-      if (text !== undefined) return text.replace(/\n/g, '<br />');
+      if (text !== undefined) {
+        return text.replace(/\n/g, '<br />');
+      }
     };
   })
   .config(function ($routeProvider, WebSocketProvider) {

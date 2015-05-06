@@ -1,4 +1,4 @@
-/* global confirm:false, alert:false */
+/* global confirm:false, alert:false, getRestApiBase:false */
 /* jshint loopfunc: true */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -266,7 +266,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       for (var i=0; i < $scope.interpreterSettings.length; i++) {
         var setting = $scope.interpreterSettings[i];
         if (setting.id === settingId) {
-          delete $scope.interpreterSettings[i].properties[key]
+          delete $scope.interpreterSettings[i].properties[key];
           break;
         }
       }
