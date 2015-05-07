@@ -276,7 +276,7 @@ public class NotebookServer extends WebSocketServer implements
           conns.add(conn);
         }
         for (WebSocket theconn : conns) {
-           theconn.send(serializeMessage(m));
+          theconn.send(serializeMessage(m));
         }
       }
     }
