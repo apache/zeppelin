@@ -270,11 +270,13 @@ public class NotebookServer extends WebSocketServer implements
         List<WebSocket> conns = userSocketMap.get(principal);
         if (conns == null) {
           conns = new LinkedList<>();
-          conns.add(conn);
           userSocketMap.put(principal, conns);
         }
+        if (!conns.contains(conn)) {
+          conns.add(conn);
+        }
         for (WebSocket theconn : conns) {
-          theconn.send(serializeMessage(m));
+           theconn.send(serializeMessage(m));
         }
       }
     }
