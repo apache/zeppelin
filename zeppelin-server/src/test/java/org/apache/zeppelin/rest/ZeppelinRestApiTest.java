@@ -105,7 +105,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote("anonymous");
 
     // check interpreter is bindded
-    GetMethod get = httpGet("/notebook/interpreter/bind/"+note.id()+"/anonymous/anonymous");
+    GetMethod get = httpGet("/notebook/interpreter/bind/"+note.id());
     assertThat(get, isAllowed());
     Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>(){}.getType());
     List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
