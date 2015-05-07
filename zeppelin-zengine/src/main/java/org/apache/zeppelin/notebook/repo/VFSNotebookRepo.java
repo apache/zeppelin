@@ -242,10 +242,16 @@ public class VFSNotebookRepo implements NotebookRepo {
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
     String json = gson.toJson(note);
+    FileObject rootDir = getRootDir();
 
-    FileObject rootDir = getRootDir(note.getOwner());
+    rootDir.createFolder();
 
-    FileObject noteDir = rootDir.resolveFile(note.id(), NameScope.CHILD);
+    FileObject ownerDir = fsManager.resolveFile(rootDir, note.getOwner());
+
+    if (!ownerDir.exists())
+      ownerDir.createFolder();
+
+    FileObject noteDir = ownerDir.resolveFile(note.id(), NameScope.CHILD);
 
     if (!noteDir.exists()) {
       noteDir.createFolder();
