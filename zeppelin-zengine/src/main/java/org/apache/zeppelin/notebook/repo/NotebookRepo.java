@@ -28,7 +28,8 @@ import org.apache.zeppelin.notebook.NoteInfo;
  */
 public interface NotebookRepo {
   public List<NoteInfo> list() throws IOException;
-  public Note get(String noteId) throws IOException;
+  public List<NoteInfo> list(String owner) throws IOException;
+  public Note get(String noteId, String owner) throws IOException;
   public void save(Note note) throws IOException;
-  public void remove(String noteId) throws IOException;
+  public void remove(String noteId, String owner) throws IOException;
 }

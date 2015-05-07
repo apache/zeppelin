@@ -100,8 +100,8 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public List<NoteInfo> list() throws IOException {
-    FileObject rootDir = getRootDir();
+  public List<NoteInfo> list(String owner) throws IOException {
+    FileObject rootDir = getRootDir(owner);
 
     FileObject[] children = rootDir.getChildren();
 
@@ -109,9 +109,9 @@ public class VFSNotebookRepo implements NotebookRepo {
     for (FileObject f : children) {
       String fileName = f.getName().getBaseName();
       if (f.isHidden()
-          || fileName.startsWith(".")
-          || fileName.startsWith("#")
-          || fileName.startsWith("~")) {
+              || fileName.startsWith(".")
+              || fileName.startsWith("#")
+              || fileName.startsWith("~")) {
         // skip hidden, temporary files
         continue;
       }
@@ -128,6 +128,43 @@ public class VFSNotebookRepo implements NotebookRepo {
         info = getNoteInfo(f);
         if (info != null) {
           infos.add(info);
+        }
+      } catch (IOException e) {
+        logger.error("Can't read note " + f.getName().toString(), e);
+      }
+    }
+
+    return infos;
+  }
+
+  @Override
+  public List<NoteInfo> list() throws IOException {
+    FileObject rootDir = getRootDir();
+    logger.info(rootDir.getName().getPath());
+    FileObject[] children = rootDir.getChildren();
+
+    List<NoteInfo> infos = new LinkedList<>();
+    for (FileObject f : children) {
+      String owner = f.getName().getBaseName();
+      logger.info("OWNER=" + owner);
+      if (f.isHidden()
+              || owner.startsWith(".")
+              || owner.startsWith("#")
+              || owner.startsWith("~")) {
+        // skip hidden, temporary files
+        continue;
+      }
+
+      if (!isDirectory(f)) {
+        // currently one directory per user saved like, [OWNER]/[NOTE_ID]/note.json.
+        // so it must be a directory
+        continue;
+      }
+
+      try {
+        List<NoteInfo> ownerInfos = list(owner);
+        if (ownerInfos != null) {
+          infos.addAll(ownerInfos);
         }
       } catch (IOException e) {
         logger.error("Can't read note " + f.getName().toString(), e);
@@ -175,15 +212,15 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId) throws IOException {
-    FileObject rootDir = fsManager.resolveFile(getPath("/"));
+  public Note get(String noteId, String owner) throws IOException {
+    FileObject rootDir = fsManager.resolveFile(getPath("/" + owner));
     FileObject noteDir = rootDir.resolveFile(noteId, NameScope.CHILD);
 
     return getNote(noteDir);
   }
 
-  private FileObject getRootDir() throws IOException {
-    FileObject rootDir = fsManager.resolveFile(getPath("/"));
+  private FileObject getRootDir(String owner) throws IOException {
+    FileObject rootDir = fsManager.resolveFile(getPath(owner != null ? "/" + owner : "/"));
 
     if (!rootDir.exists()) {
       throw new IOException("Root path does not exists");
@@ -195,6 +232,9 @@ public class VFSNotebookRepo implements NotebookRepo {
 
     return rootDir;
   }
+  private FileObject getRootDir() throws IOException {
+    return getRootDir(null);
+  }
 
   @Override
   public void save(Note note) throws IOException {
@@ -203,7 +243,7 @@ public class VFSNotebookRepo implements NotebookRepo {
     Gson gson = gsonBuilder.create();
     String json = gson.toJson(note);
 
-    FileObject rootDir = getRootDir();
+    FileObject rootDir = getRootDir(note.getOwner());
 
     FileObject noteDir = rootDir.resolveFile(note.id(), NameScope.CHILD);
 
@@ -222,8 +262,8 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void remove(String noteId) throws IOException {
-    FileObject rootDir = fsManager.resolveFile(getPath("/"));
+  public void remove(String noteId, String owner) throws IOException {
+    FileObject rootDir = fsManager.resolveFile(getPath("/" + owner));
     FileObject noteDir = rootDir.resolveFile(noteId, NameScope.CHILD);
 
     if (!noteDir.exists()) {

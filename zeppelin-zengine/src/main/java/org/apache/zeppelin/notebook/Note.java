@@ -17,9 +17,6 @@
 
 package org.apache.zeppelin.notebook;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
@@ -28,26 +25,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
-import org.apache.zeppelin.scheduler.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 /**
  * Binded interpreters for a note
@@ -57,13 +48,14 @@ public class Note implements Serializable, JobListener {
   List<Paragraph> paragraphs = new LinkedList<Paragraph>();
   private String name;
   private String id;
-  private String owner;
+  private String owner = "anonymous";
 
   Map<String, List<AngularObject>> angularObjects = new HashMap<String, List<AngularObject>>();
 
   private transient NoteInterpreterLoader replLoader;
   private transient ZeppelinConfiguration conf;
   private transient JobListenerFactory jobListenerFactory;
+  private transient NotebookRepo repo;
 
   /**
    * note configurations.
@@ -79,13 +71,14 @@ public class Note implements Serializable, JobListener {
    */
   private Map<String, Object> info = new HashMap<String, Object>();
 
+
   public Note() {}
 
-  public Note(ZeppelinConfiguration conf, NoteInterpreterLoader replLoader,
-              JobListenerFactory jobListenerFactory,
-              org.quartz.Scheduler quartzSched,
-              String owner) {
-    this.conf = conf;
+  public Note(NotebookRepo repo,
+      NoteInterpreterLoader replLoader,
+      JobListenerFactory jobListenerFactory,
+            String owner) {
+    this.repo = repo;
     this.replLoader = replLoader;
     this.jobListenerFactory = jobListenerFactory;
     this.owner = owner;
@@ -100,7 +93,9 @@ public class Note implements Serializable, JobListener {
     return id;
   }
 
-  public String owner() { return this.owner; }
+  public String getOwner() { return this.owner; }
+
+  public String setOwner() { return this.owner; }
 
   public String getName() {
     return name;
@@ -118,8 +113,20 @@ public class Note implements Serializable, JobListener {
     this.replLoader = replLoader;
   }
 
-  public void setZeppelinConfiguration(ZeppelinConfiguration conf) {
-    this.conf = conf;
+  public JobListenerFactory getJobListenerFactory() {
+    return jobListenerFactory;
+  }
+
+  public void setJobListenerFactory(JobListenerFactory jobListenerFactory) {
+    this.jobListenerFactory = jobListenerFactory;
+  }
+
+  public NotebookRepo getNotebookRepo() {
+    return repo;
+  }
+
+  public void setNotebookRepo(NotebookRepo repo) {
+    this.repo = repo;
   }
 
   public Map<String, List<AngularObject>> getAngularObjects() {
@@ -129,7 +136,6 @@ public class Note implements Serializable, JobListener {
   /**
    * Add paragraph last.
    *
-   * @param p
    */
   public Paragraph addParagraph() {
     Paragraph p = new Paragraph(this, this, replLoader);
@@ -143,7 +149,6 @@ public class Note implements Serializable, JobListener {
    * Insert paragraph in given index.
    *
    * @param index
-   * @param p
    */
   public Paragraph insertParagraph(int index) {
     Paragraph p = new Paragraph(this, this, replLoader);
@@ -242,7 +247,6 @@ public class Note implements Serializable, JobListener {
   /**
    * Run all paragraphs sequentially.
    *
-   * @param jobListener
    */
   public void runAll() {
     synchronized (paragraphs) {
@@ -300,63 +304,11 @@ public class Note implements Serializable, JobListener {
   }
 
   public void persist() throws IOException {
-    GsonBuilder gsonBuilder = new GsonBuilder();
-    gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.create();
-
-    File dir = new File(conf.getNotebookDir() + File.separator + owner + File.separator + id);
-    if (!dir.exists()) {
-      dir.mkdirs();
-    } else if (dir.isFile()) {
-      throw new RuntimeException("File already exists" + dir.toString());
-    }
-
-    File file = new File(dir, "note.json");
-    logger().info("Persist note {} into {}", id, file.getAbsolutePath());
-
-    snapshotAngularObjectRegistry();
-    String json = gson.toJson(this);
-    FileOutputStream out = new FileOutputStream(file);
-    out.write(json.getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)));
-    out.close();
+    repo.save(this);
   }
 
   public void unpersist() throws IOException {
-    File dir = new File(conf.getNotebookDir() + File.separator + owner + File.separator + id);
-
-    FileUtils.deleteDirectory(dir);
-  }
-
-  public static Note load(String id, ZeppelinConfiguration conf, NoteInterpreterLoader replLoader,
-                          Scheduler scheduler, JobListenerFactory jobListenerFactory,
-                          org.quartz.Scheduler quartzSched, String principal)
-      throws IOException {
-    GsonBuilder gsonBuilder = new GsonBuilder();
-    gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.create();
-
-    File file = new File(conf.getNotebookDir() + File.separator + principal +
-            File.separator + id + File.separator + "note.json");
-    logger().info("Load note {} from {}", id, file.getAbsolutePath());
-
-    if (!file.isFile()) {
-      return null;
-    }
-
-    FileInputStream ins = new FileInputStream(file);
-    String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
-    Note note = gson.fromJson(json, Note.class);
-    note.setZeppelinConfiguration(conf);
-    note.setReplLoader(replLoader);
-    note.jobListenerFactory = jobListenerFactory;
-    for (Paragraph p : note.paragraphs) {
-      p.setNote(note);
-
-      if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
-        p.setStatus(Status.ABORT);
-      }
-    }
-    return note;
+    repo.remove(this.id, this.owner);
   }
 
   public Map<String, Object> getConfig() {

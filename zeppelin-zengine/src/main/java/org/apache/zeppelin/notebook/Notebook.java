@@ -17,18 +17,15 @@
 
 package org.apache.zeppelin.notebook;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
-import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
@@ -56,11 +53,14 @@ public class Notebook {
   private StdSchedulerFactory quertzSchedFact;
   private org.quartz.Scheduler quartzSched;
   private JobListenerFactory jobListenerFactory;
+  private NotebookRepo notebookRepo;
 
-  public Notebook(ZeppelinConfiguration conf, SchedulerFactory schedulerFactory,
+  public Notebook(ZeppelinConfiguration conf, NotebookRepo notebookRepo,
+      SchedulerFactory schedulerFactory,
       InterpreterFactory replFactory, JobListenerFactory jobListenerFactory) throws IOException,
       SchedulerException {
     this.conf = conf;
+    this.notebookRepo = notebookRepo;
     this.schedulerFactory = schedulerFactory;
     this.replFactory = replFactory;
     this.jobListenerFactory = jobListenerFactory;
@@ -106,7 +106,7 @@ public class Notebook {
    */
   public Note createNote(List<String> interpreterIds, String principal) throws IOException {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    Note note = new Note(conf, intpLoader, jobListenerFactory, quartzSched, principal);
+    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, principal);
     intpLoader.setNoteId(note.id());
     synchronized (notes) {
       getUserNotes(principal).put(note.id(), note);
@@ -115,6 +115,7 @@ public class Notebook {
       bindInterpretersToNote(note.id(), interpreterIds, principal);
     }
 
+    note.persist();
     return note;
   }
 
@@ -163,90 +164,73 @@ public class Notebook {
     }
   }
 
-  private void loadAllNotes() throws IOException {
-    File notebookDir = new File(conf.getNotebookDir());
-    logger.info("Notebook Directory " + notebookDir.getAbsolutePath());
-    File[] userdirs = notebookDir.listFiles();
-    if (userdirs == null) {
-      return;
+  private Note loadNoteFromRepo(String id, String owner) {
+    Note note = null;
+    try {
+      note = notebookRepo.get(id, owner);
+    } catch (IOException e) {
+      logger.error("Failed to load " + id, e);
     }
+    if (note == null) {
+      return null;
+    }
+
+    // set NoteInterpreterLoader
+    NoteInterpreterLoader noteInterpreterLoader = new NoteInterpreterLoader(
+            replFactory);
+    note.setReplLoader(noteInterpreterLoader);
+    noteInterpreterLoader.setNoteId(note.id());
+    // set JobListenerFactory
+    note.setJobListenerFactory(jobListenerFactory);
+
+    // set notebookRepo
+    note.setNotebookRepo(notebookRepo);
 
     Map<String, SnapshotAngularObject> angularObjectSnapshot =
-        new HashMap<String, SnapshotAngularObject>();
+            new HashMap<String, SnapshotAngularObject>();
 
-    for (File fuser : userdirs) {
-      String principal = fuser.getName();
-      boolean isHidden = principal.startsWith(".");
-      if (fuser.isDirectory() && !isHidden) {
-        File[] dirs = fuser.listFiles();
-        if (dirs != null) {
-          for (File f : dirs) {
-            boolean isHiddenFile = f.getName().startsWith(".");
-            if (f.isDirectory() && !isHiddenFile) {
-              Scheduler scheduler =
-                  schedulerFactory.createOrGetFIFOScheduler("note_" + System.currentTimeMillis());
-              logger.info("Loading note from " + f.getName());
-              NoteInterpreterLoader noteInterpreterLoader = new NoteInterpreterLoader(replFactory);
-              Note note = Note.load(f.getName(),
-                  conf,
-                  noteInterpreterLoader,
-                  scheduler,
-                  jobListenerFactory, quartzSched, fuser.getName());
-              logger.info("Loading note from " + f.getName());
-              noteInterpreterLoader.setNoteId(note.id());
+    // restore angular object --------------
+    Date lastUpdatedDate = new Date(0);
+    for (Paragraph p : note.getParagraphs()) {
+      p.setNote(note);
+      if (p.getDateFinished() != null &&
+              lastUpdatedDate.before(p.getDateFinished())) {
+        lastUpdatedDate = p.getDateFinished();
+      }
+    }
 
-              // restore angular object --------------
-              Date lastUpdatedDate = new Date(0);
-              for (Paragraph p : note.getParagraphs()) {
-                if (p.getDateFinished() != null &&
-                    lastUpdatedDate.before(p.getDateFinished())) {
-                  lastUpdatedDate = p.getDateFinished();
-                }
-              }
+    Map<String, List<AngularObject>> savedObjects = note.getAngularObjects();
 
-              Map<String, List<AngularObject>> savedObjects = note.getAngularObjects();
+    if (savedObjects != null) {
+      for (String intpGroupName : savedObjects.keySet()) {
+        List<AngularObject> objectList = savedObjects.get(intpGroupName);
 
-              if (savedObjects != null) {
-                for (String intpGroupName : savedObjects.keySet()) {
-                  List<AngularObject> objectList = savedObjects.get(intpGroupName);
-
-                  for (AngularObject savedObject : objectList) {
-                    SnapshotAngularObject snapshot =
-                            angularObjectSnapshot.get(savedObject.getName());
-                    if (snapshot == null || snapshot.getLastUpdate().before(lastUpdatedDate)) {
-                      angularObjectSnapshot.put(
-                          savedObject.getName(),
-                          new SnapshotAngularObject(
-                              intpGroupName,
-                              savedObject,
-                              lastUpdatedDate));
-                    }
-                  }
-                }
-              }
-
-              synchronized (notes) {
-                getUserNotes(principal).put(note.id(), note);
-                refreshCron(note.id(), principal);
-              }
-            }
+        for (AngularObject savedObject : objectList) {
+          SnapshotAngularObject snapshot = angularObjectSnapshot.get(savedObject.getName());
+          if (snapshot == null || snapshot.getLastUpdate().before(lastUpdatedDate)) {
+            angularObjectSnapshot.put(
+                    savedObject.getName(),
+                    new SnapshotAngularObject(
+                            intpGroupName,
+                            savedObject,
+                            lastUpdatedDate));
           }
         }
       }
     }
 
-    for (String name : angularObjectSnapshot.keySet()) {
-      SnapshotAngularObject snapshot = angularObjectSnapshot.get(name);
-      List<InterpreterSetting> settings = replFactory.get();
-      for (InterpreterSetting setting : settings) {
-        InterpreterGroup intpGroup = setting.getInterpreterGroup();
-        if (intpGroup.getId().equals(snapshot.getIntpGroupId())) {
-          AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
-          if (registry.get(name) == null) {
-            registry.add(name, snapshot.getAngularObject().get(), false);
-          }
-        }
-      }
+    synchronized (notes) {
+      getUserNotes(owner).put(note.id(), note);
+      refreshCron(note.id(), owner);
+    }
+    return note;
+  }
+
+  private void loadAllNotes() throws IOException {
+    List<NoteInfo> noteInfos = notebookRepo.list();
+
+    for (NoteInfo info : noteInfos) {
+      loadNoteFromRepo(info.getId(), info.getOwner());
     }
   }
 
