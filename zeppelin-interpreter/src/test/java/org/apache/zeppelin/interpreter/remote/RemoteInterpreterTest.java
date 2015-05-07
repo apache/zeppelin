@@ -457,4 +457,25 @@ public class RemoteInterpreterTest {
 
     intpA.close();
   }
+
+  @Test
+  public void testProcessCreation() {
+    Properties p = new Properties();
+
+    RemoteInterpreter intpA = new RemoteInterpreter(
+        p,
+        MockInterpreterA.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        env
+        );
+
+    intpA.setInterpreterGroup(intpGroup);
+    RemoteInterpreterProcess processA = intpA.getInterpreterProcess();
+
+    intpA.setInterpreterGroup(new InterpreterGroup(intpA.getInterpreterGroup().getId()));
+    RemoteInterpreterProcess processB = intpA.getInterpreterProcess();
+
+    assertEquals(processA.hashCode(), processB.hashCode());
+  }
 }
