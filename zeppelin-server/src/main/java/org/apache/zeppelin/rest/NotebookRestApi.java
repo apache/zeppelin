@@ -25,6 +25,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.shiro.SecurityUtils;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.message.InterpreterSettingListForNoteBind;
@@ -59,13 +60,13 @@ public class NotebookRestApi {
   @PUT
   @Path("interpreter/bind/{noteId}")
   public Response bind(
-          @PathParam("noteId") String noteId,
-          @HeaderParam("X-Ticket") String principalAndTicket, String req) throws Exception {
-    String[] tokens = principalAndTicket.split(":");
-    String principal = tokens[0];
-    String ticket = tokens[1];
-    if (!TicketContainer.instance.isValid(principal, ticket))
-      throw new Exception("Invalid principal / ticket:" + principal + "/" + ticket);
+          @PathParam("noteId") String noteId, String req) throws Exception {
+    Object oprincipal = SecurityUtils.getSubject().getPrincipal();
+    String principal;
+    if (oprincipal == null)
+      principal = "anonymous";
+    else
+      principal = oprincipal.toString();
 
     List<String> settingIdList = gson.fromJson(req, new TypeToken<List<String>>(){}.getType());
     notebook.bindInterpretersToNote(noteId, settingIdList, principal);
@@ -77,14 +78,13 @@ public class NotebookRestApi {
    */
   @GET
   @Path("interpreter/bind/{noteId}")
-  public Response bind(@PathParam("noteId") String noteId,
-                       @HeaderParam("X-Ticket") String principalAndTicket) throws Exception {
-    String[] tokens = principalAndTicket.split(":");
-    String principal = tokens[0];
-    String ticket = tokens[1];
-    if (!TicketContainer.instance.isValid(principal, ticket))
-      throw new Exception("Invalid principal / ticket:" + principal + "/" + ticket);
-
+  public Response bind(@PathParam("noteId") String noteId) throws Exception {
+    Object oprincipal = SecurityUtils.getSubject().getPrincipal();
+    String principal;
+    if (oprincipal == null)
+      principal = "anonymous";
+    else
+      principal = oprincipal.toString();
     List<InterpreterSettingListForNoteBind> settingList = new LinkedList<>();
 
     List<InterpreterSetting> selectedSettings =

@@ -350,19 +350,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
-  /** Config header */
-  var getTicketHeader = function(principal, ticket) {
-    return {
-      headers: {
-        'X-Principal': principal,
-        'X-Ticket': ticket
-      }
-    };
-  }
-
   /** user dependent*/
   var getInterpreterBindings = function(callback) {
-    $http.get(getRestApiBase()+ '/notebook/interpreter/bind/' +$scope.note.id, getTicketHeader($rootScope.ticket.principal, $rootScope.ticket.ticket)).
+    $http.get(getRestApiBase()+ '/notebook/interpreter/bind/' +$scope.note.id).
       success(function(data, status, headers, config) {
         $scope.interpreterBindings = data.body;
         $scope.interpreterBindingsOrig = jQuery.extend(true, [], $scope.interpreterBindings); // to check dirty
@@ -430,8 +420,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       }
     }
 
-    $http.put(getRestApiBase() + '/notebook/interpreter/bind/' + $scope.note.id, selectedSettingIds,
-        getTicketHeader($rootScope.ticket.principal, $rootScope.ticket.ticket)).
+    $http.put(getRestApiBase() + '/notebook/interpreter/bind/' + $scope.note.id, selectedSettingIds).
       success(function(data, status, headers, config) {
         console.log('Interpreter binding %o saved', selectedSettingIds);
         $scope.showSetting = false;

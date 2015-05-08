@@ -135,7 +135,6 @@ public abstract class AbstractTestRestApi {
     LOG.info("Connecting to {}", url + path);
     HttpClient httpClient = new HttpClient();
     GetMethod getMethod = new GetMethod(url + path);
-    getMethod.addRequestHeader("X-Ticket", "anonymous:anonymous");
     httpClient.executeMethod(getMethod);
     LOG.info("{} - {}", getMethod.getStatusCode(), getMethod.getStatusText());
     return getMethod;
@@ -145,7 +144,6 @@ public abstract class AbstractTestRestApi {
     LOG.info("Connecting to {}", url + path);
     HttpClient httpClient = new HttpClient();
     PostMethod postMethod = new PostMethod(url + path);
-    postMethod.addRequestHeader("X-Ticket", "anonymous:anonymous");
     RequestEntity entity = new ByteArrayRequestEntity(body.getBytes("UTF-8"));
     postMethod.setRequestEntity(entity);
     httpClient.executeMethod(postMethod);
