@@ -1,15 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-<!-- 
-  This is commented because somehow this force zeppelin-webb to be build 2 times.
+
   <parent>
     <artifactId>zeppelin</artifactId>
-    <groupId>com.nflabs.zeppelin</groupId>
+    <groupId>org.apache.zeppelin</groupId>
     <version>0.5.0-SNAPSHOT</version>
   </parent>
--->
-  <groupId>com.nflabs.zeppelin</groupId>
+
+  <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-web</artifactId>
   <packaging>war</packaging>
   <version>0.5.0-SNAPSHOT</version>
@@ -18,9 +34,45 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.rat</groupId>
+        <artifactId>apache-rat-plugin</artifactId>
+        <version>0.11</version>
+        <configuration>
+          <excludes>
+            <exclude>**/.idea/</exclude>
+            <exclude>**/*.iml</exclude>
+            <exclude>.git/</exclude>
+            <exclude>.gitignore</exclude>
+            <exclude>.bowerrc</exclude>
+            <exclude>.editorconfig</exclude>
+            <exclude>.jshintrc</exclude>
+            <exclude>.tmp/**</exclude>
+            <exclude>**/.settings/*</exclude>
+            <exclude>**/.classpath</exclude>
+            <exclude>**/.project</exclude>
+            <exclude>**/target/**</exclude>            
+            <exclude>node/**</exclude>
+            <exclude>node_modules/**</exclude>
+            <exclude>bower_components/**</exclude>
+            <exclude>test/**</exclude>
+            <exclude>src/main/webapp/**</exclude>
+            <exclude>app/.buildignore</exclude>
+            <exclude>app/fonts/fontawesome*</exclude>
+            <exclude>app/fonts/font-awesome*</exclude>
+            <exclude>app/styles/font-awesome*</exclude>
+            <exclude>app/fonts/Simple-Line*</exclude>
+            <exclude>app/fonts/simple-line*</exclude>
+            <exclude>app/styles/simple-line*</exclude>
+            <exclude>bower.json</exclude>
+            <exclude>package.json</exclude>
+            <exclude>README.md</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
-        <version>0.0.20</version>
+        <version>0.0.23</version>
         <executions>
           <execution>
             <id>install node and npm</id>

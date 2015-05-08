@@ -22,9 +22,22 @@
 #
 
 function usage() {
-  echo "Usage: bin/zeppelin.sh [spark options] [application options]"
+  echo "Usage: bin/zeppelin.sh [--config <conf-dir>] [spark options] [application options]"
   exit 0
 }
+
+if [[ "$1" == "--config" ]]; then
+  shift
+  conf_dir="$1"
+  if [[ ! -d "${conf_dir}" ]]; then
+    echo "ERROR : ${conf_dir} is not a directory"
+    echo ${USAGE}
+    exit 1
+  else
+    export ZEPPELIN_CONF_DIR="${conf_dir}"
+  fi
+  shift
+fi
 
 bin=$(dirname "${BASH_SOURCE-$0}")
 bin=$(cd "${bin}">/dev/null; pwd)
@@ -35,7 +48,7 @@ HOSTNAME=$(hostname)
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
 LOG="${ZEPPELIN_LOG_DIR}/zeppelin-cli-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.out"
   
-ZEPPELIN_SERVER=com.nflabs.zeppelin.server.ZeppelinServer
+ZEPPELIN_SERVER=org.apache.zeppelin.server.ZeppelinServer
 JAVA_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
 if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then

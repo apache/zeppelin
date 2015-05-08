@@ -1,7 +1,6 @@
 /* global confirm:false, alert:false */
 /* jshint loopfunc: true */
-/* Copyright 2014 NFLabs
- *
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -44,6 +43,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.interpreterSettings = [];
   $scope.interpreterBindings = [];
+
+  var angularObjectRegistry = {};
 
   $scope.getCronOptionNameFromValue = function(value) {
     if (!value) {
@@ -443,4 +444,51 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       return true;
     }
   };
+
+  $scope.$on('angularObjectUpdate', function(event, data) {
+    if (data.noteId === $scope.note.id) {
+      var scope = $rootScope.compiledScope;
+      var varName = data.angularObject.name;
+
+      if (angular.equals(data.angularObject.object, scope[varName])) {
+        // return when update has no change
+        return;
+      }
+
+      if (!angularObjectRegistry[varName]) {
+        angularObjectRegistry[varName] = {
+          interpreterGroupId : data.interpreterGroupId,
+        }
+      }
+
+      angularObjectRegistry[varName].skipEmit = true;
+
+      if (!angularObjectRegistry[varName].clearWatcher) {
+        angularObjectRegistry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
+          if (angularObjectRegistry[varName].skipEmit) {
+            angularObjectRegistry[varName].skipEmit = false;
+            return;
+          }
+
+          $rootScope.$emit('sendNewEvent', {
+              op: 'ANGULAR_OBJECT_UPDATED',
+              data: {
+                  noteId: $routeParams.noteId,
+                  name:varName,
+                  value:newValue,
+                  interpreterGroupId:angularObjectRegistry[varName].interpreterGroupId
+              }
+          });
+        });
+      }
+      scope[varName] = data.angularObject.object;
+    }
+      
+  });
+
+  var isFunction = function(functionToCheck) {
+    var getType = {};
+    return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
+  }
+
 });

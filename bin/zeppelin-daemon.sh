@@ -21,6 +21,21 @@
 # description: Start and stop daemon script for.
 #
 
+USAGE="Usage: zeppelin-daemon.sh [--config <conf-dir>] {start|stop|restart|reload|status}"
+
+if [[ "$1" == "--config" ]]; then
+  shift
+  conf_dir="$1"
+  if [[ ! -d "${conf_dir}" ]]; then
+    echo "ERROR : ${conf_dir} is not a directory"
+    echo ${USAGE}
+    exit 1
+  else
+    export ZEPPELIN_CONF_DIR="${conf_dir}"
+  fi
+  shift
+fi
+
 if [ -L ${BASH_SOURCE-$0} ]; then
   BIN=$(dirname $(readlink "${BASH_SOURCE-$0}"))
 else
@@ -36,7 +51,7 @@ ZEPPELIN_NAME="Zeppelin"
 ZEPPELIN_LOGFILE="${ZEPPELIN_LOG_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.log"
 ZEPPELIN_OUTFILE="${ZEPPELIN_LOG_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.out"
 ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.pid"
-ZEPPELIN_MAIN=com.nflabs.zeppelin.server.ZeppelinServer
+ZEPPELIN_MAIN=org.apache.zeppelin.server.ZeppelinServer
 JAVA_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
 if [[ "${ZEPPELIN_NICENESS}" = "" ]]; then
@@ -205,5 +220,5 @@ case "${1}" in
     find_zeppelin_process
     ;;
   *)
-    echo "Usage: $0 {start|stop|restart|reload|status}"
+    echo ${USAGE}
 esac

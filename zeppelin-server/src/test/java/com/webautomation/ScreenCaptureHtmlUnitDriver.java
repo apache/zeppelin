@@ -42,7 +42,7 @@ public class ScreenCaptureHtmlUnitDriver extends HtmlUnitDriver implements Takes
     private static Map<String, byte[]> imagesCache = Collections.synchronizedMap(new HashMap<String, byte[]>());
 
     private static Map<String, String> cssjsCache = Collections.synchronizedMap(new HashMap<String, String>());
-    
+
     // http://stackoverflow.com/questions/4652777/java-regex-to-get-the-urls-from-css
     private final static Pattern cssUrlPattern = Pattern.compile("background(-image)?[\\s]*:[^url]*url[\\s]*\\([\\s]*([^\\)]*)[\\s]*\\)[\\s]*");// ?<url>
 
@@ -65,6 +65,7 @@ public class ScreenCaptureHtmlUnitDriver extends HtmlUnitDriver implements Takes
     }
 
     //@Override
+    @Override
     @SuppressWarnings("unchecked")
     public <X> X getScreenshotAs(OutputType<X> target) throws WebDriverException {
         byte[] archive = new byte[0];

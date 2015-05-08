@@ -1,10 +1,10 @@
 #Zeppelin 
 
-**Documentation:** [User Guide](http://zeppelin-project.org/docs/index.html)<br/>
+**Documentation:** [User Guide](http://zeppelin.incubator.apache.org/docs/index.html)<br/>
 **Mailing List:** [User and Dev mailing list](http://zeppelin.incubator.apache.org/community.html)<br/>
-**Continuous Integration:** [![Build Status](https://secure.travis-ci.org/NFLabs/zeppelin.png?branch=master)](https://travis-ci.org/NFLabs/zeppelin) <br/>
-**Contributing:** [Contribution Guide](https://github.com/NFLabs/zeppelin/blob/master/CONTRIBUTING.md)<br/>
-**License:** [Apache 2.0](https://github.com/NFLabs/zeppelin/blob/master/LICENSE)
+**Continuous Integration:** [![Build Status](https://secure.travis-ci.org/apache/incubator-zeppelin.png?branch=master)](https://travis-ci.org/apache/incubator-zeppelin) <br/>
+**Contributing:** [Contribution Guide](https://github.com/apache/incubator-zeppelin/blob/master/CONTRIBUTING.md)<br/>
+**License:** [Apache 2.0](https://github.com/apache/incubator-zeppelin/blob/master/LICENSE)
 
 
 **Zeppelin**, a web-based notebook that enables interactive data analytics. You can make beautiful data-driven, interactive and collaborative documents with SQL, Scala and more.
@@ -14,7 +14,7 @@ Core feature:
    * Built-in Apache Spark support
 
 
-To know more about Zeppelin, visit our web site [http://zeppelin-project.org](http://zeppelin-project.org) 
+To know more about Zeppelin, visit our web site [http://zeppelin.incubator.apache.org](http://zeppelin.incubator.apache.org)
 
 ## Requirements
  * Java 1.7
@@ -85,10 +85,8 @@ If you set `SPARK_HOME`, you should deploy spark binary on the same location to 
 Yarn
 
     # ./conf/zeppelin-env.sh
-    export SPARK_YARN_JAR=/path/to/spark-assembly-*.jar
     export HADOOP_CONF_DIR=/path/to/hadoop_conf_dir
-
-`SPARK_YARN_JAR` is deployed for running executor, this could be a local path or HDFS. HDFS allows YARN to cache it on nodes so that it doesn't need to be distributed each time an application runs. To point to a jar on HDFS, for example, set this configuration to "hdfs:///some/path".  
+  
 `HADOOP_CONF_DIR` should contains yarn-site.xml and core-site.xml.
 
 ### Run
@@ -116,7 +114,4 @@ Zeppelin comes with a set of end-to-end acceptnce tests driving headless seleniu
       mvn verify -P using-packaged-distr
 
 
-[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/10ba60fb64e53bb1ccd0bab47abbcc4a "githalytics.com")](http://githalytics.com/NFLabs/zeppelin)
-
-
-
+[![Analytics](https://ga-beacon.appspot.com/UA-45176241-4/apache/incubator-zeppelin/README.md?pixel)](https://github.com/igrigorik/ga-beacon)

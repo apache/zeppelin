@@ -1,5 +1,4 @@
-/* Copyright 2014 NFLabs
- *
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,7 +24,7 @@
  */
 angular.module('zeppelinWebApp')
         .controller('MainCtrl', function($scope, WebSocket, $rootScope, $window) {
-
+  $rootScope.compiledScope = $scope.$new(true, $rootScope);  
   $scope.WebSocketWaitingList = [];
   $scope.connected = false;
   $scope.looknfeel = 'default';
@@ -66,6 +65,8 @@ angular.module('zeppelinWebApp')
       $scope.$broadcast('updateProgress', data);
     } else if (op === 'COMPLETION_LIST') {
       $scope.$broadcast('completionList', data);
+    } else if (op === 'ANGULAR_OBJECT_UPDATE') {
+      $scope.$broadcast('angularObjectUpdate', data);
     }
   });
 
