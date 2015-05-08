@@ -817,6 +817,10 @@ angular.module('zeppelinWebApp')
 
     var d3g = [];
 
+    // FIXME: pivot(data) will alter the rows order
+    console.log('data is\n %s \n', JSON.stringify(data));
+    // ------
+
     if (type === 'scatterChart') {
       var scatterData = setScatterChart(data, refresh);
 
@@ -857,6 +861,11 @@ angular.module('zeppelinWebApp')
                         .scatter.useVoronoi(false);
     } else {
       var p = pivot(data);
+
+      // FIXME: pivot(data) will alter the rows order
+      console.log('Pivot(data) is\n %s \n', JSON.stringify(p));
+      // ------
+
       if (type === 'pieChart') {
         var d = pivotDataToD3ChartFormat(p, true).d3g;
 
@@ -890,6 +899,11 @@ angular.module('zeppelinWebApp')
         $scope.chart[type].useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
         $scope.chart[type].forceY([0]); // force y-axis minimum to 0 for line chart.
       }
+
+      // FIXME: pivotDataToD3ChartFormat(p)
+      console.log('D3CharFormat is %s', JSON.stringify(d3g));
+      // ------
+
     }
 
     var renderChart = function() {
@@ -1117,6 +1131,10 @@ angular.module('zeppelinWebApp')
       avg : true
     };
 
+    var getIndex = function(previous, actual) {
+      return (previous == null) ? actual : Math.min(previous, actual);
+    };
+
     var schema = {};
     var rows = {};
 
@@ -1146,6 +1164,7 @@ angular.module('zeppelinWebApp')
           p[keyKey] = {};
         }
         p = p[keyKey];
+        p.rowIndex = getIndex(p.rowIndex, i);
       }
 
       for (var g=0; g < groups.length; g++) {
@@ -1168,6 +1187,9 @@ angular.module('zeppelinWebApp')
           p[groupKey] = {};
         }
         p = p[groupKey];
+        if (keys.length == 0) {
+          p.rowIndex = getIndex(p.rowIndex, i);
+        }
       }
 
       for (var v=0; v < values.length; v++) {
@@ -1195,14 +1217,32 @@ angular.module('zeppelinWebApp')
               count : (aggrFuncDiv[value.aggr]) ?  p[valueKey].count+1 : p[valueKey].count
           };
         }
+        if (keys.length == 0 && groups.length == 0) {
+          p.idx = getIndex(p.idx, v );
+        }
       }
     }
+
+    var compareRowIndex = function(a,b) {
+      var ai = a[Object.keys(a)[0]].rowIndex;
+      var bi = b[Object.keys(b)[0]].rowIndex;
+      if (ai < bi) { return -1; }
+      else if (ai > bi) { return 1; }
+      else { return 0; }
+    };
+    var rowsArray = [];
+    for (var key in rows) {
+      var e = {};
+      e[key] = rows[key];
+      rowsArray.push(e);
+    };
+    rowsArray.sort(compareRowIndex);
 
     //console.log("schema=%o, rows=%o", schema, rows);
 
     return {
       schema : schema,
-      rows : rows
+      rows : rowsArray
     };
   };
 
