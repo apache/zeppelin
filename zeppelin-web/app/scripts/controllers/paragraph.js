@@ -1313,8 +1313,10 @@ angular.module('zeppelinWebApp')
     var colIdx = 0;
     var rowIndexValue = {};
 
-    for (var k in rows) {
-      traverse(sKey, schema[sKey], k, rows[k], function(rowName, rowValue, colName, value) {
+    for (var kk in rows) {
+      var row = rows[kk];
+      var k = Object.keys(row)[0];
+      traverse(sKey, schema[sKey], k, row[k], function(rowName, rowValue, colName, value) {
         //console.log("RowName=%o, row=%o, col=%o, value=%o", rowName, rowValue, colName, value);
         if (rowNameIndex[rowValue] === undefined) {
           rowIndexValue[rowIdx] = rowValue;
