@@ -58,9 +58,12 @@ public class NotebookRestApi {
    */
   @PUT
   @Path("interpreter/bind/{noteId}")
-  public Response bind(@PathParam("noteId") String noteId,
-                       @HeaderParam("X-Principal") String principal,
-                       @HeaderParam("X-Ticket") String ticket, String req) throws Exception {
+  public Response bind(
+          @PathParam("noteId") String noteId,
+          @HeaderParam("X-Ticket") String principalAndTicket, String req) throws Exception {
+    String[] tokens = principalAndTicket.split(":");
+    String principal = tokens[0];
+    String ticket = tokens[1];
     if (!TicketContainer.instance.isValid(principal, ticket))
       throw new Exception("Invalid principal / ticket:" + principal + "/" + ticket);
 
@@ -75,8 +78,10 @@ public class NotebookRestApi {
   @GET
   @Path("interpreter/bind/{noteId}")
   public Response bind(@PathParam("noteId") String noteId,
-                       @HeaderParam("X-Principal") String principal,
-                       @HeaderParam("X-Ticket") String ticket) throws Exception {
+                       @HeaderParam("X-Ticket") String principalAndTicket) throws Exception {
+    String[] tokens = principalAndTicket.split(":");
+    String principal = tokens[0];
+    String ticket = tokens[1];
     if (!TicketContainer.instance.isValid(principal, ticket))
       throw new Exception("Invalid principal / ticket:" + principal + "/" + ticket);
 
