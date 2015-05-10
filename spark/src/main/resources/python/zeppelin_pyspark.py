@@ -15,9 +15,10 @@
 # limitations under the License.
 #
 
-import sys, getopt
+import sys, getopt, traceback
 
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
+from py4j.protocol import Py4JJavaError
 from pyspark.conf import SparkConf
 from pyspark.context import SparkContext
 from pyspark.rdd import RDD
@@ -106,6 +107,12 @@ while True :
       eval(compiledCode)
 
     intp.setStatementsFinished(output.get(), False)
+  except Py4JJavaError:
+    excInnerError = traceback.format_exc() # format_tb() does not return the inner exception
+    innerErrorStart = excInnerError.find("Py4JJavaError:")
+    if innerErrorStart > -1:
+       excInnerError = excInnerError[innerErrorStart:]
+    intp.setStatementsFinished(excInnerError + str(sys.exc_info()), True)
   except:
     intp.setStatementsFinished(str(sys.exc_info()), True)
 
