@@ -86,9 +86,7 @@ while True :
   try:
     stmts = req.statements().split("\n")
     jobGroup = req.jobGroup()
-    single = None
-    incomplete = None
-    compiledCode = None
+    final_code = None
 
     for s in stmts:
       if s == None or len(s.strip()) == 0:
@@ -98,38 +96,13 @@ while True :
       if s.strip().startswith("#"):
         continue
 
-      if s[0] != " " and s[0] != "\t":
-        if incomplete != None:
-          raise incomplete
-
-        if compiledCode != None:
-          sc.setJobGroup(jobGroup, "Zeppelin")
-          eval(compiledCode)
-          compiledCode = None
-          single = None
-          incomplete = None
-
-      if single == None:
-        single = s
+      if final_code:
+        final_code += "\n" + s
       else:
-        single += "\n" + s
+        final_code = s
 
-      try :
-        compiledCode = compile(single, "<string>", "single")
-        incomplete = None
-      except SyntaxError as e:
-        if str(e).startswith("unexpected EOF while parsing") :
-          # incomplete expression
-          incomplete = e
-          continue
-        else:
-          # actual error, reraise to keep traceback
-          raise
-
-    if incomplete != None:
-      raise incomplete
-
-    if compiledCode != None:
+    if final_code:
+      compiledCode = compile(final_code, "<string>", "exec")
       sc.setJobGroup(jobGroup, "Zeppelin")
       eval(compiledCode)
 
