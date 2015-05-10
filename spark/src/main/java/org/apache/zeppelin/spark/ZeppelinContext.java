@@ -22,19 +22,31 @@ import static scala.collection.JavaConversions.asJavaIterable;
 import static scala.collection.JavaConversions.collectionAsScalaIterable;
 
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.SQLContext.QueryExecution;
+import org.apache.spark.sql.catalyst.expressions.Attribute;
 import org.apache.spark.sql.hive.HiveContext;
+import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.AngularObjectWatcher;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input.ParamOption;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.spark.dep.DependencyResolver;
 
 import scala.Tuple2;
+import scala.Unit;
 import scala.collection.Iterable;
 
 /**
@@ -47,27 +59,24 @@ public class ZeppelinContext extends HashMap<String, Object> {
   private DependencyResolver dep;
   private PrintStream out;
   private InterpreterContext interpreterContext;
+  private int maxResult;
 
   public ZeppelinContext(SparkContext sc, SQLContext sql,
       InterpreterContext interpreterContext,
-      DependencyResolver dep, PrintStream printStream) {
+      DependencyResolver dep, PrintStream printStream,
+      int maxResult) {
     this.sc = sc;
     this.sqlContext = sql;
     this.interpreterContext = interpreterContext;
     this.dep = dep;
     this.out = printStream;
+    this.maxResult = maxResult;
   }
 
   public SparkContext sc;
   public SQLContext sqlContext;
   public HiveContext hiveContext;
   private GUI gui;
-
-  /* spark-1.3
-  public SchemaRDD sql(String sql) {
-    return sqlContext.sql(sql);
-  }
-  */
 
   /**
    * Load dependency for interpreter and runtime (driver).
@@ -221,25 +230,6 @@ public class ZeppelinContext extends HashMap<String, Object> {
     this.gui = o;
   }
 
-  public void run(String lines) {
-    /*
-    String intpName = Paragraph.getRequiredReplName(lines);
-    String scriptBody = Paragraph.getScriptBody(lines);
-    Interpreter intp = interpreterContext.getParagraph().getRepl(intpName);
-    InterpreterResult ret = intp.interpret(scriptBody, interpreterContext);
-    if (ret.code() == InterpreterResult.Code.SUCCESS) {
-      out.println("%" + ret.type().toString().toLowerCase() + " " + ret.message());
-    } else if (ret.code() == InterpreterResult.Code.ERROR) {
-      out.println("Error: " + ret.message());
-    } else if (ret.code() == InterpreterResult.Code.INCOMPLETE) {
-      out.println("Incomplete");
-    } else {
-      out.println("Unknown error");
-    }
-    */
-    throw new RuntimeException("Missing implementation");
-  }
-
   private void restartInterpreter() {
   }
 
@@ -251,4 +241,310 @@ public class ZeppelinContext extends HashMap<String, Object> {
     this.interpreterContext = interpreterContext;
   }
 
+  public void setMaxResult(int maxResult) {
+    this.maxResult = maxResult;
+  }
+
+  /**
+   * show DataFrame or SchemaRDD
+   * @param o DataFrame or SchemaRDD object
+   */
+  public void show(Object o) {
+    show(o, maxResult);
+  }
+
+  /**
+   * show DataFrame or SchemaRDD
+   * @param o DataFrame or SchemaRDD object
+   * @param maxResult maximum number of rows to display
+   */
+  public void show(Object o, int maxResult) {
+    Class cls = null;
+    try {
+      cls = this.getClass().forName("org.apache.spark.sql.DataFrame");
+    } catch (ClassNotFoundException e) {
+    }
+
+    if (cls == null) {
+      try {
+        cls = this.getClass().forName("org.apache.spark.sql.SchemaRDD");
+      } catch (ClassNotFoundException e) {
+      }
+    }
+
+    if (cls == null) {
+      throw new InterpreterException("Can not road DataFrame/SchemaRDD class");
+    }
+
+    if (cls.isInstance(o)) {
+      out.print(showRDD(sc, interpreterContext, o, maxResult));
+    } else {
+      out.print(o.toString());
+    }
+  }
+
+  public static String showRDD(SparkContext sc,
+      InterpreterContext interpreterContext,
+      Object rdd, int maxResult) {
+    Object[] rows = null;
+    Method take;
+    String jobGroup = "zeppelin-" + interpreterContext.getParagraphId();
+    sc.setJobGroup(jobGroup, "Zeppelin", false);
+
+    try {
+      take = rdd.getClass().getMethod("take", int.class);
+      rows = (Object[]) take.invoke(rdd, maxResult + 1);
+
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+        | IllegalArgumentException | InvocationTargetException e) {
+      sc.clearJobGroup();
+      throw new InterpreterException(e);
+    }
+
+    String msg = null;
+
+    // get field names
+    Method queryExecution;
+    QueryExecution qe;
+    try {
+      queryExecution = rdd.getClass().getMethod("queryExecution");
+      qe = (QueryExecution) queryExecution.invoke(rdd);
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+        | IllegalArgumentException | InvocationTargetException e) {
+      throw new InterpreterException(e);
+    }
+
+    List<Attribute> columns =
+        scala.collection.JavaConverters.asJavaListConverter(
+            qe.analyzed().output()).asJava();
+
+    for (Attribute col : columns) {
+      if (msg == null) {
+        msg = col.name();
+      } else {
+        msg += "\t" + col.name();
+      }
+    }
+
+    msg += "\n";
+
+    // ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType,
+    // FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType,
+    // NullType, NumericType, ShortType, StringType, StructType
+
+    try {
+      for (int r = 0; r < maxResult && r < rows.length; r++) {
+        Object row = rows[r];
+        Method isNullAt = row.getClass().getMethod("isNullAt", int.class);
+        Method apply = row.getClass().getMethod("apply", int.class);
+
+        for (int i = 0; i < columns.size(); i++) {
+          if (!(Boolean) isNullAt.invoke(row, i)) {
+            msg += apply.invoke(row, i).toString();
+          } else {
+            msg += "null";
+          }
+          if (i != columns.size() - 1) {
+            msg += "\t";
+          }
+        }
+        msg += "\n";
+      }
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+        | IllegalArgumentException | InvocationTargetException e) {
+      throw new InterpreterException(e);
+    }
+
+    if (rows.length > maxResult) {
+      msg += "\n<font color=red>Results are limited by " + maxResult + ".</font>";
+    }
+    sc.clearJobGroup();
+    return "%table " + msg;
+  }
+
+  /**
+   * Run paragraph by id
+   * @param id
+   */
+  public void run(String id) {
+    run(id, interpreterContext);
+  }
+
+  /**
+   * Run paragraph by id
+   * @param id
+   * @param context
+   */
+  public void run(String id, InterpreterContext context) {
+    if (id.equals(context.getParagraphId())) {
+      throw new InterpreterException("Can not run current Paragraph");
+    }
+
+    for (InterpreterContextRunner r : context.getRunners()) {
+      if (id.equals(r.getParagraphId())) {
+        r.run();
+        return;
+      }
+    }
+
+    throw new InterpreterException("Paragraph " + id + " not found");
+  }
+
+  /**
+   * Run paragraph at idx
+   * @param idx
+   */
+  public void run(int idx) {
+    run(idx, interpreterContext);
+  }
+
+  /**
+   * Run paragraph at index
+   * @param idx index starting from 0
+   * @param context interpreter context
+   */
+  public void run(int idx, InterpreterContext context) {
+    if (idx >= context.getRunners().size()) {
+      throw new InterpreterException("Index out of bound");
+    }
+
+    InterpreterContextRunner runner = context.getRunners().get(idx);
+    if (runner.getParagraphId().equals(context.getParagraphId())) {
+      throw new InterpreterException("Can not run current Paragraph");
+    }
+
+    runner.run();
+  }
+
+  public void run(List<Object> paragraphIdOrIdx) {
+    run(paragraphIdOrIdx, interpreterContext);
+  }
+
+  /**
+   * Run paragraphs
+   * @param paragraphIdOrIdxs list of paragraph id or idx
+   */
+  public void run(List<Object> paragraphIdOrIdx, InterpreterContext context) {
+    for (Object idOrIdx : paragraphIdOrIdx) {
+      if (idOrIdx instanceof String) {
+        String id = (String) idOrIdx;
+        run(id, context);
+      } else if (idOrIdx instanceof Integer) {
+        Integer idx = (Integer) idOrIdx;
+        run(idx, context);
+      } else {
+        throw new InterpreterException("Paragraph " + idOrIdx + " not found");
+      }
+    }
+  }
+
+  public void runAll() {
+    runAll(interpreterContext);
+  }
+
+  /**
+   * Run all paragraphs. except this.
+   */
+  public void runAll(InterpreterContext context) {
+    for (InterpreterContextRunner r : context.getRunners()) {
+      if (r.getParagraphId().equals(context.getParagraphId())) {
+        // skip itself
+        continue;
+      }
+      r.run();
+    }
+  }
+
+  public List<String> listParagraphs() {
+    List<String> paragraphs = new LinkedList<String>();
+
+    for (InterpreterContextRunner r : interpreterContext.getRunners()) {
+      paragraphs.add(r.getParagraphId());
+    }
+
+    return paragraphs;
+  }
+
+
+
+  public Object angular(String name) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    AngularObject ao = registry.get(name);
+    if (ao == null) {
+      return null;
+    } else {
+      return ao.get();
+    }
+  }
+
+  public void angularBind(String name, Object o) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    if (registry.get(name) == null) {
+      registry.add(name, o);
+    } else {
+      registry.get(name).set(o);
+    }
+  }
+
+  public void angularBind(String name, Object o, AngularObjectWatcher w) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    if (registry.get(name) == null) {
+      registry.add(name, o);
+    } else {
+      registry.get(name).set(o);
+    }
+    angularWatch(name, w);
+  }
+
+  public void angularWatch(String name, AngularObjectWatcher w) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    if (registry.get(name) != null) {
+      registry.get(name).addWatcher(w);
+    }
+  }
+
+
+  public void angularWatch(String name,
+      final scala.Function2<Object, Object, Unit> func) {
+    AngularObjectWatcher w = new AngularObjectWatcher(getInterpreterContext()) {
+      @Override
+      public void watch(Object oldObject, Object newObject,
+          InterpreterContext context) {
+        func.apply(newObject, newObject);
+      }
+    };
+    angularWatch(name, w);
+  }
+
+  public void angularWatch(
+      String name,
+      final scala.Function3<Object, Object, InterpreterContext, Unit> func) {
+    AngularObjectWatcher w = new AngularObjectWatcher(getInterpreterContext()) {
+      @Override
+      public void watch(Object oldObject, Object newObject,
+          InterpreterContext context) {
+        func.apply(oldObject, newObject, context);
+      }
+    };
+    angularWatch(name, w);
+  }
+
+  public void angularUnwatch(String name, AngularObjectWatcher w) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    if (registry.get(name) != null) {
+      registry.get(name).removeWatcher(w);
+    }
+  }
+
+  public void angularUnwatch(String name) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    if (registry.get(name) != null) {
+      registry.get(name).clearAllWatchers();
+    }
+  }
+
+  public void angularUnbind(String name) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    registry.remove(name);
+  }
 }

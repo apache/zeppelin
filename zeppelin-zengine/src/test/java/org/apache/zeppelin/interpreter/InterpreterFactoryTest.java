@@ -54,8 +54,8 @@ public class InterpreterFactoryTest {
 	  System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
 	  System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 	  conf = new ZeppelinConfiguration();
-	  factory = new InterpreterFactory(conf, new InterpreterOption(false));
-	  context = new InterpreterContext("id", "title", "text", null, null);
+	  factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
+	  context = new InterpreterContext("id", "title", "text", null, null, null, null);
 
 	}
 
@@ -122,7 +122,7 @@ public class InterpreterFactoryTest {
     factory.add("newsetting", "mock1", new InterpreterOption(false), new Properties());
     assertEquals(3, factory.get().size());
 
-    InterpreterFactory factory2 = new InterpreterFactory(conf);
+    InterpreterFactory factory2 = new InterpreterFactory(conf, null);
     assertEquals(3, factory2.get().size());
   }
 }

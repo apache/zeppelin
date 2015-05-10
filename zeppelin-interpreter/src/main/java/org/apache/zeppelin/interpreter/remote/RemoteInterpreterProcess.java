@@ -17,50 +17,67 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.ExecuteResultHandler;
-import org.apache.commons.exec.ExecuteWatchdog;
+import com.google.gson.Gson;
+import org.apache.commons.exec.*;
 import org.apache.commons.exec.environment.EnvironmentUtils;
 import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.thrift.TException;
 import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
  */
 public class RemoteInterpreterProcess implements ExecuteResultHandler {
-  Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
-  AtomicInteger referenceCount;
+  private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
+  
+  private final AtomicInteger referenceCount;
   private DefaultExecutor executor;
   private ExecuteWatchdog watchdog;
   boolean running = false;
-  int port = -1;
-  private String interpreterRunner;
-  private String interpreterDir;
+  private int port = -1;
+  private final String interpreterRunner;
+  private final String interpreterDir;
 
   private GenericObjectPool<Client> clientPool;
   private Map<String, String> env;
+  private final RemoteInterpreterEventPoller remoteInterpreterEventPoller;
+  private final InterpreterContextRunnerPool interpreterContextRunnerPool;
 
-  public RemoteInterpreterProcess(String intpRunner, String intpDir, Map<String, String> env) {
+  public RemoteInterpreterProcess(String intpRunner,
+      String intpDir,
+      Map<String, String> env,
+      InterpreterContextRunnerPool interpreterContextRunnerPool) {
+    this(intpRunner, intpDir, env, interpreterContextRunnerPool, 
+        new RemoteInterpreterEventPoller());
+  }
+
+  RemoteInterpreterProcess(String intpRunner,
+      String intpDir,
+      Map<String, String> env,
+      InterpreterContextRunnerPool interpreterContextRunnerPool,
+      RemoteInterpreterEventPoller remoteInterpreterEventPoller) {
     this.interpreterRunner = intpRunner;
     this.interpreterDir = intpDir;
     this.env = env;
+    this.interpreterContextRunnerPool = interpreterContextRunnerPool;
     referenceCount = new AtomicInteger(0);
+    this.remoteInterpreterEventPoller = remoteInterpreterEventPoller;
   }
+
 
   public int getPort() {
     return port;
   }
 
-  public int reference() {
+  public int reference(InterpreterGroup interpreterGroup) {
     synchronized (referenceCount) {
       if (executor == null) {
         // start server process
@@ -108,6 +125,10 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
         }
 
         clientPool = new GenericObjectPool<Client>(new ClientFactory("localhost", port));
+
+        remoteInterpreterEventPoller.setInterpreterGroup(interpreterGroup);
+        remoteInterpreterEventPoller.setInterpreterProcess(this);
+        remoteInterpreterEventPoller.start();
       }
       return referenceCount.incrementAndGet();
     }
@@ -126,6 +147,8 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
       int r = referenceCount.decrementAndGet();
       if (r == 0) {
         logger.info("shutdown interpreter process");
+        remoteInterpreterEventPoller.shutdown();
+
         // first try shutdown
         try {
           Client client = getClient();
@@ -204,5 +227,36 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
     } else {
       return clientPool.getNumIdle();
     }
+  }
+
+  /**
+   * Called when angular object is updated in client side to propagate
+   * change to the remote process
+   * @param name
+   * @param o
+   */
+  public void updateRemoteAngularObject(String name, Object o) {
+    Client client = null;
+    try {
+      client = getClient();
+    } catch (NullPointerException e) {
+      // remote process not started
+      return;
+    } catch (Exception e) {
+      logger.error("Can't update angular object", e);
+    }
+
+    try {
+      Gson gson = new Gson();
+      client.angularObjectUpdate(name, gson.toJson(o));
+    } catch (TException e) {
+      logger.error("Can't update angular object", e);
+    } finally {
+      releaseClient(client);
+    }
+  }
+
+  public InterpreterContextRunnerPool getInterpreterContextRunnerPool() {
+    return interpreterContextRunnerPool;
   }
 }

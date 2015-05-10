@@ -148,7 +148,7 @@ public abstract class Interpreter {
     Map<String, InterpreterProperty> defaultProperties = Interpreter
         .findRegisteredInterpreterByClassName(getClassName()).getProperties();
     for (String k : defaultProperties.keySet()) {
-      if (!p.contains(k)) {
+      if (!p.containsKey(k)) {
         String value = defaultProperties.get(k).getDefaultValue();
         if (value != null) {
           p.put(k, defaultProperties.get(k).getDefaultValue());
@@ -156,7 +156,7 @@ public abstract class Interpreter {
       }
     }
 
-    return property;
+    return p;
   }
 
   public String getProperty(String key) {

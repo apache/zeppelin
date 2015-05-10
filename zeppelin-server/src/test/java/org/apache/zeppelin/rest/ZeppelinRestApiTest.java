@@ -26,7 +26,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -79,7 +83,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertThat(get, isAllowed());
     Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>(){}.getType());
     Map<String, Object> body = (Map<String, Object>) resp.get("body");
-    assertEquals(6, body.size());
+    assertEquals(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getStringValue().split(",").length, body.size());
     get.releaseConnection();
   }
 
@@ -108,5 +112,39 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertTrue(0 < body.size());
 
     get.releaseConnection();
+  }
+
+  @Test
+  public void testInterpreterRestart() throws IOException, InterruptedException {
+    // create new note
+    Note note = ZeppelinServer.notebook.createNote();
+    note.addParagraph();
+    Paragraph p = note.getLastParagraph();
+
+    // run markdown paragraph
+    p.setText("%md markdown");
+    note.run(p.getId());
+    while (p.getStatus() != Status.FINISHED) {
+      Thread.sleep(100);
+    }
+    assertEquals("<p>markdown</p>\n", p.getResult().message());
+
+    // restart interpreter
+    for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {
+      if (setting.getName().equals("md")) {
+        // restart
+        ZeppelinServer.notebook.getInterpreterFactory().restart(setting.id());
+        break;
+      }
+    }
+
+    // run markdown paragraph, again
+    p = note.addParagraph();
+    p.setText("%md markdown restarted");
+    note.run(p.getId());
+    while (p.getStatus() != Status.FINISHED) {
+      Thread.sleep(100);
+    }
+    assertEquals("<p>markdown restarted</p>\n", p.getResult().message());
   }
 }

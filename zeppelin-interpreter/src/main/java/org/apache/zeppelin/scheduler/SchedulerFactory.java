@@ -22,8 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.slf4j.Logger;
@@ -37,7 +36,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SchedulerFactory implements SchedulerListener {
   private final Logger logger = LoggerFactory.getLogger(SchedulerFactory.class);
-  ScheduledExecutorService executor;
+  ExecutorService executor;
   Map<String, Scheduler> schedulers = new LinkedHashMap<String, Scheduler>();
 
   private static SchedulerFactory singleton;
@@ -59,11 +58,11 @@ public class SchedulerFactory implements SchedulerListener {
   }
 
   public SchedulerFactory() throws Exception {
-    executor = Executors.newScheduledThreadPool(100);
+    executor = ExecutorFactory.singleton().createOrGet("schedulerFactory", 100);
   }
 
   public void destroy() {
-    executor.shutdown();
+    ExecutorFactory.singleton().shutdown("schedulerFactory");
   }
 
   public Scheduler createOrGetFIFOScheduler(String name) {

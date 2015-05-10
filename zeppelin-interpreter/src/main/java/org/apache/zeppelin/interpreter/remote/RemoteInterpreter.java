@@ -26,6 +26,7 @@ import org.apache.thrift.TException;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -56,6 +57,8 @@ public class RemoteInterpreter extends Interpreter {
   static Map<String, RemoteInterpreterProcess> interpreterGroupReference
     = new HashMap<String, RemoteInterpreterProcess>();
 
+  private InterpreterContextRunnerPool interpreterContextRunnerPool;
+
   public RemoteInterpreter(Properties property,
       String className,
       String interpreterRunner,
@@ -67,6 +70,7 @@ public class RemoteInterpreter extends Interpreter {
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
     env = new HashMap<String, String>();
+    interpreterContextRunnerPool = new InterpreterContextRunnerPool();
   }
 
   public RemoteInterpreter(Properties property,
@@ -75,7 +79,6 @@ public class RemoteInterpreter extends Interpreter {
       String interpreterPath,
       Map<String, String> env) {
     super(property);
-
     this.className = className;
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
@@ -119,7 +122,7 @@ public class RemoteInterpreter extends Interpreter {
       }
     }
 
-    int rc = interpreterProcess.reference();
+    int rc = interpreterProcess.reference(getInterpreterGroup());
 
     synchronized (interpreterProcess) {
       // when first process created
@@ -185,6 +188,15 @@ public class RemoteInterpreter extends Interpreter {
       client = interpreterProcess.getClient();
     } catch (Exception e1) {
       throw new InterpreterException(e1);
+    }
+
+    List<InterpreterContextRunner> runners = context.getRunners();
+    if (runners != null && runners.size() != 0) {
+      // assume all runners in this InterpreterContext have the same note id
+      String noteId = runners.get(0).getNoteId();
+
+      interpreterContextRunnerPool.clear(noteId);
+      interpreterContextRunnerPool.addAll(noteId, runners);
     }
 
     try {
@@ -312,11 +324,14 @@ public class RemoteInterpreter extends Interpreter {
     super.setInterpreterGroup(interpreterGroup);
 
     synchronized (interpreterGroupReference) {
-      if (!interpreterGroupReference
-          .containsKey(getInterpreterGroupKey(interpreterGroup))) {
+      RemoteInterpreterProcess intpProcess = interpreterGroupReference
+          .get(getInterpreterGroupKey(interpreterGroup));
+
+      // when interpreter process is not created or terminated
+      if (intpProcess == null || (!intpProcess.isRunning() && intpProcess.getPort() > 0)) {
         interpreterGroupReference.put(getInterpreterGroupKey(interpreterGroup),
             new RemoteInterpreterProcess(interpreterRunner,
-                interpreterPath, env));
+                interpreterPath, env, interpreterContextRunnerPool));
 
         logger.info("setInterpreterGroup = "
             + getInterpreterGroupKey(interpreterGroup) + " class=" + className
@@ -335,7 +350,8 @@ public class RemoteInterpreter extends Interpreter {
         ic.getParagraphTitle(),
         ic.getParagraphText(),
         gson.toJson(ic.getConfig()),
-        gson.toJson(ic.getGui()));
+        gson.toJson(ic.getGui()),
+        gson.toJson(ic.getRunners()));
   }
 
   private InterpreterResult convert(RemoteInterpreterResult result) {

@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
+import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -258,8 +259,16 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getBoolean(ConfVars.ZEPPELIN_SSL_CLIENT_AUTH);
   }
 
+  public String getServerAddress() {
+    return getString(ConfVars.ZEPPELIN_ADDR);
+  }
+
   public int getServerPort() {
     return getInt(ConfVars.ZEPPELIN_PORT);
+  }
+
+  public String getWebSocketAddress() {
+    return getString(ConfVars.ZEPPELIN_WEBSOCKET_ADDR);
   }
 
   public int getWebSocketPort() {
@@ -320,7 +329,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getNotebookDir() {
-    return getRelativeDir(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
 
   public String getInterpreterDir() {
@@ -356,8 +365,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
    */
   public static enum ConfVars {
     ZEPPELIN_HOME("zeppelin.home", "../"),
+    ZEPPELIN_ADDR("zeppelin.server.addr", "0.0.0.0"),
     ZEPPELIN_PORT("zeppelin.server.port", 8080),
     // negative websocket port denotes that server port + 1 should be used
+    ZEPPELIN_WEBSOCKET_ADDR("zeppelin.websocket.addr", "0.0.0.0"),
     ZEPPELIN_WEBSOCKET_PORT("zeppelin.websocket.port", -1),
     ZEPPELIN_SSL("zeppelin.ssl", false),
     ZEPPELIN_SSL_CLIENT_AUTH("zeppelin.ssl.client.auth", false),
@@ -375,10 +386,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.spark.SparkSqlInterpreter,"
         + "org.apache.zeppelin.spark.DepInterpreter,"
         + "org.apache.zeppelin.markdown.Markdown,"
-        + "org.apache.zeppelin.shell.ShellInterpreter"),
+        + "org.apache.zeppelin.angular.AngularInterpreter,"
+        + "org.apache.zeppelin.shell.ShellInterpreter,"
+        + "org.apache.zeppelin.hive.HiveInterpreter,"
+        + "org.apache.zeppelin.tajo.TajoInterpreter"),
         ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
         ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
         ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
+        ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", VFSNotebookRepo.class.getName()),
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner", "bin/interpreter.sh"),
     // Decide when new note is created, interpreter settings will be binded automatically or not.
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true);

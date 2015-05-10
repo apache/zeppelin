@@ -22,13 +22,17 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Properties;
 
+import org.apache.spark.SparkConf;
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.spark.SparkInterpreter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -55,7 +59,10 @@ public class SparkInterpreterTest {
   	  repl.open();
 	  }
 
-    context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI());
+	  InterpreterGroup intpGroup = new InterpreterGroup();
+    context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        new LinkedList<InterpreterContextRunner>());
 	}
 
   @After
@@ -131,5 +138,19 @@ public class SparkInterpreterTest {
     // load library from maven repository and try to import again
     repl.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
     assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
+  }
+
+  @Test
+  public void emptyConfigurationVariablesOnlyForNonSparkProperties() {
+    Properties intpProperty = repl.getProperty();
+    SparkConf sparkConf = repl.getSparkContext().getConf();
+    for (Object oKey : intpProperty.keySet()) {
+      String key = (String) oKey;
+      String value = (String) intpProperty.get(key);
+      repl.logger.debug(String.format("[%s]: [%s]", key, value));
+      if (key.startsWith("spark.") && value.isEmpty()) {
+        assertTrue(String.format("configuration starting from 'spark.' should not be empty. [%s]", key), !sparkConf.contains(key) || !sparkConf.get(key).isEmpty());
+      }
+    }
   }
 }

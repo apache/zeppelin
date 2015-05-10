@@ -17,11 +17,12 @@
 
 package org.apache.zeppelin.notebook;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,9 +30,10 @@ import java.util.Map;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
@@ -59,11 +61,14 @@ public class Notebook {
   private StdSchedulerFactory quertzSchedFact;
   private org.quartz.Scheduler quartzSched;
   private JobListenerFactory jobListenerFactory;
+  private NotebookRepo notebookRepo;
 
-  public Notebook(ZeppelinConfiguration conf, SchedulerFactory schedulerFactory,
+  public Notebook(ZeppelinConfiguration conf, NotebookRepo notebookRepo,
+      SchedulerFactory schedulerFactory,
       InterpreterFactory replFactory, JobListenerFactory jobListenerFactory) throws IOException,
       SchedulerException {
     this.conf = conf;
+    this.notebookRepo = notebookRepo;
     this.schedulerFactory = schedulerFactory;
     this.replFactory = replFactory;
     this.jobListenerFactory = jobListenerFactory;
@@ -97,7 +102,7 @@ public class Notebook {
    */
   public Note createNote(List<String> interpreterIds) throws IOException {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    Note note = new Note(conf, intpLoader, jobListenerFactory, quartzSched);
+    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory);
     intpLoader.setNoteId(note.id());
     synchronized (notes) {
       notes.put(note.id(), note);
@@ -106,6 +111,7 @@ public class Notebook {
       bindInterpretersToNote(note.id(), interpreterIds);
     }
 
+    note.persist();
     return note;
   }
 
@@ -154,38 +160,104 @@ public class Notebook {
     }
   }
 
-  private void loadAllNotes() throws IOException {
-    File notebookDir = new File(conf.getNotebookDir());
-    File[] dirs = notebookDir.listFiles();
-    if (dirs == null) {
-      return;
+  private Note loadNoteFromRepo(String id) {
+    Note note = null;
+    try {
+      note = notebookRepo.get(id);
+    } catch (IOException e) {
+      logger.error("Failed to load " + id, e);
     }
-    for (File f : dirs) {
-      boolean isHidden = f.getName().startsWith(".");
-      if (f.isDirectory() && !isHidden) {
-        Scheduler scheduler =
-            schedulerFactory.createOrGetFIFOScheduler("note_" + System.currentTimeMillis());
-        logger.info("Loading note from " + f.getName());
-        NoteInterpreterLoader noteInterpreterLoader = new NoteInterpreterLoader(replFactory);
-        Note note = Note.load(f.getName(),
-            conf,
-            noteInterpreterLoader,
-            scheduler,
-            jobListenerFactory, quartzSched);
-        noteInterpreterLoader.setNoteId(note.id());
+    if (note == null) {
+      return null;
+    }
 
-        synchronized (notes) {
-          notes.put(note.id(), note);
-          refreshCron(note.id());
+    // set NoteInterpreterLoader
+    NoteInterpreterLoader noteInterpreterLoader = new NoteInterpreterLoader(
+        replFactory);
+    note.setReplLoader(noteInterpreterLoader);
+    noteInterpreterLoader.setNoteId(note.id());
+
+    // set JobListenerFactory
+    note.setJobListenerFactory(jobListenerFactory);
+
+    // set notebookRepo
+    note.setNotebookRepo(notebookRepo);
+
+    Map<String, SnapshotAngularObject> angularObjectSnapshot =
+        new HashMap<String, SnapshotAngularObject>();
+
+    // restore angular object --------------
+    Date lastUpdatedDate = new Date(0);
+    for (Paragraph p : note.getParagraphs()) {
+      p.setNote(note);
+      if (p.getDateFinished() != null &&
+          lastUpdatedDate.before(p.getDateFinished())) {
+        lastUpdatedDate = p.getDateFinished();
+      }
+    }
+
+    Map<String, List<AngularObject>> savedObjects = note.getAngularObjects();
+
+    if (savedObjects != null) {
+      for (String intpGroupName : savedObjects.keySet()) {
+        List<AngularObject> objectList = savedObjects.get(intpGroupName);
+
+        for (AngularObject savedObject : objectList) {
+          SnapshotAngularObject snapshot = angularObjectSnapshot.get(savedObject.getName());
+          if (snapshot == null || snapshot.getLastUpdate().before(lastUpdatedDate)) {
+            angularObjectSnapshot.put(
+                savedObject.getName(),
+                new SnapshotAngularObject(
+                    intpGroupName,
+                    savedObject,
+                    lastUpdatedDate));
+          }
         }
       }
+    }
+
+    synchronized (notes) {
+      notes.put(note.id(), note);
+      refreshCron(note.id());
+    }
+    return note;
+  }
+
+  private void loadAllNotes() throws IOException {
+    List<NoteInfo> noteInfos = notebookRepo.list();
+
+    for (NoteInfo info : noteInfos) {
+      loadNoteFromRepo(info.getId());
+    }
+  }
+
+  class SnapshotAngularObject {
+    String intpGroupId;
+    AngularObject angularObject;
+    Date lastUpdate;
+
+    public SnapshotAngularObject(String intpGroupId,
+        AngularObject angularObject, Date lastUpdate) {
+      super();
+      this.intpGroupId = intpGroupId;
+      this.angularObject = angularObject;
+      this.lastUpdate = lastUpdate;
+    }
+
+    public String getIntpGroupId() {
+      return intpGroupId;
+    }
+    public AngularObject getAngularObject() {
+      return angularObject;
+    }
+    public Date getLastUpdate() {
+      return lastUpdate;
     }
   }
 
   public List<Note> getAllNotes() {
     synchronized (notes) {
       List<Note> noteList = new ArrayList<Note>(notes.values());
-      logger.info("" + noteList.size());
       Collections.sort(noteList, new Comparator() {
         @Override
         public int compare(Object one, Object two) {

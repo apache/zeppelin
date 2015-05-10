@@ -38,6 +38,7 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
   private static final org.apache.thrift.protocol.TField PARAGRAPH_TEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("paragraphText", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField CONFIG_FIELD_DESC = new org.apache.thrift.protocol.TField("config", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField GUI_FIELD_DESC = new org.apache.thrift.protocol.TField("gui", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField RUNNERS_FIELD_DESC = new org.apache.thrift.protocol.TField("runners", org.apache.thrift.protocol.TType.STRING, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -50,6 +51,7 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
   public String paragraphText; // required
   public String config; // required
   public String gui; // required
+  public String runners; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -57,7 +59,8 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
     PARAGRAPH_TITLE((short)2, "paragraphTitle"),
     PARAGRAPH_TEXT((short)3, "paragraphText"),
     CONFIG((short)4, "config"),
-    GUI((short)5, "gui");
+    GUI((short)5, "gui"),
+    RUNNERS((short)6, "runners");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -82,6 +85,8 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
           return CONFIG;
         case 5: // GUI
           return GUI;
+        case 6: // RUNNERS
+          return RUNNERS;
         default:
           return null;
       }
@@ -135,6 +140,8 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.GUI, new org.apache.thrift.meta_data.FieldMetaData("gui", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.RUNNERS, new org.apache.thrift.meta_data.FieldMetaData("runners", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(RemoteInterpreterContext.class, metaDataMap);
   }
@@ -147,7 +154,8 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
     String paragraphTitle,
     String paragraphText,
     String config,
-    String gui)
+    String gui,
+    String runners)
   {
     this();
     this.paragraphId = paragraphId;
@@ -155,6 +163,7 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
     this.paragraphText = paragraphText;
     this.config = config;
     this.gui = gui;
+    this.runners = runners;
   }
 
   /**
@@ -176,6 +185,9 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
     if (other.isSetGui()) {
       this.gui = other.gui;
     }
+    if (other.isSetRunners()) {
+      this.runners = other.runners;
+    }
   }
 
   public RemoteInterpreterContext deepCopy() {
@@ -189,6 +201,7 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
     this.paragraphText = null;
     this.config = null;
     this.gui = null;
+    this.runners = null;
   }
 
   public String getParagraphId() {
@@ -311,6 +324,30 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
     }
   }
 
+  public String getRunners() {
+    return this.runners;
+  }
+
+  public RemoteInterpreterContext setRunners(String runners) {
+    this.runners = runners;
+    return this;
+  }
+
+  public void unsetRunners() {
+    this.runners = null;
+  }
+
+  /** Returns true if field runners is set (has been assigned a value) and false otherwise */
+  public boolean isSetRunners() {
+    return this.runners != null;
+  }
+
+  public void setRunnersIsSet(boolean value) {
+    if (!value) {
+      this.runners = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case PARAGRAPH_ID:
@@ -353,6 +390,14 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
       }
       break;
 
+    case RUNNERS:
+      if (value == null) {
+        unsetRunners();
+      } else {
+        setRunners((String)value);
+      }
+      break;
+
     }
   }
 
@@ -372,6 +417,9 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
 
     case GUI:
       return getGui();
+
+    case RUNNERS:
+      return getRunners();
 
     }
     throw new IllegalStateException();
@@ -394,6 +442,8 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
       return isSetConfig();
     case GUI:
       return isSetGui();
+    case RUNNERS:
+      return isSetRunners();
     }
     throw new IllegalStateException();
   }
@@ -453,6 +503,15 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
       if (!(this_present_gui && that_present_gui))
         return false;
       if (!this.gui.equals(that.gui))
+        return false;
+    }
+
+    boolean this_present_runners = true && this.isSetRunners();
+    boolean that_present_runners = true && that.isSetRunners();
+    if (this_present_runners || that_present_runners) {
+      if (!(this_present_runners && that_present_runners))
+        return false;
+      if (!this.runners.equals(that.runners))
         return false;
     }
 
@@ -522,6 +581,16 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetRunners()).compareTo(typedOther.isSetRunners());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetRunners()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.runners, typedOther.runners);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -579,6 +648,14 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
       sb.append("null");
     } else {
       sb.append(this.gui);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("runners:");
+    if (this.runners == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.runners);
     }
     first = false;
     sb.append(")");
@@ -664,6 +741,14 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // RUNNERS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.runners = iprot.readString();
+              struct.setRunnersIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -704,6 +789,11 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
         oprot.writeString(struct.gui);
         oprot.writeFieldEnd();
       }
+      if (struct.runners != null) {
+        oprot.writeFieldBegin(RUNNERS_FIELD_DESC);
+        oprot.writeString(struct.runners);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -737,7 +827,10 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
       if (struct.isSetGui()) {
         optionals.set(4);
       }
-      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetRunners()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetParagraphId()) {
         oprot.writeString(struct.paragraphId);
       }
@@ -753,12 +846,15 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
       if (struct.isSetGui()) {
         oprot.writeString(struct.gui);
       }
+      if (struct.isSetRunners()) {
+        oprot.writeString(struct.runners);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, RemoteInterpreterContext struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(5);
+      BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.paragraphId = iprot.readString();
         struct.setParagraphIdIsSet(true);
@@ -778,6 +874,10 @@ public class RemoteInterpreterContext implements org.apache.thrift.TBase<RemoteI
       if (incoming.get(4)) {
         struct.gui = iprot.readString();
         struct.setGuiIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.runners = iprot.readString();
+        struct.setRunnersIsSet(true);
       }
     }
   }

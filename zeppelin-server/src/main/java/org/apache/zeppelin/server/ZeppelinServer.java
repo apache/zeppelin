@@ -19,6 +19,7 @@ package org.apache.zeppelin.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.rest.InterpreterRestApi;
 import org.apache.zeppelin.rest.NotebookRestApi;
 import org.apache.zeppelin.rest.ZeppelinRestApi;
@@ -70,6 +72,8 @@ public class ZeppelinServer extends Application {
   static NotebookServer notebookServer;
 
   private InterpreterFactory replFactory;
+
+  private NotebookRepo notebookRepo;
 
   public static void main(String[] args) throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -145,6 +149,7 @@ public class ZeppelinServer extends Application {
     int timeout = 1000 * 30;
     connector.setMaxIdleTime(timeout);
     connector.setSoLingerTime(-1);
+    connector.setHost(conf.getServerAddress());
     connector.setPort(conf.getServerPort());
 
     final Server server = new Server();
@@ -156,7 +161,7 @@ public class ZeppelinServer extends Application {
   private static NotebookServer setupNotebookServer(ZeppelinConfiguration conf)
       throws Exception {
 
-    NotebookServer server = new NotebookServer(conf.getWebSocketPort());
+    NotebookServer server = new NotebookServer(conf.getWebSocketAddress(), conf.getWebSocketPort());
 
     // Default WebSocketServer uses unencrypted connector, so only need to
     // change the connector if SSL should be used.
@@ -233,7 +238,7 @@ public class ZeppelinServer extends Application {
     swaggerServlet.setInitParameter("api.version", "1.0.0");
     swaggerServlet.setInitParameter(
         "swagger.api.basepath",
-        "http://localhost:" + conf.getServerPort() + "/api");
+        "http://" + conf.getServerAddress() + ":" + conf.getServerPort() + "/api");
     swaggerServlet.setInitOrder(2);
 
     // Setup the handler
@@ -297,8 +302,13 @@ public class ZeppelinServer extends Application {
 
     this.schedulerFactory = new SchedulerFactory();
 
-    this.replFactory = new InterpreterFactory(conf);
-    notebook = new Notebook(conf, schedulerFactory, replFactory, notebookServer);
+    this.replFactory = new InterpreterFactory(conf, notebookServer);
+    Class<?> notebookStorageClass = getClass().forName(
+        conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE));
+    Constructor<?> constructor = notebookStorageClass.getConstructor(
+        ZeppelinConfiguration.class);
+    this.notebookRepo = (NotebookRepo) constructor.newInstance(conf);
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, replFactory, notebookServer);
   }
 
   @Override

@@ -20,15 +20,16 @@ package org.apache.zeppelin.spark;
 import static org.junit.Assert.assertEquals;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Properties;
 
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
-import org.apache.zeppelin.spark.SparkInterpreter;
-import org.apache.zeppelin.spark.SparkSqlInterpreter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +39,7 @@ public class SparkSqlInterpreterTest {
 	private SparkSqlInterpreter sql;
   private SparkInterpreter repl;
   private InterpreterContext context;
+  private InterpreterGroup intpGroup;
 
 	@Before
 	public void setUp() throws Exception {
@@ -55,13 +57,15 @@ public class SparkSqlInterpreterTest {
 
   		sql = new SparkSqlInterpreter(p);
 
-  		InterpreterGroup intpGroup = new InterpreterGroup();
+  		intpGroup = new InterpreterGroup();
 		  intpGroup.add(repl);
 		  intpGroup.add(sql);
 		  sql.setInterpreterGroup(intpGroup);
 		  sql.open();
 		}
-		context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI());
+		context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI(),
+		    new AngularObjectRegistry(intpGroup.getId(), null),
+		    new LinkedList<InterpreterContextRunner>());
 	}
 
 	@After
@@ -79,7 +83,7 @@ public class SparkSqlInterpreterTest {
 		assertEquals(Type.TABLE, ret.type());
 		assertEquals("name\tage\nmoon\t33\npark\t34\n", ret.message());
 
-		assertEquals(InterpreterResult.Code.ERROR, sql.interpret("select wrong syntax", context).code());
+	  assertEquals(InterpreterResult.Code.ERROR, sql.interpret("select wrong syntax", context).code());
 		assertEquals(InterpreterResult.Code.SUCCESS, sql.interpret("select case when name==\"aa\" then name else name end from people", context).code());
 	}
 

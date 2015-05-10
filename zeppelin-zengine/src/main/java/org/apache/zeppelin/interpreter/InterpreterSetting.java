@@ -36,21 +36,17 @@ public class InterpreterSetting {
 
   public InterpreterSetting(String id, String name,
       String group,
-      InterpreterOption option,
-      InterpreterGroup interpreterGroup) {
+      InterpreterOption option) {
     this.id = id;
     this.name = name;
     this.group = group;
-    this.properties = interpreterGroup.getProperty();
     this.option = option;
-    this.interpreterGroup = interpreterGroup;
   }
 
   public InterpreterSetting(String name,
       String group,
-      InterpreterOption option,
-      InterpreterGroup interpreterGroup) {
-    this(generateId(), name, group, option, interpreterGroup);
+      InterpreterOption option) {
+    this(generateId(), name, group, option);
   }
 
   public String id() {

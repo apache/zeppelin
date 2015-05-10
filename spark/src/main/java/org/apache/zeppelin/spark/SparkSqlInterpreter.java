@@ -29,18 +29,15 @@ import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Stage;
 import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.SQLContext.QueryExecution;
-import org.apache.spark.sql.catalyst.expressions.Attribute;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterUtils;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -76,7 +73,7 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   private String getJobGroup(InterpreterContext context){
-    return "zeppelin-" + this.hashCode() + "-" + context.getParagraphId();
+    return "zeppelin-" + context.getParagraphId();
   }
 
   private int maxResult;
@@ -126,82 +123,13 @@ public class SparkSqlInterpreter extends Interpreter {
       sc.setLocalProperty("spark.scheduler.pool", null);
     }
 
-    sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
-
-    // SchemaRDD - spark 1.1, 1.2, DataFrame - spark 1.3
-    Object rdd;
-    Object[] rows = null;
     try {
-      rdd = sqlc.sql(st);
-
-      Method take = rdd.getClass().getMethod("take", int.class);
-      rows = (Object[]) take.invoke(rdd, maxResult + 1);
+      Object rdd = sqlc.sql(st);
+      String msg = ZeppelinContext.showRDD(sc, context, rdd, maxResult);
+      return new InterpreterResult(Code.SUCCESS, msg);
     } catch (Exception e) {
-      logger.error("Error", e);
-      sc.clearJobGroup();
-      return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
+      return new InterpreterResult(Code.ERROR, e.getMessage());
     }
-
-    String msg = null;
-
-    // get field names
-    Method queryExecution;
-    QueryExecution qe;
-    try {
-      queryExecution = rdd.getClass().getMethod("queryExecution");
-      qe = (QueryExecution) queryExecution.invoke(rdd);
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
-      throw new InterpreterException(e);
-    }
-
-    List<Attribute> columns =
-        scala.collection.JavaConverters.asJavaListConverter(
-            qe.analyzed().output()).asJava();
-
-    for (Attribute col : columns) {
-      if (msg == null) {
-        msg = col.name();
-      } else {
-        msg += "\t" + col.name();
-      }
-    }
-
-    msg += "\n";
-
-    // ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType,
-    // FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType,
-    // NullType, NumericType, ShortType, StringType, StructType
-
-    try {
-      for (int r = 0; r < maxResult && r < rows.length; r++) {
-        Object row = rows[r];
-        Method isNullAt = row.getClass().getMethod("isNullAt", int.class);
-        Method apply = row.getClass().getMethod("apply", int.class);
-
-        for (int i = 0; i < columns.size(); i++) {
-          if (!(Boolean) isNullAt.invoke(row, i)) {
-            msg += apply.invoke(row, i).toString();
-          } else {
-            msg += "null";
-          }
-          if (i != columns.size() - 1) {
-            msg += "\t";
-          }
-        }
-        msg += "\n";
-      }
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
-      throw new InterpreterException(e);
-    }
-
-    if (rows.length > maxResult) {
-      msg += "\n<font color=red>Results are limited by " + maxResult + ".</font>";
-    }
-    InterpreterResult rett = new InterpreterResult(Code.SUCCESS, "%table " + msg);
-    sc.clearJobGroup();
-    return rett;
   }
 
   @Override

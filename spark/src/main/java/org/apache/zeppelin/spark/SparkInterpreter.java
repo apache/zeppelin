@@ -107,6 +107,7 @@ public class SparkInterpreter extends Interpreter {
                 + "we should set this value")
             .add("zeppelin.spark.useHiveContext", "true",
                  "Use HiveContext instead of SQLContext if it is true.")
+            .add("zeppelin.spark.maxResult", "1000", "Max number of SparkSQL result to display.")
             .add("args", "", "spark commandline args").build());
 
   }
@@ -243,8 +244,11 @@ public class SparkInterpreter extends Interpreter {
         new SparkConf()
             .setMaster(getProperty("master"))
             .setAppName(getProperty("spark.app.name"))
-            .setJars(jars)
             .set("spark.repl.class.uri", classServerUri);
+
+    if (jars.length > 0) {
+      conf.setJars(jars);
+    }
 
     if (execUri != null) {
       conf.set("spark.executor.uri", execUri);
@@ -258,10 +262,10 @@ public class SparkInterpreter extends Interpreter {
 
     for (Object k : intpProperty.keySet()) {
       String key = (String) k;
-      Object value = intpProperty.get(key);
-      if (!isEmptyString(value)) {
-        logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, value));
-        conf.set(key, (String) value);
+      String val = toString(intpProperty.get(key));
+      if (!key.startsWith("spark.") || !val.trim().isEmpty()) {
+        logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
+        conf.set(key, val);
       }
     }
 
@@ -269,8 +273,8 @@ public class SparkInterpreter extends Interpreter {
     return sparkContext;
   }
 
-  public static boolean isEmptyString(Object val) {
-    return val instanceof String && ((String) val).trim().isEmpty();
+  static final String toString(Object o) {
+    return (o instanceof String) ? (String) o : "";
   }
 
   public static String getSystemDefault(
@@ -400,7 +404,8 @@ public class SparkInterpreter extends Interpreter {
 
     dep = getDependencyResolver();
 
-    z = new ZeppelinContext(sc, sqlc, null, dep, printStream);
+    z = new ZeppelinContext(sc, sqlc, null, dep, printStream,
+        Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
     try {
       if (sc.version().startsWith("1.1") || sc.version().startsWith("1.2")) {
@@ -512,7 +517,7 @@ public class SparkInterpreter extends Interpreter {
   }
 
   String getJobGroup(InterpreterContext context){
-    return "zeppelin-" + this.hashCode() + "-" + context.getParagraphId();
+    return "zeppelin-" + context.getParagraphId();
   }
 
   /**
