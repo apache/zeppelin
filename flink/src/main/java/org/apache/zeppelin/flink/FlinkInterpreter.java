@@ -19,7 +19,6 @@ package org.apache.zeppelin.flink;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -29,7 +28,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.flink.api.java.ExecutionEnvironment;
-import org.apache.flink.client.program.Client;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.minicluster.LocalFlinkMiniCluster;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -56,12 +54,10 @@ public class FlinkInterpreter extends Interpreter {
   private Settings settings;
   private ByteArrayOutputStream out;
   private FlinkIMain imain;
-  private File classDir;
   private Map<String, Object> binder;
   private ExecutionEnvironment env;
   private Configuration flinkConf;
   private LocalFlinkMiniCluster localFlinkCluster;
-  private Client client;
 
   public FlinkInterpreter(Properties property) {
     super(property);
@@ -235,7 +231,6 @@ public class FlinkInterpreter extends Interpreter {
     linesToRun[lines.length] = "print(\"\")";
 
     Console.setOut(out);
-    System.setOut(new PrintStream(out));
     out.reset();
     Code r = null;
 
