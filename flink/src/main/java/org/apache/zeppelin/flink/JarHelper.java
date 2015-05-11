@@ -11,6 +11,9 @@ import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 
 /**
+ * This class copied from flink-scala-shell. Once the flink-0.9 is published in
+ * the maven repository, this class can be removed
+ *
  * Provides utility services for jarring and unjarring files and directories.
  * Note that a given instance of JarHelper is not threadsafe with respect to
  * multiple jar operations.

@@ -17,6 +17,7 @@ import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.IMain;
 
 /**
+ * Scala compiler
  */
 public class FlinkIMain extends IMain {
   Logger logger = LoggerFactory.getLogger(FlinkIMain.class);

@@ -27,7 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * The class override execute() method to create an PlanExecutor with
+ * jar file that packages classes from scala compiler.
  */
 public class FlinkEnvironment extends ExecutionEnvironment {
   Logger logger = LoggerFactory.getLogger(FlinkEnvironment.class);
@@ -79,52 +80,4 @@ public class FlinkEnvironment extends ExecutionEnvironment {
 
     return jsonPlan;
   }
-
-/*
-  private File createJar() throws IOException {
-    // create execution environment
-    File jarFile = new File(System.getProperty("java.io.tmpdir")
-        + "/ZeppelinFlinkJar_" + System.currentTimeMillis() + ".jar");
-
-
-    File[] classFiles = classDir.listFiles();
-    if (classFiles == null) {
-      return null;
-    }
-
-    byte buffer[] = new byte[10240];
-    // Open archive file
-    FileOutputStream stream = new FileOutputStream(jarFile);
-    JarOutputStream out = new JarOutputStream(stream, new Manifest());
-
-    for (int i = 0; i < classFiles.length; i++) {
-      File classFile = classFiles[i];
-      if (classFiles == null || !classFile.exists()
-          || classFile.isDirectory())
-        continue;
-
-
-      // Add class
-      JarEntry jarAdd = new JarEntry(classFile.getName());
-      jarAdd.setTime(classFile.lastModified());
-      out.putNextEntry(jarAdd);
-      logger.info("add class {} into jar", classFile);
-
-      // Write file to archive
-      FileInputStream in = new FileInputStream(classFile);
-      while (true) {
-        int nRead = in.read(buffer, 0, buffer.length);
-        if (nRead <= 0)
-          break;
-        out.write(buffer, 0, nRead);
-      }
-      in.close();
-    }
-
-    out.close();
-    stream.close();
-    return jarFile;
-  }
-  */
-
 }

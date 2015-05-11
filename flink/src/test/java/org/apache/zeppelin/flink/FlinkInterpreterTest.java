@@ -23,25 +23,26 @@ import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.junit.After;
-import org.junit.Before;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class FlinkInterpreterTest {
 
-  private FlinkInterpreter flink;
-  private InterpreterContext context;
+  private static FlinkInterpreter flink;
+  private static InterpreterContext context;
 
-  @Before
-  public void setUp() {
+  @BeforeClass
+  public static void setUp() {
     Properties p = new Properties();
     flink = new FlinkInterpreter(p);
     flink.open();
     context = new InterpreterContext(null, null, null, null, null, null, null);
   }
 
-  @After
-  public void tearDown() {
+  @AfterClass
+  public static void tearDown() {
     flink.close();
     flink.destroy();
   }
@@ -53,12 +54,13 @@ public class FlinkInterpreterTest {
     assertEquals("1", result.message());
   }
 
+
   @Test
   public void testWordCount() {
     flink.interpret("val text = env.fromElements(\"To be or not to be\")", context);
     flink.interpret("val counts = text.flatMap { _.toLowerCase.split(\" \") }.map { (_, 1) }.groupBy(0).sum(1)", context);
     flink.interpret("counts.print()", context);
     InterpreterResult result = flink.interpret("env.execute(\"WordCount Example\")", context);
-    assertEquals("", result.message());
+    assertEquals(Code.SUCCESS, result.code());
   }
 }
