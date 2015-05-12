@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.tajo;
+package org.apache.zeppelin.tajo.jdbc;
 
 import java.sql.*;
 import java.util.List;
@@ -45,8 +45,8 @@ public class TajoInterpreter extends Interpreter {
 
   static {
     Interpreter.register(
-      "tajo",
-      "tajo",
+      "tsqlj",
+      "tajo-jdbc",
       TajoInterpreter.class.getName(),
       new InterpreterPropertyBuilder()
         .add(TAJO_JDBC_URI, "jdbc:tajo://localhost:26002/default", "The URL for TajoServer.")
