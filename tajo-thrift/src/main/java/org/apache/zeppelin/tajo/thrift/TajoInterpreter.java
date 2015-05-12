@@ -311,7 +311,25 @@ public class TajoInterpreter extends Interpreter {
   @Override
   public int getProgress(InterpreterContext context) {
 
-    return 0;
+    int result = 0;
+    logger.info("Getting progress information...");
+    try {
+      List<TBriefQueryInfo> queryList = tajoClient.getQueryList();
+
+      logger.info("\t " + queryList.size() + " queries");
+      if (queryList.isEmpty()) {
+        return result;
+      }
+
+      String queryId = queryList.get(queryList.size() - 1).queryId;
+      TGetQueryStatusResponse query = tajoClient.getQueryStatus(queryId);
+      logger.info("Done! " + query);
+      result = (int) query.progress * 100;
+
+    } catch (Exception e) {
+      logger.error("getProgress failed ", e);
+    }
+    return result;
   }
 
   @Override
