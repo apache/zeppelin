@@ -92,6 +92,7 @@
     <module>shell</module>
     <module>hive</module>
     <module>tajo-jdbc</module>
+    <module>tajo-thrift</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
