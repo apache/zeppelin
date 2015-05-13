@@ -31,6 +31,10 @@
   <name>Zeppelin: Tajo Thrift interpreter</name>
   <url>http://zeppelin.incubator.apache.org</url>
 
+  <properties>
+    <protobuf.version>2.5.0</protobuf.version>
+  </properties>
+  
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
