@@ -68,6 +68,20 @@
     </dependency>
   </dependencies>
 
+ <repositories>
+    <!-- For unpublished tajo-thrift-server snapshot -->
+    <repository>
+      <id>nflabs public repository</id>
+      <url>https://raw.github.com/NFLabs/mvn-repo/master/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
   <build>
     <plugins>
       <plugin>
