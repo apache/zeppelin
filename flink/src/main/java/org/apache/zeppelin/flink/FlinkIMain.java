@@ -80,7 +80,7 @@ public class FlinkIMain extends IMain {
       }
     }
 
-    // jarr up
+    // jar up
     JarHelper jh = new JarHelper();
     jh.jarDir(jarBuildDir, jarFile);
 
