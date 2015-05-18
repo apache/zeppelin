@@ -24,16 +24,18 @@ zeppelin-web/bower_components
 **nbproject/
 **node/
 
-logs/
-run/
-metastore_db/
-*.log
-jobs/
-zan-repo/
-drivers/
-warehouse/
-notebook/
-local-repo/
+
+# project level
+/logs/
+/run/
+/metastore_db/
+/*.log
+/jobs/
+/zan-repo/
+/drivers/
+/warehouse/
+/notebook/
+/local-repo/
 
 **/sessions/
 **/data/

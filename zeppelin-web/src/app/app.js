@@ -113,11 +113,11 @@ angular
         templateUrl: 'app/home/home.html'
       })
       .when('/notebook/:noteId', {
-        templateUrl: 'app/notebook/notebooks.html',
+        templateUrl: 'app/notebook/notebook.html',
         controller: 'NotebookCtrl'
       })
       .when('/notebook/:noteId/paragraph/:paragraphId?', {
-        templateUrl: 'app/notebook/notebooks.html',
+        templateUrl: 'app/notebook/notebook.html',
         controller: 'NotebookCtrl'
       })
       .when('/interpreter', {
