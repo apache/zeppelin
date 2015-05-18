@@ -15,7 +15,6 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
@@ -26,26 +25,24 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-shell</artifactId>
+  <artifactId>zeppelin-tajo</artifactId>
   <packaging>jar</packaging>
   <version>0.5.0-incubating-SNAPSHOT</version>
-  <name>Zeppelin: Shell interpreter</name>
-  <url>http://zeppelin.incubator.apache.org</url>
+  <name>Zeppelin: Tajo interpreter</name>
+  <url>http://www.apache.org</url>
+
+  <properties>
+    <protobuf.version>2.5.0</protobuf.version>
+  </properties>
 
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>org.apache.zeppelin</groupId>
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
-    
-	<dependency>
-		<groupId>org.apache.commons</groupId>
-		<artifactId>commons-exec</artifactId>
-		<version>1.1</version>
-	</dependency>
-	
+
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -55,12 +52,19 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
     </dependency>
-    
+
+    <dependency>
+      <groupId>org.apache.tajo</groupId>
+      <artifactId>tajo-jdbc</artifactId>
+      <version>${tajo.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
+
   </dependencies>
 
   <build>
@@ -76,11 +80,11 @@
 
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>1.3.1</version>            
-        <executions> 
-          <execution> 
-            <id>enforce</id> 
-            <phase>none</phase> 
+        <version>1.3.1</version>
+        <executions>
+          <execution>
+            <id>enforce</id>
+            <phase>none</phase>
           </execution>
         </executions>
       </plugin>
@@ -96,7 +100,7 @@
               <goal>copy-dependencies</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/../../interpreter/sh</outputDirectory>
+              <outputDirectory>${project.build.directory}/../../interpreter/tajo</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
@@ -110,7 +114,7 @@
               <goal>copy</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/../../interpreter/sh</outputDirectory>
+              <outputDirectory>${project.build.directory}/../../interpreter/tajo</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
@@ -122,12 +126,13 @@
                   <version>${project.version}</version>
                   <type>${project.packaging}</type>
                 </artifactItem>
-              </artifactItems>              
+              </artifactItems>
             </configuration>
           </execution>
         </executions>
       </plugin>
     </plugins>
   </build>
+
 
 </project>

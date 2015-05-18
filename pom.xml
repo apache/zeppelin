@@ -35,7 +35,7 @@
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin</artifactId>
   <packaging>pom</packaging>
-  <version>0.5.0-SNAPSHOT</version>
+  <version>0.5.0-incubating-SNAPSHOT</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
   <url>http://zeppelin.incubator.apache.org/</url>
@@ -91,6 +91,7 @@
     <module>angular</module>
     <module>shell</module>
     <module>hive</module>
+    <module>tajo</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
@@ -113,6 +114,7 @@
     <hbase.version>0.94.6</hbase.version>
     <zookeeper.version>3.4.5</zookeeper.version>
     <hive.version>0.12.0</hive.version>
+    <tajo.version>0.10.0</tajo.version>
     <derby.version>10.4.2.0</derby.version>
     <parquet.version>1.4.3</parquet.version>
     <jblas.version>1.2.3</jblas.version>
@@ -893,7 +895,7 @@
         </configuration>
         <executions>
           <execution>
-            <id>covertura</id>
+            <id>cobertura</id>
             <phase>package</phase>
             <goals>
               <goal>cobertura</goal>
@@ -1095,15 +1097,18 @@
             </execution>
           </executions>
         </plugin>
+
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>2.13</version>
         </plugin>
+
         <plugin>
           <artifactId>maven-dependency-plugin</artifactId>
           <version>2.8</version>
         </plugin>
+
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.17</version>
@@ -1119,14 +1124,22 @@
             </excludes> <includes> <include>**/itest/**</include> </includes> </configuration>
             </execution> </executions> -->
         </plugin>
+
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
           <version>2.4</version>
         </plugin>
+
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
           <version>1.2.1</version>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>cobertura-maven-plugin</artifactId>
+          <version>2.7</version>
         </plugin>
 
         <plugin>
@@ -1142,7 +1155,6 @@
             </filesets>
           </configuration>
         </plugin>
-
 
         <!--This plugin's configuration is used to store Eclipse m2e settings
           only. It has no influence on the Maven build itself. -->
@@ -1199,47 +1211,6 @@
       </plugins>
     </pluginManagement>
   </build>
-
-  <repositories>
-    <!-- For dependency recosiled version of hive_test -->
-    <repository>
-      <id>nflabs public repository</id>
-      <url>https://raw.github.com/NFLabs/mvn-repo/master/releases</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-
-    <!-- for for jdo/jdo2-api/2.3-ec -->
-    <repository>
-      <id>cdh-repository</id>
-      <name>CDH Repository</name>
-      <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <!-- for s3-upload-maven-pugin 1.2-SNAPSHOT until this one merged https://github.com/bazaarvoice/s3-upload-maven-plugin/pull/2 -->
-    <pluginRepository>
-      <id>nflabs public repository snspshots</id>
-      <url>https://github.com/NFLabs/mvn-repo/raw/master/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
 
   <profiles>
     <profile>

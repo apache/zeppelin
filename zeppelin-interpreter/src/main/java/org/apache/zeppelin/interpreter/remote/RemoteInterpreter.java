@@ -79,7 +79,6 @@ public class RemoteInterpreter extends Interpreter {
       String interpreterPath,
       Map<String, String> env) {
     super(property);
-
     this.className = className;
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
@@ -325,8 +324,11 @@ public class RemoteInterpreter extends Interpreter {
     super.setInterpreterGroup(interpreterGroup);
 
     synchronized (interpreterGroupReference) {
-      if (!interpreterGroupReference
-          .containsKey(getInterpreterGroupKey(interpreterGroup))) {
+      RemoteInterpreterProcess intpProcess = interpreterGroupReference
+          .get(getInterpreterGroupKey(interpreterGroup));
+
+      // when interpreter process is not created or terminated
+      if (intpProcess == null || (!intpProcess.isRunning() && intpProcess.getPort() > 0)) {
         interpreterGroupReference.put(getInterpreterGroupKey(interpreterGroup),
             new RemoteInterpreterProcess(interpreterRunner,
                 interpreterPath, env, interpreterContextRunnerPool));
