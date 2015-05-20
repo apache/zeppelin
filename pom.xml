@@ -126,6 +126,7 @@
     <jets3t.version>0.7.1</jets3t.version>
     <commons.math3.version>3.2</commons.math3.version>
     <commons.httpclient.version>4.3.6</commons.httpclient.version>
+    <fasterxml.jackson.version>2.4.4</fasterxml.jackson.version>
     <codehaus.jackson.version>1.8.8</codehaus.jackson.version>
     <snappy.version>1.0.5</snappy.version>
     <io.netty.version>4.0.17.Final</io.netty.version>
@@ -812,6 +813,26 @@
       </dependency>
 
       <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${fasterxml.jackson.version}</version>
+      </dependency>
+
+      <!-- Guava is excluded because of SPARK-6149.  The Guava version referenced in this module is
+           15.0, which causes runtime incompatibility issues. -->
+      <dependency>
+        <groupId>com.fasterxml.jackson.module</groupId>
+        <artifactId>jackson-module-scala_2.10</artifactId>
+        <version>${fasterxml.jackson.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
         <groupId>com.thoughtworks.paranamer</groupId>
         <artifactId>paranamer</artifactId>
         <version>2.6</version>
@@ -1317,8 +1338,6 @@
 
     <profile>
       <id>spark-1.3</id>
-      <dependencies>
-      </dependencies>
       <properties>
         <akka.version>2.3.4-spark</akka.version>
         <spark.version>1.3.0</spark.version>
@@ -1343,7 +1362,44 @@
         <snappy.version>1.1.1.6</snappy.version>
         <mesos.version>0.21.0</mesos.version>
       </properties>
+
+      <dependencies>
+      </dependencies>
+
     </profile>
+
+    <profile>
+      <id>spark-1.4</id>
+      <properties>
+        <akka.version>2.3.4-spark</akka.version>
+        <spark.version>1.4.0</spark.version>
+        <mesos.version>0.21.1</mesos.version>
+        <hbase.version>0.98.7-hadoop2</hbase.version>
+        <hbase.artifact>hbase</hbase.artifact>
+        <hive.group>org.spark-project.hive</hive.group>
+        <hive.version>0.13.1a</hive.version>
+        <derby.version>10.10.1.1</derby.version>
+        <orbit.version>3.0.0.v201112011016</orbit.version>
+        <parquet.version>1.6.0rc3</parquet.version>
+        <chill.version>0.5.0</chill.version>
+        <ivy.version>2.4.0</ivy.version>
+        <oro.version>2.0.8</oro.version>
+        <avro.mapred.classifier>hadoop2</avro.mapred.classifier>
+        <codahale.metrics.version>3.1.0</codahale.metrics.version>
+        <commons.httpclient.version>4.3.2</commons.httpclient.version>
+        <commons.math3.version>3.4.1</commons.math3.version>
+        <io.netty.version>4.0.23.Final</io.netty.version>
+        <codehaus.jackson.version>1.9.13</codehaus.jackson.version>
+        <fasterxml.jackson.version>2.4.4</fasterxml.jackson.version>
+        <snappy.version>1.1.1.7</snappy.version>
+        <mesos.version>0.21.0</mesos.version>
+      </properties>
+
+      <dependencies>
+      </dependencies>
+
+    </profile>
+
 
     <profile>
       <id>hadoop-0.23</id>
