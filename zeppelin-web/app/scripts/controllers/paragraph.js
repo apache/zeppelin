@@ -817,9 +817,7 @@ angular.module('zeppelinWebApp')
 
     var d3g = [];
 
-    // FIXME: pivot(data) will alter the rows order
-    console.log('data is\n %s \n', JSON.stringify(data));
-    // ------
+    // console.log('data is\n %s \n', JSON.stringify(data));
 
     if (type === 'scatterChart') {
       var scatterData = setScatterChart(data, refresh);
@@ -861,10 +859,7 @@ angular.module('zeppelinWebApp')
                         .scatter.useVoronoi(false);
     } else {
       var p = pivot(data);
-
-      // FIXME: pivot(data) will alter the rows order
-      console.log('Pivot(data) is\n %s \n', JSON.stringify(p));
-      // ------
+      // console.log('Pivot(data) is\n %s \n', JSON.stringify(p));
 
       if (type === 'pieChart') {
         var d = pivotDataToD3ChartFormat(p, true).d3g;
@@ -900,9 +895,7 @@ angular.module('zeppelinWebApp')
         $scope.chart[type].forceY([0]); // force y-axis minimum to 0 for line chart.
       }
 
-      // FIXME: pivotDataToD3ChartFormat(p)
-      console.log('D3CharFormat is %s', JSON.stringify(d3g));
-      // ------
+      // console.log('pivotDataD3ChartFormat is %s', JSON.stringify(d3g));
 
     }
 
