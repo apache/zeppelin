@@ -70,22 +70,22 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-yarn-common</artifactId>
-            <version>${yarn.version}</version>
+            <version>${hbase.interpreter.hadoop}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-yarn-api</artifactId>
-            <version>${yarn.version}</version>
+            <version>${hbase.interpreter.hadoop}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
-            <version>${hbase.interpreter.version}</version>
+            <version>${hbase.interpreter.hbase}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-annotations</artifactId>
-            <version>${hbase..interpreter.version}</version>
+            <version>${hbase.interpreter.hbase}</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
@@ -95,7 +95,7 @@
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-server</artifactId>
-            <version>${hbase.interpreter.version}</version>
+            <version>${hbase.interpreter.hbase}</version>
         </dependency>
         <dependency>
             <groupId>jline</groupId>
