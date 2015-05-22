@@ -54,6 +54,28 @@ ZEPPELIN_PID="${ZEPPELIN_PID_DIR}/zeppelin-${ZEPPELIN_IDENT_STRING}-${HOSTNAME}.
 ZEPPELIN_MAIN=org.apache.zeppelin.server.ZeppelinServer
 JAVA_OPTS+=" -Dzeppelin.log.file=${ZEPPELIN_LOGFILE}"
 
+# construct classpath
+if [[ -d "${ZEPPELIN_HOME}/zeppelin-interpreter/target/classes" ]]; then
+  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-interpreter/target/classes"
+fi
+
+if [[ -d "${ZEPPELIN_HOME}/zeppelin-zengine/target/classes" ]]; then
+  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-zengine/target/classes"
+fi
+
+if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
+  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
+fi
+
+addJarInDir "${ZEPPELIN_HOME}"
+addJarInDir "${ZEPPELIN_HOME}/lib"
+addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
+addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
+addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
+addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
+
+CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+
 if [[ "${ZEPPELIN_NICENESS}" = "" ]]; then
     export ZEPPELIN_NICENESS=0
 fi

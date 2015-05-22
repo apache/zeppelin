@@ -49,10 +49,16 @@ fi
 
 ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 
+# construct classpath
+if [[ -d "${ZEPPELIN_HOME}/zeppelin-interpreter/target/classes" ]]; then
+  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-interpreter/target/classes"
+fi
+
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
 addJarInDir "${INTERPRETER_DIR}"
 
-export CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
 HOSTNAME=$(hostname)
 ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
@@ -66,7 +72,6 @@ if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   echo "Log dir doesn't exist, create ${ZEPPELIN_LOG_DIR}"
   $(mkdir -p "${ZEPPELIN_LOG_DIR}")
 fi
-
 
 
 ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} -cp ${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &

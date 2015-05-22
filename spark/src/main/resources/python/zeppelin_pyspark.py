@@ -15,9 +15,10 @@
 # limitations under the License.
 #
 
-import sys, getopt
+import sys, getopt, traceback
 
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
+from py4j.protocol import Py4JJavaError
 from pyspark.conf import SparkConf
 from pyspark.context import SparkContext
 from pyspark.rdd import RDD
@@ -85,9 +86,7 @@ while True :
   try:
     stmts = req.statements().split("\n")
     jobGroup = req.jobGroup()
-    single = None
-    incomplete = None
-    compiledCode = None
+    final_code = None
 
     for s in stmts:
       if s == None or len(s.strip()) == 0:
@@ -97,44 +96,24 @@ while True :
       if s.strip().startswith("#"):
         continue
 
-      if s[0] != " " and s[0] != "\t":
-        if incomplete != None:
-          raise incomplete
-
-        if compiledCode != None:
-          sc.setJobGroup(jobGroup, "Zeppelin")
-          eval(compiledCode)
-          compiledCode = None
-          single = None
-          incomplete = None
-
-      if single == None:
-        single = s
+      if final_code:
+        final_code += "\n" + s
       else:
-        single += "\n" + s
+        final_code = s
 
-      try :
-        compiledCode = compile(single, "<string>", "single")
-        incomplete = None
-      except SyntaxError as e:
-        if str(e).startswith("unexpected EOF while parsing") :
-          # incomplete expression
-          incomplete = e
-          continue
-        else :
-          # actual error
-          raise e
-
-    if incomplete != None:
-      raise incomplete
-
-    if compiledCode != None:
+    if final_code:
+      compiledCode = compile(final_code, "<string>", "exec")
       sc.setJobGroup(jobGroup, "Zeppelin")
       eval(compiledCode)
 
     intp.setStatementsFinished(output.get(), False)
+  except Py4JJavaError:
+    excInnerError = traceback.format_exc() # format_tb() does not return the inner exception
+    innerErrorStart = excInnerError.find("Py4JJavaError:")
+    if innerErrorStart > -1:
+       excInnerError = excInnerError[innerErrorStart:]
+    intp.setStatementsFinished(excInnerError + str(sys.exc_info()), True)
   except:
     intp.setStatementsFinished(str(sys.exc_info()), True)
 
   output.reset()
-    

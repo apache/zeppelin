@@ -22,13 +22,13 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.5.0-SNAPSHOT</version>
+    <version>0.5.0-incubating-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-web</artifactId>
   <packaging>war</packaging>
-  <version>0.5.0-SNAPSHOT</version>
+  <version>0.5.0-incubating-SNAPSHOT</version>
   <name>Zeppelin: web Application</name>
 
   <build>
@@ -74,6 +74,7 @@
         <artifactId>frontend-maven-plugin</artifactId>
         <version>0.0.23</version>
         <executions>
+
           <execution>
             <id>install node and npm</id>
             <goals>
@@ -90,10 +91,6 @@
             <goals>
               <goal>npm</goal>
             </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <arguments>install</arguments>
-            </configuration>
           </execution>
           
           <execution>
@@ -101,7 +98,6 @@
             <goals>
               <goal>bower</goal>
             </goals>
-            <phase>generate-resources</phase>
             <configuration>
               <arguments>--allow-root install</arguments>
             </configuration>
@@ -112,15 +108,33 @@
             <goals>
               <goal>grunt</goal>
             </goals>
-            <phase>generate-resources</phase>
+
             <configuration>
               <!-- TODO(anthonycorbacho): remove force once all JSHint are fixed! -->
               <arguments>--no-color --force</arguments>
             </configuration>
           </execution>
-          
         </executions>
       </plugin>
+
+      <!--
+          Disabling test report generation as it forks the lifecycle
+          and results in https://issues.apache.org/jira/browse/ZEPPELIN-69
+
+          There is no better way to do it, as per
+          http://jira.codehaus.org/browse/MCOBERTURA-154
+      -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>cobertura</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 

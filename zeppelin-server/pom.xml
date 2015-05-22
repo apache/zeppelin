@@ -22,13 +22,13 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.5.0-SNAPSHOT</version>
+    <version>0.5.0-incubating-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-server</artifactId>
   <packaging>jar</packaging>
-  <version>0.5.0-SNAPSHOT</version>
+  <version>0.5.0-incubating-SNAPSHOT</version>
   <name>Zeppelin: Server</name>
   <url>http://www.nflabs.com</url>
 
@@ -67,13 +67,13 @@
       <version>${cxf.version}</version>
     </dependency>
 
-	<dependency>
-	    <groupId>org.java-websocket</groupId>
-	    <artifactId>Java-WebSocket</artifactId>
-	    <version>1.3.0</version>
-	</dependency>
+    <dependency>
+      <groupId>org.java-websocket</groupId>
+      <artifactId>Java-WebSocket</artifactId>
+      <version>1.3.0</version>
+    </dependency>
 
-<!-- Swagger -->
+    <!-- Swagger -->
     <dependency>
       <groupId>com.wordnik</groupId>
       <artifactId>swagger-jersey-jaxrs_2.10</artifactId>
@@ -177,7 +177,7 @@
       <groupId>org.eclipse.jetty.orbit</groupId>
       <artifactId>javax.servlet.jsp</artifactId>
       <version>2.2.0.v201112011158</version>
-       <exclusions>
+      <exclusions>
         <exclusion>
           <groupId>org.eclipse.jetty.orbit</groupId>
           <artifactId>javax.servlet</artifactId>
@@ -207,7 +207,7 @@
           <groupId>commons-codec</groupId>
           <artifactId>commons-codec</artifactId>
         </exclusion>
-       </exclusions>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -259,29 +259,29 @@
       	<exclusion>
       	  <groupId>com.sun.jersey</groupId>
       	  <artifactId>jersey-server</artifactId>
-	    </exclusion>
+	</exclusion>
       	<exclusion>
       	  <groupId>javax.ws.rs</groupId>
       	  <artifactId>javax.ws.rs-api</artifactId>
-	    </exclusion>
+	</exclusion>
       </exclusions>
     </dependency>
 
-	<dependency>
-		<groupId>javax.ws.rs</groupId>
-		<artifactId>javax.ws.rs-api</artifactId>
-		<version>2.0-m10</version>
-	</dependency>
-
     <dependency>
-        <groupId>org.scala-lang</groupId>
-        <artifactId>scala-library</artifactId>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+      <version>2.0-m10</version>
     </dependency>
 
     <dependency>
-        <groupId>org.scalatest</groupId>
-        <artifactId>scalatest_${scala.binary.version}</artifactId>
-        <scope>test</scope>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.scalatest</groupId>
+      <artifactId>scalatest_${scala.binary.version}</artifactId>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
@@ -320,7 +320,7 @@
             </goals>
           </execution>
         </executions>
-         <configuration>
+        <configuration>
 	  <argLine>-Xmx2048m</argLine>
         </configuration>
       </plugin>
@@ -335,38 +335,39 @@
       </plugin>
 
       <plugin>
-            <groupId>org.scala-tools</groupId>
-            <artifactId>maven-scala-plugin</artifactId>
-            <executions>
-                <execution>
-                    <goals>
-                        <goal>testCompile</goal>
-                    </goals>
-                </execution>
-            </executions>
-        </plugin>
+        <groupId>org.scala-tools</groupId>
+        <artifactId>maven-scala-plugin</artifactId>
+        <version>2.15.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
-        <plugin>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest-maven-plugin</artifactId>
-            <version>1.0</version>
-            <configuration>
-                <stderr/>
-                <systemProperties>
-                    <spark.testing>1</spark.testing>
-                </systemProperties>
-            </configuration>
-            <executions>
-                <execution>
-                    <id>test</id>
-                    <goals>
-                        <goal>test</goal>
-                    </goals>
-                </execution>
-            </executions>
-        </plugin>
+      <plugin>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest-maven-plugin</artifactId>
+        <version>1.0</version>
+        <configuration>
+          <stderr/>
+          <systemProperties>
+            <spark.testing>1</spark.testing>
+          </systemProperties>
+        </configuration>
+        <executions>
+          <execution>
+            <id>test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
-        <plugin>
+      <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <version>1.6</version>
         <executions>

@@ -29,6 +29,7 @@ script:
   - mvn verify -Pusing-packaged-distr -B
 
 after_failure:
+  - cat target/rat.txt
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.log
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.out
 
