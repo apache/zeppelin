@@ -80,12 +80,12 @@
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
-            <version>${hbase.version}</version>
+            <version>${hbase.interpreter.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-annotations</artifactId>
-            <version>${hbase.version}</version>
+            <version>${hbase..interpreter.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
@@ -95,7 +95,7 @@
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-server</artifactId>
-            <version>${hbase.version}</version>
+            <version>${hbase.interpreter.version}</version>
         </dependency>
         <dependency>
             <groupId>jline</groupId>

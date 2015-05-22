@@ -131,6 +131,7 @@
     <snappy.version>1.0.5</snappy.version>
     <io.netty.version>4.0.17.Final</io.netty.version>
     <jruby.version>1.6.8</jruby.version>
+    <hbase.interpreter.version>1.0.0</hbase.interpreter.version>
 
     <guava.version>15.0</guava.version>
     <scalatest.version>2.2.1</scalatest.version>
