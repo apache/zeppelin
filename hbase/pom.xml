@@ -18,14 +18,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <artifactId>zeppelin</artifactId>
         <groupId>org.apache.zeppelin</groupId>
         <version>0.5.0-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
-    <name>Zeppelin: Hbase interpreter</name>
+
+    <groupId>org.apache.zeppelin</groupId>
     <artifactId>zeppelin-hbase</artifactId>
+    <packaging>jar</packaging>
+    <version>0.5.0-SNAPSHOT</version>
+    <name>Zeppelin: HBase interpreter</name>
+    <url>http://www.apache.org</url>
+
+    <properties>
+        <hbase.hbase.version>1.0.0</hbase.hbase.version>
+        <hbase.hadoop.version>2.6.0</hbase.hadoop.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -70,22 +81,22 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-yarn-common</artifactId>
-            <version>${hbase.interpreter.hadoop}</version>
+            <version>${hbase.hadoop.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-yarn-api</artifactId>
-            <version>${hbase.interpreter.hadoop}</version>
+            <version>${hbase.hadoop.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
-            <version>${hbase.interpreter.hbase}</version>
+            <version>${hbase.hbase.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-annotations</artifactId>
-            <version>${hbase.interpreter.hbase}</version>
+            <version>${hbase.hbase.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
@@ -95,7 +106,7 @@
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-server</artifactId>
-            <version>${hbase.interpreter.hbase}</version>
+            <version>${hbase.hbase.version}</version>
         </dependency>
         <dependency>
             <groupId>jline</groupId>
