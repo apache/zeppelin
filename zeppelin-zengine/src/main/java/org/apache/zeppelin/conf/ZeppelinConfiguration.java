@@ -389,7 +389,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.angular.AngularInterpreter,"
         + "org.apache.zeppelin.shell.ShellInterpreter,"
         + "org.apache.zeppelin.hive.HiveInterpreter,"
-        + "org.apache.zeppelin.tajo.TajoInterpreter"),
+        + "org.apache.zeppelin.tajo.TajoInterpreter,"
+        + "org.apache.zeppelin.ignite.IgniteInterpreter,"
+        + "org.apache.zeppelin.ignite.IgniteSqlInterpreter"),
         ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
         ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
         ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
