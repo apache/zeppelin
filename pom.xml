@@ -139,6 +139,7 @@
     <java.version>1.7</java.version>
     <cxf.version>2.7.7</cxf.version>
     <gson.version>2.2</gson.version>
+    <libthrift.version>0.9.0</libthrift.version>
   </properties>
 
   <dependencyManagement>
@@ -175,6 +176,12 @@
         <version>${jetty.version}</version>
       </dependency>
 
+      <!-- Thrift -->
+      <dependency>
+        <groupId>org.apache.thrift</groupId>
+        <artifactId>libthrift</artifactId>
+        <version>${libthrift.version}</version>
+      </dependency>
 
       <!-- Commons -->
 
@@ -1320,6 +1327,27 @@
     </profile>
 
     <profile>
+      <id>cassandra-spark-1.1</id>
+      <dependencies>
+        <dependency>
+          <groupId>com.datastax.spark</groupId>
+          <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
+          <version>1.1.1</version>
+          <exclusions>
+            <exclusion>
+              <groupId>org.joda</groupId>
+              <artifactId>joda-convert</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+      </dependencies>
+      <properties>
+        <spark.version>1.1.1</spark.version>
+        <libthrift.version>0.9.2</libthrift.version>
+      </properties>
+    </profile>
+
+    <profile>
       <id>spark-1.2</id>
       <dependencies>
       </dependencies>
@@ -1334,6 +1362,35 @@
         <commons.math3.version>3.1.1</commons.math3.version>
         <io.netty.version>4.0.23.Final</io.netty.version>
       </properties>
+    </profile>
+
+    <profile>
+      <id>cassandra-spark-1.2</id>
+      <properties>
+        <akka.version>2.3.4-spark</akka.version>
+        <spark.version>1.2.1</spark.version>
+        <hive.version>0.13.1a</hive.version>
+        <derby.version>10.10.1.1</derby.version>
+        <parquet.version>1.6.0rc3</parquet.version>
+        <chill.version>0.5.0</chill.version>
+        <commons.httpclient.version>4.2.6</commons.httpclient.version>
+        <commons.math3.version>3.1.1</commons.math3.version>
+        <io.netty.version>4.0.23.Final</io.netty.version>
+        <libthrift.version>0.9.2</libthrift.version>
+      </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.datastax.spark</groupId>
+          <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
+          <version>1.2.1</version>
+          <exclusions>
+            <exclusion>
+              <groupId>org.joda</groupId>
+              <artifactId>joda-convert</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+      </dependencies>
     </profile>
 
     <profile>
@@ -1369,6 +1426,51 @@
     </profile>
 
     <profile>
+      <id>cassandra-spark-1.3</id>
+      <properties>
+        <akka.version>2.3.4-spark</akka.version>
+        <spark.version>1.3.0</spark.version>
+        <mesos.version>0.21.0</mesos.version>
+        <hbase.version>0.98.7</hbase.version>
+        <hbase.artifact>hbase</hbase.artifact>
+        <hive.group>org.spark-project.hive</hive.group>
+        <hive.version>0.13.1a</hive.version>
+        <derby.version>10.10.1.1</derby.version>
+        <orbit.version>3.0.0.v201112011016</orbit.version>
+        <parquet.version>1.6.0rc3</parquet.version>
+        <chill.version>0.5.0</chill.version>
+        <ivy.version>2.4.0</ivy.version>
+        <oro.version>2.0.8</oro.version>
+        <avro.mapred.classifier></avro.mapred.classifier>
+        <codahale.metrics.version>3.1.0</codahale.metrics.version>
+        <commons.httpclient.version>4.2.6</commons.httpclient.version>
+        <commons.math3.version>3.1.1</commons.math3.version>
+        <io.netty.version>4.0.23.Final</io.netty.version>
+        <codehaus.jackson.version>1.9.13</codehaus.jackson.version>
+        <fasterxml.jackson.version>2.4.4</fasterxml.jackson.version>
+        <snappy.version>1.1.1.6</snappy.version>
+        <mesos.version>0.21.0</mesos.version>
+        <libthrift.version>0.9.2</libthrift.version>
+      </properties>
+
+      <dependencies>
+        <dependency>
+          <groupId>com.datastax.spark</groupId>
+          <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
+          <!--You need to build your own version of Spark Cassandra connector 1.3.0-SNAPSHOT
+              because it is not yet released-->
+          <version>1.3.0-SNAPSHOT</version>
+          <exclusions>
+            <exclusion>
+              <groupId>org.joda</groupId>
+              <artifactId>joda-convert</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+      </dependencies>
+    </profile>
+
+   <profile>
       <id>spark-1.4</id>
       <properties>
         <akka.version>2.3.4-spark</akka.version>
