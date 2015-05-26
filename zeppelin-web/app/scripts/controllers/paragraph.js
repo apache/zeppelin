@@ -1346,7 +1346,7 @@ angular.module('zeppelinWebApp')
       if (groups.length === 1 && values.length === 1) {
         for (d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
           var colName = d3g[d3gIndex].key;
-          colName = colName.split('.')[0];
+          colName = colName.substring(0, colName.lastIndexOf("."));
           d3g[d3gIndex].key = colName;
         }
       }
