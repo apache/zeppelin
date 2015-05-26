@@ -23,13 +23,13 @@ Checkout source code from [https://github.com/apache/incubator-zeppelin](https:/
 #### Local mode
 
 ```
-mvn install -DskipTests
+mvn package -DskipTests
 ```
 
 #### Cluster mode
 
 ```
-mvn install -DskipTests -Dspark.version=1.1.0 -Dhadoop.version=2.2.0
+mvn package -DskipTests -Dspark.version=1.1.0 -Dhadoop.version=2.2.0
 ```
 
 Change spark.version and hadoop.version to your cluster's one.
@@ -45,7 +45,7 @@ sbt/sbt publish-local
 and then build Zeppelin with your custom built Spark
 
 ```
-mvn install -DskipTests -Dspark.version=1.1.0-Custom -Dhadoop.version=2.2.0
+mvn package -DskipTests -Dspark.version=1.1.0-Custom -Dhadoop.version=2.2.0
 ```
 
 
