@@ -45,6 +45,21 @@ public class SparkInterpreterTest {
   private InterpreterContext context;
   private File tmpDir;
 
+
+  /**
+   * Get spark version number as a numerical value.
+   * eg. 1.1.x => 11, 1.2.x => 12, 1.3.x => 13 ...
+   */
+  public static int getSparkVersionNumber() {
+    if (repl == null) {
+      return 0;
+    }
+
+    String[] split = repl.getSparkContext().version().split(".");
+    int version = Integer.parseInt(split[0]) + Integer.parseInt(split[1]);
+    return version;
+  }
+
   @Before
   public void setUp() throws Exception {
     tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
@@ -113,7 +128,8 @@ public class SparkInterpreterTest {
     repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
     assertEquals(Code.SUCCESS, repl.interpret("people.take(3)", context).code());
 
-    if (repl.getSparkContext().version().startsWith("1.1")) { // spark 1.2 or later does not allow create multiple SparkContext in the same jvm by default.
+
+    if (getSparkVersionNumber() <= 11) { // spark 1.2 or later does not allow create multiple SparkContext in the same jvm by default.
     // create new interpreter
     Properties p = new Properties();
     SparkInterpreter repl2 = new SparkInterpreter(p);

@@ -73,8 +73,7 @@ public class SparkSqlInterpreterTest {
   }
 
   boolean isDataFrameSupported() {
-    String version = repl.getSparkContext().version();
-    if (version.startsWith("1.1") || version.startsWith("1.2")) {
+    if (SparkInterpreterTest.getSparkVersionNumber() <= 12) {
       return false;
     } else {
       return true;
