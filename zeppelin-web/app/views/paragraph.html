@@ -396,7 +396,9 @@ limitations under the License.
           ng-click="toggleEditor()"></span>
     <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
           ng-click="toggleOutput()"></span>
-
+    <span class="icon-cloud-download" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Download data"
+          ng-click="downloadParagraph(getEditorValue())"
+          ng-show="paragraph.status=='FINISHED'"></span>
     <span class="dropdown navbar-right">
       <span class="icon-settings" style="cursor:pointer"
             data-toggle="dropdown"
