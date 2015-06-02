@@ -14,19 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.spark.utils
 
 import java.io.ByteArrayOutputStream
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfter, _}
+import org.apache.spark.{SparkContext, SparkConf}
+import org.scalatest._
+import org.scalatest.{BeforeAndAfter}
 
 case class Person(login : String, name: String, age: Int)
 
 class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAfterEach with Matchers {
   var sc: SparkContext = null
+  var testTuples:List[(String, String, Int)] = null
+  var testPersons:List[Person] = null
   var testRDDTuples: RDD[(String,String,Int)]  = null
   var testRDDPersons: RDD[Person]  = null
   var stream: ByteArrayOutputStream = null
@@ -36,8 +38,10 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
       .setAppName("test-DisplayFunctions")
       .setMaster("local")
     sc = new SparkContext(sparkConf)
-    testRDDTuples = sc.parallelize(List(("jdoe","John DOE",32),("hsue","Helen SUE",27),("rsmith","Richard SMITH",45)))
-    testRDDPersons = sc.parallelize(List(Person("jdoe","John DOE",32),Person("hsue","Helen SUE",27),Person("rsmith","Richard SMITH",45)))
+    testTuples = List(("jdoe", "John DOE", 32), ("hsue", "Helen SUE", 27), ("rsmith", "Richard SMITH", 45))
+    testRDDTuples = sc.parallelize(testTuples)
+    testPersons = List(Person("jdoe", "John DOE", 32), Person("hsue", "Helen SUE", 27), Person("rsmith", "Richard SMITH", 45))
+    testRDDPersons = sc.parallelize(testPersons)
   }
 
   override def beforeEach() {
@@ -49,7 +53,7 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
   "DisplayFunctions" should "generate correct column headers for tuples" in {
 
     Console.withOut(stream) {
-      new DisplayFunctions[(String,String,Int)](testRDDTuples).displayAsTable("Login","Name","Age")
+      new DisplayRDDFunctions[(String,String,Int)](testRDDTuples).displayAsTable("Login","Name","Age")
     }
 
     stream.toString("UTF-8") should be("%table Login\tName\tAge\n" +
@@ -61,7 +65,7 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
   "DisplayFunctions" should "generate correct column headers for case class" in {
 
     Console.withOut(stream) {
-      new DisplayFunctions[Person](testRDDPersons).displayAsTable("Login","Name","Age")
+      new DisplayRDDFunctions[Person](testRDDPersons).displayAsTable("Login","Name","Age")
     }
 
     stream.toString("UTF-8") should be("%table Login\tName\tAge\n" +
@@ -73,7 +77,7 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
   "DisplayFunctions" should "truncate exceeding column headers for tuples" in {
 
     Console.withOut(stream) {
-      new DisplayFunctions[(String,String,Int)](testRDDTuples).displayAsTable("Login","Name","Age","xxx","yyy")
+      new DisplayRDDFunctions[(String,String,Int)](testRDDTuples).displayAsTable("Login","Name","Age","xxx","yyy")
     }
 
     stream.toString("UTF-8") should be("%table Login\tName\tAge\n" +
@@ -85,7 +89,7 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
   "DisplayFunctions" should "pad missing column headers with ColumnXXX for tuples" in {
 
     Console.withOut(stream) {
-      new DisplayFunctions[(String,String,Int)](testRDDTuples).displayAsTable("Login")
+      new DisplayRDDFunctions[(String,String,Int)](testRDDTuples).displayAsTable("Login")
     }
 
     stream.toString("UTF-8") should be("%table Login\tColumn2\tColumn3\n" +
@@ -94,13 +98,25 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
       "rsmith\tRichard SMITH\t45\n")
   }
 
-  "DisplayFunctions" should "pad all missing column headers with ColumnXXX for tuples" in {
+  "DisplayFunctions" should "display traversable of tuples" in {
 
     Console.withOut(stream) {
-      new DisplayFunctions[(String,String,Int)](testRDDTuples).displayAsTable()
+      new DisplayTraversableFunctions[(String,String,Int)](testTuples).displayAsTable("Login","Name","Age")
     }
 
-    stream.toString("UTF-8") should be("%table Column1\tColumn2\tColumn3\n" +
+    stream.toString("UTF-8") should be("%table Login\tName\tAge\n" +
+      "jdoe\tJohn DOE\t32\n" +
+      "hsue\tHelen SUE\t27\n" +
+      "rsmith\tRichard SMITH\t45\n")
+  }
+
+  "DisplayFunctions" should "display traversable of case class" in {
+
+    Console.withOut(stream) {
+      new DisplayTraversableFunctions[Person](testPersons).displayAsTable("Login","Name","Age")
+    }
+
+    stream.toString("UTF-8") should be("%table Login\tName\tAge\n" +
       "jdoe\tJohn DOE\t32\n" +
       "hsue\tHelen SUE\t27\n" +
       "rsmith\tRichard SMITH\t45\n")
@@ -128,3 +144,5 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
 
 
 }
+
+
