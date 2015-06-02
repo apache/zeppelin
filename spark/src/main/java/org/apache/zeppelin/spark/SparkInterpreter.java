@@ -109,7 +109,9 @@ public class SparkInterpreter extends Interpreter {
                 getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT", 
                     "zeppelin.spark.useHiveContext", "true"),
                 "Use HiveContext instead of SQLContext if it is true.")
-            .add("zeppelin.spark.maxResult", "1000", "Max number of SparkSQL result to display.")
+            .add("zeppelin.spark.maxResult",
+                getSystemDefault("ZEPPELIN_SPARK_MAXRESULT", "zeppelin.spark.maxResult", "1000"),
+                "Max number of SparkSQL result to display.")
             .add("args", "", "spark commandline args").build());
 
   }
