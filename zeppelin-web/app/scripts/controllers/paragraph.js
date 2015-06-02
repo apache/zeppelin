@@ -915,8 +915,9 @@ angular.module('zeppelinWebApp')
         }
       } catch(ignoreErr) {
       }
-
       var chartEl = d3.select('#p'+$scope.paragraph.id+'_'+type+' svg')
+          .attr('height', $scope.paragraph.config.graph.height)
+          .style('height', height + 'px')
           .attr('height', $scope.paragraph.config.graph.height)
           .datum(d3g)
           .transition()
