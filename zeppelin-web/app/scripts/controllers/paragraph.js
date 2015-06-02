@@ -918,12 +918,10 @@ angular.module('zeppelinWebApp')
       var chartEl = d3.select('#p'+$scope.paragraph.id+'_'+type+' svg')
           .attr('height', $scope.paragraph.config.graph.height)
           .style('height', height + 'px')
-          .attr('height', $scope.paragraph.config.graph.height)
           .datum(d3g)
           .transition()
           .duration(animationDuration)
           .call($scope.chart[type]);
-      d3.select('#p'+$scope.paragraph.id+'_'+type+' svg').style.height = height+'px';
       nv.utils.windowResize($scope.chart[type].update);
     };
 
