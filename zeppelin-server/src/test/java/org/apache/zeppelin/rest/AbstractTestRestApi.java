@@ -70,7 +70,7 @@ public abstract class AbstractTestRestApi {
     return url;
   }
 
-  static ExecutorService executor = Executors.newSingleThreadExecutor();
+  static ExecutorService executor;
   protected static final Runnable server = new Runnable() {
     @Override
     public void run() {
@@ -86,6 +86,7 @@ public abstract class AbstractTestRestApi {
   protected static void startUp() throws Exception {
     if (!wasRunning) {
       LOG.info("Staring test Zeppelin up...");
+      executor = Executors.newSingleThreadExecutor();
       executor.submit(server);
       long s = System.currentTimeMillis();
       boolean started = false;
@@ -125,6 +126,8 @@ public abstract class AbstractTestRestApi {
   protected static void shutDown() throws Exception {
     if (!wasRunning) {
       LOG.info("Terminating test Zeppelin...");
+      ZeppelinServer.notebookServer.stop();
+      ZeppelinServer.jettyServer.stop();
       executor.shutdown();
 
       long s = System.currentTimeMillis();
