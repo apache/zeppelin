@@ -22,14 +22,14 @@ before_install:
   - "sh -e /etc/init.d/xvfb start"
 
 install:
-  - mvn package -DskipTests -B
+  - mvn package -DskipTests -Phadoop-2.3 -B
 
 before_script:
-  - mvn package -Pbuild-distr -B
-  - ./testing/startSparkCluster.sh 1.1.1
+  - mvn package -Pbuild-distr -Phadoop-2.3 -B
+  - ./testing/startSparkCluster.sh 1.1.1 2.3
 
 script:
-  - mvn verify -Pusing-packaged-distr -B
+  - mvn verify -Pusing-packaged-distr -Phadoop-2.3 -B
 
 after_failure:
   - cat target/rat.txt
@@ -38,7 +38,7 @@ after_failure:
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.out
 
 after_script:
-  - ./testing/stopSparkCluster.sh 1.1.1
+  - ./testing/stopSparkCluster.sh 1.1.1 2.3
 
 notifications:
   slack:

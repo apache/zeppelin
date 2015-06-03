@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -17,21 +17,22 @@
 #
 
 
-if [ $# -ne 1 ]; then
-    echo "usage) $0 [spark version]"
-    echo "   eg) $0 1.3.1"
+if [ $# -ne 2 ]; then
+    echo "usage) $0 [spark version] [hadoop version]"
+    echo "   eg) $0 1.3.1 2.6"
     exit 1
 fi
 
 SPARK_VERSION="${1}"
+HADOOP_VERSION="${2}"
 
-if [ ! -d "spark-${SPARK_VERSION}-bin-hadoop2.3" ]; then
-    wget -q http://www.us.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.3.tgz
-    tar zxf spark-${SPARK_VERSION}-bin-hadoop2.3.tgz
+if [ ! -d "spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}" ]; then
+    wget -q http://www.us.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
+    tar zxf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
 fi
 
 # start
 export SPARK_MASTER_PORT=7071
 export SPARK_MASTER_WEBUI_PORT=7072
-./spark-${SPARK_VERSION}-bin-hadoop2.3/sbin/start-master.sh
-./spark-${SPARK_VERSION}-bin-hadoop2.3/sbin/start-slave.sh 1 `hostname`:${SPARK_MASTER_PORT}
+./spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}/sbin/start-master.sh
+./spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}/sbin/start-slave.sh 1 `hostname`:${SPARK_MASTER_PORT}

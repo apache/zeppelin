@@ -1,4 +1,4 @@
-#!/bin/sh#
+#!/bin/bash#
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -16,15 +16,16 @@
 # limitations under the License.
 #
 
-if [ $# -ne 1 ]; then
-    echo "usage) $0 [spark version]"
-    echo "   eg) $0 1.3.1"
+if [ $# -ne 2 ]; then
+    echo "usage) $0 [spark version] [hadoop version]"
+    echo "   eg) $0 1.3.1 2.6"
     exit 1
 fi
 
 SPARK_VERSION="${1}"
+HADOOP_VERSION="${2}"
 
-./spark-${SPARK_VERSION}-bin-hadoop2.3/sbin/spark-daemon.sh stop org.apache.spark.deploy.worker.Worker 1
-./spark-${SPARK_VERSION}-bin-hadoop2.3/sbin/stop-master.sh
+./spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}/sbin/spark-daemon.sh stop org.apache.spark.deploy.worker.Worker 1
+./spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}/sbin/stop-master.sh
 
 
