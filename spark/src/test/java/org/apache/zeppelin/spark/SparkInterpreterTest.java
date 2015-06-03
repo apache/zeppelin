@@ -55,8 +55,8 @@ public class SparkInterpreterTest {
       return 0;
     }
 
-    String[] split = repl.getSparkContext().version().split(".");
-    int version = Integer.parseInt(split[0]) + Integer.parseInt(split[1]);
+    String[] split = repl.getSparkContext().version().split("\\.");
+    int version = Integer.parseInt(split[0]) * 10 + Integer.parseInt(split[1]);
     return version;
   }
 
