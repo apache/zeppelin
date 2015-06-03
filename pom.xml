@@ -416,6 +416,7 @@
               <exclude>STYLE.md</exclude>
               <exclude>Roadmap.md</exclude>
               <exclude>conf/interpreter.json</exclude>
+              <exclude>spark-*-bin*/**</exclude>
             </excludes>
           </configuration>
 

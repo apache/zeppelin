@@ -21,20 +21,24 @@ before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
 
+install:
+  - mvn package -DskipTests -B
+
 before_script:
   - mvn package -Pbuild-distr -B
-  - ./testing/startSparkCluster.sh
+  - ./testing/startSparkCluster.sh 1.1.1
 
 script:
   - mvn verify -Pusing-packaged-distr -B
 
 after_failure:
   - cat target/rat.txt
+  - cat zeppelin-server/target/rat.txt
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.log
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.out
 
 after_script:
-  - ./testing/stopSparkCluster.sh
+  - ./testing/stopSparkCluster.sh 1.1.1
 
 notifications:
   slack:

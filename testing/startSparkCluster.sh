@@ -16,11 +16,22 @@
 # limitations under the License.
 #
 
-wget http://apache.mesi.com.ar/spark/spark-1.1.1/spark-1.1.1-bin-hadoop2.3.tgz
-tar zxvf spark-1.1.1-bin-hadoop2.3.tgz
-cd spark-1.1.1-bin-hadoop2.3
+
+if [ $# -ne 1 ]; then
+    echo "usage) $0 [spark version]"
+    echo "   eg) $0 1.3.1"
+    exit 1
+fi
+
+SPARK_VERSION="${1}"
+
+if [ ! -d "spark-${SPARK_VERSION}-bin-hadoop2.3" ]; then
+    wget -q http://www.us.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop2.3.tgz
+    tar zxf spark-${SPARK_VERSION}-bin-hadoop2.3.tgz
+fi
+
+# start
 export SPARK_MASTER_PORT=7071
 export SPARK_MASTER_WEBUI_PORT=7072
-./sbin/start-master.sh
-./bin/spark-class org.apache.spark.deploy.worker.Worker spark://localhost:7071 &> worker.log &
-./bin/spark-class org.apache.spark.deploy.worker.Worker spark://localhost:7071 &> worker2.log &
+./spark-${SPARK_VERSION}-bin-hadoop2.3/sbin/start-master.sh
+./spark-${SPARK_VERSION}-bin-hadoop2.3/sbin/start-slave.sh 1 `hostname`:${SPARK_MASTER_PORT}

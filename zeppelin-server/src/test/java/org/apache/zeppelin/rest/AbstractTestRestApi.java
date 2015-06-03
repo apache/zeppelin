@@ -19,15 +19,17 @@ package org.apache.zeppelin.rest;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -98,19 +100,46 @@ public abstract class AbstractTestRestApi {
     	  throw new RuntimeException("Can not start Zeppelin server");
       }
       LOG.info("Test Zeppelin stared.");
+
+
+      // ci environment runs spark cluster for testing
+      // so configure zeppelin use spark cluster
+      if ("true".equals(System.getenv("CI"))) {
+        // assume first one is spark
+        InterpreterSetting sparkIntpSetting = ZeppelinServer.notebook.getInterpreterFactory().get().get(0);
+        sparkIntpSetting.getProperties().setProperty("master", "spark://" + getHostname() + ":7071");
+        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.id());
+      }
     }
   }
 
-  protected static void shutDown() {
+  private static String getHostname() {
+    try {
+      return InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      e.printStackTrace();
+      return "localhost";
+    }
+  }
+
+  protected static void shutDown() throws Exception {
     if (!wasRunning) {
       LOG.info("Terminating test Zeppelin...");
       executor.shutdown();
-      try {
-        executor.awaitTermination(10, TimeUnit.SECONDS);
-      } catch (InterruptedException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+
+      long s = System.currentTimeMillis();
+      boolean started = true;
+      while (System.currentTimeMillis() - s < 1000 * 60 * 3) {  // 3 minutes
+        Thread.sleep(2000);
+        started = checkIfServerIsRuning();
+        if (started == false) {
+          break;
+        }
       }
+      if (started == true) {
+        throw new RuntimeException("Can not stop Zeppelin server");
+      }
+
       LOG.info("Test Zeppelin terminated.");
     }
   }

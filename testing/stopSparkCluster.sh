@@ -16,8 +16,15 @@
 # limitations under the License.
 #
 
-cd spark-1.1.1-bin-hadoop2.3
-./sbin/stop-master.sh
-kill $(ps -ef | grep 'org.apache.spark.deploy.worker.Worker' | awk '{print $2}')
-cd ..
-rm -rf spark-1.1.1-bin-hadoop2.3*
+if [ $# -ne 1 ]; then
+    echo "usage) $0 [spark version]"
+    echo "   eg) $0 1.3.1"
+    exit 1
+fi
+
+SPARK_VERSION="${1}"
+
+./spark-${SPARK_VERSION}-bin-hadoop2.3/sbin/spark-daemon.sh stop org.apache.spark.deploy.worker.Worker 1
+./spark-${SPARK_VERSION}-bin-hadoop2.3/sbin/stop-master.sh
+
+
