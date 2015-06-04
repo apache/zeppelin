@@ -99,7 +99,10 @@ public class IgniteSqlInterpreter extends Interpreter {
         msg.append("\n");
         while (res.next()) {
           for (int i = 1; i < md.getColumnCount() + 1; i++) {
-            msg.append(res.getString(i) + "\t");
+            msg.append(res.getString(i));
+            if (i != md.getColumnCount()) {
+              msg.append("\t");
+            }
           }
           msg.append("\n");
         }

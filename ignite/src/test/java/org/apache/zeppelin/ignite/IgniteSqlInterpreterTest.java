@@ -25,6 +25,7 @@ import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +45,6 @@ public class IgniteSqlInterpreterTest {
     ignite.open();
 
     sql = new IgniteSqlInterpreter(p);
-    sql.open();
 
     context = new InterpreterContext(null, null, null, null, null, null, null);
   }
@@ -65,8 +65,13 @@ public class IgniteSqlInterpreterTest {
     //IgniteCache<Integer, Person> cache = ignite.getIgnite().cache("person");
     cache.put(1, new Person("sun", 100));
     cache.put(2, new Person("moon", 50));
-    InterpreterResult result = sql.interpret("select name, age from Person where age > 10", context);
+    assertEquals("moon", cache.get(2).getName());
+
+    sql.open();
+    InterpreterResult result = sql.interpret("select name, age from person where age > 10", context);
     assertEquals(Code.SUCCESS, result.code());
+    assertEquals(Type.TABLE, result.type());
+    assertEquals("NAME\tAGE\nsun\t100\nmoon\t50\n", result.message());
   }
 
 }
