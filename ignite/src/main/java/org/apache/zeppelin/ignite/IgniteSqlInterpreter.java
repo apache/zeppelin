@@ -42,8 +42,8 @@ import org.slf4j.LoggerFactory;
 public class IgniteSqlInterpreter extends Interpreter {
   static {
     Interpreter.register(
-        "ignite",
         "ignitesql",
+        "ignite",
         IgniteSqlInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .add("url", "localhost:11211/", "url for jdbc driver")
