@@ -26,13 +26,23 @@ fi
 SPARK_VERSION="${1}"
 HADOOP_VERSION="${2}"
 
-if [ ! -d "spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}" ]; then
+FWDIR=$(dirname "${BASH_SOURCE-$0}")
+ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
+export SPARK_HOME=${ZEPPELIN_HOME}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
+
+if [ ! -d "${SPARK_HOME}" ]; then
     wget -q http://www.us.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
     tar zxf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
 fi
 
+# create PID dir. test case detect pid file so they can select active spark home dir for test
+mkdir -p ${SPARK_HOME}/run
+export SPARK_PID_DIR=${SPARK_HOME}/run
+
+
 # start
 export SPARK_MASTER_PORT=7071
 export SPARK_MASTER_WEBUI_PORT=7072
-./spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}/sbin/start-master.sh
-./spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}/sbin/start-slave.sh 1 `hostname`:${SPARK_MASTER_PORT}
+export SPARK_WORKER_WEBUI_PORT=8082
+${SPARK_HOME}/sbin/start-master.sh
+${SPARK_HOME}/sbin/start-slave.sh 1 `hostname`:${SPARK_MASTER_PORT}

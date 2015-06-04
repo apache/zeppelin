@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.rest;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
@@ -48,6 +49,7 @@ public abstract class AbstractTestRestApi {
   static final String restApiUrl = "/api";
   static final String url = getUrlToTest();
   protected static final boolean wasRunning = checkIfServerIsRuning();
+  static boolean pySpark = false;
 
   private String getUrl(String path) {
     String url;
@@ -108,7 +110,26 @@ public abstract class AbstractTestRestApi {
       if ("true".equals(System.getenv("CI"))) {
         // assume first one is spark
         InterpreterSetting sparkIntpSetting = ZeppelinServer.notebook.getInterpreterFactory().get().get(0);
+
+        // set spark master
         sparkIntpSetting.getProperties().setProperty("master", "spark://" + getHostname() + ":7071");
+
+        // set spark home for pyspark
+        sparkIntpSetting.getProperties().setProperty("spark.home", getSparkHome());
+        pySpark = true;
+
+        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.id());
+      } else {
+        // assume first one is spark
+        InterpreterSetting sparkIntpSetting = ZeppelinServer.notebook.getInterpreterFactory().get().get(0);
+
+        String sparkHome = getSparkHome();
+        if (sparkHome != null) {
+          // set spark home for pyspark
+          sparkIntpSetting.getProperties().setProperty("spark.home", sparkHome);
+          pySpark = true;
+        }
+
         ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.id());
       }
     }
@@ -121,6 +142,46 @@ public abstract class AbstractTestRestApi {
       e.printStackTrace();
       return "localhost";
     }
+  }
+
+  private static String getSparkHome() {
+    String sparkHome = getSparkHomeRecursively(new File(System.getProperty("user.dir")));
+    System.out.println("SPARK HOME detected " + sparkHome);
+    return sparkHome;
+  }
+
+  boolean isPyspark() {
+    return pySpark;
+  }
+
+  private static String getSparkHomeRecursively(File dir) {
+    if (dir == null) return null;
+    File files []  = dir.listFiles();
+    if (files == null) return null;
+
+    File homeDetected = null;
+    for (File f : files) {
+      if (isActiveSparkHome(f)) {
+        homeDetected = f;
+        break;
+      }
+    }
+
+    if (homeDetected != null) {
+      return homeDetected.getAbsolutePath();
+    } else {
+      return getSparkHomeRecursively(dir.getParentFile());
+    }
+  }
+
+  private static boolean isActiveSparkHome(File dir) {
+    if (dir.getName().matches("spark-[0-9\\.]+-bin-hadoop[0-9\\.]+")) {
+      File pidDir = new File(dir, "run");
+      if (pidDir.isDirectory() && pidDir.listFiles().length > 0) {
+        return true;
+      }
+    }
+    return false;
   }
 
   protected static void shutDown() throws Exception {

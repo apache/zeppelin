@@ -25,7 +25,13 @@ fi
 SPARK_VERSION="${1}"
 HADOOP_VERSION="${2}"
 
-./spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}/sbin/spark-daemon.sh stop org.apache.spark.deploy.worker.Worker 1
-./spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}/sbin/stop-master.sh
+FWDIR=$(dirname "${BASH_SOURCE-$0}")
+ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
+export SPARK_HOME=${ZEPPELIN_HOME}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
+
+# set create PID dir
+export SPARK_PID_DIR=${SPARK_HOME}/run
 
 
+${SPARK_HOME}/sbin/spark-daemon.sh stop org.apache.spark.deploy.worker.Worker 1
+${SPARK_HOME}/sbin/stop-master.sh

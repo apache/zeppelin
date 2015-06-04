@@ -58,24 +58,50 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void getApiRoot() throws IOException {
+  public void basicRDDTransformationAndActionTest() throws IOException {
     // create new note
     Note note = ZeppelinServer.notebook.createNote();
-    note.addParagraph();
-    Paragraph p = note.getLastParagraph();
-
-    // get spark version string
-    p.setText("print(sc.version)");
-    note.run(p.getId());
-    waitForFinish(p);
-    String sparkVersion = p.getResult().message();
 
     // run markdown paragraph, again
-    p = note.addParagraph();
+    Paragraph p = note.addParagraph();
     p.setText("print(sc.parallelize(1 to 10).reduce(_ + _))");
     note.run(p.getId());
     waitForFinish(p);
     assertEquals("55", p.getResult().message());
     ZeppelinServer.notebook.removeNote(note.id());
+  }
+
+  @Test
+  public void pySparkTest() throws IOException {
+    // create new note
+    Note note = ZeppelinServer.notebook.createNote();
+
+    int sparkVersion = getSparkVersionNumber(note);
+
+    if (isPyspark() && sparkVersion >= 12) {   // pyspark supported from 1.2.1
+      // run markdown paragraph, again
+      Paragraph p = note.addParagraph();
+      p.setText("%pyspark print(sc.parallelize(range(1, 11)).reduce(lambda a, b: a + b))");
+      note.run(p.getId());
+      waitForFinish(p);
+      assertEquals("55\n", p.getResult().message());
+    }
+    ZeppelinServer.notebook.removeNote(note.id());
+  }
+
+  /**
+   * Get spark version number as a numerical value.
+   * eg. 1.1.x => 11, 1.2.x => 12, 1.3.x => 13 ...
+   */
+  private int getSparkVersionNumber(Note note) {
+    Paragraph p = note.addParagraph();
+    p.setText("print(sc.version)");
+    note.run(p.getId());
+    waitForFinish(p);
+    String sparkVersion = p.getResult().message();
+    System.out.println("Spark version detected " + sparkVersion);
+    String[] split = sparkVersion.split("\\.");
+    int version = Integer.parseInt(split[0]) * 10 + Integer.parseInt(split[1]);
+    return version;
   }
 }
