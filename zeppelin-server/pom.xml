@@ -32,6 +32,34 @@
   <name>Zeppelin: Server</name>
   <url>http://www.nflabs.com</url>
 
+  <properties>
+    <cxf.version>2.7.7</cxf.version>
+    <jetty.version>8.1.14.v20131031</jetty.version>
+    <commons.httpclient.version>4.3.6</commons.httpclient.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-library</artifactId>
+        <version>2.10.4</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-compiler</artifactId>
+        <version>2.10.4</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scalap</artifactId>
+        <version>2.10.4</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -111,6 +139,18 @@
       	  <groupId>com.sun.jersey</groupId>
       	  <artifactId>jersey-servlet</artifactId>
 	</exclusion>
+        <exclusion>
+          <groupId>org.scala-lang</groupId>
+          <artifactId>scala-library</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.scala-lang</groupId>
+          <artifactId>scala-compiler</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.scala-lang</groupId>
+          <artifactId>scalap</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -248,6 +288,7 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
+      <version>4.3.6</version>
       <scope>test</scope>
     </dependency>
 
@@ -280,7 +321,8 @@
 
     <dependency>
       <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_${scala.binary.version}</artifactId>
+      <artifactId>scalatest_2.10</artifactId>
+      <version>2.1.1</version>
       <scope>test</scope>
     </dependency>
 
