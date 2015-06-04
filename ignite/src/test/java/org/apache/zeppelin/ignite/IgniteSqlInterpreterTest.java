@@ -38,8 +38,8 @@ public class IgniteSqlInterpreterTest {
   @Before
   public void setUp() {
     Properties p = new Properties();
-    p.setProperty("url", "localhost:11211");
-    p.setProperty("ignite.clientMode", "true");
+    p.setProperty("url", "localhost:11211/person");
+    p.setProperty("ignite.clientMode", "false");
     ignite = new IgniteInterpreter(p);
     ignite.open();
 
@@ -58,9 +58,11 @@ public class IgniteSqlInterpreterTest {
   @Test
   public void testSql() {
     CacheConfiguration<Integer, Person> cacheConf = new CacheConfiguration<Integer, Person>();
-    cacheConf.setName(null); // use default cache
+    cacheConf.setIndexedTypes(Integer.class, Person.class);
+    cacheConf.setName("person");
 
-    IgniteCache<Integer, Person> cache = ignite.getIgnite().cache("query");
+    IgniteCache<Integer, Person> cache = ignite.getIgnite().createCache(cacheConf);
+    //IgniteCache<Integer, Person> cache = ignite.getIgnite().cache("person");
     cache.put(1, new Person("sun", 100));
     cache.put(2, new Person("moon", 50));
     InterpreterResult result = sql.interpret("select name, age from Person where age > 10", context);

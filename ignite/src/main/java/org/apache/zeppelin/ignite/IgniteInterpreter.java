@@ -39,7 +39,7 @@ public class IgniteInterpreter extends Interpreter {
         "ignite",
         IgniteInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add("ignite.clientMode", "true", "Client mode. true or false")
+            .add("ignite.clientMode", "false", "Client mode. true or false")
             .build());
   }
 
@@ -62,8 +62,8 @@ public class IgniteInterpreter extends Interpreter {
   }
 
 
-  public boolean isLocalMode() {
-    return Boolean.parseBoolean(getProperty("ignite.localMode"));
+  public boolean isClientMode() {
+    return Boolean.parseBoolean(getProperty("ignite.clientMode"));
   }
 
 
@@ -71,7 +71,7 @@ public class IgniteInterpreter extends Interpreter {
     synchronized (this) {
       if (ignite == null) {
         IgniteConfiguration conf = new IgniteConfiguration();
-        conf.setClientMode(!isLocalMode());
+        conf.setClientMode(isClientMode());
         ignite = Ignition.start(conf);
       }
       return ignite;
