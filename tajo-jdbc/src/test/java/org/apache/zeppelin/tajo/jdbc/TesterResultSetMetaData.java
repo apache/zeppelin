@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.tajo;
+package org.apache.zeppelin.tajo.jdbc;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
