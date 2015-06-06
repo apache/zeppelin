@@ -23,7 +23,7 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.5.0-SNAPSHOT</version>
+    <version>0.5.0-incubating-SNAPSHOT</version>
   </parent>
 
   <artifactId>zeppelin-distribution</artifactId>
@@ -147,7 +147,7 @@
           <plugin>
             <groupId>com.bazaarvoice.maven.plugins</groupId>
             <artifactId>s3-upload-maven-plugin</artifactId>
-            <version>1.2-SNAPSHOT</version>
+            <version>1.2</version>
             <configuration>
               <bucketName>zeppel.in</bucketName>
               <endpoint>s3-ap-northeast-1.amazonaws.com</endpoint>

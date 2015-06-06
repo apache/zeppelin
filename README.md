@@ -54,6 +54,10 @@ Spark 1.3.x
 ```
 mvn clean package -Pspark-1.3 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests
 ```
+Spark 1.4.x
+```
+mvn clean package -Pspark-1.4 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests
+```
 CDH 5.X
 ```
 mvn clean package -Pspark-1.2 -Dhadoop.version=2.5.0-cdh5.3.0 -Phadoop-2.4 -DskipTests
@@ -112,6 +116,7 @@ Zeppelin comes with a set of end-to-end acceptnce tests driving headless seleniu
 
       #or take care of starting\stoping zeppelin-server from packaged _zeppelin-distribuion/target_
       mvn verify -P using-packaged-distr
+
 
 
 [![Analytics](https://ga-beacon.appspot.com/UA-45176241-4/apache/incubator-zeppelin/README.md?pixel)](https://github.com/igrigorik/ga-beacon)
