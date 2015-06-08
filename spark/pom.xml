@@ -40,6 +40,7 @@
     <scala.binary.version>2.10</scala.binary.version>
 
     <hadoop.version>2.3.0</hadoop.version>
+    <yarn.version>${hadoop.version}</yarn.version>
   </properties>
 
   <dependencies>
