@@ -38,6 +38,7 @@
     <flink.akka.version>2.3.7</flink.akka.version>
     <flink.scala.binary.version>2.10</flink.scala.binary.version>
     <flink.scala.version>2.10.4</flink.scala.version>
+    <scala.macros.version>2.0.1</scala.macros.version>
   </properties>
 
   <repositories>
@@ -79,11 +80,6 @@
     </dependency>
 
     <dependency>
-      <groupId>commons-collections</groupId>
-      <artifactId>commons-collections</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.flink</groupId>
       <artifactId>flink-core</artifactId>
       <version>${flink.version}</version>
@@ -99,20 +95,6 @@
       <groupId>org.apache.flink</groupId>
       <artifactId>flink-runtime</artifactId>
       <version>${flink.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>com.typesafe.akka</groupId>
-          <artifactId>akka-actor_2.10</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.typesafe.akka</groupId>
-          <artifactId>akka-remote_2.10</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>com.typesafe.akka</groupId>
-          <artifactId>akka-slf4j_2.10</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
@@ -144,7 +126,6 @@
       <artifactId>akka-testkit_${flink.scala.binary.version}</artifactId>
       <version>${flink.akka.version}</version>
     </dependency>
-
 
     <dependency>
       <groupId>org.scala-lang</groupId>
@@ -225,7 +206,7 @@
 	  <compilerPlugins combine.children="append">
 	    <compilerPlugin>
 	      <groupId>org.scalamacros</groupId>
-	      <artifactId>paradise_${scala.version}</artifactId>
+	      <artifactId>paradise_${flink.scala.version}</artifactId>
 	      <version>${scala.macros.version}</version>
 	    </compilerPlugin>
 	  </compilerPlugins>
