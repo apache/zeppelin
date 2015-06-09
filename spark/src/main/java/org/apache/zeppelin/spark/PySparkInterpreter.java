@@ -74,7 +74,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   static {
     Interpreter.register(
-        "pyspark",
+        "py",
         "spark",
         PySparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()

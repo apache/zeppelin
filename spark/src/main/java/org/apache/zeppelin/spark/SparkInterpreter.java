@@ -87,7 +87,7 @@ public class SparkInterpreter extends Interpreter {
 
   static {
     Interpreter.register(
-        "spark",
+        "scala",
         "spark",
         SparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
@@ -106,7 +106,7 @@ public class SparkInterpreter extends Interpreter {
                 "The location of the Spark jar file. If you use yarn as a cluster, "
                 + "we should set this value")
             .add("zeppelin.spark.useHiveContext",
-                getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT", 
+                getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT",
                     "zeppelin.spark.useHiveContext", "true"),
                 "Use HiveContext instead of SQLContext if it is true.")
             .add("zeppelin.spark.maxResult",
