@@ -24,6 +24,10 @@ public class NoteInterpreterLoaderTest {
 
   @Before
   public void setUp() throws Exception {
+    tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
+    tmpDir.mkdirs();
+    new File(tmpDir, "conf").mkdirs();
+
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
     System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter11,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
@@ -38,6 +42,7 @@ public class NoteInterpreterLoaderTest {
 
   @After
   public void tearDown() throws Exception {
+    delete(tmpDir);
   }
 
   @Test
@@ -64,4 +69,16 @@ public class NoteInterpreterLoaderTest {
     assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter2", loader.get("group2.mock2").getClassName());
   }
 
+  private void delete(File file){
+    if(file.isFile()) file.delete();
+    else if(file.isDirectory()){
+      File [] files = file.listFiles();
+      if(files!=null && files.length>0){
+        for(File f : files){
+          delete(f);
+        }
+      }
+      file.delete();
+    }
+  }
 }
