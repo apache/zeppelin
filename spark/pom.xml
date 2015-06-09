@@ -43,6 +43,13 @@
     <yarn.version>${hadoop.version}</yarn.version>
   </properties>
 
+  <repositories>
+    <repository>
+      <id>cloudera</id>
+      <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>org.slf4j</groupId>
