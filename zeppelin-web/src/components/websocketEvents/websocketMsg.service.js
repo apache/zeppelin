@@ -19,4 +19,85 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope)
     $rootScope.$broadcast('sendNewEvent', {op: 'NEW_NOTE'});
   };
 
+  this.deleteNotebook = function(noteId) {
+    $rootScope.$broadcast('sendNewEvent', {op: 'DEL_NOTE', data: {id: noteId}});
+  };
+
+  this.getNotebookList = function() {
+    $rootScope.$broadcast('sendNewEvent', {op: 'LIST_NOTES'});
+  };
+
+  this.getNotebook = function(noteId) {
+    $rootScope.$broadcast('sendNewEvent', {op: 'GET_NOTE', data: {id: noteId}});
+  };
+
+  this.updateNotebook = function(noteId, noteName, noteConfig) {
+    $rootScope.$broadcast('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: noteId, name: noteName, config : noteConfig}});
+  };
+
+  this.moveParagraph = function(paragraphId, newIndex) {
+    $rootScope.$broadcast('sendNewEvent', { op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
+  };
+
+  this.insertParagraph = function(newIndex) {
+    $rootScope.$broadcast('sendNewEvent', { op: 'INSERT_PARAGRAPH', data : {index: newIndex}});
+  };
+
+  this.updateAngularObject = function(noteId, name, value, interpreterGroupId) {
+    $rootScope.$broadcast('sendNewEvent', {
+      op: 'ANGULAR_OBJECT_UPDATED',
+      data: {
+        noteId: noteId,
+        name: name,
+        value: value,
+        interpreterGroupId: interpreterGroupId
+      }
+    });
+  };
+
+  this.cancelParagraphRun = function(paragraphId) {
+    $rootScope.$broadcast('sendNewEvent', {op: 'CANCEL_PARAGRAPH', data: {id: paragraphId}});
+  };
+
+  this.runParagraph = function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
+    $rootScope.$broadcast('sendNewEvent', {
+      op: 'RUN_PARAGRAPH',
+      data: {
+        id: paragraphId,
+        title: paragraphTitle,
+        paragraph: paragraphData,
+        config: paragraphConfig,
+        params: paragraphParams
+      }
+    });
+  };
+
+  this.removeParagraph = function(paragraphId) {
+    $rootScope.$broadcast('sendNewEvent', {op: 'PARAGRAPH_REMOVE', data: {id: paragraphId}});
+  };
+
+  this.completion = function(paragraphId, buf, cursor) {
+    $rootScope.$broadcast('sendNewEvent', {
+      op : 'COMPLETION',
+      data : {
+        id : paragraphId,
+        buf : buf,
+        cursor : cursor
+      }
+    });
+  };
+
+  this.commitParagraph = function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
+    $rootScope.$broadcast('sendNewEvent', {
+      op: 'COMMIT_PARAGRAPH',
+      data: {
+        id: paragraphId,
+        title : paragraphTitle,
+        paragraph: paragraphData,
+        config: paragraphConfig,
+        params: paragraphParams
+      }
+    });
+  };
+
 });

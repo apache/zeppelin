@@ -39,7 +39,7 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   });
 
   function loadNotes() {
-    $rootScope.$broadcast('sendNewEvent', {op: 'LIST_NOTES'});
+    websocketMsgSrv.getNotebookList();
   }
 
   function isActive(noteId) {

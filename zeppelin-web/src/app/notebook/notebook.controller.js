@@ -23,7 +23,7 @@
  * Controller of notes, manage the note (update)
  *
  */
-angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http) {
+angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, websocketMsgSrv) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -61,7 +61,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   /** Init the new controller */
   var initNotebook = function() {
-    $rootScope.$emit('sendNewEvent', {op: 'GET_NOTE', data: {id: $routeParams.noteId}});
+    websocketMsgSrv.getNotebook($routeParams.noteId);
   };
 
   initNotebook();
@@ -71,7 +71,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.removeNote = function(noteId) {
     var result = confirm('Do you want to delete this notebook?');
     if (result) {
-      $rootScope.$emit('sendNewEvent', {op: 'DEL_NOTE', data: {id: noteId}});
+      websocketMsgSrv.deleteNotebook(noteId);
       $location.path('/#');
     }
   };
@@ -145,14 +145,14 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if(config) {
       $scope.note.config = config;
     }
-    $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.note.id, name: $scope.note.name, config : $scope.note.config}});
+    websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, $scope.note.config);
   };
 
   /** Update the note name */
   $scope.sendNewName = function() {
     $scope.showEditor = false;
     if ($scope.note.name) {
-      $rootScope.$emit('sendNewEvent', {op: 'NOTE_UPDATE', data: {id: $scope.note.id, name: $scope.note.name, config : $scope.note.config}});
+      websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, $scope.note.config);
     }
   };
 
@@ -162,7 +162,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $scope.asIframe = $routeParams.asIframe;
     if ($scope.paragraphUrl) {
       note = cleanParagraphExcept($scope.paragraphUrl, note);
-      $rootScope.$emit('setIframe', $scope.asIframe);
+      $rootScope.$broadcast('setIframe', $scope.asIframe);
     }
 
     if ($scope.note === null) {
@@ -182,7 +182,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     } else {
       $scope.viewOnly = $scope.note.config.looknfeel === 'report' ? true : false;
     }
-    $rootScope.$emit('setLookAndFeel', $scope.note.config.looknfeel);
+    $rootScope.$broadcast('setLookAndFeel', $scope.note.config.looknfeel);
   };
 
 
@@ -222,7 +222,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
       return;
     }
-    $rootScope.$emit('sendNewEvent', { op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
+    websocketMsgSrv.moveParagraph(paragraphId, newIndex);
   });
 
   // create new paragraph on current position
@@ -242,7 +242,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if (newIndex < 0 || newIndex > $scope.note.paragraphs.length) {
       return;
     }
-    $rootScope.$emit('sendNewEvent', { op: 'INSERT_PARAGRAPH', data : {index: newIndex}});
+    websocketMsgSrv.insertParagraph(newIndex);
   });
 
   $scope.$on('moveParagraphDown', function(event, paragraphId) {
@@ -257,7 +257,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
       return;
     }
-    $rootScope.$emit('sendNewEvent', { op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
+    websocketMsgSrv.moveParagraph(paragraphId, newIndex);
   });
 
   $scope.$on('moveFocusToPreviousParagraph', function(event, currentParagraphId){
@@ -458,7 +458,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       if (!angularObjectRegistry[varName]) {
         angularObjectRegistry[varName] = {
           interpreterGroupId : data.interpreterGroupId,
-        }
+        };
       }
 
       angularObjectRegistry[varName].skipEmit = true;
@@ -469,16 +469,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
             angularObjectRegistry[varName].skipEmit = false;
             return;
           }
-
-          $rootScope.$emit('sendNewEvent', {
-              op: 'ANGULAR_OBJECT_UPDATED',
-              data: {
-                  noteId: $routeParams.noteId,
-                  name:varName,
-                  value:newValue,
-                  interpreterGroupId:angularObjectRegistry[varName].interpreterGroupId
-              }
-          });
+          websocketMsgSrv.updateAngularObject($routeParams.noteId, varName, newValue, angularObjectRegistry[varName].interpreterGroupId);
         });
       }
       scope[varName] = data.angularObject.object;
@@ -489,6 +480,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   var isFunction = function(functionToCheck) {
     var getType = {};
     return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
-  }
+  };
 
 });
