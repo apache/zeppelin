@@ -1,4 +1,4 @@
-/* global confirm:false, alert:false, getRestApiBase:false */
+/* global confirm:false, alert:false */
 /* jshint loopfunc: true */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,8 @@
  * # InterpreterCtrl
  * Controller of interpreter, manage the note (update)
  */
-angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http) {
+angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, $route, $routeParams, $location, $rootScope,
+                                                                         $http, baseUrlSrv) {
 
   var remoteSettingToLocalSetting = function(settingId, setting) {
     var property = {};
@@ -42,7 +43,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   };
 
   var getInterpreterSettings = function() {
-    $http.get(getRestApiBase()+'/interpreter/setting').
+    $http.get(baseUrlSrv.getRestApiBase()+'/interpreter/setting').
       success(function(data, status, headers, config) {
         var interpreterSettings = [];
         //console.log("getInterpreterSettings=%o", data);
@@ -59,7 +60,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   };
 
   var getAvailableInterpreters = function() {
-    $http.get(getRestApiBase()+'/interpreter').
+    $http.get(baseUrlSrv.getRestApiBase()+'/interpreter').
       success(function(data, status, headers, config) {
         var groupedInfo = {};
         var info;
@@ -122,7 +123,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       }
     }
 
-    $http.put(getRestApiBase()+'/interpreter/setting/'+settingId, request).
+    $http.put(baseUrlSrv.getRestApiBase()+'/interpreter/setting/'+settingId, request).
     success(function(data, status, headers, config) {
       for (var i=0; i < $scope.interpreterSettings.length; i++) {
         var setting = $scope.interpreterSettings[i];
@@ -156,7 +157,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     }
 
     console.log('Delete setting %o', settingId);
-    $http.delete(getRestApiBase()+'/interpreter/setting/'+settingId).
+    $http.delete(baseUrlSrv.getRestApiBase()+'/interpreter/setting/'+settingId).
       success(function(data, status, headers, config) {
         for (var i=0; i < $scope.interpreterSettings.length; i++) {
           var setting = $scope.interpreterSettings[i];
@@ -192,7 +193,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       return;
     }
 
-    $http.put(getRestApiBase()+'/interpreter/setting/restart/'+settingId).
+    $http.put(baseUrlSrv.getRestApiBase()+'/interpreter/setting/restart/'+settingId).
       success(function(data, status, headers, config) {
         for (var i=0; i < $scope.interpreterSettings.length; i++) {
           var setting = $scope.interpreterSettings[i];
@@ -235,7 +236,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       newSetting.properties[p] = $scope.newInterpreterSetting.properties[p].value;
     }
 
-    $http.post(getRestApiBase()+'/interpreter/setting', newSetting).
+    $http.post(baseUrlSrv.getRestApiBase()+'/interpreter/setting', newSetting).
       success(function(data, status, headers, config) {
         $scope.resetNewInterpreterSetting();
         getInterpreterSettings();

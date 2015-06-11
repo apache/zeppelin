@@ -31,9 +31,9 @@
       </ul>
       <ul class="nav navbar-nav navbar-right" style="margin-top:10px; margin-right:5px;">
         <li class="server-status">
-          <i class="fa fa-circle" ng-class="{'server-connected':connected, 'server-disconnected':!connected }"></i>
-          <span ng-show="connected">Connected</span>
-          <span ng-show="!connected">Disconnected</span>
+          <i class="fa fa-circle" ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
+          <span ng-show="navbar.connected">Connected</span>
+          <span ng-show="!navbar.connected">Disconnected</span>
         </li>
       </ul>
     </div>

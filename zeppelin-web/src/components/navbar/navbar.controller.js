@@ -30,12 +30,17 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   
   var vm = this;
   vm.notes = notebookListDataFactory;
+  vm.connected = false;
   vm.websocketMsgSrv = websocketMsgSrv;
   
   $('#notebook-list').perfectScrollbar({suppressScrollX: true});
   
   $scope.$on('setNoteMenu', function(event, notes) {
       notebookListDataFactory.setNotes(notes);
+  });
+  
+  $scope.$on('setConnectedStatus', function(event, param) {
+      vm.connected = param;
   });
 
   function loadNotes() {

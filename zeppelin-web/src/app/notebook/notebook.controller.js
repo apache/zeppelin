@@ -23,7 +23,7 @@
  * Controller of notes, manage the note (update)
  *
  */
-angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, websocketMsgSrv) {
+angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, websocketMsgSrv, baseUrlSrv) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -351,7 +351,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   var getInterpreterBindings = function(callback) {
-    $http.get(getRestApiBase()+ '/notebook/interpreter/bind/' +$scope.note.id).
+    $http.get(baseUrlSrv.getRestApiBase()+ '/notebook/interpreter/bind/' +$scope.note.id).
       success(function(data, status, headers, config) {
         $scope.interpreterBindings = data.body;
         $scope.interpreterBindingsOrig = jQuery.extend(true, [], $scope.interpreterBindings); // to check dirty
@@ -418,7 +418,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       }
     }
 
-    $http.put(getRestApiBase() + '/notebook/interpreter/bind/' + $scope.note.id,
+    $http.put(baseUrlSrv.getRestApiBase() + '/notebook/interpreter/bind/' + $scope.note.id,
              selectedSettingIds).
       success(function(data, status, headers, config) {
         console.log('Interpreter binding %o saved', selectedSettingIds);
