@@ -13,10 +13,10 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, notebookListDataFactory, websocketMsgSrv) {
-  
-  var vm = this;
-  vm.notes = notebookListDataFactory;
-  vm.websocketMsgSrv = websocketMsgSrv;
-  
+angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope) {
+
+  this.createNotebook = function() {
+    $rootScope.$broadcast('sendNewEvent', {op: 'NEW_NOTE'});
+  };
+
 });

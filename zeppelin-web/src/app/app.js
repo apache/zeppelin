@@ -110,7 +110,8 @@ angular
 
     $routeProvider
       .when('/', {
-        templateUrl: 'app/home/home.html'
+        templateUrl: 'app/home/home.html',
+        controller: 'HomeCtrl'
       })
       .when('/notebook/:noteId', {
         templateUrl: 'app/notebook/notebook.html',

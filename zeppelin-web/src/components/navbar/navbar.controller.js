@@ -25,32 +25,33 @@
  * @author anthonycorbacho
  */
 
-angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams) {
+angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams, notebookListDataFactory, websocketMsgSrv) {
   /** Current list of notes (ids) */
-  $scope.notes = [];
+  
+  var vm = this;
+  vm.notes = notebookListDataFactory;
+  vm.websocketMsgSrv = websocketMsgSrv;
+  
   $('#notebook-list').perfectScrollbar({suppressScrollX: true});
-
-  /** Set the new menu */
+  
   $scope.$on('setNoteMenu', function(event, notes) {
-      $scope.notes = notes;
+      notebookListDataFactory.setNotes(notes);
   });
 
-  var loadNotes = function() {
-    $rootScope.$emit('sendNewEvent', {op: 'LIST_NOTES'});
-  };
-  loadNotes();
+  function loadNotes() {
+    $rootScope.$broadcast('sendNewEvent', {op: 'LIST_NOTES'});
+  }
 
-  /** Create a new note */
-  $scope.createNewNote = function() {
-    $rootScope.$emit('sendNewEvent', {op: 'NEW_NOTE'});
-  };
-
-  /** Check if the note url is equal to the current note */
-  $scope.isActive = function(noteId) {
+  function isActive(noteId) {
     if ($routeParams.noteId === noteId) {
       return true;
     }
     return false;
-  };
-
+  }
+  
+  vm.loadNotes = loadNotes;
+  vm.isActive = isActive;
+  
+  vm.loadNotes();
+  
 });

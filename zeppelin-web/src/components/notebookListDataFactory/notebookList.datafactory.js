@@ -13,10 +13,14 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, notebookListDataFactory, websocketMsgSrv) {
-  
-  var vm = this;
-  vm.notes = notebookListDataFactory;
-  vm.websocketMsgSrv = websocketMsgSrv;
-  
+angular.module('zeppelinWebApp').factory('notebookListDataFactory', function() {
+  var notes = {};
+
+  notes.list = [];
+
+  notes.setNotes = function(notesList) {
+    notes.list = angular.copy(notesList);
+  };
+
+  return notes;
 });
