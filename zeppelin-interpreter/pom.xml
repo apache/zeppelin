@@ -36,6 +36,7 @@
   <url>http://zeppelin.incubator.apache.org</url>
 
   <dependencies>
+
     <dependency>
       <groupId>org.apache.thrift</groupId>
       <artifactId>libthrift</artifactId>
