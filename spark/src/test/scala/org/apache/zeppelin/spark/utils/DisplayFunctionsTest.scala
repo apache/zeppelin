@@ -53,7 +53,7 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
   "DisplayFunctions" should "generate correct column headers for tuples" in {
 
     Console.withOut(stream) {
-      new DisplayRDDFunctions[(String,String,Int)](testRDDTuples).displayAsTable("Login","Name","Age")
+      new DisplayRDDFunctions[(String,String,Int)](testRDDTuples).display("Login","Name","Age")
     }
 
     stream.toString("UTF-8") should be("%table Login\tName\tAge\n" +
@@ -65,7 +65,7 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
   "DisplayFunctions" should "generate correct column headers for case class" in {
 
     Console.withOut(stream) {
-      new DisplayRDDFunctions[Person](testRDDPersons).displayAsTable("Login","Name","Age")
+      new DisplayRDDFunctions[Person](testRDDPersons).display("Login","Name","Age")
     }
 
     stream.toString("UTF-8") should be("%table Login\tName\tAge\n" +
@@ -77,7 +77,7 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
   "DisplayFunctions" should "truncate exceeding column headers for tuples" in {
 
     Console.withOut(stream) {
-      new DisplayRDDFunctions[(String,String,Int)](testRDDTuples).displayAsTable("Login","Name","Age","xxx","yyy")
+      new DisplayRDDFunctions[(String,String,Int)](testRDDTuples).display("Login","Name","Age","xxx","yyy")
     }
 
     stream.toString("UTF-8") should be("%table Login\tName\tAge\n" +
@@ -89,7 +89,7 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
   "DisplayFunctions" should "pad missing column headers with ColumnXXX for tuples" in {
 
     Console.withOut(stream) {
-      new DisplayRDDFunctions[(String,String,Int)](testRDDTuples).displayAsTable("Login")
+      new DisplayRDDFunctions[(String,String,Int)](testRDDTuples).display("Login")
     }
 
     stream.toString("UTF-8") should be("%table Login\tColumn2\tColumn3\n" +
@@ -101,7 +101,7 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
   "DisplayFunctions" should "display traversable of tuples" in {
 
     Console.withOut(stream) {
-      new DisplayTraversableFunctions[(String,String,Int)](testTuples).displayAsTable("Login","Name","Age")
+      new DisplayTraversableFunctions[(String,String,Int)](testTuples).display("Login","Name","Age")
     }
 
     stream.toString("UTF-8") should be("%table Login\tName\tAge\n" +
@@ -113,7 +113,7 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
   "DisplayFunctions" should "display traversable of case class" in {
 
     Console.withOut(stream) {
-      new DisplayTraversableFunctions[Person](testPersons).displayAsTable("Login","Name","Age")
+      new DisplayTraversableFunctions[Person](testPersons).display("Login","Name","Age")
     }
 
     stream.toString("UTF-8") should be("%table Login\tName\tAge\n" +

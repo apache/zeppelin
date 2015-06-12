@@ -71,14 +71,14 @@ trait DisplayCollection[T <: Product] {
 
 class DisplayRDDFunctions[T <: Product] (val rdd: RDD[T]) extends DisplayCollection[T] {
 
-  def displayAsTable(columnLabels: String*): Unit = {
+  def display(columnLabels: String*): Unit = {
     printFormattedData(rdd.collect(), columnLabels: _*)
   }
 }
 
 class DisplayTraversableFunctions[T <: Product] (val traversable: Traversable[T]) extends DisplayCollection[T] {
 
-  def displayAsTable(columnLabels: String*): Unit = {
+  def display(columnLabels: String*): Unit = {
     printFormattedData(traversable, columnLabels: _*)
   }
 }
