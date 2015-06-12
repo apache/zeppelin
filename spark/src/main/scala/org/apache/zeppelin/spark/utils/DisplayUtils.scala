@@ -71,8 +71,12 @@ trait DisplayCollection[T <: Product] {
 
 class DisplayRDDFunctions[T <: Product] (val rdd: RDD[T]) extends DisplayCollection[T] {
 
-  def display(columnLabels: String*): Unit = {
-    printFormattedData(rdd.collect(), columnLabels: _*)
+  def display(columnLabels: String*)(implicit sparkMaxResult: SparkMaxResult): Unit = {
+    printFormattedData(rdd.take(sparkMaxResult.maxResult), columnLabels: _*)
+  }
+
+  def display(sparkMaxResult:Int, columnLabels: String*): Unit = {
+    printFormattedData(rdd.take(sparkMaxResult), columnLabels: _*)
   }
 }
 
@@ -83,4 +87,4 @@ class DisplayTraversableFunctions[T <: Product] (val traversable: Traversable[T]
   }
 }
 
-
+class SparkMaxResult(val maxResult: Int) extends Serializable

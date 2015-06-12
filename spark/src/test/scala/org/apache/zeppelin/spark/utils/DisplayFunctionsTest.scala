@@ -51,7 +51,7 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
 
 
   "DisplayFunctions" should "generate correct column headers for tuples" in {
-
+    implicit val sparkMaxResult = new SparkMaxResult(100)
     Console.withOut(stream) {
       new DisplayRDDFunctions[(String,String,Int)](testRDDTuples).display("Login","Name","Age")
     }
@@ -63,7 +63,7 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
   }
 
   "DisplayFunctions" should "generate correct column headers for case class" in {
-
+    implicit val sparkMaxResult = new SparkMaxResult(100)
     Console.withOut(stream) {
       new DisplayRDDFunctions[Person](testRDDPersons).display("Login","Name","Age")
     }
@@ -75,7 +75,7 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
   }
 
   "DisplayFunctions" should "truncate exceeding column headers for tuples" in {
-
+    implicit val sparkMaxResult = new SparkMaxResult(100)
     Console.withOut(stream) {
       new DisplayRDDFunctions[(String,String,Int)](testRDDTuples).display("Login","Name","Age","xxx","yyy")
     }
@@ -87,7 +87,7 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
   }
 
   "DisplayFunctions" should "pad missing column headers with ColumnXXX for tuples" in {
-
+    implicit val sparkMaxResult = new SparkMaxResult(100)
     Console.withOut(stream) {
       new DisplayRDDFunctions[(String,String,Int)](testRDDTuples).display("Login")
     }
@@ -96,6 +96,31 @@ class DisplayFunctionsTest extends FlatSpec with BeforeAndAfter with BeforeAndAf
       "jdoe\tJohn DOE\t32\n" +
       "hsue\tHelen SUE\t27\n" +
       "rsmith\tRichard SMITH\t45\n")
+  }
+
+  "DisplayUtils" should "restricts RDD to sparkMaxresult with implicit limit" in {
+
+    implicit val sparkMaxResult = new SparkMaxResult(2)
+
+    Console.withOut(stream) {
+      new DisplayRDDFunctions[(String,String,Int)](testRDDTuples).display("Login")
+    }
+
+    stream.toString("UTF-8") should be("%table Login\tColumn2\tColumn3\n" +
+      "jdoe\tJohn DOE\t32\n" +
+      "hsue\tHelen SUE\t27\n")
+  }
+
+  "DisplayUtils" should "restricts RDD to sparkMaxresult with explicit limit" in {
+
+    implicit val sparkMaxResult = new SparkMaxResult(2)
+
+    Console.withOut(stream) {
+      new DisplayRDDFunctions[(String,String,Int)](testRDDTuples).display(1,"Login")
+    }
+
+    stream.toString("UTF-8") should be("%table Login\tColumn2\tColumn3\n" +
+      "jdoe\tJohn DOE\t32\n")
   }
 
   "DisplayFunctions" should "display traversable of tuples" in {

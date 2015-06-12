@@ -464,6 +464,11 @@ public class SparkInterpreter extends Interpreter {
     // Utility functions for display
     intp.interpret("import org.apache.zeppelin.spark.utils.DisplayUtils._");
 
+    // Scala implicit value for spark.maxResult
+    intp.interpret("import org.apache.zeppelin.spark.utils.SparkMaxResult");
+    intp.interpret("implicit val sparkMaxResult = new SparkMaxResult(" +
+            Integer.parseInt(getProperty("zeppelin.spark.maxResult")) + ")");
+
     // add jar
     if (depInterpreter != null) {
       DependencyContext depc = depInterpreter.getDependencyContext();
