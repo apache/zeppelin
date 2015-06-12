@@ -48,10 +48,7 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   }
 
   function isActive(noteId) {
-    if ($routeParams.noteId === noteId) {
-      return true;
-    }
-    return false;
+    return ($routeParams.noteId === noteId);
   }
   
   vm.loadNotes = loadNotes;

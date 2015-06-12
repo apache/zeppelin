@@ -15,89 +15,93 @@
 
 angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope, websocketEvents) {
 
-  this.createNotebook = function() {
-    websocketEvents.sendNewEvent({op: 'NEW_NOTE'});
-  };
+  return {
 
-  this.deleteNotebook = function(noteId) {
-    websocketEvents.sendNewEvent({op: 'DEL_NOTE', data: {id: noteId}});
-  };
+    createNotebook: function() {
+      websocketEvents.sendNewEvent({op: 'NEW_NOTE'});
+    },
 
-  this.getNotebookList = function() {
-    websocketEvents.sendNewEvent({op: 'LIST_NOTES'});
-  };
+    deleteNotebook: function(noteId) {
+      websocketEvents.sendNewEvent({op: 'DEL_NOTE', data: {id: noteId}});
+    },
 
-  this.getNotebook = function(noteId) {
-    websocketEvents.sendNewEvent({op: 'GET_NOTE', data: {id: noteId}});
-  };
+    getNotebookList: function() {
+      websocketEvents.sendNewEvent({op: 'LIST_NOTES'});
+    },
 
-  this.updateNotebook = function(noteId, noteName, noteConfig) {
-    websocketEvents.sendNewEvent({op: 'NOTE_UPDATE', data: {id: noteId, name: noteName, config : noteConfig}});
-  };
+    getNotebook: function(noteId) {
+      websocketEvents.sendNewEvent({op: 'GET_NOTE', data: {id: noteId}});
+    },
 
-  this.moveParagraph = function(paragraphId, newIndex) {
-    websocketEvents.sendNewEvent({ op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
-  };
+    updateNotebook: function(noteId, noteName, noteConfig) {
+      websocketEvents.sendNewEvent({op: 'NOTE_UPDATE', data: {id: noteId, name: noteName, config : noteConfig}});
+    },
 
-  this.insertParagraph = function(newIndex) {
-    websocketEvents.sendNewEvent({ op: 'INSERT_PARAGRAPH', data : {index: newIndex}});
-  };
+    moveParagraph: function(paragraphId, newIndex) {
+      websocketEvents.sendNewEvent({ op: 'MOVE_PARAGRAPH', data : {id: paragraphId, index: newIndex}});
+    },
 
-  this.updateAngularObject = function(noteId, name, value, interpreterGroupId) {
-    websocketEvents.sendNewEvent({
-      op: 'ANGULAR_OBJECT_UPDATED',
-      data: {
-        noteId: noteId,
-        name: name,
-        value: value,
-        interpreterGroupId: interpreterGroupId
-      }
-    });
-  };
+    insertParagraph: function(newIndex) {
+      websocketEvents.sendNewEvent({ op: 'INSERT_PARAGRAPH', data : {index: newIndex}});
+    },
 
-  this.cancelParagraphRun = function(paragraphId) {
-    websocketEvents.sendNewEvent({op: 'CANCEL_PARAGRAPH', data: {id: paragraphId}});
-  };
+    updateAngularObject: function(noteId, name, value, interpreterGroupId) {
+      websocketEvents.sendNewEvent({
+        op: 'ANGULAR_OBJECT_UPDATED',
+        data: {
+          noteId: noteId,
+          name: name,
+          value: value,
+          interpreterGroupId: interpreterGroupId
+        }
+      });
+    },
 
-  this.runParagraph = function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
-    websocketEvents.sendNewEvent({
-      op: 'RUN_PARAGRAPH',
-      data: {
-        id: paragraphId,
-        title: paragraphTitle,
-        paragraph: paragraphData,
-        config: paragraphConfig,
-        params: paragraphParams
-      }
-    });
-  };
+    cancelParagraphRun: function(paragraphId) {
+      websocketEvents.sendNewEvent({op: 'CANCEL_PARAGRAPH', data: {id: paragraphId}});
+    },
 
-  this.removeParagraph = function(paragraphId) {
-    websocketEvents.sendNewEvent({op: 'PARAGRAPH_REMOVE', data: {id: paragraphId}});
-  };
+    runParagraph: function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
+      websocketEvents.sendNewEvent({
+        op: 'RUN_PARAGRAPH',
+        data: {
+          id: paragraphId,
+          title: paragraphTitle,
+          paragraph: paragraphData,
+          config: paragraphConfig,
+          params: paragraphParams
+        }
+      });
+    },
 
-  this.completion = function(paragraphId, buf, cursor) {
-    websocketEvents.sendNewEvent({
-      op : 'COMPLETION',
-      data : {
-        id : paragraphId,
-        buf : buf,
-        cursor : cursor
-      }
-    });
-  };
+    removeParagraph: function(paragraphId) {
+      websocketEvents.sendNewEvent({op: 'PARAGRAPH_REMOVE', data: {id: paragraphId}});
+    },
 
-  this.commitParagraph = function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
-    websocketEvents.sendNewEvent({
-      op: 'COMMIT_PARAGRAPH',
-      data: {
-        id: paragraphId,
-        title : paragraphTitle,
-        paragraph: paragraphData,
-        config: paragraphConfig,
-        params: paragraphParams
-      }
-    });
+    completion: function(paragraphId, buf, cursor) {
+      websocketEvents.sendNewEvent({
+        op : 'COMPLETION',
+        data : {
+          id : paragraphId,
+          buf : buf,
+          cursor : cursor
+        }
+      });
+    },
+
+    commitParagraph: function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
+      websocketEvents.sendNewEvent({
+        op: 'COMMIT_PARAGRAPH',
+        data: {
+          id: paragraphId,
+          title : paragraphTitle,
+          paragraph: paragraphData,
+          config: paragraphConfig,
+          params: paragraphParams
+        }
+      });
+    }
+
   };
 
 });
