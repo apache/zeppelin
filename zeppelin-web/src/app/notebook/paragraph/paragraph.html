@@ -31,7 +31,7 @@ limitations under the License.
   </div>
 
   <div>
-    <div ng-show="!paragraph.config.editorHide">
+    <div ng-show="!paragraph.config.editorHide && !viewOnly">
       <div id="{{paragraph.id}}_editor"
            style="opacity: 1;"
            class="editor"

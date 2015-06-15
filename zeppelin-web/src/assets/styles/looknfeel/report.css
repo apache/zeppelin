@@ -62,7 +62,6 @@ body {
   visibility : visible;
 }
 
-.editor,
 .executionTime,
 .nv-controlsWrap {
   display:none;

@@ -185,10 +185,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $rootScope.$broadcast('setLookAndFeel', $scope.note.config.looknfeel);
   };
 
-
-
-
-
   var cleanParagraphExcept = function(paragraphId, note) {
     var noteCopy = {};
     noteCopy.id = note.id;
