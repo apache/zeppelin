@@ -22,6 +22,11 @@
   min-height: 32px;
 }
 
+.paragraphForm.form-horizontal .form-group {
+  margin-right: 0px;
+  margin-left:  0px;
+}
+
 .paragraph .tableDisplay .hljs {
   background: none;
 }
