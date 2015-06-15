@@ -255,6 +255,7 @@ angular.module('zeppelinWebApp')
   $scope.runParagraph = function(data) {
     websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
                                  data, $scope.paragraph.config, $scope.paragraph.settings.params);
+    $scope.dirtyText = undefined;
   };
 
   $scope.moveUp = function() {
