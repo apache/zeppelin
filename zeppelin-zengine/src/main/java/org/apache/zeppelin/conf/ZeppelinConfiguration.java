@@ -403,7 +403,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner", "bin/interpreter.sh"),
     // Decide when new note is created, interpreter settings will be binded automatically or not.
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),
-    ZEPPELIN_CONF_DIR("zeppelin.conf.dir", null);
+    ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf");
 
     private String varName;
     @SuppressWarnings("rawtypes")
