@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
  * Zeppelin configuration.
  *
  * @author Leemoonsoo
+ *
  */
 public class ZeppelinConfiguration extends XMLConfiguration {
   private static final String ZEPPELIN_SITE_XML = "zeppelin-site.xml";
@@ -367,6 +368,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
    * Wrapper class.
    *
    * @author Leemoonsoo
+   *
    */
   public static enum ConfVars {
     ZEPPELIN_HOME("zeppelin.home", "../"),
@@ -507,8 +509,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     enum VarType {
       STRING {
         @Override
-        void checkType(String value) throws Exception {
-        }
+        void checkType(String value) throws Exception {}
       },
       INT {
         @Override
