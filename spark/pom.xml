@@ -41,6 +41,7 @@
 
     <hadoop.version>2.3.0</hadoop.version>
     <yarn.version>${hadoop.version}</yarn.version>
+    <jets3t.version>0.9.3</jets3t.version>
   </properties>
 
   <repositories>
@@ -52,6 +53,19 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- See SPARK-1556 for info on this dependency: -->
+      <dependency>
+        <groupId>net.java.dev.jets3t</groupId>
+        <artifactId>jets3t</artifactId>
+        <version>${jets3t.version}</version>
+        <scope>runtime</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
       <dependency>		
         <groupId>org.apache.hadoop</groupId>		
         <artifactId>hadoop-yarn-api</artifactId>		
@@ -491,6 +505,7 @@
       </dependencies>
       <properties>
         <hadoop.version>0.23.10</hadoop.version>
+        <jets3t.version>0.7.1</jets3t.version>
       </properties>
     </profile>
 
@@ -498,6 +513,7 @@
       <id>hadoop-2.2</id>
       <properties>
         <hadoop.version>2.2.0</hadoop.version>
+        <jets3t.version>0.7.1</jets3t.version>
       </properties>
     </profile>
 
@@ -530,6 +546,7 @@
       <properties>
         <hadoop.version>1.0.3-mapr-3.0.3</hadoop.version>
         <yarn.version>2.3.0-mapr-4.0.0-FCS</yarn.version>
+        <jets3t.version>0.7.1</jets3t.version>
       </properties>
     </profile>
 
@@ -541,6 +558,7 @@
       <properties>
         <hadoop.version>2.3.0-mapr-4.0.0-FCS</hadoop.version>
         <yarn.version>2.3.0-mapr-4.0.0-FCS</yarn.version>
+        <jets3t.version>0.7.1</jets3t.version>
       </properties>
       <dependencies>
         <dependency>
