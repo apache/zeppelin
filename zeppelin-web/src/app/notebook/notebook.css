@@ -27,6 +27,10 @@
   margin-left:  0px;
 }
 
+.paragraphForm.form-horizontal .form-group label {
+  padding-left: 0;
+}
+
 .paragraph .tableDisplay .hljs {
   background: none;
 }
@@ -271,7 +275,7 @@
 
 
 .disable {
-  opacity:0.4!important;
+  opacity:0.6!important;
   pointer-events: none;
 }
 
