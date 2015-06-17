@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.remote;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -456,5 +457,75 @@ public class RemoteInterpreterTest {
     assertTrue(end - start < timeToSleep * concurrency);
 
     intpA.close();
+  }
+
+  @Test
+  public void testInterpreterGroupResetBeforeProcessStarts() {
+    Properties p = new Properties();
+
+    RemoteInterpreter intpA = new RemoteInterpreter(
+        p,
+        MockInterpreterA.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        env
+        );
+
+    intpA.setInterpreterGroup(intpGroup);
+    RemoteInterpreterProcess processA = intpA.getInterpreterProcess();
+
+    intpA.setInterpreterGroup(new InterpreterGroup(intpA.getInterpreterGroup().getId()));
+    RemoteInterpreterProcess processB = intpA.getInterpreterProcess();
+
+    assertNotSame(processA.hashCode(), processB.hashCode());
+  }
+
+  @Test
+  public void testInterpreterGroupResetAfterProcessFinished() {
+    Properties p = new Properties();
+
+    RemoteInterpreter intpA = new RemoteInterpreter(
+        p,
+        MockInterpreterA.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        env
+        );
+
+    intpA.setInterpreterGroup(intpGroup);
+    RemoteInterpreterProcess processA = intpA.getInterpreterProcess();
+    intpA.open();
+
+    processA.dereference();    // intpA.close();
+
+    intpA.setInterpreterGroup(new InterpreterGroup(intpA.getInterpreterGroup().getId()));
+    RemoteInterpreterProcess processB = intpA.getInterpreterProcess();
+
+    assertNotSame(processA.hashCode(), processB.hashCode());
+  }
+
+  @Test
+  public void testInterpreterGroupResetDuringProcessRunning() {
+    Properties p = new Properties();
+
+    RemoteInterpreter intpA = new RemoteInterpreter(
+        p,
+        MockInterpreterA.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        env
+        );
+
+    intpA.setInterpreterGroup(intpGroup);
+    RemoteInterpreterProcess processA = intpA.getInterpreterProcess();
+    intpA.open();
+
+    intpA.setInterpreterGroup(new InterpreterGroup(intpA.getInterpreterGroup().getId()));
+    RemoteInterpreterProcess processB = intpA.getInterpreterProcess();
+
+    assertEquals(processA.hashCode(), processB.hashCode());
+
+    processA.dereference();     // intpA.close();
+
   }
 }

@@ -21,18 +21,18 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.5.0-SNAPSHOT</version>
+    <version>0.5.0-incubating-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-tajo</artifactId>
   <packaging>jar</packaging>
-  <version>0.5.0-SNAPSHOT</version>
+  <version>0.5.0-incubating-SNAPSHOT</version>
   <name>Zeppelin: Tajo interpreter</name>
   <url>http://www.apache.org</url>
 
   <properties>
-    <protobuf.version>2.5.0</protobuf.version>
+    <tajo.version>0.10.0</tajo.version>
   </properties>
 
   <dependencies>

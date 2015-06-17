@@ -105,9 +105,13 @@ public class SparkInterpreter extends Interpreter {
                 getSystemDefault("SPARK_YARN_JAR", "spark.yarn.jar", ""),
                 "The location of the Spark jar file. If you use yarn as a cluster, "
                 + "we should set this value")
-            .add("zeppelin.spark.useHiveContext", "true",
-                 "Use HiveContext instead of SQLContext if it is true.")
-            .add("zeppelin.spark.maxResult", "1000", "Max number of SparkSQL result to display.")
+            .add("zeppelin.spark.useHiveContext",
+                getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT", 
+                    "zeppelin.spark.useHiveContext", "true"),
+                "Use HiveContext instead of SQLContext if it is true.")
+            .add("zeppelin.spark.maxResult",
+                getSystemDefault("ZEPPELIN_SPARK_MAXRESULT", "zeppelin.spark.maxResult", "1000"),
+                "Max number of SparkSQL result to display.")
             .add("args", "", "spark commandline args").build());
 
   }
@@ -415,6 +419,10 @@ public class SparkInterpreter extends Interpreter {
         Method loadFiles = this.interpreter.getClass().getMethod(
             "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
         loadFiles.invoke(this.interpreter, settings);
+      } else if (sc.version().startsWith("1.4")) {
+        Method loadFiles = this.interpreter.getClass().getMethod(
+            "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
+        loadFiles.invoke(this.interpreter, settings);
       }
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
@@ -444,6 +452,10 @@ public class SparkInterpreter extends Interpreter {
     } else if (sc.version().startsWith("1.2")) {
       intp.interpret("import sqlContext._");
     } else if (sc.version().startsWith("1.3")) {
+      intp.interpret("import sqlContext.implicits._");
+      intp.interpret("import sqlContext.sql");
+      intp.interpret("import org.apache.spark.sql.functions._");
+    } else if (sc.version().startsWith("1.4")) {
       intp.interpret("import sqlContext.implicits._");
       intp.interpret("import sqlContext.sql");
       intp.interpret("import org.apache.spark.sql.functions._");
@@ -620,6 +632,8 @@ public class SparkInterpreter extends Interpreter {
         } else if (sc.version().startsWith("1.2")) {
           progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
         } else if (sc.version().startsWith("1.3")) {
+          progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
+        } else if (sc.version().startsWith("1.4")) {
           progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
         } else {
           continue;

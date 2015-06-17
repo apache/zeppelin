@@ -118,6 +118,9 @@ public class RemoteScheduler implements Scheduler {
 
   @Override
   public void submit(Job job) {
+    if (terminate) {
+      throw new RuntimeException("Scheduler already terminated");
+    }
     job.setStatus(Status.PENDING);
 
     synchronized (queue) {
