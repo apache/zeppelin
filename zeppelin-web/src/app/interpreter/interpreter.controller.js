@@ -1,4 +1,4 @@
-/* global confirm:false, alert:false */
+/* global confirm:false, alert:false, _:false */
 /* jshint loopfunc: true */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,35 +24,13 @@
  */
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, $route, $routeParams, $location, $rootScope,
                                                                          $http, baseUrlSrv) {
-
-  var remoteSettingToLocalSetting = function(settingId, setting) {
-    var property = {};
-    for (var key in setting.properties) {
-      property[key] = {
-        value : setting.properties[key]
-      };
-    }
-    return {
-      id : settingId,
-      name : setting.name,
-      group : setting.group,
-      option : angular.copy(setting.option),
-      properties : property,
-      interpreters : setting.interpreterGroup
-    };
-  };
-
+  var interpreterSettingsTmp = [];
+  
+  
   var getInterpreterSettings = function() {
     $http.get(baseUrlSrv.getRestApiBase()+'/interpreter/setting').
       success(function(data, status, headers, config) {
-        var interpreterSettings = [];
-        //console.log("getInterpreterSettings=%o", data);
-
-        for (var settingId in data.body) {
-          var setting = data.body[settingId];
-          interpreterSettings.push(remoteSettingToLocalSetting(setting.id, setting));
-        }
-        $scope.interpreterSettings = interpreterSettings;
+        $scope.interpreterSettings = data.body;
       }).
       error(function(data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
@@ -62,39 +40,24 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   var getAvailableInterpreters = function() {
     $http.get(baseUrlSrv.getRestApiBase()+'/interpreter').
       success(function(data, status, headers, config) {
-        var groupedInfo = {};
-        var info;
-        for (var k in data.body) {
-          info = data.body[k];
-          if (!groupedInfo[info.group]) {
-            groupedInfo[info.group] = [];
-          }
-          groupedInfo[info.group].push({
-            name : info.name,
-            className : info.className,
-            properties : info.properties
-          });
-        }
-
-        $scope.availableInterpreters = groupedInfo;
-        //console.log("getAvailableInterpreters=%o", data);
+        $scope.availableInterpreters = data.body;
       }).
       error(function(data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
       });
   };
+  
+  var emptyNewProperty = function(object) {
+    angular.extend(object, {propertyValue: '', propertyKey: ''});
+  };
+  
+  var removeTMPSettings = function(index) {
+    interpreterSettingsTmp.splice(index, 1);
+  };
 
   $scope.copyOriginInterpreterSettingProperties = function(settingId) {
-    $scope.interpreterSettingProperties = {};
-    for (var i=0; i < $scope.interpreterSettings.length; i++) {
-      var setting = $scope.interpreterSettings[i];
-      if(setting.id === settingId) {
-        angular.copy(setting.properties, $scope.interpreterSettingProperties);
-        angular.copy(setting.option, $scope.interpreterSettingOption);
-        break;
-      }
-    }
-    console.log('%o, %o', $scope.interpreterSettings[i], $scope.interpreterSettingProperties);
+    var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
+    interpreterSettingsTmp[index] = angular.copy($scope.interpreterSettings[index]);
   };
 
   $scope.updateInterpreterSetting = function(settingId) {
@@ -102,37 +65,19 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     if (!result) {
       return;
     }
-
-    $scope.addNewInterpreterProperty(settingId);
-
+    
+    var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
+    
     var request = {
-      option : {
-        remote : true
-      },
-      properties : {},
+      option : angular.copy($scope.interpreterSettings[index].option),
+      properties : angular.copy($scope.interpreterSettings[index].properties),
     };
+    
 
-    for (var i=0; i < $scope.interpreterSettings.length; i++) {
-      var setting = $scope.interpreterSettings[i];
-      if(setting.id === settingId) {
-        request.option = angular.copy(setting.option);
-        for (var p in setting.properties) {
-          request.properties[p] = setting.properties[p].value;
-        }
-        break;
-      }
-    }
-
-    $http.put(baseUrlSrv.getRestApiBase()+'/interpreter/setting/'+settingId, request).
+    $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId, request).
     success(function(data, status, headers, config) {
-      for (var i=0; i < $scope.interpreterSettings.length; i++) {
-        var setting = $scope.interpreterSettings[i];
-        if (setting.id === settingId) {
-          $scope.interpreterSettings.splice(i, 1);
-          $scope.interpreterSettings.splice(i, 0, remoteSettingToLocalSetting(settingId, data.body));
-          break;
-        }
-      }
+      $scope.interpreterSettings[index] = data.body;
+      removeTMPSettings(index);
     }).
     error(function(data, status, headers, config) {
       console.log('Error %o %o', status, data.message);
@@ -140,14 +85,11 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   };
 
   $scope.resetInterpreterSetting = function(settingId){
-    for (var i=0; i<$scope.interpreterSettings.length; i++) {
-      var setting = $scope.interpreterSettings[i];
-      if (setting.id === settingId) {
-        angular.copy($scope.interpreterSettingProperties, setting.properties);
-        angular.copy($scope.interpreterSettingOption, setting.option);
-        break;
-      }
-    }
+    var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
+
+    // Set the old settings back
+    $scope.interpreterSettings[index] = angular.copy(interpreterSettingsTmp[index]);
+    removeTMPSettings(index);
   };
 
   $scope.removeInterpreterSetting = function(settingId) {
@@ -157,15 +99,10 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     }
 
     console.log('Delete setting %o', settingId);
-    $http.delete(baseUrlSrv.getRestApiBase()+'/interpreter/setting/'+settingId).
+    $http.delete(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId).
       success(function(data, status, headers, config) {
-        for (var i=0; i < $scope.interpreterSettings.length; i++) {
-          var setting = $scope.interpreterSettings[i];
-          if (setting.id === settingId) {
-            $scope.interpreterSettings.splice(i, 1);
-            break;
-          }
-        }
+        var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
+        $scope.interpreterSettings.splice(index, 1);
       }).
       error(function(data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
@@ -173,18 +110,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   };
 
   $scope.newInterpreterGroupChange = function() {
-    var property = {};
-    var intpGroupInfo = $scope.availableInterpreters[$scope.newInterpreterSetting.group];
-    for (var i=0; i<intpGroupInfo.length; i++) {
-      var intpInfo = intpGroupInfo[i];
-      for (var key in intpInfo.properties) {
-        property[key] = {
-          value : intpInfo.properties[key].defaultValue,
-          description : intpInfo.properties[key].description
-        };
-      }
-    }
-    $scope.newInterpreterSetting.properties = property;
+    $scope.newInterpreterSetting.properties = $scope.availableInterpreters[$scope.newInterpreterSetting.group].properties;
   };
 
   $scope.restartInterpreterSetting = function(settingId) {
@@ -193,16 +119,10 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       return;
     }
 
-    $http.put(baseUrlSrv.getRestApiBase()+'/interpreter/setting/restart/'+settingId).
+    $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + settingId).
       success(function(data, status, headers, config) {
-        for (var i=0; i < $scope.interpreterSettings.length; i++) {
-          var setting = $scope.interpreterSettings[i];
-          if (setting.id === settingId) {
-            $scope.interpreterSettings.splice(i, 1);
-            $scope.interpreterSettings.splice(i, 0, remoteSettingToLocalSetting(settingId, data.body));
-            break;
-          }
-        }
+      var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
+      $scope.interpreterSettings[index] = data.body;
       }).
       error(function(data, status, headers, config) {
         console.log('Error %o %o', status, data.message);
@@ -214,21 +134,16 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       alert('Please determine name and interpreter');
       return;
     }
-
-    for (var i=0; i<$scope.interpreterSettings.length; i++) {
-      var setting = $scope.interpreterSettings[i];
-      if (setting.name === $scope.newInterpreterSetting.name) {
-        alert('Name ' + setting.name + ' already exists');
-        return;
-      }
+    
+    if (_.findIndex($scope.interpreterSettings, { 'name': $scope.newInterpreterSetting.name }) >= 0) {
+      alert('Name ' + $scope.newInterpreterSetting.name + ' already exists');
+      return;
     }
-
-    $scope.addNewInterpreterProperty();
 
     var newSetting = {
       name : $scope.newInterpreterSetting.name,
       group : $scope.newInterpreterSetting.group,
-      option : angular.copy($scope.newInterpreterSetting.option),
+      option : $scope.newInterpreterSetting.option,
       properties : {}
     };
 
@@ -255,8 +170,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       option : { remote : true },
       properties : {}
     };
-    $scope.newInterpreterSetting.propertyValue = '';
-    $scope.newInterpreterSetting.propertyKey = '';
+    emptyNewProperty($scope.newInterpreterSetting);
   };
 
   $scope.removeInterpreterProperty = function(key, settingId) {
@@ -264,38 +178,27 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       delete $scope.newInterpreterSetting.properties[key];
     }
     else {
-      for (var i=0; i < $scope.interpreterSettings.length; i++) {
-        var setting = $scope.interpreterSettings[i];
-        if (setting.id === settingId) {
-          delete $scope.interpreterSettings[i].properties[key];
-          break;
-        }
-      }
+      var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
+      delete $scope.interpreterSettings[index].properties[key];
     }
   };
 
   $scope.addNewInterpreterProperty = function(settingId) {
     if(settingId === undefined) {
+      // Add new property from create form
       if (!$scope.newInterpreterSetting.propertyKey || $scope.newInterpreterSetting.propertyKey === '') {
         return;
       }
-      $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = { value : $scope.newInterpreterSetting.propertyValue};
-      $scope.newInterpreterSetting.propertyValue = '';
-      $scope.newInterpreterSetting.propertyKey = '';
+      $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = $scope.newInterpreterSetting.propertyValue;
+      emptyNewProperty($scope.newInterpreterSetting);
     }
     else {
-      for (var i=0; i < $scope.interpreterSettings.length; i++) {
-        var setting = $scope.interpreterSettings[i];
-        if (setting.id === settingId){
-          if (!setting.propertyKey || setting.propertyKey === '') {
-            return;
-          }
-          setting.properties[setting.propertyKey] = { value : setting.propertyValue };
-          setting.propertyValue = '';
-          setting.propertyKey = '';
-          break;
-        }
-      }
+      // Add new property from create form 
+      var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
+      var setting = $scope.interpreterSettings[index];
+      
+      setting.properties[setting.propertyKey] = setting.propertyValue;
+      emptyNewProperty(setting);
     }
   };
 
