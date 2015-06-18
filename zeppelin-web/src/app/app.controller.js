@@ -40,10 +40,15 @@ angular.module('zeppelinWebApp').controller('MainCtrl', function($scope, $rootSc
   });
 
   $rootScope.$on('setLookAndFeel', function(event, data) {
-    if (!event.defaultPrevented && data && data !== '') {
+    if (!event.defaultPrevented && data && data !== '' && data != $scope.looknfeel) {
       $scope.looknfeel = data;
       event.preventDefault();
     }
+  });
+  
+  // Set The lookAndFeel to default on every page
+  $rootScope.$on('$routeChangeStart', function(event, next, current) {
+    $rootScope.$broadcast('setLookAndFeel', 'default');
   });
 
 });
