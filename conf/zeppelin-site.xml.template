@@ -66,7 +66,7 @@
 
 <property>
   <name>zeppelin.interpreters</name>
-  <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.angular.AngularInterpreter,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.hive.HiveInterpreter,org.apache.zeppelin.tajo.TajoInterpreter</value>
+  <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.angular.AngularInterpreter,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.hive.HiveInterpreter,org.apache.zeppelin.tajo.TajoInterpreter,org.apache.zeppelin.flink.FlinkInterpreter</value>
   <description>Comma separated interpreter configurations. First interpreter become a default</description>
 </property>
 
@@ -84,8 +84,8 @@
 
 <property>
   <name>zeppelin.ssl.keystore.path</name>
-  <value>conf/keystore</value>
-  <description>Path to keystore relative to Zeppelin home</description>
+  <value>keystore</value>
+  <description>Path to keystore relative to Zeppelin configuration directory</description>
 </property>
 
 <property>
@@ -110,8 +110,8 @@
 
 <property>
   <name>zeppelin.ssl.truststore.path</name>
-  <value>conf/truststore</value>
-  <description>Path to truststore relative to Zeppelin home. Defaults to the keystore path</description>
+  <value>truststore</value>
+  <description>Path to truststore relative to Zeppelin configuration directory. Defaults to the keystore path</description>
 </property>
 
 <property>

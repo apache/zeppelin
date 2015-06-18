@@ -17,17 +17,20 @@
 
 package org.apache.zeppelin.rest;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -46,6 +49,7 @@ public abstract class AbstractTestRestApi {
   static final String restApiUrl = "/api";
   static final String url = getUrlToTest();
   protected static final boolean wasRunning = checkIfServerIsRuning();
+  static boolean pySpark = false;
 
   private String getUrl(String path) {
     String url;
@@ -68,7 +72,7 @@ public abstract class AbstractTestRestApi {
     return url;
   }
 
-  static ExecutorService executor = Executors.newSingleThreadExecutor();
+  static ExecutorService executor;
   protected static final Runnable server = new Runnable() {
     @Override
     public void run() {
@@ -84,6 +88,7 @@ public abstract class AbstractTestRestApi {
   protected static void startUp() throws Exception {
     if (!wasRunning) {
       LOG.info("Staring test Zeppelin up...");
+      executor = Executors.newSingleThreadExecutor();
       executor.submit(server);
       long s = System.currentTimeMillis();
       boolean started = false;
@@ -98,19 +103,107 @@ public abstract class AbstractTestRestApi {
     	  throw new RuntimeException("Can not start Zeppelin server");
       }
       LOG.info("Test Zeppelin stared.");
+
+
+      // ci environment runs spark cluster for testing
+      // so configure zeppelin use spark cluster
+      if ("true".equals(System.getenv("CI"))) {
+        // assume first one is spark
+        InterpreterSetting sparkIntpSetting = ZeppelinServer.notebook.getInterpreterFactory().get().get(0);
+
+        // set spark master
+        sparkIntpSetting.getProperties().setProperty("master", "spark://" + getHostname() + ":7071");
+
+        // set spark home for pyspark
+        sparkIntpSetting.getProperties().setProperty("spark.home", getSparkHome());
+        pySpark = true;
+
+        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.id());
+      } else {
+        // assume first one is spark
+        InterpreterSetting sparkIntpSetting = ZeppelinServer.notebook.getInterpreterFactory().get().get(0);
+
+        String sparkHome = getSparkHome();
+        if (sparkHome != null) {
+          // set spark home for pyspark
+          sparkIntpSetting.getProperties().setProperty("spark.home", sparkHome);
+          pySpark = true;
+        }
+
+        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.id());
+      }
     }
   }
 
-  protected static void shutDown() {
+  private static String getHostname() {
+    try {
+      return InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException e) {
+      e.printStackTrace();
+      return "localhost";
+    }
+  }
+
+  private static String getSparkHome() {
+    String sparkHome = getSparkHomeRecursively(new File(System.getProperty("user.dir")));
+    System.out.println("SPARK HOME detected " + sparkHome);
+    return sparkHome;
+  }
+
+  boolean isPyspark() {
+    return pySpark;
+  }
+
+  private static String getSparkHomeRecursively(File dir) {
+    if (dir == null) return null;
+    File files []  = dir.listFiles();
+    if (files == null) return null;
+
+    File homeDetected = null;
+    for (File f : files) {
+      if (isActiveSparkHome(f)) {
+        homeDetected = f;
+        break;
+      }
+    }
+
+    if (homeDetected != null) {
+      return homeDetected.getAbsolutePath();
+    } else {
+      return getSparkHomeRecursively(dir.getParentFile());
+    }
+  }
+
+  private static boolean isActiveSparkHome(File dir) {
+    if (dir.getName().matches("spark-[0-9\\.]+-bin-hadoop[0-9\\.]+")) {
+      File pidDir = new File(dir, "run");
+      if (pidDir.isDirectory() && pidDir.listFiles().length > 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  protected static void shutDown() throws Exception {
     if (!wasRunning) {
       LOG.info("Terminating test Zeppelin...");
+      ZeppelinServer.notebookServer.stop();
+      ZeppelinServer.jettyServer.stop();
       executor.shutdown();
-      try {
-        executor.awaitTermination(10, TimeUnit.SECONDS);
-      } catch (InterruptedException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+
+      long s = System.currentTimeMillis();
+      boolean started = true;
+      while (System.currentTimeMillis() - s < 1000 * 60 * 3) {  // 3 minutes
+        Thread.sleep(2000);
+        started = checkIfServerIsRuning();
+        if (started == false) {
+          break;
+        }
       }
+      if (started == true) {
+        throw new RuntimeException("Can not stop Zeppelin server");
+      }
+
       LOG.info("Test Zeppelin terminated.");
     }
   }
