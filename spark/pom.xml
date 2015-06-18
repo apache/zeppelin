@@ -538,27 +538,21 @@
       </properties>
     </profile>
 
-    <profile>
-      <id>mapr3</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <properties>
-        <hadoop.version>1.0.3-mapr-3.0.3</hadoop.version>
-        <yarn.version>2.3.0-mapr-4.0.0-FCS</yarn.version>
-        <jets3t.version>0.7.1</jets3t.version>
-      </properties>
-    </profile>
-
+<!-- MapR Maven Artifacts
+     The Maven artifacts are MapR release specific. These are for MapR 4.0.1
+     The MapR Maven documentation is here:
+     http://doc.mapr.com/display/MapR40x/Maven+Artifacts+for+MapR
+-->
     <profile>
       <id>mapr4</id>
       <activation>
         <activeByDefault>false</activeByDefault>
       </activation>
       <properties>
-        <hadoop.version>2.3.0-mapr-4.0.0-FCS</hadoop.version>
-        <yarn.version>2.3.0-mapr-4.0.0-FCS</yarn.version>
-        <jets3t.version>0.7.1</jets3t.version>
+        <hadoop.version>2.4.1-mapr-1408</hadoop.version>
+        <yarn.version>2.4.1-mapr-1408</yarn.version>
+        <hbase.version>0.98.9-mapr-1503</hbase.version>
+        <zookeeper.version>3.4.5-mapr-1503</zookeeper.version>
       </properties>
       <dependencies>
         <dependency>
@@ -575,7 +569,7 @@
         <dependency>
           <groupId>org.apache.zookeeper</groupId>
           <artifactId>zookeeper</artifactId>
-          <version>3.4.5-mapr-1406</version>
+          <version>3.4.5-mapr-1503</version>
         </dependency>
       </dependencies>
     </profile>
