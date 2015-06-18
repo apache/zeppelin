@@ -113,7 +113,7 @@ To package final distribution do:
 The archive is generated under _zeppelin-distribution/target_ directory
 
 ###Run end-to-end tests
-Zeppelin comes with a set of end-to-end acceptnce tests driving headless selenium browser
+Zeppelin comes with a set of end-to-end acceptance tests driving headless selenium browser
 
       #assumes zeppelin-server running on localhost:8080 (use -Durl=.. to override)
       mvn verify
