@@ -25,32 +25,34 @@
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, $route, $routeParams, $location, $rootScope,
                                                                          $http, baseUrlSrv) {
   var interpreterSettingsTmp = [];
-  
-  
+  $scope.interpreterSettings = [];
+  $scope.availableInterpreters = {};
+  $scope.showAddNewSetting = false;
+
   var getInterpreterSettings = function() {
     $http.get(baseUrlSrv.getRestApiBase()+'/interpreter/setting').
-      success(function(data, status, headers, config) {
-        $scope.interpreterSettings = data.body;
-      }).
-      error(function(data, status, headers, config) {
-        console.log('Error %o %o', status, data.message);
-      });
+    success(function(data, status, headers, config) {
+      $scope.interpreterSettings = data.body;
+    }).
+    error(function(data, status, headers, config) {
+      console.log('Error %o %o', status, data.message);
+    });
   };
 
   var getAvailableInterpreters = function() {
     $http.get(baseUrlSrv.getRestApiBase()+'/interpreter').
-      success(function(data, status, headers, config) {
-        $scope.availableInterpreters = data.body;
-      }).
-      error(function(data, status, headers, config) {
-        console.log('Error %o %o', status, data.message);
-      });
+    success(function(data, status, headers, config) {
+      $scope.availableInterpreters = data.body;
+    }).
+    error(function(data, status, headers, config) {
+      console.log('Error %o %o', status, data.message);
+    });
   };
-  
+
   var emptyNewProperty = function(object) {
     angular.extend(object, {propertyValue: '', propertyKey: ''});
   };
-  
+
   var removeTMPSettings = function(index) {
     interpreterSettingsTmp.splice(index, 1);
   };
@@ -65,14 +67,14 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     if (!result) {
       return;
     }
-    
+
     var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
-    
+
     var request = {
       option : angular.copy($scope.interpreterSettings[index].option),
       properties : angular.copy($scope.interpreterSettings[index].properties),
     };
-    
+
 
     $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId, request).
     success(function(data, status, headers, config) {
@@ -98,15 +100,15 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       return;
     }
 
-    console.log('Delete setting %o', settingId);
     $http.delete(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId).
-      success(function(data, status, headers, config) {
-        var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
-        $scope.interpreterSettings.splice(index, 1);
-      }).
-      error(function(data, status, headers, config) {
-        console.log('Error %o %o', status, data.message);
-      });
+    success(function(data, status, headers, config) {
+
+      var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
+      $scope.interpreterSettings.splice(index, 1);
+    }).
+    error(function(data, status, headers, config) {
+      console.log('Error %o %o', status, data.message);
+    });
   };
 
   $scope.newInterpreterGroupChange = function() {
@@ -120,13 +122,13 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     }
 
     $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + settingId).
-      success(function(data, status, headers, config) {
+    success(function(data, status, headers, config) {
       var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
       $scope.interpreterSettings[index] = data.body;
-      }).
-      error(function(data, status, headers, config) {
-        console.log('Error %o %o', status, data.message);
-      });
+    }).
+    error(function(data, status, headers, config) {
+      console.log('Error %o %o', status, data.message);
+    });
   };
 
   $scope.addNewInterpreterSetting = function() {
@@ -134,32 +136,27 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       alert('Please determine name and interpreter');
       return;
     }
-    
+
     if (_.findIndex($scope.interpreterSettings, { 'name': $scope.newInterpreterSetting.name }) >= 0) {
       alert('Name ' + $scope.newInterpreterSetting.name + ' already exists');
       return;
     }
 
-    var newSetting = {
-      name : $scope.newInterpreterSetting.name,
-      group : $scope.newInterpreterSetting.group,
-      option : $scope.newInterpreterSetting.option,
-      properties : {}
-    };
+    var newSetting = angular.copy($scope.newInterpreterSetting);
 
     for (var p in $scope.newInterpreterSetting.properties) {
       newSetting.properties[p] = $scope.newInterpreterSetting.properties[p].value;
     }
 
     $http.post(baseUrlSrv.getRestApiBase()+'/interpreter/setting', newSetting).
-      success(function(data, status, headers, config) {
-        $scope.resetNewInterpreterSetting();
-        getInterpreterSettings();
-        $scope.showAddNewSetting = false;
-      }).
-      error(function(data, status, headers, config) {
-        console.log('Error %o %o', status, data.message);
-      });
+    success(function(data, status, headers, config) {
+      $scope.resetNewInterpreterSetting();
+      getInterpreterSettings();
+      $scope.showAddNewSetting = false;
+    }).
+    error(function(data, status, headers, config) {
+      console.log('Error %o %o', status, data.message);
+    });
   };
 
 
@@ -196,19 +193,14 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       // Add new property from create form 
       var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
       var setting = $scope.interpreterSettings[index];
-      
+
       setting.properties[setting.propertyKey] = setting.propertyValue;
       emptyNewProperty(setting);
     }
   };
 
   var init = function() {
-    // when interpreter page opened after seeing non-default looknfeel note, the css remains unchanged. that's what interpreter page want. Force set default looknfeel.
-    $rootScope.$broadcast('setLookAndFeel', 'default');
-    $scope.interpreterSettings = [];
-    $scope.availableInterpreters = {};
     $scope.resetNewInterpreterSetting();
-
     getInterpreterSettings();
     getAvailableInterpreters();
   };
