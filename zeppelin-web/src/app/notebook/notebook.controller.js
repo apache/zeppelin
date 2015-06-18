@@ -15,14 +15,6 @@
  */
 'use strict';
 
-/**
- * @ngdoc function
- * @name zeppelinWebApp.controller:NotebookCtrl
- * @description
- * # NotebookCtrl
- * Controller of notes, manage the note (update)
- *
- */
 angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, websocketMsgSrv, baseUrlSrv) {
   $scope.note = null;
   $scope.showEditor = false;

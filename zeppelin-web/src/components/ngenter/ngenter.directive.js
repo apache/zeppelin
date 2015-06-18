@@ -13,15 +13,6 @@
  */
 'use strict';
 
-/**
- * @ngdoc directive
- * @name zeppelinWebApp.directive:ngEnter
- * @description
- * # ngEnter
- * Bind the <enter> event
- * 
- * @author anthonycorbacho
- */
 angular.module('zeppelinWebApp').directive('ngEnter', function() {
   return function(scope, element, attrs) {
     element.bind('keydown keypress', function(event) {

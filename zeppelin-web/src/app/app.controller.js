@@ -13,15 +13,6 @@
  */
 'use strict';
 
-/**
- * @ngdoc function
- * @name zeppelinWebApp.controller:MainCtrl
- * @description
- * # MainCtrl
- * Controller of the zeppelinWebApp
- *
- * @author anthonycorbacho
- */
 angular.module('zeppelinWebApp').controller('MainCtrl', function($scope, $rootScope, $window) {
   $rootScope.compiledScope = $scope.$new(true, $rootScope);
   $scope.looknfeel = 'default';

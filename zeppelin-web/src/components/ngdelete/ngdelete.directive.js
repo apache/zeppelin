@@ -14,12 +14,6 @@
 
 'use strict';
 
-/**
- * @ngdoc directive
- * @name zeppelinWebApp.directive:delete
- * @description
- * # ngDelete
- */
 angular.module('zeppelinWebApp').directive('ngDelete', function() {
   return function(scope, element, attrs) {
     element.bind('keydown keyup', function(event) {

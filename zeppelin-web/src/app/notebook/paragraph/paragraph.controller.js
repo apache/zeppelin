@@ -15,15 +15,6 @@
  */
 'use strict';
 
-/**
- * @ngdoc function
- * @name zeppelinWebApp.controller:ParagraphCtrl
- * @description
- * # ParagraphCtrl
- * Controller of the paragraph, manage everything related to the paragraph
- *
- * @author anthonycorbacho
- */
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
                                          $timeout, $compile, websocketMsgSrv) {

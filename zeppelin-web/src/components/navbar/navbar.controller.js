@@ -15,16 +15,6 @@
 
 'use strict';
 
-/**
- * @ngdoc function
- * @name zeppelinWebApp.controller:NavCtrl
- * @description
- * # NavCtrl
- * Controller of the top navigation, mainly use for the dropdown menu
- *
- * @author anthonycorbacho
- */
-
 angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams, notebookListDataFactory, websocketMsgSrv) {
   /** Current list of notes (ids) */
   

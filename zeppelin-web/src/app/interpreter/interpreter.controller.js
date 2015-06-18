@@ -15,13 +15,6 @@
  */
 'use strict';
 
-/**
- * @ngdoc function
- * @name zeppelinWebApp.controller:InterpreterCtrl
- * @description
- * # InterpreterCtrl
- * Controller of interpreter, manage the note (update)
- */
 angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, $route, $routeParams, $location, $rootScope,
                                                                          $http, baseUrlSrv) {
   var interpreterSettingsTmp = [];
