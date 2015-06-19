@@ -37,9 +37,9 @@ public class DrillInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(DrillInterpreter.class);
   int commandTimeOut = 600000;
 
-  static final String DRILL_URL = "drill.url";
-  static final String DRILL_USER = "drill.user";
-  static final String DRILL_PASSWORD = "drill.password";
+  static final String DRILL_URL = "drill.drill.url";
+  static final String DRILL_USER = "drill.drill.user";
+  static final String DRILL_PASSWORD = "drill.drill.password";
 
   static {
     Interpreter.register(
@@ -47,7 +47,7 @@ public class DrillInterpreter extends Interpreter {
       "drill",
       DrillInterpreter.class.getName(),
       new InterpreterPropertyBuilder()
-        .add(DRILL_URL, "jdbc:drill:zk=localhost:5181/drill/drillbits", "The URL for Drill Instance.")
+        .add(DRILL_URL, "jdbc:drill:", "The URL for Drill Instance.")
         .add(DRILL_USER, "mapr", "The Drill user")
         .add(DRILL_PASSWORD, "", "The password for the Drill user").build());
   }

@@ -29,11 +29,11 @@
   <artifactId>zeppelin-drill</artifactId>
   <packaging>jar</packaging>
   <version>0.5.0-incubating-SNAPSHOT</version>
-  <name>Zeppelin: Hive interpreter</name>
+  <name>Zeppelin: Drill interpreter</name>
   <url>http://www.apache.org</url>
 
   <properties>
-    <drill.version>1.0.0</drill.version>
+    <drill.drill.version>1.0.0-mapr-r1</drill.drill.version>
   </properties>
   <dependencies>
     <dependency>
@@ -61,8 +61,8 @@
     
     <dependency>
       <groupId>org.apache.drill</groupId>
-      <artifactId>drill-jdbc</artifactId>
-      <version>${drill.version}</version>
+      <artifactId>drill-jdbc-all</artifactId>
+      <version>${drill.drill.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
