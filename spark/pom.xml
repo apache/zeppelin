@@ -41,7 +41,13 @@
 
     <hadoop.version>2.3.0</hadoop.version>
     <yarn.version>${hadoop.version}</yarn.version>
+    <avro.version>1.7.7</avro.version>
+    <avro.mapred.classifier>hadoop2</avro.mapred.classifier>
     <jets3t.version>0.9.3</jets3t.version>
+    <protobuf.version>2.5.0</protobuf.version>
+
+    <akka.group>com.typesafe.akka</akka.group>
+    <akka.version>2.3.11</akka.version>
   </properties>
 
   <repositories>
@@ -53,6 +59,67 @@
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro</artifactId>
+        <version>${avro.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro-ipc</artifactId>
+        <version>${avro.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro-mapred</artifactId>
+        <version>${avro.version}</version>
+        <classifier>${avro.mapred.classifier}</classifier>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>servlet-api</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
       <!-- See SPARK-1556 for info on this dependency: -->
       <dependency>
         <groupId>net.java.dev.jets3t</groupId>
@@ -253,6 +320,44 @@
       <version>${hadoop.version}</version>
     </dependency>
 
+
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>${protobuf.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>${akka.group}</groupId>
+      <artifactId>akka-actor_${scala.binary.version}</artifactId>
+      <version>${akka.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${akka.group}</groupId>
+      <artifactId>akka-remote_${scala.binary.version}</artifactId>
+      <version>${akka.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${akka.group}</groupId>
+      <artifactId>akka-slf4j_${scala.binary.version}</artifactId>
+      <version>${akka.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${akka.group}</groupId>
+      <artifactId>akka-testkit_${scala.binary.version}</artifactId>
+      <version>${akka.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${akka.group}</groupId>
+      <artifactId>akka-zeromq_${scala.binary.version}</artifactId>
+      <version>${akka.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>${akka.group}</groupId>
+          <artifactId>akka-actor_${scala.binary.version}</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
 
     <!-- Aether :: maven dependency resolution -->
     <dependency>
@@ -514,6 +619,18 @@
       <properties>
         <hadoop.version>0.23.10</hadoop.version>
         <jets3t.version>0.7.1</jets3t.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>hadoop-1</id>
+      <properties>
+        <hadoop.version>1.0.4</hadoop.version>
+        <protobuf.version>2.4.1</protobuf.version>
+        <avro.mapred.classifier>hadoop1</avro.mapred.classifier>
+        <codehaus.jackson.version>1.8.8</codehaus.jackson.version>
+        <akka.group>org.spark-project.akka</akka.group>
+        <akka.version>2.3.4-spark</akka.version>
       </properties>
     </profile>
 
