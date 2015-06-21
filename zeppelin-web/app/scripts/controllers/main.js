@@ -45,6 +45,10 @@ angular.module('zeppelinWebApp')
         WebSocket.send(JSON.stringify($scope.WebSocketWaitingList[o]));
       }
     }
+    setInterval(function(){
+        $rootScope.$emit('sendNewEvent', {op: 'PING'})
+      }
+      ,60000);    
   });
 
   WebSocket.onmessage(function(event) {
