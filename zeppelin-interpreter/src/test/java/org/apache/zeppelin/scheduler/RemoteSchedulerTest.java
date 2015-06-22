@@ -62,7 +62,8 @@ public class RemoteSchedulerTest {
         MockInterpreterA.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
-        env
+        env,
+        10 * 1000
         );
 
     intpGroup.add(intpA);
