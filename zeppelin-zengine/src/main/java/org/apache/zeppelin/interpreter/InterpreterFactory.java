@@ -621,8 +621,10 @@ public class InterpreterFactory {
   private Interpreter createRemoteRepl(String interpreterPath, String className,
       Properties property) {
 
+    int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(
-        property, className, conf.getInterpreterRemoteRunnerPath(), interpreterPath));
+        property, className, conf.getInterpreterRemoteRunnerPath(),
+        interpreterPath, connectTimeout));
     return intp;
   }
 
