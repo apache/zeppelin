@@ -108,7 +108,7 @@ for example,
 
     ZEPPELIN_JAVA_OPTS="-Dspark.jars=/mylib1.jar,/mylib2.jar -Dspark.files=/myfile1.dat,/myfile2.dat"
 
-or you can do it dynamically with [dependency loader](http://localhost:4000/docs/zeppelincontext.html)
+or you can do it dynamically with [dependency loader](../interpreter/spark.html#dependencyloading)
 
 
 ## Start/Stop
