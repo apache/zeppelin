@@ -87,7 +87,7 @@ public class SparkInterpreter extends Interpreter {
 
   static {
     Interpreter.register(
-        "scala",
+        "spark",
         "spark",
         SparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
