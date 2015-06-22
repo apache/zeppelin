@@ -46,6 +46,7 @@ for example,
 
 ### Use your interpreter
 
+#### 0.5.0
 Inside of a notebook, %[INTERPRETER_NAME] directive will call your interpreter.
 Note that the first interpreter configuration in zeppelin.interpreters will be the default one.
 
@@ -57,6 +58,52 @@ for example
 val a = "My interpreter"
 println(a)
 ```
+
+<br />
+#### 0.6.0 and later
+Inside of a noteobok, %[INTERPRETER\_GROUP].[INTERPRETER\_NAME] directive will call your interpreter.
+Note that the first interpreter configuration in zeppelin.interpreters will be the default one.
+
+You can omit either [INTERPRETER\_GROUP] or [INTERPRETER\_NAME]. Omit [INTERPRETER\_NAME] selects first available interpreter in the [INTERPRETER\_GROUP].
+Omit '[INTERPRETER\_GROUP]' will selects [INTERPRETER\_NAME] from defualt interpreter group.
+
+
+For example, if you have two interpreter myintp1 and myintp2 in group mygrp,
+
+you can call myintp1 like
+
+```
+%mygrp.myintp1
+
+codes for myintp1
+```
+
+and you can call myintp2 like
+
+```
+%mygrp.myintp2
+
+codes for myintp2
+```
+
+If you ommit your interpreter name, it'll selects first available interpreter in the group (myintp1)
+
+```
+%mygrp
+
+codes for myintp1
+
+```
+
+You can only ommit your interpreter group when your interpreter group is selected as a default group.
+
+```
+%myintp2
+
+codes for myintp2
+```
+
+
 
 
 ### Examples
