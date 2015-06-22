@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -79,29 +80,71 @@ public class NoteInterpreterLoader {
       return null;
     }
 
-    if (replName == null) {
+    if (replName == null || replName.trim().length() == 0) {
       return settings.get(0).getInterpreterGroup().getFirst();
     }
 
     if (Interpreter.registeredInterpreters == null) {
       return null;
     }
-    Interpreter.RegisteredInterpreter registeredInterpreter
-      = Interpreter.registeredInterpreters.get(replName);
-    if (registeredInterpreter == null || registeredInterpreter.getClassName() == null) {
-      throw new InterpreterException(replName + " interpreter not found");
-    }
-    String interpreterClassName = registeredInterpreter.getClassName();
 
-    for (InterpreterSetting setting : settings) {
-      InterpreterGroup intpGroup = setting.getInterpreterGroup();
+    String[] replNameSplit = replName.split("\\.");
+    String group = null;
+    String name = null;
+    if (replNameSplit.length == 2) {
+      group = replNameSplit[0];
+      name = replNameSplit[1];
+
+      Interpreter.RegisteredInterpreter registeredInterpreter = Interpreter.registeredInterpreters
+          .get(group + "." + name);
+      if (registeredInterpreter == null
+          || registeredInterpreter.getClassName() == null) {
+        throw new InterpreterException(replName + " interpreter not found");
+      }
+      String interpreterClassName = registeredInterpreter.getClassName();
+
+      for (InterpreterSetting setting : settings) {
+        InterpreterGroup intpGroup = setting.getInterpreterGroup();
+        for (Interpreter interpreter : intpGroup) {
+          if (interpreterClassName.equals(interpreter.getClassName())) {
+            return interpreter;
+          }
+        }
+      }
+    } else {
+      // first assume replName is 'name' of interpreter. ('groupName' is ommitted)
+      // search 'name' from first (default) interpreter group
+      InterpreterGroup intpGroup = settings.get(0).getInterpreterGroup();
       for (Interpreter interpreter : intpGroup) {
-        if (interpreterClassName.equals(interpreter.getClassName())) {
+        RegisteredInterpreter intp = Interpreter
+            .findRegisteredInterpreterByClassName(interpreter.getClassName());
+        if (intp == null) {
+          continue;
+        }
+
+        if (intp.getName().equals(replName)) {
+          return interpreter;
+        }
+      }
+
+
+      // next, assume replName is 'group' of interpreter ('name' is ommitted)
+      // search interpreter group and return first interpreter.
+      for (InterpreterSetting setting : settings) {
+        intpGroup = setting.getInterpreterGroup();
+        Interpreter interpreter = intpGroup.get(0);
+        RegisteredInterpreter intp = Interpreter
+            .findRegisteredInterpreterByClassName(interpreter.getClassName());
+        if (intp == null) {
+          continue;
+        }
+
+        if (intp.getGroup().equals(replName)) {
           return interpreter;
         }
       }
     }
 
-    return null;
+    throw new InterpreterException(replName + " interpreter not found");
   }
 }
