@@ -7,7 +7,7 @@ group: tutorial
 
 ### Zeppelin Tutorial
 
-We will assume you have Zeppelin installed already. If that's not the case, see [Install](../../install/install.md).
+We will assume you have Zeppelin installed already. If that's not the case, see [Install](../install/install.html).
 
 Zeppelin's current main backend processing engine is [Apache Spark](https://spark.apache.org). If you're new to the system, you might want to start by getting an idea of how it processes data to get the most out of Zeppelin.
 
