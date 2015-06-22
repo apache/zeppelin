@@ -58,11 +58,13 @@ public class RemoteInterpreter extends Interpreter {
     = new HashMap<String, RemoteInterpreterProcess>();
 
   private InterpreterContextRunnerPool interpreterContextRunnerPool;
+  private int connectTimeout;
 
   public RemoteInterpreter(Properties property,
       String className,
       String interpreterRunner,
-      String interpreterPath) {
+      String interpreterPath,
+      int connectTimeout) {
     super(property);
 
     this.className = className;
@@ -71,18 +73,21 @@ public class RemoteInterpreter extends Interpreter {
     this.interpreterPath = interpreterPath;
     env = new HashMap<String, String>();
     interpreterContextRunnerPool = new InterpreterContextRunnerPool();
+    this.connectTimeout = connectTimeout;
   }
 
   public RemoteInterpreter(Properties property,
       String className,
       String interpreterRunner,
       String interpreterPath,
-      Map<String, String> env) {
+      Map<String, String> env,
+      int connectTimeout) {
     super(property);
     this.className = className;
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
     this.env = env;
+    this.connectTimeout = connectTimeout;  
   }
 
   @Override
@@ -333,7 +338,7 @@ public class RemoteInterpreter extends Interpreter {
           || (!intpProcess.isRunning() && intpProcess.getPort() == -1)) {
         interpreterGroupReference.put(getInterpreterGroupKey(interpreterGroup),
             new RemoteInterpreterProcess(interpreterRunner,
-                interpreterPath, env, interpreterContextRunnerPool));
+                interpreterPath, env, interpreterContextRunnerPool, connectTimeout));
 
         logger.info("setInterpreterGroup = "
             + getInterpreterGroupKey(interpreterGroup) + " class=" + className

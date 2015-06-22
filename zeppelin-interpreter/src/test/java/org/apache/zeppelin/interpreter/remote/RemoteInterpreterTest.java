@@ -74,7 +74,8 @@ public class RemoteInterpreterTest {
         MockInterpreterA.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
-        env
+        env,
+        10 * 1000
         );
 
     intpGroup.add(intpA);
@@ -85,7 +86,8 @@ public class RemoteInterpreterTest {
         MockInterpreterB.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
-        env
+        env,
+        10 * 1000
         );
 
     intpGroup.add(intpB);
@@ -135,7 +137,8 @@ public class RemoteInterpreterTest {
         MockInterpreterA.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
-        env
+        env,
+        10 * 1000
         );
 
     intpGroup.add(intpA);
@@ -146,7 +149,8 @@ public class RemoteInterpreterTest {
         MockInterpreterB.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
-        env
+        env,
+        10 * 1000
         );
 
     intpGroup.add(intpB);
@@ -197,7 +201,8 @@ public class RemoteInterpreterTest {
         MockInterpreterA.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
-        env
+        env,
+        10 * 1000
         );
 
     intpGroup.add(intpA);
@@ -208,7 +213,8 @@ public class RemoteInterpreterTest {
         MockInterpreterB.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
-        env
+        env,
+        10 * 1000
         );
 
     intpGroup.add(intpB);
@@ -311,7 +317,8 @@ public class RemoteInterpreterTest {
         MockInterpreterA.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
-        env
+        env,
+        10 * 1000
         );
 
     intpGroup.add(intpA);
@@ -390,7 +397,8 @@ public class RemoteInterpreterTest {
         MockInterpreterA.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
-        env
+        env,
+        10 * 1000
         );
 
     intpGroup.add(intpA);
@@ -468,7 +476,8 @@ public class RemoteInterpreterTest {
         MockInterpreterA.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
-        env
+        env,
+        10 * 1000
         );
 
     intpA.setInterpreterGroup(intpGroup);
@@ -489,7 +498,8 @@ public class RemoteInterpreterTest {
         MockInterpreterA.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
-        env
+        env,
+        10 * 1000
         );
 
     intpA.setInterpreterGroup(intpGroup);
@@ -513,7 +523,8 @@ public class RemoteInterpreterTest {
         MockInterpreterA.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
-        env
+        env,
+        10 * 1000
         );
 
     intpA.setInterpreterGroup(intpGroup);
