@@ -46,8 +46,8 @@
     <jets3t.version>0.7.1</jets3t.version>
     <protobuf.version>2.4.1</protobuf.version>
 
-    <akka.group>com.typesafe.akka</akka.group>
-    <akka.version>2.3.11</akka.version>
+    <akka.group>org.spark-project.akka</akka.group>
+    <akka.version>2.3.4-spark</akka.version>
   </properties>
 
   <repositories>
@@ -509,6 +509,7 @@
       </dependencies>
       <properties>
         <spark.version>1.1.1</spark.version>
+        <akka.version>2.2.3-shaded-protobuf</akka.version>
       </properties>
     </profile>
 
@@ -529,6 +530,7 @@
       </dependencies>
       <properties>
         <spark.version>1.1.1</spark.version>
+        <akka.version>2.2.3-shaded-protobuf</akka.version>
       </properties>
     </profile>
 
@@ -628,7 +630,6 @@
         <avro.mapred.classifier>hadoop1</avro.mapred.classifier>
         <codehaus.jackson.version>1.8.8</codehaus.jackson.version>
         <akka.group>org.spark-project.akka</akka.group>
-        <akka.version>2.3.4-spark</akka.version>
       </properties>
     </profile>
 
