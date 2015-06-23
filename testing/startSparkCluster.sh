@@ -45,4 +45,10 @@ export SPARK_MASTER_PORT=7071
 export SPARK_MASTER_WEBUI_PORT=7072
 export SPARK_WORKER_WEBUI_PORT=8082
 ${SPARK_HOME}/sbin/start-master.sh
-${SPARK_HOME}/sbin/start-slave.sh 1 `hostname`:${SPARK_MASTER_PORT}
+
+echo ${SPARK_VERSION} | grep "^1.4" > /dev/null
+if [ $? -ne 0 ]; then   # spark 1.3 or prior
+    ${SPARK_HOME}/sbin/start-slave.sh 1 `hostname`:${SPARK_MASTER_PORT}
+else
+    ${SPARK_HOME}/sbin/start-slave.sh spark://`hostname`:7071
+fi
