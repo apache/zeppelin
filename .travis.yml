@@ -28,22 +28,28 @@ before_script:
   -
 
 script:
-# spark 1.3
+# spark 1.4
   - mvn package -Pbuild-distr -Phadoop-2.3 -B
+  - ./testing/startSparkCluster.sh 1.4.0 2.3
+  - SPARK_HOME=./spark-1.4.1-bin-hadoop2.3 mvn verify -Pusing-packaged-distr -Phadoop-2.3 -B
+  - ./testing/stopSparkCluster.sh 1.4.0 2.3
+ # spark 1.3
+  - mvn clean package -DskipTests -Pspark-1.3 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
+  - mvn package -Pbuild-distr -Pspark-1.3 -Phadoop-2.3 -B
   - ./testing/startSparkCluster.sh 1.3.1 2.3
-  - SPARK_HOME=./spark-1.3.1-bin-hadoop2.3 mvn verify -Pusing-packaged-distr -Phadoop-2.3 -B
+  - SPARK_HOME=./spark-1.3.1-bin-hadoop2.3 mvn verify -Pspark-1.3 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
   - ./testing/stopSparkCluster.sh 1.3.1 2.3
 # spark 1.2
-  - mvn clean package -DskipTests -Pspark-1.2 -Phadoop-2.3 -B -pl '!zeppelin-web,!zeppelin-distribution'
+  - mvn clean package -DskipTests -Pspark-1.2 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
   - mvn package -Pbuild-distr -Pspark-1.2 -Phadoop-2.3 -B
   - ./testing/startSparkCluster.sh 1.2.1 2.3
-  - SPARK_HOME=./spark-1.2.1-bin-hadoop2.3 mvn verify -Pusing-packaged-distr -Pspark-1.2 -Phadoop-2.3 -B
+  - SPARK_HOME=./spark-1.2.1-bin-hadoop2.3 mvn verify -Pspark-1.2 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
   - ./testing/stopSparkCluster.sh 1.2.1 2.3
 # spark 1.1
-  - mvn clean package -DskipTests -Pspark-1.1 -Phadoop-2.3 -B -pl '!zeppelin-web,!zeppelin-distribution'
+  - mvn clean package -DskipTests -Pspark-1.1 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
   - mvn package -Pbuild-distr -Pspark-1.1 -Phadoop-2.3 -B
   - ./testing/startSparkCluster.sh 1.1.1 2.3
-  - SPARK_HOME=./spark-1.1.1-bin-hadoop2.3 mvn verify -Pusing-packaged-distr -Pspark-1.1 -Phadoop-2.3 -B
+  - SPARK_HOME=./spark-1.1.1-bin-hadoop2.3 mvn verify -Pspark-1.1 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
   - ./testing/stopSparkCluster.sh 1.1.1 2.3
 
 after_failure:
