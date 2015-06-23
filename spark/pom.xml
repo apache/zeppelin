@@ -631,6 +631,7 @@
         <codehaus.jackson.version>1.8.8</codehaus.jackson.version>
         <akka.group>org.spark-project.akka</akka.group>
         <akka.version>2.3.4-spark</akka.version>
+        <jets3t.version>0.7.1</jets3t.version>
       </properties>
     </profile>
 
