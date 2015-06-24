@@ -66,6 +66,10 @@ Yarn (Hadoop 2.2.x and later)
 ```
 mvn clean package -Pspark-1.1 -Dhadoop.version=2.2.0 -Phadoop-2.2 -Pyarn -DskipTests
 ```
+Ignite (1.1.0-incubating and later)
+```
+mvn clean package -Dignite.version=1.1.0-incubating -DskipTests
+```
 
 ### Configure
 If you wish to configure Zeppelin option (like port number), configure the following files:
@@ -109,7 +113,7 @@ To package final distribution do:
 The archive is generated under _zeppelin-distribution/target_ directory
 
 ###Run end-to-end tests
-Zeppelin comes with a set of end-to-end acceptnce tests driving headless selenium browser
+Zeppelin comes with a set of end-to-end acceptance tests driving headless selenium browser
 
       #assumes zeppelin-server running on localhost:8080 (use -Durl=.. to override)
       mvn verify

@@ -93,6 +93,7 @@
     <module>hive</module>
     <module>tajo</module>
     <module>flink</module>
+    <module>ignite</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
@@ -229,7 +230,7 @@
         <executions>
           <execution>
             <id>cobertura</id>
-            <phase>package</phase>
+            <phase>install</phase>
             <goals>
               <goal>cobertura</goal>
             </goals>
@@ -248,10 +249,9 @@
         </configuration>
         <executions>
           <execution>
-            <id>checkstyle</id>
+            <id>checkstyle-fail-build</id>
             <phase>validate</phase>
             <goals>
-              <goal>checkstyle</goal>
               <goal>check</goal>
             </goals>
             <configuration>
@@ -259,6 +259,17 @@
               <excludes>org/apache/zeppelin/interpreter/thrift/*</excludes>
             </configuration>
           </execution>
+          <execution>
+            <id>checkstyle-gen-html-report</id>
+            <phase>install</phase>
+            <goals>
+              <goal>checkstyle-aggregate</goal>
+            </goals>
+            <configuration>
+              <excludes>org/apache/zeppelin/interpreter/thrift/*</excludes>
+            </configuration>
+          </execution>
+
         </executions>
       </plugin>
 
