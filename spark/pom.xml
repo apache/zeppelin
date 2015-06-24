@@ -915,7 +915,7 @@
         <executions>
           <execution>
             <id>download-pyspark-files</id>
-            <phase>prepare-package</phase>
+            <phase>validate</phase>
             <goals>
               <goal>wget</goal>
             </goals>
@@ -928,24 +928,41 @@
         </executions>
       </plugin>
       <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${basedir}/../python/build</directory>
+            </fileset>
+            <fileset>
+              <directory>${project.build.direcoty}/spark-dist</directory>
+            </fileset>
+          </filesets>
+          <verbose>true</verbose>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <version>1.7</version>
         <executions>
           <execution>
             <id>download-and-zip-pyspark-files</id>
-            <phase>package</phase>
+            <phase>generate-resources</phase>
             <goals>
               <goal>run</goal>
             </goals>
             <configuration>
               <target>
-                <delete dir="${project.build.directory}/../../python" />
-                <zip destfile="${project.build.directory}/../../python/pyspark.zip"
-                     basedir="${project.build.directory}/spark-dist/spark-${spark.version}/python/pyspark"/>
-                <copy
-                    file="${project.build.directory}/spark-dist/spark-${spark.version}/python/lib/py4j-0.8.2.1-src.zip"
-                    todir="${project.build.directory}/../../python"/>
+                <delete dir="../python" />
+                <copy todir="../python">
+                  <fileset dir="${project.build.directory}/spark-dist/spark-${spark.version}/python"/>
+                </copy>
+                <unzip src="../python/lib/py4j-0.8.2.1-src.zip"
+                       dest="../python/build"/>
+                <zip destfile="${project.build.directory}/../../python/lib/pyspark.zip"
+                     basedir="${project.build.directory}/spark-dist/spark-${spark.version}/python"
+                     includes="pyspark/*.py,pyspark/**/*.py"/>
               </target>
             </configuration>
           </execution>

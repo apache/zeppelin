@@ -73,6 +73,16 @@ if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   $(mkdir -p "${ZEPPELIN_LOG_DIR}")
 fi
 
+if [[ x"" == x${PYTHONPATH} ]]; then
+  export PYTHONPATH="${ZEPPELIN_HOME}/python/lib/pyspark.zip:${ZEPPELIN_HOME}/python/lib/py4j-0.8.2.1-src.zip"
+else
+  export PYTHONPATH="$PYTHONPATH${ZEPPELIN_HOME}/lib/pyspark.zip:${ZEPPELIN_HOME}/python/lib/py4j-0.8.2.1-src.zip"
+fi
+
+if [[ x"" == x${SPARK_HOME} ]]; then
+  export SPARK_HOME=${ZEPPELIN_HOME}
+fi
+
 
 ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} -cp ${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
 pid=$!

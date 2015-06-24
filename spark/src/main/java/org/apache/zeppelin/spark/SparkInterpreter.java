@@ -26,12 +26,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
+import com.google.common.base.Joiner;
 import org.apache.spark.HttpServer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -272,6 +269,18 @@ public class SparkInterpreter extends Interpreter {
         conf.set(key, val);
       }
     }
+    
+    //TODO(jongyoul): Move these codes into PySparkInterpreter.java
+    String zeppelinHome = getSystemDefault("ZEPPELIN_HOME", "zeppelin.home", "../");
+    File zeppelinPythonLibPath = new File(zeppelinHome, "python/lib");
+    String[] pythonLibs = new String[] {"pyspark.zip", "py4j-0.8.2.1-src.zip"};
+    ArrayList<String> pythonLibUris = new ArrayList<>(); 
+    for (String lib: pythonLibs) {
+      pythonLibUris.add(new File(zeppelinPythonLibPath, lib).toURI().toString());
+    }
+    conf.set("spark.yarn.dist.files", Joiner.on(",").join(pythonLibUris));
+    conf.set("spark.files", conf.get("spark.yarn.dist.files"));
+    conf.set("spark.submit.pyArchives", Joiner.on(":").join(pythonLibs));
 
     SparkContext sparkContext = new SparkContext(conf);
     return sparkContext;
