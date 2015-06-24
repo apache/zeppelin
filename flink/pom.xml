@@ -29,7 +29,7 @@
   <artifactId>zeppelin-flink</artifactId>
   <packaging>jar</packaging>
   <version>0.5.0-incubating-SNAPSHOT</version>
-  <name>Zeppelin: Flink</name>
+  <name>Zeppelin: Flink interpreter</name>
   <description>Zeppelin flink support</description>
   <url>http://zeppelin.incubator.apache.org</url>
 

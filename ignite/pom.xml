@@ -28,7 +28,7 @@
   <artifactId>zeppelin-ignite</artifactId>
   <packaging>jar</packaging>
   <version>0.5.0-incubating-SNAPSHOT</version>
-  <name>Zeppelin: Apache Ignite interpreter</name>
+  <name>Zeppelin: Ignite interpreter</name>
   <url>http://zeppelin.incubator.apache.org</url>
 
   <properties>
