@@ -430,6 +430,7 @@
               <exclude>Roadmap.md</exclude>
               <exclude>conf/interpreter.json</exclude>
               <exclude>spark-*-bin*/**</exclude>
+              <exclude>python/**</exclude>
             </excludes>
           </configuration>
 
