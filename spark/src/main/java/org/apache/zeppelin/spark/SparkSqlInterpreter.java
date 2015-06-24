@@ -66,8 +66,13 @@ public class SparkSqlInterpreter extends Interpreter {
         "spark",
         SparkSqlInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add("zeppelin.spark.maxResult", "10000", "Max number of SparkSQL result to display.")
-            .add("zeppelin.spark.concurrentSQL", "false",
+            .add("zeppelin.spark.maxResult",
+                SparkInterpreter.getSystemDefault("ZEPPELIN_SPARK_MAXRESULT",
+                    "zeppelin.spark.maxResult", "1000"),
+                "Max number of SparkSQL result to display.")
+            .add("zeppelin.spark.concurrentSQL",
+                SparkInterpreter.getSystemDefault("ZEPPELIN_SPARK_CONCURRENTSQL",
+                    "zeppelin.spark.concurrentSQL", "false"),
                 "Execute multiple SQL concurrently if set true.")
             .build());
   }
@@ -170,6 +175,8 @@ public class SparkSqlInterpreter extends Interpreter {
         } else if (sc.version().startsWith("1.2")) {
           progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
         } else if (sc.version().startsWith("1.3")) {
+          progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
+        } else if (sc.version().startsWith("1.4")) {
           progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
         } else {
           logger.warn("Spark {} getting progress information not supported" + sc.version());

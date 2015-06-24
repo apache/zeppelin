@@ -319,6 +319,7 @@ public class RemoteInterpreter extends Interpreter {
         maxConcurrency);
   }
 
+
   @Override
   public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
     super.setInterpreterGroup(interpreterGroup);
@@ -328,7 +329,8 @@ public class RemoteInterpreter extends Interpreter {
           .get(getInterpreterGroupKey(interpreterGroup));
 
       // when interpreter process is not created or terminated
-      if (intpProcess == null || (!intpProcess.isRunning() && intpProcess.getPort() > 0)) {
+      if (intpProcess == null || (!intpProcess.isRunning() && intpProcess.getPort() > 0)
+          || (!intpProcess.isRunning() && intpProcess.getPort() == -1)) {
         interpreterGroupReference.put(getInterpreterGroupKey(interpreterGroup),
             new RemoteInterpreterProcess(interpreterRunner,
                 interpreterPath, env, interpreterContextRunnerPool));

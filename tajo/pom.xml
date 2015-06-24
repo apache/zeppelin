@@ -32,7 +32,7 @@
   <url>http://www.apache.org</url>
 
   <properties>
-    <protobuf.version>2.5.0</protobuf.version>
+    <tajo.version>0.10.0</tajo.version>
   </properties>
 
   <dependencies>

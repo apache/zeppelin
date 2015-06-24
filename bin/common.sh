@@ -70,28 +70,19 @@ fi
 
 ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 
-function addJarInDir(){
+function addEachJarInDir(){
   if [[ -d "${1}" ]]; then
     for jar in $(find -L "${1}" -maxdepth 1 -name '*jar'); do
       ZEPPELIN_CLASSPATH="$jar:$ZEPPELIN_CLASSPATH"
     done
   fi
 }
-  
-addJarInDir "${ZEPPELIN_HOME}"
-addJarInDir "${ZEPPELIN_HOME}/lib"
-addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
-addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
-addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
-addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
 
-if [[ -d "${ZEPPELIN_HOME}/zeppelin-zengine/target/classes" ]]; then
-  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-zengine/target/classes"
-fi
-
-if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
-  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
-fi
+function addJarInDir(){
+  if [[ -d "${1}" ]]; then
+    export ZEPPELIN_CLASSPATH="${1}/*:${ZEPPELIN_CLASSPATH}"
+  fi
+}
 
 if [[ ! -z "${SPARK_HOME}" ]] && [[ -d "${SPARK_HOME}" ]]; then
   addJarInDir "${SPARK_HOME}"
@@ -106,8 +97,6 @@ if [[ ! -z "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
 fi
 
 export ZEPPELIN_CLASSPATH
-export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
-export CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
 # Text encoding for 
 # read/write job into files,

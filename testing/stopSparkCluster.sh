@@ -1,4 +1,4 @@
-#!/bin/sh#
+#!/bin/bash
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -16,8 +16,22 @@
 # limitations under the License.
 #
 
-cd spark-1.1.1-bin-hadoop2.3
-./sbin/stop-master.sh
-kill $(ps -ef | grep 'org.apache.spark.deploy.worker.Worker' | awk '{print $2}')
-cd ..
-rm -rf spark-1.1.1-bin-hadoop2.3*
+if [ $# -ne 2 ]; then
+    echo "usage) $0 [spark version] [hadoop version]"
+    echo "   eg) $0 1.3.1 2.6"
+    exit 1
+fi
+
+SPARK_VERSION="${1}"
+HADOOP_VERSION="${2}"
+
+FWDIR=$(dirname "${BASH_SOURCE-$0}")
+ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
+export SPARK_HOME=${ZEPPELIN_HOME}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
+
+# set create PID dir
+export SPARK_PID_DIR=${SPARK_HOME}/run
+
+
+${SPARK_HOME}/sbin/spark-daemon.sh stop org.apache.spark.deploy.worker.Worker 1
+${SPARK_HOME}/sbin/stop-master.sh

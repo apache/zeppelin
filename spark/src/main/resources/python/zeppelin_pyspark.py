@@ -53,6 +53,9 @@ if jsc.version().startswith("1.2"):
 elif jsc.version().startswith("1.3"):
   java_import(gateway.jvm, "org.apache.spark.sql.*")
   java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
+elif jsc.version().startswith("1.4"):
+  java_import(gateway.jvm, "org.apache.spark.sql.*")
+  java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
 
 
 java_import(gateway.jvm, "scala.Tuple2")
