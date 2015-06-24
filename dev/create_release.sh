@@ -29,11 +29,16 @@
 # http://www.apache.org/dev/publishing-maven-artifacts.html
 
 if [[ -z "${TAR}" ]]; then
-    TAR=/usr/bin/bsdtar    
+    TAR=/usr/bin/tar
 fi
 
 if [[ -z "${WORKING_DIR}" ]]; then
     WORKING_DIR=/tmp/incubator-zeppelin-release
+fi
+
+if [[ -z "${GPG_PASSPHRASE}" ]]; then
+    echo "You need GPG_PASSPHRASE variable set"
+    exit 1
 fi
 
 
@@ -69,17 +74,52 @@ rm -rf ${WORKING_DIR}/zeppelin/.git
 
 
 # create source package
-cp -r ${WORKING_DIR}/zeppelin ${WORKING_DIR}/zeppelin-${RELEASE_NAME}
-tar cvzf ${WORKING_DIR}/zeppelin-${RELEASE_NAME}.tgz ${WORKING_DIR}/zeppelin-${RELEASE_NAME}
+cd ${WORKING_DIR}
+cp -r zeppelin zeppelin-${RELEASE_NAME}
+${TAR} cvzf zeppelin-${RELEASE_NAME}.tgz zeppelin-${RELEASE_NAME}
 
 echo "Signing the source package"
 cd ${WORKING_DIR}
-gpg --armor --output zeppelin-${RELEASE_NAME}.tgz.asc --detach-sig ${WORKING_DIR}/zeppelin-${RELEASE_NAME}.tgz
-gpg --print-md MD5 zeppelin-${RELEASE_NAME}.tgz > ${WORKING_DIR}/zeppelin-${RELEASE_NAME}.tgz.md5
-gpg --print-md SHA512 zeppelin-${RELEASE_NAME}.tgz > ${WORKING_DIR}/zeppelin-${RELEASE_NAME}.tgz.sha
+echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --armor --output zeppelin-${RELEASE_NAME}.tgz.asc --detach-sig ${WORKING_DIR}/zeppelin-${RELEASE_NAME}.tgz
+echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --print-md MD5 zeppelin-${RELEASE_NAME}.tgz > ${WORKING_DIR}/zeppelin-${RELEASE_NAME}.tgz.md5
+echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --print-md SHA512 zeppelin-${RELEASE_NAME}.tgz > ${WORKING_DIR}/zeppelin-${RELEASE_NAME}.tgz.sha
 
 
+function make_binary_release() {
+    BIN_RELEASE_NAME="${1}"
+    BUILD_FLAGS="${2}"
 
+    cp -r ${WORKING_DIR}/zeppelin ${WORKING_DIR}/zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
+    cd ${WORKING_DIR}/zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
+    echo "mvn clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}"
+    mvn clean package -Pbuild-distr -DskipTests ${BUILD_FLAGS}
+    if [[ $? -ne 0 ]]; then
+        echo "Build failed. ${BUILD_FLAGS}"
+        exit 1
+    fi
+
+    # re-create package with proper dir name
+    cd zeppelin-distribution/target
+    rm zeppelin-*.tar.gz
+    mv zeppelin-* zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
+    ${TAR} cvzf zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
+
+    # sign bin package
+    echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --armor --output zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.asc --detach-sig zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz
+    echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --print-md MD5 zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz > zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.md5
+    echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --print-md SHA512 zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz > zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.sha
+
+    mv zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz ${WORKING_DIR}/
+    mv zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.asc ${WORKING_DIR}/
+    mv zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.md5 ${WORKING_DIR}/
+    mv zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.sha ${WORKING_DIR}/
+
+    # clean up build dir
+    rm -rf ${WORKING_DIR}/zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
+}
+
+make_binary_release spark-1.4.0_hadoop-2.3 -Pyarn -Pspark-1.4 -Dspark.version=1.4.0 -Phadoop-2.3
+make_binary_release spark-1.3.1_hadoop-2.3 -Pyarn -Pspark-1.3 -Dspark.version=1.3.1 -Phadoop-2.3
 
 # remove non release files and dirs
 rm -rf ${WORKING_DIR}/zeppelin
