@@ -938,7 +938,6 @@
               <directory>${project.build.direcoty}/spark-dist</directory>
             </fileset>
           </filesets>
-          <verbose>true</verbose>
         </configuration>
       </plugin>
       <plugin>
