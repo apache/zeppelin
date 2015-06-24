@@ -269,20 +269,20 @@ public class SparkInterpreter extends Interpreter {
         conf.set(key, val);
       }
     }
-    
+
     //TODO(jongyoul): Move these codes into PySparkInterpreter.java
     String zeppelinHome = getSystemDefault("ZEPPELIN_HOME", "zeppelin.home", "../");
     File zeppelinPythonLibPath = new File(zeppelinHome, "python/lib");
-    String[] pythonLibs = new String[] {"pyspark.zip", "py4j-0.8.2.1-src.zip"};
-    ArrayList<String> pythonLibUris = new ArrayList<>(); 
-    for (String lib: pythonLibs) {
+    String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.8.2.1-src.zip"};
+    ArrayList<String> pythonLibUris = new ArrayList<>();
+    for (String lib : pythonLibs) {
       File libFile = new File(zeppelinPythonLibPath, lib);
-      if(libFile.exists()) {
+      if (libFile.exists()) {
         pythonLibUris.add(libFile.toURI().toString());
       }
     }
     pythonLibUris.trimToSize();
-    if(pythonLibs.length == pythonLibUris.size()) {
+    if (pythonLibs.length == pythonLibUris.size()) {
       conf.set("spark.yarn.dist.files", Joiner.on(",").join(pythonLibUris));
       conf.set("spark.files", conf.get("spark.yarn.dist.files"));
       conf.set("spark.submit.pyArchives", Joiner.on(":").join(pythonLibs));
