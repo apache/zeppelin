@@ -278,7 +278,7 @@ public class SparkInterpreter extends Interpreter {
     for (String lib : pythonLibs) {
       File libFile = new File(zeppelinPythonLibPath, lib);
       if (libFile.exists()) {
-        pythonLibUris.add(libFile.toURI().toString());
+        pythonLibUris.add(libFile.toURI().toString()); 
       }
     }
     pythonLibUris.trimToSize();
