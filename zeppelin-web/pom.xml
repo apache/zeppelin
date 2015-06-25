@@ -69,6 +69,7 @@
           </excludes>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
@@ -133,6 +134,17 @@
             <phase>none</phase>
           </execution>
         </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>bower_components</directory>
+            </fileset>
+          </filesets>
+        </configuration>
       </plugin>
 
     </plugins>
