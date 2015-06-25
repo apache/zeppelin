@@ -727,7 +727,7 @@
     </profile>
 
     <profile>
-      <id>yarn-pyspark</id>
+      <id>pyspark</id>
       <properties>
         <spark.download.url>http://www.apache.org/dist/spark/spark-${spark.version}/spark-${spark.version}.tgz
         </spark.download.url>
