@@ -57,7 +57,6 @@ public class RemoteInterpreter extends Interpreter {
   static Map<String, RemoteInterpreterProcess> interpreterGroupReference
     = new HashMap<String, RemoteInterpreterProcess>();
 
-  private InterpreterContextRunnerPool interpreterContextRunnerPool;
   private int connectTimeout;
 
   public RemoteInterpreter(Properties property,
@@ -72,7 +71,6 @@ public class RemoteInterpreter extends Interpreter {
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
     env = new HashMap<String, String>();
-    interpreterContextRunnerPool = new InterpreterContextRunnerPool();
     this.connectTimeout = connectTimeout;
   }
 
@@ -194,6 +192,9 @@ public class RemoteInterpreter extends Interpreter {
     } catch (Exception e1) {
       throw new InterpreterException(e1);
     }
+
+    InterpreterContextRunnerPool interpreterContextRunnerPool = interpreterProcess
+        .getInterpreterContextRunnerPool();
 
     List<InterpreterContextRunner> runners = context.getRunners();
     if (runners != null && runners.size() != 0) {
@@ -338,7 +339,7 @@ public class RemoteInterpreter extends Interpreter {
           || (!intpProcess.isRunning() && intpProcess.getPort() == -1)) {
         interpreterGroupReference.put(getInterpreterGroupKey(interpreterGroup),
             new RemoteInterpreterProcess(interpreterRunner,
-                interpreterPath, env, interpreterContextRunnerPool, connectTimeout));
+                interpreterPath, env, connectTimeout));
 
         logger.info("setInterpreterGroup = "
             + getInterpreterGroupKey(interpreterGroup) + " class=" + className

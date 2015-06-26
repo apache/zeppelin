@@ -89,6 +89,27 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     ZeppelinServer.notebook.removeNote(note.id());
   }
 
+  @Test
+  public void zRunTest() throws IOException {
+    // create new note
+    Note note = ZeppelinServer.notebook.createNote();
+    Paragraph p0 = note.addParagraph();
+    p0.setText("z.run(1)");
+    Paragraph p1 = note.addParagraph();
+    p1.setText("val a=10");
+    Paragraph p2 = note.addParagraph();
+    p2.setText("print(a)");
+
+    note.run(p0.getId());
+    waitForFinish(p0);
+
+    note.run(p2.getId());
+    waitForFinish(p2);
+    assertEquals("10", p2.getResult().message());
+
+    ZeppelinServer.notebook.removeNote(note.id());
+  }
+
   /**
    * Get spark version number as a numerical value.
    * eg. 1.1.x => 11, 1.2.x => 12, 1.3.x => 13 ...
