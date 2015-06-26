@@ -34,6 +34,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.rest.InterpreterRestApi;
 import org.apache.zeppelin.rest.NotebookRestApi;
 import org.apache.zeppelin.rest.ZeppelinRestApi;
@@ -305,11 +306,12 @@ public class ZeppelinServer extends Application {
     this.schedulerFactory = new SchedulerFactory();
 
     this.replFactory = new InterpreterFactory(conf, notebookServer);
-    Class<?> notebookStorageClass = getClass().forName(
+    /*Class<?> notebookStorageClass = getClass().forName(
         conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE));
     Constructor<?> constructor = notebookStorageClass.getConstructor(
         ZeppelinConfiguration.class);
-    this.notebookRepo = (NotebookRepo) constructor.newInstance(conf);
+    this.notebookRepo = (NotebookRepo) constructor.newInstance(conf);*/
+    this.notebookRepo = (NotebookRepo) new NotebookRepoSync(conf);
     notebook = new Notebook(conf, notebookRepo, schedulerFactory, replFactory, notebookServer);
   }
 
