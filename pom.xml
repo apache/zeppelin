@@ -94,6 +94,7 @@
     <module>tajo</module>
     <module>flink</module>
     <module>ignite</module>
+    <module>lens</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
