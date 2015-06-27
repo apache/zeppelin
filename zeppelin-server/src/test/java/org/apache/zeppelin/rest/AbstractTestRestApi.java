@@ -156,9 +156,13 @@ public abstract class AbstractTestRestApi {
   }
 
   private static String getSparkHome() {
-    String sparkHome = getSparkHomeRecursively(new File(System.getProperty("user.dir")));
-    System.out.println("SPARK HOME detected " + sparkHome);
-    return sparkHome;
+    if (System.getenv("SPARK_HOME") != null) {
+      return new File(System.getenv("SPARK_HOME")).getAbsolutePath();
+    } else { // autodetect spark.home that ./testing/startSparkCluster.sh creates 
+      String sparkHome = getSparkHomeRecursively(new File(System.getProperty("user.dir")));
+      System.out.println("SPARK HOME detected " + sparkHome);
+      return sparkHome;
+    }
   }
 
   boolean isPyspark() {
