@@ -295,7 +295,7 @@ public class Note implements Serializable, JobListener {
     for (InterpreterSetting setting : settings) {
       InterpreterGroup intpGroup = setting.getInterpreterGroup();
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
-      angularObjects.put(intpGroup.getId(), registry.getAll());
+      angularObjects.put(intpGroup.getId(), registry.getAll(id));
     }
   }
 

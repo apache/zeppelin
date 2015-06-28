@@ -56,7 +56,7 @@ public class RemoteInterpreterService {
 
     public RemoteInterpreterEvent getEvent() throws org.apache.thrift.TException;
 
-    public void angularObjectUpdate(String name, String object) throws org.apache.thrift.TException;
+    public void angularObjectUpdate(String name, String noteId, String object) throws org.apache.thrift.TException;
 
   }
 
@@ -84,7 +84,7 @@ public class RemoteInterpreterService {
 
     public void getEvent(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getEvent_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void angularObjectUpdate(String name, String object, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.angularObjectUpdate_call> resultHandler) throws org.apache.thrift.TException;
+    public void angularObjectUpdate(String name, String noteId, String object, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.angularObjectUpdate_call> resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -351,16 +351,17 @@ public class RemoteInterpreterService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getEvent failed: unknown result");
     }
 
-    public void angularObjectUpdate(String name, String object) throws org.apache.thrift.TException
+    public void angularObjectUpdate(String name, String noteId, String object) throws org.apache.thrift.TException
     {
-      send_angularObjectUpdate(name, object);
+      send_angularObjectUpdate(name, noteId, object);
       recv_angularObjectUpdate();
     }
 
-    public void send_angularObjectUpdate(String name, String object) throws org.apache.thrift.TException
+    public void send_angularObjectUpdate(String name, String noteId, String object) throws org.apache.thrift.TException
     {
       angularObjectUpdate_args args = new angularObjectUpdate_args();
       args.setName(name);
+      args.setNoteId(noteId);
       args.setObject(object);
       sendBase("angularObjectUpdate", args);
     }
@@ -757,19 +758,21 @@ public class RemoteInterpreterService {
       }
     }
 
-    public void angularObjectUpdate(String name, String object, org.apache.thrift.async.AsyncMethodCallback<angularObjectUpdate_call> resultHandler) throws org.apache.thrift.TException {
+    public void angularObjectUpdate(String name, String noteId, String object, org.apache.thrift.async.AsyncMethodCallback<angularObjectUpdate_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      angularObjectUpdate_call method_call = new angularObjectUpdate_call(name, object, resultHandler, this, ___protocolFactory, ___transport);
+      angularObjectUpdate_call method_call = new angularObjectUpdate_call(name, noteId, object, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class angularObjectUpdate_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String name;
+      private String noteId;
       private String object;
-      public angularObjectUpdate_call(String name, String object, org.apache.thrift.async.AsyncMethodCallback<angularObjectUpdate_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public angularObjectUpdate_call(String name, String noteId, String object, org.apache.thrift.async.AsyncMethodCallback<angularObjectUpdate_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.name = name;
+        this.noteId = noteId;
         this.object = object;
       }
 
@@ -777,6 +780,7 @@ public class RemoteInterpreterService {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("angularObjectUpdate", org.apache.thrift.protocol.TMessageType.CALL, 0));
         angularObjectUpdate_args args = new angularObjectUpdate_args();
         args.setName(name);
+        args.setNoteId(noteId);
         args.setObject(object);
         args.write(prot);
         prot.writeMessageEnd();
@@ -1056,7 +1060,7 @@ public class RemoteInterpreterService {
 
       public angularObjectUpdate_result getResult(I iface, angularObjectUpdate_args args) throws org.apache.thrift.TException {
         angularObjectUpdate_result result = new angularObjectUpdate_result();
-        iface.angularObjectUpdate(args.name, args.object);
+        iface.angularObjectUpdate(args.name, args.noteId, args.object);
         return result;
       }
     }
@@ -8937,7 +8941,8 @@ public class RemoteInterpreterService {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("angularObjectUpdate_args");
 
     private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField OBJECT_FIELD_DESC = new org.apache.thrift.protocol.TField("object", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField NOTE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("noteId", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField OBJECT_FIELD_DESC = new org.apache.thrift.protocol.TField("object", org.apache.thrift.protocol.TType.STRING, (short)3);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -8946,12 +8951,14 @@ public class RemoteInterpreterService {
     }
 
     public String name; // required
+    public String noteId; // required
     public String object; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       NAME((short)1, "name"),
-      OBJECT((short)2, "object");
+      NOTE_ID((short)2, "noteId"),
+      OBJECT((short)3, "object");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -8968,7 +8975,9 @@ public class RemoteInterpreterService {
         switch(fieldId) {
           case 1: // NAME
             return NAME;
-          case 2: // OBJECT
+          case 2: // NOTE_ID
+            return NOTE_ID;
+          case 3: // OBJECT
             return OBJECT;
           default:
             return null;
@@ -9015,6 +9024,8 @@ public class RemoteInterpreterService {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.NOTE_ID, new org.apache.thrift.meta_data.FieldMetaData("noteId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.OBJECT, new org.apache.thrift.meta_data.FieldMetaData("object", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -9026,10 +9037,12 @@ public class RemoteInterpreterService {
 
     public angularObjectUpdate_args(
       String name,
+      String noteId,
       String object)
     {
       this();
       this.name = name;
+      this.noteId = noteId;
       this.object = object;
     }
 
@@ -9039,6 +9052,9 @@ public class RemoteInterpreterService {
     public angularObjectUpdate_args(angularObjectUpdate_args other) {
       if (other.isSetName()) {
         this.name = other.name;
+      }
+      if (other.isSetNoteId()) {
+        this.noteId = other.noteId;
       }
       if (other.isSetObject()) {
         this.object = other.object;
@@ -9052,6 +9068,7 @@ public class RemoteInterpreterService {
     @Override
     public void clear() {
       this.name = null;
+      this.noteId = null;
       this.object = null;
     }
 
@@ -9076,6 +9093,30 @@ public class RemoteInterpreterService {
     public void setNameIsSet(boolean value) {
       if (!value) {
         this.name = null;
+      }
+    }
+
+    public String getNoteId() {
+      return this.noteId;
+    }
+
+    public angularObjectUpdate_args setNoteId(String noteId) {
+      this.noteId = noteId;
+      return this;
+    }
+
+    public void unsetNoteId() {
+      this.noteId = null;
+    }
+
+    /** Returns true if field noteId is set (has been assigned a value) and false otherwise */
+    public boolean isSetNoteId() {
+      return this.noteId != null;
+    }
+
+    public void setNoteIdIsSet(boolean value) {
+      if (!value) {
+        this.noteId = null;
       }
     }
 
@@ -9113,6 +9154,14 @@ public class RemoteInterpreterService {
         }
         break;
 
+      case NOTE_ID:
+        if (value == null) {
+          unsetNoteId();
+        } else {
+          setNoteId((String)value);
+        }
+        break;
+
       case OBJECT:
         if (value == null) {
           unsetObject();
@@ -9128,6 +9177,9 @@ public class RemoteInterpreterService {
       switch (field) {
       case NAME:
         return getName();
+
+      case NOTE_ID:
+        return getNoteId();
 
       case OBJECT:
         return getObject();
@@ -9145,6 +9197,8 @@ public class RemoteInterpreterService {
       switch (field) {
       case NAME:
         return isSetName();
+      case NOTE_ID:
+        return isSetNoteId();
       case OBJECT:
         return isSetObject();
       }
@@ -9170,6 +9224,15 @@ public class RemoteInterpreterService {
         if (!(this_present_name && that_present_name))
           return false;
         if (!this.name.equals(that.name))
+          return false;
+      }
+
+      boolean this_present_noteId = true && this.isSetNoteId();
+      boolean that_present_noteId = true && that.isSetNoteId();
+      if (this_present_noteId || that_present_noteId) {
+        if (!(this_present_noteId && that_present_noteId))
+          return false;
+        if (!this.noteId.equals(that.noteId))
           return false;
       }
 
@@ -9204,6 +9267,16 @@ public class RemoteInterpreterService {
       }
       if (isSetName()) {
         lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.name, typedOther.name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetNoteId()).compareTo(typedOther.isSetNoteId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNoteId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, typedOther.noteId);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -9243,6 +9316,14 @@ public class RemoteInterpreterService {
         sb.append("null");
       } else {
         sb.append(this.name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("noteId:");
+      if (this.noteId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.noteId);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -9304,7 +9385,15 @@ public class RemoteInterpreterService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // OBJECT
+            case 2: // NOTE_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.noteId = iprot.readString();
+                struct.setNoteIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 3: // OBJECT
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.object = iprot.readString();
                 struct.setObjectIsSet(true);
@@ -9330,6 +9419,11 @@ public class RemoteInterpreterService {
         if (struct.name != null) {
           oprot.writeFieldBegin(NAME_FIELD_DESC);
           oprot.writeString(struct.name);
+          oprot.writeFieldEnd();
+        }
+        if (struct.noteId != null) {
+          oprot.writeFieldBegin(NOTE_ID_FIELD_DESC);
+          oprot.writeString(struct.noteId);
           oprot.writeFieldEnd();
         }
         if (struct.object != null) {
@@ -9358,12 +9452,18 @@ public class RemoteInterpreterService {
         if (struct.isSetName()) {
           optionals.set(0);
         }
-        if (struct.isSetObject()) {
+        if (struct.isSetNoteId()) {
           optionals.set(1);
         }
-        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetObject()) {
+          optionals.set(2);
+        }
+        oprot.writeBitSet(optionals, 3);
         if (struct.isSetName()) {
           oprot.writeString(struct.name);
+        }
+        if (struct.isSetNoteId()) {
+          oprot.writeString(struct.noteId);
         }
         if (struct.isSetObject()) {
           oprot.writeString(struct.object);
@@ -9373,12 +9473,16 @@ public class RemoteInterpreterService {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, angularObjectUpdate_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(2);
+        BitSet incoming = iprot.readBitSet(3);
         if (incoming.get(0)) {
           struct.name = iprot.readString();
           struct.setNameIsSet(true);
         }
         if (incoming.get(1)) {
+          struct.noteId = iprot.readString();
+          struct.setNoteIdIsSet(true);
+        }
+        if (incoming.get(2)) {
           struct.object = iprot.readString();
           struct.setObjectIsSet(true);
         }

@@ -76,6 +76,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     intp.setInterpreterGroup(intpGroup);
 
     context = new InterpreterContext(
+        "note",
         "id",
         "title",
         "text",
@@ -108,7 +109,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     result = ret.message().split(" ");
     assertEquals("1", result[0]); // size of registry
     assertEquals("0", result[1]); // num watcher called
-    assertEquals("v1", localRegistry.get("n1").get());
+    assertEquals("v1", localRegistry.get("n1", "note").get());
 
     // update object
     ret = intp.interpret("update n1 v11", context);
@@ -116,7 +117,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     Thread.sleep(500);
     assertEquals("1", result[0]); // size of registry
     assertEquals("1", result[1]); // num watcher called
-    assertEquals("v11", localRegistry.get("n1").get());
+    assertEquals("v11", localRegistry.get("n1", "note").get());
 
     // remove object
     ret = intp.interpret("remove n1", context);
@@ -124,7 +125,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     Thread.sleep(500);
     assertEquals("0", result[0]); // size of registry
     assertEquals("1", result[1]); // num watcher called
-    assertEquals(null, localRegistry.get("n1"));
+    assertEquals(null, localRegistry.get("n1", "note"));
   }
 
   @Override

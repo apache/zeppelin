@@ -55,12 +55,12 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
   }
 
   @Override
-  protected AngularObject createNewAngularObject(String name, Object o) {
+  protected AngularObject createNewAngularObject(String name, Object o, String noteId) {
     RemoteInterpreterProcess remoteInterpreterProcess = getRemoteInterpreterProcess();
     if (remoteInterpreterProcess == null) {
       throw new RuntimeException("Remote Interpreter process not found");
     }
-    return new RemoteAngularObject(name, o, getInterpreterGroupId(),
+    return new RemoteAngularObject(name, o, noteId, getInterpreterGroupId(),
         getAngularObjectListener(),
         getRemoteInterpreterProcess());
   }

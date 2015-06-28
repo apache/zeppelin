@@ -320,6 +320,7 @@ public class RemoteInterpreterServer
     }
 
     return new InterpreterContext(
+        ric.getNoteId(),
         ric.getParagraphId(),
         ric.getParagraphTitle(),
         ric.getParagraphText(),
@@ -429,17 +430,24 @@ public class RemoteInterpreterServer
    * called when object is updated in client (web) side.
    * @param className
    * @param name
+   * @param noteId noteId where the update issues
    * @param object
    * @throws TException
    */
   @Override
-  public void angularObjectUpdate(String name, String object)
+  public void angularObjectUpdate(String name, String noteId, String object)
       throws TException {
     AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
-    AngularObject ao = registry.get(name);
+    // first try local objects
+    AngularObject ao = registry.get(name, noteId);
     if (ao == null) {
-      logger.error("Angular object {} not exists", name);
-      return;
+      // then try global objects
+      ao = registry.get(name, null);
+      
+      if (ao == null) {
+        logger.error("Angular object {} not exists", name);
+        return;
+      }
     }
 
     if (object == null) {
