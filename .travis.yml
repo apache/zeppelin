@@ -31,9 +31,9 @@ script:
 # spark 1.4
   - mvn package -Pbuild-distr -Pyarn -Phadoop-2.6 -Ppyspark -B
   - ./testing/startSparkCluster.sh 1.4.0 2.4
-  - SPARK_HOME=./spark-1.4.1-bin-hadoop2.5 mvn verify -Pusing-packaged-distr -Pyarn -Phadoop-2.4 -Ppyspark -B
+  - SPARK_HOME=$TRAVIS_BUILD_DIR/spark-1.4.1-bin-hadoop2.5 mvn verify -Pusing-packaged-distr -Pyarn -Phadoop-2.4 -B
   - ./testing/stopSparkCluster.sh 1.4.0 2.4
-  - SPARK_HOME=./spark-1.4.1-bin-hadoop2.5 HADOOP_CONF_DIR=./hadoop-2.5.2/etc/hadoop YARN=true mvn verify -Pusing-packaged-distr -Pyarn -Phadoop-2.4 -B  
+  - SPARK_HOME=$TRAVIS_BUILD_DIR/spark-1.4.1-bin-hadoop2.5 HADOOP_CONF_DIR=./hadoop-2.5.2/etc/hadoop YARN=true mvn verify -Pusing-packaged-distr -Pyarn -Phadoop-2.4 -B  
 
 
  # spark 1.3
