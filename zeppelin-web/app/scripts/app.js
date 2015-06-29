@@ -20,7 +20,7 @@
   *
   * In the case of running the zeppelin-server normally,
   * the body of this function is just filler. It will be dynamically
-  * overridden with the AppScriptServlet from zeppelin-site.xml config value 
+  * overridden with the AppScriptServlet from zeppelin-site.xml config value
   * when the client requests the script.
   *
   * If the config value is not defined, it defaults to the HTTP port + 1
@@ -38,26 +38,23 @@
   */
 function getPort() {
   var port = Number(location.port);
-  if (location.protocol !== 'https:' && (port === 'undifined' || port === 0))
+  if (location.protocol !== 'https:' && !!port)
     port = 80;
-  else if (location.protocol === 'https:' && (port === 'undifined' || port === 0))
+  else if (location.protocol === 'https:' && !!port)
     port = 443;
   else if (port === 3333 || port === 9000)
     port = 8080;
+
   return port+1;
 }
 
 function getWebsocketProtocol() {
-  var protocol = 'ws';
-  if (location.protocol === 'https:') {
-    protocol = 'wss';
-  }
-  return protocol;
+  return location.protocol === 'https:' ? 'wss' : 'ws';
 }
 
 function getRestApiBase() {
   var port = Number(location.port);
-  if (port === 'undefined' || port === 0) {
+  if (!!port) {
     port = 80;
     if (location.protocol === 'https:') {
       port = 443;
@@ -67,11 +64,11 @@ function getRestApiBase() {
   if (port === 3333 || port === 9000) {
     port = 8080;
   }
-  return location.protocol+"//"+location.hostname+":"+port + skipTrailingSlash(location.pathname) + "/api";
+  return location.protocol + "//" + location.hostname + ":" + port + skipTrailingSlash(location.pathname) + "/api";
 }
 
 function skipTrailingSlash(path) {
-  return path.slice(-1) === "/" ? path.substring(0, path.length-1) : path;
+  return path.replace(/\/$/, "");
 }
 
 /**
@@ -100,9 +97,9 @@ angular
     'puElasticInput',
     'xeditable'
   ])
-  .filter('breakFilter', function() {
+  .filter('breakFilter', function () {
     return function (text) {
-      if (text !== undefined) return text.replace(/\n/g, '<br />');
+      if (!!text) return text.replace(/\n/g, '<br />');
     };
   })
   .config(function ($routeProvider, WebSocketProvider) {
@@ -130,6 +127,3 @@ angular
         redirectTo: '/'
       });
   });
-
-
-

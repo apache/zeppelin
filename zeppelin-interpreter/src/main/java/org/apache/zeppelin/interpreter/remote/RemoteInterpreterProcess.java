@@ -55,19 +55,21 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   public RemoteInterpreterProcess(String intpRunner,
       String intpDir,
       Map<String, String> env,
-      int connectTimeout) {
-    this(intpRunner, intpDir, env, new RemoteInterpreterEventPoller(), connectTimeout);
+      InterpreterContextRunnerPool interpreterContextRunnerPool, int connectTimeout) {
+    this(intpRunner, intpDir, env, interpreterContextRunnerPool, 
+        new RemoteInterpreterEventPoller(), connectTimeout);
   }
 
   RemoteInterpreterProcess(String intpRunner,
       String intpDir,
       Map<String, String> env,
+      InterpreterContextRunnerPool interpreterContextRunnerPool,
       RemoteInterpreterEventPoller remoteInterpreterEventPoller,
       int connectTimeout) {
     this.interpreterRunner = intpRunner;
     this.interpreterDir = intpDir;
     this.env = env;
-    this.interpreterContextRunnerPool = new InterpreterContextRunnerPool();
+    this.interpreterContextRunnerPool = interpreterContextRunnerPool;
     referenceCount = new AtomicInteger(0);
     this.remoteInterpreterEventPoller = remoteInterpreterEventPoller;
     this.connectTimeout = connectTimeout;
