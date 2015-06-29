@@ -26,19 +26,22 @@ import java.util.Map;
 public class NoteInfo {
   String id;
   String name;
+  long modTime;
   private Map<String, Object> config = new HashMap<String, Object>();
 
-  public NoteInfo(String id, String name, Map<String, Object> config) {
+  public NoteInfo(String id, String name, Map<String, Object> config, long timestamp) {
     super();
     this.id = id;
     this.name = name;
     this.config = config;
+    this.modTime = timestamp;
   }
 
   public NoteInfo(Note note) {
     id = note.id();
     name = note.getName();
     config = note.getConfig();
+    modTime = note.getModTime();
   }
 
   public String getId() {
@@ -63,5 +66,13 @@ public class NoteInfo {
 
   public void setConfig(Map<String, Object> config) {
     this.config = config;
+  }
+
+  public long getModTime() {
+    return modTime;
+  }
+
+  public void setMotTime(long timestamp) {
+    this.modTime = timestamp;
   }
 }
