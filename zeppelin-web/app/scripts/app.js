@@ -16,31 +16,38 @@
  */
 'use strict';
 
-/** get the current port of the websocket
- * In the case of running the zeppelin-server normally,
- * The body of this function is just filler. It will be dynamically
- * overridden with the zeppelin-site.xml config value when the client
- * requests the script. If the config value is not defined, it defaults
- * to the HTTP port + 1
- *
- * At the moment, the key delimiter denoting the end of this function
- * during the replacement is the '}' character. Avoid using this
- * character inside the function body
- *
- * In the case of running "grunt serve", this function will appear
- * as is.
- */
+/** Get the current port of the websocket
+  *
+  * In the case of running the zeppelin-server normally,
+  * the body of this function is just filler. It will be dynamically
+  * overridden with the AppScriptServlet from zeppelin-site.xml config value
+  * when the client requests the script.
+  *
+  * If the config value is not defined, it defaults to the HTTP port + 1
+  *
+  * At the moment, the key delimiter denoting the end of this function
+  * during the replacement is the '}' character.
+  *
+  * !!!
+  * Avoid using '}' inside the function body or you will fail running
+  * in server mode.
+  * !!!
+  *
+  * In the case of running "grunt serve", this function will appear
+  * as is.
+  */
 function getPort() {
   var port = Number(location.port);
-  if (location.protocol !== 'https:' && !!port) {
+  if (location.protocol !== 'https:' && !!port)
     port = 80;
-  } else if (location.protocol === 'https:' && !!port) {
+  else if (location.protocol === 'https:' && !!port)
     port = 443;
-  } else if (port === 3333 || port === 9000) {
+  else if (port === 3333 || port === 9000)
     port = 8080;
-  }
-  return ++port;
+
+  return port+1;
 }
+
 function getWebsocketProtocol() {
   return location.protocol === 'https:' ? 'wss' : 'ws';
 }
@@ -92,9 +99,7 @@ angular
   ])
   .filter('breakFilter', function () {
     return function (text) {
-      if (!!text) {
-        return text.replace(/\n/g, '<br />');
-      }
+      if (!!text) return text.replace(/\n/g, '<br />');
     };
   })
   .config(function ($routeProvider, WebSocketProvider) {
