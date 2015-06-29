@@ -106,8 +106,10 @@ public class NotebookRepoSync implements NotebookRepo{
   private List<String> findUploadNotes(List <NoteInfo> localNotes, List <NoteInfo> remoteNotes) {
     List <String> newIDs = new ArrayList<String>();
     //List <String> modifiedIDs = new ArrayList<String>();
+    NoteInfo rnote;
     for (NoteInfo lnote : localNotes) {
-      if (containsID(remoteNotes, lnote.getId())) {
+      rnote = containsID(remoteNotes, lnote.getId());
+      if ( rnote != null) {
         /* note may exist, but outdated
          * TODO(khalid): check modification time or hash*/
       } else {
@@ -121,14 +123,14 @@ public class NotebookRepoSync implements NotebookRepo{
     return newIDs;
   }
 
-  private boolean containsID(List <NoteInfo> notes, String id) { 
+  private NoteInfo containsID(List <NoteInfo> notes, String id) { 
     for (NoteInfo note : notes) {
       if (note.getId().equals(id)) {
-        notes.remove(note);
-        return true;
+        //notes.remove(note);
+        return note;
       }
     }
-    return false;
+    return null;
   }
   
   private void printNoteInfo(NoteInfo note) {
