@@ -88,6 +88,25 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     }
     ZeppelinServer.notebook.removeNote(note.id());
   }
+  
+  @Test
+  public void pySparkAutoConvertOptionTest() throws IOException {
+    // create new note
+    Note note = ZeppelinServer.notebook.createNote();
+
+    int sparkVersion = getSparkVersionNumber(note);
+
+    if (isPyspark() && sparkVersion >= 14) {   // auto_convert enabled from spark 1.4
+      // run markdown paragraph, again
+      Paragraph p = note.addParagraph();
+      p.setText("%pyspark\nfrom pyspark.sql.functions import *\n"
+          + "print(sqlContext.range(0, 10).withColumn('uniform', rand(seed=10) * 3.14).count())");
+      note.run(p.getId());
+      waitForFinish(p);
+      assertEquals("10\n", p.getResult().message());
+    }
+    ZeppelinServer.notebook.removeNote(note.id());
+  }
 
   @Test
   public void zRunTest() throws IOException {

@@ -32,7 +32,12 @@ from pyspark.serializers import MarshalSerializer, PickleSerializer
 from pyspark.sql import SQLContext, HiveContext, SchemaRDD, Row
 
 client = GatewayClient(port=int(sys.argv[1]))
-gateway = JavaGateway(client)
+sparkVersion = sys.argv[2]
+
+if sparkVersion.startswith("1.4"):
+  gateway = JavaGateway(client, auto_convert = True)
+else:
+  gateway = JavaGateway(client)
 
 java_import(gateway.jvm, "org.apache.spark.SparkEnv")
 java_import(gateway.jvm, "org.apache.spark.SparkConf")
@@ -45,15 +50,15 @@ intp.onPythonScriptInitialized()
 
 jsc = intp.getJavaSparkContext()
 
-if jsc.version().startswith("1.2"):
+if sparkVersion.startswith("1.2"):
   java_import(gateway.jvm, "org.apache.spark.sql.SQLContext")
   java_import(gateway.jvm, "org.apache.spark.sql.hive.HiveContext")
   java_import(gateway.jvm, "org.apache.spark.sql.hive.LocalHiveContext")
   java_import(gateway.jvm, "org.apache.spark.sql.hive.TestHiveContext")
-elif jsc.version().startswith("1.3"):
+elif sparkVersion.startswith("1.3"):
   java_import(gateway.jvm, "org.apache.spark.sql.*")
   java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
-elif jsc.version().startswith("1.4"):
+elif sparkVersion.startswith("1.4"):
   java_import(gateway.jvm, "org.apache.spark.sql.*")
   java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
 
@@ -64,6 +69,7 @@ jconf = intp.getSparkConf()
 conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
 sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
 sqlc = SQLContext(sc, intp.getSQLContext())
+sqlContext = sqlc
 
 z = intp.getZeppelinContext()
 
@@ -117,6 +123,6 @@ while True :
        excInnerError = excInnerError[innerErrorStart:]
     intp.setStatementsFinished(excInnerError + str(sys.exc_info()), True)
   except:
-    intp.setStatementsFinished(str(sys.exc_info()), True)
+    intp.setStatementsFinished(traceback.format_exc(), True)
 
   output.reset()
