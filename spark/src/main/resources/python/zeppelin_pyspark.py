@@ -117,6 +117,6 @@ while True :
        excInnerError = excInnerError[innerErrorStart:]
     intp.setStatementsFinished(excInnerError + str(sys.exc_info()), True)
   except:
-    intp.setStatementsFinished(str(sys.exc_info()), True)
+    intp.setStatementsFinished(traceback.format_exc(), True)
 
   output.reset()
