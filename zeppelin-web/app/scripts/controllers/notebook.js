@@ -25,6 +25,10 @@
  */
 angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http) {
   $scope.note = null;
+  /** Collection of paragraphs that will be diplayed, will populate paragraphs from note.paragraphs.*/
+  $scope.notebookParagraphs = [];
+  /** Number of paragraphs that will be displayed by default. */
+  var minimumOfParagraphs = 6;
   $scope.showEditor = false;
   $scope.editorToggled = false;
   $scope.tableToggled = false;
@@ -65,6 +69,31 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   initNotebook();
+  
+  /** Function to load more paragraphs. */
+  $scope.loadMoreParagraph = function() {
+    var sizeOfCurrentParagraphDisplay = $scope.notebookParagraphs.length;
+    var sizeOfParagraphtoDisplay = sizeOfCurrentParagraphDisplay + 6;
+
+    if (angular.isUndefinedOrNull($scope.note) || angular.isUndefinedOrNull($scope.note.paragraphs)) {
+      return;
+    }
+
+    if (sizeOfParagraphtoDisplay >= $scope.note.paragraphs.length) {
+      sizeOfParagraphtoDisplay = $scope.note.paragraphs.length;
+    }
+
+    if(sizeOfCurrentParagraphDisplay >= sizeOfParagraphtoDisplay) {
+      return;
+    }
+
+    while (sizeOfCurrentParagraphDisplay <= sizeOfParagraphtoDisplay) {
+      if (!angular.isUndefinedOrNull($scope.note.paragraphs[sizeOfCurrentParagraphDisplay])) {
+        $scope.notebookParagraphs.push($scope.note.paragraphs[sizeOfCurrentParagraphDisplay]);
+      }
+      sizeOfCurrentParagraphDisplay++;
+    }
+  };
 
   /** Remove the note and go back tot he main page */
   /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
@@ -167,6 +196,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
     if ($scope.note === null) {
       $scope.note = note;
+      $scope.notebookParagraphs = _.take($scope.note.paragraphs, minimumOfParagraphs);
     } else {
       updateNote(note);
     }

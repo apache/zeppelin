@@ -98,7 +98,8 @@ angular
     'ngDragDrop',
     'monospaced.elastic',
     'puElasticInput',
-    'xeditable'
+    'xeditable',
+    'infinite-scroll'
   ])
   .filter('breakFilter', function() {
     return function (text) {
@@ -131,5 +132,12 @@ angular
       });
   });
 
+  angular.isUndefinedOrNull = function (val) {
+    return angular.isUndefined(val) || val === null;
+  };
 
+
+  angular.isBlanck = function (val) {
+    return angular.isUndefinedOrNull(val) || val === '';
+  };
 
