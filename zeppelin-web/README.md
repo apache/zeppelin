@@ -10,13 +10,13 @@ If you want to compile the WebApplication only, you will have to simply run `mvn
 
 This will Download all the dependencies including node js and npm (you will find the binaries in the folder `zeppelin-web/node`).
 
-We also provide some **helper script** for __bower__ and __grunt__, but they are currently outdated, so you might want to install them on your machine.
+We are supposed to provide some **helper script** for __bower__ and __grunt__, but they are currently outdated, so you might want install them on your machine and use them instead.
 
 ### Configured environment
 
-Here are the basic commands to compile the WebApplication with a configured environment (Installed grunt, bower, npm, node js)
+Here are the basic commands to compile the WebApplication with a configured environment (Installed grunt, bower, npm)
 
-**Build the application**
+**Build the application for production**
 
 `./grunt build`
 
@@ -25,7 +25,7 @@ Here are the basic commands to compile the WebApplication with a configured envi
 ``./grunt serve``
 
 This will launch a Zeppelin WebApplication on port **9000** and update on code changes.
-(You will need Zeppelin running on the side)
+(You will need to have Zeppelin running on the side)
 
 
 #### Troubleshooting
