@@ -104,29 +104,33 @@ public class NotebookRepoSync implements NotebookRepo{
   
   }
   private List<String> findUploadNotes(List <NoteInfo> localNotes, List <NoteInfo> remoteNotes) {
-    List <String> newIDs = new ArrayList<String>();
-    //List <String> modifiedIDs = new ArrayList<String>();
+    List <String> ids = new ArrayList<String>();
     NoteInfo rnote;
     for (NoteInfo lnote : localNotes) {
       rnote = containsID(remoteNotes, lnote.getId());
       if ( rnote != null) {
         /* note may exist, but outdated
-         * TODO(khalid): check modification time or hash*/
+         * currently using file modification timestamps, other option: hash
+         */
+        //LOG.info("Local note modification time is: " + lnote.getModTime());
+        //LOG.info("Remote note modification time is: " + rnote.getModTime());
+        if (lnote.getModTime() > rnote.getModTime()) {
+          ids.add(lnote.getId());
+        }
       } else {
         /* this note exists in local fs, and doesnt exist in remote fs
          * need to upload it 
          * (another scenario is that it was deleted from remote)*/
-        newIDs.add(lnote.getId());
+        ids.add(lnote.getId());
       }
     }
     
-    return newIDs;
+    return ids;
   }
 
   private NoteInfo containsID(List <NoteInfo> notes, String id) { 
     for (NoteInfo note : notes) {
       if (note.getId().equals(id)) {
-        //notes.remove(note);
         return note;
       }
     }
