@@ -53,7 +53,7 @@ public class NotebookRepoSync implements NotebookRepo{
       Constructor<?> constructor = notebookStorageClass.getConstructor(
                 ZeppelinConfiguration.class);
       remoteRepo = (NotebookRepo) constructor.newInstance(conf);
-      syncSimple();
+      localToRemoteSync();
     } else {
       remoteRepo = null;
     }
@@ -79,10 +79,10 @@ public class NotebookRepoSync implements NotebookRepo{
   }
 
   /**
-   * sync for simple case of same token/instance 
+   * one-way sync of local storage to remote one
    * @throws IOException
    */
-  public void syncSimple() throws IOException {
+  public void localToRemoteSync() throws IOException {
     LOG.info("Local to remote sync started");
     List <NoteInfo> localNotes = localRepo.list();
     List <NoteInfo> remoteNotes = remoteRepo.list();
