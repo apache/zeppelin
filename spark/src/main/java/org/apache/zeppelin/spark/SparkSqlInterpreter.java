@@ -40,6 +40,7 @@ import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.spark.utils.SparkSqlCompleter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -292,6 +293,7 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
-    return null;
+    SQLContext sqlc = getSparkInterpreter().getSQLContext();
+    return new SparkSqlCompleter(sqlc).completion(buf, cursor);
   }
 }
