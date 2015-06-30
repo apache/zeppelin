@@ -220,6 +220,9 @@ public class VFSNotebookRepo implements NotebookRepo {
     OutputStream out = noteJson.getContent().getOutputStream(false);
     out.write(json.getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)));
     out.close();
+    
+    /* on file change record the modification timestamp into Note object */
+    note.setModTime(noteJson.getContent().getLastModifiedTime());
   }
 
   @Override
