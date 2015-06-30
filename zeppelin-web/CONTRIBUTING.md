@@ -22,7 +22,7 @@ please search for its **angularJS** directive first and if it doesn't exist, mak
 ## Folder Structure & Code Organization
 
 * `src` folder: Contains the Source code for Zeppelin WebApplication
-* `dist` folder: Contains the compiled code after using **grunt**
+* `dist` folder: Contains the compiled code after using **grunt build**
 
 ### Src and Code Organization
 
