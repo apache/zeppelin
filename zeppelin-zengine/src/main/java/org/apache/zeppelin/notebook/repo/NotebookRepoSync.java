@@ -114,10 +114,7 @@ public class NotebookRepoSync implements NotebookRepo{
       rnote = containsID(remoteNotes, lnote.getId());
       if ( rnote != null) {
         /* note may exist, but outdated
-         * currently using file modification timestamps, other option: hash
-         */
-        //LOG.info("Local note modification time is: " + lnote.getModTime());
-        //LOG.info("Remote note modification time is: " + rnote.getModTime());
+         * currently using file modification timestamps, other option: hash*/
         if (lnote.getModTime() > rnote.getModTime()) {
           ids.add(lnote.getId());
         }
