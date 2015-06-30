@@ -441,13 +441,14 @@ angular.module('zeppelinWebApp')
           getCompletions : function(editor, session, pos, prefix, callback) {
               if (!$scope.editor.isFocused() ){ return;}
 
-              var buf = session.getTextRange(new Range(0, 0, pos.row, pos.column));
+              var pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
+              var buf = session.getValue();
               $rootScope.$emit('sendNewEvent', {
                   op : 'COMPLETION',
                   data : {
                       id : $scope.paragraph.id,
                       buf : buf,
-                      cursor : buf.length
+                      cursor : pos
                   }
               });
 
