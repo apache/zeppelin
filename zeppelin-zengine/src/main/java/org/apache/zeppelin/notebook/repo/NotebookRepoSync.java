@@ -83,17 +83,21 @@ public class NotebookRepoSync implements NotebookRepo{
    * @throws IOException
    */
   public void syncSimple() throws IOException {
-    LOG.info("Sync start");
+    LOG.info("Local to remote sync started");
     List <NoteInfo> localNotes = localRepo.list();
     List <NoteInfo> remoteNotes = remoteRepo.list();
     
     List<String> uploadIDs = findUploadNotes(localNotes, remoteNotes);
-    LOG.info("Notes with the following IDs will be uploaded");
-    for (String id : uploadIDs) {
-      LOG.info("ID : " + id);
+    if (!uploadIDs.isEmpty()) {
+      LOG.info("Notes with the following IDs will be uploaded");
+      for (String id : uploadIDs) {
+        LOG.info("ID : " + id);
+      }
+    } else {
+      LOG.info("Nothing to sync");
     }
     saveToRemote(uploadIDs, localRepo, remoteRepo);
-    LOG.info("Sync end");
+    LOG.info("Sync ended");
   }
 
   private void saveToRemote(List<String> ids, VFSNotebookRepo localRepo,
