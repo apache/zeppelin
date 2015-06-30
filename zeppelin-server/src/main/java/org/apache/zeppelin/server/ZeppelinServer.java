@@ -306,12 +306,7 @@ public class ZeppelinServer extends Application {
     this.schedulerFactory = new SchedulerFactory();
 
     this.replFactory = new InterpreterFactory(conf, notebookServer);
-    /*Class<?> notebookStorageClass = getClass().forName(
-        conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE));
-    Constructor<?> constructor = notebookStorageClass.getConstructor(
-        ZeppelinConfiguration.class);
-    this.notebookRepo = (NotebookRepo) constructor.newInstance(conf);*/
-    this.notebookRepo = (NotebookRepo) new NotebookRepoSync(conf);
+    this.notebookRepo = new NotebookRepoSync(conf);
     notebook = new Notebook(conf, notebookRepo, schedulerFactory, replFactory, notebookServer);
   }
 
