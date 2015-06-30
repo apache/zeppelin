@@ -44,18 +44,18 @@ public class NotebookRepoSync implements NotebookRepo{
    */
   public NotebookRepoSync(ZeppelinConfiguration conf) throws Exception {
     localRepo = new VFSNotebookRepo(conf);
+    final String defStorageClassName = "org.apache.zeppelin.notebook.repo.VFSNotebookRepo";
+    final String nbStorageClassName = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
     
-    if (conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim().length() != 0 &&
-          !conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).equals(
-            "org.apache.zeppelin.notebook.repo.VFSNotebookRepo")) {
+    if (nbStorageClassName.isEmpty() || nbStorageClassName.equals(defStorageClassName)) {
+      remoteRepo = null;
+    } else {
       Class<?> notebookStorageClass = getClass().forName(
                 conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE));
       Constructor<?> constructor = notebookStorageClass.getConstructor(
                 ZeppelinConfiguration.class);
       remoteRepo = (NotebookRepo) constructor.newInstance(conf);
       localToRemoteSync();
-    } else {
-      remoteRepo = null;
     }
 
   }
