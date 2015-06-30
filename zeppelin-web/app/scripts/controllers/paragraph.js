@@ -498,6 +498,8 @@ angular.module('zeppelinWebApp')
       var code = $scope.editor.getSession().getValue();
       if ( String(code).startsWith('%sql')) {
         $scope.editor.getSession().setMode(editorMode.sql);
+      } else if ( String(code).startsWith('%bq')) {
+        $scope.editor.getSession().setMode(editorMode.sql);
       } else if ( String(code).startsWith('%md')) {
         $scope.editor.getSession().setMode(editorMode.markdown);
       } else {
