@@ -466,17 +466,18 @@ public class SparkInterpreter extends Interpreter {
       intp.interpret("import sqlContext.sql");
       intp.interpret("import org.apache.spark.sql.functions._");
     }
-
-    /* Temporary disabling DisplayUtils. see https://issues.apache.org/jira/browse/ZEPPELIN-127
-     *
+    
     // Utility functions for display
     intp.interpret("import org.apache.zeppelin.spark.utils.DisplayUtils._");
 
     // Scala implicit value for spark.maxResult
     intp.interpret("import org.apache.zeppelin.spark.utils.SparkMaxResult");
-    intp.interpret("implicit val sparkMaxResult = new SparkMaxResult(" +
-            Integer.parseInt(getProperty("zeppelin.spark.maxResult")) + ")");
-     */
+    intp.interpret("object MaxResult {" +
+        "implicit val sparkMaxResult = new SparkMaxResult(" +
+        Integer.parseInt(getProperty("zeppelin.spark.maxResult")) + ")" +
+        "}");
+    intp.interpret("import MaxResult.sparkMaxResult");
+
 
     try {
       if (sc.version().startsWith("1.1") || sc.version().startsWith("1.2")) {
