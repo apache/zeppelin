@@ -15,6 +15,18 @@
 
 angular.module('zeppelinWebApp').service('baseUrlSrv', function() {
 
+  /** Get the current port of the websocket
+  *
+  * When running Zeppelin, the body of this function will be dynamically
+  * overridden with the AppScriptServlet from zeppelin-site.xml config value.
+  *
+  * If the config value is not defined, it defaults to the HTTP port + 1
+  *
+  * In the case of running "grunt serve", this function will appear
+  * as is.
+  */
+  
+  /* @preserve AppScriptServlet - getPort */
   this.getPort = function() {
     var port = Number(location.port);
     if (location.protocol !== 'https:' && (port === 'undifined' || port === 0)) {
@@ -26,6 +38,7 @@ angular.module('zeppelinWebApp').service('baseUrlSrv', function() {
     }
     return port+1;
   };
+  /* @preserve AppScriptServlet - close */
 
   this.getWebsocketProtocol = function() {
     var protocol = 'ws';

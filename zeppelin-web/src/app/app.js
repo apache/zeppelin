@@ -16,29 +16,7 @@
  */
 'use strict';
 
-/** Get the current port of the websocket
-  *
-  * In the case of running the zeppelin-server normally,
-  * the body of this function is just filler. It will be dynamically
-  * overridden with the AppScriptServlet from zeppelin-site.xml config value 
-  * when the client requests the script.
-  *
-  * If the config value is not defined, it defaults to the HTTP port + 1
-  *
-  * At the moment, the key delimiter denoting the end of this function
-  * during the replacement is the '}' character.
-  *
-  * !!!
-  * Avoid using '}' inside the function body or you will fail running
-  * in server mode.
-  * !!!
-  *
-  * In the case of running "grunt serve", this function will appear
-  * as is.
-  */
-
-angular
-  .module('zeppelinWebApp', [
+angular.module('zeppelinWebApp', [
     'ngAnimate',
     'ngCookies',
     'ngRoute',
