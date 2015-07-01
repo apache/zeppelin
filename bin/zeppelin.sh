@@ -21,10 +21,7 @@
 # Run Zeppelin 
 #
 
-function usage() {
-  echo "Usage: bin/zeppelin.sh [--config <conf-dir>] [spark options] [application options]"
-  exit 0
-}
+USAGE="Usage: bin/zeppelin.sh [--config <conf-dir>]"
 
 if [[ "$1" == "--config" ]]; then
   shift
@@ -88,12 +85,4 @@ if [[ ! -d "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
   $(mkdir -p "${ZEPPELIN_NOTEBOOK_DIR}")
 fi
 
-if [[ ! -z "${SPARK_HOME}" ]]; then
-  source "${SPARK_HOME}/bin/utils.sh"
-  SUBMIT_USAGE_FUNCTION=usage
-  gatherSparkSubmitOpts "$@"
-  ZEPPELIN_RUNNER="${SPARK_HOME}/bin/spark-submit"
-  $(exec $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER --class $ZEPPELIN_SERVER "${SUBMISSION_OPTS[@]}" --driver-java-options -Dzeppelin.log.file=$ZEPPELIN_LOGFILE spark-shell "${APPLICATION_OPTS[@]}")
-else
-  $(exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_SERVER "$@")
-fi
+$(exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_SERVER "$@")

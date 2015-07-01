@@ -143,11 +143,24 @@ public class DependencyResolver {
 
   // Until spark 1.1.x
   // check https://github.com/apache/spark/commit/191d7cf2a655d032f160b9fa181730364681d0e7
-  private void updateRuntimeClassPath(URL[] urls) throws SecurityException, IllegalAccessException,
-      IllegalArgumentException, InvocationTargetException, NoSuchMethodException {
+  private void updateRuntimeClassPath_1_x(URL[] urls) throws SecurityException,
+      IllegalAccessException, IllegalArgumentException,
+      InvocationTargetException, NoSuchMethodException {
     ClassLoader cl = intp.classLoader().getParent();
     Method addURL;
     addURL = cl.getClass().getDeclaredMethod("addURL", new Class[] {URL.class});
+    addURL.setAccessible(true);
+    for (URL url : urls) {
+      addURL.invoke(cl, url);
+    }
+  }
+
+  private void updateRuntimeClassPath_2_x(URL[] urls) throws SecurityException,
+      IllegalAccessException, IllegalArgumentException,
+      InvocationTargetException, NoSuchMethodException {
+    ClassLoader cl = intp.classLoader().getParent();
+    Method addURL;
+    addURL = cl.getClass().getDeclaredMethod("addNewUrl", new Class[] {URL.class});
     addURL.setAccessible(true);
     for (URL url : urls) {
       addURL.invoke(cl, url);
@@ -217,8 +230,11 @@ public class DependencyResolver {
 
     intp.global().new Run();
 
-    updateRuntimeClassPath(new URL[] {jarFile.toURI().toURL()});
-    updateCompilerClassPath(new URL[] {jarFile.toURI().toURL()});
+    if (sc.version().startsWith("1.1")) {
+      updateRuntimeClassPath_1_x(new URL[] {jarFile.toURI().toURL()});
+    } else {
+      updateRuntimeClassPath_2_x(new URL[] {jarFile.toURI().toURL()});
+    }
 
     if (addSparkContext) {
       sc.addJar(jarFile.getAbsolutePath());
@@ -261,7 +277,11 @@ public class DependencyResolver {
     }
 
     intp.global().new Run();
-    updateRuntimeClassPath(newClassPathList.toArray(new URL[0]));
+    if (sc.version().startsWith("1.1")) {
+      updateRuntimeClassPath_1_x(newClassPathList.toArray(new URL[0]));
+    } else {
+      updateRuntimeClassPath_2_x(newClassPathList.toArray(new URL[0]));
+    }
     updateCompilerClassPath(newClassPathList.toArray(new URL[0]));
 
     if (addSparkContext) {

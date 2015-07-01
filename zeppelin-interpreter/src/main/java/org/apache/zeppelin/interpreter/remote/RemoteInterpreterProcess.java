@@ -50,26 +50,27 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   private Map<String, String> env;
   private final RemoteInterpreterEventPoller remoteInterpreterEventPoller;
   private final InterpreterContextRunnerPool interpreterContextRunnerPool;
+  private int connectTimeout;
 
   public RemoteInterpreterProcess(String intpRunner,
       String intpDir,
       Map<String, String> env,
-      InterpreterContextRunnerPool interpreterContextRunnerPool) {
-    this(intpRunner, intpDir, env, interpreterContextRunnerPool, 
-        new RemoteInterpreterEventPoller());
+      int connectTimeout) {
+    this(intpRunner, intpDir, env, new RemoteInterpreterEventPoller(), connectTimeout);
   }
 
   RemoteInterpreterProcess(String intpRunner,
       String intpDir,
       Map<String, String> env,
-      InterpreterContextRunnerPool interpreterContextRunnerPool,
-      RemoteInterpreterEventPoller remoteInterpreterEventPoller) {
+      RemoteInterpreterEventPoller remoteInterpreterEventPoller,
+      int connectTimeout) {
     this.interpreterRunner = intpRunner;
     this.interpreterDir = intpDir;
     this.env = env;
-    this.interpreterContextRunnerPool = interpreterContextRunnerPool;
+    this.interpreterContextRunnerPool = new InterpreterContextRunnerPool();
     referenceCount = new AtomicInteger(0);
     this.remoteInterpreterEventPoller = remoteInterpreterEventPoller;
+    this.connectTimeout = connectTimeout;
   }
 
 
@@ -113,7 +114,7 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
 
 
         long startTime = System.currentTimeMillis();
-        while (System.currentTimeMillis() - startTime < 5 * 1000) {
+        while (System.currentTimeMillis() - startTime < connectTimeout) {
           if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", port)) {
             break;
           } else {
@@ -123,7 +124,7 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
             }
           }
         }
-
+        
         clientPool = new GenericObjectPool<Client>(new ClientFactory("localhost", port));
 
         remoteInterpreterEventPoller.setInterpreterGroup(interpreterGroup);

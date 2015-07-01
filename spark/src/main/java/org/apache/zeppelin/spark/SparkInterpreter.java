@@ -26,7 +26,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import org.apache.spark.HttpServer;
 import org.apache.spark.SparkConf;
@@ -101,11 +105,13 @@ public class SparkInterpreter extends Interpreter {
                 getSystemDefault("SPARK_YARN_JAR", "spark.yarn.jar", ""),
                 "The location of the Spark jar file. If you use yarn as a cluster, "
                 + "we should set this value")
-            .add("zeppelin.spark.useHiveContext", "true",
-                 "Use HiveContext instead of SQLContext if it is true.")
-            .add("zeppelin.spark.useCassandraContext", "false",
-                 "Use CassandraContext instead of SQLContext if it is true")
-            .add("zeppelin.spark.maxResult", "1000", "Max number of SparkSQL result to display.")
+            .add("zeppelin.spark.useHiveContext",
+                getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT",
+                    "zeppelin.spark.useHiveContext", "true"),
+                "Use HiveContext instead of SQLContext if it is true.")
+            .add("zeppelin.spark.maxResult",
+                getSystemDefault("ZEPPELIN_SPARK_MAXRESULT", "zeppelin.spark.maxResult", "1000"),
+                "Max number of SparkSQL result to display.")
             .add("args", "", "spark commandline args").build());
 
   }
@@ -161,6 +167,32 @@ public class SparkInterpreter extends Interpreter {
     return Boolean.parseBoolean(getProperty("zeppelin.spark.useHiveContext"));
   }
 
+  public SQLContext getSQLContext() {
+    if (sqlc == null) {
+      if (useHiveContext()) {
+        String name = "org.apache.spark.sql.hive.HiveContext";
+        Constructor<?> hc;
+        try {
+          hc = getClass().getClassLoader().loadClass(name)
+              .getConstructor(SparkContext.class);
+          sqlc = (SQLContext) hc.newInstance(getSparkContext());
+        } catch (NoSuchMethodException | SecurityException
+            | ClassNotFoundException | InstantiationException
+            | IllegalAccessException | IllegalArgumentException
+            | InvocationTargetException e) {
+          logger.warn("Can't create HiveContext. Fallback to SQLContext", e);
+          // when hive dependency is not loaded, it'll fail.
+          // in this case SQLContext can be used.
+          sqlc = new SQLContext(getSparkContext());
+        }
+      } else {
+        sqlc = new SQLContext(getSparkContext());
+      }
+    }
+
+    return sqlc;
+  }
+
   public DependencyResolver getDependencyResolver() {
     if (dep == null) {
       dep = new DependencyResolver(intp, sc, getProperty("zeppelin.dep.localrepo"));
@@ -183,45 +215,6 @@ public class SparkInterpreter extends Interpreter {
       }
     }
     return null;
-  }
-
-  private boolean useCassandraContext() {
-    return Boolean.parseBoolean(getProperty("zeppelin.spark.useCassandraContext"));
-  }
-
-  private SQLContext loadCustomContext(final String contextName) {
-    Constructor<?> hc;
-    SQLContext context;
-    try {
-      hc = getClass().getClassLoader().loadClass(contextName)
-              .getConstructor(SparkContext.class);
-      context = (SQLContext) hc.newInstance(getSparkContext());
-    } catch (NoSuchMethodException | SecurityException
-            | ClassNotFoundException | InstantiationException
-            | IllegalAccessException | IllegalArgumentException
-            | InvocationTargetException e) {
-      logger.warn("Can't create " + contextName + ". Fallback to SQLContext", e);
-      // when hive dependency is not loaded, it'll fail.
-      // in this case SQLContext can be used.
-      context = new SQLContext(getSparkContext());
-    }
-    return context;
-  }
-
-  public SQLContext getSQLContext() {
-    if (sqlc == null) {
-      if (useCassandraContext()) {
-        sqlc = loadCustomContext("org.apache.spark.sql.cassandra.CassandraSQLContext");
-        logger.debug("Loading Cassandra SQL Context");
-      } else if (useHiveContext()) {
-        sqlc = loadCustomContext("org.apache.spark.sql.hive.HiveContext");
-        logger.debug("Loading Hive SQL Context");
-      } else {
-        sqlc = new SQLContext(getSparkContext());
-        logger.debug("Loading Standard SQL Context");
-      }
-    }
-    return sqlc;
   }
 
   public SparkContext createSparkContext() {
@@ -251,7 +244,8 @@ public class SparkInterpreter extends Interpreter {
       }
     }
 
-    SparkConf conf = new SparkConf()
+    SparkConf conf =
+        new SparkConf()
             .setMaster(getProperty("master"))
             .setAppName(getProperty("spark.app.name"))
             .set("spark.repl.class.uri", classServerUri);
@@ -417,25 +411,6 @@ public class SparkInterpreter extends Interpreter {
     z = new ZeppelinContext(sc, sqlc, null, dep, printStream,
         Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
-    try {
-      if (sc.version().startsWith("1.1") || sc.version().startsWith("1.2")) {
-        Method loadFiles = this.interpreter.getClass().getMethod("loadFiles", Settings.class);
-        loadFiles.invoke(this.interpreter, settings);
-      } else if (sc.version().startsWith("1.3")) {
-        Method loadFiles = this.interpreter.getClass().getMethod(
-            "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
-        loadFiles.invoke(this.interpreter, settings);
-      } else if (sc.version().startsWith("1.4")) {
-        Method loadFiles = this.interpreter.getClass().getMethod(
-            "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
-        loadFiles.invoke(this.interpreter, settings);
-      }
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
-      throw new InterpreterException(e);
-    }
-
-
     intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
     binder = (Map<String, Object>) getValue("_binder");
     binder.put("sc", sc);
@@ -465,6 +440,35 @@ public class SparkInterpreter extends Interpreter {
       intp.interpret("import sqlContext.implicits._");
       intp.interpret("import sqlContext.sql");
       intp.interpret("import org.apache.spark.sql.functions._");
+    }
+
+    /* Temporary disabling DisplayUtils. see https://issues.apache.org/jira/browse/ZEPPELIN-127
+     *
+    // Utility functions for display
+    intp.interpret("import org.apache.zeppelin.spark.utils.DisplayUtils._");
+
+    // Scala implicit value for spark.maxResult
+    intp.interpret("import org.apache.zeppelin.spark.utils.SparkMaxResult");
+    intp.interpret("implicit val sparkMaxResult = new SparkMaxResult(" +
+            Integer.parseInt(getProperty("zeppelin.spark.maxResult")) + ")");
+     */
+
+    try {
+      if (sc.version().startsWith("1.1") || sc.version().startsWith("1.2")) {
+        Method loadFiles = this.interpreter.getClass().getMethod("loadFiles", Settings.class);
+        loadFiles.invoke(this.interpreter, settings);
+      } else if (sc.version().startsWith("1.3")) {
+        Method loadFiles = this.interpreter.getClass().getMethod(
+                "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
+        loadFiles.invoke(this.interpreter, settings);
+      } else if (sc.version().startsWith("1.4")) {
+        Method loadFiles = this.interpreter.getClass().getMethod(
+                "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
+        loadFiles.invoke(this.interpreter, settings);
+      }
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+            | IllegalArgumentException | InvocationTargetException e) {
+      throw new InterpreterException(e);
     }
 
     // add jar
