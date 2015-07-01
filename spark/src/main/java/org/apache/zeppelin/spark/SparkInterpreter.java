@@ -103,6 +103,8 @@ public class SparkInterpreter extends Interpreter {
                 + "we should set this value")
             .add("zeppelin.spark.useHiveContext", "true",
                  "Use HiveContext instead of SQLContext if it is true.")
+            .add("zeppelin.spark.useCassandraContext", "false",
+                 "Use CassandraContext instead of SQLContext if it is true")
             .add("zeppelin.spark.maxResult", "1000", "Max number of SparkSQL result to display.")
             .add("args", "", "spark commandline args").build());
 
@@ -253,18 +255,6 @@ public class SparkInterpreter extends Interpreter {
             .setMaster(getProperty("master"))
             .setAppName(getProperty("spark.app.name"))
             .set("spark.repl.class.uri", classServerUri);
-
-    if (useCassandraContext()) {
-      conf.set("spark.cassandra.connection.host", getProperty("spark.cassandra.connection.host"));
-
-      if (getProperty("spark.cassandra.auth.username") != null) {
-        conf.set("spark.cassandra.auth.username", getProperty("spark.cassandra.auth.username"));
-      }
-
-      if (getProperty("spark.cassandra.auth.password") != null) {
-        conf.set("spark.cassandra.auth.password", getProperty("spark.cassandra.auth.password"));
-      }
-    }
 
     if (jars.length > 0) {
       conf.setJars(jars);
