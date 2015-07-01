@@ -300,6 +300,7 @@ public class Note implements Serializable, JobListener {
   }
 
   public void persist() throws IOException {
+    snapshotAngularObjectRegistry();
     repo.save(this);
   }
 

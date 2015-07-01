@@ -31,7 +31,9 @@ import java.util.Map;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -219,6 +221,23 @@ public class Notebook {
     synchronized (notes) {
       notes.put(note.id(), note);
       refreshCron(note.id());
+    }
+
+    for (String name : angularObjectSnapshot.keySet()) {
+      SnapshotAngularObject snapshot = angularObjectSnapshot.get(name);
+      List<InterpreterSetting> settings = replFactory.get();
+      for (InterpreterSetting setting : settings) {
+        InterpreterGroup intpGroup = setting.getInterpreterGroup();
+        if (intpGroup.getId().equals(snapshot.getIntpGroupId())) {
+          AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
+          boolean localScope = snapshot.getAngularObject().getNoteId() != null;
+          if (localScope) {
+            registry.add(name, snapshot.getAngularObject().get(), note.id());
+          } else {
+            registry.add(name, snapshot.getAngularObject().get(), null);
+          }
+        }
+      }
     }
     return note;
   }
