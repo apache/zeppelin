@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.thrift.TException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -294,6 +296,7 @@ public class RemoteScheduler implements Scheduler {
         listener.jobStarted(scheduler, job);
       }
       job.run();
+
       jobExecuted = true;
       jobSubmittedRemotely = true;
 
@@ -304,7 +307,16 @@ public class RemoteScheduler implements Scheduler {
         logger.error("JobStatusPoller interrupted", e);
       }
 
-      job.setStatus(jobStatusPoller.getStatus());
+      // set job status based on result.
+      Status lastStatus = jobStatusPoller.getStatus();
+      Object jobResult = job.getReturn();
+      if (jobResult != null && jobResult instanceof InterpreterResult) {
+        if (((InterpreterResult) jobResult).code() == Code.ERROR) {
+          lastStatus = Status.ERROR;
+        }
+      }
+      job.setStatus(lastStatus);
+
       if (listener != null) {
         listener.jobFinished(scheduler, job);
       }
