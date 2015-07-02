@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook.repo;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,99 +35,179 @@ import org.slf4j.LoggerFactory;
  * Notebook repository sync with remote storage
  */
 public class NotebookRepoSync implements NotebookRepo{
-  private VFSNotebookRepo localRepo;
-  private NotebookRepo remoteRepo;
+  private List<NotebookRepo> repos = new ArrayList<NotebookRepo>();
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSync.class);
+  private static final int maxRepoNum = 2;
+  private static final String pushKey = "pushNoteIDs";
+  private static final String pullKey = "pullNoteIDs";
 
   /**
    * @param (conf)
    * @throws - Exception
    */
   public NotebookRepoSync(ZeppelinConfiguration conf) throws Exception {
-    localRepo = new VFSNotebookRepo(conf);
-    final String defStorageClassName = "org.apache.zeppelin.notebook.repo.VFSNotebookRepo";
-    final String nbStorageClassName = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
     
-    if (nbStorageClassName.isEmpty() || nbStorageClassName.equals(defStorageClassName)) {
-      remoteRepo = null;
-    } else {
-      Class<?> notebookStorageClass = getClass().forName(
-                conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE));
-      Constructor<?> constructor = notebookStorageClass.getConstructor(
-                ZeppelinConfiguration.class);
-      remoteRepo = (NotebookRepo) constructor.newInstance(conf);
-      localToRemoteSync();
+    String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
+    if (allStorageClassNames.isEmpty()) {
+      throw new IOException("Empty ZEPPELIN_NOTEBOOK_STORAGE conf parameter");
+    }
+    String[] storageClassNames = allStorageClassNames.split(",");
+    if (storageClassNames.length > getMaxRepoNum()) {
+      throw new IOException("Unsupported number of storage classes (" + 
+        storageClassNames.length + ") in ZEPPELIN_NOTEBOOK_STORAGE");
     }
 
+    for (int i = 0; i < storageClassNames.length; i++) {
+      Class<?> notebookStorageClass = getClass().forName(storageClassNames[i].trim());
+      Constructor<?> constructor = notebookStorageClass.getConstructor(
+                ZeppelinConfiguration.class);
+      repos.add((NotebookRepo) constructor.newInstance(conf));
+    }
+    if (getRepoCount() > 1) {
+      sync(0, 1);
+    }
   }
 
+  /* by default lists from first repository */
   public List<NoteInfo> list() throws IOException {
-    return localRepo.list();
+    return getRepo(0).list();
+  }
+  
+  /* list from specific repo (for tests) */
+  List<NoteInfo> list(int repoIndex) throws IOException {
+    return getRepo(repoIndex).list();
   }
 
+  /* by default returns from first repository */ 
   public Note get(String noteId) throws IOException {
-    return localRepo.get(noteId);
+    return getRepo(0).get(noteId);
   }
 
+  /* get note from specific repo (for tests) */
+  Note get(int repoIndex, String noteId) throws IOException {
+    return getRepo(repoIndex).get(noteId);
+  }
+  
+  /* by default saves to all repos */
   public void save(Note note) throws IOException {
-    localRepo.save(note);
-    if (remoteRepo != null) remoteRepo.save(note);
+    for (NotebookRepo repo : repos) {
+      repo.save(note);
+    }
+    /* TODO(khalid): handle case when saving to secondary storage fails */
+  }
+
+  /* save note to specific repo (for tests) */
+  void save(int repoIndex, Note note) throws IOException {
+    getRepo(repoIndex).save(note);
   }
 
   public void remove(String noteId) throws IOException {
-    localRepo.remove(noteId);
-    if (remoteRepo != null) remoteRepo.remove(noteId);
+    for (NotebookRepo repo : repos) {
+      repo.remove(noteId);
+    }
+    /* TODO(khalid): handle case when removing from secondary storage fails */
   }
 
   /**
-   * one-way sync of local storage to remote one
+   * copy new/updated notes from source to destination storage 
    * @throws IOException
    */
-  public void localToRemoteSync() throws IOException {
-    LOG.info("Local to remote sync started");
-    List <NoteInfo> localNotes = localRepo.list();
-    List <NoteInfo> remoteNotes = remoteRepo.list();
+  public void sync(int sourceRepoIndex, int destRepoIndex) throws IOException {
+    LOG.info("Sync started");
+    NotebookRepo sourceRepo = getRepo(sourceRepoIndex);
+    NotebookRepo destRepo = getRepo(destRepoIndex);
+    List <NoteInfo> sourceNotes = sourceRepo.list();
+    List <NoteInfo> destNotes = destRepo.list();
     
-    List<String> uploadIDs = findUploadNotes(localNotes, remoteNotes);
-    if (!uploadIDs.isEmpty()) {
-      LOG.info("Notes with the following IDs will be uploaded");
-      for (String id : uploadIDs) {
+    Map<String, List<String>> noteIDs = notesCheckDiff(sourceNotes, destNotes);
+    List<String> pushNoteIDs = noteIDs.get(pushKey);
+    List<String> pullNoteIDs = noteIDs.get(pullKey);
+    if (!pushNoteIDs.isEmpty()) {
+      LOG.info("Notes with the following IDs will be pushed");
+      for (String id : pushNoteIDs) {
         LOG.info("ID : " + id);
       }
+      pushNotes(pushNoteIDs, sourceRepo, destRepo);
     } else {
-      LOG.info("Nothing to sync");
+      LOG.info("Nothing to push");
     }
-    saveToRemote(uploadIDs, localRepo, remoteRepo);
+    
+    if (!pullNoteIDs.isEmpty()) {
+      LOG.info("Notes with the following IDs will be pulled");
+      for (String id : pullNoteIDs) {
+        LOG.info("ID : " + id);
+      }
+      pushNotes(pullNoteIDs, destRepo, sourceRepo);
+    } else {
+      LOG.info("Nothing to pull");
+    }
+    
     LOG.info("Sync ended");
   }
 
-  private void saveToRemote(List<String> ids, VFSNotebookRepo localRepo,
+  public void sync() throws IOException {
+    sync(0, 1);
+  }
+  
+  private void pushNotes(List<String> ids, NotebookRepo localRepo,
                             NotebookRepo remoteRepo) throws IOException {
     for (String id : ids) {
       remoteRepo.save(localRepo.get(id));
     }
-  
   }
-  private List<String> findUploadNotes(List <NoteInfo> localNotes, List <NoteInfo> remoteNotes) {
-    List <String> ids = new ArrayList<String>();
-    NoteInfo rnote;
-    for (NoteInfo lnote : localNotes) {
-      rnote = containsID(remoteNotes, lnote.getId());
-      if ( rnote != null) {
-        /* note may exist, but outdated
-         * currently using file modification timestamps, other option: hash*/
-        if (lnote.getModTime() > rnote.getModTime()) {
-          ids.add(lnote.getId());
+
+  int getRepoCount() {
+    return repos.size();
+  }
+  
+  int getMaxRepoNum() {
+    return maxRepoNum;
+  }
+
+  private NotebookRepo getRepo(int repoIndex) throws IOException {
+    if (repoIndex < 0 || repoIndex >= getRepoCount()) {
+      throw new IOException("Storage repo index is out of range");
+    }
+    return repos.get(repoIndex);
+  }
+  
+  private Map<String, List<String>> notesCheckDiff(List <NoteInfo> sourceNotes,
+                                                   List <NoteInfo> destNotes) {
+    List <String> pushIDs = new ArrayList<String>();
+    List <String> pullIDs = new ArrayList<String>();
+    
+    NoteInfo dnote;
+    for (NoteInfo snote : sourceNotes) {
+      dnote = containsID(destNotes, snote.getId());
+      if (dnote != null) {
+        /* note exists in source and destination storage systems */
+        if (snote.getModTime() > dnote.getModTime()) {
+          /* source contains more up to date note - push */
+          pushIDs.add(snote.getId());
+        } else if (snote.getModTime() != dnote.getModTime()) {
+          /* destination contains more up to date note - pull */
+          pullIDs.add(snote.getId());
         }
       } else {
-        /* this note exists in local fs, and doesnt exist in remote fs
-         * need to upload it 
-         * (another scenario is that it was deleted from remote)*/
-        ids.add(lnote.getId());
+        /* note exists in source storage, and absent in destination
+         * view source as up to date - push
+         * (another scenario : note was deleted from destination - not considered)*/
+        pushIDs.add(snote.getId());
       }
     }
     
-    return ids;
+    for (NoteInfo note : destNotes) {
+      dnote = containsID(sourceNotes, note.getId());
+      if (dnote == null) {
+        /* note exists in destination storage, and absent in source - pull*/
+        pullIDs.add(note.getId());
+      }
+    }
+    
+    Map<String, List<String>> map = new HashMap<String, List<String>>();
+    map.put(pushKey, pushIDs);
+    map.put(pullKey, pullIDs);
+    return map;
   }
 
   private NoteInfo containsID(List <NoteInfo> notes, String id) { 
@@ -141,6 +222,7 @@ public class NotebookRepoSync implements NotebookRepo{
   private void printNoteInfo(NoteInfo note) {
     LOG.info("Note info of notebook with name : " + note.getName());
     LOG.info("ID : " + note.getId());
+    LOG.info("Note modification time : " + note.getModTime());
     Map<String, Object> configs = note.getConfig();
     for (Map.Entry<String, Object> entry : configs.entrySet()) {
       LOG.info("Config Key = " + entry.getKey() + "  , Value = " + 
