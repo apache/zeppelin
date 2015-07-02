@@ -421,27 +421,35 @@ angular.module('zeppelinWebApp')
         enableLiveAutocompletion:false
       });
       var remoteCompleter = {
-        getCompletions : function(editor, session, pos, prefix, callback) {
-          if (!$scope.editor.isFocused() ){ return;}
+          getCompletions : function(editor, session, pos, prefix, callback) {
+              if (!$scope.editor.isFocused() ){ return;}
 
-          var buf = session.getTextRange(new Range(0, 0, pos.row, pos.column));
-          websocketMsgSrv.completion($scope.paragraph.id, buf, buf.length);
+              var pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
+              var buf = session.getValue();
+              $rootScope.$emit('sendNewEvent', {
+                  op : 'COMPLETION',
+                  data : {
+                      id : $scope.paragraph.id,
+                      buf : buf,
+                      cursor : pos
+                  }
+              });
 
-          $scope.$on('completionList', function(event, data) {
-            if (data.completions) {
-              var completions = [];
-              for (var c in data.completions) {
-                var v = data.completions[c];
-                completions.push({
-                  name:v,
-                  value:v,
-                  score:300
-                });
-              }
-              callback(null, completions);
-            }
-          });
-        }
+              $scope.$on('completionList', function(event, data) {
+                  if (data.completions) {
+                      var completions = [];
+                      for (var c in data.completions) {
+                          var v = data.completions[c];
+                          completions.push({
+                              name:v,
+                              value:v,
+                              score:300
+                          });
+                      }
+                      callback(null, completions);
+                  }
+              });
+          }
       };
       langTools.addCompleter(remoteCompleter);
 

@@ -29,28 +29,24 @@ angular.module('zeppelinWebApp').service('baseUrlSrv', function() {
   /* @preserve AppScriptServlet - getPort */
   this.getPort = function() {
     var port = Number(location.port);
-    if (location.protocol !== 'https:' && (port === 'undifined' || port === 0)) {
+    if (location.protocol !== 'https:' && !port) {
       port = 80;
-    } else if (location.protocol === 'https:' && (port === 'undifined' || port === 0)) {
+    } else if (location.protocol === 'https:' && !port) {
       port = 443;
     } else if (port === 3333 || port === 9000) {
       port = 8080;
     }
-    return port+1;
+    return port + 1;
   };
   /* @preserve AppScriptServlet - close */
 
   this.getWebsocketProtocol = function() {
-    var protocol = 'ws';
-    if (location.protocol === 'https:') {
-      protocol = 'wss';
-    }
-    return protocol;
+    return location.protocol === 'https:' ? 'wss' : 'ws';
   };
 
   this.getRestApiBase = function() {
     var port = Number(location.port);
-    if (port === 'undefined' || port === 0) {
+    if (!port) {
       port = 80;
       if (location.protocol === 'https:') {
         port = 443;
@@ -60,7 +56,11 @@ angular.module('zeppelinWebApp').service('baseUrlSrv', function() {
     if (port === 3333 || port === 9000) {
       port = 8080;
     }
-    return location.protocol + '//' + location.hostname + ':' + port + '/api';
+    return location.protocol + '//' + location.hostname + ':' + port + skipTrailingSlash(location.pathname) + '/api';
+  };
+  
+  var skipTrailingSlash = function(path) {
+    return path.replace(/\/$/, '');
   };
 
 });

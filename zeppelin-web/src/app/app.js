@@ -33,7 +33,7 @@ angular.module('zeppelinWebApp', [
   ])
   .filter('breakFilter', function() {
     return function (text) {
-      if (text !== undefined) {
+      if (!!text) {
         return text.replace(/\n/g, '<br />');
       }
     };
