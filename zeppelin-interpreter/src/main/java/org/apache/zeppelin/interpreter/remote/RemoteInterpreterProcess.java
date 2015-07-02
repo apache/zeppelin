@@ -163,10 +163,10 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
         clientPool.clear();
         clientPool.close();
 
-        // wait for 3 sec and force kill
+        // wait for some time (connectTimeout) and force kill
         // remote process server.serve() loop is not always finishing gracefully
         long startTime = System.currentTimeMillis();
-        while (System.currentTimeMillis() - startTime < 3 * 1000) {
+        while (System.currentTimeMillis() - startTime < connectTimeout) {
           if (this.isRunning()) {
             try {
               Thread.sleep(500);
