@@ -251,7 +251,13 @@ angular.module('zeppelinWebApp')
     $rootScope.$emit('sendNewEvent', data);
   };
 
+  $scope.downloadParagraph = function(){
 
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/text;charset=utf-8,' +      encodeURI($scope.paragraph.result.msg.replace(/\t/g,",")));
+    element.setAttribute('download', "data.csv");
+    element.click();
+  }
   $scope.runParagraph = function(data) {
     var parapgraphData = {op: 'RUN_PARAGRAPH',
                           data: {
@@ -910,7 +916,6 @@ angular.module('zeppelinWebApp')
         }
       } catch(ignoreErr) {
       }
-
       var chartEl = d3.select('#p'+$scope.paragraph.id+'_'+type+' svg')
           .attr('height', $scope.paragraph.config.graph.height)
           .style('height', height + 'px')
