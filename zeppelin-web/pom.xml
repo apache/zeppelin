@@ -64,16 +64,15 @@
             <exclude>bower_components/**</exclude>
             <exclude>test/**</exclude>
             <exclude>dist/**</exclude>
-            <exclude>app/.buildignore</exclude>
-            <exclude>app/fonts/fontawesome*</exclude>
-            <exclude>app/fonts/font-awesome*</exclude>
-            <exclude>app/styles/font-awesome*</exclude>
-            <exclude>app/fonts/Simple-Line*</exclude>
-            <exclude>app/fonts/simple-line*</exclude>
-            <exclude>app/styles/simple-line*</exclude>
+            <exclude>src/.buildignore</exclude>
+            <exclude>src/fonts/fontawesome*</exclude>
+            <exclude>src/fonts/font-awesome*</exclude>
+            <exclude>src/styles/font-awesome*</exclude>
+            <exclude>src/fonts/Simple-Line*</exclude>
+            <exclude>src/fonts/simple-line*</exclude>
             <exclude>bower.json</exclude>
             <exclude>package.json</exclude>
-            <exclude>README.md</exclude>
+            <exclude>*.md</exclude>
           </excludes>
         </configuration>
       </plugin>
