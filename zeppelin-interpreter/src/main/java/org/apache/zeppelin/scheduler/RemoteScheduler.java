@@ -181,6 +181,10 @@ public class RemoteScheduler implements Scheduler {
           }
         }
 
+        if (terminate) {
+          // terminated by shutdown
+          break;
+        }
 
         Status newStatus = getStatus();
         if (newStatus == null) { // unknown
@@ -189,9 +193,10 @@ public class RemoteScheduler implements Scheduler {
 
         if (newStatus != Status.READY && newStatus != Status.PENDING) {
           // we don't need more
-          continue;
+          break;
         }
       }
+      terminate = true;
     }
 
     public void shutdown() {
@@ -235,9 +240,9 @@ public class RemoteScheduler implements Scheduler {
         if ("Unknown".equals(statusStr)) {
           // not found this job in the remote schedulers.
           // maybe not submitted, maybe already finished
-          Status status = getLastStatus();
-          listener.afterStatusChange(job, null, status);
-          return status;
+          //Status status = getLastStatus();
+          listener.afterStatusChange(job, null, null);
+          return job.getStatus();
         }
         Status status = Status.valueOf(statusStr);
         lastStatus = status;
@@ -343,9 +348,13 @@ public class RemoteScheduler implements Scheduler {
       if (after == null) { // unknown. maybe before sumitted remotely, maybe already finished.
         if (jobExecuted) {
           jobSubmittedRemotely = true;
+          Object jobResult = job.getReturn();
           if (job.isAborted()) {
             job.setStatus(Status.ABORT);
           } else if (job.getException() != null) {
+            job.setStatus(Status.ERROR);
+          } else if (jobResult != null && jobResult instanceof InterpreterResult
+              && ((InterpreterResult) jobResult).code() == Code.ERROR) {
             job.setStatus(Status.ERROR);
           } else {
             job.setStatus(Status.FINISHED);

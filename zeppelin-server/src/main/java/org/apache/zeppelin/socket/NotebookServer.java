@@ -568,7 +568,9 @@ public class NotebookServer extends WebSocketServer implements
     @Override
     public void afterStatusChange(Job job, Status before, Status after) {
       if (after == Status.ERROR) {
-        job.getException().printStackTrace();
+        if (job.getException() != null) {
+          LOG.error("Error", job.getException());
+        }
       }
       if (job.isTerminated()) {
         LOG.info("Job {} is finished", job.getId());

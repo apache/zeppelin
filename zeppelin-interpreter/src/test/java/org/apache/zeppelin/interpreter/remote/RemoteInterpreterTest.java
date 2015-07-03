@@ -37,6 +37,8 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer.InterpretJob;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterB;
 import org.apache.zeppelin.scheduler.Job;
@@ -126,6 +128,36 @@ public class RemoteInterpreterTest {
 
     assertFalse(process.isRunning());
 
+  }
+
+  @Test
+  public void testRemoteInterperterErrorStatus() throws TTransportException, IOException {
+    Properties p = new Properties();
+
+    RemoteInterpreter intpA = new RemoteInterpreter(
+        p,
+        MockInterpreterA.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        env,
+        10 * 1000
+        );
+
+    intpGroup.add(intpA);
+    intpA.setInterpreterGroup(intpGroup);
+
+    intpA.open();
+    InterpreterResult ret = intpA.interpret("non numeric value",
+        new InterpreterContext(
+            "id",
+            "title",
+            "text",
+            new HashMap<String, Object>(),
+            new GUI(),
+            new AngularObjectRegistry(intpGroup.getId(), null),
+            new LinkedList<InterpreterContextRunner>()));
+
+    assertEquals(Code.ERROR, ret.code());
   }
 
   @Test
