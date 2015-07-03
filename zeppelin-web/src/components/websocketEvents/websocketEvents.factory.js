@@ -26,7 +26,6 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
     }, 60000);
   });
 
-
   websocketCalls.sendNewEvent = function(data) {
     console.log('Send >> %o, %o', data.op, data);
     websocketCalls.ws.send(JSON.stringify(data));
