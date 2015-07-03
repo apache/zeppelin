@@ -90,10 +90,15 @@ public class NotebookRepoSync implements NotebookRepo{
   
   /* by default saves to all repos */
   public void save(Note note) throws IOException {
-    for (NotebookRepo repo : repos) {
-      repo.save(note);
+    getRepo(0).save(note);
+    if (getRepoCount() > 1) {
+      try {
+        getRepo(1).save(note);
+      }
+      catch (IOException e) {
+        LOG.info(e.getMessage() + ": Failed to write to secondary storage");
+      }
     }
-    /* TODO(khalid): handle case when saving to secondary storage fails */
   }
 
   /* save note to specific repo (for tests) */
