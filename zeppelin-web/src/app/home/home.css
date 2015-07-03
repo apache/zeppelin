@@ -11,9 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import url(//fonts.googleapis.com/css?family=Patua+One);
+/* @import url(//fonts.googleapis.com/css?family=Patua+One);
 @import url(//fonts.googleapis.com/css?family=Roboto);
-@import url(//fonts.googleapis.com/css?family=Source+Code+Pro);
+@import url(//fonts.googleapis.com/css?family=Source+Code+Pro); */
 
 body {
   padding-top: 60px;
@@ -236,7 +236,11 @@ h6.box-heading{
 }
 
 .zeppelin2 {
+<<<<<<< HEAD:zeppelin-web/src/app/home/home.css
   background-image: url('/assets/images/zepLogo.png');
+=======
+  background-image: url('../images/zepLogo.png');
+>>>>>>> [ZEPPELIN-18] Remove setting SPARK_HOME for PySpark:zeppelin-web/app/styles/main.css
   background-repeat: no-repeat;
   background-position: right;
   background-position-y: 12px;

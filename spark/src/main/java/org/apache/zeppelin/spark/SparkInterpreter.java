@@ -276,11 +276,17 @@ public class SparkInterpreter extends Interpreter {
     String[] pythonLibs = new String[] {"pyspark.zip", "py4j-0.8.2.1-src.zip"};
     ArrayList<String> pythonLibUris = new ArrayList<>(); 
     for (String lib: pythonLibs) {
-      pythonLibUris.add(new File(zeppelinPythonLibPath, lib).toURI().toString());
+      File libFile = new File(zeppelinPythonLibPath, lib);
+      if(libFile.exists()) {
+        pythonLibUris.add(libFile.toURI().toString());
+      }
     }
-    conf.set("spark.yarn.dist.files", Joiner.on(",").join(pythonLibUris));
-    conf.set("spark.files", conf.get("spark.yarn.dist.files"));
-    conf.set("spark.submit.pyArchives", Joiner.on(":").join(pythonLibs));
+    pythonLibUris.trimToSize();
+    if(pythonLibs.length == pythonLibUris.size()) {
+      conf.set("spark.yarn.dist.files", Joiner.on(",").join(pythonLibUris));
+      conf.set("spark.files", conf.get("spark.yarn.dist.files"));
+      conf.set("spark.submit.pyArchives", Joiner.on(":").join(pythonLibs));
+    }
 
     SparkContext sparkContext = new SparkContext(conf);
     return sparkContext;
