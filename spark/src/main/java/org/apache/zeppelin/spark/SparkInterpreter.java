@@ -271,14 +271,27 @@ public class SparkInterpreter extends Interpreter {
     }
 
     //TODO(jongyoul): Move these codes into PySparkInterpreter.java
-    String zeppelinHome = getSystemDefault("ZEPPELIN_HOME", "zeppelin.home", "../");
-    File zeppelinPythonLibPath = new File(zeppelinHome, "python/lib");
+//    String zeppelinHome = getSystemDefault("ZEPPELIN_HOME", "zeppelin.home", "../");
+//    File zeppelinPythonLibPath = new File(zeppelinHome, "python/lib");
+    
+    String pysparkBasePath = getSystemDefault("SPARK_HOME", "spark.home", null);
+    File pysparkPath;
+    if (null == pysparkBasePath) {
+      pysparkBasePath = getSystemDefault("ZEPPELIN_HOME", "zeppelin.home", "../");
+      pysparkPath = new File(pysparkBasePath,
+          "interpreter" + File.separator + "spark" + File.separator + "pyspark");
+    } else {
+      pysparkPath = new File(pysparkBasePath,
+          "python" + File.separator + "lib");
+    }
+
     String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.8.2.1-src.zip"};
     ArrayList<String> pythonLibUris = new ArrayList<>();
     for (String lib : pythonLibs) {
-      File libFile = new File(zeppelinPythonLibPath, lib);
+//      File libFile = new File(zeppelinPythonLibPath, lib);
+      File libFile = new File(pysparkPath, lib);
       if (libFile.exists()) {
-        pythonLibUris.add(libFile.toURI().toString()); 
+        pythonLibUris.add(libFile.toURI().toString());
       }
     }
     pythonLibUris.trimToSize();
