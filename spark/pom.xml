@@ -782,10 +782,6 @@
                     <delete dir="../interpreter/spark/pyspark"/>
                     <copy todir="../interpreter/spark/pyspark"
                         file="${project.build.directory}/spark-dist/spark-${spark.version}/python/lib/py4j-0.8.2.1-src.zip"/>
-                      <!--<fileset dir="${project.build.directory}/spark-dist/spark-${spark.version}/python"/>
-                    </copy>-->
-                    <!--<unzip src="../interpreter/spark/python/py4j-0.8.2.1-src.zip"
-                           dest="../interpreter/spark/python/build"/>-->
                     <zip destfile="${project.build.directory}/../../interpreter/spark/pyspark/pyspark.zip"
                          basedir="${project.build.directory}/spark-dist/spark-${spark.version}/python"
                          includes="pyspark/*.py,pyspark/**/*.py"/>
