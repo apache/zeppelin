@@ -29,7 +29,9 @@ limitations under the License.
              style="width:180px">
           <select class="form-control input-sm" ng-model="newInterpreterSetting.group"
                   ng-change="newInterpreterGroupChange()">
-            <option ng-repeat="(groupName, interpreterGroup) in availableInterpreters" value="{{groupName}}">{{groupName}}</option>
+            <option ng-repeat="availableInterpreter in availableInterpreters | unique: 'group'" value="{{availableInterpreter.group}}">
+              {{availableInterpreter.group}}
+            </option>
           </select>
         </div>
 
@@ -43,7 +45,7 @@ limitations under the License.
           </tr>
           <tr ng-repeat="(key, value) in newInterpreterSetting.properties">
             <td>{{key}}</td>
-            <td><textarea msd-elastic ng-model="value.value" ng-init="value.value = value.defaultValue"></textarea></td>
+            <td><textarea msd-elastic ng-model="value.value"></textarea></td>
             <td>{{value.description}}</td>
             <td>
               <div class="btn btn-default btn-sm fa fa-remove" ng-click="removeInterpreterProperty(key)">

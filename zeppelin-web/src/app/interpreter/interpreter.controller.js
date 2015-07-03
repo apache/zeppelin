@@ -105,7 +105,20 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   };
 
   $scope.newInterpreterGroupChange = function() {
-    $scope.newInterpreterSetting.properties = $scope.availableInterpreters[$scope.newInterpreterSetting.group].properties;
+    var el = _.pluck(_.filter($scope.availableInterpreters, { 'group': $scope.newInterpreterSetting.group }), 'properties');
+    
+    var properties = {};
+    for (var i=0; i < el.length; i++) {
+      var intpInfo = el[i];
+      for (var key in intpInfo) {
+        properties[key] = {
+          value : intpInfo[key].defaultValue,
+          description : intpInfo[key].description
+        };
+      }
+    }
+    
+    $scope.newInterpreterSetting.properties = properties;
   };
 
   $scope.restartInterpreterSetting = function(settingId) {
@@ -152,7 +165,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     });
   };
 
-
   $scope.resetNewInterpreterSetting = function() {
     $scope.newInterpreterSetting = {
       name : undefined,
@@ -179,11 +191,14 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       if (!$scope.newInterpreterSetting.propertyKey || $scope.newInterpreterSetting.propertyKey === '') {
         return;
       }
-      $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = $scope.newInterpreterSetting.propertyValue;
+      
+      $scope.newInterpreterSetting.properties[$scope.newInterpreterSetting.propertyKey] = {
+        value: $scope.newInterpreterSetting.propertyValue
+      };
       emptyNewProperty($scope.newInterpreterSetting);
     }
     else {
-      // Add new property from create form 
+      // Add new property from edit form
       var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
       var setting = $scope.interpreterSettings[index];
 
