@@ -64,10 +64,9 @@ object ZeppelinContext{
   def showRDD(sc: SparkContext, interpreterContext: InterpreterContext, rdd: AnyRef, maxResult: Int): String = {
     sc.setJobGroup("zeppelin-" + interpreterContext.getParagraphId, "Zeppelin", false)
     val queryExecutionHelper: QueryExecutionHelper = new QueryExecutionHelper(sc)
-
     try {
-      val rows:Array[Row] = rdd.getClass().getMethod("take", classOf[Int]).invoke(rdd, new Integer(maxResult+1)).asInstanceOf[Array[Row]]
-      val attributes: Seq[Attribute] = queryExecutionHelper.schemaAttributes(rdd)
+      val rows:Array[Row] = rdd.getClass().getMethod("take", classOf[Int]).invoke(rdd, new Integer(maxResult)).asInstanceOf[Array[Row]]
+      val attributes: Seq[String] = queryExecutionHelper.schemaAttributes(rdd).map(_.name)
       val msg = new StringBuilder("")
       try {
         val headerCount = attributes.size
@@ -79,10 +78,6 @@ object ZeppelinContext{
           ).mkString("", "\t", "\n")
           msg.append(tableRow)
         })
-
-        if (rows.length > maxResult) {
-          msg.append(s"""\n<font color="red">Results are limited by $maxResult.</font>""")
-        }
       } catch {
         case e:Throwable => {
           sc.clearJobGroup()
@@ -103,8 +98,8 @@ object ZeppelinContext{
  * Spark context for zeppelin.
  *
  */
-class ZeppelinContext(private val sc: SparkContext,
-                          private val sql: SQLContext,
+class ZeppelinContext(val sc: SparkContext,
+                          val sqlContext: SQLContext,
                           private var interpreterContext: InterpreterContext,
                           private val dep: DependencyResolver,
                           private val out: PrintStream,
@@ -298,8 +293,7 @@ class ZeppelinContext(private val sc: SparkContext,
    * @param maxResult maximum number of rows to display
    */
   def show(rdd: AnyRef, maxResult: Int) {
-    validateRDD(rdd)
-    out.print(ZeppelinContext.showRDD(sc, interpreterContext, rdd, maxResult))
+    validateAndShowRDD(rdd, maxResult)
   }
 
   /**
@@ -560,7 +554,7 @@ class ZeppelinContext(private val sc: SparkContext,
    */
   def img(url: String) = ZeppelinContext.img(url)
 
-  private def validateRDD(rdd: AnyRef): Unit = {
+  private def validateAndShowRDD(rdd: AnyRef, maxResult: Int): Unit = {
     var cls: Class[_]  = null
     try {
       cls = Class.forName("org.apache.spark.sql.DataFrame")

@@ -20,6 +20,7 @@ package org.apache.zeppelin.spark
 import java.io.{PrintStream, ByteArrayOutputStream}
 import java.util.concurrent.atomic.AtomicBoolean
 
+
 import collection.JavaConversions._
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
