@@ -24,6 +24,7 @@ zeppelin-web/bower_components
 **nbproject/
 **node/
 
+
 # project level
 /logs/
 /run/
@@ -35,6 +36,7 @@ zeppelin-web/bower_components
 /warehouse/
 /notebook/
 /local-repo/
+
 **/sessions/
 **/data/
 **/build/
