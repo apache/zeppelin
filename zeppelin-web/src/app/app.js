@@ -27,6 +27,7 @@ angular.module('zeppelinWebApp', [
     'ui.sortable',
     'ngTouch',
     'ngDragDrop',
+    'angular.filter',
     'monospaced.elastic',
     'puElasticInput',
     'xeditable'
