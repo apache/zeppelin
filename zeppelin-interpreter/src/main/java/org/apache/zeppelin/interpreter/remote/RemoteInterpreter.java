@@ -30,6 +30,7 @@ import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
@@ -222,7 +223,8 @@ public class RemoteInterpreter extends Interpreter {
         context.getGui().setForms(remoteGui.getForms());
       }
 
-      return convert(remoteResult);
+      InterpreterResult result = convert(remoteResult);
+      return result;
     } catch (TException e) {
       throw new InterpreterException(e);
     } finally {
