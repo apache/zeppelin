@@ -184,7 +184,7 @@ a.navbar-brand:hover {
   margin-bottom: 20px;
 }
 
-.box, 
+.box,
 .well {
   background-color: #ffffff;
   border-color: #e5e5e5;
@@ -236,15 +236,7 @@ h6.box-heading{
 }
 
 .zeppelin2 {
-<<<<<<< HEAD:zeppelin-web/src/app/home/home.css
-<<<<<<< HEAD:zeppelin-web/src/app/home/home.css
   background-image: url('/assets/images/zepLogo.png');
-=======
-  background-image: url('../images/zepLogo.png');
->>>>>>> [ZEPPELIN-18] Remove setting SPARK_HOME for PySpark:zeppelin-web/app/styles/main.css
-=======
-  background-image: url('../images/zepLogo.png'); 
->>>>>>> Reset unwanted changes:zeppelin-web/app/styles/main.css
   background-repeat: no-repeat;
   background-position: right;
   background-position-y: 12px;
@@ -285,9 +277,9 @@ kbd {
 }
 
 
-/* 
-temporary fix for bootstrap issue (https://github.com/twbs/bootstrap/issues/5865) 
-This part should be removed when new version of bootstrap handles this issue. 
+/*
+temporary fix for bootstrap issue (https://github.com/twbs/bootstrap/issues/5865)
+This part should be removed when new version of bootstrap handles this issue.
 */
 .btn-group > .tooltip + .btn,
 .btn-group > .popover + .btn {

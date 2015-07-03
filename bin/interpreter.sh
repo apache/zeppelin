@@ -79,7 +79,6 @@ else
   PYSPARKPATH="${ZEPPELIN_HOME}/interpreter/spark/pyspark/pyspark.zip:${ZEPPELIN_HOME}/interpreter/spark/pyspark/py4j-0.8.2.1-src.zip"
 fi
 
-
 if [[ x"" == x"${PYTHONPATH}" ]]; then
   export PYTHONPATH="${PYSPARKPATH}"
 else

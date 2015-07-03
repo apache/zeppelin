@@ -73,9 +73,6 @@
     <fileSet>
       <directory>../notebook</directory>
     </fileSet>
-    <fileSet>
-      <directory>../python</directory>
-    </fileSet>
   </fileSets>
     <!--<fileSet>
       <directory>zeppelin-cli/target</directory>
