@@ -353,7 +353,6 @@ public class NotebookServer extends WebSocketServer implements
       return;
     }
     Note note = notebook.getNote(noteId);
-    note.unpersist();
     notebook.removeNote(noteId);
     removeNote(noteId);
     broadcastNoteList();

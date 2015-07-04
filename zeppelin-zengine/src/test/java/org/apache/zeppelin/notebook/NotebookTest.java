@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
@@ -159,6 +160,59 @@ public class NotebookTest implements JobListenerFactory{
 		Thread.sleep(1*1000);
 		assertEquals(dateFinished, p.getDateFinished());
 	}
+
+  @Test
+  public void testAngularObjectRemovalOnNotebookRemove() throws InterruptedException,
+      IOException {
+    // create a note and a paragraph
+    Note note = notebook.createNote();
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
+    AngularObjectRegistry registry = note.getNoteReplLoader()
+        .getInterpreterSettings().get(0).getInterpreterGroup()
+        .getAngularObjectRegistry();
+
+    // add local scope object
+    registry.add("o1", "object1", note.id());
+    // add global scope object
+    registry.add("o2", "object2", null);
+
+    // remove notebook
+    notebook.removeNote(note.id());
+
+    // local object should be removed
+    assertNull(registry.get("o1", note.id()));
+    // global object sould be remained
+    assertNotNull(registry.get("o2", null));
+	}
+
+  @Test
+  public void testAngularObjectRemovalOnInterpreterRestart() throws InterruptedException,
+      IOException {
+    // create a note and a paragraph
+    Note note = notebook.createNote();
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
+    AngularObjectRegistry registry = note.getNoteReplLoader()
+        .getInterpreterSettings().get(0).getInterpreterGroup()
+        .getAngularObjectRegistry();
+
+    // add local scope object
+    registry.add("o1", "object1", note.id());
+    // add global scope object
+    registry.add("o2", "object2", null);
+
+    // restart interpreter
+    factory.restart(note.getNoteReplLoader().getInterpreterSettings().get(0).id());
+    registry = note.getNoteReplLoader()
+    .getInterpreterSettings().get(0).getInterpreterGroup()
+    .getAngularObjectRegistry();
+
+    // local and global scope object should be removed
+    assertNull(registry.get("o1", note.id()));
+    assertNull(registry.get("o2", null));
+    notebook.removeNote(note.id());
+  }
 
 	private void delete(File file){
 		if(file.isFile()) file.delete();

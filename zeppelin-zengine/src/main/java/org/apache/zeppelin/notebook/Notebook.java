@@ -155,6 +155,13 @@ public class Notebook {
     synchronized (notes) {
       note = notes.remove(id);
     }
+
+    // remove from all interpreter instance's angular object registry
+    for (InterpreterSetting settings : replFactory.get()) {
+      AngularObjectRegistry registry = settings.getInterpreterGroup().getAngularObjectRegistry();
+      registry.removeAll(id);
+    }
+
     try {
       note.unpersist();
     } catch (IOException e) {

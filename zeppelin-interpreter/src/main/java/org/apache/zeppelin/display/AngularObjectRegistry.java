@@ -121,6 +121,15 @@ public class AngularObjectRegistry {
     }
   }
 
+  public void removeAll(String noteId) {
+    synchronized (registry) {
+      List<AngularObject> all = getAll(noteId);
+      for (AngularObject ao : all) {
+        remove(ao.getName(), noteId);
+      }
+    }
+  }
+
   public AngularObject get(String name, String noteId) {
     synchronized (registry) {
       Map<String, AngularObject> r = getRegistryForKey(noteId);
@@ -161,11 +170,5 @@ public class AngularObjectRegistry {
 
   public String getInterpreterGroupId() {
     return interpreterId;
-  }
-  
-  public void removeAll(String noteId) {
-    synchronized (registry) {
-      registry.remove(getRegistryKey(noteId));
-    }
   }
 }
