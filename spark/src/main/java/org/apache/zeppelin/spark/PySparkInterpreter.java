@@ -159,18 +159,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     try {
       Map env = EnvironmentUtils.getProcEnvironment();
 
-      String pythonPath = (String) env.get("PYTHONPATH");
-      if (pythonPath == null) {
-        pythonPath = "";
-      } else {
-        pythonPath += ":";
-      }
-
-      pythonPath += getSparkHome() + "/python/lib/py4j-0.8.2.1-src.zip:"
-          + getSparkHome() + "/python";
-
-      env.put("PYTHONPATH", pythonPath);
-
       executor.execute(cmd, env, this);
       pythonscriptRunning = true;
     } catch (IOException e) {
