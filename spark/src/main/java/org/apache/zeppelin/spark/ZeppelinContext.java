@@ -631,9 +631,16 @@ public class ZeppelinContext extends HashMap<String, Object> {
    * @param name
    */
   public void angularUnbind(String name) {
-    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
     String noteId = interpreterContext.getNoteId();
-    registry.remove(name, noteId);
+    angularUnbind(name, noteId);
+  }
+
+  /**
+   * Remove angular variable and all the watchers.
+   * @param name
+   */
+  public void angularUnbindGlobal(String name) {
+    angularUnbind(name, null);
   }
   
   /**
