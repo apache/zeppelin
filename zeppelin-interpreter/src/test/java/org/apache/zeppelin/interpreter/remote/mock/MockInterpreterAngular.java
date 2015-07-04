@@ -71,7 +71,7 @@ public class MockInterpreterAngular extends Interpreter {
     AngularObjectRegistry registry = context.getAngularObjectRegistry();
 
     if (cmd.equals("add")) {
-      registry.add(name, context.getNoteId(), value);
+      registry.add(name, value, context.getNoteId());
       registry.get(name, context.getNoteId()).addWatcher(new AngularObjectWatcher(null) {
 
         @Override
