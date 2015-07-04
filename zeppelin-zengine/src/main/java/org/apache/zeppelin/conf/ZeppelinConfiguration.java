@@ -273,8 +273,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public int getWebSocketPort() {
     int port = getInt(ConfVars.ZEPPELIN_WEBSOCKET_PORT);
+    int serverPort = getServerPort();
+
     if (port < 0) {
-      return getServerPort() + 1;
+      if (serverPort <= 0) {
+        return 0;
+      } else {
+        return serverPort + 1;
+      }
     } else {
       return port;
     }
