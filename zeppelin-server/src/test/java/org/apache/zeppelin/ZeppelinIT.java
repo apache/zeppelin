@@ -47,47 +47,48 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  *
  */
 public class ZeppelinIT {
-	private WebDriver driver;
+  private WebDriver driver;
 
-  private WebDriver getWebDriver(){
-		WebDriver driver = null;
+  private WebDriver getWebDriver() {
+    WebDriver driver = null;
 
-		if (driver==null){
-			try {
-				FirefoxBinary ffox = new FirefoxBinary();
-				if ("true".equals(System.getenv("TRAVIS"))) {
-					ffox.setEnvironmentProperty("DISPLAY", ":99"); // xvfb is supposed to run with DISPLAY 99
-				}
-				FirefoxProfile profile = new FirefoxProfile();
-				driver = new FirefoxDriver(ffox, profile);
-			} catch (Exception e){
-			}
-		}
+    if (driver == null) {
+      try {
+        FirefoxBinary ffox = new FirefoxBinary();
+        if ("true".equals(System.getenv("TRAVIS"))) {
+          ffox.setEnvironmentProperty("DISPLAY", ":99"); // xvfb is supposed to
+                                                         // run with DISPLAY 99
+        }
+        FirefoxProfile profile = new FirefoxProfile();
+        driver = new FirefoxDriver(ffox, profile);
+      } catch (Exception e) {
+      }
+    }
 
-		if (driver==null){
-			try {
-				driver = new ChromeDriver();
-			} catch (Exception e){
-			}
-		}
+    if (driver == null) {
+      try {
+        driver = new ChromeDriver();
+      } catch (Exception e) {
+      }
+    }
 
-		if (driver==null){
-			try {
-				driver = new SafariDriver();
-			} catch (Exception e){
-			}
-		}
+    if (driver == null) {
+      try {
+        driver = new SafariDriver();
+      } catch (Exception e) {
+      }
+    }
 
-		String url;
-		if (System.getProperty("url")!=null) {
-			url = System.getProperty("url");
-		} else {
-			url = "http://localhost:8080";
-		}
+    String url;
+    if (System.getProperty("url") != null) {
+      url = System.getProperty("url");
+    } else {
+      url = "http://localhost:8080";
+    }
 
-		long start = System.currentTimeMillis();
-		boolean loaded = false;
-		driver.get(url);
+    long start = System.currentTimeMillis();
+    boolean loaded = false;
+    driver.get(url);
 
     while (System.currentTimeMillis() - start < 60 * 1000) {
       // wait for page load
@@ -106,12 +107,12 @@ public class ZeppelinIT {
       }
     }
 
-		if (loaded==false) {
-			fail();
-		}
+    if (loaded == false) {
+      fail();
+    }
 
-		return driver;
-	}
+    return driver;
+  }
 
   @Before
   public void startUp() {
@@ -150,7 +151,7 @@ public class ZeppelinIT {
   }
 
 	@Test
-	public void testAngularDisplay() throws InterruptedException{
+  public void testAngularDisplay() throws InterruptedException{
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -275,9 +276,9 @@ public class ZeppelinIT {
         getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).getText());
 
     System.out.println("testCreateNotebook Test executed");
-	}
-	
-	private String createNewNoteAndGetName() {
+  }
+
+  private String createNewNoteAndGetName() {
     List<WebElement> notebookLinks = driver.findElements(By
         .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));    
     List<String> notebookTitles = new LinkedList<String>();
@@ -292,7 +293,7 @@ public class ZeppelinIT {
       Thread.sleep(500); // wait for notebook list updated
     } catch (InterruptedException e) {
     } 
-    
+
     List<WebElement> notebookLinksAfterCreate = driver.findElements(By
         .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));
 
@@ -307,5 +308,5 @@ public class ZeppelinIT {
 
     assertEquals(1, notebookLinksAfterCreate.size());
     return notebookLinksAfterCreate.get(0).getText();
-	}
+  }
 }
