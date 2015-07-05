@@ -150,6 +150,7 @@ public class RemoteInterpreterTest {
     intpA.open();
     InterpreterResult ret = intpA.interpret("non numeric value",
         new InterpreterContext(
+            "noteId",
             "id",
             "title",
             "text",
