@@ -236,7 +236,7 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
    * @param name
    * @param o
    */
-  public void updateRemoteAngularObject(String name, Object o) {
+  public void updateRemoteAngularObject(String name, String noteId, Object o) {
     Client client = null;
     try {
       client = getClient();
@@ -249,7 +249,7 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
 
     try {
       Gson gson = new Gson();
-      client.angularObjectUpdate(name, gson.toJson(o));
+      client.angularObjectUpdate(name, noteId, gson.toJson(o));
     } catch (TException e) {
       logger.error("Can't update angular object", e);
     } finally {

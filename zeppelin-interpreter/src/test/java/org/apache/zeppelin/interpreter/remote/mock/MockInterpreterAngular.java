@@ -71,8 +71,8 @@ public class MockInterpreterAngular extends Interpreter {
     AngularObjectRegistry registry = context.getAngularObjectRegistry();
 
     if (cmd.equals("add")) {
-      registry.add(name, value);
-      registry.get(name).addWatcher(new AngularObjectWatcher(null) {
+      registry.add(name, value, context.getNoteId());
+      registry.get(name, context.getNoteId()).addWatcher(new AngularObjectWatcher(null) {
 
         @Override
         public void watch(Object oldObject, Object newObject,
@@ -82,9 +82,9 @@ public class MockInterpreterAngular extends Interpreter {
 
       });
     } else if (cmd.equalsIgnoreCase("update")) {
-      registry.get(name).set(value);
+      registry.get(name, context.getNoteId()).set(value);
     } else if (cmd.equals("remove")) {
-      registry.remove(name);
+      registry.remove(name, context.getNoteId());
     }
 
     try {
@@ -92,7 +92,7 @@ public class MockInterpreterAngular extends Interpreter {
     } catch (InterruptedException e) {
     }
 
-    String msg = registry.getAll().size() + " " + Integer.toString(numWatch.get());
+    String msg = registry.getAll(context.getNoteId()).size() + " " + Integer.toString(numWatch.get());
     return new InterpreterResult(Code.SUCCESS, msg);
   }
 

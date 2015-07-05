@@ -21,6 +21,7 @@ package org.apache.zeppelin.interpreter.remote;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -320,6 +321,7 @@ public class RemoteInterpreterServer
     }
 
     return new InterpreterContext(
+        ric.getNoteId(),
         ric.getParagraphId(),
         ric.getParagraphTitle(),
         ric.getParagraphText(),
@@ -395,9 +397,13 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public void onRemove(String interpreterGroupId, AngularObject object) {
+  public void onRemove(String interpreterGroupId, String name, String noteId) {
+    Map<String, String> removeObject = new HashMap<String, String>();
+    removeObject.put("name", name);
+    removeObject.put("noteId", noteId);
+
     sendEvent(new RemoteInterpreterEvent(
-        RemoteInterpreterEventType.ANGULAR_OBJECT_REMOVE, gson.toJson(object)));
+        RemoteInterpreterEventType.ANGULAR_OBJECT_REMOVE, gson.toJson(removeObject)));
   }
 
   private void sendEvent(RemoteInterpreterEvent event) {
@@ -429,14 +435,16 @@ public class RemoteInterpreterServer
    * called when object is updated in client (web) side.
    * @param className
    * @param name
+   * @param noteId noteId where the update issues
    * @param object
    * @throws TException
    */
   @Override
-  public void angularObjectUpdate(String name, String object)
+  public void angularObjectUpdate(String name, String noteId, String object)
       throws TException {
     AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
-    AngularObject ao = registry.get(name);
+    // first try local objects
+    AngularObject ao = registry.get(name, noteId);
     if (ao == null) {
       logger.error("Angular object {} not exists", name);
       return;
@@ -448,8 +456,8 @@ public class RemoteInterpreterServer
     }
 
     Object oldObject = ao.get();
+    Object value = null;
     if (oldObject != null) {  // first try with previous object's type
-      Object value;
       try {
         value = gson.fromJson(object, oldObject.getClass());
         ao.set(value, false);
@@ -460,9 +468,60 @@ public class RemoteInterpreterServer
     }
 
     // Generic java object type for json.
-    Map<String, Object> value = gson.fromJson(object,
-        new TypeToken<Map<String, Object>>() {
-        }.getType());
+    if (value == null) {
+      try {
+        value = gson.fromJson(object,
+          new TypeToken<Map<String, Object>>() {
+          }.getType());
+      } catch (Exception e) {
+        // no lock
+      }
+    }
+
+    // try string object type at last
+    if (value == null) {
+      value = gson.fromJson(object, String.class);
+    }
+
     ao.set(value, false);
+  }
+
+  /**
+   * When zeppelinserver initiate angular object add.
+   * Dont't need to emit event to zeppelin server
+   */
+  @Override
+  public void angularObjectAdd(String name, String noteId, String object)
+      throws TException {
+    AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
+    // first try local objects
+    AngularObject ao = registry.get(name, noteId);
+    if (ao != null) {
+      angularObjectUpdate(name, noteId, object);
+      return;
+    }
+
+    // Generic java object type for json.
+    Object value = null;
+    try {
+      value = gson.fromJson(object,
+          new TypeToken<Map<String, Object>>() {
+          }.getType());
+    } catch (Exception e) {
+      // nolock
+    }
+
+    // try string object type at last
+    if (value == null) {
+      value = gson.fromJson(object, String.class);
+    }
+
+    registry.add(name, value, noteId, false);
+  }
+
+  @Override
+  public void angularObjectRemove(String name, String noteId) throws TException {
+    AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
+    registry.remove(name, noteId, false);
   }
 }

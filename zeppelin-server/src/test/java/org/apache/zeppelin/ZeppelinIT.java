@@ -17,12 +17,20 @@
 
 package org.apache.zeppelin;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -31,308 +39,274 @@ import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+/**
+ * Test Zeppelin with web brower.
+ * 
+ * To test, ZeppelinServer should be running on port 8080
+ * On OSX, you'll need firefox 31.0 installed. 
+ *
+ */
 public class ZeppelinIT {
-	private WebDriver getWebDriver(){
-		WebDriver driver = null;
+  private WebDriver driver;
 
-		if (driver==null){
-			try {
-				FirefoxBinary ffox = new FirefoxBinary();
-				if ("true".equals(System.getenv("TRAVIS"))) {
-					ffox.setEnvironmentProperty("DISPLAY", ":99"); // xvfb is supposed to run with DISPLAY 99
-				}
-				FirefoxProfile profile = new FirefoxProfile();
-				driver = new FirefoxDriver(ffox, profile);
-			} catch (Exception e){
-			}
-		}
+  private WebDriver getWebDriver() {
+    WebDriver driver = null;
 
-		if (driver==null){
-			try {
-				driver = new ChromeDriver();
-			} catch (Exception e){
-			}
-		}
-
-		if (driver==null){
-			try {
-				driver = new SafariDriver();
-			} catch (Exception e){
-			}
-		}
-
-		String url;
-		if (System.getProperty("url")!=null) {
-			url = System.getProperty("url");
-		} else {
-			url = "http://localhost:8080";
-		}
-
-		long start = System.currentTimeMillis();
-		boolean loaded = false;
-		driver.get(url);
-
-		while (System.currentTimeMillis() - start < 60*1000) {
-	        // wait for page load
-			try {
-		        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
-		            @Override
-                public Boolean apply(WebDriver d) {
-		                return d.findElement(By.partialLinkText("Start")).isDisplayed();
-		            }
-		        });
-		        loaded = true;
-		        break;
-			} catch (TimeoutException e){
-				driver.navigate().to(url);
-			}
-		}
-
-		if (loaded==false) {
-			fail();
-		}
-
-		return driver;
-	}
-
-	@Test
-	public void testDisableIT(){
-		//
-	}
-
-	/*
-    @Test
-    public void testRunSimpleQueryInNewSession() {
-        // Notice that the remainder of the code relies on the interface,
-        // not the implementation.
-        WebDriver driver = getWebDriver();
-
-        try {
-            // click start
-            WebElement start = driver.findElement(By.partialLinkText("Start"));
-            start.click();
-
-            // Wait for the page to load, timeout after 10 seconds
-            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.linkText("Create new Job")).isDisplayed();
-                }
-            });
-
-            // click new
-            driver.findElement(By.linkText("Create new Job")).click();
-
-            // wait for run button appears
-            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.linkText("Run")).isDisplayed();
-                }
-            });
-
-            // type some query
-            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("create table if not exists test "+Keys.chord(Keys.SHIFT, "9")+"id STRING);\n");
-            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("\nshow tables;");
-
-            // press run button
-            driver.findElement(By.linkText("Run")).click();
-
-            // wait for button becomes Running ...
-            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.xpath("//div//a[text()='Running ...']")).isDisplayed();
-                }
-            });
-
-            // wait for button becomes Run
-            (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.xpath("//div//a[text()='Run']")).isDisplayed();
-                }
-            });
-
-            WebElement msg = driver.findElement(By.id("msgBox"));
-            if (msg!=null) {
-            	System.out.println("msgBox="+msg.getText());
-            }
-
-            // wait for visualization
-            (new WebDriverWait(driver, 20)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.xpath("//div[@id='visualizationContainer']//iframe")).isDisplayed();
-                }
-            });
-
-            WebDriver iframe = driver.switchTo().frame(driver.findElement(By.xpath("//div[@id='visualizationContainer']//iframe")));
-
-            // wait for result displayed
-            (new WebDriverWait(iframe, 20)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.xpath("//table//td[text()='test']")).isDisplayed();
-                }
-            });
-        } catch (WebDriverException e){
-            File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
-            System.out.println("Screenshot in: " + scrFile.getAbsolutePath());
-            throw e;
-        } finally {
-            // Close the browser
-            driver.quit();
+    if (driver == null) {
+      try {
+        FirefoxBinary ffox = new FirefoxBinary();
+        if ("true".equals(System.getenv("TRAVIS"))) {
+          ffox.setEnvironmentProperty("DISPLAY", ":99"); // xvfb is supposed to
+                                                         // run with DISPLAY 99
         }
+        FirefoxProfile profile = new FirefoxProfile();
+        driver = new FirefoxDriver(ffox, profile);
+      } catch (Exception e) {
+      }
     }
 
-*/
+    if (driver == null) {
+      try {
+        driver = new ChromeDriver();
+      } catch (Exception e) {
+      }
+    }
 
-    /**
-     * Get the url of Zeppelin
-     *
-     * @param path to add to the url ex: HOST/myPath
-     * @return Zeppelin url HOST:PORT{/PATH}
-     */
-  private String getUrl(String path) {
+    if (driver == null) {
+      try {
+        driver = new SafariDriver();
+      } catch (Exception e) {
+      }
+    }
+
     String url;
     if (System.getProperty("url") != null) {
       url = System.getProperty("url");
     } else {
       url = "http://localhost:8080";
     }
-    if (path != null)
-      url += path;
-    return url;
-  }
 
-/*
-    @Test
-	public void testZAN() {
-		WebDriver driver = getWebDriver();
+    long start = System.currentTimeMillis();
+    boolean loaded = false;
+    driver.get(url);
 
-		try {
-			// goto ZAN menu
-			driver.findElement(By.xpath("//ul//a[text()='ZAN']")).click();
-
-			// wait for ZAN page loaded
-			(new WebDriverWait(driver, 20)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.xpath("//div//a[text()='Update Catalog']")).isDisplayed();
-                }
-            });
-		} catch (WebDriverException e) {
-			File scrFile = ((TakesScreenshot) driver)
-					.getScreenshotAs(OutputType.FILE);
-			System.out.println("Screenshot in: " + scrFile.getAbsolutePath());
-			throw e;
-		} finally {
-			// Close the browser
-			driver.quit();
-		}
-	}
-*/
-
-
-  /**
-   * Test is swagger-ui is started
-   */
-    /*
-  @Test
-  public void testSwaggerDocumentation() {
-    WebDriver driver = getWebDriver();
-    try {
-
-      driver.get(getUrl("/docs"));
-      // wait for Swagger page loaded
-      (new WebDriverWait(driver, 20)).until(new ExpectedCondition<Boolean>() {
-        public Boolean apply(WebDriver d) {
-          return d.findElement(By.xpath("//div//input[@id='input_apiKey']")).isDisplayed();
-        }
-      });
-
-    } catch (WebDriverException ex) {
-      File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-      System.out.println("Screenshot in: " + scrFile.getAbsolutePath());
-      throw ex;
-    } finally {
-      driver.close();
+    while (System.currentTimeMillis() - start < 60 * 1000) {
+      // wait for page load
+      try {
+        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+          @Override
+          public Boolean apply(WebDriver d) {
+            return d.findElement(By.partialLinkText("Create new note"))
+                .isDisplayed();
+          }
+        });
+        loaded = true;
+        break;
+      } catch (TimeoutException e) {
+        driver.navigate().to(url);
+      }
     }
+
+    if (loaded == false) {
+      fail();
+    }
+
+    return driver;
   }
 
-    @Test
-	public void testAnnotationStmt() {
-        // Notice that the remainder of the code relies on the interface,
-        // not the implementation.
-        WebDriver driver = getWebDriver();
+  @Before
+  public void startUp() {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
 
-        try {
-            // click start
-            WebElement start = driver.findElement(By.partialLinkText("Start"));
-            start.click();
+    driver = getWebDriver();
+  }
 
-            // Wait for the page to load, timeout after 10 seconds
-            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.linkText("Create new Job")).isDisplayed();
-                }
-            });
+  @After
+  public void tearDown() {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
 
-            // click new
-            driver.findElement(By.linkText("Create new Job")).click();
+    driver.quit();
+  }
 
-            // wait for run button appears
-            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.linkText("Run")).isDisplayed();
-                }
-            });
+  String getParagraphXPath(int paragraphNo) {
+    return "//div[@ng-controller=\"ParagraphCtrl\"][" + paragraphNo +"]";
+  }
 
-            // type some query with default driver
-            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("@driver set exec;");
-            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys("\necho 'hello world';");
+  void waitForParagraph(final int paragraphNo, final String state) {
+    (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
+      public Boolean apply(WebDriver d) {
+        return driver.findElement(By.xpath(getParagraphXPath(paragraphNo)
+                + "//div[@class=\"control\"]//span[1][text()=\" " + state + " \"]"))
+            .isDisplayed();
+      };
+    });
+  }
 
-            // press run button
-            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys(Keys.chord(Keys.COMMAND, Keys.ENTER));
-            driver.findElement(By.xpath("//div[@id='zqlEditor']//textarea")).sendKeys(Keys.chord(Keys.CONTROL, Keys.ENTER));
-            driver.findElement(By.linkText("Run")).click();
+  boolean endToEndTestEnabled() {
+    return null != System.getenv("CI");
+  }
 
-            // wait for button becomes Running ...
-            (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.xpath("//div//a[text()='Running ...']")).isDisplayed();
-                }
-            });
+	@Test
+  public void testAngularDisplay() throws InterruptedException{
+    if (!endToEndTestEnabled()) {
+      return;
+    }
 
-            // wait for button becomes Run
-            (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.xpath("//div//a[text()='Run']")).isDisplayed();
-                }
-            });
+	  String noteName = createNewNoteAndGetName();
+	  driver.findElement(By.partialLinkText(noteName)).click();
 
-            WebElement msg = driver.findElement(By.id("msgBox"));
-            if (msg!=null) {
-            	System.out.println("msgBox="+msg.getText());
-            }
+	  // wait for first paragraph's " READY " status text
+	  waitForParagraph(1, "READY");
 
-            // wait for visualization
-            (new WebDriverWait(driver, 20)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.xpath("//div[@id='visualizationContainer']//iframe")).isDisplayed();
-                }
-            });
+    /*
+     * print angular template
+     * %angular <div id='angularTestButton' ng-click='myVar=myVar+1'>BindingTest_{{myVar}}_</div>
+     */
+    WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
+    paragraph1Editor.sendKeys("println" + Keys.chord(Keys.SHIFT, "9") + "\""
+                + Keys.chord(Keys.SHIFT, "5")
+                + "angular <div id='angularTestButton' "
+                + "ng" + Keys.chord(Keys.SUBTRACT) + "click='myVar=myVar+1'>"
+                + "BindingTest_{{myVar}}_</div>\")");
+    paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+    waitForParagraph(1, "FINISHED");
 
-            WebDriver iframe = driver.switchTo().frame(driver.findElement(By.xpath("//div[@id='visualizationContainer']//iframe")));
+    // check expected text
+    assertEquals("BindingTest__", driver.findElement(By.xpath(
+        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).getText());
 
-            // wait for result displayed
-            (new WebDriverWait(iframe, 20)).until(new ExpectedCondition<Boolean>() {
-                public Boolean apply(WebDriver d) {
-                    return d.findElement(By.xpath("//table//td[text()='hello world']")).isDisplayed();
-                }
-            });
-        } catch (WebDriverException e){
-            File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
-            System.out.println("Screenshot in: " + scrFile.getAbsolutePath());
-            throw e;
-        } finally {
-            // Close the browser
-            driver.quit();
-        }
-	}
-*/
+    /*
+     * Bind variable
+     * z.angularBind("myVar", 1)
+     */
+    assertEquals(1, driver.findElements(By.xpath(getParagraphXPath(2) + "//textarea")).size());
+    WebElement paragraph2Editor = driver.findElement(By.xpath(getParagraphXPath(2) + "//textarea"));
+    paragraph2Editor.sendKeys("z.angularBind" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\", 1)");
+    paragraph2Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+    waitForParagraph(2, "FINISHED");
+
+    // check expected text
+    assertEquals("BindingTest_1_", driver.findElement(By.xpath(
+        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).getText());
+
+
+    /*
+     * print variable
+     * print("myVar="+z.angular("myVar"))
+     */
+    WebElement paragraph3Editor = driver.findElement(By.xpath(getParagraphXPath(3) + "//textarea"));
+    paragraph3Editor.sendKeys(
+        "print" + Keys.chord(Keys.SHIFT, "9") + "\"myVar=\"" + Keys.chord(Keys.ADD) 
+        + "z.angular" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\"))");
+    paragraph3Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+    waitForParagraph(3, "FINISHED");
+
+    // check expected text
+    assertEquals("myVar=1", driver.findElement(By.xpath(
+        getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]")).getText());
+
+    /*
+     * Click element
+     */
+    driver.findElement(By.xpath(
+        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+
+    // check expected text
+    assertEquals("BindingTest_2_", driver.findElement(By.xpath(
+        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).getText());
+
+    /*
+     * Register watcher
+     * z.angularWatch("myVar", (before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext) => {
+     *   z.run(2, context)
+     * }
+     */
+    WebElement paragraph4Editor = driver.findElement(By.xpath(getParagraphXPath(4) + "//textarea"));
+    paragraph4Editor.sendKeys(
+        "z.angularWatch" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\", "
+        + Keys.chord(Keys.SHIFT, "9") 
+        + "before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext)"
+        + Keys.EQUALS + ">{ z.run" +Keys.chord(Keys.SHIFT, "9") + "2, context)}");
+    paragraph4Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+    waitForParagraph(4, "FINISHED");
+
+
+    /*
+     * Click element, again and see watcher works
+     */
+    driver.findElement(By.xpath(
+        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+
+    // check expected text
+    assertEquals("BindingTest_3_", driver.findElement(By.xpath(
+        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).getText());
+    waitForParagraph(3, "FINISHED");
+
+    // check expected text by watcher
+    assertEquals("myVar=3", driver.findElement(By.xpath(
+        getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]")).getText());
+
+    /*
+     * Unbind
+     * z.angularUnbind("myVar")
+     */
+    WebElement paragraph5Editor = driver.findElement(By.xpath(getParagraphXPath(5) + "//textarea"));
+    paragraph5Editor.sendKeys(
+        "z.angularUnbind" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\")");
+    paragraph5Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+    waitForParagraph(5, "FINISHED");
+
+    // check expected text
+    assertEquals("BindingTest__", driver.findElement(By.xpath(
+        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).getText());
+
+    /*
+     * Bind again and see rebind works.
+     */
+    paragraph2Editor = driver.findElement(By.xpath(getParagraphXPath(2) + "//textarea"));
+    paragraph2Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+    waitForParagraph(2, "FINISHED");
+
+    // check expected text
+    assertEquals("BindingTest_1_", driver.findElement(By.xpath(
+        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).getText());
+
+    System.out.println("testCreateNotebook Test executed");
+  }
+
+  private String createNewNoteAndGetName() {
+    List<WebElement> notebookLinks = driver.findElements(By
+        .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));    
+    List<String> notebookTitles = new LinkedList<String>();
+    for (WebElement el : notebookLinks) {
+      notebookTitles.add(el.getText());
+    }
+    
+    WebElement createNoteLink = driver.findElement(By.partialLinkText("Create new note"));
+    createNoteLink.click();
+
+    try {
+      Thread.sleep(500); // wait for notebook list updated
+    } catch (InterruptedException e) {
+    } 
+
+    List<WebElement> notebookLinksAfterCreate = driver.findElements(By
+        .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));
+
+    Iterator<WebElement> it = notebookLinksAfterCreate.iterator();
+    while (it.hasNext()) {
+      WebElement newEl = it.next();
+      if (notebookTitles.contains(newEl.getText())) {
+        
+        it.remove();
+      }
+    }
+
+    assertEquals(1, notebookLinksAfterCreate.size());
+    return notebookLinksAfterCreate.get(0).getText();
+  }
 }

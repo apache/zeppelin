@@ -356,6 +356,7 @@ public class RemoteInterpreter extends Interpreter {
 
   private RemoteInterpreterContext convert(InterpreterContext ic) {
     return new RemoteInterpreterContext(
+        ic.getNoteId(),
         ic.getParagraphId(),
         ic.getParagraphTitle(),
         ic.getParagraphText(),
