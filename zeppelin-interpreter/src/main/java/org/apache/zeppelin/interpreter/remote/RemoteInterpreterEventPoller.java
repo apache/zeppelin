@@ -109,6 +109,7 @@ public class RemoteInterpreterEventPoller extends Thread {
           interpreterProcess.getInterpreterContextRunnerPool().run(
               runnerFromRemote.getNoteId(), runnerFromRemote.getParagraphId());
         }
+        logger.info("I've got event from remoteproceess {}", event.getType());
       } catch (Exception e) {
         logger.error("Can't handle event " + event, e);
       }

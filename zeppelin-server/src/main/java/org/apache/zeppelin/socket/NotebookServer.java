@@ -666,21 +666,20 @@ public class NotebookServer extends WebSocketServer implements
  
 
   @Override
-  public void onRemove(String interpreterGroupId, AngularObject object) {
+  public void onRemove(String interpreterGroupId, String name, String noteId) {
     Notebook notebook = notebook();
     List<Note> notes = notebook.getAllNotes();
     for (Note note : notes) {
-      if (object.getNoteId() != null && !note.id().equals(object.getNoteId())) {
+      if (noteId != null && !note.id().equals(noteId)) {
         continue;
       }
-      
+
       List<String> ids = note.getNoteReplLoader().getInterpreters();
       for (String id : ids) {
         if (id.equals(interpreterGroupId)) {
           broadcast(
               note.id(),
-              new Message(OP.ANGULAR_OBJECT_REMOVE).put("name",
-                  object.getName()));
+              new Message(OP.ANGULAR_OBJECT_REMOVE).put("name", name));
         }
       }
     }

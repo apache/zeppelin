@@ -59,7 +59,7 @@ public class AngularObjectRegistry {
   }
 
   /**
-   * Add object into global registry
+   * Add object into registry
    * @param name
    * @param o
    * @param noteId noteId belonging to. null for global object.
@@ -111,11 +111,15 @@ public class AngularObjectRegistry {
   }
 
   public AngularObject remove(String name, String noteId) {
+    return remove(name, noteId, true);
+  }
+
+  public AngularObject remove(String name, String noteId, boolean emit) {
     synchronized (registry) {
       Map<String, AngularObject> r = getRegistryForKey(noteId);
       AngularObject o = r.remove(name);
-      if (listener != null) {
-        listener.onRemove(interpreterId, o);;
+      if (listener != null && emit) {
+        listener.onRemove(interpreterId, name, noteId);;
       }
       return o;
     }

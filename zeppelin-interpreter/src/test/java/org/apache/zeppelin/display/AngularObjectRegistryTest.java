@@ -45,7 +45,7 @@ public class AngularObjectRegistryTest {
           }
 
           @Override
-          public void onRemove(String interpreterGroupId, AngularObject object) {
+          public void onRemove(String interpreterGroupId, String name, String noteId) {
             onRemove.incrementAndGet();
           }
     });
