@@ -17,12 +17,20 @@
 
 package org.apache.zeppelin;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -31,8 +39,17 @@ import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+/**
+ * Test Zeppelin with web brower.
+ * 
+ * To test, ZeppelinServer should be running on port 8080
+ * On OSX, you'll need firefox 31.0 installed. 
+ *
+ */
 public class ZeppelinIT {
-	private WebDriver getWebDriver(){
+	private WebDriver driver;
+
+  private WebDriver getWebDriver(){
 		WebDriver driver = null;
 
 		if (driver==null){
@@ -72,21 +89,22 @@ public class ZeppelinIT {
 		boolean loaded = false;
 		driver.get(url);
 
-		while (System.currentTimeMillis() - start < 60*1000) {
-	        // wait for page load
-			try {
-		        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
-		            @Override
-                public Boolean apply(WebDriver d) {
-		                return d.findElement(By.partialLinkText("Start")).isDisplayed();
-		            }
-		        });
-		        loaded = true;
-		        break;
-			} catch (TimeoutException e){
-				driver.navigate().to(url);
-			}
-		}
+    while (System.currentTimeMillis() - start < 60 * 1000) {
+      // wait for page load
+      try {
+        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+          @Override
+          public Boolean apply(WebDriver d) {
+            return d.findElement(By.partialLinkText("Create new note"))
+                .isDisplayed();
+          }
+        });
+        loaded = true;
+        break;
+      } catch (TimeoutException e) {
+        driver.navigate().to(url);
+      }
+    }
 
 		if (loaded==false) {
 			fail();
@@ -95,9 +113,94 @@ public class ZeppelinIT {
 		return driver;
 	}
 
+  @Before
+  public void startUp() {
+    driver = getWebDriver();
+  }
+
+  @After
+  public void tearDown() {
+    driver.quit();
+  }
+
 	@Test
-	public void testDisableIT(){
-		//
+	public void testCreateNotebook() throws InterruptedException{
+	  String noteName = createNewNoteAndGetName();
+	  driver.findElement(By.partialLinkText(noteName)).click();
+	  
+    final WebElement p1 = driver.findElement(By
+        .xpath("//div[@ng-controller=\"ParagraphCtrl\"][1]"));
+    
+	  // wait for first paragraph's " READY " status text
+    (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+      public Boolean apply(WebDriver d) {
+        return p1.findElement(By.xpath("//div[@class=\"control\"]//span[1][text()=\" READY \"]"))
+            .isDisplayed();
+      }
+    });
+  //div[@class="control"]/span[1]
+    // type some query
+
+    p1.findElement(By.xpath("//textarea")).sendKeys("println" + Keys.chord(Keys.SHIFT, "9") + "\""
+        + Keys.chord(Keys.SHIFT, "5") + "angular BindingTest_{{myVar}}_\")");
+    p1.findElement(By.xpath("//textarea")).sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+
+    // wait for text displayed
+    (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
+      public Boolean apply(WebDriver d) {
+        return p1.findElement(By.xpath("//div[@class=\"control\"]//span[1][text()=\" FINISHED \"]"))
+            .isDisplayed();
+      }
+    });
+    /*
+    // bind value
+    final WebElement p2 = driver.findElement(By
+        .xpath("//div[@ng-controller=\"ParagraphCtrl\"][2]"));
+    p2.findElement(By.xpath("//textarea")).sendKeys("z.angularBind" + Keys.chord(Keys.SHIFT, "9")
+        + "\"myVar\", 1)");
+    p2.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+
+    // wait for text displayed
+    (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
+      public Boolean apply(WebDriver d) {
+        return p2.findElement(By.xpath("//div[@class=\"ng-scope\"]/span")).isDisplayed();
+      }
+    });
+    
+    Thread.sleep(60*1000);
+    */
+	}
+	
+	private String createNewNoteAndGetName() {
+    List<WebElement> notebookLinks = driver.findElements(By
+        .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));    
+    List<String> notebookTitles = new LinkedList<String>();
+    for (WebElement el : notebookLinks) {
+      notebookTitles.add(el.getText());
+    }
+    
+    WebElement createNoteLink = driver.findElement(By.partialLinkText("Create new note"));
+    createNoteLink.click();
+
+    try {
+      Thread.sleep(500); // wait for notebook list updated
+    } catch (InterruptedException e) {
+    } 
+    
+    List<WebElement> notebookLinksAfterCreate = driver.findElements(By
+        .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));
+
+    Iterator<WebElement> it = notebookLinksAfterCreate.iterator();
+    while (it.hasNext()) {
+      WebElement newEl = it.next();
+      if (notebookTitles.contains(newEl.getText())) {
+        
+        it.remove();
+      }
+    }
+
+    assertEquals(1, notebookLinksAfterCreate.size());
+    return notebookLinksAfterCreate.get(0).getText();
 	}
 
 	/*
