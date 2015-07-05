@@ -473,6 +473,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       // clear watcher
       if (angularObjectRegistry[varName]) {
         angularObjectRegistry[varName].clearWatcher();
+        angularObjectRegistry[varName] = undefined;
       }
 
       // remove scope variable
