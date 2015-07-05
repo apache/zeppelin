@@ -679,7 +679,10 @@ public class NotebookServer extends WebSocketServer implements
         if (id.equals(interpreterGroupId)) {
           broadcast(
               note.id(),
-              new Message(OP.ANGULAR_OBJECT_REMOVE).put("name", name));
+              new Message(OP.ANGULAR_OBJECT_REMOVE)
+                .put("name", name)
+                .put("noteId", noteId)
+              );
         }
       }
     }
