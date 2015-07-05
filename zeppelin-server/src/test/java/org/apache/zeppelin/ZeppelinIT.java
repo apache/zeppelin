@@ -137,7 +137,7 @@ public class ZeppelinIT {
   }
 
   void waitForParagraph(final int paragraphNo, final String state) {
-    (new WebDriverWait(driver, 10)).until(new ExpectedCondition<Boolean>() {
+    (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
       public Boolean apply(WebDriver d) {
         return driver.findElement(By.xpath(getParagraphXPath(paragraphNo)
                 + "//div[@class=\"control\"]//span[1][text()=\" " + state + " \"]"))
