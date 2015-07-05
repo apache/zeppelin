@@ -152,6 +152,9 @@ public class ZeppelinIT {
             .isDisplayed();
       }
     });
+    
+    
+    System.out.println("testCreateNotebook Test executed");
     /*
     // bind value
     final WebElement p2 = driver.findElement(By
