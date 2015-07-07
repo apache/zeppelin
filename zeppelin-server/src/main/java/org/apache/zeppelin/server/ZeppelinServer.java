@@ -93,6 +93,8 @@ public class ZeppelinServer extends Application {
     final ServletContextHandler swagger = setupSwaggerContextHandler(conf);
 
     // Web UI
+    LOG.info("Create zeppelin websocket on {}:{}", notebookServer.getAddress()
+        .getAddress(), notebookServer.getPort());
     final WebAppContext webApp = setupWebAppContext(conf, notebookServer.getPort());
     //Below is commented since zeppelin-docs module is removed.
     //final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
