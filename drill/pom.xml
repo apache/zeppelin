@@ -22,7 +22,7 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.5.0-incubating-SNAPSHOT</version>
+    <version>0.6.0-incubating-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
@@ -35,6 +35,17 @@
   <properties>
     <drill.drill.version>1.0.0-mapr-r1</drill.drill.version>
   </properties>
+
+<!-- MapR Technologies Maven Repository -->
+  <repositories>
+    <repository>
+      <id>mapr-releases</id>
+      <url>http://repository.mapr.com/maven/</url>
+      <snapshots><enabled>false</enabled></snapshots>
+      <releases><enabled>true</enabled></releases>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
