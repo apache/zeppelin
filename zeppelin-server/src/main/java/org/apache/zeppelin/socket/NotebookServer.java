@@ -136,6 +136,9 @@ public class NotebookServer extends WebSocketServer implements
           case COMPLETION:
             completion(conn, notebook, messagereceived);
             break;
+          case PING:
+            pong();
+            break;          
           case ANGULAR_OBJECT_UPDATED:
             angularObjectUpdated(conn, notebook, messagereceived);
             break;
@@ -565,7 +568,9 @@ public class NotebookServer extends WebSocketServer implements
     @Override
     public void afterStatusChange(Job job, Status before, Status after) {
       if (after == Status.ERROR) {
-        job.getException().printStackTrace();
+        if (job.getException() != null) {
+          LOG.error("Error", job.getException());
+        }
       }
       if (job.isTerminated()) {
         LOG.info("Job {} is finished", job.getId());
@@ -582,6 +587,9 @@ public class NotebookServer extends WebSocketServer implements
   @Override
   public JobListener getParagraphJobListener(Note note) {
     return new ParagraphJobListener(this, note);
+  }
+
+  private void pong() {
   }
 
   private void sendAllAngularObjects(Note note, WebSocket conn) {
