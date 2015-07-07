@@ -83,6 +83,7 @@ public class ZeppelinServer extends Application {
 
     jettyServer = setupJettyServer(conf);
     notebookServer = setupNotebookServer(conf);
+    notebookServer.start();
 
     // REST api
     final ServletContextHandler restApi = setupRestApiContextHandler();
@@ -92,7 +93,9 @@ public class ZeppelinServer extends Application {
     final ServletContextHandler swagger = setupSwaggerContextHandler(conf);
 
     // Web UI
-    final WebAppContext webApp = setupWebAppContext(conf);
+    LOG.info("Create zeppelin websocket on {}:{}", notebookServer.getAddress()
+        .getAddress(), notebookServer.getPort());
+    final WebAppContext webApp = setupWebAppContext(conf, notebookServer.getPort());
     //Below is commented since zeppelin-docs module is removed.
     //final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
 
@@ -102,7 +105,6 @@ public class ZeppelinServer extends Application {
     contexts.setHandlers(new Handler[]{swagger, restApi, webApp});
     jettyServer.setHandler(contexts);
 
-    notebookServer.start();
     LOG.info("Start zeppelin server");
     jettyServer.start();
     LOG.info("Started");
@@ -254,7 +256,7 @@ public class ZeppelinServer extends Application {
   }
 
   private static WebAppContext setupWebAppContext(
-      ZeppelinConfiguration conf) {
+      ZeppelinConfiguration conf, int websocketPort) {
 
     WebAppContext webApp = new WebAppContext();
     File warPath = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
@@ -270,7 +272,7 @@ public class ZeppelinServer extends Application {
     }
     // Explicit bind to root
     webApp.addServlet(
-      new ServletHolder(new AppScriptServlet(conf.getWebSocketPort())),
+      new ServletHolder(new AppScriptServlet(websocketPort)),
       "/*"
     );
     return webApp;
