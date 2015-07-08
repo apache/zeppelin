@@ -59,8 +59,7 @@ public class FlinkInterpreterTest {
   public void testWordCount() {
     flink.interpret("val text = env.fromElements(\"To be or not to be\")", context);
     flink.interpret("val counts = text.flatMap { _.toLowerCase.split(\" \") }.map { (_, 1) }.groupBy(0).sum(1)", context);
-    flink.interpret("counts.print()", context);
-    InterpreterResult result = flink.interpret("env.execute(\"WordCount Example\")", context);
+    InterpreterResult result = flink.interpret("counts.print()", context);
     assertEquals(Code.SUCCESS, result.code());
   }
 }
