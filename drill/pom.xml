@@ -33,7 +33,7 @@
   <url>http://www.apache.org</url>
 
   <properties>
-    <drill.drill.version>1.0.0-mapr-r1</drill.drill.version>
+    <drill.drill.version>1.1.0</drill.drill.version>
   </properties>
 
 <!-- MapR Technologies Maven Repository -->
@@ -71,8 +71,8 @@
     </dependency>
     
     <dependency>
-      <groupId>org.apache.drill</groupId>
-      <artifactId>drill-jdbc-all</artifactId>
+      <groupId>org.apache.drill.exec</groupId>
+      <artifactId>drill-jdbc</artifactId>
       <version>${drill.drill.version}</version>
     </dependency>
     <dependency>
