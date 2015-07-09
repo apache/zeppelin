@@ -63,13 +63,14 @@ limitations under the License.
     </div>
 
     <form id="{{paragraph.id}}_form" role="form"
-          ng-show="!paragraph.config.tableHide && !asIframe"
+          ng-show="!paragraph.config.tableHide"
           class=" paragraphForm form-horizontal row">
       <div class="form-group col-sm-6 col-md-6 col-lg-4"
            ng-repeat="formulaire in paragraph.settings.forms"
            ng-Init="loadForm(formulaire, paragraph.settings.params)">
         <label class="control-label input-sm" ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">{{formulaire.name}}</label>
         <div class="">
+
           <input class="form-control input-sm"
                  ng-if="!paragraph.settings.forms[formulaire.name].options"
                  ng-enter="runParagraph(getEditorValue())"
