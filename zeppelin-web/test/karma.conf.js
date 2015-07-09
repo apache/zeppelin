@@ -20,6 +20,7 @@ module.exports = function(config) {
     files: [
       'bower_components/jquery/dist/jquery.js',
       'bower_components/angular/angular.js',
+    'bower_components/angular-mocks/angular-mocks.js',
       'bower_components/json3/lib/json3.js',
       'bower_components/bootstrap/dist/js/bootstrap.js',
       'bower_components/angular-cookies/angular-cookies.js',
@@ -50,8 +51,9 @@ module.exports = function(config) {
       'bower_components/highlightjs/highlight.pack.js',
       'bower_components/lodash/lodash.js',
       'bower_components/angular-filter/dist/angular-filter.js',
+      'src/app/app.js',
+      'src/app/app.controller.js',
       'src/app/**/*.js',
-      'test/mock/**/*.js',
       'test/spec/**/*.js'
     ],
 
