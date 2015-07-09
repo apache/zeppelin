@@ -97,6 +97,7 @@
     <module>tajo</module>
     <module>flink</module>
     <module>ignite</module>
+    <module>kylin</module>
     <module>lens</module>
     <module>cassandra</module>
     <module>zeppelin-web</module>
