@@ -55,9 +55,9 @@
   </licenses>
 
   <scm>
-    <url>http://zeppelin.incubator.apache.org</url>
-    <connection>scm:git:git:git@github.com:apache/incubator-zeppelin.git</connection>
-    <developerConnection>scm:git:git@github.com:apache/incubator-zeppelin.git</developerConnection>
+    <url>https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</url>
+    <connection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</connection>
+    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</developerConnection>
   </scm>
 
   <developers>
