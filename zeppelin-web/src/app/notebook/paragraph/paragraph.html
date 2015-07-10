@@ -22,7 +22,7 @@ limitations under the License.
            placeholder="Edit title"
            ng-model="paragraph.title"
            ng-show="showTitleEditor"
-           ng-delete="showTitleEditor = false"
+           ng-escape="showTitleEditor = false"
            ng-enter="setTitle(); showTitleEditor = false"/>
     <div ng-click="showTitleEditor = !asIframe && !viewOnly"
          ng-show="!showTitleEditor"
