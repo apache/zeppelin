@@ -57,7 +57,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   }
 
   @AfterClass
-  public static void destroy() {
+  public static void destroy() throws Exception {
     AbstractTestRestApi.shutDown();
   }
 

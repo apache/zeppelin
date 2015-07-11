@@ -281,7 +281,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getKeyStorePath() {
-    return getRelativeDir(ConfVars.ZEPPELIN_SSL_KEYSTORE_PATH);
+    return getRelativeDir(
+        String.format("%s/%s",
+            getConfDir(),
+            getString(ConfVars.ZEPPELIN_SSL_KEYSTORE_PATH)));
   }
 
   public String getKeyStoreType() {
@@ -337,7 +340,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getInterpreterSettingPath() {
-    return getRelativeDir("conf/interpreter.json");
+    return getRelativeDir(String.format("%s/interpreter.json", getConfDir()));
   }
 
   public String getInterpreterRemoteRunnerPath() {
@@ -356,6 +359,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     }
   }
 
+  public String getConfDir() {
+    return getString(ConfVars.ZEPPELIN_CONF_DIR);
+  }
+
 
   /**
    * Wrapper class.
@@ -372,7 +379,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_WEBSOCKET_PORT("zeppelin.websocket.port", -1),
     ZEPPELIN_SSL("zeppelin.ssl", false),
     ZEPPELIN_SSL_CLIENT_AUTH("zeppelin.ssl.client.auth", false),
-    ZEPPELIN_SSL_KEYSTORE_PATH("zeppelin.ssl.keystore.path", "conf/keystore"),
+    ZEPPELIN_SSL_KEYSTORE_PATH("zeppelin.ssl.keystore.path", "keystore"),
     ZEPPELIN_SSL_KEYSTORE_TYPE("zeppelin.ssl.keystore.type", "JKS"),
     ZEPPELIN_SSL_KEYSTORE_PASSWORD("zeppelin.ssl.keystore.password", ""),
     ZEPPELIN_SSL_KEY_MANAGER_PASSWORD("zeppelin.ssl.key.manager.password", null),
@@ -389,14 +396,16 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.angular.AngularInterpreter,"
         + "org.apache.zeppelin.shell.ShellInterpreter,"
         + "org.apache.zeppelin.hive.HiveInterpreter,"
-        + "org.apache.zeppelin.tajo.TajoInterpreter"),
-        ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
-        ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
-        ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
-        ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", VFSNotebookRepo.class.getName()),
+        + "org.apache.zeppelin.tajo.TajoInterpreter,"
+        + "org.apache.zeppelin.flink.FlinkInterpreter"),
+    ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
+    ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
+    ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
+    ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", VFSNotebookRepo.class.getName()),
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner", "bin/interpreter.sh"),
     // Decide when new note is created, interpreter settings will be binded automatically or not.
-    ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true);
+    ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),
+    ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf");
 
     private String varName;
     @SuppressWarnings("rawtypes")

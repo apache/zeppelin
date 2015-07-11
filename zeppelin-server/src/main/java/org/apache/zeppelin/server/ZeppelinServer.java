@@ -70,7 +70,9 @@ public class ZeppelinServer extends Application {
   private SchedulerFactory schedulerFactory;
   public static Notebook notebook;
 
-  static NotebookServer notebookServer;
+  public static NotebookServer notebookServer;
+
+  public static Server jettyServer;
 
   private InterpreterFactory replFactory;
 
@@ -80,7 +82,7 @@ public class ZeppelinServer extends Application {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     conf.setProperty("args", args);
 
-    final Server jettyServer = setupJettyServer(conf);
+    jettyServer = setupJettyServer(conf);
     notebookServer = setupNotebookServer(conf);
 
     // REST api
