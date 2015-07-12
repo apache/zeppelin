@@ -721,6 +721,10 @@ angular.module('zeppelinWebApp')
     }
   };
 
+  $scope.defaults= {
+    scrollWheelZoom: false
+  };
+
   $scope.setGraphMode = function(type, emit, refresh) {
     if (emit) {
       setNewMode(type);
@@ -732,6 +736,9 @@ angular.module('zeppelinWebApp')
 
       if (!type || type === 'table') {
         setTable($scope.paragraph.result, refresh);
+      }
+      if (!type || type === 'mapChart') {
+        //setting the map
       }
       else {
         setD3Chart(type, $scope.paragraph.result, refresh);
