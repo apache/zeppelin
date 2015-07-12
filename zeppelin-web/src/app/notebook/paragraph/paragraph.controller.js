@@ -17,7 +17,7 @@
 
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv) {
+                                         $timeout, $compile, websocketMsgSrv, dataValidatorSrv) {
 
   $scope.paragraph = null;
   $scope.editor = null;
@@ -721,6 +721,10 @@ angular.module('zeppelinWebApp')
     }
   };
 
+  $scope.defaults= {
+    scrollWheelZoom: false
+  };
+
   $scope.setGraphMode = function(type, emit, refresh) {
     if (emit) {
       setNewMode(type);
@@ -732,6 +736,14 @@ angular.module('zeppelinWebApp')
 
       if (!type || type === 'table') {
         setTable($scope.paragraph.result, refresh);
+      }
+      if (!type || type === 'mapChart') {
+        //setting the map : To-DO Moving the map for separate file
+/*        angular.extend($scope, {
+        defaults: {
+            scrollWheelZoom: false
+        }
+    });*/
       }
       else {
         setD3Chart(type, $scope.paragraph.result, refresh);
@@ -1339,6 +1351,12 @@ angular.module('zeppelinWebApp')
       });
     }
 
+    var msg = dataValidatorSrv.validateChartData(data);
+    //Only console print error found 
+    if(msg.error){
+      console.log(msg.msg);
+    }
+
     // clear aggregation name, if possible
     var namesWithoutAggr = {};
     var colName;
@@ -1472,6 +1490,12 @@ angular.module('zeppelinWebApp')
       return {
         d3g : []
       };
+    }
+
+    var msg = dataValidatorSrv.validateScatterData(data);
+    //TODO- warning need to error model or services will needed
+    if(msg.error){
+      console.log(msg.msg);
     }
 
     for (var i = 0; i < data.rows.length; i++) {
