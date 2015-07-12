@@ -747,7 +747,12 @@ angular.module('zeppelinWebApp')
         setTable($scope.paragraph.result, refresh);
       }
       if (!type || type === 'mapChart') {
-        //setting the map
+        //setting the map : To-DO Moving the map for separate file
+/*        angular.extend($scope, {
+        defaults: {
+            scrollWheelZoom: false
+        }
+    });*/
       }
       else {
         setD3Chart(type, $scope.paragraph.result, refresh);

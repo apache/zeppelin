@@ -31,7 +31,8 @@ angular.module('zeppelinWebApp', [
     'monospaced.elastic',
     'puElasticInput',
     'xeditable',
-    'ngToast'
+    'ngToast',
+    'leaflet-directive'
   ])
   .filter('breakFilter', function() {
     return function (text) {
