@@ -55,8 +55,9 @@ public class ClassloaderInterpreter
     Thread.currentThread().setContextClassLoader(cl);
     try {
       return intp.interpret(st, context);
+    } catch (InterpreterException e) {
+      throw e;
     } catch (Exception e) {
-      e.printStackTrace();
       throw new InterpreterException(e);
     } finally {
       cl = Thread.currentThread().getContextClassLoader();

@@ -109,9 +109,9 @@ public class VFSNotebookRepo implements NotebookRepo {
     for (FileObject f : children) {
       String fileName = f.getName().getBaseName();
       if (f.isHidden()
-              || fileName.startsWith(".")
-              || fileName.startsWith("#")
-              || fileName.startsWith("~")) {
+        || fileName.startsWith(".")
+        || fileName.startsWith("#")
+        || fileName.startsWith("~")) {
         // skip hidden, temporary files
         continue;
       }
@@ -133,7 +133,6 @@ public class VFSNotebookRepo implements NotebookRepo {
         logger.error("Can't read note " + f.getName().toString(), e);
       }
     }
-
     return infos;
   }
 
@@ -146,14 +145,14 @@ public class VFSNotebookRepo implements NotebookRepo {
     List<NoteInfo> infos = new LinkedList<>();
     for (FileObject f : children) {
       String owner = f.getName().getBaseName();
-      logger.info("OWNER=" + owner);
       if (f.isHidden()
-              || owner.startsWith(".")
-              || owner.startsWith("#")
-              || owner.startsWith("~")) {
+        || owner.startsWith(".")
+        || owner.startsWith("#")
+        || owner.startsWith("~")) {
         // skip hidden, temporary files
         continue;
       }
+      logger.info("OWNER=" + owner);
 
       if (!isDirectory(f)) {
         // currently one directory per user saved like, [OWNER]/[NOTE_ID]/note.json.
@@ -170,7 +169,6 @@ public class VFSNotebookRepo implements NotebookRepo {
         logger.error("Can't read note " + f.getName().toString(), e);
       }
     }
-
     return infos;
   }
 
@@ -232,6 +230,7 @@ public class VFSNotebookRepo implements NotebookRepo {
 
     return rootDir;
   }
+
   private FileObject getRootDir() throws IOException {
     return getRootDir(null);
   }
@@ -247,7 +246,6 @@ public class VFSNotebookRepo implements NotebookRepo {
     rootDir.createFolder();
 
     FileObject ownerDir = fsManager.resolveFile(rootDir, note.getOwner());
-
     if (!ownerDir.exists())
       ownerDir.createFolder();
 

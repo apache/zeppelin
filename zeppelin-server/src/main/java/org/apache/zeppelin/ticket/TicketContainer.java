@@ -35,17 +35,18 @@ public class TicketContainer {
     public final String ticket;
     // lastAccessTime still unused
     public final long lastAccessTime;
+
     Entry(String ticket) {
       this.ticket = ticket;
       this.lastAccessTime = Calendar.getInstance().getTimeInMillis();
     }
   }
+
   private Map<String, Entry> sessions = new ConcurrentHashMap<>();
 
   public static final TicketContainer instance = new TicketContainer();
 
   public boolean isValid(String principal, String ticket) {
-    // Always accept anonymous with ticket anonymous
     if ("anonymous".equals(principal) && "anonymous".equals(ticket))
       return true;
     Entry entry = sessions.get(principal);
@@ -59,9 +60,8 @@ public class TicketContainer {
       if (principal.equals("anonymous"))
         ticket = "anonymous"; // enable testing on anonymous when ticket is required in the url
       else
-        ticket = UUID.randomUUID().toString();
-    }
-    else {
+          ticket = UUID.randomUUID().toString();
+    } else {
       ticket = entry.ticket;
     }
     entry = new Entry(ticket);

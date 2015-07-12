@@ -35,15 +35,15 @@
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin</artifactId>
   <packaging>pom</packaging>
-  <version>0.5.0-incubating-SNAPSHOT</version>
+  <version>0.6.0-incubating-SNAPSHOT</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
   <url>http://zeppelin.incubator.apache.org/</url>
 
   <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>7</version>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>17</version>
   </parent>
 
   <licenses>
@@ -55,9 +55,9 @@
   </licenses>
 
   <scm>
-    <url>http://zeppelin.incubator.apache.org</url>
-    <connection>scm:git:git:git@github.com:apache/incubator-zeppelin.git</connection>
-    <developerConnection>scm:git:git@github.com:apache/incubator-zeppelin.git</developerConnection>
+    <url>https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</url>
+    <connection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</connection>
+    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</developerConnection>
   </scm>
 
   <developers>
@@ -93,6 +93,8 @@
     <module>hive</module>
     <module>tajo</module>
     <module>flink</module>
+    <module>ignite</module>
+    <module>lens</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
@@ -200,6 +202,19 @@
         <version>4.11</version>
         <scope>test</scope>
       </dependency>
+
+
+      <!-- Apache Shiro -->
+      <dependency>
+        <groupId>org.apache.shiro</groupId>
+        <artifactId>shiro-core</artifactId>
+        <version>1.2.3</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.shiro</groupId>
+        <artifactId>shiro-web</artifactId>
+        <version>1.2.3</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -229,7 +244,7 @@
         <executions>
           <execution>
             <id>cobertura</id>
-            <phase>package</phase>
+            <phase>install</phase>
             <goals>
               <goal>cobertura</goal>
             </goals>
@@ -248,10 +263,9 @@
         </configuration>
         <executions>
           <execution>
-            <id>checkstyle</id>
+            <id>checkstyle-fail-build</id>
             <phase>validate</phase>
             <goals>
-              <goal>checkstyle</goal>
               <goal>check</goal>
             </goals>
             <configuration>
@@ -259,6 +273,17 @@
               <excludes>org/apache/zeppelin/interpreter/thrift/*</excludes>
             </configuration>
           </execution>
+          <execution>
+            <id>checkstyle-gen-html-report</id>
+            <phase>install</phase>
+            <goals>
+              <goal>checkstyle-aggregate</goal>
+            </goals>
+            <configuration>
+              <excludes>org/apache/zeppelin/interpreter/thrift/*</excludes>
+            </configuration>
+          </execution>
+
         </executions>
       </plugin>
 
@@ -479,7 +504,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-clean-plugin</artifactId>
-          <version>2.4.1</version>
+          <version>2.6.1</version>
           <configuration>
             <filesets>
               <fileset>

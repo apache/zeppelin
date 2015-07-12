@@ -137,6 +137,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     CommandLine cmd = CommandLine.parse(getProperty("zeppelin.pyspark.python"));
     cmd.addArgument(scriptPath, false);
     cmd.addArgument(Integer.toString(port), false);
+    cmd.addArgument(getJavaSparkContext().version(), false);
     executor = new DefaultExecutor();
     outputStream = new ByteArrayOutputStream();
     PipedOutputStream ps = new PipedOutputStream();
@@ -157,18 +158,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     try {
       Map env = EnvironmentUtils.getProcEnvironment();
-
-      String pythonPath = (String) env.get("PYTHONPATH");
-      if (pythonPath == null) {
-        pythonPath = "";
-      } else {
-        pythonPath += ":";
-      }
-
-      pythonPath += getSparkHome() + "/python/lib/py4j-0.8.2.1-src.zip:"
-          + getSparkHome() + "/python";
-
-      env.put("PYTHONPATH", pythonPath);
 
       executor.execute(cmd, env, this);
       pythonscriptRunning = true;

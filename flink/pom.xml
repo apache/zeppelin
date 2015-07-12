@@ -22,39 +22,24 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.5.0-incubating-SNAPSHOT</version>
+    <version>0.6.0-incubating-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-flink</artifactId>
   <packaging>jar</packaging>
-  <version>0.5.0-incubating-SNAPSHOT</version>
+  <version>0.6.0-incubating-SNAPSHOT</version>
   <name>Zeppelin: Flink</name>
   <description>Zeppelin flink support</description>
   <url>http://zeppelin.incubator.apache.org</url>
 
   <properties>
-    <flink.version>0.9.0-milestone-1</flink.version>
+    <flink.version>0.9.0</flink.version>
     <flink.akka.version>2.3.7</flink.akka.version>
     <flink.scala.binary.version>2.10</flink.scala.binary.version>
     <flink.scala.version>2.10.4</flink.scala.version>
     <scala.macros.version>2.0.1</scala.macros.version>
   </properties>
-
-  <repositories>
-    <!-- for flink 0.9-SNAPSHOT. After 0.9 released, it can be removed -->
-    <repository>
-      <id>apache.snapshots</id>
-      <name>Apache Development Snapshot Repository</name>
-      <url>https://repository.apache.org/content/repositories/snapshots/</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
 
   <dependencies>
     <dependency>
@@ -100,6 +85,12 @@
     <dependency>
       <groupId>org.apache.flink</groupId>
       <artifactId>flink-scala</artifactId>
+      <version>${flink.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.flink</groupId>
+      <artifactId>flink-scala-shell</artifactId>
       <version>${flink.version}</version>
     </dependency>
 

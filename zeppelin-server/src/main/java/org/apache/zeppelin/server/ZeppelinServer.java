@@ -36,11 +36,11 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.rest.InterpreterRestApi;
 import org.apache.zeppelin.rest.NotebookRestApi;
-import org.apache.zeppelin.rest.SecurityRestApi;
 import org.apache.zeppelin.rest.ZeppelinRestApi;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.socket.SslWebSocketServerFactory;
+import org.apache.zeppelin.rest.SecurityRestApi;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.bio.SocketConnector;
@@ -84,6 +84,7 @@ public class ZeppelinServer extends Application {
 
     jettyServer = setupJettyServer(conf);
     notebookServer = setupNotebookServer(conf);
+    notebookServer.start();
 
     // REST api
     final ServletContextHandler restApi = setupRestApiContextHandler();
@@ -93,7 +94,9 @@ public class ZeppelinServer extends Application {
     final ServletContextHandler swagger = setupSwaggerContextHandler(conf);
 
     // Web UI
-    final WebAppContext webApp = setupWebAppContext(conf);
+    LOG.info("Create zeppelin websocket on {}:{}", notebookServer.getAddress()
+        .getAddress(), notebookServer.getPort());
+    final WebAppContext webApp = setupWebAppContext(conf, notebookServer.getPort());
     //Below is commented since zeppelin-docs module is removed.
     //final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
 
@@ -103,7 +106,6 @@ public class ZeppelinServer extends Application {
     contexts.setHandlers(new Handler[]{swagger, restApi, webApp});
     jettyServer.setHandler(contexts);
 
-    notebookServer.start();
     LOG.info("Start zeppelin server");
     jettyServer.start();
     LOG.info("Started");
@@ -222,11 +224,13 @@ public class ZeppelinServer extends Application {
     cxfContext.addServlet(cxfServletHolder, "/*");
 
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
-            EnumSet.allOf(DispatcherType.class));
+        EnumSet.allOf(DispatcherType.class));
 
     cxfContext.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class, "/*",
-            EnumSet.allOf(DispatcherType.class));
+        EnumSet.allOf(DispatcherType.class));
+
     cxfContext.addEventListener(new org.apache.shiro.web.env.EnvironmentLoaderListener());
+
     return cxfContext;
   }
 
@@ -259,7 +263,7 @@ public class ZeppelinServer extends Application {
   }
 
   private static WebAppContext setupWebAppContext(
-      ZeppelinConfiguration conf) {
+      ZeppelinConfiguration conf, int websocketPort) {
 
     WebAppContext webApp = new WebAppContext();
     File warPath = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
@@ -275,7 +279,7 @@ public class ZeppelinServer extends Application {
     }
     // Explicit bind to root
     webApp.addServlet(
-      new ServletHolder(new AppScriptServlet(conf.getWebSocketPort())),
+      new ServletHolder(new AppScriptServlet(websocketPort)),
       "/*"
     );
     return webApp;
@@ -325,7 +329,7 @@ public class ZeppelinServer extends Application {
   }
 
   @Override
-  public Set<Object> getSingletons() {
+  public java.util.Set<java.lang.Object> getSingletons() {
     Set<Object> singletons = new HashSet<Object>();
 
     /** Rest-api root endpoint */

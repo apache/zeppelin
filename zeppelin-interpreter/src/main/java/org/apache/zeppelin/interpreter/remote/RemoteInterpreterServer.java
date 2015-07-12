@@ -42,6 +42,7 @@ import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
@@ -210,18 +211,15 @@ public class RemoteInterpreterServer
       }
     }
 
+    InterpreterResult result;
     if (job.getStatus() == Status.ERROR) {
-      throw new TException(job.getException());
+      result = new InterpreterResult(Code.ERROR, Job.getStack(job.getException()));
     } else {
-      if (intp.getFormType() == FormType.NATIVE) {
-        // serialize dynamic form
-
-      }
-
-      return convert((InterpreterResult) job.getReturn(),
-          context.getConfig(),
-          context.getGui());
+      result = (InterpreterResult) job.getReturn();
     }
+    return convert(result,
+        context.getConfig(),
+        context.getGui());
   }
 
   class InterpretJobListener implements JobListener {

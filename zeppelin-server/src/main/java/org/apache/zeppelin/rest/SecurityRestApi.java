@@ -29,9 +29,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by hayssams on 24/04/15.
+ * Zeppelin security rest api endpoint.
+ *
  */
-
 @Path("/security")
 @Produces("application/json")
 public class SecurityRestApi {
@@ -47,6 +47,7 @@ public class SecurityRestApi {
    * Returns username & ticket
    * for anonymous access, username is always anonymous.
    * After getting this ticket, access through websockets become safe
+   *
    * @return 200 response
    */
   @GET
@@ -62,7 +63,7 @@ public class SecurityRestApi {
     // ticket set to anonymous for anonymous user. Simplify testing.
     String ticket;
     if ("anonymous".equals(principal))
-     ticket = "anonymous";
+      ticket = "anonymous";
     else
       ticket = TicketContainer.instance.getTicket(principal);
 

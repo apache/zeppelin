@@ -41,7 +41,7 @@ public class AppScriptServlet extends DefaultServlet {
   private static Set<String> scriptPaths = new HashSet<String>(
     Arrays.asList(
       "/scripts/scripts.js",
-      "/scripts/app.js"
+      "/components/baseUrl/baseUrl.js"
     )
   );
 
@@ -77,14 +77,16 @@ public class AppScriptServlet extends DefaultServlet {
       script.append(new String(buffer, 0, numRead, "UTF-8"));
     }
 
-    // Replace the string "function getPort(){...}" to return
-    // the proper value
-    int startIndex = script.indexOf("function getPort()");
-    int endIndex = script.indexOf("}", startIndex);
+    // Replace the getPort function to return the proper value
+    String startReplaceString = "/* @preserve AppScriptServlet - getPort */";
+    String endReplaceString = "/* @preserve AppScriptServlet - close */";
+            
+    int startIndex = script.indexOf(startReplaceString);
+    int endIndex = script.indexOf(endReplaceString, startIndex);
 
     if (startIndex >= 0 && endIndex >= 0) {
-      String replaceString = "function getPort(){return " + websocketPort + "}";
-      script.replace(startIndex, endIndex + 1, replaceString);
+      String replaceString = "this.getPort=function(){return " + websocketPort + "};";
+      script.replace(startIndex, endIndex + endReplaceString.length(), replaceString);
     }
 
     response.getWriter().println(script.toString());

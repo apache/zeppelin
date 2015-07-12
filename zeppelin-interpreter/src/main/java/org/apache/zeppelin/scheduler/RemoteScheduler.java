@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.thrift.TException;
+import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -179,6 +181,10 @@ public class RemoteScheduler implements Scheduler {
           }
         }
 
+        if (terminate) {
+          // terminated by shutdown
+          break;
+        }
 
         Status newStatus = getStatus();
         if (newStatus == null) { // unknown
@@ -187,9 +193,10 @@ public class RemoteScheduler implements Scheduler {
 
         if (newStatus != Status.READY && newStatus != Status.PENDING) {
           // we don't need more
-          continue;
+          break;
         }
       }
+      terminate = true;
     }
 
     public void shutdown() {
@@ -233,9 +240,9 @@ public class RemoteScheduler implements Scheduler {
         if ("Unknown".equals(statusStr)) {
           // not found this job in the remote schedulers.
           // maybe not submitted, maybe already finished
-          Status status = getLastStatus();
-          listener.afterStatusChange(job, null, status);
-          return status;
+          //Status status = getLastStatus();
+          listener.afterStatusChange(job, null, null);
+          return job.getStatus();
         }
         Status status = Status.valueOf(statusStr);
         lastStatus = status;
@@ -294,6 +301,7 @@ public class RemoteScheduler implements Scheduler {
         listener.jobStarted(scheduler, job);
       }
       job.run();
+
       jobExecuted = true;
       jobSubmittedRemotely = true;
 
@@ -304,7 +312,16 @@ public class RemoteScheduler implements Scheduler {
         logger.error("JobStatusPoller interrupted", e);
       }
 
-      job.setStatus(jobStatusPoller.getStatus());
+      // set job status based on result.
+      Status lastStatus = jobStatusPoller.getStatus();
+      Object jobResult = job.getReturn();
+      if (jobResult != null && jobResult instanceof InterpreterResult) {
+        if (((InterpreterResult) jobResult).code() == Code.ERROR) {
+          lastStatus = Status.ERROR;
+        }
+      }
+      job.setStatus(lastStatus);
+
       if (listener != null) {
         listener.jobFinished(scheduler, job);
       }
@@ -331,9 +348,13 @@ public class RemoteScheduler implements Scheduler {
       if (after == null) { // unknown. maybe before sumitted remotely, maybe already finished.
         if (jobExecuted) {
           jobSubmittedRemotely = true;
+          Object jobResult = job.getReturn();
           if (job.isAborted()) {
             job.setStatus(Status.ABORT);
           } else if (job.getException() != null) {
+            job.setStatus(Status.ERROR);
+          } else if (jobResult != null && jobResult instanceof InterpreterResult
+              && ((InterpreterResult) jobResult).code() == Code.ERROR) {
             job.setStatus(Status.ERROR);
           } else {
             job.setStatus(Status.FINISHED);

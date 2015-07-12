@@ -21,7 +21,11 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -30,7 +34,6 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.message.InterpreterSettingListForNoteBind;
 import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.ticket.TicketContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,8 +62,7 @@ public class NotebookRestApi {
    */
   @PUT
   @Path("interpreter/bind/{noteId}")
-  public Response bind(
-          @PathParam("noteId") String noteId, String req) throws Exception {
+  public Response bind(@PathParam("noteId") String noteId, String req) throws IOException {
     Object oprincipal = SecurityUtils.getSubject().getPrincipal();
     String principal;
     if (oprincipal == null)
@@ -78,14 +80,16 @@ public class NotebookRestApi {
    */
   @GET
   @Path("interpreter/bind/{noteId}")
-  public Response bind(@PathParam("noteId") String noteId) throws Exception {
+  public Response bind(@PathParam("noteId") String noteId) {
     Object oprincipal = SecurityUtils.getSubject().getPrincipal();
     String principal;
     if (oprincipal == null)
       principal = "anonymous";
     else
       principal = oprincipal.toString();
-    List<InterpreterSettingListForNoteBind> settingList = new LinkedList<>();
+
+    List<InterpreterSettingListForNoteBind> settingList =
+      new LinkedList<InterpreterSettingListForNoteBind>();
 
     List<InterpreterSetting> selectedSettings =
             notebook.getBindedInterpreterSettings(noteId, principal);

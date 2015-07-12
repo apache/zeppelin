@@ -44,21 +44,20 @@ import org.junit.Test;
 import org.quartz.SchedulerException;
 
 public class NotebookTest implements JobListenerFactory{
-
-	private File tmpDir;
-	private ZeppelinConfiguration conf;
-	private SchedulerFactory schedulerFactory;
-	private File notebookDir;
-	private Notebook notebook;
-	private NotebookRepo notebookRepo;
+  private File tmpDir;
+  private ZeppelinConfiguration conf;
+  private SchedulerFactory schedulerFactory;
+  private File notebookDir;
+  private Notebook notebook;
+  private NotebookRepo notebookRepo;
   private InterpreterFactory factory;
 
-	@Before
-	public void setUp() throws Exception {
-		tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
-		tmpDir.mkdirs();
-		new File(tmpDir, "conf").mkdirs();
-		notebookDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis()+"/notebook");
+  @Before
+  public void setUp() throws Exception {
+    tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
+	tmpDir.mkdirs();
+	new File(tmpDir, "conf").mkdirs();
+	notebookDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis()+"/notebook");
 		notebookDir.mkdirs();
 
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
@@ -147,7 +146,7 @@ public class NotebookTest implements JobListenerFactory{
 		Map<String, Object> config = note.getConfig();
 		config.put("cron", "* * * * * ?");
 		note.setConfig(config);
-		notebook.refreshCron(note.id(),"anonymous");
+		notebook.refreshCron(note.id(), "anonymous");
 		Thread.sleep(1*1000);
 		dateFinished = p.getDateFinished();
 		assertNotNull(dateFinished);
@@ -155,7 +154,7 @@ public class NotebookTest implements JobListenerFactory{
 		// remove cron scheduler.
 		config.put("cron", null);
 		note.setConfig(config);
-		notebook.refreshCron(note.id(),"anonymous");
+		notebook.refreshCron(note.id(), "anonymous");
 		Thread.sleep(1*1000);
 		assertEquals(dateFinished, p.getDateFinished());
 	}

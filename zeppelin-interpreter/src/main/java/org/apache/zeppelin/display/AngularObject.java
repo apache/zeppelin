@@ -49,9 +49,13 @@ public class AngularObject<T> {
     return name;
   }
 
-  public String getPrincipal() { return principal; }
+  public String getPrincipal() {
+    return principal;
+  }
 
-  public void setPrincipal(String principal) { this.principal = principal; }
+  public void setPrincipal(String principal) {
+    this.principal = principal;
+  }
 
   @Override
   public boolean equals(Object o) {

@@ -48,7 +48,7 @@ public class Notebook {
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
   /** Keep the order. */
-  Map<String, Map<String, Note>> notes = new LinkedHashMap<>();
+  Map<String, Map<String, Note>> notes = new LinkedHashMap<String, Map<String, Note>>();
   private ZeppelinConfiguration conf;
   private StdSchedulerFactory quertzSchedFact;
   private org.quartz.Scheduler quartzSched;
@@ -64,7 +64,7 @@ public class Notebook {
     this.schedulerFactory = schedulerFactory;
     this.replFactory = replFactory;
     this.jobListenerFactory = jobListenerFactory;
-    quertzSchedFact = new StdSchedulerFactory();
+    quertzSchedFact = new org.quartz.impl.StdSchedulerFactory();
     quartzSched = quertzSchedFact.getScheduler();
     quartzSched.start();
     CronJob.notebook = this;
@@ -94,10 +94,7 @@ public class Notebook {
       notes.put(principal, userNotes);
       return userNotes;
     }
-
-
   }
-
   /**
    * Create new note.
    *
@@ -177,9 +174,10 @@ public class Notebook {
 
     // set NoteInterpreterLoader
     NoteInterpreterLoader noteInterpreterLoader = new NoteInterpreterLoader(
-            replFactory);
+        replFactory);
     note.setReplLoader(noteInterpreterLoader);
     noteInterpreterLoader.setNoteId(note.id());
+
     // set JobListenerFactory
     note.setJobListenerFactory(jobListenerFactory);
 
@@ -187,14 +185,14 @@ public class Notebook {
     note.setNotebookRepo(notebookRepo);
 
     Map<String, SnapshotAngularObject> angularObjectSnapshot =
-            new HashMap<String, SnapshotAngularObject>();
+        new HashMap<String, SnapshotAngularObject>();
 
     // restore angular object --------------
     Date lastUpdatedDate = new Date(0);
     for (Paragraph p : note.getParagraphs()) {
       p.setNote(note);
       if (p.getDateFinished() != null &&
-              lastUpdatedDate.before(p.getDateFinished())) {
+          lastUpdatedDate.before(p.getDateFinished())) {
         lastUpdatedDate = p.getDateFinished();
       }
     }
@@ -209,11 +207,11 @@ public class Notebook {
           SnapshotAngularObject snapshot = angularObjectSnapshot.get(savedObject.getName());
           if (snapshot == null || snapshot.getLastUpdate().before(lastUpdatedDate)) {
             angularObjectSnapshot.put(
-                    savedObject.getName(),
-                    new SnapshotAngularObject(
-                            intpGroupName,
-                            savedObject,
-                            lastUpdatedDate));
+                savedObject.getName(),
+                new SnapshotAngularObject(
+                    intpGroupName,
+                    savedObject,
+                    lastUpdatedDate));
           }
         }
       }
@@ -228,7 +226,6 @@ public class Notebook {
 
   private void loadAllNotes() throws IOException {
     List<NoteInfo> noteInfos = notebookRepo.list();
-
     for (NoteInfo info : noteInfos) {
       loadNoteFromRepo(info.getId(), info.getOwner());
     }
@@ -359,9 +356,9 @@ public class Notebook {
 
       JobDetail newJob =
           JobBuilder.newJob(CronJob.class)
-                  .withIdentity(id, "note")
-                  .usingJobData("noteId", id)
-                  .usingJobData("principal", principal)
+            .withIdentity(id, "note")
+            .usingJobData("noteId", id)
+            .usingJobData("principal", principal)
                   .build();
 
       Map<String, Object> info = note.getInfo();

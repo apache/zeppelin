@@ -76,8 +76,7 @@ public class Note implements Serializable, JobListener {
 
   public Note(NotebookRepo repo,
       NoteInterpreterLoader replLoader,
-      JobListenerFactory jobListenerFactory,
-            String owner) {
+      JobListenerFactory jobListenerFactory, String owner) {
     this.repo = repo;
     this.replLoader = replLoader;
     this.jobListenerFactory = jobListenerFactory;
@@ -136,6 +135,7 @@ public class Note implements Serializable, JobListener {
   /**
    * Add paragraph last.
    *
+   * @param p
    */
   public Paragraph addParagraph() {
     Paragraph p = new Paragraph(this, this, replLoader);
@@ -149,6 +149,7 @@ public class Note implements Serializable, JobListener {
    * Insert paragraph in given index.
    *
    * @param index
+   * @param p
    */
   public Paragraph insertParagraph(int index) {
     Paragraph p = new Paragraph(this, this, replLoader);
@@ -247,6 +248,7 @@ public class Note implements Serializable, JobListener {
   /**
    * Run all paragraphs sequentially.
    *
+   * @param jobListener
    */
   public void runAll() {
     synchronized (paragraphs) {
@@ -308,7 +310,7 @@ public class Note implements Serializable, JobListener {
   }
 
   public void unpersist() throws IOException {
-    repo.remove(this.id, this.owner);
+    repo.remove(id(), this.owner);
   }
 
   public Map<String, Object> getConfig() {

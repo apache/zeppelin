@@ -58,22 +58,17 @@ public class NotebookServer extends WebSocketServer implements
   private static final String DEFAULT_ADDR = "0.0.0.0";
   private static final int DEFAULT_PORT = 8282;
 
-  private static void creatingwebSocketServerLog(String address, int port) {
-    LOG.info("Create zeppelin websocket on {}:{}", address, port);
-  }
-
   Gson gson = new Gson();
   Map<String, List<WebSocket>> noteSocketMap = new HashMap<String, List<WebSocket>>();
   Map<String, List<WebSocket>> userSocketMap = new HashMap<>();
+  List<WebSocket> connectedSockets = new LinkedList<WebSocket>();
 
   public NotebookServer() {
     super(new InetSocketAddress(DEFAULT_ADDR, DEFAULT_PORT));
-    creatingwebSocketServerLog(DEFAULT_ADDR, DEFAULT_PORT);
   }
 
   public NotebookServer(String address, int port) {
     super(new InetSocketAddress(address, port));
-    creatingwebSocketServerLog(address, port);
   }
 
   private Notebook notebook() {
@@ -83,7 +78,10 @@ public class NotebookServer extends WebSocketServer implements
   @Override
   public void onOpen(WebSocket conn, ClientHandshake handshake) {
     LOG.info("New connection from {} : {}", conn.getRemoteSocketAddress().getHostName(), conn
-            .getRemoteSocketAddress().getPort());
+        .getRemoteSocketAddress().getPort());
+    synchronized (connectedSockets) {
+      connectedSockets.add(conn);
+    }
   }
 
   @Override
@@ -97,7 +95,8 @@ public class NotebookServer extends WebSocketServer implements
       String ticket = TicketContainer.instance.getTicket(messagereceived.principal);
       if (ticket != null && !ticket.equals(messagereceived.ticket))
         throw new Exception("Invalid ticket " + messagereceived.ticket + " != " + ticket);
-      /** Lets be elegant here */
+
+        /** Lets be elegant here */
       switch (messagereceived.op) {
           case LIST_NOTES:
             broadcastNoteList(conn, messagereceived);
@@ -135,6 +134,9 @@ public class NotebookServer extends WebSocketServer implements
           case COMPLETION:
             completion(conn, notebook, messagereceived);
             break;
+          case PING:
+            pong();
+            break;          
           case ANGULAR_OBJECT_UPDATED:
             angularObjectUpdated(conn, notebook, messagereceived);
             break;
@@ -150,7 +152,7 @@ public class NotebookServer extends WebSocketServer implements
   @Override
   public void onClose(WebSocket conn, int code, String reason, boolean remote) {
     LOG.info("Closed connection to {} : {}", conn.getRemoteSocketAddress().getHostName(), conn
-        .getRemoteSocketAddress().getPort());
+            .getRemoteSocketAddress().getPort());
     removeConnectionFromAllNote(conn);
     synchronized (userSocketMap) {
       Collection<List<WebSocket>> allSockets = userSocketMap.values();
@@ -263,7 +265,6 @@ public class NotebookServer extends WebSocketServer implements
 
   private void broadcastAll(WebSocket conn, Message m) {
     synchronized (userSocketMap) {
-      //conn.send(serializeMessage(m));
       List<Map<String, String>> notesInfo = (List<Map<String, String>>) m.get("notes");
       for ( Map<String, String> info : notesInfo) {
         String principal = info.get("principal");
@@ -437,7 +438,6 @@ public class NotebookServer extends WebSocketServer implements
     String interpreterGroupId = (String) fromMessage.get("interpreterGroupId");
     String varName = (String) fromMessage.get("name");
     Object varValue = fromMessage.get("value");
-    String principal = fromMessage.principal;
 
     // propagate change to (Remote) AngularObjectRegistry
     Note note = notebook.getNote(noteId, fromMessage.principal);
@@ -457,7 +457,6 @@ public class NotebookServer extends WebSocketServer implements
           } else {
             // path from client -> server
             ao.set(varValue, false);
-            ao.setPrincipal(principal);
           }
 
           break;
@@ -466,7 +465,7 @@ public class NotebookServer extends WebSocketServer implements
     }
 
     // broadcast change to all web session that uses related interpreter.
-    for (Note n : notebook.getAllNotes(fromMessage.principal)) {
+    for (Note n : notebook.getAllNotes()) {
       List<InterpreterSetting> settings = note.getNoteReplLoader().getInterpreterSettings();
       for (InterpreterSetting setting : settings) {
         if (setting.getInterpreterGroup() == null) {
@@ -586,7 +585,9 @@ public class NotebookServer extends WebSocketServer implements
     @Override
     public void afterStatusChange(Job job, Status before, Status after) {
       if (after == Status.ERROR) {
-        job.getException().printStackTrace();
+        if (job.getException() != null) {
+          LOG.error("Error", job.getException());
+        }
       }
       if (job.isTerminated()) {
         LOG.info("Job {} is finished", job.getId());
@@ -603,6 +604,9 @@ public class NotebookServer extends WebSocketServer implements
   @Override
   public JobListener getParagraphJobListener(Note note) {
     return new ParagraphJobListener(this, note);
+  }
+
+  private void pong() {
   }
 
   private void sendAllAngularObjects(Note note, WebSocket conn) {

@@ -60,7 +60,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   @Test
   public void basicRDDTransformationAndActionTest() throws IOException {
     // create new note
-    Note note = ZeppelinServer.notebook.createNote();
+    Note note = ZeppelinServer.notebook.createNote("anonymous");
 
     // run markdown paragraph, again
     Paragraph p = note.addParagraph();
@@ -68,13 +68,13 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     note.run(p.getId());
     waitForFinish(p);
     assertEquals("55", p.getResult().message());
-    ZeppelinServer.notebook.removeNote(note.id());
+    ZeppelinServer.notebook.removeNote(note.id(), "anonymous");
   }
 
   @Test
   public void pySparkTest() throws IOException {
     // create new note
-    Note note = ZeppelinServer.notebook.createNote();
+    Note note = ZeppelinServer.notebook.createNote("anonymous");
 
     int sparkVersion = getSparkVersionNumber(note);
 
@@ -86,7 +86,47 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       waitForFinish(p);
       assertEquals("55\n", p.getResult().message());
     }
-    ZeppelinServer.notebook.removeNote(note.id());
+    ZeppelinServer.notebook.removeNote(note.id(), "anonymous");
+  }
+  
+  @Test
+  public void pySparkAutoConvertOptionTest() throws IOException {
+    // create new note
+    Note note = ZeppelinServer.notebook.createNote("anonymous");
+
+    int sparkVersion = getSparkVersionNumber(note);
+
+    if (isPyspark() && sparkVersion >= 14) {   // auto_convert enabled from spark 1.4
+      // run markdown paragraph, again
+      Paragraph p = note.addParagraph();
+      p.setText("%pyspark\nfrom pyspark.sql.functions import *\n"
+          + "print(sqlContext.range(0, 10).withColumn('uniform', rand(seed=10) * 3.14).count())");
+      note.run(p.getId());
+      waitForFinish(p);
+      assertEquals("10\n", p.getResult().message());
+    }
+    ZeppelinServer.notebook.removeNote(note.id(), "anonymous");
+  }
+
+  @Test
+  public void zRunTest() throws IOException {
+    // create new note
+    Note note = ZeppelinServer.notebook.createNote("anonymous");
+    Paragraph p0 = note.addParagraph();
+    p0.setText("z.run(1)");
+    Paragraph p1 = note.addParagraph();
+    p1.setText("val a=10");
+    Paragraph p2 = note.addParagraph();
+    p2.setText("print(a)");
+
+    note.run(p0.getId());
+    waitForFinish(p0);
+
+    note.run(p2.getId());
+    waitForFinish(p2);
+    assertEquals("10", p2.getResult().message());
+
+    ZeppelinServer.notebook.removeNote(note.id(), "anonymous");
   }
 
   /**

@@ -90,6 +90,7 @@ public class Message {
                 // @param notes serialized List<NoteInfo> object
 
     PARAGRAPH_REMOVE,
+    PING,
 
     ANGULAR_OBJECT_UPDATE,  // [s-c] add/update angular object
     ANGULAR_OBJECT_REMOVE,  // [s-c] add angular object del
