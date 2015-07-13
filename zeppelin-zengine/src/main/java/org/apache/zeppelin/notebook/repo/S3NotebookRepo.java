@@ -36,20 +36,20 @@ import com.google.gson.GsonBuilder;
 
 /**
  * 
- * @author root
+ * @author vgmartinez
  *
  */
 public class S3NotebookRepo implements NotebookRepo{
   
   Logger logger = LoggerFactory.getLogger(S3NotebookRepo.class);
-  Credentials cred = new Credentials();
+  Credentials aws = new Credentials();
   private static String bucketName = "";
-  AmazonS3 s3client = new AmazonS3Client(cred.getCredentials());
+  String user = "";
+  
+  AmazonS3 s3client = new AmazonS3Client(aws.getCredentials());
   
   private ZeppelinConfiguration conf;
-  String user = null;
-  String userShare = null;
-
+  
   public S3NotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
     user = conf.getUser();
@@ -94,7 +94,6 @@ public class S3NotebookRepo implements NotebookRepo{
           "such as not being able to access the network.");
       logger.info("Error Message: " + ace.getMessage());
     }
-    logger.info("NOTE NAME: " + infos.get(1).getName());
     return infos;
   }
 
@@ -135,9 +134,9 @@ public class S3NotebookRepo implements NotebookRepo{
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
     String json = gson.toJson(note);
-    String key = user + "/" + "notebook" + "/" + note.id();
+    String key = user + "/" + "notebook" + "/" + note.id() + "/" + "note.json";
     
-    File file = File.createTempFile("note.json", ".txt");
+    File file = File.createTempFile("note", "json");
     file.deleteOnExit();
     Writer writer = new OutputStreamWriter(new FileOutputStream(file));
     
@@ -149,7 +148,17 @@ public class S3NotebookRepo implements NotebookRepo{
   
   @Override
   public void remove(String noteId) throws IOException {
-    s3client.deleteObject(new DeleteObjectRequest(bucketName,
-      noteId));
+    
+    String key = user + "/" + "notebook" + "/" + noteId;
+    final ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
+        .withBucketName(bucketName).withPrefix(key);
+
+    ObjectListing objects = s3client.listObjects(listObjectsRequest);
+    do {
+      for (S3ObjectSummary objectSummary : objects.getObjectSummaries()) {
+        s3client.deleteObject(bucketName, objectSummary.getKey());
+      }
+      objects = s3client.listNextBatchOfObjects(objects);
+    } while (objects.isTruncated());
   }
 }

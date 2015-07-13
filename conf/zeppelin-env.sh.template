@@ -26,6 +26,8 @@
 # export ZEPPELIN_LOG_DIR        # Where log files are stored.  PWD by default.
 # export ZEPPELIN_PID_DIR        # The pid files are stored. /tmp by default.
 # export ZEPPELIN_NOTEBOOK_DIR   # Where notebook saved
+# export ZEPPELIN_BUCKET         # Bucket where notebook saved
+# export ZEPPELIN_USER           # User in bucket where notebook saved. For example bucket/user/notebook/2A94M5J1Z/note.json
 # export ZEPPELIN_IDENT_STRING   # A string representing this instance of zeppelin. $USER by default.
 # export ZEPPELIN_NICENESS       # The scheduling priority for daemons. Defaults to 0.
 

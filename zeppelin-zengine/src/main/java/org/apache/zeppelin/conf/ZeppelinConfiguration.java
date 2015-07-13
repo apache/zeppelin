@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
+import org.apache.zeppelin.notebook.repo.S3NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -419,9 +420,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
-    ZEPPELIN_BUCKET("zeppelin.bucket.name", "dataswarm"),
-    ZEPPELIN_USER("zeppelin.notebook.user", "vmgarcia"),
-    ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", VFSNotebookRepo.class.getName()),
+    ZEPPELIN_BUCKET("zeppelin.bucket.name", "zeppelin"),
+    ZEPPELIN_USER("zeppelin.notebook.user", "user"),
+    ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", S3NotebookRepo.class.getName()),
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner", "bin/interpreter.sh"),
     // Decide when new note is created, interpreter settings will be binded automatically or not.
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),
