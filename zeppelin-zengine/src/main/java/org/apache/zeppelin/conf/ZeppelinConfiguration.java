@@ -343,11 +343,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
   
   public String getUser() {
-    return getString(ConfVars.ZEPPELIN_USER);
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_BUCKET);
   }
   
   public String getBucketName() {
-    return getString(ConfVars.ZEPPELIN_BUCKET);
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_BUCKET);
   }
 
   public String getInterpreterDir() {
@@ -420,8 +420,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
-    ZEPPELIN_BUCKET("zeppelin.bucket.name", "zeppelin"),
-    ZEPPELIN_USER("zeppelin.notebook.user", "user"),
+    ZEPPELIN_NOTEBOOK_S3_BUCKET("zeppelin.bucket.name", "zeppelin"),
+    ZEPPELIN_NOTEBOOK_S3_USER("zeppelin.notebook.user", "user"),
     ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", VFSNotebookRepo.class.getName()),
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner", "bin/interpreter.sh"),
     // Decide when new note is created, interpreter settings will be binded automatically or not.
