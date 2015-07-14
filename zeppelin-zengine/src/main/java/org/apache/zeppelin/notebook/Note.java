@@ -48,7 +48,6 @@ public class Note implements Serializable, JobListener {
   List<Paragraph> paragraphs = new LinkedList<Paragraph>();
   private String name;
   private String id;
-  private long modTime;
 
   Map<String, List<AngularObject>> angularObjects = new HashMap<String, List<AngularObject>>();
 
@@ -121,14 +120,6 @@ public class Note implements Serializable, JobListener {
 
   public void setNotebookRepo(NotebookRepo repo) {
     this.repo = repo;
-  }
-
-  public long getModTime() {
-    return modTime;
-  }
-
-  public void setModTime(long timestamp) {
-    this.modTime = timestamp;
   }
 
   public Map<String, List<AngularObject>> getAngularObjects() {

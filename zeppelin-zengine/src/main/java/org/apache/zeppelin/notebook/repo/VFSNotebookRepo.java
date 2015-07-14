@@ -159,7 +159,6 @@ public class VFSNotebookRepo implements NotebookRepo {
     Note note = gson.fromJson(json, Note.class);
 //    note.setReplLoader(replLoader);
 //    note.jobListenerFactory = jobListenerFactory;
-    note.setModTime(content.getLastModifiedTime());
 
     for (Paragraph p : note.getParagraphs()) {
       if (p.getStatus() == Status.PENDING || p.getStatus() == Status.RUNNING) {
@@ -220,9 +219,6 @@ public class VFSNotebookRepo implements NotebookRepo {
     OutputStream out = noteJson.getContent().getOutputStream(false);
     out.write(json.getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)));
     out.close();
-    
-    /* on file change record the modification timestamp into Note object */
-    note.setModTime(noteJson.getContent().getLastModifiedTime());
   }
 
   @Override
