@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook.repo;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
+import org.apache.zeppelin.notebook.Paragraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,7 +126,17 @@ public class NotebookRepoSync implements NotebookRepo{
     List <NoteInfo> sourceNotes = sourceRepo.list();
     List <NoteInfo> destNotes = destRepo.list();
     
-    Map<String, List<String>> noteIDs = notesCheckDiff(sourceNotes, destNotes);
+    //printNoteInfos(sourceNotes);
+    //printNoteInfos(destNotes);
+    
+    /*for (NoteInfo nInfo : sourceNotes) {
+      printParagraphs(getRepo(sourceRepoIndex).get(nInfo.getId()));
+    }*/
+    
+    Map<String, List<String>> noteIDs = notesCheckDiff(sourceNotes,
+                                                       sourceRepo,
+                                                       destNotes,
+                                                       destRepo);
     List<String> pushNoteIDs = noteIDs.get(pushKey);
     List<String> pullNoteIDs = noteIDs.get(pullKey);
     if (!pushNoteIDs.isEmpty()) {
@@ -177,20 +189,27 @@ public class NotebookRepoSync implements NotebookRepo{
   }
   
   private Map<String, List<String>> notesCheckDiff(List <NoteInfo> sourceNotes,
-                                                   List <NoteInfo> destNotes) {
+                                                   NotebookRepo sourceRepo,
+                                                   List <NoteInfo> destNotes,
+                                                   NotebookRepo destRepo) throws IOException {
     List <String> pushIDs = new ArrayList<String>();
     List <String> pullIDs = new ArrayList<String>();
     
     NoteInfo dnote;
+    Date sdate, ddate;
     for (NoteInfo snote : sourceNotes) {
       dnote = containsID(destNotes, snote.getId());
       if (dnote != null) {
         /* note exists in source and destination storage systems */
-        if (snote.getModTime() > dnote.getModTime()) {
+        sdate = lastModificationDate(sourceRepo.get(snote.getId()));
+        ddate = lastModificationDate(destRepo.get(dnote.getId()));
+        if (sdate.after(ddate)) {
           /* source contains more up to date note - push */
           pushIDs.add(snote.getId());
-        } else if (snote.getModTime() != dnote.getModTime()) {
+          LOG.info("Modified note is added to push list : " + sdate);
+        } else if (sdate.compareTo(ddate) != 0) {
           /* destination contains more up to date note - pull */
+          LOG.info("Modified note is added to pull list : " + ddate);
           pullIDs.add(snote.getId());
         }
       } else {
@@ -223,11 +242,58 @@ public class NotebookRepoSync implements NotebookRepo{
     }
     return null;
   }
+  /**
+   * checks latest modification date based on Paragraph fields
+   * @return -Date
+   */
+  private Date lastModificationDate(Note note) {
+    Date latest = new Date(0L);
+    Date tempCreated, tempStarted, tempFinished;
+    
+    for (Paragraph paragraph : note.getParagraphs()) {
+      tempCreated = paragraph.getDateCreated();
+      tempStarted = paragraph.getDateStarted();
+      tempFinished = paragraph.getDateFinished();
+
+      if (tempCreated != null && tempCreated.after(latest)) {
+        latest = tempCreated;
+      }
+      if (tempStarted != null && tempStarted.after(latest)) {
+        latest = tempStarted;
+      }
+      if (tempFinished != null && tempFinished.after(latest)) {
+        latest = tempFinished;
+      }
+    }
+    return latest;
+  }
   
+  private void printParagraphs(Note note) {
+    LOG.info("Note name :  " + note.getName());
+    LOG.info("Note ID :  " + note.id());
+    for (Paragraph p : note.getParagraphs()) {
+      printParagraph(p);
+    }
+  }
+  
+  private void printParagraph(Paragraph paragraph) {
+    LOG.info("Date created :  " + paragraph.getDateCreated());
+    LOG.info("Date started :  " + paragraph.getDateStarted());
+    LOG.info("Date finished :  " + paragraph.getDateFinished());
+    LOG.info("Paragraph ID : " + paragraph.getId());
+    LOG.info("Paragraph title : " + paragraph.getTitle());
+  }
+  
+  private void printNoteInfos(List <NoteInfo> notes) {
+    LOG.info("The following is a list of note infos");
+    for (NoteInfo note : notes) {
+      printNoteInfo(note);
+    }
+  }
+
   private void printNoteInfo(NoteInfo note) {
     LOG.info("Note info of notebook with name : " + note.getName());
     LOG.info("ID : " + note.getId());
-    LOG.info("Note modification time : " + note.getModTime());
     Map<String, Object> configs = note.getConfig();
     for (Map.Entry<String, Object> entry : configs.entrySet()) {
       LOG.info("Config Key = " + entry.getKey() + "  , Value = " + 
