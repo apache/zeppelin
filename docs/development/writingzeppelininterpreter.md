@@ -62,7 +62,7 @@ for example,
 4. in the interpreter page, click the +Create button and configure your interpreter properties.
 Now you are done and ready to use your interpreter.
 
-Note that the interpreters shipped with zeppelin have a slightly different configuration process as they are registered by default without the use of the zeppelin-site.xml.
+Note that the interpreters shipped with zeppelin have a [default configuration](https://github.com/apache/incubator-zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/conf/ZeppelinConfiguration.java#L397) which is used when there is no zeppelin-site.xml.
 
 ### Use your interpreter
 
