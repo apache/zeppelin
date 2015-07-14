@@ -101,7 +101,7 @@ public class NotebookServer extends WebSocketServer implements
             sendNote(conn, notebook, messagereceived);
             break;
           case NEW_NOTE:
-            createNote(conn, notebook);
+            createNote(conn, notebook, messagereceived);
             break;
           case DEL_NOTE:
             removeNote(conn, notebook, messagereceived);
@@ -332,9 +332,14 @@ public class NotebookServer extends WebSocketServer implements
     return cronUpdated;
   }
 
-  private void createNote(WebSocket conn, Notebook notebook) throws IOException {
+  private void createNote(WebSocket conn, Notebook notebook, Message message) throws IOException {
     Note note = notebook.createNote();
     note.addParagraph(); // it's an empty note. so add one paragraph
+    if (message != null) {
+      String noteName = (String) message.get("name");
+      if (noteName != null && !noteName.isEmpty())
+        note.setName(noteName);
+    }
     note.persist();
     broadcastNote(note);
     broadcastNoteList();
