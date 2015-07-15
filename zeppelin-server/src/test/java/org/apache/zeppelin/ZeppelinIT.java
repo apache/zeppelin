@@ -287,13 +287,12 @@ public class ZeppelinIT {
       notebookTitles.add(el.getText());
     }
     
-    WebElement createNoteLink = driver.findElement(By
-    		.xpath("//div[contains(@class, \"col-md-4\")]/div/h5"));
-    createNoteLink.click();
+	WebElement createNoteLink = driver.findElement(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5"));
+	createNoteLink.click();
 
 	WebDriverWait block = new WebDriverWait(driver, 10);
-	WebElement createNoteButton = block
-			.until(ExpectedConditions.visibilityOfElementLocated(By.id("createNoteButton")));
+	WebElement modal = block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteNameModal")));
+	WebElement createNoteButton = modal.findElement(By.id("createNoteButton"));
 	createNoteButton.click();
 
     try {
