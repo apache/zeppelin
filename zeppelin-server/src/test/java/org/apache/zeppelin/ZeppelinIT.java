@@ -286,7 +286,7 @@ public class ZeppelinIT {
       notebookTitles.add(el.getText());
     }
     
-    WebElement createNoteLink = driver.findElement(By.partialLinkText("Create new note"));
+    WebElement createNoteLink = driver.findElement(By.id("createNoteButton"));
     createNoteLink.click();
 
     try {
