@@ -170,14 +170,15 @@ public class NotebookRepoSyncTest implements JobListenerFactory{
         notebookRepoSync.list(1).get(0).getId()).getParagraphs().size());
     /* apply sync */
     notebookRepoSync.sync();
-
+    /* check whether added to second storage */
     assertEquals(1, notebookRepoSync.get(1,
     notebookRepoSync.list(1).get(0).getId()).getParagraphs().size());
-    
-    //LOG.info("Last paragraph, secondary storage" + 
-    //notebookRepoSync.get(notebookRepoSync.list(1).get(0).getId()).getLastParagraph().getText());
+    /* check whether same paragraph id */
+    assertEquals(p1.getId(), notebookRepoSync.get(0,
+        notebookRepoSync.list(0).get(0).getId()).getLastParagraph().getId());
+    assertEquals(p1.getId(), notebookRepoSync.get(1,
+        notebookRepoSync.list(1).get(0).getId()).getLastParagraph().getId());
   }
-  
   
   private void delete(File file){
     if(file.isFile()) file.delete();

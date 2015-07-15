@@ -126,13 +126,6 @@ public class NotebookRepoSync implements NotebookRepo{
     List <NoteInfo> sourceNotes = sourceRepo.list();
     List <NoteInfo> destNotes = destRepo.list();
     
-    //printNoteInfos(sourceNotes);
-    //printNoteInfos(destNotes);
-    
-    /*for (NoteInfo nInfo : sourceNotes) {
-      printParagraphs(getRepo(sourceRepoIndex).get(nInfo.getId()));
-    }*/
-    
     Map<String, List<String>> noteIDs = notesCheckDiff(sourceNotes,
                                                        sourceRepo,
                                                        destNotes,
