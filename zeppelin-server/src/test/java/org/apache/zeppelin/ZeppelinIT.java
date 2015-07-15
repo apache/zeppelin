@@ -286,8 +286,12 @@ public class ZeppelinIT {
       notebookTitles.add(el.getText());
     }
     
-    WebElement createNoteLink = driver.findElement(By.id("createNoteButton"));
+    WebElement createNoteLink = driver.findElement(By
+    		.xpath("//div[contains(@class, \"col-md-4\")]/div/h5"));
     createNoteLink.click();
+    
+    WebElement createNoteButton = driver.findElement(By.id("createNoteButton"));
+    createNoteButton.click();
 
     try {
       Thread.sleep(500); // wait for notebook list updated
