@@ -37,6 +37,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
@@ -289,9 +290,11 @@ public class ZeppelinIT {
     WebElement createNoteLink = driver.findElement(By
     		.xpath("//div[contains(@class, \"col-md-4\")]/div/h5"));
     createNoteLink.click();
-    
-    WebElement createNoteButton = driver.findElement(By.id("createNoteButton"));
-    createNoteButton.click();
+
+	WebDriverWait block = new WebDriverWait(driver, 10);
+	WebElement createNoteButton = block
+			.until(ExpectedConditions.visibilityOfElementLocated(By.id("createNoteButton")));
+	createNoteButton.click();
 
     try {
       Thread.sleep(500); // wait for notebook list updated
