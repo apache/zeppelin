@@ -14,7 +14,7 @@ Interpreters in the same InterpreterGroup can reference each other. For example,
 
 <img class="img-responsive" style="width:50%; border: 1px solid #ecf0f1;" height="auto" src="../../assets/themes/zeppelin/img/interpreter.png" />
 
-Interpreter can be launched either using separate JVM process or separate classloader. The default is using separate JVM process (by checking 'fork' in Interpreter menu). When Interpreter is running in separate JVM process, it's communicating with Zeppelin via thrift. The other option is to use separate classloader, note that sometime separate classloader can causes problem especially when your interpreter uses reflections or trying to grab standard out/err.
+All Interpreters in the same interpreter group are launched in a single, separate JVM process. The Interpreter communicates with Zeppelin engine via thrift.
 
 ### Make your own Interpreter
 
@@ -30,8 +30,14 @@ static {
   }
 ```
 
-This name will appear later in the interpreter name option box during the interpreter configuration process.
+The name will appear later in the interpreter name option box during the interpreter configuration process.
 
+The name of the interpreter is what you later write to identify a paragraph which should be interpreted using this interpreter.
+
+```
+%MyInterpreterName
+some interpreter spesific code...
+```
 ### Install your interpreter binary
 
 Once you have build your interpreter, you can place your interpreter under directory with all the dependencies.
