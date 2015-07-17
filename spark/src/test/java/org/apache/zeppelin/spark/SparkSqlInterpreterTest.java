@@ -44,6 +44,7 @@ public class SparkSqlInterpreterTest {
   @Before
   public void setUp() throws Exception {
     Properties p = new Properties();
+    p.setProperty("zeppelin.spark.useHiveContext", "true");
 
     if (repl == null) {
 

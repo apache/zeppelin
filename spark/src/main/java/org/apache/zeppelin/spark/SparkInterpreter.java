@@ -109,7 +109,7 @@ public class SparkInterpreter extends Interpreter {
                  "Use CassandraContext instead of SQLContext if it is true")
             .add("zeppelin.spark.useHiveContext",
                 getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT",
-                    "zeppelin.spark.useHiveContext", "true"),
+                    "zeppelin.spark.useHiveContext", "false"),
                 "Use HiveContext instead of SQLContext if it is true.")
             .add("zeppelin.spark.maxResult",
                 getSystemDefault("ZEPPELIN_SPARK_MAXRESULT", "zeppelin.spark.maxResult", "1000"),
