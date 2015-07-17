@@ -218,8 +218,9 @@ public class SparkInterpreter extends Interpreter {
 
   public SQLContext getSQLContext() {
     if (sqlc == null) {
-      if(useCassandraContext() && useHiveContext())
-        throw new InterpreterException("Cassandra and Hive context are both enabled, please enable only one");
+      if (useCassandraContext() && useHiveContext())
+        throw new InterpreterException("Cassandra and Hive context are both enabled, " +
+            "please enable only one");
       
       if (useCassandraContext()) {
         sqlc = loadCustomContext("org.apache.spark.sql.cassandra.CassandraSQLContext");
