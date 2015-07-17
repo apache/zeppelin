@@ -37,6 +37,8 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer.InterpretJob;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterB;
 import org.apache.zeppelin.scheduler.Job;
@@ -108,6 +110,7 @@ public class RemoteInterpreterTest {
 
     intpA.interpret("1",
         new InterpreterContext(
+            "note",
             "id",
             "title",
             "text",
@@ -126,6 +129,37 @@ public class RemoteInterpreterTest {
 
     assertFalse(process.isRunning());
 
+  }
+
+  @Test
+  public void testRemoteInterperterErrorStatus() throws TTransportException, IOException {
+    Properties p = new Properties();
+
+    RemoteInterpreter intpA = new RemoteInterpreter(
+        p,
+        MockInterpreterA.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        env,
+        10 * 1000
+        );
+
+    intpGroup.add(intpA);
+    intpA.setInterpreterGroup(intpGroup);
+
+    intpA.open();
+    InterpreterResult ret = intpA.interpret("non numeric value",
+        new InterpreterContext(
+            "noteId",
+            "id",
+            "title",
+            "text",
+            new HashMap<String, Object>(),
+            new GUI(),
+            new AngularObjectRegistry(intpGroup.getId(), null),
+            new LinkedList<InterpreterContextRunner>()));
+
+    assertEquals(Code.ERROR, ret.code());
   }
 
   @Test
@@ -162,6 +196,7 @@ public class RemoteInterpreterTest {
     long start = System.currentTimeMillis();
     InterpreterResult ret = intpA.interpret("500",
         new InterpreterContext(
+            "note",
             "id",
             "title",
             "text",
@@ -173,6 +208,7 @@ public class RemoteInterpreterTest {
 
     ret = intpB.interpret("500",
         new InterpreterContext(
+            "note",
             "id",
             "title",
             "text",
@@ -240,6 +276,7 @@ public class RemoteInterpreterTest {
       protected Object jobRun() throws Throwable {
         return intpA.interpret("500",
             new InterpreterContext(
+                "note",
                 "jobA",
                 "title",
                 "text",
@@ -273,6 +310,7 @@ public class RemoteInterpreterTest {
       protected Object jobRun() throws Throwable {
         return intpB.interpret("500",
             new InterpreterContext(
+                "note",
                 "jobB",
                 "title",
                 "text",
@@ -347,6 +385,7 @@ public class RemoteInterpreterTest {
         @Override
         protected Object jobRun() throws Throwable {
           InterpreterResult ret = intpA.interpret(getJobName(), new InterpreterContext(
+              "note",
               jobId,
               "title",
               "text",
@@ -430,6 +469,7 @@ public class RemoteInterpreterTest {
         protected Object jobRun() throws Throwable {
           String stmt = Integer.toString(timeToSleep);
           InterpreterResult ret = intpA.interpret(stmt, new InterpreterContext(
+              "note",
               jobId,
               "title",
               "text",

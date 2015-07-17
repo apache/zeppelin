@@ -21,7 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -191,17 +191,13 @@ public abstract class Job {
     }
   }
 
-  public String getStack(Throwable e) {
-    StackTraceElement[] stacks = e.getStackTrace();
-    if (stacks == null) {
+  public static String getStack(Throwable e) {
+    if (e == null) {
       return "";
     }
-    String ss = "";
-    for (StackTraceElement s : stacks) {
-      ss += s.toString() + "\n";
-    }
 
-    return ss;
+    Throwable cause = ExceptionUtils.getRootCause(e);
+    return ExceptionUtils.getFullStackTrace(cause);
   }
 
   public Throwable getException() {

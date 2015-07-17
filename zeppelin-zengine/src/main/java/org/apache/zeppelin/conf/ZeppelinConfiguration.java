@@ -273,8 +273,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public int getWebSocketPort() {
     int port = getInt(ConfVars.ZEPPELIN_WEBSOCKET_PORT);
+    int serverPort = getServerPort();
+
     if (port < 0) {
-      return getServerPort() + 1;
+      if (serverPort <= 0) {
+        return 0;
+      } else {
+        return serverPort + 1;
+      }
     } else {
       return port;
     }
@@ -386,7 +392,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SSL_TRUSTSTORE_PATH("zeppelin.ssl.truststore.path", null),
     ZEPPELIN_SSL_TRUSTSTORE_TYPE("zeppelin.ssl.truststore.type", null),
     ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
-    ZEPPELIN_WAR("zeppelin.war", "../zeppelin-web/src/main/webapp"),
+    ZEPPELIN_WAR("zeppelin.war", "../zeppelin-web/dist"),
     ZEPPELIN_API_WAR("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),
     ZEPPELIN_INTERPRETERS("zeppelin.interpreters", "org.apache.zeppelin.spark.SparkInterpreter,"
         + "org.apache.zeppelin.spark.PySparkInterpreter,"
@@ -452,7 +458,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       this.floatValue = -1;
       this.longValue = longValue;
       this.booleanValue = false;
-      this.type = VarType.INT;
+      this.type = VarType.LONG;
     }
 
     ConfVars(String varName, float floatValue) {

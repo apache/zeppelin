@@ -18,9 +18,11 @@
 package org.apache.zeppelin.interpreter;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import org.apache.log4j.Logger;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 
 /**
@@ -71,14 +73,50 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
   }
 
   public void close() {
-    for (Interpreter intp : this) {
-      intp.close();
+    List<Thread> closeThreads = new LinkedList<Thread>();
+
+    for (final Interpreter intp : this) {
+      Thread t = new Thread() {
+        public void run() {
+          intp.close();
+        }
+      };
+
+      t.start();
+      closeThreads.add(t);
+    }
+
+    for (Thread t : closeThreads) {
+      try {
+        t.join();
+      } catch (InterruptedException e) {
+        Logger logger = Logger.getLogger(InterpreterGroup.class);
+        logger.error("Can't close interpreter", e);
+      }
     }
   }
 
   public void destroy() {
-    for (Interpreter intp : this) {
-      intp.destroy();
+    List<Thread> destroyThreads = new LinkedList<Thread>();
+
+    for (final Interpreter intp : this) {
+      Thread t = new Thread() {
+        public void run() {
+          intp.destroy();
+        }
+      };
+
+      t.start();
+      destroyThreads.add(t);
+    }
+
+    for (Thread t : destroyThreads) {
+      try {
+        t.join();
+      } catch (InterruptedException e) {
+        Logger logger = Logger.getLogger(InterpreterGroup.class);
+        logger.error("Can't close interpreter", e);
+      }
     }
   }
 }

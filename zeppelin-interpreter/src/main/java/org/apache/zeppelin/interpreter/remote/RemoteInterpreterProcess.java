@@ -163,10 +163,10 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
         clientPool.clear();
         clientPool.close();
 
-        // wait for 3 sec and force kill
+        // wait for some time (connectTimeout) and force kill
         // remote process server.serve() loop is not always finishing gracefully
         long startTime = System.currentTimeMillis();
-        while (System.currentTimeMillis() - startTime < 3 * 1000) {
+        while (System.currentTimeMillis() - startTime < connectTimeout) {
           if (this.isRunning()) {
             try {
               Thread.sleep(500);
@@ -236,7 +236,7 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
    * @param name
    * @param o
    */
-  public void updateRemoteAngularObject(String name, Object o) {
+  public void updateRemoteAngularObject(String name, String noteId, Object o) {
     Client client = null;
     try {
       client = getClient();
@@ -249,7 +249,7 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
 
     try {
       Gson gson = new Gson();
-      client.angularObjectUpdate(name, gson.toJson(o));
+      client.angularObjectUpdate(name, noteId, gson.toJson(o));
     } catch (TException e) {
       logger.error("Can't update angular object", e);
     } finally {

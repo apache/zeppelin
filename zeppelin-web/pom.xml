@@ -34,6 +34,14 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <warSourceDirectory>dist</warSourceDirectory>
+          <webXml>dist\WEB-INF\web.xml</webXml>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
         <version>0.11</version>
@@ -50,22 +58,21 @@
             <exclude>**/.settings/*</exclude>
             <exclude>**/.classpath</exclude>
             <exclude>**/.project</exclude>
-            <exclude>**/target/**</exclude>            
+            <exclude>**/target/**</exclude>
             <exclude>node/**</exclude>
             <exclude>node_modules/**</exclude>
             <exclude>bower_components/**</exclude>
             <exclude>test/**</exclude>
-            <exclude>src/main/webapp/**</exclude>
-            <exclude>app/.buildignore</exclude>
-            <exclude>app/fonts/fontawesome*</exclude>
-            <exclude>app/fonts/font-awesome*</exclude>
-            <exclude>app/styles/font-awesome*</exclude>
-            <exclude>app/fonts/Simple-Line*</exclude>
-            <exclude>app/fonts/simple-line*</exclude>
-            <exclude>app/styles/simple-line*</exclude>
+            <exclude>dist/**</exclude>
+            <exclude>src/.buildignore</exclude>
+            <exclude>src/fonts/fontawesome*</exclude>
+            <exclude>src/fonts/font-awesome*</exclude>
+            <exclude>src/styles/font-awesome*</exclude>
+            <exclude>src/fonts/Simple-Line*</exclude>
+            <exclude>src/fonts/simple-line*</exclude>
             <exclude>bower.json</exclude>
             <exclude>package.json</exclude>
-            <exclude>README.md</exclude>
+            <exclude>*.md</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -93,7 +100,7 @@
               <goal>npm</goal>
             </goals>
           </execution>
-          
+
           <execution>
             <id>bower install</id>
             <goals>

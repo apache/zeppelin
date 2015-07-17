@@ -56,7 +56,11 @@ public class RemoteInterpreterService {
 
     public RemoteInterpreterEvent getEvent() throws org.apache.thrift.TException;
 
-    public void angularObjectUpdate(String name, String object) throws org.apache.thrift.TException;
+    public void angularObjectUpdate(String name, String noteId, String object) throws org.apache.thrift.TException;
+
+    public void angularObjectAdd(String name, String noteId, String object) throws org.apache.thrift.TException;
+
+    public void angularObjectRemove(String name, String noteId) throws org.apache.thrift.TException;
 
   }
 
@@ -84,7 +88,11 @@ public class RemoteInterpreterService {
 
     public void getEvent(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getEvent_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void angularObjectUpdate(String name, String object, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.angularObjectUpdate_call> resultHandler) throws org.apache.thrift.TException;
+    public void angularObjectUpdate(String name, String noteId, String object, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.angularObjectUpdate_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void angularObjectAdd(String name, String noteId, String object, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.angularObjectAdd_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void angularObjectRemove(String name, String noteId, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.angularObjectRemove_call> resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -351,16 +359,17 @@ public class RemoteInterpreterService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getEvent failed: unknown result");
     }
 
-    public void angularObjectUpdate(String name, String object) throws org.apache.thrift.TException
+    public void angularObjectUpdate(String name, String noteId, String object) throws org.apache.thrift.TException
     {
-      send_angularObjectUpdate(name, object);
+      send_angularObjectUpdate(name, noteId, object);
       recv_angularObjectUpdate();
     }
 
-    public void send_angularObjectUpdate(String name, String object) throws org.apache.thrift.TException
+    public void send_angularObjectUpdate(String name, String noteId, String object) throws org.apache.thrift.TException
     {
       angularObjectUpdate_args args = new angularObjectUpdate_args();
       args.setName(name);
+      args.setNoteId(noteId);
       args.setObject(object);
       sendBase("angularObjectUpdate", args);
     }
@@ -369,6 +378,49 @@ public class RemoteInterpreterService {
     {
       angularObjectUpdate_result result = new angularObjectUpdate_result();
       receiveBase(result, "angularObjectUpdate");
+      return;
+    }
+
+    public void angularObjectAdd(String name, String noteId, String object) throws org.apache.thrift.TException
+    {
+      send_angularObjectAdd(name, noteId, object);
+      recv_angularObjectAdd();
+    }
+
+    public void send_angularObjectAdd(String name, String noteId, String object) throws org.apache.thrift.TException
+    {
+      angularObjectAdd_args args = new angularObjectAdd_args();
+      args.setName(name);
+      args.setNoteId(noteId);
+      args.setObject(object);
+      sendBase("angularObjectAdd", args);
+    }
+
+    public void recv_angularObjectAdd() throws org.apache.thrift.TException
+    {
+      angularObjectAdd_result result = new angularObjectAdd_result();
+      receiveBase(result, "angularObjectAdd");
+      return;
+    }
+
+    public void angularObjectRemove(String name, String noteId) throws org.apache.thrift.TException
+    {
+      send_angularObjectRemove(name, noteId);
+      recv_angularObjectRemove();
+    }
+
+    public void send_angularObjectRemove(String name, String noteId) throws org.apache.thrift.TException
+    {
+      angularObjectRemove_args args = new angularObjectRemove_args();
+      args.setName(name);
+      args.setNoteId(noteId);
+      sendBase("angularObjectRemove", args);
+    }
+
+    public void recv_angularObjectRemove() throws org.apache.thrift.TException
+    {
+      angularObjectRemove_result result = new angularObjectRemove_result();
+      receiveBase(result, "angularObjectRemove");
       return;
     }
 
@@ -757,19 +809,21 @@ public class RemoteInterpreterService {
       }
     }
 
-    public void angularObjectUpdate(String name, String object, org.apache.thrift.async.AsyncMethodCallback<angularObjectUpdate_call> resultHandler) throws org.apache.thrift.TException {
+    public void angularObjectUpdate(String name, String noteId, String object, org.apache.thrift.async.AsyncMethodCallback<angularObjectUpdate_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      angularObjectUpdate_call method_call = new angularObjectUpdate_call(name, object, resultHandler, this, ___protocolFactory, ___transport);
+      angularObjectUpdate_call method_call = new angularObjectUpdate_call(name, noteId, object, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class angularObjectUpdate_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String name;
+      private String noteId;
       private String object;
-      public angularObjectUpdate_call(String name, String object, org.apache.thrift.async.AsyncMethodCallback<angularObjectUpdate_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public angularObjectUpdate_call(String name, String noteId, String object, org.apache.thrift.async.AsyncMethodCallback<angularObjectUpdate_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.name = name;
+        this.noteId = noteId;
         this.object = object;
       }
 
@@ -777,6 +831,7 @@ public class RemoteInterpreterService {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("angularObjectUpdate", org.apache.thrift.protocol.TMessageType.CALL, 0));
         angularObjectUpdate_args args = new angularObjectUpdate_args();
         args.setName(name);
+        args.setNoteId(noteId);
         args.setObject(object);
         args.write(prot);
         prot.writeMessageEnd();
@@ -789,6 +844,79 @@ public class RemoteInterpreterService {
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
         (new Client(prot)).recv_angularObjectUpdate();
+      }
+    }
+
+    public void angularObjectAdd(String name, String noteId, String object, org.apache.thrift.async.AsyncMethodCallback<angularObjectAdd_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      angularObjectAdd_call method_call = new angularObjectAdd_call(name, noteId, object, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class angularObjectAdd_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String name;
+      private String noteId;
+      private String object;
+      public angularObjectAdd_call(String name, String noteId, String object, org.apache.thrift.async.AsyncMethodCallback<angularObjectAdd_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.name = name;
+        this.noteId = noteId;
+        this.object = object;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("angularObjectAdd", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        angularObjectAdd_args args = new angularObjectAdd_args();
+        args.setName(name);
+        args.setNoteId(noteId);
+        args.setObject(object);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_angularObjectAdd();
+      }
+    }
+
+    public void angularObjectRemove(String name, String noteId, org.apache.thrift.async.AsyncMethodCallback<angularObjectRemove_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      angularObjectRemove_call method_call = new angularObjectRemove_call(name, noteId, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class angularObjectRemove_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String name;
+      private String noteId;
+      public angularObjectRemove_call(String name, String noteId, org.apache.thrift.async.AsyncMethodCallback<angularObjectRemove_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.name = name;
+        this.noteId = noteId;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("angularObjectRemove", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        angularObjectRemove_args args = new angularObjectRemove_args();
+        args.setName(name);
+        args.setNoteId(noteId);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_angularObjectRemove();
       }
     }
 
@@ -817,6 +945,8 @@ public class RemoteInterpreterService {
       processMap.put("getStatus", new getStatus());
       processMap.put("getEvent", new getEvent());
       processMap.put("angularObjectUpdate", new angularObjectUpdate());
+      processMap.put("angularObjectAdd", new angularObjectAdd());
+      processMap.put("angularObjectRemove", new angularObjectRemove());
       return processMap;
     }
 
@@ -1056,7 +1186,47 @@ public class RemoteInterpreterService {
 
       public angularObjectUpdate_result getResult(I iface, angularObjectUpdate_args args) throws org.apache.thrift.TException {
         angularObjectUpdate_result result = new angularObjectUpdate_result();
-        iface.angularObjectUpdate(args.name, args.object);
+        iface.angularObjectUpdate(args.name, args.noteId, args.object);
+        return result;
+      }
+    }
+
+    public static class angularObjectAdd<I extends Iface> extends org.apache.thrift.ProcessFunction<I, angularObjectAdd_args> {
+      public angularObjectAdd() {
+        super("angularObjectAdd");
+      }
+
+      public angularObjectAdd_args getEmptyArgsInstance() {
+        return new angularObjectAdd_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public angularObjectAdd_result getResult(I iface, angularObjectAdd_args args) throws org.apache.thrift.TException {
+        angularObjectAdd_result result = new angularObjectAdd_result();
+        iface.angularObjectAdd(args.name, args.noteId, args.object);
+        return result;
+      }
+    }
+
+    public static class angularObjectRemove<I extends Iface> extends org.apache.thrift.ProcessFunction<I, angularObjectRemove_args> {
+      public angularObjectRemove() {
+        super("angularObjectRemove");
+      }
+
+      public angularObjectRemove_args getEmptyArgsInstance() {
+        return new angularObjectRemove_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public angularObjectRemove_result getResult(I iface, angularObjectRemove_args args) throws org.apache.thrift.TException {
+        angularObjectRemove_result result = new angularObjectRemove_result();
+        iface.angularObjectRemove(args.name, args.noteId);
         return result;
       }
     }
@@ -8937,7 +9107,8 @@ public class RemoteInterpreterService {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("angularObjectUpdate_args");
 
     private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField OBJECT_FIELD_DESC = new org.apache.thrift.protocol.TField("object", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField NOTE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("noteId", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField OBJECT_FIELD_DESC = new org.apache.thrift.protocol.TField("object", org.apache.thrift.protocol.TType.STRING, (short)3);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -8946,12 +9117,14 @@ public class RemoteInterpreterService {
     }
 
     public String name; // required
+    public String noteId; // required
     public String object; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       NAME((short)1, "name"),
-      OBJECT((short)2, "object");
+      NOTE_ID((short)2, "noteId"),
+      OBJECT((short)3, "object");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -8968,7 +9141,9 @@ public class RemoteInterpreterService {
         switch(fieldId) {
           case 1: // NAME
             return NAME;
-          case 2: // OBJECT
+          case 2: // NOTE_ID
+            return NOTE_ID;
+          case 3: // OBJECT
             return OBJECT;
           default:
             return null;
@@ -9015,6 +9190,8 @@ public class RemoteInterpreterService {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.NOTE_ID, new org.apache.thrift.meta_data.FieldMetaData("noteId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.OBJECT, new org.apache.thrift.meta_data.FieldMetaData("object", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -9026,10 +9203,12 @@ public class RemoteInterpreterService {
 
     public angularObjectUpdate_args(
       String name,
+      String noteId,
       String object)
     {
       this();
       this.name = name;
+      this.noteId = noteId;
       this.object = object;
     }
 
@@ -9039,6 +9218,9 @@ public class RemoteInterpreterService {
     public angularObjectUpdate_args(angularObjectUpdate_args other) {
       if (other.isSetName()) {
         this.name = other.name;
+      }
+      if (other.isSetNoteId()) {
+        this.noteId = other.noteId;
       }
       if (other.isSetObject()) {
         this.object = other.object;
@@ -9052,6 +9234,7 @@ public class RemoteInterpreterService {
     @Override
     public void clear() {
       this.name = null;
+      this.noteId = null;
       this.object = null;
     }
 
@@ -9076,6 +9259,30 @@ public class RemoteInterpreterService {
     public void setNameIsSet(boolean value) {
       if (!value) {
         this.name = null;
+      }
+    }
+
+    public String getNoteId() {
+      return this.noteId;
+    }
+
+    public angularObjectUpdate_args setNoteId(String noteId) {
+      this.noteId = noteId;
+      return this;
+    }
+
+    public void unsetNoteId() {
+      this.noteId = null;
+    }
+
+    /** Returns true if field noteId is set (has been assigned a value) and false otherwise */
+    public boolean isSetNoteId() {
+      return this.noteId != null;
+    }
+
+    public void setNoteIdIsSet(boolean value) {
+      if (!value) {
+        this.noteId = null;
       }
     }
 
@@ -9113,6 +9320,14 @@ public class RemoteInterpreterService {
         }
         break;
 
+      case NOTE_ID:
+        if (value == null) {
+          unsetNoteId();
+        } else {
+          setNoteId((String)value);
+        }
+        break;
+
       case OBJECT:
         if (value == null) {
           unsetObject();
@@ -9128,6 +9343,9 @@ public class RemoteInterpreterService {
       switch (field) {
       case NAME:
         return getName();
+
+      case NOTE_ID:
+        return getNoteId();
 
       case OBJECT:
         return getObject();
@@ -9145,6 +9363,8 @@ public class RemoteInterpreterService {
       switch (field) {
       case NAME:
         return isSetName();
+      case NOTE_ID:
+        return isSetNoteId();
       case OBJECT:
         return isSetObject();
       }
@@ -9170,6 +9390,15 @@ public class RemoteInterpreterService {
         if (!(this_present_name && that_present_name))
           return false;
         if (!this.name.equals(that.name))
+          return false;
+      }
+
+      boolean this_present_noteId = true && this.isSetNoteId();
+      boolean that_present_noteId = true && that.isSetNoteId();
+      if (this_present_noteId || that_present_noteId) {
+        if (!(this_present_noteId && that_present_noteId))
+          return false;
+        if (!this.noteId.equals(that.noteId))
           return false;
       }
 
@@ -9204,6 +9433,16 @@ public class RemoteInterpreterService {
       }
       if (isSetName()) {
         lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.name, typedOther.name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetNoteId()).compareTo(typedOther.isSetNoteId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNoteId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, typedOther.noteId);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -9243,6 +9482,14 @@ public class RemoteInterpreterService {
         sb.append("null");
       } else {
         sb.append(this.name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("noteId:");
+      if (this.noteId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.noteId);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -9304,7 +9551,15 @@ public class RemoteInterpreterService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // OBJECT
+            case 2: // NOTE_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.noteId = iprot.readString();
+                struct.setNoteIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 3: // OBJECT
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.object = iprot.readString();
                 struct.setObjectIsSet(true);
@@ -9330,6 +9585,11 @@ public class RemoteInterpreterService {
         if (struct.name != null) {
           oprot.writeFieldBegin(NAME_FIELD_DESC);
           oprot.writeString(struct.name);
+          oprot.writeFieldEnd();
+        }
+        if (struct.noteId != null) {
+          oprot.writeFieldBegin(NOTE_ID_FIELD_DESC);
+          oprot.writeString(struct.noteId);
           oprot.writeFieldEnd();
         }
         if (struct.object != null) {
@@ -9358,12 +9618,18 @@ public class RemoteInterpreterService {
         if (struct.isSetName()) {
           optionals.set(0);
         }
-        if (struct.isSetObject()) {
+        if (struct.isSetNoteId()) {
           optionals.set(1);
         }
-        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetObject()) {
+          optionals.set(2);
+        }
+        oprot.writeBitSet(optionals, 3);
         if (struct.isSetName()) {
           oprot.writeString(struct.name);
+        }
+        if (struct.isSetNoteId()) {
+          oprot.writeString(struct.noteId);
         }
         if (struct.isSetObject()) {
           oprot.writeString(struct.object);
@@ -9373,12 +9639,16 @@ public class RemoteInterpreterService {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, angularObjectUpdate_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(2);
+        BitSet incoming = iprot.readBitSet(3);
         if (incoming.get(0)) {
           struct.name = iprot.readString();
           struct.setNameIsSet(true);
         }
         if (incoming.get(1)) {
+          struct.noteId = iprot.readString();
+          struct.setNoteIdIsSet(true);
+        }
+        if (incoming.get(2)) {
           struct.object = iprot.readString();
           struct.setObjectIsSet(true);
         }
@@ -9627,6 +9897,1506 @@ public class RemoteInterpreterService {
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, angularObjectUpdate_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+      }
+    }
+
+  }
+
+  public static class angularObjectAdd_args implements org.apache.thrift.TBase<angularObjectAdd_args, angularObjectAdd_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("angularObjectAdd_args");
+
+    private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField NOTE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("noteId", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField OBJECT_FIELD_DESC = new org.apache.thrift.protocol.TField("object", org.apache.thrift.protocol.TType.STRING, (short)3);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new angularObjectAdd_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new angularObjectAdd_argsTupleSchemeFactory());
+    }
+
+    public String name; // required
+    public String noteId; // required
+    public String object; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      NAME((short)1, "name"),
+      NOTE_ID((short)2, "noteId"),
+      OBJECT((short)3, "object");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // NAME
+            return NAME;
+          case 2: // NOTE_ID
+            return NOTE_ID;
+          case 3: // OBJECT
+            return OBJECT;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.NOTE_ID, new org.apache.thrift.meta_data.FieldMetaData("noteId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.OBJECT, new org.apache.thrift.meta_data.FieldMetaData("object", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(angularObjectAdd_args.class, metaDataMap);
+    }
+
+    public angularObjectAdd_args() {
+    }
+
+    public angularObjectAdd_args(
+      String name,
+      String noteId,
+      String object)
+    {
+      this();
+      this.name = name;
+      this.noteId = noteId;
+      this.object = object;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public angularObjectAdd_args(angularObjectAdd_args other) {
+      if (other.isSetName()) {
+        this.name = other.name;
+      }
+      if (other.isSetNoteId()) {
+        this.noteId = other.noteId;
+      }
+      if (other.isSetObject()) {
+        this.object = other.object;
+      }
+    }
+
+    public angularObjectAdd_args deepCopy() {
+      return new angularObjectAdd_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.name = null;
+      this.noteId = null;
+      this.object = null;
+    }
+
+    public String getName() {
+      return this.name;
+    }
+
+    public angularObjectAdd_args setName(String name) {
+      this.name = name;
+      return this;
+    }
+
+    public void unsetName() {
+      this.name = null;
+    }
+
+    /** Returns true if field name is set (has been assigned a value) and false otherwise */
+    public boolean isSetName() {
+      return this.name != null;
+    }
+
+    public void setNameIsSet(boolean value) {
+      if (!value) {
+        this.name = null;
+      }
+    }
+
+    public String getNoteId() {
+      return this.noteId;
+    }
+
+    public angularObjectAdd_args setNoteId(String noteId) {
+      this.noteId = noteId;
+      return this;
+    }
+
+    public void unsetNoteId() {
+      this.noteId = null;
+    }
+
+    /** Returns true if field noteId is set (has been assigned a value) and false otherwise */
+    public boolean isSetNoteId() {
+      return this.noteId != null;
+    }
+
+    public void setNoteIdIsSet(boolean value) {
+      if (!value) {
+        this.noteId = null;
+      }
+    }
+
+    public String getObject() {
+      return this.object;
+    }
+
+    public angularObjectAdd_args setObject(String object) {
+      this.object = object;
+      return this;
+    }
+
+    public void unsetObject() {
+      this.object = null;
+    }
+
+    /** Returns true if field object is set (has been assigned a value) and false otherwise */
+    public boolean isSetObject() {
+      return this.object != null;
+    }
+
+    public void setObjectIsSet(boolean value) {
+      if (!value) {
+        this.object = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case NAME:
+        if (value == null) {
+          unsetName();
+        } else {
+          setName((String)value);
+        }
+        break;
+
+      case NOTE_ID:
+        if (value == null) {
+          unsetNoteId();
+        } else {
+          setNoteId((String)value);
+        }
+        break;
+
+      case OBJECT:
+        if (value == null) {
+          unsetObject();
+        } else {
+          setObject((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case NAME:
+        return getName();
+
+      case NOTE_ID:
+        return getNoteId();
+
+      case OBJECT:
+        return getObject();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case NAME:
+        return isSetName();
+      case NOTE_ID:
+        return isSetNoteId();
+      case OBJECT:
+        return isSetObject();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof angularObjectAdd_args)
+        return this.equals((angularObjectAdd_args)that);
+      return false;
+    }
+
+    public boolean equals(angularObjectAdd_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_name = true && this.isSetName();
+      boolean that_present_name = true && that.isSetName();
+      if (this_present_name || that_present_name) {
+        if (!(this_present_name && that_present_name))
+          return false;
+        if (!this.name.equals(that.name))
+          return false;
+      }
+
+      boolean this_present_noteId = true && this.isSetNoteId();
+      boolean that_present_noteId = true && that.isSetNoteId();
+      if (this_present_noteId || that_present_noteId) {
+        if (!(this_present_noteId && that_present_noteId))
+          return false;
+        if (!this.noteId.equals(that.noteId))
+          return false;
+      }
+
+      boolean this_present_object = true && this.isSetObject();
+      boolean that_present_object = true && that.isSetObject();
+      if (this_present_object || that_present_object) {
+        if (!(this_present_object && that_present_object))
+          return false;
+        if (!this.object.equals(that.object))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(angularObjectAdd_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      angularObjectAdd_args typedOther = (angularObjectAdd_args)other;
+
+      lastComparison = Boolean.valueOf(isSetName()).compareTo(typedOther.isSetName());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetName()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.name, typedOther.name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetNoteId()).compareTo(typedOther.isSetNoteId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNoteId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, typedOther.noteId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetObject()).compareTo(typedOther.isSetObject());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetObject()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.object, typedOther.object);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("angularObjectAdd_args(");
+      boolean first = true;
+
+      sb.append("name:");
+      if (this.name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("noteId:");
+      if (this.noteId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.noteId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("object:");
+      if (this.object == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.object);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class angularObjectAdd_argsStandardSchemeFactory implements SchemeFactory {
+      public angularObjectAdd_argsStandardScheme getScheme() {
+        return new angularObjectAdd_argsStandardScheme();
+      }
+    }
+
+    private static class angularObjectAdd_argsStandardScheme extends StandardScheme<angularObjectAdd_args> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, angularObjectAdd_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // NAME
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.name = iprot.readString();
+                struct.setNameIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // NOTE_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.noteId = iprot.readString();
+                struct.setNoteIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 3: // OBJECT
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.object = iprot.readString();
+                struct.setObjectIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, angularObjectAdd_args struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.name != null) {
+          oprot.writeFieldBegin(NAME_FIELD_DESC);
+          oprot.writeString(struct.name);
+          oprot.writeFieldEnd();
+        }
+        if (struct.noteId != null) {
+          oprot.writeFieldBegin(NOTE_ID_FIELD_DESC);
+          oprot.writeString(struct.noteId);
+          oprot.writeFieldEnd();
+        }
+        if (struct.object != null) {
+          oprot.writeFieldBegin(OBJECT_FIELD_DESC);
+          oprot.writeString(struct.object);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class angularObjectAdd_argsTupleSchemeFactory implements SchemeFactory {
+      public angularObjectAdd_argsTupleScheme getScheme() {
+        return new angularObjectAdd_argsTupleScheme();
+      }
+    }
+
+    private static class angularObjectAdd_argsTupleScheme extends TupleScheme<angularObjectAdd_args> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, angularObjectAdd_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetName()) {
+          optionals.set(0);
+        }
+        if (struct.isSetNoteId()) {
+          optionals.set(1);
+        }
+        if (struct.isSetObject()) {
+          optionals.set(2);
+        }
+        oprot.writeBitSet(optionals, 3);
+        if (struct.isSetName()) {
+          oprot.writeString(struct.name);
+        }
+        if (struct.isSetNoteId()) {
+          oprot.writeString(struct.noteId);
+        }
+        if (struct.isSetObject()) {
+          oprot.writeString(struct.object);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, angularObjectAdd_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(3);
+        if (incoming.get(0)) {
+          struct.name = iprot.readString();
+          struct.setNameIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.noteId = iprot.readString();
+          struct.setNoteIdIsSet(true);
+        }
+        if (incoming.get(2)) {
+          struct.object = iprot.readString();
+          struct.setObjectIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class angularObjectAdd_result implements org.apache.thrift.TBase<angularObjectAdd_result, angularObjectAdd_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("angularObjectAdd_result");
+
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new angularObjectAdd_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new angularObjectAdd_resultTupleSchemeFactory());
+    }
+
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+;
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(angularObjectAdd_result.class, metaDataMap);
+    }
+
+    public angularObjectAdd_result() {
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public angularObjectAdd_result(angularObjectAdd_result other) {
+    }
+
+    public angularObjectAdd_result deepCopy() {
+      return new angularObjectAdd_result(this);
+    }
+
+    @Override
+    public void clear() {
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof angularObjectAdd_result)
+        return this.equals((angularObjectAdd_result)that);
+      return false;
+    }
+
+    public boolean equals(angularObjectAdd_result that) {
+      if (that == null)
+        return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(angularObjectAdd_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      angularObjectAdd_result typedOther = (angularObjectAdd_result)other;
+
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("angularObjectAdd_result(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class angularObjectAdd_resultStandardSchemeFactory implements SchemeFactory {
+      public angularObjectAdd_resultStandardScheme getScheme() {
+        return new angularObjectAdd_resultStandardScheme();
+      }
+    }
+
+    private static class angularObjectAdd_resultStandardScheme extends StandardScheme<angularObjectAdd_result> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, angularObjectAdd_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, angularObjectAdd_result struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class angularObjectAdd_resultTupleSchemeFactory implements SchemeFactory {
+      public angularObjectAdd_resultTupleScheme getScheme() {
+        return new angularObjectAdd_resultTupleScheme();
+      }
+    }
+
+    private static class angularObjectAdd_resultTupleScheme extends TupleScheme<angularObjectAdd_result> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, angularObjectAdd_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, angularObjectAdd_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+      }
+    }
+
+  }
+
+  public static class angularObjectRemove_args implements org.apache.thrift.TBase<angularObjectRemove_args, angularObjectRemove_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("angularObjectRemove_args");
+
+    private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField NOTE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("noteId", org.apache.thrift.protocol.TType.STRING, (short)2);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new angularObjectRemove_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new angularObjectRemove_argsTupleSchemeFactory());
+    }
+
+    public String name; // required
+    public String noteId; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      NAME((short)1, "name"),
+      NOTE_ID((short)2, "noteId");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // NAME
+            return NAME;
+          case 2: // NOTE_ID
+            return NOTE_ID;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.NOTE_ID, new org.apache.thrift.meta_data.FieldMetaData("noteId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(angularObjectRemove_args.class, metaDataMap);
+    }
+
+    public angularObjectRemove_args() {
+    }
+
+    public angularObjectRemove_args(
+      String name,
+      String noteId)
+    {
+      this();
+      this.name = name;
+      this.noteId = noteId;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public angularObjectRemove_args(angularObjectRemove_args other) {
+      if (other.isSetName()) {
+        this.name = other.name;
+      }
+      if (other.isSetNoteId()) {
+        this.noteId = other.noteId;
+      }
+    }
+
+    public angularObjectRemove_args deepCopy() {
+      return new angularObjectRemove_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.name = null;
+      this.noteId = null;
+    }
+
+    public String getName() {
+      return this.name;
+    }
+
+    public angularObjectRemove_args setName(String name) {
+      this.name = name;
+      return this;
+    }
+
+    public void unsetName() {
+      this.name = null;
+    }
+
+    /** Returns true if field name is set (has been assigned a value) and false otherwise */
+    public boolean isSetName() {
+      return this.name != null;
+    }
+
+    public void setNameIsSet(boolean value) {
+      if (!value) {
+        this.name = null;
+      }
+    }
+
+    public String getNoteId() {
+      return this.noteId;
+    }
+
+    public angularObjectRemove_args setNoteId(String noteId) {
+      this.noteId = noteId;
+      return this;
+    }
+
+    public void unsetNoteId() {
+      this.noteId = null;
+    }
+
+    /** Returns true if field noteId is set (has been assigned a value) and false otherwise */
+    public boolean isSetNoteId() {
+      return this.noteId != null;
+    }
+
+    public void setNoteIdIsSet(boolean value) {
+      if (!value) {
+        this.noteId = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case NAME:
+        if (value == null) {
+          unsetName();
+        } else {
+          setName((String)value);
+        }
+        break;
+
+      case NOTE_ID:
+        if (value == null) {
+          unsetNoteId();
+        } else {
+          setNoteId((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case NAME:
+        return getName();
+
+      case NOTE_ID:
+        return getNoteId();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case NAME:
+        return isSetName();
+      case NOTE_ID:
+        return isSetNoteId();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof angularObjectRemove_args)
+        return this.equals((angularObjectRemove_args)that);
+      return false;
+    }
+
+    public boolean equals(angularObjectRemove_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_name = true && this.isSetName();
+      boolean that_present_name = true && that.isSetName();
+      if (this_present_name || that_present_name) {
+        if (!(this_present_name && that_present_name))
+          return false;
+        if (!this.name.equals(that.name))
+          return false;
+      }
+
+      boolean this_present_noteId = true && this.isSetNoteId();
+      boolean that_present_noteId = true && that.isSetNoteId();
+      if (this_present_noteId || that_present_noteId) {
+        if (!(this_present_noteId && that_present_noteId))
+          return false;
+        if (!this.noteId.equals(that.noteId))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(angularObjectRemove_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      angularObjectRemove_args typedOther = (angularObjectRemove_args)other;
+
+      lastComparison = Boolean.valueOf(isSetName()).compareTo(typedOther.isSetName());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetName()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.name, typedOther.name);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetNoteId()).compareTo(typedOther.isSetNoteId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNoteId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, typedOther.noteId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("angularObjectRemove_args(");
+      boolean first = true;
+
+      sb.append("name:");
+      if (this.name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.name);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("noteId:");
+      if (this.noteId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.noteId);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class angularObjectRemove_argsStandardSchemeFactory implements SchemeFactory {
+      public angularObjectRemove_argsStandardScheme getScheme() {
+        return new angularObjectRemove_argsStandardScheme();
+      }
+    }
+
+    private static class angularObjectRemove_argsStandardScheme extends StandardScheme<angularObjectRemove_args> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, angularObjectRemove_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // NAME
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.name = iprot.readString();
+                struct.setNameIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // NOTE_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.noteId = iprot.readString();
+                struct.setNoteIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, angularObjectRemove_args struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.name != null) {
+          oprot.writeFieldBegin(NAME_FIELD_DESC);
+          oprot.writeString(struct.name);
+          oprot.writeFieldEnd();
+        }
+        if (struct.noteId != null) {
+          oprot.writeFieldBegin(NOTE_ID_FIELD_DESC);
+          oprot.writeString(struct.noteId);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class angularObjectRemove_argsTupleSchemeFactory implements SchemeFactory {
+      public angularObjectRemove_argsTupleScheme getScheme() {
+        return new angularObjectRemove_argsTupleScheme();
+      }
+    }
+
+    private static class angularObjectRemove_argsTupleScheme extends TupleScheme<angularObjectRemove_args> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, angularObjectRemove_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetName()) {
+          optionals.set(0);
+        }
+        if (struct.isSetNoteId()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetName()) {
+          oprot.writeString(struct.name);
+        }
+        if (struct.isSetNoteId()) {
+          oprot.writeString(struct.noteId);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, angularObjectRemove_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          struct.name = iprot.readString();
+          struct.setNameIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.noteId = iprot.readString();
+          struct.setNoteIdIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class angularObjectRemove_result implements org.apache.thrift.TBase<angularObjectRemove_result, angularObjectRemove_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("angularObjectRemove_result");
+
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new angularObjectRemove_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new angularObjectRemove_resultTupleSchemeFactory());
+    }
+
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+;
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(angularObjectRemove_result.class, metaDataMap);
+    }
+
+    public angularObjectRemove_result() {
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public angularObjectRemove_result(angularObjectRemove_result other) {
+    }
+
+    public angularObjectRemove_result deepCopy() {
+      return new angularObjectRemove_result(this);
+    }
+
+    @Override
+    public void clear() {
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof angularObjectRemove_result)
+        return this.equals((angularObjectRemove_result)that);
+      return false;
+    }
+
+    public boolean equals(angularObjectRemove_result that) {
+      if (that == null)
+        return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(angularObjectRemove_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      angularObjectRemove_result typedOther = (angularObjectRemove_result)other;
+
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("angularObjectRemove_result(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class angularObjectRemove_resultStandardSchemeFactory implements SchemeFactory {
+      public angularObjectRemove_resultStandardScheme getScheme() {
+        return new angularObjectRemove_resultStandardScheme();
+      }
+    }
+
+    private static class angularObjectRemove_resultStandardScheme extends StandardScheme<angularObjectRemove_result> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, angularObjectRemove_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, angularObjectRemove_result struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class angularObjectRemove_resultTupleSchemeFactory implements SchemeFactory {
+      public angularObjectRemove_resultTupleScheme getScheme() {
+        return new angularObjectRemove_resultTupleScheme();
+      }
+    }
+
+    private static class angularObjectRemove_resultTupleScheme extends TupleScheme<angularObjectRemove_result> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, angularObjectRemove_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, angularObjectRemove_result struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
       }
     }

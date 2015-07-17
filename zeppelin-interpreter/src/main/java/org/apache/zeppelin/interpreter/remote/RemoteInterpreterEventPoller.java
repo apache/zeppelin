@@ -85,10 +85,13 @@ public class RemoteInterpreterEventPoller extends Thread {
           continue;
         } else if (event.getType() == RemoteInterpreterEventType.ANGULAR_OBJECT_ADD) {
           AngularObject angularObject = gson.fromJson(event.getData(), AngularObject.class);
-          angularObjectRegistry.add(angularObject.getName(), angularObject.get());
+          angularObjectRegistry.add(angularObject.getName(),
+              angularObject.get(), angularObject.getNoteId());
         } else if (event.getType() == RemoteInterpreterEventType.ANGULAR_OBJECT_UPDATE) {
-          AngularObject angularObject = gson.fromJson(event.getData(), AngularObject.class);
-          AngularObject localAngularObject = angularObjectRegistry.get(angularObject.getName());
+          AngularObject angularObject = gson.fromJson(event.getData(),
+              AngularObject.class);
+          AngularObject localAngularObject = angularObjectRegistry.get(
+              angularObject.getName(), angularObject.getNoteId());
           if (localAngularObject instanceof RemoteAngularObject) {
             // to avoid ping-pong loop
             ((RemoteAngularObject) localAngularObject).set(
@@ -98,7 +101,7 @@ public class RemoteInterpreterEventPoller extends Thread {
           }
         } else if (event.getType() == RemoteInterpreterEventType.ANGULAR_OBJECT_REMOVE) {
           AngularObject angularObject = gson.fromJson(event.getData(), AngularObject.class);
-          angularObjectRegistry.remove(angularObject.getName());
+          angularObjectRegistry.remove(angularObject.getName(), angularObject.getNoteId());
         } else if (event.getType() == RemoteInterpreterEventType.RUN_INTERPRETER_CONTEXT_RUNNER) {
           InterpreterContextRunner runnerFromRemote = gson.fromJson(
               event.getData(), RemoteInterpreterContextRunner.class);
@@ -106,6 +109,7 @@ public class RemoteInterpreterEventPoller extends Thread {
           interpreterProcess.getInterpreterContextRunnerPool().run(
               runnerFromRemote.getNoteId(), runnerFromRemote.getParagraphId());
         }
+        logger.debug("Event from remoteproceess {}", event.getType());
       } catch (Exception e) {
         logger.error("Can't handle event " + event, e);
       }

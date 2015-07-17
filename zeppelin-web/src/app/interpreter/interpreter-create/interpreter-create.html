@@ -1,0 +1,79 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="interpreterSettingAdd" ng-show="showAddNewSetting">
+        <hr />
+        <h4>Create new interpreter</h4>
+
+        <div class="form-group" style="width:200px">
+          <b>Name</b>
+          <input id="newInterpreterSettingName" input pu-elastic-input
+                 pu-elastic-input-minwidth="180px" ng-model="newInterpreterSetting.name" />
+        </div>
+
+        <b>Interpreter</b>
+        <div class="form-group"
+             style="width:180px">
+          <select class="form-control input-sm" ng-model="newInterpreterSetting.group"
+                  ng-change="newInterpreterGroupChange()">
+            <option ng-repeat="availableInterpreter in availableInterpreters | unique: 'group'" value="{{availableInterpreter.group}}">
+              {{availableInterpreter.group}}
+            </option>
+          </select>
+        </div>
+
+        <b>Properties</b>
+        <table class="table table-striped properties">
+          <tr>
+            <th>name</th>
+            <th>value</th>
+            <th>description</th>
+            <th>action</th>
+          </tr>
+          <tr ng-repeat="(key, value) in newInterpreterSetting.properties">
+            <td>{{key}}</td>
+            <td><textarea msd-elastic ng-model="value.value"></textarea></td>
+            <td>{{value.description}}</td>
+            <td>
+              <div class="btn btn-default btn-sm fa fa-remove" ng-click="removeInterpreterProperty(key)">
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <input pu-elastic-input pu-elastic-input-minwidth="180px"
+                     ng-model="newInterpreterSetting.propertyKey" />
+            </td>
+            <td><textarea msd-elastic ng-model="newInterpreterSetting.propertyValue"></textarea></td>
+            <td></td>
+            <td>
+              <div class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterProperty()">
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <span class="btn btn-primary" ng-click="addNewInterpreterSetting()">
+          Save
+        </span>
+        <span class="btn btn-default" ng-click="showAddNewSetting=false">
+          Cancel
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
