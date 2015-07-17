@@ -73,7 +73,7 @@ public class CassandraSparkSqlInterpreterTest {
       sql.setInterpreterGroup(intpGroup);
       sql.open();
     }
-    context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI(),
+    context = new InterpreterContext("note", "id", "title", "text", new HashMap<String, Object>(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
         new LinkedList<InterpreterContextRunner>());
   }
@@ -89,7 +89,6 @@ public class CassandraSparkSqlInterpreterTest {
     assertEquals(Type.TABLE, ret.type());
     assertEquals("name\tage\nmoon\t33\npark\t34\n", ret.message());
 
-    assertEquals(InterpreterResult.Code.ERROR, sql.interpret("select wrong syntax", context).code());
     assertEquals(InterpreterResult.Code.SUCCESS, sql.interpret("select * FROM sparkkeyspace.test as t1 INNER JOIN sparkkeyspace.test as t2 on t1.name = t2.name", context).code());
   }
 }
