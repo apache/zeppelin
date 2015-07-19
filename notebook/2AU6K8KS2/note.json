@@ -1,0 +1,136 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md\n## Welcome to Zeppelin.\n##### This is a quickly start on  zeppelin map visualization tutorial. It is using Leaflet mapping basics, including setting up a Leaflet map, working with markers, polylines and popups, and dealing with events.you can run the code yourself. (Shift-Enter to Run)",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorHide": true,
+        "tableHide": false
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1437313582566_-967040274",
+      "id": "20150719-191622_9501079",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch2\u003eWelcome to Zeppelin.\u003c/h2\u003e\n\u003ch5\u003eThis is a quickly start on  zeppelin map visualization tutorial. It is using Leaflet mapping basics, including setting up a Leaflet map, working with markers, polylines and popups, and dealing with events.you can run the code yourself. (Shift-Enter to Run)\u003c/h5\u003e\n"
+      },
+      "dateCreated": "Jul 19, 2015 7:16:22 PM",
+      "dateStarted": "Jul 19, 2015 8:20:26 PM",
+      "dateFinished": "Jul 19, 2015 8:20:26 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "import org.apache.commons.io.IOUtils\nimport java.net.URL\nimport java.nio.charset.Charset\n\n// Zeppelin creates and injects sc (SparkContext) and sqlContext (HiveContext or SqlContext)\n// So you don\u0027t need create them manually\n\n// load bank data\nval myMapText \u003d sc.parallelize(\n    IOUtils.toString(\n        new URL(\"https://gist.githubusercontent.com/Madhuka/74cb9a6577c87aa7d2fd/raw/2f758d33d28ddc01c162293ad45dc16be2806a6b/data.csv\"),\n        Charset.forName(\"utf8\")).split(\"\\n\"))\n\n\ncase class Map(Country:String, Name:String, lat : Float, lan : Float, Altitude : Float)\n\nval myMap \u003d myMapText.map(s\u003d\u003es.split(\",\")).filter(s\u003d\u003es(0)!\u003d\"Country\").map(\n    s\u003d\u003eMap(s(0), \n            s(1),\n            s(2).toFloat,\n            s(3).toFloat,\n            s(5).toFloat\n        )\n)\n\n// Below line works only in spark 1.3.0.\n// For spark 1.1.x and spark 1.2.x,\n// use bank.registerTempTable(\"bank\") instead.\nmyMap.toDF().registerTempTable(\"myMap\")\n",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1437314214306_141157507",
+      "id": "20150719-192654_12434929",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "import org.apache.commons.io.IOUtils\nimport java.net.URL\nimport java.nio.charset.Charset\nmyMapText: org.apache.spark.rdd.RDD[String] \u003d ParallelCollectionRDD[14] at parallelize at \u003cconsole\u003e:39\ndefined class Map\nmyMap: org.apache.spark.rdd.RDD[Map] \u003d MapPartitionsRDD[17] at map at \u003cconsole\u003e:39\n"
+      },
+      "dateCreated": "Jul 19, 2015 7:26:54 PM",
+      "dateStarted": "Jul 19, 2015 8:20:26 PM",
+      "dateFinished": "Jul 19, 2015 8:20:32 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sql \nselect * from myMap",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1437316940442_271264979",
+      "id": "20150719-201220_10279868",
+      "result": {
+        "code": "ERROR",
+        "type": "TEXT",
+        "msg": "org.apache.spark.SparkException: Job aborted due to stage failure: Task 0 in stage 4.0 failed 1 times, most recent failure: Lost task 0.0 in stage 4.0 (TID 4, localhost): java.lang.ArrayIndexOutOfBoundsException: 5\n\tat $line41.$read$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$anonfun$3.apply(\u003cconsole\u003e:44)\n\tat $line41.$read$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$iwC$$anonfun$3.apply(\u003cconsole\u003e:40)\n\tat scala.collection.Iterator$$anon$11.next(Iterator.scala:328)\n\tat scala.collection.Iterator$$anon$1.next(Iterator.scala:853)\n\tat scala.collection.Iterator$$anon$1.head(Iterator.scala:840)\n\tat org.apache.spark.sql.execution.RDDConversions$$anonfun$productToRowRdd$1.apply(ExistingRDD.scala:42)\n\tat org.apache.spark.sql.execution.RDDConversions$$anonfun$productToRowRdd$1.apply(ExistingRDD.scala:37)\n\tat org.apache.spark.rdd.RDD$$anonfun$14.apply(RDD.scala:634)\n\tat org.apache.spark.rdd.RDD$$anonfun$14.apply(RDD.scala:634)\n\tat org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:35)\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:277)\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:244)\n\tat org.apache.spark.rdd.MapPartitionsRDD.compute(MapPartitionsRDD.scala:35)\n\tat org.apache.spark.rdd.RDD.computeOrReadCheckpoint(RDD.scala:277)\n\tat org.apache.spark.rdd.RDD.iterator(RDD.scala:244)\n\tat org.apache.spark.scheduler.ResultTask.runTask(ResultTask.scala:61)\n\tat org.apache.spark.scheduler.Task.run(Task.scala:64)\n\tat org.apache.spark.executor.Executor$TaskRunner.run(Executor.scala:203)\n\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1145)\n\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)\n\tat java.lang.Thread.run(Thread.java:745)\n\nDriver stacktrace:\n\tat org.apache.spark.scheduler.DAGScheduler.org$apache$spark$scheduler$DAGScheduler$$failJobAndIndependentStages(DAGScheduler.scala:1204)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$abortStage$1.apply(DAGScheduler.scala:1193)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$abortStage$1.apply(DAGScheduler.scala:1192)\n\tat scala.collection.mutable.ResizableArray$class.foreach(ResizableArray.scala:59)\n\tat scala.collection.mutable.ArrayBuffer.foreach(ArrayBuffer.scala:47)\n\tat org.apache.spark.scheduler.DAGScheduler.abortStage(DAGScheduler.scala:1192)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$handleTaskSetFailed$1.apply(DAGScheduler.scala:693)\n\tat org.apache.spark.scheduler.DAGScheduler$$anonfun$handleTaskSetFailed$1.apply(DAGScheduler.scala:693)\n\tat scala.Option.foreach(Option.scala:236)\n\tat org.apache.spark.scheduler.DAGScheduler.handleTaskSetFailed(DAGScheduler.scala:693)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:1393)\n\tat org.apache.spark.scheduler.DAGSchedulerEventProcessLoop.onReceive(DAGScheduler.scala:1354)\n\tat org.apache.spark.util.EventLoop$$anon$1.run(EventLoop.scala:48)\n"
+      },
+      "dateCreated": "Jul 19, 2015 8:12:20 PM",
+      "dateStarted": "Jul 19, 2015 8:20:26 PM",
+      "dateFinished": "Jul 19, 2015 8:20:32 PM",
+      "status": "ERROR",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1437317266677_-261952669",
+      "id": "20150719-201746_23407076",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT"
+      },
+      "dateCreated": "Jul 19, 2015 8:17:46 PM",
+      "dateStarted": "Jul 19, 2015 8:20:32 PM",
+      "dateFinished": "Jul 19, 2015 8:20:32 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "Map Visualization Tutorial",
+  "id": "2AU6K8KS2",
+  "angularObjects": {},
+  "config": {
+    "looknfeel": "default"
+  },
+  "info": {}
+}
