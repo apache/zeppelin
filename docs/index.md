@@ -16,9 +16,6 @@ group: nav-right
 
 ### Interpreter
 
-Interpreter is backend abstraction in Zeppelin.
-You can select Interpreter using '%[GROUP].[NAME]' directive in the beginning of your code.
-
 * [flink](../docs/pleasecontribute.html)
 * [hive](../docs/pleasecontribute.html)
 * [ignite](../docs/pleasecontribute.html)
@@ -30,13 +27,10 @@ You can select Interpreter using '%[GROUP].[NAME]' directive in the beginning of
 
 ### Display System
 
-Display System defines how your result is being displayed.
-You can select Display System using '%[NAME]' directive in the beginning of your result.
-
 * [text](./displaysystem/display.html)
 * [html](./displaysystem/display.html)
 * [table](./displaysystem/table.html)
-* [angular](./displaysystem/angular.html)
+* [angular](./displaysystem/angular.html) (Beta)
 
 ### Manual
 
