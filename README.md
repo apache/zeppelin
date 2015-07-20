@@ -62,9 +62,25 @@ CDH 5.X
 ```
 mvn clean package -Pspark-1.2 -Dhadoop.version=2.5.0-cdh5.3.0 -Phadoop-2.4 -DskipTests
 ```
-Yarn (Hadoop 2.2.x and later)
+Yarn (Hadoop 2.2.x)
 ```
 mvn clean package -Pspark-1.1 -Dhadoop.version=2.2.0 -Phadoop-2.2 -Pyarn -DskipTests
+```
+Yarn (Hadoop 2.3.x)
+```
+mvn clean package -Pspark-1.1 -Dhadoop.version=2.3.0 -Phadoop-2.3 -Pyarn -DskipTests
+```
+Yarn (Hadoop 2.4.x)
+```
+mvn clean package -Pspark-1.1 -Dhadoop.version=2.4.0 -Phadoop-2.4 -Pyarn -DskipTests
+```
+Yarn (Hadoop 2.6.x)
+```
+mvn clean package -Pspark-1.1 -Dhadoop.version=2.6.0 -Phadoop-2.6 -Pyarn -DskipTests
+```
+Yarn (Hadoop 2.7.x)
+```
+mvn clean package -Pspark-1.1 -Dhadoop.version=2.7.0 -Phadoop-2.6 -Pyarn -DskipTests
 ```
 Ignite (1.1.0-incubating and later)
 ```

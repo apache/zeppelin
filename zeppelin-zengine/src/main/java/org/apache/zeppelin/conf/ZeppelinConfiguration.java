@@ -469,7 +469,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       this.floatValue = -1;
       this.longValue = longValue;
       this.booleanValue = false;
-      this.type = VarType.INT;
+      this.type = VarType.LONG;
     }
 
     ConfVars(String varName, float floatValue) {
