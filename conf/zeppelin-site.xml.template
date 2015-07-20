@@ -52,27 +52,30 @@
   <description>path or URI for notebook persist</description>
 </property>
 
+<!-- If used S3 to storage the notebooks, it is necessary the following folder structure bucketname/username/notebook/ -->
+<!--
 <property>
-  <name>zeppelin.bucket.name</name>
-  <value>zeppelin</value>
-  <description>path or URI for notebook persist</description>
-</property>
-
-<property>
-  <name>zeppelin.bucket.user</name>
+  <name>zeppelin.notebook.s3.user</name>
   <value>user</value>
-  <description>path or URI for notebook persist</description>
+  <description>user name for s3 folder structure</description>
 </property>
 
 <property>
-  <name>zeppelin.notebook.storage</name>
-  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</value>
-  <description>notebook persistence layer implementation</description>
+  <name>zeppelin.notebook.s3.bucket</name>
+  <value>zeppelin</value>
+  <description>bucket name for notebook storage</description>
 </property>
 
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.S3NotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+-->
+
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</value>
   <description>notebook persistence layer implementation</description>
 </property>
 
