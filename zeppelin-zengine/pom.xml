@@ -50,7 +50,13 @@
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
     </dependency>
-
+	
+	<dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-s3</artifactId>
+      <version>1.10.1</version>
+	</dependency>
+    
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
