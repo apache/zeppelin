@@ -116,12 +116,15 @@ a.navbar-brand:hover {
 }
 
 @media (max-width: 767px) {
+  .navbar-inverse .navbar-nav .open .dropdown-menu > li > a {
+    color: #D3D3D3;
+  }
   .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a {
     padding: 5px 15px 5px 25px;
     line-height: 20px;
   }
   .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a {
-    color: #777;
+    color: #D3D3D3;
   }
   .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:hover,
   .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:focus {
