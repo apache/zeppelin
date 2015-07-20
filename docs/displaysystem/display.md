@@ -7,6 +7,9 @@ group: display
 {% include JB/setup %}
 
 
+<a name="text"> </a>
+<br />
+<br />
 ### Text
 
 Zeppelin prints output of language backend in text, by default.
@@ -19,6 +22,8 @@ You can explicitly say you're using text display system.
 
 Note that display system is backend independent.
 
+<a name="html"> </a>
+<br />
 <br />
 ### Html
 

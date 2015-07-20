@@ -28,7 +28,7 @@ group: nav-right
 ### Display System
 
 * [text](./displaysystem/display.html)
-* [html](./displaysystem/display.html)
+* [html](./displaysystem/display.html#html)
 * [table](./displaysystem/table.html)
 * [angular](./displaysystem/angular.html) (Beta)
 
