@@ -747,6 +747,24 @@ angular.module('zeppelinWebApp')
         setTable($scope.paragraph.result, refresh);
       }
       if (!type || type === 'mapChart') {
+        //TODO just testing markers
+        //setMap($scope.paragraph.result, refresh);
+        $scope.markers = {
+          SriLanka: {, 
+              lat: 6.923117,
+              lng: 79.861184,
+              message: "Sri Lanka",
+              focus: true,
+              draggable: true
+            },
+            India: {, 
+              lat: 13.811499,
+              lng: 77.818405,
+              message: "India",
+              focus: false,
+              draggable: false
+            }
+}
         //setting the map : To-DO Moving the map for separate file
 /*        angular.extend($scope, {
         defaults: {
