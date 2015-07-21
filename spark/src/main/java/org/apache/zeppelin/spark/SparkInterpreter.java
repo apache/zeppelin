@@ -26,12 +26,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
+import com.google.common.base.Joiner;
 import org.apache.spark.HttpServer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -106,7 +103,7 @@ public class SparkInterpreter extends Interpreter {
                 "The location of the Spark jar file. If you use yarn as a cluster, "
                 + "we should set this value")
             .add("zeppelin.spark.useHiveContext",
-                getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT", 
+                getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT",
                     "zeppelin.spark.useHiveContext", "true"),
                 "Use HiveContext instead of SQLContext if it is true.")
             .add("zeppelin.spark.maxResult",
@@ -271,6 +268,34 @@ public class SparkInterpreter extends Interpreter {
         logger.debug(String.format("SparkConf: key = [%s], value = [%s]", key, val));
         conf.set(key, val);
       }
+    }
+
+    //TODO(jongyoul): Move these codes into PySparkInterpreter.java
+    
+    String pysparkBasePath = getSystemDefault("SPARK_HOME", "spark.home", null);
+    File pysparkPath;
+    if (null == pysparkBasePath) {
+      pysparkBasePath = getSystemDefault("ZEPPELIN_HOME", "zeppelin.home", "../");
+      pysparkPath = new File(pysparkBasePath,
+          "interpreter" + File.separator + "spark" + File.separator + "pyspark");
+    } else {
+      pysparkPath = new File(pysparkBasePath,
+          "python" + File.separator + "lib");
+    }
+
+    String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.8.2.1-src.zip"};
+    ArrayList<String> pythonLibUris = new ArrayList<>();
+    for (String lib : pythonLibs) {
+      File libFile = new File(pysparkPath, lib);
+      if (libFile.exists()) {
+        pythonLibUris.add(libFile.toURI().toString());
+      }
+    }
+    pythonLibUris.trimToSize();
+    if (pythonLibs.length == pythonLibUris.size()) {
+      conf.set("spark.yarn.dist.files", Joiner.on(",").join(pythonLibUris));
+      conf.set("spark.files", conf.get("spark.yarn.dist.files"));
+      conf.set("spark.submit.pyArchives", Joiner.on(":").join(pythonLibs));
     }
 
     SparkContext sparkContext = new SparkContext(conf);

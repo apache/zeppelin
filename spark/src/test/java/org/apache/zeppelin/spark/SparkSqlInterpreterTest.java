@@ -17,7 +17,7 @@
 
 package org.apache.zeppelin.spark;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -63,7 +63,7 @@ public class SparkSqlInterpreterTest {
       sql.setInterpreterGroup(intpGroup);
       sql.open();
     }
-    context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI(),
+    context = new InterpreterContext("note", "id", "title", "text", new HashMap<String, Object>(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
         new LinkedList<InterpreterContextRunner>());
   }
@@ -91,7 +91,12 @@ public class SparkSqlInterpreterTest {
     assertEquals(Type.TABLE, ret.type());
     assertEquals("name\tage\nmoon\t33\npark\t34\n", ret.message());
 
-    assertEquals(InterpreterResult.Code.ERROR, sql.interpret("select wrong syntax", context).code());
+    try {
+      sql.interpret("select wrong syntax", context);
+      fail("Exception not catched");
+    } catch (Exception e) {
+      // okay
+    }
     assertEquals(InterpreterResult.Code.SUCCESS, sql.interpret("select case when name==\"aa\" then name else name end from test", context).code());
   }
 

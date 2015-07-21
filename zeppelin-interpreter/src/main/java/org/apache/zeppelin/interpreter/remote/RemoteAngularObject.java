@@ -27,10 +27,10 @@ public class RemoteAngularObject extends AngularObject {
 
   private transient RemoteInterpreterProcess remoteInterpreterProcess;
 
-  RemoteAngularObject(String name, Object o, String interpreterGroupId,
+  RemoteAngularObject(String name, Object o, String noteId, String interpreterGroupId,
       AngularObjectListener listener,
       RemoteInterpreterProcess remoteInterpreterProcess) {
-    super(name, o, listener);
+    super(name, o, noteId, listener);
     this.remoteInterpreterProcess = remoteInterpreterProcess;
   }
 
@@ -44,7 +44,7 @@ public class RemoteAngularObject extends AngularObject {
 
     if (emitRemoteProcess) {
       // send updated value to remote interpreter
-      remoteInterpreterProcess.updateRemoteAngularObject(getName(), o);
+      remoteInterpreterProcess.updateRemoteAngularObject(getName(), getNoteId(), o);
     }
   }
 }

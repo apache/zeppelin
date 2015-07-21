@@ -31,8 +31,11 @@ import java.util.Map;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.quartz.CronScheduleBuilder;
@@ -153,6 +156,17 @@ public class Notebook {
     synchronized (notes) {
       note = notes.remove(id);
     }
+
+    // remove from all interpreter instance's angular object registry
+    for (InterpreterSetting settings : replFactory.get()) {
+      AngularObjectRegistry registry = settings.getInterpreterGroup().getAngularObjectRegistry();
+      if (registry instanceof RemoteAngularObjectRegistry) {
+        ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id);
+      } else {
+        registry.removeAll(id);
+      }
+    }
+
     try {
       note.unpersist();
     } catch (IOException e) {
@@ -219,6 +233,24 @@ public class Notebook {
     synchronized (notes) {
       notes.put(note.id(), note);
       refreshCron(note.id());
+    }
+
+    for (String name : angularObjectSnapshot.keySet()) {
+      SnapshotAngularObject snapshot = angularObjectSnapshot.get(name);
+      List<InterpreterSetting> settings = replFactory.get();
+      for (InterpreterSetting setting : settings) {
+        InterpreterGroup intpGroup = setting.getInterpreterGroup();
+        if (intpGroup.getId().equals(snapshot.getIntpGroupId())) {
+          AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
+          String noteId = snapshot.getAngularObject().getNoteId();
+          // at this point, remote interpreter process is not created.
+          // so does not make sense add it to the remote.
+          // 
+          // therefore instead of addAndNotifyRemoteProcess(), need to use add()
+          // that results add angularObject only in ZeppelinServer side not remoteProcessSide
+          registry.add(name, snapshot.getAngularObject().get(), noteId);
+        }
+      }
     }
     return note;
   }

@@ -1,0 +1,285 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+body {
+  padding-top: 60px;
+  color: #212121;
+}
+
+html,body { height: 100%;}
+
+.bodyAsIframe {
+  background: white;
+}
+
+.displayNavBar {
+  display: inline !important;
+}
+
+
+body.asIframe {
+  padding-top: 0px;
+}
+body .navbar {
+  margin-bottom: 10px;
+}
+
+.container {
+  padding-right: 15px;
+  padding-left: 15px;
+  margin-right: auto;
+  margin-left: auto;
+  width: auto;
+}
+
+.navbar-inverse {
+  background-color: #3071a9;
+  color: #fff;
+  border-color: #3071a9;
+  font-size: 18px;
+}
+
+.navbar-inverse .navbar-nav > .open > a, .navbar-inverse .navbar-nav > .open > a:hover, .navbar-inverse .navbar-nav > .open > a:focus {
+  color: #fff;
+  background-color: #3071a9;
+}
+
+.navbar-inverse .navbar-toggle:hover, .navbar-inverse .navbar-toggle:focus {
+  background-color: #3071a9;
+}
+
+.navbar-inverse .navbar-nav > li > a:hover, .navbar-inverse .navbar-nav > li > a:focus {
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.2);
+
+}
+
+.navbar-inverse .navbar-toggle {
+  border-color: #FFFFFF;
+}
+
+.navbar-inverse .navbar-nav > .active > a, .navbar-inverse .navbar-nav > .active > a:hover, .navbar-inverse .navbar-nav > .active > a:focus {
+  color: #fff;
+  background-color: #080808;
+}
+
+.navbar-inverse .navbar-nav > li > a {
+  color: #FFFFFF;
+}
+
+.navbar-inverse .navbar-brand {
+  color: #fff;
+  text-decoration: none;
+  font-family: 'Patua One', cursive;
+  font-size: 32px;
+}
+
+a.navbar-brand:hover {
+  color: #fff !important;
+}
+
+/* bootstrap customization for scrollable dropdown menu */
+.dropdown-menu > .scrollbar-container > li > a {
+  display: block;
+  padding: 3px 20px;
+  clear: both;
+  font-weight: normal;
+  line-height: 1.42857143;
+  color: #333;
+  white-space: nowrap;
+}
+.dropdown-menu > .scrollbar-container > li > a:hover,
+.dropdown-menu > .scrollbar-container > li > a:focus {
+  color: #262626;
+  text-decoration: none;
+  background-color: #f5f5f5;
+}
+
+.dropdown-menu > .scrollbar-container > .active > a,
+.dropdown-menu > .scrollbar-container > .active > a:hover,
+.dropdown-menu > .scrollbar-container > .active > a:focus {
+  color: #fff;
+  text-decoration: none;
+  background-color: #428bca;
+  outline: 0;
+}
+
+@media (max-width: 767px) {
+  .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a {
+    padding: 5px 15px 5px 25px;
+    line-height: 20px;
+  }
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a {
+    color: #777;
+  }
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:hover,
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:focus {
+    color: #fff;
+    background-color: transparent;
+  }
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a,
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a:hover,
+  .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a:focus {
+    color: #fff;
+    background-color: #080808;
+  }
+}
+
+
+#main {
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 10px;
+  height: 100%;
+}
+
+#notebook-list {
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  #notebook-list {
+    max-height: 500px;
+  }
+}
+
+.server-status {
+  font-size:12px;
+  margin-top: 6px;
+}
+
+.server-connected {
+  color: #00CC00;
+}
+
+.server-disconnected {
+  color: rgba(240, 48, 0, 1);
+  font-size: 12px !important;
+  font-weight: bold !important;
+}
+
+
+/**
+ * Box and well
+ */
+.box{
+  border-style: solid;
+  min-height: 20px;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.box,
+.well {
+  background-color: #ffffff;
+  border-color: #e5e5e5;
+  border-width: 1px 1px 2px;
+  border-radius: 3px;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
+.box-heading{
+  position:relative;
+  max-width: 100%;
+  /*font-size: 20px;*/
+  font-weight:300;
+  white-space: nowrap;
+  /*overflow:hidden;*/
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  margin: 0 0 15px;
+  padding-bottom: 2px;
+}
+/**
+h1.box-heading,
+h2.box-heading,
+h3.box-heading,
+h4.box-heading,
+h5.box-heading,
+h6.box-heading{
+  font-size: 20px;
+}*/
+.box-heading > .btn-group,
+.box-heading > .btn{
+  margin-top: -3px;
+}
+
+
+.icheck-label{
+  position: relative;
+  top: 0;
+}
+
+
+.zeppelin {
+  background-image: url('/assets/images/zepLogo.png');
+  background-repeat: no-repeat;
+  background-position: right;
+  height: 380px;
+  opacity: 0.2;
+}
+
+.zeppelin2 {
+  background-image: url('/assets/images/zepLogo.png');
+  background-repeat: no-repeat;
+  background-position: right;
+  background-position-y: 12px;
+  height: 380px;
+  opacity: 0.2;
+}
+
+.keys {
+  padding-right: 10px;
+  color: #999;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.kbd-dark {
+  color: #eee;
+  background-color: #222;
+  background-image: none;
+  border: 0;
+}
+
+kbd {
+  background-color: #e7e7e7;
+  background-image: -webkit-linear-gradient(#fefefe, #e7e7e7);
+  background-image: linear-gradient(#fefefe, #e7e7e7);
+  background-repeat: repeat-x;
+  display: inline-block;
+  padding: 4px 5px;
+  font: 11px Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  line-height: 10px;
+  color: #000;
+  border: 1px solid #cfcfcf;
+  border-radius: 2px;
+}
+
+.home {
+  min-height: 400px;
+}
+
+
+/*
+temporary fix for bootstrap issue (https://github.com/twbs/bootstrap/issues/5865)
+This part should be removed when new version of bootstrap handles this issue.
+*/
+.btn-group > .tooltip + .btn,
+.btn-group > .popover + .btn {
+  margin-left:-1px;
+}
+

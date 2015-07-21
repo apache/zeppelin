@@ -35,15 +35,15 @@
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin</artifactId>
   <packaging>pom</packaging>
-  <version>0.5.0-incubating-SNAPSHOT</version>
+  <version>0.6.0-incubating-SNAPSHOT</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
   <url>http://zeppelin.incubator.apache.org/</url>
 
   <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>7</version>
+    <groupId>org.apache</groupId>
+    <artifactId>apache</artifactId>
+    <version>17</version>
   </parent>
 
   <licenses>
@@ -55,9 +55,9 @@
   </licenses>
 
   <scm>
-    <url>http://zeppelin.incubator.apache.org</url>
-    <connection>scm:git:git:git@github.com:apache/incubator-zeppelin.git</connection>
-    <developerConnection>scm:git:git@github.com:apache/incubator-zeppelin.git</developerConnection>
+    <url>https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</url>
+    <connection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</connection>
+    <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</developerConnection>
   </scm>
 
   <developers>
@@ -94,6 +94,7 @@
     <module>tajo</module>
     <module>flink</module>
     <module>ignite</module>
+    <module>lens</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
@@ -490,7 +491,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-clean-plugin</artifactId>
-          <version>2.4.1</version>
+          <version>2.6.1</version>
           <configuration>
             <filesets>
               <fileset>

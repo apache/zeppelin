@@ -12,26 +12,30 @@ conf/keystore
 conf/truststore
 conf/interpreter.json
 
+# other generated files
+spark/dependency-reduced-pom.xml
+
 #webapp
 zeppelin-web/node_modules
 zeppelin-web/dist
 zeppelin-web/.tmp
 zeppelin-web/.sass-cache
 zeppelin-web/bower_components
-zeppelin-web/src
 **nbproject/
 **node/
 
-logs/
-run/
-metastore_db/
-*.log
-jobs/
-zan-repo/
-drivers/
-warehouse/
-notebook/
-local-repo/
+
+# project level
+/logs/
+/run/
+/metastore_db/
+/*.log
+/jobs/
+/zan-repo/
+/drivers/
+/warehouse/
+/notebook/
+/local-repo/
 
 **/sessions/
 **/data/
@@ -73,3 +77,4 @@ auto-save-list
 tramp
 .\#*
 *.swp
+**/dependency-reduced-pom.xml

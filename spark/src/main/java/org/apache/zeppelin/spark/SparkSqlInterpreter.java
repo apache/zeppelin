@@ -35,6 +35,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
@@ -128,13 +129,10 @@ public class SparkSqlInterpreter extends Interpreter {
       sc.setLocalProperty("spark.scheduler.pool", null);
     }
 
-    try {
-      Object rdd = sqlc.sql(st);
-      String msg = ZeppelinContext.showRDD(sc, context, rdd, maxResult);
-      return new InterpreterResult(Code.SUCCESS, msg);
-    } catch (Exception e) {
-      return new InterpreterResult(Code.ERROR, e.getMessage());
-    }
+
+    Object rdd = sqlc.sql(st);
+    String msg = ZeppelinContext.showRDD(sc, context, rdd, maxResult);
+    return new InterpreterResult(Code.SUCCESS, msg);
   }
 
   @Override

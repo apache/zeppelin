@@ -1,7 +1,10 @@
 {
   "name": "zeppelin-web",
   "version": "0.0.0",
-  "dependencies": {},
+  "dependencies": {
+    "grunt-angular-templates": "^0.5.7",
+    "grunt-dom-munger": "^3.4.0"
+  },
   "devDependencies": {
     "bower": "",
     "grunt": "^0.4.1",
