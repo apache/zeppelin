@@ -23,8 +23,6 @@ import static com.datastax.driver.core.ConsistencyLevel.ONE;
 import static com.datastax.driver.core.ConsistencyLevel.QUORUM;
 import static com.datastax.driver.core.ConsistencyLevel.SERIAL;
 import static java.util.Arrays.asList;
-import static org.apache.zeppelin.cassandra.InterpreterLogic.toJavaList;
-import static org.apache.zeppelin.cassandra.InterpreterLogic.toScalaList;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -162,7 +160,7 @@ public class InterpreterLogicTest {
         List<QueryParameters> options = Arrays.<QueryParameters>asList(new Consistency(ALL), new Consistency(ONE));
 
         //When
-        final CassandraQueryOptions actual = helper.extractQueryOptions(helper.toScalaList(options));
+        final CassandraQueryOptions actual = helper.extractQueryOptions(toScalaList(options));
 
         //Then
         assertThat(actual.consistency().get()).isEqualTo(ALL);
@@ -175,7 +173,7 @@ public class InterpreterLogicTest {
         List<QueryParameters> options = Arrays.<QueryParameters>asList(new SerialConsistency(SERIAL), new SerialConsistency(LOCAL_SERIAL));
 
         //When
-        final CassandraQueryOptions actual = helper.extractQueryOptions(helper.toScalaList(options));
+        final CassandraQueryOptions actual = helper.extractQueryOptions(toScalaList(options));
 
         //Then
         assertThat(actual.serialConsistency().get()).isEqualTo(SERIAL);
@@ -187,7 +185,7 @@ public class InterpreterLogicTest {
         List<QueryParameters> options = Arrays.<QueryParameters>asList(new Timestamp(123L), new Timestamp(456L));
 
         //When
-        final CassandraQueryOptions actual = helper.extractQueryOptions(helper.toScalaList(options));
+        final CassandraQueryOptions actual = helper.extractQueryOptions(toScalaList(options));
 
         //Then
         assertThat(actual.timestamp().get()).isEqualTo(123L);
@@ -199,7 +197,7 @@ public class InterpreterLogicTest {
         List<QueryParameters> options = Arrays.<QueryParameters>asList(DowngradingRetryPolicy$.MODULE$, LoggingDefaultRetryPolicy$.MODULE$);
 
         //When
-        final CassandraQueryOptions actual = helper.extractQueryOptions(helper.toScalaList(options));
+        final CassandraQueryOptions actual = helper.extractQueryOptions(toScalaList(options));
 
         //Then
         assertThat(actual.retryPolicy().get()).isSameAs(DowngradingRetryPolicy$.MODULE$);
@@ -301,5 +299,13 @@ public class InterpreterLogicTest {
         assertThat(calendar.get(Calendar.MINUTE)).isEqualTo(0);
         assertThat(calendar.get(Calendar.SECOND)).isEqualTo(1);
         assertThat(calendar.get(Calendar.MILLISECOND)).isEqualTo(123);
+    }
+
+    private <A> scala.collection.immutable.List<A> toScalaList(java.util.List<A> list)  {
+        return scala.collection.JavaConverters.asScalaIterableConverter(list).asScala().toList();
+    }
+
+    private  <A> java.util.List<A> toJavaList(scala.collection.immutable.List<A> list){
+        return scala.collection.JavaConverters.asJavaListConverter(list).asJava();
     }
 }

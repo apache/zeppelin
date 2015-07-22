@@ -79,9 +79,7 @@ object InterpreterLogic {
 
   val paragraphParser = new ParagraphParser
   val boundValuesParser = new BoundValuesParser
-
-  def toScalaList[A](list: java.util.List[A]): List[A] = list.asScala.toList
-  def toJavaList[A](list: List[A]): java.util.List[A] = list.asJava
+  
 }
 
 /**
