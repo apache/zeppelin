@@ -52,6 +52,7 @@ public class CassandraSparkSqlInterpreterTest {
   public void setUp() throws Exception {
     Properties p = new Properties();
     p.setProperty("zeppelin.spark.useCassandraContext", "true");
+    p.setProperty("zeppelin.spark.useHiveContext", "false");
     p.setProperty("spark.cassandra.connection.host", "127.0.0.1");
     p.setProperty("spark.cassandra.connection.port", "9142");
 
