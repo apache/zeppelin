@@ -50,6 +50,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import scala.Option;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.zeppelin.cassandra.TextBlockHierarchy.*;
@@ -245,5 +247,59 @@ public class InterpreterLogicTest {
         assertThat(statements.get(1)).isSameAs(st2);
         assertThat(statements.get(2)).isSameAs(st3);
         assertThat(actual.getConsistencyLevel()).isSameAs(QUORUM);
+    }
+
+    @Test
+    public void should_parse_bound_values() throws Exception {
+        //Given
+        String bs="'jdoe',32,'John DOE',null, true, '2014-06-12 34:00:34'";
+
+        //When
+        final List<String> actual = toJavaList(helper.parseBoundValues("ps", bs));
+
+        //Then
+        assertThat(actual).containsExactly("'jdoe'", "32", "'John DOE'",
+                "null", "true", "2014-06-12 34:00:34");
+    }
+
+    @Test
+    public void should_parse_simple_date() throws Exception {
+        //Given
+        String dateString = "2015-07-30 12:00:01";
+
+        //When
+        final Date actual = helper.parseDate(dateString);
+
+        //Then
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(actual);
+
+        assertThat(calendar.get(Calendar.YEAR)).isEqualTo(2015);
+        assertThat(calendar.get(Calendar.MONTH)).isEqualTo(Calendar.JULY);
+        assertThat(calendar.get(Calendar.DAY_OF_MONTH)).isEqualTo(30);
+        assertThat(calendar.get(Calendar.HOUR_OF_DAY)).isEqualTo(12);
+        assertThat(calendar.get(Calendar.MINUTE)).isEqualTo(0);
+        assertThat(calendar.get(Calendar.SECOND)).isEqualTo(1);
+    }
+
+    @Test
+    public void should_parse_accurate_date() throws Exception {
+        //Given
+        String dateString = "2015-07-30 12:00:01.123";
+
+        //When
+        final Date actual = helper.parseDate(dateString);
+
+        //Then
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(actual);
+
+        assertThat(calendar.get(Calendar.YEAR)).isEqualTo(2015);
+        assertThat(calendar.get(Calendar.MONTH)).isEqualTo(Calendar.JULY);
+        assertThat(calendar.get(Calendar.DAY_OF_MONTH)).isEqualTo(30);
+        assertThat(calendar.get(Calendar.HOUR_OF_DAY)).isEqualTo(12);
+        assertThat(calendar.get(Calendar.MINUTE)).isEqualTo(0);
+        assertThat(calendar.get(Calendar.SECOND)).isEqualTo(1);
+        assertThat(calendar.get(Calendar.MILLISECOND)).isEqualTo(123);
     }
 }

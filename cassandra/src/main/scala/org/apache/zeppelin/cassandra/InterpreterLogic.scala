@@ -382,7 +382,7 @@ class InterpreterLogic(val session: Session)  {
     ps.bind(convertedValues.toArray: _*)
   }
 
-  private def parseBoundValues(psName: String, boundValues: String): List[String] = {
+  protected def parseBoundValues(psName: String, boundValues: String): List[String] = {
     val result: BoundValuesParser#ParseResult[List[String]] = boundValuesParser.parseAll(boundValuesParser.values, boundValues)
 
     result match {
