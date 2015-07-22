@@ -140,6 +140,12 @@ a.navbar-brand:hover {
   .server-status{
     float: right;
   }
+  .navbar-inverse .navbar-nav .open .dropdown-menu .divider {
+    background-color: #3071A9;
+  }
+  .navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form {
+    border-color: #3071A9;
+  }
 }
 
 
