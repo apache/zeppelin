@@ -17,6 +17,7 @@
  */
 package org.apache.zeppelin.flink;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintWriter;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.flink.api.java.ExecutionEnvironment;
+import org.apache.flink.api.scala.FlinkILoop;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.minicluster.LocalFlinkMiniCluster;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -41,8 +43,10 @@ import org.slf4j.LoggerFactory;
 
 import scala.Console;
 import scala.None;
+import scala.Option;
 import scala.Some;
 import scala.tools.nsc.Settings;
+import scala.tools.nsc.interpreter.IMain;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
@@ -51,13 +55,12 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
  */
 public class FlinkInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(FlinkInterpreter.class);
-  private Settings settings;
   private ByteArrayOutputStream out;
-  private FlinkIMain imain;
-  private Map<String, Object> binder;
-  private ExecutionEnvironment env;
   private Configuration flinkConf;
   private LocalFlinkMiniCluster localFlinkCluster;
+  private FlinkILoop flinkIloop;
+  private Map<String, Object> binder;
+  private IMain imain;
 
   public FlinkInterpreter(Properties property) {
     super(property);
@@ -69,17 +72,72 @@ public class FlinkInterpreter extends Interpreter {
         "flink",
         FlinkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-          .add("local", "true", "Run flink locally")
-          .add("jobmanager.rpc.address", "localhost", "Flink cluster")
-          .add("jobmanager.rpc.port", "6123", "Flink cluster")
+                .add("host", "local",
+                    "host name of running JobManager. 'local' runs flink in local mode")
+          .add("port", "6123", "port of running JobManager")
           .build()
     );
   }
 
   @Override
   public void open() {
+    out = new ByteArrayOutputStream();
+    flinkConf = new org.apache.flink.configuration.Configuration();
+    Properties intpProperty = getProperty();
+    for (Object k : intpProperty.keySet()) {
+      String key = (String) k;
+      String val = toString(intpProperty.get(key));
+      flinkConf.setString(key, val);
+    }
+
+    if (localMode()) {
+      startFlinkMiniCluster();
+    }
+
+    flinkIloop = new FlinkILoop(getHost(), getPort(), (BufferedReader) null, new PrintWriter(out));
+    flinkIloop.settings_$eq(createSettings());
+    flinkIloop.createInterpreter();
+    
+    imain = flinkIloop.intp();
+
+    // prepare bindings
+    imain.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
+    binder = (Map<String, Object>) getValue("_binder");    
+
+    // import libraries
+    imain.interpret("import scala.tools.nsc.io._");
+    imain.interpret("import Properties.userHome");
+    imain.interpret("import scala.compat.Platform.EOL");
+    
+    imain.interpret("import org.apache.flink.api.scala._");
+    imain.interpret("import org.apache.flink.api.common.functions._");
+    imain.bindValue("env", flinkIloop.scalaEnv());
+  }
+
+  private boolean localMode() {
+    String host = getProperty("host");
+    return host == null || host.trim().length() == 0 || host.trim().equals("local");
+  }
+
+  private String getHost() {
+    if (localMode()) {
+      return "localhost";
+    } else {
+      return getProperty("host");
+    }
+  }
+
+  private int getPort() {
+    if (localMode()) {
+      return localFlinkCluster.getJobManagerRPCPort();
+    } else {
+      return Integer.parseInt(getProperty("port"));
+    }
+  }
+
+  private Settings createSettings() {
     URL[] urls = getClassloaderUrls();
-    this.settings = new Settings();
+    Settings settings = new Settings();
 
     // set classpath
     PathSetting pathSettings = settings.classpath();
@@ -108,61 +166,10 @@ public class FlinkInterpreter extends Interpreter {
     BooleanSetting b = (BooleanSetting) settings.usejavacp();
     b.v_$eq(true);
     settings.scala$tools$nsc$settings$StandardScalaSettings$_setter_$usejavacp_$eq(b);
-
-    out = new ByteArrayOutputStream();
-    imain = new FlinkIMain(settings, new PrintWriter(out));
-
-    initializeFlinkEnv();
+    
+    return settings;
   }
-
-  private boolean localMode() {
-    return Boolean.parseBoolean(getProperty("local"));
-  }
-
-  private String getRpcAddress() {
-    if (localMode()) {
-      return "localhost";
-    } else {
-      return getProperty("jobmanager.rpc.address");
-    }
-  }
-
-  private int getRpcPort() {
-    if (localMode()) {
-      return localFlinkCluster.getJobManagerRPCPort();
-    } else {
-      return Integer.parseInt(getProperty("jobmanager.rpc.port"));
-    }
-  }
-
-  private void initializeFlinkEnv() {
-    // prepare bindings
-    imain.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
-    binder = (Map<String, Object>) getValue("_binder");
-
-    flinkConf = new org.apache.flink.configuration.Configuration();
-    Properties intpProperty = getProperty();
-    for (Object k : intpProperty.keySet()) {
-      String key = (String) k;
-      String val = toString(intpProperty.get(key));
-      flinkConf.setString(key, val);
-    }
-
-    if (localMode()) {
-      startFlinkMiniCluster();
-    }
-
-    env = new FlinkEnvironment(getRpcAddress(), getRpcPort(), imain);
-    binder.put("env", new org.apache.flink.api.scala.ExecutionEnvironment(env));
-
-    // do import and create val
-    imain.interpret("@transient val env = "
-        + "_binder.get(\"env\")"
-        + ".asInstanceOf[org.apache.flink.api.scala.ExecutionEnvironment]");
-
-    imain.interpret("import org.apache.flink.api.scala._");
-  }
-
+  
 
   private List<File> currentClassPath() {
     List<File> paths = classPath(Thread.currentThread().getContextClassLoader());
@@ -194,6 +201,7 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   public Object getValue(String name) {
+    IMain imain = flinkIloop.intp();
     Object ret = imain.valueOfTerm(name);
     if (ret instanceof None) {
       return null;
@@ -206,7 +214,7 @@ public class FlinkInterpreter extends Interpreter {
 
   @Override
   public void close() {
-    imain.close();
+    flinkIloop.closeInterpreter();
 
     if (localMode()) {
       stopFlinkMiniCluster();
@@ -224,6 +232,8 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   public InterpreterResult interpret(String[] lines, InterpreterContext context) {
+    IMain imain = flinkIloop.intp();
+    
     String[] linesToRun = new String[lines.length + 1];
     for (int i = 0; i < lines.length; i++) {
       linesToRun[i] = lines[i];
@@ -300,7 +310,7 @@ public class FlinkInterpreter extends Interpreter {
 
   private void stopFlinkMiniCluster() {
     if (localFlinkCluster != null) {
-      localFlinkCluster.shutdown();
+      localFlinkCluster.stop();
       localFlinkCluster = null;
     }
   }

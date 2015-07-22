@@ -30,6 +30,7 @@ import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
@@ -57,12 +58,13 @@ public class RemoteInterpreter extends Interpreter {
   static Map<String, RemoteInterpreterProcess> interpreterGroupReference
     = new HashMap<String, RemoteInterpreterProcess>();
 
-  private InterpreterContextRunnerPool interpreterContextRunnerPool;
+  private int connectTimeout;
 
   public RemoteInterpreter(Properties property,
       String className,
       String interpreterRunner,
-      String interpreterPath) {
+      String interpreterPath,
+      int connectTimeout) {
     super(property);
 
     this.className = className;
@@ -70,19 +72,21 @@ public class RemoteInterpreter extends Interpreter {
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
     env = new HashMap<String, String>();
-    interpreterContextRunnerPool = new InterpreterContextRunnerPool();
+    this.connectTimeout = connectTimeout;
   }
 
   public RemoteInterpreter(Properties property,
       String className,
       String interpreterRunner,
       String interpreterPath,
-      Map<String, String> env) {
+      Map<String, String> env,
+      int connectTimeout) {
     super(property);
     this.className = className;
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
     this.env = env;
+    this.connectTimeout = connectTimeout;  
   }
 
   @Override
@@ -190,6 +194,9 @@ public class RemoteInterpreter extends Interpreter {
       throw new InterpreterException(e1);
     }
 
+    InterpreterContextRunnerPool interpreterContextRunnerPool = interpreterProcess
+        .getInterpreterContextRunnerPool();
+
     List<InterpreterContextRunner> runners = context.getRunners();
     if (runners != null && runners.size() != 0) {
       // assume all runners in this InterpreterContext have the same note id
@@ -216,7 +223,8 @@ public class RemoteInterpreter extends Interpreter {
         context.getGui().setForms(remoteGui.getForms());
       }
 
-      return convert(remoteResult);
+      InterpreterResult result = convert(remoteResult);
+      return result;
     } catch (TException e) {
       throw new InterpreterException(e);
     } finally {
@@ -333,7 +341,7 @@ public class RemoteInterpreter extends Interpreter {
           || (!intpProcess.isRunning() && intpProcess.getPort() == -1)) {
         interpreterGroupReference.put(getInterpreterGroupKey(interpreterGroup),
             new RemoteInterpreterProcess(interpreterRunner,
-                interpreterPath, env, interpreterContextRunnerPool));
+                interpreterPath, env, connectTimeout));
 
         logger.info("setInterpreterGroup = "
             + getInterpreterGroupKey(interpreterGroup) + " class=" + className
@@ -348,6 +356,7 @@ public class RemoteInterpreter extends Interpreter {
 
   private RemoteInterpreterContext convert(InterpreterContext ic) {
     return new RemoteInterpreterContext(
+        ic.getNoteId(),
         ic.getParagraphId(),
         ic.getParagraphTitle(),
         ic.getParagraphText(),
