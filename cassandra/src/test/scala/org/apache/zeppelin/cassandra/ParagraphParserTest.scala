@@ -21,7 +21,7 @@ import org.apache.zeppelin.interpreter.InterpreterException
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers}
 import org.apache.zeppelin.cassandra.ParagraphParser._
-import org.apache.zeppelin.cassandra.TextBlochHierarchy._
+import org.apache.zeppelin.cassandra.TextBlockHierarchy._
 
 class ParagraphParserTest extends FlatSpec
   with BeforeAndAfterEach

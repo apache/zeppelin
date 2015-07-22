@@ -26,22 +26,19 @@ import scala.util.parsing.combinator._
  */
 class BoundValuesParser extends RegexParsers with JavaTokenParsers {
 
-  val standardDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-  val accurateDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
-
-  val STANDARD_DATE_PATTERN = """([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9])""".r
-  val ACCURATE_DATE_PATTERN = """([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\.[0-9][0-9][0-9])""".r
+  val STANDARD_DATE_PATTERN = """(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})""".r
+  val ACCURATE_DATE_PATTERN = """(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})""".r
 
   def value : Parser[String] = "null" | "true" | "false" | zeppelinVariable |
     map | list | set | tuple| udt |
     decimal | integer | standardDate | quotedString
 
 
-  def integer: Parser[String] = """[0-9]+""".r ^^{_.toLong.toString}
+  def integer: Parser[String] = """\d+""".r ^^{_.toLong.toString}
 
   def decimal: Parser[String] = """[+-]?(?:(?:\d+\.(?:\d*)?)|(?:\.\d+))""".r ^^{_.toDouble.toString}
 
-  def standardDate: Parser[String] = """'[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9](?:\.[0-9][0-9][0-9])?'""".r ^^{_.replaceAll("'","")}
+  def standardDate: Parser[String] = s"""'${STANDARD_DATE_PATTERN.toString}(?:\\.\\d{3})?'""".r ^^{_.replaceAll("'","")}
 
   def quotedString: Parser[String] = """'[^']+'""".r //^^ {_.replaceAll("(?<!')'","")}
 

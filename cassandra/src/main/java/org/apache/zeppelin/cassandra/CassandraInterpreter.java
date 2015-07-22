@@ -141,7 +141,7 @@ public class CassandraInterpreter extends Interpreter {
 
   public static final List<String> NO_COMPLETION = new ArrayList<>();
 
-  CassandraInterpreterHelper helper;
+  InterpreterLogic helper;
   Cluster cluster;
   Session session;
   private JavaDriverConfig driverConfig = new JavaDriverConfig();
@@ -277,20 +277,20 @@ public class CassandraInterpreter extends Interpreter {
       .withClusterName(getProperty(CASSANDRA_CLUSTER_NAME))
       .withCompression(compression)
       .withCredentials(getProperty(CASSANDRA_CREDENTIALS_USERNAME),
-        getProperty(CASSANDRA_CREDENTIALS_PASSWORD))
+              getProperty(CASSANDRA_CREDENTIALS_PASSWORD))
       .withLoadBalancingPolicy(driverConfig.getLoadBalancingPolicy(this))
       .withRetryPolicy(driverConfig.getRetryPolicy(this))
       .withReconnectionPolicy(driverConfig.getReconnectionPolicy(this))
       .withSpeculativeExecutionPolicy(driverConfig.getSpeculativeExecutionPolicy(this))
       .withMaxSchemaAgreementWaitSeconds(
-        parseInt(getProperty(CASSANDRA_MAX_SCHEMA_AGREEMENT_WAIT_SECONDS)))
+              parseInt(getProperty(CASSANDRA_MAX_SCHEMA_AGREEMENT_WAIT_SECONDS)))
       .withPoolingOptions(driverConfig.getPoolingOptions(this))
       .withQueryOptions(driverConfig.getQueryOptions(this))
       .withSocketOptions(driverConfig.getSocketOptions(this))
       .build();
 
     session = cluster.connect();
-    helper = new CassandraInterpreterHelper(session);
+    helper = new InterpreterLogic(session);
   }
 
   @Override

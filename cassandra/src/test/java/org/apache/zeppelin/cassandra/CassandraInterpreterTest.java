@@ -410,7 +410,7 @@ public class CassandraInterpreterTest {
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
         assertThat(actual.message()).contains("last_update\n" +
-                "Thu Jul 30 12:00:01\n");
+                "Thu Jul 30 12:00:01");
     }
 
     @Test
@@ -480,9 +480,22 @@ public class CassandraInterpreterTest {
                         "Tried Hosts\t" +
                         "Schema In Agreement\n" +
                         "CREATE TABLE IF NOT EXISTS no_select(id int PRIMARY KEY);\t" +
-                        "null\t"+
-                        "/"+address+":"+port+"\t"+
-                        "[/"+address+":"+port+"]\t"+
+                        "null\t" +
+                        "/" + address + ":" + port + "\t" +
+                        "[/" + address + ":" + port + "]\t" +
                         "true");
+    }
+
+    @Test
+    public void should_error_and_display_stack_trace() throws Exception {
+        //Given
+        String query = "@consistency=THREE\n" +
+                "SELECT * FROM zeppelin.users LIMIT 3;";
+        //When
+        final InterpreterResult actual = interpreter.interpret(query, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.ERROR);
+        assertThat(actual.message()).contains("All host(s) tried for query failed");
     }
 }

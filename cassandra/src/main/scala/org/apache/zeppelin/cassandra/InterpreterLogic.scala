@@ -16,16 +16,19 @@
  */
 package org.apache.zeppelin.cassandra
 
+import java.io.{ByteArrayOutputStream, PrintStream}
 import java.net.InetAddress
 import java.nio.ByteBuffer
+import java.text.SimpleDateFormat
 import java.util
 import java.util.Date
+import java.util.concurrent.ConcurrentHashMap
 
 import com.datastax.driver.core.DataType.Name._
 import com.datastax.driver.core._
 import com.datastax.driver.core.exceptions.DriverException
 import com.datastax.driver.core.policies.{LoggingRetryPolicy, FallthroughRetryPolicy, DowngradingConsistencyRetryPolicy, Policies}
-import org.apache.zeppelin.cassandra.TextBlochHierarchy._
+import org.apache.zeppelin.cassandra.TextBlockHierarchy._
 import org.apache.zeppelin.display.Input.ParamOption
 import org.apache.zeppelin.interpreter.InterpreterResult.Code
 import org.apache.zeppelin.interpreter.{InterpreterException, InterpreterResult, InterpreterContext}
@@ -36,18 +39,32 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 
+/**
+ * Value object to store runtime query parameters
+ * @param consistency consistency level
+ * @param serialConsistency serial consistency level
+ * @param timestamp timestamp
+ * @param retryPolicy retry policy
+ * @param fetchSize query fetch size
+ */
 case class CassandraQueryOptions(consistency: Option[ConsistencyLevel],
                                  serialConsistency:Option[ConsistencyLevel],
                                  timestamp: Option[Long],
                                  retryPolicy: Option[RetryPolicy],
                                  fetchSize: Option[Int])
 
-object CassandraInterpreterHelper {
+/**
+ * Singleton object to store constants
+ */
+object InterpreterLogic {
   
   val CHOICES_SEPARATOR : String = """\|"""
   val VARIABLE_PATTERN = """\{\{[^}]+\}\}""".r
   val SIMPLE_VARIABLE_DEFINITION_PATTERN = """\{\{([^=]+)=([^=]+)\}\}""".r
   val MULTIPLE_CHOICES_VARIABLE_DEFINITION_PATTERN = """\{\{([^=]+)=((?:[^=]+\|)+[^|]+)\}\}""".r
+
+  val STANDARD_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss"
+  val ACCURATE_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS"
 
   val defaultRetryPolicy = Policies.defaultRetryPolicy()
   val downgradingConsistencyRetryPolicy = DowngradingConsistencyRetryPolicy.INSTANCE
@@ -56,9 +73,9 @@ object CassandraInterpreterHelper {
   val loggingDownGradingRetryPolicy = new LoggingRetryPolicy(downgradingConsistencyRetryPolicy)
   val loggingFallThrougRetryPolicy = new LoggingRetryPolicy(fallThroughRetryPolicy)
 
-  val preparedStatements : mutable.Map[String,PreparedStatement] = mutable.Map[String,PreparedStatement]()
+  val preparedStatements : mutable.Map[String,PreparedStatement] = new ConcurrentHashMap[String,PreparedStatement]().asScala
 
-  val logger = LoggerFactory.getLogger(classOf[CassandraInterpreterHelper])
+  val logger = LoggerFactory.getLogger(classOf[InterpreterLogic])
 
   val paragraphParser = new ParagraphParser
   val boundValuesParser = new BoundValuesParser
@@ -67,9 +84,16 @@ object CassandraInterpreterHelper {
   def toJavaList[A](list: List[A]): java.util.List[A] = list.asJava
 }
 
-class CassandraInterpreterHelper(val session: Session)  {
+/**
+ * Real class to implement the
+ * interpreting logic of CQL statements
+ * and parameters blocks
+ *
+ * @param session java driver session
+ */
+class InterpreterLogic(val session: Session)  {
  
-  import CassandraInterpreterHelper._
+  import InterpreterLogic._
 
   def interpret(session:Session, stringStatements : String, context: InterpreterContext): InterpreterResult = {
 
@@ -86,7 +110,7 @@ class CassandraInterpreterHelper(val session: Session)  {
 
       logger.info(s"Current Cassandra query options = $queryOptions")
 
-      val queryStatements = queries .filter(_.blockType == StatementBlock).map(_.get[QueryStatement])
+      val queryStatements = queries.filter(_.blockType == StatementBlock).map(_.get[QueryStatement])
 
       //Remove prepared statements
       queryStatements
@@ -124,7 +148,7 @@ class CassandraInterpreterHelper(val session: Session)  {
 
       val resultSets: List[(ResultSet,Statement)] = for (statement <- statements) yield (session.execute(statement),statement)
 
-      if (resultSets.size > 0) {
+      if (resultSets.nonEmpty) {
         buildResponseMessage(resultSets.last, protocolVersion)
       } else {
         new InterpreterResult(Code.SUCCESS, "%html\n<h4>No Result</h4>")
@@ -166,7 +190,7 @@ class CassandraInterpreterHelper(val session: Session)  {
       .map(definition => (definition.getName, definition.getType))
 
 
-    if (rows.size > 0) {
+    if (rows.nonEmpty) {
       // Create table headers
       output
         .append("%table ")
@@ -369,27 +393,18 @@ class CassandraInterpreterHelper(val session: Session)  {
 
   def parseDate(dateString: String): Date = {
     dateString match {
-      case boundValuesParser.STANDARD_DATE_PATTERN(datePattern) => boundValuesParser.standardDateFormat.parse(datePattern)
-      case boundValuesParser.ACCURATE_DATE_PATTERN(datePattern) => boundValuesParser.accurateDateFormat.parse(datePattern)
+      case boundValuesParser.STANDARD_DATE_PATTERN(datePattern) => new SimpleDateFormat(STANDARD_DATE_FORMAT).parse(datePattern)
+      case boundValuesParser.ACCURATE_DATE_PATTERN(datePattern) => new SimpleDateFormat(ACCURATE_DATE_FORMAT).parse(datePattern)
       case _ => throw new InterpreterException(s"Cannot parse date '$dateString'. " +
-        s"Accepted formats : ${boundValuesParser.standardDateFormat.toPattern} OR ${boundValuesParser.accurateDateFormat.toPattern}");
+        s"Accepted formats : $STANDARD_DATE_FORMAT OR $ACCURATE_DATE_FORMAT");
     }
   }
 
   def parseException(ex: Exception): String = {
-    val msg = new StringBuilder()
-      .append(ex.getClass.getCanonicalName)
-      .append(Option(ex.getMessage) match {
-        case Some(x) => x + " : "
-        case None => ""})
-      .append("\n")
-    ex.getStackTrace.foreach{
-      stack => {
-        val stackLine: String = s"""\t at ${stack.getClassName}.${stack.getMethodName}(${stack.getFileName}):${stack.getLineNumber}"""
-        msg.append(stackLine).append("\n")
-      }
-    }
-    msg.toString()
+    val os = new ByteArrayOutputStream()
+    val ps = new PrintStream(os)
+    ex.printStackTrace(ps)
+    os.toString("UTF-8")
   }
 
 }

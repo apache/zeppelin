@@ -20,7 +20,7 @@ import com.datastax.driver.core._
 import org.apache.zeppelin.cassandra.CassandraInterpreter._
 import org.apache.zeppelin.interpreter.InterpreterException
 import scala.util.parsing.combinator._
-import org.apache.zeppelin.cassandra.TextBlochHierarchy._
+import org.apache.zeppelin.cassandra.TextBlockHierarchy._
 
 object ParagraphParser {
   val CONSISTENCY_LEVEL_PATTERN = ConsistencyLevel.values().toList

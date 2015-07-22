@@ -22,7 +22,7 @@ import com.datastax.driver.core.{BatchStatement, ConsistencyLevel}
  * Define a Scala object hierarchy
  * for input text parsing
  */
-object TextBlochHierarchy {
+object TextBlockHierarchy {
 
   sealed trait BlockType
   object ParameterBlock extends BlockType
@@ -30,7 +30,7 @@ object TextBlochHierarchy {
   object CommentBlock extends BlockType
 
   abstract class AnyBlock(val blockType: BlockType) {
-    def get[U <: AnyBlock](): U = {
+    def get[U <: AnyBlock]: U = {
       this.asInstanceOf[U]
     }
   }
@@ -46,7 +46,7 @@ object TextBlochHierarchy {
 
 
   abstract class QueryParameters(val paramType: ParameterType) extends AnyBlock(ParameterBlock) {
-    def getParam[U <: QueryParameters](): U = {
+    def getParam[U <: QueryParameters]: U = {
       this.asInstanceOf[U]
     }
   }

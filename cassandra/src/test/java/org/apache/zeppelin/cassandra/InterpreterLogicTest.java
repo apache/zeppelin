@@ -23,8 +23,8 @@ import static com.datastax.driver.core.ConsistencyLevel.ONE;
 import static com.datastax.driver.core.ConsistencyLevel.QUORUM;
 import static com.datastax.driver.core.ConsistencyLevel.SERIAL;
 import static java.util.Arrays.asList;
-import static org.apache.zeppelin.cassandra.CassandraInterpreterHelper.toJavaList;
-import static org.apache.zeppelin.cassandra.CassandraInterpreterHelper.toScalaList;
+import static org.apache.zeppelin.cassandra.InterpreterLogic.toJavaList;
+import static org.apache.zeppelin.cassandra.InterpreterLogic.toScalaList;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -52,10 +52,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.zeppelin.cassandra.TextBlochHierarchy.*;
+import org.apache.zeppelin.cassandra.TextBlockHierarchy.*;
 
 @RunWith(MockitoJUnitRunner.class)
-public class CassandraInterpreterHelperTest {
+public class InterpreterLogicTest {
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -66,7 +66,7 @@ public class CassandraInterpreterHelperTest {
     @Mock
     private Session session;
 
-    final CassandraInterpreterHelper helper = new CassandraInterpreterHelper(session);
+    final InterpreterLogic helper = new InterpreterLogic(session);
 
     @Captor
     ArgumentCaptor<ParamOption[]> optionsCaptor;
