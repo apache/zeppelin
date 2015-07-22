@@ -34,6 +34,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.rest.InterpreterRestApi;
 import org.apache.zeppelin.rest.NotebookRestApi;
 import org.apache.zeppelin.rest.ZeppelinRestApi;
@@ -83,6 +84,7 @@ public class ZeppelinServer extends Application {
 
     jettyServer = setupJettyServer(conf);
     notebookServer = setupNotebookServer(conf);
+    notebookServer.start();
 
     // REST api
     final ServletContextHandler restApi = setupRestApiContextHandler();
@@ -92,7 +94,9 @@ public class ZeppelinServer extends Application {
     final ServletContextHandler swagger = setupSwaggerContextHandler(conf);
 
     // Web UI
-    final WebAppContext webApp = setupWebAppContext(conf);
+    LOG.info("Create zeppelin websocket on {}:{}", notebookServer.getAddress()
+        .getAddress(), notebookServer.getPort());
+    final WebAppContext webApp = setupWebAppContext(conf, notebookServer.getPort());
     //Below is commented since zeppelin-docs module is removed.
     //final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
 
@@ -102,7 +106,6 @@ public class ZeppelinServer extends Application {
     contexts.setHandlers(new Handler[]{swagger, restApi, webApp});
     jettyServer.setHandler(contexts);
 
-    notebookServer.start();
     LOG.info("Start zeppelin server");
     jettyServer.start();
     LOG.info("Started");
@@ -254,7 +257,7 @@ public class ZeppelinServer extends Application {
   }
 
   private static WebAppContext setupWebAppContext(
-      ZeppelinConfiguration conf) {
+      ZeppelinConfiguration conf, int websocketPort) {
 
     WebAppContext webApp = new WebAppContext();
     File warPath = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
@@ -270,7 +273,7 @@ public class ZeppelinServer extends Application {
     }
     // Explicit bind to root
     webApp.addServlet(
-      new ServletHolder(new AppScriptServlet(conf.getWebSocketPort())),
+      new ServletHolder(new AppScriptServlet(websocketPort)),
       "/*"
     );
     return webApp;
@@ -305,11 +308,7 @@ public class ZeppelinServer extends Application {
     this.schedulerFactory = new SchedulerFactory();
 
     this.replFactory = new InterpreterFactory(conf, notebookServer);
-    Class<?> notebookStorageClass = getClass().forName(
-        conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE));
-    Constructor<?> constructor = notebookStorageClass.getConstructor(
-        ZeppelinConfiguration.class);
-    this.notebookRepo = (NotebookRepo) constructor.newInstance(conf);
+    this.notebookRepo = new NotebookRepoSync(conf);
     notebook = new Notebook(conf, notebookRepo, schedulerFactory, replFactory, notebookServer);
   }
 

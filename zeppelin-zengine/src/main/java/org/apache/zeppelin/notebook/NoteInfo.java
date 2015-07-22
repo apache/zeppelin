@@ -64,4 +64,5 @@ public class NoteInfo {
   public void setConfig(Map<String, Object> config) {
     this.config = config;
   }
+
 }

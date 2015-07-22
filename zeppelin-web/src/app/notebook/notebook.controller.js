@@ -465,6 +465,22 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       
   });
 
+  $scope.$on('angularObjectRemove', function(event, data) {
+    if (!data.noteId || data.noteId === $scope.note.id) {
+      var scope = $rootScope.compiledScope;
+      var varName = data.name;
+
+      // clear watcher
+      if (angularObjectRegistry[varName]) {
+        angularObjectRegistry[varName].clearWatcher();
+        angularObjectRegistry[varName] = undefined;
+      }
+
+      // remove scope variable
+      scope[varName] = undefined;
+    }
+  });
+
   var isFunction = function(functionToCheck) {
     var getType = {};
     return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';

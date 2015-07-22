@@ -90,6 +90,7 @@ public class RemoteSchedulerTest {
       @Override
       protected Object jobRun() throws Throwable {
         intpA.interpret("1000", new InterpreterContext(
+            "note",
             "jobId",
             "title",
             "text",
