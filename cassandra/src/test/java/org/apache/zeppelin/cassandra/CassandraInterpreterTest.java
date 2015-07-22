@@ -409,8 +409,8 @@ public class CassandraInterpreterTest {
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-        assertThat(actual.message()).isEqualTo("last_update\n" +
-                "Thu Jul 30 12:00:01 CEST 2015\n");
+        assertThat(actual.message()).contains("last_update\n" +
+                "Thu Jul 30 12:00:01\n");
     }
 
     @Test
