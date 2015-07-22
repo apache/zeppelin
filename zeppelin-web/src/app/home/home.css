@@ -137,6 +137,9 @@ a.navbar-brand:hover {
     color: #fff;
     background-color: #080808;
   }
+  .server-status{
+    float: right;
+  }
 }
 
 
