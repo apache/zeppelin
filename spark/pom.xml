@@ -596,7 +596,7 @@
    <profile>
       <id>spark-1.4</id>
       <properties>
-        <spark.version>1.4.0</spark.version>
+        <spark.version>1.4.1</spark.version>
       </properties>
 
       <dependencies>
