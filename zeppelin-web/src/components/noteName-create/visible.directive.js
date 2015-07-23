@@ -13,30 +13,22 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').directive('visible', function () {
+angular.module('zeppelinWebApp').directive('modalvisible', function () {
     return {
         restrict: 'A',
+        scope: {
+        	preVisibleCallback: '&previsiblecallback',
+        	postVisibleCallback: '&postvisiblecallback'	},
         link: function(scope, elem, attrs) {
         	// Add some listeners
-        		$(elem).on('show.bs.modal',function(e) {
-        				var generatedName = generateName();
-        				scope.notename = 'note ' + generatedName;
-        				scope.$apply();
-        			});
-        		$(elem).on('shown.bs.modal', function(e) {
-        				$('#noteName').select();
-        		});
-        	function generateName() {
-    			var DICTIONARY = [ '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B',
-    					'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'M', 'N', 'P', 'Q', 'R',
-    					'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' ];
-    			var randIndex, name = '';
-    			for (var i = 0; i < 9; i++) {
-    				randIndex = Math.floor(Math.random() * 32);
-    				name += DICTIONARY[randIndex];
-    			}
-    			return name;
-        	}
+    		var previsibleMethod = scope.preVisibleCallback;
+    		var postVisibleMethod = scope.postVisibleCallback;
+    		$(elem).on('show.bs.modal',function(e) {
+    			previsibleMethod();
+    		});
+    		$(elem).on('shown.bs.modal', function(e) {
+    			postVisibleMethod();
+    		});
         }
     };
 });
