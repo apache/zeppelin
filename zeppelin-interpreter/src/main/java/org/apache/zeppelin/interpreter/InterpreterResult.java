@@ -18,6 +18,8 @@
 package org.apache.zeppelin.interpreter;
 
 import java.io.Serializable;
+import org.apache.commons.lang3.StringUtils;
+import java.util.*;
 
 /**
  * Interpreter result template.
@@ -87,37 +89,54 @@ public class InterpreterResult implements Serializable {
     if (msg == null) {
       return null;
     }
-
-    Type[] types = Type.values();
-    for (Type t : types) {
-      String magic = "%" + t.name().toLowerCase();
-      if (msg.contains(magic + " ") || msg.contains(magic + "\n")) {
-        int magicLength = magic.length() + 1;
-        if (msg.length() > magicLength + msg.indexOf(magic)) {
-          return msg.substring(magicLength + msg.indexOf(magic));
-        } else {
-          return "";
-        }
+    int lastIndexOftypes = 0;
+    Type[] types = type.values();
+    TreeMap<Integer, Type> typesLastIndexInMsg = new TreeMap<Integer, Type>();
+    for (Type t : types){
+      lastIndexOftypes = getLastIndexOfType(msg, t);
+      if (lastIndexOftypes >= 0){
+        typesLastIndexInMsg.put(lastIndexOftypes, t);
       }
     }
-
-    return msg;
+    if (typesLastIndexInMsg.size() == 0){
+      return msg;
+    } else {
+      Map.Entry<Integer, Type> lastType = typesLastIndexInMsg.lastEntry();
+      int magicLength = lastType.getValue().name().length() + 1; //add 1 for the %
+      int subStringPos = magicLength + lastType.getKey() + 1; // 1 for the last \w after magic
+      return msg.substring(subStringPos); 
+    }
   }
-
 
   private Type getType(String msg) {
     if (msg == null) {
       return Type.TEXT;
     }
-    Type[] types = Type.values();
-    for (Type t : types) {
-      String magic = "%" + t.name().toLowerCase();
-      if (msg.contains(magic + " ") || msg.contains(magic + "\n")) {
-        return t;
+    int lastIndexOftypes = 0;
+    Type[] types = type.values();
+    TreeMap<Integer, Type> typesLastIndexInMsg = new TreeMap<Integer, Type>();
+    for (Type t : types){
+      lastIndexOftypes = getLastIndexOfType(msg, t);
+      if (lastIndexOftypes >= 0){
+        typesLastIndexInMsg.put(lastIndexOftypes, t);
       }
     }
-    return Type.TEXT;
+    if (typesLastIndexInMsg.size() == 0){
+      return Type.TEXT;
+    } else {
+      Map.Entry<Integer, Type> lastType = typesLastIndexInMsg.lastEntry();
+      return lastType.getValue();
+    }
   }
+  
+  private int getLastIndexOfType(String msg, Type t){
+    if (msg == null) {
+      return 0;
+    }
+    String typeString = "%" + t.name().toLowerCase();
+    return StringUtils.lastIndexOf(msg, typeString );
+  }
+  
 
   public Code code() {
     return code;
