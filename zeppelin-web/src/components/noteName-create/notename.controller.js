@@ -21,13 +21,10 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, $ro
   vm.createNote = function(){
 	  vm.websocketMsgSrv.createNotebook($scope.notename);
   }
-  $scope.preVisible = function(){
+  vm.preVisible = function(){
 		var generatedName = vm.generateName();
 		$scope.notename = 'Note ' + generatedName;
 		$scope.$apply()
-  }
-  $scope.postVisible = function(){
-		$('#noteName').select();
   }
   vm.generateName = function () {
 		var DICTIONARY = [ '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B',

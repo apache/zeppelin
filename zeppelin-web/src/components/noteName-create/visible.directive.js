@@ -27,6 +27,7 @@ angular.module('zeppelinWebApp').directive('modalvisible', function () {
     			previsibleMethod();
     		});
     		$(elem).on('shown.bs.modal', function(e) {
+    			$(e.target).find("#noteName").select()
     			postVisibleMethod();
     		});
         }
