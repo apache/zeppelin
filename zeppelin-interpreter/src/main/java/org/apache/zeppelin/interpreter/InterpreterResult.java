@@ -91,10 +91,10 @@ public class InterpreterResult implements Serializable {
     Type[] types = Type.values();
     for (Type t : types) {
       String magic = "%" + t.name().toLowerCase();
-      if (msg.startsWith(magic + " ") || msg.startsWith(magic + "\n")) {
+      if (msg.contains(magic + " ") || msg.contains(magic + "\n")) {
         int magicLength = magic.length() + 1;
-        if (msg.length() > magicLength) {
-          return msg.substring(magicLength);
+        if (msg.length() > magicLength + msg.indexOf(magic)) {
+          return msg.substring(magicLength + msg.indexOf(magic));
         } else {
           return "";
         }
@@ -112,7 +112,7 @@ public class InterpreterResult implements Serializable {
     Type[] types = Type.values();
     for (Type t : types) {
       String magic = "%" + t.name().toLowerCase();
-      if (msg.startsWith(magic + " ") || msg.startsWith(magic + "\n")) {
+      if (msg.contains(magic + " ") || msg.contains(magic + "\n")) {
         return t;
       }
     }
