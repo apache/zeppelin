@@ -887,6 +887,10 @@ angular.module('zeppelinWebApp')
     ]);
     $scope.bounds = bounds;
     $scope.center = {};
+
+    // set map chart height
+    var height = $scope.paragraph.config.graph.height;
+    $('#p'+$scope.paragraph.id+'_mapChart').height(height);
   };
 
   var setD3Chart = function(type, data, refresh) {
