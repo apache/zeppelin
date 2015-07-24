@@ -89,16 +89,9 @@ public class InterpreterResult implements Serializable {
     if (msg == null) {
       return null;
     }
-    int lastIndexOftypes = 0;
     Type[] types = type.values();
-    TreeMap<Integer, Type> typesLastIndexInMsg = new TreeMap<Integer, Type>();
-    for (Type t : types){
-      lastIndexOftypes = getLastIndexOfType(msg, t);
-      if (lastIndexOftypes >= 0){
-        typesLastIndexInMsg.put(lastIndexOftypes, t);
-      }
-    }
-    if (typesLastIndexInMsg.size() == 0){
+    TreeMap<Integer, Type> typesLastIndexInMsg = buildIndexMap(msg);
+    if (typesLastIndexInMsg.size() == 0) {
       return msg;
     } else {
       Map.Entry<Integer, Type> lastType = typesLastIndexInMsg.lastEntry();
@@ -112,16 +105,9 @@ public class InterpreterResult implements Serializable {
     if (msg == null) {
       return Type.TEXT;
     }
-    int lastIndexOftypes = 0;
     Type[] types = type.values();
-    TreeMap<Integer, Type> typesLastIndexInMsg = new TreeMap<Integer, Type>();
-    for (Type t : types){
-      lastIndexOftypes = getLastIndexOfType(msg, t);
-      if (lastIndexOftypes >= 0){
-        typesLastIndexInMsg.put(lastIndexOftypes, t);
-      }
-    }
-    if (typesLastIndexInMsg.size() == 0){
+    TreeMap<Integer, Type> typesLastIndexInMsg = buildIndexMap(msg);
+    if (typesLastIndexInMsg.size() == 0) {
       return Type.TEXT;
     } else {
       Map.Entry<Integer, Type> lastType = typesLastIndexInMsg.lastEntry();
@@ -129,7 +115,7 @@ public class InterpreterResult implements Serializable {
     }
   }
   
-  private int getLastIndexOfType(String msg, Type t){
+  private int getLastIndexOfType(String msg, Type t) {
     if (msg == null) {
       return 0;
     }
@@ -137,6 +123,18 @@ public class InterpreterResult implements Serializable {
     return StringUtils.lastIndexOf(msg, typeString );
   }
   
+  private TreeMap<Integer, Type> buildIndexMap(String msg) {
+    int lastIndexOftypes = 0;
+    TreeMap<Integer, Type> typesLastIndexInMsg = new TreeMap<Integer, Type>();
+    Type[] types = Type.values();
+    for (Type t : types) {
+      lastIndexOftypes = getLastIndexOfType(msg, t);
+      if (lastIndexOftypes >= 0) {
+        typesLastIndexInMsg.put(lastIndexOftypes, t);
+      }
+    }
+    return typesLastIndexInMsg;
+  }
 
   public Code code() {
     return code;

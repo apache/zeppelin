@@ -39,7 +39,7 @@ public class InterpreterResultTest {
 		
 		result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"%table col1\tcol2\naaa\t123\n"); 
 	    assertEquals(InterpreterResult.Type.TABLE, result.type());
-	    result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"%table\n col1\tcol2\naaa\t123\n"); 
+	    result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"%table\ncol1\tcol2\naaa\t123\n"); 
 	    assertEquals(InterpreterResult.Type.TABLE, result.type());
 	    result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"some text before magic word %table col1\tcol2\naaa\t123\n"); 
 	    assertEquals(InterpreterResult.Type.TABLE, result.type());
