@@ -340,7 +340,7 @@ limitations under the License.
 
         <div ng-if="getGraphMode()=='mapChart'"
              id="p{{paragraph.id}}_mapChart">
-          <leaflet markers="markers" width="100%" height="480px"></leaflet>
+          <leaflet bounds="bounds" center="center" markers="markers" width="100%" height="480px"></leaflet>
       </div>
 
       <div id="{{paragraph.id}}_comment"
