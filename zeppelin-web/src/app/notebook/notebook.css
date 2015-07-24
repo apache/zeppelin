@@ -456,6 +456,15 @@
   margin-bottom: 5px !important;
 }
 
+.angular-leaflet-map {
+  height: 300px;
+  width: 100%;
+}
+
+.graphContainer .mapChart {
+  overflow: hidden;
+}
+
 .allFields {
   margin-bottom: 10px;
 }
