@@ -738,28 +738,7 @@ angular.module('zeppelinWebApp')
         setTable($scope.paragraph.result, refresh);
       }
       if (!type || type === 'mapChart') {
-        $scope.markers = {
-          SriLanka: {
-              lat: 6.923117,
-              lng: 79.861184,
-              message: "Sri Lanka",
-              focus: true,
-              draggable: false
-            },
-            India: {
-              lat: 13.811499,
-              lng: 77.818405,
-              message: "India",
-              focus: false,
-              draggable: false
-            }
-          }
-        //setting the map : To-DO Moving the map for separate file
-/*        angular.extend($scope, {
-        defaults: {
-            scrollWheelZoom: false
-        }
-    });*/
+        setMapChart(type, $scope.paragraph.result, refresh);
       }
       else {
         setD3Chart(type, $scope.paragraph.result, refresh);
@@ -863,6 +842,33 @@ angular.module('zeppelinWebApp')
     };
     $timeout(retryRenderer);
 
+  };
+
+  var setMapChart = function(type, data, refresh) {
+    if (!$scope.chart[type]) {
+
+      var mapChartModel = function(d) {
+        var key = d[1].replace("-", "_");;
+        var obj = {};
+        obj[key] = {
+          lat: parseFloat(d[2]),
+          lng: parseFloat(d[3]),
+          message: d[1],
+          focus: true,
+          draggable: false
+        };
+        console.log(obj);
+        return obj;
+      };
+
+      var newmarkers = {}
+      for (var i = 0; i < data.rows.length; i++) {
+        var row = data.rows[i];
+        var rowMarker = mapChartModel(row);
+        newmarkers = $.extend(newmarkers, rowMarker);
+      }
+    }
+    $scope.markers = newmarkers;
   };
 
   var setD3Chart = function(type, data, refresh) {
