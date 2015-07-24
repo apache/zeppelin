@@ -17,7 +17,7 @@
 
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv, leafletBoundsHelpers) {
+                                         $timeout, $compile, websocketMsgSrv, leafletBoundsHelpers, dataValidatorSrv) {
 
   $scope.paragraph = null;
   $scope.editor = null;
@@ -889,6 +889,7 @@ angular.module('zeppelinWebApp')
     $scope.center = {};
 
     // set map chart height
+    dataValidatorSrv.validateMapData(data);
     var height = $scope.paragraph.config.graph.height;
     $('#p'+$scope.paragraph.id+'_mapChart').height(height);
   };
