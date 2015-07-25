@@ -95,8 +95,10 @@ public class InterpreterResult implements Serializable {
       return msg;
     } else {
       Map.Entry<Integer, Type> lastType = typesLastIndexInMsg.lastEntry();
-      int magicLength = lastType.getValue().name().length() + 1; //add 1 for the %
-      int subStringPos = magicLength + lastType.getKey() + 1; // 1 for the last \w after magic
+      //add 1 for the % char
+      int magicLength = lastType.getValue().name().length() + 1;
+      // 1 for the last \n or space after magic
+      int subStringPos = magicLength + lastType.getKey() + 1;
       return msg.substring(subStringPos); 
     }
   }

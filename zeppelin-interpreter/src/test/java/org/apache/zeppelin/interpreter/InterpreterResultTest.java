@@ -31,31 +31,35 @@ public class InterpreterResultTest {
 	public void testTextType() {
 	    
 		InterpreterResult result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"this is a TEXT type"); 
-	    assertEquals("No magic",InterpreterResult.Type.TEXT, result.type());
+    assertEquals("No magic",InterpreterResult.Type.TEXT, result.type());
+		result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"%this is a TEXT type");
+		assertEquals("No magic",InterpreterResult.Type.TEXT, result.type());
+		result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"%\n");
+		assertEquals("No magic",InterpreterResult.Type.TEXT, result.type());
 	  }
 	  @Test
 	  public void testSimpleMagicType() {
 		  InterpreterResult result = null;
 		
-		result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"%table col1\tcol2\naaa\t123\n"); 
-	    assertEquals(InterpreterResult.Type.TABLE, result.type());
-	    result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"%table\ncol1\tcol2\naaa\t123\n"); 
-	    assertEquals(InterpreterResult.Type.TABLE, result.type());
-	    result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"some text before magic word %table col1\tcol2\naaa\t123\n"); 
-	    assertEquals(InterpreterResult.Type.TABLE, result.type());
+		result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"%table col1\tcol2\naaa\t123\n");
+		assertEquals(InterpreterResult.Type.TABLE, result.type());
+	  result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"%table\ncol1\tcol2\naaa\t123\n");
+	  assertEquals(InterpreterResult.Type.TABLE, result.type());
+	  result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"some text before magic word %table col1\tcol2\naaa\t123\n");
+	  assertEquals(InterpreterResult.Type.TABLE, result.type());
 	  }
 
 	  public void testComplexMagicType() {
-		  InterpreterResult result = null;
+		InterpreterResult result = null;
 		
 		result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"some text before %table col1\tcol2\naaa\t123\n"); 
-	    assertEquals("some text before magic",InterpreterResult.Type.TABLE, result.type());
-	    result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"%html  <h3> This is a hack </h3> %table\n col1\tcol2\naaa\t123\n"); 
-	    assertEquals("magic before magic",InterpreterResult.Type.TABLE, result.type());
-	    result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"some text before magic word %table col1\tcol2\naaa\t123\n %html  <h3> This is a hack </h3>"); 
-	    assertEquals("text & magic before magic" ,InterpreterResult.Type.HTML, result.type());
-	    result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"%table col1\tcol2\naaa\t123\n %html  <h3> This is a hack </h3> %table col1\naaa\n123\n"); 
-	    assertEquals("%table, %html, %table" ,InterpreterResult.Type.TABLE, result.type());
+	  assertEquals("some text before magic",InterpreterResult.Type.TABLE, result.type());
+	  result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"%html  <h3> This is a hack </h3> %table\n col1\tcol2\naaa\t123\n");
+	  assertEquals("magic before magic",InterpreterResult.Type.TABLE, result.type());
+	  result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"some text before magic word %table col1\tcol2\naaa\t123\n %html  <h3> This is a hack </h3>");
+	  assertEquals("text & magic before magic" ,InterpreterResult.Type.HTML, result.type());
+	  result = new InterpreterResult(InterpreterResult.Code.SUCCESS,"%table col1\tcol2\naaa\t123\n %html  <h3> This is a hack </h3> %table col1\naaa\n123\n");
+	  assertEquals("%table, %html, %table" ,InterpreterResult.Type.TABLE, result.type());
 
 	  }
 
