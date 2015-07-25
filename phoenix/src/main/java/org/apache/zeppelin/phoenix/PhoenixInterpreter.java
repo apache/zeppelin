@@ -54,7 +54,7 @@ public class PhoenixInterpreter extends Interpreter {
       "phoenix",
       PhoenixInterpreter.class.getName(),
       new InterpreterPropertyBuilder()
-        .add(ZK_URL, "jdbc:phoenix://localhost:2181", "The URL for ZooKeeper.")
+        .add(ZK_URL, "jdbc:phoenix://localhost:2181:/hbase-unsecure", "The URL for ZooKeeper.")
         .add(PHOENIX_USER, "", "The Phoenix user")
         .add(PHOENIX_PASSWORD, "", "The password for the Phoenix user").build());
   }
