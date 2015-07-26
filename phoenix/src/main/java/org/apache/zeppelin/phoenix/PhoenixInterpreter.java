@@ -44,17 +44,19 @@ public class PhoenixInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(PhoenixInterpreter.class);
   int commandTimeOut = 600000;
 
-  static final String PHOENIX_URL = "phoenix.url";
+  static final String PHOENIX_JDBC_URL = "phoenix.jdbc.url";
   static final String PHOENIX_USER = "phoenix.user";
   static final String PHOENIX_PASSWORD = "phoenix.password";
 
   static {
     Interpreter.register(
-      "pql",
+      "sql",
       "phoenix",
       PhoenixInterpreter.class.getName(),
       new InterpreterPropertyBuilder()
-        .add(PHOENIX_URL, "jdbc:phoenix://localhost:2181:/hbase-unsecure", "The URL for ZooKeeper.")
+        .add(PHOENIX_JDBC_URL,
+          "jdbc:phoenix:localhost:2181:/hbase-unsecure",
+          "Phoenix JDBC connection string")
         .add(PHOENIX_USER, "", "The Phoenix user")
         .add(PHOENIX_PASSWORD, "", "The password for the Phoenix user").build());
   }
@@ -69,7 +71,7 @@ public class PhoenixInterpreter extends Interpreter {
   //Test only method
   public Connection getJdbcConnection()
       throws SQLException {
-    String url = getProperty(PHOENIX_URL);
+    String url = getProperty(PHOENIX_JDBC_URL);
     String user = getProperty(PHOENIX_USER);
     String password = getProperty(PHOENIX_PASSWORD);
 
