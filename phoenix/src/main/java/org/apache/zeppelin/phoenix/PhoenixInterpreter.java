@@ -50,7 +50,7 @@ public class PhoenixInterpreter extends Interpreter {
 
   static {
     Interpreter.register(
-      "sql",
+      "pql",
       "phoenix",
       PhoenixInterpreter.class.getName(),
       new InterpreterPropertyBuilder()
