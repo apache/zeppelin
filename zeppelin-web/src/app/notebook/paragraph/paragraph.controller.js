@@ -880,6 +880,9 @@ angular.module('zeppelinWebApp')
         newmarkers = $.extend(newmarkers, rowMarker);
       }
     }
+    //data model validator
+    var msg = dataValidatorSrv.validateMapData(data);
+
     $scope.markers = newmarkers;
     var bounds = leafletBoundsHelpers.createBoundsFromArray([
       [Math.max.apply(Math, latArr), Math.max.apply(Math, lngArr)],
@@ -889,7 +892,6 @@ angular.module('zeppelinWebApp')
     $scope.center = {};
 
     // set map chart height
-    dataValidatorSrv.validateMapData(data);
     var height = $scope.paragraph.config.graph.height;
     $('#p'+$scope.paragraph.id+'_mapChart').height(height);
   };

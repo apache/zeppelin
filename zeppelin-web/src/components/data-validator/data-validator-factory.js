@@ -19,15 +19,13 @@ angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
     this.schema = null;
     this.error = true;
     this.msg = null;
+    this.checkData = checkData;
   };
 
-  dataValidator.setDataschema = function(dataschema) {
-    dataValidator.dataschema = dataschema;
-  };
   //TODO - data validation process inprogress.
-  dataValidator.checkData = function(data) {
+  function checkData(data) {
     if (basicCheck(data)) {
-      dataValidator.error = false;
+      this.error = false;
     }
   };
 
