@@ -22,15 +22,43 @@ angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
     this.checkData = checkData;
   };
 
-  //TODO - data validation process inprogress.
-  function checkData(data) {
-    if (basicCheck(data)) {
-      this.error = false;
+  function checkData(data, schema) {
+    console.log(schema);
+    if (basicCheck(data, schema)) {
+      return false;
     }
-  };
+  }
 
-  function basicCheck(data) {
-    if (data.code) {
+  function basicCheck(data, schema) {
+    if (data.code && data.rows) {
+      rowCheck(data.rows, 3, schema);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  function rowCheck(rowData, num, schema) {
+    if (rowData) {
+      for (var i = 0; i < rowData.length; i++) {
+        var row = rowData[i];
+        dataCheckValidator(row, schema);
+      }
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  function dataCheckValidator(record, schema) {
+    console.log(schema.type.length);
+    if (record) {
+      for (var i = 0; i < schema.type.length; i++) {
+        //TODOto remove logs code inprogress on return msg
+        console.log('data is validated');
+        console.log(record[i]);
+        console.log(isNaN(record[i]) === (schema.type[i] === 'string'));
+      }
       return true;
     } else {
       return false;
