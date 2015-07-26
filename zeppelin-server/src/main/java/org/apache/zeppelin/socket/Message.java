@@ -58,6 +58,12 @@ public class Message {
                   // @param config paragraph config
                   // @param params paragraph params
 
+    SAVE_PARAGRAPH, // [c-s] run paragraph
+                  // @param id paragraph id
+                  // @param paragraph paragraph content.ie. script
+                  // @param config paragraph config
+                  // @param params paragraph params
+
     COMMIT_PARAGRAPH, // [c-s] commit paragraph
                       // @param id paragraph id
                       // @param title paragraph title

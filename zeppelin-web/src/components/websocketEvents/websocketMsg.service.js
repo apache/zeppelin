@@ -74,6 +74,19 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
+    saveParagraph: function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
+      websocketEvents.sendNewEvent({
+        op: 'SAVE_PARAGRAPH',
+        data: {
+          id: paragraphId,
+          title: paragraphTitle,
+          paragraph: paragraphData,
+          config: paragraphConfig,
+          params: paragraphParams
+        }
+      });
+    },
+
     removeParagraph: function(paragraphId) {
       websocketEvents.sendNewEvent({op: 'PARAGRAPH_REMOVE', data: {id: paragraphId}});
     },
