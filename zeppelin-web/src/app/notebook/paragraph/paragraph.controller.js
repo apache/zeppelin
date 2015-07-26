@@ -242,10 +242,15 @@ angular.module('zeppelinWebApp')
     websocketMsgSrv.cancelParagraphRun($scope.paragraph.id);
   };
 
-
   $scope.runParagraph = function(data) {
     websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
                                  data, $scope.paragraph.config, $scope.paragraph.settings.params);
+    $scope.dirtyText = undefined;
+  };
+
+  $scope.saveParagraph = function(data){
+    websocketMsgSrv.saveParagraph($scope.paragraph.id, $scope.paragraph.title,
+      data, $scope.paragraph.config, $scope.paragraph.settings.params);
     $scope.dirtyText = undefined;
   };
 
