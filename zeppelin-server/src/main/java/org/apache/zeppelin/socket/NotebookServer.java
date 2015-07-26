@@ -478,10 +478,10 @@ public class NotebookServer extends WebSocketServer implements
       }
     } else {  // broadcast to all web session for the note
       this.broadcast(
-              note.id(),
-              new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", ao)
-                      .put("interpreterGroupId", interpreterGroupId)
-                      .put("noteId", note.id()));
+          note.id(),
+          new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", ao)
+              .put("interpreterGroupId", interpreterGroupId)
+              .put("noteId", note.id()));
     }
   }
 
