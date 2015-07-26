@@ -69,7 +69,7 @@ public class PhoenixInterpreter extends Interpreter {
   //Test only method
   public Connection getJdbcConnection()
       throws SQLException {
-    String url = getProperty(ZK_URL);
+    String url = getProperty(PHOENIX_URL);
     String user = getProperty(PHOENIX_USER);
     String password = getProperty(PHOENIX_PASSWORD);
 
