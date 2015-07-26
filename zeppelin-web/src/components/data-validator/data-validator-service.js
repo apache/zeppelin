@@ -16,8 +16,10 @@
 angular.module('zeppelinWebApp').service('dataValidatorSrv', function($rootScope, dataValidator) {
 
   this.validateMapData = function(data) {
-    var validator = dataValidator;
+    var validator = new dataValidator();
+    validator.schema = {type:{},model:{}};
     validator.checkData(data);
+    //var msg = {'error':validator.error, 'msg':validator.msg};
     return validator;
   };
 
