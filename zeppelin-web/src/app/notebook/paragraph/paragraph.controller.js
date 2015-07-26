@@ -870,9 +870,16 @@ angular.module('zeppelinWebApp')
         var rowMarker = mapChartModel(row);
         newmarkers = $.extend(newmarkers, rowMarker);
       }
-    }
+    } 
     //data model validator
     var msg = dataValidatorSrv.validateMapData(data);
+    console.log(msg);
+    //TODO- warning need to be show in here. currently it is only printing.
+    //need to know what is the standard way of warning in zepplin.
+    if(msg.error){
+      console.log('Data is not matching for schema');
+      console.log(msg.msg);
+    }
 
     $scope.markers = newmarkers;
     var bounds = leafletBoundsHelpers.createBoundsFromArray([

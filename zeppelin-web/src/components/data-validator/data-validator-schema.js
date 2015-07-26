@@ -13,14 +13,9 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').service('dataValidatorSrv', function($rootScope, dataValidator, dataModelSchemas) {
-
-  this.validateMapData = function(data) {
-    var mapValidator = new dataValidator();
-    mapValidator.schema = dataModelSchemas.MapSchema;
-    mapValidator.checkData(data,mapValidator.schema);
-    var msg = {'error':mapValidator.error(), 'msg':mapValidator.getMsg()};
-    return msg;
-  };
-
-});
+angular.module('zeppelinWebApp')
+  .constant('dataModelSchemas', {
+    'MapSchema': {
+      type: ['string', 'string', 'number', 'number', 'number']
+    }
+  });
