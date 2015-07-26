@@ -15,18 +15,30 @@
 
 angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
 
+  var msg = '';
+  var errorStatus = true;
   var dataValidator = function() {
     this.schema = null;
-    this.error = true;
-    this.msg = null;
+    this.error = getErrorStatus;
     this.checkData = checkData;
+    this.getMsg = getMsg;
   };
 
   function checkData(data, schema) {
     console.log(schema);
     if (basicCheck(data, schema)) {
-      return false;
+      msg += 'data is exisiting | ';
+    } else {
+      msg += 'data does not exisiting | ';
     }
+  }
+
+  function getMsg() {
+    return msg;
+  }
+
+  function getErrorStatus() {
+    return errorStatus;
   }
 
   function basicCheck(data, schema) {
@@ -34,6 +46,7 @@ angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
       rowCheck(data.rows, 3, schema);
       return true;
     } else {
+      msg += 'data rows does not exisiting | ';
       return false;
     }
   }
@@ -42,10 +55,13 @@ angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
     if (rowData) {
       for (var i = 0; i < rowData.length; i++) {
         var row = rowData[i];
-        dataCheckValidator(row, schema);
+        if (dataCheckValidator(row, schema)) {
+          msg += 'data record does not mapping to data schema| ';
+        }
       }
       return true;
     } else {
+      msg += 'data row does not exisiting | ';
       return false;
     }
   }
@@ -54,14 +70,17 @@ angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
     console.log(schema.type.length);
     if (record) {
       for (var i = 0; i < schema.type.length; i++) {
-        //TODOto remove logs code inprogress on return msg
-        console.log('data is validated');
-        console.log(record[i]);
-        console.log(isNaN(record[i]) === (schema.type[i] === 'string'));
+        if (isNaN(record[i]) !== (schema.type[i] === 'string')) {
+          errorStatus = true;
+          msg += 'data record ' + (record[i]) + ' is not matching for schema | ';
+          return true;
+        }
       }
-      return true;
-    } else {
+      errorStatus = false;
       return false;
+    } else {
+      msg += 'data record does not exisiting | ';
+      return true;
     }
   }
 
