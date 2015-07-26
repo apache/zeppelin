@@ -44,7 +44,7 @@ public class PhoenixInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(PhoenixInterpreter.class);
   int commandTimeOut = 600000;
 
-  static final String ZK_URL = "zk.url";
+  static final String PHOENIX_URL = "phoenix.url";
   static final String PHOENIX_USER = "phoenix.user";
   static final String PHOENIX_PASSWORD = "phoenix.password";
 
@@ -54,7 +54,7 @@ public class PhoenixInterpreter extends Interpreter {
       "phoenix",
       PhoenixInterpreter.class.getName(),
       new InterpreterPropertyBuilder()
-        .add(ZK_URL, "jdbc:phoenix://localhost:2181:/hbase-unsecure", "The URL for ZooKeeper.")
+        .add(PHOENIX_URL, "jdbc:phoenix://localhost:2181:/hbase-unsecure", "The URL for ZooKeeper.")
         .add(PHOENIX_USER, "", "The Phoenix user")
         .add(PHOENIX_PASSWORD, "", "The password for the Phoenix user").build());
   }
