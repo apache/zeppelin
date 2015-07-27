@@ -36,7 +36,7 @@
 
     <properties>
         <cassandra.driver.version>2.1.7.1</cassandra.driver.version>
-        <scala.compiler.version>2.10.4</scala.compiler.version>
+        <scala.version>2.10.4</scala.version>
         <scala.binary.version>2.10</scala.binary.version>
         <commons-lang.version>3.3.2</commons-lang.version>
 
@@ -65,8 +65,20 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-compiler</artifactId>
-            <version>${scala.compiler.version}</version>
-            <scope>provided</scope>
+            <version>${scala.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-reflect</artifactId>
+            <version>${scala.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
