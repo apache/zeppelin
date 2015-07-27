@@ -6,16 +6,16 @@ group: nav-right
 ---
 {% include JB/setup %}
 
-### Build from source
+### Download Zeppelin
+
+The latest release of Apache Zeppelin (incubating) is 0.5.0-incubating. Released on July 23, 2015 ([release notes](./docs/releases/zeppelin-release-0.5.0-incubating.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=incubator-zeppelin.git;a=tag;h=refs/tags/v0.5.0))
+
+[Download](http://www.apache.org/dyn/closer.cgi/incubator/zeppelin/0.5.0-incubating)
+
+
+### Build from source, installation
 
 Check [install](./docs/install/install.html).
-
-
-### Current binary release
-
-We will provide binary release pretty soon. Until then, please build your own. It's not that difficult.
-
-For install and configure, check [install](./docs/install/install.html).
 
 
 <!-- 
