@@ -27,6 +27,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.util.resource.Resource;
 
@@ -45,10 +46,7 @@ public class AppScriptServlet extends DefaultServlet {
     )
   );
 
-  private int websocketPort;
-
-  public AppScriptServlet(int websocketPort) {
-    this.websocketPort = websocketPort;
+  public AppScriptServlet() {
   }
 
   @Override
@@ -85,7 +83,8 @@ public class AppScriptServlet extends DefaultServlet {
     int endIndex = script.indexOf(endReplaceString, startIndex);
 
     if (startIndex >= 0 && endIndex >= 0) {
-      String replaceString = "this.getPort=function(){return " + websocketPort + "};";
+      Server server = ZeppelinServer.jettyServer;
+      String replaceString = "this.getPort=function(){return " + ZeppelinServer.jettyServer.getConnectors()[0].getLocalPort() + "};";
       script.replace(startIndex, endIndex + endReplaceString.length(), replaceString);
     }
 

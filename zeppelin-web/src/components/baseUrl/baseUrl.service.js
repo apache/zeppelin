@@ -36,7 +36,7 @@ angular.module('zeppelinWebApp').service('baseUrlSrv', function() {
     } else if (port === 3333 || port === 9000) {
       port = 8080;
     }
-    return port + 1;
+    return port;
   };
   /* @preserve AppScriptServlet - close */
 
