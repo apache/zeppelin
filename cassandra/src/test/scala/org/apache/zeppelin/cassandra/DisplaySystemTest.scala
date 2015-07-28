@@ -19,7 +19,7 @@ package org.apache.zeppelin.cassandra
 import java.io.InputStream
 
 import com.datastax.driver.core._
-import org.apache.zeppelin.cassandra.DisplaySystem.{ClusterDisplay, KeyspaceDisplay, UDTDisplay, TableDisplay}
+import org.apache.zeppelin.cassandra.DisplaySystem._
 
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
@@ -129,6 +129,18 @@ class DisplaySystemTest extends FlatSpec
 
     //Then
     val expected: String = readTestResource("/scalate/DescribeTables.html")
+
+    reformatHtml(actual) should be(reformatHtml(expected))
+  }
+
+  "DisplaySystem" should "display help" in {
+    //Given
+
+    //When
+    val actual: String = HelpDisplay.formatHelp()
+
+    //Then
+    val expected: String = readTestResource("/scalate/Help.html")
 
     reformatHtml(actual) should be(reformatHtml(expected))
   }

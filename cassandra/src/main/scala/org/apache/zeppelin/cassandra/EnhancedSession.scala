@@ -32,6 +32,7 @@ class EnhancedSession(val session: Session) {
   val keyspaceDisplay = DisplaySystem.KeyspaceDisplay
   val tableDisplay = DisplaySystem.TableDisplay
   val udtDisplay = DisplaySystem.UDTDisplay
+  val helpDisplay = DisplaySystem.HelpDisplay
 
   val HTML_MAGIC = "%html \n"
 
@@ -76,8 +77,12 @@ class EnhancedSession(val session: Session) {
       case Some(userType) => HTML_MAGIC + udtDisplay.format(describeUDT.statement, userType, true)
       case None => throw new InterpreterException(s"Cannot find type $keyspace.$udtName")
     }
-
   }
+
+  private def execute(helpCmd: HelpCmd): String = {
+    HTML_MAGIC + helpDisplay.formatHelp()
+  }
+
 
   def execute(st: Any): Any = {
     st match {
@@ -87,6 +92,7 @@ class EnhancedSession(val session: Session) {
       case x:DescribeKeyspaceCmd => execute(x)
       case x:DescribeTableCmd => execute(x)
       case x:DescribeUDTCmd => execute(x)
+      case x:HelpCmd => execute(x)
       case x:Statement => session.execute(x)
       case _ => throw new InterpreterException(s"Cannot execute statement '$st' of type ${st.getClass}")
     }

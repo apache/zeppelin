@@ -564,4 +564,22 @@ class ParagraphParserTest extends FlatSpec
     ex.getMessage should be(s"Invalid syntax for DESCRIBE TYPE. It should comply to the patterns: " +
       s"${DESCRIBE_TYPE_WITH_KEYSPACE_PATTERN.toString} or ${DESCRIBE_TYPE_PATTERN.toString}")
   }
+
+  "Parser" should "parse help" in {
+    val queries ="hElp;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get(0) shouldBe a [HelpCmd]
+  }
+
+  "Parser" should "fail parsing help" in {
+    val queries ="HELP"
+
+    val ex = intercept[InterpreterException] {
+      parser.parseAll(parser.queries, queries)
+    }
+    ex.getMessage should be(s"Invalid syntax for HELP. It should comply to the patterns: " +
+      s"${HELP_PATTERN.toString}")
+  }
 }

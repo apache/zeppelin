@@ -65,6 +65,8 @@ object ParagraphParser {
                                                 """)\.(""" +
                                                 VALID_IDENTIFIER +
                                                 """);\s*$""").r
+
+  val HELP_PATTERN = """^(?i)\s*HELP;\s*$""".r
 }
 
 class ParagraphParser extends RegexParsers{
@@ -90,13 +92,15 @@ class ParagraphParser extends RegexParsers{
 
 
   //Meta data
-  def describeCluster: Parser[DescribeClusterCmd] = """(?i)\s*(?:DESCRIBE|DESC)\s+CLUSTER.*""".r ^^ {extractDescribeClusterCmd(_)}
-  def describeKeyspaces: Parser[DescribeKeyspacesCmd] = """(?i)\s*(?:DESCRIBE|DESC)\s+KEYSPACES.*""".r ^^ {extractDescribeKeyspacesCmd(_)}
-  def describeTables: Parser[DescribeTablesCmd] = """(?i)\s*(?:DESCRIBE|DESC)\s+TABLES.*""".r ^^ {extractDescribeTablesCmd(_)}
-  def describeKeyspace: Parser[DescribeKeyspaceCmd] = """\s*(?i)(?:DESCRIBE|DESC)\s+KEYSPACE\s+.+""".r ^^ {extractDescribeKeyspaceCmd(_)}
-  def describeTable: Parser[DescribeTableCmd] = """(?i)\s*(?:DESCRIBE|DESC)\s+TABLE\s+.+""".r ^^ {extractDescribeTableCmd(_)}
-  def describeType: Parser[DescribeUDTCmd] = """(?i)\s*(?:DESCRIBE|DESC)\s+TYPE\s+.+""".r ^^ {extractDescribeTypeCmd(_)}
+  private def describeCluster: Parser[DescribeClusterCmd] = """(?i)\s*(?:DESCRIBE|DESC)\s+CLUSTER.*""".r ^^ {extractDescribeClusterCmd(_)}
+  private def describeKeyspaces: Parser[DescribeKeyspacesCmd] = """(?i)\s*(?:DESCRIBE|DESC)\s+KEYSPACES.*""".r ^^ {extractDescribeKeyspacesCmd(_)}
+  private def describeTables: Parser[DescribeTablesCmd] = """(?i)\s*(?:DESCRIBE|DESC)\s+TABLES.*""".r ^^ {extractDescribeTablesCmd(_)}
+  private def describeKeyspace: Parser[DescribeKeyspaceCmd] = """\s*(?i)(?:DESCRIBE|DESC)\s+KEYSPACE\s+.+""".r ^^ {extractDescribeKeyspaceCmd(_)}
+  private def describeTable: Parser[DescribeTableCmd] = """(?i)\s*(?:DESCRIBE|DESC)\s+TABLE\s+.+""".r ^^ {extractDescribeTableCmd(_)}
+  private def describeType: Parser[DescribeUDTCmd] = """(?i)\s*(?:DESCRIBE|DESC)\s+TYPE\s+.*""".r ^^ {extractDescribeTypeCmd(_)}
 
+  //Help
+  private def helpCommand: Parser[HelpCmd] = """(?i)\s*HELP.*""".r ^^{extractHelpCmd(_)}
 
   private def beginBatch: Parser[String] = """(?i)\s*BEGIN\s+(UNLOGGED|COUNTER)?\s*BATCH""".r
   private def applyBatch: Parser[String] = """(?i)APPLY BATCH;""".r
@@ -111,7 +115,7 @@ class ParagraphParser extends RegexParsers{
 
   def queries:Parser[List[AnyBlock]] = rep(singleLineComment | multiLineComment | consistency | serialConsistency |
     timestamp | retryPolicy | fetchSize | removePrepare | prepare | bind | batch | describeCluster | describeKeyspaces |
-    describeTables | describeKeyspace | describeTable | describeType | genericStatement)
+    describeTables | describeKeyspace | describeTable | describeType | helpCommand | genericStatement)
 
   def extractConsistency(text: String): Consistency = {
     text match {
@@ -249,6 +253,14 @@ class ParagraphParser extends RegexParsers{
       case DESCRIBE_TYPE_PATTERN(table) => new DescribeUDTCmd(Option.empty,table)
       case _ => throw new InterpreterException(s"Invalid syntax for DESCRIBE TYPE. " +
         s"""It should comply to the patterns: ${DESCRIBE_TYPE_WITH_KEYSPACE_PATTERN.toString} or ${DESCRIBE_TYPE_PATTERN.toString}""".stripMargin)
+    }
+  }
+
+  def extractHelpCmd(text: String): HelpCmd = {
+    text match {
+      case HELP_PATTERN() => new HelpCmd
+      case _ => throw new InterpreterException(s"Invalid syntax for HELP. " +
+        s"""It should comply to the patterns: ${HELP_PATTERN.toString}""".stripMargin)
     }
   }
 }

@@ -81,6 +81,7 @@ object TextBlockHierarchy {
   object DescribeAllTablesStatementType extends StatementType
   object DescribeTableStatementType extends StatementType
   object DescribeTypeStatementType extends StatementType
+  object HelpStatementType extends StatementType
 
   abstract class QueryStatement(val statementType: StatementType) extends AnyBlock(StatementBlock) {
     def getStatement[U<: QueryStatement]: U = {
@@ -132,4 +133,7 @@ object TextBlockHierarchy {
       case None => s"DESCRIBE TYPE $udtName;"
     }
   }
+
+  class HelpCmd extends QueryStatement(HelpStatementType)
+
 }

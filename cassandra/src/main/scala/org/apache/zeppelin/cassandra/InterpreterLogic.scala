@@ -144,6 +144,7 @@ class InterpreterLogic(val session: Session)  {
           }
           case x:BoundStm => generateBoundStatement(x, queryOptions, context)
           case x:DescribeCommandStatement => x
+          case x:HelpCmd => x
           case x => throw new InterpreterException(s"Unknown statement type : ${x}")
        }
 

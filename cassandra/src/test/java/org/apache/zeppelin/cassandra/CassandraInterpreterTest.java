@@ -603,7 +603,6 @@ public class CassandraInterpreterTest {
 
         assertThat(reformatHtml(actual.message())).isEqualTo(expected);
     }
-
     @Test
     public void should_error_describing_non_existing_table() throws Exception {
         //Given
@@ -630,6 +629,22 @@ public class CassandraInterpreterTest {
         //Then
         assertThat(actual.code()).isEqualTo(Code.ERROR);
         assertThat(actual.message()).contains("Cannot find type system.address");
+    }
+
+    @Test
+    public void should_show_help() throws Exception {
+        //Given
+        String query = "HELP;";
+        final String expected = reformatHtml(
+                readTestResource("/scalate/Help.html"));
+
+        //When
+        final InterpreterResult actual = interpreter.interpret(query, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+
+        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
     }
 
     private static String reformatHtml(String rawHtml) {

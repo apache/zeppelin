@@ -167,6 +167,13 @@ object DisplaySystem {
     }
   }
 
+  object HelpDisplay {
+
+    def formatHelp(): String = {
+      engine.layout("/scalate/helpMenu.ssp")
+    }
+  }
+
   private object MenuDisplay {
     def formatMenu(statement: String, dropDownMenu: String = ""): String = {
       engine.layout(MENU_TEMPLATE,
