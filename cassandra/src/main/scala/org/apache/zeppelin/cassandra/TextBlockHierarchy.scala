@@ -16,7 +16,7 @@
  */
 package org.apache.zeppelin.cassandra
 
-import com.datastax.driver.core.{BatchStatement, ConsistencyLevel}
+import com.datastax.driver.core._
 
 /**
  * Define a Scala object hierarchy
@@ -38,11 +38,11 @@ object TextBlockHierarchy {
   case class Comment(text:String) extends AnyBlock(CommentBlock)
 
   sealed trait ParameterType
-  object CS extends ParameterType
-  object SCS extends ParameterType
-  object TS extends ParameterType
-  object RP extends ParameterType
-  object FS extends ParameterType
+  object ConsistencyParam extends ParameterType
+  object SerialConsistencyParam extends ParameterType
+  object TimestampParam extends ParameterType
+  object RetryPolicyParam extends ParameterType
+  object FetchSizeParam extends ParameterType
 
 
   abstract class QueryParameters(val paramType: ParameterType) extends AnyBlock(ParameterBlock) {
@@ -51,17 +51,29 @@ object TextBlockHierarchy {
     }
   }
 
-  case class Consistency(value: ConsistencyLevel) extends QueryParameters(CS)
-  case class SerialConsistency(value: ConsistencyLevel) extends QueryParameters(SCS)
-  case class Timestamp(value: Long) extends QueryParameters(TS)
-  case class FetchSize(value: Int) extends QueryParameters(FS)
+  case class Consistency(value: ConsistencyLevel) extends QueryParameters(ConsistencyParam)
+  
+  case class SerialConsistency(value: ConsistencyLevel) extends QueryParameters(SerialConsistencyParam)
+  
+  case class Timestamp(value: Long) extends QueryParameters(TimestampParam)
+  
+  case class FetchSize(value: Int) extends QueryParameters(FetchSizeParam)
 
+  abstract class RetryPolicy extends QueryParameters(RetryPolicyParam)
+
+  object DefaultRetryPolicy extends RetryPolicy
+  object DowngradingRetryPolicy extends RetryPolicy
+  object FallThroughRetryPolicy extends RetryPolicy
+  object LoggingDefaultRetryPolicy extends RetryPolicy
+  object LoggingDowngradingRetryPolicy extends RetryPolicy
+  object LoggingFallThroughRetryPolicy extends RetryPolicy
+  
   sealed trait StatementType
-  object PS extends StatementType
-  object RPS extends StatementType
-  object BS extends StatementType
-  object SS extends StatementType
-  object BatchS extends StatementType
+  object PrepareStatementType extends StatementType
+  object RemovePrepareStatementType extends StatementType
+  object BoundStatementType extends StatementType
+  object SimpleStatementType extends StatementType
+  object BatchStatementType extends StatementType
 
   abstract class QueryStatement(val statementType: StatementType) extends AnyBlock(StatementBlock) {
     def getStatement[U<: QueryStatement]: U = {
@@ -69,17 +81,15 @@ object TextBlockHierarchy {
     }
   }
 
-  case class SimpleStm(text:String) extends QueryStatement(SS)
-  case class PrepareStm(name: String, query:String) extends QueryStatement(PS)
-  case class RemovePrepareStm(name:String) extends QueryStatement(RPS)
-  case class BoundStm(name: String, values:String) extends QueryStatement(BS)
-  case class BatchStm(batchType: BatchStatement.Type, statements: List[QueryStatement]) extends QueryStatement(BatchS)
+  case class SimpleStm(text:String) extends QueryStatement(SimpleStatementType)
+  
+  case class PrepareStm(name: String, query:String) extends QueryStatement(PrepareStatementType)
+  
+  case class RemovePrepareStm(name:String) extends QueryStatement(RemovePrepareStatementType)
+  
+  case class BoundStm(name: String, values:String) extends QueryStatement(BoundStatementType)
+  
+  case class BatchStm(batchType: BatchStatement.Type, statements: List[QueryStatement])
+    extends QueryStatement(BatchStatementType)
 
-  abstract class RetryPolicy extends QueryParameters(RP)
-  object DefaultRetryPolicy extends RetryPolicy
-  object DowngradingRetryPolicy extends RetryPolicy
-  object FallThroughRetryPolicy extends RetryPolicy
-  object LoggingDefaultRetryPolicy extends RetryPolicy
-  object LoggingDowngradingRetryPolicy extends RetryPolicy
-  object LoggingFallThroughRetryPolicy extends RetryPolicy
 }

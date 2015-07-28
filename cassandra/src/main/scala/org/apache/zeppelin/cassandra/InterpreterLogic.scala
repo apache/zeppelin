@@ -112,7 +112,7 @@ class InterpreterLogic(val session: Session)  {
 
       //Remove prepared statements
       queryStatements
-        .filter(_.statementType == RPS)
+        .filter(_.statementType == RemovePrepareStatementType)
         .map(_.getStatement[RemovePrepareStm])
         .foreach(remove => {
           logger.debug(s"Removing prepared statement '${remove.name}'")
@@ -121,7 +121,7 @@ class InterpreterLogic(val session: Session)  {
 
       //Update prepared statement maps
       queryStatements
-        .filter(_.statementType == PS)
+        .filter(_.statementType == PrepareStatementType)
         .map(_.getStatement[PrepareStm])
         .foreach(statement => {
           logger.debug(s"Get or prepare statement '${statement.name}' : ${statement.query}")
@@ -129,7 +129,7 @@ class InterpreterLogic(val session: Session)  {
         })
 
       val statements: List[Statement] = queryStatements
-        .filter(st => (st.statementType != PS) && (st.statementType != RPS))
+        .filter(st => (st.statementType != PrepareStatementType) && (st.statementType != RemovePrepareStatementType))
         .map{
           case x:SimpleStm => generateSimpleStatement(x, queryOptions, context)
           case x:BatchStm => {
@@ -241,31 +241,31 @@ class InterpreterLogic(val session: Session)  {
     logger.debug(s"Extracting query options from $parameters")
 
     val consistency: Option[ConsistencyLevel] = parameters
-      .filter(_.paramType == CS)
+      .filter(_.paramType == ConsistencyParam)
       .map(_.getParam[Consistency])
       .flatMap(x => Option(x.value))
       .headOption
 
 
     val serialConsistency: Option[ConsistencyLevel] = parameters
-      .filter(_.paramType == SCS)
+      .filter(_.paramType == SerialConsistencyParam)
       .map(_.getParam[SerialConsistency])
       .flatMap(x => Option(x.value))
       .headOption
 
     val timestamp: Option[Long] = parameters
-      .filter(_.paramType == TS)
+      .filter(_.paramType == TimestampParam)
       .map(_.getParam[Timestamp])
       .flatMap(x => Option(x.value))
       .headOption
 
     val retryPolicy: Option[RetryPolicy] = parameters
-      .filter(_.paramType == RP)
+      .filter(_.paramType == RetryPolicyParam)
       .map(_.getParam[RetryPolicy])
       .headOption
 
     val fetchSize: Option[Int] = parameters
-      .filter(_.paramType == FS)
+      .filter(_.paramType == FetchSizeParam)
       .map(_.getParam[FetchSize])
       .flatMap(x => Option(x.value))
       .headOption
