@@ -40,10 +40,10 @@ object ParagraphParser {
   val REMOVE_PREPARE_STATEMENT_PATTERN = """^\s*@remove_prepare\[([^]]+)\]\s*$""".r
 
   val BIND_PATTERN = """^\s*@bind\[([^]]+)\](?:=([^;]+))?""".r
-  val BATCH_PATTERN = """^\s*BEGIN\s+(UNLOGGED|COUNTER)?\s*BATCH""".r
+  val BATCH_PATTERN = """^(?i)\s*BEGIN\s+(UNLOGGED|COUNTER)?\s*BATCH""".r
 
   val GENERIC_STATEMENT_PREFIX =
-    """\s*(?is)(?:INSERT|UPDATE|DELETE|SELECT|CREATE|UPDATE|
+    """(?is)\s*(?:INSERT|UPDATE|DELETE|SELECT|CREATE|UPDATE|
       |DROP|GRANT|REVOKE|TRUNCATE|LIST|USE)\s+""".r
 }
 
@@ -69,11 +69,11 @@ class ParagraphParser extends RegexParsers{
   def bind: Parser[BoundStm] = """\s*@bind.+""".r ^^ {case x => extractBoundStatement(x.trim)}
 
 
-  private def beginBatch: Parser[String] = """\s*BEGIN\s+(UNLOGGED|COUNTER)?\s*BATCH""".r
-  private def applyBatch: Parser[String] = "APPLY BATCH;"
-  private def insert: Parser[SimpleStm] = """INSERT [^;]+;""".r ^^{SimpleStm(_)}
-  private def update: Parser[SimpleStm] = """UPDATE [^;]+;""".r ^^{SimpleStm(_)}
-  private def delete: Parser[SimpleStm] = """DELETE [^;]+;""".r ^^{SimpleStm(_)}
+  private def beginBatch: Parser[String] = """(?i)\s*BEGIN\s+(UNLOGGED|COUNTER)?\s*BATCH""".r
+  private def applyBatch: Parser[String] = """(?i)APPLY BATCH;""".r
+  private def insert: Parser[SimpleStm] = """(?i)INSERT [^;]+;""".r ^^{SimpleStm(_)}
+  private def update: Parser[SimpleStm] = """(?i)UPDATE [^;]+;""".r ^^{SimpleStm(_)}
+  private def delete: Parser[SimpleStm] = """(?i)DELETE [^;]+;""".r ^^{SimpleStm(_)}
 
   private def mutationStatements: Parser[List[QueryStatement]] = rep(insert | update | delete | bind)
 
@@ -164,10 +164,9 @@ class ParagraphParser extends RegexParsers{
 
   def extractBatchType(text: String): BatchStatement.Type = {
     text match {
-      case BATCH_PATTERN(batchType) => {
+      case BATCH_PATTERN(batchType) =>
         val inferredType = Option(batchType).getOrElse("LOGGED")
-        BatchStatement.Type.valueOf(inferredType)
-      }
+        BatchStatement.Type.valueOf(inferredType.toUpperCase)
       case _ => throw new InterpreterException(s"Invalid syntax for BEGIN BATCH. " +
         s"""It should comply to the pattern: ${BATCH_PATTERN.toString}""")
     }

@@ -16,7 +16,7 @@
  */
 package org.apache.zeppelin.cassandra
 
-import com.datastax.driver.core.{BatchStatement, Session, PreparedStatement, ConsistencyLevel}
+import com.datastax.driver.core._
 import org.apache.zeppelin.interpreter.InterpreterException
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{BeforeAndAfterEach, FlatSpec, Matchers}
@@ -33,19 +33,19 @@ class ParagraphParserTest extends FlatSpec
   val parser: ParagraphParser = new ParagraphParser()
 
 
-  "Parser" should "parse" in {
+  "Parser" should "parse mixed statements" in {
     val query: String = """
         SELECT * FROM albums LIMIT 10;
 
-        BEGIN UNLOGGED BATCH
+        begin UnLoGgEd BATCH
         INSERT INTO users(id) VALUES(10);
         @bind[test]='a',12.34
-        APPLY BATCH;
+        apply Batch;
 
         SELECT * FROM users LIMIT 10;
 
         BEGIN BATCH
-        INSERT INTO users(id) VALUES(11);
+        Insert INTO users(id) VALUES(11);
         INSERT INTO users(id) VALUES(12);
         APPLY BATCH;
 
@@ -65,7 +65,7 @@ class ParagraphParserTest extends FlatSpec
       SimpleStm("SELECT * FROM users LIMIT 10;"),
       BatchStm(BatchStatement.Type.LOGGED,
         List(
-          SimpleStm("INSERT INTO users(id) VALUES(11);"),
+          SimpleStm("Insert INTO users(id) VALUES(11);"),
           SimpleStm("INSERT INTO users(id) VALUES(12);")
         )
       ),
@@ -235,11 +235,11 @@ class ParagraphParserTest extends FlatSpec
   "Parser" should "parse batch" in {
     //Given
     val query:String ="""
-      BEGIN BATCH
-        INSERT INTO users(id) VALUES(10);
+      bEgin Batch
+        Insert INTO users(id) VALUES(10);
         @bind[select_users  ]=10,'toto'
-        UPDATE users SET name ='John DOE' WHERE id=10;
-        DELETE users WHERE id=11;
+        update users SET name ='John DOE' WHERE id=10;
+        dElEtE users WHERE id=11;
       APPLY BATCH;""".stripMargin
 
     //When
@@ -250,10 +250,10 @@ class ParagraphParserTest extends FlatSpec
       BatchStm(
         BatchStatement.Type.LOGGED,
         List[QueryStatement](
-          SimpleStm("INSERT INTO users(id) VALUES(10);"),
+          SimpleStm("Insert INTO users(id) VALUES(10);"),
           BoundStm("select_users", "10,'toto'"),
-          SimpleStm("UPDATE users SET name ='John DOE' WHERE id=10;"),
-          SimpleStm("DELETE users WHERE id=11;")
+          SimpleStm("update users SET name ='John DOE' WHERE id=10;"),
+          SimpleStm("dElEtE users WHERE id=11;")
         )
       )
     )
@@ -265,7 +265,7 @@ class ParagraphParserTest extends FlatSpec
     val ex = intercept[InterpreterException] {
       parser.extractBatchType(query)
     }
-    ex.getMessage should be("""Invalid syntax for BEGIN BATCH. It should comply to the pattern: ^\s*BEGIN\s+(UNLOGGED|COUNTER)?\s*BATCH""")
+    ex.getMessage should be(s"""Invalid syntax for BEGIN BATCH. It should comply to the pattern: ${BATCH_PATTERN.toString}""")
   }
 
   "Parser" should "parse query parameter with statement" in {
