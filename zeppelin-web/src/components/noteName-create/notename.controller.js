@@ -20,12 +20,12 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, $ro
   
   vm.createNote = function(){
 	  vm.websocketMsgSrv.createNotebook($scope.notename);
-  }
+  };
   vm.preVisible = function(){
 		var generatedName = vm.generateName();
 		$scope.notename = 'Note ' + generatedName;
-		$scope.$apply()
-  }
+		$scope.$apply();
+  };
   vm.generateName = function () {
 		var DICTIONARY = [ '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B',
 				'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'M', 'N', 'P', 'Q', 'R',
@@ -36,5 +36,5 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, $ro
 			name += DICTIONARY[randIndex];
 		}
 		return name;
-	}
+	};
 });

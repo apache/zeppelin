@@ -23,11 +23,11 @@ angular.module('zeppelinWebApp').directive('modalvisible', function () {
         	// Add some listeners
     		var previsibleMethod = scope.preVisibleCallback;
     		var postVisibleMethod = scope.postVisibleCallback;
-    		$(elem).on('show.bs.modal',function(e) {
+    		elem.on('show.bs.modal',function(e) {
     			previsibleMethod();
     		});
-    		$(elem).on('shown.bs.modal', function(e) {
-    			$(e.target).find("#noteName").select()
+    		elem.on('shown.bs.modal', function(e) {
+    			$(e.target).find('#noteName').select();
     			postVisibleMethod();
     		});
         }
