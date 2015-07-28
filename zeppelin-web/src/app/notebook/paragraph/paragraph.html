@@ -377,6 +377,10 @@ limitations under the License.
   </div>
   <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
 
+    <span class="glyphicon glyphicon-flag" style="cursor:pointer"
+          ng-show="dirtyText"
+          tooltip-placement="top" tooltip="not Saved"></span>
+
     <span>
       {{paragraph.status}}
     </span>
@@ -392,11 +396,6 @@ limitations under the License.
     <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top" tooltip="Cancel"
           ng-click="cancelParagraph()"
           ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
-
-    <span class="glyphicon glyphicon-save" style="cursor:pointer"
-          ng-click="saveParagraph(getEditorValue())"
-          ng-show="dirtyText"
-          tooltip-placement="top" tooltip="Save"></span>
     <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide') + ' editor'}}"
           ng-click="toggleEditor()"></span>
     <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
