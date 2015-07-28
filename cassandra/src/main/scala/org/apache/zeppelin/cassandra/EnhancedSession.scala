@@ -28,10 +28,10 @@ import org.apache.zeppelin.interpreter.InterpreterException
  */
 class EnhancedSession(val session: Session) {
 
-  val clusterDisplay = SchemaDisplay.ClusterDisplay
-  val keyspaceDisplay = SchemaDisplay.KeyspaceDisplay
-  val tableDisplay = SchemaDisplay.TableDisplay
-  val udtDisplay = SchemaDisplay.UDTDisplay
+  val clusterDisplay = DisplaySystem.ClusterDisplay
+  val keyspaceDisplay = DisplaySystem.KeyspaceDisplay
+  val tableDisplay = DisplaySystem.TableDisplay
+  val udtDisplay = DisplaySystem.UDTDisplay
 
   val HTML_MAGIC = "%html \n"
 

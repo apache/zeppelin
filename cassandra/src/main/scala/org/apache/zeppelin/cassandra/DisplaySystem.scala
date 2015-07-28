@@ -33,7 +33,7 @@ import scala.collection.immutable.ListMap
  * Format and display
  * schema meta data
  */
-object SchemaDisplay {
+object DisplaySystem {
 
   val engine = new TemplateEngine
 
@@ -56,7 +56,7 @@ object SchemaDisplay {
       MenuDisplay.formatMenu(statement) + formatWithoutMenu(meta, withCaption)
     }
 
-    protected[SchemaDisplay] def formatWithoutMenu(meta: TableMetadata, withCaption: Boolean): String = {
+    protected[DisplaySystem] def formatWithoutMenu(meta: TableMetadata, withCaption: Boolean): String = {
       val tableName: String = meta.getName
       val columnsDetails = MetaDataConverter.tableMetaToColumnDetails(meta)
 
@@ -70,7 +70,7 @@ object SchemaDisplay {
       MenuDisplay.formatMenu(statement) ++ formatWithoutMenu(userType, withCaption)
     }
 
-    protected[SchemaDisplay] def formatWithoutMenu(userType: UserType, withCaption: Boolean): String = {
+    protected[DisplaySystem] def formatWithoutMenu(userType: UserType, withCaption: Boolean): String = {
       val udtName: String = userType.getTypeName
       val columnsDetails = MetaDataConverter.userTypeToColumnDetails(userType)
 

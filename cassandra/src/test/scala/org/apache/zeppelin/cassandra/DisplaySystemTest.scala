@@ -19,14 +19,14 @@ package org.apache.zeppelin.cassandra
 import java.io.InputStream
 
 import com.datastax.driver.core._
-import org.apache.zeppelin.cassandra.SchemaDisplay.{ClusterDisplay, KeyspaceDisplay, UDTDisplay, TableDisplay}
+import org.apache.zeppelin.cassandra.DisplaySystem.{ClusterDisplay, KeyspaceDisplay, UDTDisplay, TableDisplay}
 
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 import info.archinnov.achilles.junit.AchillesResourceBuilder
 import scala.io.Source
 
-class SchemaDisplayTest extends FlatSpec
+class DisplaySystemTest extends FlatSpec
   with BeforeAndAfterAll
   with Matchers
   with MockitoSugar {
@@ -41,7 +41,7 @@ class SchemaDisplayTest extends FlatSpec
     session = resource.getNativeSession
   }
 
-  "SchemaDisplay" should "display table details" in {
+  "DisplaySystem" should "display table details" in {
     //Given
     val tableMetadata = session.getCluster.getMetadata.getKeyspace("live_data").getTable("complex_table")
 
@@ -55,7 +55,7 @@ class SchemaDisplayTest extends FlatSpec
   }
 
 
-  "SchemaDisplay" should "display udt details" in {
+  "DisplaySystem" should "display udt details" in {
     //Given
     val userType: UserType = session.getCluster.getMetadata.getKeyspace("live_data").getUserType("address")
 
@@ -68,7 +68,7 @@ class SchemaDisplayTest extends FlatSpec
     reformatHtml(actual) should be(reformatHtml(expected))
   }
 
-  "SchemaDisplay" should "display keyspace details" in {
+  "DisplaySystem" should "display keyspace details" in {
     //Given
     val ksMeta: KeyspaceMetadata = session.getCluster.getMetadata.getKeyspace("live_data")
 
@@ -81,7 +81,7 @@ class SchemaDisplayTest extends FlatSpec
     reformatHtml(actual) should be(reformatHtml(expected))
   }
 
-  "SchemaDisplay" should "display keyspace content" in {
+  "DisplaySystem" should "display keyspace content" in {
     //Given
     val ksMeta: KeyspaceMetadata = session.getCluster.getMetadata.getKeyspace("live_data")
 
@@ -94,7 +94,7 @@ class SchemaDisplayTest extends FlatSpec
     reformatHtml(actual) should be(reformatHtml(expected))
   }
 
-  "SchemaDisplay" should "display cluster details" in {
+  "DisplaySystem" should "display cluster details" in {
     //Given
     val meta: Metadata = session.getCluster.getMetadata
 
@@ -107,7 +107,7 @@ class SchemaDisplayTest extends FlatSpec
     reformatHtml(actual) should be(reformatHtml(expected))
   }
 
-  "SchemaDisplay" should "display cluster content" in {
+  "DisplaySystem" should "display cluster content" in {
     //Given
     val meta: Metadata = session.getCluster.getMetadata
 
@@ -120,7 +120,7 @@ class SchemaDisplayTest extends FlatSpec
     reformatHtml(actual) should be(reformatHtml(expected))
   }
 
-  "SchemaDisplay" should "display all tables" in {
+  "DisplaySystem" should "display all tables" in {
     //Given
     val meta: Metadata = session.getCluster.getMetadata
 
