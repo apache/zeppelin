@@ -80,7 +80,7 @@ mvn clean package -Pspark-1.1 -Dhadoop.version=2.6.0 -Phadoop-2.6 -Pyarn -DskipT
 ```
 Yarn (Hadoop 2.7.x)
 ```
-mvn clean package -Pspark-1.4 -Dspark.version=1.4.1 -Dhadoop.version=2.7.0 -Phadoop-2.7 -Pyarn -DskipTests
+mvn clean package -Pspark-1.4 -Dspark.version=1.4.1 -Dhadoop.version=2.7.0 -Phadoop-2.6 -Pyarn -DskipTests
 ```
 Ignite (1.1.0-incubating and later)
 ```
