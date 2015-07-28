@@ -1,12 +1,14 @@
 package org.apache.zeppelin.socket;
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.eclipse.jetty.websocket.WebSocket;
 
+/**
+ * Notebook websocket
+ */
 public class NotebookSocket implements WebSocket.OnTextMessage{
 
   private Connection connection;

@@ -26,6 +26,7 @@ import java.util.Set;
 
 import javax.net.ssl.SSLContext;
 import javax.servlet.DispatcherType;
+import javax.servlet.Servlet;
 import javax.ws.rs.core.Application;
 
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
@@ -162,13 +163,14 @@ public class ZeppelinServer extends Application {
   private static ServletContextHandler setupNotebookServer(ZeppelinConfiguration conf)
       throws Exception {
 
-    final ServletHolder notebookServer = new ServletHolder("ws", NotebookServer.class);
+    notebookServer = new NotebookServer();
+    final ServletHolder servletHolder = new ServletHolder(notebookServer);
 
     final ServletContextHandler cxfContext = new ServletContextHandler(
         ServletContextHandler.SESSIONS);
     cxfContext.setSessionHandler(new SessionHandler());
     cxfContext.setContextPath("/");
-    cxfContext.addServlet(notebookServer, "/ws/*");
+    cxfContext.addServlet(servletHolder, "/ws/*");
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
         EnumSet.allOf(DispatcherType.class));
     return cxfContext;

@@ -91,51 +91,51 @@ public class NotebookServer extends WebSocketServlet implements
       LOG.info("RECEIVE << " + messagereceived.op);
       /** Lets be elegant here */
       switch (messagereceived.op) {
-      case LIST_NOTES:
-        broadcastNoteList();
-        break;
-      case GET_NOTE:
-        sendNote(conn, notebook, messagereceived);
-        break;
-      case NEW_NOTE:
-        createNote(conn, notebook);
-        break;
-      case DEL_NOTE:
-        removeNote(conn, notebook, messagereceived);
-        break;
-      case COMMIT_PARAGRAPH:
-        updateParagraph(conn, notebook, messagereceived);
-        break;
-      case RUN_PARAGRAPH:
-        runParagraph(conn, notebook, messagereceived);
-        break;
-      case CANCEL_PARAGRAPH:
-        cancelParagraph(conn, notebook, messagereceived);
-        break;
-      case MOVE_PARAGRAPH:
-        moveParagraph(conn, notebook, messagereceived);
-        break;
-      case INSERT_PARAGRAPH:
-        insertParagraph(conn, notebook, messagereceived);
-        break;
-      case PARAGRAPH_REMOVE:
-        removeParagraph(conn, notebook, messagereceived);
-        break;
-      case NOTE_UPDATE:
-        updateNote(conn, notebook, messagereceived);
-        break;
-      case COMPLETION:
-        completion(conn, notebook, messagereceived);
-        break;
-      case PING:
-        pong();
-        break;
-      case ANGULAR_OBJECT_UPDATED:
-        angularObjectUpdated(conn, notebook, messagereceived);
-        break;
-      default:
-        broadcastNoteList();
-        break;
+          case LIST_NOTES:
+            broadcastNoteList();
+            break;
+          case GET_NOTE:
+            sendNote(conn, notebook, messagereceived);
+            break;
+          case NEW_NOTE:
+            createNote(conn, notebook);
+            break;
+          case DEL_NOTE:
+            removeNote(conn, notebook, messagereceived);
+            break;
+          case COMMIT_PARAGRAPH:
+            updateParagraph(conn, notebook, messagereceived);
+            break;
+          case RUN_PARAGRAPH:
+            runParagraph(conn, notebook, messagereceived);
+            break;
+          case CANCEL_PARAGRAPH:
+            cancelParagraph(conn, notebook, messagereceived);
+            break;
+          case MOVE_PARAGRAPH:
+            moveParagraph(conn, notebook, messagereceived);
+            break;
+          case INSERT_PARAGRAPH:
+            insertParagraph(conn, notebook, messagereceived);
+            break;
+          case PARAGRAPH_REMOVE:
+            removeParagraph(conn, notebook, messagereceived);
+            break;
+          case NOTE_UPDATE:
+            updateNote(conn, notebook, messagereceived);
+            break;
+          case COMPLETION:
+            completion(conn, notebook, messagereceived);
+            break;
+          case PING:
+            pong();
+            break;
+          case ANGULAR_OBJECT_UPDATED:
+            angularObjectUpdated(conn, notebook, messagereceived);
+            break;
+          default:
+            broadcastNoteList();
+            break;
       }
     } catch (Exception e) {
       LOG.error("Can't handle message", e);

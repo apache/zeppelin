@@ -83,8 +83,8 @@ public class AppScriptServlet extends DefaultServlet {
     int endIndex = script.indexOf(endReplaceString, startIndex);
 
     if (startIndex >= 0 && endIndex >= 0) {
-      Server server = ZeppelinServer.jettyServer;
-      String replaceString = "this.getPort=function(){return " + ZeppelinServer.jettyServer.getConnectors()[0].getLocalPort() + "};";
+      String replaceString = "this.getPort=function(){return "
+          + ZeppelinServer.jettyServer.getConnectors()[0].getLocalPort() + "};";
       script.replace(startIndex, endIndex + endReplaceString.length(), replaceString);
     }
 
