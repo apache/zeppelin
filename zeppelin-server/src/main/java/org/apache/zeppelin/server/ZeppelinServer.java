@@ -165,9 +165,11 @@ public class ZeppelinServer extends Application {
 
     notebookServer = new NotebookServer();
     final ServletHolder servletHolder = new ServletHolder(notebookServer);
+    servletHolder.setInitParameter("maxTextMessageSize", "1024000");
 
     final ServletContextHandler cxfContext = new ServletContextHandler(
         ServletContextHandler.SESSIONS);
+
     cxfContext.setSessionHandler(new SessionHandler());
     cxfContext.setContextPath("/");
     cxfContext.addServlet(servletHolder, "/ws/*");
