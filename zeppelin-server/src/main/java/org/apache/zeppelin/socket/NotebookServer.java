@@ -112,9 +112,6 @@ public class NotebookServer extends WebSocketServer implements
           case RUN_PARAGRAPH:
             runParagraph(conn, notebook, messagereceived);
             break;
-          case SAVE_PARAGRAPH:
-            saveParagraph(conn, notebook, messagereceived);
-            break;
           case CANCEL_PARAGRAPH:
             cancelParagraph(conn, notebook, messagereceived);
             break;
@@ -523,7 +520,7 @@ public class NotebookServer extends WebSocketServer implements
     p.abort();
   }
 
-  private void saveParagraph(WebSocket conn, Notebook notebook, Message fromMessage)
+  private void runParagraph(WebSocket conn, Notebook notebook, Message fromMessage)
       throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
@@ -546,17 +543,6 @@ public class NotebookServer extends WebSocketServer implements
     }
     note.persist();
     broadcastNote(note);
-  }
-
-  private void runParagraph(WebSocket conn, Notebook notebook, Message fromMessage)
-      throws IOException {
-    final String paragraphId = (String) fromMessage.get("id");
-    if (paragraphId == null) {
-      return;
-    }
-    saveParagraph(conn, notebook, fromMessage);
-    final Note note = notebook.getNote(getOpenNoteId(conn));
-    Paragraph p = note.getParagraph(paragraphId);
     try {
       note.run(paragraphId);
     }

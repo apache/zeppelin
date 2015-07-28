@@ -18,11 +18,7 @@
 package org.apache.zeppelin.notebook;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
@@ -50,6 +46,7 @@ public class Paragraph extends Job implements Serializable {
 
   String title;
   String text;
+  Date textSaved;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
 
@@ -59,6 +56,7 @@ public class Paragraph extends Job implements Serializable {
     this.replLoader = replLoader;
     title = null;
     text = null;
+    textSaved = null;
     settings = new GUI();
     config = new HashMap<String, Object>();
   }
@@ -74,6 +72,7 @@ public class Paragraph extends Job implements Serializable {
 
   public void setText(String newText) {
     this.text = newText;
+    this.textSaved = new Date();
   }
 
 

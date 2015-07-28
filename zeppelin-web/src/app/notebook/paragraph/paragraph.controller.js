@@ -157,6 +157,7 @@ angular.module('zeppelinWebApp')
       data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
       data.paragraph.dateFinished !== $scope.paragraph.dateFinished ||
       data.paragraph.dateStarted !== $scope.paragraph.dateStarted ||
+      data.paragraph.textSaved !== $scope.paragraph.textSaved ||
       data.paragraph.status !== $scope.paragraph.status ||
       data.paragraph.jobName !== $scope.paragraph.jobName ||
       data.paragraph.title !== $scope.paragraph.title ||
@@ -192,6 +193,7 @@ angular.module('zeppelinWebApp')
 
       /** push the rest */
       $scope.paragraph.aborted = data.paragraph.aborted;
+      $scope.paragraph.textSaved = data.paragraph.textSaved;
       $scope.paragraph.dateCreated = data.paragraph.dateCreated;
       $scope.paragraph.dateFinished = data.paragraph.dateFinished;
       $scope.paragraph.dateStarted = data.paragraph.dateStarted;
@@ -250,12 +252,11 @@ angular.module('zeppelinWebApp')
     $scope.dirtyText = undefined;
   };
 
-  $scope.saveParagraph = function(data){
+  $scope.saveParagraph = function(){
     if($scope.dirtyText === undefined){
       return;
     }
-    websocketMsgSrv.saveParagraph($scope.paragraph.id, $scope.paragraph.title,
-      data, $scope.paragraph.config, $scope.paragraph.settings.params);
+    commitParagraph($scope.paragraph.title, $scope.dirtyText, $scope.paragraph.config, $scope.paragraph.settings.params);
     $scope.dirtyText = undefined;
   };
 
@@ -401,7 +402,7 @@ angular.module('zeppelinWebApp')
 
   $scope.killSaveTimer = function(){
     if($scope.paragraphSaveTimer){
-      console.log('timer killed ' + $scope.paragraphSaveTimer)
+      console.log('timer killed ' + $scope.paragraphSaveTimer);
       $timeout.cancel($scope.paragraphSaveTimer);
       $scope.paragraphSaveTimer = undefined;
     }
@@ -412,10 +413,9 @@ angular.module('zeppelinWebApp')
 
     $scope.killSaveTimer();
     $scope.paragraphSaveTimer = $timeout(function(){
-      $scope.paragraphSaveTimer = undefined;
-      $scope.saveParagraph($scope.getEditorValue());
-      console.log('hit save timer' );
-    }, 10000, false);
+      $scope.saveParagraph();
+      //console.log('hit save timer' );
+    }, 10000);
   };
 
   $scope.aceLoaded = function(_editor) {
@@ -586,7 +586,11 @@ angular.module('zeppelinWebApp')
     if (isNaN(timeMs) || timeMs < 0) {
       return '&nbsp;';
     }
-    return 'Took ' + (timeMs/1000) + ' seconds';
+    var desc = 'Took ' + (timeMs/1000) + ' seconds.';
+    if (pdata.textSaved !==undefined && Date.parse(pdata.textSaved) > Date.parse(pdata.dateStarted)){
+      desc += ' (outdated)'
+    }
+    return desc;
   };
 
   $scope.$on('updateProgress', function(event, data) {
