@@ -268,25 +268,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getInt(ConfVars.ZEPPELIN_PORT);
   }
 
-  public String getWebSocketAddress() {
-    return getString(ConfVars.ZEPPELIN_WEBSOCKET_ADDR);
-  }
-
-  public int getWebSocketPort() {
-    int port = getInt(ConfVars.ZEPPELIN_WEBSOCKET_PORT);
-    int serverPort = getServerPort();
-
-    if (port < 0) {
-      if (serverPort <= 0) {
-        return 0;
-      } else {
-        return serverPort + 1;
-      }
-    } else {
-      return port;
-    }
-  }
-
   public String getKeyStorePath() {
     return getRelativeDir(
         String.format("%s/%s",
@@ -389,9 +370,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_HOME("zeppelin.home", "../"),
     ZEPPELIN_ADDR("zeppelin.server.addr", "0.0.0.0"),
     ZEPPELIN_PORT("zeppelin.server.port", 8080),
-    // negative websocket port denotes that server port + 1 should be used
-    ZEPPELIN_WEBSOCKET_ADDR("zeppelin.websocket.addr", "0.0.0.0"),
-    ZEPPELIN_WEBSOCKET_PORT("zeppelin.websocket.port", -1),
     ZEPPELIN_SSL("zeppelin.ssl", false),
     ZEPPELIN_SSL_CLIENT_AUTH("zeppelin.ssl.client.auth", false),
     ZEPPELIN_SSL_KEYSTORE_PATH("zeppelin.ssl.keystore.path", "keystore"),
