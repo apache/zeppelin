@@ -77,7 +77,7 @@ public class InterpreterLogicTest {
         String input = "SELECT * FROM users LIMIT 10;";
 
         //When
-        final List<AnyBlock> anyBlocks = toJavaList(helper.parseInput(input));
+        final List<AnyBlock> anyBlocks = this.<AnyBlock>toJavaList(helper.parseInput(input));
 
         //Then
         assertThat(anyBlocks).hasSize(1);
@@ -253,7 +253,7 @@ public class InterpreterLogicTest {
         String bs="'jdoe',32,'John DOE',null, true, '2014-06-12 34:00:34'";
 
         //When
-        final List<String> actual = toJavaList(helper.parseBoundValues("ps", bs));
+        final List<String> actual = this.<String>toJavaList(helper.parseBoundValues("ps", bs));
 
         //Then
         assertThat(actual).containsExactly("'jdoe'", "32", "'John DOE'",
@@ -302,10 +302,10 @@ public class InterpreterLogicTest {
     }
 
     private <A> scala.collection.immutable.List<A> toScalaList(java.util.List<A> list)  {
-        return scala.collection.JavaConverters.asScalaIterableConverter(list).asScala().toList();
+        return scala.collection.JavaConverters.asScalaBufferConverter(list).asScala().toList();
     }
 
     private  <A> java.util.List<A> toJavaList(scala.collection.immutable.List<A> list){
-        return scala.collection.JavaConverters.asJavaListConverter(list).asJava();
+        return scala.collection.JavaConverters.seqAsJavaListConverter(list).asJava();
     }
 }

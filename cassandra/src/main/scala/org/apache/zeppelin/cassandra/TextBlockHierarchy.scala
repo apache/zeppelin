@@ -27,6 +27,7 @@ object TextBlockHierarchy {
   sealed trait BlockType
   object ParameterBlock extends BlockType
   object StatementBlock extends BlockType
+  object DescribeBlock extends BlockType
   object CommentBlock extends BlockType
 
   abstract class AnyBlock(val blockType: BlockType) {
@@ -74,6 +75,12 @@ object TextBlockHierarchy {
   object BoundStatementType extends StatementType
   object SimpleStatementType extends StatementType
   object BatchStatementType extends StatementType
+  object DescribeClusterStatementType extends StatementType
+  object DescribeAllKeyspacesStatementType extends StatementType
+  object DescribeKeyspaceStatementType extends StatementType
+  object DescribeAllTablesStatementType extends StatementType
+  object DescribeTableStatementType extends StatementType
+  object DescribeTypeStatementType extends StatementType
 
   abstract class QueryStatement(val statementType: StatementType) extends AnyBlock(StatementBlock) {
     def getStatement[U<: QueryStatement]: U = {
@@ -92,4 +99,37 @@ object TextBlockHierarchy {
   case class BatchStm(batchType: BatchStatement.Type, statements: List[QueryStatement])
     extends QueryStatement(BatchStatementType)
 
+  sealed trait DescribeCommandStatement {
+    val statement: String
+  }
+
+  class DescribeClusterCmd(override val statement: String = "DESCRIBE CLUSTER;")
+    extends QueryStatement(DescribeClusterStatementType) with DescribeCommandStatement
+
+  class DescribeKeyspacesCmd(override val statement: String = "DESCRIBE KEYSPACES;")
+    extends QueryStatement(DescribeAllKeyspacesStatementType) with DescribeCommandStatement
+
+  class DescribeTablesCmd(override val statement: String = "DESCRIBE TABLES;")
+    extends QueryStatement(DescribeAllTablesStatementType) with DescribeCommandStatement
+
+  case class DescribeKeyspaceCmd(keyspace: String) extends QueryStatement(DescribeKeyspaceStatementType)
+    with DescribeCommandStatement {
+    override val statement: String = s"DESCRIBE KEYSPACE $keyspace;"
+  }
+
+  case class DescribeTableCmd(keyspace:Option[String],table: String) extends QueryStatement(DescribeTableStatementType)
+    with DescribeCommandStatement {
+    override val statement: String = keyspace match {
+      case Some(ks) => s"DESCRIBE TABLE $ks.$table;"
+      case None => s"DESCRIBE TABLE $table;"
+    }
+  }
+
+  case class DescribeUDTCmd(keyspace:Option[String],udtName: String) extends QueryStatement(DescribeTypeStatementType)
+    with DescribeCommandStatement {
+    override val statement: String = keyspace match {
+      case Some(ks) => s"DESCRIBE TYPE $ks.$udtName;"
+      case None => s"DESCRIBE TYPE $udtName;"
+    }
+  }
 }

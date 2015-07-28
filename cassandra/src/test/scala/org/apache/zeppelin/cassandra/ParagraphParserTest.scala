@@ -50,6 +50,9 @@ class ParagraphParserTest extends FlatSpec
         APPLY BATCH;
 
         @bind[toto]='a',12.34
+
+        desc table zeppelin.users;
+        describe keyspace zeppelin;
       """.stripMargin
 
     val parsed = parser.parse(parser.queries,query)
@@ -69,7 +72,9 @@ class ParagraphParserTest extends FlatSpec
           SimpleStm("INSERT INTO users(id) VALUES(12);")
         )
       ),
-      BoundStm("toto","'a',12.34")
+      BoundStm("toto","'a',12.34"),
+      DescribeTableCmd(Option("zeppelin"),"users"),
+      DescribeKeyspaceCmd("zeppelin")
     ))
   }
 
@@ -437,5 +442,126 @@ class ParagraphParserTest extends FlatSpec
     val parsed = parser.parseAll(parser.queries, queries)
 
     parsed.get should be(List(FetchSize(1000)))
+  }
+
+
+  "Parser" should "parse describe cluster" in {
+    val queries ="Describe ClUsTeR;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get(0) shouldBe a [DescribeClusterCmd]
+  }
+
+  "Parser" should "fail parsing describe cluster" in {
+    val queries ="Describe ClUsTeR"
+
+    val ex = intercept[InterpreterException] {
+      parser.parseAll(parser.queries, queries)
+    }
+    ex.getMessage should be(s"Invalid syntax for DESCRIBE CLUSTER. It should comply to the pattern: ${DESCRIBE_CLUSTER_PATTERN.toString}")
+  }
+
+  "Parser" should "parse describe keyspaces" in {
+    val queries ="Describe KeYsPaCeS;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get(0) shouldBe a [DescribeKeyspacesCmd]
+  }
+
+  "Parser" should "fail parsing describe keyspaces" in {
+    val queries ="Describe KeYsPaCeS"
+
+    val ex = intercept[InterpreterException] {
+      parser.parseAll(parser.queries, queries)
+    }
+    ex.getMessage should be(s"Invalid syntax for DESCRIBE KEYSPACES. It should comply to the pattern: ${DESCRIBE_KEYSPACES_PATTERN.toString}")
+  }
+
+  "Parser" should "parse describe tables" in {
+    val queries ="Describe TaBlEs;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get(0) shouldBe a [DescribeTablesCmd]
+  }
+
+  "Parser" should "fail parsing describe tables" in {
+    val queries ="Describe TaBlEs"
+
+    val ex = intercept[InterpreterException] {
+      parser.parseAll(parser.queries, queries)
+    }
+    ex.getMessage should be(s"Invalid syntax for DESCRIBE TABLES. It should comply to the pattern: ${DESCRIBE_TABLES_PATTERN.toString}")
+  }
+
+  "Parser" should "parse describe keyspace" in {
+    val queries ="Describe KeYsPaCe toto;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get should be(List(DescribeKeyspaceCmd("toto")))
+  }
+
+  "Parser" should "fail parsing describe keyspace" in {
+    val queries ="Describe KeYsPaCe toto"
+
+    val ex = intercept[InterpreterException] {
+      parser.parseAll(parser.queries, queries)
+    }
+    ex.getMessage should be(s"Invalid syntax for DESCRIBE KEYSPACE. It should comply to the pattern: ${DESCRIBE_KEYSPACE_PATTERN.toString}")
+  }
+
+  "Parser" should "parse describe table" in {
+    val queries ="Describe TaBlE toto;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get should be(List(DescribeTableCmd(None,"toto")))
+  }
+
+  "Parser" should "parse describe table with keyspace" in {
+    val queries ="Describe TaBlE ks.toto;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get should be(List(DescribeTableCmd(Some("ks"),"toto")))
+  }
+
+  "Parser" should "fail parsing describe table" in {
+    val queries ="Describe TaBlE toto"
+
+    val ex = intercept[InterpreterException] {
+      parser.parseAll(parser.queries, queries)
+    }
+    ex.getMessage should be(s"Invalid syntax for DESCRIBE TABLE. It should comply to the patterns: " +
+      s"${DESCRIBE_TABLE_WITH_KEYSPACE_PATTERN.toString} or ${DESCRIBE_TABLE_PATTERN.toString}")
+  }
+
+  "Parser" should "parse describe type" in {
+    val queries ="Describe Type toto;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get should be(List(DescribeUDTCmd(None,"toto")))
+  }
+
+  "Parser" should "parse describe type with keyspace" in {
+    val queries ="Describe Type ks.toto;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get should be(List(DescribeUDTCmd(Some("ks"),"toto")))
+  }
+
+  "Parser" should "fail parsing describe type" in {
+    val queries ="Describe Type toto"
+
+    val ex = intercept[InterpreterException] {
+      parser.parseAll(parser.queries, queries)
+    }
+    ex.getMessage should be(s"Invalid syntax for DESCRIBE TYPE. It should comply to the patterns: " +
+      s"${DESCRIBE_TYPE_WITH_KEYSPACE_PATTERN.toString} or ${DESCRIBE_TYPE_PATTERN.toString}")
   }
 }

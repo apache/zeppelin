@@ -45,7 +45,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import scala.io.Source;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Properties;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -56,6 +61,8 @@ public class CassandraInterpreterTest {
     @ClassRule
     public static AchillesResource resource = AchillesResourceBuilder
         .noEntityPackages()
+        .withKeyspaceName("zeppelin")
+        .withScript("prepare_schema.cql")
         .withScript("prepare_data.cql")
         .build();
 
@@ -497,5 +504,156 @@ public class CassandraInterpreterTest {
         //Then
         assertThat(actual.code()).isEqualTo(Code.ERROR);
         assertThat(actual.message()).contains("All host(s) tried for query failed");
+    }
+
+    @Test
+    public void should_describe_cluster() throws Exception {
+        //Given
+
+        String query = "DESCRIBE CLUSTER;";
+        final String expected = reformatHtml(
+                readTestResource("/scalate/DescribeCluster.html"));
+
+        //When
+        final InterpreterResult actual = interpreter.interpret(query, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+
+        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
+    }
+
+    @Test
+    public void should_describe_keyspaces() throws Exception {
+        //Given
+        String query = "DESCRIBE KEYSPACES;";
+        final String expected = reformatHtml(
+                readTestResource("/scalate/DescribeKeyspaces.html"));
+
+        //When
+        final InterpreterResult actual = interpreter.interpret(query, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+
+        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
+    }
+
+    @Test
+         public void should_describe_keyspace() throws Exception {
+        //Given
+        String query = "DESCRIBE KEYSPACE live_data;";
+        final String expected = reformatHtml(
+                readTestResource("/scalate/DescribeKeyspace_live_data.html"));
+
+        //When
+        final InterpreterResult actual = interpreter.interpret(query, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+
+        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
+    }
+
+    @Test
+    public void should_describe_table() throws Exception {
+        //Given
+        String query = "DESCRIBE TABLE live_data.complex_table;";
+        final String expected = reformatHtml(
+                readTestResource("/scalate/DescribeTable_live_data_complex_table.html"));
+
+        //When
+        final InterpreterResult actual = interpreter.interpret(query, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+
+        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
+    }
+
+    @Test
+    public void should_describe_udt() throws Exception {
+        //Given
+        String query = "DESCRIBE TYPE live_data.address;";
+        final String expected = reformatHtml(
+                readTestResource("/scalate/DescribeType_live_data_address.html"));
+
+        //When
+        final InterpreterResult actual = interpreter.interpret(query, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+
+        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
+    }
+
+    @Test
+    public void should_describe_udt_withing_logged_in_keyspace() throws Exception {
+        //Given
+        String query = "USE live_data;\n" +
+                "DESCRIBE TYPE address;";
+        final String expected = reformatHtml(
+                readTestResource("/scalate/DescribeType_live_data_address_within_current_keyspace.html"));
+
+        //When
+        final InterpreterResult actual = interpreter.interpret(query, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+
+        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
+    }
+
+    @Test
+    public void should_error_describing_non_existing_table() throws Exception {
+        //Given
+        String query = "USE system;\n" +
+                "DESCRIBE TABLE complex_table;";
+
+        //When
+        final InterpreterResult actual = interpreter.interpret(query, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.ERROR);
+        assertThat(actual.message()).contains("Cannot find table system.complex_table");
+    }
+
+    @Test
+    public void should_error_describing_non_existing_udt() throws Exception {
+        //Given
+        String query = "USE system;\n" +
+                "DESCRIBE TYPE address;";
+
+        //When
+        final InterpreterResult actual = interpreter.interpret(query, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.ERROR);
+        assertThat(actual.message()).contains("Cannot find type system.address");
+    }
+
+    private static String reformatHtml(String rawHtml) {
+        return  rawHtml
+                .replaceAll("\\s*\n\\s*","")
+                .replaceAll(">\\s+<", "><")
+                .replaceAll("(?s)data-target=\"#[a-f0-9-]+(?:_asCQL)?\"", "")
+                .replaceAll("(?s)id=\"[a-f0-9-]+(?:_asCQL)?\"", "")
+                .trim();
+    }
+
+    private static String readTestResource(String testResource) {
+        StringBuilder builder = new StringBuilder();
+        InputStream stream = testResource.getClass().getResourceAsStream(testResource);
+
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(stream))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                builder.append(line).append("\n");
+            }
+        } catch (Exception ex) {
+            throw  new RuntimeException(ex);
+        }
+
+        return builder.toString();
     }
 }

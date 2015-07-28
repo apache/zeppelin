@@ -45,6 +45,26 @@ object ParagraphParser {
   val GENERIC_STATEMENT_PREFIX =
     """(?is)\s*(?:INSERT|UPDATE|DELETE|SELECT|CREATE|UPDATE|
       |DROP|GRANT|REVOKE|TRUNCATE|LIST|USE)\s+""".r
+
+  val VALID_IDENTIFIER = "[a-z][a-z0-9_]*"
+
+  val DESCRIBE_CLUSTER_PATTERN = """^(?i)\s*(?:DESCRIBE|DESC)\s+CLUSTER;\s*$""".r
+  val DESCRIBE_KEYSPACES_PATTERN = """^(?i)\s*(?:DESCRIBE|DESC)\s+KEYSPACES;\s*$""".r
+  val DESCRIBE_TABLES_PATTERN = """^(?i)\s*(?:DESCRIBE|DESC)\s+TABLES;\s*$""".r
+  val DESCRIBE_KEYSPACE_PATTERN = ("""^(?i)\s*(?:DESCRIBE|DESC)\s+KEYSPACE\s*("""+VALID_IDENTIFIER+""");\s*$""").r
+  val DESCRIBE_TABLE_PATTERN = ("""^(?i)\s*(?:DESCRIBE|DESC)\s+TABLE\s*("""+VALID_IDENTIFIER+""");\s*$""").r
+  val DESCRIBE_TABLE_WITH_KEYSPACE_PATTERN = ("""^(?i)\s*(?:DESCRIBE|DESC)\s+TABLE\s*(""" +
+                                                VALID_IDENTIFIER +
+                                                """)\.(""" +
+                                                VALID_IDENTIFIER +
+                                                """);\s*$""").r
+
+  val DESCRIBE_TYPE_PATTERN = ("""^(?i)\s*(?:DESCRIBE|DESC)\s+TYPE\s*("""+VALID_IDENTIFIER+""");\s*$""").r
+  val DESCRIBE_TYPE_WITH_KEYSPACE_PATTERN = ("""^(?i)\s*(?:DESCRIBE|DESC)\s+TYPE\s*(""" +
+                                                VALID_IDENTIFIER +
+                                                """)\.(""" +
+                                                VALID_IDENTIFIER +
+                                                """);\s*$""").r
 }
 
 class ParagraphParser extends RegexParsers{
@@ -69,6 +89,15 @@ class ParagraphParser extends RegexParsers{
   def bind: Parser[BoundStm] = """\s*@bind.+""".r ^^ {case x => extractBoundStatement(x.trim)}
 
 
+  //Meta data
+  def describeCluster: Parser[DescribeClusterCmd] = """(?i)\s*(?:DESCRIBE|DESC)\s+CLUSTER.*""".r ^^ {extractDescribeClusterCmd(_)}
+  def describeKeyspaces: Parser[DescribeKeyspacesCmd] = """(?i)\s*(?:DESCRIBE|DESC)\s+KEYSPACES.*""".r ^^ {extractDescribeKeyspacesCmd(_)}
+  def describeTables: Parser[DescribeTablesCmd] = """(?i)\s*(?:DESCRIBE|DESC)\s+TABLES.*""".r ^^ {extractDescribeTablesCmd(_)}
+  def describeKeyspace: Parser[DescribeKeyspaceCmd] = """\s*(?i)(?:DESCRIBE|DESC)\s+KEYSPACE\s+.+""".r ^^ {extractDescribeKeyspaceCmd(_)}
+  def describeTable: Parser[DescribeTableCmd] = """(?i)\s*(?:DESCRIBE|DESC)\s+TABLE\s+.+""".r ^^ {extractDescribeTableCmd(_)}
+  def describeType: Parser[DescribeUDTCmd] = """(?i)\s*(?:DESCRIBE|DESC)\s+TYPE\s+.+""".r ^^ {extractDescribeTypeCmd(_)}
+
+
   private def beginBatch: Parser[String] = """(?i)\s*BEGIN\s+(UNLOGGED|COUNTER)?\s*BATCH""".r
   private def applyBatch: Parser[String] = """(?i)APPLY BATCH;""".r
   private def insert: Parser[SimpleStm] = """(?i)INSERT [^;]+;""".r ^^{SimpleStm(_)}
@@ -81,7 +110,8 @@ class ParagraphParser extends RegexParsers{
     case begin ~ cqls ~ end => BatchStm(extractBatchType(begin),cqls)}
 
   def queries:Parser[List[AnyBlock]] = rep(singleLineComment | multiLineComment | consistency | serialConsistency |
-    timestamp | retryPolicy | fetchSize | removePrepare | prepare | bind | batch | genericStatement)
+    timestamp | retryPolicy | fetchSize | removePrepare | prepare | bind | batch | describeCluster | describeKeyspaces |
+    describeTables | describeKeyspace | describeTable | describeType | genericStatement)
 
   def extractConsistency(text: String): Consistency = {
     text match {
@@ -169,6 +199,56 @@ class ParagraphParser extends RegexParsers{
         BatchStatement.Type.valueOf(inferredType.toUpperCase)
       case _ => throw new InterpreterException(s"Invalid syntax for BEGIN BATCH. " +
         s"""It should comply to the pattern: ${BATCH_PATTERN.toString}""")
+    }
+  }
+
+  def extractDescribeClusterCmd(text: String): DescribeClusterCmd = {
+    text match {
+      case DESCRIBE_CLUSTER_PATTERN() => new DescribeClusterCmd
+      case _ => throw new InterpreterException(s"Invalid syntax for DESCRIBE CLUSTER. " +
+        s"""It should comply to the pattern: ${DESCRIBE_CLUSTER_PATTERN.toString}""")
+    }
+  }
+
+  def extractDescribeKeyspacesCmd(text: String): DescribeKeyspacesCmd = {
+    text match {
+        case DESCRIBE_KEYSPACES_PATTERN() => new DescribeKeyspacesCmd
+        case _ => throw new InterpreterException(s"Invalid syntax for DESCRIBE KEYSPACES. " +
+          s"""It should comply to the pattern: ${DESCRIBE_KEYSPACES_PATTERN.toString}""")
+      }
+  }
+
+  def extractDescribeTablesCmd(text: String): DescribeTablesCmd = {
+    text match {
+      case DESCRIBE_TABLES_PATTERN() => new DescribeTablesCmd
+      case _ => throw new InterpreterException(s"Invalid syntax for DESCRIBE TABLES. " +
+        s"""It should comply to the pattern: ${DESCRIBE_TABLES_PATTERN.toString}""")
+    }
+  }
+
+  def extractDescribeKeyspaceCmd(text: String): DescribeKeyspaceCmd = {
+    text match {
+      case DESCRIBE_KEYSPACE_PATTERN(keyspace) => new DescribeKeyspaceCmd(keyspace)
+      case _ => throw new InterpreterException(s"Invalid syntax for DESCRIBE KEYSPACE. " +
+        s"""It should comply to the pattern: ${DESCRIBE_KEYSPACE_PATTERN.toString}""")
+    }
+  }
+
+  def extractDescribeTableCmd(text: String): DescribeTableCmd = {
+    text match {
+      case DESCRIBE_TABLE_WITH_KEYSPACE_PATTERN(keyspace,table) => new DescribeTableCmd(Option(keyspace),table)
+      case DESCRIBE_TABLE_PATTERN(table) => new DescribeTableCmd(Option.empty,table)
+      case _ => throw new InterpreterException(s"Invalid syntax for DESCRIBE TABLE. " +
+       s"""It should comply to the patterns: ${DESCRIBE_TABLE_WITH_KEYSPACE_PATTERN.toString} or ${DESCRIBE_TABLE_PATTERN.toString}""".stripMargin)
+    }
+  }
+
+  def extractDescribeTypeCmd(text: String): DescribeUDTCmd = {
+    text match {
+      case DESCRIBE_TYPE_WITH_KEYSPACE_PATTERN(keyspace,table) => new DescribeUDTCmd(Option(keyspace),table)
+      case DESCRIBE_TYPE_PATTERN(table) => new DescribeUDTCmd(Option.empty,table)
+      case _ => throw new InterpreterException(s"Invalid syntax for DESCRIBE TYPE. " +
+        s"""It should comply to the patterns: ${DESCRIBE_TYPE_WITH_KEYSPACE_PATTERN.toString} or ${DESCRIBE_TYPE_PATTERN.toString}""".stripMargin)
     }
   }
 }

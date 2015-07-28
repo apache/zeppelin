@@ -1,0 +1,313 @@
+<br/>
+<br/>
+<nav class="navbar navbar-default">
+    <ul class="nav navbar-nav">
+
+        <li role="presentation" class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                <span class="text-muted"><i class="glyphicon glyphicon-dashboard"/>&nbsp;<strong>Test Cluster</strong></span>
+                <span class="text-muted caret"></span>
+                <ul class="dropdown-menu">
+                    <li class="dropdown-header"><span class="text-danger">Keyspaces</span></li>
+                    <li>
+                        <a role="button" data-toggle="collapse" data-target="#d0b77780-3518-11e5-86fc-8f0ea8ae1a37">
+                            <span class="text-danger"><i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;live_data</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a role="button" data-toggle="collapse" data-target="#d0b7ecb0-3518-11e5-86fc-8f0ea8ae1a37">
+                            <span class="text-danger"><i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;samples</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a role="button" data-toggle="collapse" data-target="#d0b7ecb1-3518-11e5-86fc-8f0ea8ae1a37">
+                            <span class="text-danger"><i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;system</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a role="button" data-toggle="collapse" data-target="#d0b813c0-3518-11e5-86fc-8f0ea8ae1a37">
+                            <span class="text-danger"><i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;system_traces</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a role="button" data-toggle="collapse" data-target="#d0b813c1-3518-11e5-86fc-8f0ea8ae1a37">
+                            <span class="text-danger"><i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;zeppelin</span>
+                        </a>
+                    </li>
+                </ul>
+            </a>
+        </li>
+
+        <li>
+            <a><strong>DESCRIBE TABLES;</strong></a>
+        </li>
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                <strong>Legend</strong>
+                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-dashboard text-muted" />&nbsp;Cluster
+                    </a>
+                </li>
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-folder-open text-danger" />&nbsp;&nbsp;Keyspace
+                    </a>
+                </li>
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-copyright-mark text-warning" />&nbsp;&nbsp;UDT
+                    </a>
+                </li>
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-th-list text-primary" />&nbsp;&nbsp;Table
+                    </a>
+                </li>
+                <li class="bg-info">
+                    <a role="button">
+                        <i class="glyphicon glyphicon-fullscreen" />&nbsp;&nbsp;Partition Key
+                    </a>
+                </li>
+                <li class="bg-warning">
+                    <a role="button">
+                        <i class="glyphicon glyphicon-pushpin" />&nbsp;&nbsp;Static Column
+                    </a>
+                </li>
+                <li class="bg-success">
+                    <a role="button">
+                        <i class="glyphicon glyphicon-sort" />&nbsp;&nbsp;Clustering Column
+                    </a>
+                </li>
+                <li class="bg-success">
+                    <a role="button">
+                        <i class="glyphicon glyphicon-sort-by-attributes" />&nbsp;&nbsp;Clustering Order ASC
+                    </a>
+                </li>
+                <li class="bg-success">
+                    <a role="button">
+                        <i class="glyphicon glyphicon-sort-by-attributes-alt" />&nbsp;&nbsp;Clustering Order DESC
+                    </a>
+                </li>
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-info-sign" />&nbsp;&nbsp;Indexed Column
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a href="#"></a>
+        </li>
+    </ul>
+</nav>
+<hr/>
+
+<div class="container">
+
+    <div class="row">
+        <div class="panel-group" role="tablist" aria-multiselectable="true">
+
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab">
+                    <h4 class="panel-title">
+                        <a role="button" data-toggle="collapse" data-target="#d0b77780-3518-11e5-86fc-8f0ea8ae1a37" aria-expanded="false">
+                            <span class="text-danger"><i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;live_data</span>
+                        </a>
+                    </h4>
+                </div>
+                <div id="d0b77780-3518-11e5-86fc-8f0ea8ae1a37" class="panel-collapse collapse" role="tabpanel">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-2"/>
+                            <div class="col-md-8 col-offset-md-2 table-responsive table-bordered">
+
+
+                                <table class="table">
+                                    <thead>
+                                    <tr><th>Tables</th></tr>
+                                    </thead>
+                                    <tbody>
+
+                                    <tr class="text-primary"><td>complex_table</td></tr>
+
+                                    <tr class="text-primary"><td>sensor_data</td></tr>
+
+                                    <tr class="text-primary"><td>stations</td></tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-2"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab">
+                    <h4 class="panel-title">
+                        <a role="button" data-toggle="collapse" data-target="#d0b7ecb0-3518-11e5-86fc-8f0ea8ae1a37" aria-expanded="false">
+                            <span class="text-danger"><i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;samples</span>
+                        </a>
+                    </h4>
+                </div>
+                <div id="d0b7ecb0-3518-11e5-86fc-8f0ea8ae1a37" class="panel-collapse collapse" role="tabpanel">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-2"/>
+                            <div class="col-md-8 col-offset-md-2 table-responsive table-bordered">
+
+                                <span><h4>No Table</h4></span>
+
+                            </div>
+                            <div class="col-md-2"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab">
+                    <h4 class="panel-title">
+                        <a role="button" data-toggle="collapse" data-target="#d0b7ecb1-3518-11e5-86fc-8f0ea8ae1a37" aria-expanded="false">
+                            <span class="text-danger"><i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;system</span>
+                        </a>
+                    </h4>
+                </div>
+                <div id="d0b7ecb1-3518-11e5-86fc-8f0ea8ae1a37" class="panel-collapse collapse" role="tabpanel">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-2"/>
+                            <div class="col-md-8 col-offset-md-2 table-responsive table-bordered">
+
+
+                                <table class="table">
+                                    <thead>
+                                    <tr><th>Tables</th></tr>
+                                    </thead>
+                                    <tbody>
+
+                                    <tr class="text-primary"><td>IndexInfo</td></tr>
+
+                                    <tr class="text-primary"><td>batchlog</td></tr>
+
+                                    <tr class="text-primary"><td>compaction_history</td></tr>
+
+                                    <tr class="text-primary"><td>compactions_in_progress</td></tr>
+
+                                    <tr class="text-primary"><td>hints</td></tr>
+
+                                    <tr class="text-primary"><td>local</td></tr>
+
+                                    <tr class="text-primary"><td>paxos</td></tr>
+
+                                    <tr class="text-primary"><td>peer_events</td></tr>
+
+                                    <tr class="text-primary"><td>peers</td></tr>
+
+                                    <tr class="text-primary"><td>range_xfers</td></tr>
+
+                                    <tr class="text-primary"><td>schema_columnfamilies</td></tr>
+
+                                    <tr class="text-primary"><td>schema_columns</td></tr>
+
+                                    <tr class="text-primary"><td>schema_keyspaces</td></tr>
+
+                                    <tr class="text-primary"><td>schema_triggers</td></tr>
+
+                                    <tr class="text-primary"><td>schema_usertypes</td></tr>
+
+                                    <tr class="text-primary"><td>size_estimates</td></tr>
+
+                                    <tr class="text-primary"><td>sstable_activity</td></tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-2"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab">
+                    <h4 class="panel-title">
+                        <a role="button" data-toggle="collapse" data-target="#d0b813c0-3518-11e5-86fc-8f0ea8ae1a37" aria-expanded="false">
+                            <span class="text-danger"><i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;system_traces</span>
+                        </a>
+                    </h4>
+                </div>
+                <div id="d0b813c0-3518-11e5-86fc-8f0ea8ae1a37" class="panel-collapse collapse" role="tabpanel">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-2"/>
+                            <div class="col-md-8 col-offset-md-2 table-responsive table-bordered">
+
+
+                                <table class="table">
+                                    <thead>
+                                    <tr><th>Tables</th></tr>
+                                    </thead>
+                                    <tbody>
+
+                                    <tr class="text-primary"><td>events</td></tr>
+
+                                    <tr class="text-primary"><td>sessions</td></tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-2"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab">
+                    <h4 class="panel-title">
+                        <a role="button" data-toggle="collapse" data-target="#d0b813c1-3518-11e5-86fc-8f0ea8ae1a37" aria-expanded="false">
+                            <span class="text-danger"><i class="glyphicon glyphicon-folder-open"/>&nbsp;&nbsp;zeppelin</span>
+                        </a>
+                    </h4>
+                </div>
+                <div id="d0b813c1-3518-11e5-86fc-8f0ea8ae1a37" class="panel-collapse collapse" role="tabpanel">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-2"/>
+                            <div class="col-md-8 col-offset-md-2 table-responsive table-bordered">
+
+
+                                <table class="table">
+                                    <thead>
+                                    <tr><th>Tables</th></tr>
+                                    </thead>
+                                    <tbody>
+
+                                    <tr class="text-primary"><td>artists</td></tr>
+
+                                    <tr class="text-primary"><td>prepared</td></tr>
+
+                                    <tr class="text-primary"><td>ts</td></tr>
+
+                                    <tr class="text-primary"><td>users</td></tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-md-2"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

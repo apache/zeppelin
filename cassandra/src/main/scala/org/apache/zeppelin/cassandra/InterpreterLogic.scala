@@ -90,7 +90,9 @@ object InterpreterLogic {
  * @param session java driver session
  */
 class InterpreterLogic(val session: Session)  {
- 
+
+  val enhancedSession: EnhancedSession = new EnhancedSession(session)
+
   import InterpreterLogic._
 
   def interpret(session:Session, stringStatements : String, context: InterpreterContext): InterpreterResult = {
@@ -128,7 +130,7 @@ class InterpreterLogic(val session: Session)  {
           preparedStatements.getOrElseUpdate(statement.name,session.prepare(statement.query))
         })
 
-      val statements: List[Statement] = queryStatements
+      val statements: List[Any] = queryStatements
         .filter(st => (st.statementType != PrepareStatementType) && (st.statementType != RemovePrepareStatementType))
         .map{
           case x:SimpleStm => generateSimpleStatement(x, queryOptions, context)
@@ -141,13 +143,19 @@ class InterpreterLogic(val session: Session)  {
             generateBatchStatement(x.batchType, queryOptions, builtStatements)
           }
           case x:BoundStm => generateBoundStatement(x, queryOptions, context)
-          case _ => throw new InterpreterException(s"Unknown statement type")
+          case x:DescribeCommandStatement => x
+          case x => throw new InterpreterException(s"Unknown statement type : ${x}")
        }
 
-      val resultSets: List[(ResultSet,Statement)] = for (statement <- statements) yield (session.execute(statement),statement)
+      val results: List[(Any,Any)] = for (statement <- statements) yield (enhancedSession.execute(statement),statement)
 
-      if (resultSets.nonEmpty) {
-        buildResponseMessage(resultSets.last, protocolVersion)
+      if (results.nonEmpty) {
+        results.last match {
+          case(res: ResultSet, st: Statement) => buildResponseMessage((res, st), protocolVersion)
+          case(output: String, _) => new InterpreterResult(Code.SUCCESS, output)
+          case _ => throw new InterpreterException(s"Cannot parse result type : ${results.last}")
+        }
+
       } else {
         new InterpreterResult(Code.SUCCESS, "%html\n<h4>No Result</h4>")
       }
