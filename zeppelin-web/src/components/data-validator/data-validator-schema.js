@@ -16,6 +16,16 @@
 angular.module('zeppelinWebApp')
   .constant('dataModelSchemas', {
     'MapSchema': {
-      type: ['string', 'string', 'number', 'number', 'number']
+      type: ['string', 'string', 'number', 'number', 'number'],
+      range: {
+        latitude: {
+          low: -90,
+          high: 90
+        },
+        longitude: {
+          low: -180,
+          high: 180
+        }
+      }
     }
   });
