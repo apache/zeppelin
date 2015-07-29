@@ -67,19 +67,55 @@ angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
   }
 
   function dataCheckValidator(record, schema) {
-    console.log(schema.type.length);
+    //console.log(schema.type.length);
     if (record) {
       for (var i = 0; i < schema.type.length; i++) {
         if (isNaN(record[i]) !== (schema.type[i] === 'string')) {
           errorStatus = true;
           msg += 'data record ' + (record[i]) + ' is not matching for schema | ';
           return true;
+        }else{
+          if(i==2){
+            latitudeValidator(record[i]);
+          }if(i==3){
+            longitudeValidator(record[i]);
+          }
         }
       }
       errorStatus = false;
       return false;
     } else {
       msg += 'data record does not exisiting | ';
+      return true;
+    }
+  }
+
+  //Latitude measurements range from 0° to (+/–)90°.
+  function latitudeValidator(record, schema) {
+    if(record) {
+      var latitude = parseFloat(record)
+      if(!(-90 <= latitude <= 90)) {
+        msg += 'Latitude ' + (record) + ' is not in range | ';
+        return true;
+      }
+      return false;
+    } else {
+      msg += 'Latitude record does not exisiting | ';
+      return true;
+    }
+  }
+
+  //Longitude measurements range from 0° to (+/–)180°.
+  function longitudeValidator(record, schema) {
+    if(record) {
+      var longitude = parseFloat(record)
+      if(!(-180 <= longitude <= 180)) {
+        msg += 'Longitude' + (record) + ' is not in range | ';
+        return true;
+      }
+      return false;
+    } else {
+      msg += 'Longitude record does not exisiting | ';
       return true;
     }
   }
