@@ -151,6 +151,10 @@
           <groupId>org.scala-lang</groupId>
           <artifactId>scalap</artifactId>
         </exclusion>
+        <exclusion>
+        	<artifactId>joda-time</artifactId>
+        	<groupId>joda-time</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
 
