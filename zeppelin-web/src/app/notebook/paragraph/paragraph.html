@@ -377,8 +377,6 @@ limitations under the License.
   </div>
   <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
 
-    <span class="icon-flag"  ng-show="dirtyText"></span>
-
     <span>
       {{paragraph.status}}
     </span>
@@ -398,7 +396,7 @@ limitations under the License.
           ng-click="toggleEditor()"></span>
     <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
           ng-click="toggleOutput()"></span>
-
+    <span class="icon-flag"  ng-show="dirtyText"></span>
     <span class="dropdown navbar-right">
       <span class="icon-settings" style="cursor:pointer"
             data-toggle="dropdown"
