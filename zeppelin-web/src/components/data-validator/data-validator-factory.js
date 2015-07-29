@@ -16,7 +16,7 @@
 angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
 
   var msg = '';
-  var errorStatus = true;
+  var errorStatus = false;
   var dataValidator = function() {
     this.schema = null;
     this.error = getErrorStatus;
@@ -67,7 +67,6 @@ angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
   }
 
   function dataCheckValidator(record, schema) {
-    //console.log(schema.type.length);
     if (record) {
       for (var i = 0; i < schema.type.length; i++) {
         if (isNaN(record[i]) !== (schema.type[i] === 'string')) {
@@ -75,13 +74,16 @@ angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
           msg += 'data record ' + (record[i]) + ' is not matching for schema | ';
           return true;
         }else{
-          if(i==2){
-            latitudeValidator(record[i],schema.range);
-          }if(i==3){
-            longitudeValidator(record[i],schema.range);
+          if(i===2){
+            errorStatus = !latitudeValidator(record[i],schema.range);
+          }if(i===3){
+            errorStatus = !longitudeValidator(record[i],schema.range);
+          }
+          if(errorStatus){
+            return true;
           }
         }
-      }
+      }//end validation on data record
       errorStatus = false;
       return false;
     } else {
@@ -93,11 +95,11 @@ angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
   //Latitude measurements range from 0° to (+/–)90°.
   function latitudeValidator(record, schema) {
     if(record) {
-      var latitude = parseFloat(record)
-      if(!(schema.latitude.low <= latitude <= schema.latitude.high)) {
-        msg += 'Latitude ' + record + ' is not in range | ';
+      var latitude = parseFloat(record);
+      if(schema.latitude.low <= latitude <= schema.latitude.high) {
         return true;
       }
+      msg += 'Latitude ' + record + ' is not in range | ';
       return false;
     } else {
       msg += 'Latitude record does not exisiting | ';
@@ -107,12 +109,13 @@ angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
 
   //Longitude measurements range from 0° to (+/–)180°.
   function longitudeValidator(record, schema) {
+    console.log(record);
     if(record) {
-      var longitude = parseFloat(record)
-      if(!(schema.longitude.low <= longitude <= schema.longitude.high)) {
-        msg += 'Longitude' + record + ' is not in range | ';
+      var longitude = parseFloat(record);
+      if(schema.longitude.low <= longitude <= schema.longitude.high) {
         return true;
       }
+      msg += 'Longitude' + record + ' is not in range | ';
       return false;
     } else {
       msg += 'Longitude record does not exisiting | ';
