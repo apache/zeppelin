@@ -76,9 +76,9 @@ angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
           return true;
         }else{
           if(i==2){
-            latitudeValidator(record[i]);
+            latitudeValidator(record[i],schema.range);
           }if(i==3){
-            longitudeValidator(record[i]);
+            longitudeValidator(record[i],schema.range);
           }
         }
       }
@@ -94,8 +94,8 @@ angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
   function latitudeValidator(record, schema) {
     if(record) {
       var latitude = parseFloat(record)
-      if(!(-90 <= latitude <= 90)) {
-        msg += 'Latitude ' + (record) + ' is not in range | ';
+      if(!(schema.latitude.low <= latitude <= schema.latitude.high)) {
+        msg += 'Latitude ' + record + ' is not in range | ';
         return true;
       }
       return false;
@@ -109,8 +109,8 @@ angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
   function longitudeValidator(record, schema) {
     if(record) {
       var longitude = parseFloat(record)
-      if(!(-180 <= longitude <= 180)) {
-        msg += 'Longitude' + (record) + ' is not in range | ';
+      if(!(schema.longitude.low <= longitude <= schema.longitude.high)) {
+        msg += 'Longitude' + record + ' is not in range | ';
         return true;
       }
       return false;
