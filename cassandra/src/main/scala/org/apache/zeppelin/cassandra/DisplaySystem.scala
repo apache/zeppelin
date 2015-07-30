@@ -174,6 +174,24 @@ object DisplaySystem {
     }
   }
 
+  object NoResultDisplay {
+
+    val formatNoResult: String = engine.layout("/scalate/noResult.ssp")
+
+    def noResultWithExecutionInfo(lastQuery: String, execInfo: ExecutionInfo): String = {
+      val consistency = Option(execInfo.getAchievedConsistencyLevel).getOrElse("N/A")
+      val queriedHosts = execInfo.getQueriedHost.toString.replaceAll("/","").replaceAll("""\[""","").replaceAll("""\]""","")
+      val triedHosts = execInfo.getTriedHosts.toString.replaceAll("/","").replaceAll("""\[""","").replaceAll("""\]""","")
+      val schemaInAgreement = Option(execInfo.isSchemaInAgreement).map(_.toString).getOrElse("N/A")
+
+      engine.layout("/scalate/noResultWithExecutionInfo.ssp",
+        Map[String,Any]("query" -> lastQuery, "consistency" -> consistency,
+                        "triedHosts" -> triedHosts, "queriedHosts" -> queriedHosts,
+                        "schemaInAgreement" -> schemaInAgreement))
+    }
+  }
+
+
   private object MenuDisplay {
     def formatMenu(statement: String, dropDownMenu: String = ""): String = {
       engine.layout(MENU_TEMPLATE,

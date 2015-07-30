@@ -378,13 +378,15 @@ public class CassandraInterpreterTest {
     public void should_just_prepare_statement() throws Exception {
         //Given
         String queries = "@prepare[just_prepare]=SELECT name,country,styles FROM zeppelin.artists LIMIT 3";
+        final String expected = reformatHtml(
+                readTestResource("/scalate/NoResult.html"));
 
         //When
         final InterpreterResult actual = interpreter.interpret(queries, intrContext);
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-        assertThat(actual.message()).isEqualTo("<h4>No Result</h4>");
+        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
     }
 
     @Test
@@ -471,26 +473,22 @@ public class CassandraInterpreterTest {
     public void should_display_statistics_for_non_select_statement() throws Exception {
         //Given
         String query = "USE zeppelin;\nCREATE TABLE IF NOT EXISTS no_select(id int PRIMARY KEY);";
+        final String rawResult = reformatHtml(readTestResource("/scalate/NoResultWithExecutionInfo.html"));
 
         //When
         final InterpreterResult actual = interpreter.interpret(query, intrContext);
         final Cluster cluster = session.getCluster();
         final int port = cluster.getConfiguration().getProtocolOptions().getPort();
         final String address = cluster.getMetadata().getAllHosts().iterator().next()
-                .getAddress().getHostAddress();
+                .getAddress().getHostAddress()
+                .replaceAll("/", "").replaceAll("\\[", "").replaceAll("\\]","");
         //Then
+        final String expected = rawResult.replaceAll("TRIED_HOSTS", address+":"+port)
+                .replaceAll("QUERIED_HOSTS", address +":"+port);
+
+
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-        assertThat(actual.message()).contains(
-                "Statement\t" +
-                        "Achieved Consistency\t" +
-                        "Queried Hosts\t" +
-                        "Tried Hosts\t" +
-                        "Schema In Agreement\n" +
-                        "CREATE TABLE IF NOT EXISTS no_select(id int PRIMARY KEY);\t" +
-                        "null\t" +
-                        "/" + address + ":" + port + "\t" +
-                        "[/" + address + ":" + port + "]\t" +
-                        "true");
+        assertThat(reformatHtml(actual.message())).isEqualTo(expected);
     }
 
     @Test
@@ -635,15 +633,13 @@ public class CassandraInterpreterTest {
     public void should_show_help() throws Exception {
         //Given
         String query = "HELP;";
-        final String expected = reformatHtml(
-                readTestResource("/scalate/Help.html"));
+        final String expected = reformatHtml(readTestResource("/scalate/Help.html"));
 
         //When
         final InterpreterResult actual = interpreter.interpret(query, intrContext);
 
         //Then
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
-
         assertThat(reformatHtml(actual.message())).isEqualTo(expected);
     }
 

@@ -158,7 +158,7 @@ class InterpreterLogic(val session: Session)  {
         }
 
       } else {
-        new InterpreterResult(Code.SUCCESS, "%html\n<h4>No Result</h4>")
+        new InterpreterResult(Code.SUCCESS, enhancedSession.displayNoResult)
       }
 
     } catch {
@@ -215,15 +215,9 @@ class InterpreterLogic(val session: Session)  {
         }
       }
     } else {
-      val info: ExecutionInfo = lastResultSet._1.getExecutionInfo
-      output
-        .append("%table ")
-        .append("Statement\tAchieved Consistency\tQueried Hosts\tTried Hosts\tSchema In Agreement\n")
-        .append(s"${lastResultSet._2.toString}\t")
-        .append(s"${info.getAchievedConsistencyLevel}\t")
-        .append(s"${info.getQueriedHost}\t")
-        .append(s"${info.getTriedHosts}\t")
-        .append(s"${info.isSchemaInAgreement}")
+      val lastQuery: String = lastResultSet._2.toString
+      val executionInfo: ExecutionInfo = lastResultSet._1.getExecutionInfo
+      output.append(enhancedSession.displayExecutionStatistics(lastQuery, executionInfo))
     }
 
     val result: String = output.toString()

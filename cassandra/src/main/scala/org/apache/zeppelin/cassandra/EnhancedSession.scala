@@ -33,8 +33,16 @@ class EnhancedSession(val session: Session) {
   val tableDisplay = DisplaySystem.TableDisplay
   val udtDisplay = DisplaySystem.UDTDisplay
   val helpDisplay = DisplaySystem.HelpDisplay
+  private val noResultDisplay = DisplaySystem.NoResultDisplay
+
 
   val HTML_MAGIC = "%html \n"
+
+  val displayNoResult: String = HTML_MAGIC + noResultDisplay.formatNoResult
+
+  def displayExecutionStatistics(query: String, execInfo: ExecutionInfo): String = {
+    HTML_MAGIC + noResultDisplay.noResultWithExecutionInfo(query, execInfo)
+  }
 
   private def execute(describeCluster: DescribeClusterCmd): String = {
     val metaData = session.getCluster.getMetadata
