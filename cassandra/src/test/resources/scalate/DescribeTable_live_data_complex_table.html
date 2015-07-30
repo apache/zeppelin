@@ -1,0 +1,326 @@
+<br/>
+<br/>
+<nav class="navbar navbar-default">
+    <ul class="nav navbar-nav">
+
+        <li>
+            <a><strong>DESCRIBE TABLE live_data.complex_table;</strong></a>
+        </li>
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                <strong>Legend</strong>
+                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-dashboard text-muted" />&nbsp;Cluster
+                    </a>
+                </li>
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-folder-open text-danger" />&nbsp;&nbsp;Keyspace
+                    </a>
+                </li>
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-copyright-mark text-warning" />&nbsp;&nbsp;UDT
+                    </a>
+                </li>
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-th-list text-primary" />&nbsp;&nbsp;Table
+                    </a>
+                </li>
+                <li class="bg-info">
+                    <a role="button">
+                        <i class="glyphicon glyphicon-fullscreen" />&nbsp;&nbsp;Partition Key
+                    </a>
+                </li>
+                <li class="bg-warning">
+                    <a role="button">
+                        <i class="glyphicon glyphicon-pushpin" />&nbsp;&nbsp;Static Column
+                    </a>
+                </li>
+                <li class="bg-success">
+                    <a role="button">
+                        <i class="glyphicon glyphicon-sort" />&nbsp;&nbsp;Clustering Column
+                    </a>
+                </li>
+                <li class="bg-success">
+                    <a role="button">
+                        <i class="glyphicon glyphicon-sort-by-attributes" />&nbsp;&nbsp;Clustering Order ASC
+                    </a>
+                </li>
+                <li class="bg-success">
+                    <a role="button">
+                        <i class="glyphicon glyphicon-sort-by-attributes-alt" />&nbsp;&nbsp;Clustering Order DESC
+                    </a>
+                </li>
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-info-sign" />&nbsp;&nbsp;Indexed Column
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a href="#"></a>
+        </li>
+    </ul>
+</nav>
+<hr/>
+<div class="row">
+    <div class="col-md-2"/>
+    <div class="col-md-8 col-offset-md-2">
+        <div class="panel panel-default table-responsive table-bordered">
+            <table class="table">
+
+                <caption><h4 class="text-primary"><i class="glyphicon glyphicon-th-list"/>&nbsp;complex_table</h4></caption>
+                <thead>
+                <tr>
+                    <th class="col-md-4">Column Type</th>
+                    <th class="col-md-4">Column Name</th>
+                    <th class="col-md-4">Data Type</th>
+                </tr>
+                </thead>
+                <tbody>
+
+
+                <tr class="info">
+                    <td class="col-md-4">
+                        <i class="glyphicon glyphicon-fullscreen" title="Partition Key"/>
+
+                        <span></span>
+
+                    </td>
+                    <td class="col-md-4">pk1</td>
+                    <td class="col-md-4">uuid</td>
+                </tr>
+
+
+                <tr class="info">
+                    <td class="col-md-4">
+                        <i class="glyphicon glyphicon-fullscreen" title="Partition Key"/>
+
+
+                        &nbsp;<i class="glyphicon glyphicon-info-sign" title="Indexed Column"/>
+                        <em>pk2idx</em> <strong></strong>
+
+                    </td>
+                    <td class="col-md-4">pk2</td>
+                    <td class="col-md-4">int</td>
+                </tr>
+
+                <tr class="warning">
+                    <td class="col-md-4">
+                        <i class="glyphicon glyphicon-pushpin" title="Static Column"/>
+
+                        <span></span>
+
+                    </td>
+                    <td class="col-md-4">my_static1</td>
+                    <td class="col-md-4">text</td>
+                </tr>
+
+                <tr class="warning">
+                    <td class="col-md-4">
+                        <i class="glyphicon glyphicon-pushpin" title="Static Column"/>
+
+                        <span></span>
+
+                    </td>
+                    <td class="col-md-4">my_static2</td>
+                    <td class="col-md-4">text</td>
+                </tr>
+
+                <tr class="success">
+                    <td class="col-md-4">
+                        <i class="glyphicon glyphicon-sort" title="Clustering Column"/>
+                        &nbsp;
+                        <i class="glyphicon glyphicon-sort-by-attributes-alt" title="Sort DESC"/>
+
+                        <span></span>
+
+                    </td>
+                    <td class="col-md-4">clustering1</td>
+                    <td class="col-md-4">timestamp</td>
+                </tr>
+
+                <tr class="success">
+                    <td class="col-md-4">
+                        <i class="glyphicon glyphicon-sort" title="Clustering Column"/>
+                        &nbsp;
+                        <i class="glyphicon glyphicon-sort-by-attributes" title="Sort ASC"/>
+
+
+                        &nbsp;<i class="glyphicon glyphicon-info-sign" title="Indexed Column"/>
+                        <em>clustering2idx</em> <strong></strong>
+
+                    </td>
+                    <td class="col-md-4">clustering2</td>
+                    <td class="col-md-4">int</td>
+                </tr>
+
+                <tr class="success">
+                    <td class="col-md-4">
+                        <i class="glyphicon glyphicon-sort" title="Clustering Column"/>
+                        &nbsp;
+                        <i class="glyphicon glyphicon-sort-by-attributes-alt" title="Sort DESC"/>
+
+                        <span></span>
+
+                    </td>
+                    <td class="col-md-4">clustering3</td>
+                    <td class="col-md-4">text</td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+
+                        <span></span>
+
+                    </td>
+                    <td class="col-md-4">entries_indexed_map</td>
+                    <td class="col-md-4">map&lt;int, text&gt;</td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+
+
+                        <i class="glyphicon glyphicon-info-sign" title="Indexed Column"/>
+                        <em>idx1</em> <strong></strong>
+
+                    </td>
+                    <td class="col-md-4">indexed1</td>
+                    <td class="col-md-4">text</td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+
+
+                        <i class="glyphicon glyphicon-info-sign" title="Indexed Column"/>
+                        <em>idx2</em> <strong></strong>
+
+                    </td>
+                    <td class="col-md-4">indexed2</td>
+                    <td class="col-md-4">int</td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+
+
+                        <i class="glyphicon glyphicon-info-sign" title="Indexed Column"/>
+                        <em>keys_map_idx</em> <strong></strong>
+
+                    </td>
+                    <td class="col-md-4">key_indexed_map</td>
+                    <td class="col-md-4">map&lt;int, text&gt;</td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+
+                        <span></span>
+
+                    </td>
+                    <td class="col-md-4">my_list</td>
+                    <td class="col-md-4">list&lt;text&gt;</td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+
+                        <span></span>
+
+                    </td>
+                    <td class="col-md-4">my_map</td>
+                    <td class="col-md-4">map&lt;int, text&gt;</td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+
+                        <span></span>
+
+                    </td>
+                    <td class="col-md-4">my_udt</td>
+                    <td class="col-md-4">frozen&lt;live_data.address&gt;</td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+
+                        <span></span>
+
+                    </td>
+                    <td class="col-md-4">my_udt_list</td>
+                    <td class="col-md-4">frozen&lt;list&lt;frozen&lt;live_data.address&gt;&gt;&gt;</td>
+                </tr>
+
+                <tr>
+                    <td class="col-md-4">
+
+                        <span></span>
+
+                    </td>
+                    <td class="col-md-4">simple</td>
+                    <td class="col-md-4">double</td>
+                </tr>
+
+                </tbody>
+            </table>
+            <div class="panel-footer">
+                <a data-toggle="collapse" data-target="#26dd4330-350d-11e5-9539-8f0ea8ae1a37_asCQL">
+                    <strong>As CQL statement</strong>
+                    <span class="caret"></span>
+                </a>
+                <br/><br/>
+                <div class="collapse" id="26dd4330-350d-11e5-9539-8f0ea8ae1a37_asCQL">
+                    <pre class="well">CREATE TABLE live_data.complex_table (
+    pk1 uuid,
+    pk2 int,
+    clustering1 timestamp,
+    clustering2 int,
+    clustering3 text,
+    entries_indexed_map map&lt;int, text&gt;,
+    indexed1 text,
+    indexed2 int,
+    key_indexed_map map&lt;int, text&gt;,
+    my_list list&lt;text&gt;,
+    my_map map&lt;int, text&gt;,
+    my_static1 text static,
+    my_static2 text static,
+    my_udt frozen&lt;live_data.address&gt;,
+    my_udt_list frozen&lt;list&lt;frozen&lt;live_data.address&gt;&gt;&gt;,
+    simple double,
+    PRIMARY KEY ((pk1, pk2), clustering1, clustering2, clustering3)
+) WITH CLUSTERING ORDER BY (clustering1 DESC, clustering2 ASC, clustering3 DESC)
+   AND read_repair_chance = 0.0
+   AND dclocal_read_repair_chance = 0.1
+   AND gc_grace_seconds = 864000
+   AND bloom_filter_fp_chance = 0.01
+   AND caching = { 'keys' : 'ALL', 'rows_per_partition' : 'NONE' }
+   AND comment = ''
+   AND compaction = { 'class' : 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy' }
+   AND compression = { 'sstable_compression' : 'org.apache.cassandra.io.compress.LZ4Compressor' }
+   AND default_time_to_live = 0
+   AND speculative_retry = '99.0PERCENTILE'
+   AND min_index_interval = 128
+   AND max_index_interval = 2048;
+CREATE INDEX pk2idx ON live_data.complex_table (pk2);
+CREATE INDEX clustering2idx ON live_data.complex_table (clustering2);
+CREATE INDEX idx1 ON live_data.complex_table (indexed1);
+CREATE INDEX idx2 ON live_data.complex_table (indexed2);
+CREATE INDEX keys_map_idx ON live_data.complex_table (KEYS(key_indexed_map));</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2"></div>
+</div>
