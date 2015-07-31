@@ -196,6 +196,7 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.errorMessage = data.paragraph.errorMessage;
       $scope.paragraph.jobName = data.paragraph.jobName;
       $scope.paragraph.title = data.paragraph.title;
+      $scope.paragraph.lineNumbers = data.paragraph.lineNumbers;
       $scope.paragraph.status = data.paragraph.status;
       $scope.paragraph.result = data.paragraph.result;
       $scope.paragraph.settings = data.paragraph.settings;
@@ -339,6 +340,24 @@ angular.module('zeppelinWebApp')
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
+  $scope.showLineNumbers = function () {
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
+    newConfig.lineNumbers = true;
+    $scope.editor.renderer.setShowGutter(true);
+
+    commitParagraph($scope.paragraph.lineNumbers, $scope.paragraph.text, newConfig, newParams);
+  };
+
+  $scope.hideLineNumbers = function () {
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
+    newConfig.lineNumbers = false;
+    $scope.editor.renderer.setShowGutter(false);
+
+    commitParagraph($scope.paragraph.lineNumbers, $scope.paragraph.text, newConfig, newParams);
+  };
+
   $scope.columnWidthClass = function(n) {
     if ($scope.asIframe) {
       return 'col-md-12';
@@ -399,8 +418,10 @@ angular.module('zeppelinWebApp')
 
     $scope.editor = _editor;
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
-      $scope.editor.renderer.setShowGutter(false);
+      $scope.editor.renderer.setShowGutter($scope.paragraph.config.lineNumbers);
+      $scope.editor.setShowFoldWidgets(false);
       $scope.editor.setHighlightActiveLine(false);
+      $scope.editor.setHighlightGutterLine(false);
       $scope.editor.setTheme('ace/theme/github');
       $scope.editor.focus();
       var hight = $scope.editor.getSession().getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
