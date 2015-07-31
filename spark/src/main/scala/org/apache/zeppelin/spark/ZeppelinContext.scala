@@ -404,102 +404,247 @@ class ZeppelinContext(val sc: SparkContext,
    * @return variable value
    */
   def angular(name: String): Any = {
-    val ao: AngularObject[_] = interpreterContext.getAngularObjectRegistry.get(name)
-    if (ao == null) null else ao.get
+    Option(getAngularObject(name, interpreterContext))
+      .map(_.get)
+      .getOrElse(null)
   }
 
   /**
-   * Bind value to an Angular variable
+   * Get angular object. Look up global registry
    * @param name variable name
-   * @param value variable value
+   * @return value
    */
-  def angularBind(name: String, value: Any):Unit = {
+  def angularGlobal(name: String): AnyRef = {
     val registry: AngularObjectRegistry = interpreterContext.getAngularObjectRegistry
-    val obj: AngularObject[Any] = registry.get(name).asInstanceOf[AngularObject[Any]]
-    if (obj == null) registry.add(name, value) else obj.set(value)
+    Option(registry.get(name, null))
+      .map(_.get)
+      .getOrElse(null)
   }
 
   /**
-   * Bind value to an Angular variable with a watcher
-   * @param name variable name
-   * @param value variable value
-   * @param watcher variable watcher
+   * Create angular variable in local registry and bind with front end Angular display system.
+   * If variable exists, it'll be overwritten.
+   * @param name name of the variable
+   * @param o value
    */
-  def angularBind(name: String, value: Any, watcher: AngularObjectWatcher) {
-    angularBind(name,value)
+  def angularBind(name: String, o: AnyRef) {
+    angularBindWithNodeId(name, o, interpreterContext.getNoteId)
+  }
+
+  /**
+   * Create angular variable in global registry and bind with front end Angular display system.
+   * If variable exists, it'll be overwritten.
+   * @param name name of the variable
+   * @param o value
+   */
+  def angularBindGlobal(name: String, o: AnyRef) {
+    angularBindWithNodeId(name, o, null)
+  }
+
+  /**
+   * Create angular variable in local registry and bind with front end Angular display system.
+   * If variable exists, value will be overwritten and watcher will be added.
+   * @param name name of variable
+   * @param o value
+   * @param watcher watcher of the variable
+   */
+  def angularBind(name: String, o: AnyRef, watcher: AngularObjectWatcher) {
+    angularBindWithWatcher(name, o, interpreterContext.getNoteId, watcher)
+  }
+
+  /**
+   * Create angular variable in global registry and bind with front end Angular display system.
+   * If variable exists, value will be overwritten and watcher will be added.
+   * @param name name of variable
+   * @param o value
+   * @param watcher watcher of the variable
+   */
+  def angularBindGlobal(name: String, o: AnyRef, watcher: AngularObjectWatcher) {
+    angularBindWithWatcher(name, o, null, watcher)
+  }
+
+  /**
+   * Add watcher into angular variable (local registry)
+   * @param name name of the variable
+   * @param watcher watcher
+   */
+  def angularWatch(name: String, watcher: AngularObjectWatcher) {
+    angularWatch(name, interpreterContext.getNoteId, watcher)
+  }
+
+  /**
+   * Add watcher into angular variable (global registry)
+   * @param name name of the variable
+   * @param watcher watcher
+   */
+  def angularWatchGlobal(name: String, watcher: AngularObjectWatcher) {
+    angularWatch(name, null, watcher)
+  }
+
+  def angularWatch(name: String, func: (AnyRef, AnyRef) => Unit) {
+    angularWatch(name, interpreterContext.getNoteId, func)
+  }
+
+  def angularWatchGlobal(name: String, func: (AnyRef, AnyRef) => Unit) {
+    angularWatch(name, null, func)
+  }
+
+  def angularWatch(name: String, func: (AnyRef, AnyRef, InterpreterContext) => Unit) {
+    angularWatch(name, interpreterContext.getNoteId, func)
+  }
+
+  def angularWatchGlobal(name: String, func: (AnyRef, AnyRef, InterpreterContext) => Unit) {
+    angularWatch(name, null, func)
+  }
+
+  /**
+   * Remove watcher from angular variable (local)
+   * @param name
+   * @param watcher
+   */
+  def angularUnwatch(name: String, watcher: AngularObjectWatcher) {
+    angularUnwatchFromWatcher(name, interpreterContext.getNoteId, watcher)
+  }
+
+  /**
+   * Remove watcher from angular variable (global)
+   * @param name
+   * @param watcher
+   */
+  def angularUnwatchGlobal(name: String, watcher: AngularObjectWatcher) {
+    angularUnwatchFromWatcher(name, null, watcher)
+  }
+
+  /**
+   * Remove all watchers for the angular variable (local)
+   * @param name
+   */
+  def angularUnwatch(name: String) {
+    angularUnwatchFromNoteId(name, interpreterContext.getNoteId)
+  }
+
+  /**
+   * Remove all watchers for the angular variable (global)
+   * @param name
+   */
+  def angularUnwatchGlobal(name: String) {
+    angularUnwatchFromNoteId(name, null)
+  }
+
+  /**
+   * Remove angular variable and all the watchers.
+   * @param name
+   */
+  def angularUnbind(name: String) {
+    val noteId: String = interpreterContext.getNoteId
+    angularUnbind(name, noteId)
+  }
+
+  /**
+   * Remove angular variable and all the watchers.
+   * @param name
+   */
+  def angularUnbindGlobal(name: String) {
+    angularUnbind(name, null)
+  }
+
+  private def getAngularObject(name: String, interpreterContext: InterpreterContext): AngularObject[_] = {
+    val registry: AngularObjectRegistry = interpreterContext.getAngularObjectRegistry
+    Option(registry.get(name, interpreterContext.getNoteId))
+      .getOrElse(registry.get(name, null))
+  }
+
+  /**
+   * Create angular variable in local registry and bind with front end Angular display system.
+   * If variable exists, it'll be overwritten.
+   * @param name name of the variable
+   * @param o value
+   */
+  private def angularBindWithNodeId(name: String, o: AnyRef, noteId: String) {
+    val registry: AngularObjectRegistry = interpreterContext.getAngularObjectRegistry
+    if (registry.get(name, noteId) == null) {
+      registry.add(name, o, noteId)
+    }
+    else {
+      registry.get(name, noteId)
+        .asInstanceOf[AngularObject[AnyRef]]
+        .set(o)
+    }
+  }
+
+  /**
+   * Create angular variable in local registry and bind with front end Angular display system.
+   * If variable exists, value will be overwritten and watcher will be added.
+   * @param name name of variable
+   * @param o value
+   * @param watcher watcher of the variable
+   */
+  private def angularBindWithWatcher(name: String, o: AnyRef, noteId: String, watcher: AngularObjectWatcher) {
+    val registry: AngularObjectRegistry = interpreterContext.getAngularObjectRegistry
+    if (registry.get(name, noteId) == null) {
+      registry.add(name, o, noteId)
+    }
+    else {
+      registry.get(name, noteId)
+        .asInstanceOf[AngularObject[AnyRef]]
+        .set(o)
+    }
     angularWatch(name, watcher)
   }
 
   /**
-   * Unbind an Angular variable
-   * @param name variable name
-   */
-  def angularUnbind(name: String) {
-    interpreterContext.getAngularObjectRegistry.remove(name)
-  }
-
-  /**
-   * Add a watcher to an Angular variable
-   * @param name variable name
+   * Add watcher into angular binding variable
+   * @param name name of the variable
    * @param watcher watcher
    */
-  def angularWatch(name: String, watcher: AngularObjectWatcher):Unit = {
-    val registry: AngularObjectRegistry = interpreterContext.getAngularObjectRegistry
-    val obj: AngularObject[_] = registry.get(name)
-    if (obj != null) obj.addWatcher(watcher)
+  private def angularWatch(name: String, noteId: String, watcher: AngularObjectWatcher) {
+    Option(interpreterContext.getAngularObjectRegistry)
+      .foreach(_.get(name, noteId).addWatcher(watcher))
   }
 
-  /**
-   * Add a watcher function to an Angular variable
-   * @param name variable name
-   * @param func watcher function
-   */
-  def angularWatch(name: String, func: (Any, Any) => Unit):Unit = {
+  private def angularWatch(name: String, noteId: String, func: (AnyRef, AnyRef) => Unit) {
     val w: AngularObjectWatcher = new AngularObjectWatcher((getInterpreterContext)) {
-      override def watch(oldObject: Any, newObject: Any, context: InterpreterContext) {
+      def watch(oldObject: AnyRef, newObject: AnyRef, context: InterpreterContext) {
         func.apply(newObject, newObject)
       }
     }
-    angularWatch(name, w)
+    angularWatch(name, noteId, w)
   }
 
-  /**
-   * Add a watcher function with an arbitrary interpreter to an Angular variable
-   * @param name variable name
-   * @param func watcher function with an arbitrary interpreter
-   */
-  def angularWatch(name: String, func: (Any, Any, InterpreterContext) => Unit):Unit = {
+  private def angularWatch(name: String, noteId: String, func: (AnyRef, AnyRef, InterpreterContext) => Unit) {
     val w: AngularObjectWatcher = new AngularObjectWatcher((getInterpreterContext)) {
-      override def watch(oldObject: Any, newObject: Any, context: InterpreterContext) {
+      def watch(oldObject: AnyRef, newObject: AnyRef, context: InterpreterContext) {
         func.apply(oldObject, newObject, context)
       }
     }
-    angularWatch(name, w)
+    angularWatch(name, noteId, w)
   }
 
   /**
-   * Stop watching an Angular variable with given watcher
-   * @param name variable name
-   * @param watcher watcher
+   * Remove watcher
+   * @param name
+   * @param watcher
    */
-  def angularUnwatch(name: String, watcher: AngularObjectWatcher) {
-    val registry: AngularObjectRegistry = interpreterContext.getAngularObjectRegistry
-    val obj: AngularObject[_] = registry.get(name)
-    if (obj != null) {
-      obj.removeWatcher(watcher)
-    }
+  private def angularUnwatchFromWatcher(name: String, noteId: String, watcher: AngularObjectWatcher) {
+    Option(interpreterContext.getAngularObjectRegistry)
+      .foreach(_.get(name, noteId).removeWatcher(watcher))
   }
 
   /**
-   * Stop watching an Angular variable and remove all watchers
-   * @param name variable name
+   * Remove all watchers for the angular variable
+   * @param name
    */
-  def angularUnwatch(name: String) {
-    val registry: AngularObjectRegistry = interpreterContext.getAngularObjectRegistry
-    val obj: AngularObject[_] = registry.get(name)
-    if (obj != null) {
-      obj.clearAllWatchers
-    }
+  private def angularUnwatchFromNoteId(name: String, noteId: String) {
+    Option(interpreterContext.getAngularObjectRegistry)
+      .foreach(_.get(name, noteId).clearAllWatchers)
+  }
+
+  /**
+   * Remove angular variable and all the watchers.
+   * @param name
+   */
+  private def angularUnbind(name: String, noteId: String) {
+    interpreterContext.getAngularObjectRegistry.remove(name, noteId)
   }
 
   /**

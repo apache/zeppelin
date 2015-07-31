@@ -53,6 +53,7 @@ class ZeppelinContextTest extends FlatSpec
   val dep: DependencyResolver = mock[DependencyResolver]
   val gui: GUI = mock[GUI]
   val out: PrintStream = mock[PrintStream]
+  val noteId: String = "myNoteId"
 
 
   before {
@@ -70,6 +71,7 @@ class ZeppelinContextTest extends FlatSpec
 
   override def beforeEach() {
     stream = new java.io.ByteArrayOutputStream()
+    when(interpreterContext.getNoteId).thenReturn(noteId)
     super.beforeEach() // To be stackable, must call super.beforeEach
   }
 
@@ -186,10 +188,10 @@ class ZeppelinContextTest extends FlatSpec
     //Given
     val z = new ZeppelinContext(sc, sqlContext, interpreterContext, dep, out, 100)
     z.setGui(gui)
-    when(gui.input("test input","default")).thenReturn("defaultVal", Nil:_*)
+    when(gui.input("test input", "default")).thenReturn("defaultVal", Nil:_*)
 
     //When
-    val actual: Any = z.input("test input","default")
+    val actual: Any = z.input("test input", "default")
 
     //Then
     actual should be("defaultVal")
@@ -201,11 +203,11 @@ class ZeppelinContextTest extends FlatSpec
     val z = new ZeppelinContext(sc, sqlContext, interpreterContext, dep, out, 100)
     z.setGui(gui)
     val paramOptions: Array[ParamOption] = Seq(new ParamOption(1,"1"),new ParamOption(2,"2")).toArray
-    when(gui.select("test select","1",paramOptions)).thenReturn("1", Nil:_*)
+    when(gui.select("test select", "1",paramOptions)).thenReturn("1", Nil:_*)
 
     //When
     val seq: Seq[(Any, String)] = Seq((1, "1"), (2, "2"))
-    val actual: Any = z.select("test select","1",seq)
+    val actual: Any = z.select("test select", "1",seq)
 
     //Then
     actual should be("1")
@@ -216,10 +218,10 @@ class ZeppelinContextTest extends FlatSpec
     val z = new ZeppelinContext(sc, sqlContext, interpreterContext, dep, out, 100)
     val hasRun1 = new AtomicBoolean(false)
     val hasRun2 = new AtomicBoolean(false)
-    val runner1:InterpreterContextRunner = new InterpreterContextRunner("1","par1") {
+    val runner1:InterpreterContextRunner = new InterpreterContextRunner("1", "par1") {
       override def run(): Unit = {hasRun1.getAndSet(true) }
     }
-    val runner2:InterpreterContextRunner = new InterpreterContextRunner("2","par2") {
+    val runner2:InterpreterContextRunner = new InterpreterContextRunner("2", "par2") {
       override def run(): Unit = {hasRun2.getAndSet(true)}
     }
     when(interpreterContext.getRunners()).thenReturn(Seq(runner1,runner2),Nil:_*)
@@ -237,10 +239,10 @@ class ZeppelinContextTest extends FlatSpec
     val z = new ZeppelinContext(sc, sqlContext, interpreterContext, dep, out, 100)
     val hasRun1 = new AtomicBoolean(false)
     val hasRun2 = new AtomicBoolean(false)
-    val runner1:InterpreterContextRunner = new InterpreterContextRunner("1","par1") {
+    val runner1:InterpreterContextRunner = new InterpreterContextRunner("1", "par1") {
       override def run(): Unit = {hasRun1.getAndSet(true) }
     }
-    val runner2:InterpreterContextRunner = new InterpreterContextRunner("2","par2") {
+    val runner2:InterpreterContextRunner = new InterpreterContextRunner("2", "par2") {
       override def run(): Unit = {hasRun2.getAndSet(true)}
     }
     when(interpreterContext.getParagraphId).thenReturn("whatever",Nil:_*)
@@ -259,10 +261,10 @@ class ZeppelinContextTest extends FlatSpec
     val z = new ZeppelinContext(sc, sqlContext, interpreterContext, dep, out, 100)
     val hasRun1 = new AtomicBoolean(false)
     val hasRun2 = new AtomicBoolean(false)
-    val runner1:InterpreterContextRunner = new InterpreterContextRunner("1","par1") {
+    val runner1:InterpreterContextRunner = new InterpreterContextRunner("1", "par1") {
       override def run(): Unit = {hasRun1.getAndSet(true) }
     }
-    val runner2:InterpreterContextRunner = new InterpreterContextRunner("2","par2") {
+    val runner2:InterpreterContextRunner = new InterpreterContextRunner("2", "par2") {
       override def run(): Unit = {hasRun2.getAndSet(true)}
     }
     when(interpreterContext.getParagraphId).thenReturn("par1",Nil:_*)
@@ -284,13 +286,13 @@ class ZeppelinContextTest extends FlatSpec
     val hasRun1 = new AtomicBoolean(false)
     val hasRun2 = new AtomicBoolean(false)
     val hasRun3 = new AtomicBoolean(false)
-    val runner1:InterpreterContextRunner = new InterpreterContextRunner("1","par1") {
+    val runner1:InterpreterContextRunner = new InterpreterContextRunner("1", "par1") {
       override def run(): Unit = {hasRun1.getAndSet(true) }
     }
-    val runner2:InterpreterContextRunner = new InterpreterContextRunner("2","par2") {
+    val runner2:InterpreterContextRunner = new InterpreterContextRunner("2", "par2") {
       override def run(): Unit = {hasRun2.getAndSet(true)}
     }
-    val runner3:InterpreterContextRunner = new InterpreterContextRunner("3","par3") {
+    val runner3:InterpreterContextRunner = new InterpreterContextRunner("3", "par3") {
       override def run(): Unit = {hasRun3.getAndSet(true)}
     }
     when(interpreterContext.getParagraphId).thenReturn("par10",Nil:_*)
@@ -311,13 +313,13 @@ class ZeppelinContextTest extends FlatSpec
     val hasRun1 = new AtomicBoolean(false)
     val hasRun2 = new AtomicBoolean(false)
     val hasRun3 = new AtomicBoolean(false)
-    val runner1:InterpreterContextRunner = new InterpreterContextRunner("1","par1") {
+    val runner1:InterpreterContextRunner = new InterpreterContextRunner("1", "par1") {
       override def run(): Unit = {hasRun1.getAndSet(true) }
     }
-    val runner2:InterpreterContextRunner = new InterpreterContextRunner("2","par2") {
+    val runner2:InterpreterContextRunner = new InterpreterContextRunner("2", "par2") {
       override def run(): Unit = {hasRun2.getAndSet(true)}
     }
-    val runner3:InterpreterContextRunner = new InterpreterContextRunner("3","par3") {
+    val runner3:InterpreterContextRunner = new InterpreterContextRunner("3", "par3") {
       override def run(): Unit = {hasRun3.getAndSet(true)}
     }
     when(interpreterContext.getParagraphId).thenReturn("par1",Nil:_*)
@@ -335,13 +337,13 @@ class ZeppelinContextTest extends FlatSpec
   "ZeppelinContext" should "list paragraph ids" in {
     //Given
     val z = new ZeppelinContext(sc, sqlContext, interpreterContext, dep, out, 100)
-    val runner1:InterpreterContextRunner = new InterpreterContextRunner("1","par1") {
+    val runner1:InterpreterContextRunner = new InterpreterContextRunner("1", "par1") {
       override def run(): Unit = {}
     }
-    val runner2:InterpreterContextRunner = new InterpreterContextRunner("2","par2") {
+    val runner2:InterpreterContextRunner = new InterpreterContextRunner("2", "par2") {
       override def run(): Unit = {}
     }
-    val runner3:InterpreterContextRunner = new InterpreterContextRunner("3","par3") {
+    val runner3:InterpreterContextRunner = new InterpreterContextRunner("3", "par3") {
       override def run(): Unit = {}
     }
     when(interpreterContext.getRunners()).thenReturn(Seq(runner1,runner2,runner3): java.util.List[InterpreterContextRunner])
@@ -350,14 +352,14 @@ class ZeppelinContextTest extends FlatSpec
     val actual: List[String] = z.listParagraphs
 
     //Then
-    actual should be(List("par1","par2","par3"))
+    actual should be(List("par1", "par2", "par3"))
   }
 
   "ZeppelinContext" should "fetch Angular object by name" in {
     //Given
     val z = new ZeppelinContext(sc, sqlContext, interpreterContext, dep, out, 100)
 
-    registry.add("name1", "val")
+    registry.add("name1", "val", noteId)
 
     //When
     val actual = z.angular("name1")
@@ -382,40 +384,40 @@ class ZeppelinContextTest extends FlatSpec
     val z = new ZeppelinContext(sc, sqlContext, interpreterContext, dep, out, 100)
 
     //When
-    z.angularBind("name3","value")
+    z.angularBind("name3", "value")
 
     //Then
-    registry.get("name3").get() should be("value")
+    registry.get("name3", noteId).get() should be("value")
   }
 
   "ZeppelinContext" should "update bound Angular object by name with new value" in {
     //Given
     val z = new ZeppelinContext(sc, sqlContext, interpreterContext, dep, out, 100)
-    registry.add("name4","val1")
+    registry.add("name4", "val1", noteId)
 
     //When
-    z.angularBind("name4","val2")
+    z.angularBind("name4", "val2")
 
     //Then
-    registry.get("name4").get() should be("val2")
+    registry.get("name4", noteId).get() should be("val2")
   }
 
   "ZeppelinContext" should "unbind Angular object by name" in {
     //Given
     val z = new ZeppelinContext(sc, sqlContext, interpreterContext, dep, out, 100)
-    registry.add("name5","val1")
+    registry.add("name5", "val1", noteId)
 
     //When
     z.angularUnbind("name5")
 
     //Then
-    assert(registry.get("name5") == null )
+    assert(registry.get("name5", noteId) == null )
   }
 
   "ZeppelinContext" should "add watch to Angular object by name" in {
     //Given
     val z = new ZeppelinContext(sc, sqlContext, interpreterContext, dep, out, 100)
-    registry.add("name6","val1")
+    registry.add("name6", "val1", noteId)
 
     val hasChanged = new AtomicBoolean(false)
     val watcher = new AngularObjectWatcher(interpreterContext) {
@@ -426,10 +428,10 @@ class ZeppelinContextTest extends FlatSpec
     z.angularWatch("name6", watcher)
 
     //When
-    z.angularBind("name6","val2")
+    z.angularBind("name6", "val2")
 
     //Then
-    registry.get("name6").get() should be("val2")
+    registry.get("name6", noteId).get() should be("val2")
 
     //Wait for the update to be effective
     java.lang.Thread.sleep(100)
@@ -440,7 +442,7 @@ class ZeppelinContextTest extends FlatSpec
   "ZeppelinContext" should "add watch to Angular object by name with anonymous function" in {
     //Given
     val z = new ZeppelinContext(sc, sqlContext, interpreterContext, dep, out, 100)
-    registry.add("name7","val1")
+    registry.add("name7", "val1", noteId)
 
     val hasChanged = new AtomicBoolean(false)
     z.angularWatch("name7", (oldObject: scala.Any, newObject: scala.Any) => {
@@ -448,17 +450,17 @@ class ZeppelinContextTest extends FlatSpec
     })
 
     //When
-    z.angularBind("name7","val2")
+    z.angularBind("name7", "val2")
 
     //Then
-    registry.get("name7").get() should be("val2")
+    registry.get("name7", noteId).get() should be("val2")
     hasChanged.get() should be(true)
   }
 
   "ZeppelinContext" should "stop watching an Angular object using a given watcher" in {
     //Given
     val z = new ZeppelinContext(sc, sqlContext, interpreterContext, dep, out, 100)
-    registry.add("name8", "val1")
+    registry.add("name8", "val1", noteId)
     val hasChanged = new AtomicBoolean(false)
     val watcher = new AngularObjectWatcher(interpreterContext) {
       override def watch(oldObject: scala.Any, newObject: scala.Any, context: InterpreterContext): Unit = {
@@ -473,14 +475,14 @@ class ZeppelinContextTest extends FlatSpec
     z.angularBind("name8", "val2")
 
     //Then
-    registry.get("name8").get() should be("val2")
+    registry.get("name8", noteId).get() should be("val2")
     hasChanged.get() should be(false)
   }
 
   "ZeppelinContext" should "stop watching an Angular object for all watchers" in {
     //Given
     val z = new ZeppelinContext(sc, sqlContext, interpreterContext, dep, out, 100)
-    registry.add("name9", "val1")
+    registry.add("name9", "val1", noteId)
     val hasChanged1 = new AtomicBoolean(false)
     val hasChanged2 = new AtomicBoolean(false)
     val watcher1 = new AngularObjectWatcher(interpreterContext) {
@@ -502,7 +504,7 @@ class ZeppelinContextTest extends FlatSpec
     z.angularBind("name9", "val2")
 
     //Then
-    registry.get("name9").get() should be("val2")
+    registry.get("name9", noteId).get() should be("val2")
     hasChanged1.get() should be(false)
     hasChanged2.get() should be(false)
   }
@@ -522,5 +524,5 @@ class AngularListener extends AngularObjectRegistryListener {
 
   override def onUpdate(interpreterGroupId: String, `object`: AngularObject[_]): Unit = {}
 
-  override def onRemove(interpreterGroupId: String, `object`: AngularObject[_]): Unit = {}
+  override def onRemove(interpreterGroupId: String, name: String, noteId: String): Unit = {}
 }
