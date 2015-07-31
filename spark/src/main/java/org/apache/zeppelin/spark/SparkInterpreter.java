@@ -472,7 +472,7 @@ public class SparkInterpreter extends Interpreter {
 
     // Scala implicit value for spark.maxResult
     intp.interpret("import org.apache.zeppelin.spark.utils.SparkMaxResult");
-    intp.interpret("object MaxResult {" +
+    intp.interpret("object MaxResult extends Serializable {" +
         "implicit val sparkMaxResult = new SparkMaxResult(" +
         Integer.parseInt(getProperty("zeppelin.spark.maxResult")) + ")" +
         "}");
