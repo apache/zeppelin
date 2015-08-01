@@ -42,7 +42,7 @@ public class PostgreSqlInterpreter extends Interpreter {
 
   private Logger logger = LoggerFactory.getLogger(PostgreSqlInterpreter.class);
 
-  private static final char WITESPACE = ' ';
+  private static final char WhITESPACE = ' ';
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
   private static final String TABLE_MAGIC_TAG = "%table ";
@@ -197,7 +197,7 @@ public class PostgreSqlInterpreter extends Interpreter {
    * For %table response replace Tab and Newline characters from the content.
    */
   private String replaceReservedChars(boolean isTableResponseType, String str) {
-    return (!isTableResponseType) ? str : str.replace(TAB, WITESPACE).replace(NEWLINE, WITESPACE);
+    return (!isTableResponseType) ? str : str.replace(TAB, WhITESPACE).replace(NEWLINE, WhITESPACE);
   }
 
   @Override
