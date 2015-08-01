@@ -131,7 +131,7 @@ public class SparkSqlInterpreter extends Interpreter {
 
 
     Object rdd = sqlc.sql(st);
-    String msg = ZeppelinContext.showRDD(sc, context, rdd, maxResult);
+    String msg = ZeppelinContext.showDF(sc, context, rdd, maxResult);
     return new InterpreterResult(Code.SUCCESS, msg);
   }
 
