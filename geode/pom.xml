@@ -29,11 +29,12 @@
   <artifactId>zeppelin-geode</artifactId>
   <packaging>jar</packaging>
   <version>0.6.0-incubating-SNAPSHOT</version>
-  <name>Zeppelin: Apache Geode Interpreter</name>
+  <name>Zeppelin: Apache Geode interpreter</name>
   <url>http://geode.incubator.apache.org/</url>
 
   <properties>
-    <gemfire.version>8.1.0</gemfire.version>
+	<geode.version>1.0.0-incubating-SNAPSHOT</geode.version>  
+    <!-- <gemfire.version>8.1.0</gemfire.version> -->    
   </properties>
 
   <dependencies>
@@ -44,10 +45,18 @@
       <scope>provided</scope>
     </dependency>
 
+	<!-- 	
 	<dependency>
 		<groupId>com.gemstone.gemfire</groupId>
 		<artifactId>gemfire</artifactId>
 		<version>${gemfire.version}</version>
+	</dependency> 
+	-->
+
+	<dependency>
+	  <groupId>org.apache.geode</groupId>
+	  <artifactId>gemfire-core</artifactId>
+	  <version>${geode.version}</version>
 	</dependency>
 
     <dependency>
@@ -147,10 +156,12 @@
       </plugin>
     </plugins>
   </build>
+	<!--   
 	<repositories>
 		<repository>
 			<id>spring-gemstone-releases</id>
 			<url>http://repo.springsource.org/gemstone-release-cache/</url>
 		</repository>
 	</repositories>
+	 -->
 </project>

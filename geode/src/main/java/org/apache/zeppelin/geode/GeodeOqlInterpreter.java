@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
@@ -45,7 +46,7 @@ import com.gemstone.gemfire.pdx.PdxInstance;
  * <p>
  * Sample usage: <br/>
  * {@code %geode.oql} <br/>
- * {@code SELECT * FROM /regionEmployee e WHERE e.companyId > '95'}
+ * {@code SELECT * FROM /regionEmployee e WHERE e.companyId > 95}
  * </p>
  * 
  * The OQL spec and sample queries:
@@ -59,18 +60,24 @@ import com.gemstone.gemfire.pdx.PdxInstance;
  */
 public class GeodeOqlInterpreter extends Interpreter {
 
-  Logger logger = LoggerFactory.getLogger(GeodeOqlInterpreter.class);
-  int commandTimeOut = 600000;
+  private static final String DEFAULT_PORT = "10334";
+  private static final String DEFAULT_HOST = "localhost";
 
-  private static final String TABLE_MAGIC = "%table ";
+  private static final char NEWLINE = '\n';
+  private static final char TAB = '\t';
+  private static final char WHITESPACE = ' ';
+
+  Logger logger = LoggerFactory.getLogger(GeodeOqlInterpreter.class);
+
+  private static final String TABLE_MAGIC_TAG = "%table ";
 
   public static final String LOCATOR_HOST = "geode.locator.host";
   public static final String LOCATOR_PORT = "geode.locator.port";
 
   static {
     Interpreter.register("oql", "geode", GeodeOqlInterpreter.class.getName(),
-        new InterpreterPropertyBuilder().add(LOCATOR_HOST, "localhost", "The Geode Locator Host.")
-            .add(LOCATOR_PORT, "10334", "The Geode Locator Port").build());
+        new InterpreterPropertyBuilder().add(LOCATOR_HOST, DEFAULT_HOST, "The Geode Locator Host.")
+            .add(LOCATOR_PORT, DEFAULT_PORT, "The Geode Locator Port").build());
   }
 
   private ClientCache clientCache = null;
@@ -126,7 +133,6 @@ public class GeodeOqlInterpreter extends Interpreter {
     }
   }
 
-
   private InterpreterResult executeOql(String oql) {
     try {
 
@@ -138,7 +144,7 @@ public class GeodeOqlInterpreter extends Interpreter {
       SelectResults<Object> results =
           (SelectResults<Object>) getQueryService().newQuery(oql).execute();
 
-      StringBuilder msg = new StringBuilder(TABLE_MAGIC);
+      StringBuilder msg = new StringBuilder(TABLE_MAGIC_TAG);
       boolean isTableHeaderSet = false;
 
       Iterator<Object> iterator = results.iterator();
@@ -157,7 +163,7 @@ public class GeodeOqlInterpreter extends Interpreter {
         }
 
         isTableHeaderSet = true;
-        msg.append('\n');
+        msg.append(NEWLINE);
       }
 
       return new InterpreterResult(Code.SUCCESS, msg.toString());
@@ -168,45 +174,56 @@ public class GeodeOqlInterpreter extends Interpreter {
     }
   }
 
-  private void handleStructEntry(boolean isTableHeaderSet, Object entry, StringBuilder msg) {
+  /**
+   * For %table response replace Tab and Newline characters from the content.
+   */
+  private String replaceReservedChars(String str) {
+
+    if (StringUtils.isBlank(str)) {
+      return str;
+    }
+
+    return str.replace(TAB, WHITESPACE).replace(NEWLINE, WHITESPACE);
+  }
+
+  private void handleStructEntry(boolean isHeaderSet, Object entry, StringBuilder msg) {
     Struct struct = (Struct) entry;
-    if (!isTableHeaderSet) {
+    if (!isHeaderSet) {
       for (String titleName : struct.getStructType().getFieldNames()) {
-        msg.append(titleName).append('\t');
+        msg.append(replaceReservedChars(titleName)).append(TAB);
       }
-      msg.append('\n');
+      msg.append(NEWLINE);
     }
 
     for (String titleName : struct.getStructType().getFieldNames()) {
-      msg.append(struct.get(titleName)).append('\t');
+      msg.append(replaceReservedChars("" + struct.get(titleName))).append(TAB);
     }
   }
 
-  private void handlePdxInstanceEntry(boolean isTableHeaderSet, Object entry, StringBuilder msg) {
+  private void handlePdxInstanceEntry(boolean isHeaderSet, Object entry, StringBuilder msg) {
     PdxInstance pdxEntry = (PdxInstance) entry;
-    if (!isTableHeaderSet) {
+    if (!isHeaderSet) {
       for (String titleName : pdxEntry.getFieldNames()) {
-        msg.append(titleName).append('\t');
+        msg.append(replaceReservedChars(titleName)).append(TAB);
       }
-      msg.append('\n');
+      msg.append(NEWLINE);
     }
 
     for (String titleName : pdxEntry.getFieldNames()) {
-      msg.append(pdxEntry.getField(titleName)).append('\t');
+      msg.append(replaceReservedChars("" + pdxEntry.getField(titleName))).append(TAB);
     }
   }
 
-  private void handleNumberEntry(boolean isTableHeaderSet, Object entry, StringBuilder msg) {
-    if (!isTableHeaderSet) {
-      msg.append("Result").append('\n');
+  private void handleNumberEntry(boolean isHeaderSet, Object entry, StringBuilder msg) {
+    if (!isHeaderSet) {
+      msg.append("Result").append(NEWLINE);
     }
     msg.append((Number) entry);
   }
 
-  private void handleUnsupportedTypeEntry(boolean isTableHeaderSet, 
-      Object entry, StringBuilder msg) {
-    if (!isTableHeaderSet) {
-      msg.append("Unsuppoted Type").append('\n');
+  private void handleUnsupportedTypeEntry(boolean isHeaderSet, Object entry, StringBuilder msg) {
+    if (!isHeaderSet) {
+      msg.append("Unsuppoted Type").append(NEWLINE);
     }
     msg.append("" + entry);
   }

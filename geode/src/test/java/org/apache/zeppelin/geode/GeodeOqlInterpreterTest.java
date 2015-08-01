@@ -48,7 +48,7 @@ public class GeodeOqlInterpreterTest {
 
   @Test
   public void oqlNumberResponse() throws Exception {
-    oqlTest(new ArrayList<Object>(Arrays.asList(66, 67)).iterator(), "Result\n66\n67\n");
+    testOql(new ArrayList<Object>(Arrays.asList(66, 67)).iterator(), "Result\n66\n67\n");
   }
 
   @Test
@@ -56,15 +56,24 @@ public class GeodeOqlInterpreterTest {
     String[] fields = new String[] {"field1", "field2"};
     Struct struct = new StructImpl(new StructTypeImpl(fields), new String[] {"val1", "val2"});
 
-    oqlTest(new ArrayList<Object>(Arrays.asList(struct)).iterator(),
+    testOql(new ArrayList<Object>(Arrays.asList(struct)).iterator(),
         "field1\tfield2\t\nval1\tval2\t\n");
+  }
+  
+  @Test
+  public void oqlStructResponseWithReservedCharacters() throws Exception {
+    String[] fields = new String[] {"fi\teld1", "f\nield2"};
+    Struct struct = new StructImpl(new StructTypeImpl(fields), new String[] {"v\nal\t1", "val2"});
+
+    testOql(new ArrayList<Object>(Arrays.asList(struct)).iterator(),
+        "fi eld1\tf ield2\t\nv al 1\tval2\t\n");
   }
 
   @Test
   public void oqlPdxInstanceResponse() throws Exception {
     ByteArrayInputStream bais = new ByteArrayInputStream("koza\tboza\n".getBytes());
     PdxInstance pdxInstance = new PdxInstanceImpl(new PdxType(), new DataInputStream(bais), 4);
-    oqlTest(new ArrayList<Object>(Arrays.asList(pdxInstance)).iterator(), "\n\n");
+    testOql(new ArrayList<Object>(Arrays.asList(pdxInstance)).iterator(), "\n\n");
   }
 
   private static class DummyUnspportedType {
@@ -78,11 +87,11 @@ public class GeodeOqlInterpreterTest {
   public void oqlUnsupportedTypeResponse() throws Exception {
     DummyUnspportedType unspported1 = new DummyUnspportedType();
     DummyUnspportedType unspported2 = new DummyUnspportedType();
-    oqlTest(new ArrayList<Object>(Arrays.asList(unspported1, unspported2)).iterator(),
+    testOql(new ArrayList<Object>(Arrays.asList(unspported1, unspported2)).iterator(),
         "Unsuppoted Type\n" + unspported1.toString() + "\n" + unspported1.toString() + "\n");
   }
 
-  private void oqlTest(Iterator<Object> queryResponseIterator, String expectedOutput)
+  private void testOql(Iterator<Object> queryResponseIterator, String expectedOutput)
       throws Exception {
 
     GeodeOqlInterpreter spyGeodeOqlInterpreter = spy(new GeodeOqlInterpreter(new Properties()));
@@ -124,12 +133,12 @@ public class GeodeOqlInterpreterTest {
     GeodeOqlInterpreter spyGeodeOqlInterpreter = spy(new GeodeOqlInterpreter(new Properties()));
 
     when(spyGeodeOqlInterpreter.getQueryService())
-        .thenThrow(new RuntimeException("Test exception"));
+        .thenThrow(new RuntimeException("Expected Test Exception!"));
 
     InterpreterResult interpreterResult = spyGeodeOqlInterpreter.interpret(OQL_QUERY, null);
 
     assertEquals(Code.ERROR, interpreterResult.code());
-    assertEquals("Test exception", interpreterResult.message());
+    assertEquals("Expected Test Exception!", interpreterResult.message());
   }
 
   @Test
