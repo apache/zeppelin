@@ -13,20 +13,21 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
+angular.module('zeppelinWebApp').factory('DataValidator', function($rootScope) {
 
   var msg = '';
   var errorStatus = false;
-  var dataValidator = function() {
-    this.schema = null;
+  var DataValidator = function(schema) {
+    this.schema = schema;
     this.error = getErrorStatus;
     this.checkData = checkData;
     this.getMsg = getMsg;
+    this.data = null;
   };
 
-  function checkData(data, schema) {
-    console.log(schema);
-    if (basicCheck(data, schema)) {
+
+  function checkData() {
+    if (basicCheck(this.data, this.schema)) {// jshint ignore:line
       msg += 'data is exisiting | ';
     } else {
       msg += 'data does not exisiting | ';
@@ -73,15 +74,6 @@ angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
           errorStatus = true;
           msg += 'data record ' + (record[i]) + ' is not matching for schema | ';
           return true;
-        }else{
-          if(i===2){
-            errorStatus = !latitudeValidator(record[i],schema.range);
-          }if(i===3){
-            errorStatus = !longitudeValidator(record[i],schema.range);
-          }
-          if(errorStatus){
-            return true;
-          }
         }
       }//end validation on data record
       errorStatus = false;
@@ -92,36 +84,5 @@ angular.module('zeppelinWebApp').factory('dataValidator', function($rootScope) {
     }
   }
 
-  //Latitude measurements range from 0° to (+/–)90°.
-  function latitudeValidator(record, schema) {
-    if(record) {
-      var latitude = parseFloat(record);
-      if(schema.latitude.low <= latitude <= schema.latitude.high) {
-        return true;
-      }
-      msg += 'Latitude ' + record + ' is not in range | ';
-      return false;
-    } else {
-      msg += 'Latitude record does not exisiting | ';
-      return true;
-    }
-  }
-
-  //Longitude measurements range from 0° to (+/–)180°.
-  function longitudeValidator(record, schema) {
-    console.log(record);
-    if(record) {
-      var longitude = parseFloat(record);
-      if(schema.longitude.low <= longitude <= schema.longitude.high) {
-        return true;
-      }
-      msg += 'Longitude' + record + ' is not in range | ';
-      return false;
-    } else {
-      msg += 'Longitude record does not exisiting | ';
-      return true;
-    }
-  }
-
-  return dataValidator;
+  return DataValidator;
 });

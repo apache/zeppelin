@@ -13,12 +13,14 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').service('dataValidatorSrv', function($rootScope, dataValidator, dataModelSchemas) {
+angular.module('zeppelinWebApp').service('dataValidatorSrv', function($rootScope, mapdataValidator, dataModelSchemas) {
 
   this.validateMapData = function(data) {
-    var mapValidator = new dataValidator();
-    mapValidator.schema = dataModelSchemas.MapSchema;
-    mapValidator.checkData(data,mapValidator.schema);
+    var mapValidator =  mapdataValidator;
+    mapValidator.data = data;
+    mapValidator.checkData();
+    mapValidator.checkLatiLong();
+    //mapdataValidator.data = data;
     var msg = {'error':mapValidator.error(), 'msg':mapValidator.getMsg()};
     return msg;
   };
