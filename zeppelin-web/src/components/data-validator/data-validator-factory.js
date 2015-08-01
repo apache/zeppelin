@@ -20,11 +20,12 @@ angular.module('zeppelinWebApp').factory('DataValidator', function($rootScope) {
   var DataValidator = function(schema) {
     this.schema = schema;
     this.error = getErrorStatus;
+    this.setError = setError;
     this.checkData = checkData;
     this.getMsg = getMsg;
+    this.setMsg = setMsg;
     this.data = null;
   };
-
 
   function checkData() {
     if (basicCheck(this.data, this.schema)) {// jshint ignore:line
@@ -38,8 +39,16 @@ angular.module('zeppelinWebApp').factory('DataValidator', function($rootScope) {
     return msg;
   }
 
+  function setMsg(newMsg) {
+    msg += newMsg;
+  }
+
   function getErrorStatus() {
     return errorStatus;
+  }
+
+    function setError() {
+    errorStatus = true;
   }
 
   function basicCheck(data, schema) {
