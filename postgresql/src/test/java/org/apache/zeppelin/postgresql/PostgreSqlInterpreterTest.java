@@ -14,7 +14,10 @@
  */
 package org.apache.zeppelin.postgresql;
 
+import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.*;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -34,48 +37,72 @@ import com.mockrunner.mock.jdbc.MockResultSet;
  * PostgreSQL interpreter unit tests
  */
 public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
-  
+
   private PostgreSqlInterpreter psqlInterpreter = null;
   private MockResultSet result = null;
-  
+
   @Before
   public void beforeTest() {
     MockConnection connection = getJDBCMockObjectFactory().getMockConnection();
-    
-    StatementResultSetHandler statementHandler = connection.getStatementResultSetHandler();    
+
+    StatementResultSetHandler statementHandler = connection.getStatementResultSetHandler();
     result = statementHandler.createResultSet();
     statementHandler.prepareGlobalResultSet(result);
 
     psqlInterpreter = spy(new PostgreSqlInterpreter(new Properties()));
-    when(psqlInterpreter.getJdbcConnection()).thenReturn(connection);    
+    when(psqlInterpreter.getJdbcConnection()).thenReturn(connection);
   }
+
   
   @Test
-  public void testOpenClose() throws SQLException {
-    Properties props = new Properties();
-    props.put(PostgreSqlInterpreter.POSTGRESQL_SERVER_URL, "url");
-    props.put(PostgreSqlInterpreter.POSTGRESQL_SERVER_USER, "user");
-    props.put(PostgreSqlInterpreter.POSTGRESQL_SERVER_PASSWORD, "pass");
-    
-    PostgreSqlInterpreter psqlInterpreter = spy(new PostgreSqlInterpreter(props));
-    
-    when(psqlInterpreter.getJdbcConnection()).thenReturn(getJDBCMockObjectFactory().getMockConnection());   
+  public void testDefaultProperties() throws SQLException {
 
-    psqlInterpreter.open();
+    PostgreSqlInterpreter psqlInterpreter = new PostgreSqlInterpreter(new Properties());    
+
+    assertEquals(DEFAULT_JDBC_DRIVER_NAME, psqlInterpreter.getProperty(POSTGRESQL_SERVER_DRIVER_NAME));
+    assertEquals(DEFAULT_JDBC_URL, psqlInterpreter.getProperty(POSTGRESQL_SERVER_URL));
+    assertEquals(DEFAULT_JDBC_USER_NAME, psqlInterpreter.getProperty(POSTGRESQL_SERVER_USER));
+    assertEquals(DEFAULT_JDBC_USER_PASSWORD, psqlInterpreter.getProperty(POSTGRESQL_SERVER_PASSWORD));
+  }
+
+  @Test
+  public void testConnectionClose() throws SQLException {
+
+    PostgreSqlInterpreter psqlInterpreter = spy(new PostgreSqlInterpreter(new Properties()));
+
+    when(psqlInterpreter.getJdbcConnection()).thenReturn(
+        getJDBCMockObjectFactory().getMockConnection());
+
     psqlInterpreter.close();
-    
+
     verifyAllResultSetsClosed();
     verifyAllStatementsClosed();
     verifyConnectionClosed();
   }
-  
+
+  @Test
+  public void testStatementCancel() throws SQLException {
+
+    PostgreSqlInterpreter psqlInterpreter = spy(new PostgreSqlInterpreter(new Properties()));
+
+    when(psqlInterpreter.getJdbcConnection()).thenReturn(
+        getJDBCMockObjectFactory().getMockConnection());
+
+    psqlInterpreter.cancel(null);
+
+    verifyAllResultSetsClosed();
+    verifyAllStatementsClosed();
+    assertFalse("Cancel operation should not close the connection", psqlInterpreter
+        .getJdbcConnection().isClosed());
+  }
+
   @Test
   public void testSelectQuery() throws SQLException {
 
     String sqlQuery = "select * from t";
-    
-    result.addColumn("col1", new String[]{"val11", "val12"});
-    result.addColumn("col2", new String[]{"val21", "val22"});
+
+    result.addColumn("col1", new String[] {"val11", "val12"});
+    result.addColumn("col2", new String[] {"val21", "val22"});
 
     InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
 
@@ -85,17 +112,16 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     verifySQLStatementExecuted(sqlQuery);
     verifyAllResultSetsClosed();
-    verifyAllStatementsClosed();  
+    verifyAllStatementsClosed();
   }
-  
 
   @Test
   public void testSelectQueryWithSpecialCharacters() throws SQLException {
 
     String sqlQuery = "select * from t";
-    
-    result.addColumn("co\tl1", new String[]{"val11", "va\tl1\n2"});
-    result.addColumn("co\nl2", new String[]{"v\nal21", "val\t22"});
+
+    result.addColumn("co\tl1", new String[] {"val11", "va\tl1\n2"});
+    result.addColumn("co\nl2", new String[] {"v\nal21", "val\t22"});
 
     InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
 
@@ -112,14 +138,32 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
   public void testExplainQuery() throws SQLException {
 
     String sqlQuery = "explain select * from t";
-    
-    result.addColumn("col1", new String[]{"val11", "val12"});
+
+    result.addColumn("col1", new String[] {"val11", "val12"});
 
     InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TEXT, interpreterResult.type());
     assertEquals("col1\nval11\nval12\n", interpreterResult.message());
+
+    verifySQLStatementExecuted(sqlQuery);
+    verifyAllResultSetsClosed();
+    verifyAllStatementsClosed();
+  }
+
+  @Test
+  public void testExplainQueryWithSpecialCharachters() throws SQLException {
+
+    String sqlQuery = "explain select * from t";
+
+    result.addColumn("co\tl\n1", new String[] {"va\nl11", "va\tl\n12"});
+
+    InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Type.TEXT, interpreterResult.type());
+    assertEquals("co\tl\n1\nva\nl11\nva\tl\n12\n", interpreterResult.message());
 
     verifySQLStatementExecuted(sqlQuery);
     verifyAllResultSetsClosed();
