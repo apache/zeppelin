@@ -13,7 +13,7 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').service('dataValidatorSrv', function($rootScope, mapdataValidator, chartdataValidator, dataModelSchemas) {
+angular.module('zeppelinWebApp').service('dataValidatorSrv', function($rootScope, mapdataValidator, scatterdataValidator, chartdataValidator, dataModelSchemas) {
 
   this.validateMapData = function(data) {
     var mapValidator = mapdataValidator;
@@ -25,6 +25,13 @@ angular.module('zeppelinWebApp').service('dataValidatorSrv', function($rootScope
 
     this.validateChartData = function(data) {
     var chartValidator = chartdataValidator;
+    chartValidator.data = data;
+    chartValidator.checkData();
+    return buildMsg(chartValidator);
+  };
+
+    this.validateScatterData = function(data) {
+    var chartValidator = scatterdataValidator;
     chartValidator.data = data;
     chartValidator.checkData();
     return buildMsg(chartValidator);
