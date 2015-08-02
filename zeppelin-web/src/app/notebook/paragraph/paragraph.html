@@ -417,11 +417,11 @@ limitations under the License.
         </li>
         <li>
           <a class="icon-arrow-up" style="cursor:pointer"
-             ng-click="moveUp()"> Move Up</a>
+             ng-click="moveUp()" ng-show="dirtyText===undefined"> Move Up</a>
         </li>
         <li>
           <a class="icon-arrow-down" style="cursor:pointer"
-             ng-click="moveDown()"> Move Down</a>
+             ng-click="moveDown()" ng-show="dirtyText===undefined"> Move Down</a>
         </li>
         <li>
           <a class="icon-plus" style="cursor:pointer"
