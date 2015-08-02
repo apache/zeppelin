@@ -150,6 +150,20 @@ public class ZeppelinIT {
     return null != System.getenv("CI");
   }
 
+  boolean waitForText(final String txt, final By by) {
+    try {
+      new WebDriverWait(driver, 5).until(new ExpectedCondition<Boolean>() {
+        @Override
+        public Boolean apply(WebDriver d) {
+          return txt.equals(driver.findElement(by).getText());
+        }
+      });
+      return true;
+    } catch (TimeoutException e) {
+      return false;
+    }
+  }
+
 	@Test
   public void testAngularDisplay() throws InterruptedException{
     if (!endToEndTestEnabled()) {
@@ -176,8 +190,8 @@ public class ZeppelinIT {
     waitForParagraph(1, "FINISHED");
 
     // check expected text
-    assertEquals("BindingTest__", driver.findElement(By.xpath(
-        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).getText());
+    waitForText("BindingTest__", By.xpath(
+        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
     /*
      * Bind variable
@@ -190,8 +204,8 @@ public class ZeppelinIT {
     waitForParagraph(2, "FINISHED");
 
     // check expected text
-    assertEquals("BindingTest_1_", driver.findElement(By.xpath(
-        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).getText());
+    waitForText("BindingTest_1_", By.xpath(
+        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
 
     /*
@@ -206,8 +220,8 @@ public class ZeppelinIT {
     waitForParagraph(3, "FINISHED");
 
     // check expected text
-    assertEquals("myVar=1", driver.findElement(By.xpath(
-        getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]")).getText());
+    waitForText("myVar=1", By.xpath(
+        getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]"));
 
     /*
      * Click element
@@ -216,8 +230,8 @@ public class ZeppelinIT {
         getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
 
     // check expected text
-    assertEquals("BindingTest_2_", driver.findElement(By.xpath(
-        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).getText());
+    waitForText("BindingTest_2_", By.xpath(
+        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
     /*
      * Register watcher
@@ -242,13 +256,13 @@ public class ZeppelinIT {
         getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
 
     // check expected text
-    assertEquals("BindingTest_3_", driver.findElement(By.xpath(
-        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).getText());
+    waitForText("BindingTest_3_", By.xpath(
+        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
     waitForParagraph(3, "FINISHED");
 
     // check expected text by watcher
-    assertEquals("myVar=3", driver.findElement(By.xpath(
-        getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]")).getText());
+    waitForText("myVar=3", By.xpath(
+        getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]"));
 
     /*
      * Unbind
@@ -261,8 +275,8 @@ public class ZeppelinIT {
     waitForParagraph(5, "FINISHED");
 
     // check expected text
-    assertEquals("BindingTest__", driver.findElement(By.xpath(
-        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).getText());
+    waitForText("BindingTest__",
+        By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
     /*
      * Bind again and see rebind works.
@@ -272,8 +286,8 @@ public class ZeppelinIT {
     waitForParagraph(2, "FINISHED");
 
     // check expected text
-    assertEquals("BindingTest_1_", driver.findElement(By.xpath(
-        getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).getText());
+    waitForText("BindingTest_1_",
+        By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
     System.out.println("testCreateNotebook Test executed");
   }
