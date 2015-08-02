@@ -15,36 +15,7 @@
 
 angular.module('zeppelinWebApp').service('baseUrlSrv', function() {
 
-  /** Get the current port of the websocket
-  *
-  * When running Zeppelin, the body of this function will be dynamically
-  * overridden with the AppScriptServlet from zeppelin-site.xml config value.
-  *
-  * If the config value is not defined, it defaults to the HTTP port + 1
-  *
-  * In the case of running "grunt serve", this function will appear
-  * as is.
-  */
-  
-  /* @preserve AppScriptServlet - getPort */
   this.getPort = function() {
-    var port = Number(location.port);
-    if (location.protocol !== 'https:' && !port) {
-      port = 80;
-    } else if (location.protocol === 'https:' && !port) {
-      port = 443;
-    } else if (port === 3333 || port === 9000) {
-      port = 8080;
-    }
-    return port + 1;
-  };
-  /* @preserve AppScriptServlet - close */
-
-  this.getWebsocketProtocol = function() {
-    return location.protocol === 'https:' ? 'wss' : 'ws';
-  };
-
-  this.getRestApiBase = function() {
     var port = Number(location.port);
     if (!port) {
       port = 80;
@@ -52,13 +23,22 @@ angular.module('zeppelinWebApp').service('baseUrlSrv', function() {
         port = 443;
       }
     }
-
+    //Exception for when running locally via grunt
     if (port === 3333 || port === 9000) {
       port = 8080;
     }
-    return location.protocol + '//' + location.hostname + ':' + port + skipTrailingSlash(location.pathname) + '/api';
+    return port;
   };
-  
+
+  this.getWebsocketUrl = function() {
+    var wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return wsProtocol + '//' + location.hostname + ':' + this.getPort() + '/ws';
+  };
+
+  this.getRestApiBase = function() {
+    return location.protocol + '//' + location.hostname + ':' + this.getPort() + skipTrailingSlash(location.pathname) + '/api';
+  };
+
   var skipTrailingSlash = function(path) {
     return path.replace(/\/$/, '');
   };
