@@ -27,5 +27,14 @@ angular.module('zeppelinWebApp')
           high: 180
         }
       }
+    },
+    'D3ChartDataSchema': {
+      type: ['number', 'number', 'number'],
+    },
+    'PieChartSchema': {
+      type: ['number', 'number'],
+    },
+    'ScatterDataSchema': {
+      type: ['number', 'number'],
     }
   });

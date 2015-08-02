@@ -13,13 +13,10 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').factory('chartdataValidator', function(
+angular.module('zeppelinWebApp').factory('scatterdataValidator', function(
   $rootScope, DataValidator, dataModelSchemas) {
 
-  var simpleChartSchema = dataModelSchemas.D3ChartDataSchema;
-  var chartdataValidator = new DataValidator(simpleChartSchema);
-
-  //Can specify for more deeper level for chart data models
-
-  return chartdataValidator;
+  var simpleChartSchema = dataModelSchemas.ScatterDataSchema;
+  var scatterdataValidator = new DataValidator(simpleChartSchema);
+  return scatterdataValidator;
 });
