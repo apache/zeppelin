@@ -1299,6 +1299,8 @@ angular.module('zeppelinWebApp')
 
     var schema = data.schema;
     var rows = data.rows;
+    console.log(rows)
+    //check for d3s
     var values = $scope.paragraph.config.graph.values;
 
     var concat = function(o, n) {
@@ -1395,7 +1397,9 @@ angular.module('zeppelinWebApp')
         });
       });
     }
-
+    //TODO adding data validator services 
+    //var msg = dataValidatorSrv.validateChartData(data);
+    //console.log(msg);
     // clear aggregation name, if possible
     var namesWithoutAggr = {};
     var colName;
@@ -1441,7 +1445,6 @@ angular.module('zeppelinWebApp')
       }
 
     }
-
     return {
       xLabels : rowIndexValue,
       d3g : d3g
@@ -1531,8 +1534,17 @@ angular.module('zeppelinWebApp')
       };
     }
 
+    var msg = dataValidatorSrv.validateScatterData(data);
+    console.log(msg);
+    //TODO- warning need to error model or services will needed
+    if(msg.error){
+      console.log('Data is not matching for schema');
+      console.log(msg.msg);
+    }
+
     for (var i = 0; i < data.rows.length; i++) {
       row = data.rows[i];
+
       if (xAxis) {
         xValue = row[xAxis.index];
         xValues[i] = xValue;
