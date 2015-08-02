@@ -17,8 +17,10 @@ angular.module('zeppelinWebApp').directive('modalvisible', function () {
     return {
         restrict: 'A',
         scope: {
-        	preVisibleCallback: '&previsiblecallback',
-        	postVisibleCallback: '&postvisiblecallback'	},
+	        	preVisibleCallback: '&previsiblecallback',
+	        	postVisibleCallback: '&postvisiblecallback',
+	        	targetinput: '@targetinput'
+        	   },
         link: function(scope, elem, attrs) {
         	// Add some listeners
     		var previsibleMethod = scope.preVisibleCallback;
@@ -27,7 +29,8 @@ angular.module('zeppelinWebApp').directive('modalvisible', function () {
     			previsibleMethod();
     		});
     		elem.on('shown.bs.modal', function(e) {
-    			$(e.target).find('#noteName').select();
+    			if(scope.targetinput)
+    			  $(e.target).find('input#' + scope.targetinput ).select();
     			postVisibleMethod();
     		});
         }
