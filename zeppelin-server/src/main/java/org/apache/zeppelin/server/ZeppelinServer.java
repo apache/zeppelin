@@ -48,6 +48,7 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
+import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -91,7 +92,7 @@ public class ZeppelinServer extends Application {
      * But the rest of swagger is configured here
      */
     final ServletContextHandler swagger = setupSwaggerContextHandler(conf);
-    
+
     // Notebook server
     final ServletContextHandler notebook = setupNotebookServer(conf);
 
@@ -272,7 +273,7 @@ public class ZeppelinServer extends Application {
     }
     // Explicit bind to root
     webApp.addServlet(
-      new ServletHolder(new AppScriptServlet()),
+      new ServletHolder(new DefaultServlet()),
       "/*"
     );
     return webApp;
