@@ -36,7 +36,24 @@ import org.slf4j.LoggerFactory;
 
 /**
  * PostgreSQL interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ and
- * GreenplumDB
+ * GreenplumDB.
+ * 
+ * <ul>
+ * <li>{@code postgresql.url} - JDBC URL to connect to.</li>
+ * <li>{@code postgresql.user} - JDBC user name..</li>
+ * <li>{@code postgresql.password} - JDBC password..</li>
+ * <li>{@code postgresql.driver.name} - JDBC driver name.</li>
+ * </ul>
+ * 
+ * <p>
+ * How to use: <br/>
+ * {@code %psql.sql} <br/>
+ * {@code 
+ *  SELECT store_id, count(*) 
+ *  FROM retail_demo.order_lineitems_pxf 
+ *  GROUP BY store_id;
+ * }
+ * </p>
  */
 public class PostgreSqlInterpreter extends Interpreter {
 
