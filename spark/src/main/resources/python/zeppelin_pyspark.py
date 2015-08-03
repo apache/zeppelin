@@ -46,11 +46,11 @@ class Logger(object):
 
 
 class PyZeppelinContext(dict):
-  from pyspark.sql import DataFrame
   def __init__(self, zc):
     self.z = zc
 
   def show(self, obj):
+    from pyspark.sql import DataFrame
     if isinstance(obj, DataFrame):
       print gateway.jvm.org.apache.zeppelin.spark.ZeppelinContext.showDF(self.z, obj._jdf)
     else:
@@ -64,7 +64,7 @@ class PyZeppelinContext(dict):
     return self.z.get(key)
 
   def __delitem__(self, key):
-    del self.z.remove(key)
+    self.z.remove(key)
 
   def __contains__(self, item):
     return self.z.containsKey(item)
@@ -76,7 +76,7 @@ class PyZeppelinContext(dict):
     self.__setitem__(key, value)
 
   def get(self, key):
-    self.__getitem__(key)
+    return self.__getitem__(key)
 
 
 output = Logger()
