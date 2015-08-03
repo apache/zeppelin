@@ -44,14 +44,37 @@ import com.gemstone.gemfire.pdx.PdxInstance;
  * <li>{@code geode.locator.port} - The Geode Locator {@code <PORT>} to connect to.</li>
  * </ul>
  * <p>
- * Sample usage: <br/>
+ * Sample usages: <br/>
  * {@code %geode.oql} <br/>
- * {@code SELECT * FROM /regionEmployee e WHERE e.companyId > 95}
+ * {@code SELECT * FROM /regionEmployee e WHERE e.companyId > 95} <br/>
+ * {@code SELECT * FROM /regionEmployee ORDER BY employeeId} <br/>
+ * {@code 
+ * SELECT * FROM /regionEmployee 
+ * WHERE companyId IN SET(1, 3, 7) OR lastName IN SET('NameA', 'NameB')
+ * } <br/>
+ * {@code 
+ * SELECT e.employeeId, c.id as companyId FROM /regionEmployee e, /regionCompany c 
+ * WHERE e.companyId = c.id
+ * }
  * </p>
- * 
- * The OQL spec and sample queries:
+ * <p>
+ * OQL specification and sample queries:
  * http://geode-docs.cfapps.io/docs/getting_started/querying_quick_reference.html
- * 
+ * </p>
+ * <p>
+ * When the Zeppelin server is collocated with Geode Shell (gfsh) one can use the %sh interpreter to
+ * run Geode shell commands: <br/>
+ * {@code 
+ * %sh
+ *  source /etc/geode/conf/geode-env.sh
+ *  gfsh << EOF
+ *    connect --locator=ambari.localdomain[10334]
+ *    destroy region --name=/regionEmployee
+ *    create region --name=regionEmployee --type=REPLICATE
+ *    exit;
+ *  EOF
+ *}
+ * </p>
  * <p>
  * Known issue:http://gemfire.docs.pivotal.io/bugnotes/KnownIssuesGemFire810.html #43673 Using query
  * "select * from /exampleRegion.entrySet" fails in a client-server topology and/or in a
@@ -60,14 +83,14 @@ import com.gemstone.gemfire.pdx.PdxInstance;
  */
 public class GeodeOqlInterpreter extends Interpreter {
 
+  private Logger logger = LoggerFactory.getLogger(GeodeOqlInterpreter.class);
+
   private static final String DEFAULT_PORT = "10334";
   private static final String DEFAULT_HOST = "localhost";
 
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
   private static final char WHITESPACE = ' ';
-
-  Logger logger = LoggerFactory.getLogger(GeodeOqlInterpreter.class);
 
   private static final String TABLE_MAGIC_TAG = "%table ";
 
@@ -175,7 +198,9 @@ public class GeodeOqlInterpreter extends Interpreter {
   }
 
   /**
-   * For %table response replace Tab and Newline characters from the content.
+   * Zeppelin's %TABLE convention uses tab (\t) to delimit fields and new-line (\n) to delimit rows
+   * To complain with this convention we need to replace any occurrences of tab and/or newline
+   * characters in the content.
    */
   private String replaceReservedChars(String str) {
 
