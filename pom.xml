@@ -84,12 +84,12 @@
   <inceptionYear>2013</inceptionYear>
 
   <modules>
-    <module>zeppelin-interpreter</module>
     <module>zeppelin-zengine</module>
-    <module>spark</module>
+    <module>zeppelin-interpreter</module>
     <module>markdown</module>
-    <module>angular</module>
     <module>shell</module>
+    <module>angular</module>
+    <module>spark</module>
     <module>hive</module>
     <module>tajo</module>
     <module>flink</module>
