@@ -16,7 +16,8 @@
   ~ limitations under the License.
   -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -33,8 +34,7 @@
   <url>http://geode.incubator.apache.org/</url>
 
   <properties>
-	<geode.version>1.0.0-incubating-SNAPSHOT</geode.version>  
-    <!-- <gemfire.version>8.1.0</gemfire.version> -->    
+    <geode.version>1.0.0-incubating-SNAPSHOT</geode.version>
   </properties>
 
   <dependencies>
@@ -45,19 +45,11 @@
       <scope>provided</scope>
     </dependency>
 
-	<!-- 	
-	<dependency>
-		<groupId>com.gemstone.gemfire</groupId>
-		<artifactId>gemfire</artifactId>
-		<version>${gemfire.version}</version>
-	</dependency> 
-	-->
-
-	<dependency>
-	  <groupId>org.apache.geode</groupId>
-	  <artifactId>gemfire-core</artifactId>
-	  <version>${geode.version}</version>
-	</dependency>
+    <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>gemfire-core</artifactId>
+      <version>${geode.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -80,14 +72,14 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
-  	  <groupId>org.mockito</groupId>
-	  <artifactId>mockito-all</artifactId>
-	  <version>1.9.5</version>
-	  <scope>test</scope>
-	</dependency>
-    
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>1.9.5</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -156,12 +148,4 @@
       </plugin>
     </plugins>
   </build>
-	<!--   
-	<repositories>
-		<repository>
-			<id>spring-gemstone-releases</id>
-			<url>http://repo.springsource.org/gemstone-release-cache/</url>
-		</repository>
-	</repositories>
-	 -->
 </project>
