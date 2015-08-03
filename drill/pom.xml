@@ -28,7 +28,7 @@
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-drill</artifactId>
   <packaging>jar</packaging>
-  <version>0.5.0-incubating-SNAPSHOT</version>
+  <version>0.6.0-incubating-SNAPSHOT</version>
   <name>Zeppelin: Drill interpreter</name>
   <url>http://www.apache.org</url>
 
