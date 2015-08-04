@@ -155,7 +155,7 @@ public class SparkInterpreterTest {
     assertEquals(InterpreterResult.Code.ERROR, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
 
     // load library from maven repository and try to import again
-    repl.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
+    repl.interpret("dep.load(\"org.apache.commons:commons-csv:1.1\", true)", context);
     assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
   }
 

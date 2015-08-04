@@ -450,10 +450,14 @@ public class SparkInterpreter extends Interpreter {
     binder.put("sc", sc);
     binder.put("sqlc", sqlc);
     binder.put("z", z);
+    binder.put("dep", dep);
     binder.put("out", printStream);
 
     intp.interpret("@transient val z = "
-                 + "_binder.get(\"z\").asInstanceOf[org.apache.zeppelin.context.ZeppelinContext]");
+            + "_binder.get(\"z\").asInstanceOf[org.apache.zeppelin.context.ZeppelinContext]");
+    intp.interpret("@transient val dep = "
+            + "_binder.get(\"dep\").asInstanceOf" +
+            "[org.apache.zeppelin.spark.dep.DependencyResolver]");
     intp.interpret("@transient val sc = "
                  + "_binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
     intp.interpret("@transient val sqlc = "
