@@ -26,9 +26,9 @@ import org.slf4j.{LoggerFactory, Logger}
  * appropriate display function
  * depending on the Spark version
  */
-object DisplayFunctionsHelper{
+object SparkDisplayFunctionsHelper{
 
-  val logger:Logger = LoggerFactory.getLogger(classOf[DisplayFunctionsHelper])
+  val logger:Logger = LoggerFactory.getLogger(classOf[SparkDisplayFunctionsHelper])
 
   def registerDisplayFunctions(sc: SparkContext, z: ZeppelinContext): Unit = {
 
@@ -65,4 +65,4 @@ object DisplayFunctionsHelper{
   }
 }
 
-class DisplayFunctionsHelper
+class SparkDisplayFunctionsHelper
