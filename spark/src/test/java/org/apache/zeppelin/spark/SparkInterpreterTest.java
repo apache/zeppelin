@@ -45,6 +45,21 @@ public class SparkInterpreterTest {
   private InterpreterContext context;
   private File tmpDir;
 
+
+  /**
+   * Get spark version number as a numerical value.
+   * eg. 1.1.x => 11, 1.2.x => 12, 1.3.x => 13 ...
+   */
+  public static int getSparkVersionNumber() {
+    if (repl == null) {
+      return 0;
+    }
+
+    String[] split = repl.getSparkContext().version().split("\\.");
+    int version = Integer.parseInt(split[0]) * 10 + Integer.parseInt(split[1]);
+    return version;
+  }
+
   @Before
   public void setUp() throws Exception {
     tmpDir = new File(System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis());
@@ -52,18 +67,19 @@ public class SparkInterpreterTest {
 
     tmpDir.mkdirs();
 
-	  if (repl == null) {
-		  Properties p = new Properties();
+    if (repl == null) {
+      Properties p = new Properties();
 
-	    repl = new SparkInterpreter(p);
-  	  repl.open();
-	  }
+      repl = new SparkInterpreter(p);
+      repl.open();
+    }
 
-	  InterpreterGroup intpGroup = new InterpreterGroup();
-    context = new InterpreterContext("id", "title", "text", new HashMap<String, Object>(), new GUI(),
-        new AngularObjectRegistry(intpGroup.getId(), null),
+    InterpreterGroup intpGroup = new InterpreterGroup();
+    context = new InterpreterContext("note", "id", "title", "text",
+        new HashMap<String, Object>(), new GUI(), new AngularObjectRegistry(
+            intpGroup.getId(), null),
         new LinkedList<InterpreterContextRunner>());
-	}
+  }
 
   @After
   public void tearDown() throws Exception {
@@ -83,52 +99,55 @@ public class SparkInterpreterTest {
     }
   }
 
-	@Test
-	public void testBasicIntp() {
-		assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("val a = 1\nval b = 2", context).code());
+  @Test
+  public void testBasicIntp() {
+    assertEquals(InterpreterResult.Code.SUCCESS,
+        repl.interpret("val a = 1\nval b = 2", context).code());
 
-		// when interpret incomplete expression
-		InterpreterResult incomplete = repl.interpret("val a = \"\"\"", context);
-		assertEquals(InterpreterResult.Code.INCOMPLETE, incomplete.code());
-		assertTrue(incomplete.message().length()>0); // expecting some error message
-		/*
-		assertEquals(1, repl.getValue("a"));
-		assertEquals(2, repl.getValue("b"));
-		repl.interpret("val ver = sc.version");
-		assertNotNull(repl.getValue("ver"));
-		assertEquals("HELLO\n", repl.interpret("println(\"HELLO\")").message());
-		*/
-	}
+    // when interpret incomplete expression
+    InterpreterResult incomplete = repl.interpret("val a = \"\"\"", context);
+    assertEquals(InterpreterResult.Code.INCOMPLETE, incomplete.code());
+    assertTrue(incomplete.message().length() > 0); // expecting some error
+                                                   // message
+    /*
+     * assertEquals(1, repl.getValue("a")); assertEquals(2, repl.getValue("b"));
+     * repl.interpret("val ver = sc.version");
+     * assertNotNull(repl.getValue("ver")); assertEquals("HELLO\n",
+     * repl.interpret("println(\"HELLO\")").message());
+     */
+  }
 
-	@Test
-	public void testEndWithComment() {
-		assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("val c=1\n//comment", context).code());
-	}
+  @Test
+  public void testEndWithComment() {
+    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("val c=1\n//comment", context).code());
+  }
 
-	@Test
-	public void testSparkSql(){
-		repl.interpret("case class Person(name:String, age:Int)\n", context);
-		repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
-		assertEquals(Code.SUCCESS, repl.interpret("people.take(3)", context).code());
+  @Test
+  public void testSparkSql(){
+    repl.interpret("case class Person(name:String, age:Int)\n", context);
+    repl.interpret("val people = sc.parallelize(Seq(Person(\"moon\", 33), Person(\"jobs\", 51), Person(\"gates\", 51), Person(\"park\", 34)))\n", context);
+    assertEquals(Code.SUCCESS, repl.interpret("people.take(3)", context).code());
 
-		// create new interpreter
-		Properties p = new Properties();
-		SparkInterpreter repl2 = new SparkInterpreter(p);
-		repl2.open();
 
-		repl.interpret("case class Man(name:String, age:Int)", context);
-		repl.interpret("val man = sc.parallelize(Seq(Man(\"moon\", 33), Man(\"jobs\", 51), Man(\"gates\", 51), Man(\"park\", 34)))", context);
-		assertEquals(Code.SUCCESS, repl.interpret("man.take(3)", context).code());
-		repl2.getSparkContext().stop();
-	}
+    if (getSparkVersionNumber() <= 11) { // spark 1.2 or later does not allow create multiple SparkContext in the same jvm by default.
+    // create new interpreter
+    Properties p = new Properties();
+    SparkInterpreter repl2 = new SparkInterpreter(p);
+    repl2.open();
 
-	@Test
-	public void testReferencingUndefinedVal(){
-		InterpreterResult result = repl.interpret("def category(min: Int) = {" +
-				       "    if (0 <= value) \"error\"" +
-                       "}", context);
-		assertEquals(Code.ERROR, result.code());
-	}
+    repl.interpret("case class Man(name:String, age:Int)", context);
+    repl.interpret("val man = sc.parallelize(Seq(Man(\"moon\", 33), Man(\"jobs\", 51), Man(\"gates\", 51), Man(\"park\", 34)))", context);
+    assertEquals(Code.SUCCESS, repl.interpret("man.take(3)", context).code());
+    repl2.getSparkContext().stop();
+    }
+  }
+
+  @Test
+  public void testReferencingUndefinedVal() {
+    InterpreterResult result = repl.interpret("def category(min: Int) = {"
+        + "    if (0 <= value) \"error\"" + "}", context);
+    assertEquals(Code.ERROR, result.code());
+  }
 
   @Test
   public void testZContextDependencyLoading() {

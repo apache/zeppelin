@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
+import org.apache.zeppelin.notebook.repo.S3NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -273,15 +274,24 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   public int getWebSocketPort() {
     int port = getInt(ConfVars.ZEPPELIN_WEBSOCKET_PORT);
+    int serverPort = getServerPort();
+
     if (port < 0) {
-      return getServerPort() + 1;
+      if (serverPort <= 0) {
+        return 0;
+      } else {
+        return serverPort + 1;
+      }
     } else {
       return port;
     }
   }
 
   public String getKeyStorePath() {
-    return getRelativeDir(ConfVars.ZEPPELIN_SSL_KEYSTORE_PATH);
+    return getRelativeDir(
+        String.format("%s/%s",
+            getConfDir(),
+            getString(ConfVars.ZEPPELIN_SSL_KEYSTORE_PATH)));
   }
 
   public String getKeyStoreType() {
@@ -331,13 +341,21 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getNotebookDir() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
+  
+  public String getUser() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_USER);
+  }
+  
+  public String getBucketName() {
+    return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_BUCKET);
+  }
 
   public String getInterpreterDir() {
     return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_DIR);
   }
 
   public String getInterpreterSettingPath() {
-    return getRelativeDir("conf/interpreter.json");
+    return getRelativeDir(String.format("%s/interpreter.json", getConfDir()));
   }
 
   public String getInterpreterRemoteRunnerPath() {
@@ -356,6 +374,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     }
   }
 
+  public String getConfDir() {
+    return getString(ConfVars.ZEPPELIN_CONF_DIR);
+  }
+
 
   /**
    * Wrapper class.
@@ -372,14 +394,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_WEBSOCKET_PORT("zeppelin.websocket.port", -1),
     ZEPPELIN_SSL("zeppelin.ssl", false),
     ZEPPELIN_SSL_CLIENT_AUTH("zeppelin.ssl.client.auth", false),
-    ZEPPELIN_SSL_KEYSTORE_PATH("zeppelin.ssl.keystore.path", "conf/keystore"),
+    ZEPPELIN_SSL_KEYSTORE_PATH("zeppelin.ssl.keystore.path", "keystore"),
     ZEPPELIN_SSL_KEYSTORE_TYPE("zeppelin.ssl.keystore.type", "JKS"),
     ZEPPELIN_SSL_KEYSTORE_PASSWORD("zeppelin.ssl.keystore.password", ""),
     ZEPPELIN_SSL_KEY_MANAGER_PASSWORD("zeppelin.ssl.key.manager.password", null),
     ZEPPELIN_SSL_TRUSTSTORE_PATH("zeppelin.ssl.truststore.path", null),
     ZEPPELIN_SSL_TRUSTSTORE_TYPE("zeppelin.ssl.truststore.type", null),
     ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
-    ZEPPELIN_WAR("zeppelin.war", "../zeppelin-web/src/main/webapp"),
+    ZEPPELIN_WAR("zeppelin.war", "../zeppelin-web/dist"),
     ZEPPELIN_API_WAR("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),
     ZEPPELIN_INTERPRETERS("zeppelin.interpreters", "org.apache.zeppelin.spark.SparkInterpreter,"
         + "org.apache.zeppelin.spark.PySparkInterpreter,"
@@ -389,14 +411,22 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.angular.AngularInterpreter,"
         + "org.apache.zeppelin.shell.ShellInterpreter,"
         + "org.apache.zeppelin.hive.HiveInterpreter,"
-        + "org.apache.zeppelin.tajo.TajoInterpreter"),
-        ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
-        ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
-        ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
-        ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", VFSNotebookRepo.class.getName()),
+        + "org.apache.zeppelin.tajo.TajoInterpreter,"
+        + "org.apache.zeppelin.flink.FlinkInterpreter,"
+        + "org.apache.zeppelin.ignite.IgniteInterpreter,"
+        + "org.apache.zeppelin.ignite.IgniteSqlInterpreter,"
+        + "org.apache.zeppelin.lens.LensInterpreter"),
+    ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
+    ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),
+    ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
+    ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
+    ZEPPELIN_NOTEBOOK_S3_BUCKET("zeppelin.notebook.s3.bucket", "zeppelin"),
+    ZEPPELIN_NOTEBOOK_S3_USER("zeppelin.notebook.s3.user", "user"),
+    ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", VFSNotebookRepo.class.getName()),
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner", "bin/interpreter.sh"),
     // Decide when new note is created, interpreter settings will be binded automatically or not.
-    ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true);
+    ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),
+    ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf");
 
     private String varName;
     @SuppressWarnings("rawtypes")
@@ -439,7 +469,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
       this.floatValue = -1;
       this.longValue = longValue;
       this.booleanValue = false;
-      this.type = VarType.INT;
+      this.type = VarType.LONG;
     }
 
     ConfVars(String varName, float floatValue) {

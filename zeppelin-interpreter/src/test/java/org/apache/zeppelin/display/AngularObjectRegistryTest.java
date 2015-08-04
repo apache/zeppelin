@@ -45,23 +45,32 @@ public class AngularObjectRegistryTest {
           }
 
           @Override
-          public void onRemove(String interpreterGroupId, AngularObject object) {
+          public void onRemove(String interpreterGroupId, String name, String noteId) {
             onRemove.incrementAndGet();
           }
     });
 
-    registry.add("name1", "value1");
-    assertEquals(1, registry.getAll().size());
+    registry.add("name1", "value1", "note1");
+    assertEquals(1, registry.getAll("note1").size());
     assertEquals(1, onAdd.get());
     assertEquals(0, onUpdate.get());
 
-    registry.get("name1").set("newValue");
+    registry.get("name1", "note1").set("newValue");
     assertEquals(1, onUpdate.get());
 
-    registry.remove("name1");
-    assertEquals(0, registry.getAll().size());
+    registry.remove("name1", "note1");
+    assertEquals(0, registry.getAll("note1").size());
     assertEquals(1, onRemove.get());
 
-    assertEquals(null, registry.get("name1"));
+    assertEquals(null, registry.get("name1", "note1"));
+    
+    // namespace
+    registry.add("name1", "value11", "note2");
+    assertEquals("value11", registry.get("name1", "note2").get());
+    assertEquals(null, registry.get("name1", "note1"));
+    
+    // null namespace
+    registry.add("name1", "global1", null);
+    assertEquals("global1", registry.get("name1", null).get());
   }
 }

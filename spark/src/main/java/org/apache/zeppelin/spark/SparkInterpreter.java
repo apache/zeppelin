@@ -26,12 +26,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
+import com.google.common.base.Joiner;
 import org.apache.spark.HttpServer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -105,9 +102,13 @@ public class SparkInterpreter extends Interpreter {
                 getSystemDefault("SPARK_YARN_JAR", "spark.yarn.jar", ""),
                 "The location of the Spark jar file. If you use yarn as a cluster, "
                 + "we should set this value")
-            .add("zeppelin.spark.useHiveContext", "true",
-                 "Use HiveContext instead of SQLContext if it is true.")
-            .add("zeppelin.spark.maxResult", "1000", "Max number of SparkSQL result to display.")
+            .add("zeppelin.spark.useHiveContext",
+                getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT",
+                    "zeppelin.spark.useHiveContext", "true"),
+                "Use HiveContext instead of SQLContext if it is true.")
+            .add("zeppelin.spark.maxResult",
+                getSystemDefault("ZEPPELIN_SPARK_MAXRESULT", "zeppelin.spark.maxResult", "1000"),
+                "Max number of SparkSQL result to display.")
             .add("args", "", "spark commandline args").build());
 
   }
@@ -269,6 +270,34 @@ public class SparkInterpreter extends Interpreter {
       }
     }
 
+    //TODO(jongyoul): Move these codes into PySparkInterpreter.java
+    
+    String pysparkBasePath = getSystemDefault("SPARK_HOME", "spark.home", null);
+    File pysparkPath;
+    if (null == pysparkBasePath) {
+      pysparkBasePath = getSystemDefault("ZEPPELIN_HOME", "zeppelin.home", "../");
+      pysparkPath = new File(pysparkBasePath,
+          "interpreter" + File.separator + "spark" + File.separator + "pyspark");
+    } else {
+      pysparkPath = new File(pysparkBasePath,
+          "python" + File.separator + "lib");
+    }
+
+    String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.8.2.1-src.zip"};
+    ArrayList<String> pythonLibUris = new ArrayList<>();
+    for (String lib : pythonLibs) {
+      File libFile = new File(pysparkPath, lib);
+      if (libFile.exists()) {
+        pythonLibUris.add(libFile.toURI().toString());
+      }
+    }
+    pythonLibUris.trimToSize();
+    if (pythonLibs.length == pythonLibUris.size()) {
+      conf.set("spark.yarn.dist.files", Joiner.on(",").join(pythonLibUris));
+      conf.set("spark.files", conf.get("spark.yarn.dist.files"));
+      conf.set("spark.submit.pyArchives", Joiner.on(":").join(pythonLibs));
+    }
+
     SparkContext sparkContext = new SparkContext(conf);
     return sparkContext;
   }
@@ -407,21 +436,6 @@ public class SparkInterpreter extends Interpreter {
     z = new ZeppelinContext(sc, sqlc, null, dep, printStream,
         Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
-    try {
-      if (sc.version().startsWith("1.1") || sc.version().startsWith("1.2")) {
-        Method loadFiles = this.interpreter.getClass().getMethod("loadFiles", Settings.class);
-        loadFiles.invoke(this.interpreter, settings);
-      } else if (sc.version().startsWith("1.3")) {
-        Method loadFiles = this.interpreter.getClass().getMethod(
-            "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
-        loadFiles.invoke(this.interpreter, settings);
-      }
-    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
-      throw new InterpreterException(e);
-    }
-
-
     intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
     binder = (Map<String, Object>) getValue("_binder");
     binder.put("sc", sc);
@@ -447,6 +461,39 @@ public class SparkInterpreter extends Interpreter {
       intp.interpret("import sqlContext.implicits._");
       intp.interpret("import sqlContext.sql");
       intp.interpret("import org.apache.spark.sql.functions._");
+    } else if (sc.version().startsWith("1.4")) {
+      intp.interpret("import sqlContext.implicits._");
+      intp.interpret("import sqlContext.sql");
+      intp.interpret("import org.apache.spark.sql.functions._");
+    }
+
+    /* Temporary disabling DisplayUtils. see https://issues.apache.org/jira/browse/ZEPPELIN-127
+     *
+    // Utility functions for display
+    intp.interpret("import org.apache.zeppelin.spark.utils.DisplayUtils._");
+
+    // Scala implicit value for spark.maxResult
+    intp.interpret("import org.apache.zeppelin.spark.utils.SparkMaxResult");
+    intp.interpret("implicit val sparkMaxResult = new SparkMaxResult(" +
+            Integer.parseInt(getProperty("zeppelin.spark.maxResult")) + ")");
+     */
+
+    try {
+      if (sc.version().startsWith("1.1") || sc.version().startsWith("1.2")) {
+        Method loadFiles = this.interpreter.getClass().getMethod("loadFiles", Settings.class);
+        loadFiles.invoke(this.interpreter, settings);
+      } else if (sc.version().startsWith("1.3")) {
+        Method loadFiles = this.interpreter.getClass().getMethod(
+                "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
+        loadFiles.invoke(this.interpreter, settings);
+      } else if (sc.version().startsWith("1.4")) {
+        Method loadFiles = this.interpreter.getClass().getMethod(
+                "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
+        loadFiles.invoke(this.interpreter, settings);
+      }
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+            | IllegalArgumentException | InvocationTargetException e) {
+      throw new InterpreterException(e);
     }
 
     // add jar
@@ -620,6 +667,8 @@ public class SparkInterpreter extends Interpreter {
         } else if (sc.version().startsWith("1.2")) {
           progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
         } else if (sc.version().startsWith("1.3")) {
+          progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
+        } else if (sc.version().startsWith("1.4")) {
           progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
         } else {
           continue;

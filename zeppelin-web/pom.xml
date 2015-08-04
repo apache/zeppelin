@@ -22,17 +22,25 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.5.0-incubating-SNAPSHOT</version>
+    <version>0.6.0-incubating-SNAPSHOT</version>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-web</artifactId>
   <packaging>war</packaging>
-  <version>0.5.0-incubating-SNAPSHOT</version>
+  <version>0.6.0-incubating-SNAPSHOT</version>
   <name>Zeppelin: web Application</name>
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <warSourceDirectory>dist</warSourceDirectory>
+          <webXml>dist\WEB-INF\web.xml</webXml>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
@@ -50,25 +58,25 @@
             <exclude>**/.settings/*</exclude>
             <exclude>**/.classpath</exclude>
             <exclude>**/.project</exclude>
-            <exclude>**/target/**</exclude>            
+            <exclude>**/target/**</exclude>
             <exclude>node/**</exclude>
             <exclude>node_modules/**</exclude>
             <exclude>bower_components/**</exclude>
             <exclude>test/**</exclude>
-            <exclude>src/main/webapp/**</exclude>
-            <exclude>app/.buildignore</exclude>
-            <exclude>app/fonts/fontawesome*</exclude>
-            <exclude>app/fonts/font-awesome*</exclude>
-            <exclude>app/styles/font-awesome*</exclude>
-            <exclude>app/fonts/Simple-Line*</exclude>
-            <exclude>app/fonts/simple-line*</exclude>
-            <exclude>app/styles/simple-line*</exclude>
+            <exclude>dist/**</exclude>
+            <exclude>src/.buildignore</exclude>
+            <exclude>src/fonts/fontawesome*</exclude>
+            <exclude>src/fonts/font-awesome*</exclude>
+            <exclude>src/styles/font-awesome*</exclude>
+            <exclude>src/fonts/Simple-Line*</exclude>
+            <exclude>src/fonts/simple-line*</exclude>
             <exclude>bower.json</exclude>
             <exclude>package.json</exclude>
-            <exclude>README.md</exclude>
+            <exclude>*.md</exclude>
           </excludes>
         </configuration>
       </plugin>
+
       <plugin>
         <groupId>com.github.eirslett</groupId>
         <artifactId>frontend-maven-plugin</artifactId>
@@ -92,7 +100,7 @@
               <goal>npm</goal>
             </goals>
           </execution>
-          
+
           <execution>
             <id>bower install</id>
             <goals>
@@ -135,6 +143,25 @@
         </executions>
       </plugin>
 
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>2.7</version>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>bower_components</directory>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 

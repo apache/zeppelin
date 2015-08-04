@@ -526,33 +526,44 @@ public class InterpreterFactory {
 
   public void restart(String id) {
     synchronized (interpreterSettings) {
-      synchronized (interpreterSettings) {
-        InterpreterSetting intpsetting = interpreterSettings.get(id);
-        if (intpsetting != null) {
-          intpsetting.getInterpreterGroup().close();
-          intpsetting.getInterpreterGroup().destroy();
+      InterpreterSetting intpsetting = interpreterSettings.get(id);
+      if (intpsetting != null) {
+        intpsetting.getInterpreterGroup().close();
+        intpsetting.getInterpreterGroup().destroy();
 
-          InterpreterGroup interpreterGroup = createInterpreterGroup(
-              intpsetting.id(),
-              intpsetting.getGroup(), intpsetting.getOption(), intpsetting.getProperties());
-          intpsetting.setInterpreterGroup(interpreterGroup);
-        } else {
-          throw new InterpreterException("Interpreter setting id " + id
-              + " not found");
-        }
+        InterpreterGroup interpreterGroup = createInterpreterGroup(
+            intpsetting.id(),
+            intpsetting.getGroup(), intpsetting.getOption(), intpsetting.getProperties());
+        intpsetting.setInterpreterGroup(interpreterGroup);
+      } else {
+        throw new InterpreterException("Interpreter setting id " + id
+            + " not found");
       }
     }
   }
 
 
   public void close() {
+    List<Thread> closeThreads = new LinkedList<Thread>();
     synchronized (interpreterSettings) {
-      synchronized (interpreterSettings) {
-        Collection<InterpreterSetting> intpsettings = interpreterSettings.values();
-        for (InterpreterSetting intpsetting : intpsettings) {
-          intpsetting.getInterpreterGroup().close();
-          intpsetting.getInterpreterGroup().destroy();
-        }
+      Collection<InterpreterSetting> intpsettings = interpreterSettings.values();
+      for (final InterpreterSetting intpsetting : intpsettings) {
+        Thread t = new Thread() {
+          public void run() {
+            intpsetting.getInterpreterGroup().close();
+            intpsetting.getInterpreterGroup().destroy();
+          }
+        };
+        t.start();
+        closeThreads.add(t);
+      }
+    }
+
+    for (Thread t : closeThreads) {
+      try {
+        t.join();
+      } catch (InterruptedException e) {
+        logger.error("Can't close interpreterGroup", e);
       }
     }
   }
@@ -621,8 +632,10 @@ public class InterpreterFactory {
   private Interpreter createRemoteRepl(String interpreterPath, String className,
       Properties property) {
 
+    int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(
-        property, className, conf.getInterpreterRemoteRunnerPath(), interpreterPath));
+        property, className, conf.getInterpreterRemoteRunnerPath(),
+        interpreterPath, connectTimeout));
     return intp;
   }
 

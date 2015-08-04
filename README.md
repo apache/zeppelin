@@ -54,13 +54,37 @@ Spark 1.3.x
 ```
 mvn clean package -Pspark-1.3 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests
 ```
+Spark 1.4.x
+```
+mvn clean package -Pspark-1.4 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests
+```
 CDH 5.X
 ```
 mvn clean package -Pspark-1.2 -Dhadoop.version=2.5.0-cdh5.3.0 -Phadoop-2.4 -DskipTests
 ```
-Yarn (Hadoop 2.2.x and later)
+Yarn (Hadoop 2.2.x)
 ```
 mvn clean package -Pspark-1.1 -Dhadoop.version=2.2.0 -Phadoop-2.2 -Pyarn -DskipTests
+```
+Yarn (Hadoop 2.3.x)
+```
+mvn clean package -Pspark-1.1 -Dhadoop.version=2.3.0 -Phadoop-2.3 -Pyarn -DskipTests
+```
+Yarn (Hadoop 2.4.x)
+```
+mvn clean package -Pspark-1.1 -Dhadoop.version=2.4.0 -Phadoop-2.4 -Pyarn -DskipTests
+```
+Yarn (Hadoop 2.6.x)
+```
+mvn clean package -Pspark-1.1 -Dhadoop.version=2.6.0 -Phadoop-2.6 -Pyarn -DskipTests
+```
+Yarn (Hadoop 2.7.x)
+```
+mvn clean package -Pspark-1.4 -Dspark.version=1.4.1 -Dhadoop.version=2.7.0 -Phadoop-2.6 -Pyarn -DskipTests
+```
+Ignite (1.1.0-incubating and later)
+```
+mvn clean package -Dignite.version=1.1.0-incubating -DskipTests
 ```
 
 ### Configure
@@ -70,7 +94,7 @@ If you wish to configure Zeppelin option (like port number), configure the follo
 ./conf/zeppelin-site.xml
 ```
 (You can copy ```./conf/zeppelin-env.sh.template``` into ```./conf/zeppelin-env.sh```. 
-Same for ```zeppein-site.xml```.)
+Same for ```zeppelin-site.xml```.)
 
 #### External cluster configuration
 Mesos
@@ -105,13 +129,14 @@ To package final distribution do:
 The archive is generated under _zeppelin-distribution/target_ directory
 
 ###Run end-to-end tests
-Zeppelin comes with a set of end-to-end acceptnce tests driving headless selenium browser
+Zeppelin comes with a set of end-to-end acceptance tests driving headless selenium browser
 
       #assumes zeppelin-server running on localhost:8080 (use -Durl=.. to override)
       mvn verify
 
       #or take care of starting\stoping zeppelin-server from packaged _zeppelin-distribuion/target_
       mvn verify -P using-packaged-distr
+
 
 
 [![Analytics](https://ga-beacon.appspot.com/UA-45176241-4/apache/incubator-zeppelin/README.md?pixel)](https://github.com/igrigorik/ga-beacon)

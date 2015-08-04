@@ -68,13 +68,15 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
         MockInterpreterAngular.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
-        env
+        env,
+        10 * 1000
         );
 
     intpGroup.add(intp);
     intp.setInterpreterGroup(intpGroup);
 
     context = new InterpreterContext(
+        "note",
         "id",
         "title",
         "text",
@@ -94,7 +96,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
   }
 
   @Test
-  public void testAngularObjectCRUD() throws InterruptedException {
+  public void testAngularObjectInterpreterSideCRUD() throws InterruptedException {
     InterpreterResult ret = intp.interpret("get", context);
     Thread.sleep(500); // waitFor eventpoller pool event
     String[] result = ret.message().split(" ");
@@ -107,7 +109,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     result = ret.message().split(" ");
     assertEquals("1", result[0]); // size of registry
     assertEquals("0", result[1]); // num watcher called
-    assertEquals("v1", localRegistry.get("n1").get());
+    assertEquals("v1", localRegistry.get("n1", "note").get());
 
     // update object
     ret = intp.interpret("update n1 v11", context);
@@ -115,7 +117,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     Thread.sleep(500);
     assertEquals("1", result[0]); // size of registry
     assertEquals("1", result[1]); // num watcher called
-    assertEquals("v11", localRegistry.get("n1").get());
+    assertEquals("v11", localRegistry.get("n1", "note").get());
 
     // remove object
     ret = intp.interpret("remove n1", context);
@@ -123,7 +125,52 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     Thread.sleep(500);
     assertEquals("0", result[0]); // size of registry
     assertEquals("1", result[1]); // num watcher called
-    assertEquals(null, localRegistry.get("n1"));
+    assertEquals(null, localRegistry.get("n1", "note"));
+  }
+
+  @Test
+  public void testAngularObjectRemovalOnZeppelinServerSide() throws InterruptedException {
+    // test if angularobject removal from server side propagate to interpreter process's registry.
+    // will happen when notebook is removed.
+
+    InterpreterResult ret = intp.interpret("get", context);
+    Thread.sleep(500); // waitFor eventpoller pool event
+    String[] result = ret.message().split(" ");
+    assertEquals("0", result[0]); // size of registry
+    
+    // create object
+    ret = intp.interpret("add n1 v1", context);
+    Thread.sleep(500);
+    result = ret.message().split(" ");
+    assertEquals("1", result[0]); // size of registry
+    assertEquals("v1", localRegistry.get("n1", "note").get());
+
+    // remove object in local registry.
+    localRegistry.removeAndNotifyRemoteProcess("n1", "note");
+    ret = intp.interpret("get", context);
+    Thread.sleep(500); // waitFor eventpoller pool event
+    result = ret.message().split(" ");
+    assertEquals("0", result[0]); // size of registry
+  }
+
+  @Test
+  public void testAngularObjectAddOnZeppelinServerSide() throws InterruptedException {
+    // test if angularobject add from server side propagate to interpreter process's registry.
+    // will happen when zeppelin server loads notebook and restore the object into registry
+
+    InterpreterResult ret = intp.interpret("get", context);
+    Thread.sleep(500); // waitFor eventpoller pool event
+    String[] result = ret.message().split(" ");
+    assertEquals("0", result[0]); // size of registry
+    
+    // create object
+    localRegistry.addAndNotifyRemoteProcess("n1", "v1", "note");
+    
+    // get from remote registry 
+    ret = intp.interpret("get", context);
+    Thread.sleep(500); // waitFor eventpoller pool event
+    result = ret.message().split(" ");
+    assertEquals("1", result[0]); // size of registry
   }
 
   @Override
@@ -137,7 +184,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
   }
 
   @Override
-  public void onRemove(String interpreterGroupId, AngularObject object) {
+  public void onRemove(String interpreterGroupId, String name, String noteId) {
     onRemove.incrementAndGet();
   }
 

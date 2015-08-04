@@ -233,7 +233,9 @@ public class Paragraph extends Job implements Serializable {
       runners.add(new ParagraphRunner(note, note.id(), p.getId()));
     }
 
-    InterpreterContext interpreterContext = new InterpreterContext(getId(),
+    InterpreterContext interpreterContext = new InterpreterContext(
+            note.id(),
+            getId(),
             this.getTitle(),
             this.getText(),
             this.getConfig(),

@@ -61,22 +61,16 @@ public class NotebookServer extends WebSocketServer implements
   private static final String DEFAULT_ADDR = "0.0.0.0";
   private static final int DEFAULT_PORT = 8282;
 
-  private static void creatingwebSocketServerLog(String address, int port) {
-    LOG.info("Create zeppelin websocket on {}:{}", address, port);
-  }
-
   Gson gson = new Gson();
   Map<String, List<WebSocket>> noteSocketMap = new HashMap<String, List<WebSocket>>();
   List<WebSocket> connectedSockets = new LinkedList<WebSocket>();
 
   public NotebookServer() {
     super(new InetSocketAddress(DEFAULT_ADDR, DEFAULT_PORT));
-    creatingwebSocketServerLog(DEFAULT_ADDR, DEFAULT_PORT);
   }
 
   public NotebookServer(String address, int port) {
     super(new InetSocketAddress(address, port));
-    creatingwebSocketServerLog(address, port);
   }
 
   private Notebook notebook() {
@@ -136,6 +130,9 @@ public class NotebookServer extends WebSocketServer implements
           case COMPLETION:
             completion(conn, notebook, messagereceived);
             break;
+          case PING:
+            pong();
+            break;          
           case ANGULAR_OBJECT_UPDATED:
             angularObjectUpdated(conn, notebook, messagereceived);
             break;
@@ -350,7 +347,6 @@ public class NotebookServer extends WebSocketServer implements
       return;
     }
     Note note = notebook.getNote(noteId);
-    note.unpersist();
     notebook.removeNote(noteId);
     removeNote(noteId);
     broadcastNoteList();
@@ -419,6 +415,10 @@ public class NotebookServer extends WebSocketServer implements
     String varName = (String) fromMessage.get("name");
     Object varValue = fromMessage.get("value");
 
+    AngularObject ao = null;
+    boolean global = false;
+    
+    
     // propagate change to (Remote) AngularObjectRegistry
     Note note = notebook.getNote(noteId);
     if (note != null) {
@@ -431,37 +431,54 @@ public class NotebookServer extends WebSocketServer implements
         if (interpreterGroupId.equals(setting.getInterpreterGroup().getId())) {
           AngularObjectRegistry angularObjectRegistry = setting
               .getInterpreterGroup().getAngularObjectRegistry();
-          AngularObject ao = angularObjectRegistry.get(varName);
+
+          // first trying to get local registry
+          ao = angularObjectRegistry.get(varName, noteId); 
           if (ao == null) {
-            LOG.warn("Object {} is not binded", varName);
+            // then try global registry
+            ao = angularObjectRegistry.get(varName, null);
+            if (ao == null) {
+              LOG.warn("Object {} is not binded", varName);
+            } else {
+              // path from client -> server
+              ao.set(varValue, false);
+              global = true;
+            }
           } else {
             // path from client -> server
             ao.set(varValue, false);
+            global = false;
           }
 
           break;
         }
       }
     }
-
-    // broadcast change to all web session that uses related interpreter.
-    for (Note n : notebook.getAllNotes()) {
-      List<InterpreterSetting> settings = note.getNoteReplLoader().getInterpreterSettings();
-      for (InterpreterSetting setting : settings) {
-        if (setting.getInterpreterGroup() == null) {
-          continue;
-        }
-
-        if (interpreterGroupId.equals(setting.getInterpreterGroup().getId())) {
-          AngularObjectRegistry angularObjectRegistry = setting
-              .getInterpreterGroup().getAngularObjectRegistry();
-          AngularObject ao = angularObjectRegistry.get(varName);
-          this.broadcast(n.id(), new Message(OP.ANGULAR_OBJECT_UPDATE)
-                              .put("angularObject", ao)
-                              .put("interpreterGroupId", interpreterGroupId)
-                              .put("noteId", n.id()));
+    
+    if (global) { // broadcast change to all web session that uses related interpreter.
+      for (Note n : notebook.getAllNotes()) {
+        List<InterpreterSetting> settings = note.getNoteReplLoader().getInterpreterSettings();
+        for (InterpreterSetting setting : settings) {
+          if (setting.getInterpreterGroup() == null) {
+            continue;
+          }
+  
+          if (interpreterGroupId.equals(setting.getInterpreterGroup().getId())) {
+            AngularObjectRegistry angularObjectRegistry = setting
+                .getInterpreterGroup().getAngularObjectRegistry();
+            this.broadcast(n.id(), new Message(OP.ANGULAR_OBJECT_UPDATE)
+                                .put("angularObject", ao)
+                                .put("interpreterGroupId", interpreterGroupId)
+                                .put("noteId", n.id()));
+          }
         }
       }
+    } else {  // broadcast to all web session for the note
+      this.broadcast(
+          note.id(),
+          new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", ao)
+              .put("interpreterGroupId", interpreterGroupId)
+              .put("noteId", note.id()));
     }
   }
 
@@ -565,7 +582,9 @@ public class NotebookServer extends WebSocketServer implements
     @Override
     public void afterStatusChange(Job job, Status before, Status after) {
       if (after == Status.ERROR) {
-        job.getException().printStackTrace();
+        if (job.getException() != null) {
+          LOG.error("Error", job.getException());
+        }
       }
       if (job.isTerminated()) {
         LOG.info("Job {} is finished", job.getId());
@@ -584,6 +603,9 @@ public class NotebookServer extends WebSocketServer implements
     return new ParagraphJobListener(this, note);
   }
 
+  private void pong() {
+  }
+
   private void sendAllAngularObjects(Note note, WebSocket conn) {
     List<InterpreterSetting> settings = note.getNoteReplLoader().getInterpreterSettings();
     if (settings == null || settings.size() == 0) {
@@ -592,7 +614,7 @@ public class NotebookServer extends WebSocketServer implements
 
     for (InterpreterSetting intpSetting : settings) {
       AngularObjectRegistry registry = intpSetting.getInterpreterGroup().getAngularObjectRegistry();
-      List<AngularObject> objects = registry.getAll();
+      List<AngularObject> objects = registry.getAllWithGlobal(note.id());
       for (AngularObject object : objects) {
         conn.send(serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
           .put("angularObject", object)
@@ -610,9 +632,16 @@ public class NotebookServer extends WebSocketServer implements
   @Override
   public void onUpdate(String interpreterGroupId, AngularObject object) {
     Notebook notebook = notebook();
+    if (notebook == null) {
+      return;
+    }
 
     List<Note> notes = notebook.getAllNotes();
     for (Note note : notes) {
+      if (object.getNoteId() != null && !note.id().equals(object.getNoteId())) {
+        continue;
+      }
+      
       List<InterpreterSetting> intpSettings = note.getNoteReplLoader()
           .getInterpreterSettings();
 
@@ -626,21 +655,26 @@ public class NotebookServer extends WebSocketServer implements
             .put("noteId", note.id()));
         }
       }
-    }
+    }    
   }
+ 
 
   @Override
-  public void onRemove(String interpreterGroupId, AngularObject object) {
+  public void onRemove(String interpreterGroupId, String name, String noteId) {
     Notebook notebook = notebook();
     List<Note> notes = notebook.getAllNotes();
     for (Note note : notes) {
+      if (noteId != null && !note.id().equals(noteId)) {
+        continue;
+      }
+
       List<String> ids = note.getNoteReplLoader().getInterpreters();
       for (String id : ids) {
         if (id.equals(interpreterGroupId)) {
           broadcast(
               note.id(),
-              new Message(OP.ANGULAR_OBJECT_REMOVE).put("name",
-                  object.getName()));
+              new Message(OP.ANGULAR_OBJECT_REMOVE).put("name", name).put(
+                  "noteId", noteId));
         }
       }
     }

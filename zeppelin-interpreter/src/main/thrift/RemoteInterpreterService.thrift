@@ -20,12 +20,13 @@ namespace java org.apache.zeppelin.interpreter.thrift
 
 
 struct RemoteInterpreterContext {
-  1: string paragraphId,
-  2: string paragraphTitle,
-  3: string paragraphText,
-  4: string config,   // json serialized config
-  5: string gui,      // json serialized gui
-  6: string runners   // json serialized runner
+  1: string noteId,
+  2: string paragraphId,
+  3: string paragraphTitle,
+  4: string paragraphText,
+  5: string config,   // json serialized config
+  6: string gui,      // json serialized gui
+  7: string runners   // json serialized runner
 }
 
 struct RemoteInterpreterResult {
@@ -64,5 +65,7 @@ service RemoteInterpreterService {
   string getStatus(1:string jobId);
 
   RemoteInterpreterEvent getEvent();
-  void angularObjectUpdate(1: string name, 2: string object);
+  void angularObjectUpdate(1: string name, 2: string noteId, 3: string object);
+  void angularObjectAdd(1: string name, 2: string noteId, 3: string object);
+  void angularObjectRemove(1: string name, 2: string noteId);
 }
