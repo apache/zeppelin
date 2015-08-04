@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
  * <li>{@code postgresql.user} - JDBC user name..</li>
  * <li>{@code postgresql.password} - JDBC password..</li>
  * <li>{@code postgresql.driver.name} - JDBC driver name.</li>
+ * <li>{@code postgresql.max.result} - Max number of SQL result to display.</li>
  * </ul>
  * 
  * <p>
@@ -70,11 +71,13 @@ public class PostgreSqlInterpreter extends Interpreter {
   static final String DEFAULT_JDBC_USER_PASSWORD = "";
   static final String DEFAULT_JDBC_USER_NAME = "gpadmin";
   static final String DEFAULT_JDBC_DRIVER_NAME = "org.postgresql.Driver";
+  static final String DEFAULT_MAX_RESULT = "1000";
 
   static final String POSTGRESQL_SERVER_URL = "postgresql.url";
   static final String POSTGRESQL_SERVER_USER = "postgresql.user";
   static final String POSTGRESQL_SERVER_PASSWORD = "postgresql.password";
   static final String POSTGRESQL_SERVER_DRIVER_NAME = "postgresql.driver.name";
+  static final String POSTGRESQL_SERVER_MAX_RESULT = "postgresql.max.result";
 
   static {
     Interpreter.register(
@@ -87,12 +90,14 @@ public class PostgreSqlInterpreter extends Interpreter {
             .add(POSTGRESQL_SERVER_PASSWORD, DEFAULT_JDBC_USER_PASSWORD,
                 "The PostgreSQL user password")
             .add(POSTGRESQL_SERVER_DRIVER_NAME, DEFAULT_JDBC_DRIVER_NAME, "JDBC Driver Name")
-            .build());
+            .add(POSTGRESQL_SERVER_MAX_RESULT, DEFAULT_MAX_RESULT,
+                "Max number of SQL result to display.").build());
   }
 
   private Connection jdbcConnection;
   private Statement currentStatement;
   private Exception exceptionOnConnect;
+  private int maxResult;
 
   public PostgreSqlInterpreter(Properties property) {
     super(property);
@@ -109,6 +114,7 @@ public class PostgreSqlInterpreter extends Interpreter {
       String url = getProperty(POSTGRESQL_SERVER_URL);
       String user = getProperty(POSTGRESQL_SERVER_USER);
       String password = getProperty(POSTGRESQL_SERVER_PASSWORD);
+      maxResult = Integer.valueOf(getProperty(POSTGRESQL_SERVER_MAX_RESULT));
 
       Class.forName(driverName);
 
@@ -176,7 +182,8 @@ public class PostgreSqlInterpreter extends Interpreter {
           }
           msg.append(NEWLINE);
 
-          while (resultSet.next()) {
+          int displayRowCount = 0;
+          while (resultSet.next() && displayRowCount < getMaxResult()) {
             for (int i = 1; i < md.getColumnCount() + 1; i++) {
               msg.append(replaceReservedChars(isTableType, resultSet.getString(i)));
               if (i != md.getColumnCount()) {
@@ -184,6 +191,7 @@ public class PostgreSqlInterpreter extends Interpreter {
               }
             }
             msg.append(NEWLINE);
+            displayRowCount++;
           }
         } else {
           // Response contains either an update count or there are no results.
@@ -254,6 +262,10 @@ public class PostgreSqlInterpreter extends Interpreter {
   @Override
   public List<String> completion(String buf, int cursor) {
     return null;
+  }
+
+  public int getMaxResult() {
+    return maxResult;
   }
 
   // Test only method

@@ -53,16 +53,19 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
     when(psqlInterpreter.getJdbcConnection()).thenReturn(connection);
   }
 
-  
+
   @Test
   public void testDefaultProperties() throws SQLException {
 
-    PostgreSqlInterpreter psqlInterpreter = new PostgreSqlInterpreter(new Properties());    
+    PostgreSqlInterpreter psqlInterpreter = new PostgreSqlInterpreter(new Properties());
 
-    assertEquals(DEFAULT_JDBC_DRIVER_NAME, psqlInterpreter.getProperty(POSTGRESQL_SERVER_DRIVER_NAME));
+    assertEquals(DEFAULT_JDBC_DRIVER_NAME,
+        psqlInterpreter.getProperty(POSTGRESQL_SERVER_DRIVER_NAME));
     assertEquals(DEFAULT_JDBC_URL, psqlInterpreter.getProperty(POSTGRESQL_SERVER_URL));
     assertEquals(DEFAULT_JDBC_USER_NAME, psqlInterpreter.getProperty(POSTGRESQL_SERVER_USER));
-    assertEquals(DEFAULT_JDBC_USER_PASSWORD, psqlInterpreter.getProperty(POSTGRESQL_SERVER_PASSWORD));
+    assertEquals(DEFAULT_JDBC_USER_PASSWORD,
+        psqlInterpreter.getProperty(POSTGRESQL_SERVER_PASSWORD));
+    assertEquals(DEFAULT_MAX_RESULT, psqlInterpreter.getProperty(POSTGRESQL_SERVER_MAX_RESULT));
   }
 
   @Test
@@ -99,6 +102,8 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
   @Test
   public void testSelectQuery() throws SQLException {
 
+    when(psqlInterpreter.getMaxResult()).thenReturn(1000);
+
     String sqlQuery = "select * from t";
 
     result.addColumn("col1", new String[] {"val11", "val12"});
@@ -116,7 +121,30 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
+  public void testSelectQueryMaxResult() throws SQLException {
+
+    when(psqlInterpreter.getMaxResult()).thenReturn(1);
+
+    String sqlQuery = "select * from t";
+
+    result.addColumn("col1", new String[] {"val11", "val12"});
+    result.addColumn("col2", new String[] {"val21", "val22"});
+
+    InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
+    assertEquals("col1\tcol2\nval11\tval21\n", interpreterResult.message());
+
+    verifySQLStatementExecuted(sqlQuery);
+    verifyAllResultSetsClosed();
+    verifyAllStatementsClosed();
+  }
+
+  @Test
   public void testSelectQueryWithSpecialCharacters() throws SQLException {
+
+    when(psqlInterpreter.getMaxResult()).thenReturn(1000);
 
     String sqlQuery = "select * from t";
 
@@ -137,6 +165,8 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
   @Test
   public void testExplainQuery() throws SQLException {
 
+    when(psqlInterpreter.getMaxResult()).thenReturn(1000);
+
     String sqlQuery = "explain select * from t";
 
     result.addColumn("col1", new String[] {"val11", "val12"});
@@ -154,6 +184,8 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
 
   @Test
   public void testExplainQueryWithSpecialCharachters() throws SQLException {
+
+    when(psqlInterpreter.getMaxResult()).thenReturn(1000);
 
     String sqlQuery = "explain select * from t";
 
