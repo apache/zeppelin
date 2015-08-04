@@ -426,15 +426,9 @@ angular.module('zeppelinWebApp')
 
               var pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
               var buf = session.getValue();
-              $rootScope.$emit('sendNewEvent', {
-                  op : 'COMPLETION',
-                  data : {
-                      id : $scope.paragraph.id,
-                      buf : buf,
-                      cursor : pos
-                  }
-              });
-
+              
+              websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
+              
               $scope.$on('completionList', function(event, data) {
                   if (data.completions) {
                       var completions = [];
