@@ -33,6 +33,7 @@ import org.apache.spark.HttpServer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.SparkEnv;
+import org.apache.zeppelin.spark.display.DisplayFunctionsHelper$;
 import org.apache.spark.repl.SparkCommandLine;
 import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.repl.SparkIMain;
