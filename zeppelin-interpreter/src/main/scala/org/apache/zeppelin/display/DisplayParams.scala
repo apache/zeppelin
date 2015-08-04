@@ -14,13 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.zeppelin.display
 
-package org.apache.spark.sql
+import java.io.PrintStream
+import org.apache.zeppelin.interpreter.InterpreterContext
 
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.catalyst.expressions.Attribute
-class QueryExecutionHelper(@transient val sc: SparkContext) extends SQLContext(sc) {
-  def schemaAttributes(rdd: Any):Seq[Attribute] = {
-    rdd.getClass().getMethod("queryExecution").invoke(rdd).asInstanceOf[SQLContext#QueryExecution].analyzed.output
-  }
-}
+/**
+ * Parameters for display function
+ * @param maxResult restrict display to 'maxResult' items
+ * @param out output stream. If not provided, it will be Console output
+ * @param context interpreter context, to provide extra info
+ * @param columnsLabel columns label
+ */
+case class DisplayParams(maxResult: Int, out: PrintStream, context: InterpreterContext, columnsLabel: java.util.List[String])

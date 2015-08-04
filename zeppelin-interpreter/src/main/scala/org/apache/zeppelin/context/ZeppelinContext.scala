@@ -15,209 +15,128 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.spark
+package org.apache.zeppelin.context
 
-import java.io.PrintStream
 import java.util
 
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.sql.{QueryExecutionHelper, Row, SQLContext}
 import org.apache.zeppelin.display.Input.ParamOption
-import org.apache.zeppelin.display.{AngularObjectWatcher, AngularObject, AngularObjectRegistry, GUI}
-import org.apache.zeppelin.interpreter.{InterpreterContextRunner, InterpreterException, InterpreterContext}
-import org.apache.zeppelin.spark.dep.DependencyResolver
+import org.apache.zeppelin.display._
+import org.apache.zeppelin.interpreter.{InterpreterContext, InterpreterContextRunner, InterpreterException}
 import org.slf4j.{Logger, LoggerFactory}
 
-import scala.collection.JavaConversions.asJavaCollection
-import scala.collection.JavaConversions.collectionAsScalaIterable
+import scala.collection.JavaConversions.{collectionAsScalaIterable}
 import scala.collection.mutable
+import scala.collection.mutable.{ArrayBuffer}
+import scala.collection.JavaConverters._
 
-object ZeppelinContext{
-
-  implicit def toDisplayRDDFunctions[T <: Product](rdd: RDD[T]): DisplayRDDFunctions[T] = new DisplayRDDFunctions[T](rdd)
-
-  implicit def toDisplayTraversableFunctions[T <: Product](traversable: Traversable[T]): DisplayTraversableFunctions[T] = new DisplayTraversableFunctions[T](traversable)
-
-  /**
-   * Display HTML code
-   * @param htmlContent unescaped HTML content
-   * @return HTML content prefixed by the magic %html
-   */
-  def html(htmlContent: String = "") = s"%html $htmlContent"
-
-  /**
-   * Display image using base 64 content
-   * @param base64Content base64 content
-   * @return base64Content prefixed by the magic %img
-   */
-  def img64(base64Content: String = "") = s"%img $base64Content"
-
-  /**
-   * Display image using URL
-   * @param url image URL
-   * @return a HTML &lt;img&gt; tag with src = base64 content
-   */
-  def img(url: String) = s"<img src='$url' />"
-
-  def showRDD(sc: SparkContext, interpreterContext: InterpreterContext, rdd: AnyRef, maxResult: Int): String = {
-    sc.setJobGroup("zeppelin-" + interpreterContext.getParagraphId, "Zeppelin", false)
-    val queryExecutionHelper: QueryExecutionHelper = new QueryExecutionHelper(sc)
-    try {
-      val rows:Array[Row] = rdd.getClass().getMethod("take", classOf[Int]).invoke(rdd, new Integer(maxResult)).asInstanceOf[Array[Row]]
-      val attributes: Seq[String] = queryExecutionHelper.schemaAttributes(rdd).map(_.name)
-      val msg = new StringBuilder("")
-      try {
-        val headerCount = attributes.size
-        msg.append("%table ").append(attributes.mkString("","\t","\n"))
-
-        rows.foreach( row => {
-          val tableRow: String = (0 until headerCount).map(index =>
-            if (row.isNullAt(index)) "null" else row(index).toString
-          ).mkString("", "\t", "\n")
-          msg.append(tableRow)
-        })
-      } catch {
-        case e:Throwable => {
-          sc.clearJobGroup()
-          throw new InterpreterException(e)
-        }
-      }
-      msg.toString
-    } catch{
-      case e:Throwable => {
-        sc.clearJobGroup()
-        throw new InterpreterException(e)
-      }
-    }
-  }
-}
 
 /**
- * Spark context for zeppelin.
+ * ZeppelinContext
+ * @param defaultMaxResult the default max result
  *
  */
-class ZeppelinContext(val sc: SparkContext,
-                          val sqlContext: SQLContext,
-                          private var interpreterContext: InterpreterContext,
-                          private val dep: DependencyResolver,
-                          private val out: PrintStream,
-                          private var maxResult: Int)  extends mutable.HashMap[String,Any] {
+class ZeppelinContext(private var defaultMaxResult: Int)  extends mutable.HashMap[String,Any] {
 
   val logger:Logger = LoggerFactory.getLogger(classOf[ZeppelinContext])
 
   private var gui: GUI = null
+  private var interpreterContext: InterpreterContext = null
+  val displayFunctionRegistry = mutable.ArrayBuffer.empty[DisplayFunction]
 
   /**
-   * Load dependency for interpreter and runtime (driver).
-   * And distribute them to spark cluster (sc.add())
-   *
-   * @param artifact "group:artifact:version" or file path like "/somepath/your.jar"
-   * @return
-   * @throws Exception
+   * Register a new display function
+   * @param displayFunction
    */
-  @throws(classOf[Exception])
-  def load(artifact: String): Iterable[String] = {
-    return collectionAsScalaIterable(dep.load(artifact, true))
+  def registerDisplayFunction(displayFunction: DisplayFunction): Unit = {
+    if (logger.isDebugEnabled()) logger.debug(s"Registering display function $displayFunction")
+
+    if (!displayFunctionRegistry.contains(displayFunction)) {
+      displayFunctionRegistry.append(displayFunction)
+    } else {
+      logger.warn(s"Display function $displayFunction is already registered !")
+    }
   }
 
   /**
-   * Load dependency and it's transitive dependencies for interpreter and runtime (driver).
-   * And distribute them to spark cluster (sc.add())
-   *
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
-   * @return
-   * @throws Exception
+   * Display the current object to the standard console output
+   * @param obj current object to display
+   * @return formatted output
    */
-  @throws(classOf[Exception])
-  def load(artifact: String, excludes: Iterable[String]): Iterable[String] = {
-    return collectionAsScalaIterable(dep.load(artifact, asJavaCollection(excludes), true))
+  def display(obj: AnyRef): Unit = {
+    display(obj, DisplayParams(defaultMaxResult, Console.out, interpreterContext, List[String]().asJava))
   }
 
   /**
-   * Load dependency and it's transitive dependencies for interpreter and runtime (driver).
-   * And distribute them to spark cluster (sc.add())
-   *
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
-   * @return
-   * @throws Exception
+   * Display the current object to the standard console output,
+   * restricted to the first 'maxResult' items
+   * @param obj current object to display
+   * @param maxResult max results
+   * @return formatted output
    */
-  @throws(classOf[Exception])
-  def load(artifact: String, excludes: util.Collection[String]): Iterable[String] = {
-    return collectionAsScalaIterable(dep.load(artifact, excludes, true))
+  def display(obj: AnyRef, maxResult: Int): Unit = {
+    display(obj, DisplayParams(maxResult, Console.out, interpreterContext, List[String]().asJava))
   }
 
   /**
-   * Load dependency for interpreter and runtime, and then add to sparkContext.
-   * But not adding them to spark cluster
-   *
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @return
-   * @throws Exception
+   * Display the current object to the standard console output,
+   * with the provided columns label optionally
+   * @param obj current object to display
+   * @param firstColumnLabel first columns label
+   * @param remainingColumnsLabel remaining columns label
+   * @return formatted output
    */
-  @throws(classOf[Exception])
-  def loadLocal(artifact: String): Iterable[String] = {
-    return collectionAsScalaIterable(dep.load(artifact, false))
+  def display(obj: AnyRef, firstColumnLabel: String, remainingColumnsLabel: String*): Unit = {
+    val orElse = Option(remainingColumnsLabel).getOrElse(Seq[String]())
+    val columnsLabel: List[String] = List(firstColumnLabel) ::: orElse.toList
+    display(obj, DisplayParams(defaultMaxResult, Console.out, interpreterContext,columnsLabel.asJava))
   }
 
   /**
-   * Load dependency and it's transitive dependencies and then add to sparkContext.
-   * But not adding them to spark cluster
-   *
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
-   * @return
-   * @throws Exception
+   * Display the current object to the standard console output,
+   * with the provided columns label optionally
+   * @param obj current object to display
+   * @param maxResult max results
+   * @param columnsLabel columns label
+   * @return formatted output
    */
-  @throws(classOf[Exception])
-  def loadLocal(artifact: String, excludes: Iterable[String]): Iterable[String] = {
-    return collectionAsScalaIterable(dep.load(artifact, asJavaCollection(excludes), false))
+  def display(obj: AnyRef, maxResult: Int, columnsLabel: String*): Unit = {
+    val safeList = Option(columnsLabel).getOrElse(Seq[String]())
+    display(obj, DisplayParams(maxResult, Console.out, interpreterContext, safeList.asJava))
   }
 
   /**
-   * Load dependency and it's transitive dependencies and then add to sparkContext.
-   * But not adding them to spark cluster
-   *
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
-   * @return
-   * @throws Exception
+   * Display the current object with display parameters
+   * @param displayParams display parameters
+   * @param obj current object to display
+   * @return formatted output
    */
-  @throws(classOf[Exception])
-  def loadLocal(artifact: String, excludes: util.Collection[String]): Iterable[String] = {
-    return collectionAsScalaIterable(dep.load(artifact, excludes, false))
-  }
+  def display(obj: AnyRef, displayParams: DisplayParams): Unit = {
 
-  /**
-   * Add maven repository
-   *
-   * @param id id of repository ex) oss, local, snapshot
-   * @param url url of repository. supported protocol : file, http, https
-   */
-  def addRepo(id: String, url: String) {
-    addRepo(id, url, false)
-  }
+    if (logger.isDebugEnabled()) logger.debug(s"Attempting to display $obj with params $displayParams")
 
-  /**
-   * Add maven repository
-   *
-   * @param id id of repository
-   * @param url url of repository. supported protocol : file, http, https
-   * @param snapshot true if it is snapshot repository
-   */
-  def addRepo(id: String, url: String, snapshot: Boolean) {
-    dep.addRepo(id, url, snapshot)
-  }
+    require(obj != null, "Cannot display null object")
 
-  /**
-   * Remove maven repository by id
-   * @param id id of repository
-   */
-  def removeRepo(id: String) {
-    dep.delRepo(id)
+    val max = Option(displayParams.maxResult).getOrElse(defaultMaxResult)
+    val columnsLabel = Option(displayParams.columnsLabel).getOrElse(List[String]().asJava)
+    val context = Option(displayParams.context).getOrElse(interpreterContext)
+    val newParams = displayParams.copy(maxResult = max, columnsLabel = columnsLabel, context = context)
+
+    val matchedDisplayedFunctions: ArrayBuffer[DisplayFunction] = displayFunctionRegistry
+      .filter(_.canDisplay(obj))
+
+    if (logger.isDebugEnabled())
+      logger.debug(s"""Matched display function(s) found for $obj: ${matchedDisplayedFunctions.mkString(",")}""")
+
+    val displayFunction: Option[DisplayFunction] = matchedDisplayedFunctions.headOption
+
+    matchedDisplayedFunctions.size match {
+      case 0 => throw new InterpreterException(s"Cannot find any suitable display function for object ${obj.toString}")
+      case 1 => displayFunction.get.display(obj, newParams)
+      case _ => {
+        logger.warn(s"More than one display function found for type ${obj.getClass}. Will use the first one : $displayFunction")
+        displayFunction.get.display(obj, newParams)
+      }
+    }
   }
 
   /**
@@ -265,35 +184,22 @@ class ZeppelinContext(val sc: SparkContext,
     this.gui = o
   }
 
-  def getInterpreterContext: InterpreterContext = interpreterContext
-
-  def setInterpreterContext(interpreterContext: InterpreterContext):Unit = {
-    this.interpreterContext = interpreterContext
-  }
-
   /**
    * Set max result for display
    * @param maxResult max result for display
    */
   def setMaxResult(maxResult: Int):Unit = {
-    this.maxResult = maxResult
+    this.defaultMaxResult = maxResult
   }
 
-  /**
-   * Show SchemaRDD or DataFrame
-   * @param rdd SchemaRDD or DataFrame object
-   */
-  def show(rdd: AnyRef):Unit = {
-    show(rdd, maxResult)
+  def getMaxResult(): Int = {
+    this.defaultMaxResult
   }
 
-  /**
-   * show SchemaRDD or DataFrame
-   * @param rdd SchemaRDD or DataFrame object
-   * @param maxResult maximum number of rows to display
-   */
-  def show(rdd: AnyRef, maxResult: Int) {
-    validateAndShowRDD(rdd, maxResult)
+  def getInterpreterContext: InterpreterContext = interpreterContext
+
+  def setInterpreterContext(interpreterContext: InterpreterContext):Unit = {
+    this.interpreterContext = interpreterContext
   }
 
   /**
@@ -648,135 +554,23 @@ class ZeppelinContext(val sc: SparkContext,
   }
 
   /**
-   * Display rdd as table using default 'spark.max.result' to restrict the results
-   * @param rdd rdd
-   * @param columnsLabel varargs of columns label
-   * @tparam T rdd type (should be either a case class or a tuple)
-   */
-  def display[T<: Product](rdd: RDD[T], columnsLabel: String*):Unit = {
-    new DisplayRDDFunctions[T](rdd).display(columnsLabel: _*)(new SparkMaxResult(this.maxResult))
-  }
-
-  /**
-   * Display rdd as table using the passed maxResult to restrict the results
-   * @param rdd rdd
-   * @param maxResult restrict the rdd to maxResult
-   * @param columnsLabel varargs of columns label
-   * @tparam T rdd type (should be either a case class or a tuple)
-   */
-  def display[T<: Product](rdd: RDD[T], maxResult:Int, columnsLabel: String*):Unit = {
-    new DisplayRDDFunctions[T](rdd).display(columnsLabel: _*)(new SparkMaxResult(maxResult))
-  }
-
-  /**
-   * Display a Scala traversable as table
-   * @param traversable Scala traversable
-   * @param columnsLabel varargs of columns label
-   * @tparam T rdd type (should be either a case class or a tuple)
-   */
-  def display[T<: Product](traversable: Traversable[T], columnsLabel: String*):Unit = {
-    new DisplayTraversableFunctions[T](traversable).display(columnsLabel: _*)
-  }
-
-  /**
    * Display HTML code
    * @param htmlContent unescaped HTML content
    * @return HTML content prefixed by the magic %html
    */
-  def html(htmlContent: String = "") = ZeppelinContext.html(htmlContent)
+  def html(htmlContent: String = ""):String = s"%html $htmlContent"
 
   /**
    * Display image using base 64 content
    * @param base64Content base64 content
    * @return base64Content prefixed by the magic %img
    */
-  def img64(base64Content: String = "") = ZeppelinContext.img64(base64Content)
+  def img64(base64Content: String = "") = s"%img $base64Content"
 
   /**
    * Display image using URL
    * @param url image URL
    * @return a HTML &lt;img&gt; tag with src = base64 content
    */
-  def img(url: String) = ZeppelinContext.img(url)
-
-  private def validateAndShowRDD(rdd: AnyRef, maxResult: Int): Unit = {
-    var cls: Class[_]  = null
-    try {
-      cls = Class.forName("org.apache.spark.sql.DataFrame")
-    } catch {
-      case cnfe: ClassNotFoundException => {}
-      case e:Throwable => throw new InterpreterException(e)
-    }
-
-    if (cls == null) {
-      try {
-        cls = Class.forName("org.apache.spark.sql.SchemaRDD")
-      }catch {
-        case cnfe: ClassNotFoundException => {}
-        case e:Throwable => throw new InterpreterException(e)
-      }
-    }
-
-    if (cls == null) {
-      throw new InterpreterException("Can not road DataFrame/SchemaRDD class")
-    }
-
-    if (cls.isInstance(rdd)) {
-      out.print(ZeppelinContext.showRDD(sc, interpreterContext, rdd, maxResult))
-    } else {
-      out.print(rdd.toString());
-    }
-  }
+  def img(url: String) = s"<img src='$url' />"
 }
-
-trait DisplayCollection[T <: Product] {
-
-  def printFormattedData(traversable: Traversable[T], columnLabels: String*): Unit = {
-    val providedLabelCount: Int = columnLabels.size
-    var maxColumnCount:Int = 1
-    val headers = new StringBuilder("%table ")
-
-    val data = new StringBuilder("")
-
-    traversable.foreach(tuple => {
-      maxColumnCount = math.max(maxColumnCount,tuple.productArity)
-      data.append(tuple.productIterator.mkString("\t")).append("\n")
-    })
-
-    if (providedLabelCount > maxColumnCount) {
-      headers.append(columnLabels.take(maxColumnCount).mkString("\t")).append("\n")
-    } else if (providedLabelCount < maxColumnCount) {
-      val missingColumnHeaders = ((providedLabelCount+1) to maxColumnCount).foldLeft[String](""){
-        (stringAccumulator,index) =>  if (index==1) s"Column$index" else s"$stringAccumulator\tColumn$index"
-      }
-
-      headers.append(columnLabels.mkString("\t")).append(missingColumnHeaders).append("\n")
-    } else {
-      headers.append(columnLabels.mkString("\t")).append("\n")
-    }
-
-    headers.append(data)
-
-    print(headers.toString)
-  }
-}
-
-class DisplayRDDFunctions[T <: Product] (val rdd: RDD[T]) extends DisplayCollection[T] {
-
-  def display(columnLabels: String*)(implicit sparkMaxResult: SparkMaxResult): Unit = {
-    printFormattedData(rdd.take(sparkMaxResult.maxResult), columnLabels: _*)
-  }
-
-  def display(sparkMaxResult:Int, columnLabels: String*): Unit = {
-    printFormattedData(rdd.take(sparkMaxResult), columnLabels: _*)
-  }
-}
-
-class DisplayTraversableFunctions[T <: Product] (val traversable: Traversable[T]) extends DisplayCollection[T] {
-
-  def display(columnLabels: String*): Unit = {
-    printFormattedData(traversable, columnLabels: _*)
-  }
-}
-
-class SparkMaxResult(val maxResult: Int) extends Serializable

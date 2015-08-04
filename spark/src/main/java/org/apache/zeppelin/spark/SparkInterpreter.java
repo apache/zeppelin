@@ -43,6 +43,7 @@ import org.apache.spark.scheduler.Pool;
 import org.apache.spark.scheduler.Stage;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.jobs.JobProgressListener;
+import org.apache.zeppelin.context.ZeppelinContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -335,14 +336,19 @@ public class SparkInterpreter extends Interpreter {
     // https://groups.google.com/forum/#!topic/scala-user/MlVwo2xCCI0
 
     /*
-     * > val env = new nsc.Settings(errLogger) > env.usejavacp.value = true > val p = new
-     * Interpreter(env) > p.setContextClassLoader > Alternatively you can set the class path through
-     * nsc.Settings.classpath.
+     * > val env = new nsc.Settings(errLogger)
+     * > env.usejavacp.value = true
+     * > val p = new Interpreter(env)
+     * > p.setContextClassLoader
+     * > Alternatively you can set the class path through nsc.Settings.classpath.
      *
-     * >> val settings = new Settings() >> settings.usejavacp.value = true >>
-     * settings.classpath.value += File.pathSeparator + >> System.getProperty("java.class.path") >>
-     * val in = new Interpreter(settings) { >> override protected def parentClassLoader =
-     * getClass.getClassLoader >> } >> in.setContextClassLoader()
+     * >> val settings = new Settings()
+     * >> settings.usejavacp.value = true
+     * >> settings.classpath.value += File.pathSeparator + System.getProperty("java.class.path")
+     * >> val in = new Interpreter(settings) {
+     * >>   override protected def parentClassLoader = getClass.getClassLoader
+     * >> }
+     * >> in.setContextClassLoader()
      */
     Settings settings = new Settings();
     if (getProperty("args") != null) {
@@ -433,8 +439,10 @@ public class SparkInterpreter extends Interpreter {
 
     dep = getDependencyResolver();
 
-    z = new ZeppelinContext(sc, sqlc, null, dep, printStream,
-        Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
+    final int defaultSparkMaxResult = Integer.parseInt(getProperty("zeppelin.spark.maxResult"));
+    z = new ZeppelinContext(defaultSparkMaxResult);
+
+    DisplayFunctionsHelper$.MODULE$.registerDisplayFunctions(sc, z);
 
     intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
     binder = (Map<String, Object>) getValue("_binder");
@@ -444,7 +452,7 @@ public class SparkInterpreter extends Interpreter {
     binder.put("out", printStream);
 
     intp.interpret("@transient val z = "
-                 + "_binder.get(\"z\").asInstanceOf[org.apache.zeppelin.spark.ZeppelinContext]");
+                 + "_binder.get(\"z\").asInstanceOf[org.apache.zeppelin.context.ZeppelinContext]");
     intp.interpret("@transient val sc = "
                  + "_binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
     intp.interpret("@transient val sqlc = "
@@ -466,25 +474,6 @@ public class SparkInterpreter extends Interpreter {
       intp.interpret("import sqlContext.sql");
       intp.interpret("import org.apache.spark.sql.functions._");
     }
-
-    intp.interpret("import org.apache.zeppelin.spark.ZeppelinContext._");
-    intp.interpret("import org.apache.zeppelin.spark.SparkMaxResult");
-    intp.interpret("object MaxResult { " +
-            "implicit val sparkMaxResult = new SparkMaxResult(" +
-            Integer.parseInt(getProperty("zeppelin.spark.maxResult")) +
-            ")}");
-    intp.interpret("import MaxResult._");
-
-    /* Temporary disabling DisplayUtils. see https://issues.apache.org/jira/browse/ZEPPELIN-127
-     *
-    // Utility functions for display
-    intp.interpret("import org.apache.zeppelin.spark.utils.DisplayUtils._");
-
-    // Scala implicit value for spark.maxResult
-    intp.interpret("import org.apache.zeppelin.spark.utils.SparkMaxResult");
-    intp.interpret("implicit val sparkMaxResult = new SparkMaxResult(" +
-            Integer.parseInt(getProperty("zeppelin.spark.maxResult")) + ")");
-     */
 
     try {
       if (sc.version().startsWith("1.1") || sc.version().startsWith("1.2")) {
