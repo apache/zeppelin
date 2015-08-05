@@ -112,7 +112,11 @@ public abstract class AbstractTestRestApi {
         InterpreterSetting sparkIntpSetting = ZeppelinServer.notebook.getInterpreterFactory().get().get(0);
 
         // set spark master
-        sparkIntpSetting.getProperties().setProperty("master", "spark://" + getHostname() + ":7071");
+        if ("true".equals(System.getenv("YARN"))) {
+          sparkIntpSetting.getProperties().setProperty("master", "yarn-client");
+        } else {
+          sparkIntpSetting.getProperties().setProperty("master", "spark://" + getHostname() + ":7071");
+        }
 
         // set spark home for pyspark
         sparkIntpSetting.getProperties().setProperty("spark.home", getSparkHome());
@@ -122,6 +126,13 @@ public abstract class AbstractTestRestApi {
       } else {
         // assume first one is spark
         InterpreterSetting sparkIntpSetting = ZeppelinServer.notebook.getInterpreterFactory().get().get(0);
+
+        // set spark master
+        if ("true".equals(System.getenv("YARN"))) {
+          sparkIntpSetting.getProperties().setProperty("master", "yarn-client");
+        } else {
+          sparkIntpSetting.getProperties().setProperty("master", "spark://" + getHostname() + ":7071");
+        }
 
         String sparkHome = getSparkHome();
         if (sparkHome != null) {
@@ -145,9 +156,13 @@ public abstract class AbstractTestRestApi {
   }
 
   private static String getSparkHome() {
-    String sparkHome = getSparkHomeRecursively(new File(System.getProperty("user.dir")));
-    System.out.println("SPARK HOME detected " + sparkHome);
-    return sparkHome;
+    if (System.getenv("SPARK_HOME") != null) {
+      return new File(System.getenv("SPARK_HOME")).getAbsolutePath();
+    } else { // autodetect spark.home that ./testing/startSparkCluster.sh creates 
+      String sparkHome = getSparkHomeRecursively(new File(System.getProperty("user.dir")));
+      System.out.println("SPARK HOME detected " + sparkHome);
+      return sparkHome;
+    }
   }
 
   boolean isPyspark() {
