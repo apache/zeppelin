@@ -108,6 +108,9 @@ public class PostgreSqlInterpreter extends Interpreter {
 
     logger.info("Open psql connection!");
 
+    // Ensure that no previous connections are left open.
+    close();
+
     try {
 
       String driverName = getProperty(POSTGRESQL_SERVER_DRIVER_NAME);

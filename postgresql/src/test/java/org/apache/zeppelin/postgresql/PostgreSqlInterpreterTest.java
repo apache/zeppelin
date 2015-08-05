@@ -15,11 +15,12 @@
 package org.apache.zeppelin.postgresql;
 
 import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.*;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 import java.sql.SQLException;
 import java.util.Properties;
@@ -27,6 +28,8 @@ import java.util.Properties;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
 import com.mockrunner.jdbc.StatementResultSetHandler;
@@ -49,10 +52,27 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
     result = statementHandler.createResultSet();
     statementHandler.prepareGlobalResultSet(result);
 
-    psqlInterpreter = spy(new PostgreSqlInterpreter(new Properties()));
+    Properties properties = new Properties();
+    properties.put(POSTGRESQL_SERVER_DRIVER_NAME, DEFAULT_JDBC_DRIVER_NAME);
+    properties.put(POSTGRESQL_SERVER_URL, DEFAULT_JDBC_URL);
+    properties.put(POSTGRESQL_SERVER_USER, DEFAULT_JDBC_USER_NAME);
+    properties.put(POSTGRESQL_SERVER_PASSWORD, DEFAULT_JDBC_USER_PASSWORD);
+    properties.put(POSTGRESQL_SERVER_MAX_RESULT, DEFAULT_MAX_RESULT);
+
+    psqlInterpreter = spy(new PostgreSqlInterpreter(properties));
     when(psqlInterpreter.getJdbcConnection()).thenReturn(connection);
   }
 
+  @Test
+  public void testOpenCommandIndempotency() throws SQLException {
+    // Ensure that an attempt to open new connection will clean any remaining connections
+    psqlInterpreter.open();
+    psqlInterpreter.open();
+    psqlInterpreter.open();
+
+    verify(psqlInterpreter, times(3)).open();
+    verify(psqlInterpreter, times(3)).close();
+  }
 
   @Test
   public void testDefaultProperties() throws SQLException {
