@@ -31,25 +31,24 @@ script:
 # spark 1.4
   - mvn package -Pbuild-distr -Pyarn -Phadoop-2.4 -Ppyspark -B
   - ./testing/startSparkCluster.sh 1.4.1 2.4
-  - SPARK_HOME=$TRAVIS_BUILD_DIR/spark-1.4.1-bin-hadoop2.5 mvn verify -Pusing-packaged-distr -Pyarn -Phadoop-2.4 -B
+  - SPARK_HOME=`pwd`/spark-1.4.1-bin-hadoop2.5 mvn verify -Pusing-packaged-distr -Pyarn -Phadoop-2.4 -B
   - ./testing/stopSparkCluster.sh 1.4.1 2.4
-  - SPARK_HOME=$TRAVIS_BUILD_DIR/spark-1.4.1-bin-hadoop2.5 HADOOP_CONF_DIR=./hadoop-2.5.2/etc/hadoop YARN=true mvn verify -Pusing-packaged-distr -Pyarn -Phadoop-2.4 -B  
-
+  - SPARK_HOME=`pwd`/spark-1.4.1-bin-hadoop2.5 HADOOP_CONF_DIR=./hadoop-2.5.2/etc/hadoop YARN=true mvn verify -Pusing-packaged-distr -Pyarn -Phadoop-2.4 -B  
 
  # spark 1.3
   - mvn clean package -DskipTests -Pspark-1.3 -Phadoop-2.4 -B -pl 'zeppelin-interpreter,spark'
   - ./testing/startSparkCluster.sh 1.3.1 2.4
-  - SPARK_HOME=./spark-1.3.1-bin-hadoop2.4 mvn verify -B -pl 'zeppelin-interpreter,zeppelin-zengine,zeppelin-server'
+  - SPARK_HOME=`pwd`/spark-1.3.1-bin-hadoop2.4 mvn verify -B -pl 'zeppelin-interpreter,zeppelin-zengine,zeppelin-server'
   - ./testing/stopSparkCluster.sh 1.3.1 2.4
 # spark 1.2
   - mvn clean package -DskipTests -Pspark-1.2 -Phadoop-2.4 -B -pl 'zeppelin-interpreter,spark'
   - ./testing/startSparkCluster.sh 1.2.1 2.4
-  - SPARK_HOME=./spark-1.2.1-bin-hadoop2.4 mvn verify -B -pl 'zeppelin-interpreter,zeppelin-zengine,zeppelin-server'
+  - SPARK_HOME=`pwd`/spark-1.2.1-bin-hadoop2.4 mvn verify -B -pl 'zeppelin-interpreter,zeppelin-zengine,zeppelin-server'
   - ./testing/stopSparkCluster.sh 1.2.1 2.4
 # spark 1.1
   - mvn clean package -DskipTests -Pspark-1.1 -Phadoop-2.4 -B -pl 'zeppelin-interpreter,spark'
   - ./testing/startSparkCluster.sh 1.1.1 2.4
-  - SPARK_HOME=./spark-1.1.1-bin-hadoop2.4 mvn verify -B -pl 'zeppelin-interpreter,zeppelin-zengine,zeppelin-server'
+  - SPARK_HOME=`pwd`/spark-1.1.1-bin-hadoop2.4 mvn verify -B -pl 'zeppelin-interpreter,zeppelin-zengine,zeppelin-server'
   - ./testing/stopSparkCluster.sh 1.1.1 2.4
 
 after_failure:
