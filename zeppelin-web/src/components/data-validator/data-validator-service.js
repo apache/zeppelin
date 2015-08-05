@@ -17,32 +17,34 @@ angular.module('zeppelinWebApp').service('dataValidatorSrv', function($rootScope
 
   this.validateMapData = function(data) {
     var mapValidator = mapdataValidator;
-    mapValidator.data = data;
-    mapValidator.checkData();
+    doBasicCheck(mapValidator,data);
     mapValidator.checkLatiLong();
     return buildMsg(mapValidator);
   };
 
     this.validateChartData = function(data) {
     var chartValidator = chartdataValidator;
-    chartValidator.data = data;
-    chartValidator.checkData();
+    doBasicCheck(chartValidator,data);
     return buildMsg(chartValidator);
   };
 
     this.validateScatterData = function(data) {
-    var chartValidator = scatterdataValidator;
-    chartValidator.data = data;
-    chartValidator.checkData();
-    return buildMsg(chartValidator);
+    var scatterChartValidator = scatterdataValidator;
+    doBasicCheck(scatterChartValidator,data);
+    return buildMsg(scatterChartValidator);
   };
 
-  function buildMsg(validator){
+  function buildMsg(validator) {
     var msg = {
       'error': validator.error(),
       'msg': validator.getMsg()
     };
     return msg;
+  }
+
+  function doBasicCheck(validator,data) {
+    validator.data = data;
+    validator.checkData();
   }
 
 });
