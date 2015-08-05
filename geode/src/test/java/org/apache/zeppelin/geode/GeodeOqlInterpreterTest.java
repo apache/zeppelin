@@ -46,34 +46,42 @@ public class GeodeOqlInterpreterTest {
 
   private static final String OQL_QUERY = "select * from /region";
 
+  private static Iterator<Object> asIterator(Object... items) {
+    return new ArrayList<Object>(Arrays.asList(items)).iterator();
+  }
+
   @Test
   public void oqlNumberResponse() throws Exception {
-    testOql(new ArrayList<Object>(Arrays.asList(66, 67)).iterator(), "Result\n66\n67\n");
+    testOql(asIterator(66, 67), "Result\n66\n67\n", 10);
+    testOql(asIterator(66, 67), "Result\n66\n", 1);
   }
 
   @Test
   public void oqlStructResponse() throws Exception {
     String[] fields = new String[] {"field1", "field2"};
-    Struct struct = new StructImpl(new StructTypeImpl(fields), new String[] {"val1", "val2"});
+    Struct s1 = new StructImpl(new StructTypeImpl(fields), new String[] {"val11", "val12"});
+    Struct s2 = new StructImpl(new StructTypeImpl(fields), new String[] {"val21", "val22"});
 
-    testOql(new ArrayList<Object>(Arrays.asList(struct)).iterator(),
-        "field1\tfield2\t\nval1\tval2\t\n");
+    testOql(asIterator(s1, s2), "field1\tfield2\t\nval11\tval12\t\nval21\tval22\t\n", 10);
+    testOql(asIterator(s1, s2), "field1\tfield2\t\nval11\tval12\t\n", 1);
   }
-  
+
   @Test
   public void oqlStructResponseWithReservedCharacters() throws Exception {
     String[] fields = new String[] {"fi\teld1", "f\nield2"};
-    Struct struct = new StructImpl(new StructTypeImpl(fields), new String[] {"v\nal\t1", "val2"});
+    Struct s1 = new StructImpl(new StructTypeImpl(fields), new String[] {"v\nal\t1", "val2"});
 
-    testOql(new ArrayList<Object>(Arrays.asList(struct)).iterator(),
-        "fi eld1\tf ield2\t\nv al 1\tval2\t\n");
+    testOql(asIterator(s1), "fi eld1\tf ield2\t\nv al 1\tval2\t\n", 10);
   }
 
   @Test
   public void oqlPdxInstanceResponse() throws Exception {
     ByteArrayInputStream bais = new ByteArrayInputStream("koza\tboza\n".getBytes());
-    PdxInstance pdxInstance = new PdxInstanceImpl(new PdxType(), new DataInputStream(bais), 4);
-    testOql(new ArrayList<Object>(Arrays.asList(pdxInstance)).iterator(), "\n\n");
+    PdxInstance pdx1 = new PdxInstanceImpl(new PdxType(), new DataInputStream(bais), 4);
+    PdxInstance pdx2 = new PdxInstanceImpl(new PdxType(), new DataInputStream(bais), 4);
+
+    testOql(asIterator(pdx1, pdx2), "\n\n\n", 10);
+    testOql(asIterator(pdx1, pdx2), "\n\n", 1);
   }
 
   private static class DummyUnspportedType {
@@ -87,11 +95,12 @@ public class GeodeOqlInterpreterTest {
   public void oqlUnsupportedTypeResponse() throws Exception {
     DummyUnspportedType unspported1 = new DummyUnspportedType();
     DummyUnspportedType unspported2 = new DummyUnspportedType();
-    testOql(new ArrayList<Object>(Arrays.asList(unspported1, unspported2)).iterator(),
-        "Unsuppoted Type\n" + unspported1.toString() + "\n" + unspported1.toString() + "\n");
+
+    testOql(asIterator(unspported1, unspported2), "Unsuppoted Type\n" + unspported1.toString()
+        + "\n" + unspported1.toString() + "\n", 10);
   }
 
-  private void testOql(Iterator<Object> queryResponseIterator, String expectedOutput)
+  private void testOql(Iterator<Object> queryResponseIterator, String expectedOutput, int maxResult)
       throws Exception {
 
     GeodeOqlInterpreter spyGeodeOqlInterpreter = spy(new GeodeOqlInterpreter(new Properties()));
@@ -99,6 +108,7 @@ public class GeodeOqlInterpreterTest {
     QueryService mockQueryService = mock(QueryService.class, RETURNS_DEEP_STUBS);
 
     when(spyGeodeOqlInterpreter.getQueryService()).thenReturn(mockQueryService);
+    when(spyGeodeOqlInterpreter.getMaxResult()).thenReturn(maxResult);
 
     @SuppressWarnings("unchecked")
     SelectResults<Object> mockResults = mock(SelectResults.class);
@@ -132,8 +142,8 @@ public class GeodeOqlInterpreterTest {
 
     GeodeOqlInterpreter spyGeodeOqlInterpreter = spy(new GeodeOqlInterpreter(new Properties()));
 
-    when(spyGeodeOqlInterpreter.getQueryService())
-        .thenThrow(new RuntimeException("Expected Test Exception!"));
+    when(spyGeodeOqlInterpreter.getQueryService()).thenThrow(
+        new RuntimeException("Expected Test Exception!"));
 
     InterpreterResult interpreterResult = spyGeodeOqlInterpreter.interpret(OQL_QUERY, null);
 

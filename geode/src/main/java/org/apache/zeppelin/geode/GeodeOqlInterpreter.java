@@ -42,6 +42,7 @@ import com.gemstone.gemfire.pdx.PdxInstance;
  * <ul>
  * <li>{@code geode.locator.host} - The Geode Locator {@code <HOST>} to connect to.</li>
  * <li>{@code geode.locator.port} - The Geode Locator {@code <PORT>} to connect to.</li>
+ * <li>{@code geode.max.result} - Max number of OQL result to display.</li>
  * </ul>
  * <p>
  * Sample usages: <br/>
@@ -87,6 +88,7 @@ public class GeodeOqlInterpreter extends Interpreter {
 
   private static final String DEFAULT_PORT = "10334";
   private static final String DEFAULT_HOST = "localhost";
+  private static final String DEFAULT_MAX_RESULT = "1000";
 
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
@@ -96,16 +98,22 @@ public class GeodeOqlInterpreter extends Interpreter {
 
   public static final String LOCATOR_HOST = "geode.locator.host";
   public static final String LOCATOR_PORT = "geode.locator.port";
+  public static final String MAX_RESULT = "geode.max.result";
 
   static {
-    Interpreter.register("oql", "geode", GeodeOqlInterpreter.class.getName(),
+    Interpreter.register(
+        "oql",
+        "geode",
+        GeodeOqlInterpreter.class.getName(),
         new InterpreterPropertyBuilder().add(LOCATOR_HOST, DEFAULT_HOST, "The Geode Locator Host.")
-            .add(LOCATOR_PORT, DEFAULT_PORT, "The Geode Locator Port").build());
+            .add(LOCATOR_PORT, DEFAULT_PORT, "The Geode Locator Port")
+            .add(MAX_RESULT, DEFAULT_MAX_RESULT, "Max number of OQL result to display.").build());
   }
 
   private ClientCache clientCache = null;
   private QueryService queryService = null;
   private Exception exceptionOnConnect;
+  private int maxResult;
 
   public GeodeOqlInterpreter(Properties property) {
     super(property);
@@ -125,9 +133,13 @@ public class GeodeOqlInterpreter extends Interpreter {
   @Override
   public void open() {
     logger.info("Geode open connection called!");
+
     try {
+      maxResult = Integer.valueOf(getProperty(MAX_RESULT));
+
       clientCache = getClientCache();
       queryService = clientCache.getQueryService();
+
       exceptionOnConnect = null;
       logger.info("Successfully created Geode connection");
     } catch (Exception e) {
@@ -171,9 +183,12 @@ public class GeodeOqlInterpreter extends Interpreter {
       boolean isTableHeaderSet = false;
 
       Iterator<Object> iterator = results.iterator();
-      while (iterator.hasNext()) {
+      int rowDisplayCount = 0;
+
+      while (iterator.hasNext() && (rowDisplayCount < getMaxResult())) {
 
         Object entry = iterator.next();
+        rowDisplayCount++;
 
         if (entry instanceof Number) {
           handleNumberEntry(isTableHeaderSet, entry, msg);
@@ -284,6 +299,10 @@ public class GeodeOqlInterpreter extends Interpreter {
   @Override
   public List<String> completion(String buf, int cursor) {
     return null;
+  }
+
+  public int getMaxResult() {
+    return maxResult;
   }
 
   // Test only
