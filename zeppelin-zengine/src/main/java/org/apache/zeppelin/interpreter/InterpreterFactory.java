@@ -526,20 +526,18 @@ public class InterpreterFactory {
 
   public void restart(String id) {
     synchronized (interpreterSettings) {
-      synchronized (interpreterSettings) {
-        InterpreterSetting intpsetting = interpreterSettings.get(id);
-        if (intpsetting != null) {
-          intpsetting.getInterpreterGroup().close();
-          intpsetting.getInterpreterGroup().destroy();
+      InterpreterSetting intpsetting = interpreterSettings.get(id);
+      if (intpsetting != null) {
+        intpsetting.getInterpreterGroup().close();
+        intpsetting.getInterpreterGroup().destroy();
 
-          InterpreterGroup interpreterGroup = createInterpreterGroup(
-              intpsetting.id(),
-              intpsetting.getGroup(), intpsetting.getOption(), intpsetting.getProperties());
-          intpsetting.setInterpreterGroup(interpreterGroup);
-        } else {
-          throw new InterpreterException("Interpreter setting id " + id
-              + " not found");
-        }
+        InterpreterGroup interpreterGroup = createInterpreterGroup(
+            intpsetting.id(),
+            intpsetting.getGroup(), intpsetting.getOption(), intpsetting.getProperties());
+        intpsetting.setInterpreterGroup(interpreterGroup);
+      } else {
+        throw new InterpreterException("Interpreter setting id " + id
+            + " not found");
       }
     }
   }

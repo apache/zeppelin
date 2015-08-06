@@ -187,7 +187,6 @@ public abstract class AbstractTestRestApi {
   protected static void shutDown() throws Exception {
     if (!wasRunning) {
       LOG.info("Terminating test Zeppelin...");
-      ZeppelinServer.notebookServer.stop();
       ZeppelinServer.jettyServer.stop();
       executor.shutdown();
 
