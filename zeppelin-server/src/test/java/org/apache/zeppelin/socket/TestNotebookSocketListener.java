@@ -2,6 +2,7 @@ package org.apache.zeppelin.socket;
 
 /**
  * Created by joelz on 8/6/15.
+ * This enables mocking a socket listener.
  */
 public class TestNotebookSocketListener implements NotebookSocketListener {
     @Override

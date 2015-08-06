@@ -13,6 +13,7 @@ import java.util.Map;
 
 /**
  * Created by joelz on 8/6/15.
+ * Helps mocking a http servlet request
  */
 public class TestHttpServletRequest implements HttpServletRequest {
     @Override
