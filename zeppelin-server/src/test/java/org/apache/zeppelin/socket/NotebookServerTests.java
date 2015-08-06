@@ -19,7 +19,7 @@
  */
 package org.apache.zeppelin.socket;
 
-        import org.junit.Assert;
+import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -32,7 +32,7 @@ import org.junit.runners.MethodSorters;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-        public class NotebookServerTest {
+        public class NotebookServerTests {
 
     @Test
     public void CheckOrigin(){
@@ -44,6 +44,18 @@ import org.junit.runners.MethodSorters;
         Assert.assertTrue(server.checkOrigin(new TestHttpServletRequest(), "http://localhost:8080"));
         server.onClose(socket, 0, "Shutdown");
         Assert.assertFalse(server.checkOrigin(new TestHttpServletRequest(), "http://localhost:8080"));
+        Assert.assertEquals(0, server.seenOrigins.size());
+    }
+
+    @Test
+    public void CheckInvalidOrigin(){
+        NotebookServer server = new NotebookServer();
+        NotebookSocket socket = new NotebookSocket(new TestHttpServletRequest(), "http", new TestNotebookSocketListener());
+        server.onOpen(socket);
+        Assert.assertEquals(1, server.seenOrigins.size());
+        server.doWebSocketConnect(new TestHttpServletRequest(), "http");
+        Assert.assertFalse(server.checkOrigin(new TestHttpServletRequest(), "http://evillocalhost:8080"));
+        server.onClose(socket, 0, "Shutdown");
         Assert.assertEquals(0, server.seenOrigins.size());
     }
 }

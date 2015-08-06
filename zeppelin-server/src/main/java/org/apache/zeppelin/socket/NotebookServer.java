@@ -16,8 +16,12 @@
  */
 package org.apache.zeppelin.socket;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
