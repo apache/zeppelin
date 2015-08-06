@@ -91,6 +91,7 @@
     <module>angular</module>
     <module>shell</module>
     <module>hive</module>
+    <module>geode</module>
     <module>tajo</module>
     <module>flink</module>
     <module>ignite</module>
