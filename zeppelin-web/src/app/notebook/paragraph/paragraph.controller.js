@@ -415,11 +415,6 @@ angular.module('zeppelinWebApp')
         // not applying emacs key binding while the binding override Ctrl-v. default behavior of paste text on windows.
       }
 
-      $scope.editor.setOptions({
-        enableBasicAutocompletion: true,
-        enableSnippets: false,
-        enableLiveAutocompletion:false
-      });
       var remoteCompleter = {
           getCompletions : function(editor, session, pos, prefix, callback) {
               if (!$scope.editor.isFocused() ){ return;}
@@ -445,8 +440,14 @@ angular.module('zeppelinWebApp')
               });
           }
       };
-      langTools.addCompleter(remoteCompleter);
+      
+      langTools.setCompleters([remoteCompleter]);
 
+      $scope.editor.setOptions({
+          enableBasicAutocompletion: true,
+          enableSnippets: false,
+          enableLiveAutocompletion:false
+      });
 
       $scope.handleFocus = function(value) {
         $scope.paragraphFocused = value;
