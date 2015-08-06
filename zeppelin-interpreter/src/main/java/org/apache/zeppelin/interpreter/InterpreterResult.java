@@ -94,7 +94,7 @@ public class InterpreterResult implements Serializable {
     if (typesLastIndexInMsg.size() == 0) {
       return msg;
     } else {
-      Map.Entry<Integer, Type> lastType = typesLastIndexInMsg.lastEntry();
+      Map.Entry<Integer, Type> lastType = typesLastIndexInMsg.firstEntry();
       //add 1 for the % char
       int magicLength = lastType.getValue().name().length() + 1;
       // 1 for the last \n or space after magic
@@ -112,17 +112,17 @@ public class InterpreterResult implements Serializable {
     if (typesLastIndexInMsg.size() == 0) {
       return Type.TEXT;
     } else {
-      Map.Entry<Integer, Type> lastType = typesLastIndexInMsg.lastEntry();
+      Map.Entry<Integer, Type> lastType = typesLastIndexInMsg.firstEntry();
       return lastType.getValue();
     }
   }
   
-  private int getLastIndexOfType(String msg, Type t) {
+  private int getIndexOfType(String msg, Type t) {
     if (msg == null) {
       return 0;
     }
     String typeString = "%" + t.name().toLowerCase();
-    return StringUtils.lastIndexOf(msg, typeString );
+    return StringUtils.indexOf(msg, typeString );
   }
   
   private TreeMap<Integer, Type> buildIndexMap(String msg) {
@@ -130,7 +130,7 @@ public class InterpreterResult implements Serializable {
     TreeMap<Integer, Type> typesLastIndexInMsg = new TreeMap<Integer, Type>();
     Type[] types = Type.values();
     for (Type t : types) {
-      lastIndexOftypes = getLastIndexOfType(msg, t);
+      lastIndexOftypes = getIndexOfType(msg, t);
       if (lastIndexOftypes >= 0) {
         typesLastIndexInMsg.put(lastIndexOftypes, t);
       }
