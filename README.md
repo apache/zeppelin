@@ -116,7 +116,7 @@ Yarn
 ### Run
     ./bin/zeppelin-daemon.sh start
 
-    browse localhost:8080 in your browser. 8081 port should be accessible for websocket connection.
+    browse localhost:8080 in your browser.
 
 
 For configuration details check __./conf__ subdirectory.
