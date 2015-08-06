@@ -22,7 +22,8 @@ angular.module('zeppelinWebApp')
   $scope.paragraph = null;
   $scope.editor = null;
 
-  var editorMode = {scala: 'ace/mode/scala', sql: 'ace/mode/sql', markdown: 'ace/mode/markdown'};
+  var editorMode = {scala: 'ace/mode/scala', sql: 'ace/mode/sql', markdown: 'ace/mode/markdown', 
+		  sh: 'ace/mode/sh'};
 
   // Controller init
   $scope.init = function(newParagraph) {
@@ -434,6 +435,7 @@ angular.module('zeppelinWebApp')
       $scope.editor.setHighlightActiveLine(false);
       $scope.editor.setHighlightGutterLine(false);
       $scope.editor.setTheme('ace/theme/github');
+      $scope.editor.setTheme('ace/theme/chrome');
       $scope.editor.focus();
       var hight = $scope.editor.getSession().getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
       setEditorHeight(_editor.container.id, hight);
@@ -450,13 +452,15 @@ angular.module('zeppelinWebApp')
       var sqlModeTest = /^%(\w*\.)?\wql/;
 
       $scope.setParagraphMode = function(session, paragraphText) {
-    	  if (sqlModeTest.test(String(paragraphText))) {
-        	  session.setMode(editorMode.sql);
-          } else if ( String(paragraphText).startsWith('%md')) {
-        	  session.setMode(editorMode.markdown);
-          } else {
-        	  session.setMode(editorMode.scala);
-          }
+        if (sqlModeTest.test(String(paragraphText))) {
+          session.setMode(editorMode.sql);
+        } else if ( String(paragraphText).startsWith('%md')) {
+          session.setMode(editorMode.markdown);
+        } else if ( String(paragraphText).startsWith('%sh')) {
+          session.setMode(editorMode.sh);
+        } else {
+          session.setMode(editorMode.scala);
+        }
       };
 
       var remoteCompleter = {
