@@ -472,8 +472,9 @@ angular.module('zeppelinWebApp')
         $scope.editor.resize();
       });
 
+      var sqlModeTest = /^%(\w*\.)?\wql/;
       var code = $scope.editor.getSession().getValue();
-      if ( String(code).startsWith('%sql')) {
+      if (sqlModeTest.test(String(code))) {
         $scope.editor.getSession().setMode(editorMode.sql);
       } else if ( String(code).startsWith('%md')) {
         $scope.editor.getSession().setMode(editorMode.markdown);
