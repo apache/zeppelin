@@ -14,12 +14,16 @@
  */
 package org.apache.zeppelin.geode;
 
+import static org.apache.zeppelin.geode.GeodeOqlInterpreter.*;
+
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -48,6 +52,25 @@ public class GeodeOqlInterpreterTest {
 
   private static Iterator<Object> asIterator(Object... items) {
     return new ArrayList<Object>(Arrays.asList(items)).iterator();
+  }
+
+  @Test
+  public void testOpenCommandIndempotency() {
+
+    Properties properties = new Properties();
+    properties.put(LOCATOR_HOST, DEFAULT_HOST);
+    properties.put(LOCATOR_PORT, DEFAULT_PORT);
+    properties.put(MAX_RESULT, DEFAULT_MAX_RESULT);
+
+    GeodeOqlInterpreter spyGeodeOqlInterpreter = spy(new GeodeOqlInterpreter(properties));
+
+    // Ensure that an attempt to open new connection will clean any remaining connections
+    spyGeodeOqlInterpreter.open();
+    spyGeodeOqlInterpreter.open();
+    spyGeodeOqlInterpreter.open();
+
+    verify(spyGeodeOqlInterpreter, times(3)).open();
+    verify(spyGeodeOqlInterpreter, times(3)).close();
   }
 
   @Test

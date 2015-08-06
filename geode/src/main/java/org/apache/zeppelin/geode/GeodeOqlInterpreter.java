@@ -86,9 +86,9 @@ public class GeodeOqlInterpreter extends Interpreter {
 
   private Logger logger = LoggerFactory.getLogger(GeodeOqlInterpreter.class);
 
-  private static final String DEFAULT_PORT = "10334";
-  private static final String DEFAULT_HOST = "localhost";
-  private static final String DEFAULT_MAX_RESULT = "1000";
+  public static final String DEFAULT_PORT = "10334";
+  public static final String DEFAULT_HOST = "localhost";
+  public static final String DEFAULT_MAX_RESULT = "1000";
 
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
@@ -133,6 +133,9 @@ public class GeodeOqlInterpreter extends Interpreter {
   @Override
   public void open() {
     logger.info("Geode open connection called!");
+
+    // Close the previous open connections.
+    close();
 
     try {
       maxResult = Integer.valueOf(getProperty(MAX_RESULT));
