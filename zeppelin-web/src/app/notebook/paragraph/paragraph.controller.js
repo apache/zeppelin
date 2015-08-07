@@ -20,8 +20,7 @@ angular.module('zeppelinWebApp')
                                          $timeout, $compile, websocketMsgSrv) {
 
   $scope.paragraph = null;
-  $scope.editor = null;
-  $scope.paragraphSaveTimer = undefined;
+  $scope.editor = null;  
 
   var editorMode = {scala: 'ace/mode/scala', sql: 'ace/mode/sql', markdown: 'ace/mode/markdown'};
 
@@ -398,24 +397,11 @@ angular.module('zeppelinWebApp')
     }
 
     $scope.paragraph.settings.params[formulaire.name] = value;
-  };
-
-  $scope.killSaveTimer = function(){
-    if($scope.paragraphSaveTimer){
-      console.log('timer killed ' + $scope.paragraphSaveTimer);
-      $timeout.cancel($scope.paragraphSaveTimer);
-      $scope.paragraphSaveTimer = undefined;
-    }
-  };
+  };  
 
   $scope.aceChanged = function() {
     $scope.dirtyText = $scope.editor.getSession().getValue();
-
-    $scope.killSaveTimer();
-    $scope.paragraphSaveTimer = $timeout(function(){
-      $scope.saveParagraph();
-      //console.log('hit save timer' );
-    }, 10000);
+    $scope.startSaveTimer();    
   };
 
   $scope.aceLoaded = function(_editor) {

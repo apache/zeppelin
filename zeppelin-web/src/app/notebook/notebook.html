@@ -27,6 +27,15 @@ limitations under the License.
               <i class="icon-control-play"></i>
             </button>
 
+            <!--ng-if="isNoteDirty()"-->
+            <button type="button"
+                    class="btn btn-default btn-xs"
+                    ng-click="saveNote()"
+                    ng-show="isNoteDirty"
+                    tooltip-placement="top" tooltip="Save note">
+              <i class="fa fa-floppy-o"></i>
+            </button>
+
             <button type="button"
                     class="btn btn-default btn-xs"
                     ng-click="toggleAllEditor()"
