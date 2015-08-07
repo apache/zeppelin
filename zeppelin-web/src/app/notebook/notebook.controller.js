@@ -71,7 +71,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.runNote = function() {
     var result = confirm('Run all paragraphs?');
     if (result) {
-      $scope.$broadcast('runParagraph');
+      _.forEach($scope.note.paragraphs, function(n, key) {
+        angular.element('#' + n.id + '_paragraphColumn_main').scope().runParagraph(n.text);
+      });
     }
   };
 

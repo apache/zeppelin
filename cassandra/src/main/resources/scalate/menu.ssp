@@ -1,0 +1,94 @@
+<%--
+/*
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+--%>
+<%@ val statement: String %>
+<%@ val dropDownMenu: String = "" %>
+<br/>
+<br/>
+<nav class="navbar navbar-default">
+    <ul class="nav navbar-nav">
+        ${unescape(dropDownMenu)}
+        <li>
+            <a><strong>${statement}</strong></a>
+        </li>
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                <strong>Legend</strong>
+                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-dashboard text-muted" />&nbsp;Cluster
+                    </a>
+                </li>
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-folder-open text-danger" />&nbsp;&nbsp;Keyspace
+                    </a>
+                </li>
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-copyright-mark text-warning" />&nbsp;&nbsp;UDT
+                    </a>
+                </li>
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-th-list text-primary" />&nbsp;&nbsp;Table
+                    </a>
+                </li>
+                <li class="bg-info">
+                    <a role="button">
+                        <i class="glyphicon glyphicon-fullscreen" />&nbsp;&nbsp;Partition Key
+                    </a>
+                </li>
+                <li class="bg-warning">
+                    <a role="button">
+                        <i class="glyphicon glyphicon-pushpin" />&nbsp;&nbsp;Static Column
+                    </a>
+                </li>
+                <li class="bg-success">
+                    <a role="button">
+                        <i class="glyphicon glyphicon-sort" />&nbsp;&nbsp;Clustering Column
+                    </a>
+                </li>
+                <li class="bg-success">
+                    <a role="button">
+                        <i class="glyphicon glyphicon-sort-by-attributes" />&nbsp;&nbsp;Clustering Order ASC
+                    </a>
+                </li>
+                <li class="bg-success">
+                    <a role="button">
+                        <i class="glyphicon glyphicon-sort-by-attributes-alt" />&nbsp;&nbsp;Clustering Order DESC
+                    </a>
+                </li>
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-info-sign" />&nbsp;&nbsp;Indexed Column
+                    </a>
+                </li>
+            </ul>
+        </li>
+        <li>
+            <a href="#"></a>
+        </li>
+    </ul>
+</nav>
+<hr/>
