@@ -424,11 +424,11 @@ angular.module('zeppelinWebApp')
           getCompletions : function(editor, session, pos, prefix, callback) {
               if (!$scope.editor.isFocused() ){ return;}
 
-              var pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
+              pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
               var buf = session.getValue();
-              
+
               websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
-              
+
               $scope.$on('completionList', function(event, data) {
                   if (data.completions) {
                       var completions = [];
@@ -785,12 +785,14 @@ angular.module('zeppelinWebApp')
     }
 
     var d3g = [];
+    var xLabels;
+    var yLabels;
 
     if (type === 'scatterChart') {
       var scatterData = setScatterChart(data, refresh);
 
-      var xLabels = scatterData.xLabels;
-      var yLabels = scatterData.yLabels;
+      xLabels = scatterData.xLabels;
+      yLabels = scatterData.yLabels;
       d3g = scatterData.d3g;
 
       $scope.chart[type].xAxis.tickFormat(function(d) {
@@ -846,7 +848,7 @@ angular.module('zeppelinWebApp')
         $scope.chart[type].yAxis.axisLabelDistance(50);
       } else if (type === 'lineChart' || type === 'stackedAreaChart') {
         var pivotdata = pivotDataToD3ChartFormat(p, false, true);
-        var xLabels = pivotdata.xLabels;
+        xLabels = pivotdata.xLabels;
         d3g = pivotdata.d3g;
         $scope.chart[type].xAxis.tickFormat(function(d) {
           if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
@@ -1229,7 +1231,7 @@ angular.module('zeppelinWebApp')
 
     var keys = $scope.paragraph.config.graph.keys;
     var groups = $scope.paragraph.config.graph.groups;
-    var values = $scope.paragraph.config.graph.values;
+    values = $scope.paragraph.config.graph.values;
     var valueOnly = (keys.length === 0 && groups.length === 0 && values.length > 0);
     var noKey = (keys.length === 0);
     var isMultiBarChart = (chartType === 'multiBarChart');
@@ -1280,9 +1282,11 @@ angular.module('zeppelinWebApp')
 
     // clear aggregation name, if possible
     var namesWithoutAggr = {};
+    var colName;
+    var withoutAggr;
     // TODO - This part could use som refactoring - Weird if/else with similar actions and variable names
-    for (var colName in colNameIndex) {
-      var withoutAggr = colName.substring(0, colName.lastIndexOf('('));
+    for (colName in colNameIndex) {
+      withoutAggr = colName.substring(0, colName.lastIndexOf('('));
       if (!namesWithoutAggr[withoutAggr]) {
         namesWithoutAggr[withoutAggr] = 1;
       } else {
@@ -1292,20 +1296,20 @@ angular.module('zeppelinWebApp')
 
     if (valueOnly) {
       for (var valueIndex = 0; valueIndex < d3g[0].values.length; valueIndex++) {
-        var colName = d3g[0].values[valueIndex].x;
+        colName = d3g[0].values[valueIndex].x;
         if (!colName) {
           continue;
         }
 
-        var withoutAggr = colName.substring(0, colName.lastIndexOf('('));
+        withoutAggr = colName.substring(0, colName.lastIndexOf('('));
         if (namesWithoutAggr[withoutAggr] <= 1 ) {
           d3g[0].values[valueIndex].x = withoutAggr;
         }
       }
     } else {
       for (var d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
-        var colName = d3g[d3gIndex].key;
-        var withoutAggr = colName.substring(0, colName.lastIndexOf('('));
+        colName = d3g[d3gIndex].key;
+        withoutAggr = colName.substring(0, colName.lastIndexOf('('));
         if (namesWithoutAggr[withoutAggr] <= 1 ) {
           d3g[d3gIndex].key = withoutAggr;
         }
@@ -1314,7 +1318,7 @@ angular.module('zeppelinWebApp')
       // use group name instead of group.value as a column name, if there're only one group and one value selected.
       if (groups.length === 1 && values.length === 1) {
         for (d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
-          var colName = d3g[d3gIndex].key;
+          colName = d3g[d3gIndex].key;
           colName = colName.split('.')[0];
           d3g[d3gIndex].key = colName;
         }
