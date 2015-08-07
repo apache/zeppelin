@@ -38,7 +38,7 @@ public class Credentials {
   //
   // In summary, the order is:
   //
-  //  1. Environment Variables - AWS_ACCESS_KEY_ID and AWS_SECRET_KEY
+  //  1. Environment Variables - AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
   //  2. Java System Properties - aws.accessKeyId and aws.secretKey
   //  3. Credential profiles file at the default location (~/.aws/credentials)
   //       shared by all AWS SDKs and the AWS CLI
