@@ -17,8 +17,11 @@
 
 package org.apache.zeppelin.spark;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -30,6 +33,8 @@ import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Stage;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.jobs.JobProgressListener;
+import org.apache.zeppelin.context.ZeppelinContext;
+import org.apache.zeppelin.display.DisplayParams;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -120,7 +125,8 @@ public class SparkSqlInterpreter extends Interpreter {
   public InterpreterResult interpret(String st, InterpreterContext context) {
     SQLContext sqlc = null;
 
-    sqlc = getSparkInterpreter().getSQLContext();
+    final SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    sqlc = sparkInterpreter.getSQLContext();
 
     SparkContext sc = sqlc.sparkContext();
     if (concurrentSQL()) {
@@ -131,8 +137,13 @@ public class SparkSqlInterpreter extends Interpreter {
 
 
     Object rdd = sqlc.sql(st);
-    String msg = ZeppelinContext.showRDD(sc, context, rdd, maxResult);
-    return new InterpreterResult(Code.SUCCESS, msg);
+    final ZeppelinContext zeppelinContext = sparkInterpreter.getZeppelinContext();
+    zeppelinContext.setInterpreterContext(context);
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    PrintStream stream = new PrintStream(out);
+    zeppelinContext.display(rdd, new DisplayParams(maxResult, stream, context,
+            new java.util.ArrayList<String>()));
+    return new InterpreterResult(Code.SUCCESS, out.toString());
   }
 
   @Override
