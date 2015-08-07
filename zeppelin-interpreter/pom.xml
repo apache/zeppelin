@@ -25,6 +25,7 @@
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
     <version>0.6.0-incubating-SNAPSHOT</version>
+    <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
@@ -57,6 +58,11 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-pool2</artifactId>
       <version>2.3</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
     </dependency>
 
     <dependency>
