@@ -27,6 +27,12 @@ limitations under the License.
 
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
+
+    <!-- ACE CSS autocomplition issue workarounds -->
+    <style type="text/css">
+       div.ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line { z-index: -1 !important; }
+    </style>
+
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
     <!-- build:css(.) styles/vendor.css -->
     <!-- bower:css -->

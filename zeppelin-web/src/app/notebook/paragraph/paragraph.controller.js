@@ -415,17 +415,27 @@ angular.module('zeppelinWebApp')
         // not applying emacs key binding while the binding override Ctrl-v. default behavior of paste text on windows.
       }
 
-      $scope.editor.setOptions({
-        enableBasicAutocompletion: true,
-        enableSnippets: false,
-        enableLiveAutocompletion:false
-      });
+      var sqlModeTest = /^%(\w*\.)?\wql/;
+
+      $scope.setParagraphMode = function(session, paragraphText) {
+    	  if (sqlModeTest.test(String(paragraphText))) {
+        	  session.setMode(editorMode.sql);
+          } else if ( String(paragraphText).startsWith('%md')) {
+        	  session.setMode(editorMode.markdown);
+          } else {
+        	  session.setMode(editorMode.scala);
+          }
+      }
+
       var remoteCompleter = {
           getCompletions : function(editor, session, pos, prefix, callback) {
               if (!$scope.editor.isFocused() ){ return;}
 
               var pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
               var buf = session.getValue();
+
+              // ensure the correct mode is set
+              $scope.setParagraphMode(session, buf);
               
               websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
               
@@ -445,8 +455,14 @@ angular.module('zeppelinWebApp')
               });
           }
       };
-      langTools.addCompleter(remoteCompleter);
+      
+      langTools.setCompleters([remoteCompleter, langTools.keyWordCompleter, langTools.snippetCompleter, langTools.textCompleter]);
 
+      $scope.editor.setOptions({
+          enableBasicAutocompletion: true,
+          enableSnippets: false,
+          enableLiveAutocompletion:false
+      });
 
       $scope.handleFocus = function(value) {
         $scope.paragraphFocused = value;
@@ -472,15 +488,7 @@ angular.module('zeppelinWebApp')
         $scope.editor.resize();
       });
 
-      var sqlModeTest = /^%(\w*\.)?\wql/;
-      var code = $scope.editor.getSession().getValue();
-      if (sqlModeTest.test(String(code))) {
-        $scope.editor.getSession().setMode(editorMode.sql);
-      } else if ( String(code).startsWith('%md')) {
-        $scope.editor.getSession().setMode(editorMode.markdown);
-      } else {
-        $scope.editor.getSession().setMode(editorMode.scala);
-      }
+      $scope.setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue());
 
       $scope.editor.commands.addCommand({
         name: 'run',
