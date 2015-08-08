@@ -35,7 +35,6 @@ group: nav-right
 ### Manual
 
 * [Dynamic Form](./dynamicform.html)
-* [Display System](./display.html)
 
 
 ### Development
