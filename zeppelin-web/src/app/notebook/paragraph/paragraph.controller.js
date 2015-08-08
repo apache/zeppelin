@@ -441,7 +441,7 @@ angular.module('zeppelinWebApp')
           }
       };
       
-      langTools.setCompleters([remoteCompleter]);
+      langTools.setCompleters([remoteCompleter, langTools.keyWordCompleter, langTools.snippetCompleter, langTools.textCompleter]);
 
       $scope.editor.setOptions({
           enableBasicAutocompletion: true,
