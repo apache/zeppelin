@@ -1,0 +1,61 @@
+/**
+ * Created by joelz on 8/6/15.
+ *
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.zeppelin.socket;
+
+import org.junit.Assert;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runners.MethodSorters;
+
+/**
+ * BASIC Zeppelin rest api tests
+ * TODO: Add Post,Put,Delete test and method
+ *
+ * @author joelz
+ *
+ */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+    public class NotebookServerTests {
+
+    @Test
+    public void CheckOrigin(){
+        NotebookServer server = new NotebookServer();
+        NotebookSocket socket = new NotebookSocket(new TestHttpServletRequest(), "http", new TestNotebookSocketListener());
+        server.onOpen(socket);
+        Assert.assertEquals(1, server.seenOrigins.size());
+        server.doWebSocketConnect(new TestHttpServletRequest(), "http");
+        Assert.assertTrue(server.checkOrigin(new TestHttpServletRequest(), "http://localhost:8080"));
+        server.onClose(socket, 0, "Shutdown");
+        Assert.assertFalse(server.checkOrigin(new TestHttpServletRequest(), "http://localhost:8080"));
+        Assert.assertEquals(0, server.seenOrigins.size());
+    }
+
+    @Test
+    public void CheckInvalidOrigin(){
+        NotebookServer server = new NotebookServer();
+        NotebookSocket socket = new NotebookSocket(new TestHttpServletRequest(), "http", new TestNotebookSocketListener());
+        server.onOpen(socket);
+        Assert.assertEquals(1, server.seenOrigins.size());
+        server.doWebSocketConnect(new TestHttpServletRequest(), "http");
+        Assert.assertFalse(server.checkOrigin(new TestHttpServletRequest(), "http://evillocalhost:8080"));
+        server.onClose(socket, 0, "Shutdown");
+        Assert.assertEquals(0, server.seenOrigins.size());
+    }
+}
