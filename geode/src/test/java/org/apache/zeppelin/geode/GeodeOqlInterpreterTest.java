@@ -15,7 +15,6 @@
 package org.apache.zeppelin.geode;
 
 import static org.apache.zeppelin.geode.GeodeOqlInterpreter.*;
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -27,6 +26,7 @@ import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -177,5 +177,21 @@ public class GeodeOqlInterpreterTest {
   @Test
   public void testFormType() {
     assertEquals(FormType.SIMPLE, new GeodeOqlInterpreter(new Properties()).getFormType());
+  }
+
+  @Test
+  public void testAutoCompletion() throws SQLException {
+    Properties properties = new Properties();
+    properties.put(LOCATOR_HOST, DEFAULT_HOST);
+    properties.put(LOCATOR_PORT, DEFAULT_PORT);
+    properties.put(MAX_RESULT, DEFAULT_MAX_RESULT);
+
+    GeodeOqlInterpreter spyGeodeOqlInterpreter = spy(new GeodeOqlInterpreter(properties));
+
+    spyGeodeOqlInterpreter.open();
+
+    assertEquals(1, spyGeodeOqlInterpreter.completion("SEL", 0).size());
+    assertEquals("SELECT ", spyGeodeOqlInterpreter.completion("SEL", 0).iterator().next());
+    assertEquals(0, spyGeodeOqlInterpreter.completion("SEL", 100).size());
   }
 }

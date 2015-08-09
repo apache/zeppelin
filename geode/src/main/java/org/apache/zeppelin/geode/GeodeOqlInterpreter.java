@@ -14,6 +14,7 @@
  */
 package org.apache.zeppelin.geode;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -35,6 +36,8 @@ import com.gemstone.gemfire.cache.query.QueryService;
 import com.gemstone.gemfire.cache.query.SelectResults;
 import com.gemstone.gemfire.cache.query.Struct;
 import com.gemstone.gemfire.pdx.PdxInstance;
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 
 /**
  * Apache Geode OQL Interpreter (http://geode.incubator.apache.org)
@@ -99,6 +102,7 @@ public class GeodeOqlInterpreter extends Interpreter {
   public static final String LOCATOR_HOST = "geode.locator.host";
   public static final String LOCATOR_PORT = "geode.locator.port";
   public static final String MAX_RESULT = "geode.max.result";
+  private static final List<String> NO_COMPLETION = new ArrayList<String>();
 
   static {
     Interpreter.register(
@@ -110,10 +114,19 @@ public class GeodeOqlInterpreter extends Interpreter {
             .add(MAX_RESULT, DEFAULT_MAX_RESULT, "Max number of OQL result to display.").build());
   }
 
+  private static final Function<CharSequence, String> sequenceToStringTransformer =
+      new Function<CharSequence, String>() {
+        public String apply(CharSequence seq) {
+          return seq.toString();
+        }
+      };
+
   private ClientCache clientCache = null;
   private QueryService queryService = null;
   private Exception exceptionOnConnect;
   private int maxResult;
+
+  private OqlCompleter oqlCompleter;
 
   public GeodeOqlInterpreter(Properties property) {
     super(property);
@@ -142,6 +155,7 @@ public class GeodeOqlInterpreter extends Interpreter {
 
       clientCache = getClientCache();
       queryService = clientCache.getQueryService();
+      oqlCompleter = new OqlCompleter(OqlCompleter.getOqlCompleterTokens(clientCache));
 
       exceptionOnConnect = null;
       logger.info("Successfully created Geode connection");
@@ -301,7 +315,12 @@ public class GeodeOqlInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
-    return null;
+    List<CharSequence> candidates = new ArrayList<CharSequence>();
+    if (oqlCompleter.complete(buf, cursor, candidates) >= 0) {
+      return Lists.transform(candidates, sequenceToStringTransformer);
+    } else {
+      return NO_COMPLETION;
+    }
   }
 
   public int getMaxResult() {
