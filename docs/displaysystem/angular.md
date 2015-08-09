@@ -52,7 +52,7 @@ In the example, let's bind "world" variable 'name'. Then you can see AngularJs v
 
 
 <br />
-#### Bind/Unbind variable
+#### Watch/Unwatch variable
 
 Through ZeppelinContext, you can watch/unwatch variable in AngularJs view.
 
