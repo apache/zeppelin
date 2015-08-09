@@ -20,7 +20,7 @@ angular.module('zeppelinWebApp')
                                          $timeout, $compile, websocketMsgSrv) {
 
   $scope.paragraph = null;
-  $scope.editor = null;  
+  $scope.editor = null;
 
   var editorMode = {scala: 'ace/mode/scala', sql: 'ace/mode/sql', markdown: 'ace/mode/markdown'};
 
@@ -397,11 +397,11 @@ angular.module('zeppelinWebApp')
     }
 
     $scope.paragraph.settings.params[formulaire.name] = value;
-  };  
+  };
 
   $scope.aceChanged = function() {
     $scope.dirtyText = $scope.editor.getSession().getValue();
-    $scope.startSaveTimer();    
+    $scope.startSaveTimer();
   };
 
   $scope.aceLoaded = function(_editor) {
@@ -437,9 +437,9 @@ angular.module('zeppelinWebApp')
 
               var pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
               var buf = session.getValue();
-              
+
               websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
-              
+
               $scope.$on('completionList', function(event, data) {
                   if (data.completions) {
                       var completions = [];
@@ -564,7 +564,7 @@ angular.module('zeppelinWebApp')
     var pdata = $scope.paragraph;
     var timeMs = Date.parse(pdata.dateFinished) - Date.parse(pdata.dateStarted);
     if (isNaN(timeMs) || timeMs < 0) {
-      return '&nbsp;';
+      return 'outdated';
     }
     var desc = 'Took ' + (timeMs/1000) + ' seconds.';
     if (pdata.textSaved !==undefined && Date.parse(pdata.textSaved) > Date.parse(pdata.dateStarted)){
