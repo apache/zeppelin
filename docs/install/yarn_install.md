@@ -159,7 +159,6 @@ cd /home/zeppelin/incubator-zeppelin
 bin/zeppelin-daemon.sh start
 ```
 After successful start, visit http://[zeppelin-server-host-name]:8080 with your web browser.
-Note that port **8081** also need to be accessible for websocket connection.
 
 ### Stop Zeppelin
 
