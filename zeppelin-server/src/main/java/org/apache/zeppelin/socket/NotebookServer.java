@@ -27,6 +27,7 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -270,9 +271,19 @@ public class NotebookServer extends WebSocketServlet implements
 
   private void broadcastNoteList() {
     Notebook notebook = notebook();
+
+    ZeppelinConfiguration conf = notebook.getConf();
+    String homescreenNotebookId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
+    boolean hideHomeScreenNotebookFromList = conf
+        .getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
+
     List<Note> notes = notebook.getAllNotes();
     List<Map<String, String>> notesInfo = new LinkedList<Map<String, String>>();
     for (Note note : notes) {
+      if (hideHomeScreenNotebookFromList && note.id().equals(homescreenNotebookId)) {
+        continue;
+      }
+
       Map<String, String> info = new HashMap<String, String>();
       info.put("id", note.id());
       info.put("name", note.getName());
