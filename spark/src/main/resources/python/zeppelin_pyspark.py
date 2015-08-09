@@ -31,6 +31,58 @@ from pyspark.serializers import MarshalSerializer, PickleSerializer
 # for back compatibility
 from pyspark.sql import SQLContext, HiveContext, SchemaRDD, Row
 
+class Logger(object):
+  def __init__(self):
+    self.out = ""
+
+  def write(self, message):
+    self.out = self.out + message
+
+  def get(self):
+    return self.out
+
+  def reset(self):
+    self.out = ""
+
+
+class PyZeppelinContext(dict):
+  def __init__(self, zc):
+    self.z = zc
+
+  def show(self, obj):
+    from pyspark.sql import DataFrame
+    if isinstance(obj, DataFrame):
+      print gateway.jvm.org.apache.zeppelin.spark.ZeppelinContext.showDF(self.z, obj._jdf)
+    else:
+      print str(obj)
+
+  # By implementing special methods it makes operating on it more Pythonic
+  def __setitem__(self, key, item):
+    self.z.put(key, item)
+
+  def __getitem__(self, key):
+    return self.z.get(key)
+
+  def __delitem__(self, key):
+    self.z.remove(key)
+
+  def __contains__(self, item):
+    return self.z.containsKey(item)
+
+  def add(self, key, value):
+    self.__setitem__(key, value)
+
+  def put(self, key, value):
+    self.__setitem__(key, value)
+
+  def get(self, key):
+    return self.__getitem__(key)
+
+
+output = Logger()
+sys.stdout = output
+sys.stderr = output
+
 client = GatewayClient(port=int(sys.argv[1]))
 sparkVersion = sys.argv[2]
 
@@ -71,24 +123,7 @@ sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
 sqlc = SQLContext(sc, intp.getSQLContext())
 sqlContext = sqlc
 
-z = intp.getZeppelinContext()
-
-class Logger(object):
-  def __init__(self):
-    self.out = ""
-
-  def write(self, message):
-    self.out = self.out + message
-
-  def get(self):
-    return self.out
-
-  def reset(self):
-    self.out = ""
-
-output = Logger()
-sys.stdout = output
-sys.stderr = output
+z = PyZeppelinContext(intp.getZeppelinContext())
 
 while True :
   req = intp.getStatements()
@@ -98,11 +133,12 @@ while True :
     final_code = None
 
     for s in stmts:
-      if s == None or len(s.strip()) == 0:
+      if s == None:
         continue
 
       # skip comment
-      if s.strip().startswith("#"):
+      s_stripped = s.strip()
+      if len(s_stripped) == 0 or s_stripped.startswith("#"):
         continue
 
       if final_code:

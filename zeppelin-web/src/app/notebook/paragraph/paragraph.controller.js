@@ -426,15 +426,9 @@ angular.module('zeppelinWebApp')
 
               var pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
               var buf = session.getValue();
-              $rootScope.$emit('sendNewEvent', {
-                  op : 'COMPLETION',
-                  data : {
-                      id : $scope.paragraph.id,
-                      buf : buf,
-                      cursor : pos
-                  }
-              });
-
+              
+              websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
+              
               $scope.$on('completionList', function(event, data) {
                   if (data.completions) {
                       var completions = [];
@@ -478,8 +472,9 @@ angular.module('zeppelinWebApp')
         $scope.editor.resize();
       });
 
+      var sqlModeTest = /^%(\w*\.)?\wql/;
       var code = $scope.editor.getSession().getValue();
-      if ( String(code).startsWith('%sql')) {
+      if (sqlModeTest.test(String(code))) {
         $scope.editor.getSession().setMode(editorMode.sql);
       } else if ( String(code).startsWith('%md')) {
         $scope.editor.getSession().setMode(editorMode.markdown);
