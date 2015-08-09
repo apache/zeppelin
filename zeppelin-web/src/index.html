@@ -61,6 +61,7 @@ limitations under the License.
     </div>
     <!-- Modal ::  Keyboard shortcuts -->
     <div ng-include src="'components/modal-shortcut/modal-shortcut.html'"></div>
+    <div id="note-modal-container" ng-include src="'components/noteName-create/note-name-dialog.html'"></div>
     <!-- build:js(.) scripts/oldieshim.js -->
     <!--[if lt IE 9]>
 <script src="bower_components/es5-shim/es5-shim.js"></script>
@@ -113,10 +114,12 @@ limitations under the License.
     <script src="app/notebook/paragraph/paragraph.controller.js"></script>
     <script src="components/navbar/navbar.controller.js"></script>
     <script src="components/ngescape/ngescape.directive.js"></script>
+    <script src="components/noteName-create/notename.controller.js"></script>
     <script src="components/popover-html-unsafe/popover-html-unsafe.directive.js"></script>
     <script src="components/ngenter/ngenter.directive.js"></script>
     <script src="components/dropdowninput/dropdowninput.directive.js"></script>
     <script src="components/resizable/resizable.directive.js"></script>
+    <script src="components/noteName-create/visible.directive.js"></script>
     <script src="components/websocketEvents/websocketMsg.service.js"></script>
     <script src="components/websocketEvents/websocketEvents.factory.js"></script>
     <script src="components/notebookListDataFactory/notebookList.datafactory.js"></script>
