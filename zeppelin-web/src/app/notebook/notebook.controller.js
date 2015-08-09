@@ -79,9 +79,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.toggleAllEditor = function() {
     if ($scope.editorToggled) {
-      $scope.$broadcast('closeEditor');
-    } else {
       $scope.$broadcast('openEditor');
+    } else {
+      $scope.$broadcast('closeEditor');
     }
     $scope.editorToggled = !$scope.editorToggled;
   };
@@ -96,9 +96,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.toggleAllTable = function() {
     if ($scope.tableToggled) {
-      $scope.$broadcast('closeTable');
-    } else {
       $scope.$broadcast('openTable');
+    } else {
+      $scope.$broadcast('closeTable');
     }
     $scope.tableToggled = !$scope.tableToggled;
   };
