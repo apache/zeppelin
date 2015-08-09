@@ -8,7 +8,7 @@ group: development
 
 
 ### Waiting for your help
-The content not exists yet.
+The content does not exist yet.
 
 We're always welcoming contribution.
 
