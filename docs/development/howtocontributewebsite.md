@@ -55,7 +55,7 @@ You can directly edit .md files in github's web interface and make pullrequest.
 
 <br />
 ### JIRA
-Zeppelin manages it's issues in Jira. [https://issues.apache.org/jira/browse/ZEPPELIN](https://issues.apache.org/jira/browse/ZEPPELIN)
+Zeppelin manages its issues in Jira. [https://issues.apache.org/jira/browse/ZEPPELIN](https://issues.apache.org/jira/browse/ZEPPELIN)
 
 ### Stay involved
 Contributors should join the Zeppelin mailing lists.
