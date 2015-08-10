@@ -18,6 +18,8 @@
 package org.apache.zeppelin.interpreter;
 
 import java.io.Serializable;
+import org.apache.commons.lang3.StringUtils;
+import java.util.*;
 
 /**
  * Interpreter result template.
@@ -87,36 +89,53 @@ public class InterpreterResult implements Serializable {
     if (msg == null) {
       return null;
     }
-
-    Type[] types = Type.values();
-    for (Type t : types) {
-      String magic = "%" + t.name().toLowerCase();
-      if (msg.startsWith(magic + " ") || msg.startsWith(magic + "\n")) {
-        int magicLength = magic.length() + 1;
-        if (msg.length() > magicLength) {
-          return msg.substring(magicLength);
-        } else {
-          return "";
-        }
-      }
+    Type[] types = type.values();
+    TreeMap<Integer, Type> typesLastIndexInMsg = buildIndexMap(msg);
+    if (typesLastIndexInMsg.size() == 0) {
+      return msg;
+    } else {
+      Map.Entry<Integer, Type> lastType = typesLastIndexInMsg.firstEntry();
+      //add 1 for the % char
+      int magicLength = lastType.getValue().name().length() + 1;
+      // 1 for the last \n or space after magic
+      int subStringPos = magicLength + lastType.getKey() + 1;
+      return msg.substring(subStringPos); 
     }
-
-    return msg;
   }
-
 
   private Type getType(String msg) {
     if (msg == null) {
       return Type.TEXT;
     }
+    Type[] types = type.values();
+    TreeMap<Integer, Type> typesLastIndexInMsg = buildIndexMap(msg);
+    if (typesLastIndexInMsg.size() == 0) {
+      return Type.TEXT;
+    } else {
+      Map.Entry<Integer, Type> lastType = typesLastIndexInMsg.firstEntry();
+      return lastType.getValue();
+    }
+  }
+  
+  private int getIndexOfType(String msg, Type t) {
+    if (msg == null) {
+      return 0;
+    }
+    String typeString = "%" + t.name().toLowerCase();
+    return StringUtils.indexOf(msg, typeString );
+  }
+  
+  private TreeMap<Integer, Type> buildIndexMap(String msg) {
+    int lastIndexOftypes = 0;
+    TreeMap<Integer, Type> typesLastIndexInMsg = new TreeMap<Integer, Type>();
     Type[] types = Type.values();
     for (Type t : types) {
-      String magic = "%" + t.name().toLowerCase();
-      if (msg.startsWith(magic + " ") || msg.startsWith(magic + "\n")) {
-        return t;
+      lastIndexOftypes = getIndexOfType(msg, t);
+      if (lastIndexOftypes >= 0) {
+        typesLastIndexInMsg.put(lastIndexOftypes, t);
       }
     }
-    return Type.TEXT;
+    return typesLastIndexInMsg;
   }
 
   public Code code() {

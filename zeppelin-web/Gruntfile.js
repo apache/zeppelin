@@ -207,6 +207,22 @@ module.exports = function (grunt) {
       app: {
         src: ['<%= yeoman.app %>/index.html'],
         ignorePath:  /\.\.\//
+      },
+      test: {
+        devDependencies: true,
+        src: '<%= karma.unit.configFile %>',
+        ignorePath:  /\.\.\//,
+        fileTypes:{
+          js: {
+            block: /(([\s\t]*)\/{2}\s*?bower:\s*?(\S*))(\n|\r|.)*?(\/{2}\s*endbower)/gi,
+              detect: {
+                js: /'(.*\.js)'/gi
+              },
+              replace: {
+                js: '\'{{filePath}}\','
+              }
+            }
+          }
       }
     },
 
@@ -255,19 +271,19 @@ module.exports = function (grunt) {
     uglify: {
       options: {
         mangle: {
-          screw_ie8: true
+          'screw_ie8': true
         },
         preserveComments: 'some',
         compress: {
-          screw_ie8: true,
+          'screw_ie8': true,
           sequences: true,
-          dead_code: true,
+          'dead_code': true,
           conditionals: true,
           booleans: true,
           unused: true,
-          if_return: true,
-          join_vars: true,
-          drop_console: true
+          'if_return': true,
+          'join_vars': true,
+          'drop_console': true
         }
       }
     },
@@ -407,6 +423,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('test', [
     'clean:server',
+    'wiredep',
     'concurrent:test',
     'autoprefixer',
     'connect:test',
@@ -414,6 +431,22 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('build', [
+    'test',
+    'clean:dist',
+    'wiredep',
+    'useminPrepare',
+    'concurrent:dist',
+    'autoprefixer',
+    'concat',
+    'ngAnnotate',
+    'copy:dist',
+    'cssmin',
+    'uglify',
+    'usemin',
+    'htmlmin'
+  ]);
+
+  grunt.registerTask('buildSkipTests', [
     'clean:dist',
     'wiredep',
     'useminPrepare',

@@ -17,8 +17,8 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
 
   return {
 
-    createNotebook: function() {
-      websocketEvents.sendNewEvent({op: 'NEW_NOTE'});
+    createNotebook: function(noteName) {
+      websocketEvents.sendNewEvent({op: 'NEW_NOTE',data: {name: noteName}});
     },
 
     deleteNotebook: function(noteId) {
