@@ -88,6 +88,8 @@ public class SparkInterpreter extends Interpreter {
         "spark",
         SparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
+            .add("spark.executor.instances", "2", "Number of executors.")
+            .add("spark.executor.cores", "1", "The number of cores to use on each executor.")
             .add("spark.app.name", "Zeppelin", "The name of spark application.")
             .add("master",
                 getSystemDefault("MASTER", "spark.master", "local[*]"),
