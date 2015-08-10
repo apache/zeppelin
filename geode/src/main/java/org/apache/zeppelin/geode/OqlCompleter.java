@@ -84,7 +84,7 @@ public class OqlCompleter extends StringsCompleter {
     // add the default OQL completions
     String keywords =
         new BufferedReader(new InputStreamReader(
-            OqlCompleter.class.getResourceAsStream("/oql-keywords.properties"))).readLine();
+            OqlCompleter.class.getResourceAsStream("/oql.keywords"))).readLine();
 
 
     // Also allow upper-case versions of all the keywords

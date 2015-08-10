@@ -80,6 +80,9 @@ import com.google.common.collect.Lists;
  *}
  * </p>
  * <p>
+ * Use (Ctrl + .) to activate the auto-completion.
+ * </p>
+ * <p>
  * Known issue:http://gemfire.docs.pivotal.io/bugnotes/KnownIssuesGemFire810.html #43673 Using query
  * "select * from /exampleRegion.entrySet" fails in a client-server topology and/or in a
  * PartitionedRegion.
