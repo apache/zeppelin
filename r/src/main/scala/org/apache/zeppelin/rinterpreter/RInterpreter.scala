@@ -84,8 +84,8 @@ object RInterpreter {
           .add("rscala.home", SparkInterpreter.getSystemDefault("RSCALA_HOME", "rscala.home", ""), "Path to library directory containing rScala R Package")
           .add("rhadoop.cmd", SparkInterpreter.getSystemDefault("HADOOOP_CMD", "rhadoop.cmd", ""), "Usually /usr/bin/hadoop")
           .add("rhadooop.streamingjar", SparkInterpreter.getSystemDefault("HADOOP_STREAMING", "rhadoop.streamingjar", ""), "Usually /usr/lib/hadoop/contrib/streaming/hadoop-streaming-<version>.jar")
-    .add("rscala.debug", "false", "Whether to turn on rScala debugging") // FIXME:  Implemented but not tested
-    .add("rscala.timeout", "60", "Timeout for rScala") // TODO:  Not yet implemented
+          .add("rscala.debug", "false", "Whether to turn on rScala debugging") // FIXME:  Implemented but not tested
+          .add("rscala.timeout", "60", "Timeout for rScala") // TODO:  Not yet implemented
          .build
 
   def getProps() = {
@@ -107,6 +107,5 @@ object RInterpreter {
   }
 
   def processHTML(input: List[String]): String = processHTML(input.mkString("\n"))
-
 
 }
