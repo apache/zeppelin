@@ -126,8 +126,6 @@ public class OqlCompleterTest {
 
       logger.info(explain);
 
-      System.out.println(explain);
-
       assertEquals("Buffer [" + buffer.replace(" ", ".") + "] and Cursor[" + cursor + "] "
           + explain, expected, newHashSet(candidates));
     }
