@@ -14,12 +14,14 @@
  */
 package org.apache.zeppelin.postgresql;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -33,6 +35,9 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 
 /**
  * PostgreSQL interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ and
@@ -55,6 +60,8 @@ import org.slf4j.LoggerFactory;
  *  GROUP BY store_id;
  * }
  * </p>
+ * 
+ * For SQL auto-completion use the (Ctrl+.) shortcut.
  */
 public class PostgreSqlInterpreter extends Interpreter {
 
@@ -99,6 +106,17 @@ public class PostgreSqlInterpreter extends Interpreter {
   private Exception exceptionOnConnect;
   private int maxResult;
 
+  private SqlCompleter sqlCompleter;
+
+  private static final Function<CharSequence, String> sequenceToStringTransformer =
+      new Function<CharSequence, String>() {
+        public String apply(CharSequence seq) {
+          return seq.toString();
+        }
+      };
+
+  private static final List<String> NO_COMPLETION = new ArrayList<String>();
+
   public PostgreSqlInterpreter(Properties property) {
     super(property);
   }
@@ -123,10 +141,12 @@ public class PostgreSqlInterpreter extends Interpreter {
 
       jdbcConnection = DriverManager.getConnection(url, user, password);
 
+      sqlCompleter = new SqlCompleter(SqlCompleter.getSqlCompleterTokens(jdbcConnection, false));
+
       exceptionOnConnect = null;
       logger.info("Successfully created psql connection");
 
-    } catch (ClassNotFoundException | SQLException e) {
+    } catch (ClassNotFoundException | SQLException | IOException e) {
       logger.error("Cannot open connection", e);
       exceptionOnConnect = e;
     }
@@ -264,7 +284,13 @@ public class PostgreSqlInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
-    return null;
+
+    List<CharSequence> candidates = new ArrayList<CharSequence>();
+    if (sqlCompleter.complete(buf, cursor, candidates) >= 0) {
+      return Lists.transform(candidates, sequenceToStringTransformer);
+    } else {
+      return NO_COMPLETION;
+    }
   }
 
   public int getMaxResult() {

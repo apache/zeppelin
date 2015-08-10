@@ -402,6 +402,7 @@
           <version>0.11</version>
           <configuration>
             <excludes>
+              <exclude>**/*.keywords</exclude>
               <exclude>**/.idea/</exclude>
               <exclude>**/*.iml</exclude>
               <exclude>.git/</exclude>
