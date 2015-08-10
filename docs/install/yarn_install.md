@@ -12,7 +12,7 @@ This page describes how to pre-configure a bare metal node, build & configure Ze
 ## Prepare Node
 
 ### Zeppelin user (Optional)
-This step is optional, however its nice to run Zeppelin under its own user. In case you do not like to use Zeppelin (hope not) the user could be deleted along with all the pacakges that were installed for Zeppelin, Zeppelin binary itslef and associated directories.
+This step is optional, however its nice to run Zeppelin under its own user. In case you do not like to use Zeppelin (hope not) the user could be deleted along with all the pacakges that were installed for Zeppelin, Zeppelin binary itself and associated directories.
 
 Create a zeppelin user and switch to zeppelin user or if zeppelin user is already created then login as zeppelin.
 
