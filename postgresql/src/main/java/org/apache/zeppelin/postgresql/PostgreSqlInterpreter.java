@@ -177,6 +177,8 @@ public class PostgreSqlInterpreter extends Interpreter {
 
       currentStatement = getJdbcConnection().createStatement();
 
+      currentStatement.setMaxRows(maxResult);
+      
       StringBuilder msg = null;
       boolean isTableType = false;
 
