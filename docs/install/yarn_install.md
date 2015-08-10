@@ -7,7 +7,7 @@ group: install
 {% include JB/setup %}
 
 ## Introduction
-This page describes how to pre-configure a bare metal node, build & configure Zeppelin on it, configure Zeppelin and connect it to existing YARN cluster. It also describes steps to configure Spark & Hive interpreter of Zeppelin.
+This page describes how to pre-configure a bare metal node, build & configure Zeppelin on it, configure Zeppelin and connect it to existing YARN cluster running Hortonworks flavour of Hadoop. It also describes steps to configure Spark & Hive interpreter of Zeppelin. 
 
 ## Prepare Node
 
@@ -35,6 +35,7 @@ Its assumed in the rest of the document that zeppelin user is indeed created and
  * Apache Maven
  * Hadoop client.
  * Spark.
+ * Internet connection is required. 
 
 Its assumed that the node has CentOS 6.x installed on it. Although any version of Linux distribution should work fine. The working directory of all prerequisite pacakges is /home/zeppelin/prerequisites, although any location could be used.
 
