@@ -30,6 +30,7 @@ Because of variable 'name' is not defined, 'Hello \{\{name\}\}' display 'Hello '
 
 Through ZeppelinContext, you can bind/unbind variable to AngularJS view.
 
+Currently it only works in Spark Interpreter (scala).
 
 ```
 // bind my 'object' as angular scope variable 'name' in current notebook.
@@ -56,6 +57,7 @@ In the example, let's bind "world" variable 'name'. Then you can see AngularJs v
 
 Through ZeppelinContext, you can watch/unwatch variable in AngularJs view.
 
+Currently it only works in Spark Interpreter (scala).
 
 ```
 // register for angular scope variable 'name' (notebook)
