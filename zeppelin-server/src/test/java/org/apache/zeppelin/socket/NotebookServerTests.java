@@ -31,7 +31,6 @@ import org.junit.runners.MethodSorters;
  * @author joelz
  *
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
     public class NotebookServerTests {
 
     @Test
