@@ -425,7 +425,7 @@ angular.module('zeppelinWebApp')
           } else {
         	  session.setMode(editorMode.scala);
           }
-      }
+      };
 
       var remoteCompleter = {
           getCompletions : function(editor, session, pos, prefix, callback) {

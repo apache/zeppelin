@@ -29,8 +29,9 @@ angular.module('zeppelinWebApp').directive('modalvisible', function () {
     			previsibleMethod();
     		});
     		elem.on('shown.bs.modal', function(e) {
-    			if(scope.targetinput)
-    			  $(e.target).find('input#' + scope.targetinput ).select();
+    			if(scope.targetinput) {
+    			  angular.element(e.target).find('input#' + scope.targetinput ).select();
+    			}
     			postVisibleMethod();
     		});
         }
