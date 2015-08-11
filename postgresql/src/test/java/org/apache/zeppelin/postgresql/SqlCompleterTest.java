@@ -16,6 +16,7 @@ package org.apache.zeppelin.postgresql;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -41,9 +42,11 @@ public class SqlCompleterTest extends BasicJDBCTestCaseAdapter {
 
   private CompleterTester tester;
 
+  private SqlCompleter sqlCompleter;
+
   @Before
   public void beforeTest() throws IOException, SQLException {
-    SqlCompleter sqlCompleter =
+    sqlCompleter =
         new SqlCompleter(SqlCompleter.getSqlCompleterTokens(getJDBCMockObjectFactory()
             .getMockConnection(), false));
     tester = new CompleterTester(sqlCompleter);
@@ -91,11 +94,19 @@ public class SqlCompleterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
-  public void testCommaDelimiter() {
+  public void testDotDelimiter() {
     String buffer = "  order.select  ";
-    tester.buffer(buffer).from(0).to(7).expect(newHashSet("order ")).test();
+    tester.buffer(buffer).from(4).to(7).expect(newHashSet("order ")).test();
     tester.buffer(buffer).from(8).to(14).expect(newHashSet("select ")).test();
     tester.buffer(buffer).from(15).to(17).expect(EMPTY).test();
+  }
+
+  @Test
+  public void testSqlDelimiterCharacters() {
+    assertTrue(sqlCompleter.getSqlDelimiter().isDelimiterChar("r.", 1));
+    assertTrue(sqlCompleter.getSqlDelimiter().isDelimiterChar("SS;", 2));
+    assertTrue(sqlCompleter.getSqlDelimiter().isDelimiterChar(":", 0));
+    assertTrue(sqlCompleter.getSqlDelimiter().isDelimiterChar("ttt,", 3));
   }
 
   public class CompleterTester {

@@ -17,7 +17,6 @@ package org.apache.zeppelin.postgresql;
 /*
  * This source file is based on code taken from SQLLine 1.0.2 See SQLLine notice in LICENSE
  */
-import static java.lang.Character.isWhitespace;
 import static org.apache.commons.lang.StringUtils.isBlank;
 
 import java.io.BufferedReader;
@@ -32,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import jline.console.completer.ArgumentCompleter.ArgumentList;
 import jline.console.completer.ArgumentCompleter.WhitespaceArgumentDelimiter;
@@ -53,13 +53,15 @@ public class SqlCompleter extends StringsCompleter {
    * Delimiter that can split SQL statement in keyword list
    */
   private WhitespaceArgumentDelimiter sqlDelimiter = new WhitespaceArgumentDelimiter() {
+
+    private Pattern pattern = Pattern.compile("[\\.:;,]");
+
     @Override
     public boolean isDelimiterChar(CharSequence buffer, int pos) {
-      return super.isDelimiterChar(buffer, pos) || (buffer.charAt(pos) == '.')
-          || (buffer.charAt(pos) == ';') || (buffer.charAt(pos) == ':');
+      return pattern.matcher("" + buffer.charAt(pos)).matches()
+          || super.isDelimiterChar(buffer, pos);
     }
   };
-
 
   public SqlCompleter(Set<String> completions) {
     super(completions);
@@ -81,7 +83,7 @@ public class SqlCompleter extends StringsCompleter {
 
     if (isBlank(argument)) {
       int argumentsCount = argumentList.getArguments().length;
-      if (argumentsCount <= 0 || isWhitespace(buffer.charAt(buffer.length() - 1))) {
+      if (argumentsCount <= 0 || sqlDelimiter.isDelimiterChar(buffer, buffer.length() - 1)) {
         return -1;
       }
       argument = argumentList.getArguments()[argumentsCount - 1];
@@ -227,5 +229,10 @@ public class SqlCompleter extends StringsCompleter {
       logger.error("Failed to retrieve the column name", t);
       return new HashSet<String>();
     }
+  }
+
+  // test purpose only
+  WhitespaceArgumentDelimiter getSqlDelimiter() {
+    return this.sqlDelimiter;
   }
 }

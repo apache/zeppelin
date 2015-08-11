@@ -223,9 +223,10 @@ public class PostgreSqlInterpreter extends Interpreter {
           int updateCount = currentStatement.getUpdateCount();
           msg.append(UPDATE_COUNT_HEADER).append(NEWLINE);
           msg.append(updateCount).append(NEWLINE);
-          
-          // update the database metadata completions (beta)
-          //sqlCompleter.updateMetaData(getJdbcConnection());
+
+          // In case of update event (e.g. isResultSetAvailable = false) update the completion
+          // meta-data.
+          // sqlCompleter.updateMetaData(getJdbcConnection());
         }
       } finally {
         try {
