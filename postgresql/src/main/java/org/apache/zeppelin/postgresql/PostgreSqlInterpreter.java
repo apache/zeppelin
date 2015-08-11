@@ -14,6 +14,8 @@
  */
 package org.apache.zeppelin.postgresql;
 
+import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -25,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
@@ -182,7 +183,7 @@ public class PostgreSqlInterpreter extends Interpreter {
       StringBuilder msg = null;
       boolean isTableType = false;
 
-      if (StringUtils.containsIgnoreCase(sql, EXPLAIN_PREDICATE)) {
+      if (containsIgnoreCase(sql, EXPLAIN_PREDICATE)) {
         msg = new StringBuilder();
       } else {
         msg = new StringBuilder(TABLE_MAGIC_TAG);
@@ -262,6 +263,9 @@ public class PostgreSqlInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
+
+    logger.info("Cancel current query statement.");
+
     if (currentStatement != null) {
       try {
         currentStatement.cancel();

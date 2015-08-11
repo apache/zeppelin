@@ -102,7 +102,6 @@ public class SqlCompleter extends StringsCompleter {
     try {
       completions.addAll(getColumnNames(connection.getMetaData()));
       completions.addAll(getSchemaNames(connection.getMetaData()));
-
       logger.info("Udateds metadata with:" + Joiner.on(',').join(completions));
       this.getStrings().addAll(completions);
     } catch (SQLException e) {
@@ -127,7 +126,6 @@ public class SqlCompleter extends StringsCompleter {
     logger.info("JDBC DriverName:" + driverSpecificKeywords);
 
     if (SqlCompleter.class.getResource(driverSpecificKeywords) != null) {
-      logger.info("JDBC DriverName: 2" + driverSpecificKeywords);
       String driverKeywords =
           new BufferedReader(new InputStreamReader(
               SqlCompleter.class.getResourceAsStream(driverSpecificKeywords))).readLine();
@@ -200,7 +198,7 @@ public class SqlCompleter extends StringsCompleter {
         columns.close();
       }
 
-      logger.info(Joiner.on(',').join(names));
+      logger.debug(Joiner.on(',').join(names));
 
       return names;
     } catch (Throwable t) {
