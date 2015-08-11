@@ -40,6 +40,8 @@ import jline.console.completer.StringsCompleter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
+
 /**
  * SQL auto complete functionality for the PostgreSqlInterpreter.
  */
@@ -91,6 +93,19 @@ public class SqlCompleter extends StringsCompleter {
     logger.debug("complete:" + complete + ", size:" + candidates.size());
 
     return complete;
+  }
+
+  public void updateMetaData(Connection connection) {
+    Set<String> completions = new TreeSet<String>();
+    try {
+      completions.addAll(getColumnNames(connection.getMetaData()));
+      completions.addAll(getSchemaNames(connection.getMetaData()));
+
+      logger.info("Udateds metadata with:" + Joiner.on(',').join(completions));
+      this.getStrings().addAll(completions);
+    } catch (SQLException e) {
+      logger.error("Failed to update the metadata conmpletions", e);
+    }
   }
 
   public static Set<String> getSqlCompleterTokens(Connection connection, boolean skipmeta)
@@ -157,44 +172,60 @@ public class SqlCompleter extends StringsCompleter {
 
     // now add the tables and columns from the current connection
     if (!(skipmeta)) {
-      String[] columns = getColumnNames(connection.getMetaData());
-      for (int i = 0; columns != null && i < columns.length; i++) {
-        completions.add(columns[i++]);
-      }
+      completions.addAll(getColumnNames(connection.getMetaData()));
+      completions.addAll(getSchemaNames(connection.getMetaData()));
     }
 
     return completions;
   }
 
-  private static String[] getColumnNames(DatabaseMetaData meta) throws SQLException {
+  private static Set<String> getColumnNames(DatabaseMetaData meta) throws SQLException {
     Set<String> names = new HashSet<String>();
-
     try {
-      ResultSet columns = getColumns(meta, "%");
+      ResultSet columns = meta.getColumns(meta.getConnection().getCatalog(), null, "%", "%");
       try {
 
         while (columns.next()) {
-          // add the following strings:
-          // 1. column name
-          // 2. table name
-          // 3. tablename.columnname
+          // Add the following strings: (1) column name, (2) table name
           String name = columns.getString("TABLE_NAME");
-          names.add(name);
-          names.add(columns.getString("COLUMN_NAME"));
-          names.add(columns.getString("TABLE_NAME") + "." + columns.getString("COLUMN_NAME"));
+          if (!isBlank(name)) {
+            names.add(name);
+            names.add(columns.getString("COLUMN_NAME"));
+            // names.add(columns.getString("TABLE_NAME") + "." + columns.getString("COLUMN_NAME"));
+          }
         }
       } finally {
         columns.close();
       }
 
-      return names.toArray(new String[0]);
+      logger.info(Joiner.on(',').join(names));
+
+      return names;
     } catch (Throwable t) {
-      logger.error("Failed to tretrieve the column name", t);
-      return new String[0];
+      logger.error("Failed to retrieve the column name", t);
+      return new HashSet<String>();
     }
   }
 
-  static ResultSet getColumns(DatabaseMetaData metaData, String table) throws SQLException {
-    return metaData.getColumns(metaData.getConnection().getCatalog(), null, table, "%");
+  private static Set<String> getSchemaNames(DatabaseMetaData meta) throws SQLException {
+    Set<String> names = new HashSet<String>();
+    try {
+      ResultSet schemas = meta.getSchemas();
+      try {
+        while (schemas.next()) {
+          String schemaName = schemas.getString("TABLE_SCHEM");
+          if (!isBlank(schemaName)) {
+            names.add(schemaName + ".");
+          }
+        }
+      } finally {
+        schemas.close();
+      }
+
+      return names;
+    } catch (Throwable t) {
+      logger.error("Failed to retrieve the column name", t);
+      return new HashSet<String>();
+    }
   }
 }

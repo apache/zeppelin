@@ -178,7 +178,7 @@ public class PostgreSqlInterpreter extends Interpreter {
       currentStatement = getJdbcConnection().createStatement();
 
       currentStatement.setMaxRows(maxResult);
-      
+
       StringBuilder msg = null;
       boolean isTableType = false;
 
@@ -223,6 +223,9 @@ public class PostgreSqlInterpreter extends Interpreter {
           int updateCount = currentStatement.getUpdateCount();
           msg.append(UPDATE_COUNT_HEADER).append(NEWLINE);
           msg.append(updateCount).append(NEWLINE);
+          
+          // update the database metadata completions (beta)
+          //sqlCompleter.updateMetaData(getJdbcConnection());
         }
       } finally {
         try {
