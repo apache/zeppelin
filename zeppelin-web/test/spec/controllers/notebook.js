@@ -8,7 +8,7 @@ describe('Controller: NotebookCtrl', function() {
   var NotebookCtrl, scope;
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function($controller, $rootScope, websocketMsgSrv, baseUrlSrv) {
+  beforeEach(inject(function($controller, $rootScope/*, websocketMsgSrv, baseUrlSrv*/) {
     scope = $rootScope.$new();
     NotebookCtrl = $controller('NotebookCtrl', {
       $scope: scope
