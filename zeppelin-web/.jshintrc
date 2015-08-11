@@ -23,6 +23,7 @@
     "angular": false,
     "_": false,
     "jQuery": false,
+    "$": false
     "hljs": false
   }
 }
