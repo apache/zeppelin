@@ -7,12 +7,13 @@ group: development
 {% include JB/setup %}
 
 ### Why Charts are important in zeppeline?
+Zeppeline is mostly used for data analysis and visualization. Depending on the user requirements and datasets the types of charts needed could differ. So Zeppeline let user to add different chart libraries and chart types.
 
 <br />
 ### Add New Chart Library
-If You need a new JS chart library rather than D3 (nvd3) which is included in zeppelin, add new JS library for zeppelin-web by adding name for zeppelin-web/bower.json
+When needed a new JS chart library than D3 (nvd3) which is included in zeppelin, a new JS library for zeppelin-web is added by adding name in zeppelin-web/bower.json
 
-eg:
+eg: Adding map visualization to Zeppeline using leaflet
 
 ```
 "leaflet": "~0.7.3" for dependencies
@@ -52,4 +53,4 @@ Data can be retrived by `$scope.paragraph.result` inside function.
 <br />
 ### Best Practices for setting a new chart.
 
-We can have a new function to handle new charts. Example function `setMapChart()`
+A new function can be used to handle new charts. Example function `setMapChart()`
