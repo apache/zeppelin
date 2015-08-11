@@ -761,7 +761,7 @@
                   <directory>${basedir}/../python/build</directory>
                 </fileset>
                 <fileset>
-                  <directory>${project.build.direcoty}/spark-dist</directory>
+                  <directory>${project.build.directory}/spark-dist</directory>
                 </fileset>
               </filesets>
             </configuration>

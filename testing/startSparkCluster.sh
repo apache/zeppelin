@@ -29,7 +29,7 @@ HADOOP_VERSION="${2}"
 FWDIR=$(dirname "${BASH_SOURCE-$0}")
 ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
 export SPARK_HOME=${ZEPPELIN_HOME}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
-
+echo "SPARK_HOME is ${SPARK_HOME} " 
 if [ ! -d "${SPARK_HOME}" ]; then
     wget -q http://www.us.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
     tar zxf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz

@@ -436,7 +436,7 @@ angular.module('zeppelinWebApp')
           } else {
         	  session.setMode(editorMode.scala);
           }
-      }
+      };
 
       var remoteCompleter = {
           getCompletions : function(editor, session, pos, prefix, callback) {
@@ -465,7 +465,7 @@ angular.module('zeppelinWebApp')
               });
           }
       };
-      
+
       langTools.setCompleters([remoteCompleter, langTools.keyWordCompleter, langTools.snippetCompleter, langTools.textCompleter]);
 
       $scope.editor.setOptions({
@@ -576,7 +576,7 @@ angular.module('zeppelinWebApp')
     }
     var desc = 'Took ' + (timeMs/1000) + ' seconds.';
     if (pdata.textSaved !==undefined && Date.parse(pdata.textSaved) > Date.parse(pdata.dateStarted)){
-      desc += ' (outdated)'
+      desc += ' (outdated)';
     }
     return desc;
   };
