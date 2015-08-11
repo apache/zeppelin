@@ -44,6 +44,6 @@ group: nav-right
 * [Writing Zeppelin Interpreter](./development/writingzeppelininterpreter.html)
 * [How to contribute (code)](./development/howtocontribute.html)
 * [How to contribute (website)](./development/howtocontributewebsite.html)
-
-
-
+* [Data Validation](./development/datavalidation.html)
+* [Introducing New Chart Library](./development/introducingchartlibrary.html)
+* [How to contribute](./development/howtocontribute.html)
