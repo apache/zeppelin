@@ -83,7 +83,8 @@ public class SqlCompleter extends StringsCompleter {
 
     if (isBlank(argument)) {
       int argumentsCount = argumentList.getArguments().length;
-      if (argumentsCount <= 0 || sqlDelimiter.isDelimiterChar(buffer, buffer.length() - 1)) {
+      if (argumentsCount <= 0 || ((buffer.length() + 2) < cursor)
+          || sqlDelimiter.isDelimiterChar(buffer, cursor - 2)) {
         return -1;
       }
       argument = argumentList.getArguments()[argumentsCount - 1];

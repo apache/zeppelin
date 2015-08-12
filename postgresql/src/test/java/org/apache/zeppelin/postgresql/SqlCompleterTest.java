@@ -64,8 +64,8 @@ public class SqlCompleterTest extends BasicJDBCTestCaseAdapter {
   @Test
   public void testEdges() {
     String buffer = "  ORDER  ";
-    tester.buffer(buffer).from(0).to(7).expect(newHashSet("ORDER ")).test();
-    tester.buffer(buffer).from(8).to(15).expect(EMPTY).test();
+    tester.buffer(buffer).from(0).to(8).expect(newHashSet("ORDER ")).test();
+    tester.buffer(buffer).from(9).to(15).expect(EMPTY).test();
   }
 
   @Test
@@ -97,8 +97,8 @@ public class SqlCompleterTest extends BasicJDBCTestCaseAdapter {
   public void testDotDelimiter() {
     String buffer = "  order.select  ";
     tester.buffer(buffer).from(4).to(7).expect(newHashSet("order ")).test();
-    tester.buffer(buffer).from(8).to(14).expect(newHashSet("select ")).test();
-    tester.buffer(buffer).from(15).to(17).expect(EMPTY).test();
+    tester.buffer(buffer).from(8).to(15).expect(newHashSet("select ")).test();
+    tester.buffer(buffer).from(16).to(17).expect(EMPTY).test();
   }
 
   @Test
