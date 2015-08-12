@@ -14,7 +14,6 @@
  */
 package org.apache.zeppelin.geode;
 
-import static java.lang.Character.isWhitespace;
 import static org.apache.commons.lang.StringUtils.isBlank;
 
 import java.io.BufferedReader;
@@ -63,7 +62,8 @@ public class OqlCompleter extends StringsCompleter {
 
     if (isBlank(argument)) {
       int argumentsCount = argumentList.getArguments().length;
-      if (argumentsCount <= 0 || isWhitespace(buffer.charAt(buffer.length() - 1))) {
+      if (argumentsCount <= 0 || ((buffer.length() + 2) < cursor)
+          || delimiter.isDelimiterChar(buffer, cursor - 2)) {
         return -1;
       }
       argument = argumentList.getArguments()[argumentsCount - 1];

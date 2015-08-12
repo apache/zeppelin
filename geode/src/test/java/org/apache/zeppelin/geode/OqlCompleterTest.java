@@ -49,8 +49,8 @@ public class OqlCompleterTest {
   @Test
   public void testEdges() {
     String buffer = "  ORDER  ";
-    tester.buffer(buffer).from(0).to(7).expect(newHashSet("ORDER ")).test();
-    tester.buffer(buffer).from(8).to(15).expect(EMPTY).test();
+    tester.buffer(buffer).from(0).to(8).expect(newHashSet("ORDER ")).test();
+    tester.buffer(buffer).from(9).to(15).expect(EMPTY).test();
   }
 
   @Test
