@@ -6,14 +6,14 @@ group: development
 ---
 {% include JB/setup %}
 
-### Why Charts are important in zeppeline?
-Zeppeline is mostly used for data analysis and visualization. Depending on the user requirements and datasets the types of charts needed could differ. So Zeppeline let user to add different chart libraries and chart types.
+### Why Charts are important in zeppelin?
+Zeppelin is mostly used for data analysis and visualization. Depending on the user requirements and datasets the types of charts needed could differ. So Zeppelin let user to add different chart libraries and chart types.
 
 <br />
 ### Add New Chart Library
 When needed a new JS chart library than D3 (nvd3) which is included in zeppelin, a new JS library for zeppelin-web is added by adding name in zeppelin-web/bower.json
 
-eg: Adding map visualization to Zeppeline using leaflet
+eg: Adding map visualization to Zeppelin using leaflet
 
 ```
 "leaflet": "~0.7.3" for dependencies
