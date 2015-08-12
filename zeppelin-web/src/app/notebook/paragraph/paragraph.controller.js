@@ -1308,7 +1308,7 @@ angular.module('zeppelinWebApp')
 
     var schema = data.schema;
     var rows = data.rows;
-    console.log(rows)
+    console.log(rows);
     //check for d3s
     var values = $scope.paragraph.config.graph.values;
 
