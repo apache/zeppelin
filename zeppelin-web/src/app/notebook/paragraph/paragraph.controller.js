@@ -196,6 +196,7 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.errorMessage = data.paragraph.errorMessage;
       $scope.paragraph.jobName = data.paragraph.jobName;
       $scope.paragraph.title = data.paragraph.title;
+      $scope.paragraph.lineNumbers = data.paragraph.lineNumbers;
       $scope.paragraph.status = data.paragraph.status;
       $scope.paragraph.result = data.paragraph.result;
       $scope.paragraph.settings = data.paragraph.settings;
@@ -339,6 +340,24 @@ angular.module('zeppelinWebApp')
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
+  $scope.showLineNumbers = function () {
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
+    newConfig.lineNumbers = true;
+    $scope.editor.renderer.setShowGutter(true);
+
+    commitParagraph($scope.paragraph.lineNumbers, $scope.paragraph.text, newConfig, newParams);
+  };
+
+  $scope.hideLineNumbers = function () {
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
+    newConfig.lineNumbers = false;
+    $scope.editor.renderer.setShowGutter(false);
+
+    commitParagraph($scope.paragraph.lineNumbers, $scope.paragraph.text, newConfig, newParams);
+  };
+
   $scope.columnWidthClass = function(n) {
     if ($scope.asIframe) {
       return 'col-md-12';
@@ -399,8 +418,10 @@ angular.module('zeppelinWebApp')
 
     $scope.editor = _editor;
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
-      $scope.editor.renderer.setShowGutter(false);
+      $scope.editor.renderer.setShowGutter($scope.paragraph.config.lineNumbers);
+      $scope.editor.setShowFoldWidgets(false);
       $scope.editor.setHighlightActiveLine(false);
+      $scope.editor.setHighlightGutterLine(false);
       $scope.editor.setTheme('ace/theme/github');
       $scope.editor.focus();
       var hight = $scope.editor.getSession().getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
@@ -415,25 +436,29 @@ angular.module('zeppelinWebApp')
         // not applying emacs key binding while the binding override Ctrl-v. default behavior of paste text on windows.
       }
 
-      $scope.editor.setOptions({
-        enableBasicAutocompletion: true,
-        enableSnippets: false,
-        enableLiveAutocompletion:false
-      });
+      var sqlModeTest = /^%(\w*\.)?\wql/;
+
+      $scope.setParagraphMode = function(session, paragraphText) {
+    	  if (sqlModeTest.test(String(paragraphText))) {
+        	  session.setMode(editorMode.sql);
+          } else if ( String(paragraphText).startsWith('%md')) {
+        	  session.setMode(editorMode.markdown);
+          } else {
+        	  session.setMode(editorMode.scala);
+          }
+      };
+
       var remoteCompleter = {
           getCompletions : function(editor, session, pos, prefix, callback) {
               if (!$scope.editor.isFocused() ){ return;}
 
-              var pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
+              pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
               var buf = session.getValue();
-              $rootScope.$emit('sendNewEvent', {
-                  op : 'COMPLETION',
-                  data : {
-                      id : $scope.paragraph.id,
-                      buf : buf,
-                      cursor : pos
-                  }
-              });
+
+              // ensure the correct mode is set
+              $scope.setParagraphMode(session, buf);
+              
+              websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
 
               $scope.$on('completionList', function(event, data) {
                   if (data.completions) {
@@ -451,8 +476,14 @@ angular.module('zeppelinWebApp')
               });
           }
       };
-      langTools.addCompleter(remoteCompleter);
+      
+      langTools.setCompleters([remoteCompleter, langTools.keyWordCompleter, langTools.snippetCompleter, langTools.textCompleter]);
 
+      $scope.editor.setOptions({
+          enableBasicAutocompletion: true,
+          enableSnippets: false,
+          enableLiveAutocompletion:false
+      });
 
       $scope.handleFocus = function(value) {
         $scope.paragraphFocused = value;
@@ -478,14 +509,7 @@ angular.module('zeppelinWebApp')
         $scope.editor.resize();
       });
 
-      var code = $scope.editor.getSession().getValue();
-      if ( String(code).startsWith('%sql')) {
-        $scope.editor.getSession().setMode(editorMode.sql);
-      } else if ( String(code).startsWith('%md')) {
-        $scope.editor.getSession().setMode(editorMode.markdown);
-      } else {
-        $scope.editor.getSession().setMode(editorMode.scala);
-      }
+      $scope.setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue());
 
       $scope.editor.commands.addCommand({
         name: 'run',
@@ -791,12 +815,14 @@ angular.module('zeppelinWebApp')
     }
 
     var d3g = [];
+    var xLabels;
+    var yLabels;
 
     if (type === 'scatterChart') {
       var scatterData = setScatterChart(data, refresh);
 
-      var xLabels = scatterData.xLabels;
-      var yLabels = scatterData.yLabels;
+      xLabels = scatterData.xLabels;
+      yLabels = scatterData.yLabels;
       d3g = scatterData.d3g;
 
       $scope.chart[type].xAxis.tickFormat(function(d) {
@@ -852,7 +878,7 @@ angular.module('zeppelinWebApp')
         $scope.chart[type].yAxis.axisLabelDistance(50);
       } else if (type === 'lineChart' || type === 'stackedAreaChart') {
         var pivotdata = pivotDataToD3ChartFormat(p, false, true);
-        var xLabels = pivotdata.xLabels;
+        xLabels = pivotdata.xLabels;
         d3g = pivotdata.d3g;
         $scope.chart[type].xAxis.tickFormat(function(d) {
           if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
@@ -1235,7 +1261,7 @@ angular.module('zeppelinWebApp')
 
     var keys = $scope.paragraph.config.graph.keys;
     var groups = $scope.paragraph.config.graph.groups;
-    var values = $scope.paragraph.config.graph.values;
+    values = $scope.paragraph.config.graph.values;
     var valueOnly = (keys.length === 0 && groups.length === 0 && values.length > 0);
     var noKey = (keys.length === 0);
     var isMultiBarChart = (chartType === 'multiBarChart');
@@ -1286,9 +1312,11 @@ angular.module('zeppelinWebApp')
 
     // clear aggregation name, if possible
     var namesWithoutAggr = {};
+    var colName;
+    var withoutAggr;
     // TODO - This part could use som refactoring - Weird if/else with similar actions and variable names
-    for (var colName in colNameIndex) {
-      var withoutAggr = colName.substring(0, colName.lastIndexOf('('));
+    for (colName in colNameIndex) {
+      withoutAggr = colName.substring(0, colName.lastIndexOf('('));
       if (!namesWithoutAggr[withoutAggr]) {
         namesWithoutAggr[withoutAggr] = 1;
       } else {
@@ -1298,20 +1326,20 @@ angular.module('zeppelinWebApp')
 
     if (valueOnly) {
       for (var valueIndex = 0; valueIndex < d3g[0].values.length; valueIndex++) {
-        var colName = d3g[0].values[valueIndex].x;
+        colName = d3g[0].values[valueIndex].x;
         if (!colName) {
           continue;
         }
 
-        var withoutAggr = colName.substring(0, colName.lastIndexOf('('));
+        withoutAggr = colName.substring(0, colName.lastIndexOf('('));
         if (namesWithoutAggr[withoutAggr] <= 1 ) {
           d3g[0].values[valueIndex].x = withoutAggr;
         }
       }
     } else {
       for (var d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
-        var colName = d3g[d3gIndex].key;
-        var withoutAggr = colName.substring(0, colName.lastIndexOf('('));
+        colName = d3g[d3gIndex].key;
+        withoutAggr = colName.substring(0, colName.lastIndexOf('('));
         if (namesWithoutAggr[withoutAggr] <= 1 ) {
           d3g[d3gIndex].key = withoutAggr;
         }
@@ -1320,7 +1348,7 @@ angular.module('zeppelinWebApp')
       // use group name instead of group.value as a column name, if there're only one group and one value selected.
       if (groups.length === 1 && values.length === 1) {
         for (d3gIndex = 0; d3gIndex < d3g.length; d3gIndex++) {
-          var colName = d3g[d3gIndex].key;
+          colName = d3g[d3gIndex].key;
           colName = colName.split('.')[0];
           d3g[d3gIndex].key = colName;
         }

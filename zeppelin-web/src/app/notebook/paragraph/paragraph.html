@@ -435,6 +435,14 @@ limitations under the License.
              ng-click="showTitle()"
              ng-show="!paragraph.config.title"> Show title</a>
         </li>
+        <li>
+          <a class="fa fa-list-ol" style="cursor:pointer"
+             ng-click="hideLineNumbers()"
+             ng-show="paragraph.config.lineNumbers"> Hide line numbers</a>
+          <a class="fa fa-list-ol" style="cursor:pointer"
+             ng-click="showLineNumbers()"
+             ng-show="!paragraph.config.lineNumbers"> Show line numbers</a>
+        </li>
 
         <li><a class="icon-share-alt" style="cursor:pointer"
                ng-click="goToSingleParagraph()"> Link this paragraph</a>

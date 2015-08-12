@@ -79,9 +79,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.toggleAllEditor = function() {
     if ($scope.editorToggled) {
-      $scope.$broadcast('closeEditor');
-    } else {
       $scope.$broadcast('openEditor');
+    } else {
+      $scope.$broadcast('closeEditor');
     }
     $scope.editorToggled = !$scope.editorToggled;
   };
@@ -96,9 +96,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.toggleAllTable = function() {
     if ($scope.tableToggled) {
-      $scope.$broadcast('closeTable');
-    } else {
       $scope.$broadcast('openTable');
+    } else {
+      $scope.$broadcast('closeTable');
     }
     $scope.tableToggled = !$scope.tableToggled;
   };
@@ -356,8 +356,11 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   var getInterpreterBindingsCallBack = function() {
     var selected = false;
-    for (var i in $scope.interpreterBindings) {
-      var setting = $scope.interpreterBindings[i];
+    var key;
+    var setting;
+
+    for (key in $scope.interpreterBindings) {
+      setting = $scope.interpreterBindings[key];
       if (setting.selected) {
         selected = true;
         break;
@@ -367,8 +370,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if (!selected) {
       // make default selection
       var selectedIntp = {};
-      for (var i in $scope.interpreterBindings) {
-        var setting = $scope.interpreterBindings[i];
+      for (key in $scope.interpreterBindings) {
+        setting = $scope.interpreterBindings[key];
         if (!selectedIntp[setting.group]) {
           setting.selected = true;
           selectedIntp[setting.group] = true;
@@ -464,7 +467,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       }
       scope[varName] = data.angularObject.object;
     }
-      
   });
 
   $scope.$on('angularObjectRemove', function(event, data) {
@@ -482,10 +484,5 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       scope[varName] = undefined;
     }
   });
-
-  var isFunction = function(functionToCheck) {
-    var getType = {};
-    return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
-  };
 
 });

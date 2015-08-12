@@ -27,7 +27,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.zeppelin.conf.Credentials;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
@@ -39,6 +38,8 @@ import org.slf4j.LoggerFactory;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.AWSCredentialsProviderChain;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -55,14 +56,29 @@ import com.google.gson.GsonBuilder;
  * @author vgmartinez
  *
  */
-public class S3NotebookRepo implements NotebookRepo{
+public class S3NotebookRepo implements NotebookRepo {
   
   Logger logger = LoggerFactory.getLogger(S3NotebookRepo.class);
-  Credentials aws = new Credentials();
+
+  // Use a credential provider chain so that instance profiles can be utilized
+  // on an EC2 instance. The order of locations where credentials are searched
+  // is documented here
+  //
+  //    http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/
+  //        auth/DefaultAWSCredentialsProviderChain.html
+  //
+  // In summary, the order is:
+  //
+  //  1. Environment Variables - AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+  //  2. Java System Properties - aws.accessKeyId and aws.secretKey
+  //  3. Credential profiles file at the default location (~/.aws/credentials)
+  //       shared by all AWS SDKs and the AWS CLI
+  //  4. Instance profile credentials delivered through the Amazon EC2 metadata service
+  private AmazonS3 s3client = new AmazonS3Client(new DefaultAWSCredentialsProviderChain());
+
   private static String bucketName = "";
-  String user = "";
+  private String user = "";
   
-  AmazonS3 s3client = new AmazonS3Client(aws.getCredentials());
   
   private ZeppelinConfiguration conf;
   

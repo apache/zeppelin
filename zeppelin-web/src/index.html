@@ -27,6 +27,12 @@ limitations under the License.
 
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width">
+
+    <!-- ACE CSS autocomplition issue workarounds -->
+    <style type="text/css">
+       div.ace_editor.ace_autocomplete .ace_marker-layer .ace_active-line { z-index: -1 !important; }
+    </style>
+
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
     <!-- build:css(.) styles/vendor.css -->
     <!-- bower:css -->
@@ -61,6 +67,7 @@ limitations under the License.
     </div>
     <!-- Modal ::  Keyboard shortcuts -->
     <div ng-include src="'components/modal-shortcut/modal-shortcut.html'"></div>
+    <div id="note-modal-container" ng-include src="'components/noteName-create/note-name-dialog.html'"></div>
     <!-- build:js(.) scripts/oldieshim.js -->
     <!--[if lt IE 9]>
 <script src="bower_components/es5-shim/es5-shim.js"></script>
@@ -101,7 +108,7 @@ limitations under the License.
     <script src="bower_components/angular-xeditable/dist/js/xeditable.js"></script>
     <script src="bower_components/highlightjs/highlight.pack.js"></script>
     <script src="bower_components/lodash/lodash.js"></script>
-    <script src="bower_components/angular-filter/dist/angular-filter.js"></script>
+    <script src="bower_components/angular-filter/dist/angular-filter.min.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
     <!-- build:js({.tmp,src}) scripts/scripts.js -->
@@ -113,10 +120,12 @@ limitations under the License.
     <script src="app/notebook/paragraph/paragraph.controller.js"></script>
     <script src="components/navbar/navbar.controller.js"></script>
     <script src="components/ngescape/ngescape.directive.js"></script>
+    <script src="components/noteName-create/notename.controller.js"></script>
     <script src="components/popover-html-unsafe/popover-html-unsafe.directive.js"></script>
     <script src="components/ngenter/ngenter.directive.js"></script>
     <script src="components/dropdowninput/dropdowninput.directive.js"></script>
     <script src="components/resizable/resizable.directive.js"></script>
+    <script src="components/noteName-create/visible.directive.js"></script>
     <script src="components/websocketEvents/websocketMsg.service.js"></script>
     <script src="components/websocketEvents/websocketEvents.factory.js"></script>
     <script src="components/notebookListDataFactory/notebookList.datafactory.js"></script>

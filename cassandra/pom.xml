@@ -35,6 +35,8 @@
 
     <properties>
         <cassandra.driver.version>2.1.7.1</cassandra.driver.version>
+        <snappy.version>1.0.5.4</snappy.version>
+        <lz4.version>1.2.0</lz4.version>
         <scala.version>2.11.7</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
         <commons-lang.version>3.3.2</commons-lang.version>
@@ -61,6 +63,23 @@
             <artifactId>cassandra-driver-core</artifactId>
             <version>${cassandra.driver.version}</version>
         </dependency>
+
+        <!-- Compression libraries for the cassandra-driver protocol. -->
+        <!-- Include both compression options to make to simplify deployment. -->
+
+        <dependency>
+            <groupId>org.xerial.snappy</groupId>
+            <artifactId>snappy-java</artifactId>
+            <version>${snappy.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.jpountz.lz4</groupId>
+            <artifactId>lz4</artifactId>
+            <version>${lz4.version}</version>
+        </dependency>
+
+        <!-- End of compression libraries -->
 
         <dependency>
             <groupId>org.scala-lang</groupId>
