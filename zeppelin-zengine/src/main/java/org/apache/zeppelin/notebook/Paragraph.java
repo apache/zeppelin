@@ -17,22 +17,18 @@
 
 package org.apache.zeppelin.notebook;
 
-import java.io.Serializable;
-import java.util.*;
-
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
-import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * Paragraph is a representation of an execution unit.
@@ -46,7 +42,7 @@ public class Paragraph extends Job implements Serializable {
 
   String title;
   String text;
-  Date textSaved;
+  Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
 
@@ -56,7 +52,7 @@ public class Paragraph extends Job implements Serializable {
     this.replLoader = replLoader;
     title = null;
     text = null;
-    textSaved = null;
+    dateUpdated = null;
     settings = new GUI();
     config = new HashMap<String, Object>();
   }
@@ -72,7 +68,7 @@ public class Paragraph extends Job implements Serializable {
 
   public void setText(String newText) {
     this.text = newText;
-    this.textSaved = new Date();
+    this.dateUpdated = new Date();
   }
 
 

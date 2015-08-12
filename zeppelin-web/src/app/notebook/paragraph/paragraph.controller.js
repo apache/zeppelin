@@ -156,7 +156,7 @@ angular.module('zeppelinWebApp')
       data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
       data.paragraph.dateFinished !== $scope.paragraph.dateFinished ||
       data.paragraph.dateStarted !== $scope.paragraph.dateStarted ||
-      data.paragraph.textSaved !== $scope.paragraph.textSaved ||
+      data.paragraph.dateUpdated !== $scope.paragraph.dateUpdated ||
       data.paragraph.status !== $scope.paragraph.status ||
       data.paragraph.jobName !== $scope.paragraph.jobName ||
       data.paragraph.title !== $scope.paragraph.title ||
@@ -192,7 +192,7 @@ angular.module('zeppelinWebApp')
 
       /** push the rest */
       $scope.paragraph.aborted = data.paragraph.aborted;
-      $scope.paragraph.textSaved = data.paragraph.textSaved;
+      $scope.paragraph.dateUpdated = data.paragraph.dateUpdated;
       $scope.paragraph.dateCreated = data.paragraph.dateCreated;
       $scope.paragraph.dateFinished = data.paragraph.dateFinished;
       $scope.paragraph.dateStarted = data.paragraph.dateStarted;
@@ -566,19 +566,30 @@ angular.module('zeppelinWebApp')
 
   $scope.getProgress = function() {
     return ($scope.currentProgress) ? $scope.currentProgress : 0;
-  };
+  };                                           
 
   $scope.getExecutionTime = function() {
     var pdata = $scope.paragraph;
     var timeMs = Date.parse(pdata.dateFinished) - Date.parse(pdata.dateStarted);
     if (isNaN(timeMs) || timeMs < 0) {
-      return 'outdated';
+      if ($scope.isResultOutdated()){
+        return 'outdated';
+      }
+      return '';
     }
     var desc = 'Took ' + (timeMs/1000) + ' seconds.';
-    if (pdata.textSaved !==undefined && Date.parse(pdata.textSaved) > Date.parse(pdata.dateStarted)){
+    if ($scope.isResultOutdated()){
       desc += ' (outdated)';
     }
     return desc;
+  };  
+
+  $scope.isResultOutdated = function() {      
+    var pdata = $scope.paragraph;
+    if (pdata.dateUpdated !==undefined && Date.parse(pdata.dateUpdated) > Date.parse(pdata.dateStarted)){
+      return true;
+    }
+    return false;
   };
 
   $scope.$on('updateProgress', function(event, data) {
