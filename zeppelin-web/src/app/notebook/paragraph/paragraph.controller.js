@@ -21,6 +21,7 @@ angular.module('zeppelinWebApp')
 
   $scope.paragraph = null;
   $scope.editor = null;
+
   var editorMode = {scala: 'ace/mode/scala', sql: 'ace/mode/sql', markdown: 'ace/mode/markdown'};
 
   // Controller init
@@ -155,6 +156,7 @@ angular.module('zeppelinWebApp')
       data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
       data.paragraph.dateFinished !== $scope.paragraph.dateFinished ||
       data.paragraph.dateStarted !== $scope.paragraph.dateStarted ||
+      data.paragraph.dateUpdated !== $scope.paragraph.dateUpdated ||
       data.paragraph.status !== $scope.paragraph.status ||
       data.paragraph.jobName !== $scope.paragraph.jobName ||
       data.paragraph.title !== $scope.paragraph.title ||
@@ -190,6 +192,7 @@ angular.module('zeppelinWebApp')
 
       /** push the rest */
       $scope.paragraph.aborted = data.paragraph.aborted;
+      $scope.paragraph.dateUpdated = data.paragraph.dateUpdated;
       $scope.paragraph.dateCreated = data.paragraph.dateCreated;
       $scope.paragraph.dateFinished = data.paragraph.dateFinished;
       $scope.paragraph.dateStarted = data.paragraph.dateStarted;
@@ -243,10 +246,17 @@ angular.module('zeppelinWebApp')
     websocketMsgSrv.cancelParagraphRun($scope.paragraph.id);
   };
 
-
   $scope.runParagraph = function(data) {
     websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
                                  data, $scope.paragraph.config, $scope.paragraph.settings.params);
+    $scope.dirtyText = undefined;
+  };
+
+  $scope.saveParagraph = function(){
+    if($scope.dirtyText === undefined){
+      return;
+    }
+    commitParagraph($scope.paragraph.title, $scope.dirtyText, $scope.paragraph.config, $scope.paragraph.settings.params);
     $scope.dirtyText = undefined;
   };
 
@@ -410,6 +420,7 @@ angular.module('zeppelinWebApp')
 
   $scope.aceChanged = function() {
     $scope.dirtyText = $scope.editor.getSession().getValue();
+    $scope.startSaveTimer();
   };
 
   $scope.aceLoaded = function(_editor) {
@@ -457,7 +468,6 @@ angular.module('zeppelinWebApp')
 
               // ensure the correct mode is set
               $scope.setParagraphMode(session, buf);
-              
               websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
 
               $scope.$on('completionList', function(event, data) {
@@ -476,7 +486,7 @@ angular.module('zeppelinWebApp')
               });
           }
       };
-      
+
       langTools.setCompleters([remoteCompleter, langTools.keyWordCompleter, langTools.snippetCompleter, langTools.textCompleter]);
 
       $scope.editor.setOptions({
@@ -577,15 +587,30 @@ angular.module('zeppelinWebApp')
 
   $scope.getProgress = function() {
     return ($scope.currentProgress) ? $scope.currentProgress : 0;
-  };
+  };                                           
 
   $scope.getExecutionTime = function() {
     var pdata = $scope.paragraph;
     var timeMs = Date.parse(pdata.dateFinished) - Date.parse(pdata.dateStarted);
     if (isNaN(timeMs) || timeMs < 0) {
-      return '&nbsp;';
+      if ($scope.isResultOutdated()){
+        return 'outdated';
+      }
+      return '';
     }
-    return 'Took ' + (timeMs/1000) + ' seconds';
+    var desc = 'Took ' + (timeMs/1000) + ' seconds.';
+    if ($scope.isResultOutdated()){
+      desc += ' (outdated)';
+    }
+    return desc;
+  };  
+
+  $scope.isResultOutdated = function() {      
+    var pdata = $scope.paragraph;
+    if (pdata.dateUpdated !==undefined && Date.parse(pdata.dateUpdated) > Date.parse(pdata.dateStarted)){
+      return true;
+    }
+    return false;
   };
 
   $scope.$on('updateProgress', function(event, data) {

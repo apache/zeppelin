@@ -182,9 +182,13 @@
 
 .paragraph .editor {
   width: 100%;
-  border-left: 4px solid #DDDDDD;
+  border-left: 4px solid #DDDDDD;  
   background: rgba(255, 255, 255, 0.0);
   margin: 7px 0 2px 0px;
+}
+
+.dirty{  
+  border-left: 4px solid #E67E22 !important;   
 }
 
 .paragraph .text {

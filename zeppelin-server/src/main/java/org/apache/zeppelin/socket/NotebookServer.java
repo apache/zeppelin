@@ -560,7 +560,6 @@ public class NotebookServer extends WebSocketServlet implements
     }
     note.persist();
     broadcastNote(note);
-
     try {
       note.run(paragraphId);
     } catch (Exception ex) {
