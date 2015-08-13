@@ -356,7 +356,7 @@ angular.module('zeppelinWebApp')
     newConfig.lineNumbers = true;
     $scope.editor.renderer.setShowGutter(true);
 
-    commitParagraph($scope.paragraph.lineNumbers, $scope.paragraph.text, newConfig, newParams);
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.hideLineNumbers = function () {
@@ -365,7 +365,7 @@ angular.module('zeppelinWebApp')
     newConfig.lineNumbers = false;
     $scope.editor.renderer.setShowGutter(false);
 
-    commitParagraph($scope.paragraph.lineNumbers, $scope.paragraph.text, newConfig, newParams);
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.columnWidthClass = function(n) {
