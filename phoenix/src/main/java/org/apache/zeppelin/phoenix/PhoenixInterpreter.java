@@ -47,6 +47,8 @@ public class PhoenixInterpreter extends Interpreter {
   static final String PHOENIX_JDBC_URL = "phoenix.jdbc.url";
   static final String PHOENIX_USER = "phoenix.user";
   static final String PHOENIX_PASSWORD = "phoenix.password";
+  static final String PHOENIX_MAX_RESULT = "phoenix.max.result";
+  static final String DEFAULT_MAX_RESULT = "1000";
 
   static {
     Interpreter.register(
@@ -58,7 +60,9 @@ public class PhoenixInterpreter extends Interpreter {
           "jdbc:phoenix:localhost:2181:/hbase-unsecure",
           "Phoenix JDBC connection string")
         .add(PHOENIX_USER, "", "The Phoenix user")
-        .add(PHOENIX_PASSWORD, "", "The password for the Phoenix user").build());
+        .add(PHOENIX_PASSWORD, "", "The password for the Phoenix user")
+        .add(PHOENIX_MAX_RESULT, DEFAULT_MAX_RESULT, "Max number of SQL results to display.")
+        .build());
   }
 
   public PhoenixInterpreter(Properties property) {
@@ -67,6 +71,7 @@ public class PhoenixInterpreter extends Interpreter {
 
   Connection jdbcConnection;
   Exception exceptionOnConnect;
+  private int maxResult;
 
   //Test only method
   public Connection getJdbcConnection()
@@ -74,12 +79,15 @@ public class PhoenixInterpreter extends Interpreter {
     String url = getProperty(PHOENIX_JDBC_URL);
     String user = getProperty(PHOENIX_USER);
     String password = getProperty(PHOENIX_PASSWORD);
+    maxResult = Integer.valueOf(getProperty(PHOENIX_MAX_RESULT));
 
     return DriverManager.getConnection(url, user, password);
   }
 
   @Override
   public void open() {
+    close();
+
     logger.info("Jdbc open connection called!");
     try {
       String driverName = "org.apache.phoenix.jdbc.PhoenixDriver";
@@ -142,11 +150,14 @@ public class PhoenixInterpreter extends Interpreter {
           }
         }
         msg.append("\n");
-        while (res.next()) {
+
+        int displayRowCount = 0;
+        while (res.next() && displayRowCount < getMaxResult()) {
           for (int i = 1; i < md.getColumnCount() + 1; i++) {
             msg.append(res.getString(i) + "\t");
           }
           msg.append("\n");
+          displayRowCount++;
         }
       }
       finally {
@@ -207,6 +218,10 @@ public class PhoenixInterpreter extends Interpreter {
   @Override
   public List<String> completion(String buf, int cursor) {
     return null;
+  }
+
+  public int getMaxResult() {
+    return maxResult;
   }
 
 }
