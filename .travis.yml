@@ -22,34 +22,34 @@ before_install:
   - "sh -e /etc/init.d/xvfb start"
 
 install:
-  - mvn package -DskipTests -Phadoop-2.3 -Ppyspark -B
+  - /bin/bash ./dev/travis/travis-install.sh `pwd`  mvn package -DskipTests -Phadoop-2.3 -Ppyspark -B
 
 before_script:
   -
 
 script:
 # spark 1.4
-  - mvn package -Pbuild-distr -Phadoop-2.3 -Ppyspark -B
+  - /bin/bash ./dev/travis/travis-install.sh `pwd` mvn package -Pbuild-distr -Phadoop-2.3 -Ppyspark -B
   - ./testing/startSparkCluster.sh 1.4.0 2.3
-  - SPARK_HOME=`pwd`/spark-1.4.0-bin-hadoop2.3 mvn verify -Pusing-packaged-distr -Phadoop-2.3 -Ppyspark -B
+  - /bin/bash ./dev/travis/travis-install.sh `pwd` mvn verify -Pusing-packaged-distr -Phadoop-2.3 -Ppyspark -B
   - ./testing/stopSparkCluster.sh 1.4.0 2.3
  # spark 1.3
-  - mvn clean package -DskipTests -Pspark-1.3 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
-  - mvn package -Pbuild-distr -Pspark-1.3 -Phadoop-2.3 -B
+  - /bin/bash ./dev/travis/travis-install.sh `pwd`  mvn clean package -DskipTests -Pspark-1.3 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
+  - /bin/bash ./dev/travis/travis-install.sh `pwd`  mvn package -Pbuild-distr -Pspark-1.3 -Phadoop-2.3 -B
   - ./testing/startSparkCluster.sh 1.3.1 2.3
-  - SPARK_HOME=./spark-1.3.1-bin-hadoop2.3 mvn verify -Pspark-1.3 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
+  - mvn verify -Pspark-1.3 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
   - ./testing/stopSparkCluster.sh 1.3.1 2.3
 # spark 1.2
-  - mvn clean package -DskipTests -Pspark-1.2 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
-  - mvn package -Pbuild-distr -Pspark-1.2 -Phadoop-2.3 -B
+  - /bin/bash ./dev/travis/travis-install.sh `pwd` mvn clean package -DskipTests -Pspark-1.2 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
+  - /bin/bash ./dev/travis/travis-install.sh `pwd` mvn package -Pbuild-distr -Pspark-1.2 -Phadoop-2.3 -B
   - ./testing/startSparkCluster.sh 1.2.1 2.3
-  - SPARK_HOME=./spark-1.2.1-bin-hadoop2.3 mvn verify -Pspark-1.2 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
+  - mvn verify -Pspark-1.2 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
   - ./testing/stopSparkCluster.sh 1.2.1 2.3
 # spark 1.1
-  - mvn clean package -DskipTests -Pspark-1.1 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
+  - /bin/bash ./dev/travis/travis-install.sh `pwd`  mvn clean package -DskipTests -Pspark-1.1 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
   - mvn package -Pbuild-distr -Pspark-1.1 -Phadoop-2.3 -B
   - ./testing/startSparkCluster.sh 1.1.1 2.3
-  - SPARK_HOME=./spark-1.1.1-bin-hadoop2.3 mvn verify -Pspark-1.1 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
+  - /bin/bash ./dev/travis/travis-install.sh `pwd` mvn verify -Pspark-1.1 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark'
   - ./testing/stopSparkCluster.sh 1.1.1 2.3
 
 after_failure:

@@ -41,7 +41,7 @@ limitations under the License.
                      require : ['ace/ext/language_tools']
                    }"
            ng-model="paragraph.text"
-           ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">
+           ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING', dirty : dirtyText}">
       </div>
     </div>
 
@@ -392,12 +392,13 @@ limitations under the License.
     <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top" tooltip="Cancel"
           ng-click="cancelParagraph()"
           ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
-
     <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide') + ' editor'}}"
           ng-click="toggleEditor()"></span>
     <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
           ng-click="toggleOutput()"></span>
-
+    <span  style="cursor:pointer;"
+          ng-click="saveParagraph()"
+          ng-show="dirtyText"></span>
     <span class="dropdown navbar-right">
       <span class="icon-settings" style="cursor:pointer"
             data-toggle="dropdown"
@@ -434,6 +435,14 @@ limitations under the License.
           <a class="fa fa-font" style="cursor:pointer"
              ng-click="showTitle()"
              ng-show="!paragraph.config.title"> Show title</a>
+        </li>
+        <li>
+          <a class="fa fa-list-ol" style="cursor:pointer"
+             ng-click="hideLineNumbers()"
+             ng-show="paragraph.config.lineNumbers"> Hide line numbers</a>
+          <a class="fa fa-list-ol" style="cursor:pointer"
+             ng-click="showLineNumbers()"
+             ng-show="!paragraph.config.lineNumbers"> Show line numbers</a>
         </li>
 
         <li><a class="icon-share-alt" style="cursor:pointer"

@@ -26,10 +26,10 @@ limitations under the License.
 
     <div class="collapse navbar-collapse" ng-controller="NavCtrl as navbar">
       <ul class="nav navbar-nav">
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle">Notebook <span class="caret"></span></a>
+        <li class="dropdown" dropdown>
+          <a href="#" class="dropdown-toggle" dropdown-toggle>Notebook <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
-            <li><a href="javascript:void(0);" ng-click="navbar.websocketMsgSrv.createNotebook()"><i class="fa fa-plus"></i> Create new note</a></li>
+            <li><a href="" data-toggle="modal" data-target="#noteNameModal"><i class="fa fa-plus"></i> Create new note</a></li>
             <li class="divider"></li>
             <div id="notebook-list" class="scrollbar-container">
               <li ng-repeat="note in navbar.notes.list track by $index" ng-class="{'active' : navbar.isActive(note.id)}">

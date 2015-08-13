@@ -23,16 +23,16 @@ limitations under the License.
                     class="btn btn-default btn-xs"
                     ng-click="runNote()"
                     ng-if="!isNoteRunning()"
-                    tooltip-placement="top" tooltip="Run all the note">
+                    tooltip-placement="top" tooltip="Run all the notes">
               <i class="icon-control-play"></i>
-            </button>
+            </button>            
 
             <button type="button"
                     class="btn btn-default btn-xs"
                     ng-click="toggleAllEditor()"
                     ng-hide="viewOnly"
                     tooltip-placement="top" tooltip="Show/hide the code">
-              <i ng-class="editorToggled ? 'fa icon-size-actual' : 'fa icon-size-fullscreen'"></i></button>
+              <i ng-class="editorToggled ?  'fa icon-size-fullscreen' :'fa icon-size-actual'"></i></button>
 
             <button type="button"
                     class="btn btn-default btn-xs"
@@ -54,7 +54,8 @@ limitations under the License.
               <div class="btn btn-default btn-xs dropdown-toggle"
                    type="button"
                    data-toggle="dropdown"
-                   ng-class="{ 'btn-info' : note.config.cron, 'btn-danger' : note.info.cron, 'btn-default' : !note.config.cron}">
+                   ng-class="{ 'btn-info' : note.config.cron, 'btn-danger' : note.info.cron, 'btn-default' : !note.config.cron}"
+                   tooltip-placement="top" tooltip="Run scheduler">
                 <span class="fa fa-clock-o"></span> {{getCronOptionNameFromValue(note.config.cron)}}
               </div>
               <ul class="dropdown-menu" role="menu" style="width:300px">

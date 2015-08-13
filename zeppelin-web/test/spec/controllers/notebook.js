@@ -1,22 +1,20 @@
 'use strict';
 
-describe('Controller: NotebookCtrl', function () {
+describe('Controller: NotebookCtrl', function() {
 
   // load the controller's module
-  beforeEach(module('zeppelinWeb2App'));
+  beforeEach(module('zeppelinWebApp'));
 
-  var NotebookCtrl,
-    scope;
+  var NotebookCtrl, scope;
 
   // Initialize the controller and a mock scope
-  beforeEach(inject(function ($controller, $rootScope) {
+  beforeEach(inject(function($controller, $rootScope/*, websocketMsgSrv, baseUrlSrv*/) {
     scope = $rootScope.$new();
     NotebookCtrl = $controller('NotebookCtrl', {
       $scope: scope
     });
   }));
 
-  it('should attach a list of awesomeThings to the scope', function () {
-    expect(scope.awesomeThings.length).toBe(3);
-  });
+  //Test Can be writting for to test NotebookCtrl
+
 });
