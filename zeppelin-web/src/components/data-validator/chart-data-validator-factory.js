@@ -27,36 +27,38 @@ angular.module('zeppelinWebApp').factory('chartdataValidator', function(
 
   function rowCheck(dataRows) {
     if(dataRows instanceof Object) {
-      console.log(dataRows)
       for(var key in dataRows) {
-        key
+        schemaChecker(key, 0);
         if(dataRows.hasOwnProperty(key)) {
           var obj = dataRows[key];
           rowValueCheck(obj);
         }
       }
     } else {
-      msg += 'dataRows is not a Object | ';
-      errorStatus = true;
+      chartdataValidator.msg += 'dataRows is not a Object | ';
+      chartdataValidator.errorStatus = true;
     }
   }
 
   function rowValueCheck(record) {
     if(record instanceof Object) {
-      console.log(record)
+      //console.log(record)
       for(var key in record) {
-
         var recordValues = record[key];
-        for(var dataValues in recordValues) {
-          if(dataValues.hasOwnProperty(key)) {
-            var values = values[key];
-            console.log(values);
+        var countKey = 1;
+        for(var recordKey in recordValues) {
+
+          if(recordValues.hasOwnProperty(recordKey)) {
+            var values = recordValues[recordKey];
+            //console.log(values);
+            schemaChecker(values, countKey);
+            countKey++;
           }
         }
       }
     } else {
-      msg += 'record is not a Object | ';
-      errorStatus = true;
+      chartdataValidator.msg += 'record is not a Object | ';
+      chartdataValidator.errorStatus = true;
     }
   }
 
@@ -67,20 +69,20 @@ angular.module('zeppelinWebApp').factory('chartdataValidator', function(
       console.log(data);
       return true;
     } else {
-      msg += 'data rows does not exisiting | ';
-      errorStatus = true;
+      chartdataValidator.msg += 'data rows does not exisiting | ';
+      chartdataValidator.errorStatus = true;
     }
   }
 
   function schemaChecker(record, index) {
-    if(isNaN(record) !== (schema.type[index] === 'string')) {
-      errorStatus = true;
-      msg += 'data record ' + (record[index]) +
+    if(isNaN(record) !== (simpleChartSchema.type[index] === 'string')) {
+      //console.log(record+' is failed '+simpleChartSchema.type[index]);
+      chartdataValidator.errorStatus = true;
+      chartdataValidator.msg += 'data record ' + (record[index]) +
         ' is not matching for schema | ';
-      return true;
     }
+    //console.log(record+' is passed');
   }
-
 
   return chartdataValidator;
 });

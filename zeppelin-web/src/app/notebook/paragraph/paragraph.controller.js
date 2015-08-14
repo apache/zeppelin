@@ -1397,9 +1397,10 @@ angular.module('zeppelinWebApp')
         });
       });
     }
-    //TODO adding data validator services 
-    //var msg = dataValidatorSrv.validateChartData(data);
-    //console.log(msg);
+
+    var msg = dataValidatorSrv.validateChartData(data);
+    console.log(msg);
+
     // clear aggregation name, if possible
     var namesWithoutAggr = {};
     var colName;
@@ -1533,7 +1534,7 @@ angular.module('zeppelinWebApp')
         d3g : []
       };
     }
-
+    console.log(data.rows);
     var msg = dataValidatorSrv.validateScatterData(data);
     console.log(msg);
     //TODO- warning need to error model or services will needed

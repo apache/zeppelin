@@ -24,6 +24,7 @@ angular.module('zeppelinWebApp').service('dataValidatorSrv', function($rootScope
 
     this.validateChartData = function(data) {
     var chartValidator = chartdataValidator;
+    //console.log(data);
     doBasicCheck(chartValidator,data);
     return buildMsg(chartValidator);
   };
