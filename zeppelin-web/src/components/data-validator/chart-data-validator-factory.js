@@ -19,7 +19,68 @@ angular.module('zeppelinWebApp').factory('chartdataValidator', function(
   var simpleChartSchema = dataModelSchemas.D3ChartDataSchema;
   var chartdataValidator = new DataValidator(simpleChartSchema);
 
-  //Can specify for more deeper level for chart data models
+  //overriding the check data 
+  chartdataValidator.checkData = function() {
+    console.log('over riding happen');
+    basicCheck();
+  };
+
+  function rowCheck(dataRows) {
+    if(dataRows instanceof Object) {
+      console.log(dataRows)
+      for(var key in dataRows) {
+        key
+        if(dataRows.hasOwnProperty(key)) {
+          var obj = dataRows[key];
+          rowValueCheck(obj);
+        }
+      }
+    } else {
+      msg += 'dataRows is not a Object | ';
+      errorStatus = true;
+    }
+  }
+
+  function rowValueCheck(record) {
+    if(record instanceof Object) {
+      console.log(record)
+      for(var key in record) {
+
+        var recordValues = record[key];
+        for(var dataValues in recordValues) {
+          if(dataValues.hasOwnProperty(key)) {
+            var values = values[key];
+            console.log(values);
+          }
+        }
+      }
+    } else {
+      msg += 'record is not a Object | ';
+      errorStatus = true;
+    }
+  }
+
+  function basicCheck() {
+    var data = chartdataValidator.data;
+    if(data.schema && data.rows) {
+      rowCheck(data.rows);
+      console.log(data);
+      return true;
+    } else {
+      msg += 'data rows does not exisiting | ';
+      errorStatus = true;
+    }
+  }
+
+  function schemaChecker(record, index) {
+    if(isNaN(record) !== (schema.type[index] === 'string')) {
+      errorStatus = true;
+      msg += 'data record ' + (record[index]) +
+        ' is not matching for schema | ';
+      return true;
+    }
+  }
+
 
   return chartdataValidator;
 });
