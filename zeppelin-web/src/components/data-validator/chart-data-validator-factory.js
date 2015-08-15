@@ -35,8 +35,7 @@ angular.module('zeppelinWebApp').factory('chartdataValidator', function(
         }
       }
     } else {
-      chartdataValidator.msg += 'dataRows is not a Object | ';
-      chartdataValidator.errorStatus = true;
+      markValidationError('dataRows is not a Object | ');
     }
   }
 
@@ -57,8 +56,7 @@ angular.module('zeppelinWebApp').factory('chartdataValidator', function(
         }
       }
     } else {
-      chartdataValidator.msg += 'record is not a Object | ';
-      chartdataValidator.errorStatus = true;
+      markValidationError('record is not a Object | ');
     }
   }
 
@@ -69,19 +67,22 @@ angular.module('zeppelinWebApp').factory('chartdataValidator', function(
       console.log(data);
       return true;
     } else {
-      chartdataValidator.msg += 'data rows does not exisiting | ';
-      chartdataValidator.errorStatus = true;
+      markValidationError('data rows does not exisiting | ');
     }
   }
 
   function schemaChecker(record, index) {
     if(isNaN(record) !== (simpleChartSchema.type[index] === 'string')) {
       //console.log(record+' is failed '+simpleChartSchema.type[index]);
-      chartdataValidator.errorStatus = true;
-      chartdataValidator.msg += 'data record ' + (record[index]) +
-        ' is not matching for schema | ';
+      markValidationError('data record ' + record +
+        ' is not matching for schema | ');
     }
     //console.log(record+' is passed');
+  }
+
+  function markValidationError(msg) {
+    chartdataValidator.setMsg(msg);
+    chartdataValidator.setError();
   }
 
   return chartdataValidator;

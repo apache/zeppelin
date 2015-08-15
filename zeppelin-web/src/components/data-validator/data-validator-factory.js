@@ -24,6 +24,7 @@ angular.module('zeppelinWebApp').factory('DataValidator', function($rootScope) {
     this.checkData = checkData;
     this.getMsg = getMsg;
     this.setMsg = setMsg;
+    this.clearMsg = clearMsg;
     this.data = null;
   };
 
@@ -41,6 +42,10 @@ angular.module('zeppelinWebApp').factory('DataValidator', function($rootScope) {
 
   function setMsg(newMsg) {
     msg += newMsg;
+  }
+
+  function clearMsg() {
+    msg = '';
   }
 
   function getErrorStatus() {
@@ -69,10 +74,8 @@ angular.module('zeppelinWebApp').factory('DataValidator', function($rootScope) {
           msg += 'data record does not mapping to data schema| ';
         }
       }
-      return true;
     } else {
       msg += 'data row does not exisiting | ';
-      return false;
     }
   }
 
@@ -81,7 +84,8 @@ angular.module('zeppelinWebApp').factory('DataValidator', function($rootScope) {
       for(var i = 0; i < schema.type.length; i++) {
         if(isNaN(record[i]) !== (schema.type[i] === 'string')) {
           errorStatus = true;
-          msg += 'data record ' + (record[i]) + ' is not matching for schema | ';
+          msg += 'data record ' + (record[i]) +
+            ' is not matching for schema | ';
           return true;
         }
       } //end validation on data record

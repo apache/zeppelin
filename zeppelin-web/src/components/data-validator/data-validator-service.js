@@ -13,25 +13,29 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').service('dataValidatorSrv', function($rootScope, mapdataValidator, scatterdataValidator, chartdataValidator, dataModelSchemas) {
+angular.module('zeppelinWebApp').service('dataValidatorSrv', function(
+  $rootScope, mapdataValidator, scatterdataValidator, chartdataValidator,
+  dataModelSchemas) {
 
   this.validateMapData = function(data) {
+    console.log('map data validator');
     var mapValidator = mapdataValidator;
-    doBasicCheck(mapValidator,data);
+    doBasicCheck(mapValidator, data);
     mapValidator.checkLatiLong();
     return buildMsg(mapValidator);
   };
 
-    this.validateChartData = function(data) {
+  this.validateChartData = function(data) {
+    console.log('chart data validator');
     var chartValidator = chartdataValidator;
-    //console.log(data);
-    doBasicCheck(chartValidator,data);
+    doBasicCheck(chartValidator, data);
     return buildMsg(chartValidator);
   };
 
-    this.validateScatterData = function(data) {
+  this.validateScatterData = function(data) {
+    console.log('scatter data validator');
     var scatterChartValidator = scatterdataValidator;
-    doBasicCheck(scatterChartValidator,data);
+    doBasicCheck(scatterChartValidator, data);
     return buildMsg(scatterChartValidator);
   };
 
@@ -43,9 +47,13 @@ angular.module('zeppelinWebApp').service('dataValidatorSrv', function($rootScope
     return msg;
   }
 
-  function doBasicCheck(validator,data) {
+  function doBasicCheck(validator, data) {
+    validator.clearMsg();
     validator.data = data;
     validator.checkData();
+    console.log('doBasicCheck..');
+    console.log(validator.getMsg());
+    console.log(validator);
   }
 
 });
