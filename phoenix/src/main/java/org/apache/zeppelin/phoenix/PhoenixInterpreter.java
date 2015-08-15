@@ -127,7 +127,7 @@ public class PhoenixInterpreter extends Interpreter {
   }
 
   private String clean(boolean isExplain, String str){
-    return (isExplain) ? str : str.replace(TAB, WS).replace(NEWLINE, WS);  
+    return (isExplain || str == null) ? str : str.replace(TAB, WS).replace(NEWLINE, WS);  
   }
 
   private InterpreterResult executeSql(String sql) {
