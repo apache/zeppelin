@@ -18,7 +18,6 @@ angular.module('zeppelinWebApp').service('dataValidatorSrv', function(
   dataModelSchemas) {
 
   this.validateMapData = function(data) {
-    console.log('map data validator');
     var mapValidator = mapdataValidator;
     doBasicCheck(mapValidator, data);
     mapValidator.checkLatiLong();
@@ -26,14 +25,12 @@ angular.module('zeppelinWebApp').service('dataValidatorSrv', function(
   };
 
   this.validateChartData = function(data) {
-    console.log('chart data validator');
     var chartValidator = chartdataValidator;
     doBasicCheck(chartValidator, data);
     return buildMsg(chartValidator);
   };
 
   this.validateScatterData = function(data) {
-    console.log('scatter data validator');
     var scatterChartValidator = scatterdataValidator;
     doBasicCheck(scatterChartValidator, data);
     return buildMsg(scatterChartValidator);
@@ -51,9 +48,6 @@ angular.module('zeppelinWebApp').service('dataValidatorSrv', function(
     validator.clearMsg();
     validator.data = data;
     validator.checkData();
-    console.log('doBasicCheck..');
-    console.log(validator.getMsg());
-    console.log(validator);
   }
 
 });
