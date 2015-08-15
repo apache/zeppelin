@@ -879,19 +879,21 @@ angular.module('zeppelinWebApp')
     if(msg.error){
       console.log('Data is not matching for schema');
       console.log(msg.msg);
-    }
-
+    }else{
+    //drawing map deatils if only data set is validated.
     $scope.markers = newmarkers;
     var bounds = leafletBoundsHelpers.createBoundsFromArray([
       [Math.max.apply(Math, latArr), Math.max.apply(Math, lngArr)],
       [Math.min.apply(Math, latArr), Math.min.apply(Math, lngArr)]
     ]);
     $scope.bounds = bounds;
-    $scope.center = {};
+    
 
     // set map chart height
     var height = $scope.paragraph.config.graph.height;
     $('#p'+$scope.paragraph.id+'_mapChart').height(height);
+  }
+  $scope.center = {};
   };
 
   var setD3Chart = function(type, data, refresh) {

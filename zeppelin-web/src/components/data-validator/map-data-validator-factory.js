@@ -22,6 +22,7 @@ angular.module('zeppelinWebApp').factory('mapdataValidator', function(
 
   var mapdataValidator = new DataValidator(mapSchema);
   mapdataValidator.checkLatiLong = function() {
+    errorStatus = false;
     var data = mapdataValidator.data.rows;
     msg = '';
     for(var i = 0; i < data.length; i++) {
@@ -32,7 +33,6 @@ angular.module('zeppelinWebApp').factory('mapdataValidator', function(
       }
     }
     mapdataValidator.setMsg(msg);
-    return;
   };
 
   //Latitude measurements range from 0° to (+/–)90°.
@@ -40,11 +40,10 @@ angular.module('zeppelinWebApp').factory('mapdataValidator', function(
     var latitude = parseFloat(record);
     if(schema.latitude.low < latitude && latitude < schema.latitude.high) {
       msg += 'latitudes are ok | ';
-      return;
+    } else {
+      msg += 'Latitude ' + record + ' is not in range | ';
+      errorStatus = true;
     }
-    msg += 'Latitude ' + record + ' is not in range | ';
-    errorStatus = true;
-    return;
   }
 
   //Longitude measurements range from 0° to (+/–)180°.
@@ -53,11 +52,10 @@ angular.module('zeppelinWebApp').factory('mapdataValidator', function(
     console.log(schema.longitude.low < longitude);
     if(schema.longitude.low < longitude && longitude < schema.longitude.high) {
       msg += 'longitude are ok | ';
-      return;
+    } else {
+      msg += 'Longitude' + record + ' is not in range | ';
+      errorStatus = true;
     }
-    msg += 'Longitude' + record + ' is not in range | ';
-    errorStatus = true;
-    return;
   }
 
   return mapdataValidator;
