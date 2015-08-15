@@ -42,13 +42,31 @@ import org.slf4j.LoggerFactory;
  */
 public class PhoenixInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(PhoenixInterpreter.class);
-  int commandTimeOut = 600000;
+
+  private static final String EXPLAIN_PREDICATE = "EXPLAIN ";
+  private static final String UPDATE_HEADER = "UPDATES ";
+
+  private static final String WS = " ";
+  private static final String NEWLINE = "\n";
+  private static final String TAB = "\t";
+  private static final String TABLE_MAGIC_TAG = "%table ";
 
   static final String PHOENIX_JDBC_URL = "phoenix.jdbc.url";
-  static final String PHOENIX_USER = "phoenix.user";
-  static final String PHOENIX_PASSWORD = "phoenix.password";
+  static final String PHOENIX_JDBC_USER = "phoenix.user";
+  static final String PHOENIX_JDBC_PASSWORD = "phoenix.password";
   static final String PHOENIX_MAX_RESULT = "phoenix.max.result";
+  static final String PHOENIX_JDBC_DRIVER_NAME = "phoenix.driver.name";
+
+  static final String DEFAULT_JDBC_URL = "jdbc:phoenix:localhost:2181:/hbase-unsecure";
+  static final String DEFAULT_JDBC_USER = "";
+  static final String DEFAULT_JDBC_PASSWORD = "";
   static final String DEFAULT_MAX_RESULT = "1000";
+  static final String DEFAULT_JDBC_DRIVER_NAME = "org.apache.phoenix.jdbc.PhoenixDriver";
+
+  private Connection jdbcConnection;
+  private Statement currentStatement;
+  private Exception exceptionOnConnect;
+  private int maxResult;
 
   static {
     Interpreter.register(
@@ -56,53 +74,37 @@ public class PhoenixInterpreter extends Interpreter {
       "phoenix",
       PhoenixInterpreter.class.getName(),
       new InterpreterPropertyBuilder()
-        .add(PHOENIX_JDBC_URL,
-          "jdbc:phoenix:localhost:2181:/hbase-unsecure",
-          "Phoenix JDBC connection string")
-        .add(PHOENIX_USER, "", "The Phoenix user")
-        .add(PHOENIX_PASSWORD, "", "The password for the Phoenix user")
+        .add(PHOENIX_JDBC_URL, DEFAULT_JDBC_URL, "Phoenix JDBC connection string")
+        .add(PHOENIX_JDBC_USER, DEFAULT_JDBC_USER, "The Phoenix user")
+        .add(PHOENIX_JDBC_PASSWORD, DEFAULT_JDBC_PASSWORD, "The password for the Phoenix user")
         .add(PHOENIX_MAX_RESULT, DEFAULT_MAX_RESULT, "Max number of SQL results to display.")
-        .build());
+        .add(PHOENIX_JDBC_DRIVER_NAME, DEFAULT_JDBC_DRIVER_NAME, "Phoenix Driver classname.")
+        .build()
+    );
   }
 
   public PhoenixInterpreter(Properties property) {
     super(property);
   }
 
-  Connection jdbcConnection;
-  Exception exceptionOnConnect;
-  private int maxResult;
-
-  //Test only method
-  public Connection getJdbcConnection()
-      throws SQLException {
-    String url = getProperty(PHOENIX_JDBC_URL);
-    String user = getProperty(PHOENIX_USER);
-    String password = getProperty(PHOENIX_PASSWORD);
-    maxResult = Integer.valueOf(getProperty(PHOENIX_MAX_RESULT));
-
-    return DriverManager.getConnection(url, user, password);
-  }
-
   @Override
   public void open() {
+    logger.info("Jdbc open connection called!");
     close();
 
-    logger.info("Jdbc open connection called!");
     try {
-      String driverName = "org.apache.phoenix.jdbc.PhoenixDriver";
-      Class.forName(driverName);
-    } catch (ClassNotFoundException e) {
-      logger.error("Can not open connection", e);
-      exceptionOnConnect = e;
-      return;
-    }
-    try {
-      jdbcConnection = getJdbcConnection();
+      Class.forName(getProperty(PHOENIX_JDBC_DRIVER_NAME));
+
+      maxResult = Integer.valueOf(getProperty(PHOENIX_MAX_RESULT));
+      jdbcConnection = DriverManager.getConnection(
+        getProperty(PHOENIX_JDBC_URL),
+        getProperty(PHOENIX_JDBC_USER),
+        getProperty(PHOENIX_JDBC_PASSWORD)
+      );
       exceptionOnConnect = null;
       logger.info("Successfully created Jdbc connection");
     }
-    catch (SQLException e) {
+    catch (ClassNotFoundException | SQLException e) {
       logger.error("Cannot open connection", e);
       exceptionOnConnect = e;
     }
@@ -110,68 +112,67 @@ public class PhoenixInterpreter extends Interpreter {
 
   @Override
   public void close() {
+    logger.info("Jdbc close connection called!");
+
     try {
-      if (jdbcConnection != null) {
-        jdbcConnection.close();
+      if (getJdbcConnection() != null) {
+        getJdbcConnection().close();
       }
-    }
-    catch (SQLException e) {
+    } catch (SQLException e) {
       logger.error("Cannot close connection", e);
     }
     finally {
-      jdbcConnection = null;
       exceptionOnConnect = null;
     }
   }
 
-  Statement currentStatement;
+  private String clean(boolean isExplain, String str){
+    return (isExplain) ? str : str.replace(TAB, WS).replace(NEWLINE, WS);  
+  }
+
   private InterpreterResult executeSql(String sql) {
     try {
       if (exceptionOnConnect != null) {
         return new InterpreterResult(Code.ERROR, exceptionOnConnect.getMessage());
       }
-      currentStatement = jdbcConnection.createStatement();
-      StringBuilder msg = null;
-      if (StringUtils.containsIgnoreCase(sql, "EXPLAIN ")) {
-        //return the explain as text, make this visual explain later
-        msg = new StringBuilder();
-      }
-      else {
-        msg = new StringBuilder("%table ");
-      }
-      ResultSet res = currentStatement.executeQuery(sql);
+
+      currentStatement = getJdbcConnection().createStatement();
+
+      boolean isExplain = StringUtils.containsIgnoreCase(sql, EXPLAIN_PREDICATE);
+      StringBuilder msg = (isExplain) ? new StringBuilder() : new StringBuilder(TABLE_MAGIC_TAG);
+
       try {
-        ResultSetMetaData md = res.getMetaData();
-        for (int i = 1; i < md.getColumnCount() + 1; i++) {
-          if (i == 1) {
-            msg.append(md.getColumnName(i));
-          } else {
-            msg.append("\t" + md.getColumnName(i));
-          }
-        }
-        msg.append("\n");
+        if (currentStatement.execute(sql)){ //If query had results
+          ResultSet res = currentStatement.getResultSet();
 
-        int displayRowCount = 0;
-        while (res.next() && displayRowCount < getMaxResult()) {
-          for (int i = 1; i < md.getColumnCount() + 1; i++) {
-            msg.append(res.getString(i) + "\t");
+          //Append column names
+          ResultSetMetaData md = res.getMetaData();
+          String row = clean(isExplain, md.getColumnName(1));
+          for (int i = 2; i < md.getColumnCount() + 1; i++)
+            row += TAB + clean(isExplain, md.getColumnName(i));
+          msg.append(row + NEWLINE);
+
+          //Append rows
+          int rowCount = 0;
+          while (res.next() && rowCount < getMaxResult()) {
+            row = clean(isExplain, res.getString(1));
+            for (int i = 2; i < md.getColumnCount() + 1; i++)
+              row += TAB + clean(isExplain, res.getString(i));
+            msg.append(row + NEWLINE);
+            rowCount++;
           }
-          msg.append("\n");
-          displayRowCount++;
-        }
-      }
-      finally {
-        try {
           res.close();
-          currentStatement.close();
         }
-        finally {
-          currentStatement = null;
+        else { // May have been upsert or DDL
+          msg.append(UPDATE_HEADER + NEWLINE + currentStatement.getUpdateCount() + NEWLINE);
         }
+
+        currentStatement.close();
+      } finally {
+        currentStatement = null;
       }
 
-      InterpreterResult rett = new InterpreterResult(Code.SUCCESS, msg.toString());
-      return rett;
+      return new InterpreterResult(Code.SUCCESS, msg.toString());
     }
     catch (SQLException ex) {
       logger.error("Can not run " + sql, ex);
@@ -218,6 +219,10 @@ public class PhoenixInterpreter extends Interpreter {
   @Override
   public List<String> completion(String buf, int cursor) {
     return null;
+  }
+
+  public Connection getJdbcConnection() {
+    return jdbcConnection;
   }
 
   public int getMaxResult() {
