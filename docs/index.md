@@ -34,7 +34,8 @@ group: nav-right
 
 ### Manual
 
-* [Dynamic Form](./dynamicform.html)
+* [Dynamic Form](./manual/dynamicform.html)
+* [Notebook as Homepage](./manual/notebookashomepage.html)
 
 
 ### Development
