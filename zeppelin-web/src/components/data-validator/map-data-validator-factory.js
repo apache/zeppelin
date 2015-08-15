@@ -49,7 +49,6 @@ angular.module('zeppelinWebApp').factory('mapdataValidator', function(
   //Longitude measurements range from 0° to (+/–)180°.
   function longitudeValidator(record, schema) {
     var longitude = parseFloat(record);
-    console.log(schema.longitude.low < longitude);
     if(schema.longitude.low < longitude && longitude < schema.longitude.high) {
       msg += 'longitude are ok | ';
     } else {

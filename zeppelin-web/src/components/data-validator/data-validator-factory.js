@@ -62,6 +62,7 @@ angular.module('zeppelinWebApp').factory('DataValidator', function($rootScope) {
       return true;
     } else {
       msg += 'data rows does not exisiting | ';
+      setError();
       return false;
     }
   }
@@ -75,6 +76,7 @@ angular.module('zeppelinWebApp').factory('DataValidator', function($rootScope) {
         }
       }
     } else {
+      setError();
       msg += 'data row does not exisiting | ';
     }
   }
@@ -93,6 +95,7 @@ angular.module('zeppelinWebApp').factory('DataValidator', function($rootScope) {
       return false;
     } else {
       msg += 'data record does not exisiting | ';
+      setError();
       return true;
     }
   }

@@ -21,7 +21,6 @@ angular.module('zeppelinWebApp').factory('chartdataValidator', function(
 
   //overriding the check data 
   chartdataValidator.checkData = function() {
-    console.log('over riding happen');
     basicCheck();
   };
 
@@ -49,7 +48,6 @@ angular.module('zeppelinWebApp').factory('chartdataValidator', function(
 
           if(recordValues.hasOwnProperty(recordKey)) {
             var values = recordValues[recordKey];
-            //console.log(values);
             schemaChecker(values, countKey);
             countKey++;
           }
@@ -73,7 +71,6 @@ angular.module('zeppelinWebApp').factory('chartdataValidator', function(
 
   function schemaChecker(record, index) {
     if(isNaN(record) !== (simpleChartSchema.type[index] === 'string')) {
-      //console.log(record+' is failed '+simpleChartSchema.type[index]);
       markValidationError('data record ' + record +
         ' is not matching for schema | ');
     }

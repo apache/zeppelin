@@ -52,10 +52,14 @@ module.exports = function(config) {
       'bower_components/highlightjs/highlight.pack.js',
       'bower_components/lodash/lodash.js',
       'bower_components/angular-filter/dist/angular-filter.min.js',
+      'bower_components/leaflet/dist/leaflet.js',
+      'bower_components/leaflet/dist/leaflet-src.js',
+      'bower_components/angular-leaflet-directive/dist/angular-leaflet-directive.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'src/app/app.js',
       'src/app/app.controller.js',
+      'src/components/data-validator/*.js',
       'src/app/**/*.js',
       'test/spec/**/*.js'
     ],
