@@ -289,6 +289,7 @@ public class RemoteScheduler implements Scheduler {
           running.remove(job);
           queue.notify();
         }
+        jobSubmittedRemotely = true;
 
         return;
       }
