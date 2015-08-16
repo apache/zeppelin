@@ -164,7 +164,9 @@ public class PhoenixInterpreter extends Interpreter {
           res.close();
         }
         else { // May have been upsert or DDL
-          msg.append(UPDATE_HEADER + NEWLINE + currentStatement.getUpdateCount() + NEWLINE);
+          msg.append(UPDATE_HEADER + NEWLINE +
+            "Rows affected: " + currentStatement.getUpdateCount()
+            + NEWLINE);
         }
 
         currentStatement.close();

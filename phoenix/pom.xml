@@ -29,8 +29,8 @@
   <artifactId>zeppelin-phoenix</artifactId>
   <packaging>jar</packaging>
   <version>0.6.0-incubating-SNAPSHOT</version>
-  <name>Zeppelin: Phoenix</name>
-  <description>Zeppelin Phoenix support</description>
+  <name>Zeppelin: Apache Phoenix Interpreter</name>
+  <description>Zeppelin interprter for Apache Phoenix</description>
   <url>http://zeppelin.incubator.apache.org</url>
   
   <properties>
