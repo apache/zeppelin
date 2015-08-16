@@ -169,10 +169,14 @@ public class PhoenixInterpreter extends Interpreter {
             + NEWLINE);
         }
 
-        currentStatement.close();
       } finally {
-        if (res != null) res.close();
-        currentStatement = null;
+        try {
+          if (res != null) res.close();
+          getJdbcConnection().commit();
+          currentStatement.close();
+        } finally {
+          currentStatement = null;
+        }
       }
 
       return new InterpreterResult(Code.SUCCESS, msg.toString());
