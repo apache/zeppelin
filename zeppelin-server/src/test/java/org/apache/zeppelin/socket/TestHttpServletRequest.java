@@ -317,7 +317,7 @@ public class TestHttpServletRequest implements HttpServletRequest {
 
     @Override
     public String getServerName() {
-        return null;
+        return "localhost";
     }
 
     @Override
