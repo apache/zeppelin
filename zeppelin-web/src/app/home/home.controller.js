@@ -24,7 +24,7 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
   
   var initHome = function() {
     websocketMsgSrv.getHomeNotebook();
-  }
+  };
 
   initHome();
 
