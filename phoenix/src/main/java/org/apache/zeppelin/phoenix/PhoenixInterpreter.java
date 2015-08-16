@@ -141,10 +141,11 @@ public class PhoenixInterpreter extends Interpreter {
       boolean isExplain = StringUtils.containsIgnoreCase(sql, EXPLAIN_PREDICATE);
       StringBuilder msg = (isExplain) ? new StringBuilder() : new StringBuilder(TABLE_MAGIC_TAG);
 
+      ResultSet res = null;
       try {
-        if (currentStatement.execute(sql)){ //If query had results
-          ResultSet res = currentStatement.getResultSet();
-
+        boolean hasResult = currentStatement.execute(sql);
+        if (hasResult){ //If query had results
+          res = currentStatement.getResultSet();
           //Append column names
           ResultSetMetaData md = res.getMetaData();
           String row = clean(isExplain, md.getColumnName(1));
@@ -161,7 +162,6 @@ public class PhoenixInterpreter extends Interpreter {
             msg.append(row + NEWLINE);
             rowCount++;
           }
-          res.close();
         }
         else { // May have been upsert or DDL
           msg.append(UPDATE_HEADER + NEWLINE +
@@ -171,6 +171,7 @@ public class PhoenixInterpreter extends Interpreter {
 
         currentStatement.close();
       } finally {
+        if (res != null) res.close();
         currentStatement = null;
       }
 
