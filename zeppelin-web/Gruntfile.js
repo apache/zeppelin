@@ -426,7 +426,6 @@ module.exports = function (grunt) {
     'wiredep',
     'concurrent:test',
     'autoprefixer',
-    'connect:test',
     'karma'
   ]);
 

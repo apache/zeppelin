@@ -35,8 +35,8 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.Job.Status;
+import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.socket.Message.OP;
 import org.eclipse.jetty.websocket.WebSocket;
@@ -118,6 +118,9 @@ public class NotebookServer extends WebSocketServlet implements
             break;
           case DEL_NOTE:
             removeNote(conn, notebook, messagereceived);
+            break;
+          case CLONE_NOTE:
+            cloneNote(conn, notebook, messagereceived);
             break;
           case COMMIT_PARAGRAPH:
             updateParagraph(conn, notebook, messagereceived);
@@ -395,6 +398,25 @@ public class NotebookServer extends WebSocketServlet implements
     p.setText((String) fromMessage.get("paragraph"));
     note.persist();
     broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
+  }
+  
+  private void cloneNote(NotebookSocket conn, Notebook notebook,
+      Message fromMessage) throws IOException {
+    String noteId = getOpenNoteId(conn);
+    String name = (String) fromMessage.get("name");
+    Note sourceNote = notebook.getNote(noteId);
+    Note newNote = notebook.createNote();
+    if (name != null) {
+      newNote.setName(name);
+    }
+
+    List<Paragraph> paragraphs = sourceNote.getParagraphs();
+    for (Paragraph para : paragraphs) {
+      Paragraph p = newNote.addParagraph(para);
+    }
+    newNote.persist();
+    broadcastNote(newNote);
+    broadcastNoteList();
   }
 
   private void removeParagraph(NotebookSocket conn, Notebook notebook,

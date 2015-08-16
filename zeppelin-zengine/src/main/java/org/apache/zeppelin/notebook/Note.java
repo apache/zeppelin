@@ -139,6 +139,24 @@ public class Note implements Serializable, JobListener {
     return p;
   }
 
+  public Paragraph addParagraph(Paragraph para) {
+    Paragraph p = addParagraph();
+
+    Map<String, Object> config = new HashMap<>(para.getConfig());
+    // Show the editor by default
+    String hideEditorKey = "editorHide";
+    Object object = config.get(hideEditorKey);
+    if (object != null && object == Boolean.TRUE) {
+      config.put(hideEditorKey, Boolean.FALSE);
+    }
+    Map<String, Object> param = new HashMap<>(para.settings.getParams());
+    p.setConfig(config);
+    p.settings.setParams(param);
+    p.setTitle(para.getTitle());
+    p.setText(para.getText());
+    return p;
+  }
+
   /**
    * Insert paragraph in given index.
    *
