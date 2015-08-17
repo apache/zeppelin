@@ -92,4 +92,10 @@ public class IgniteInterpreterTest {
 
     assertEquals(InterpreterResult.Code.ERROR, result.code());
   }
+  
+  @Test
+  public void testNextlineInvoke() {
+    InterpreterResult result = intp.interpret("\"123\"\n  .toInt", INTP_CONTEXT);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
+  }
 }
