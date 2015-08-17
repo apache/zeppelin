@@ -9,7 +9,7 @@ group: manual
 ## Customize your zeppelin homepage
  Zeppelin allows you to use one of the notebooks you create as your zeppelin Homepage.
  With that you can brand your zeppelin installation, 
- adjust the instruction to your users needs and event translate to other languages.
+ adjust the instruction to your users needs and even translate to other languages.
 
  <br />
 ### How to set a notebook as your zeppelin homepage
