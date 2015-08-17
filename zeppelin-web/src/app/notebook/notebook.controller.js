@@ -35,10 +35,18 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.interpreterSettings = [];
   $scope.interpreterBindings = [];
-  $scope.isNoteDirty = null;  
+  $scope.isNoteDirty = null;
   $scope.saveTimer = null;
 
   var angularObjectRegistry = {};
+  var connectedOnce = false;
+
+  $scope.$on('setConnectedStatus', function(event, param) {
+    if(connectedOnce && param){
+      initNotebook();
+    }
+    connectedOnce = true;
+  });
 
   $scope.getCronOptionNameFromValue = function(value) {
     if (!value) {
@@ -158,7 +166,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   $scope.setLookAndFeel = function(looknfeel) {
-    $scope.note.config.looknfeel = looknfeel;    
+    $scope.note.config.looknfeel = looknfeel;
     $scope.setConfig();
   };
 
