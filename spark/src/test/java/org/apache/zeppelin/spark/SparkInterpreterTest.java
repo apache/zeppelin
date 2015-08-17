@@ -118,6 +118,11 @@ public class SparkInterpreterTest {
   }
 
   @Test
+  public void testNextLineInvocation() {
+    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("\"123\"\n.toInt", context).code());    
+  }
+
+  @Test
   public void testEndWithComment() {
     assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("val c=1\n//comment", context).code());
   }
