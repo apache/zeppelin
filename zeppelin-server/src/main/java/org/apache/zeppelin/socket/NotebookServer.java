@@ -401,7 +401,7 @@ public class NotebookServer extends WebSocketServlet implements
   }
   
   private void cloneNote(NotebookSocket conn, Notebook notebook,
-      Message fromMessage) throws IOException {
+      Message fromMessage) throws IOException, CloneNotSupportedException {
     String noteId = getOpenNoteId(conn);
     String name = (String) fromMessage.get("name");
     Note sourceNote = notebook.getNote(noteId);
@@ -412,7 +412,8 @@ public class NotebookServer extends WebSocketServlet implements
 
     List<Paragraph> paragraphs = sourceNote.getParagraphs();
     for (Paragraph para : paragraphs) {
-      Paragraph p = newNote.addParagraph(para);
+      Paragraph p = (Paragraph) para.clone();
+      newNote.addParagraph(p);
     }
     newNote.persist();
     broadcastNote(newNote);
