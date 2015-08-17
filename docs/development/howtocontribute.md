@@ -76,6 +76,7 @@ mvn install -Dspark.version=1.0.1 -Dhadoop.version=2.2.0
 cd zeppelin-server
 HADOOP_HOME=YOUR_HADOOP_HOME JAVA_HOME=YOUR_JAVA_HOME mvn exec:java -Dexec.mainClass="org.apache.zeppelin.server.ZeppelinServer" -Dexec.args=""
 ```
+NOTE: make sure you first run ```mvn clean install -DskipTests``` on your zeppelin root directory otherwise your server build will fail to find the required dependencies in the local repro
 
 or use daemon script
 
