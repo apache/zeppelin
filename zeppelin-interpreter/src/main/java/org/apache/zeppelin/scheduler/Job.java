@@ -256,4 +256,21 @@ public abstract class Job {
   protected void setResult(Object result) {
     this.result = result;
   }
+
+  public Job findSimilarJob(List<Job> queue) {
+    for (int i = 0; i < queue.size(); i++) {
+      Job j = queue.get(i);
+      if (j.getId().equals(this.getId())) {
+        return j;
+      }
+    }
+    return null;
+  }
+
+  public boolean isSimilarJob(Job j) {
+    if (j == null) {
+      return false;
+    }
+    return j.getId().equals(this.getId()); 
+  }
 }

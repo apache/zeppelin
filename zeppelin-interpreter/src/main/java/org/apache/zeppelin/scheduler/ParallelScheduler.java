@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.zeppelin.scheduler.Job.Status;
 
@@ -31,6 +33,7 @@ import org.apache.zeppelin.scheduler.Job.Status;
  *
  */
 public class ParallelScheduler implements Scheduler {
+  Logger logger = LoggerFactory.getLogger(ParallelScheduler.class);
   List<Job> queue = new LinkedList<Job>();
   List<Job> running = new LinkedList<Job>();
   private ExecutorService executor;
@@ -78,9 +81,14 @@ public class ParallelScheduler implements Scheduler {
 
   @Override
   public void submit(Job job) {
-    job.setStatus(Status.PENDING);
     synchronized (queue) {
-      queue.add(job);
+      if (job.findSimilarJob(queue) != null || job.findSimilarJob(running) != null) {
+        logger.info("Trying to submit job already exists in queue: " + job.getId());
+      } else {
+        job.setStatus(Status.PENDING);
+        queue.add(job);
+        logger.info("Success to submit job : " + job.getId());
+      }            
       queue.notify();
     }
   }
