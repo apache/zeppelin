@@ -20,6 +20,7 @@ package org.apache.zeppelin.scheduler;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+import java.util.List;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.slf4j.Logger;
