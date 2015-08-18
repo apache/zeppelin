@@ -26,6 +26,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -39,6 +40,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 
 /**
  * PostgreSQL interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ and
@@ -142,7 +145,11 @@ public class PostgreSqlInterpreter extends Interpreter {
 
       jdbcConnection = DriverManager.getConnection(url, user, password);
 
-      sqlCompleter = new SqlCompleter(SqlCompleter.getSqlCompleterTokens(jdbcConnection, false));
+      Set<String> keywordsCompletions = SqlCompleter.getSqlKeywordsCompletions(jdbcConnection);
+      Set<String> dataModelCompletions =
+          SqlCompleter.getDataModelMetadataCompletions(jdbcConnection);
+      SetView<String> allCompletions = Sets.union(keywordsCompletions, dataModelCompletions);
+      sqlCompleter = new SqlCompleter(allCompletions, dataModelCompletions);
 
       exceptionOnConnect = null;
       logger.info("Successfully created psql connection");
@@ -227,7 +234,7 @@ public class PostgreSqlInterpreter extends Interpreter {
 
           // In case of update event (e.g. isResultSetAvailable = false) update the completion
           // meta-data.
-          sqlCompleter.updateMetaData(getJdbcConnection());
+          sqlCompleter.updateDataModelMetaData(getJdbcConnection());
         }
       } finally {
         try {

@@ -41,6 +41,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 
 /**
  * SQL auto complete functionality for the PostgreSqlInterpreter.
@@ -63,8 +65,11 @@ public class SqlCompleter extends StringsCompleter {
     }
   };
 
-  public SqlCompleter(Set<String> completions) {
-    super(completions);
+  private Set<String> modelCompletions = new HashSet<String>();
+
+  public SqlCompleter(Set<String> allCompletions, Set<String> dataModelCompletions) {
+    super(allCompletions);
+    this.modelCompletions = dataModelCompletions;
   }
 
   @Override
@@ -75,7 +80,7 @@ public class SqlCompleter extends StringsCompleter {
     }
 
     // The delimiter breaks the buffer into separate words (arguments), separated by the
-    // whitespaces.
+    // white spaces.
     ArgumentList argumentList = sqlDelimiter.delimit(buffer, cursor);
     String argument = argumentList.getCursorArgument();
     // cursor in the selected argument
@@ -98,20 +103,32 @@ public class SqlCompleter extends StringsCompleter {
     return complete;
   }
 
-  public void updateMetaData(Connection connection) {
-    Set<String> completions = new TreeSet<String>();
+  public void updateDataModelMetaData(Connection connection) {
+
     try {
-      completions.addAll(getColumnNames(connection.getMetaData()));
-      completions.addAll(getSchemaNames(connection.getMetaData()));
-      logger.info("Udateds metadata with:" + Joiner.on(',').join(completions));
-      this.getStrings().addAll(completions);
+      Set<String> newModelCompletions = getDataModelMetadataCompletions(connection);
+      logger.debug("New model metadata is:" + Joiner.on(',').join(newModelCompletions));
+
+      // Sets.difference(set1, set2) - returned set contains all elements that are contained by set1
+      // and not contained by set2. set2 may also contain elements not present in set1; these are
+      // simply ignored.
+      SetView<String> removedCompletions = Sets.difference(modelCompletions, newModelCompletions);
+      logger.debug("Removed Model Completions: " + Joiner.on(',').join(removedCompletions));
+      this.getStrings().removeAll(removedCompletions);
+
+      SetView<String> newCompletions = Sets.difference(newModelCompletions, modelCompletions);
+      logger.debug("New Completions: " + Joiner.on(',').join(newCompletions));
+      this.getStrings().addAll(newCompletions);
+
+      modelCompletions = newModelCompletions;
+
     } catch (SQLException e) {
       logger.error("Failed to update the metadata conmpletions", e);
     }
   }
 
-  public static Set<String> getSqlCompleterTokens(Connection connection, boolean skipmeta)
-      throws IOException, SQLException {
+  public static Set<String> getSqlKeywordsCompletions(Connection connection) throws IOException,
+      SQLException {
 
     // Add the default SQL completions
     String keywords =
@@ -171,17 +188,19 @@ public class SqlCompleter extends StringsCompleter {
       completions.add(tok.nextToken());
     }
 
-    // now add the tables and columns from the current connection
-    if (!(skipmeta)) {
-      completions.addAll(getColumnNames(connection.getMetaData()));
-      completions.addAll(getSchemaNames(connection.getMetaData()));
-    }
-
     return completions;
   }
 
-  private static Set<String> getColumnNames(DatabaseMetaData meta) throws SQLException {
-    Set<String> names = new HashSet<String>();
+  public static Set<String> getDataModelMetadataCompletions(Connection connection)
+      throws SQLException {
+    Set<String> completions = new TreeSet<String>();
+    getColumnNames(connection.getMetaData(), completions);
+    getSchemaNames(connection.getMetaData(), completions);
+    return completions;
+  }
+
+  private static void getColumnNames(DatabaseMetaData meta, Set<String> names) throws SQLException {
+
     try {
       ResultSet columns = meta.getColumns(meta.getConnection().getCatalog(), null, "%", "%");
       try {
@@ -200,16 +219,13 @@ public class SqlCompleter extends StringsCompleter {
       }
 
       logger.debug(Joiner.on(',').join(names));
-
-      return names;
     } catch (Throwable t) {
       logger.error("Failed to retrieve the column name", t);
-      return new HashSet<String>();
     }
   }
 
-  private static Set<String> getSchemaNames(DatabaseMetaData meta) throws SQLException {
-    Set<String> names = new HashSet<String>();
+  private static void getSchemaNames(DatabaseMetaData meta, Set<String> names) throws SQLException {
+
     try {
       ResultSet schemas = meta.getSchemas();
       try {
@@ -222,11 +238,8 @@ public class SqlCompleter extends StringsCompleter {
       } finally {
         schemas.close();
       }
-
-      return names;
     } catch (Throwable t) {
       logger.error("Failed to retrieve the column name", t);
-      return new HashSet<String>();
     }
   }
 

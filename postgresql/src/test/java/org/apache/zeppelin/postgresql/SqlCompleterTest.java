@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Sets;
 import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
 
 public class SqlCompleterTest extends BasicJDBCTestCaseAdapter {
@@ -46,9 +47,15 @@ public class SqlCompleterTest extends BasicJDBCTestCaseAdapter {
 
   @Before
   public void beforeTest() throws IOException, SQLException {
+    Set<String> keywordsCompletions =
+        SqlCompleter.getSqlKeywordsCompletions(getJDBCMockObjectFactory().getMockConnection());
+    Set<String> dataModelCompletions =
+        SqlCompleter
+            .getDataModelMetadataCompletions(getJDBCMockObjectFactory().getMockConnection());
+
     sqlCompleter =
-        new SqlCompleter(SqlCompleter.getSqlCompleterTokens(getJDBCMockObjectFactory()
-            .getMockConnection(), false));
+        new SqlCompleter(Sets.union(keywordsCompletions, dataModelCompletions),
+            dataModelCompletions);
     tester = new CompleterTester(sqlCompleter);
   }
 
