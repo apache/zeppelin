@@ -22,9 +22,11 @@ su - zeppelin
 whoami
 ```
 Assuming a zeppelin user is created then running whoami command must return 
+
 ```bash
 zeppelin
 ```
+
 Its assumed in the rest of the document that zeppelin user is indeed created and below installation instructions are performed as zeppelin user.
 
 ### List of Prerequisites
@@ -41,6 +43,7 @@ Its assumed that the node has CentOS 6.x installed on it. Although any version o
 
 #### Git
 Intall latest stable version of Git. This document describes installation of version 2.4.8
+
 ```bash
 yum install curl-devel expat-devel gettext-devel openssl-devel zlib-devel
 yum install  gcc perl-ExtUtils-MakeMaker
@@ -55,7 +58,9 @@ echo "export PATH=$PATH:/home/zeppelin/prerequisites/bin" >> /home/zeppelin/.bas
 source /home/zeppelin/.bashrc
 git --version
 ```
+
 Assuming all the packages are successfully installed, running the version option with git command should display
+
 ```bash
 git version 2.4.8
 ```
@@ -72,12 +77,14 @@ source /home/zeppelin/.bashrc
 echo $JAVA_HOME
 ```
 Assuming all the packages are successfully installed, echoing JAVA_HOME environment variable should display
+
 ```bash
 /home/zeppelin/prerequisites/jdk1.7.0_79
 ```
 
 #### Apache Maven
 Download and install a stable version of Maven.
+
 ```bash
 cd /home/zeppelin/prerequisites/
 wget ftp://mirror.reverse.net/pub/apache/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
@@ -88,7 +95,9 @@ echo "export PATH=$PATH:/home/zeppelin/prerequisites/apache-maven-3.3.3/bin" >> 
 source /home/zeppelin/.bashrc
 mvn -version
 ```
+
 Assuming all the packages are successfully installed, running the version option with mvn command should display
+
 ```bash
 Apache Maven 3.3.3 (7994120775791599e205a5524ec3e0dfe41d4a06; 2015-04-22T04:57:37-07:00)
 Maven home: /home/zeppelin/prerequisites/apache-maven-3.3.3
@@ -117,6 +126,7 @@ Zeppelin can work with multiple versions Spark. A complete list [is available he
 ## Build
 
 Checkout source code from [https://github.com/apache/incubator-zeppelin](https://github.com/apache/incubator-zeppelin)
+
 ```bash
 cd /home/zeppelin/
 git clone https://github.com/apache/incubator-zeppelin.git
@@ -137,21 +147,27 @@ Building Zeppelin for first time downloads various dependencies and hence takes 
 
 ## Zeppelin Configuration
 Zeppelin configurations needs to be modified to connect to YARN cluster. Create a copy of zeppelin environment XML
+
 ```bash
 cp /home/zeppelin/incubator-zeppelin/conf/zeppelin-env.sh.template /home/zeppelin/incubator-zeppelin/conf/zeppelin-env.sh 
 ```
+
 Set the following properties
+
 ```bash
 export JAVA_HOME=/home/zeppelin/prerequisites/jdk1.7.0_79
 export HADOOP_CONF_DIR=/etc/hadoop/conf
 export ZEPPELIN_PORT=10008
 export ZEPPELIN_JAVA_OPTS="-Dhdp.version=2.3.1.0-2574"
 ```
+
 As /etc/hadoop/conf contains various configurations of YARN cluster, Zeppelin can now submit Spark/Hive jobs on YARN cluster form its web interface. The value of hdp.version is set to 2.3.1.0-2574. This can be obtained by running the following command
+
 ```bash
 hdp-select status hadoop-client | sed 's/hadoop-client - \(.*\)/\1/'
 # It returned  2.3.1.0-2574
 ```
+
 ## Start/Stop
 ### Start Zeppelin
 
