@@ -9,6 +9,7 @@ group: nav-right
 ### Install
 
 * [Install](./install/install.html)
+* [YARN Install](./install/yarn_install.html)
 
 ### Tutorial
 
