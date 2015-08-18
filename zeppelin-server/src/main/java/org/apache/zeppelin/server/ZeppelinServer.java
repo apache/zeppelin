@@ -57,8 +57,6 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.wordnik.swagger.jersey.config.JerseyJaxrsConfig;
-
 /**
  * Main class of Zeppelin.
  *
@@ -88,23 +86,16 @@ public class ZeppelinServer extends Application {
 
     // REST api
     final ServletContextHandler restApi = setupRestApiContextHandler();
-    /** NOTE: Swagger-core is included via the web.xml in zeppelin-web
-     * But the rest of swagger is configured here
-     */
-    final ServletContextHandler swagger = setupSwaggerContextHandler(conf);
 
     // Notebook server
     final ServletContextHandler notebook = setupNotebookServer(conf);
 
     // Web UI
     final WebAppContext webApp = setupWebAppContext(conf);
-    //Below is commented since zeppelin-docs module is removed.
-    //final WebAppContext webAppSwagg = setupWebAppSwagger(conf);
 
     // add all handlers
     ContextHandlerCollection contexts = new ContextHandlerCollection();
-    //contexts.setHandlers(new Handler[]{swagger, restApi, webApp, webAppSwagg});
-    contexts.setHandlers(new Handler[]{swagger, restApi, notebook, webApp});
+    contexts.setHandlers(new Handler[]{restApi, notebook, webApp});
     jettyServer.setHandler(contexts);
 
     LOG.info("Start zeppelin server");
@@ -228,34 +219,6 @@ public class ZeppelinServer extends Application {
     return cxfContext;
   }
 
-  /**
-   * Swagger core handler - Needed for the RestFul api documentation.
-   *
-   * @return ServletContextHandler of Swagger
-   */
-  private static ServletContextHandler setupSwaggerContextHandler(
-    ZeppelinConfiguration conf) {
-
-    // Configure Swagger-core
-    final ServletHolder swaggerServlet =
-        new ServletHolder(new JerseyJaxrsConfig());
-    swaggerServlet.setName("JerseyJaxrsConfig");
-    swaggerServlet.setInitParameter("api.version", "1.0.0");
-    swaggerServlet.setInitParameter(
-        "swagger.api.basepath",
-        "http://" + conf.getServerAddress() + ":" + conf.getServerPort() + "/api");
-    swaggerServlet.setInitOrder(2);
-
-    // Setup the handler
-    final ServletContextHandler handler = new ServletContextHandler();
-    handler.setSessionHandler(new SessionHandler());
-    // Bind Swagger-core to the url HOST/api-docs
-    handler.addServlet(swaggerServlet, "/api-docs/*");
-
-    // And we are done
-    return handler;
-  }
-
   private static WebAppContext setupWebAppContext(
       ZeppelinConfiguration conf) {
 
@@ -278,29 +241,6 @@ public class ZeppelinServer extends Application {
     );
     return webApp;
   }
-
-  /**
-   * Handles the WebApplication for Swagger-ui.
-   *
-   * @return WebAppContext with swagger ui context
-   */
-  /*private static WebAppContext setupWebAppSwagger(
-      ZeppelinConfiguration conf) {
-
-    WebAppContext webApp = new WebAppContext();
-    File warPath = new File(conf.getString(ConfVars.ZEPPELIN_API_WAR));
-
-    if (warPath.isDirectory()) {
-      webApp.setResourceBase(warPath.getPath());
-    } else {
-      webApp.setWar(warPath.getAbsolutePath());
-    }
-    webApp.setContextPath("/docs");
-    webApp.setParentLoaderPriority(true);
-    // Bind swagger-ui to the path HOST/docs
-    webApp.addServlet(new ServletHolder(new DefaultServlet()), "/docs/*");
-    return webApp;
-  }*/
 
   public ZeppelinServer() throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
