@@ -355,6 +355,10 @@ public class InterpreterFactory {
       Properties properties)
       throws InterpreterException {
 
+    //When called from REST API without option we receive NPE
+    if (option == null || properties == null)
+      throw new InterpreterException("Can't create group with null option or properties");
+
     AngularObjectRegistry angularObjectRegistry;
 
     InterpreterGroup interpreterGroup = new InterpreterGroup(id);
