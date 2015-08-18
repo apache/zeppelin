@@ -227,7 +227,7 @@ public class PostgreSqlInterpreter extends Interpreter {
 
           // In case of update event (e.g. isResultSetAvailable = false) update the completion
           // meta-data.
-          // sqlCompleter.updateMetaData(getJdbcConnection());
+          sqlCompleter.updateMetaData(getJdbcConnection());
         }
       } finally {
         try {
