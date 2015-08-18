@@ -83,6 +83,19 @@
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
 }
 
+.ui-notification{
+  position:fixed;
+  z-index:9999;
+  width:100px;
+  cursor:pointer;
+  -webkit-transition:all ease .5s;
+  -o-transition:all ease .5s;
+  transition:all ease .5s;
+  color:#fff;
+  background:#337ab7;
+  box-shadow:5px 5px 10px rgba(0,0,0,.3)
+}
+
 .ace_marker-layer .ace_selection {
     z-index: 0 !important;
 }

@@ -17,7 +17,7 @@
 
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv) {
+                                         $timeout, $compile, websocketMsgSrv, Notification) {
 
   $scope.paragraph = null;
   $scope.editor = null;
@@ -258,6 +258,7 @@ angular.module('zeppelinWebApp')
       return;
     }
     commitParagraph($scope.paragraph.title, $scope.dirtyText, $scope.paragraph.config, $scope.paragraph.settings.params);
+    Notification.info({message: 'Saved', positionY: 'bottom', positionX: 'right'});
     $scope.dirtyText = undefined;
   };
 
@@ -434,7 +435,6 @@ angular.module('zeppelinWebApp')
       $scope.editor.setShowFoldWidgets(false);
       $scope.editor.setHighlightActiveLine(false);
       $scope.editor.setHighlightGutterLine(false);
-      $scope.editor.setTheme('ace/theme/github');
       $scope.editor.setTheme('ace/theme/chrome');
       $scope.editor.focus();
       var hight = $scope.editor.getSession().getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
