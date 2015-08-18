@@ -286,7 +286,17 @@ public class IgniteInterpreter extends Interpreter {
     Code code = null;
 
     String incomplete = "";
-    for (String s : linesToRun) {
+    for (int l = 0; l < linesToRun.length; l++) {
+      String s = linesToRun[l];      
+      // check if next line starts with "." (but not ".." or "./") it is treated as an invocation
+      if (l + 1 < linesToRun.length) {
+        String nextLine = linesToRun[l + 1].trim();
+        if (nextLine.startsWith(".") && !nextLine.startsWith("..") && !nextLine.startsWith("./")) {
+          incomplete += s + "\n";
+          continue;
+        }
+      }
+
       try {
         code = getResultCode(imain.interpret(incomplete + s));
       } catch (Exception e) {

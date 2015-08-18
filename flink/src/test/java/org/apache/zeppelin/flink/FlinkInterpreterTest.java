@@ -54,6 +54,11 @@ public class FlinkInterpreterTest {
     assertEquals("1", result.message());
   }
 
+  @Test
+  public void testNextlineInvoke() {
+    InterpreterResult result = flink.interpret("\"123\"\n  .toInt", context);
+    assertEquals("res0: Int = 123\n", result.message());    
+  }
 
   @Test
   public void testWordCount() {
