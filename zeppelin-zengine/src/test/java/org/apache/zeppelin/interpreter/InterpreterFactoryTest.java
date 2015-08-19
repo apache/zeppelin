@@ -96,7 +96,7 @@ public class InterpreterFactoryTest {
 		assertFalse(((LazyOpenInterpreter) repl1).isOpen());
 	}
 
-  @Test (expected = InterpreterException.class)
+  @Test
   public void testFactoryDefaultList() throws InterpreterException, IOException {
     // get default list from default setting
     List<String> all = factory.getDefaultInterpreterSettingList();
@@ -109,10 +109,6 @@ public class InterpreterFactoryTest {
     assertEquals(2, all.size());
     assertEquals("mock1", factory.get(all.get(0)).getName());
     assertEquals("a mock", factory.get(all.get(1)).getName());
-
-    // add setting with null option & properties expected InterpreterException.class
-    factory.add("a mock", "mock2", null, new Properties());
-    factory.add("a mock", "mock2", new InterpreterOption(false), null);
   }
 
   @Test
