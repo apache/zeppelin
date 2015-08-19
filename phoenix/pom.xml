@@ -34,24 +34,8 @@
   <url>http://zeppelin.incubator.apache.org</url>
   
   <properties>
-    <phoenix.version>4.4.0.2.3.0.0-2557</phoenix.version>
+    <phoenix.version>4.4.0-HBase-1.1</phoenix.version>
   </properties>
-
-  <repositories>
-    <repository>
-      <id>hortonworks</id>
-      <url>http://repo.hortonworks.com/content/repositories/releases/</url>
-    </repository>
-    <repository>
-       <id>repo.hortonworks.com-jetty</id>
-       <name>Hortonworks Jetty Maven Repository</name>
-       <url>http://repo.hortonworks.com/content/repositories/jetty-hadoop/</url>
-     </repository>
-     <repository>
-       <id>apache</id>
-       <url>http://repository.apache.org/content/repositories/releases/</url>
-     </repository>
-  </repositories>
 
   <dependencies>
     <dependency>
