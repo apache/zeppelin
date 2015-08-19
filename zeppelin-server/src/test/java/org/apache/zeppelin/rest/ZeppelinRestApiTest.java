@@ -83,7 +83,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertThat(get, isAllowed());
     Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>(){}.getType());
     Map<String, Object> body = (Map<String, Object>) resp.get("body");
-    //This works only if the list of interpreters in the build match the list of interpreters in the default config
+    //This works only if the list of intepreters in the build match the list of interpreters in the default config
     //assertEquals(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getStringValue().split(",").length, body.size());
     assertThat(get,isAllowed());
     get.releaseConnection();
