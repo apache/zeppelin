@@ -91,6 +91,7 @@
     <module>angular</module>
     <module>shell</module>
     <module>hive</module>
+    <module>phoenix</module>
     <module>geode</module>
     <module>postgresql</module>
     <module>tajo</module>
