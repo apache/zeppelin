@@ -24,7 +24,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.servlet.http.HttpServletRequest;
+
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
@@ -44,6 +46,7 @@ import org.eclipse.jetty.websocket.WebSocketServlet;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 /**
@@ -400,8 +403,8 @@ public class NotebookServer extends WebSocketServlet implements
     broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
   }
   
-  private void cloneNote(NotebookSocket conn, Notebook notebook,
-      Message fromMessage) throws IOException, CloneNotSupportedException {
+  private void cloneNote(NotebookSocket conn, Notebook notebook, Message fromMessage)
+      throws IOException, CloneNotSupportedException {
     String noteId = getOpenNoteId(conn);
     String name = (String) fromMessage.get("name");
     Note sourceNote = notebook.getNote(noteId);
@@ -409,6 +412,10 @@ public class NotebookServer extends WebSocketServlet implements
     if (name != null) {
       newNote.setName(name);
     }
+    // Copy the interpreter bindings
+    List<String> boundInterpreterSettingsIds = notebook
+        .getBindedInterpreterSettingsIds(sourceNote.id());
+    notebook.bindInterpretersToNote(newNote.id(), boundInterpreterSettingsIds);
 
     List<Paragraph> paragraphs = sourceNote.getParagraphs();
     for (Paragraph para : paragraphs) {
