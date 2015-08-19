@@ -17,20 +17,25 @@
 
 package org.apache.zeppelin.rest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
+import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -40,6 +45,9 @@ import org.junit.runners.MethodSorters;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import static org.junit.Assert.*;
+
 /**
  * BASIC Zeppelin rest api tests
  * TODO: Add Post,Put,Delete test and method
@@ -83,7 +91,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertThat(get, isAllowed());
     Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>(){}.getType());
     Map<String, Object> body = (Map<String, Object>) resp.get("body");
-    assertEquals(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getStringValue().split(",").length, body.size());
+    assertEquals(Interpreter.registeredInterpreters.size(), body.size());
     get.releaseConnection();
   }
 
@@ -93,11 +101,80 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     GetMethod get = httpGet("/interpreter/setting");
 
     // then
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>(){}.getType());
     assertThat(get, isAllowed());
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>(){}.getType());
+    List<Map<String, Object>> body = (List<Map<String, Object>>) resp.get("body");
+    assertEquals(Interpreter.registeredInterpreters.size(),body.size());
     get.releaseConnection();
   }
 
+  @Test
+  public void updateSettings() throws IOException {
+    // when
+    // create new setting
+    String newName = "newMd";
+    String interpreterID = createTempSetting(newName);
+
+    // Build JSON
+    String propertyName = "new Property";
+    String propertyValue = "new Value";
+    String jsonRequest = "{\"id\":\"" + interpreterID + "\",\"name\":\"" + newName + "\",\"group\":\"md\",\"properties\":{\"" +
+                          propertyName + "\":\"" +
+                          propertyValue + "\"},\"" +
+                          "interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}],\"option\":{\"remote\":true}}";
+    //Send request
+    PutMethod put = httpPut("/interpreter/setting/" + interpreterID, jsonRequest);
+    // test response
+    assertThat(put,isAllowed());
+
+    // then
+    //Test to see is property exist and value is set
+    //If propertyName is not found value is ""
+    InterpreterSetting interpreterSetting = ZeppelinServer.notebook.getInterpreterFactory().get(newName);
+    assertNotNull("interpreterSetting wasn't found", interpreterSetting);
+    assertEquals("Test if property was added and value match", interpreterSetting.getProperties().getProperty(propertyName), propertyValue);
+    put.releaseConnection();
+    //cleanup
+    ZeppelinServer.notebook.getInterpreterFactory().remove(newName);
+  }
+
+  @Test
+  public void createSettings() throws IOException {
+    // when
+    String newSettingName = "newMd";
+    String jsonRequest = "{\"name\":\"" + newSettingName + "\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
+        "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
+        "\"option\":{\"remote\":true}}";
+    //Send request
+    PostMethod post = httpPost("/interpreter/setting/" , jsonRequest);
+    // test response
+    assertThat(post, isCreated());
+
+    // then
+    //Test if the new setting was created
+    InterpreterSetting interpreterSetting = ZeppelinServer.notebook.getInterpreterFactory().get(newSettingName);
+    assertNotNull("New setting wasn't found", interpreterSetting);
+    post.releaseConnection();
+    //cleanup
+    ZeppelinServer.notebook.getInterpreterFactory().remove(newSettingName);
+  }
+
+  @Test
+  public void deleteSettings() throws IOException {
+    // when
+    String newSettingName = "newMd";
+    String settingID = createTempSetting(newSettingName);
+    //TODO(eranw) complete test
+    DeleteMethod delete = httpDelete("/interpreter/setting/" + settingID);
+    assertThat(delete,isAllowed());
+    // Make sure it was deleted - get should return null
+    InterpreterSetting interpreterSetting = ZeppelinServer.notebook.getInterpreterFactory().get(newSettingName);
+    assertNull("interpreter was't deleted", interpreterSetting);
+  }
+
+  private void deleteSetting(String settingID) throws IOException {
+
+  }
 
   @Test
   public void testInterpreterAutoBinding() throws IOException {
