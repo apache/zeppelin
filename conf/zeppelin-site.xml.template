@@ -37,6 +37,19 @@
   <description>path or URI for notebook persist</description>
 </property>
 
+<property>
+  <name>zeppelin.notebook.homescreen</name>
+  <value></value>
+  <description>id of notebook to be displayed in homescreen. ex) 2A94M5J1Z Empty value displays default home screen</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.homescreen.hide</name>
+  <value>false</value>
+  <description>hide homescreen notebook from list when this value set to true</description>
+</property>
+
+
 <!-- If used S3 to storage the notebooks, it is necessary the following folder structure bucketname/username/notebook/ -->
 <!--
 <property>

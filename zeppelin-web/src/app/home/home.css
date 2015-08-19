@@ -294,4 +294,3 @@ This part should be removed when new version of bootstrap handles this issue.
 .btn-group > .popover + .btn {
   margin-left:-1px;
 }
-
