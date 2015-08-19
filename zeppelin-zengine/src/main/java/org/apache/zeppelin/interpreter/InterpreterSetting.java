@@ -81,6 +81,13 @@ public class InterpreterSetting {
     return interpreterGroup;
   }
 
+  public InterpreterGroup getInterpreterGroupWithRefresh(InterpreterFactory factory) {
+    if (interpreterGroup.restartRequired()) {
+      factory.restart(id);
+    }
+    return interpreterGroup;
+  }
+
   public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
     this.interpreterGroup = interpreterGroup;
     this.properties = interpreterGroup.getProperty();

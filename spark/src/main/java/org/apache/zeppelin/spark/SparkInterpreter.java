@@ -109,6 +109,8 @@ public class SparkInterpreter extends Interpreter {
             .add("zeppelin.spark.maxResult",
                 getSystemDefault("ZEPPELIN_SPARK_MAXRESULT", "zeppelin.spark.maxResult", "1000"),
                 "Max number of SparkSQL result to display.")
+            .add("spark.auto.restart.sc", "true", "spark context will automatically restart" +
+              "if a job is submitted after it has stopped due to idle timeout.")
             .add("args", "", "spark commandline args").build());
 
   }
@@ -791,5 +793,15 @@ public class SparkInterpreter extends Interpreter {
 
   public ZeppelinContext getZeppelinContext() {
     return z;
+  }
+
+  @Override
+  public boolean restartRequired() {
+    boolean restartEnabled = Boolean.parseBoolean(getProperty("spark.auto.restart.sc"));
+    boolean required = (restartEnabled && sc != null && sc.taskScheduler() == null);
+    if (required) {
+      logger.info("Spark interpreter restart required");
+    }
+    return required;
   }
 }

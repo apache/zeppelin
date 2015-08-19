@@ -524,4 +524,10 @@ public class RemoteInterpreterServer
     AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
     registry.remove(name, noteId, false);
   }
+
+  @Override
+  public boolean restartRequired(String className) throws TException {
+    Interpreter intp = getInterpreter(className);
+    return intp.restartRequired();
+  }
 }
