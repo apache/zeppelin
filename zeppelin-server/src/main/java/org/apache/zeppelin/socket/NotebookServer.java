@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
@@ -109,6 +112,9 @@ public class NotebookServer extends WebSocketServlet implements
       switch (messagereceived.op) {
           case LIST_NOTES:
             broadcastNoteList();
+            break;
+          case GET_HOME_NOTE:
+            sendHomeNote(conn, notebook);
             break;
           case GET_NOTE:
             sendNote(conn, notebook, messagereceived);
@@ -279,10 +285,20 @@ public class NotebookServer extends WebSocketServlet implements
 
   private void broadcastNoteList() {
     Notebook notebook = notebook();
+
+    ZeppelinConfiguration conf = notebook.getConf();
+    String homescreenNotebookId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
+    boolean hideHomeScreenNotebookFromList = conf
+        .getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
+
     List<Note> notes = notebook.getAllNotes();
     List<Map<String, String>> notesInfo = new LinkedList<>();
     for (Note note : notes) {
       Map<String, String> info = new HashMap<>();
+      if (hideHomeScreenNotebookFromList && note.id().equals(homescreenNotebookId)) {
+        continue;
+      }
+
       info.put("id", note.id());
       info.put("name", note.getName());
       notesInfo.add(info);
@@ -303,6 +319,23 @@ public class NotebookServer extends WebSocketServlet implements
       addConnectionToNote(note.id(), conn);
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
       sendAllAngularObjects(note, conn);
+    }
+  }
+
+  private void sendHomeNote(NotebookSocket conn, Notebook notebook) throws IOException {
+    String noteId = notebook.getConf().getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
+
+    Note note = null;
+    if (noteId != null) {
+      note = notebook.getNote(noteId);
+    }
+
+    if (note != null) {
+      addConnectionToNote(note.id(), conn);
+      conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
+      sendAllAngularObjects(note, conn);
+    } else {
+      conn.send(serializeMessage(new Message(OP.NOTE).put("note", null)));
     }
   }
 
