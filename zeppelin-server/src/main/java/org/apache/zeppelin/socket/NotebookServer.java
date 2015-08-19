@@ -65,23 +65,50 @@ public class NotebookServer extends WebSocketServlet implements
   private Notebook notebook() {
     return ZeppelinServer.notebook;
   }
+
+  /**
+   * Is lazily set during the first call to hostName().
+   */
+  private String cachedHostName = null;
+
+  /**
+   * Returns a cached hostname used during HTTP request origin checks.
+   *
+   * @return the value of ZEPPELIN_HOSTNAME, getHostName(), or "localhost"
+   */
+  private final String hostName() {
+    if (cachedHostName != null) {
+      return cachedHostName;
+    }
+
+    String host = System.getenv("ZEPPELIN_HOSTNAME");
+    if (host != null) {
+      cachedHostName = host;
+    } else {
+      try {
+        cachedHostName = java.net.InetAddress.getLocalHost().getHostName();
+      }
+      catch (UnknownHostException e) {
+        LOG.warn("hostName", e);
+        cachedHostName = "localhost";
+      }
+    }
+    return cachedHostName;
+  }
+
   @Override
   public boolean checkOrigin(HttpServletRequest request, String origin) {
     URI sourceUri = null;
-    String currentHost = null;
 
     try {
       sourceUri = new URI(origin);
-      currentHost = java.net.InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      e.printStackTrace();
     }
     catch (URISyntaxException e) {
       e.printStackTrace();
     }
 
     String sourceHost = sourceUri.getHost();
-    if (currentHost.equals(sourceHost) || "localhost".equals(sourceHost)) {
+    if (hostName().equals(sourceHost) || "localhost".equals(sourceHost)) {
       return true;
     }
 

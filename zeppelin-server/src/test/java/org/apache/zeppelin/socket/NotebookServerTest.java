@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.UnknownHostException;
 
 /**
@@ -36,18 +37,33 @@ import java.net.UnknownHostException;
  * @author joelz
  *
  */
-    public class NotebookServerTests {
+public class NotebookServerTest {
+
+    private static String invokeHostName(NotebookServer server) {
+        String hostname = null;
+        try {
+            Method method = server.getClass().getDeclaredMethod("hostName");
+            method.setAccessible(true);
+            hostname =  method.invoke(server).toString();
+        }
+        catch (Exception e) {
+            Assert.fail("private hostName method missing");
+        }
+        return hostname;
+    }
 
     @Test
-    public void CheckOrigin() throws UnknownHostException {
+    public void CheckValidOrigin() throws UnknownHostException {
         NotebookServer server = new NotebookServer();
-         Assert.assertTrue(server.checkOrigin(new TestHttpServletRequest(),
+        Assert.assertTrue(server.checkOrigin(new TestHttpServletRequest(),
                  "http://" + java.net.InetAddress.getLocalHost().getHostName() + ":8080"));
+        Assert.assertEquals(invokeHostName(server), java.net.InetAddress.getLocalHost().getHostName());
     }
 
     @Test
     public void CheckInvalidOrigin(){
         NotebookServer server = new NotebookServer();
         Assert.assertFalse(server.checkOrigin(new TestHttpServletRequest(), "http://evillocalhost:8080"));
+        Assert.assertNotEquals(invokeHostName(server), "evillocalhost:8080");
     }
 }

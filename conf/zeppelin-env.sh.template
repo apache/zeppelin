@@ -23,6 +23,7 @@
 # export ZEPPELIN_INTP_MEM       		# zeppelin interpreter process jvm mem options. Default = ZEPPELIN_MEM
 # export ZEPPELIN_INTP_JAVA_OPTS 		# zeppelin interpreter process jvm options. Default = ZEPPELIN_JAVA_OPTS
 
+# export ZEPPELIN_HOSTNAME          # hostname used to check web socket request origin. Defaults to java.net.InetAddress.getLocalHost().getHostName() or "localhost"
 # export ZEPPELIN_LOG_DIR        		# Where log files are stored.  PWD by default.
 # export ZEPPELIN_PID_DIR        		# The pid files are stored. /tmp by default.
 # export ZEPPELIN_NOTEBOOK_DIR   		# Where notebook saved
