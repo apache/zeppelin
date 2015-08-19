@@ -19,6 +19,7 @@ describe('Controller: NotebookCtrl', function() {
 
   var noteMock = {
     id: 1,
+    name: 'my notebook',
     config: {},
   };
 
@@ -55,10 +56,23 @@ describe('Controller: NotebookCtrl', function() {
   });
 
   it('should return the correct value for getCronOptionNameFromValue', function () {
+    var none = scope.getCronOptionNameFromValue();
     var oneMin = scope.getCronOptionNameFromValue('0 0/1 * * * ?');
+    var fiveMin = scope.getCronOptionNameFromValue('0 0/5 * * * ?');
     var oneHour = scope.getCronOptionNameFromValue('0 0 0/1 * * ?');
+    var threeHours = scope.getCronOptionNameFromValue('0 0 0/3 * * ?');
+    var sixHours = scope.getCronOptionNameFromValue('0 0 0/6 * * ?');
+    var twelveHours =  scope.getCronOptionNameFromValue('0 0 0/12 * * ?');
+    var oneDay = scope.getCronOptionNameFromValue('0 0 0 * * ?');
+
+    expect(none).toEqual('');
     expect(oneMin).toEqual('1m');
+    expect(fiveMin).toEqual('5m');
     expect(oneHour).toEqual('1h');
+    expect(threeHours).toEqual('3h');
+    expect(sixHours).toEqual('6h');
+    expect(twelveHours).toEqual('12h');
+    expect(oneDay).toEqual('1d');
   });
 
   it('default value for isNoteDirty should be null', function () {
