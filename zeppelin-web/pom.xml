@@ -60,6 +60,7 @@
             <exclude>.bowerrc</exclude>
             <exclude>.editorconfig</exclude>
             <exclude>.jshintrc</exclude>
+            <exclude>.jscsrc</exclude>
             <exclude>.tmp/**</exclude>
             <exclude>**/.settings/*</exclude>
             <exclude>**/.classpath</exclude>
