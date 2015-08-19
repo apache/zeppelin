@@ -315,7 +315,7 @@ public class InterpreterFactory {
     List<RegisteredInterpreter> registeredInterpreters = new LinkedList<RegisteredInterpreter>();
 
     for (String className : interpreterClassList) {
-        RegisteredInterpreter ri = Interpreter.findRegisteredInterpreterByClassName(className);
+      RegisteredInterpreter ri = Interpreter.findRegisteredInterpreterByClassName(className);
       if (ri != null) {
         registeredInterpreters.add(ri);
       }
