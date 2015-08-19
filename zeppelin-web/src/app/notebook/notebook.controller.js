@@ -70,6 +70,15 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
+  //Clone note
+  $scope.cloneNote = function(noteId) {
+    var result = confirm('Do you want to clone this notebook?');
+    if (result) {
+      websocketMsgSrv.cloneNotebook(noteId);
+      $location.path('/#');
+    }
+  };
+  
   $scope.runNote = function() {
     var result = confirm('Run all paragraphs?');
     if (result) {
