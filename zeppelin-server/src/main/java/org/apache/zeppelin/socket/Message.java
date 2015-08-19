@@ -34,6 +34,8 @@ public class Message {
    *
    */
   public static enum OP {
+    GET_HOME_NOTE, // [c-s] load note for home screen
+
     GET_NOTE, // [c-s] client load note
               // @param id note id
 
