@@ -20,7 +20,7 @@ angular.module('zeppelinWebApp').controller('MainCtrl', function($scope, $rootSc
   var init = function() {
     $scope.asIframe = (($window.location.href.indexOf('asIframe') > -1) ? true : false);
   };
-  
+
   init();
 
   $rootScope.$on('setIframe', function(event, data) {
@@ -36,7 +36,7 @@ angular.module('zeppelinWebApp').controller('MainCtrl', function($scope, $rootSc
       event.preventDefault();
     }
   });
-  
+
   // Set The lookAndFeel to default on every page
   $rootScope.$on('$routeChangeStart', function(event, next, current) {
     $rootScope.$broadcast('setLookAndFeel', 'default');
