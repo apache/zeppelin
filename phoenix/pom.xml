@@ -34,7 +34,7 @@
   <url>http://zeppelin.incubator.apache.org</url>
   
   <properties>
-    <phoenix.version>4.4.0-HBase-1.1</phoenix.version>
+    <phoenix.version>4.4.0-HBase-1.0</phoenix.version>
   </properties>
 
   <dependencies>
