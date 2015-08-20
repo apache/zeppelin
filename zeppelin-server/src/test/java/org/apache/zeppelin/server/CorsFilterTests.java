@@ -19,6 +19,8 @@
  */
 package org.apache.zeppelin.server;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.socket.TestHttpServletRequest;
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,6 +30,7 @@ import org.mockito.stubbing.Answer;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 
 import static org.mockito.Matchers.anyString;
@@ -42,54 +45,64 @@ import static org.mockito.Mockito.*;
  */
 public class CorsFilterTests {
 
-    public static String[] headers = new String[8];
-    public static Integer count = 0;
+  public static String[] headers = new String[10];
+  public static Integer count = 0;
 
-    @Test
-    public void ValidCorsFilterTest() throws IOException, ServletException {
-        CorsFilter filter = new CorsFilter();
-        HttpServletResponse mockResponse = mock(HttpServletResponse.class);
-        FilterChain mockedFilterChain = mock(FilterChain.class);
-        TestHttpServletRequest mockRequest = mock(TestHttpServletRequest.class);
-        when(mockRequest.getHeader("Origin")).thenReturn("http://localhost:8080");
-        when(mockRequest.getMethod()).thenReturn("Empty");
-        when(mockRequest.getServerName()).thenReturn("localhost");
+  @Test
+  public void ValidCorsFilterTest() throws IOException, ServletException {
+    System.setProperty(ConfVars.ZEPPELIN_SERVER_ORIGINS.getVarName(), "localhost");
 
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    OriginValidator originValidator = new OriginValidator(conf);
 
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                headers[count] = invocationOnMock.getArguments()[1].toString();
-                count++;
-                return null;
-            }
-        }).when(mockResponse).addHeader(anyString(), anyString());
+    CorsFilter filter = new CorsFilter();
+    HttpServletResponse mockResponse = mock(HttpServletResponse.class);
+    FilterChain mockedFilterChain = mock(FilterChain.class);
+    TestHttpServletRequest mockRequest = mock(TestHttpServletRequest.class);
+    when(mockRequest.getHeader("Origin")).thenReturn("http://localhost:8080");
+    when(mockRequest.getMethod()).thenReturn("Empty");
+    when(mockRequest.getServerName()).thenReturn("localhost");
+    when(mockRequest.getScheme()).thenReturn("http");
 
-        filter.doFilter(mockRequest, mockResponse, mockedFilterChain);
-        Assert.assertTrue(headers[0].equals("http://localhost:8080"));
-    }
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+        headers[count] = invocationOnMock.getArguments()[1].toString();
+        count++;
+        return null;
+      }
+    }).when(mockResponse).addHeader(anyString(), anyString());
 
-    @Test
-    public void InvalidCorsFilterTest() throws IOException, ServletException {
-        CorsFilter filter = new CorsFilter();
-        HttpServletResponse mockResponse = mock(HttpServletResponse.class);
-        FilterChain mockedFilterChain = mock(FilterChain.class);
-        TestHttpServletRequest mockRequest = mock(TestHttpServletRequest.class);
-        when(mockRequest.getHeader("Origin")).thenReturn("http://evillocalhost:8080");
-        when(mockRequest.getMethod()).thenReturn("Empty");
-        when(mockRequest.getServerName()).thenReturn("evillocalhost");
+    filter.doFilter(mockRequest, mockResponse, mockedFilterChain);
+    Assert.assertEquals("http://localhost:8080", headers[0]);
+  }
 
+  @Test
+  public void InvalidCorsFilterTest() throws IOException, ServletException {
+    System.setProperty(ConfVars.ZEPPELIN_SERVER_ORIGINS.getVarName(), "");
 
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                headers[count] = invocationOnMock.getArguments()[1].toString();
-                count++;
-                return null;
-            }
-        }).when(mockResponse).addHeader(anyString(), anyString());
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    OriginValidator originValidator = new OriginValidator(conf);
 
-        filter.doFilter(mockRequest, mockResponse, mockedFilterChain);
-        Assert.assertTrue(headers[0].equals(""));
-    }
+    CorsFilter filter = new CorsFilter();
+    HttpServletResponse mockResponse = mock(HttpServletResponse.class);
+    FilterChain mockedFilterChain = mock(FilterChain.class);
+    TestHttpServletRequest mockRequest = mock(TestHttpServletRequest.class);
+    when(mockRequest.getHeader("Origin")).thenReturn(
+        "http://evillocalhost:8080");
+    when(mockRequest.getMethod()).thenReturn("Empty");
+    when(mockRequest.getServerName()).thenReturn("evillocalhost");
+
+    doAnswer(new Answer() {
+      @Override
+      public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+        headers[count] = invocationOnMock.getArguments()[1].toString();
+        count++;
+        return null;
+      }
+    }).when(mockResponse).addHeader(anyString(), anyString());
+
+    filter.doFilter(mockRequest, mockResponse, mockedFilterChain);
+    Assert.assertEquals("", headers[0]);
+  }
 }

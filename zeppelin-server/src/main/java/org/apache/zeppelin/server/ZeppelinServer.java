@@ -76,6 +76,8 @@ public class ZeppelinServer extends Application {
 
   public static Server jettyServer;
 
+  private static OriginValidator originValidator;
+
   private InterpreterFactory replFactory;
 
   private NotebookRepo notebookRepo;
@@ -93,8 +95,10 @@ public class ZeppelinServer extends Application {
      */
     final ServletContextHandler swagger = setupSwaggerContextHandler(conf);
 
+    originValidator = new OriginValidator(conf);
+
     // Notebook server
-    final ServletContextHandler notebook = setupNotebookServer(conf);
+    final ServletContextHandler notebook = setupNotebookServer(conf, originValidator);
 
     // Web UI
     final WebAppContext webApp = setupWebAppContext(conf);
@@ -161,10 +165,11 @@ public class ZeppelinServer extends Application {
     return server;
   }
 
-  private static ServletContextHandler setupNotebookServer(ZeppelinConfiguration conf)
+  private static ServletContextHandler setupNotebookServer(
+      ZeppelinConfiguration conf, OriginValidator originValidator)
       throws Exception {
 
-    notebookServer = new NotebookServer();
+    notebookServer = new NotebookServer(originValidator);
     final ServletHolder servletHolder = new ServletHolder(notebookServer);
     servletHolder.setInitParameter("maxTextMessageSize", "1024000");
 

@@ -37,15 +37,17 @@ import javax.servlet.http.HttpServletResponse;
  *
  */
 public class CorsFilter implements Filter {
-
+  
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
       throws IOException, ServletException {
+    OriginValidator originValidator = OriginValidator.singleton();
+
     String sourceHost = request.getServerName();
-    String currentHost = java.net.InetAddress.getLocalHost().getHostName();
     String origin = "";
-    if (currentHost.equals(sourceHost) || "localhost".equals(sourceHost)) {
-      origin = ((HttpServletRequest) request).getHeader("Origin");
+
+    if (originValidator.validate(sourceHost)) {
+      origin = ((HttpServletRequest) request).getHeader("Origin");      
     }
 
     if (((HttpServletRequest) request).getMethod().equals("OPTIONS")) {
