@@ -19,6 +19,9 @@
  */
 package org.apache.zeppelin.socket;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.server.OriginValidator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,20 +34,28 @@ import java.net.UnknownHostException;
  * @author joelz
  *
  */
-    public class NotebookServerTests {
+public class NotebookServerTests {
 
-    @Test
-    public void CheckOrigin() throws UnknownHostException {
-        NotebookServer server = new NotebookServer();
-         Assert.assertTrue(server.checkOrigin(new TestHttpServletRequest(),
-                 "http://" + java.net.InetAddress.getLocalHost().getHostName() + ":8080"));
-    }
+  @Test
+  public void CheckOrigin() throws UnknownHostException {
+    System.setProperty(ConfVars.ZEPPELIN_SERVER_ORIGINS.getVarName(), "");
 
-    @Test
-    public void CheckInvalidOrigin(){
-        NotebookServer server = new NotebookServer();
-        Assert.assertFalse(server.checkOrigin(new TestHttpServletRequest(), "http://evillocalhost:8080"));
-    }
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    OriginValidator originValidator = new OriginValidator(conf);
+    NotebookServer server = new NotebookServer(originValidator);
+    Assert.assertTrue(server
+        .checkOrigin(new TestHttpServletRequest(), "http://"
+            + java.net.InetAddress.getLocalHost().getHostName() + ":8080"));
+  }
 
+  @Test
+  public void CheckInvalidOrigin() {
+    System.setProperty(ConfVars.ZEPPELIN_SERVER_ORIGINS.getVarName(), "");
 
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    OriginValidator originValidator = new OriginValidator(conf);
+    NotebookServer server = new NotebookServer(originValidator);
+    Assert.assertFalse(server.checkOrigin(new TestHttpServletRequest(),
+        "http://evillocalhost:8080"));
+  }
 }

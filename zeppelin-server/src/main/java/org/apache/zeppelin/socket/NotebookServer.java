@@ -41,6 +41,7 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
+import org.apache.zeppelin.server.OriginValidator;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.socket.Message.OP;
 import org.eclipse.jetty.websocket.WebSocket;
@@ -63,31 +64,17 @@ public class NotebookServer extends WebSocketServlet implements
   Gson gson = new Gson();
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   final List<NotebookSocket> connectedSockets = new LinkedList<>();
+  private OriginValidator originValidator;
 
+  public NotebookServer(OriginValidator originValidator) {
+    this.originValidator = originValidator;
+  }
   private Notebook notebook() {
     return ZeppelinServer.notebook;
   }
   @Override
   public boolean checkOrigin(HttpServletRequest request, String origin) {
-    URI sourceUri = null;
-    String currentHost = null;
-
-    try {
-      sourceUri = new URI(origin);
-      currentHost = java.net.InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException e) {
-      e.printStackTrace();
-    }
-    catch (URISyntaxException e) {
-      e.printStackTrace();
-    }
-
-    String sourceHost = sourceUri.getHost();
-    if (currentHost.equals(sourceHost) || "localhost".equals(sourceHost)) {
-      return true;
-    }
-
-    return false;
+    return originValidator.validate(origin) != null;
   }
 
   @Override
