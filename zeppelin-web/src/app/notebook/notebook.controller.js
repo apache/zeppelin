@@ -15,7 +15,7 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, websocketMsgSrv, baseUrlSrv) {
+angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, websocketMsgSrv, baseUrlSrv, $timeout) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -35,6 +35,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.interpreterSettings = [];
   $scope.interpreterBindings = [];
+  $scope.isNoteDirty = null;  
+  $scope.saveTimer = null;
 
   var angularObjectRegistry = {};
 
@@ -68,6 +70,15 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
+  //Clone note
+  $scope.cloneNote = function(noteId) {
+    var result = confirm('Do you want to clone this notebook?');
+    if (result) {
+      websocketMsgSrv.cloneNotebook(noteId);
+      $location.path('/#');
+    }
+  };
+  
   $scope.runNote = function() {
     var result = confirm('Run all paragraphs?');
     if (result) {
@@ -75,6 +86,13 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         angular.element('#' + n.id + '_paragraphColumn_main').scope().runParagraph(n.text);
       });
     }
+  };
+
+  $scope.saveNote = function() {
+    _.forEach($scope.note.paragraphs, function(n, key) {
+      angular.element('#' + n.id + '_paragraphColumn_main').scope().saveParagraph();
+    });
+    $scope.isNoteDirty = null;
   };
 
   $scope.toggleAllEditor = function() {
@@ -123,8 +141,24 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     return running;
   };
 
+  $scope.killSaveTimer = function() {
+    if($scope.saveTimer){
+      $timeout.cancel($scope.saveTimer);
+      $scope.saveTimer = null;
+    }
+  };
+
+  $scope.startSaveTimer = function() {
+    $scope.killSaveTimer();
+    $scope.isNoteDirty = true;
+    console.log('startSaveTimer called ' + $scope.note.id);
+    $scope.saveTimer = $timeout(function(){
+      $scope.saveNote();
+    }, 10000);
+  };
+
   $scope.setLookAndFeel = function(looknfeel) {
-    $scope.note.config.looknfeel = looknfeel;
+    $scope.note.config.looknfeel = looknfeel;    
     $scope.setConfig();
   };
 

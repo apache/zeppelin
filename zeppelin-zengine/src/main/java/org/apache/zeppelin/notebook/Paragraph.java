@@ -17,39 +17,32 @@
 
 package org.apache.zeppelin.notebook;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
-import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * Paragraph is a representation of an execution unit.
  *
  * @author Leemoonsoo
  */
-public class Paragraph extends Job implements Serializable {
+public class Paragraph extends Job implements Serializable, Cloneable {
   private static final transient long serialVersionUID = -6328572073497992016L;
   private transient NoteInterpreterLoader replLoader;
   private transient Note note;
 
   String title;
   String text;
+  Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
 
@@ -59,6 +52,7 @@ public class Paragraph extends Job implements Serializable {
     this.replLoader = replLoader;
     title = null;
     text = null;
+    dateUpdated = null;
     settings = new GUI();
     config = new HashMap<String, Object>();
   }
@@ -74,6 +68,7 @@ public class Paragraph extends Job implements Serializable {
 
   public void setText(String newText) {
     this.text = newText;
+    this.dateUpdated = new Date();
   }
 
 
@@ -277,6 +272,23 @@ public class Paragraph extends Job implements Serializable {
   public void setReturn(InterpreterResult value, Throwable t) {
     setResult(value);
     setException(t);
-
+  }
+  
+  @Override
+  public Object clone() throws CloneNotSupportedException {
+    Paragraph paraClone = (Paragraph) super.clone();
+    Map<String, Object> config = new HashMap<>(this.getConfig());
+    // Show the editor by default
+    String hideEditorKey = "editorHide";
+    Object object = config.get(hideEditorKey);
+    if (object != null && object == Boolean.TRUE) {
+      config.put(hideEditorKey, Boolean.FALSE);
+    }
+    Map<String, Object> param = new HashMap<>(this.settings.getParams());
+    paraClone.setConfig(config);
+    paraClone.settings.setParams(param);
+    paraClone.setTitle(this.getTitle());
+    paraClone.setText(this.getText());
+    return paraClone;
   }
 }

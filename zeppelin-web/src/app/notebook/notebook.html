@@ -25,7 +25,7 @@ limitations under the License.
                     ng-if="!isNoteRunning()"
                     tooltip-placement="top" tooltip="Run all the notes">
               <i class="icon-control-play"></i>
-            </button>
+            </button>            
 
             <button type="button"
                     class="btn btn-default btn-xs"
@@ -47,6 +47,13 @@ limitations under the License.
                     ng-hide="viewOnly"
                     tooltip-placement="top" tooltip="Remove the notebook">
               <i class="icon-trash"></i></button>
+            <button type="button"
+                    class="btn btn-default btn-xs"
+                    ng-hide="viewOnly"
+                    tooltip-placement="top" tooltip="Clone the notebook"
+                    data-toggle="modal" data-target="#noteNameModal" data-clone="true"
+                    >
+              <i class="fa fa-copy"></i></button>
           </span>
 
           <span ng-hide="viewOnly">
