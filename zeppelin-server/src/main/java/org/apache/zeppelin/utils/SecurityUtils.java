@@ -28,7 +28,11 @@ import java.net.UnknownHostException;
 public class SecurityUtils {
   public static Boolean isValidOrigin(String sourceHost, ZeppelinConfiguration conf)
       throws UnknownHostException, URISyntaxException {
-    URI sourceHostUri = new URI(sourceHost.toLowerCase());
+    if(sourceHost == null){
+        return false;
+    }
+
+    URI sourceHostUri = new URI(sourceHost);
     String currentHost = java.net.InetAddress.getLocalHost().getHostName().toLowerCase();
     if (currentHost.equals(sourceHostUri.getHost()) ||
             "localhost".equals(sourceHostUri.getHost()) ||

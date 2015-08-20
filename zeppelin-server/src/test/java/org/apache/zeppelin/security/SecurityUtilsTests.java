@@ -66,4 +66,25 @@ public class SecurityUtilsTests {
                 SecurityUtils.isValidOrigin("http://anyhost.com",
                         new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site-star.xml"))));
     }
+
+    @Test
+    public void nullOrigin() throws URISyntaxException, UnknownHostException, ConfigurationException {
+        Assert.assertFalse(
+                SecurityUtils.isValidOrigin(null,
+                        new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
+    }
+
+    @Test
+    public void emptyOrigin() throws URISyntaxException, UnknownHostException, ConfigurationException {
+        Assert.assertFalse(
+                SecurityUtils.isValidOrigin("",
+                        new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
+    }
+
+    @Test
+    public void notAURIOrigin() throws URISyntaxException, UnknownHostException, ConfigurationException {
+        Assert.assertFalse(
+                SecurityUtils.isValidOrigin("test123",
+                        new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
+    }
 }
