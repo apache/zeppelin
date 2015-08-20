@@ -54,7 +54,7 @@ public class CorsFilterTests {
         when(mockRequest.getHeader("Origin")).thenReturn("http://localhost:8080");
         when(mockRequest.getMethod()).thenReturn("Empty");
         when(mockRequest.getServerName()).thenReturn("localhost");
-
+        count = 0;
 
         doAnswer(new Answer() {
             @Override

@@ -32,7 +32,8 @@ public class SecurityUtils {
     String currentHost = java.net.InetAddress.getLocalHost().getHostName().toLowerCase();
     if (currentHost.equals(sourceHostUri.getHost()) ||
             "localhost".equals(sourceHostUri.getHost()) ||
-            conf.getAllowedOrigins().contains(sourceHost)) {
+            conf.getAllowedOrigins().contains(sourceHost) ||
+            conf.getAllowedOrigins().contains("*")) {
       return true;
     }
 

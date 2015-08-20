@@ -47,4 +47,11 @@ public class SecurityUtilsTests {
                 SecurityUtils.isValidOrigin("http://otherhost.com",
                         new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
     }
+
+    @Test
+    public void isValidFromStar() throws URISyntaxException, UnknownHostException, ConfigurationException {
+        Assert.assertTrue(
+                SecurityUtils.isValidOrigin("http://anyhost.com",
+                        new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site-star.xml"))));
+    }
 }

@@ -325,7 +325,6 @@ public class NotebookServer extends WebSocketServlet implements
       note = notebook.getNote(noteId);
     }
 
-    Note note = notebook.getNote(noteId);
     if (note != null) {
       addConnectionToNote(note.id(), conn);
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
