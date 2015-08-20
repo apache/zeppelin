@@ -28,8 +28,8 @@ import java.net.UnknownHostException;
 public class SecurityUtils {
   public static Boolean isValidOrigin(String sourceHost, ZeppelinConfiguration conf)
       throws UnknownHostException, URISyntaxException {
-    if(sourceHost == null){
-        return false;
+    if (sourceHost == null){
+      return false;
     }
 
     URI sourceHostUri = new URI(sourceHost);
