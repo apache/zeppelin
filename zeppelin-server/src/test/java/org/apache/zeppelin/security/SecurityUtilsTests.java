@@ -30,6 +30,18 @@ import java.net.UnknownHostException;
  */
 public class SecurityUtilsTests {
     @Test
+    public void isInvalid() throws URISyntaxException, UnknownHostException {
+        Assert.assertFalse(SecurityUtils.isValidOrigin("http://127.0.1.1", ZeppelinConfiguration.create()));
+    }
+
+    @Test
+    public void isInvalidFromConfig() throws URISyntaxException, UnknownHostException, ConfigurationException {
+        Assert.assertFalse(
+                SecurityUtils.isValidOrigin("http://otherinvalidhost.com",
+                        new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"))));
+    }
+
+    @Test
     public void isLocalhost() throws URISyntaxException, UnknownHostException {
         Assert.assertTrue(SecurityUtils.isValidOrigin("http://localhost", ZeppelinConfiguration.create()));
     }
