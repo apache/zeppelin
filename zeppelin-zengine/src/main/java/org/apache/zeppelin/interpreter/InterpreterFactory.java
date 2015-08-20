@@ -41,6 +41,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -353,7 +354,14 @@ public class InterpreterFactory {
       String groupName,
       InterpreterOption option,
       Properties properties)
-      throws InterpreterException {
+      throws InterpreterException , NullArgumentException {
+
+    //When called from REST API without option we receive NPE
+    if (option == null )
+      throw new NullArgumentException("option");
+    //When called from REST API without option we receive NPE
+    if (properties == null )
+      throw new NullArgumentException("properties");
 
     AngularObjectRegistry angularObjectRegistry;
 
@@ -590,6 +598,7 @@ public class InterpreterFactory {
         }
       } catch (Exception e) {
         // nothing to do.
+        //TODO: This is masking error fix this?
       }
 
       URLClassLoader cl;
