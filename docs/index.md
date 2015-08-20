@@ -14,6 +14,7 @@ group: nav-right
 ### Tutorial
 
 * [Tutorial](./tutorial/tutorial.html)
+* [Tutorial with Map Visualization](./tutorial/tutorialonmapvisualization.html)
 
 ### Interpreter
 
