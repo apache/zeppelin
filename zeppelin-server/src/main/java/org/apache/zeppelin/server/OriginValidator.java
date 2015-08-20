@@ -5,7 +5,6 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -18,6 +17,7 @@ import org.slf4j.LoggerFactory;
 public class OriginValidator {
   Logger logger = LoggerFactory.getLogger(OriginValidator.class);
 
+  private static OriginValidator singletonInstance;
   private ZeppelinConfiguration conf;
   private final List<String> allowedOrigins;
   private final String ALLOW_ALL = "*";
@@ -26,6 +26,7 @@ public class OriginValidator {
     this.conf = conf;
     allowedOrigins = new LinkedList<String>();
     initAllowedOrigins();
+    singletonInstance = this;
   }
   
   /**
@@ -78,5 +79,9 @@ public class OriginValidator {
         allowedOrigins.add(origin);
       }
     }
+  }
+
+  public static OriginValidator singleton() {
+    return singletonInstance;
   }
 }

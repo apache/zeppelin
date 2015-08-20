@@ -38,15 +38,11 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class CorsFilter implements Filter {
   
-  private OriginValidator originValidator;
-
-  public CorsFilter(OriginValidator originValidator) {
-    this.originValidator = originValidator;
-  }
-
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
-      throws IOException, ServletException {    
+      throws IOException, ServletException {
+    OriginValidator originValidator = OriginValidator.singleton();
+
     String sourceHost = request.getServerName();
     String origin = originValidator.validate(sourceHost);
 

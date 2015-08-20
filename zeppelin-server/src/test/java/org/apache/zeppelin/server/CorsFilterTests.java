@@ -55,7 +55,7 @@ public class CorsFilterTests {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     OriginValidator originValidator = new OriginValidator(conf);
 
-    CorsFilter filter = new CorsFilter(originValidator);
+    CorsFilter filter = new CorsFilter();
     HttpServletResponse mockResponse = mock(HttpServletResponse.class);
     FilterChain mockedFilterChain = mock(FilterChain.class);
     TestHttpServletRequest mockRequest = mock(TestHttpServletRequest.class);
@@ -84,7 +84,7 @@ public class CorsFilterTests {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     OriginValidator originValidator = new OriginValidator(conf);
 
-    CorsFilter filter = new CorsFilter(originValidator);
+    CorsFilter filter = new CorsFilter();
     HttpServletResponse mockResponse = mock(HttpServletResponse.class);
     FilterChain mockedFilterChain = mock(FilterChain.class);
     TestHttpServletRequest mockRequest = mock(TestHttpServletRequest.class);

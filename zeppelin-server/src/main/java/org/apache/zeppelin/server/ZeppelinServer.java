@@ -179,7 +179,7 @@ public class ZeppelinServer extends Application {
     cxfContext.setSessionHandler(new SessionHandler());
     cxfContext.setContextPath("/");
     cxfContext.addServlet(servletHolder, "/ws/*");
-    cxfContext.addFilter(new FilterHolder(new CorsFilter(originValidator)), "/*",
+    cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
         EnumSet.allOf(DispatcherType.class));
     return cxfContext;
   }
