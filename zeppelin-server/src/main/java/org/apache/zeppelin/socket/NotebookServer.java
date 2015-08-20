@@ -42,6 +42,7 @@ import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.socket.Message.OP;
+import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketServlet;
 import org.quartz.SchedulerException;
@@ -67,22 +68,13 @@ public class NotebookServer extends WebSocketServlet implements
   }
   @Override
   public boolean checkOrigin(HttpServletRequest request, String origin) {
-    URI sourceUri = null;
-    String currentHost = null;
 
     try {
-      sourceUri = new URI(origin);
-      currentHost = java.net.InetAddress.getLocalHost().getHostName();
+      return SecurityUtils.isValidOrigin(origin, ZeppelinConfiguration.create());
     } catch (UnknownHostException e) {
       e.printStackTrace();
-    }
-    catch (URISyntaxException e) {
+    } catch (URISyntaxException e) {
       e.printStackTrace();
-    }
-
-    String sourceHost = sourceUri.getHost();
-    if (currentHost.equals(sourceHost) || "localhost".equals(sourceHost)) {
-      return true;
     }
 
     return false;
