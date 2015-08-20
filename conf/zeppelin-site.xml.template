@@ -34,7 +34,7 @@
 <property>
   <name>zeppelin.server.origins</name>
   <value>*</value>
-  <description>Comma separated list of domains to allow. * for allow all. eg. 'www.domain.com, 'www.domain1.com,www.domain2.com', '*' </description>
+  <description>Comma separated list of domains to allow. Empty value autodetects. * for allow all. eg. '', 'www.domain.com, 'www.domain1.com,www.domain2.com', '*' </description>
 </property>
 
 <property>
