@@ -17,8 +17,8 @@
   -->
 
 <web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-	version="2.5">
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	version="3.0">
 
  <display-name>zeppelin-web</display-name>
 	<servlet>
@@ -30,7 +30,6 @@
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
-
 	<!-- This route is for swagger, must be different than root -->
 	<servlet-mapping>
 		<servlet-name>default</servlet-name>
@@ -41,4 +40,11 @@
 		<param-name>configuration</param-name>
 		<param-value>deployment</param-value>
 	</context-param>
+
+  <session-config>
+    <cookie-config>
+      <http-only>true</http-only>
+      <secure>true</secure>
+    </cookie-config>
+  </session-config>
 </web-app>

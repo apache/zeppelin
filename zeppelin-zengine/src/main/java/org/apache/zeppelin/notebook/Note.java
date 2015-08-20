@@ -140,6 +140,17 @@ public class Note implements Serializable, JobListener {
   }
 
   /**
+   * Add the paragraph p to the list of paras in note.
+   *
+   * @param p
+   */
+  public void addParagraph(Paragraph p) {
+    synchronized (paragraphs) {
+      paragraphs.add(p);
+    }
+  }
+  
+  /**
    * Insert paragraph in given index.
    *
    * @param index

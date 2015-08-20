@@ -27,6 +27,9 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import java.io.IOException;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.net.UnknownHostException;
 
 /**

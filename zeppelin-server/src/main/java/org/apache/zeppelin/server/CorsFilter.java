@@ -18,6 +18,7 @@
 package org.apache.zeppelin.server;
 
 import java.io.IOException;
+import java.net.URI;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -40,21 +41,28 @@ public class CorsFilter implements Filter {
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
       throws IOException, ServletException {
+    String sourceHost = request.getServerName();
+    String currentHost = java.net.InetAddress.getLocalHost().getHostName();
+    String origin = "";
+    if (currentHost.equals(sourceHost) || "localhost".equals(sourceHost)) {
+      origin = ((HttpServletRequest) request).getHeader("Origin");
+    }
+
     if (((HttpServletRequest) request).getMethod().equals("OPTIONS")) {
       HttpServletResponse resp = ((HttpServletResponse) response);
-      addCorsHeaders(resp);
+      addCorsHeaders(resp, origin);
       return;
     }
 
     if (response instanceof HttpServletResponse) {
       HttpServletResponse alteredResponse = ((HttpServletResponse) response);
-      addCorsHeaders(alteredResponse);
+      addCorsHeaders(alteredResponse, origin);
     }
     filterChain.doFilter(request, response);
   }
 
-  private void addCorsHeaders(HttpServletResponse response) {
-    response.addHeader("Access-Control-Allow-Origin", "*");
+  private void addCorsHeaders(HttpServletResponse response, String origin) {
+    response.addHeader("Access-Control-Allow-Origin", origin);
     response.addHeader("Access-Control-Allow-Credentials", "true");
     response.addHeader("Access-Control-Allow-Headers", "authorization,Content-Type");
     response.addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, HEAD, DELETE");
