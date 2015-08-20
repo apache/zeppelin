@@ -882,11 +882,9 @@ angular.module('zeppelinWebApp')
     } 
     //data model validator
     var msg = dataValidatorSrv.validateMapData(data);
-    console.log(msg);
     //TODO- warning need to be show in here. currently it is only printing.
     //need to know what is the standard way of warning in zepplin.
     if(msg.error){
-      console.log('Data is not matching for schema');
       console.log(msg.msg);
     }else{
     //drawing map deatils if only data set is validated.
@@ -1310,7 +1308,6 @@ angular.module('zeppelinWebApp')
 
     var schema = data.schema;
     var rows = data.rows;
-    console.log(rows);
     //check for d3s
     var values = $scope.paragraph.config.graph.values;
 
@@ -1410,7 +1407,10 @@ angular.module('zeppelinWebApp')
     }
 
     var msg = dataValidatorSrv.validateChartData(data);
-    console.log(msg);
+    //Only console print error found 
+    if(msg.error){
+      console.log(msg.msg);
+    }
 
     // clear aggregation name, if possible
     var namesWithoutAggr = {};
@@ -1545,12 +1545,10 @@ angular.module('zeppelinWebApp')
         d3g : []
       };
     }
-    console.log(data.rows);
+
     var msg = dataValidatorSrv.validateScatterData(data);
-    console.log(msg);
     //TODO- warning need to error model or services will needed
     if(msg.error){
-      console.log('Data is not matching for schema');
       console.log(msg.msg);
     }
 

@@ -40,7 +40,6 @@ angular.module('zeppelinWebApp').factory('chartdataValidator', function(
 
   function rowValueCheck(record) {
     if(record instanceof Object) {
-      //console.log(record)
       for(var key in record) {
         var recordValues = record[key];
         var countKey = 1;
@@ -62,7 +61,6 @@ angular.module('zeppelinWebApp').factory('chartdataValidator', function(
     var data = chartdataValidator.data;
     if(data.schema && data.rows) {
       rowCheck(data.rows);
-      console.log(data);
       return true;
     } else {
       markValidationError('data rows does not exisiting | ');
@@ -74,7 +72,7 @@ angular.module('zeppelinWebApp').factory('chartdataValidator', function(
       markValidationError('data record ' + record +
         ' is not matching for schema | ');
     }
-    //console.log(record+' is passed');
+    //record is passed
   }
 
   function markValidationError(msg) {
