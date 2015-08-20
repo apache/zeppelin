@@ -44,12 +44,10 @@ public class CorsFilter implements Filter {
     OriginValidator originValidator = OriginValidator.singleton();
 
     String sourceHost = request.getServerName();
-    String origin = originValidator.validate(sourceHost);
+    String origin = "";
 
-    if (origin == null) {
-      origin = "";
-    } else {
-      origin = ((HttpServletRequest) request).getHeader("Origin");
+    if (originValidator.validate(sourceHost)) {
+      origin = ((HttpServletRequest) request).getHeader("Origin");      
     }
 
     if (((HttpServletRequest) request).getMethod().equals("OPTIONS")) {

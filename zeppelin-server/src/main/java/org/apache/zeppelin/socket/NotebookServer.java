@@ -74,7 +74,7 @@ public class NotebookServer extends WebSocketServlet implements
   }
   @Override
   public boolean checkOrigin(HttpServletRequest request, String origin) {
-    return originValidator.validate(origin) != null;
+    return originValidator.validate(origin);
   }
 
   @Override

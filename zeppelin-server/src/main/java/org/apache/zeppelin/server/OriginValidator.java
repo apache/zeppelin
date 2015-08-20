@@ -48,9 +48,9 @@ public class OriginValidator {
   /**
    * 
    * @param origin origin to check
-   * @return matched origin. null when it's not allowed
+   * @return
    */
-  public String validate(String origin) {
+  public boolean validate(String origin) {
     try {
       // just get host if origin is form of URI
       URI sourceUri = new URI(origin);
@@ -63,7 +63,7 @@ public class OriginValidator {
     }
     
     if (origin == null) {
-      return null;
+      return false;
     }
 
     for (String p : allowedOrigins) {
@@ -71,10 +71,10 @@ public class OriginValidator {
         continue;
       }
       if (p.trim().compareToIgnoreCase(origin) == 0 || p.trim().equals(ALLOW_ALL)) {
-        return p.trim();
+        return true;
       }      
     }
-    return null;
+    return false;
   }
   
   private void initAllowedOrigins() {
