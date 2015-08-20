@@ -79,7 +79,6 @@ public class CorsFilterTests {
         when(mockRequest.getMethod()).thenReturn("Empty");
         when(mockRequest.getServerName()).thenReturn("evillocalhost");
 
-
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
