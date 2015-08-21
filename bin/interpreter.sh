@@ -57,9 +57,6 @@ fi
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
 addJarInDir "${INTERPRETER_DIR}"
 
-export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
-CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
-
 HOSTNAME=$(hostname)
 ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
 
@@ -88,9 +85,9 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
   # autodetect HADOOP_CONF_HOME by heuristic
   if [[ ! -z "${HADOOP_HOME}" ]] && [[ -z "${HADOOP_CONF_DIR}" ]]; then
     if [[ -d "${HADOOP_HOME}/etc/hadoop" ]]; then
-      HADOOP_CONF_DIR="${HADOOP_HOME}/etc/hadoop"
+      export HADOOP_CONF_DIR="${HADOOP_HOME}/etc/hadoop"
     elif [[ -d "/etc/hadoop/conf" ]]; then
-      HADOOP_CONF_DIR="/etc/hadoop/conf"
+      export HADOOP_CONF_DIR="/etc/hadoop/conf"
     fi
   fi
 
@@ -101,7 +98,7 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
   # add Spark jars into classpath
   if [[ ! -z "${SPARK_HOME}" ]]; then
     addJarInDir "${SPARK_HOME}/lib"
-    PYSPARKPATH="${SPARK_HOME}/python:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-0.8.2.1-src.zip"      
+    PYSPARKPATH="${SPARK_HOME}/python:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-0.8.2.1-src.zip"
   else
     addJarInDir "${INTERPRETER_DIR}/dep"
     PYSPARKPATH="${ZEPPELIN_HOME}/interpreter/spark/pyspark/pyspark.zip:${ZEPPELIN_HOME}/interpreter/spark/pyspark/py4j-0.8.2.1-src.zip"
@@ -128,8 +125,6 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
     done < ${SPARK_CONF_DIR}
   fi
 
-  export ZEPPELIN_CLASSPATH
-
   if [[ x"" == x"${PYTHONPATH}" ]]; then
     export PYTHONPATH="${PYSPARKPATH}"
   else
@@ -138,6 +133,9 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
 
   unset PYSPARKPATH
 fi
+
+export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
 ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} -cp ${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
 pid=$!
