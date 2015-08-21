@@ -146,6 +146,11 @@
   <description>The format of the given truststore (e.g. JKS or PKCS12). Defaults to the same type as the keystore type</description>
 </property>
 
+  <property>
+    <name>zeppelin.server.allowed.origins</name>
+    <value>http://onehost:8080</value>
+    <description>Allowed sources for REST and WebSocket requests.</description>
+  </property>
 <!--
 <property>
   <name>zeppelin.ssl.truststore.password</name>
@@ -153,12 +158,6 @@
   <description>Truststore password. Can be obfuscated by the Jetty Password tool. Defaults to the keystore password</description>
 </property>
 -->
-
-<property>
-  <name>zeppelin.server.allowed.origins</name>
-  <value>*</value>
-  <description>Allowed sources for REST and WebSocket requests (i.e. http://onehost:8080,http://otherhost.com). If you leave * you are vulnerable to https://issues.apache.org/jira/browse/ZEPPELIN-173</description>
-</property>
 
 </configuration>
 
