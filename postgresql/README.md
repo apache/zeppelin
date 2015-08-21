@@ -12,7 +12,9 @@ Name | Class | Description
 %psql.sql | PostgreSqlInterpreter | Provides SQL environment for Postgresql, HAWQ and Greenplum
 
 
-> This [Video Tutorial](https://www.youtube.com/watch?v=wqXXQhJ5Uk8) illustrates some of the features provided by the `Postgresql Interpreter`.
+[<img align="left" src="http://img.youtube.com/vi/wqXXQhJ5Uk8/0.jpg" alt="zeppelin-view" hspace="10" width="70"></img>](https://www.youtube.com/watch?v=wqXXQhJ5Uk8)
+This [Video Tutorial](https://www.youtube.com/watch?v=wqXXQhJ5Uk8) illustrates some of the features provided by the `Postgresql Interpreter`.
+
 
 ## Create Interpreter 
 
