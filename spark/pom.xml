@@ -34,8 +34,8 @@
   <description>Zeppelin spark support</description>
   <url>http://zeppelin.incubator.apache.org</url>
   
-
   <properties>
+    <scala.version>2.10.4</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
   </properties>
 
@@ -192,6 +192,13 @@
     </dependency>
 
     <!--TEST-->
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>${scala.version}</version>
+      <scope>test</scope>
+    </dependency>
+
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.binary.version}</artifactId>
