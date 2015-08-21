@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Created by joelz on 8/19/15.
  */
-public class ZeppelinConfigurationTests {
+public class ZeppelinConfigurationTest {
     @Test
     public void getAllowedOrigins2Test() throws MalformedURLException, ConfigurationException {
 

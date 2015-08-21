@@ -28,7 +28,7 @@ import java.net.UnknownHostException;
 /**
  * Created by joelz on 8/19/15.
  */
-public class SecurityUtilsTests {
+public class SecurityUtilsTest {
     @Test
     public void isInvalid() throws URISyntaxException, UnknownHostException {
         Assert.assertFalse(SecurityUtils.isValidOrigin("http://127.0.1.1", ZeppelinConfiguration.create()));

@@ -35,7 +35,7 @@ import java.net.UnknownHostException;
  * @author joelz
  *
  */
-    public class NotebookServerTests {
+    public class NotebookServerTest {
 
     @Test
     public void CheckOrigin() throws UnknownHostException {

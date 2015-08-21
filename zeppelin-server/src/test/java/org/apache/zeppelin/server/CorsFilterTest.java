@@ -40,7 +40,7 @@ import static org.mockito.Mockito.*;
  * @author joelz
  *
  */
-public class CorsFilterTests {
+public class CorsFilterTest {
 
     public static String[] headers = new String[8];
     public static Integer count = 0;
