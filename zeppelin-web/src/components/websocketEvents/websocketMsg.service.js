@@ -107,6 +107,10 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
           params: paragraphParams
         }
       });
+    },
+
+    isConnected: function(){
+      return websocketEvents.isConnected();
     }
 
   };

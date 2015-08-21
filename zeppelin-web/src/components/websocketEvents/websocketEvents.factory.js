@@ -32,6 +32,10 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
     websocketCalls.ws.send(JSON.stringify(data));
   };
 
+  websocketCalls.isConnected = function() {
+    return (websocketCalls.ws.socket.readyState === 1);
+  };
+
   websocketCalls.ws.onMessage(function(event) {
     var payload;
     if (event.data) {
