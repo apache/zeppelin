@@ -75,12 +75,60 @@ fi
 
 # set spark related env variables
 if [[ "${INTERPRETER_ID}" == "spark" ]]; then
-  if [[ -z "${SPARK_HOME}" ]]; then
+  # add Hadoop jars into classpath
+  if [[ ! -z "${HADOOP_HOME}" ]]; then
+    # Apache
+    addEachJarInDir "${HADOOP_HOME}/share"
+
+    # CDH
+    addJarInDir "${HADOOP_HOME}"
+    addJarInDir "${HADOOP_HOME}/lib"
+  fi
+
+  # autodetect HADOOP_CONF_HOME by heuristic
+  if [[ ! -z "${HADOOP_HOME}" ]] && [[ -z "${HADOOP_CONF_DIR}" ]]; then
+    if [[ -d "${HADOOP_HOME}/etc/hadoop" ]]; then
+      HADOOP_CONF_DIR="${HADOOP_HOME}/etc/hadoop"
+    elif [[ -d "/etc/hadoop/conf" ]]; then
+      HADOOP_CONF_DIR="/etc/hadoop/conf"
+    fi
+  fi
+
+  if [[ ! -z "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
+    ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
+  fi
+
+  # add Spark jars into classpath
+  if [[ ! -z "${SPARK_HOME}" ]]; then
+    addJarInDir "${SPARK_HOME}/lib"
     PYSPARKPATH="${SPARK_HOME}/python:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-0.8.2.1-src.zip"      
   else
     addJarInDir "${INTERPRETER_DIR}/dep"
     PYSPARKPATH="${ZEPPELIN_HOME}/interpreter/spark/pyspark/pyspark.zip:${ZEPPELIN_HOME}/interpreter/spark/pyspark/py4j-0.8.2.1-src.zip"
   fi
+
+  # autodetect SPARK_CONF_DIR
+  if [[ ! -z "${SPARK_HOME}" ]] && [[ -z "${SPARK_CONF_DIR}" ]]; then
+    if [[ -d "${SPARK_HOME}/conf" ]]; then
+      SPARK_CONF_DIR="${SPARK_HOME}/conf"
+    fi
+  fi
+
+  # read spark conf
+  if [[ -d "${SPARK_CONF_DIR}" ]]; then
+    while read line; do
+      echo "${line}" | grep -e "^spark[.]" > /dev/null
+      if [ $? -ne 0 ]; then
+        # skip the line not started with 'spark.'
+        continue;
+      fi
+      SPARK_CONF_KEY=`echo "${line}" | sed -e 's/\(^spark[^ ]*\)[ \t]*\(.*\)/\1/g'`
+      SPARK_CONF_VALUE=`echo "${line}" | sed -e 's/\(^spark[^ ]*\)[ \t]*\(.*\)/\2/g'`
+      export ZEPPELIN_JAVA_OPTS+=" -D${SPARK_CONF_KEY}=\"${SPARK_CONF_VALUE}\""
+    done < ${SPARK_CONF_DIR}
+  fi
+
+  export ZEPPELIN_CLASSPATH
 
   if [[ x"" == x"${PYTHONPATH}" ]]; then
     export PYTHONPATH="${PYSPARKPATH}"
