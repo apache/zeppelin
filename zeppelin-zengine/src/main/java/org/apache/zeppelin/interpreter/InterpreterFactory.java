@@ -315,9 +315,11 @@ public class InterpreterFactory {
     List<RegisteredInterpreter> registeredInterpreters = new LinkedList<RegisteredInterpreter>();
 
     for (String className : interpreterClassList) {
-      registeredInterpreters.add(Interpreter.findRegisteredInterpreterByClassName(className));
+      RegisteredInterpreter ri = Interpreter.findRegisteredInterpreterByClassName(className);
+      if (ri != null) {
+        registeredInterpreters.add(ri);
+      }
     }
-
     return registeredInterpreters;
   }
 
@@ -597,8 +599,7 @@ public class InterpreterFactory {
           separateCL = false;
         }
       } catch (Exception e) {
-        // nothing to do.
-        //TODO(eranw): This is masking error fix this?
+        logger.error("exception checking server classloader driver" , e);
       }
 
       URLClassLoader cl;
