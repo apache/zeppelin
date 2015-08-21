@@ -17,20 +17,20 @@
 
 angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams, notebookListDataFactory, websocketMsgSrv) {
   /** Current list of notes (ids) */
-  
+
   var vm = this;
   vm.notes = notebookListDataFactory;
-  vm.connected = false;
+  vm.connected = websocketMsgSrv.isConnected();
   vm.websocketMsgSrv = websocketMsgSrv;
-  
-  $('#notebook-list').perfectScrollbar({suppressScrollX: true});
-  
+
+  $('#notebook-list').perfectScrollbar({suppressScrollX : true});
+
   $scope.$on('setNoteMenu', function(event, notes) {
-      notebookListDataFactory.setNotes(notes);
+    notebookListDataFactory.setNotes(notes);
   });
-  
+
   $scope.$on('setConnectedStatus', function(event, param) {
-      vm.connected = param;
+    vm.connected = param;
   });
 
   function loadNotes() {
@@ -40,10 +40,10 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   function isActive(noteId) {
     return ($routeParams.noteId === noteId);
   }
-  
+
   vm.loadNotes = loadNotes;
   vm.isActive = isActive;
-  
+
   vm.loadNotes();
-  
+
 });
