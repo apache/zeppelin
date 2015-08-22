@@ -86,7 +86,7 @@ public class SparkConfValidator {
 
   private void printClasspath() {
     ClassLoader cl = getClass().getClassLoader();
-    URL[] urls = ((URLClassLoader)cl).getURLs();
+    URL[] urls = ((URLClassLoader) cl).getURLs();
     for (URL url : urls) {
       error += url.getFile() + "\n";
     }
@@ -156,7 +156,8 @@ public class SparkConfValidator {
     clear();
 
     if (pysparkPath == null) {
-      error += "PYSPARKPATH is not defined. It is usually configured automatically. Please report this problem";
+      error += "PYSPARKPATH is not defined. It is usually configured automatically." +
+          "Please report this problem";
       return false;
     } else {
       boolean pysparkFound = false;

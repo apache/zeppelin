@@ -364,7 +364,7 @@ public class SparkInterpreter extends Interpreter {
           System.getenv("HADOOP_HOME"),
           System.getenv("HADOOP_CONF_DIR"),
           System.getenv("PYSPARKPATH")
-          );
+      );
 
       if (!sparkConfValidator.validateSpark()) {
         return;
