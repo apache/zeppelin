@@ -91,7 +91,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertThat(get, isAllowed());
     Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>(){}.getType());
     Map<String, Object> body = (Map<String, Object>) resp.get("body");
-    assertEquals(Interpreter.registeredInterpreters.size(), body.size());
+    assertEquals(ZeppelinServer.notebook.getInterpreterFactory().getRegisteredInterpreterList().size(), body.size());
     get.releaseConnection();
   }
 
@@ -104,7 +104,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertThat(get, isAllowed());
     Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>(){}.getType());
     List<Map<String, Object>> body = (List<Map<String, Object>>) resp.get("body");
-    assertEquals(Interpreter.registeredInterpreters.size(),body.size());
+    assertEquals(ZeppelinServer.notebook.getInterpreterFactory().get().size(),body.size());
     get.releaseConnection();
   }
 

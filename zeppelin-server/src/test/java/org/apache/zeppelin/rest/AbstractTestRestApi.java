@@ -228,6 +228,7 @@ public abstract class AbstractTestRestApi {
     LOG.info("Connecting to {}", url + path);
     HttpClient httpClient = new HttpClient();
     GetMethod getMethod = new GetMethod(url + path);
+    getMethod.addRequestHeader("Origin", url);
     httpClient.executeMethod(getMethod);
     LOG.info("{} - {}", getMethod.getStatusCode(), getMethod.getStatusText());
     return getMethod;
@@ -237,6 +238,7 @@ public abstract class AbstractTestRestApi {
     LOG.info("Connecting to {}", url + path);
     HttpClient httpClient = new HttpClient();
     DeleteMethod deleteMethod = new DeleteMethod(url + path);
+    deleteMethod.addRequestHeader("Origin", url);
     httpClient.executeMethod(deleteMethod);
     LOG.info("{} - {}", deleteMethod.getStatusCode(), deleteMethod.getStatusText());
     return deleteMethod;
@@ -246,6 +248,7 @@ public abstract class AbstractTestRestApi {
     LOG.info("Connecting to {}", url + path);
     HttpClient httpClient = new HttpClient();
     PostMethod postMethod = new PostMethod(url + path);
+    postMethod.addRequestHeader("Origin", url);
     RequestEntity entity = new ByteArrayRequestEntity(body.getBytes("UTF-8"));
     postMethod.setRequestEntity(entity);
     httpClient.executeMethod(postMethod);
@@ -257,6 +260,7 @@ public abstract class AbstractTestRestApi {
     LOG.info("Connecting to {}", url + path);
     HttpClient httpClient = new HttpClient();
     PutMethod putMethod = new PutMethod(url + path);
+    putMethod.addRequestHeader("Origin", url);
     RequestEntity entity = new ByteArrayRequestEntity(body.getBytes("UTF-8"));
     putMethod.setRequestEntity(entity);
     httpClient.executeMethod(putMethod);
