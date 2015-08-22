@@ -46,11 +46,11 @@ script:
   - /bin/bash ./dev/travis/travis-install.sh `pwd` mvn test -Pspark-1.2 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,zeppelin-zengine,zeppelin-server' -Dtest=org.apache.zeppelin.rest.*Test -DfailIfNoTests=false
   - ./testing/stopSparkCluster.sh 1.2.1 2.3
 # spark 1.1
-#  - rm -rf `pwd`/interpreter/spark
-#  - /bin/bash ./dev/travis/travis-install.sh `pwd` mvn package -Pspark-1.1 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark-dependencies,spark'
-#  - ./testing/startSparkCluster.sh 1.1.1 2.3
-#  - /bin/bash ./dev/travis/travis-install.sh `pwd` mvn test -Pspark-1.1 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,zeppelin-zengine,zeppelin-server' -Dtest=org.apache.zeppelin.rest.*Test -DfailIfNoTests=false
-#  - ./testing/stopSparkCluster.sh 1.1.1 2.3
+  - rm -rf `pwd`/interpreter/spark
+  - /bin/bash ./dev/travis/travis-install.sh `pwd` mvn package -Pspark-1.1 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,spark-dependencies,spark'
+  - ./testing/startSparkCluster.sh 1.1.1 2.3
+  - /bin/bash ./dev/travis/travis-install.sh `pwd` mvn test -Pspark-1.1 -Phadoop-2.3 -B -pl 'zeppelin-interpreter,zeppelin-zengine,zeppelin-server' -Dtest=org.apache.zeppelin.rest.*Test -DfailIfNoTests=false
+  - ./testing/stopSparkCluster.sh 1.1.1 2.3
 
 after_failure:
   - cat target/rat.txt
