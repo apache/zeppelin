@@ -19,6 +19,7 @@ package org.apache.zeppelin.spark;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.apache.spark.SparkContext;
@@ -94,7 +95,7 @@ public class SparkConfValidator {
     }
   }
   
-  public boolean validateYarn() {
+  public boolean validateYarn(Properties property) {
     clear();
     if (!checkClassAvailability("org.apache.spark.deploy.yarn.YarnSparkHadoopUtil")) {
       if (sparkHome == null) {
@@ -134,6 +135,15 @@ public class SparkConfValidator {
       return false;
     }
 
+    // check spark.yarn.jar
+    String sparkYarnJar = property.getProperty("spark.yarn.jar");
+    if (sparkYarnJar == null || sparkYarnJar.trim().length() == 0) {
+      error += "spark.yarn.jar is not defined. Please set this property in Interpreter menu";
+      return false;
+    } else if (!new File(sparkYarnJar).isFile()) {
+      error += "spark.yarn.jar " + sparkYarnJar + " is not a valid file";
+      return false;
+    }
     return true;
   }
   
@@ -171,11 +181,7 @@ public class SparkConfValidator {
         error += "py4j-x.x.x.x-src.zip is not found. Please check your SPARK_HOME";
         return false;
       }
-      
-      if (yarnMode) {
-        // do additional check for yarn-client mode
-      }
-      
+
       return true;
     }
   }
