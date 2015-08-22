@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.spark;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -114,8 +116,15 @@ public class SparkSqlInterpreter extends Interpreter {
       sc.setLocalProperty("spark.scheduler.pool", null);
     }
 
+    Object rdd = null;
+    try {
+      Method sqlMethod = sqlc.getClass().getMethod("sql", String.class);
+      rdd = sqlMethod.invoke(sqlc, st);
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+        | IllegalArgumentException | InvocationTargetException e) {
+      throw new InterpreterException(e);
+    }
 
-    Object rdd = sqlc.sql(st);
     String msg = ZeppelinContext.showDF(sc, context, rdd, maxResult);
     return new InterpreterResult(Code.SUCCESS, msg);
   }
