@@ -128,10 +128,6 @@ public class InterpreterFactoryTest {
     }
   }
 
-  @Test
-  public void testGetRegisteredInterpreterList() throws IOException {
-    assertEquals("Test if factory list match Interpreter list" ,Interpreter.registeredInterpreters.size(), factory.getRegisteredInterpreterList().size());
-  }
 
   @Test
   public void testSaveLoad() throws InterpreterException, IOException {
