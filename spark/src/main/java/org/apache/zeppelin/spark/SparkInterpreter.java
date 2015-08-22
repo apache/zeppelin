@@ -158,8 +158,9 @@ public class SparkInterpreter extends Interpreter {
   private static JobProgressListener setupListeners(SparkContext context) {
     JobProgressListener pl = new JobProgressListener(context.getConf());
     try {
-      Method m = context.listenerBus().getClass().getMethod("addListener", pl.getClass());
-      m.invoke(context.listenerBus(), pl);
+      Object listenerBus = context.getClass().getMethod("listenerBus").invoke(context);
+      Method m = listenerBus.getClass().getMethod("addListener", pl.getClass());
+      m.invoke(listenerBus, pl);
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
       e.printStackTrace();
