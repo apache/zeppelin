@@ -105,9 +105,14 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    if (sparkInterpreter.diagnosis() && sparkInterpreter.getValidator().hasError()) {
+      return new InterpreterResult(Code.ERROR, sparkInterpreter.getValidator().getError());
+    }
+
     SQLContext sqlc = null;
 
-    sqlc = getSparkInterpreter().getSQLContext();
+    sqlc = sparkInterpreter.getSQLContext();
 
     SparkContext sc = sqlc.sparkContext();
     if (concurrentSQL()) {
@@ -136,8 +141,10 @@ public class SparkSqlInterpreter extends Interpreter {
   @Override
   public void cancel(InterpreterContext context) {
     SQLContext sqlc = getSparkInterpreter().getSQLContext();
+    if (sqlc == null) {
+      return;
+    }
     SparkContext sc = sqlc.sparkContext();
-
     sc.cancelJobGroup(getJobGroup(context));
   }
 

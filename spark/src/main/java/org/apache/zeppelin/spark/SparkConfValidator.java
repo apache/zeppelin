@@ -22,7 +22,6 @@ import java.net.URLClassLoader;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import org.apache.spark.SparkContext;
 /**
  * Validate configurations.
  */
@@ -34,7 +33,7 @@ public class SparkConfValidator {
   private String pysparkPath;
 
   /**
-   * 
+   *
    * @param sparkHome SPARK_HOME env variable
    * @param hadoopHome HADOOP_HOME env variable
    * @param hadoopConfDir HADOOP_CONF_DIR env variable
@@ -62,7 +61,7 @@ public class SparkConfValidator {
 
     return true;
   }
-  
+
   private boolean checkSparkClassAvailability() {
     if (checkClassAvailability("org.apache.spark.SparkContext")) {
       return true;
@@ -84,7 +83,7 @@ public class SparkConfValidator {
       return false;
     }
   }
-  
+
   private void printClasspath() {
     ClassLoader cl = getClass().getClassLoader();
     URL[] urls = ((URLClassLoader)cl).getURLs();
@@ -92,7 +91,7 @@ public class SparkConfValidator {
       error += url.getFile() + "\n";
     }
   }
-  
+
   private boolean checkClassAvailability(String className) {
     try {
       getClass().getClassLoader().loadClass(className);
@@ -101,7 +100,7 @@ public class SparkConfValidator {
       return false;
     }
   }
-  
+
   public boolean validateYarn(Properties property) {
     clear();
     if (!checkClassAvailability("org.apache.spark.deploy.yarn.YarnSparkHadoopUtil")) {
@@ -118,12 +117,12 @@ public class SparkConfValidator {
         return false;
       }
     }
-    
+
     if (!checkClassAvailability("org.apache.hadoop.yarn.conf.YarnConfiguration")) {
       if (hadoopHome == null) {
         // unknown reason
         error += "hadoop-yarn-api artifact is not available in current classpaths.\n";
-        error += "Please rebuild Zeppelin or try to set HADOOP_HOME"; 
+        error += "Please rebuild Zeppelin or try to set HADOOP_HOME";
         printClasspath();
         return false;
       } else if (!new File(hadoopHome).isDirectory()) {
@@ -166,12 +165,12 @@ public class SparkConfValidator {
       for (String p : pysparkPath.split(":")) {
         File path = new File(p);
         String name = path.getName();
-        
+
         if (Pattern.matches("py4j.*src.zip", name) && path.isFile()) {
           py4jFound = true;
         } else if (name.equals("pyspark.zip") && path.isFile()) {
           pysparkFound = true;
-        } else if (name.equals("python") && sparkHome != null && 
+        } else if (name.equals("python") && sparkHome != null &&
             path.getAbsolutePath().equals(sparkHome + "/python")) {
           pysparkFound = true;
         }
@@ -194,8 +193,12 @@ public class SparkConfValidator {
     }
   }
 
-  
+
   public String getError() {
     return error;
+  }
+
+  public boolean hasError() {
+    return (error != null && error.length() > 0);
   }
 }

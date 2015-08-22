@@ -90,6 +90,9 @@ public class SparkInterpreter extends Interpreter {
         "spark",
         SparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
+            .add("zeppelin.spark.diagnosis",
+                getSystemDefault("ZEPPELIN_SPARK_DIAGNOSIS", "zeppelin.spark.diagnosis", "true"),
+                "Self diagnosis of configuration")
             .add("spark.app.name", "Zeppelin", "The name of spark application.")
             .add("master",
                 getSystemDefault("MASTER", "spark.master", "local[*]"),
@@ -128,6 +131,7 @@ public class SparkInterpreter extends Interpreter {
 
   private Map<String, Object> binder;
   private SparkEnv env;
+  private SparkConfValidator sparkConfValidator;
 
 
   public SparkInterpreter(Properties property) {
@@ -171,6 +175,22 @@ public class SparkInterpreter extends Interpreter {
 
   private boolean useHiveContext() {
     return Boolean.parseBoolean(getProperty("zeppelin.spark.useHiveContext"));
+  }
+
+  public boolean diagnosis() {
+    if (getProperty("zeppelin.spark.diagnosis") == null) {
+      return true;
+    } else {
+      return Boolean.parseBoolean(getProperty("zeppelin.spark.diagnosis"));
+    }
+  }
+
+  public boolean isYarnMode() {
+    return getProperty("master").equals("yarn-client");
+  }
+
+  public SparkConfValidator getValidator() {
+    return sparkConfValidator;
   }
 
   public SQLContext getSQLContext() {
@@ -338,6 +358,23 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public void open() {
+    if (diagnosis()) {
+      sparkConfValidator = new SparkConfValidator(
+          System.getenv("SPARK_HOME"),
+          System.getenv("HADOOP_HOME"),
+          System.getenv("HADOOP_CONF_DIR"),
+          System.getenv("PYSPARKPATH")
+          );
+
+      if (!sparkConfValidator.validateSpark()) {
+        return;
+      }
+
+      if (isYarnMode() && !sparkConfValidator.validateYarn(getProperty())) {
+        return;
+      }
+    }
+
     URL[] urls = getClassloaderUrls();
 
     // Very nice discussion about how scala compiler handle classpath
@@ -556,6 +593,9 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
+    if (completor == null) {
+      return new LinkedList<String>();
+    }
     ScalaCompleter c = completor.completer();
     Candidates ret = c.complete(buf, cursor);
     return scala.collection.JavaConversions.asJavaList(ret.candidates());
@@ -581,6 +621,10 @@ public class SparkInterpreter extends Interpreter {
    */
   @Override
   public InterpreterResult interpret(String line, InterpreterContext context) {
+    if (diagnosis() && sparkConfValidator.hasError()) {
+      return new InterpreterResult(Code.ERROR, sparkConfValidator.getError());
+    }
+
     z.setInterpreterContext(context);
     if (line == null || line.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);
@@ -656,11 +700,18 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
+    if (sc == null) {
+      return;
+    }
     sc.cancelJobGroup(getJobGroup(context));
   }
 
   @Override
   public int getProgress(InterpreterContext context) {
+    if (sc == null) {
+      return 0;
+    }
+
     String jobGroup = getJobGroup(context);
     int completedTasks = 0;
     int totalTasks = 0;
@@ -794,10 +845,14 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public void close() {
-    sc.stop();
-    sc = null;
+    if (sc != null) {
+      sc.stop();
+      sc = null;
+    }
 
-    intp.close();
+    if (intp != null) {
+      intp.close();
+    }
   }
 
   @Override
