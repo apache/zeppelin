@@ -33,6 +33,13 @@ public class SparkConfValidator {
   private String hadoopConfDir;
   private String pysparkPath;
 
+  /**
+   * 
+   * @param sparkHome SPARK_HOME env variable
+   * @param hadoopHome HADOOP_HOME env variable
+   * @param hadoopConfDir HADOOP_CONF_DIR env variable
+   * @param pysparkPath PYSPARKPATH env variable
+   */
   public SparkConfValidator(String sparkHome, String hadoopHome,
       String hadoopConfDir, String pysparkPath) {
     clear();
@@ -52,7 +59,7 @@ public class SparkConfValidator {
     if (!checkSparkClassAvailability()) {
       return false;
     }
-    
+
     return true;
   }
   
@@ -126,7 +133,6 @@ public class SparkConfValidator {
     }
 
     // check hadoop conf dir
-    hadoopConfDir = System.getenv("HADOOP_CONF_DIR");
     if (hadoopConfDir == null) {
       error += "HADOOP_CONF_DIR is not defined";
       return false;
@@ -146,11 +152,10 @@ public class SparkConfValidator {
     }
     return true;
   }
-  
-  public boolean validatePyspark(SparkContext sc, boolean yarnMode) {
+
+  public boolean validatePyspark(boolean yarnMode) {
     clear();
-    
-    pysparkPath = System.getenv("PYSPARKPATH");
+
     if (pysparkPath == null) {
       error += "PYSPARKPATH is not defined. It is usually configured automatically. Please report this problem";
       return false;
@@ -171,21 +176,24 @@ public class SparkConfValidator {
           pysparkFound = true;
         }
       }
-      
+
       if (!pysparkFound) {
         error += "pyspark.zip or SPARK_HOME/python directory is not found";
         return false;
       }
-      
+
       if (!py4jFound) {
         error += "py4j-x.x.x.x-src.zip is not found. Please check your SPARK_HOME";
         return false;
       }
 
+      if (yarnMode) {
+        // more test on yarn-client mode
+      }
       return true;
     }
   }
-  
+
   
   public String getError() {
     return error;
