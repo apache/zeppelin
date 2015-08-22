@@ -41,6 +41,7 @@ import org.apache.spark.repl.SparkJLineCompletion;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
+import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -159,7 +160,7 @@ public class SparkInterpreter extends Interpreter {
     JobProgressListener pl = new JobProgressListener(context.getConf());
     try {
       Object listenerBus = context.getClass().getMethod("listenerBus").invoke(context);
-      Method m = listenerBus.getClass().getMethod("addListener", pl.getClass());
+      Method m = listenerBus.getClass().getMethod("addListener", SparkListener.class);
       m.invoke(listenerBus, pl);
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
