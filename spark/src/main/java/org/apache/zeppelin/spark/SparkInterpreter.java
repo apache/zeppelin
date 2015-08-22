@@ -157,7 +157,13 @@ public class SparkInterpreter extends Interpreter {
 
   private static JobProgressListener setupListeners(SparkContext context) {
     JobProgressListener pl = new JobProgressListener(context.getConf());
-    context.listenerBus().addListener(pl);
+    try {
+      Method m = context.listenerBus().getClass().getMethod("addListener", pl.getClass());
+      m.invoke(context.listenerBus(), pl);
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+        | IllegalArgumentException | InvocationTargetException e) {
+      e.printStackTrace();
+    }
     return pl;
   }
 
@@ -272,7 +278,7 @@ public class SparkInterpreter extends Interpreter {
     }
 
     //TODO(jongyoul): Move these codes into PySparkInterpreter.java
-    
+
     String pysparkBasePath = getSystemDefault("SPARK_HOME", "spark.home", null);
     File pysparkPath;
     if (null == pysparkBasePath) {
@@ -607,7 +613,7 @@ public class SparkInterpreter extends Interpreter {
     String incomplete = "";
 
     for (int l = 0; l < linesToRun.length; l++) {
-      String s = linesToRun[l];      
+      String s = linesToRun[l];
       // check if next line starts with "." (but not ".." or "./") it is treated as an invocation
       if (l + 1 < linesToRun.length) {
         String nextLine = linesToRun[l + 1].trim();
