@@ -30,22 +30,22 @@ public class SparkConfValidator {
   private String sparkHome;
   private String hadoopHome;
   private String hadoopConfDir;
-  private String pysparkPath;
+  private String pythonPath;
 
   /**
    *
    * @param sparkHome SPARK_HOME env variable
    * @param hadoopHome HADOOP_HOME env variable
    * @param hadoopConfDir HADOOP_CONF_DIR env variable
-   * @param pysparkPath PYSPARKPATH env variable
+   * @param pythonPath PYTHONPATH env variable
    */
   public SparkConfValidator(String sparkHome, String hadoopHome,
-      String hadoopConfDir, String pysparkPath) {
+      String hadoopConfDir, String pythonPath) {
     clear();
     this.sparkHome = sparkHome;
     this.hadoopHome = hadoopHome;
     this.hadoopConfDir = hadoopConfDir;
-    this.pysparkPath = pysparkPath;
+    this.pythonPath = pythonPath;
   }
   private void clear() {
     error = "";
@@ -155,15 +155,15 @@ public class SparkConfValidator {
   public boolean validatePyspark(boolean yarnMode) {
     clear();
 
-    if (pysparkPath == null) {
-      error += "PYSPARKPATH is not defined. It is usually configured automatically." +
+    if (pythonPath == null) {
+      error += "PYTHONPATH is not defined. It is usually configured automatically." +
           "Please report this problem";
       return false;
     } else {
       boolean pysparkFound = false;
       boolean py4jFound = false;
 
-      for (String p : pysparkPath.split(":")) {
+      for (String p : pythonPath.split(":")) {
         File path = new File(p);
         String name = path.getName();
 

@@ -101,10 +101,10 @@ public class SparkConfValidatorTest {
     String sparkHome = null;
     String hadoopHome = null;
     String hadoopConfDir = null;
-    String pysparkPath = null;
+    String pythonPath = null;
 
     SparkConfValidator scv = new SparkConfValidator(
-        sparkHome, hadoopHome, hadoopConfDir, pysparkPath);
+        sparkHome, hadoopHome, hadoopConfDir, pythonPath);
     assertFalse(scv.validatePyspark(false));
 
     // create mock file and directories
@@ -114,41 +114,41 @@ public class SparkConfValidatorTest {
     new File(tmpDir, "invalidpath").mkdir();
 
     // when py4j and python dir is found
-    pysparkPath = tmpDir.getAbsolutePath() + "/py4j-0.0.0.0-src.zip:" +
+    pythonPath = tmpDir.getAbsolutePath() + "/py4j-0.0.0.0-src.zip:" +
         tmpDir.getAbsolutePath() + "/python";
-    scv = new SparkConfValidator(tmpDir.getAbsolutePath(), hadoopHome, hadoopConfDir, pysparkPath);
+    scv = new SparkConfValidator(tmpDir.getAbsolutePath(), hadoopHome, hadoopConfDir, pythonPath);
     assertTrue(scv.validatePyspark(false));
 
-    scv = new SparkConfValidator(null, hadoopHome, hadoopConfDir, pysparkPath);
+    scv = new SparkConfValidator(null, hadoopHome, hadoopConfDir, pythonPath);
     assertFalse(scv.validatePyspark(false));
 
-    scv = new SparkConfValidator(tmpDir.getAbsolutePath() + "/invalidpath", hadoopHome, hadoopConfDir, pysparkPath);
+    scv = new SparkConfValidator(tmpDir.getAbsolutePath() + "/invalidpath", hadoopHome, hadoopConfDir, pythonPath);
     assertFalse(scv.validatePyspark(false));
 
     // when py4j and python.zip is found
-    pysparkPath = tmpDir.getAbsolutePath() + "/py4j-0.0.0.0-src.zip:" +
+    pythonPath = tmpDir.getAbsolutePath() + "/py4j-0.0.0.0-src.zip:" +
         tmpDir.getAbsolutePath() + "/python";
 
-    scv = new SparkConfValidator(tmpDir.getAbsolutePath(), hadoopHome, hadoopConfDir, pysparkPath);
+    scv = new SparkConfValidator(tmpDir.getAbsolutePath(), hadoopHome, hadoopConfDir, pythonPath);
     assertTrue(scv.validatePyspark(false));
 
-    scv = new SparkConfValidator(null, hadoopHome, hadoopConfDir, pysparkPath);
+    scv = new SparkConfValidator(null, hadoopHome, hadoopConfDir, pythonPath);
     assertFalse(scv.validatePyspark(false));
 
-    scv = new SparkConfValidator(tmpDir.getAbsolutePath() + "/invalidpath", hadoopHome, hadoopConfDir, pysparkPath);
+    scv = new SparkConfValidator(tmpDir.getAbsolutePath() + "/invalidpath", hadoopHome, hadoopConfDir, pythonPath);
     assertFalse(scv.validatePyspark(false));
 
     // when python dir or python.zip is not found
-    pysparkPath = tmpDir.getAbsolutePath() + "/py4j-0.0.0.0-src.zip:" +
+    pythonPath = tmpDir.getAbsolutePath() + "/py4j-0.0.0.0-src.zip:" +
         tmpDir.getAbsolutePath() + "/invalidpath";
 
-    scv = new SparkConfValidator(tmpDir.getAbsolutePath(), hadoopHome, hadoopConfDir, pysparkPath);
+    scv = new SparkConfValidator(tmpDir.getAbsolutePath(), hadoopHome, hadoopConfDir, pythonPath);
     assertFalse(scv.validatePyspark(false));
 
     // when py4j can not be found
-    pysparkPath = tmpDir.getAbsolutePath() + "/invalidpath:" +
+    pythonPath = tmpDir.getAbsolutePath() + "/invalidpath:" +
         tmpDir.getAbsolutePath() + "/python";
-    scv = new SparkConfValidator(tmpDir.getAbsolutePath(), hadoopHome, hadoopConfDir, pysparkPath);
+    scv = new SparkConfValidator(tmpDir.getAbsolutePath(), hadoopHome, hadoopConfDir, pythonPath);
     assertFalse(scv.validatePyspark(false));
   }
 }

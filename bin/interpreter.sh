@@ -104,6 +104,13 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
     PYSPARKPATH="${ZEPPELIN_HOME}/interpreter/spark/pyspark/pyspark.zip:${ZEPPELIN_HOME}/interpreter/spark/pyspark/py4j-0.8.2.1-src.zip"
   fi
 
+  if [[ x"" == x"${PYTHONPATH}" ]]; then
+    export PYTHONPATH="${PYSPARKPATH}"
+  else
+    export PYTHONPATH="${PYTHONPATH}:${PYSPARKPATH}"
+  fi
+
+
   # autodetect SPARK_CONF_DIR
   if [[ -n "${SPARK_HOME}" ]] && [[ -z "${SPARK_CONF_DIR}" ]]; then
     if [[ -d "${SPARK_HOME}/conf" ]]; then
@@ -129,14 +136,6 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
       done
     fi
   fi
-
-  if [[ -z "${PYTHONPATH}" ]]; then
-    export PYTHONPATH="${PYSPARKPATH}"
-  else
-    export PYTHONPATH="${PYTHONPATH}:${PYSPARKPATH}"
-  fi
-
-  unset PYSPARKPATH
 fi
 
 export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
