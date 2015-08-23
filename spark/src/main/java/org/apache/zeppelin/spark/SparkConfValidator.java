@@ -178,7 +178,7 @@ public class SparkConfValidator {
       }
 
       if (!pysparkFound) {
-        error += "pyspark.zip or SPARK_HOME/python directory is not found";
+        error += "pyspark.zip or SPARK_HOME/python directory not found";
         return false;
       }
 
