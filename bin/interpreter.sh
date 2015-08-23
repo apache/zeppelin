@@ -111,18 +111,23 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
     fi
   fi
 
-  # read spark conf
+  # read spark-*.conf if exists
   if [[ -d "${SPARK_CONF_DIR}" ]]; then
-    while read line; do
-      echo "${line}" | grep -e "^spark[.]" > /dev/null
-      if [ $? -ne 0 ]; then
-        # skip the line not started with 'spark.'
-        continue;
-      fi
-      SPARK_CONF_KEY=`echo "${line}" | sed -e 's/\(^spark[^ ]*\)[ \t]*\(.*\)/\1/g'`
-      SPARK_CONF_VALUE=`echo "${line}" | sed -e 's/\(^spark[^ ]*\)[ \t]*\(.*\)/\2/g'`
-      export ZEPPELIN_JAVA_OPTS+=" -D${SPARK_CONF_KEY}=\"${SPARK_CONF_VALUE}\""
-    done < ${SPARK_CONF_DIR}
+    ls ${SPARK_CONF_DIR}/spark-*.conf > /dev/null 2>&1
+    if [[ $? -eq 0 ]]; then
+      for file in ${SPARK_CONF_DIR}/spark-*.conf; do
+        while read -r line; do
+          echo "${line}" | grep -e "^spark[.]" > /dev/null
+          if [ $? -ne 0 ]; then
+            # skip the line not started with 'spark.'
+            continue;
+          fi
+          SPARK_CONF_KEY=`echo "${line}" | sed -e 's/\(^spark[^ ]*\)[ \t]*\(.*\)/\1/g'`
+          SPARK_CONF_VALUE=`echo "${line}" | sed -e 's/\(^spark[^ ]*\)[ \t]*\(.*\)/\2/g'`
+          export ZEPPELIN_JAVA_OPTS+=" -D${SPARK_CONF_KEY}=\"${SPARK_CONF_VALUE}\""
+        done < "${file}"
+      done
+    fi
   fi
 
   if [[ x"" == x"${PYTHONPATH}" ]]; then
