@@ -91,7 +91,7 @@ public class SparkInterpreter extends Interpreter {
         SparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .add("zeppelin.spark.diagnosis",
-                getSystemDefault("ZEPPELIN_SPARK_DIAGNOSIS", "zeppelin.spark.diagnosis", "true"),
+                getSystemDefault("ZEPPELIN_SPARK_DIAGNOSIS", "zeppelin.spark.diagnosis", "false"),
                 "Self diagnosis of configuration")
             .add("spark.app.name", "Zeppelin", "The name of spark application.")
             .add("master",
@@ -179,7 +179,7 @@ public class SparkInterpreter extends Interpreter {
 
   public boolean diagnosis() {
     if (getProperty("zeppelin.spark.diagnosis") == null) {
-      return true;
+      return false;
     } else {
       return Boolean.parseBoolean(getProperty("zeppelin.spark.diagnosis"));
     }
