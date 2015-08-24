@@ -148,7 +148,7 @@ public class LazyOpenInterpreter
 
   @Override
   public boolean restartRequired() {
-    if (isOpen()) {
+    if (opened) {
       return intp.restartRequired();
     } else {
       return false;
