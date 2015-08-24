@@ -407,6 +407,7 @@ public class InterpreterFactory {
         }
       }
     }
+    interpreterGroup.bringDefaultToFront();
     return interpreterGroup;
   }
 

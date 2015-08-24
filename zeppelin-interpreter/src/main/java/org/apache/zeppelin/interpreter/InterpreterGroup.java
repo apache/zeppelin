@@ -24,6 +24,7 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 
 /**
  * InterpreterGroup is list of interpreters in the same group.
@@ -116,6 +117,34 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
       } catch (InterruptedException e) {
         Logger logger = Logger.getLogger(InterpreterGroup.class);
         logger.error("Can't close interpreter", e);
+      }
+    }
+  }
+
+  public Interpreter getInterpreterByName(String interpreterName) {
+    Interpreter interpreter = null;
+    for (Interpreter intp : this) {
+      RegisteredInterpreter regIntp = Interpreter
+          .findRegisteredInterpreterByClassName(intp.getClassName());
+      if (regIntp.getName().equals(interpreterName)) {
+        interpreter = intp;
+        break;
+      }
+    }
+    return interpreter;
+  }
+
+  public void bringDefaultToFront() {
+    String defaultInterpreterName = getProperty().getProperty("zeppelin.default.interpreter");
+    Logger logger = Logger.getLogger(InterpreterGroup.class);
+    logger.info("Default interpreter name is " + defaultInterpreterName);
+    if (defaultInterpreterName != null && defaultInterpreterName.trim().length() > 0) {
+      Interpreter defaultInterpreter = getInterpreterByName(defaultInterpreterName);
+      //if there is a default interpreter, remove it and insert it at the head
+      if (defaultInterpreter != null && defaultInterpreter != getFirst()) {
+        logger.info("Default interpreter found. Moving to front of list");
+        remove(defaultInterpreter);
+        addFirst(defaultInterpreter);
       }
     }
   }
