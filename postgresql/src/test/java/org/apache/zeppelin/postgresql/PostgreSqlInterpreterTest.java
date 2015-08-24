@@ -14,13 +14,22 @@
  */
 package org.apache.zeppelin.postgresql;
 
-import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.*;
+import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.DEFAULT_JDBC_DRIVER_NAME;
+import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.DEFAULT_JDBC_URL;
+import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.DEFAULT_JDBC_USER_NAME;
+import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.DEFAULT_JDBC_USER_PASSWORD;
+import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.DEFAULT_MAX_RESULT;
+import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.POSTGRESQL_SERVER_DRIVER_NAME;
+import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.POSTGRESQL_SERVER_MAX_RESULT;
+import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.POSTGRESQL_SERVER_PASSWORD;
+import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.POSTGRESQL_SERVER_URL;
+import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.POSTGRESQL_SERVER_USER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.sql.SQLException;
 import java.util.Properties;
@@ -28,8 +37,6 @@ import java.util.Properties;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
-import org.mockito.Mockito;
 
 import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
 import com.mockrunner.jdbc.StatementResultSetHandler;
@@ -220,5 +227,13 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
     verifySQLStatementExecuted(sqlQuery);
     verifyAllResultSetsClosed();
     verifyAllStatementsClosed();
+  }
+
+  @Test
+  public void testAutoCompletion() throws SQLException {
+    psqlInterpreter.open();
+    assertEquals(1, psqlInterpreter.completion("SEL", 0).size());
+    assertEquals("SELECT ", psqlInterpreter.completion("SEL", 0).iterator().next());
+    assertEquals(0, psqlInterpreter.completion("SEL", 100).size());
   }
 }
