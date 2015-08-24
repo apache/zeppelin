@@ -1,18 +1,17 @@
 'use strict';
 
 describe('Controller: NotebookCtrl', function() {
-
-  // load the controller's module
   beforeEach(module('zeppelinWebApp'));
 
-  var NotebookCtrl, scope;
+  var NotebookCtrl;
+  var scope;
 
   var websocketMsgSrvMock = {
-    getNotebook:function() {}
+    getNotebook: function() {}
   };
 
   var baseUrlSrvMock = {
-    getRestApiBase: function () {
+    getRestApiBase: function() {
       return 'http://localhost:8080';
     }
   };
@@ -23,7 +22,6 @@ describe('Controller: NotebookCtrl', function() {
     config: {},
   };
 
-  // Initialize the controller and a mock scope
   beforeEach(inject(function($controller, $rootScope) {
     scope = $rootScope.$new();
     NotebookCtrl = $controller('NotebookCtrl', {
@@ -33,29 +31,40 @@ describe('Controller: NotebookCtrl', function() {
     });
   }));
 
-  beforeEach(function () {
+  beforeEach(function() {
     scope.note = noteMock;
   });
 
-  it('should set default value of "showEditor" to false', function () {
+  var functions = ['getCronOptionNameFromValue', 'removeNote', 'runNote', 'saveNote', 'toggleAllEditor',
+    'showAllEditor', 'hideAllEditor', 'toggleAllTable', 'hideAllTable', 'showAllTable', 'isNoteRunning',
+    'killSaveTimer', 'startSaveTimer', 'setLookAndFeel', 'setCronScheduler', 'setConfig', 'sendNewName',
+    'openSetting', 'closeSetting', 'saveSetting', 'toggleSetting'];
+
+  functions.forEach(function(fn) {
+    it('check for scope functions to be defined : ' + fn, function() {
+      expect(scope[fn]).toBeDefined();
+    });
+  });
+
+  it('should set default value of "showEditor" to false', function() {
     expect(scope.showEditor).toEqual(false);
   });
 
-  it('should set default value of "editorToggled" to false', function () {
+  it('should set default value of "editorToggled" to false', function() {
     expect(scope.editorToggled).toEqual(false);
   });
 
-  it('should set showSetting to true when openSetting is called', function () {
+  it('should set showSetting to true when openSetting is called', function() {
     scope.openSetting();
     expect(scope.showSetting).toEqual(true);
   });
 
-  it('should set showSetting to false when closeSetting is called', function () {
+  it('should set showSetting to false when closeSetting is called', function() {
     scope.closeSetting();
     expect(scope.showSetting).toEqual(false);
   });
 
-  it('should return the correct value for getCronOptionNameFromValue', function () {
+  it('should return the correct value for getCronOptionNameFromValue', function() {
     var none = scope.getCronOptionNameFromValue();
     var oneMin = scope.getCronOptionNameFromValue('0 0/1 * * * ?');
     var fiveMin = scope.getCronOptionNameFromValue('0 0/5 * * * ?');
@@ -75,21 +84,20 @@ describe('Controller: NotebookCtrl', function() {
     expect(oneDay).toEqual('1d');
   });
 
-  it('default value for isNoteDirty should be null', function () {
+  it('default value for isNoteDirty should be null', function() {
     expect(scope.isNoteDirty).toEqual(null);
   });
 
-  it('calling startSaveTimer should first call killSaveTimer and start a new timer', function () {
+  it('calling startSaveTimer should first call killSaveTimer and start a new timer', function() {
     expect(scope.saveTimer).toEqual(null);
     scope.startSaveTimer();
     expect(scope.isNoteDirty).toEqual(true);
     expect(scope.saveTimer).toBeTruthy();
   });
 
-  it('calling killSaveTimer should clear saveTimer flag', function () {
+  it('calling killSaveTimer should clear saveTimer flag', function() {
     scope.killSaveTimer();
     expect(scope.saveTimer).toEqual(null);
   });
-
 
 });
