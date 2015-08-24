@@ -145,19 +145,33 @@ public class PostgreSqlInterpreter extends Interpreter {
 
       jdbcConnection = DriverManager.getConnection(url, user, password);
 
-      Set<String> keywordsCompletions = SqlCompleter.getSqlKeywordsCompletions(jdbcConnection);
-      Set<String> dataModelCompletions =
-          SqlCompleter.getDataModelMetadataCompletions(jdbcConnection);
-      SetView<String> allCompletions = Sets.union(keywordsCompletions, dataModelCompletions);
-      sqlCompleter = new SqlCompleter(allCompletions, dataModelCompletions);
+      sqlCompleter = createSqlCompleter(jdbcConnection);
 
       exceptionOnConnect = null;
       logger.info("Successfully created psql connection");
 
-    } catch (ClassNotFoundException | SQLException | IOException e) {
+    } catch (ClassNotFoundException | SQLException e) {
       logger.error("Cannot open connection", e);
       exceptionOnConnect = e;
+      close();
     }
+  }
+
+  private SqlCompleter createSqlCompleter(Connection jdbcConnection) {
+
+    SqlCompleter completer = null;
+    try {
+      Set<String> keywordsCompletions = SqlCompleter.getSqlKeywordsCompletions(jdbcConnection);
+      Set<String> dataModelCompletions =
+          SqlCompleter.getDataModelMetadataCompletions(jdbcConnection);
+      SetView<String> allCompletions = Sets.union(keywordsCompletions, dataModelCompletions);
+      completer = new SqlCompleter(allCompletions, dataModelCompletions);
+
+    } catch (IOException | SQLException e) {
+      logger.error("Cannot create SQL completer", e);
+    }
+
+    return completer;
   }
 
   @Override
@@ -234,7 +248,9 @@ public class PostgreSqlInterpreter extends Interpreter {
 
           // In case of update event (e.g. isResultSetAvailable = false) update the completion
           // meta-data.
-          sqlCompleter.updateDataModelMetaData(getJdbcConnection());
+          if (sqlCompleter != null) {
+            sqlCompleter.updateDataModelMetaData(getJdbcConnection());
+          }
         }
       } finally {
         try {
@@ -303,7 +319,7 @@ public class PostgreSqlInterpreter extends Interpreter {
   public List<String> completion(String buf, int cursor) {
 
     List<CharSequence> candidates = new ArrayList<CharSequence>();
-    if (sqlCompleter.complete(buf, cursor, candidates) >= 0) {
+    if (sqlCompleter != null && sqlCompleter.complete(buf, cursor, candidates) >= 0) {
       return Lists.transform(candidates, sequenceToStringTransformer);
     } else {
       return NO_COMPLETION;
