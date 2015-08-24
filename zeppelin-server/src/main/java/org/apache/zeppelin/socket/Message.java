@@ -77,6 +77,9 @@ public class Message {
                     // @param id paragraph id
                     // @param index index the paragraph want to go
 
+    DOWNLOAD_PARAGRAPH_RESULT, // Download link to paragraph output
+                               // @param id paragraph id
+
     INSERT_PARAGRAPH, // [c-s] create new paragraph below current paragraph
                       // @param target index
 

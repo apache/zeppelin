@@ -19,6 +19,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.net.URL;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,6 +52,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
+
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.AWSCredentialsProviderChain;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.HttpMethod;
+import com.amazonaws.services.s3.AmazonS3Client;
+
 /**
  * Zeppelin websocket service.
  *
@@ -136,6 +146,9 @@ public class NotebookServer extends WebSocketServlet implements
             break;
           case PARAGRAPH_REMOVE:
             removeParagraph(conn, notebook, messagereceived);
+            break;
+          case DOWNLOAD_PARAGRAPH_RESULT:
+            downloadParagraphResult(conn, notebook, messagereceived);
             break;
           case NOTE_UPDATE:
             updateNote(conn, notebook, messagereceived);
@@ -462,6 +475,84 @@ public class NotebookServer extends WebSocketServlet implements
       note.removeParagraph(paragraphId);
       note.persist();
       broadcastNote(note);
+    }
+  }
+
+  private void downloadParagraphResult(NotebookSocket conn, Notebook notebook,
+      Message fromMessage) throws IOException {
+
+    String paragraphId = (String) fromMessage.get("id");
+
+    Message resp = new Message(OP.DOWNLOAD_PARAGRAPH_RESULT);
+    resp.put("id", paragraphId);
+
+    ZeppelinConfiguration conf = notebook.getConf();
+
+    // Make sure the export feature is enabled, otherwise results
+    // wouldn't have been exported for download
+    if (!conf.exportResults()) {
+      String clientError = "Export is not enabled.";
+      resp.put("error", clientError);
+      conn.send(serializeMessage(resp));
+      return;
+    }
+
+    // Find the note
+    final Note note = notebook.getNote(getOpenNoteId(conn));
+    if (note == null) {
+      String clientError = "Can't find note.";
+      resp.put("error", clientError);
+      conn.send(serializeMessage(resp));
+      return;
+    }
+
+    // Don't proceed if there is no such paragraph.
+    Paragraph paragraph = note.getParagraph(paragraphId);
+    if (paragraph == null) {
+      String clientError = "Can't find paragraph.";
+      resp.put("error", clientError);
+      conn.send(serializeMessage(resp));
+      return;
+    }
+
+    AWSCredentialsProviderChain chain = new DefaultAWSCredentialsProviderChain();
+    AmazonS3Client s3 = new AmazonS3Client(chain);
+
+    String bucket = conf.getExportS3Bucket();
+    String key = paragraph.getExportS3Key();
+
+    // Check if the S3 object exists. Unfortunately, the S3 SDK doesn't provide
+    // a direct way to check if an object exists
+    try {
+      s3.getObjectMetadata(bucket, key);
+    } catch (AmazonServiceException e) {
+      String clientError = "No full result found. " +
+          "Execute the paragraph and download again.";
+      resp.put("error", clientError);
+      conn.send(serializeMessage(resp));
+      return;
+    }
+
+    // Ultimately we want a java.util.Date, but the add() method of Calendar
+    // has a void return type, so we can't complete the chain here :(
+    Calendar expiration = Calendar.getInstance();
+    expiration.add(Calendar.DATE, 1);
+
+    // Generate pre-sign URL
+    try {
+      URL url = s3.generatePresignedUrl(
+          bucket,
+          key,
+          expiration.getTime(),
+          HttpMethod.GET);
+
+      resp.put("url", url.toString());
+      conn.send(serializeMessage(resp));
+    } catch (AmazonServiceException e) {
+      String clientError = "Couldn't generate download link.";
+      resp.put("error", clientError);
+      conn.send(serializeMessage(resp));
+      return;
     }
   }
 

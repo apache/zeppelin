@@ -77,6 +77,48 @@
   <description>notebook persistence layer implementation</description>
 </property>
 
+<!-- Options to truncate results. -->
+<property>
+  <name>zeppelin.paragraph.truncate.results</name>
+  <value>false</value>
+  <description>
+    Should large results be truncated? This is useful if results are large
+    enough to slow down your browser's Javascript rendering. You can enable
+    S3 export to get access to the full result set.
+  </description>
+</property>
+
+<property>
+  <name>zeppelin.paragraph.max.result.lines</name>
+  <value>25</value>
+  <description>
+    Only used if zeppelin.truncate.paragraph.results is true.
+    The maximum number of lines of a raw result to store into the note.json.
+  </description>
+</property>
+
+<!-- Options to export results to S3 -->
+<property>
+  <name>zeppelin.export.results</name>
+  <value>false</value>
+  <description>S3 bucket for exporting results.</description>
+</property>
+
+<property>
+  <name>zeppelin.export.s3.bucket</name>
+  <value>zeppelin</value>
+  <description>S3 bucket for exporting results.</description>
+</property>
+
+<property>
+  <name>zeppelin.export.s3.prefix</name>
+  <value>export</value>
+  <description>
+    Prefix of exported S3 objects. The note and paragraph ID will be appended
+    to this prefix to form the S3 key.
+  </description>
+</property>
+
 <property>
   <name>zeppelin.interpreter.dir</name>
   <value>interpreter</value>

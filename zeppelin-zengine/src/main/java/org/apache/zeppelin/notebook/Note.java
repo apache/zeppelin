@@ -73,9 +73,11 @@ public class Note implements Serializable, JobListener {
 
   public Note() {}
 
-  public Note(NotebookRepo repo,
+  public Note(ZeppelinConfiguration conf,
+      NotebookRepo repo,
       NoteInterpreterLoader replLoader,
       JobListenerFactory jobListenerFactory) {
+    this.conf = conf;
     this.repo = repo;
     this.replLoader = replLoader;
     this.jobListenerFactory = jobListenerFactory;
@@ -116,6 +118,14 @@ public class Note implements Serializable, JobListener {
 
   public NotebookRepo getNotebookRepo() {
     return repo;
+  }
+
+  public ZeppelinConfiguration getConf() {
+    return conf;
+  }
+
+  public void setConf(ZeppelinConfiguration conf) {
+    this.conf = conf;
   }
 
   public void setNotebookRepo(NotebookRepo repo) {

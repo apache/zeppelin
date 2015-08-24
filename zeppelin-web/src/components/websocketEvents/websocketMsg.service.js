@@ -96,6 +96,15 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
+    downloadParagraphResult: function(paragraphId) {
+      websocketEvents.sendNewEvent({
+        op: 'DOWNLOAD_PARAGRAPH_RESULT',
+        data: {
+          id: paragraphId
+        }
+      });
+    },
+
     commitParagraph: function(paragraphId, paragraphTitle, paragraphData, paragraphConfig, paragraphParams) {
       websocketEvents.sendNewEvent({
         op: 'COMMIT_PARAGRAPH',
