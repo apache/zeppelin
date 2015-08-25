@@ -118,6 +118,10 @@ public class SparkSqlInterpreter extends Interpreter {
 
     Object rdd = null;
     try {
+      // method signature of sqlc.sql() is changed
+      // from  def sql(sqlText: String): SchemaRDD (1.2 and prior)
+      // to    def sql(sqlText: String): DataFrame (1.3 and later).
+      // Therefore need to use reflection to keep binary compatibility for all spark versions.
       Method sqlMethod = sqlc.getClass().getMethod("sql", String.class);
       rdd = sqlMethod.invoke(sqlc, st);
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
