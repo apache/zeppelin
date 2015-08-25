@@ -28,7 +28,7 @@ tagline: Less Development, More analysis!
 ### Multiple language backend
 
 Zeppelin interpreter concept allows any language/data-processing-backend to be plugged into Zeppelin.
-Current languages included in the Zeppelin interpreter are: Scala(with Apache Spark), Python(with Apache Spark), SparkSQL, Hive, Markdown and Shell.
+Currently Zeppelin support many interpreters such as Scala(with Apache Spark), Python(with Apache Spark), SparkSQL, Hive, Markdown and Shell.
 
 <img class="img-responsive" src="assets/themes/zeppelin/img/screenshots/multiple_language_backend.png" />
 
