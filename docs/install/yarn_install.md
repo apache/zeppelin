@@ -157,7 +157,6 @@ Set the following properties
 ```bash
 export JAVA_HOME=/home/zeppelin/prerequisites/jdk1.7.0_79
 export HADOOP_CONF_DIR=/etc/hadoop/conf
-export ZEPPELIN_PORT=10008
 export ZEPPELIN_JAVA_OPTS="-Dhdp.version=2.3.1.0-2574"
 ```
 
