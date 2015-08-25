@@ -40,7 +40,7 @@ import static org.mockito.Mockito.*;
  * @author joelz
  *
  */
-public class CorsFilterTests {
+public class CorsFilterTest {
 
     public static String[] headers = new String[8];
     public static Integer count = 0;
@@ -54,7 +54,7 @@ public class CorsFilterTests {
         when(mockRequest.getHeader("Origin")).thenReturn("http://localhost:8080");
         when(mockRequest.getMethod()).thenReturn("Empty");
         when(mockRequest.getServerName()).thenReturn("localhost");
-
+        count = 0;
 
         doAnswer(new Answer() {
             @Override
@@ -78,7 +78,6 @@ public class CorsFilterTests {
         when(mockRequest.getHeader("Origin")).thenReturn("http://evillocalhost:8080");
         when(mockRequest.getMethod()).thenReturn("Empty");
         when(mockRequest.getServerName()).thenReturn("evillocalhost");
-
 
         doAnswer(new Answer() {
             @Override

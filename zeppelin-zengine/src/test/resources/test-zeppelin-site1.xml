@@ -83,11 +83,6 @@
   <description>Interpreter implementation base directory</description>
 </property>
 
-<property>
-  <name>zeppelin.interpreters</name>
-  <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.angular.AngularInterpreter,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.hive.HiveInterpreter,org.apache.zeppelin.tajo.TajoInterpreter,org.apache.zeppelin.flink.FlinkInterpreter,org.apache.zeppelin.lens.LensInterpreter,org.apache.zeppelin.ignite.IgniteInterpreter,org.apache.zeppelin.ignite.IgniteSqlInterpreter,org.apache.zeppelin.cassandra.CassandraInterpreter,org.apache.zeppelin.geode.GeodeOqlInterpreter,org.apache.zeppelin.postgresql.PostgreSqlInterpreter,org.apache.zeppelin.phoenix.PhoenixInterpreter</value>
-  <description>Comma separated interpreter configurations. First interpreter become a default</description>
-</property>
 
 <property>
   <name>zeppelin.interpreter.connect.timeout</name>
@@ -146,6 +141,11 @@
   <description>The format of the given truststore (e.g. JKS or PKCS12). Defaults to the same type as the keystore type</description>
 </property>
 
+  <property>
+    <name>zeppelin.server.allowed.origins</name>
+    <value>http://onehost:8080</value>
+    <description>Allowed sources for REST and WebSocket requests.</description>
+  </property>
 <!--
 <property>
   <name>zeppelin.ssl.truststore.password</name>
@@ -153,12 +153,6 @@
   <description>Truststore password. Can be obfuscated by the Jetty Password tool. Defaults to the keystore password</description>
 </property>
 -->
-
-<property>
-  <name>zeppelin.server.allowed.origins</name>
-  <value>*</value>
-  <description>Allowed sources for REST and WebSocket requests (i.e. http://onehost:8080,http://otherhost.com). If you leave * you are vulnerable to https://issues.apache.org/jira/browse/ZEPPELIN-173</description>
-</property>
 
 </configuration>
 

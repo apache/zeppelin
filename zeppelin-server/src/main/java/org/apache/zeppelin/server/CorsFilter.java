@@ -17,9 +17,14 @@
 
 package org.apache.zeppelin.server;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.utils.SecurityUtils;
+
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.DateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 
@@ -41,11 +46,15 @@ public class CorsFilter implements Filter {
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
       throws IOException, ServletException {
-    String sourceHost = request.getServerName();
-    String currentHost = java.net.InetAddress.getLocalHost().getHostName();
+    String sourceHost = ((HttpServletRequest) request).getHeader("Origin");
     String origin = "";
-    if (currentHost.equals(sourceHost) || "localhost".equals(sourceHost)) {
-      origin = ((HttpServletRequest) request).getHeader("Origin");
+
+    try {
+      if (SecurityUtils.isValidOrigin(sourceHost, ZeppelinConfiguration.create())) {
+        origin = sourceHost;
+      }
+    } catch (URISyntaxException e) {
+      e.printStackTrace();
     }
 
     if (((HttpServletRequest) request).getMethod().equals("OPTIONS")) {
