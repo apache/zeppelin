@@ -32,10 +32,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
@@ -101,8 +98,9 @@ public class InterpreterRestApi {
         NewInterpreterSettingRequest.class);
     Properties p = new Properties();
     p.putAll(request.getProperties());
-    interpreterFactory.add(request.getName(), request.getGroup(), request.getOption(), p);
-    return new JsonResponse(Status.CREATED, "").build();
+    InterpreterGroup interpreterGroup = interpreterFactory.add(request.getName(),
+        request.getGroup(), request.getOption(), p);
+    return new JsonResponse(Status.CREATED, "", interpreterGroup.getId()).build();
   }
 
   @PUT
@@ -162,7 +160,7 @@ public class InterpreterRestApi {
   @ApiOperation(httpMethod = "GET", value = "List all available interpreters")
   @ApiResponses(value = {
       @ApiResponse(code = 500, message = "When something goes wrong")})
-  public Response listInterpreter(String message) {
+  public Response listInterpreter() {
     Map<String, RegisteredInterpreter> m = Interpreter.registeredInterpreters;
     return new JsonResponse(Status.OK, "", m).build();
   }
