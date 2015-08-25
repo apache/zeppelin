@@ -472,6 +472,32 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
+  $scope.getParagraphResultHighlightCssCode = function (paragraphStatus)
+  {
+    var styleCode = {};
+
+    switch (paragraphStatus)
+    {
+
+        case 'RUNNING':
+            styleCode = {'border-left' : '10px solid', 'border-color' : '#428bca'};
+            break;
+
+        case 'PENDING':
+            styleCode = {'border-left' : '10px solid', 'border-color' : 'gray'};
+            break;
+
+        case 'ERROR':
+            styleCode = {'border-left' : '10px solid', 'border-color' : 'red'};
+            break;
+
+        default :
+            break;
+    }
+
+    return styleCode;
+  };
+
   var isSettingDirty = function() {
     if (angular.equals($scope.interpreterBindings, $scope.interpreterBindingsOrig)) {
       return false;
