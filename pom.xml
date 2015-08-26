@@ -96,6 +96,7 @@
     <module>postgresql</module>
     <module>tajo</module>
     <module>flink</module>
+    <module>drill</module>
     <module>ignite</module>
     <module>lens</module>
     <module>cassandra</module>
@@ -114,6 +115,17 @@
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
   </properties>
+
+<!-- MapR Technologies Maven Repository -->
+  <repositories>
+    <repository>
+      <id>mapr-releases</id>
+      <url>http://repository.mapr.com/maven/</url>
+      <snapshots><enabled>false</enabled></snapshots>
+      <releases><enabled>true</enabled></releases>
+    </repository>
+  </repositories>
+
 
   <dependencyManagement>
     <dependencies>
