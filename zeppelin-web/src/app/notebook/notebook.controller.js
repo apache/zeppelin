@@ -166,6 +166,14 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }, 10000);
   };
 
+  $(window).on('unload', function(e) {
+    $scope.saveNote();
+  });
+
+  $scope.$on("$destroy", function(){
+    $scope.saveNote();
+  });
+
   $scope.setLookAndFeel = function(looknfeel) {
     $scope.note.config.looknfeel = looknfeel;
     $scope.setConfig();
