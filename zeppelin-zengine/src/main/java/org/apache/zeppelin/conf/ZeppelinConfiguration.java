@@ -322,7 +322,27 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getNotebookDir() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
-  
+
+  public boolean truncateResults() {
+    return getBoolean(ConfVars.ZEPPELIN_TRUNCATE_RESULTS);
+  }
+
+  public int getParagraphMaxResultLines() {
+    return getInt(ConfVars.ZEPPELIN_PARAGRAPH_MAX_RESULT_LINES);
+  }
+
+  public boolean exportResults() {
+    return getBoolean(ConfVars.ZEPPELIN_EXPORT_RESULTS);
+  }
+
+  public String getExportS3Bucket() {
+    return getString(ConfVars.ZEPPELIN_EXPORT_S3_BUCKET);
+  }
+
+  public String getExportS3Prefix() {
+    return getString(ConfVars.ZEPPELIN_EXPORT_S3_PREFIX);
+  }
+
   public String getUser() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_USER);
   }
@@ -415,6 +435,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
+    ZEPPELIN_TRUNCATE_RESULTS("zeppelin.paragraph.truncate.results", false),
+    ZEPPELIN_PARAGRAPH_MAX_RESULT_LINES("zeppelin.paragraph.max.result.lines", 25),
+    ZEPPELIN_EXPORT_RESULTS("zeppelin.export.results", false),
+    ZEPPELIN_EXPORT_S3_BUCKET("zeppelin.export.s3.bucket", "zeppelin"),
+    ZEPPELIN_EXPORT_S3_PREFIX("zeppelin.export.s3.prefix", ""),
     // use specified notebook (id) as homescreen
     ZEPPELIN_NOTEBOOK_HOMESCREEN("zeppelin.notebook.homescreen", null),
     // whether homescreen notebook will be hidden from notebook list or not

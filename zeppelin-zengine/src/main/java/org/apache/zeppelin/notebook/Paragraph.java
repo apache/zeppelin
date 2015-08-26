@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook;
 
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
@@ -27,8 +28,19 @@ import org.apache.zeppelin.scheduler.JobListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
+
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.auth.AWSCredentialsProviderChain;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Paragraph is a representation of an execution unit.
@@ -39,6 +51,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   private static final transient long serialVersionUID = -6328572073497992016L;
   private transient NoteInterpreterLoader replLoader;
   private transient Note note;
+
+  private static final Logger LOG = LoggerFactory
+          .getLogger(Paragraph.class);
 
   String title;
   String text;
@@ -180,6 +195,103 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   @Override
   public Map<String, Object> info() {
     return null;
+  }
+
+
+  @Override
+  public void run() {
+    super.run();
+
+    ZeppelinConfiguration conf = note.getConf();
+    InterpreterResult rawResult = (InterpreterResult) getReturn();
+
+    if (conf.exportResults()) {
+      exportResult(rawResult);
+    }
+
+    if (conf.truncateResults()) {
+      truncateResult(rawResult);
+    }
+  }
+
+  /**
+   * Exports entire result. Currently only exports to S3.
+   */
+  protected void exportResult(InterpreterResult rawResult) {
+    ZeppelinConfiguration conf = note.getConf();
+    String bucket = conf.getExportS3Bucket();
+    String key = getExportS3Key();
+
+    AWSCredentialsProviderChain chain = new DefaultAWSCredentialsProviderChain();
+    AmazonS3Client s3 = new AmazonS3Client(chain);
+    ObjectMetadata metadata = new ObjectMetadata();
+
+    try {
+      // Upload entire results into S3
+      InputStream rawResultStream = new ByteArrayInputStream(
+          rawResult.message().getBytes(StandardCharsets.UTF_8));
+
+      s3.putObject(bucket, key, rawResultStream, metadata);
+    } catch (AmazonClientException ace) {
+      LOG.info(ace.getMessage());
+    }
+  }
+
+  /**
+   * Compute the S3 export prefix for this paragraph from its note ID and
+   * paragraph ID
+   */
+  public String getExportS3Key() {
+    ZeppelinConfiguration conf = note.getConf();
+
+    Queue<String> components = new LinkedList<String>();
+
+    // Add prefix only if it's non-empty
+    String prefix = conf.getExportS3Prefix();
+    if (prefix != null && prefix.length() > 0) {
+      components.add(prefix);
+    }
+
+    components.add(note.id());
+    components.add(getId() + ".txt");
+
+    return StringUtils.join(components, "/");
+  }
+
+  /**
+   * Stores only a subset of the raw result in the note.json, and back the
+   * entire result set in S3.
+   */
+  protected void truncateResult(InterpreterResult rawResult) {
+    ZeppelinConfiguration conf = note.getConf();
+    int paragraphMaxResultLines = conf.getParagraphMaxResultLines();
+
+    // Get the limited set of lines in the front
+    Scanner scanner = new Scanner(rawResult.message());
+    Queue<String> lines = new LinkedList<String>();
+    while (scanner.hasNextLine() && lines.size() < paragraphMaxResultLines) {
+      lines.add(scanner.nextLine());
+    }
+
+    String message = StringUtils.join(lines, "\n");
+
+    // Check if results were truncated, and if were, add a message about it.
+    // This piece of logic mimics what is done in SparkSqlInterpreter.
+    //
+    // TODO(cdfhuang) Perhaps another PR should make a more general and
+    // robust "comment" attribute in a paragraph.
+    if (scanner.hasNextLine()) {
+      message += "\n\n<font color=red>Display results were truncated to " +
+            paragraphMaxResultLines + ".</font>";
+    }
+
+    // Override the full result set
+    InterpreterResult truncatedResult = new InterpreterResult(
+        rawResult.code(),
+        rawResult.type(),
+        message);
+
+    setResult(truncatedResult);
   }
 
   @Override

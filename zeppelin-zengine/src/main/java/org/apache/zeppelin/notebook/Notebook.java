@@ -105,7 +105,7 @@ public class Notebook {
    */
   public Note createNote(List<String> interpreterIds) throws IOException {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory);
+    Note note = new Note(conf, notebookRepo, intpLoader, jobListenerFactory);
     intpLoader.setNoteId(note.id());
     synchronized (notes) {
       notes.put(note.id(), note);
@@ -184,6 +184,9 @@ public class Notebook {
     if (note == null) {
       return null;
     }
+
+    // Pass down the ZeppelinConfiguration
+    note.setConf(conf);
 
     // set NoteInterpreterLoader
     NoteInterpreterLoader noteInterpreterLoader = new NoteInterpreterLoader(

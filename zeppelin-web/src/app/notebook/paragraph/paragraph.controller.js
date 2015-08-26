@@ -150,6 +150,17 @@ angular.module('zeppelinWebApp')
     }
   });
 
+  $scope.$on('downloadParagraphResult', function(event, data) {
+    // window.location.assign(data.url);
+    if (data.id === $scope.paragraph.id) {
+      if (typeof data.error !== 'undefined') {
+        $window.alert(data.error);
+      } else {
+        $window.open(data.url);
+      }
+    }
+  });
+
   // TODO: this may have impact on performance when there are many paragraphs in a note.
   $scope.$on('updateParagraph', function(event, data) {
     if (data.paragraph.id === $scope.paragraph.id &&
@@ -279,6 +290,10 @@ angular.module('zeppelinWebApp')
       console.log('Remove paragraph');
       websocketMsgSrv.removeParagraph($scope.paragraph.id);
     }
+  };
+
+  $scope.downloadParagraphResult = function() {
+    websocketMsgSrv.downloadParagraphResult($scope.paragraph.id);
   };
 
   $scope.toggleEditor = function() {
