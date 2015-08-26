@@ -23,10 +23,10 @@ angular.module('zeppelinWebApp')
   $scope.editor = null;
 
   var editorModes = [
-     [/^%spark/, 'ace/mode/scala'],
-     [/^%(\w*\.)?\wql/, 'ace/mode/sql'],
-     [/^%md/, 'ace/mode/markdown'],
-     [/^%sh/, 'ace/mode/sh']
+    [/^%spark/, 'ace/mode/scala'],
+    [/^%(\w*\.)?\wql/, 'ace/mode/sql'],
+    [/^%md/, 'ace/mode/markdown'],
+    [/^%sh/, 'ace/mode/sh']
   ];
 
   // Controller init
@@ -458,61 +458,66 @@ angular.module('zeppelinWebApp')
       }
 
       $scope.setParagraphMode = function(session, paragraphText, pos) {
-
-        // Evaluate the mode only if the first 30 characters of the paragraph have been modified or the the position is undefined. 
+        // Evaluate the mode only if the first 30 characters of the paragraph have been modified or the the position is undefined.
         if ( (typeof pos === 'undefined') || (pos.row === 0 && pos.column < 30)) {
 
-          // Defaults to spark mode (ditorModes[0][1] == %spark).
-          var newMode = editorModes[0][1];
+          // If paragraph loading, use config value if exists
+          if ((typeof pos === 'undefined') && $scope.paragraph.config.editorMode) {
+            session.setMode($scope.paragraph.config.editorMode);
+          } else {
+            // Test first against current mode
+            var oldMode = session.getMode().$id;
+            if (!oldMode.test(paragraphText)) {
+              // Defaults to spark mode (editorModes[0][1] == %spark).
+              var newMode = editorModes[0][1];
 
-          for (var i = 0, len = editorModes.length; i < len; i++) {
-            var modeElement = editorModes[i];
-            if (modeElement[0].test(paragraphText)){
-              newMode = modeElement[1];
-              break;
+              for (var i = 0, len = editorModes.length; i < len; i++) {
+                var modeElement = editorModes[i];
+                if (modeElement[0].test(paragraphText)){
+                  newMode = modeElement[1];
+                  break;
+                }
+              }
+              // set the newMode in the paragraph config
+              $scope.paragraph.config.editorMode = newMode;
+              session.setMode(newMode);
             }
-          }
-
-          // Update to the new mode only if it differs from the existing one.
-          var oldMode = session.getMode().$id;
-          if (String(newMode).localeCompare(String(oldMode)) !== 0) {
-            session.setMode(newMode);
           }
         }
       };
 
       var remoteCompleter = {
-          getCompletions : function(editor, session, pos, prefix, callback) {
-              if (!$scope.editor.isFocused() ){ return;}
+        getCompletions : function(editor, session, pos, prefix, callback) {
+          if (!$scope.editor.isFocused() ){ return;}
 
-              pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
-              var buf = session.getValue();
+          pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
+          var buf = session.getValue();
 
-              websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
+          websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
 
-              $scope.$on('completionList', function(event, data) {
-                  if (data.completions) {
-                      var completions = [];
-                      for (var c in data.completions) {
-                          var v = data.completions[c];
-                          completions.push({
-                              name:v,
-                              value:v,
-                              score:300
-                          });
-                      }
-                      callback(null, completions);
-                  }
-              });
-          }
+          $scope.$on('completionList', function(event, data) {
+            if (data.completions) {
+              var completions = [];
+              for (var c in data.completions) {
+                var v = data.completions[c];
+                completions.push({
+                  name:v,
+                  value:v,
+                  score:300
+                });
+              }
+              callback(null, completions);
+            }
+          });
+        }
       };
 
       langTools.setCompleters([remoteCompleter, langTools.keyWordCompleter, langTools.snippetCompleter, langTools.textCompleter]);
 
       $scope.editor.setOptions({
-          enableBasicAutocompletion: true,
-          enableSnippets: false,
-          enableLiveAutocompletion:false
+        enableBasicAutocompletion: true,
+        enableSnippets: false,
+        enableLiveAutocompletion:false
       });
 
       $scope.handleFocus = function(value) {
@@ -607,7 +612,7 @@ angular.module('zeppelinWebApp')
 
   $scope.getProgress = function() {
     return ($scope.currentProgress) ? $scope.currentProgress : 0;
-  };                                           
+  };
 
   $scope.getExecutionTime = function() {
     var pdata = $scope.paragraph;
