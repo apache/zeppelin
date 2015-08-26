@@ -27,8 +27,8 @@ group: nav-right
 * [sh](../docs/pleasecontribute.html)
 * [spark](./interpreter/spark.html)
 * [tajo](../docs/pleasecontribute.html)
-* [geode](../docs/pleasecontribute.html)
 * [postgresql, hawq](./interpreter/postgresql.html)
+* [geode](./interpreter/geode.html)
 
 ### Display System
 
