@@ -22,12 +22,12 @@ angular.module('zeppelinWebApp')
   $scope.paragraph = null;
   $scope.editor = null;
 
-  var editorModes = [
-    [/^%spark/, 'ace/mode/scala'],
-    [/^%(\w*\.)?\wql/, 'ace/mode/sql'],
-    [/^%md/, 'ace/mode/markdown'],
-    [/^%sh/, 'ace/mode/sh']
-  ];
+  var editorModes = {
+    'ace/mode/scala': /^%spark/,
+    'ace/mode/sql': /^%(\w*\.)?\wql/,
+    'ace/mode/markdown': /^%md/,
+    'ace/mode/sh': /^%sh/
+  };
 
   // Controller init
   $scope.init = function(newParagraph) {
@@ -460,25 +460,24 @@ angular.module('zeppelinWebApp')
       $scope.setParagraphMode = function(session, paragraphText, pos) {
         // Evaluate the mode only if the first 30 characters of the paragraph have been modified or the the position is undefined.
         if ( (typeof pos === 'undefined') || (pos.row === 0 && pos.column < 30)) {
-
           // If paragraph loading, use config value if exists
           if ((typeof pos === 'undefined') && $scope.paragraph.config.editorMode) {
             session.setMode($scope.paragraph.config.editorMode);
           } else {
+            // Defaults to spark mode
+            var newMode = 'ace/mode/scala';
             // Test first against current mode
             var oldMode = session.getMode().$id;
-            if (!oldMode.test(paragraphText)) {
-              // Defaults to spark mode (editorModes[0][1] == %spark).
-              var newMode = editorModes[0][1];
-
-              for (var i = 0, len = editorModes.length; i < len; i++) {
-                var modeElement = editorModes[i];
-                if (modeElement[0].test(paragraphText)){
-                  newMode = modeElement[1];
-                  break;
+            if (!editorModes[oldMode] || !editorModes[oldMode].test(paragraphText)) {
+              for (var key in editorModes) {
+                if (key !== oldMode) {
+                  if (editorModes[key].test(paragraphText)){
+                    $scope.paragraph.config.editorMode = key;
+                    session.setMode(key);
+                    return true;
+                  }
                 }
               }
-              // set the newMode in the paragraph config
               $scope.paragraph.config.editorMode = newMode;
               session.setMode(newMode);
             }
