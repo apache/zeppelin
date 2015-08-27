@@ -151,7 +151,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   $scope.killSaveTimer = function() {
-    if($scope.saveTimer){
+    if ($scope.saveTimer) {
       $timeout.cancel($scope.saveTimer);
       $scope.saveTimer = null;
     }
@@ -160,18 +160,24 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.startSaveTimer = function() {
     $scope.killSaveTimer();
     $scope.isNoteDirty = true;
-    //console.log('startSaveTimer called ' + $scope.note.id);
-    $scope.saveTimer = $timeout(function(){
+    console.log('startSaveTimer called ' + $scope.note.id);
+    $scope.saveTimer = $timeout(function() {
       $scope.saveNote();
     }, 10000);
   };
 
   jQuery(window).on('unload', function(e) {
-    $scope.saveNote();
+    if ($scope.note && $scope.note.paragraphs) {
+      $scope.saveNote();
+    }
   });
 
-  $scope.$on('$destroy', function(){
-    $scope.saveNote();
+  $scope.$on('$destroy', function() {
+    jQuery(window).off('unload');
+    if ($scope.note && $scope.note.paragraphs) {
+      $scope.killSaveTimer();
+      $scope.saveNote();
+    }
   });
 
   $scope.setLookAndFeel = function(looknfeel) {
