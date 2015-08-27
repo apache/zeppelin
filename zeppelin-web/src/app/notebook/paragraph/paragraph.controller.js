@@ -245,7 +245,6 @@ angular.module('zeppelinWebApp')
   $scope.cancelParagraph = function() {
     console.log('Cancel %o', $scope.paragraph.id);
     websocketMsgSrv.cancelParagraphRun($scope.paragraph.id);
-    $scope.paragraph.status = 'CANCELING';
   };
 
   $scope.runParagraph = function(data) {

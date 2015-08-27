@@ -381,13 +381,13 @@ limitations under the License.
       {{paragraph.status}}
     </span>
 
-    <span ng-if="paragraph.status=='RUNNING' || paragraph.status=='CANCELING'">
+    <span ng-if="paragraph.status=='RUNNING'">
       {{getProgress()}}%
     </span>
 
     <!-- Run / Cancel button -->
     <span class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph"
-          ng-click="runParagraph(getEditorValue())" ng-class="paragraph.status === 'CANCELING' ? 'disable' : ''"
+          ng-click="runParagraph(getEditorValue())"
           ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING'"></span>
     <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top" tooltip="Cancel"
           ng-click="cancelParagraph()"
