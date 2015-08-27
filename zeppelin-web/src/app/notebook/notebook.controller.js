@@ -160,7 +160,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.startSaveTimer = function() {
     $scope.killSaveTimer();
     $scope.isNoteDirty = true;
-    console.log('startSaveTimer called ' + $scope.note.id);
+    //console.log('startSaveTimer called ' + $scope.note.id);
     $scope.saveTimer = $timeout(function(){
       $scope.saveNote();
     }, 10000);
