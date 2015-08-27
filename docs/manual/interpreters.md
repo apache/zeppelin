@@ -11,12 +11,13 @@ group: manual
 
 This section explain the role of Interpreters, interpreters group and interpreters settings in Zeppelin.
 Zeppelin interpreter concept allows any language/data-processing-backend to be plugged into Zeppelin.
-Currently Zeppelin support many interpreters such as Scala(with Apache Spark), Python(with Apache Spark), SparkSQL, Hive, Markdown and Shell.
+Currently Zeppelin supports many interpreters such as Scala(with Apache Spark), Python(with Apache Spark), SparkSQL, Hive, Markdown and Shell.
 
 ### What is zeppelin interpreter?
 
-Zeppelin Interpreter is the plug-in which enable zeppelin user to use a specific language backend. For example to use scala code in Zeppelin, you need scala interpreter.
-When you click on the +Create button in the interpreter page the interpreter drop-down list box will present all the available interpreters on your server.
+Zeppelin Interpreter is the plug-in which enable zeppelin user to use a specific language/data-processing-backend. For example to use scala code in Zeppelin, you need ```spark``` interpreter.
+
+When you click on the ```+Create``` button in the interpreter page the interpreter drop-down list box will present all the available interpreters on your server.
 
 <img src="../../assets/themes/zeppelin/img/screenshots/interpreter_create.png">
 
