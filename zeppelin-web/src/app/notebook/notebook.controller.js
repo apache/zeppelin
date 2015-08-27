@@ -166,11 +166,11 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }, 10000);
   };
 
-  jQuery(window).on('unload', function(e) {
+  $(window).on('unload', function(e) {
     $scope.saveNote();
   });
 
-  $scope.$on('$destroy', function(){
+  $scope.$on("$destroy", function(){
     $scope.saveNote();
   });
 
