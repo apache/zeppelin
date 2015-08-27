@@ -87,7 +87,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       $location.path('/#');
     }
   };
-
+  
   $scope.runNote = function() {
     var result = confirm('Run all paragraphs?');
     if (result) {
@@ -151,7 +151,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   $scope.killSaveTimer = function() {
-    if ($scope.saveTimer) {
+    if($scope.saveTimer){
       $timeout.cancel($scope.saveTimer);
       $scope.saveTimer = null;
     }
@@ -161,23 +161,17 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $scope.killSaveTimer();
     $scope.isNoteDirty = true;
     console.log('startSaveTimer called ' + $scope.note.id);
-    $scope.saveTimer = $timeout(function() {
+    $scope.saveTimer = $timeout(function(){
       $scope.saveNote();
     }, 10000);
   };
 
   jQuery(window).on('unload', function(e) {
-    if ($scope.note && $scope.note.paragraphs) {
-      $scope.saveNote();
-    }
+    $scope.saveNote();
   });
 
-  $scope.$on('$destroy', function() {
-    jQuery(window).off('unload');
-    if ($scope.note && $scope.note.paragraphs) {
-      $scope.killSaveTimer();
-      $scope.saveNote();
-    }
+  $scope.$on('$destroy', function(){
+    $scope.saveNote();
   });
 
   $scope.setLookAndFeel = function(looknfeel) {
