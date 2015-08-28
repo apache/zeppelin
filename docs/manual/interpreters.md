@@ -34,7 +34,5 @@ SparkSQL and the dependency loader.
 
 Technically, Zeppelin interpreters from the same group are running in the same JVM.
 
-**TODO: Validate this with the community ...**
-
 Interpreters belong to a single group a registered together and all of their properties are listed in the interpreter setting.
 <img src="../../assets/themes/zeppelin/img/screenshots/interpreter_setting_spark.png">
