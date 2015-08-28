@@ -17,6 +17,8 @@ group: nav-right
 
 ### Interpreter
 
+**[Interpreters in zeppelin](manual/interpreters.html)**
+
 * [flink](../docs/pleasecontribute.html)
 * [hive](../docs/pleasecontribute.html)
 * [ignite](../docs/pleasecontribute.html)
@@ -40,6 +42,9 @@ group: nav-right
 * [Dynamic Form](./manual/dynamicform.html)
 * [Notebook as Homepage](./manual/notebookashomepage.html)
 
+### REST API
+ * [Interpreter API](./rest-api/rest-interpreter.html)
+ * [Notebook API](../docs/pleasecontribute.html)
 
 ### Development
 

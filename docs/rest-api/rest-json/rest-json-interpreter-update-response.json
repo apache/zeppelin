@@ -1,0 +1,1 @@
+{"status":"OK","message":"","body":{"id":"2AYMV9Q7N","name":"md2","group":"md","properties":{"propname":"Otherpropvalue"},"interpreterGroup":[{"class":"org.apache.zeppelin.markdown.Markdown","name":"md"}],"option":{"remote":true}}}
