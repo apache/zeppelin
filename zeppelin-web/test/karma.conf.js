@@ -53,7 +53,6 @@ module.exports = function(config) {
       'bower_components/highlightjs/highlight.pack.js',
       'bower_components/lodash/lodash.js',
       'bower_components/angular-filter/dist/angular-filter.min.js',
-      'bower_components/angular-ui-notification/dist/angular-ui-notification.min.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'src/app/app.js',
