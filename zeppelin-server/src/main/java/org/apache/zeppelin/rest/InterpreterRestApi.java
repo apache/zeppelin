@@ -33,10 +33,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
@@ -102,7 +99,8 @@ public class InterpreterRestApi {
         NewInterpreterSettingRequest.class);
     Properties p = new Properties();
     p.putAll(request.getProperties());
-    interpreterFactory.add(request.getName(), request.getGroup(), request.getOption(), p);
+    // Option is deprecated from API, always use remote = true
+    interpreterFactory.add(request.getName(), request.getGroup(), new InterpreterOption(true), p);
     return new JsonResponse(Status.CREATED, "").build();
   }
 
@@ -114,7 +112,9 @@ public class InterpreterRestApi {
     try {
       UpdateInterpreterSettingRequest p = gson.fromJson(message,
           UpdateInterpreterSettingRequest.class);
-      interpreterFactory.setPropertyAndRestart(settingId, p.getOption(), p.getProperties());
+      // Option is deprecated from API, always use remote = true
+      interpreterFactory.setPropertyAndRestart(settingId,
+          new InterpreterOption(true), p.getProperties());
     } catch (InterpreterException e) {
       return new JsonResponse(
           Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
