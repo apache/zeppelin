@@ -360,7 +360,7 @@ public class SparkInterpreter extends Interpreter {
   public void open() {
     if (diagnosis()) {
       sparkConfValidator = new SparkConfValidator(
-          System.getenv("SPARK_HOME"),
+          getSystemDefault("SPARK_HOME", "spark.home", null),
           System.getenv("HADOOP_HOME"),
           System.getenv("HADOOP_CONF_DIR"),
           System.getenv("PYTHONPATH")
