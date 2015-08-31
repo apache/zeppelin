@@ -100,8 +100,11 @@ public class InterpreterRestApi {
     Properties p = new Properties();
     p.putAll(request.getProperties());
     // Option is deprecated from API, always use remote = true
-    interpreterFactory.add(request.getName(), request.getGroup(), new InterpreterOption(true), p);
-    return new JsonResponse(Status.CREATED, "").build();
+    InterpreterGroup interpreterGroup = interpreterFactory.add(request.getName(),
+        request.getGroup(), new InterpreterOption(true), p);
+    InterpreterSetting setting = interpreterFactory.get(interpreterGroup.getId());
+    logger.info("new setting created with " + setting.id());
+    return new JsonResponse(Status.CREATED, "", setting ).build();
   }
 
   @PUT
