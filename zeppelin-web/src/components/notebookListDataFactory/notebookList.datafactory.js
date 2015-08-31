@@ -19,7 +19,34 @@ angular.module('zeppelinWebApp').factory('notebookListDataFactory', function() {
   notes.list = [];
 
   notes.setNotes = function(notesList) {
-    notes.list = angular.copy(notesList);
+    notes.list = [];
+
+    for (var i in notesList) {
+      var note = notesList[i];
+      var noteName = note.name || note.id;
+      var dirs = noteName.match(/([^\\\][^\/]|\\\/)+/g);
+
+      var curDir = notes.list;
+      for (var t = 0; t < dirs.length; t++) {
+        var dir = dirs[t];
+        if (t == dirs.length - 1) { // last item
+          curDir.push({
+            name : dir,
+            id : note.id
+          });
+        } else {
+          var child = {
+            name : dir,
+            children : []
+          };
+          curDir.push(child);
+          curDir = child.children;
+        }
+      }
+    }
+
+    // TODO sort
+    console.log("notes.list=%o", notes.list);
   };
 
   return notes;
