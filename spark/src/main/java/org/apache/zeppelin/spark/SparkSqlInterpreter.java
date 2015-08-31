@@ -292,4 +292,9 @@ public class SparkSqlInterpreter extends Interpreter {
   public List<String> completion(String buf, int cursor) {
     return null;
   }
+
+  @Override
+  public boolean restartRequired() {
+    return getSparkInterpreter().restartRequired();
+  }
 }

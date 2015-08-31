@@ -279,4 +279,8 @@ public abstract class Interpreter {
     }
     return null;
   }
+
+  public boolean restartRequired() {
+    return false;
+  }
 }

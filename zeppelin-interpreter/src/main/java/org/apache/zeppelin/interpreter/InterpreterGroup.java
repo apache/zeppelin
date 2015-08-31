@@ -119,4 +119,14 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
       }
     }
   }
+
+  public boolean restartRequired() {
+    for (Interpreter intp : this) {
+      if (intp.restartRequired()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
 }

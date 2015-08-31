@@ -260,7 +260,7 @@ public class Note implements Serializable, JobListener {
       for (Paragraph p : paragraphs) {
         p.setNoteReplLoader(replLoader);
         p.setListener(jobListenerFactory.getParagraphJobListener(this));
-        Interpreter intp = replLoader.get(p.getRequiredReplName());
+        Interpreter intp = replLoader.get(p.getRequiredReplName(), true);
         intp.getScheduler().submit(p);
       }
     }
@@ -275,7 +275,7 @@ public class Note implements Serializable, JobListener {
     Paragraph p = getParagraph(paragraphId);
     p.setNoteReplLoader(replLoader);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
-    Interpreter intp = replLoader.get(p.getRequiredReplName());
+    Interpreter intp = replLoader.get(p.getRequiredReplName(), true);
     if (intp == null) {
       throw new InterpreterException("Interpreter " + p.getRequiredReplName() + " not found");
     }

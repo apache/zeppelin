@@ -276,4 +276,9 @@ public class ClassloaderInterpreter
       Thread.currentThread().setContextClassLoader(oldcl);
     }
   }
+
+  @Override
+  public boolean restartRequired() {
+    return intp.restartRequired();
+  }
 }

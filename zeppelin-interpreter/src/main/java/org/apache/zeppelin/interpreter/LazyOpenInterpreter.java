@@ -145,4 +145,13 @@ public class LazyOpenInterpreter
   public void setClassloaderUrls(URL [] urls) {
     intp.setClassloaderUrls(urls);
   }
+
+  @Override
+  public boolean restartRequired() {
+    if (opened) {
+      return intp.restartRequired();
+    } else {
+      return false;
+    }
+  }
 }

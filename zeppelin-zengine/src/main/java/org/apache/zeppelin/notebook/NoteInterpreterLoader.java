@@ -74,6 +74,10 @@ public class NoteInterpreterLoader {
   }
 
   public Interpreter get(String replName) {
+    return get(replName, false);
+  }
+
+  public Interpreter get(String replName, boolean withRestart) {
     List<InterpreterSetting> settings = getInterpreterSettings();
 
     if (settings == null || settings.size() == 0) {
@@ -81,7 +85,11 @@ public class NoteInterpreterLoader {
     }
 
     if (replName == null || replName.trim().length() == 0) {
-      return settings.get(0).getInterpreterGroup().getFirst();
+      if (withRestart) {
+        return settings.get(0).getInterpreterGroupWithRefresh(factory).getFirst();
+      } else {
+        return settings.get(0).getInterpreterGroup().getFirst();
+      }
     }
 
     if (Interpreter.registeredInterpreters == null) {
@@ -104,7 +112,12 @@ public class NoteInterpreterLoader {
       String interpreterClassName = registeredInterpreter.getClassName();
 
       for (InterpreterSetting setting : settings) {
-        InterpreterGroup intpGroup = setting.getInterpreterGroup();
+        InterpreterGroup intpGroup;
+        if (withRestart) {
+          intpGroup = setting.getInterpreterGroupWithRefresh(factory);
+        } else {
+          intpGroup = setting.getInterpreterGroup();
+        }
         for (Interpreter interpreter : intpGroup) {
           if (interpreterClassName.equals(interpreter.getClassName())) {
             return interpreter;
@@ -114,7 +127,12 @@ public class NoteInterpreterLoader {
     } else {
       // first assume replName is 'name' of interpreter. ('groupName' is ommitted)
       // search 'name' from first (default) interpreter group
-      InterpreterGroup intpGroup = settings.get(0).getInterpreterGroup();
+      InterpreterGroup intpGroup;
+      if (withRestart) {
+        intpGroup = settings.get(0).getInterpreterGroupWithRefresh(factory);
+      } else {
+        intpGroup = settings.get(0).getInterpreterGroup();
+      }
       for (Interpreter interpreter : intpGroup) {
         RegisteredInterpreter intp = Interpreter
             .findRegisteredInterpreterByClassName(interpreter.getClassName());
@@ -131,7 +149,11 @@ public class NoteInterpreterLoader {
       // next, assume replName is 'group' of interpreter ('name' is ommitted)
       // search interpreter group and return first interpreter.
       for (InterpreterSetting setting : settings) {
-        intpGroup = setting.getInterpreterGroup();
+        if (withRestart) {
+          intpGroup = setting.getInterpreterGroupWithRefresh(factory);
+        } else {
+          intpGroup = setting.getInterpreterGroup();
+        }
         Interpreter interpreter = intpGroup.get(0);
         RegisteredInterpreter intp = Interpreter
             .findRegisteredInterpreterByClassName(interpreter.getClassName());

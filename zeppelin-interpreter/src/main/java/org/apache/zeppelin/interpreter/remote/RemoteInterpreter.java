@@ -371,4 +371,23 @@ public class RemoteInterpreter extends Interpreter {
         Type.valueOf(result.getType()),
         result.getMsg());
   }
+
+  @Override
+  public boolean restartRequired() {
+    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
+    Client client = null;
+    try {
+      client = interpreterProcess.getClient();
+    } catch (Exception e1) {
+      throw new InterpreterException(e1);
+    }
+
+    try {
+      return client.restartRequired(className);
+    } catch (TException e) {
+      throw new InterpreterException(e);
+    } finally {
+      interpreterProcess.releaseClient(client);
+    }
+  }
 }
