@@ -594,6 +594,9 @@ public class NotebookServer extends WebSocketServlet implements
 
     final Note note = notebook.getNote(getOpenNoteId(conn));
     Paragraph p = note.getParagraph(paragraphId);
+    broadcast(note.id(), new Message(OP.CANCEL_PARAGRAPH)
+            .put("paragraphId", p.getId())
+            .put("status", Status.CANCELING));
     p.abort();
   }
 
