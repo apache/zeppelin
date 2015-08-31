@@ -73,7 +73,7 @@ fi
 # set spark related env variables
 if [[ "${INTERPRETER_ID}" == "spark" ]]; then
   # add Hadoop jars into classpath
-  if [[ ! -z "${HADOOP_HOME}" ]]; then
+  if [[ -n "${HADOOP_HOME}" ]]; then
     # Apache
     addEachJarInDir "${HADOOP_HOME}/share"
 
@@ -83,7 +83,7 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
   fi
 
   # autodetect HADOOP_CONF_HOME by heuristic
-  if [[ ! -z "${HADOOP_HOME}" ]] && [[ -z "${HADOOP_CONF_DIR}" ]]; then
+  if [[ -n "${HADOOP_HOME}" ]] && [[ -z "${HADOOP_CONF_DIR}" ]]; then
     if [[ -d "${HADOOP_HOME}/etc/hadoop" ]]; then
       export HADOOP_CONF_DIR="${HADOOP_HOME}/etc/hadoop"
     elif [[ -d "/etc/hadoop/conf" ]]; then
@@ -91,12 +91,12 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
     fi
   fi
 
-  if [[ ! -z "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
+  if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
     ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
   fi
 
   # add Spark jars into classpath
-  if [[ ! -z "${SPARK_HOME}" ]]; then
+  if [[ -n "${SPARK_HOME}" ]]; then
     addJarInDir "${SPARK_HOME}/lib"
     PYSPARKPATH="${SPARK_HOME}/python:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-0.8.2.1-src.zip"
   else
@@ -105,7 +105,7 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
   fi
 
   # autodetect SPARK_CONF_DIR
-  if [[ ! -z "${SPARK_HOME}" ]] && [[ -z "${SPARK_CONF_DIR}" ]]; then
+  if [[ -n "${SPARK_HOME}" ]] && [[ -z "${SPARK_CONF_DIR}" ]]; then
     if [[ -d "${SPARK_HOME}/conf" ]]; then
       SPARK_CONF_DIR="${SPARK_HOME}/conf"
     fi
@@ -114,11 +114,11 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
   # read spark-*.conf if exists
   if [[ -d "${SPARK_CONF_DIR}" ]]; then
     ls ${SPARK_CONF_DIR}/spark-*.conf > /dev/null 2>&1
-    if [[ $? -eq 0 ]]; then
+    if [[ "$?" -eq 0 ]]; then
       for file in ${SPARK_CONF_DIR}/spark-*.conf; do
         while read -r line; do
           echo "${line}" | grep -e "^spark[.]" > /dev/null
-          if [ $? -ne 0 ]; then
+          if [ "$?" -ne 0 ]; then
             # skip the line not started with 'spark.'
             continue;
           fi
@@ -130,7 +130,7 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
     fi
   fi
 
-  if [[ x"" == x"${PYTHONPATH}" ]]; then
+  if [[ -z "${PYTHONPATH}" ]]; then
     export PYTHONPATH="${PYSPARKPATH}"
   else
     export PYTHONPATH="${PYTHONPATH}:${PYSPARKPATH}"
