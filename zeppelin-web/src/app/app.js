@@ -30,7 +30,8 @@ angular.module('zeppelinWebApp', [
     'angular.filter',
     'monospaced.elastic',
     'puElasticInput',
-    'xeditable'
+    'xeditable',
+    'leaflet-directive'
   ])
   .filter('breakFilter', function() {
     return function (text) {
