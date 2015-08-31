@@ -84,9 +84,9 @@ sys.stdout = output
 sys.stderr = output
 
 client = GatewayClient(port=int(sys.argv[1]))
-sparkVersion = sys.argv[2]
+sparkVersion = int(sys.argv[2])
 
-if sparkVersion.startswith("1.4"):
+if sparkVersion >= 140:
   gateway = JavaGateway(client, auto_convert = True)
 else:
   gateway = JavaGateway(client)
@@ -102,15 +102,12 @@ intp.onPythonScriptInitialized()
 
 jsc = intp.getJavaSparkContext()
 
-if sparkVersion.startswith("1.2"):
+if sparkVersion < 130:
   java_import(gateway.jvm, "org.apache.spark.sql.SQLContext")
   java_import(gateway.jvm, "org.apache.spark.sql.hive.HiveContext")
   java_import(gateway.jvm, "org.apache.spark.sql.hive.LocalHiveContext")
   java_import(gateway.jvm, "org.apache.spark.sql.hive.TestHiveContext")
-elif sparkVersion.startswith("1.3"):
-  java_import(gateway.jvm, "org.apache.spark.sql.*")
-  java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
-elif sparkVersion.startswith("1.4"):
+else:
   java_import(gateway.jvm, "org.apache.spark.sql.*")
   java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
 

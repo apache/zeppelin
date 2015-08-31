@@ -17,8 +17,6 @@
 
 package org.apache.zeppelin.spark;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -161,7 +159,6 @@ public class SparkSqlInterpreter extends Interpreter {
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     return sparkInterpreter.getProgress(context);
   }
-
 
   @Override
   public Scheduler getScheduler() {
