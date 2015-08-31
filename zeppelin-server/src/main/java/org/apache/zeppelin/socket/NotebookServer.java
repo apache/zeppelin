@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
-
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
@@ -38,10 +37,11 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.Job.Status;
+import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.socket.Message.OP;
+import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketServlet;
 import org.quartz.SchedulerException;
@@ -67,22 +67,13 @@ public class NotebookServer extends WebSocketServlet implements
   }
   @Override
   public boolean checkOrigin(HttpServletRequest request, String origin) {
-    URI sourceUri = null;
-    String currentHost = null;
 
     try {
-      sourceUri = new URI(origin);
-      currentHost = java.net.InetAddress.getLocalHost().getHostName();
+      return SecurityUtils.isValidOrigin(origin, ZeppelinConfiguration.create());
     } catch (UnknownHostException e) {
       e.printStackTrace();
-    }
-    catch (URISyntaxException e) {
+    } catch (URISyntaxException e) {
       e.printStackTrace();
-    }
-
-    String sourceHost = sourceUri.getHost();
-    if (currentHost.equals(sourceHost) || "localhost".equals(sourceHost)) {
-      return true;
     }
 
     return false;
@@ -124,6 +115,9 @@ public class NotebookServer extends WebSocketServlet implements
             break;
           case DEL_NOTE:
             removeNote(conn, notebook, messagereceived);
+            break;
+          case CLONE_NOTE:
+            cloneNote(conn, notebook, messagereceived);
             break;
           case COMMIT_PARAGRAPH:
             updateParagraph(conn, notebook, messagereceived);
@@ -295,6 +289,7 @@ public class NotebookServer extends WebSocketServlet implements
     List<Map<String, String>> notesInfo = new LinkedList<>();
     for (Note note : notes) {
       Map<String, String> info = new HashMap<>();
+
       if (hideHomeScreenNotebookFromList && note.id().equals(homescreenNotebookId)) {
         continue;
       }
@@ -428,6 +423,30 @@ public class NotebookServer extends WebSocketServlet implements
     p.setText((String) fromMessage.get("paragraph"));
     note.persist();
     broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
+  }
+  
+  private void cloneNote(NotebookSocket conn, Notebook notebook, Message fromMessage)
+      throws IOException, CloneNotSupportedException {
+    String noteId = getOpenNoteId(conn);
+    String name = (String) fromMessage.get("name");
+    Note sourceNote = notebook.getNote(noteId);
+    Note newNote = notebook.createNote();
+    if (name != null) {
+      newNote.setName(name);
+    }
+    // Copy the interpreter bindings
+    List<String> boundInterpreterSettingsIds = notebook
+        .getBindedInterpreterSettingsIds(sourceNote.id());
+    notebook.bindInterpretersToNote(newNote.id(), boundInterpreterSettingsIds);
+
+    List<Paragraph> paragraphs = sourceNote.getParagraphs();
+    for (Paragraph para : paragraphs) {
+      Paragraph p = (Paragraph) para.clone();
+      newNote.addParagraph(p);
+    }
+    newNote.persist();
+    broadcastNote(newNote);
+    broadcastNoteList();
   }
 
   private void removeParagraph(NotebookSocket conn, Notebook notebook,

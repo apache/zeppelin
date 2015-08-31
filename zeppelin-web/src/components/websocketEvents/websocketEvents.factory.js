@@ -17,6 +17,7 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
   var websocketCalls = {};
 
   websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
+  websocketCalls.ws.reconnectIfNotNormalClose = true;
 
   websocketCalls.ws.onOpen(function() {
     console.log('Websocket created');
@@ -29,6 +30,10 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
   websocketCalls.sendNewEvent = function(data) {
     console.log('Send >> %o, %o', data.op, data);
     websocketCalls.ws.send(JSON.stringify(data));
+  };
+
+  websocketCalls.isConnected = function() {
+    return (websocketCalls.ws.socket.readyState === 1);
   };
 
   websocketCalls.ws.onMessage(function(event) {

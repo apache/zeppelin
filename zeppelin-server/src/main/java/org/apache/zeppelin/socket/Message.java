@@ -52,6 +52,9 @@ public class Message {
     NEW_NOTE, // [c-s] create new notebook
     DEL_NOTE, // [c-s] delete notebook
               // @param id note id
+    CLONE_NOTE, // [c-s] clone new notebook
+                // @param id id of note to clone
+                // @param name name fpor the cloned note
     NOTE_UPDATE,
 
     RUN_PARAGRAPH, // [c-s] run paragraph

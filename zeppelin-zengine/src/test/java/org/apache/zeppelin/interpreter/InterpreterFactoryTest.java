@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.lang.NullArgumentException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
@@ -97,7 +98,7 @@ public class InterpreterFactoryTest {
 	}
 
   @Test
-  public void testFactoryDefaultList() throws InterpreterException, IOException {
+  public void testFactoryDefaultList() throws IOException {
     // get default list from default setting
     List<String> all = factory.getDefaultInterpreterSettingList();
     assertEquals(2, all.size());
@@ -110,6 +111,23 @@ public class InterpreterFactoryTest {
     assertEquals("mock1", factory.get(all.get(0)).getName());
     assertEquals("a mock", factory.get(all.get(1)).getName());
   }
+
+  @Test
+  public void testExceptions() throws IOException {
+    List<String> all = factory.getDefaultInterpreterSettingList();
+    // add setting with null option & properties expected nullArgumentException.class
+    try {
+      factory.add("a mock", "mock2", null, new Properties());
+    } catch(NullArgumentException e) {
+        assertEquals("Test null option" , e.getMessage(),new NullArgumentException("option").getMessage());
+      }
+    try {
+      factory.add("a mock" , "mock2" , new InterpreterOption(false),null);
+    } catch (NullArgumentException e){
+      assertEquals("Test null properties" , e.getMessage(),new NullArgumentException("properties").getMessage());
+    }
+  }
+
 
   @Test
   public void testSaveLoad() throws InterpreterException, IOException {

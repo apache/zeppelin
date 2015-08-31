@@ -434,7 +434,6 @@ angular.module('zeppelinWebApp')
       $scope.editor.setShowFoldWidgets(false);
       $scope.editor.setHighlightActiveLine(false);
       $scope.editor.setHighlightGutterLine(false);
-      $scope.editor.setTheme('ace/theme/github');
       $scope.editor.setTheme('ace/theme/chrome');
       $scope.editor.focus();
       var hight = $scope.editor.getSession().getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
