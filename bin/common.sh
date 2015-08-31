@@ -80,21 +80,9 @@ function addEachJarInDir(){
 
 function addJarInDir(){
   if [[ -d "${1}" ]]; then
-    export ZEPPELIN_CLASSPATH="${1}/*:${ZEPPELIN_CLASSPATH}"
+    ZEPPELIN_CLASSPATH="${1}/*:${ZEPPELIN_CLASSPATH}"
   fi
 }
-
-if [[ ! -z "${SPARK_HOME}" ]] && [[ -d "${SPARK_HOME}" ]]; then
-  addJarInDir "${SPARK_HOME}"
-fi
-
-if [[ ! -z "${HADOOP_HOME}" ]] && [[ -d "${HADOOP_HOME}" ]]; then
-  addJarInDir "${HADOOP_HOME}"
-fi
-
-if [[ ! -z "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
-  ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
-fi
 
 export ZEPPELIN_CLASSPATH
 

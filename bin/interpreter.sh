@@ -57,9 +57,6 @@ fi
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
 addJarInDir "${INTERPRETER_DIR}"
 
-export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
-CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
-
 HOSTNAME=$(hostname)
 ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
 
@@ -73,19 +70,77 @@ if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   $(mkdir -p "${ZEPPELIN_LOG_DIR}")
 fi
 
-if [[ ! -z "${SPARK_HOME}" ]]; then
-  PYSPARKPATH="${SPARK_HOME}/python:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-0.8.2.1-src.zip"
-else
-  PYSPARKPATH="${ZEPPELIN_HOME}/interpreter/spark/pyspark/pyspark.zip:${ZEPPELIN_HOME}/interpreter/spark/pyspark/py4j-0.8.2.1-src.zip"
+# set spark related env variables
+if [[ "${INTERPRETER_ID}" == "spark" ]]; then
+  # add Hadoop jars into classpath
+  if [[ -n "${HADOOP_HOME}" ]]; then
+    # Apache
+    addEachJarInDir "${HADOOP_HOME}/share"
+
+    # CDH
+    addJarInDir "${HADOOP_HOME}"
+    addJarInDir "${HADOOP_HOME}/lib"
+  fi
+
+  # autodetect HADOOP_CONF_HOME by heuristic
+  if [[ -n "${HADOOP_HOME}" ]] && [[ -z "${HADOOP_CONF_DIR}" ]]; then
+    if [[ -d "${HADOOP_HOME}/etc/hadoop" ]]; then
+      export HADOOP_CONF_DIR="${HADOOP_HOME}/etc/hadoop"
+    elif [[ -d "/etc/hadoop/conf" ]]; then
+      export HADOOP_CONF_DIR="/etc/hadoop/conf"
+    fi
+  fi
+
+  if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
+    ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
+  fi
+
+  # add Spark jars into classpath
+  if [[ -n "${SPARK_HOME}" ]]; then
+    addJarInDir "${SPARK_HOME}/lib"
+    PYSPARKPATH="${SPARK_HOME}/python:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-0.8.2.1-src.zip"
+  else
+    addJarInDir "${INTERPRETER_DIR}/dep"
+    PYSPARKPATH="${ZEPPELIN_HOME}/interpreter/spark/pyspark/pyspark.zip:${ZEPPELIN_HOME}/interpreter/spark/pyspark/py4j-0.8.2.1-src.zip"
+  fi
+
+  # autodetect SPARK_CONF_DIR
+  if [[ -n "${SPARK_HOME}" ]] && [[ -z "${SPARK_CONF_DIR}" ]]; then
+    if [[ -d "${SPARK_HOME}/conf" ]]; then
+      SPARK_CONF_DIR="${SPARK_HOME}/conf"
+    fi
+  fi
+
+  # read spark-*.conf if exists
+  if [[ -d "${SPARK_CONF_DIR}" ]]; then
+    ls ${SPARK_CONF_DIR}/spark-*.conf > /dev/null 2>&1
+    if [[ "$?" -eq 0 ]]; then
+      for file in ${SPARK_CONF_DIR}/spark-*.conf; do
+        while read -r line; do
+          echo "${line}" | grep -e "^spark[.]" > /dev/null
+          if [ "$?" -ne 0 ]; then
+            # skip the line not started with 'spark.'
+            continue;
+          fi
+          SPARK_CONF_KEY=`echo "${line}" | sed -e 's/\(^spark[^ ]*\)[ \t]*\(.*\)/\1/g'`
+          SPARK_CONF_VALUE=`echo "${line}" | sed -e 's/\(^spark[^ ]*\)[ \t]*\(.*\)/\2/g'`
+          export ZEPPELIN_JAVA_OPTS+=" -D${SPARK_CONF_KEY}=\"${SPARK_CONF_VALUE}\""
+        done < "${file}"
+      done
+    fi
+  fi
+
+  if [[ -z "${PYTHONPATH}" ]]; then
+    export PYTHONPATH="${PYSPARKPATH}"
+  else
+    export PYTHONPATH="${PYTHONPATH}:${PYSPARKPATH}"
+  fi
+
+  unset PYSPARKPATH
 fi
 
-if [[ x"" == x"${PYTHONPATH}" ]]; then
-  export PYTHONPATH="${PYSPARKPATH}"
-else
-  export PYTHONPATH="${PYTHONPATH}:${PYSPARKPATH}"
-fi
-
-unset PYSPARKPATH
+export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
 ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} -cp ${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
 pid=$!
