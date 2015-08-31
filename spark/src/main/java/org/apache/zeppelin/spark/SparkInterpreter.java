@@ -102,6 +102,8 @@ public class SparkInterpreter extends Interpreter {
                 getSystemDefault("SPARK_YARN_JAR", "spark.yarn.jar", ""),
                 "The location of the Spark jar file. If you use yarn as a cluster, "
                 + "we should set this value")
+            .add("zeppelin.spark.useCassandraContext", "false",
+                 "Use CassandraContext instead of SQLContext if it is true")
             .add("zeppelin.spark.useHiveContext",
                 getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT",
                     "zeppelin.spark.useHiveContext", "true"),
@@ -164,30 +166,8 @@ public class SparkInterpreter extends Interpreter {
     return Boolean.parseBoolean(getProperty("zeppelin.spark.useHiveContext"));
   }
 
-  public SQLContext getSQLContext() {
-    if (sqlc == null) {
-      if (useHiveContext()) {
-        String name = "org.apache.spark.sql.hive.HiveContext";
-        Constructor<?> hc;
-        try {
-          hc = getClass().getClassLoader().loadClass(name)
-              .getConstructor(SparkContext.class);
-          sqlc = (SQLContext) hc.newInstance(getSparkContext());
-        } catch (NoSuchMethodException | SecurityException
-            | ClassNotFoundException | InstantiationException
-            | IllegalAccessException | IllegalArgumentException
-            | InvocationTargetException e) {
-          logger.warn("Can't create HiveContext. Fallback to SQLContext", e);
-          // when hive dependency is not loaded, it'll fail.
-          // in this case SQLContext can be used.
-          sqlc = new SQLContext(getSparkContext());
-        }
-      } else {
-        sqlc = new SQLContext(getSparkContext());
-      }
-    }
-
-    return sqlc;
+  private boolean useCassandraContext() {
+    return Boolean.parseBoolean(getProperty("zeppelin.spark.useCassandraContext"));
   }
 
   public DependencyResolver getDependencyResolver() {
@@ -212,6 +192,45 @@ public class SparkInterpreter extends Interpreter {
       }
     }
     return null;
+  }
+
+  private SQLContext loadCustomContext(final String contextName) {
+    Constructor<?> hc;
+    SQLContext context;
+    try {
+      hc = getClass().getClassLoader().loadClass(contextName)
+              .getConstructor(SparkContext.class);
+      context = (SQLContext) hc.newInstance(getSparkContext());
+    } catch (NoSuchMethodException | SecurityException
+            | ClassNotFoundException | InstantiationException
+            | IllegalAccessException | IllegalArgumentException
+            | InvocationTargetException e) {
+      logger.warn("Can't create " + contextName + ". Fallback to SQLContext", e);
+      // when hive dependency is not loaded, it'll fail.
+      // in this case SQLContext can be used.
+      context = new SQLContext(getSparkContext());
+    }
+    return context;
+  }
+
+  public SQLContext getSQLContext() {
+    if (sqlc == null) {
+      if (useCassandraContext() && useHiveContext())
+        throw new InterpreterException("Cassandra and Hive context are both enabled, " +
+            "please enable only one");
+      
+      if (useCassandraContext()) {
+        sqlc = loadCustomContext("org.apache.spark.sql.cassandra.CassandraSQLContext");
+        logger.debug("Loading Cassandra SQL Context");
+      } else if (useHiveContext()) {
+        sqlc = loadCustomContext("org.apache.spark.sql.hive.HiveContext");
+        logger.debug("Loading Hive SQL Context");
+      } else {
+        sqlc = new SQLContext(getSparkContext());
+        logger.debug("Loading Standard SQL Context");
+      }
+    }
+    return sqlc;
   }
 
   public SparkContext createSparkContext() {
