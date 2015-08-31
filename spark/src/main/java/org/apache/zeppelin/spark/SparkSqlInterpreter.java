@@ -32,6 +32,7 @@ import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -94,16 +95,19 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   private SparkInterpreter getSparkInterpreter() {
-    for (Interpreter intp : getInterpreterGroup()) {
-      if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
-        Interpreter p = intp;
-        while (p instanceof WrappedInterpreter) {
-          if (p instanceof LazyOpenInterpreter) {
-            p.open();
+    InterpreterGroup intpGroup = getInterpreterGroup();
+    synchronized (intpGroup) {
+      for (Interpreter intp : getInterpreterGroup()) {
+        if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
+          Interpreter p = intp;
+          while (p instanceof WrappedInterpreter) {
+            if (p instanceof LazyOpenInterpreter) {
+              p.open();
+            }
+            p = ((WrappedInterpreter) p).getInnerInterpreter();
           }
-          p = ((WrappedInterpreter) p).getInnerInterpreter();
+          return (SparkInterpreter) p;
         }
-        return (SparkInterpreter) p;
       }
     }
     return null;
