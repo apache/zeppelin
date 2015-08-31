@@ -21,6 +21,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.editorToggled = false;
   $scope.tableToggled = false;
   $scope.viewOnly = false;
+  $scope.showSetting = false;
   $scope.looknfeelOption = [ 'default', 'simple', 'report'];
   $scope.cronOption = [
     {name: 'None', value : undefined},
