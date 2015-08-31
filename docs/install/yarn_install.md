@@ -158,6 +158,8 @@ Set the following properties
 export JAVA_HOME=/home/zeppelin/prerequisites/jdk1.7.0_79
 export HADOOP_CONF_DIR=/etc/hadoop/conf
 export ZEPPELIN_JAVA_OPTS="-Dhdp.version=2.3.1.0-2574"
+export PYTHONPATH="${SPARK_HOME}/python:${SPARK_HOME}/python/lib/py4j-0.8.2.1-src.zip"
+export SPARK_YARN_USER_ENV="PYTHONPATH=${PYTHONPATH}"
 ```
 
 As /etc/hadoop/conf contains various configurations of YARN cluster, Zeppelin can now submit Spark/Hive jobs on YARN cluster form its web interface. The value of hdp.version is set to 2.3.1.0-2574. This can be obtained by running the following command
