@@ -1125,7 +1125,7 @@ angular.module('zeppelinWebApp')
     };
 
     var getIndex = function(previous, actual) {
-      return (previous == null) ? actual : Math.min(previous, actual);
+      return (previous === null || typeof(previous) === 'undefined' ) ? actual : Math.min(previous, actual);
     };
 
     var schema = {};
