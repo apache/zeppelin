@@ -128,7 +128,7 @@ public class SparkInterpreter extends Interpreter {
 
   private Map<String, Object> binder;
   private SparkEnv env;
-  private int sparkVersion;
+  private SparkVersion sparkVersion;
 
 
   public SparkInterpreter(Properties property) {
@@ -439,7 +439,7 @@ public class SparkInterpreter extends Interpreter {
       sc.taskScheduler().rootPool().addSchedulable(pool);
     }
 
-    sparkVersion = getVersion(sc);
+    sparkVersion = SparkVersion.fromVersionString(sc.version());
 
     sqlc = getSQLContext();
 
@@ -465,7 +465,7 @@ public class SparkInterpreter extends Interpreter {
                  + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
     intp.interpret("import org.apache.spark.SparkContext._");
 
-    if (sparkVersion < 130) {
+    if (sparkVersion.olderThan(SparkVersion.SPARK_1_3_0)) {
       intp.interpret("import sqlContext._");
     } else {
       intp.interpret("import sqlContext.implicits._");
@@ -485,7 +485,7 @@ public class SparkInterpreter extends Interpreter {
      */
 
     try {
-      if (sparkVersion < 130) {
+      if (sparkVersion.olderThan(SparkVersion.SPARK_1_3_0)) {
         Method loadFiles = this.interpreter.getClass().getMethod("loadFiles", Settings.class);
         loadFiles.invoke(this.interpreter, settings);
       } else {
@@ -675,10 +675,10 @@ public class SparkInterpreter extends Interpreter {
         int[] progressInfo = null;
         try {
           Object finalStage = job.getClass().getMethod("finalStage").invoke(job);
-          if (sparkVersion < 110) {
-            progressInfo = getProgressFromStage_1_0x(sparkListener, job.finalStage());
+          if (sparkVersion.olderThan(SparkVersion.SPARK_1_1_0)) {
+            progressInfo = getProgressFromStage_1_0x(sparkListener, finalStage);
           } else {
-            progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
+            progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);
           }
         } catch (IllegalAccessException | IllegalArgumentException
             | InvocationTargetException | NoSuchMethodException
@@ -804,18 +804,7 @@ public class SparkInterpreter extends Interpreter {
     return z;
   }
 
-  /**
-   * Get spark version
-   * @param sc SparkContext
-   * @return integer number. eg) 141 for spark "1.4.1"
-   */
-  private int getVersion(SparkContext sc) {
-    String versionString = sc.version();
-    versionString = versionString.replaceAll("\\.", "");
-    return Integer.parseInt(versionString);
-  }
-
-  public int getSparkVersion() {
+  public SparkVersion getSparkVersion() {
     return sparkVersion;
   }
 }

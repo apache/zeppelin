@@ -78,15 +78,28 @@ class PyZeppelinContext(dict):
   def get(self, key):
     return self.__getitem__(key)
 
+class SparkVersion(object):
+  SPARK_1_4_0 = 140
+  SPARK_1_3_0 = 130
+
+  def __init__(self, versionNumber):
+    self.version = versionNumber
+
+  def isAutoConvertEnabled(self):
+    return self.version >= self.SPARK_1_4_0
+
+  def isImportAllPackageUnderSparkSql(self):
+    return self.version >= self.SPARK_1_3_0
+
 
 output = Logger()
 sys.stdout = output
 sys.stderr = output
 
 client = GatewayClient(port=int(sys.argv[1]))
-sparkVersion = int(sys.argv[2])
+sparkVersion = SparkVersion(int(sys.argv[2]))
 
-if sparkVersion >= 140:
+if sparkVersion.isAutoConvertEnabled():
   gateway = JavaGateway(client, auto_convert = True)
 else:
   gateway = JavaGateway(client)
@@ -102,14 +115,14 @@ intp.onPythonScriptInitialized()
 
 jsc = intp.getJavaSparkContext()
 
-if sparkVersion < 130:
+if sparkVersion.isImportAllPackageUnderSparkSql():
+  java_import(gateway.jvm, "org.apache.spark.sql.*")
+  java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
+else:
   java_import(gateway.jvm, "org.apache.spark.sql.SQLContext")
   java_import(gateway.jvm, "org.apache.spark.sql.hive.HiveContext")
   java_import(gateway.jvm, "org.apache.spark.sql.hive.LocalHiveContext")
   java_import(gateway.jvm, "org.apache.spark.sql.hive.TestHiveContext")
-else:
-  java_import(gateway.jvm, "org.apache.spark.sql.*")
-  java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
 
 
 java_import(gateway.jvm, "scala.Tuple2")

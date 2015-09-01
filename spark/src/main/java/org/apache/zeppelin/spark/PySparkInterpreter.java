@@ -137,7 +137,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     CommandLine cmd = CommandLine.parse(getProperty("zeppelin.pyspark.python"));
     cmd.addArgument(scriptPath, false);
     cmd.addArgument(Integer.toString(port), false);
-    cmd.addArgument(Integer.toString(getSparkInterpreter().getSparkVersion()), false);
+    cmd.addArgument(Integer.toString(getSparkInterpreter().getSparkVersion().toNumber()), false);
     executor = new DefaultExecutor();
     outputStream = new ByteArrayOutputStream();
     PipedOutputStream ps = new PipedOutputStream();
@@ -286,7 +286,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     }
 
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
-    if (sparkInterpreter.getSparkVersion() < 120) {
+    if (!sparkInterpreter.getSparkVersion().isPysparkSupported()) {
       return new InterpreterResult(Code.ERROR, "pyspark "
           + sparkInterpreter.getSparkContext().version() + " is not supported");
     }
