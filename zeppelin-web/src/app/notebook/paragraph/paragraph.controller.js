@@ -63,7 +63,6 @@ angular.module('zeppelinWebApp')
 
           $('#p'+$scope.paragraph.id+'_html').find('pre code').each(function(i, e) { hljs.highlightBlock(e); });
         } catch(err) {
-          Notification.error('HTML rendering error');
           console.log('HTML rendering error %o', err);
         }
       } else {
@@ -82,7 +81,6 @@ angular.module('zeppelinWebApp')
 
           $compile(angular.element('#p'+$scope.paragraph.id+'_angular').contents())($rootScope.compiledScope);
         } catch(err) {
-          Notification.error('ANGULAR rendering error');
           console.log('ANGULAR rendering error %o', err);
         }
       } else {
@@ -828,7 +826,6 @@ angular.module('zeppelinWebApp')
         try {
           renderTable();
         } catch(err) {
-          Notification.error('Chart drawing error');
           console.log('Chart drawing error %o', err);
         }
       } else {
@@ -957,7 +954,6 @@ angular.module('zeppelinWebApp')
         try {
           renderChart();
         } catch(err) {
-          Notification.error('Chart drawing error');
           console.log('Chart drawing error %o', err);
         }
       } else {

@@ -16,7 +16,7 @@
 angular.module('zeppelinWebApp')
   .config(function(NotificationProvider) {
     NotificationProvider.setOptions({
-      delay: 10000,
+      delay: 6000,
       startTop: 20,
       startRight: 10,
       verticalSpacing: 20,
