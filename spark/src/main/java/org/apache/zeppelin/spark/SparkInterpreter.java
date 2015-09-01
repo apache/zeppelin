@@ -465,7 +465,7 @@ public class SparkInterpreter extends Interpreter {
                  + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
     intp.interpret("import org.apache.spark.SparkContext._");
 
-    if (sparkVersion.olderThan(SparkVersion.SPARK_1_3_0)) {
+    if (sparkVersion.oldSqlContextImplicits()) {
       intp.interpret("import sqlContext._");
     } else {
       intp.interpret("import sqlContext.implicits._");
@@ -485,7 +485,7 @@ public class SparkInterpreter extends Interpreter {
      */
 
     try {
-      if (sparkVersion.olderThan(SparkVersion.SPARK_1_3_0)) {
+      if (sparkVersion.oldLoadFilesMethodName()) {
         Method loadFiles = this.interpreter.getClass().getMethod("loadFiles", Settings.class);
         loadFiles.invoke(this.interpreter, settings);
       } else {
@@ -675,7 +675,7 @@ public class SparkInterpreter extends Interpreter {
         int[] progressInfo = null;
         try {
           Object finalStage = job.getClass().getMethod("finalStage").invoke(job);
-          if (sparkVersion.olderThan(SparkVersion.SPARK_1_1_0)) {
+          if (sparkVersion.getProgress1_0()) {          
             progressInfo = getProgressFromStage_1_0x(sparkListener, finalStage);
           } else {
             progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);

@@ -64,6 +64,18 @@ public enum SparkVersion {
     return this.newerThanEquals(SPARK_1_4_0);
   }
 
+  public boolean getProgress1_0() {
+    return this.olderThan(SPARK_1_1_0);
+  }
+
+  public boolean oldLoadFilesMethodName() {
+    return this.olderThan(SPARK_1_3_0);
+  }
+
+  public boolean oldSqlContextImplicits() {
+    return this.olderThan(SPARK_1_3_0);
+  }
+
   public boolean newerThan(SparkVersion versionToCompare) {
     return version > versionToCompare.version;
   }
