@@ -64,7 +64,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
     // run markdown paragraph, again
     Paragraph p = note.addParagraph();
-    p.setText("print(sc.parallelize(1 to 10).reduce(_ + _))");
+    p.setText("%spark print(sc.parallelize(1 to 10).reduce(_ + _))");
     note.run(p.getId());
     waitForFinish(p);
     assertEquals("55", p.getResult().message());
@@ -88,7 +88,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     }
     ZeppelinServer.notebook.removeNote(note.id());
   }
-  
+
   @Test
   public void pySparkAutoConvertOptionTest() throws IOException {
     // create new note
@@ -113,11 +113,11 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     // create new note
     Note note = ZeppelinServer.notebook.createNote();
     Paragraph p0 = note.addParagraph();
-    p0.setText("z.run(1)");
+    p0.setText("%spark z.run(1)");
     Paragraph p1 = note.addParagraph();
-    p1.setText("val a=10");
+    p1.setText("%spark val a=10");
     Paragraph p2 = note.addParagraph();
-    p2.setText("print(a)");
+    p2.setText("%spark print(a)");
 
     note.run(p0.getId());
     waitForFinish(p0);
@@ -135,7 +135,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
    */
   private int getSparkVersionNumber(Note note) {
     Paragraph p = note.addParagraph();
-    p.setText("print(sc.version)");
+    p.setText("%spark print(sc.version)");
     note.run(p.getId());
     waitForFinish(p);
     String sparkVersion = p.getResult().message();

@@ -42,8 +42,7 @@ def main(file, cmd):
     errcode = process.wait()
     diff = datetime.now() - start
     sys.stdout.write("\r%d seconds %d log lines"%(diff.seconds, count))
-    print
-    print cmd, "done", errcode
+    sys.stdout.write("\n" + str(cmd) + " done " + str(errcode) + "\n")
     return errcode
 
 if __name__ == "__main__":

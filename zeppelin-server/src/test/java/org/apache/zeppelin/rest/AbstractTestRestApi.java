@@ -108,8 +108,12 @@ public abstract class AbstractTestRestApi {
       // ci environment runs spark cluster for testing
       // so configure zeppelin use spark cluster
       if ("true".equals(System.getenv("CI"))) {
-        // assume first one is spark
-        InterpreterSetting sparkIntpSetting = ZeppelinServer.notebook.getInterpreterFactory().get().get(0);
+        InterpreterSetting sparkIntpSetting = null;
+        for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
+          if (intpSetting.getGroup().equals("spark")) {
+            sparkIntpSetting = intpSetting;
+          }
+        }
 
         // set spark master
         sparkIntpSetting.getProperties().setProperty("master", "spark://" + getHostname() + ":7071");
@@ -120,8 +124,12 @@ public abstract class AbstractTestRestApi {
 
         ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.id());
       } else {
-        // assume first one is spark
-        InterpreterSetting sparkIntpSetting = ZeppelinServer.notebook.getInterpreterFactory().get().get(0);
+        InterpreterSetting sparkIntpSetting = null;
+        for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
+          if (intpSetting.getGroup().equals("spark")) {
+            sparkIntpSetting = intpSetting;
+          }
+        }
 
         String sparkHome = getSparkHome();
         if (sparkHome != null) {

@@ -29,6 +29,7 @@ import java.net.URLClassLoader;
 import java.util.*;
 
 import com.google.common.base.Joiner;
+
 import org.apache.spark.HttpServer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -40,7 +41,7 @@ import org.apache.spark.repl.SparkJLineCompletion;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
-import org.apache.spark.scheduler.Stage;
+import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -67,6 +68,7 @@ import scala.Tuple2;
 import scala.collection.Iterator;
 import scala.collection.JavaConversions;
 import scala.collection.JavaConverters;
+import scala.collection.Seq;
 import scala.collection.mutable.HashMap;
 import scala.collection.mutable.HashSet;
 import scala.tools.nsc.Settings;
@@ -88,6 +90,9 @@ public class SparkInterpreter extends Interpreter {
         "spark",
         SparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
+            .add("zeppelin.spark.diagnosis",
+                getSystemDefault("ZEPPELIN_SPARK_DIAGNOSIS", "zeppelin.spark.diagnosis", "false"),
+                "Self diagnosis of configuration")
             .add("spark.app.name", "Zeppelin", "The name of spark application.")
             .add("master",
                 getSystemDefault("MASTER", "spark.master", "local[*]"),
@@ -126,6 +131,7 @@ public class SparkInterpreter extends Interpreter {
 
   private Map<String, Object> binder;
   private SparkEnv env;
+  private SparkConfValidator sparkConfValidator;
 
 
   public SparkInterpreter(Properties property) {
@@ -156,12 +162,35 @@ public class SparkInterpreter extends Interpreter {
 
   private static JobProgressListener setupListeners(SparkContext context) {
     JobProgressListener pl = new JobProgressListener(context.getConf());
-    context.listenerBus().addListener(pl);
+    try {
+      Object listenerBus = context.getClass().getMethod("listenerBus").invoke(context);
+      Method m = listenerBus.getClass().getMethod("addListener", SparkListener.class);
+      m.invoke(listenerBus, pl);
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+        | IllegalArgumentException | InvocationTargetException e) {
+      e.printStackTrace();
+    }
     return pl;
   }
 
   private boolean useHiveContext() {
     return Boolean.parseBoolean(getProperty("zeppelin.spark.useHiveContext"));
+  }
+
+  public boolean diagnosis() {
+    if (getProperty("zeppelin.spark.diagnosis") == null) {
+      return false;
+    } else {
+      return Boolean.parseBoolean(getProperty("zeppelin.spark.diagnosis"));
+    }
+  }
+
+  public boolean isYarnMode() {
+    return getProperty("master").equals("yarn-client") || getProperty("master").equals("yarn");
+  }
+
+  public SparkConfValidator getValidator() {
+    return sparkConfValidator;
   }
 
   public SQLContext getSQLContext() {
@@ -271,7 +300,7 @@ public class SparkInterpreter extends Interpreter {
     }
 
     //TODO(jongyoul): Move these codes into PySparkInterpreter.java
-    
+
     String pysparkBasePath = getSystemDefault("SPARK_HOME", "spark.home", null);
     File pysparkPath;
     if (null == pysparkBasePath) {
@@ -329,6 +358,23 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public void open() {
+    if (diagnosis()) {
+      sparkConfValidator = new SparkConfValidator(
+          getSystemDefault("SPARK_HOME", "spark.home", null),
+          System.getenv("HADOOP_HOME"),
+          System.getenv("HADOOP_CONF_DIR"),
+          System.getenv("PYTHONPATH")
+      );
+
+      if (!sparkConfValidator.validateSpark()) {
+        return;
+      }
+
+      if (isYarnMode() && !sparkConfValidator.validateYarn(getProperty())) {
+        return;
+      }
+    }
+
     URL[] urls = getClassloaderUrls();
 
     // Very nice discussion about how scala compiler handle classpath
@@ -547,6 +593,9 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
+    if (completor == null) {
+      return new LinkedList<String>();
+    }
     ScalaCompleter c = completor.completer();
     Candidates ret = c.complete(buf, cursor);
     return scala.collection.JavaConversions.asJavaList(ret.candidates());
@@ -572,6 +621,10 @@ public class SparkInterpreter extends Interpreter {
    */
   @Override
   public InterpreterResult interpret(String line, InterpreterContext context) {
+    if (diagnosis() && sparkConfValidator.hasError()) {
+      return new InterpreterResult(Code.ERROR, sparkConfValidator.getError());
+    }
+
     z.setInterpreterContext(context);
     if (line == null || line.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);
@@ -606,7 +659,7 @@ public class SparkInterpreter extends Interpreter {
     String incomplete = "";
 
     for (int l = 0; l < linesToRun.length; l++) {
-      String s = linesToRun[l];      
+      String s = linesToRun[l];
       // check if next line starts with "." (but not ".." or "./") it is treated as an invocation
       if (l + 1 < linesToRun.length) {
         String nextLine = linesToRun[l + 1].trim();
@@ -647,11 +700,18 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
+    if (sc == null) {
+      return;
+    }
     sc.cancelJobGroup(getJobGroup(context));
   }
 
   @Override
   public int getProgress(InterpreterContext context) {
+    if (sc == null) {
+      return 0;
+    }
+
     String jobGroup = getJobGroup(context);
     int completedTasks = 0;
     int totalTasks = 0;
@@ -671,18 +731,26 @@ public class SparkInterpreter extends Interpreter {
 
       if (jobGroup.equals(g)) {
         int[] progressInfo = null;
-        if (sc.version().startsWith("1.0")) {
-          progressInfo = getProgressFromStage_1_0x(sparkListener, job.finalStage());
-        } else if (sc.version().startsWith("1.1")) {
-          progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
-        } else if (sc.version().startsWith("1.2")) {
-          progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
-        } else if (sc.version().startsWith("1.3")) {
-          progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
-        } else if (sc.version().startsWith("1.4")) {
-          progressInfo = getProgressFromStage_1_1x(sparkListener, job.finalStage());
-        } else {
-          continue;
+        try {
+          Object finalStage = job.getClass().getMethod("finalStage").invoke(job);
+          if (sc.version().startsWith("1.0")) {
+            progressInfo = getProgressFromStage_1_0x(sparkListener, finalStage);
+          } else if (sc.version().startsWith("1.1")) {
+            progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);
+          } else if (sc.version().startsWith("1.2")) {
+            progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);
+          } else if (sc.version().startsWith("1.3")) {
+            progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);
+          } else if (sc.version().startsWith("1.4")) {
+            progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);
+          } else {
+            continue;
+          }
+        } catch (IllegalAccessException | IllegalArgumentException
+            | InvocationTargetException | NoSuchMethodException
+            | SecurityException e) {
+          logger.error("Can't get progress info", e);
+          return 0;
         }
         totalTasks += progressInfo[0];
         completedTasks += progressInfo[1];
@@ -695,33 +763,27 @@ public class SparkInterpreter extends Interpreter {
     return completedTasks * 100 / totalTasks;
   }
 
-  private int[] getProgressFromStage_1_0x(JobProgressListener sparkListener, Stage stage) {
-    int numTasks = stage.numTasks();
+  private int[] getProgressFromStage_1_0x(JobProgressListener sparkListener, Object stage)
+      throws IllegalAccessException, IllegalArgumentException,
+      InvocationTargetException, NoSuchMethodException, SecurityException {
+    int numTasks = (int) stage.getClass().getMethod("numTasks").invoke(stage);
     int completedTasks = 0;
 
-    Method method;
+    int id = (int) stage.getClass().getMethod("id").invoke(stage);
+
     Object completedTaskInfo = null;
-    try {
-      method = sparkListener.getClass().getMethod("stageIdToTasksComplete");
-      completedTaskInfo =
-          JavaConversions.asJavaMap((HashMap<Object, Object>) method.invoke(sparkListener)).get(
-              stage.id());
-    } catch (NoSuchMethodException | SecurityException e) {
-      logger.error("Error while getting progress", e);
-    } catch (IllegalAccessException e) {
-      logger.error("Error while getting progress", e);
-    } catch (IllegalArgumentException e) {
-      logger.error("Error while getting progress", e);
-    } catch (InvocationTargetException e) {
-      logger.error("Error while getting progress", e);
-    }
+
+    completedTaskInfo = JavaConversions.asJavaMap(
+        (HashMap<Object, Object>) sparkListener.getClass()
+            .getMethod("stageIdToTasksComplete").invoke(sparkListener)).get(id);
 
     if (completedTaskInfo != null) {
       completedTasks += (int) completedTaskInfo;
     }
-    List<Stage> parents = JavaConversions.asJavaList(stage.parents());
+    List<Object> parents = JavaConversions.asJavaList((Seq<Object>) stage.getClass()
+        .getMethod("parents").invoke(stage));
     if (parents != null) {
-      for (Stage s : parents) {
+      for (Object s : parents) {
         int[] p = getProgressFromStage_1_0x(sparkListener, s);
         numTasks += p[0];
         completedTasks += p[1];
@@ -731,9 +793,12 @@ public class SparkInterpreter extends Interpreter {
     return new int[] {numTasks, completedTasks};
   }
 
-  private int[] getProgressFromStage_1_1x(JobProgressListener sparkListener, Stage stage) {
-    int numTasks = stage.numTasks();
+  private int[] getProgressFromStage_1_1x(JobProgressListener sparkListener, Object stage)
+      throws IllegalAccessException, IllegalArgumentException,
+      InvocationTargetException, NoSuchMethodException, SecurityException {
+    int numTasks = (int) stage.getClass().getMethod("numTasks").invoke(stage);
     int completedTasks = 0;
+    int id = (int) stage.getClass().getMethod("id").invoke(stage);
 
     try {
       Method stageIdToData = sparkListener.getClass().getMethod("stageIdToData");
@@ -747,7 +812,7 @@ public class SparkInterpreter extends Interpreter {
       Set<Tuple2<Object, Object>> keys =
           JavaConverters.asJavaSetConverter(stageIdData.keySet()).asJava();
       for (Tuple2<Object, Object> k : keys) {
-        if (stage.id() == (int) k._1()) {
+        if (id == (int) k._1()) {
           Object uiData = stageIdData.get(k).get();
           completedTasks += (int) numCompletedTasks.invoke(uiData);
         }
@@ -756,9 +821,10 @@ public class SparkInterpreter extends Interpreter {
       logger.error("Error on getting progress information", e);
     }
 
-    List<Stage> parents = JavaConversions.asJavaList(stage.parents());
+    List<Object> parents = JavaConversions.asJavaList((Seq<Object>) stage.getClass()
+        .getMethod("parents").invoke(stage));
     if (parents != null) {
-      for (Stage s : parents) {
+      for (Object s : parents) {
         int[] p = getProgressFromStage_1_1x(sparkListener, s);
         numTasks += p[0];
         completedTasks += p[1];
@@ -779,10 +845,14 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public void close() {
-    sc.stop();
-    sc = null;
+    if (sc != null) {
+      sc.stop();
+      sc = null;
+    }
 
-    intp.close();
+    if (intp != null) {
+      intp.close();
+    }
   }
 
   @Override

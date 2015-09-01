@@ -92,15 +92,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     scriptPath = System.getProperty("java.io.tmpdir") + "/zeppelin_pyspark.py";
   }
 
-  private String getSparkHome() {
-    String sparkHome = getProperty("spark.home");
-    if (sparkHome == null) {
-      throw new InterpreterException("spark.home is undefined");
-    } else {
-      return sparkHome;
-    }
-  }
-
 
   private void createPythonScript() {
     ClassLoader classLoader = getClass().getClassLoader();
@@ -125,6 +116,17 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   @Override
   public void open() {
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    if (sparkInterpreter.diagnosis()) {
+      SparkConfValidator validator = sparkInterpreter.getValidator();
+      if (!validator.hasError()) {
+        validator.validatePyspark(sparkInterpreter.isYarnMode());
+      }
+      if (validator.hasError()) {
+        return;
+      }
+    }
+
     // create python script
     createPythonScript();
 
@@ -187,8 +189,12 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   @Override
   public void close() {
-    executor.getWatchdog().destroyProcess();
-    gatewayServer.shutdown();
+    if (executor != null) {
+      executor.getWatchdog().destroyProcess();
+    }
+    if (gatewayServer != null) {
+      gatewayServer.shutdown();
+    }
   }
 
   PythonInterpretRequest pythonInterpretRequest = null;
@@ -255,6 +261,14 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    if (sparkInterpreter.diagnosis()) {
+      SparkConfValidator validator = sparkInterpreter.getValidator();
+      if (validator.hasError()) {
+        return new InterpreterResult(Code.ERROR, validator.getError());
+      }
+    }
+
     if (!pythonscriptRunning) {
       return new InterpreterResult(Code.ERROR, "python process not running"
           + outputStream.toString());
@@ -285,7 +299,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
           + outputStream.toString());
     }
 
-    SparkInterpreter sparkInterpreter = getSparkInterpreter();
     if (!sparkInterpreter.getSparkContext().version().startsWith("1.2") &&
         !sparkInterpreter.getSparkContext().version().startsWith("1.3") &&
         !sparkInterpreter.getSparkContext().version().startsWith("1.4")) {
