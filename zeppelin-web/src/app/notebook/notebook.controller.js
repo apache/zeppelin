@@ -152,7 +152,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     return running;
   };
 
-  $scope.killSaveTimer = function() {
+  var killSaveTimer = function() {
     if ($scope.saveTimer) {
       $timeout.cancel($scope.saveTimer);
       $scope.saveTimer = null;
@@ -160,7 +160,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   $scope.startSaveTimer = function() {
-    $scope.killSaveTimer();
+    killSaveTimer();
     $scope.isNoteDirty = true;
     console.log('startSaveTimer called ' + $scope.note.id);
     $scope.saveTimer = $timeout(function() {
@@ -174,7 +174,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.$on('$destroy', function() {
     jQuery(window).off('unload');
-    $scope.killSaveTimer();
+    killSaveTimer();
     $scope.saveNote();
   });
 
