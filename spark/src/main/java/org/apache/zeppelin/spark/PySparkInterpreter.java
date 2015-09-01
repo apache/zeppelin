@@ -354,11 +354,9 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
             if (p instanceof LazyOpenInterpreter) {
               lazy = (LazyOpenInterpreter) p;
             }
-            if (p instanceof SparkInterpreter) {
-              spark = (SparkInterpreter) p;
-            }
             p = ((WrappedInterpreter) p).getInnerInterpreter();
           }
+          spark = (SparkInterpreter) p;
         }
       }
     }
