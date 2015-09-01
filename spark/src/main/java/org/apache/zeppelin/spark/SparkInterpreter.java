@@ -186,7 +186,7 @@ public class SparkInterpreter extends Interpreter {
   }
 
   public boolean isYarnMode() {
-    return getProperty("master").equals("yarn-client");
+    return getProperty("master").equals("yarn-client") || getProperty("master").equals("yarn");
   }
 
   public SparkConfValidator getValidator() {
