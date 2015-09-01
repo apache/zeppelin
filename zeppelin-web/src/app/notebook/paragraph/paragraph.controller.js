@@ -17,7 +17,7 @@
 
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv, Notification) {
+                                         $timeout, $compile, websocketMsgSrv) {
 
   $scope.paragraph = null;
   $scope.editor = null;
