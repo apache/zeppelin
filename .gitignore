@@ -6,7 +6,7 @@
 *.ear
 
 # interpreter
-interpreter/
+/interpreter/
 
 # conf file
 conf/zeppelin-env.sh
