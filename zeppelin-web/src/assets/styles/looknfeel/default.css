@@ -65,7 +65,3 @@ body {
 .nv-controlsWrap {
   display:block;
 }
-
-.ui-notification:hover{
-  opacity:.9 !important;
-}
