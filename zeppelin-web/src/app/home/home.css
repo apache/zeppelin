@@ -285,6 +285,28 @@ kbd {
   min-height: 400px;
 }
 
+/* ngToast style */
+
+.ng-toast .alert {
+  color: white !important;
+  border: none !important;
+}
+
+.ng-toast .alert-danger {
+  background-color: #A94442 !important;
+}
+
+.ng-toast .alert-warning {
+  background-color: #CE9532 !important;
+}
+
+.ng-toast .alert-info {
+  background-color: #589EC1 !important;
+}
+
+.ng-toast .alert-success {
+  background-color: #428443 !important;
+}
 
 /*
 temporary fix for bootstrap issue (https://github.com/twbs/bootstrap/issues/5865)

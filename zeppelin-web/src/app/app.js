@@ -40,7 +40,7 @@ angular.module('zeppelinWebApp', [
       }
     };
   })
-  .config(function ($routeProvider) {
+  .config(function ($routeProvider, ngToastProvider) {
     $routeProvider
       .when('/', {
         templateUrl: 'app/home/home.html',
@@ -61,4 +61,10 @@ angular.module('zeppelinWebApp', [
       .otherwise({
         redirectTo: '/'
       });
+  
+    ngToastProvider.configure({
+      dismissButton: true,
+      dismissOnClick: false,
+      timeout: 6000
+    });
   });
