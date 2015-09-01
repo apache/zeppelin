@@ -35,7 +35,6 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
@@ -151,7 +150,9 @@ public class SparkSqlInterpreter extends Interpreter {
 
   @Override
   public int getProgress(InterpreterContext context) {
+
     String jobGroup = getJobGroup(context);
+
     SQLContext sqlc = getSparkInterpreter().getSQLContext();
     SparkContext sc = sqlc.sparkContext();
     JobProgressListener sparkListener = getSparkInterpreter().getJobProgressListener();
@@ -189,6 +190,8 @@ public class SparkSqlInterpreter extends Interpreter {
       return 0;
     }
     return completedTasks * 100 / totalTasks;
+
+
   }
 
   private int[] getProgressFromStage_1_0x(JobProgressListener sparkListener, Stage stage) {
@@ -289,7 +292,7 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<String> completion(String buf, int cursor, InterpreterContext context) {
     return null;
   }
 }

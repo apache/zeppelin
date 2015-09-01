@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.scala.FlinkILoop;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.minicluster.LocalFlinkMiniCluster;
@@ -43,7 +42,6 @@ import org.slf4j.LoggerFactory;
 
 import scala.Console;
 import scala.None;
-import scala.Option;
 import scala.Some;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.IMain;
@@ -299,7 +297,7 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<String> completion(String buf, int cursor, InterpreterContext context) {
     return new LinkedList<String>();
   }
 

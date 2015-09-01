@@ -116,9 +116,9 @@ public class LazyOpenInterpreter
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<String> completion(String buf, int cursor, InterpreterContext context) {
     open();
-    return intp.completion(buf, cursor);
+    return intp.completion(buf, cursor,context );
   }
 
   @Override

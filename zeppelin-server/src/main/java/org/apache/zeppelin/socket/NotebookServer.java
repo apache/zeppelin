@@ -64,6 +64,7 @@ public class NotebookServer extends WebSocketServlet implements
   }
   @Override
   public boolean checkOrigin(HttpServletRequest request, String origin) {
+   /*
     URI sourceUri = null;
     String currentHost = null;
 
@@ -83,6 +84,8 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     return false;
+    */
+      return true;
   }
 
   @Override

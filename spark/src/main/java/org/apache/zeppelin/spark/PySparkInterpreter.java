@@ -337,7 +337,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<String> completion(String buf, int cursor, InterpreterContext context) {
     // not supported
     return new LinkedList<String>();
   }

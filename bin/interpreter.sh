@@ -87,7 +87,9 @@ fi
 
 unset PYSPARKPATH
 
-${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} -cp ${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
+#${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS}    -Dspark.repl.classdir=/tmp/pp -Dspark.repl.classdirName=abc    -cp ${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
+
+${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS}   -DCUSTOM_SPARK_REPL_DIR_PATH=/tmp/piyush/  -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9102  -cp ${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
 pid=$!
 if [[ -z "${pid}" ]]; then
   return 1;
