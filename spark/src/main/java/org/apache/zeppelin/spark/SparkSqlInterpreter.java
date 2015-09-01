@@ -96,21 +96,28 @@ public class SparkSqlInterpreter extends Interpreter {
 
   private SparkInterpreter getSparkInterpreter() {
     InterpreterGroup intpGroup = getInterpreterGroup();
+    LazyOpenInterpreter lazy = null;
+    SparkInterpreter spark = null;
     synchronized (intpGroup) {
-      for (Interpreter intp : getInterpreterGroup()) {
+      for (Interpreter intp : getInterpreterGroup()){
         if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
           Interpreter p = intp;
           while (p instanceof WrappedInterpreter) {
             if (p instanceof LazyOpenInterpreter) {
-              p.open();
+              lazy = (LazyOpenInterpreter) p;
+            }
+            if (p instanceof SparkInterpreter) {
+              spark = (SparkInterpreter) p;
             }
             p = ((WrappedInterpreter) p).getInnerInterpreter();
           }
-          return (SparkInterpreter) p;
         }
       }
     }
-    return null;
+    if (lazy != null) {
+      lazy.open();
+    }
+    return spark;
   }
 
   public boolean concurrentSQL() {

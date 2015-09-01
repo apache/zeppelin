@@ -63,13 +63,10 @@ public class LazyOpenInterpreter
       return;
     }
 
-    InterpreterGroup intpGroup = getInterpreterGroup();
-    synchronized (intpGroup) {
-      synchronized (intp) {
-        if (opened == false) {
-          intp.open();
-          opened = true;
-        }
+    synchronized (intp) {
+      if (opened == false) {
+        intp.open();
+        opened = true;
       }
     }
   }
