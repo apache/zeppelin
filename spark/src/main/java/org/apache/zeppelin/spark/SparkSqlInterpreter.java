@@ -27,6 +27,7 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -81,19 +82,27 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   private SparkInterpreter getSparkInterpreter() {
-    for (Interpreter intp : getInterpreterGroup()) {
-      if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
-        Interpreter p = intp;
-        while (p instanceof WrappedInterpreter) {
-          if (p instanceof LazyOpenInterpreter) {
-            p.open();
+    InterpreterGroup intpGroup = getInterpreterGroup();
+    LazyOpenInterpreter lazy = null;
+    SparkInterpreter spark = null;
+    synchronized (intpGroup) {
+      for (Interpreter intp : getInterpreterGroup()){
+        if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
+          Interpreter p = intp;
+          while (p instanceof WrappedInterpreter) {
+            if (p instanceof LazyOpenInterpreter) {
+              lazy = (LazyOpenInterpreter) p;
+            }
+            p = ((WrappedInterpreter) p).getInnerInterpreter();
           }
-          p = ((WrappedInterpreter) p).getInnerInterpreter();
+          spark = (SparkInterpreter) p;
         }
-        return (SparkInterpreter) p;
       }
     }
-    return null;
+    if (lazy != null) {
+      lazy.open();
+    }
+    return spark;
   }
 
   public boolean concurrentSQL() {

@@ -344,21 +344,26 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   private SparkInterpreter getSparkInterpreter() {
     InterpreterGroup intpGroup = getInterpreterGroup();
+    LazyOpenInterpreter lazy = null;
+    SparkInterpreter spark = null;
     synchronized (intpGroup) {
       for (Interpreter intp : getInterpreterGroup()){
         if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
           Interpreter p = intp;
           while (p instanceof WrappedInterpreter) {
             if (p instanceof LazyOpenInterpreter) {
-              ((LazyOpenInterpreter) p).open();
+              lazy = (LazyOpenInterpreter) p;
             }
             p = ((WrappedInterpreter) p).getInnerInterpreter();
           }
-          return (SparkInterpreter) p;
+          spark = (SparkInterpreter) p;
         }
       }
     }
-    return null;
+    if (lazy != null) {
+      lazy.open();
+    }
+    return spark;
   }
 
   public ZeppelinContext getZeppelinContext() {
