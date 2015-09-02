@@ -14,7 +14,6 @@
 
 package org.apache.zeppelin.hbase;
 
-import org.apache.commons.exec.*;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
@@ -27,21 +26,22 @@ import org.slf4j.LoggerFactory;
 
 import org.jruby.embed.ScriptingContainer;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
 /**
- * Created by rajatv on 4/22/15.
+ * HBase Shell Interpreter. (https://wiki.apache.org/hadoop/Hbase/Shell)
  */
 public class HbaseInterpreter extends Interpreter {
-  Logger logger = LoggerFactory.getLogger(HbaseInterpreter.class);
-  int commandTimeOut = 600000;
-  ScriptingContainer scriptingContainer;
+  private Logger logger = LoggerFactory.getLogger(HbaseInterpreter.class);
+  private ScriptingContainer scriptingContainer;
 
-  StringWriter writer;
+  private StringWriter writer;
 
   static {
     Interpreter.register("hbase", "hbase", HbaseInterpreter.class.getName(),
