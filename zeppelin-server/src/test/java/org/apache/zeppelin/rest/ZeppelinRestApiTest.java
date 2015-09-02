@@ -149,3 +149,4 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals("<p>markdown restarted</p>\n", p.getResult().message());
   }
 }
+

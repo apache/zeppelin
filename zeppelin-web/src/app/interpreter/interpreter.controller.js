@@ -64,7 +64,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
 
     var request = {
-      option : angular.copy($scope.interpreterSettings[index].option),
       properties : angular.copy($scope.interpreterSettings[index].properties),
     };
 
@@ -169,7 +168,6 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     $scope.newInterpreterSetting = {
       name : undefined,
       group : undefined,
-      option : { remote : true },
       properties : {}
     };
     emptyNewProperty($scope.newInterpreterSetting);

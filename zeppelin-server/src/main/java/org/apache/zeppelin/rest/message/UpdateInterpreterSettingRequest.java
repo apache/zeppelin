@@ -25,18 +25,16 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
  *
  */
 public class UpdateInterpreterSettingRequest {
-  InterpreterOption option;
+
+  // option was deprecated
   Properties properties;
 
   public UpdateInterpreterSettingRequest(InterpreterOption option,
       Properties properties) {
     super();
-    this.option = option;
     this.properties = properties;
   }
-  public InterpreterOption getOption() {
-    return option;
-  }
+
   public Properties getProperties() {
     return properties;
   }
