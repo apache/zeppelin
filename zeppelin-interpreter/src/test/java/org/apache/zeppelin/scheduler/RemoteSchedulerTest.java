@@ -62,7 +62,8 @@ public class RemoteSchedulerTest {
         MockInterpreterA.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
-        env
+        env,
+        10 * 1000
         );
 
     intpGroup.add(intpA);
@@ -89,6 +90,7 @@ public class RemoteSchedulerTest {
       @Override
       protected Object jobRun() throws Throwable {
         intpA.interpret("1000", new InterpreterContext(
+            "note",
             "jobId",
             "title",
             "text",

@@ -8,6 +8,9 @@ Contributing to Zeppelin (Source code, Documents, Image, Website) means you agre
 3. Contribute your patch via Pull Request.
 
 
+## SourceControl Workflow
+Zeppelin follows [Fork & Pull] (https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git:-Fork,-Branching,-Commits,-and-Pull-Request) model.
+
 ## Setting up
 Here are some things you will need to build and test Zeppelin. 
 
@@ -17,7 +20,29 @@ Zeppelin uses Git for it's SCM system. Hosted by github.com. `https://github.com
 
 ### Integrated Development Environment(IDE)
 
-You are free to use whatever IDE you prefer, or your favorite command line editor. 
+You are free to use whatever IDE you prefer, or your favorite command line editor.
+ 
+### Project Structure
+
+Zeppelin project is based on Maven. Maven works by convention & defines [directory structure] (https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html) for a project.
+The top level pom.xml describes the basic project structure. Currently Zeppelin has the following modules.
+
+    <module>zeppelin-interpreter</module>
+    <module>zeppelin-zengine</module>
+    <module>spark</module>
+    <module>markdown</module>
+    <module>angular</module>
+    <module>shell</module>
+    <module>hive</module>
+    <module>tajo</module>
+    <module>flink</module>
+    <module>ignite</module>
+    <module>lens</module>
+    <module>cassandra</module>
+    <module>zeppelin-web</module>
+    <module>zeppelin-server</module>
+    <module>zeppelin-distribution</module>
+    
 
 ### Code convention
 We are following Google Code style:
@@ -73,6 +98,23 @@ To build with specific spark / hadoop version
 ```
 mvn install -Phadoop-2.2 -Dhadoop.version=2.2.0 -Pspark-1.3 -Dspark.version=1.3.0
 ```
+
+## Tests
+Each new File should have its own accompanying unit tests. Each new interpreter should have come with its tests.
+
+  
+Zeppelin has 3 types of tests:
+
+  1. Unit Tests: The unit tests run as part of each package's build. E.g SparkInterpeter Module's unit test is SparkInterpreterTest
+  2. Integration Tests: The intergration tests run after all modules are build. The integration tests launch an instance of Zeppelin server. ZeppelinRestApiTest is an example integration test. 
+  3. GUI integration tests: These tests validate the Zeppelin UI elements. These tests require a running Zepplein server and lauches a web browser to validate Notebook UI elements like Notes and their execution. See ZeppelinIT as an example.  
+
+Currently the GUI integration tests are not run in the Maven and are only run in the CI environment when the pull request is submitted to github. Make sure to watch the [CI results] (https://travis-ci.org/apache/incubator-zeppelin/pull_requests) for your pull request.
+
+## Continuous Integration
+
+Zeppelin uses Travis for CI. In the project root there is .travis.yml that configures CI and [publishes CI results] (https://travis-ci.org/apache/incubator-zeppelin/builds)
+  
 
 ## Run Zepplin server in development mode
 

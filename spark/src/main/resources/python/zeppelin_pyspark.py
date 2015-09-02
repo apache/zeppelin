@@ -31,39 +31,6 @@ from pyspark.serializers import MarshalSerializer, PickleSerializer
 # for back compatibility
 from pyspark.sql import SQLContext, HiveContext, SchemaRDD, Row
 
-client = GatewayClient(port=int(sys.argv[1]))
-gateway = JavaGateway(client)
-
-java_import(gateway.jvm, "org.apache.spark.SparkEnv")
-java_import(gateway.jvm, "org.apache.spark.SparkConf")
-java_import(gateway.jvm, "org.apache.spark.api.java.*")
-java_import(gateway.jvm, "org.apache.spark.api.python.*")
-java_import(gateway.jvm, "org.apache.spark.mllib.api.python.*")
-
-intp = gateway.entry_point
-intp.onPythonScriptInitialized()
-
-jsc = intp.getJavaSparkContext()
-
-if jsc.version().startswith("1.2"):
-  java_import(gateway.jvm, "org.apache.spark.sql.SQLContext")
-  java_import(gateway.jvm, "org.apache.spark.sql.hive.HiveContext")
-  java_import(gateway.jvm, "org.apache.spark.sql.hive.LocalHiveContext")
-  java_import(gateway.jvm, "org.apache.spark.sql.hive.TestHiveContext")
-elif jsc.version().startswith("1.3"):
-  java_import(gateway.jvm, "org.apache.spark.sql.*")
-  java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
-
-
-java_import(gateway.jvm, "scala.Tuple2")
-
-jconf = intp.getSparkConf()
-conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
-sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
-sqlc = SQLContext(sc, intp.getSQLContext())
-
-z = intp.getZeppelinContext()
-
 class Logger(object):
   def __init__(self):
     self.out = ""
@@ -77,9 +44,86 @@ class Logger(object):
   def reset(self):
     self.out = ""
 
+
+class PyZeppelinContext(dict):
+  def __init__(self, zc):
+    self.z = zc
+
+  def show(self, obj):
+    from pyspark.sql import DataFrame
+    if isinstance(obj, DataFrame):
+      print gateway.jvm.org.apache.zeppelin.spark.ZeppelinContext.showDF(self.z, obj._jdf)
+    else:
+      print str(obj)
+
+  # By implementing special methods it makes operating on it more Pythonic
+  def __setitem__(self, key, item):
+    self.z.put(key, item)
+
+  def __getitem__(self, key):
+    return self.z.get(key)
+
+  def __delitem__(self, key):
+    self.z.remove(key)
+
+  def __contains__(self, item):
+    return self.z.containsKey(item)
+
+  def add(self, key, value):
+    self.__setitem__(key, value)
+
+  def put(self, key, value):
+    self.__setitem__(key, value)
+
+  def get(self, key):
+    return self.__getitem__(key)
+
+
 output = Logger()
 sys.stdout = output
 sys.stderr = output
+
+client = GatewayClient(port=int(sys.argv[1]))
+sparkVersion = sys.argv[2]
+
+if sparkVersion.startswith("1.4"):
+  gateway = JavaGateway(client, auto_convert = True)
+else:
+  gateway = JavaGateway(client)
+
+java_import(gateway.jvm, "org.apache.spark.SparkEnv")
+java_import(gateway.jvm, "org.apache.spark.SparkConf")
+java_import(gateway.jvm, "org.apache.spark.api.java.*")
+java_import(gateway.jvm, "org.apache.spark.api.python.*")
+java_import(gateway.jvm, "org.apache.spark.mllib.api.python.*")
+
+intp = gateway.entry_point
+intp.onPythonScriptInitialized()
+
+jsc = intp.getJavaSparkContext()
+
+if sparkVersion.startswith("1.2"):
+  java_import(gateway.jvm, "org.apache.spark.sql.SQLContext")
+  java_import(gateway.jvm, "org.apache.spark.sql.hive.HiveContext")
+  java_import(gateway.jvm, "org.apache.spark.sql.hive.LocalHiveContext")
+  java_import(gateway.jvm, "org.apache.spark.sql.hive.TestHiveContext")
+elif sparkVersion.startswith("1.3"):
+  java_import(gateway.jvm, "org.apache.spark.sql.*")
+  java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
+elif sparkVersion.startswith("1.4"):
+  java_import(gateway.jvm, "org.apache.spark.sql.*")
+  java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
+
+
+java_import(gateway.jvm, "scala.Tuple2")
+
+jconf = intp.getSparkConf()
+conf = SparkConf(_jvm = gateway.jvm, _jconf = jconf)
+sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
+sqlc = SQLContext(sc, intp.getSQLContext())
+sqlContext = sqlc
+
+z = PyZeppelinContext(intp.getZeppelinContext())
 
 while True :
   req = intp.getStatements()
@@ -89,11 +133,12 @@ while True :
     final_code = None
 
     for s in stmts:
-      if s == None or len(s.strip()) == 0:
+      if s == None:
         continue
 
       # skip comment
-      if s.strip().startswith("#"):
+      s_stripped = s.strip()
+      if len(s_stripped) == 0 or s_stripped.startswith("#"):
         continue
 
       if final_code:
@@ -114,6 +159,6 @@ while True :
        excInnerError = excInnerError[innerErrorStart:]
     intp.setStatementsFinished(excInnerError + str(sys.exc_info()), True)
   except:
-    intp.setStatementsFinished(str(sys.exc_info()), True)
+    intp.setStatementsFinished(traceback.format_exc(), True)
 
   output.reset()

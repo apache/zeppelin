@@ -28,22 +28,7 @@
 <property>
   <name>zeppelin.server.port</name>
   <value>8080</value>
-  <description>Server port. port+1 is used for web socket.</description>
-</property>
-
-<property>
-  <name>zeppelin.websocket.addr</name>
-  <value>0.0.0.0</value>
-  <description>Testing websocket address</description>
-</property>
-
-<!-- If the port value is negative, then it'll default to the server
-     port + 1.
-  -->
-<property>
-  <name>zeppelin.websocket.port</name>
-  <value>-1</value>
-  <description>Testing websocket port</description>
+  <description>Server port.</description>
 </property>
 
 <property>
@@ -51,6 +36,40 @@
   <value>notebook</value>
   <description>path or URI for notebook persist</description>
 </property>
+
+<property>
+  <name>zeppelin.notebook.homescreen</name>
+  <value></value>
+  <description>id of notebook to be displayed in homescreen. ex) 2A94M5J1Z Empty value displays default home screen</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.homescreen.hide</name>
+  <value>false</value>
+  <description>hide homescreen notebook from list when this value set to true</description>
+</property>
+
+
+<!-- If used S3 to storage the notebooks, it is necessary the following folder structure bucketname/username/notebook/ -->
+<!--
+<property>
+  <name>zeppelin.notebook.s3.user</name>
+  <value>user</value>
+  <description>user name for s3 folder structure</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.s3.bucket</name>
+  <value>zeppelin</value>
+  <description>bucket name for notebook storage</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.S3NotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+-->
 
 <property>
   <name>zeppelin.notebook.storage</name>
@@ -66,9 +85,16 @@
 
 <property>
   <name>zeppelin.interpreters</name>
-  <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.angular.AngularInterpreter,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.hive.HiveInterpreter,org.apache.zeppelin.tajo.TajoInterpreter,org.apache.zeppelin.hbase.HbaseInterpreter</value>
+  <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.angular.AngularInterpreter,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.hive.HiveInterpreter,org.apache.zeppelin.tajo.TajoInterpreter,org.apache.zeppelin.flink.FlinkInterpreter,org.apache.zeppelin.lens.LensInterpreter,org.apache.zeppelin.ignite.IgniteInterpreter,org.apache.zeppelin.ignite.IgniteSqlInterpreter,org.apache.zeppelin.cassandra.CassandraInterpreter,org.apache.zeppelin.geode.GeodeOqlInterpreter,org.apache.zeppelin.postgresql.PostgreSqlInterpreter,org.apache.zeppelin.hbase.HbaseInterpreter, org.apache.zeppelin.phoenix.PhoenixInterpreter,org.apache.zeppelin.kylin.KylinInterpreter</value>
   <description>Comma separated interpreter configurations. First interpreter become a default</description>
 </property>
+
+<property>
+  <name>zeppelin.interpreter.connect.timeout</name>
+  <value>30000</value>
+  <description>Interpreter process connect timeout in msec.</description>
+</property>
+
 
 <property>
   <name>zeppelin.ssl</name>
@@ -84,8 +110,8 @@
 
 <property>
   <name>zeppelin.ssl.keystore.path</name>
-  <value>conf/keystore</value>
-  <description>Path to keystore relative to Zeppelin home</description>
+  <value>keystore</value>
+  <description>Path to keystore relative to Zeppelin configuration directory</description>
 </property>
 
 <property>
@@ -110,8 +136,8 @@
 
 <property>
   <name>zeppelin.ssl.truststore.path</name>
-  <value>conf/truststore</value>
-  <description>Path to truststore relative to Zeppelin home. Defaults to the keystore path</description>
+  <value>truststore</value>
+  <description>Path to truststore relative to Zeppelin configuration directory. Defaults to the keystore path</description>
 </property>
 
 <property>
@@ -127,6 +153,12 @@
   <description>Truststore password. Can be obfuscated by the Jetty Password tool. Defaults to the keystore password</description>
 </property>
 -->
+
+<property>
+  <name>zeppelin.server.allowed.origins</name>
+  <value>*</value>
+  <description>Allowed sources for REST and WebSocket requests (i.e. http://onehost:8080,http://otherhost.com). If you leave * you are vulnerable to https://issues.apache.org/jira/browse/ZEPPELIN-173</description>
+</property>
 
 </configuration>
 

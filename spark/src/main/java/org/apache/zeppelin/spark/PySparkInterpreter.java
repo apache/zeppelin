@@ -48,9 +48,9 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
-import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,6 +137,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     CommandLine cmd = CommandLine.parse(getProperty("zeppelin.pyspark.python"));
     cmd.addArgument(scriptPath, false);
     cmd.addArgument(Integer.toString(port), false);
+    cmd.addArgument(getJavaSparkContext().version(), false);
     executor = new DefaultExecutor();
     outputStream = new ByteArrayOutputStream();
     PipedOutputStream ps = new PipedOutputStream();
@@ -157,18 +158,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     try {
       Map env = EnvironmentUtils.getProcEnvironment();
-
-      String pythonPath = (String) env.get("PYTHONPATH");
-      if (pythonPath == null) {
-        pythonPath = "";
-      } else {
-        pythonPath += ":";
-      }
-
-      pythonPath += getSparkHome() + "/python/lib/py4j-0.8.2.1-src.zip:"
-          + getSparkHome() + "/python";
-
-      env.put("PYTHONPATH", pythonPath);
 
       executor.execute(cmd, env, this);
       pythonscriptRunning = true;
@@ -298,7 +287,8 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     if (!sparkInterpreter.getSparkContext().version().startsWith("1.2") &&
-        !sparkInterpreter.getSparkContext().version().startsWith("1.3")) {
+        !sparkInterpreter.getSparkContext().version().startsWith("1.3") &&
+        !sparkInterpreter.getSparkContext().version().startsWith("1.4")) {
       return new InterpreterResult(Code.ERROR, "pyspark "
           + sparkInterpreter.getSparkContext().version() + " is not supported");
     }

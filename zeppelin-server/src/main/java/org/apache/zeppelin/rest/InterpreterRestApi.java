@@ -32,6 +32,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
@@ -115,9 +116,11 @@ public class InterpreterRestApi {
           UpdateInterpreterSettingRequest.class);
       interpreterFactory.setPropertyAndRestart(settingId, p.getOption(), p.getProperties());
     } catch (InterpreterException e) {
-      return new JsonResponse(Status.NOT_FOUND, e.getMessage(), e).build();
+      return new JsonResponse(
+          Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
     } catch (IOException e) {
-      return new JsonResponse(Status.INTERNAL_SERVER_ERROR, e.getMessage(), e).build();
+      return new JsonResponse(
+          Status.INTERNAL_SERVER_ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
     }
     InterpreterSetting setting = interpreterFactory.get(settingId);
     if (setting == null) {
@@ -146,7 +149,8 @@ public class InterpreterRestApi {
     try {
       interpreterFactory.restart(settingId);
     } catch (InterpreterException e) {
-      return new JsonResponse(Status.NOT_FOUND, e.getMessage(), e).build();
+      return new JsonResponse(
+          Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
     }
     InterpreterSetting setting = interpreterFactory.get(settingId);
     if (setting == null) {

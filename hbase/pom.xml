@@ -36,6 +36,8 @@
     <properties>
         <hbase.hbase.version>1.0.0</hbase.hbase.version>
         <hbase.hadoop.version>2.6.0</hbase.hadoop.version>
+        <jruby.version>1.6.8</jruby.version>
+        <protobuf.version>2.4.1</protobuf.version>
     </properties>
 
     <dependencies>

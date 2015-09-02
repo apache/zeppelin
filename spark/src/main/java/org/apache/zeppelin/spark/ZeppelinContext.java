@@ -277,26 +277,30 @@ public class ZeppelinContext extends HashMap<String, Object> {
     }
 
     if (cls.isInstance(o)) {
-      out.print(showRDD(sc, interpreterContext, o, maxResult));
+      out.print(showDF(sc, interpreterContext, o, maxResult));
     } else {
       out.print(o.toString());
     }
   }
 
-  public static String showRDD(SparkContext sc,
+  public static String showDF(ZeppelinContext z, Object df) {
+    return showDF(z.sc, z.interpreterContext, df, z.maxResult);
+  }
+
+  public static String showDF(SparkContext sc,
       InterpreterContext interpreterContext,
-      Object rdd, int maxResult) {
+      Object df, int maxResult) {
     Object[] rows = null;
     Method take;
     String jobGroup = "zeppelin-" + interpreterContext.getParagraphId();
     sc.setJobGroup(jobGroup, "Zeppelin", false);
 
     try {
-      take = rdd.getClass().getMethod("take", int.class);
-      rows = (Object[]) take.invoke(rdd, maxResult + 1);
+      take = df.getClass().getMethod("take", int.class);
+      rows = (Object[]) take.invoke(df, maxResult + 1);
 
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
+        | IllegalArgumentException | InvocationTargetException | ClassCastException e) {
       sc.clearJobGroup();
       throw new InterpreterException(e);
     }
@@ -307,8 +311,8 @@ public class ZeppelinContext extends HashMap<String, Object> {
     Method queryExecution;
     QueryExecution qe;
     try {
-      queryExecution = rdd.getClass().getMethod("queryExecution");
-      qe = (QueryExecution) queryExecution.invoke(rdd);
+      queryExecution = df.getClass().getMethod("queryExecution");
+      qe = (QueryExecution) queryExecution.invoke(df);
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
       throw new InterpreterException(e);
@@ -466,10 +470,26 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
 
-
-  public Object angular(String name) {
+  private AngularObject getAngularObject(String name, InterpreterContext interpreterContext) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    AngularObject ao = registry.get(name);
+    String noteId = interpreterContext.getNoteId();
+    // try get local object
+    AngularObject ao = registry.get(name, interpreterContext.getNoteId());
+    if (ao == null) {
+      // then global object
+      ao = registry.get(name, null);
+    }
+    return ao;
+  }
+
+
+  /**
+   * Get angular object. Look up local registry first and then global registry
+   * @param name variable name
+   * @return value
+   */
+  public Object angular(String name) {
+    AngularObject ao = getAngularObject(name, interpreterContext);
     if (ao == null) {
       return null;
     } else {
@@ -477,34 +497,205 @@ public class ZeppelinContext extends HashMap<String, Object> {
     }
   }
 
+  /**
+   * Get angular object. Look up global registry
+   * @param name variable name
+   * @return value
+   */
+  public Object angularGlobal(String name) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    AngularObject ao = registry.get(name, null);
+    if (ao == null) {
+      return null;
+    } else {
+      return ao.get();
+    }
+  }
+
+  /**
+   * Create angular variable in local registry and bind with front end Angular display system.
+   * If variable exists, it'll be overwritten.
+   * @param name name of the variable
+   * @param o value
+   */
   public void angularBind(String name, Object o) {
-    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    if (registry.get(name) == null) {
-      registry.add(name, o);
-    } else {
-      registry.get(name).set(o);
-    }
+    angularBind(name, o, interpreterContext.getNoteId());
   }
 
-  public void angularBind(String name, Object o, AngularObjectWatcher w) {
-    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    if (registry.get(name) == null) {
-      registry.add(name, o);
-    } else {
-      registry.get(name).set(o);
-    }
-    angularWatch(name, w);
+  /**
+   * Create angular variable in global registry and bind with front end Angular display system.
+   * If variable exists, it'll be overwritten.
+   * @param name name of the variable
+   * @param o value
+   */
+  public void angularBindGlobal(String name, Object o) {
+    angularBind(name, o, (String) null);
   }
 
-  public void angularWatch(String name, AngularObjectWatcher w) {
-    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    if (registry.get(name) != null) {
-      registry.get(name).addWatcher(w);
-    }
+  /**
+   * Create angular variable in local registry and bind with front end Angular display system.
+   * If variable exists, value will be overwritten and watcher will be added.
+   * @param name name of variable
+   * @param o value
+   * @param watcher watcher of the variable
+   */
+  public void angularBind(String name, Object o, AngularObjectWatcher watcher) {
+    angularBind(name, o, interpreterContext.getNoteId(), watcher);
+  }
+
+  /**
+   * Create angular variable in global registry and bind with front end Angular display system.
+   * If variable exists, value will be overwritten and watcher will be added.
+   * @param name name of variable
+   * @param o value
+   * @param watcher watcher of the variable
+   */
+  public void angularBindGlobal(String name, Object o, AngularObjectWatcher watcher) {
+    angularBind(name, o, null, watcher);
+  }
+
+  /**
+   * Add watcher into angular variable (local registry)
+   * @param name name of the variable
+   * @param watcher watcher
+   */
+  public void angularWatch(String name, AngularObjectWatcher watcher) {
+    angularWatch(name, interpreterContext.getNoteId(), watcher);
+  }
+
+  /**
+   * Add watcher into angular variable (global registry)
+   * @param name name of the variable
+   * @param watcher watcher
+   */
+  public void angularWatchGlobal(String name, AngularObjectWatcher watcher) {
+    angularWatch(name, null, watcher);
   }
 
 
   public void angularWatch(String name,
+      final scala.Function2<Object, Object, Unit> func) {
+    angularWatch(name, interpreterContext.getNoteId(), func);
+  }
+
+  public void angularWatchGlobal(String name,
+      final scala.Function2<Object, Object, Unit> func) {
+    angularWatch(name, null, func);
+  }
+
+  public void angularWatch(
+      String name,
+      final scala.Function3<Object, Object, InterpreterContext, Unit> func) {
+    angularWatch(name, interpreterContext.getNoteId(), func);
+  }
+
+  public void angularWatchGlobal(
+      String name,
+      final scala.Function3<Object, Object, InterpreterContext, Unit> func) {
+    angularWatch(name, null, func);
+  }
+
+  /**
+   * Remove watcher from angular variable (local)
+   * @param name
+   * @param watcher
+   */
+  public void angularUnwatch(String name, AngularObjectWatcher watcher) {
+    angularUnwatch(name, interpreterContext.getNoteId(), watcher);
+  }
+
+  /**
+   * Remove watcher from angular variable (global)
+   * @param name
+   * @param watcher
+   */
+  public void angularUnwatchGlobal(String name, AngularObjectWatcher watcher) {
+    angularUnwatch(name, null, watcher);
+  }
+
+
+  /**
+   * Remove all watchers for the angular variable (local)
+   * @param name
+   */
+  public void angularUnwatch(String name) {
+    angularUnwatch(name, interpreterContext.getNoteId());
+  }
+
+  /**
+   * Remove all watchers for the angular variable (global)
+   * @param name
+   */
+  public void angularUnwatchGlobal(String name) {
+    angularUnwatch(name, (String) null);
+  }
+
+  /**
+   * Remove angular variable and all the watchers.
+   * @param name
+   */
+  public void angularUnbind(String name) {
+    String noteId = interpreterContext.getNoteId();
+    angularUnbind(name, noteId);
+  }
+
+  /**
+   * Remove angular variable and all the watchers.
+   * @param name
+   */
+  public void angularUnbindGlobal(String name) {
+    angularUnbind(name, null);
+  }
+
+  /**
+   * Create angular variable in local registry and bind with front end Angular display system.
+   * If variable exists, it'll be overwritten.
+   * @param name name of the variable
+   * @param o value
+   */
+  private void angularBind(String name, Object o, String noteId) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+
+    if (registry.get(name, noteId) == null) {
+      registry.add(name, o, noteId);
+    } else {
+      registry.get(name, noteId).set(o);
+    }
+  }
+
+  /**
+   * Create angular variable in local registry and bind with front end Angular display system.
+   * If variable exists, value will be overwritten and watcher will be added.
+   * @param name name of variable
+   * @param o value
+   * @param watcher watcher of the variable
+   */
+  private void angularBind(String name, Object o, String noteId, AngularObjectWatcher watcher) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+
+    if (registry.get(name, noteId) == null) {
+      registry.add(name, o, noteId);
+    } else {
+      registry.get(name, noteId).set(o);
+    }
+    angularWatch(name, watcher);
+  }
+
+  /**
+   * Add watcher into angular binding variable
+   * @param name name of the variable
+   * @param watcher watcher
+   */
+  private void angularWatch(String name, String noteId, AngularObjectWatcher watcher) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+
+    if (registry.get(name, noteId) != null) {
+      registry.get(name, noteId).addWatcher(watcher);
+    }
+  }
+
+
+  private void angularWatch(String name, String noteId,
       final scala.Function2<Object, Object, Unit> func) {
     AngularObjectWatcher w = new AngularObjectWatcher(getInterpreterContext()) {
       @Override
@@ -513,11 +704,12 @@ public class ZeppelinContext extends HashMap<String, Object> {
         func.apply(newObject, newObject);
       }
     };
-    angularWatch(name, w);
+    angularWatch(name, noteId, w);
   }
 
-  public void angularWatch(
+  private void angularWatch(
       String name,
+      String noteId,
       final scala.Function3<Object, Object, InterpreterContext, Unit> func) {
     AngularObjectWatcher w = new AngularObjectWatcher(getInterpreterContext()) {
       @Override
@@ -526,25 +718,38 @@ public class ZeppelinContext extends HashMap<String, Object> {
         func.apply(oldObject, newObject, context);
       }
     };
-    angularWatch(name, w);
+    angularWatch(name, noteId, w);
   }
 
-  public void angularUnwatch(String name, AngularObjectWatcher w) {
+  /**
+   * Remove watcher
+   * @param name
+   * @param watcher
+   */
+  private void angularUnwatch(String name, String noteId, AngularObjectWatcher watcher) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    if (registry.get(name) != null) {
-      registry.get(name).removeWatcher(w);
+    if (registry.get(name, noteId) != null) {
+      registry.get(name, noteId).removeWatcher(watcher);
     }
   }
 
-  public void angularUnwatch(String name) {
+  /**
+   * Remove all watchers for the angular variable
+   * @param name
+   */
+  private void angularUnwatch(String name, String noteId) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    if (registry.get(name) != null) {
-      registry.get(name).clearAllWatchers();
+    if (registry.get(name, noteId) != null) {
+      registry.get(name, noteId).clearAllWatchers();
     }
   }
 
-  public void angularUnbind(String name) {
+  /**
+   * Remove angular variable and all the watchers.
+   * @param name
+   */
+  private void angularUnbind(String name, String noteId) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    registry.remove(name);
+    registry.remove(name, noteId);
   }
 }
