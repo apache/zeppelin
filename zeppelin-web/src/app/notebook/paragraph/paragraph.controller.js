@@ -570,7 +570,9 @@ angular.module('zeppelinWebApp')
       });
       */
 
-      // autocomplete on 'ctrl+.'
+      // Auto-complete on 'TAB' key. 
+      // (The 'ctrl+.' shortcut is deprecated but kept for backward compatibility)
+      $scope.editor.commands.bindKey('tab', 'startAutocomplete');
       $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
       $scope.editor.commands.bindKey('ctrl-space', null);
 
