@@ -437,6 +437,7 @@ angular.module('zeppelinWebApp')
     var langTools = ace.require('ace/ext/language_tools');
     var Range = ace.require('ace/range').Range;
 
+    _editor.$blockScrolling = Infinity;
     $scope.editor = _editor;
     _editor.$blockScrolling = Infinity;
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
