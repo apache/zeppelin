@@ -441,7 +441,6 @@
               <exclude>reports/**</exclude>
               <exclude>**/.idea/</exclude>
               <exclude>**/*.iml</exclude>
-              <exclude>.git/</exclude>
               <exclude>.gitignore</exclude>
               <exclude>.repository/</exclude>
               <exclude>**/*.diff</exclude>
@@ -498,6 +497,10 @@
 
               <!-- bundled from jekyll -->
               <exclude>docs/assets/themes/zeppelin/css/syntax.css</exclude>
+
+              <!-- frontend build tools -->
+              <exclude>zeppelin-web/node/</exclude>
+              <exclude>zeppelin-web/node_modules/</exclude>
 
               <!-- docs (website) build target dir -->
               <exclude>docs/_site/**</exclude>
