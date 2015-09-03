@@ -352,6 +352,7 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+<<<<<<< HEAD
         <artifactId>maven-shade-plugin</artifactId>
         <version>2.3</version>
         <configuration>
@@ -392,21 +393,6 @@
             <goals>
               <goal>copy</goal>
             </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/../../interpreter/spark</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>false</overWriteSnapshots>
-              <overWriteIfNewer>true</overWriteIfNewer>
-              <includeScope>runtime</includeScope>              
-              <artifactItems>
-                <artifactItem>
-                  <groupId>${project.groupId}</groupId>
-                  <artifactId>${project.artifactId}</artifactId>
-                  <version>${project.version}</version>
-                  <type>${project.packaging}</type>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
           </execution>
         </executions>
       </plugin>
