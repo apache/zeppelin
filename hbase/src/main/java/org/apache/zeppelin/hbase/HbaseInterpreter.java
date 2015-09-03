@@ -35,7 +35,21 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * HBase Shell Interpreter. (https://wiki.apache.org/hadoop/Hbase/Shell)
+ * Support for Hbase Shell. All the commands documented here
+ * https://wiki.apache.org/hadoop/Hbase/Shell is supported.
+ *
+ * Requirements:
+ * Hbase Shell should be installed on the same machine. To be more specific, the following dir.
+ * should be available: https://github.com/apache/hbase/tree/master/hbase-shell/src/main/ruby
+ * Hbase Shell should be able to connect to the Hbase cluster from terminal. This makes sure
+ * that the client is configured properly.
+ *
+ * The interpreter takes 3 config parameters:
+ * hbase.home: Root dir. where hbase is installed. Default is /usr/lib/hbase/
+ * hbase.ruby.sources: Dir where shell ruby code is installed.
+ *                          Path is relative to hbase.home. Default: lib/ruby
+ * hbase.irb.load: (Testing only) Default is true.
+ *                      Whether to load irb in the interpreter.
  */
 public class HbaseInterpreter extends Interpreter {
   private Logger logger = LoggerFactory.getLogger(HbaseInterpreter.class);
