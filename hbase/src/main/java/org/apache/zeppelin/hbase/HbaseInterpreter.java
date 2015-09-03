@@ -86,7 +86,11 @@ public class HbaseInterpreter extends Interpreter {
   }
 
   @Override
-  public void close() {}
+  public void close() {
+    if (this.scriptingContainer != null) {
+      this.scriptingContainer.terminate();
+    }
+  }
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext interpreterContext) {
