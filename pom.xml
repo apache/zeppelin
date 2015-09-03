@@ -112,8 +112,13 @@
     <gson.version>2.2</gson.version>
     <guava.version>15.0</guava.version>
 
+    <java.version>1.7</java.version>
+    <scala.version>2.10.4</scala.version>
+    <scala.binary.version>2.10</scala.binary.version>
+
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
+    <CodeCacheSize>512m</CodeCacheSize>
   </properties>
 
   <dependencyManagement>
@@ -216,12 +221,19 @@
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
       </plugin>
+
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
+        <version>3.3</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <encoding>UTF-8</encoding>
+          <maxmem>1024m</maxmem>
+          <fork>true</fork>
+          <compilerArgs>
+            <arg>-Xlint:all,-serial,-path</arg>
+          </compilerArgs>
         </configuration>
       </plugin>
       <!-- Test coverage plugin -->
@@ -558,6 +570,66 @@
                 <followSymlinks>false</followSymlinks>
               </fileset>
             </filesets>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>net.alchim31.maven</groupId>
+          <artifactId>scala-maven-plugin</artifactId>
+          <version>3.2.2</version>
+          <executions>
+            <execution>
+              <id>eclipse-add-source</id>
+              <goals>
+                <goal>add-source</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>scala-compile-first</id>
+              <phase>process-resources</phase>
+              <goals>
+                <goal>compile</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>scala-test-compile-first</id>
+              <phase>process-test-resources</phase>
+              <goals>
+                <goal>testCompile</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>attach-scaladocs</id>
+              <phase>verify</phase>
+              <goals>
+                <goal>doc-jar</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <scalaVersion>${scala.version}</scalaVersion>
+            <scalaCompatVersion>${scala.binary.version}</scalaCompatVersion>
+            <!--<recompileMode>incremental</recompileMode>-->
+            <useZincServer>true</useZincServer>
+            <args>
+              <arg>-unchecked</arg>
+              <arg>-deprecation</arg>
+              <arg>-feature</arg>
+            </args>
+            <jvmArgs>
+              <jvmArg>-Xms1024m</jvmArg>
+              <jvmArg>-Xmx1024m</jvmArg>
+              <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
+              <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
+              <jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
+            </jvmArgs>
+            <javacArgs>
+              <javacArg>-source</javacArg>
+              <javacArg>${java.version}</javacArg>
+              <javacArg>-target</javacArg>
+              <javacArg>${java.version}</javacArg>
+              <javacArg>-Xlint:all,-serial,-path</javacArg>
+            </javacArgs>
           </configuration>
         </plugin>
 
