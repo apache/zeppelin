@@ -28,7 +28,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Created by rajatv on 4/24/15.
+ * Tests for HBase Interpreter
  */
 public class HbaseInterpreterTest {
   private static Logger logger = LoggerFactory.getLogger(HbaseInterpreterTest.class);
