@@ -18,29 +18,27 @@ package org.apache.zeppelin.utils;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 
 /**
- * Created by joelz on 8/19/15.
+ * Tools for securing Zeppelin
  */
 public class SecurityUtils {
+
   public static Boolean isValidOrigin(String sourceHost, ZeppelinConfiguration conf)
       throws UnknownHostException, URISyntaxException {
     if (sourceHost == null){
       return false;
     }
+    String sourceHostUriHost = new URI(sourceHost).getHost();
+    String currentHost = InetAddress.getLocalHost().getHostName().toLowerCase();
 
-    URI sourceHostUri = new URI(sourceHost);
-    String currentHost = java.net.InetAddress.getLocalHost().getHostName().toLowerCase();
-    if (currentHost.equals(sourceHostUri.getHost()) ||
-            "localhost".equals(sourceHostUri.getHost()) ||
-            conf.getAllowedOrigins().contains(sourceHost) ||
-            conf.getAllowedOrigins().contains("*")) {
-      return true;
-    }
-
-    return false;
+    return conf.getAllowedOrigins().contains("*") ||
+            currentHost.equals(sourceHostUriHost) ||
+            "localhost".equals(sourceHostUriHost) ||
+            conf.getAllowedOrigins().contains(sourceHost);
   }
 }
