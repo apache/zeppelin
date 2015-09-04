@@ -1,0 +1,1 @@
+{"name":"md2","group":"md","properties":{"propname":"propvalue"},"interpreterGroup":[{"class":"org.apache.zeppelin.markdown.Markdown","name":"md"}]}
