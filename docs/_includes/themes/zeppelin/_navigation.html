@@ -1,0 +1,52 @@
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">
+            <img src="/assets/themes/zeppelin/img/zeppelin_logo.png" width="50" alt="I'm zeppelin">
+            Apache Zeppelin <small>(incubating)</small>
+          </a>
+        </div>
+        <nav class="navbar-collapse collapse" role="navigation">
+          <ul class="nav navbar-nav">
+            {% assign pages_list = site.pages %}
+            {% assign group = 'nav-left' %}
+            {% include JB/pages_list %}
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            {% assign pages_list = site.pages %}
+            {% assign group = 'nav-right' %}
+            {% include JB/pages_list %}
+            <li><a href="https://github.com/apache/incubator-zeppelin">GitHub</a></li>
+            <li id="apache">
+              <a href="#" data-toggle="dropdown" class="dropdown-toggle">Apache<b class="caret"></b></a>
+               <ul class="dropdown-menu">
+                <li><a href="http://www.apache.org/foundation/how-it-works.html">Apache Software Foundation</a></li>
+                <li><a href="http://www.apache.org/licenses/">Apache License</a></li>
+                <li><a href="http://www.apache.org/foundation/sponsorship.html">Sponsorship</a></li>
+                <li><a href="http://www.apache.org/foundation/thanks.html">Thanks</a></li>
+            </ul>
+            </li>
+          </ul>
+        </nav><!--/.navbar-collapse -->
+      </div>
+    </div>
+
+{% if page.title == "Zeppelin" %}
+<div class="jumbotron">
+  <div class="container">
+    <h1>Apache Zeppelin <small>(incubating)</small></h1>
+    <p>A web-based notebook that enables interactive data analytics. <br/>
+      You can make beautiful data-driven, interactive and collaborative documents with SQL, Scala and more.
+    </p>
+    <p><a href="http://youtu.be/_PQbVH_aO5E" target="_zeppelinVideo" class="btn btn-primary btn-lg bigFingerButton" role="button">Watch the video</a>
+
+       <a href="./download.html" class="btn btn-primary btn-lg bigFingerButton" role="button">Get Zeppelin</a></p>
+  </div>
+</div>
+{% endif %}
