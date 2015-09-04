@@ -17,12 +17,15 @@ Any contribution to Zeppelin (Source code, Documents, Image, Website) means you 
 
 <br />
 #### Getting the source code
-First of all, you need the website source code. The official location of mirror for Zeppelin is [https://github.com/apache/incubator-zeppelin](https://github.com/apache/incubator-zeppelin). Website is hosted in branch 'gh-pages'.
+Website is hosted in 'master' branch under `/docs/` dir.
+
+First of all, you need the website source code. The official location of mirror for Zeppelin is [https://github.com/apache/incubator-zeppelin](https://github.com/apache/incubator-zeppelin).
 
 Get the source code on your development machine using git.
 
 ```
-git clone -b gh-pages https://github.com/apache/incubator-zeppelin.git zeppelin-pages
+git clone https://github.com/apache/incubator-zeppelin.git
+cd docs
 ```
 
 <br />
@@ -30,16 +33,16 @@ git clone -b gh-pages https://github.com/apache/incubator-zeppelin.git zeppelin-
 
 To build, you'll need to install some prerequisites.
 
-Please check 'Build' section on [https://github.com/apache/incubator-zeppelin/blob/gh-pages/README.md#build](https://github.com/apache/incubator-zeppelin/blob/gh-pages/README.md#build)
+Please check 'Build' section on [docs/README.md](https://github.com/apache/incubator-zeppelin/blob/master/docs/README.md#build)
 
 <br />
 #### Run website in development mode
 
 While you're modifying website, you'll want to see preview of it.
 
-Please check 'Run' section on [https://github.com/apache/incubator-zeppelin/blob/gh-pages/README.md#run](https://github.com/apache/incubator-zeppelin/blob/gh-pages/README.md#run)
+Please check 'Run' section on [docs/README.md](https://github.com/apache/incubator-zeppelin/blob/master/docs/README.md#run)
 
-You'll able to access localhost:4000 with your webbrowser.
+You'll be able to access it on localhost:4000 with your webbrowser.
 
 <br />
 #### Pull request
@@ -50,7 +53,7 @@ When you're ready, just make a pull-request.
 <br />
 ### Alternative way
 
-You can directly edit .md files in github's web interface and make pullrequest.
+You can directly edit .md files in `/docs/` dir at github's web interface and make pull-request immediatly.
 
 
 <br />
