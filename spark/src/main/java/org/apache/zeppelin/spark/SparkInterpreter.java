@@ -280,7 +280,6 @@ public class SparkInterpreter extends Interpreter {
     }
 
     //TODO(jongyoul): Move these codes into PySparkInterpreter.java
-
     String pysparkBasePath = getSystemDefault("SPARK_HOME", "spark.home", null);
     File pysparkPath;
     if (null == pysparkBasePath) {
@@ -303,9 +302,12 @@ public class SparkInterpreter extends Interpreter {
     pythonLibUris.trimToSize();
     if (pythonLibs.length == pythonLibUris.size()) {
       conf.set("spark.yarn.dist.files", Joiner.on(",").join(pythonLibUris));
-      conf.set("spark.files", conf.get("spark.yarn.dist.files"));
+      if (!useSparkSubmit()) {
+        conf.set("spark.files", conf.get("spark.yarn.dist.files"));
+      }
       conf.set("spark.submit.pyArchives", Joiner.on(":").join(pythonLibs));
     }
+
 
     SparkContext sparkContext = new SparkContext(conf);
     return sparkContext;
@@ -313,6 +315,10 @@ public class SparkInterpreter extends Interpreter {
 
   static final String toString(Object o) {
     return (o instanceof String) ? (String) o : "";
+  }
+
+  private boolean useSparkSubmit() {
+    return null != System.getenv("SPARK_HOME");
   }
 
   public static String getSystemDefault(
