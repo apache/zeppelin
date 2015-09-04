@@ -128,6 +128,7 @@ public class SparkInterpreter extends Interpreter {
 
   private Map<String, Object> binder;
   private SparkEnv env;
+  private SparkVersion sparkVersion;
 
 
   public SparkInterpreter(Properties property) {
@@ -438,6 +439,8 @@ public class SparkInterpreter extends Interpreter {
       sc.taskScheduler().rootPool().addSchedulable(pool);
     }
 
+    sparkVersion = SparkVersion.fromVersionString(sc.version());
+
     sqlc = getSQLContext();
 
     dep = getDependencyResolver();
@@ -462,15 +465,9 @@ public class SparkInterpreter extends Interpreter {
                  + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
     intp.interpret("import org.apache.spark.SparkContext._");
 
-    if (sc.version().startsWith("1.1")) {
+    if (sparkVersion.oldSqlContextImplicits()) {
       intp.interpret("import sqlContext._");
-    } else if (sc.version().startsWith("1.2")) {
-      intp.interpret("import sqlContext._");
-    } else if (sc.version().startsWith("1.3")) {
-      intp.interpret("import sqlContext.implicits._");
-      intp.interpret("import sqlContext.sql");
-      intp.interpret("import org.apache.spark.sql.functions._");
-    } else if (sc.version().startsWith("1.4")) {
+    } else {
       intp.interpret("import sqlContext.implicits._");
       intp.interpret("import sqlContext.sql");
       intp.interpret("import org.apache.spark.sql.functions._");
@@ -488,14 +485,10 @@ public class SparkInterpreter extends Interpreter {
      */
 
     try {
-      if (sc.version().startsWith("1.1") || sc.version().startsWith("1.2")) {
+      if (sparkVersion.oldLoadFilesMethodName()) {
         Method loadFiles = this.interpreter.getClass().getMethod("loadFiles", Settings.class);
         loadFiles.invoke(this.interpreter, settings);
-      } else if (sc.version().startsWith("1.3")) {
-        Method loadFiles = this.interpreter.getClass().getMethod(
-                "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
-        loadFiles.invoke(this.interpreter, settings);
-      } else if (sc.version().startsWith("1.4")) {
+      } else {
         Method loadFiles = this.interpreter.getClass().getMethod(
                 "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
         loadFiles.invoke(this.interpreter, settings);
@@ -682,18 +675,10 @@ public class SparkInterpreter extends Interpreter {
         int[] progressInfo = null;
         try {
           Object finalStage = job.getClass().getMethod("finalStage").invoke(job);
-          if (sc.version().startsWith("1.0")) {
+          if (sparkVersion.getProgress1_0()) {          
             progressInfo = getProgressFromStage_1_0x(sparkListener, finalStage);
-          } else if (sc.version().startsWith("1.1")) {
-            progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);
-          } else if (sc.version().startsWith("1.2")) {
-            progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);
-          } else if (sc.version().startsWith("1.3")) {
-            progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);
-          } else if (sc.version().startsWith("1.4")) {
-            progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);
           } else {
-            continue;
+            progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);
           }
         } catch (IllegalAccessException | IllegalArgumentException
             | InvocationTargetException | NoSuchMethodException
@@ -817,5 +802,9 @@ public class SparkInterpreter extends Interpreter {
 
   public ZeppelinContext getZeppelinContext() {
     return z;
+  }
+
+  public SparkVersion getSparkVersion() {
+    return sparkVersion;
   }
 }

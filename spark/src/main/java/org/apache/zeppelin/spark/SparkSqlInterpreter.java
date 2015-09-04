@@ -162,7 +162,6 @@ public class SparkSqlInterpreter extends Interpreter {
     return sparkInterpreter.getProgress(context);
   }
 
-
   @Override
   public Scheduler getScheduler() {
     if (concurrentSQL()) {
