@@ -31,9 +31,8 @@ import java.lang.String;
 
 
 /**
- * Tests Hive Interpreter by running pre-determined commands against mock file system
+ * Tests Interpreter by running pre-determined commands against mock file system
  *
- * Created by rajbains on 8/29/15.
  */
 public class HDFSFileInterpreterTest extends TestCase {
 
@@ -168,7 +167,7 @@ public class HDFSFileInterpreterTest extends TestCase {
     MockFileSystem fs = null;
 
     public MockHDFSCommand(String url, String user, Logger logger) {
-      super(url, user, logger);
+      super(url, user, logger, 1000);
       fs = new MockFileSystem();
       fs.addMockData(getFileStatus);
       fs.addMockData(listStatus);

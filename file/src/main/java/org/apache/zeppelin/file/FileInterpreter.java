@@ -34,7 +34,6 @@ import java.util.*;
 /**
  * File interpreter for Zeppelin.
  *
- * @author rajbains
  */
 public abstract class FileInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(FileInterpreter.class);

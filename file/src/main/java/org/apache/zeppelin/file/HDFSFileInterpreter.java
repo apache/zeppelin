@@ -28,22 +28,21 @@ import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 /**
  * HDFS implementation of File interpreter for Zeppelin.
  *
- * @author rajbains
- *
  */
 public class HDFSFileInterpreter extends FileInterpreter {
   static final String HDFS_URL = "hdfs.url";
   static final String HDFS_USER = "hdfs.user";
+  static final String HDFS_MAXLENGTH = "hdfs.maxlength";
 
   static {
     Interpreter.register(
-      "hdfs",
-      "hdfs",
-      HDFSFileInterpreter.class.getName(),
-      new InterpreterPropertyBuilder()
-          .add(HDFS_URL, "http://c6401.ambari.apache.org:50070/webhdfs/v1/",
-              "The URL for WebHDFS")
-          .add(HDFS_USER, "hdfs", "The WebHDFS user").build());
+        "hdfs",
+        "hdfs",
+        HDFSFileInterpreter.class.getName(),
+        new InterpreterPropertyBuilder()
+            .add(HDFS_URL, "http://localhost:50070/webhdfs/v1/", "The URL for WebHDFS")
+            .add(HDFS_USER, "hdfs", "The WebHDFS user")
+            .add(HDFS_MAXLENGTH, "1000", "Maximum number of lines of results fetched").build());
   }
 
   Exception exceptionOnConnect = null;
@@ -53,7 +52,8 @@ public class HDFSFileInterpreter extends FileInterpreter {
   public void prepare() {
     String userName = getProperty(HDFS_USER);
     String hdfsUrl = getProperty(HDFS_URL);
-    cmd = new HDFSCommand(hdfsUrl, userName, logger);
+    int i = Integer.parseInt(getProperty(HDFS_MAXLENGTH));
+    cmd = new HDFSCommand(hdfsUrl, userName, logger, i);
     gson = new Gson();
   }
 

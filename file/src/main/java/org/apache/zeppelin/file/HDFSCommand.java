@@ -28,8 +28,6 @@ import org.slf4j.Logger;
 /**
  * Definition and HTTP invocation methods for all WebHDFS commands
  *
- * @author rajbains
- *
  */
 public class HDFSCommand {
 
@@ -72,16 +70,18 @@ public class HDFSCommand {
   // How to connect to WebHDFS
   String url = null;
   String user = null;
+  int maxLength = 0;
   Logger logger;
 
   // Define all the commands available
   public Op getFileStatus = new Op("GETFILESTATUS", HttpType.GET, 0);
   public Op listStatus = new Op("LISTSTATUS", HttpType.GET, 0);
 
-  public HDFSCommand(String url, String user, Logger logger) {
+  public HDFSCommand(String url, String user, Logger logger, int maxLength) {
     super();
     this.url = url;
     this.user = user;
+    this.maxLength = maxLength;
     this.logger = logger;
   }
 
@@ -140,8 +140,13 @@ public class HDFSCommand {
       String inputLine;
       StringBuffer response = new StringBuffer();
 
+      int i = 0;
       while ((inputLine = in.readLine()) != null) {
-        response.append(inputLine);
+        if (inputLine.length() < maxLength)
+          response.append(inputLine);
+        i++;
+        if (i >= maxLength)
+          break;
       }
       in.close();
       return response.toString();
