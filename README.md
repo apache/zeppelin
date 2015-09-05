@@ -128,9 +128,7 @@ If you set `SPARK_HOME`, you should deploy spark binary on the same location to 
 Yarn
 
     # ./conf/zeppelin-env.sh
-    export HADOOP_CONF_DIR=/path/to/hadoop_conf_dir
-  
-`HADOOP_CONF_DIR` should contains yarn-site.xml and core-site.xml.
+    export SPARK_HOME=/path/to/spark_dir
 
 ### Run
     ./bin/zeppelin-daemon.sh start
