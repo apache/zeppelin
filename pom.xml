@@ -602,13 +602,14 @@
                 <goal>testCompile</goal>
               </goals>
             </execution>
+            <!-- This is good, but somehow is failing on Cassandra interpreter :(
             <execution>
               <id>attach-scaladocs</id>
               <phase>verify</phase>
               <goals>
                 <goal>doc-jar</goal>
               </goals>
-            </execution>
+            </execution>-->
           </executions>
           <configuration>
             <scalaVersion>${scala.version}</scalaVersion>
