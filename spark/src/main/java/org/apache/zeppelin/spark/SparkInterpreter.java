@@ -318,7 +318,7 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private boolean useSparkSubmit() {
-    return null != System.getenv("SPARK_HOME");
+    return null != System.getenv("SPARK_SUBMIT");
   }
 
   public static String getSystemDefault(
