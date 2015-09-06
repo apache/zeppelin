@@ -26,6 +26,7 @@ public class SparkVersionTest {
   public void testSparkVersion() {
     // test equals
     assertTrue(SparkVersion.SPARK_1_2_0 == SparkVersion.fromVersionString("1.2.0"));
+    assertTrue(SparkVersion.SPARK_1_5_0 == SparkVersion.fromVersionString("1.5.0-SNAPSHOT"));
 
     // test newer than
     assertFalse(SparkVersion.SPARK_1_2_0.newerThan(SparkVersion.SPARK_1_2_0));
