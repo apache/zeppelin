@@ -17,10 +17,8 @@
 
 package org.apache.zeppelin.spark;
 import lombok.Getter;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
-import java.io.PrintWriter;
+
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -38,6 +36,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
+import org.apache.commons.io.FileUtils;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.ActiveJob;
 import com.google.common.base.Joiner;
@@ -184,6 +183,7 @@ public class SparkInterpreter extends Interpreter {
             intp = interpreter.intp();
             intp.setContextClassLoader();
             intp.initializeSynchronous();
+            completor = new SparkJLineCompletion(intp);
 
         }
 
@@ -213,10 +213,8 @@ public class SparkInterpreter extends Interpreter {
         }
 
 
-        public void init() { // todo: send SparkContext as a parameter
-            // sc is the variable of class .. should we send it as parama .. sqlc nad others too
+        public void init() {
 
-            completor = new SparkJLineCompletion(intp);
 
             dep = getDependencyResolver();
             z = new ZeppelinContext(sc, sqlc, null, dep, printStream,
@@ -250,6 +248,11 @@ public class SparkInterpreter extends Interpreter {
                     + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
             intp.interpret("import org.apache.spark.SparkContext._");
 
+            intp.interpret("import org.apache.lens.spark.LensContext");
+
+            intp.interpret("import org.apache.lens.ml.api._");
+
+
             if (sc.version().startsWith("1.1")) {
                 intp.interpret("import sqlContext._");
             } else if (sc.version().startsWith("1.2")) {
@@ -263,6 +266,7 @@ public class SparkInterpreter extends Interpreter {
                 intp.interpret("import sqlContext.sql");
                 intp.interpret("import org.apache.spark.sql.functions._");
             }
+
 
     /* Temporary disabling DisplayUtils. see https://issues.apache.org/jira/browse/ZEPPELIN-127
      *
@@ -557,6 +561,27 @@ logger.info("SparkContext created ");
   @Override
   public void open() {
 
+      String classDirName = System.getProperty("CUSTOM_SPARK_REPL_DIR_PATH");
+      if(classDirName!=null && "" != classDirName ){
+          File classDir=new File(classDirName);
+          if(classDir.exists()){
+              try {
+                  FileUtils.deleteDirectory(classDir);
+              } catch (IOException e) {
+                  logger.error("Not able to delete the classDir: "+classDir, e);
+
+              }
+          }
+         if( classDir.mkdirs()){
+             logger.info("classDir "+ classDir.getAbsolutePath()+" created");
+         }
+          
+      }
+      else{
+          logger.warn("property CUSTOM_SPARK_REPL_DIR_PATH is not set.");
+      }
+
+
       initialSparkInterpreterContext = new SparkInterpreterContext();
       sc=getSparkContext();
       sqlc=getSQLContext();
@@ -652,7 +677,7 @@ logger.info("SparkContext created ");
 
     @Override
   public List<String> completion(String buf, int cursor, InterpreterContext context) {
-        logger.info("TEST Completion pid="+ context.getParagraphId() + "  nid= "+context.getNoteId());
+        logger.debug("called  Completion pid="+ context.getParagraphId() + "  nid= "+context.getNoteId());
 
 
         Completion.ScalaCompleter c = null;
@@ -662,8 +687,10 @@ logger.info("SparkContext created ");
             logger.error("sparkInterpreterContextMap ExecutionException" ,e);
 
         }
-        Completion.Candidates ret = c.complete(buf, cursor);
-    return scala.collection.JavaConversions.asJavaList(ret.candidates());
+CompletionUtil cu=new CompletionUtil(buf,cursor);
+        Completion.Candidates ret = c.complete(cu.getEffectiveBuf(), cu.getEffectiveCur());
+        logger.debug("  Completion pid="+ context.getParagraphId() + "  nid= "+context.getNoteId()+"returning :"+ret.candidates().size()+" items.");
+        return scala.collection.JavaConversions.asJavaList(ret.candidates());
 
   }
 
@@ -1111,6 +1138,39 @@ return null;
             outputStreamMaxBytes =1048576; // 1mb
         }
 
+    }
+
+    private  static class CompletionUtil {
+        String buf;
+        int cur;
+        @Getter
+        String effectiveBuf;
+        @Getter
+        int effectiveCur;
+
+        CompletionUtil(String buf,int cur){
+            this.buf=buf;
+            this.cur=cur;
+            init();
+        }
+
+        private  void init() {
+            String[] parts = buf.split("\\n");
+            String cursorLine = parts[parts.length - 1];
+
+            for (String part : parts) {
+
+                if (cur <= (part.length()+1) ) {
+                    cursorLine = part;
+                    break;
+                }
+                cur -= part.length();
+                cur--;
+            }
+            effectiveBuf= cursorLine.trim(); 
+            effectiveCur=cur;
+
+        }
     }
 
 }
