@@ -49,7 +49,8 @@ public enum SparkVersion {
 
   public static SparkVersion fromVersionString(String versionString) {
     for (SparkVersion v : values()) {
-      if (v.toString().equals(versionString)) {
+      // Check for the beginning of the version string to allow for "1.5.0-SNAPSHOT"
+      if (versionString.startsWith(v.toString())) {
         return v;
       }
     }
