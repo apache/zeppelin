@@ -20,6 +20,9 @@ package org.apache.zeppelin.flink;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -45,8 +48,10 @@ import scala.Console;
 import scala.None;
 import scala.Option;
 import scala.Some;
+import scala.runtime.AbstractFunction0;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.IMain;
+import scala.tools.nsc.interpreter.Results;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
 
@@ -100,6 +105,9 @@ public class FlinkInterpreter extends Interpreter {
     
     imain = flinkIloop.intp();
 
+    org.apache.flink.api.scala.ExecutionEnvironment env = flinkIloop.scalaEnv();
+    env.getConfig().disableSysoutLogging();
+
     // prepare bindings
     imain.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
     binder = (Map<String, Object>) getValue("_binder");    
@@ -111,7 +119,7 @@ public class FlinkInterpreter extends Interpreter {
     
     imain.interpret("import org.apache.flink.api.scala._");
     imain.interpret("import org.apache.flink.api.common.functions._");
-    imain.bindValue("env", flinkIloop.scalaEnv());
+    imain.bindValue("env", env);
   }
 
   private boolean localMode() {
@@ -232,7 +240,7 @@ public class FlinkInterpreter extends Interpreter {
   }
 
   public InterpreterResult interpret(String[] lines, InterpreterContext context) {
-    IMain imain = flinkIloop.intp();
+    final IMain imain = flinkIloop.intp();
     
     String[] linesToRun = new String[lines.length + 1];
     for (int i = 0; i < lines.length; i++) {
@@ -240,13 +248,13 @@ public class FlinkInterpreter extends Interpreter {
     }
     linesToRun[lines.length] = "print(\"\")";
 
-    Console.setOut(out);
+    System.setOut(new PrintStream(out));
     out.reset();
     Code r = null;
 
     String incomplete = "";
     for (int l = 0; l < linesToRun.length; l++) {
-      String s = linesToRun[l];      
+      final String s = linesToRun[l];
       // check if next line starts with "." (but not ".." or "./") it is treated as an invocation
       if (l + 1 < linesToRun.length) {
         String nextLine = linesToRun[l + 1].trim();
@@ -256,9 +264,18 @@ public class FlinkInterpreter extends Interpreter {
         }
       }
 
+      final String currentCommand = incomplete;
+
       scala.tools.nsc.interpreter.Results.Result res = null;
       try {
-        res = imain.interpret(incomplete + s);
+        res = Console.withOut(
+          System.out,
+          new AbstractFunction0<Results.Result>() {
+            @Override
+            public Results.Result apply() {
+              return imain.interpret(currentCommand + s);
+            }
+          });
       } catch (Exception e) {
         logger.info("Interpreter exception", e);
         return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
@@ -328,5 +345,4 @@ public class FlinkInterpreter extends Interpreter {
   static final String toString(Object o) {
     return (o instanceof String) ? (String) o : "";
   }
-
 }
