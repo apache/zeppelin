@@ -438,6 +438,7 @@ angular.module('zeppelinWebApp')
     var Range = ace.require('ace/range').Range;
 
     $scope.editor = _editor;
+    _editor.$blockScrolling = Infinity;
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
       $scope.editor.renderer.setShowGutter($scope.paragraph.config.lineNumbers);
       $scope.editor.setShowFoldWidgets(false);

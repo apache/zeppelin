@@ -22,38 +22,38 @@ limitations under the License.
             <button type="button"
                     class="btn btn-default btn-xs"
                     ng-click="runNote()"
-                    ng-if="!isNoteRunning()"
+                    ng-class="{'disabled':isNoteRunning()}"
                     tooltip-placement="top" tooltip="Run all the notes">
               <i class="icon-control-play"></i>
-            </button>            
-
+            </button>
             <button type="button"
                     class="btn btn-default btn-xs"
                     ng-click="toggleAllEditor()"
                     ng-hide="viewOnly"
                     tooltip-placement="top" tooltip="Show/hide the code">
               <i ng-class="editorToggled ?  'fa icon-size-fullscreen' :'fa icon-size-actual'"></i></button>
-
             <button type="button"
                     class="btn btn-default btn-xs"
                     ng-click="toggleAllTable()"
                     ng-hide="viewOnly"
                     tooltip-placement="top" tooltip="Show/hide the output">
-              <i ng-class="tableToggled ? 'fa icon-notebook' : 'fa icon-book-open'"></i></button>
-
+              <i ng-class="tableToggled ? 'fa icon-notebook' : 'fa icon-book-open'"></i>
+            </button>
             <button type="button"
                     class="btn btn-default btn-xs"
                     ng-click="removeNote(note.id)"
                     ng-hide="viewOnly"
                     tooltip-placement="top" tooltip="Remove the notebook">
-              <i class="icon-trash"></i></button>
+              <i class="icon-trash"></i>
+            </button>
             <button type="button"
                     class="btn btn-default btn-xs"
                     ng-hide="viewOnly"
                     tooltip-placement="top" tooltip="Clone the notebook"
                     data-toggle="modal" data-target="#noteNameModal" data-clone="true"
                     >
-              <i class="fa fa-copy"></i></button>
+              <i class="fa fa-copy"></i>
+            </button>
           </span>
 
           <span ng-hide="viewOnly">
