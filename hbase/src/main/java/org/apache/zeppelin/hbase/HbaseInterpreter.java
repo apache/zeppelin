@@ -14,10 +14,7 @@
 
 package org.apache.zeppelin.hbase;
 
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.jruby.embed.LocalContextScope;
@@ -26,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import org.jruby.embed.ScriptingContainer;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -63,7 +61,8 @@ public class HbaseInterpreter extends Interpreter {
             .add("hbase.home", "/usr/lib/hbase/", "Installation dir. of Hbase")
             .add("hbase.ruby.sources", "lib/ruby",
                 "Path to Ruby scripts relative to 'hbase.home'")
-            .add("hbase.irb.load", "true", "Load hirb. Optional for testing only")
+            .add("hbase.irb.load", "true", "Load hirb. hirb loads hbase shell. " +
+                "For unit tests it has to be turned off.")
             .build());
   }
 
@@ -76,6 +75,11 @@ public class HbaseInterpreter extends Interpreter {
     String hbase_home = getProperty("hbase.home");
     String ruby_src = getProperty("hbase.ruby.sources");
     String abs_ruby_src = hbase_home + ruby_src;
+
+    File f = new File(abs_ruby_src);
+    if (!f.exists() || !f.isDirectory()) {
+      throw new InterpreterException("hbase ruby sources is not correctly defined.");
+    }
 
     logger.info("Home:" + hbase_home);
     logger.info("Ruby Src:" + ruby_src);
