@@ -350,7 +350,8 @@ public abstract class AbstractTestRestApi {
   //Create new Setting and return Setting ID
   protected String createTempSetting(String tempName) throws IOException {
 
-    InterpreterGroup interpreterGroup =  ZeppelinServer.notebook.getInterpreterFactory().add(tempName,"newGroup",new InterpreterOption(false),new Properties());
+    InterpreterGroup interpreterGroup =  ZeppelinServer.notebook.getInterpreterFactory().add(tempName,"newGroup",
+        new InterpreterOption(false),new Properties());
     return interpreterGroup.getId();
   }
 
