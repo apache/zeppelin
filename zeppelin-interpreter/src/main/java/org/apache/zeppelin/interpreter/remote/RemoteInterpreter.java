@@ -32,6 +32,7 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
+import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
@@ -86,7 +87,7 @@ public class RemoteInterpreter extends Interpreter {
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
     this.env = env;
-    this.connectTimeout = connectTimeout;  
+    this.connectTimeout = connectTimeout;
   }
 
   @Override
@@ -320,11 +321,28 @@ public class RemoteInterpreter extends Interpreter {
   @Override
   public Scheduler getScheduler() {
     int maxConcurrency = 10;
-    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
-    return SchedulerFactory.singleton().createOrGetRemoteScheduler(
-        "remoteinterpreter_" + interpreterProcess.hashCode(),
-        getInterpreterProcess(),
-        maxConcurrency);
+    // Share a single RemoteScheduler instance among all RemoteInterpreter in
+    // the same InterpreterGroup.
+    // If each RemoteInterpreter use each RemoteScheduler instance, can not guarantee
+    // job submit sequence when Two or more interpreter shares single Scheduler.
+
+    InterpreterGroup intpGroup = getInterpreterGroup();
+    Interpreter firstInterpreter = intpGroup.get(0);
+
+    Interpreter innerInterpreter = firstInterpreter;
+    while (innerInterpreter instanceof WrappedInterpreter) {
+      innerInterpreter = ((WrappedInterpreter) innerInterpreter).getInnerInterpreter();
+    }
+
+    if (innerInterpreter.equals(this)) {
+      RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
+      return SchedulerFactory.singleton().createOrGetRemoteScheduler(
+          "remoteinterpreter_" + interpreterProcess.hashCode(),
+          getInterpreterProcess(),
+          maxConcurrency);
+    } else {
+      return innerInterpreter.getScheduler();
+    }
   }
 
 

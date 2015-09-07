@@ -63,7 +63,7 @@ public class RemoteInterpreterTest {
 
   @After
   public void tearDown() throws Exception {
-    intpGroup.clone();
+    intpGroup.close();
     intpGroup.destroy();
   }
 
