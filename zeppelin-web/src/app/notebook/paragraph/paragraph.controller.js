@@ -24,6 +24,7 @@ angular.module('zeppelinWebApp')
 
   var editorMode = {scala: 'ace/mode/scala', sql: 'ace/mode/sql', markdown: 'ace/mode/markdown', 
 		  sh: 'ace/mode/sh'};
+	var donutFlag= false;
 
   // Controller init
   $scope.init = function(newParagraph) {
@@ -836,6 +837,9 @@ angular.module('zeppelinWebApp')
 
   };
 
+  $scope.setDonutFlag = function(flag){
+    donutFlag = flag;
+  }
   var setD3Chart = function(type, data, refresh) {
     if (!$scope.chart[type]) {
       var chart = nv.models[type]();
@@ -890,7 +894,8 @@ angular.module('zeppelinWebApp')
         var d = pivotDataToD3ChartFormat(p, true).d3g;
 
         $scope.chart[type].x(function(d) { return d.label;})
-          .y(function(d) { return d.value;});
+          .y(function(d) { return d.value;})
+          .donut(donutFlag);
 
         if ( d.length > 0 ) {
           for ( var i=0; i<d[0].values.length ; i++) {
