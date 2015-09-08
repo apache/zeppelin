@@ -115,7 +115,7 @@ limitations under the License.
         </button>
         <button type="button" class="btn btn-default btn-sm"
                 ng-class="{'active': isGraphMode('pieChart')}"
-                ng-click="setGraphMode('pieChart', true)"><i class="fa fa-pie-chart"></i>
+                ng-click="setDonutFlag(false);setGraphMode('pieChart', true)"><i class="fa fa-pie-chart"></i>
         </button>
         <button type="button" class="btn btn-default btn-sm"
                 ng-class="{'active': isGraphMode('stackedAreaChart')}"
@@ -128,6 +128,10 @@ limitations under the License.
         <button type="button" class="btn btn-default btn-sm"
                 ng-class="{'active': isGraphMode('scatterChart')}"
                 ng-click="setGraphMode('scatterChart', true)"><i class="cf cf-scatter-chart"></i>
+        </button>
+        <button type="button" class="btn btn-default btn-sm"
+                ng-class="{'active': isGraphMode('pieChart')}"
+                ng-click="setDonutFlag(true);setGraphMode('pieChart', true)"><i class="fa fa-donut-chart"></i>
         </button>
       </div>
       <span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && !asIframe && !viewOnly"
