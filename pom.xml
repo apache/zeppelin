@@ -91,6 +91,7 @@
     <module>markdown</module>
     <module>angular</module>
     <module>shell</module>
+    <module>js</module>
     <module>hive</module>
     <module>phoenix</module>
     <module>geode</module>
@@ -100,7 +101,7 @@
     <module>ignite</module>
     <module>kylin</module>
     <module>lens</module>
-    <module>cassandra</module>
+    <!-- module>cassandra</module -->
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
