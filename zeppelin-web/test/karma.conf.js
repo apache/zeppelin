@@ -89,7 +89,7 @@ module.exports = function(config) {
 
     coverageReporter: {
       type: 'html',
-      dir: 'dist/reports/coverage'
+      dir: 'reports/coverage'
     },
 
     // Which plugins to enable

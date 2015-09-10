@@ -26,6 +26,7 @@ zeppelin-web/.sass-cache
 zeppelin-web/bower_components
 **nbproject/
 **node/
+zeppelin-web/reports/coverage
 
 
 # project level
