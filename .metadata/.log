@@ -1,0 +1,18 @@
+!SESSION 2015-09-10 23:24:44.535 -----------------------------------------------
+eclipse.buildId=4.1.0-vfinal-20150525-1102-Typesafe
+java.version=1.7.0_80
+java.vendor=Oracle Corporation
+BootLoader constants: OS=linux, ARCH=x86_64, WS=gtk, NL=es_ES
+Command-line arguments:  -data /home/victorgarcia/my-repo/incubator-zeppelin -os linux -ws gtk -arch x86_64
+
+!ENTRY org.eclipse.m2e.logback.appender 2 0 2015-09-10 23:26:19.222
+!MESSAGE CatalogItem org.eclipse.m2e.discovery.lifecyclemapping.m2e-egit does not contain lifecycle mapping metadata
+
+!ENTRY org.eclipse.m2e.logback.appender 2 0 2015-09-10 23:26:19.229
+!MESSAGE CatalogItem org.eclipse.m2e.discovery.lifecyclemapping.m2e-subversive does not contain lifecycle mapping metadata
+
+!ENTRY org.eclipse.m2e.logback.appender 2 0 2015-09-10 23:26:19.233
+!MESSAGE CatalogItem org.eclipse.m2e.discovery.lifecyclemapping.m2e-subclipse does not contain lifecycle mapping metadata
+
+!ENTRY org.eclipse.m2e.logback.appender 4 0 2015-09-10 23:27:22.694
+!MESSAGE bower perfect-scrollbar extra-resolution Unnecessary resolution: perfect-scrollbar#~0.5.4

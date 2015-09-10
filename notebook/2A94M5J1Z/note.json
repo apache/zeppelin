@@ -1,7 +1,8 @@
 {
   "paragraphs": [
     {
-      "text": "%md\n## Welcome to Zeppelin.\n##### This is a live tutorial, you can run the code yourself. (Shift-Enter to Run)",
+      "text": "%md\n## Welcome to Zeppelin. vamos a ver\n##### This is a live tutorial, you can run the code yourself. (Shift-Enter to Run)",
+      "dateUpdated": "Sep 10, 2015 11:29:11 PM",
       "config": {
         "colWidth": 12.0,
         "graph": {
@@ -13,7 +14,7 @@
           "groups": [],
           "scatter": {}
         },
-        "editorHide": true
+        "editorHide": false
       },
       "settings": {
         "params": {},
@@ -255,6 +256,31 @@
       "progressUpdateIntervalMs": 500
     },
     {
+      "text": "vamos a probar ver sajdaklsja",
+      "dateUpdated": "Sep 10, 2015 11:43:14 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1435955447812_-158639899",
+      "id": "20150703-133047_853701097",
+      "dateCreated": "Jul 3, 2015 1:30:47 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    },
+    {
       "text": "%md\n## Congratulations, it\u0027s done.\n##### You can create your own notebook in \u0027Notebook\u0027 menu. Good luck!",
       "config": {
         "colWidth": 12.0,
@@ -324,16 +350,29 @@
         "params": {},
         "forms": {}
       },
-      "jobName": "paragraph_1435955447812_-158639899",
-      "id": "20150703-133047_853701097",
-      "dateCreated": "Jul 3, 2015 1:30:47 PM",
+      "jobName": "paragraph_1441921378401_-392353704",
+      "id": "20150910-234258_1806818814",
+      "dateCreated": "Sep 10, 2015 11:42:58 PM",
       "status": "READY",
       "progressUpdateIntervalMs": 500
     }
   ],
   "name": "Zeppelin Tutorial",
   "id": "2A94M5J1Z",
-  "angularObjects": {},
+  "angularObjects": {
+    "2AXC7169Z": [],
+    "2AWB6G687": [],
+    "2AYQ58UZD": [],
+    "2AVHCNJMN": [],
+    "2AYAFV12Y": [],
+    "2AXXUZE39": [],
+    "2AZ5VZQC1": [],
+    "2AYQUW524": [],
+    "2AWHYV8HH": [],
+    "2AY99KZ59": [],
+    "2AXQE34EC": [],
+    "2AY9V83AW": []
+  },
   "config": {
     "looknfeel": "default"
   },
