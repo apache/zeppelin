@@ -72,77 +72,60 @@ fi
 
 # set spark related env variables
 if [[ "${INTERPRETER_ID}" == "spark" ]]; then
-  # add Hadoop jars into classpath
-  if [[ -n "${HADOOP_HOME}" ]]; then
-    # Apache
-    addEachJarInDir "${HADOOP_HOME}/share"
-
-    # CDH
-    addJarInDir "${HADOOP_HOME}"
-    addJarInDir "${HADOOP_HOME}/lib"
-  fi
-
-  # autodetect HADOOP_CONF_HOME by heuristic
-  if [[ -n "${HADOOP_HOME}" ]] && [[ -z "${HADOOP_CONF_DIR}" ]]; then
-    if [[ -d "${HADOOP_HOME}/etc/hadoop" ]]; then
-      export HADOOP_CONF_DIR="${HADOOP_HOME}/etc/hadoop"
-    elif [[ -d "/etc/hadoop/conf" ]]; then
-      export HADOOP_CONF_DIR="/etc/hadoop/conf"
-    fi
-  fi
-
-  if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
-    ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
-  fi
-
-  # add Spark jars into classpath
   if [[ -n "${SPARK_HOME}" ]]; then
-    addJarInDir "${SPARK_HOME}/lib"
-    PYSPARKPATH="${SPARK_HOME}/python:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-0.8.2.1-src.zip"
+    export SPARK_SUBMIT="${SPARK_HOME}/bin/spark-submit"
+    SPARK_APP_JAR="$(ls ${ZEPPELIN_HOME}/interpreter/spark/zeppelin-spark*.jar)"
+    # This will evantually passes SPARK_APP_JAR to classpath of SparkIMain
+    ZEPPELIN_CLASSPATH=${SPARK_APP_JAR}
+
+    export PYTHONPATH="$SPARK_HOME/python/:$PYTHONPATH"
+    export PYTHONPATH="$SPARK_HOME/python/lib/py4j-0.8.2.1-src.zip:$PYTHONPATH"    
   else
+    # add Hadoop jars into classpath
+    if [[ -n "${HADOOP_HOME}" ]]; then
+      # Apache
+      addEachJarInDir "${HADOOP_HOME}/share"
+
+      # CDH
+      addJarInDir "${HADOOP_HOME}"
+      addJarInDir "${HADOOP_HOME}/lib"
+    fi
+
     addJarInDir "${INTERPRETER_DIR}/dep"
     PYSPARKPATH="${ZEPPELIN_HOME}/interpreter/spark/pyspark/pyspark.zip:${ZEPPELIN_HOME}/interpreter/spark/pyspark/py4j-0.8.2.1-src.zip"
-  fi
 
-  # autodetect SPARK_CONF_DIR
-  if [[ -n "${SPARK_HOME}" ]] && [[ -z "${SPARK_CONF_DIR}" ]]; then
-    if [[ -d "${SPARK_HOME}/conf" ]]; then
-      SPARK_CONF_DIR="${SPARK_HOME}/conf"
+    if [[ -z "${PYTHONPATH}" ]]; then
+      export PYTHONPATH="${PYSPARKPATH}"
+    else
+      export PYTHONPATH="${PYTHONPATH}:${PYSPARKPATH}"
     fi
-  fi
+    unset PYSPARKPATH
 
-  # read spark-*.conf if exists
-  if [[ -d "${SPARK_CONF_DIR}" ]]; then
-    ls ${SPARK_CONF_DIR}/spark-*.conf > /dev/null 2>&1
-    if [[ "$?" -eq 0 ]]; then
-      for file in ${SPARK_CONF_DIR}/spark-*.conf; do
-        while read -r line; do
-          echo "${line}" | grep -e "^spark[.]" > /dev/null
-          if [ "$?" -ne 0 ]; then
-            # skip the line not started with 'spark.'
-            continue;
-          fi
-          SPARK_CONF_KEY=`echo "${line}" | sed -e 's/\(^spark[^ ]*\)[ \t]*\(.*\)/\1/g'`
-          SPARK_CONF_VALUE=`echo "${line}" | sed -e 's/\(^spark[^ ]*\)[ \t]*\(.*\)/\2/g'`
-          export ZEPPELIN_JAVA_OPTS+=" -D${SPARK_CONF_KEY}=\"${SPARK_CONF_VALUE}\""
-        done < "${file}"
-      done
+    # autodetect HADOOP_CONF_HOME by heuristic
+    if [[ -n "${HADOOP_HOME}" ]] && [[ -z "${HADOOP_CONF_DIR}" ]]; then
+      if [[ -d "${HADOOP_HOME}/etc/hadoop" ]]; then
+        export HADOOP_CONF_DIR="${HADOOP_HOME}/etc/hadoop"
+      elif [[ -d "/etc/hadoop/conf" ]]; then
+        export HADOOP_CONF_DIR="/etc/hadoop/conf"
+      fi
     fi
-  fi
 
-  if [[ -z "${PYTHONPATH}" ]]; then
-    export PYTHONPATH="${PYSPARKPATH}"
-  else
-    export PYTHONPATH="${PYTHONPATH}:${PYSPARKPATH}"
-  fi
+    if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
+      ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
+    fi
 
-  unset PYSPARKPATH
+    export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+  fi
 fi
 
-export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
-${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} -cp ${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
+if [[ -n "${SPARK_SUBMIT}" ]]; then
+    ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path "${CLASSPATH}" --driver-java-options "${JAVA_INTP_OPTS}" ${SPARK_SUBMIT_OPTIONS} ${SPARK_APP_JAR} ${PORT} &
+else
+    ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} -cp ${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
+fi
+
 pid=$!
 if [[ -z "${pid}" ]]; then
   return 1;

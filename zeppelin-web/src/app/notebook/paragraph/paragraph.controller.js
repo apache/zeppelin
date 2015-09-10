@@ -22,8 +22,12 @@ angular.module('zeppelinWebApp')
   $scope.paragraph = null;
   $scope.editor = null;
 
-  var editorMode = {scala: 'ace/mode/scala', sql: 'ace/mode/sql', markdown: 'ace/mode/markdown', 
-		  sh: 'ace/mode/sh'};
+  var editorModes = {
+    'ace/mode/scala': /^%spark/,
+    'ace/mode/sql': /^%(\w*\.)?\wql/,
+    'ace/mode/markdown': /^%md/,
+    'ace/mode/sh': /^%sh/
+  };
 
   // Controller init
   $scope.init = function(newParagraph) {
@@ -420,8 +424,13 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.aceChanged = function() {
+
     $scope.dirtyText = $scope.editor.getSession().getValue();
     $scope.startSaveTimer();
+
+    $timeout(function() {
+      $scope.setParagraphMode($scope.editor.getSession(), $scope.dirtyText, $scope.editor.getCursorPosition());
+    });
   };
 
   $scope.aceLoaded = function(_editor) {
@@ -429,6 +438,7 @@ angular.module('zeppelinWebApp')
     var Range = ace.require('ace/range').Range;
 
     $scope.editor = _editor;
+    _editor.$blockScrolling = Infinity;
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
       $scope.editor.renderer.setShowGutter($scope.paragraph.config.lineNumbers);
       $scope.editor.setShowFoldWidgets(false);
@@ -448,54 +458,66 @@ angular.module('zeppelinWebApp')
         // not applying emacs key binding while the binding override Ctrl-v. default behavior of paste text on windows.
       }
 
-      var sqlModeTest = /^%(\w*\.)?\wql/;
-
-      $scope.setParagraphMode = function(session, paragraphText) {
-        if (sqlModeTest.test(String(paragraphText))) {
-          session.setMode(editorMode.sql);
-        } else if ( String(paragraphText).startsWith('%md')) {
-          session.setMode(editorMode.markdown);
-        } else if ( String(paragraphText).startsWith('%sh')) {
-          session.setMode(editorMode.sh);
-        } else {
-          session.setMode(editorMode.scala);
+      $scope.setParagraphMode = function(session, paragraphText, pos) {
+        // Evaluate the mode only if the first 30 characters of the paragraph have been modified or the the position is undefined.
+        if ( (typeof pos === 'undefined') || (pos.row === 0 && pos.column < 30)) {
+          // If paragraph loading, use config value if exists
+          if ((typeof pos === 'undefined') && $scope.paragraph.config.editorMode) {
+            session.setMode($scope.paragraph.config.editorMode);
+          } else {
+            // Defaults to spark mode
+            var newMode = 'ace/mode/scala';
+            // Test first against current mode
+            var oldMode = session.getMode().$id;
+            if (!editorModes[oldMode] || !editorModes[oldMode].test(paragraphText)) {
+              for (var key in editorModes) {
+                if (key !== oldMode) {
+                  if (editorModes[key].test(paragraphText)){
+                    $scope.paragraph.config.editorMode = key;
+                    session.setMode(key);
+                    return true;
+                  }
+                }
+              }
+              $scope.paragraph.config.editorMode = newMode;
+              session.setMode(newMode);
+            }
+          }
         }
       };
 
       var remoteCompleter = {
-          getCompletions : function(editor, session, pos, prefix, callback) {
-              if (!$scope.editor.isFocused() ){ return;}
+        getCompletions : function(editor, session, pos, prefix, callback) {
+          if (!$scope.editor.isFocused() ){ return;}
 
-              pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
-              var buf = session.getValue();
+          pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
+          var buf = session.getValue();
 
-              // ensure the correct mode is set
-              $scope.setParagraphMode(session, buf);
-              websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
+          websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
 
-              $scope.$on('completionList', function(event, data) {
-                  if (data.completions) {
-                      var completions = [];
-                      for (var c in data.completions) {
-                          var v = data.completions[c];
-                          completions.push({
-                              name:v,
-                              value:v,
-                              score:300
-                          });
-                      }
-                      callback(null, completions);
-                  }
-              });
-          }
+          $scope.$on('completionList', function(event, data) {
+            if (data.completions) {
+              var completions = [];
+              for (var c in data.completions) {
+                var v = data.completions[c];
+                completions.push({
+                  name:v,
+                  value:v,
+                  score:300
+                });
+              }
+              callback(null, completions);
+            }
+          });
+        }
       };
 
       langTools.setCompleters([remoteCompleter, langTools.keyWordCompleter, langTools.snippetCompleter, langTools.textCompleter]);
 
       $scope.editor.setOptions({
-          enableBasicAutocompletion: true,
-          enableSnippets: false,
-          enableLiveAutocompletion:false
+        enableBasicAutocompletion: true,
+        enableSnippets: false,
+        enableLiveAutocompletion:false
       });
 
       $scope.handleFocus = function(value) {
@@ -590,7 +612,7 @@ angular.module('zeppelinWebApp')
 
   $scope.getProgress = function() {
     return ($scope.currentProgress) ? $scope.currentProgress : 0;
-  };                                           
+  };
 
   $scope.getExecutionTime = function() {
     var pdata = $scope.paragraph;

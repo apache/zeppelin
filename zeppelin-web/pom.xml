@@ -32,6 +32,11 @@
   <version>0.6.0-incubating-SNAPSHOT</version>
   <name>Zeppelin: web Application</name>
 
+  <!-- See https://github.com/eirslett/frontend-maven-plugin/issues/229 -->
+  <prerequisites>
+    <maven>3.1.0</maven>
+  </prerequisites>
+
   <build>
     <plugins>
       <plugin>

@@ -19,6 +19,8 @@
   "strict": true,
   "trailing": true,
   "smarttabs": true,
+  "jasmine": true,
+  "predef": [ "inject" ],
   "globals": {
     "angular": false,
     "_": false,

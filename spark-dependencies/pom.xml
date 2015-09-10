@@ -456,6 +456,19 @@
     </profile>
 
     <profile>
+      <id>spark-1.5</id>
+      <properties>
+        <spark.version>1.5.0</spark.version>
+        <akka.group>com.typesafe.akka</akka.group>
+        <akka.version>2.3.11</akka.version>
+        <protobuf.version>2.5.0</protobuf.version>
+      </properties>
+
+      <dependencies>
+      </dependencies>
+    </profile>
+    
+    <profile>
       <id>hadoop-0.23</id>
       <!-- SPARK-1121: Adds an explicit dependency on Avro to work around a
         Hadoop 0.23.X issue -->
