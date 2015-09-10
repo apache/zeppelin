@@ -1,0 +1,24 @@
+2015-09-10 23:26:10,207  WARN [Worker-1] - ScalaProject - Project zeppelin-server has platform default sourceLevel.
+2015-09-10 23:26:10,208  WARN [Worker-1] - ScalaProject - Project zeppelin-server runs on platform default installation.
+2015-09-10 23:26:11,230  WARN [Worker-1] - ScalaProject - Project flink has platform default sourceLevel.
+2015-09-10 23:26:11,230  WARN [Worker-1] - ScalaProject - Project flink runs on platform default installation.
+2015-09-10 23:26:15,397  WARN [Worker-1] - ScalaProject - Project cassandra has platform default sourceLevel.
+2015-09-10 23:26:15,398  WARN [Worker-1] - ScalaProject - Project cassandra runs on platform default installation.
+2015-09-10 23:26:15,600  WARN [Worker-1] - ScalaProject - Project spark has platform default sourceLevel.
+2015-09-10 23:26:15,600  WARN [Worker-1] - ScalaProject - Project spark runs on platform default installation.
+2015-09-10 23:26:25,167  WARN [Worker-6] - ScalaProject - Project zeppelin-server has platform default sourceLevel.
+2015-09-10 23:26:25,167  WARN [Worker-6] - ScalaProject - Project zeppelin-server runs on platform default installation.
+2015-09-10 23:26:38,428  WARN [Worker-1] - ScalaProject - Project spark has platform default sourceLevel.
+2015-09-10 23:26:38,429  WARN [Worker-1] - ScalaProject - Project spark runs on platform default installation.
+2015-09-10 23:26:46,383  WARN [Worker-1] - ScalaProject - Project flink has platform default sourceLevel.
+2015-09-10 23:26:46,384  WARN [Worker-1] - ScalaProject - Project flink runs on platform default installation.
+2015-09-10 23:26:47,224  WARN [Worker-1] - ScalaProject - Project cassandra has platform default sourceLevel.
+2015-09-10 23:26:47,224  WARN [Worker-1] - ScalaProject - Project cassandra runs on platform default installation.
+2015-09-10 23:26:47,309  WARN [Worker-1] - ScalaProject - Project cassandra has platform default sourceLevel.
+2015-09-10 23:26:47,309  WARN [Worker-1] - ScalaProject - Project cassandra runs on platform default installation.
+2015-09-10 23:27:16,196  WARN [Worker-1] - ScalaProject - Project cassandra has platform default sourceLevel.
+2015-09-10 23:27:16,196  WARN [Worker-1] - ScalaProject - Project cassandra runs on platform default installation.
+2015-09-10 23:27:16,513  WARN [Worker-1] - ScalaProject - Project cassandra has platform default sourceLevel.
+2015-09-10 23:27:16,513  WARN [Worker-1] - ScalaProject - Project cassandra runs on platform default installation.
+2015-09-10 23:33:05,619  WARN [main] - ScalaProject - Project zeppelin-server has platform default sourceLevel.
+2015-09-10 23:33:05,619  WARN [main] - ScalaProject - Project zeppelin-server runs on platform default installation.

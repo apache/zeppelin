@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workingSetManager>
+<workingSet editPageId="org.eclipse.ui.resourceWorkingSetPage" factoryID="org.eclipse.ui.internal.WorkingSetFactory" id="1441920338752_1" label="zeppelin" name="zeppelin">
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/zeppelin-interpreter" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/zeppelin-zengine" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/spark" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/markdown" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/angular" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/shell" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/hive" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/phoenix" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/geode" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/postgresql" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/tajo" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/flink" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/ignite" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/lens" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/cassandra" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/zeppelin-web" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/zeppelin-server" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/zeppelin-distribution" type="4"/>
+</workingSet>
+<workingSet aggregate="true" factoryID="org.eclipse.ui.internal.WorkingSetFactory" id="1441920308412_0" label="Window Working Set" name="Aggregate for window 1441920308411"/>
+</workingSetManager>

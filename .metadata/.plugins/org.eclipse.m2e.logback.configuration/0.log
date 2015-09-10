@@ -1,0 +1,388 @@
+2015-09-10 23:25:58,493 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-interpreter:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-interpreter/pom.xml.
+2015-09-10 23:25:58,688 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-zengine:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-zengine/pom.xml.
+2015-09-10 23:25:59,138 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-spark:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/spark/pom.xml.
+2015-09-10 23:26:01,469 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-markdown:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/markdown/pom.xml.
+2015-09-10 23:26:01,542 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-angular:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/angular/pom.xml.
+2015-09-10 23:26:01,607 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-shell:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/shell/pom.xml.
+2015-09-10 23:26:01,662 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-hive:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/hive/pom.xml.
+2015-09-10 23:26:01,992 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-phoenix:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/phoenix/pom.xml.
+2015-09-10 23:26:02,452 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-geode:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/geode/pom.xml.
+2015-09-10 23:26:03,139 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-postgresql:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/postgresql/pom.xml.
+2015-09-10 23:26:03,210 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-tajo:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/tajo/pom.xml.
+2015-09-10 23:26:03,359 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-flink:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/flink/pom.xml.
+2015-09-10 23:26:03,634 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-ignite:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/ignite/pom.xml.
+2015-09-10 23:26:03,787 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-lens:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/lens/pom.xml.
+2015-09-10 23:26:04,049 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-cassandra:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/cassandra/pom.xml.
+2015-09-10 23:26:04,391 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-web:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-web/pom.xml.
+2015-09-10 23:26:04,536 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-server:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-server/pom.xml.
+2015-09-10 23:26:04,910 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using NULL lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-distribution:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-distribution/pom.xml.
+2015-09-10 23:26:07,553 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /zeppelin-interpreter/src/main/java
+2015-09-10 23:26:07,555 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /zeppelin-interpreter/src/test/java
+2015-09-10 23:26:07,555 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /zeppelin-interpreter/src/test/resources
+2015-09-10 23:26:08,051 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-angular:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/angular/pom.xml.
+2015-09-10 23:26:08,190 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-cassandra:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/cassandra/pom.xml.
+2015-09-10 23:26:09,089 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /shell/src/main/java
+2015-09-10 23:26:09,089 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /shell/src/test/java
+2015-09-10 23:26:09,173 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /phoenix/src/main/java
+2015-09-10 23:26:09,175 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /phoenix/src/test/java
+2015-09-10 23:26:09,200 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-flink:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/flink/pom.xml.
+2015-09-10 23:26:09,371 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /hive/src/main/java
+2015-09-10 23:26:09,373 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /hive/src/test/java
+2015-09-10 23:26:09,557 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-geode:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/geode/pom.xml.
+2015-09-10 23:26:09,579 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /zeppelin-zengine/src/main/java
+2015-09-10 23:26:09,582 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /zeppelin-zengine/src/test/java
+2015-09-10 23:26:09,582 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /zeppelin-zengine/src/test/resources
+2015-09-10 23:26:09,769 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /zeppelin-server/src/main/java
+2015-09-10 23:26:09,772 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /zeppelin-server/src/test/java
+2015-09-10 23:26:09,772 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /zeppelin-server/src/test/resources
+2015-09-10 23:26:10,290 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /postgresql/src/main/java
+2015-09-10 23:26:10,292 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /postgresql/src/test/java
+2015-09-10 23:26:10,298 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-hive:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/hive/pom.xml.
+2015-09-10 23:26:10,609 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /ignite/src/main/java
+2015-09-10 23:26:10,611 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /ignite/src/test/java
+2015-09-10 23:26:10,781 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /markdown/src/main/java
+2015-09-10 23:26:10,783 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /markdown/src/test/java
+2015-09-10 23:26:10,898 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /tajo/src/main/java
+2015-09-10 23:26:10,900 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /tajo/src/test/java
+2015-09-10 23:26:11,036 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-ignite:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/ignite/pom.xml.
+2015-09-10 23:26:11,212 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Source directory: /home/victorgarcia/my-repo/incubator-zeppelin/flink/src/main/scala added.
+2015-09-10 23:26:11,215 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Test Source directory: /home/victorgarcia/my-repo/incubator-zeppelin/flink/src/test/scala added.
+2015-09-10 23:26:11,221 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-lens:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/lens/pom.xml.
+2015-09-10 23:26:11,272 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /flink/src/main/java
+2015-09-10 23:26:11,273 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /flink/src/main/scala
+2015-09-10 23:26:11,275 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /flink/src/test/java
+2015-09-10 23:26:11,275 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /flink/src/test/scala
+2015-09-10 23:26:11,593 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /angular/src/main/java
+2015-09-10 23:26:11,594 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /angular/src/test/java
+2015-09-10 23:26:11,712 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-markdown:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/markdown/pom.xml.
+2015-09-10 23:26:11,748 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /geode/src/main/java
+2015-09-10 23:26:11,750 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /geode/src/test/java
+2015-09-10 23:26:11,938 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-phoenix:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/phoenix/pom.xml.
+2015-09-10 23:26:14,403 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-postgresql:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/postgresql/pom.xml.
+2015-09-10 23:26:14,427 [Worker-1] INFO  c.g.e.m.p.f.l.DefaultNodeAndNPMInstaller - Node v0.10.18 is already installed.
+2015-09-10 23:26:14,487 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-shell:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/shell/pom.xml.
+2015-09-10 23:26:14,619 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-spark:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/spark/pom.xml.
+2015-09-10 23:26:15,059 [Worker-1] INFO  c.g.e.m.p.f.l.DefaultNodeAndNPMInstaller - Found NPM version 1.3.8
+2015-09-10 23:26:15,065 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /zeppelin-web/src/main/java
+2015-09-10 23:26:15,065 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /zeppelin-web/src/test/java
+2015-09-10 23:26:15,124 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /lens/src/main/java
+2015-09-10 23:26:15,126 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /lens/src/test/java
+2015-09-10 23:26:15,409 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /cassandra/src/main/java
+2015-09-10 23:26:15,411 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /cassandra/src/main/resources
+2015-09-10 23:26:15,416 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /cassandra/src/test/java
+2015-09-10 23:26:15,417 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /cassandra/src/test/resources
+2015-09-10 23:26:15,611 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /spark/src/main/java
+2015-09-10 23:26:15,611 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding resource folder /spark/src/main/resources
+2015-09-10 23:26:15,614 [Worker-1] INFO  o.e.m.j.i.AbstractJavaProjectConfigurator - Adding source folder /spark/src/test/java
+2015-09-10 23:26:15,808 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-tajo:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/tajo/pom.xml.
+2015-09-10 23:26:15,932 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-interpreter:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-interpreter/pom.xml.
+2015-09-10 23:26:16,034 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-zengine:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-zengine/pom.xml.
+2015-09-10 23:26:16,059 [Worker-1] INFO  o.e.m.c.i.p.ProjectConfigurationManager - Imported and configured 18 project(s) in 37 sec
+2015-09-10 23:26:16,211 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using NULL lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-distribution:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-distribution/pom.xml.
+2015-09-10 23:26:16,594 [Worker-6] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-server:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-server/pom.xml.
+2015-09-10 23:26:19,219 [Worker-1] INFO  o.e.m.i.discovery.MavenDiscovery - No lifecyle mapping found at jar:file:/tmp/RemoteBundleDiscoveryStrategy899753625096081841.tmp/org.eclipse.m2e.discovery.oss_catalog_1.5.jar_6791138599303751107.jar!/lifecycle%2Forg.eclipse.m2e.discovery.lifecyclemapping.m2e-egit.xml
+2015-09-10 23:26:19,219 [Worker-1] WARN  o.e.m.i.discovery.MavenDiscovery - CatalogItem org.eclipse.m2e.discovery.lifecyclemapping.m2e-egit does not contain lifecycle mapping metadata
+2015-09-10 23:26:19,228 [Worker-1] INFO  o.e.m.i.discovery.MavenDiscovery - No lifecyle mapping found at jar:file:/tmp/RemoteBundleDiscoveryStrategy899753625096081841.tmp/org.eclipse.m2e.discovery.oss_catalog_1.5.jar_6791138599303751107.jar!/lifecycle%2Forg.eclipse.m2e.discovery.lifecyclemapping.m2e-subversive.xml
+2015-09-10 23:26:19,228 [Worker-1] WARN  o.e.m.i.discovery.MavenDiscovery - CatalogItem org.eclipse.m2e.discovery.lifecyclemapping.m2e-subversive does not contain lifecycle mapping metadata
+2015-09-10 23:26:19,233 [Worker-1] INFO  o.e.m.i.discovery.MavenDiscovery - No lifecyle mapping found at jar:file:/tmp/RemoteBundleDiscoveryStrategy899753625096081841.tmp/org.eclipse.m2e.discovery.oss_catalog_1.5.jar_6791138599303751107.jar!/lifecycle%2Forg.eclipse.m2e.discovery.lifecyclemapping.m2e-subclipse.xml
+2015-09-10 23:26:19,233 [Worker-1] WARN  o.e.m.i.discovery.MavenDiscovery - CatalogItem org.eclipse.m2e.discovery.lifecyclemapping.m2e-subclipse does not contain lifecycle mapping metadata
+2015-09-10 23:26:31,675 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:31,688 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:26:31,747 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:31,747 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-interpreter/src/main/resources
+2015-09-10 23:26:31,750 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:31,752 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2015-09-10 23:26:33,506 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:33,509 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:26:33,514 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:33,514 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/tajo/src/main/resources
+2015-09-10 23:26:33,516 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:33,516 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/tajo/src/test/resources
+2015-09-10 23:26:33,604 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-spark:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/spark/pom.xml.
+2015-09-10 23:26:35,011 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:35,013 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:26:35,018 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:35,018 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 1 resource
+2015-09-10 23:26:35,020 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:35,021 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/spark/src/test/resources
+2015-09-10 23:26:38,661 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:38,663 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:26:38,667 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:38,668 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/shell/src/main/resources
+2015-09-10 23:26:38,670 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:38,670 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/shell/src/test/resources
+2015-09-10 23:26:39,109 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:39,111 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:26:39,115 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:39,115 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/postgresql/src/main/resources
+2015-09-10 23:26:39,117 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:39,117 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/postgresql/src/test/resources
+2015-09-10 23:26:40,094 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:40,096 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:26:40,101 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:40,101 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/phoenix/src/main/resources
+2015-09-10 23:26:40,103 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:40,103 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/phoenix/src/test/resources
+2015-09-10 23:26:40,293 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:40,302 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:26:40,307 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:40,307 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/markdown/src/main/resources
+2015-09-10 23:26:40,313 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:40,313 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/markdown/src/test/resources
+2015-09-10 23:26:41,000 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-lens:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/lens/pom.xml.
+2015-09-10 23:26:41,550 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:41,554 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:26:41,570 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:41,570 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/lens/src/main/resources
+2015-09-10 23:26:41,572 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:41,572 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/lens/src/test/resources
+2015-09-10 23:26:42,755 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:42,771 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:26:42,775 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:42,775 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/ignite/src/main/resources
+2015-09-10 23:26:42,777 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:42,778 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/ignite/src/test/resources
+2015-09-10 23:26:43,685 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:43,686 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:26:43,690 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:43,690 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/hive/src/main/resources
+2015-09-10 23:26:43,692 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:43,692 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/hive/src/test/resources
+2015-09-10 23:26:45,010 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-geode:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/geode/pom.xml.
+2015-09-10 23:26:45,462 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:45,464 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:26:45,467 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:45,467 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/geode/src/main/resources
+2015-09-10 23:26:45,469 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:45,469 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/geode/src/test/resources
+2015-09-10 23:26:45,527 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-flink:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/flink/pom.xml.
+2015-09-10 23:26:45,931 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:45,933 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:26:45,940 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Source directory: /home/victorgarcia/my-repo/incubator-zeppelin/flink/src/main/scala added.
+2015-09-10 23:26:45,944 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:45,944 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/flink/src/main/resources
+2015-09-10 23:26:45,947 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Test Source directory: /home/victorgarcia/my-repo/incubator-zeppelin/flink/src/test/scala added.
+2015-09-10 23:26:45,951 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:45,952 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/flink/src/test/resources
+2015-09-10 23:26:46,480 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-cassandra:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/cassandra/pom.xml.
+2015-09-10 23:26:46,914 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:46,915 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:26:46,918 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:46,918 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 13 resources
+2015-09-10 23:26:46,919 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:26:46,920 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 14 resources
+2015-09-10 23:27:16,995 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-angular:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/angular/pom.xml.
+2015-09-10 23:27:17,106 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:27:17,107 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:27:17,112 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:27:17,112 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/angular/src/main/resources
+2015-09-10 23:27:17,114 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:27:17,114 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/angular/src/test/resources
+2015-09-10 23:27:17,183 [Worker-1] INFO  o.e.m.c.i.l.LifecycleMappingFactory - Using org.eclipse.m2e.jdt.JarLifecycleMapping lifecycle mapping for MavenProject: org.apache.zeppelin:zeppelin-web:0.6.0-incubating-SNAPSHOT @ /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-web/pom.xml.
+2015-09-10 23:27:17,304 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:27:17,315 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:27:17,335 [Worker-1] INFO  c.g.e.m.p.f.l.DefaultNodeAndNPMInstaller - Node v0.10.18 is already installed.
+2015-09-10 23:27:17,340 [Worker-1] INFO  c.g.e.m.p.f.l.DefaultNodeAndNPMInstaller - Found NPM version 1.3.8
+2015-09-10 23:27:17,346 [Worker-1] INFO  c.g.e.m.p.f.lib.DefaultNpmRunner - Running 'npm install --color=false' in /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-web
+2015-09-10 23:27:20,772 [Worker-1] INFO  c.g.e.m.p.f.lib.DefaultBowerRunner - Running 'bower --allow-root install' in /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-web
+2015-09-10 23:27:22,693 [Thread-9] ERROR c.g.e.m.p.f.lib.DefaultBowerRunner - bower perfect-scrollbar extra-resolution Unnecessary resolution: perfect-scrollbar#~0.5.4
+2015-09-10 23:27:22,706 [Worker-1] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running 'grunt --no-color' in /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-web
+2015-09-10 23:27:25,478 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "newer:jshint" (newer) task
+2015-09-10 23:27:25,482 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:25,482 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "newer:jshint:all" (newer) task
+2015-09-10 23:27:25,500 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - No newer files to process.
+2015-09-10 23:27:25,503 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:25,504 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "newer:jshint:test" (newer) task
+2015-09-10 23:27:25,507 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - No newer files to process.
+2015-09-10 23:27:25,510 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:25,510 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "clean:server" (clean) task
+2015-09-10 23:27:25,518 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Cleaning .tmp...OK
+2015-09-10 23:27:25,520 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:25,520 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "wiredep:app" (wiredep) task
+2015-09-10 23:27:25,786 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:25,786 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "wiredep:test" (wiredep) task
+2015-09-10 23:27:25,813 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:25,814 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "concurrent:test" (concurrent) task
+2015-09-10 23:27:28,177 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     
+2015-09-10 23:27:28,177 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     Running "copy:styles" (copy) task
+2015-09-10 23:27:28,177 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     Copied 6 files
+2015-09-10 23:27:28,177 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     
+2015-09-10 23:27:28,177 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     Done, without errors.
+2015-09-10 23:27:28,177 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     
+2015-09-10 23:27:28,178 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     
+2015-09-10 23:27:28,178 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     Execution Time (2015-09-10 21:27:28 UTC)
+2015-09-10 23:27:28,178 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     loading tasks   7ms  ▇▇▇▇▇▇▇▇▇ 17%
+2015-09-10 23:27:28,178 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     copy:styles    34ms  ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ 83%
+2015-09-10 23:27:28,178 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     Total 41ms
+2015-09-10 23:27:28,180 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     
+2015-09-10 23:27:28,181 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "autoprefixer:dist" (autoprefixer) task
+2015-09-10 23:27:28,251 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File .tmp/styles/custom-font.css created.
+2015-09-10 23:27:28,364 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File .tmp/styles/font-awesome.min.css created.
+2015-09-10 23:27:28,403 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File .tmp/styles/home.css created.
+2015-09-10 23:27:28,409 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File .tmp/styles/interpreter.css created.
+2015-09-10 23:27:28,429 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File .tmp/styles/notebook.css created.
+2015-09-10 23:27:28,449 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File .tmp/styles/simple-line-icons.css created.
+2015-09-10 23:27:28,450 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:28,450 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "connect:test" (connect) task
+2015-09-10 23:27:28,466 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Started connect web server on http://localhost:9001
+2015-09-10 23:27:28,467 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:28,467 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "karma:unit" (karma) task
+2015-09-10 23:27:28,607 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - INFO [karma]: Karma v0.12.37 server started at http://localhost:8080/
+2015-09-10 23:27:28,612 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - INFO [launcher]: Starting browser PhantomJS
+2015-09-10 23:27:29,795 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - INFO [PhantomJS 1.9.8 (Linux 0.0.0)]: Connected on socket VjJOyCRRBCv5adr-J_f9 with id 70257341
+2015-09-10 23:27:30,248 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - PhantomJS 1.9.8 (Linux 0.0.0): Executed 0 of 2 SUCCESS (0 secs / 0 secs)
+2015-09-10 23:27:30,290 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - [1A[2KPhantomJS 1.9.8 (Linux 0.0.0): Executed 1 of 2 SUCCESS (0 secs / 0.024 secs)
+2015-09-10 23:27:30,291 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - [1A[2KPhantomJS 1.9.8 (Linux 0.0.0): Executed 2 of 2 SUCCESS (0 secs / 0.047 secs)
+2015-09-10 23:27:30,292 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - [1A[2KPhantomJS 1.9.8 (Linux 0.0.0): Executed 2 of 2 SUCCESS (0.044 secs / 0.047 secs)
+2015-09-10 23:27:30,305 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:30,305 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "clean:dist" (clean) task
+2015-09-10 23:27:30,315 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Cleaning .tmp...OK
+2015-09-10 23:27:30,316 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Cleaning dist/404.html...OK
+2015-09-10 23:27:30,318 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Cleaning dist/WEB-INF...OK
+2015-09-10 23:27:30,322 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Cleaning dist/app...OK
+2015-09-10 23:27:30,325 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Cleaning dist/assets...OK
+2015-09-10 23:27:30,328 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Cleaning dist/components...OK
+2015-09-10 23:27:30,330 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Cleaning dist/favicon.ico...OK
+2015-09-10 23:27:30,333 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Cleaning dist/fonts...OK
+2015-09-10 23:27:30,336 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Cleaning dist/index.html...OK
+2015-09-10 23:27:30,351 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Cleaning dist/scripts...OK
+2015-09-10 23:27:30,361 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Cleaning dist/styles...OK
+2015-09-10 23:27:30,361 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:30,361 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "wiredep:app" (wiredep) task
+2015-09-10 23:27:30,418 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:30,418 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "wiredep:test" (wiredep) task
+2015-09-10 23:27:30,450 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:30,451 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "useminPrepare:html" (useminPrepare) task
+2015-09-10 23:27:30,481 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Configuration changed for concat, uglify, cssmin
+2015-09-10 23:27:30,483 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:30,484 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "concurrent:dist" (concurrent) task
+2015-09-10 23:27:33,901 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     
+2015-09-10 23:27:34,127 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     Running "svgmin:dist" (svgmin) task
+2015-09-10 23:27:34,128 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     Total saved: 0 B
+2015-09-10 23:27:34,128 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     
+2015-09-10 23:27:34,128 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     Done, without errors.
+2015-09-10 23:27:34,128 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     
+2015-09-10 23:27:34,128 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     
+2015-09-10 23:27:34,128 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     Execution Time (2015-09-10 21:27:33 UTC)
+2015-09-10 23:27:34,128 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     loading tasks   12ms  ▇▇▇▇▇ 10%
+2015-09-10 23:27:34,128 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     svgmin:dist    108ms  ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ 89%
+2015-09-10 23:27:34,128 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     Total 121ms
+2015-09-10 23:27:34,142 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -         
+2015-09-10 23:27:34,142 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     Running "copy:styles" (copy) task
+2015-09-10 23:27:34,142 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     Copied 6 files
+2015-09-10 23:27:34,142 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     
+2015-09-10 23:27:34,143 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     Done, without errors.
+2015-09-10 23:27:34,143 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     
+2015-09-10 23:27:34,143 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     
+2015-09-10 23:27:34,143 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     Execution Time (2015-09-10 21:27:33 UTC)
+2015-09-10 23:27:34,143 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     loading tasks    8ms  ▇▇ 3%
+2015-09-10 23:27:34,143 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     copy:styles    305ms  ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ 97%
+2015-09-10 23:27:34,143 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     Total 313ms
+2015-09-10 23:27:34,144 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner -     
+2015-09-10 23:27:34,148 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "autoprefixer:dist" (autoprefixer) task
+2015-09-10 23:27:34,180 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File .tmp/styles/custom-font.css created.
+2015-09-10 23:27:34,217 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File .tmp/styles/font-awesome.min.css created.
+2015-09-10 23:27:34,232 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File .tmp/styles/home.css created.
+2015-09-10 23:27:34,236 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File .tmp/styles/interpreter.css created.
+2015-09-10 23:27:34,254 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File .tmp/styles/notebook.css created.
+2015-09-10 23:27:34,269 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File .tmp/styles/simple-line-icons.css created.
+2015-09-10 23:27:34,270 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:34,270 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "concat:generated" (concat) task
+2015-09-10 23:27:34,274 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File .tmp/concat/scripts/oldieshim.js created.
+2015-09-10 23:27:34,343 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File .tmp/concat/scripts/vendor.js created.
+2015-09-10 23:27:34,362 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File .tmp/concat/scripts/scripts.js created.
+2015-09-10 23:27:34,362 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:34,362 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "ngAnnotate:dist" (ngAnnotate) task
+2015-09-10 23:27:39,607 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - >> 3 files successfully generated.
+2015-09-10 23:27:39,607 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:39,607 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "copy:dist" (copy) task
+2015-09-10 23:27:39,679 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Created 1 directories, copied 56 files
+2015-09-10 23:27:39,679 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:39,679 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "cssmin:dist" (cssmin) task
+2015-09-10 23:27:39,712 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File dist/styles/main.css created: 51.37 kB → 43.54 kB
+2015-09-10 23:27:39,713 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:39,713 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "cssmin:generated" (cssmin) task
+2015-09-10 23:27:39,787 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File dist/styles/vendor.css created: 153.93 kB → 156.06 kB
+2015-09-10 23:27:39,788 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - >> Destination not written because minified CSS was empty.
+2015-09-10 23:27:39,788 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:39,788 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "uglify:generated" (uglify) task
+2015-09-10 23:27:40,234 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File dist/scripts/oldieshim.js created: 59.08 kB → 21.58 kB
+2015-09-10 23:27:59,049 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File dist/scripts/vendor.js created: 4.75 MB → 1.87 MB
+2015-09-10 23:27:59,348 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - File dist/scripts/scripts.js created: 98.09 kB → 42.15 kB
+2015-09-10 23:27:59,348 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:59,349 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "usemin:html" (usemin) task
+2015-09-10 23:27:59,374 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Replaced 2 references to assets
+2015-09-10 23:27:59,374 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:59,374 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "usemin:css" (usemin) task
+2015-09-10 23:27:59,413 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Replaced 2 references to assets
+2015-09-10 23:27:59,413 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:59,413 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Running "htmlmin:dist" (htmlmin) task
+2015-09-10 23:27:59,423 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Minified dist/404.html 4.12 kB → 3.98 kB
+2015-09-10 23:27:59,425 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Minified dist/index.html 2.71 kB → 2.51 kB
+2015-09-10 23:27:59,428 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Minified dist/app/home/home.html 3.29 kB → 2.97 kB
+2015-09-10 23:27:59,430 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Minified dist/app/interpreter/interpreter-create/interpreter-create.html 2.84 kB → 2.13 kB
+2015-09-10 23:27:59,433 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Minified dist/app/interpreter/interpreter.html 4.37 kB → 3.26 kB
+2015-09-10 23:27:59,439 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Minified dist/app/notebook/notebook.html 8.03 kB → 6.06 kB
+2015-09-10 23:27:59,449 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Minified dist/app/notebook/paragraph/paragraph.html 20.23 kB → 15.54 kB
+2015-09-10 23:27:59,452 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Minified dist/components/modal-shortcut/modal-shortcut.html 3.85 kB → 2.81 kB
+2015-09-10 23:27:59,453 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Minified dist/components/navbar/navbar.html 2.48 kB → 2.17 kB
+2015-09-10 23:27:59,455 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Minified dist/components/noteName-create/note-name-dialog.html 1.94 kB → 1.65 kB
+2015-09-10 23:27:59,455 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Minified dist/components/popover-html-unsafe/popover-html-unsafe-popup.html 822 B → 806 B
+2015-09-10 23:27:59,456 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:59,456 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Done, without errors.
+2015-09-10 23:27:59,457 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:59,457 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:59,458 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Execution Time (2015-09-10 21:27:25 UTC)
+2015-09-10 23:27:59,460 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - concurrent:test    2.4s  ▇▇▇▇ 7%
+2015-09-10 23:27:59,460 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - karma:unit         1.8s  ▇▇▇ 5%
+2015-09-10 23:27:59,460 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - concurrent:dist    3.7s  ▇▇▇▇▇ 11%
+2015-09-10 23:27:59,460 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - ngAnnotate:dist    5.2s  ▇▇▇▇▇▇▇ 15%
+2015-09-10 23:27:59,460 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - uglify:generated  19.6s  ▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇ 58%
+2015-09-10 23:27:59,460 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - Total 34s
+2015-09-10 23:27:59,460 [Thread-10] INFO  c.g.e.m.p.f.lib.DefaultGruntRunner - 
+2015-09-10 23:27:59,509 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:27:59,509 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-web/src/main/resources
+2015-09-10 23:27:59,511 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:27:59,512 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-web/src/test/resources
+2015-09-10 23:27:59,915 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:27:59,916 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:27:59,920 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:27:59,920 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-zengine/src/main/resources
+2015-09-10 23:27:59,922 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:27:59,923 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 3 resources
+2015-09-10 23:28:00,153 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:28:00,154 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 17 resources
+2015-09-10 23:28:00,156 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:28:00,156 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-server/src/main/resources
+2015-09-10 23:28:00,157 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:28:00,158 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 3 resources
+2015-09-10 23:28:02,808 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:28:02,824 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2015-09-10 23:28:02,826 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:28:02,827 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 13 resources
+2015-09-10 23:28:02,829 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:28:02,830 [Worker-1] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 14 resources
+2015-09-10 23:35:09,043 [Worker-12] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:35:09,043 [Worker-12] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2015-09-10 23:35:09,045 [Worker-12] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:35:09,045 [Worker-12] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-server/src/main/resources
+2015-09-10 23:35:09,046 [Worker-12] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:35:09,047 [Worker-12] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2015-09-10 23:35:25,199 [Worker-10] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:35:25,199 [Worker-10] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2015-09-10 23:35:25,201 [Worker-10] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:35:25,201 [Worker-10] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-server/src/main/resources
+2015-09-10 23:35:25,202 [Worker-10] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:35:25,202 [Worker-10] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2015-09-10 23:35:44,071 [Worker-11] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:35:44,072 [Worker-11] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2015-09-10 23:35:44,074 [Worker-11] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:35:44,074 [Worker-11] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-server/src/main/resources
+2015-09-10 23:35:44,076 [Worker-11] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:35:44,076 [Worker-11] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2015-09-10 23:37:29,545 [Worker-14] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:37:29,546 [Worker-14] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
+2015-09-10 23:37:29,547 [Worker-14] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:37:29,547 [Worker-14] INFO  o.e.m.c.i.embedder.EclipseLogger - skip non existing resourceDirectory /home/victorgarcia/my-repo/incubator-zeppelin/zeppelin-server/src/main/resources
+2015-09-10 23:37:29,548 [Worker-14] INFO  o.e.m.c.i.embedder.EclipseLogger - Using 'UTF-8' encoding to copy filtered resources.
+2015-09-10 23:37:29,548 [Worker-14] INFO  o.e.m.c.i.embedder.EclipseLogger - Copying 0 resource
