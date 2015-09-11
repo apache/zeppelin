@@ -655,6 +655,12 @@ angular.module('zeppelinWebApp')
     $scope.runParagraph($scope.editor.getValue());
   });
 
+  $scope.$on('cancelParagraph', function(event, data) {
+    if (data.paragraphId === $scope.paragraph.id) {
+      $scope.paragraph.status = data.status;
+    }
+  });
+
   $scope.$on('openEditor', function(event) {
     $scope.openEditor();
   });

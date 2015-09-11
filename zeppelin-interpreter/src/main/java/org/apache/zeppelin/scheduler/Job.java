@@ -47,6 +47,7 @@ public abstract class Job {
    * PENDING - Job is submitted to scheduler. but not running yet
    * RUNNING - Job is running.
    * FINISHED - Job finished run. with success
+   * CANCELING - Job is canceling/aborting
    * ERROR - Job finished run. with error
    * ABORT - Job finished by abort
    *
@@ -56,6 +57,7 @@ public abstract class Job {
     PENDING,
     RUNNING,
     FINISHED,
+    CANCELING,
     ERROR,
     ABORT;
     boolean isReady() {
