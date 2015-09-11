@@ -101,7 +101,7 @@
     <module>ignite</module>
     <module>kylin</module>
     <module>lens</module>
-    <!-- module>cassandra</module -->
+    <module>cassandra</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
