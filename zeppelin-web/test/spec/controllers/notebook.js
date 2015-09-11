@@ -90,11 +90,7 @@ describe('Controller: NotebookCtrl', function() {
 
   it('should first call killSaveTimer() when calling startSaveTimer()', function() {
     expect(scope.saveTimer).toEqual(null);
-    spyOn(scope, 'killSaveTimer');
     scope.startSaveTimer();
-    expect(scope.killSaveTimer).toHaveBeenCalled();
-  });
-
     expect(scope.isNoteDirty).toEqual(true);
     expect(scope.saveTimer).toBeTruthy();
   });
