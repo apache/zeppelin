@@ -18,8 +18,12 @@ package org.apache.zeppelin.rest;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -75,7 +79,6 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   public void pySparkTest() throws IOException {
     // create new note
     Note note = ZeppelinServer.notebook.createNote();
-
     int sparkVersion = getSparkVersionNumber(note);
 
     if (isPyspark() && sparkVersion >= 12) {   // pyspark supported from 1.2.1
@@ -127,6 +130,46 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     assertEquals("10", p2.getResult().message());
 
     ZeppelinServer.notebook.removeNote(note.id());
+  }
+
+  @Test
+  public void pySparkDepLoaderTest() throws IOException {
+    // create new note
+    Note note = ZeppelinServer.notebook.createNote();
+
+    if (isPyspark() && getSparkVersionNumber(note) >= 14) {
+      // restart spark interpreter
+      List<InterpreterSetting> settings =
+          ZeppelinServer.notebook.getBindedInterpreterSettings(note.id());
+
+      for (InterpreterSetting setting : settings) {
+        if (setting.getGroup().equals("spark")) {
+          ZeppelinServer.notebook.getInterpreterFactory().restart(setting.id());
+          break;
+        }
+      }
+
+      // load dep
+      Paragraph p0 = note.addParagraph();
+      p0.setText("%dep z.load(\"com.databricks:spark-csv_2.11:1.2.0\")");
+      note.run(p0.getId());
+      waitForFinish(p0);
+
+      // write test csv file
+      File tmpFile = File.createTempFile("test", "csv");
+      FileUtils.write(tmpFile, "a,b\n1,2");
+
+      // load data using libraries from dep loader
+      Paragraph p1 = note.addParagraph();
+      p1.setText("%pyspark\n" +
+        "from pyspark.sql import SQLContext\n" +
+        "print(sqlContext.read.format('com.databricks.spark.csv')" +
+        ".load('"+ tmpFile.getAbsolutePath() +"').count())");
+      note.run(p1.getId());
+
+      waitForFinish(p1);
+      assertEquals("2\n", p1.getResult().message());
+    }
   }
 
   /**
