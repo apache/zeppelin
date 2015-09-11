@@ -43,78 +43,81 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class JsInterpreter extends Interpreter {
-	Logger logger = LoggerFactory.getLogger(JsInterpreter.class);
-	int commandTimeOut = 600000;
+  Logger logger = LoggerFactory.getLogger(JsInterpreter.class);
+  int commandTimeOut = 600000;
 
-	ScriptEngine engine;
+  ScriptEngine engine;
 
-	static {
-		Interpreter.register("js", JsInterpreter.class.getName());
-	}
+  static {
+    Interpreter.register("js", JsInterpreter.class.getName());
+  }
 
-	public JsInterpreter(Properties property) {
-		super(property);
+  public JsInterpreter(Properties property) {
+    super(property);
 
-		engine = new ScriptEngineManager().getEngineByName("nashorn");
+    engine = new ScriptEngineManager().getEngineByName("nashorn");
 
-	}
+  }
 
-	@Override
-	public void open() {}
+  @Override
+  public void open() {
+  }
 
-	@Override
-	public void close() {}
+  @Override
+  public void close() {
+  }
 
+  @Override
+  public InterpreterResult interpret(String cmd,
+      InterpreterContext contextInterpreter) {
+    logger.info("Run shell command '" + cmd + "'");
+    long start = System.currentTimeMillis();
 
-	@Override
-	public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
-		logger.info("Run shell command '" + cmd + "'");
-		long start = System.currentTimeMillis();
+    StringWriter sw = new StringWriter();
 
-		StringWriter sw = new StringWriter();
+    String result;
 
-		String result; 
+    engine.getContext().setWriter(sw);
 
-		engine.getContext().setWriter(sw);
+    try {
+      Object o = engine.eval(new StringReader(cmd));
 
-		try {
-			Object o = engine.eval(new StringReader(cmd));
+      if (o != null) {
+        result = sw.toString() + "\n\r" + o.toString();
+      } else {
+        result = sw.toString();
+      }
 
-			if (o != null) {
-				result = sw.toString() + "\n\r"+ o.toString();
-			} else {
-				result = sw.toString();
-			}
-			
-			return new InterpreterResult( InterpreterResult.Code.SUCCESS, result.toString());
-		} catch (ScriptException e) {
-			return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
-		}
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS, result.toString());
+    } catch (ScriptException e) {
+      return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
+    }
 
-	}
+  }
 
-	@Override
-	public void cancel(InterpreterContext context) {}
+  @Override
+  public void cancel(InterpreterContext context) {
+  }
 
-	@Override
-	public FormType getFormType() {
-		return FormType.SIMPLE;
-	}
+  @Override
+  public FormType getFormType() {
+    return FormType.SIMPLE;
+  }
 
-	@Override
-	public int getProgress(InterpreterContext context) {
-		return 0;
-	}
+  @Override
+  public int getProgress(InterpreterContext context) {
+    return 0;
+  }
 
-	@Override
-	public Scheduler getScheduler() {
-		return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-				JsInterpreter.class.getName() + this.hashCode());
-	}
+  @Override
+  public Scheduler getScheduler() {
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
+               JsInterpreter.class.getName() + this.hashCode());
+  }
 
-	@Override
-	public List<String> completion(String buf, int cursor) {
-		return null;
-	}
+  @Override
+  public List<String> completion(String buf, int cursor) {
+    return null;
+  }
 
 }
