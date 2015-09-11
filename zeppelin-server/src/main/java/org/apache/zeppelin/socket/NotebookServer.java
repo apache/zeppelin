@@ -381,9 +381,10 @@ public class NotebookServer extends WebSocketServlet implements
     note.addParagraph(); // it's an empty note. so add one paragraph
     if (message != null) {
       String noteName = (String) message.get("name");
-      if (noteName != null && !noteName.isEmpty()){
-        note.setName(noteName);
+      if (noteName == null || noteName.isEmpty()){
+        noteName = "Note " + note.getId();
       }
+      note.setName(noteName);
     }
 
     note.persist();

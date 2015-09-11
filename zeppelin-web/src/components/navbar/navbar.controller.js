@@ -15,16 +15,17 @@
 
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams, notebookListDataFactory, websocketMsgSrv) {
+angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams, notebookListDataFactory, websocketMsgSrv, arrayOrderingSrv) {
   /** Current list of notes (ids) */
 
   var vm = this;
   vm.notes = notebookListDataFactory;
   vm.connected = websocketMsgSrv.isConnected();
   vm.websocketMsgSrv = websocketMsgSrv;
-
-  $('#notebook-list').perfectScrollbar({suppressScrollX : true});
-
+  vm.arrayOrderingSrv = arrayOrderingSrv;
+  
+  $('#notebook-list').perfectScrollbar({suppressScrollX: true});
+  
   $scope.$on('setNoteMenu', function(event, notes) {
     notebookListDataFactory.setNotes(notes);
   });
