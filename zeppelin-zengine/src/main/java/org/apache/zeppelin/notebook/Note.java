@@ -89,6 +89,10 @@ public class Note implements Serializable, JobListener {
   public String id() {
     return id;
   }
+  
+  public String getId() {
+    return id;
+  }
 
   public String getName() {
     return name;

@@ -382,7 +382,7 @@ public class NotebookServer extends WebSocketServlet implements
     if (message != null) {
       String noteName = (String) message.get("name");
       if (noteName == null || noteName.isEmpty()){
-        noteName = "Note " + note.id;
+        noteName = "Note " + note.getId();
       }
       note.setName(noteName);
     }
