@@ -30,7 +30,7 @@
   <artifactId>zeppelin-js</artifactId>
   <packaging>jar</packaging>
   <version>0.6.0-incubating-SNAPSHOT</version>
-  <name>Zeppelin: Shell interpreter</name>
+  <name>Zeppelin: JS interpreter</name>
   <url>http://zeppelin.incubator.apache.org</url>
 
   <dependencies>
