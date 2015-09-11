@@ -70,7 +70,7 @@ public class JsInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String cmd,
       InterpreterContext contextInterpreter) {
-    logger.info("Run shell command '" + cmd + "'");
+    logger.info("Run js command '" + cmd + "'");
     long start = System.currentTimeMillis();
 
     StringWriter sw = new StringWriter();
