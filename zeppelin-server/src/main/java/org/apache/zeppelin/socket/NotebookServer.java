@@ -624,7 +624,6 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     note.persist();
-    broadcastNote(note);
     try {
       note.run(paragraphId);
     } catch (Exception ex) {
@@ -678,7 +677,6 @@ public class NotebookServer extends WebSocketServlet implements
           e.printStackTrace();
         }
       }
-
       notebookServer.broadcastNote(note);
     }
   }
