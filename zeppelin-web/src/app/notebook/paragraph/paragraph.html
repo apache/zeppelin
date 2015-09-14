@@ -133,6 +133,10 @@ limitations under the License.
                 ng-class="{'active': isGraphMode('pieChart')}"
                 ng-click="setDonutFlag(true);setGraphMode('pieChart', true)"><i class="fa fa-donut-chart"></i>
         </button>
+        <button type="button" class="btn btn-default btn-sm"
+                ng-class="{'active': isGraphMode('boxPlotChart')}"
+                ng-click="setGraphMode('boxPlotChart', true)"><i class="fa fa-box-plot-chart"></i>
+        </button>
       </div>
       <span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && !asIframe && !viewOnly"
             style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
@@ -335,6 +339,11 @@ limitations under the License.
 
         <div ng-if="getGraphMode()=='scatterChart'"
              id="p{{paragraph.id}}_scatterChart">
+          <svg></svg>
+        </div>
+        
+        <div ng-if="getGraphMode()=='boxPlotChart'"
+             id="p{{paragraph.id}}_boxPlotChart">
           <svg></svg>
         </div>
       </div>
