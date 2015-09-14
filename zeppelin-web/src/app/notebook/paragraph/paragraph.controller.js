@@ -906,6 +906,14 @@ angular.module('zeppelinWebApp')
             });
           }
         }
+      } else if (type === 'boxPlotChart'){
+        d3g = exampleData();
+        $scope.chart[type].x(function(d) { return d.label;})
+                          .y(function(d) { return d.value.Q3;})
+                          .staggerLabels(false)
+                          .maxBoxWidth(75) // prevent boxes from being incredibly wide 
+                          .yDomain([0, 500]);
+        
       } else if (type === 'multiBarChart') {
         d3g = pivotDataToD3ChartFormat(p, true, false, type).d3g;
         $scope.chart[type].yAxis.axisLabelDistance(50);
@@ -924,6 +932,44 @@ angular.module('zeppelinWebApp')
         $scope.chart[type].useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
         $scope.chart[type].forceY([0]); // force y-axis minimum to 0 for line chart.
       }
+    }
+    
+    function exampleData() {
+     return  [ 
+        {
+          label: "Sample A",
+          values: { 
+            Q1: 120,
+            Q2: 150,
+            Q3: 200,
+            whisker_low: 115,
+            whisker_high: 210,
+            outliers: [50, 100, 225]
+          },
+        },
+        {
+          label: "Sample B",
+          values: { 
+            Q1: 300,
+            Q2: 350,
+            Q3: 400,
+            whisker_low: 225,
+            whisker_high: 425,
+            outliers: [175]          
+          },
+        },
+        {
+          label: "Sample C",
+          values: { 
+            Q1: 50,
+            Q2: 100,
+            Q3: 125,
+            whisker_low: 25,
+            whisker_high: 175,
+            outliers: [0]
+          },
+        }
+      ];
     }
 
     var renderChart = function() {
