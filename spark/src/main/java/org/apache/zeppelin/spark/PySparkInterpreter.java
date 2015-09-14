@@ -159,6 +159,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       Thread.currentThread().setContextClassLoader(newCl);
       createGatewayServerAndStartScript();
     } catch (Exception e) {
+      logger.error("Error", e);
       throw new InterpreterException(e);
     } finally {
       Thread.currentThread().setContextClassLoader(oldCl);
