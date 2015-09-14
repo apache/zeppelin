@@ -103,7 +103,6 @@ public class ZeppelinServer extends Application {
       jettyServer.start();
     } catch (Exception e) {
       LOG.error("Error while running jettyServer", e);
-      //TODO(jl): Fix the error status code
       System.exit(-1);
     }
     LOG.info("Started zeppelin server");
