@@ -1,6 +1,11 @@
 ## Zeppelin project website
 
-## Build
+Welcome to the Zeppelin documentation!
+
+This readme will walk you through building the Zeppelin documentation, which is included here with the Zeppelin source code.
+
+
+## Build website
 See https://help.github.com/articles/using-jekyll-with-pages#installing-jekyll
 
 **tl;dr version:**
@@ -11,22 +16,25 @@ See https://help.github.com/articles/using-jekyll-with-pages#installing-jekyll
     
 *On OS X 10.9 you may need to do "xcode-select --install"*
 
-## On local machine
 
-### Run
+## Run website
+
     bundle exec jekyll serve --watch
 
-### Deploy
- 1. generate static website in ```_site```
 
-    bundle exec jekyll build
- 2. checkout asf repo
+## Deploy to ASF svnpubsub infra (commiters only)
+ 1. generate static website in `./_site`
+    ```
+    bundle exec jekyll build --safe
+    ```
 
+ 2. checkout ASF repo
+    ```
     svn co https://svn.apache.org/repos/asf/incubator/zeppelin asf-zepplelin
-
+    ```
  3. copy zeppelin/_site to asf-zepplelin/site
- 4.  svn commit
+ 4. ```svn commit```
 
-### Add a new page
+## Adding a new page
+
     rake page name="new-page.md"
-    
