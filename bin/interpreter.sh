@@ -114,7 +114,7 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
       ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
     fi
 
-    export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+    #export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
   fi
 fi
 
