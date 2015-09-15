@@ -61,6 +61,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       return;
     }
 
+    $scope.addNewInterpreterProperty(settingId);
     var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
 
     var request = {
@@ -147,6 +148,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       return;
     }
 
+    $scope.addNewInterpreterProperty();
     var newSetting = angular.copy($scope.newInterpreterSetting);
 
     for (var p in $scope.newInterpreterSetting.properties) {
@@ -199,8 +201,9 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       // Add new property from edit form
       var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
       var setting = $scope.interpreterSettings[index];
-
-      setting.properties[setting.propertyKey] = setting.propertyValue;
+      if(setting.propertyKey){
+	    setting.properties[setting.propertyKey] = setting.propertyValue;
+      }
       emptyNewProperty(setting);
     }
   };
