@@ -427,10 +427,12 @@ public class NotebookServer extends WebSocketServlet implements
       .equals(p.getId());
     if (!Strings.isNullOrEmpty(text) && isTheLastParagraph) {
       note.addParagraph();
+      note.persist();
+      broadcast(note.id(), new Message(OP.NOTE).put("note", note));
+    } else {
+      note.persist();
+      broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
     }
-
-    note.persist();
-    broadcast(note.id(), new Message(OP.NOTE).put("note", note));
   }
   
   private void cloneNote(NotebookSocket conn, Notebook notebook, Message fromMessage)

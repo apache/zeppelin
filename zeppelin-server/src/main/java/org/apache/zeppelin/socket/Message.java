@@ -41,6 +41,9 @@ public class Message {
 
     NOTE, // [s-c] note info
           // @param note serlialized Note object
+    
+    PARAGRAPH, // [s-c] paragraph info
+    // @param paragraph serialized paragraph object
 
     PROGRESS, // [s-c] progress update
               // @param id paragraph id
