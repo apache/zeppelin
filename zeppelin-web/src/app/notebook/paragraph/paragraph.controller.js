@@ -907,7 +907,7 @@ angular.module('zeppelinWebApp')
           }
         }
       } else if (type === 'boxPlotChart'){
-        d3g = exampleData();
+        d3g = pivotDatatoBoxFormat(data);
         $scope.chart[type].x(function(d) { return d.label;})
                           .y(function(d) { return d.value.Q3;})
                           .staggerLabels(false)
@@ -934,42 +934,63 @@ angular.module('zeppelinWebApp')
       }
     }
     
-    function exampleData() {
+    var pivotDataToBoxFormat = function(data) {
+      // parse in the required data here into 'val' array
+      var i;
+      for(i=0;i<data.rows.length;i++){
+        val.push(parseInt(data.rows[i][0]))
+      } ;
      return  [ 
         {
           label: "Sample A",
-          values: { 
-            Q1: 120,
-            Q2: 150,
-            Q3: 200,
-            whisker_low: 115,
-            whisker_high: 210,
-            outliers: [50, 100, 225]
-          },
-        },
-        {
-          label: "Sample B",
-          values: { 
-            Q1: 300,
-            Q2: 350,
-            Q3: 400,
-            whisker_low: 225,
-            whisker_high: 425,
-            outliers: [175]          
-          },
-        },
-        {
-          label: "Sample C",
-          values: { 
-            Q1: 50,
-            Q2: 100,
-            Q3: 125,
-            whisker_low: 25,
-            whisker_high: 175,
-            outliers: [0]
-          },
+          values: computeBoxValues(val),
         }
       ];
+    };
+    
+    var computeBoxValues = function (values){
+      var Q1,Q2,Q3;
+        var iqr,low,high,whisker_high,whisker_low;
+        var outliers = [];
+        var i=0; var j=0;
+
+        var q1Arr = (values.length % 2 == 0) ? values.slice(0, (values.length / 2)) : values.slice(0, Math.floor(values.length / 2));
+        var q2Arr =  values;
+        var q3Arr = (values.length % 2 == 0) ? values.slice((values.length / 2), values.length) : values.slice(Math.ceil(values.length / 2), values.length);
+        Q1 = medianX(q1Arr);
+        Q2 =medianX(q2Arr);
+        Q3 =medianX(q3Arr);
+                
+        iqr = Q3-Q1;
+        low = Q1 - 1.5 * iqr;
+        high = Q3 + 1.5 * iqr;
+
+       while(q1Arr[i]<low)
+            {
+                outliers.push(q1Arr[i]);
+                i++;
+            }
+        whisker_low = q1Arr[i];
+
+        while(q3Arr[j]<high) { j++;}
+
+        whisker_high = q3Arr[j-1];
+
+        outliers = outliers.concat(q3Arr.splice(j,q3Arr.length));
+        return {
+          Q1 : Q1,
+          Q2 : Q2,
+          Q3 : Q3,
+          whisker_low: whisker_low,
+          whisker_high: whisker_high,
+          outliers: outliers
+        };
+    };
+    
+    var medianX = function (medianArr) {
+      var count = medianArr.length;
+      var median = (count % 2 == 0) ? (medianArr[(medianArr.length/2) - 1] + medianArr[(medianArr.length / 2)]) / 2:medianArr[Math.floor(medianArr.length / 2)];
+      return median;
     }
 
     var renderChart = function() {
