@@ -394,6 +394,7 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     note.persist();
+    addConnectionToNote(note.id(), (NotebookSocket) conn);
     broadcastNote(note);
     broadcastNoteList();
   }
@@ -437,6 +438,7 @@ public class NotebookServer extends WebSocketServlet implements
     String noteId = getOpenNoteId(conn);
     String name = (String) fromMessage.get("name");
     Note newNote = notebook.cloneNote(noteId, name);
+    addConnectionToNote(newNote.id(), (NotebookSocket) conn);
     broadcastNote(newNote);
     broadcastNoteList();
   }
