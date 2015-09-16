@@ -145,6 +145,14 @@ limitations under the License.
       <div class="option lightBold" style="overflow: visible;"
          ng-if="getResultType()=='TABLE' && getGraphMode()!='table'
          && paragraph.config.graph.optionOpen && !asIframe && !viewOnly">
+        <label>
+          <input type="checkbox"
+                 ng-model="paragraph.config.graph.forceY"
+                 ng-click="onGraphOptionChange()">
+          force Y to 0
+        </label>
+        <br />
+
         All fields:
         <div class="allFields row">
           <ul class="noDot">

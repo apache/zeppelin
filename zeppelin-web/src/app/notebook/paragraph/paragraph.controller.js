@@ -939,7 +939,11 @@ angular.module('zeppelinWebApp')
         });
         $scope.chart[type].yAxis.axisLabelDistance(50);
         $scope.chart[type].useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
-        $scope.chart[type].forceY([0]); // force y-axis minimum to 0 for line chart.
+        if($scope.paragraph.config.graph.forceY) {
+          $scope.chart[type].forceY([0]); // force y-axis minimum to 0 for line chart.
+        } else {
+          $scope.chart[type].forceY([]);
+        }
       }
     }
 
