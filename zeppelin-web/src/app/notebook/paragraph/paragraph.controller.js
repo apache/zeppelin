@@ -936,7 +936,7 @@ angular.module('zeppelinWebApp')
     
     var pivotDataToBoxFormat = function(data) {
       // parse in the required data here into 'val' array
-      var i;
+      var i; var val = [];
       for(i=0;i<data.rows.length;i++){
         val.push(parseInt(data.rows[i][0]))
       } ;
