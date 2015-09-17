@@ -16,7 +16,6 @@ body {
   background: white;
 }
 
-
 /**
  * Box and well
  */
@@ -39,15 +38,8 @@ body {
   min-height: 32px;
 }
 
-.paragraph-space {
-  margin-bottom: 5px;
-  padding: 10px !important;
-}
-
 .paragraph .control {
   visibility : hidden;
-  right:15px;
-  top: 6px;
 }
 
 .paragraph:hover .control {

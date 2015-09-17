@@ -16,7 +16,6 @@ body {
   background: white;
 }
 
-
 /**
  * Box and well
  */
@@ -31,11 +30,11 @@ body {
   border: 1px solid #DDDDDD;
 }
 
-.paragraph-col .focused{
+.paragraph-col .focused {
   box-shadow: 1px 2px 7px rgba(0, 0, 0, 0.3);
 }
 
-.paragraph-col{
+.paragraph-col {
   border: 2px solid white;
 }
 
@@ -49,8 +48,6 @@ body {
 
 .paragraph .control {
   visibility : hidden;
-  right:15px;
-  top: 6px;
 }
 
 .paragraph:hover .control {
