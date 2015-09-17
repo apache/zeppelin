@@ -204,10 +204,8 @@ a.navbar-brand:hover {
 .box-heading{
   position:relative;
   max-width: 100%;
-  /*font-size: 20px;*/
   font-weight:300;
   white-space: nowrap;
-  /*overflow:hidden;*/
   text-overflow: ellipsis;
   vertical-align: middle;
   margin: 0 0 15px;
@@ -232,7 +230,6 @@ h6.box-heading{
   position: relative;
   top: 0;
 }
-
 
 .zeppelin {
   background-image: url('/assets/images/zepLogo.png');

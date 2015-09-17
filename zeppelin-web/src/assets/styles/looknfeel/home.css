@@ -53,14 +53,6 @@ body {
   border-bottom: 1px solid #E5E5E5;
 }
 
-.control span {
-    margin-left: 4px;
-}
-
-.control {
-    padding: 4px;
-}
-
 .paragraph-space {
   margin-bottom: 5px;
   padding: 10px !important;
