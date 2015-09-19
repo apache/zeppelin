@@ -397,6 +397,23 @@ angular.module('zeppelinWebApp')
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
+  $scope.toggleLineWithFocus = function () {
+    var mode = $scope.getGraphMode();
+
+    if (mode === 'lineWithFocusChart') {
+      $scope.setGraphMode('lineChart', true);
+      return true;
+    }
+
+    if (mode === 'lineChart') {
+      $scope.setGraphMode('lineWithFocusChart', true);
+      return true;
+    }
+
+    return false;
+  };
+
+
 
   $scope.loadForm = function(formulaire, params) {
     var value = formulaire.defaultValue;
@@ -914,7 +931,7 @@ angular.module('zeppelinWebApp')
       } else if (type === 'multiBarChart') {
         d3g = pivotDataToD3ChartFormat(p, true, false, type).d3g;
         $scope.chart[type].yAxis.axisLabelDistance(50);
-      } else if (type === 'lineChart' || type === 'stackedAreaChart') {
+      } else if (type === 'lineChart' || type === 'stackedAreaChart' || type === 'lineWithFocusChart') {
         var pivotdata = pivotDataToD3ChartFormat(p, false, true);
         xLabels = pivotdata.xLabels;
         d3g = pivotdata.d3g;
@@ -926,8 +943,14 @@ angular.module('zeppelinWebApp')
           }
         });
         $scope.chart[type].yAxis.axisLabelDistance(50);
-        $scope.chart[type].useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
-        $scope.chart[type].forceY([0]); // force y-axis minimum to 0 for line chart.
+        if ($scope.chart[type].useInteractiveGuideline) { // lineWithFocusChart hasn't got useInteractiveGuideline
+          $scope.chart[type].useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
+        }
+        if($scope.paragraph.config.graph.forceY) {
+          $scope.chart[type].forceY([0]); // force y-axis minimum to 0 for line chart.
+        } else {
+          $scope.chart[type].forceY([]);
+        }
       }
     }
 
