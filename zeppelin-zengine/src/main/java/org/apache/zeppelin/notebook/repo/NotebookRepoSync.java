@@ -74,20 +74,28 @@ public class NotebookRepoSync implements NotebookRepo{
   public List<NoteInfo> list() throws IOException {
     return getRepo(0).list();
   }
-  
-  /* list from specific repo (for tests) */
+
+  public List<NoteInfo> list(String owner) throws IOException {
+    return getRepo(0).list(owner);
+  }
+
+    /* list from specific repo (for tests) */
   List<NoteInfo> list(int repoIndex) throws IOException {
     return getRepo(repoIndex).list();
   }
 
-  /* by default returns from first repository */ 
-  public Note get(String noteId) throws IOException {
-    return getRepo(0).get(noteId);
+  List<NoteInfo> list(int repoIndex, String owner) throws IOException {
+    return getRepo(repoIndex).list(owner);
+  }
+
+    /* by default returns from first repository */
+  public Note get(String noteId, String owner) throws IOException {
+    return getRepo(0).get(noteId, owner);
   }
 
   /* get note from specific repo (for tests) */
-  Note get(int repoIndex, String noteId) throws IOException {
-    return getRepo(repoIndex).get(noteId);
+  Note get(int repoIndex, String noteId, String owner) throws IOException {
+    return getRepo(repoIndex).get(noteId, owner);
   }
   
   /* by default saves to all repos */
@@ -108,9 +116,9 @@ public class NotebookRepoSync implements NotebookRepo{
     getRepo(repoIndex).save(note);
   }
 
-  public void remove(String noteId) throws IOException {
+  public void remove(String noteId, String owner) throws IOException {
     for (NotebookRepo repo : repos) {
-      repo.remove(noteId);
+      repo.remove(noteId, owner);
     }
     /* TODO(khalid): handle case when removing from secondary storage fails */
   }
@@ -126,28 +134,28 @@ public class NotebookRepoSync implements NotebookRepo{
     List <NoteInfo> sourceNotes = sourceRepo.list();
     List <NoteInfo> destNotes = destRepo.list();
     
-    Map<String, List<String>> noteIDs = notesCheckDiff(sourceNotes,
+    Map<String, List<NoteInfo>> noteInfos = notesCheckDiff(sourceNotes,
                                                        sourceRepo,
                                                        destNotes,
                                                        destRepo);
-    List<String> pushNoteIDs = noteIDs.get(pushKey);
-    List<String> pullNoteIDs = noteIDs.get(pullKey);
-    if (!pushNoteIDs.isEmpty()) {
+    List<NoteInfo> pushNoteInfos = noteInfos.get(pushKey);
+    List<NoteInfo> pullNoteInfos = noteInfos.get(pullKey);
+    if (!pushNoteInfos.isEmpty()) {
       LOG.info("Notes with the following IDs will be pushed");
-      for (String id : pushNoteIDs) {
-        LOG.info("ID : " + id);
+      for (NoteInfo noteInfo : pushNoteInfos) {
+        LOG.info("ID : " + noteInfo.getId());
       }
-      pushNotes(pushNoteIDs, sourceRepo, destRepo);
+      pushNotes(pushNoteInfos, sourceRepo, destRepo);
     } else {
       LOG.info("Nothing to push");
     }
     
-    if (!pullNoteIDs.isEmpty()) {
+    if (!pullNoteInfos.isEmpty()) {
       LOG.info("Notes with the following IDs will be pulled");
-      for (String id : pullNoteIDs) {
-        LOG.info("ID : " + id);
+      for (NoteInfo noteInfo : pullNoteInfos) {
+        LOG.info("ID : " + noteInfo.getId());
       }
-      pushNotes(pullNoteIDs, destRepo, sourceRepo);
+      pushNotes(pullNoteInfos, destRepo, sourceRepo);
     } else {
       LOG.info("Nothing to pull");
     }
@@ -159,10 +167,10 @@ public class NotebookRepoSync implements NotebookRepo{
     sync(0, 1);
   }
   
-  private void pushNotes(List<String> ids, NotebookRepo localRepo,
+  private void pushNotes(List<NoteInfo> noteInfos, NotebookRepo localRepo,
                             NotebookRepo remoteRepo) throws IOException {
-    for (String id : ids) {
-      remoteRepo.save(localRepo.get(id));
+    for (NoteInfo noteInfo: noteInfos) {
+      remoteRepo.save(localRepo.get(noteInfo.getId(), noteInfo.getOwner()));
     }
   }
 
@@ -181,12 +189,12 @@ public class NotebookRepoSync implements NotebookRepo{
     return repos.get(repoIndex);
   }
   
-  private Map<String, List<String>> notesCheckDiff(List <NoteInfo> sourceNotes,
+  private Map<String, List<NoteInfo>> notesCheckDiff(List <NoteInfo> sourceNotes,
                                                    NotebookRepo sourceRepo,
                                                    List <NoteInfo> destNotes,
                                                    NotebookRepo destRepo) throws IOException {
-    List <String> pushIDs = new ArrayList<String>();
-    List <String> pullIDs = new ArrayList<String>();
+    List <NoteInfo> pushIDs = new ArrayList<NoteInfo>();
+    List <NoteInfo> pullIDs = new ArrayList<NoteInfo>();
     
     NoteInfo dnote;
     Date sdate, ddate;
@@ -194,22 +202,22 @@ public class NotebookRepoSync implements NotebookRepo{
       dnote = containsID(destNotes, snote.getId());
       if (dnote != null) {
         /* note exists in source and destination storage systems */
-        sdate = lastModificationDate(sourceRepo.get(snote.getId()));
-        ddate = lastModificationDate(destRepo.get(dnote.getId()));
+        sdate = lastModificationDate(sourceRepo.get(snote.getId(), snote.getOwner()));
+        ddate = lastModificationDate(destRepo.get(dnote.getId(), snote.getOwner()));
         if (sdate.after(ddate)) {
           /* source contains more up to date note - push */
-          pushIDs.add(snote.getId());
+          pushIDs.add(snote);
           LOG.info("Modified note is added to push list : " + sdate);
         } else if (sdate.compareTo(ddate) != 0) {
           /* destination contains more up to date note - pull */
           LOG.info("Modified note is added to pull list : " + ddate);
-          pullIDs.add(snote.getId());
+          pullIDs.add(snote);
         }
       } else {
         /* note exists in source storage, and absent in destination
          * view source as up to date - push
          * (another scenario : note was deleted from destination - not considered)*/
-        pushIDs.add(snote.getId());
+        pushIDs.add(snote);
       }
     }
     
@@ -217,11 +225,11 @@ public class NotebookRepoSync implements NotebookRepo{
       dnote = containsID(sourceNotes, note.getId());
       if (dnote == null) {
         /* note exists in destination storage, and absent in source - pull*/
-        pullIDs.add(note.getId());
+        pullIDs.add(note);
       }
     }
     
-    Map<String, List<String>> map = new HashMap<String, List<String>>();
+    Map<String, List<NoteInfo>> map = new HashMap<String, List<NoteInfo>>();
     map.put(pushKey, pushIDs);
     map.put(pullKey, pullIDs);
     return map;
@@ -293,5 +301,4 @@ public class NotebookRepoSync implements NotebookRepo{
         entry.getValue().toString() + "of class " + entry.getClass());
     }
   }
-
 }
