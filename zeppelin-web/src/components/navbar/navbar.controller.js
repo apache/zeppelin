@@ -50,7 +50,7 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
       vm.loadNotes();
     }).
     error(function(data, status, headers, config) {
-      console.log("Could not get ticket");
+      console.log('Could not get ticket');
     });
 
   function isActive(noteId) {
