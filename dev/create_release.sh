@@ -32,6 +32,11 @@ if [[ -z "${TAR}" ]]; then
     TAR=/usr/bin/tar
 fi
 
+if [[ -z "${SHASUM}" ]]; then
+    SHASUM="/usr/bin/shasum -a 512"
+fi
+
+
 if [[ -z "${WORKING_DIR}" ]]; then
     WORKING_DIR=/tmp/incubator-zeppelin-release
 fi
@@ -82,7 +87,7 @@ echo "Signing the source package"
 cd ${WORKING_DIR}
 echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --armor --output zeppelin-${RELEASE_NAME}.tgz.asc --detach-sig ${WORKING_DIR}/zeppelin-${RELEASE_NAME}.tgz
 echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --print-md MD5 zeppelin-${RELEASE_NAME}.tgz > ${WORKING_DIR}/zeppelin-${RELEASE_NAME}.tgz.md5
-echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --print-md SHA512 zeppelin-${RELEASE_NAME}.tgz > ${WORKING_DIR}/zeppelin-${RELEASE_NAME}.tgz.sha
+${SHASUM} zeppelin-${RELEASE_NAME}.tgz > ${WORKING_DIR}/zeppelin-${RELEASE_NAME}.tgz.sha512
 
 
 function make_binary_release() {
@@ -107,12 +112,12 @@ function make_binary_release() {
     # sign bin package
     echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --armor --output zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.asc --detach-sig zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz
     echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --print-md MD5 zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz > zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.md5
-    echo $GPG_PASSPHRASE | gpg --passphrase-fd 0 --print-md SHA512 zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz > zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.sha
+    ${SHASUM} zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz > zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.sha512
 
     mv zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz ${WORKING_DIR}/
     mv zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.asc ${WORKING_DIR}/
     mv zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.md5 ${WORKING_DIR}/
-    mv zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.sha ${WORKING_DIR}/
+    mv zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz.sha512 ${WORKING_DIR}/
 
     # clean up build dir
     rm -rf ${WORKING_DIR}/zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}

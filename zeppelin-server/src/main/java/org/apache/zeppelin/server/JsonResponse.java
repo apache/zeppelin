@@ -105,6 +105,7 @@ public class JsonResponse<T> {
     if (pretty) {
       gsonBuilder.setPrettyPrinting();
     }
+    gsonBuilder.setExclusionStrategies(new JsonExclusionStrategy());
     Gson gson = gsonBuilder.create();
     return gson.toJson(this);
   }

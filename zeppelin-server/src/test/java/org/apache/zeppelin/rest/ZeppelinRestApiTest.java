@@ -25,7 +25,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
@@ -42,7 +45,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 /**
  * BASIC Zeppelin rest api tests
- * TODO: Add Post,Put,Delete test and method
  *
  * @author anthonycorbacho
  *
@@ -81,9 +83,10 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
     // then
     assertThat(get, isAllowed());
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>(){}.getType());
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
     Map<String, Object> body = (Map<String, Object>) resp.get("body");
-    assertEquals(ZeppelinConfiguration.ConfVars.ZEPPELIN_INTERPRETERS.getStringValue().split(",").length, body.size());
+    assertEquals(ZeppelinServer.notebook.getInterpreterFactory().getRegisteredInterpreterList().size(), body.size());
     get.releaseConnection();
   }
 
@@ -93,20 +96,51 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     GetMethod get = httpGet("/interpreter/setting");
 
     // then
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>(){}.getType());
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
     assertThat(get, isAllowed());
     get.releaseConnection();
   }
 
+  @Test
+  public void testSettingsCRUD() throws IOException {
+    // Call Create Setting REST API
+    String jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"},\"" +
+        "interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]}";
+    PostMethod post = httpPost("/interpreter/setting/", jsonRequest);
+    LOG.info("testSettingCRUD create response\n" + post.getResponseBodyAsString());
+    assertThat("test create method:", post, isCreated());
 
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    Map<String, Object> body = (Map<String, Object>) resp.get("body");
+    //extract id from body string {id=2AWMQDNX7, name=md2, group=md,
+    String newSettingId =  body.toString().split(",")[0].split("=")[1];
+    post.releaseConnection();
+
+    // Call Update Setting REST API
+    jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"Otherpropvalue\"},\"" +
+        "interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]}";
+    PutMethod put = httpPut("/interpreter/setting/" + newSettingId, jsonRequest);
+    LOG.info("testSettingCRUD update response\n" + put.getResponseBodyAsString());
+    assertThat("test update method:", put, isAllowed());
+    put.releaseConnection();
+
+    // Call Delete Setting REST API
+    DeleteMethod delete = httpDelete("/interpreter/setting/" + newSettingId);
+    LOG.info("testSettingCRUD delete response\n" + delete.getResponseBodyAsString());
+    assertThat("Test delete method:", delete, isAllowed());
+    delete.releaseConnection();
+  }
   @Test
   public void testInterpreterAutoBinding() throws IOException {
     // create note
     Note note = ZeppelinServer.notebook.createNote("anonymous");
 
-    // check interpreter is bindded
+    // check interpreter is binded
     GetMethod get = httpGet("/notebook/interpreter/bind/"+note.id());
     assertThat(get, isAllowed());
+    get.addRequestHeader("Origin", "http://localhost");
     Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>(){}.getType());
     List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
     assertTrue(0 < body.size());
@@ -148,3 +182,4 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals("<p>markdown restarted</p>\n", p.getResult().message());
   }
 }
+

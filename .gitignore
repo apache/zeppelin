@@ -5,6 +5,9 @@
 *.war
 *.ear
 
+# interpreter
+/interpreter/
+
 # conf file
 conf/zeppelin-env.sh
 conf/zeppelin-site.xml

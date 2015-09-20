@@ -15,12 +15,13 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, websocketMsgSrv, baseUrlSrv) {
+angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, websocketMsgSrv, baseUrlSrv, $timeout) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
   $scope.tableToggled = false;
   $scope.viewOnly = false;
+  $scope.showSetting = false;
   $scope.looknfeelOption = [ 'default', 'simple', 'report'];
   $scope.cronOption = [
     {name: 'None', value : undefined},
@@ -35,8 +36,18 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.interpreterSettings = [];
   $scope.interpreterBindings = [];
+  $scope.isNoteDirty = null;
+  $scope.saveTimer = null;
 
   var angularObjectRegistry = {};
+  var connectedOnce = false;
+
+  $scope.$on('setConnectedStatus', function(event, param) {
+    if(connectedOnce && param){
+      initNotebook();
+    }
+    connectedOnce = true;
+  });
 
   $scope.getCronOptionNameFromValue = function(value) {
     if (!value) {
@@ -68,18 +79,36 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
+  //Clone note
+  $scope.cloneNote = function(noteId) {
+    var result = confirm('Do you want to clone this notebook?');
+    if (result) {
+      websocketMsgSrv.cloneNotebook(noteId);
+      $location.path('/#');
+    }
+  };
+
   $scope.runNote = function() {
     var result = confirm('Run all paragraphs?');
     if (result) {
-      $scope.$broadcast('runParagraph');
+      _.forEach($scope.note.paragraphs, function(n, key) {
+        angular.element('#' + n.id + '_paragraphColumn_main').scope().runParagraph(n.text);
+      });
     }
+  };
+
+  $scope.saveNote = function() {
+    _.forEach($scope.note.paragraphs, function(n, key) {
+      angular.element('#' + n.id + '_paragraphColumn_main').scope().saveParagraph();
+    });
+    $scope.isNoteDirty = null;
   };
 
   $scope.toggleAllEditor = function() {
     if ($scope.editorToggled) {
-      $scope.$broadcast('closeEditor');
-    } else {
       $scope.$broadcast('openEditor');
+    } else {
+      $scope.$broadcast('closeEditor');
     }
     $scope.editorToggled = !$scope.editorToggled;
   };
@@ -94,9 +123,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.toggleAllTable = function() {
     if ($scope.tableToggled) {
-      $scope.$broadcast('closeTable');
-    } else {
       $scope.$broadcast('openTable');
+    } else {
+      $scope.$broadcast('closeTable');
     }
     $scope.tableToggled = !$scope.tableToggled;
   };
@@ -119,6 +148,22 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       }
     }
     return running;
+  };
+
+  $scope.killSaveTimer = function() {
+    if($scope.saveTimer){
+      $timeout.cancel($scope.saveTimer);
+      $scope.saveTimer = null;
+    }
+  };
+
+  $scope.startSaveTimer = function() {
+    $scope.killSaveTimer();
+    $scope.isNoteDirty = true;
+    //console.log('startSaveTimer called ' + $scope.note.id);
+    $scope.saveTimer = $timeout(function(){
+      $scope.saveNote();
+    }, 10000);
   };
 
   $scope.setLookAndFeel = function(looknfeel) {
@@ -253,8 +298,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     for (var i=$scope.note.paragraphs.length-1; i>=0; i--) {
       if (focus === false ) {
         if ($scope.note.paragraphs[i].id === currentParagraphId) {
-            focus = true;
-            continue;
+          focus = true;
+          continue;
         }
       } else {
         var p = $scope.note.paragraphs[i];
@@ -271,8 +316,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     for (var i=0; i<$scope.note.paragraphs.length; i++) {
       if (focus === false ) {
         if ($scope.note.paragraphs[i].id === currentParagraphId) {
-            focus = true;
-            continue;
+          focus = true;
+          continue;
         }
       } else {
         var p = $scope.note.paragraphs[i];
@@ -340,22 +385,27 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   var getInterpreterBindings = function(callback) {
     $http.get(baseUrlSrv.getRestApiBase()+ '/notebook/interpreter/bind/' +$scope.note.id).
-      success(function(data, status, headers, config) {
-        $scope.interpreterBindings = data.body;
-        $scope.interpreterBindingsOrig = jQuery.extend(true, [], $scope.interpreterBindings); // to check dirty
-        if (callback) {
-          callback();
-        }
-      }).
-      error(function(data, status, headers, config) {
+    success(function(data, status, headers, config) {
+      $scope.interpreterBindings = data.body;
+      $scope.interpreterBindingsOrig = jQuery.extend(true, [], $scope.interpreterBindings); // to check dirty
+      if (callback) {
+        callback();
+      }
+    }).
+    error(function(data, status, headers, config) {
+      if (status !== 0) {
         console.log('Error %o %o', status, data.message);
-      });
+      }
+    });
   };
 
   var getInterpreterBindingsCallBack = function() {
     var selected = false;
-    for (var i in $scope.interpreterBindings) {
-      var setting = $scope.interpreterBindings[i];
+    var key;
+    var setting;
+
+    for (key in $scope.interpreterBindings) {
+      setting = $scope.interpreterBindings[key];
       if (setting.selected) {
         selected = true;
         break;
@@ -365,8 +415,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if (!selected) {
       // make default selection
       var selectedIntp = {};
-      for (var i in $scope.interpreterBindings) {
-        var setting = $scope.interpreterBindings[i];
+      for (key in $scope.interpreterBindings) {
+        setting = $scope.interpreterBindings[key];
         if (!selectedIntp[setting.group]) {
           setting.selected = true;
           selectedIntp[setting.group] = true;
@@ -407,14 +457,14 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
 
     $http.put(baseUrlSrv.getRestApiBase() + '/notebook/interpreter/bind/' + $scope.note.id,
-             selectedSettingIds).
-      success(function(data, status, headers, config) {
-        console.log('Interpreter binding %o saved', selectedSettingIds);
-        $scope.showSetting = false;
-      }).
-      error(function(data, status, headers, config) {
-        console.log('Error %o %o', status, data.message);
-      });
+              selectedSettingIds).
+    success(function(data, status, headers, config) {
+      console.log('Interpreter binding %o saved', selectedSettingIds);
+      $scope.showSetting = false;
+    }).
+    error(function(data, status, headers, config) {
+      console.log('Error %o %o', status, data.message);
+    });
   };
 
   $scope.toggleSetting = function() {
@@ -462,12 +512,22 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       }
       scope[varName] = data.angularObject.object;
     }
-      
   });
 
-  var isFunction = function(functionToCheck) {
-    var getType = {};
-    return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
-  };
+  $scope.$on('angularObjectRemove', function(event, data) {
+    if (!data.noteId || data.noteId === $scope.note.id) {
+      var scope = $rootScope.compiledScope;
+      var varName = data.name;
+
+      // clear watcher
+      if (angularObjectRegistry[varName]) {
+        angularObjectRegistry[varName].clearWatcher();
+        angularObjectRegistry[varName] = undefined;
+      }
+
+      // remove scope variable
+      scope[varName] = undefined;
+    }
+  });
 
 });

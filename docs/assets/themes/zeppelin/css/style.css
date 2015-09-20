@@ -1,0 +1,352 @@
+/* Move down content because we have a fixed navbar that is 50px tall */
+@import url(//fonts.googleapis.com/css?family=Patua+One);
+
+body {
+  padding-top: 50px;
+  padding-bottom: 20px;
+}
+
+.jumbotron {
+    background-color: #3071a9;
+}
+
+.navbar-brand {
+  padding: 12px 12px;
+  padding-top: 15px;
+  padding-bottom: 10px;
+}
+
+.navbar {
+ background-color:#3071a9;
+ border-bottom:0px;
+ height: 50px;
+}
+
+.navbar-inverse .navbar-nav > li > a {
+ color: #ffffff;
+ background-color:#3071a9;
+}
+
+.navbar-inverse .navbar-nav > li > a:hover, 
+.navbar-inverse .navbar-nav > li > a:focus {
+  color: #ffffff;
+  background-color: #2C6094;
+}
+.navbar-inverse .navbar-nav > li > a.active:hover, 
+.navbar-inverse .navbar-nav > li > a.active:focus {
+  text-decoration: none;
+  background-color: #265380;
+}
+
+.navbar-inverse .navbar-nav > li > a.active {
+  background-color: #265380;
+}
+
+.navbar-inverse .navbar-brand:hover,
+.navbar-inverse .navbar-brand:focus {
+}
+
+.navbar-inverse .navbar-brand {
+  color: #fff;
+  text-decoration: none;
+  font-size: 32px;
+}
+
+.navbar-inverse .navbar-collapse,
+.navbar-inverse .navbar-form {
+  border-color: #265380;
+  background-color: #3071a9;
+}
+
+@media (max-width: 768px) {
+  .navbar-collapse.in {
+    box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.4);
+  }
+
+  .bigFingerButton {
+    margin-top: 12px;
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
+  }
+}
+
+.bigFingerButton {
+    margin-right: 10px;
+}
+
+.navbar-inverse .navbar-toggle {
+  border-color: #265380;
+}
+
+.navbar-inverse .navbar-toggle:hover,
+.navbar-inverse .navbar-toggle:focus {
+  border-color: #265380;
+  background-color: #265380;
+}
+
+.navbar-inverse .navbar-toggle:focus {
+  outline-width: 0px;
+}
+
+
+/* CUSTOMIZE THE CAROUSEL
+-------------------------------------------------- */
+
+/* Carousel base class */
+.carousel {
+  height: 200px;
+  margin-bottom: 10px;
+}
+/* Since positioning the image, we need to help out the caption */
+.carousel-caption {
+  z-index: 10;
+}
+
+/* Declare heights because of positioning of img element */
+.carousel .item {
+  height: 300px;
+}
+.carousel-control {
+  background-image: none !important;
+}
+
+.carousel-inner > .item > img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 100%;
+  height: 300px;
+}
+.carousel-indicators {
+  margin-top:30px;
+  margin-bottom:0px;
+}
+@media screen and (min-width: 768px) {
+  .carousel-indicators {
+    margin-bottom: -60px;
+  }
+  .carousel-caption {
+    padding-bottom: 60px;
+  }
+}
+
+
+.jumbotron h1,
+.jumbotron p  {
+  color: #fff;
+}
+.jumbotron .thumbnail {
+  margin-top: 0;
+}
+.jumbotron.small {
+    padding: 0 0 0 0;
+    color : #ffffff;
+}
+.jumbotron.small .title{
+    float : left;
+    font-weight : bold;
+    font-size : 20px;
+    height : 30px;
+    margin-right: 20px;
+}
+
+.jumbotron.small .subtitle{
+    font-size : 14px;
+    height : 30px;
+    vertical-align:text-bottom;
+    padding-top:7px;
+}
+
+.jumbotron.small .description{
+    margin-top: 7px;
+}
+
+
+
+/* screenshot img inside of doc */
+.screenshot {
+    width : 800px;
+}
+
+/* Table on the index page */
+.table-container {
+    position: absolute;
+}
+
+.table-stack {
+/*    border: 1px solid #6371a9;*/
+    width:200px; padding: 5px 5px 5px 5px;
+}
+
+.table-stack table {
+    width:100%
+}
+
+.table-stack tr td{
+    border: 1px solid #FFFFFF;
+    height : 40px;
+    background-color : #6371a9;
+    color : #FFFFFF;
+}
+
+.table-stack .gray {
+    background-color:#DDDDDD;
+    color:#777777;
+}
+
+/* Table for property */
+.table-configuration {
+    width : 800px;
+    border : 1px solid gray;
+}
+.table-configuration tr td {
+    border : 1px solid gray;
+    padding : 5px 5px 5px 5px;
+}
+.table-configuration tr th {
+    border : 1px solid gray;
+    padding : 5px 5px 5px 5px;
+    background-color: #B0C4DE;
+}
+
+
+.rotate270 {
+    width:15px;padding:10px 0px 0px 0px;
+    -webkit-transform: rotate(270deg);
+    -moz-transform: rotate(270deg);
+    -ms-transform: rotate(270deg);
+    -o-transform: rotate(270deg);
+    transform: rotate(270deg);
+}
+
+
+
+
+
+
+
+
+
+/* Custom container */
+.container-narrow {
+  margin: 0 auto;
+/*  max-width: 960px; */
+}
+
+.container-narrow > hr {
+  margin: 30px 0; }
+
+/* posts index */
+.post > h3.title {
+  position: relative;
+  padding-top: 10px; }
+
+.post > h3.title span.date {
+  position: absolute;
+  right: 0;
+  font-size: 0.9em; }
+
+.post > .more {
+  margin: 10px 0;
+  text-align: left; }
+
+/* post-full*/
+.post-full .date {
+  margin-bottom: 20px;
+  font-weight: bold; }
+
+/* tag_box */
+.tag_box {
+  list-style: none;
+  margin: 0;
+  overflow: hidden; }
+
+.tag_box li {
+  line-height: 28px; }
+
+.tag_box li i {
+  opacity: 0.9; }
+
+.tag_box.inline li {
+  float: left; }
+
+.tag_box a {
+  padding: 3px 6px;
+  margin: 2px;
+  background: #eee;
+  color: #555;
+  border-radius: 3px;
+  text-decoration: none;
+  border: 1px dashed #cccccc; }
+
+.tag_box a span {
+  vertical-align: super;
+  font-size: 0.8em; }
+
+.tag_box a:hover {
+  background-color: #e5e5e5; }
+
+.tag_box a.active {
+  background: #57A957;
+  border: 1px solid #4c964d;
+  color: #FFF; }
+
+
+.jumbotron h1 {
+  font-family: 'Patua One', cursive; }
+
+.jumbotron small {
+    font-size: 60%;
+    color: #FFF;}
+
+.navbar-brand {
+    font-family: 'Patua One', cursive;
+}
+
+.navbar-brand small {
+    font-size: 60%;
+    color: #FFF; }
+
+.navbar-collapse.collapse {
+    max-height: 50px;}
+
+#apache .caret {
+    margin-left: 4px;
+    border-top-color: #FFF;
+}
+
+.navbar-inverse .navbar-nav > .open > a,
+.navbar-inverse .navbar-nav > .open > a:hover,
+.navbar-inverse .navbar-nav > .open > a:focus {
+  color: #ffffff;
+  background-color: #286090;
+}
+
+/* Custom, iPhone Retina */ 
+@media only screen and (max-width : 480px) {
+  .jumbotron h1 {
+    display: none;
+  }
+  .navbar-brand small {
+      display: none;
+      color: #FFF;
+  }
+}
+
+@media only screen and (max-width : 768px) {
+  .navbar .navbar-brand {
+      padding-bottom: 0;
+  }
+}
+
+@media only screen
+and (min-width : 768px)
+and (max-width : 1024px) {
+  .navbar-brand small {
+      display: none;
+  }
+  .navbar-collapse.collapse {
+      padding-right: 0;
+  }
+}

@@ -57,9 +57,6 @@ fi
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
 addJarInDir "${INTERPRETER_DIR}"
 
-export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
-CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
-
 HOSTNAME=$(hostname)
 ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
 
@@ -73,21 +70,62 @@ if [[ ! -d "${ZEPPELIN_LOG_DIR}" ]]; then
   $(mkdir -p "${ZEPPELIN_LOG_DIR}")
 fi
 
-if [[ ! -z "${SPARK_HOME}" ]]; then
-  PYSPARKPATH="${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-0.8.2.1-src.zip"
-else
-  PYSPARKPATH="${ZEPPELIN_HOME}/interpreter/spark/pyspark/pyspark.zip:${ZEPPELIN_HOME}/interpreter/spark/pyspark/py4j-0.8.2.1-src.zip"
+# set spark related env variables
+if [[ "${INTERPRETER_ID}" == "spark" ]]; then
+  if [[ -n "${SPARK_HOME}" ]]; then
+    export SPARK_SUBMIT="${SPARK_HOME}/bin/spark-submit"
+    SPARK_APP_JAR="$(ls ${ZEPPELIN_HOME}/interpreter/spark/zeppelin-spark*.jar)"
+    # This will evantually passes SPARK_APP_JAR to classpath of SparkIMain
+    ZEPPELIN_CLASSPATH=${SPARK_APP_JAR}
+
+    export PYTHONPATH="$SPARK_HOME/python/:$PYTHONPATH"
+    export PYTHONPATH="$SPARK_HOME/python/lib/py4j-0.8.2.1-src.zip:$PYTHONPATH"    
+  else
+    # add Hadoop jars into classpath
+    if [[ -n "${HADOOP_HOME}" ]]; then
+      # Apache
+      addEachJarInDir "${HADOOP_HOME}/share"
+
+      # CDH
+      addJarInDir "${HADOOP_HOME}"
+      addJarInDir "${HADOOP_HOME}/lib"
+    fi
+
+    addJarInDir "${INTERPRETER_DIR}/dep"
+    PYSPARKPATH="${ZEPPELIN_HOME}/interpreter/spark/pyspark/pyspark.zip:${ZEPPELIN_HOME}/interpreter/spark/pyspark/py4j-0.8.2.1-src.zip"
+
+    if [[ -z "${PYTHONPATH}" ]]; then
+      export PYTHONPATH="${PYSPARKPATH}"
+    else
+      export PYTHONPATH="${PYTHONPATH}:${PYSPARKPATH}"
+    fi
+    unset PYSPARKPATH
+
+    # autodetect HADOOP_CONF_HOME by heuristic
+    if [[ -n "${HADOOP_HOME}" ]] && [[ -z "${HADOOP_CONF_DIR}" ]]; then
+      if [[ -d "${HADOOP_HOME}/etc/hadoop" ]]; then
+        export HADOOP_CONF_DIR="${HADOOP_HOME}/etc/hadoop"
+      elif [[ -d "/etc/hadoop/conf" ]]; then
+        export HADOOP_CONF_DIR="/etc/hadoop/conf"
+      fi
+    fi
+
+    if [[ -n "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
+      ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
+    fi
+
+    export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+  fi
 fi
 
-if [[ x"" == x"${PYTHONPATH}" ]]; then
-  export PYTHONPATH="${PYSPARKPATH}"
+CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
+
+if [[ -n "${SPARK_SUBMIT}" ]]; then
+    ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path "${CLASSPATH}" --driver-java-options "${JAVA_INTP_OPTS}" ${SPARK_SUBMIT_OPTIONS} ${SPARK_APP_JAR} ${PORT} &
 else
-  export PYTHONPATH="${PYTHONPATH}:${PYSPARKPATH}"
+    ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} -cp ${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
 fi
 
-unset PYSPARKPATH
-
-${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} -cp ${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
 pid=$!
 if [[ -z "${pid}" ]]; then
   return 1;

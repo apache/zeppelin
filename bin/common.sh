@@ -52,14 +52,6 @@ if [[ -z "${ZEPPELIN_WAR}" ]]; then
   fi
 fi
 
-if [[ -z "${ZEPPELIN_API_WAR}" ]]; then
-  if [[ -d "${ZEPPELIN_HOME}/zeppelin-docs/src/main/swagger" ]]; then
-    export ZEPPELIN_API_WAR="${ZEPPELIN_HOME}/zeppelin-docs/src/main/swagger"
-  else
-    export ZEPPELIN_API_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-api-ui*.war")
-  fi
-fi
-
 if [[ -z "$ZEPPELIN_INTERPRETER_DIR" ]]; then
   export ZEPPELIN_INTERPRETER_DIR="${ZEPPELIN_HOME}/interpreter"
 fi
@@ -80,21 +72,9 @@ function addEachJarInDir(){
 
 function addJarInDir(){
   if [[ -d "${1}" ]]; then
-    export ZEPPELIN_CLASSPATH="${1}/*:${ZEPPELIN_CLASSPATH}"
+    ZEPPELIN_CLASSPATH="${1}/*:${ZEPPELIN_CLASSPATH}"
   fi
 }
-
-if [[ ! -z "${SPARK_HOME}" ]] && [[ -d "${SPARK_HOME}" ]]; then
-  addJarInDir "${SPARK_HOME}"
-fi
-
-if [[ ! -z "${HADOOP_HOME}" ]] && [[ -d "${HADOOP_HOME}" ]]; then
-  addJarInDir "${HADOOP_HOME}"
-fi
-
-if [[ ! -z "${HADOOP_CONF_DIR}" ]] && [[ -d "${HADOOP_CONF_DIR}" ]]; then
-  ZEPPELIN_CLASSPATH+=":${HADOOP_CONF_DIR}"
-fi
 
 export ZEPPELIN_CLASSPATH
 

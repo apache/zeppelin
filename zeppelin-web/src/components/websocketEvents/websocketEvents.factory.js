@@ -16,14 +16,15 @@
 angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope, $websocket, baseUrlSrv) {
   var websocketCalls = {};
 
-  websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketProtocol() + '://' + location.hostname + ':' + baseUrlSrv.getPort());
+  websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
+  websocketCalls.ws.reconnectIfNotNormalClose = true;
 
   websocketCalls.ws.onOpen(function() {
     console.log('Websocket created');
     $rootScope.$broadcast('setConnectedStatus', true);
     setInterval(function(){
       websocketCalls.sendNewEvent({op: 'PING'});
-    }, 60000);
+    }, 10000);
   });
 
   websocketCalls.sendNewEvent = function(data) {
@@ -31,6 +32,10 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
     data.ticket = $rootScope.ticket.ticket;
     console.log('Send >> %o, %o, %o, %o', data.op, data.principal, data.ticket, data);
     websocketCalls.ws.send(JSON.stringify(data));
+  };
+
+  websocketCalls.isConnected = function() {
+    return (websocketCalls.ws.socket.readyState === 1);
   };
 
   websocketCalls.ws.onMessage(function(event) {
@@ -53,6 +58,8 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
       $rootScope.$broadcast('completionList', data);
     } else if (op === 'ANGULAR_OBJECT_UPDATE') {
       $rootScope.$broadcast('angularObjectUpdate', data);
+    } else if (op === 'ANGULAR_OBJECT_REMOVE') {
+      $rootScope.$broadcast('angularObjectRemove', data);
     }
   });
 

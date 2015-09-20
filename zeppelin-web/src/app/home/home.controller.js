@@ -13,10 +13,37 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, notebookListDataFactory, websocketMsgSrv) {
+angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, notebookListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv) {
   
   var vm = this;
   vm.notes = notebookListDataFactory;
   vm.websocketMsgSrv = websocketMsgSrv;
+  vm.arrayOrderingSrv = arrayOrderingSrv;
+
+  vm.notebookHome = false;
+  vm.staticHome = false;
   
+  var initHome = function() {
+    websocketMsgSrv.getHomeNotebook();
+  };
+
+  initHome();
+
+  $scope.$on('setNoteContent', function(event, note) {
+    if (note) {
+      vm.note = note;
+
+      // initialize look And Feel
+      $rootScope.$broadcast('setLookAndFeel', 'home');
+
+      // make it read only
+      vm.viewOnly = true;
+
+      vm.notebookHome = true;
+      vm.staticHome = false;
+    } else {
+      vm.staticHome = true;
+      vm.notebookHome = false;
+    }
+  });
 });

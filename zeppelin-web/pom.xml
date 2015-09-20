@@ -23,6 +23,7 @@
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
     <version>0.6.0-incubating-SNAPSHOT</version>
+    <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
@@ -30,6 +31,11 @@
   <packaging>war</packaging>
   <version>0.6.0-incubating-SNAPSHOT</version>
   <name>Zeppelin: web Application</name>
+
+  <!-- See https://github.com/eirslett/frontend-maven-plugin/issues/229 -->
+  <prerequisites>
+    <maven>3.1.0</maven>
+  </prerequisites>
 
   <build>
     <plugins>
@@ -118,8 +124,7 @@
             </goals>
 
             <configuration>
-              <!-- TODO(anthonycorbacho): remove force once all JSHint are fixed! -->
-              <arguments>--no-color --force</arguments>
+              <arguments>--no-color</arguments>
             </configuration>
           </execution>
         </executions>

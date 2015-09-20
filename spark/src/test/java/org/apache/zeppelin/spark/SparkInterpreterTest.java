@@ -17,8 +17,7 @@
 
 package org.apache.zeppelin.spark;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.HashMap;
@@ -26,6 +25,7 @@ import java.util.LinkedList;
 import java.util.Properties;
 
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -75,7 +75,7 @@ public class SparkInterpreterTest {
     }
 
     InterpreterGroup intpGroup = new InterpreterGroup();
-    context = new InterpreterContext("id", "title", "text",
+    context = new InterpreterContext("note", "id", "title", "text",
         new HashMap<String, Object>(), new GUI(), new AngularObjectRegistry(
             intpGroup.getId(), null),
         new LinkedList<InterpreterContextRunner>());
@@ -118,8 +118,19 @@ public class SparkInterpreterTest {
   }
 
   @Test
+  public void testNextLineInvocation() {
+    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("\"123\"\n.toInt", context).code());
+  }
+
+  @Test
   public void testEndWithComment() {
     assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("val c=1\n//comment", context).code());
+  }
+
+  @Test
+  public void testListener() {
+    SparkContext sc = repl.getSparkContext();
+    assertNotNull(SparkInterpreter.setupListeners(sc));
   }
 
   @Test

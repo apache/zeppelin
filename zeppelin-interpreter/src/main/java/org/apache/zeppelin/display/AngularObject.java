@@ -37,16 +37,31 @@ public class AngularObject<T> {
   private transient AngularObjectListener listener;
   private transient List<AngularObjectWatcher> watchers
     = new LinkedList<AngularObjectWatcher>();
+  
+  private String noteId;   // noteId belonging to. null for global scope 
 
-  protected AngularObject(String name, T o,
+  protected AngularObject(String name, T o, String noteId,
       AngularObjectListener listener) {
     this.name = name;
+    this.noteId = noteId;
     this.listener = listener;
     object = o;
   }
 
   public String getName() {
     return name;
+  }
+  
+  public void setNoteId(String noteId) {
+    this.noteId = noteId;
+  }
+  
+  public String getNoteId() {
+    return noteId;
+  }
+  
+  public boolean isGlobal() {
+    return noteId == null;
   }
 
   public String getPrincipal() {
@@ -60,10 +75,13 @@ public class AngularObject<T> {
   @Override
   public boolean equals(Object o) {
     if (o instanceof AngularObject) {
-      return name.equals(((AngularObject) o).name);
-    } else {
-      return false;
+      AngularObject ao = (AngularObject) o;
+      if (noteId == null && ao.noteId == null ||
+          (noteId != null && ao.noteId != null && noteId.equals(ao.noteId))) {
+        return name.equals(ao.name);
+      }
     }
+    return false;
   }
 
   public Object get() {
@@ -75,7 +93,7 @@ public class AngularObject<T> {
       listener.updated(this);
     }
   }
-
+  
   public void set(T o) {
     set(o, true);
   }

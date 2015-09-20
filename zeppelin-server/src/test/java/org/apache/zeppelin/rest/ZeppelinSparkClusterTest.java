@@ -18,8 +18,12 @@ package org.apache.zeppelin.rest;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -64,7 +68,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
     // run markdown paragraph, again
     Paragraph p = note.addParagraph();
-    p.setText("print(sc.parallelize(1 to 10).reduce(_ + _))");
+    p.setText("%spark print(sc.parallelize(1 to 10).reduce(_ + _))");
     note.run(p.getId());
     waitForFinish(p);
     assertEquals("55", p.getResult().message());
@@ -88,7 +92,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     }
     ZeppelinServer.notebook.removeNote(note.id(), "anonymous");
   }
-  
+
   @Test
   public void pySparkAutoConvertOptionTest() throws IOException {
     // create new note
@@ -113,11 +117,11 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     // create new note
     Note note = ZeppelinServer.notebook.createNote("anonymous");
     Paragraph p0 = note.addParagraph();
-    p0.setText("z.run(1)");
+    p0.setText("%spark z.run(1)");
     Paragraph p1 = note.addParagraph();
-    p1.setText("val a=10");
+    p1.setText("%spark val a=10");
     Paragraph p2 = note.addParagraph();
-    p2.setText("print(a)");
+    p2.setText("%spark print(a)");
 
     note.run(p0.getId());
     waitForFinish(p0);
@@ -129,13 +133,53 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     ZeppelinServer.notebook.removeNote(note.id(), "anonymous");
   }
 
+  @Test
+  public void pySparkDepLoaderTest() throws IOException {
+    // create new note
+    Note note = ZeppelinServer.notebook.createNote();
+
+    if (isPyspark() && getSparkVersionNumber(note) >= 14) {
+      // restart spark interpreter
+      List<InterpreterSetting> settings =
+          ZeppelinServer.notebook.getBindedInterpreterSettings(note.id());
+
+      for (InterpreterSetting setting : settings) {
+        if (setting.getGroup().equals("spark")) {
+          ZeppelinServer.notebook.getInterpreterFactory().restart(setting.id());
+          break;
+        }
+      }
+
+      // load dep
+      Paragraph p0 = note.addParagraph();
+      p0.setText("%dep z.load(\"com.databricks:spark-csv_2.11:1.2.0\")");
+      note.run(p0.getId());
+      waitForFinish(p0);
+
+      // write test csv file
+      File tmpFile = File.createTempFile("test", "csv");
+      FileUtils.write(tmpFile, "a,b\n1,2");
+
+      // load data using libraries from dep loader
+      Paragraph p1 = note.addParagraph();
+      p1.setText("%pyspark\n" +
+        "from pyspark.sql import SQLContext\n" +
+        "print(sqlContext.read.format('com.databricks.spark.csv')" +
+        ".load('"+ tmpFile.getAbsolutePath() +"').count())");
+      note.run(p1.getId());
+
+      waitForFinish(p1);
+      assertEquals("2\n", p1.getResult().message());
+    }
+  }
+
   /**
    * Get spark version number as a numerical value.
    * eg. 1.1.x => 11, 1.2.x => 12, 1.3.x => 13 ...
    */
   private int getSparkVersionNumber(Note note) {
     Paragraph p = note.addParagraph();
-    p.setText("print(sc.version)");
+    p.setText("%spark print(sc.version)");
     note.run(p.getId());
     waitForFinish(p);
     String sparkVersion = p.getResult().message();

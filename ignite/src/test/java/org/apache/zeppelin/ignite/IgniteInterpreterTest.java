@@ -40,7 +40,7 @@ public class IgniteInterpreterTest {
   private static final String HOST = "127.0.0.1:47500..47509";
 
   private static final InterpreterContext INTP_CONTEXT =
-          new InterpreterContext(null, null, null, null, null, null, null);
+          new InterpreterContext(null, null, null, null, null, null, null, null);
 
   private IgniteInterpreter intp;
   private Ignite ignite;
@@ -84,6 +84,9 @@ public class IgniteInterpreterTest {
 
     assertEquals(InterpreterResult.Code.SUCCESS, result.code());
     assertTrue(result.message().contains(sizeVal + ": Int = " + ignite.cluster().nodes().size()));
+
+    result = intp.interpret("\"123\"\n  .toInt", INTP_CONTEXT);
+    assertEquals(InterpreterResult.Code.SUCCESS, result.code());
   }
 
   @Test
@@ -92,4 +95,5 @@ public class IgniteInterpreterTest {
 
     assertEquals(InterpreterResult.Code.ERROR, result.code());
   }
+
 }

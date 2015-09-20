@@ -110,6 +110,7 @@ public class RemoteInterpreterTest {
 
     intpA.interpret("1",
         new InterpreterContext(
+            "note",
             "id",
             "title",
             "text",
@@ -149,6 +150,7 @@ public class RemoteInterpreterTest {
     intpA.open();
     InterpreterResult ret = intpA.interpret("non numeric value",
         new InterpreterContext(
+            "noteId",
             "id",
             "title",
             "text",
@@ -194,6 +196,7 @@ public class RemoteInterpreterTest {
     long start = System.currentTimeMillis();
     InterpreterResult ret = intpA.interpret("500",
         new InterpreterContext(
+            "note",
             "id",
             "title",
             "text",
@@ -205,6 +208,7 @@ public class RemoteInterpreterTest {
 
     ret = intpB.interpret("500",
         new InterpreterContext(
+            "note",
             "id",
             "title",
             "text",
@@ -272,6 +276,7 @@ public class RemoteInterpreterTest {
       protected Object jobRun() throws Throwable {
         return intpA.interpret("500",
             new InterpreterContext(
+                "note",
                 "jobA",
                 "title",
                 "text",
@@ -305,6 +310,7 @@ public class RemoteInterpreterTest {
       protected Object jobRun() throws Throwable {
         return intpB.interpret("500",
             new InterpreterContext(
+                "note",
                 "jobB",
                 "title",
                 "text",
@@ -379,6 +385,7 @@ public class RemoteInterpreterTest {
         @Override
         protected Object jobRun() throws Throwable {
           InterpreterResult ret = intpA.interpret(getJobName(), new InterpreterContext(
+              "note",
               jobId,
               "title",
               "text",
@@ -462,6 +469,7 @@ public class RemoteInterpreterTest {
         protected Object jobRun() throws Throwable {
           String stmt = Integer.toString(timeToSleep);
           InterpreterResult ret = intpA.interpret(stmt, new InterpreterContext(
+              "note",
               jobId,
               "title",
               "text",

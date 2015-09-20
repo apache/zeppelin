@@ -91,6 +91,10 @@ public class Note implements Serializable, JobListener {
   public String id() {
     return id;
   }
+  
+  public String getId() {
+    return id;
+  }
 
   public String getOwner() { return this.owner; }
 
@@ -145,6 +149,17 @@ public class Note implements Serializable, JobListener {
     return p;
   }
 
+  /**
+   * Add the paragraph p to the list of paras in note.
+   *
+   * @param p
+   */
+  public void addParagraph(Paragraph p) {
+    synchronized (paragraphs) {
+      paragraphs.add(p);
+    }
+  }
+  
   /**
    * Insert paragraph in given index.
    *
@@ -301,11 +316,12 @@ public class Note implements Serializable, JobListener {
     for (InterpreterSetting setting : settings) {
       InterpreterGroup intpGroup = setting.getInterpreterGroup();
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
-      angularObjects.put(intpGroup.getId(), registry.getAll());
+      angularObjects.put(intpGroup.getId(), registry.getAllWithGlobal(id));
     }
   }
 
   public void persist() throws IOException {
+    snapshotAngularObjectRegistry();
     repo.save(this);
   }
 

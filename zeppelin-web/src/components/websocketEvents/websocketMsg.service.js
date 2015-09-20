@@ -17,14 +17,21 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
 
   return {
 
-    createNotebook: function() {
-      websocketEvents.sendNewEvent({op: 'NEW_NOTE'});
+    getHomeNotebook: function() {
+      websocketEvents.sendNewEvent({op: 'GET_HOME_NOTE'});
+    },
+
+    createNotebook: function(noteName) {
+      websocketEvents.sendNewEvent({op: 'NEW_NOTE',data: {name: noteName}});
     },
 
     deleteNotebook: function(noteId) {
       websocketEvents.sendNewEvent({op: 'DEL_NOTE', data: {id: noteId}});
     },
 
+    cloneNotebook: function(noteIdToClone, newNoteName ) {
+      websocketEvents.sendNewEvent({op: 'CLONE_NOTE', data: {id: noteIdToClone, name: newNoteName}});
+    },
     getNotebookList: function() {
       websocketEvents.sendNewEvent({op: 'LIST_NOTES'});
     },
@@ -100,6 +107,10 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
           params: paragraphParams
         }
       });
+    },
+
+    isConnected: function(){
+      return websocketEvents.isConnected();
     }
 
   };

@@ -11,9 +11,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@import url(//fonts.googleapis.com/css?family=Patua+One);
-@import url(//fonts.googleapis.com/css?family=Roboto);
-@import url(//fonts.googleapis.com/css?family=Source+Code+Pro);
 
 body {
   padding-top: 60px;
@@ -119,12 +116,15 @@ a.navbar-brand:hover {
 }
 
 @media (max-width: 767px) {
+  .navbar-inverse .navbar-nav .open .dropdown-menu > li > a {
+    color: #D3D3D3;
+  }
   .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a {
     padding: 5px 15px 5px 25px;
     line-height: 20px;
   }
   .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a {
-    color: #777;
+    color: #D3D3D3;
   }
   .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:hover,
   .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:focus {
@@ -136,6 +136,15 @@ a.navbar-brand:hover {
   .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a:focus {
     color: #fff;
     background-color: #080808;
+  }
+  .server-status{
+    float: right;
+  }
+  .navbar-inverse .navbar-nav .open .dropdown-menu .divider {
+    background-color: #3071A9;
+  }
+  .navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form {
+    border-color: #3071A9;
   }
 }
 
@@ -276,6 +285,28 @@ kbd {
   min-height: 400px;
 }
 
+/* ngToast style */
+
+.ng-toast .alert {
+  color: white !important;
+  border: none !important;
+}
+
+.ng-toast .alert-danger {
+  background-color: #A94442 !important;
+}
+
+.ng-toast .alert-warning {
+  background-color: #CE9532 !important;
+}
+
+.ng-toast .alert-info {
+  background-color: #589EC1 !important;
+}
+
+.ng-toast .alert-success {
+  background-color: #428443 !important;
+}
 
 /*
 temporary fix for bootstrap issue (https://github.com/twbs/bootstrap/issues/5865)
@@ -285,4 +316,3 @@ This part should be removed when new version of bootstrap handles this issue.
 .btn-group > .popover + .btn {
   margin-left:-1px;
 }
-

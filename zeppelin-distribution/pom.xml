@@ -24,6 +24,7 @@
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
     <version>0.6.0-incubating-SNAPSHOT</version>
+    <relativePath>..</relativePath>
   </parent>
 
   <artifactId>zeppelin-distribution</artifactId>
@@ -56,14 +57,6 @@
       <version>${project.version}</version>
       <type>war</type>
     </dependency>
-    <!--
-    <dependency>
-      <artifactId>zeppelin-api-ui</artifactId>
-      <groupId>${project.groupId}</groupId>
-      <version>${project.version}</version>
-      <type>war</type>
-    </dependency>
-    -->
   </dependencies>
 
   <build>
