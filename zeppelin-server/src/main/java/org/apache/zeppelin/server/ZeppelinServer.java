@@ -41,7 +41,6 @@ import org.apache.zeppelin.rest.NotebookRestApi;
 import org.apache.zeppelin.rest.ZeppelinRestApi;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.socket.NotebookServer;
-import org.apache.zeppelin.socket.SslWebSocketServerFactory;
 import org.apache.zeppelin.rest.SecurityRestApi;
 import org.eclipse.jetty.server.AbstractConnector;
 import org.eclipse.jetty.server.Handler;
