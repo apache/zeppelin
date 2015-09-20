@@ -90,17 +90,23 @@ public class S3NotebookRepo implements NotebookRepo {
 
   @Override
   public List<NoteInfo> list() throws IOException {
+    return list(null);
+  }
+
+  @Override
+  public List<NoteInfo> list(String owner) throws IOException {
     List<NoteInfo> infos = new LinkedList<NoteInfo>();
     NoteInfo info = null;
+    String ownerPath = owner == null ? "" : "/" + owner;
     try {
       ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
           .withBucketName(bucketName)
-          .withPrefix(user + "/" + "notebook");
-      ObjectListing objectListing;            
+          .withPrefix(user + "/" + "notebook" + ownerPath);
+      ObjectListing objectListing;
       do {
         objectListing = s3client.listObjects(listObjectsRequest);
-        
-        for (S3ObjectSummary objectSummary : 
+
+        for (S3ObjectSummary objectSummary :
           objectListing.getObjectSummaries()) {
           if (objectSummary.getKey().contains("note.json")) {
             try {
@@ -113,11 +119,11 @@ public class S3NotebookRepo implements NotebookRepo {
             }
           }
         }
-        
+
         listObjectsRequest.setMarker(objectListing.getNextMarker());
       } while (objectListing.isTruncated());
     } catch (AmazonServiceException ase) {
-             
+
     } catch (AmazonClientException ace) {
       logger.info("Caught an AmazonClientException, " +
           "which means the client encountered " +
@@ -156,8 +162,8 @@ public class S3NotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId) throws IOException {
-    return getNote(user + "/" + "notebook" + "/" + noteId + "/" + "note.json");
+  public Note get(String noteId, String owner) throws IOException {
+    return getNote(user + "/" + "notebook" + "/" + owner + "/" + noteId + "/" + "note.json");
   }
 
   @Override
@@ -166,7 +172,8 @@ public class S3NotebookRepo implements NotebookRepo {
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
     String json = gson.toJson(note);
-    String key = user + "/" + "notebook" + "/" + note.id() + "/" + "note.json";
+    String key = user + "/" + "notebook" + "/" +
+            note.getOwner() + "/" + note.id() + "/" + "note.json";
     
     File file = File.createTempFile("note", "json");
     file.deleteOnExit();
@@ -179,9 +186,9 @@ public class S3NotebookRepo implements NotebookRepo {
   }
   
   @Override
-  public void remove(String noteId) throws IOException {
+  public void remove(String noteId, String owner) throws IOException {
     
-    String key = user + "/" + "notebook" + "/" + noteId;
+    String key = user + "/" + "notebook" + "/" + owner + "/" + noteId;
     final ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
         .withBucketName(bucketName).withPrefix(key);
 

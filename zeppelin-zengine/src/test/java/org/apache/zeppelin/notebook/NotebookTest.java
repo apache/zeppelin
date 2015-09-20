@@ -164,7 +164,7 @@ public class NotebookTest implements JobListenerFactory{
   public void testAngularObjectRemovalOnNotebookRemove() throws InterruptedException,
       IOException {
     // create a note and a paragraph
-    Note note = notebook.createNote();
+    Note note = notebook.createNote("anonymous");
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = note.getNoteReplLoader()
@@ -177,7 +177,7 @@ public class NotebookTest implements JobListenerFactory{
     registry.add("o2", "object2", null);
 
     // remove notebook
-    notebook.removeNote(note.id());
+    notebook.removeNote(note.id(), "anonymous");
 
     // local object should be removed
     assertNull(registry.get("o1", note.id()));
@@ -189,7 +189,7 @@ public class NotebookTest implements JobListenerFactory{
   public void testAngularObjectRemovalOnInterpreterRestart() throws InterruptedException,
       IOException {
     // create a note and a paragraph
-    Note note = notebook.createNote();
+    Note note = notebook.createNote("anonymous");
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     AngularObjectRegistry registry = note.getNoteReplLoader()
@@ -210,7 +210,7 @@ public class NotebookTest implements JobListenerFactory{
     // local and global scope object should be removed
     assertNull(registry.get("o1", note.id()));
     assertNull(registry.get("o2", null));
-    notebook.removeNote(note.id());
+    notebook.removeNote(note.id(), "anonymous");
   }
 
 	private void delete(File file){

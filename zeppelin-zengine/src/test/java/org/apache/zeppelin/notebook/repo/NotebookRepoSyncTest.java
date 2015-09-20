@@ -110,7 +110,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory{
     assertEquals(0, notebookRepoSync.list(1).size());
     
     /* create note */
-    Note note = notebookSync.createNote();
+    Note note = notebookSync.createNote("anonymous");
 
     // check that automatically saved on both storages
     assertEquals(1, notebookRepoSync.list(0).size());
@@ -126,7 +126,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory{
     assertEquals(0, notebookRepoSync.list(0).size());
     assertEquals(0, notebookRepoSync.list(1).size());
     
-    Note note = notebookSync.createNote();
+    Note note = notebookSync.createNote("anonymous");
 
     /* check that created in both storage systems */
     assertEquals(1, notebookRepoSync.list(0).size());
@@ -134,7 +134,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory{
     assertEquals(notebookRepoSync.list(0).get(0).getId(),notebookRepoSync.list(1).get(0).getId());
     
     /* remove Note */
-    notebookSync.removeNote(notebookRepoSync.list(0).get(0).getId());
+    notebookSync.removeNote(notebookRepoSync.list(0).get(0).getId(), "anonymous");
     
     /* check that deleted in both storages */
     assertEquals(0, notebookRepoSync.list(0).size());
@@ -146,7 +146,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory{
   public void testSyncUpdateMain() throws IOException {
     
     /* create note */
-    Note note = notebookSync.createNote();
+    Note note = notebookSync.createNote("anonymous");
     Paragraph p1 = note.addParagraph();
     p1.setText("hello world");
     
@@ -155,29 +155,29 @@ public class NotebookRepoSyncTest implements JobListenerFactory{
     
     /* new paragraph not yet saved into storages */
     assertEquals(0, notebookRepoSync.get(0,
-        notebookRepoSync.list(0).get(0).getId()).getParagraphs().size());
+        notebookRepoSync.list(0).get(0).getId(), "anonymous").getParagraphs().size());
     assertEquals(0, notebookRepoSync.get(1,
-        notebookRepoSync.list(1).get(0).getId()).getParagraphs().size());
+        notebookRepoSync.list(1).get(0).getId(), "anonymous").getParagraphs().size());
     
     /* save to storage under index 0 (first storage) */ 
     notebookRepoSync.save(0, note);
     
     /* check paragraph saved to first storage */
     assertEquals(1, notebookRepoSync.get(0,
-        notebookRepoSync.list(0).get(0).getId()).getParagraphs().size());
+        notebookRepoSync.list(0).get(0).getId(), "anonymous").getParagraphs().size());
     /* check paragraph isn't saved to second storage */
     assertEquals(0, notebookRepoSync.get(1,
-        notebookRepoSync.list(1).get(0).getId()).getParagraphs().size());
+        notebookRepoSync.list(1).get(0).getId(), "anonymous").getParagraphs().size());
     /* apply sync */
     notebookRepoSync.sync();
     /* check whether added to second storage */
     assertEquals(1, notebookRepoSync.get(1,
-    notebookRepoSync.list(1).get(0).getId()).getParagraphs().size());
+    notebookRepoSync.list(1).get(0).getId(), "anonymous").getParagraphs().size());
     /* check whether same paragraph id */
     assertEquals(p1.getId(), notebookRepoSync.get(0,
-        notebookRepoSync.list(0).get(0).getId()).getLastParagraph().getId());
+        notebookRepoSync.list(0).get(0).getId(), "anonymous").getLastParagraph().getId());
     assertEquals(p1.getId(), notebookRepoSync.get(1,
-        notebookRepoSync.list(1).get(0).getId()).getLastParagraph().getId());
+        notebookRepoSync.list(1).get(0).getId(), "anonymous").getLastParagraph().getId());
   }
   
   private void delete(File file){
