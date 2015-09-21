@@ -193,13 +193,14 @@ public class NotebookTest implements JobListenerFactory{
     note.setConfig(config);
     notebook.refreshCron(note.id());
     Thread.sleep(1*1000);
-    dateFinished = p.getDateFinished();
-    assertNotNull(dateFinished);
-
+    
     // remove cron scheduler.
     config.put("cron", null);
     note.setConfig(config);
     notebook.refreshCron(note.id());
+    Thread.sleep(1000);
+    dateFinished = p.getDateFinished();
+    assertNotNull(dateFinished);
     Thread.sleep(1*1000);
     assertEquals(dateFinished, p.getDateFinished());
   }
