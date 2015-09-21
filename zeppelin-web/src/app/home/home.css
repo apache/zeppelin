@@ -13,7 +13,7 @@
  */
 
 body {
-  padding-top: 60px;
+  padding-top: 50px;
   color: #212121;
 }
 
@@ -32,7 +32,7 @@ body.asIframe {
   padding-top: 0px;
 }
 body .navbar {
-  margin-bottom: 10px;
+  margin-bottom: 0px;
 }
 
 .container {
@@ -150,9 +150,7 @@ a.navbar-brand:hover {
 
 
 #main {
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-bottom: 10px;
+  padding: 10px;
   height: 100%;
 }
 
