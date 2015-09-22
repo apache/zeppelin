@@ -34,7 +34,7 @@
   Paragraph as Iframe CSS
 */
 
-.paragraphAsIframe{
+.paragraphAsIframe {
   padding: 0px 0px 0px 0px;
   margin-top: -79px;
   margin-left: -10px;
@@ -119,7 +119,7 @@
   padding: 4px;
 }
 
-.paragraph .control li{
+.paragraph .control li {
   font-size: 12px;
   margin-bottom: 4px;
   color: #333333;
@@ -207,6 +207,7 @@
   background-color: #FFFFFF;
   color: black;
 }
+
 .ace_editor {
   position: relative;
   overflow: hidden;

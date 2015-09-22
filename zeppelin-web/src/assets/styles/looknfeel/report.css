@@ -19,18 +19,18 @@ body {
 /**
  * Box and well
  */
-.box{
+.box {
   border: 0px;
   min-height: 0px;
 }
 
-.box:hover, 
+.box:hover,
 .well:hover {
   background-color: white;
   border: 0px;
 }
 
-.paragraph-col{
+.paragraph-col {
   border: 0px solid white;
 }
 
@@ -39,22 +39,26 @@ body {
 }
 
 .paragraph .control {
-  visibility : hidden;
+  visibility: hidden;
 }
 
 .paragraph:hover .control {
-  visibility : hidden;
+  visibility: hidden;
 }
 
-.noteAction span, .noteAction button, .noteAction form {
-  visibility : hidden;
+.noteAction span,
+.noteAction button,
+.noteAction form {
+  visibility: hidden;
 }
 
-.noteAction:hover span, .noteAction:hover button, .noteAction:hover form {
-  visibility : visible;
+.noteAction:hover span,
+.noteAction:hover button,
+.noteAction:hover form {
+  visibility: visible;
 }
 
 .executionTime,
 .nv-controlsWrap {
-  display:none;
+  display: none;
 }

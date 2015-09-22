@@ -24,18 +24,20 @@ body {
 .editor,
 .executionTime,
 .nv-controlsWrap {
-  display:block;
+  display: block;
 }
 
 .paragraph .control {
-  visibility : hidden;
+  visibility: hidden;
 }
 
-.noteAction span, .noteAction button, .noteAction form {
-  visibility : hidden;
+.noteAction span,
+.noteAction button,
+.noteAction form {
+  visibility: hidden;
 }
 
 .executionTime,
 .nv-controlsWrap {
-  display:none;
+  display: none;
 }

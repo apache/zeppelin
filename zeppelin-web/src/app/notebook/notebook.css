@@ -59,7 +59,7 @@
 }
 
 #main .emacs-mode .ace_cursor {
-  background-color:#C0C0C0!important;
+  background-color: #C0C0C0!important;
   border: none !important;
 }
 
@@ -78,7 +78,7 @@
 
 
 .disable {
-  opacity:0.6!important;
+  opacity: 0.6!important;
   pointer-events: none;
 }
 
@@ -101,9 +101,9 @@
   padding-bottom: 4px;
 }
 
-.noteAction li{
-  font-size:12px;
-  margin-bottom:4px;
+.noteAction li {
+  font-size: 12px;
+  margin-bottom: 4px;
   color: #333333;
 }
 
@@ -176,7 +176,7 @@
 }
 
 .graphContainer {
-  position:relative;
+  position: relative;
   margin-bottom: 5px;
   overflow: visible;
 }

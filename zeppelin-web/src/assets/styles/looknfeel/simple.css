@@ -19,7 +19,7 @@ body {
 /**
  * Box and well
  */
-.box{
+.box {
   border: 1px solid white;
   min-height: 20px;
 }
@@ -47,23 +47,27 @@ body {
 }
 
 .paragraph .control {
-  visibility : hidden;
+  visibility: hidden;
 }
 
 .paragraph:hover .control {
-  visibility : visible;
+  visibility: visible;
 }
 
-.noteAction span, .noteAction button, .noteAction form {
-  visibility : hidden;
+.noteAction span,
+.noteAction button,
+.noteAction form {
+  visibility: hidden;
 }
 
-.noteAction:hover span, .noteAction:hover button, .noteAction:hover form {
-  visibility : visible;
+.noteAction:hover span,
+.noteAction:hover button,
+.noteAction:hover form {
+  visibility: visible;
 }
 
 .editor,
 .executionTime,
 .nv-controlsWrap {
-  display:block;
+  display: block;
 }
