@@ -371,8 +371,7 @@ limitations under the License.
            ng-bind="paragraph.errorMessage">
       </div>
 
-      <div id="{{paragraph.id}}_executionTime" class="executionTime" ng-bind-html="getExecutionTime()">
-      </div>
+      <div ng-if="!asIframe" id="{{paragraph.id}}_executionTime" class="executionTime" ng-bind-html="getExecutionTime()"></div>
     </div>
   </div>
   <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
