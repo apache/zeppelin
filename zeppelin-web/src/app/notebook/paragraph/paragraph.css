@@ -12,6 +12,23 @@
  * limitations under the License.
  */
 
+/*
+  Paragraph Results
+*/
+
+.paragraph .text {
+  white-space: pre;
+  display: block;
+  unicode-bidi: embed;
+  display: block !important;
+  margin: 0 0 0px !important;
+  line-height: 1.42857143 !important;
+  word-break: break-all !important;
+  word-wrap: break-word !important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 12px !important;
+  margin-bottom: 5px !important;
+}
 
 /*
   Paragraph as Iframe CSS
@@ -31,10 +48,10 @@
   float: right;
   color: #999;
   margin-top: -9px;
-  margin-right:0px;
-  position:absolute;
-  clear:both;
-  right:25px;
+  margin-right: 0px;
+  position: absolute;
+  clear: both;
+  right: 25px;
 }
 
 .paragraphAsIframe table {
@@ -73,14 +90,14 @@
 
 .paragraph .runControl .progress {
   position: relative;
-  width:100%;
-  height:4px;
-  z-index:100;
+  width: 100%;
+  height: 4px;
+  z-index: 100;
   border-radius: 0px;
 }
 
 .paragraph .runControl .progress .progress-bar {
-  z-index:100;
+  z-index: 100;
 }
 
 .paragraph .control span {
@@ -93,20 +110,58 @@
   color: #999;
   margin-top: 1px;
   margin-right: 5px;
-  position:absolute;
-  clear:both;
-  right:15px;
+  position: absolute;
+  clear: both;
+  right: 15px;
   top: 16px;
-  text-align:right;
-  font-size:12px;
+  text-align: right;
+  font-size: 12px;
   padding: 4px;
 }
 
 .paragraph .control li{
-  font-size:12px;
-  margin-bottom:4px;
+  font-size: 12px;
+  margin-bottom: 4px;
   color: #333333;
 }
+
+/*
+  Paragraph Title
+*/
+
+.paragraph .title {
+  margin: 3px 0px 0px 0px;
+  height: 20px;
+  font-size: 12px;
+}
+
+.paragraph .title div {
+  width: 80%;
+  font-weight: bold;
+  font-family: 'Roboto', sans-serif;
+  font-size: 17px !important;
+  text-transform: capitalize;
+}
+
+
+.paragraph .title input {
+  width: 80%;
+  line-height: 1.42857143;
+  color: #555;
+  background-color: #fff;
+  background-image: none;
+  border: 1px solid #ccc;
+  border-radius: 0px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+  -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  text-transform: capitalize;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px!important;
+}
+
 
 /*
   Paragraph Forms CSS
@@ -125,6 +180,13 @@
   Ace Text Editor CSS
 */
 
+.paragraph .editor {
+  width: 100%;
+  border-left: 4px solid #DDDDDD;
+  background: rgba(255, 255, 255, 0.0);
+  margin: 7px 0 2px 0px;
+}
+
 .paragraph-text--dirty {
   border-left: 4px solid #E67E22 !important;
 }
@@ -141,6 +203,33 @@
     z-index: 0 !important;
 }
 
+.ace-tm {
+  background-color: #FFFFFF;
+  color: black;
+}
+.ace_editor {
+  position: relative;
+  overflow: hidden;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 12px;
+  line-height: normal;
+  direction: ltr;
+}
+
+.ace_hidden-cursors {
+  opacity: 0;
+}
+
+.ace_text-input, .ace_gutter, .ace_layer,
+.emacs-mode, .ace_text-layer, .ace_cursor-layer,
+.ace_cursor, .ace_scrollbar {
+  z-index: auto !important;
+}
+
+.ace_text-input.ace_composition {
+ opacity: 0 !important;
+}
+
 /*
   Table Display CSS
 */
@@ -153,16 +242,16 @@
 
 .tableDisplay .btn-group span {
   margin: 10px 0px 0px 10px;
-  font-size:12px;
+  font-size: 12px;
 }
 .tableDisplay .btn-group span a {
-  cursor:pointer;
+  cursor: pointer;
 }
 
 .tableDisplay .option {
   padding: 5px 5px 5px 5px;
-  font-size:12px;
-  height:auto;
+  font-size: 12px;
+  height: auto;
   overflow : auto;
   border-top: 1px solid #ecf0f1;
 
@@ -174,7 +263,7 @@
 
 .tableDisplay .option .columns ul {
   background-color: white;
-  width:auto;
+  width: auto;
   padding: 3px 3px 3px 3px;
   height : 150px;
   border: 1px solid #CCC;
@@ -196,8 +285,8 @@
 }
 
 .tableDisplay .option .columns ul li div ul {
-  width:auto;
-  height:auto;
+  width: auto;
+  height: auto;
 }
 
 .tableDisplay .option .columns ul li div ul li a {
@@ -227,12 +316,12 @@
 
 .noDot {
   list-style-type: none;
-  padding-left:5px;
+  padding-left: 5px;
 }
 
 .liVertical {
-  display:block;
-  float:left;
+  display: block;
+  float: left;
   padding: 5px;
 }
 
