@@ -344,6 +344,11 @@ limitations under the License.
         
         <div ng-if="getGraphMode()=='boxPlotChart'"
              id="p{{paragraph.id}}_boxPlotChart">
+          <form>
+            Enter column name for Boxplot:
+            <input type="text" size="10" id="colname"></input>
+          </form>
+          <button id= "submit" ng-click="setColumnName('age')">Submit</button> 
           <svg></svg>
         </div>
       </div>
