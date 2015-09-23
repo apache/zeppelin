@@ -98,9 +98,9 @@ public class NotebookRepoSync implements NotebookRepo{
         getRepo(i).save(note);
       }
       catch (IOException e) {
-        LOG.info(e.getMessage() + ": Failed to write Notebook " 
-          + note.getName() + " in the storage "
-          + getRepo(i).getClass().getSimpleName());
+        LOG.info(e.getMessage() + ": Failed to write Notebook " +
+          note.getName() + " in the storage " +
+          getRepo(i).getClass().getSimpleName());
       }
     }
   }
