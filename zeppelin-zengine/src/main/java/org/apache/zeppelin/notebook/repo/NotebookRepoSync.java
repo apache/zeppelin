@@ -92,13 +92,14 @@ public class NotebookRepoSync implements NotebookRepo{
   
   /* by default saves to all repos */
   public void save(Note note) throws IOException {
-    int repoCount = getRepoCount();
-    for(int index=0;index<repoCount;index++){
+        int repoCount = getRepoCount();
+    for (int i = 0; i < repoCount; i++){
       try {
-        getRepo(index).save(note);
+        getRepo(i).save(note);
       }
       catch (IOException e) {
-        LOG.info(e.getMessage() + ": Failed to write to secondary storage");
+        LOG.info(e.getMessage() + ": Failed to write Notebook " + note.getName() + " in the storage "+
+                getRepo(i).getClass().getSimpleName());
       }
     }
   }
