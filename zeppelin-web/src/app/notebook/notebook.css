@@ -41,42 +41,6 @@
     margin-left: 3px;
 }
 
-.paragraph-space {
-  margin-bottom: 5px !important;
-  padding: 10px !important;
-}
-
-.paragraph table {
-  margin-bottom: 0px;
-}
-
-.paragraph p {
-  margin : 0 0 0 0px;
-}
-
-.paragraph div svg {
-  width : 100%;
-}
-
-#main .emacs-mode .ace_cursor {
-  background-color: #C0C0C0!important;
-  border: none !important;
-}
-
-.paragraph .status {
-  font-size: 10px;
-  color: #AAAAAA;
-  text-align: right;
-  visibility: hidden;
-}
-
-.paragraph .executionTime {
-  color: #999;
-  font-size: 10px;
-  font-family: 'Roboto', sans-serif;
-}
-
-
 .disable {
   opacity: 0.6!important;
   pointer-events: none;
@@ -138,67 +102,14 @@
   display: inline-block;
 }
 
-/* panel default */
-.panel-default {
-  border-color: #DDDDDD;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-.panel-default > .panel-heading {
-  color: #34495e;
-  background-color: #ffffff;
-  border-color: #e5e5e5;
-}
-
-.panel-default > .panel-heading + .panel-collapse .panel-body {
-  border-top-color: #e5e5e5;
-}
-
-.panel-default > .panel-heading > .dropdown .caret {
-  border-color: #ecf0f1 transparent;
-}
-
-.panel-default > .panel-footer + .panel-collapse .panel-body {
-  border-bottom-color: #e5e5e5;
-}
-
-.panel-body-heading {
-  position: relative;
-  display: block;
-  padding-left: 10px;
-  padding-top: 15px;
-  padding-bottom: 15px;
-}
-
-.paragraph-margin {
-  margin-right: 2px;
-  margin-left: 2px;
-}
-
-.graphContainer {
-  position: relative;
-  margin-bottom: 5px;
-  overflow: visible;
-}
-
 .noOverflow {
     overflow: hidden !important;
 }
 
-.graphContainer .table {
-  overflow: hidden;
-  margin-bottom: 5px !important;
-}
+/*
+  Note Setting Panel
+*/
 
-.row {
-  margin-right: 0px !important
-}
-
-.resizable-helper {
-  border: 3px solid #DDDDDD;
-}
-
-/* note setting panel */
 .setting {
   background-color: white;
   padding: 10px 15px 15px 15px;

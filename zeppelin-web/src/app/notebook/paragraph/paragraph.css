@@ -13,6 +13,20 @@
  */
 
 /*
+  Paragraph Style
+*/
+
+.paragraph-space {
+  margin-bottom: 5px !important;
+  padding: 10px !important;
+}
+
+.paragraph-margin {
+  margin-right: 2px;
+  margin-left: 2px;
+}
+
+/*
   Paragraph Results
 */
 
@@ -28,6 +42,39 @@
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
   font-size: 12px !important;
   margin-bottom: 5px !important;
+}
+
+.paragraph table {
+  margin-bottom: 0px;
+}
+
+.paragraph p {
+  margin : 0 0 0 0px;
+}
+
+.paragraph div svg {
+  width : 100%;
+}
+
+.graphContainer {
+  position: relative;
+  margin-bottom: 5px;
+  overflow: visible;
+}
+
+.graphContainer .table {
+  overflow: hidden;
+  margin-bottom: 5px !important;
+}
+
+.resizable-helper {
+  border: 3px solid #DDDDDD;
+}
+
+.paragraph .executionTime {
+  color: #999;
+  font-size: 10px;
+  font-family: 'Roboto', sans-serif;
 }
 
 /*
@@ -143,7 +190,6 @@
   text-transform: capitalize;
 }
 
-
 .paragraph .title input {
   width: 80%;
   line-height: 1.42857143;
@@ -161,7 +207,6 @@
   font-family: 'Roboto', sans-serif;
   font-size: 14px!important;
 }
-
 
 /*
   Paragraph Forms CSS
@@ -231,6 +276,11 @@
  opacity: 0 !important;
 }
 
+#main .emacs-mode .ace_cursor {
+  background-color: #C0C0C0!important;
+  border: none !important;
+}
+
 /*
   Table Display CSS
 */
@@ -272,7 +322,6 @@
   -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
   -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
   transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
-
 }
 
 .tableDisplay .option .columns ul li {

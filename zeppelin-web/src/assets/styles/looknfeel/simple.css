@@ -16,9 +16,6 @@ body {
   background: white;
 }
 
-/**
- * Box and well
- */
 .box {
   border: 1px solid white;
   min-height: 20px;
