@@ -122,8 +122,8 @@ limitations under the License.
                 ng-click="setGraphMode('stackedAreaChart', true)"><i class="fa fa-area-chart"></i>
         </button>
         <button type="button" class="btn btn-default btn-sm"
-                ng-class="{'active': isGraphMode('lineChart')}"
-                ng-click="setGraphMode('lineChart', true)"><i class="fa fa-line-chart"></i>
+                ng-class="{'active': isGraphMode('lineChart') || isGraphMode('lineWithFocusChart')}"
+                ng-click="paragraph.config.graph.lineWithFocus ? setGraphMode('lineWithFocusChart', true) : setGraphMode('lineChart', true)"><i class="fa fa-line-chart"></i>
         </button>
         <button type="button" class="btn btn-default btn-sm"
                 ng-class="{'active': isGraphMode('scatterChart')}"
@@ -145,6 +145,23 @@ limitations under the License.
       <div class="option lightBold" style="overflow: visible;"
          ng-if="getResultType()=='TABLE' && getGraphMode()!='table'
          && paragraph.config.graph.optionOpen && !asIframe && !viewOnly">
+        <div ng-if="isGraphMode('lineChart') || isGraphMode('lineWithFocusChart')">
+          <label>
+            <input type="checkbox"
+                   ng-model="paragraph.config.graph.forceY"
+                   ng-click="onGraphOptionChange()">
+            force Y to 0
+          </label>
+          <br/>
+
+          <label>
+            <input type="checkbox"
+                   ng-model="paragraph.config.graph.lineWithFocus"
+                   ng-click="toggleLineWithFocus()">
+            show line chart with focus
+          </label>
+        </div>
+
         All fields:
         <div class="allFields row">
           <ul class="noDot">
@@ -326,6 +343,11 @@ limitations under the License.
 
         <div ng-if="getGraphMode()=='lineChart'"
              id="p{{paragraph.id}}_lineChart">
+          <svg></svg>
+        </div>
+
+        <div ng-if="getGraphMode()=='lineWithFocusChart'"
+             id="p{{paragraph.id}}_lineWithFocusChart">
           <svg></svg>
         </div>
 
