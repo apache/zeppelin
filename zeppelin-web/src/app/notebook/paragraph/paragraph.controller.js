@@ -963,24 +963,24 @@ angular.module('zeppelinWebApp')
       var iqr,low,high,whisker_high,whisker_low;
       var i = 0; var j = 0;
 
-      var q1Arr = (values.length % 2 == 0) ? values.slice(0, (values.length / 2)) : values.slice(0, Math.floor(values.length / 2));
-      var q2Arr =  values;
-      var q3Arr = (values.length % 2 == 0) ? values.slice((values.length / 2), values.length) : values.slice(Math.ceil(values.length / 2), values.length);
-      Q1 = medianX(q1Arr);
-      Q2 = medianX(q2Arr);
-      Q3 = medianX(q3Arr);
+      var firstHalfOfArr = (values.length % 2 == 0) ? values.slice(0, (values.length / 2)) : values.slice(0, Math.floor(values.length / 2));
+      var fullArr =  values;
+      var secondHalfOfArr = (values.length % 2 == 0) ? values.slice((values.length / 2), values.length) : values.slice(Math.ceil(values.length / 2), values.length);
+      Q1 = medianX(firstHalfOfArr);
+      Q2 = medianX(fullArr);
+      Q3 = medianX(secondHalfOfArr);
                 
       iqr = Q3-Q1;
       low = Q1 - 1.5 * iqr;
       high = Q3 + 1.5 * iqr;
 
-      var outliers = q1Arr.filter(function(n){
+      var outliers = firstHalfOfArr.filter(function(n){
         return (n<low);
       });     
-      whisker_low = q1Arr[i];
-      while(q3Arr[j]<high) { j++;}
-      whisker_high = q3Arr[j-1];
-      outliers = outliers.concat(q3Arr.splice(j,q3Arr.length));
+      whisker_low = firstHalfOfArr[i];
+      while(secondHalfOfArr[j]<high) { j++;}
+      whisker_high = secondHalfOfArr[j-1];
+      outliers = outliers.concat(secondHalfOfArrr.splice(j,secondHalfOfArr.length));
       return {
         Q1 : Q1,
         Q2 : Q2,
