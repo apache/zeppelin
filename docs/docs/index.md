@@ -29,6 +29,7 @@ group: nav-right
 * [tajo](../docs/pleasecontribute.html)
 * [postgresql, hawq](./interpreter/postgresql.html)
 * [geode](./interpreter/geode.html)
+* [js](../interpreter/js.html)
 
 ### Display System
 
