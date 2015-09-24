@@ -117,6 +117,14 @@ public class RemoteSchedulerTest {
     assertEquals(1, scheduler.getJobsRunning().size());
 
     Thread.sleep(500);
+    
+    /* Test if our assertion will fail, if so,
+     * maybe the thread is just slow, give it some more time.
+     */
+    if (scheduler.getJobsRunning().size() == 1 
+     || scheduler.getJobsWaiting().size() == 1) {
+      Thread.sleep(500);
+    }
 
     assertEquals(0, scheduler.getJobsWaiting().size());
     assertEquals(0, scheduler.getJobsRunning().size());
