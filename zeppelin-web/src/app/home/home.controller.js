@@ -29,6 +29,41 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
 
   initHome();
 
+  $scope.time2TimeAgo = function(ts) {
+    var d = new Date();
+    var nowTs = Math.floor(d.getTime()/1000);
+    var seconds = nowTs-(ts/1000);
+
+    if (seconds > 2*24*3600*31 * 12) {
+      return Math.floor(seconds/2/24/3600/31/12) + ' few year ago';
+    }
+
+    if (seconds > 2*24*3600 * 31) {
+      return Math.floor(seconds/2/24/3600/31) + ' few month ago';
+    }
+
+    if (seconds > 2*24*3600) {
+      return Math.floor(seconds/2/24/3600) + ' few days ago';
+    }
+
+    // a day
+    if (seconds > 24*3600) {
+      return 'yesterday';
+    }
+
+    // hours or min 
+    if (seconds > 3600) {
+      return Math.floor(seconds/3600) + ' few hours ago';
+    }
+
+    if (seconds > 60) {
+      return Math.floor(seconds/60) + ' minutes ago';
+    }
+
+	console.log('time ' + seconds);
+    return 'New';
+  };
+
   $scope.$on('setNoteContent', function(event, note) {
     if (note) {
       vm.note = note;

@@ -296,6 +296,7 @@ public class NotebookServer extends WebSocketServlet implements
 
       info.put("id", note.id());
       info.put("name", note.getName());
+      info.put("modified_time", Long.toString(note.getLastModifiedUnixTime()));
       notesInfo.add(info);
     }
 
