@@ -48,6 +48,7 @@ public class Note implements Serializable, JobListener {
   List<Paragraph> paragraphs = new LinkedList<Paragraph>();
   private String name;
   private String id;
+  private long lastModifiedUnixTime;
 
   Map<String, List<AngularObject>> angularObjects = new HashMap<String, List<AngularObject>>();
 
@@ -80,6 +81,7 @@ public class Note implements Serializable, JobListener {
     this.replLoader = replLoader;
     this.jobListenerFactory = jobListenerFactory;
     generateId();
+    setLastModifiedUnixTime(System.currentTimeMillis());
   }
 
   private void generateId() {
@@ -100,6 +102,16 @@ public class Note implements Serializable, JobListener {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public void setLastModifiedUnixTime(long new_time)
+  {
+    this.lastModifiedUnixTime = new_time;
+  }
+  
+  public long getLastModifiedUnixTime()
+  {
+    return this.lastModifiedUnixTime;
   }
 
   public NoteInterpreterLoader getNoteReplLoader() {
