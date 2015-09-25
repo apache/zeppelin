@@ -27,3 +27,9 @@
           ng-click="setGraphMode('scatterChart', true)"><i class="cf cf-scatter-chart"></i>
   </button>
 </div>
+<span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && !asIframe && !viewOnly"
+      style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
+  <a class="btnText" ng-click="toggleGraphOption()">
+    settings <span ng-class="paragraph.config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>
+  </a>
+</span>

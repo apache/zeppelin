@@ -35,7 +35,7 @@ limitations under the License.
   </div>
 
   <div>
-    <div ng-show="!paragraph.config.editorHide && !viewOnly">
+    <div ng-show="!paragraph.config.editorHide && !viewOnly" style="margin-bottom:3px;">
       <div id="{{paragraph.id}}_editor"
            style="opacity: 1;"
            class="editor"
@@ -50,22 +50,7 @@ limitations under the License.
       </div>
     </div>
 
-    <div id="{{paragraph.id}}_runControl" class="runControl">
-      <div ng-if="(getProgress()<=0 || getProgress()>=100) && (paragraph.status=='RUNNING' )">
-        <div id="{{paragraph.id}}_progress"
-             class="progress">
-            <div class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;"></div>
-          <span class="sr-only"></span>
-        </div>
-      </div>
-      <div ng-if="getProgress()>0 && getProgress()<100 && paragraph.status=='RUNNING'">
-        <div id="{{paragraph.id}}_progress"
-             class="progress">
-          <div class="progress-bar" role="progressbar" style="width:{{getProgress()}}%;"></div>
-          <span class="sr-only">{{getProgress()}}%</span>
-        </div>
-      </div>
-    </div>
+    <div ng-include src="'app/notebook/paragraph/paragraph-progressBar.html'"></div>
 
     <form id="{{paragraph.id}}_form" role="form"
           ng-show="!paragraph.config.tableHide"
@@ -81,8 +66,7 @@ limitations under the License.
                  ng-enter="runParagraph(getEditorValue())"
                  ng-model="paragraph.settings.params[formulaire.name]"
                  ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
-                 name="{{formulaire.name}}">
-          </input>
+                 name="{{formulaire.name}}" />
 
           <select class="form-control input-sm"
                  ng-if="paragraph.settings.forms[formulaire.name].options"
@@ -98,13 +82,7 @@ limitations under the License.
 
     <!-- Rendering -->
     <div class='tableDisplay' ng-show="!paragraph.config.tableHide">
-      <div style="display: inline-block;" ng-include src="'app/notebook/paragraph/paragraph-chart-selector.html'"></div>
-      <span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && !asIframe && !viewOnly"
-            style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
-        <a class="btnText" ng-click="toggleGraphOption()">
-          settings <span ng-class="paragraph.config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>
-        </a>
-      </span>
+      <div ng-include src="'app/notebook/paragraph/paragraph-chart-selector.html'"></div>
 
       <div class="option lightBold" style="overflow: visible;"
          ng-if="getResultType()=='TABLE' && getGraphMode()!='table'

@@ -1,0 +1,8 @@
+<div id="{{paragraph.id}}_runControl" class="runControl" ng-show="paragraph.status=='RUNNING'">
+  <div id="{{paragraph.id}}_progress" class="progress">
+      <div ng-if="getProgress()>0 && getProgress()<100 && paragraph.status=='RUNNING'"
+        class="progress-bar" role="progressbar" style="width:{{getProgress()}}%;"></div>
+      <div ng-if="(getProgress()<=0 || getProgress()>=100) && (paragraph.status=='RUNNING' )"
+          class="progress-bar progress-bar-striped active" role="progressbar" style="width:100%;"></div>
+  </div>
+</div>
