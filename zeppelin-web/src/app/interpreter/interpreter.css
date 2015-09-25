@@ -27,7 +27,8 @@
   font-family: 'Roboto', sans-serif;
 }
 
-.interpreterHead textarea, .interpreter textarea {
+.interpreterHead textarea,
+.interpreter textarea {
   width: 100%;
   display: block;
   height: 20px;
@@ -37,11 +38,11 @@
 }
 
 .interpreter .interpreter-title {
-  font-size:20px;
-  font-weight:bold;
-  color:#3071a9;
-  float:left;
-  margin-top:0px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #3071a9;
+  float: left;
+  margin-top: 0px;
 }
 
 .interpreter ul {
@@ -52,7 +53,6 @@
 .interpreter .interpreterInfo {
   list-style-type: none;
 }
-
 
 .interpreter table tr .interpreterPropertyKey {
   padding : 5px 5px 5px 5px;

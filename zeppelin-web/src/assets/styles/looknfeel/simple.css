@@ -16,11 +16,7 @@ body {
   background: white;
 }
 
-
-/**
- * Box and well
- */
-.box{
+.box {
   border: 1px solid white;
   min-height: 20px;
 }
@@ -31,11 +27,11 @@ body {
   border: 1px solid #DDDDDD;
 }
 
-.paragraph-col .focused{
+.paragraph-col .focused {
   box-shadow: 1px 2px 7px rgba(0, 0, 0, 0.3);
 }
 
-.paragraph-col{
+.paragraph-col {
   border: 2px solid white;
 }
 
@@ -47,27 +43,30 @@ body {
   padding: 0px 2px 0px 2px !important;
 }
 
-
 .paragraph .control {
-  visibility : hidden;
-  right:15px;
-  top: 6px;
+  visibility: hidden;
+  top: 7px !important;
+  right: 10px !important;
 }
 
 .paragraph:hover .control {
-  visibility : visible;
+  visibility: visible;
 }
 
-.noteAction span, .noteAction button, .noteAction form {
-  visibility : hidden;
+.noteAction span,
+.noteAction button,
+.noteAction form {
+  visibility: hidden;
 }
 
-.noteAction:hover span, .noteAction:hover button, .noteAction:hover form {
-  visibility : visible;
+.noteAction:hover span,
+.noteAction:hover button,
+.noteAction:hover form {
+  visibility: visible;
 }
 
 .editor,
 .executionTime,
 .nv-controlsWrap {
-  display:block;
+  display: block;
 }
