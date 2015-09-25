@@ -35,6 +35,7 @@ limitations under the License.
               <li ng-repeat="note in home.notes.list | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">
                 <i style="font-size: 10px;" class="icon-doc"></i>
                 <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}}</a>
+                <span class="text-notebook-date-string">({{time2TimeAgo(note.dateUpdated)}})</span>
               </li>
             </ul>
           </div>
