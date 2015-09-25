@@ -16,53 +16,56 @@ body {
   background: white;
 }
 
-
-/**
- * Box and well
- */
-.box{
+.box {
   border: 0px;
   min-height: 0px;
 }
 
-.box:hover, 
+.box:hover,
 .well:hover {
   background-color: white;
   border: 0px;
 }
 
-.paragraph-col{
+.paragraph-col {
   border: 0px solid white;
+}
+
+.paragraph-space {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.graphContainer {
+  margin-bottom: 0 !important;
 }
 
 .paragraph {
   min-height: 32px;
 }
 
-.paragraph-space {
-  margin-bottom: 5px;
-  padding: 10px !important;
-}
-
 .paragraph .control {
-  visibility : hidden;
-  right:15px;
-  top: 6px;
+  visibility: hidden;
 }
 
 .paragraph:hover .control {
-  visibility : hidden;
+  visibility: hidden;
 }
 
-.noteAction span, .noteAction button, .noteAction form {
-  visibility : hidden;
+.noteAction span,
+.noteAction button,
+.noteAction form {
+  visibility: hidden;
 }
 
-.noteAction:hover span, .noteAction:hover button, .noteAction:hover form {
-  visibility : visible;
+.noteAction:hover span,
+.noteAction:hover button,
+.noteAction:hover form {
+  visibility: visible;
 }
 
 .executionTime,
-.nv-controlsWrap {
-  display:none;
+.nv-controlsWrap,
+.lastEmptyParagraph {
+  display: none;
 }
