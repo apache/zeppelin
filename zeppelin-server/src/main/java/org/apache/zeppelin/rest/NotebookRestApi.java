@@ -33,7 +33,6 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.message.InterpreterSettingListForNoteBind;
 import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.ticket.TicketContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,15 +60,10 @@ public class NotebookRestApi {
    * @throws IOException
    */
   @PUT
-  @Path("interpreter/bind/{noteId}/{principal}/{ticket}")
-  public Response bind(@PathParam("noteId") String noteId,
-                       @PathParam("principal") String principal,
-                       @PathParam("ticket") String ticket, String req) throws Exception {
-    if (!TicketContainer.instance.isValid(principal, ticket))
-      throw new Exception("Invalid principal / ticket:" + principal + "/" + ticket);
-
+  @Path("interpreter/bind/{noteId}")
+  public Response bind(@PathParam("noteId") String noteId, String req) throws IOException {
     List<String> settingIdList = gson.fromJson(req, new TypeToken<List<String>>(){}.getType());
-    notebook.bindInterpretersToNote(noteId, settingIdList, principal);
+    notebook.bindInterpretersToNote(noteId, settingIdList);
     return new JsonResponse(Status.OK).build();
   }
 
@@ -77,17 +71,12 @@ public class NotebookRestApi {
    * list binded setting
    */
   @GET
-  @Path("interpreter/bind/{noteId}/{principal}/{ticket}")
-  public Response bind(@PathParam("noteId") String noteId,
-                       @PathParam("principal") String principal,
-                       @PathParam("ticket") String ticket) throws Exception {
-    if (!TicketContainer.instance.isValid(principal, ticket))
-      throw new Exception("Invalid principal / ticket:" + principal + "/" + ticket);
+  @Path("interpreter/bind/{noteId}")
+  public Response bind(@PathParam("noteId") String noteId) {
+    List<InterpreterSettingListForNoteBind> settingList
+      = new LinkedList<InterpreterSettingListForNoteBind>();
 
-    List<InterpreterSettingListForNoteBind> settingList = new LinkedList<>();
-
-    List<InterpreterSetting> selectedSettings =
-            notebook.getBindedInterpreterSettings(noteId, principal);
+    List<InterpreterSetting> selectedSettings = notebook.getBindedInterpreterSettings(noteId);
     for (InterpreterSetting setting : selectedSettings) {
       settingList.add(new InterpreterSettingListForNoteBind(
           setting.id(),

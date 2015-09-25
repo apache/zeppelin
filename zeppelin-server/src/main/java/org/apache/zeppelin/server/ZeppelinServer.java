@@ -38,7 +38,6 @@ import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.rest.InterpreterRestApi;
 import org.apache.zeppelin.rest.NotebookRestApi;
-import org.apache.zeppelin.rest.SecurityRestApi;
 import org.apache.zeppelin.rest.ZeppelinRestApi;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.socket.NotebookServer;
@@ -216,11 +215,7 @@ public class ZeppelinServer extends Application {
     cxfContext.addServlet(cxfServletHolder, "/*");
 
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
-            EnumSet.allOf(DispatcherType.class));
-
-    cxfContext.addFilter(org.apache.shiro.web.servlet.ShiroFilter.class, "/*",
-            EnumSet.allOf(DispatcherType.class));
-    cxfContext.addEventListener(new org.apache.shiro.web.env.EnvironmentLoaderListener());
+        EnumSet.allOf(DispatcherType.class));
     return cxfContext;
   }
 
@@ -264,7 +259,7 @@ public class ZeppelinServer extends Application {
   }
 
   @Override
-  public Set<Object> getSingletons() {
+  public java.util.Set<java.lang.Object> getSingletons() {
     Set<Object> singletons = new HashSet<Object>();
 
     /** Rest-api root endpoint */
@@ -276,9 +271,6 @@ public class ZeppelinServer extends Application {
 
     InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory);
     singletons.add(interpreterApi);
-
-    SecurityRestApi securityApi = new SecurityRestApi();
-    singletons.add(securityApi);
 
     return singletons;
   }
