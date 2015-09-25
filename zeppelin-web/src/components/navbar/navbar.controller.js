@@ -16,6 +16,10 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams, notebookListDataFactory, websocketMsgSrv, arrayOrderingSrv, $http) {
+  $rootScope.ticket = {
+    'principal':'anonymous',
+    'ticket':'anonymous'
+  };
   /** Current list of notes (ids) */
 
   var vm = this;

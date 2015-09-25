@@ -397,10 +397,10 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public void onRemove(String interpreterGroupId, String name, String noteId) {
+  public void onRemove(String interpreterGroupId, AngularObject object) {
     Map<String, String> removeObject = new HashMap<String, String>();
-    removeObject.put("name", name);
-    removeObject.put("noteId", noteId);
+    removeObject.put("name", object.getName());
+    removeObject.put("noteId", object.getNoteId());
 
     sendEvent(new RemoteInterpreterEvent(
         RemoteInterpreterEventType.ANGULAR_OBJECT_REMOVE, gson.toJson(removeObject)));
@@ -433,7 +433,6 @@ public class RemoteInterpreterServer
 
   /**
    * called when object is updated in client (web) side.
-   * @param className
    * @param name
    * @param noteId noteId where the update issues
    * @param object

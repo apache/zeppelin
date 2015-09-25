@@ -136,12 +136,12 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   @Test
   public void pySparkDepLoaderTest() throws IOException {
     // create new note
-    Note note = ZeppelinServer.notebook.createNote();
+    Note note = ZeppelinServer.notebook.createNote("anonymous");
 
     if (isPyspark() && getSparkVersionNumber(note) >= 14) {
       // restart spark interpreter
       List<InterpreterSetting> settings =
-          ZeppelinServer.notebook.getBindedInterpreterSettings(note.id());
+          ZeppelinServer.notebook.getBindedInterpreterSettings(note.id(), "anonymous");
 
       for (InterpreterSetting setting : settings) {
         if (setting.getGroup().equals("spark")) {
