@@ -45,6 +45,8 @@ body {
 
 .paragraph .control {
   visibility: hidden;
+  top: 7px !important;
+  right: 10px !important;
 }
 
 .paragraph:hover .control {

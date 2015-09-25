@@ -31,6 +31,15 @@ body {
   border: 0px solid white;
 }
 
+.paragraph-space {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.graphContainer {
+  margin-bottom: 0 !important;
+}
+
 .paragraph {
   min-height: 32px;
 }
@@ -56,6 +65,7 @@ body {
 }
 
 .executionTime,
-.nv-controlsWrap {
+.nv-controlsWrap,
+.lastEmptyParagraph {
   display: none;
 }
