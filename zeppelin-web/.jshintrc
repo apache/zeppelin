@@ -25,6 +25,7 @@
     "angular": false,
     "_": false,
     "jQuery": false,
-    "hljs": false
+    "hljs": false,
+    "moment": false
   }
 }

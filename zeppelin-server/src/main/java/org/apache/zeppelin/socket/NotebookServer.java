@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -285,19 +286,47 @@ public class NotebookServer extends WebSocketServlet implements
     boolean hideHomeScreenNotebookFromList = conf
         .getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
 
+    Date noteDateUpdated = null;
+    Date lastParagraphDateUpdated = null;
     List<Note> notes = notebook.getAllNotes();
+    List<Paragraph> noteParagraphs = null;
     List<Map<String, String>> notesInfo = new LinkedList<>();
     for (Note note : notes) {
       Map<String, String> info = new HashMap<>();
-
+    
       if (hideHomeScreenNotebookFromList && note.id().equals(homescreenNotebookId)) {
         continue;
       }
-
+    
+      noteParagraphs = note.getAllParagraphs();
+      for (Paragraph paragraph : noteParagraphs) {
+        noteDateUpdated = paragraph.getDateUpdated();
+        
+        if (noteDateUpdated != null) {
+          if (lastParagraphDateUpdated == null) {
+            lastParagraphDateUpdated = noteDateUpdated;
+            noteDateUpdated = null;
+            continue;
+          }
+        
+          if (lastParagraphDateUpdated.after(noteDateUpdated)) {
+            lastParagraphDateUpdated = noteDateUpdated;
+            noteDateUpdated = null;
+          }
+        }
+        else {
+          if (lastParagraphDateUpdated == null)
+          {
+            lastParagraphDateUpdated = paragraph.getDateCreated();
+          }
+        }
+      }
+      
       info.put("id", note.id());
       info.put("name", note.getName());
-      info.put("modified_time", Long.toString(note.getLastModifiedUnixTime()));
+      info.put("dateUpdated", lastParagraphDateUpdated.toLocaleString());
       notesInfo.add(info);
+      lastParagraphDateUpdated = null;
     }
 
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
