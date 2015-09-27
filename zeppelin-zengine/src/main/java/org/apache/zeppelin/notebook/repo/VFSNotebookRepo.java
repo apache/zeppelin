@@ -138,7 +138,10 @@ public class VFSNotebookRepo implements NotebookRepo {
 
   @Override
   public List<NoteInfo> list() throws IOException {
-    FileObject rootDir = getRootDir();
+    FileObject rootDir = fsManager.resolveFile(getRootDir(), "users");
+    if (!rootDir.exists())
+      rootDir.createFolder();
+
     logger.info(rootDir.getName().getPath());
     FileObject[] children = rootDir.getChildren();
 
@@ -155,7 +158,7 @@ public class VFSNotebookRepo implements NotebookRepo {
       logger.info("OWNER=" + owner);
 
       if (!isDirectory(f)) {
-        // currently one directory per user saved like, [OWNER]/[NOTE_ID]/note.json.
+        // currently one directory per user saved like, users/[OWNER]/[NOTE_ID]/note.json.
         // so it must be a directory
         continue;
       }
@@ -211,14 +214,14 @@ public class VFSNotebookRepo implements NotebookRepo {
 
   @Override
   public Note get(String noteId, String owner) throws IOException {
-    FileObject rootDir = fsManager.resolveFile(getPath("/" + owner));
+    FileObject rootDir = fsManager.resolveFile(getPath("/users/" + owner));
     FileObject noteDir = rootDir.resolveFile(noteId, NameScope.CHILD);
 
     return getNote(noteDir);
   }
 
   private FileObject getRootDir(String owner) throws IOException {
-    FileObject rootDir = fsManager.resolveFile(getPath(owner != null ? "/" + owner : "/"));
+    FileObject rootDir = fsManager.resolveFile(getPath(owner != null ? "/users/" + owner : "/"));
 
     if (!rootDir.exists()) {
       throw new IOException("Root path does not exists");
@@ -245,7 +248,11 @@ public class VFSNotebookRepo implements NotebookRepo {
 
     rootDir.createFolder();
 
-    FileObject ownerDir = fsManager.resolveFile(rootDir, note.getOwner());
+    FileObject usersDir = fsManager.resolveFile(rootDir, "users");
+    if (!usersDir.exists())
+      usersDir.createFolder();
+
+    FileObject ownerDir = fsManager.resolveFile(usersDir, note.getOwner());
     if (!ownerDir.exists())
       ownerDir.createFolder();
 
@@ -267,7 +274,7 @@ public class VFSNotebookRepo implements NotebookRepo {
 
   @Override
   public void remove(String noteId, String owner) throws IOException {
-    FileObject rootDir = fsManager.resolveFile(getPath("/" + owner));
+    FileObject rootDir = fsManager.resolveFile(getPath("/users/" + owner));
     FileObject noteDir = rootDir.resolveFile(noteId, NameScope.CHILD);
 
     if (!noteDir.exists()) {
