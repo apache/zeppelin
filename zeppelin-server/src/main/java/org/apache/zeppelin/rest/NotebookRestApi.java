@@ -63,12 +63,7 @@ public class NotebookRestApi {
   @PUT
   @Path("interpreter/bind/{noteId}")
   public Response bind(@PathParam("noteId") String noteId, String req) throws IOException {
-    Object oprincipal = SecurityUtils.getSubject().getPrincipal();
-    String principal;
-    if (oprincipal == null)
-      principal = "anonymous";
-    else
-      principal = oprincipal.toString();
+    String principal = getPrincipal();
 
     List<String> settingIdList = gson.fromJson(req, new TypeToken<List<String>>(){}.getType());
     notebook.bindInterpretersToNote(noteId, settingIdList, principal);
@@ -81,12 +76,7 @@ public class NotebookRestApi {
   @GET
   @Path("interpreter/bind/{noteId}")
   public Response bind(@PathParam("noteId") String noteId) {
-    Object oprincipal = SecurityUtils.getSubject().getPrincipal();
-    String principal;
-    if (oprincipal == null)
-      principal = "anonymous";
-    else
-      principal = oprincipal.toString();
+    String principal = getPrincipal();
 
     List<InterpreterSettingListForNoteBind> settingList =
       new LinkedList<InterpreterSettingListForNoteBind>();
@@ -125,4 +115,15 @@ public class NotebookRestApi {
     }
     return new JsonResponse(Status.OK, "", settingList).build();
   }
+
+  private String getPrincipal() {
+    Object oprincipal = SecurityUtils.getSubject().getPrincipal();
+    String principal;
+    if (oprincipal == null)
+      principal = "anonymous";
+    else
+      principal = oprincipal.toString();
+    return principal;
+  }
+
 }
