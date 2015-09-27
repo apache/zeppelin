@@ -221,7 +221,7 @@ public class VFSNotebookRepo implements NotebookRepo {
     FileObject rootDir = fsManager.resolveFile(getPath(owner != null ? "/" + owner : "/"));
 
     if (!rootDir.exists()) {
-      throw new IOException("Root path does not exists");
+      throw new IOException("Root path does not exists" + rootDir.getName().getPath());
     }
 
     if (!isDirectory(rootDir)) {
