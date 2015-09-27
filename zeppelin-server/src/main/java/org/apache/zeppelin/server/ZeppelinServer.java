@@ -100,8 +100,13 @@ public class ZeppelinServer extends Application {
     jettyServer.setHandler(contexts);
 
     LOG.info("Start zeppelin server");
-    jettyServer.start();
-    LOG.info("Started");
+    try {
+      jettyServer.start();
+    } catch (Exception e) {
+      LOG.error("Error while running jettyServer", e);
+      System.exit(-1);
+    }
+    LOG.info("Started zeppelin server");
 
     Runtime.getRuntime().addShutdownHook(new Thread(){
       @Override public void run() {
