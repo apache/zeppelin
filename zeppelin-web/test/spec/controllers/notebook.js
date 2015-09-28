@@ -93,6 +93,8 @@ describe('Controller: NotebookCtrl', function() {
     scope.startSaveTimer();
     expect(scope.isNoteDirty).toEqual(true);
     expect(scope.saveTimer).toBeTruthy();
+    NotebookCtrl.killSaveTimer();
+    expect(scope.saveTimer).toEqual(null);
   });
 
 });
