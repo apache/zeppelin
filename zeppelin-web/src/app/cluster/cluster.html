@@ -1,0 +1,257 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<div class="interpreterHead">
+  <div class="header">
+    <div class="row">
+      <div class="col-md-12">
+        <h3 class="new_h3" style="float:left">
+          Clusters
+        </h3>
+        <div class="dropdown" style="float:right;margin-top:10px;">
+          <button class="btn btn-success dropdown-toggle fa fa-plus" type="button" id="dropdownMenu1" data-toggle="dropdown">
+          Create
+          </button>
+          <ul class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu1">
+            <li role="presentation"><a href="" ng-click="showAddNewSettingSpark=true;showAddNewSettingHadoop=false;newClusterSettingSpark.memory=8;showAddNewSettingRedshift=false; showAddNewSetting = !showAddNewSetting">Spark</a> </li>
+            <li role="presentation"><a href="" ng-click="showAddNewSettingHadoop=true;showAddNewSettingSpark=false;showAddNewSettingRedshift=false;newClusterSettingHadoop.slaves=2; showAddNewSetting = !showAddNewSetting">Hadoop</a> </li>
+            <li role="presentation"><a href="" ng-click="showAddNewSettingRedshift=true;showAddNewSettingHadoop=false;showAddNewSettingSpark=false;newClusterSettingRedshift.nodes=2; showAddNewSetting = !showAddNewSetting">Redshift</a> </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+        Manage cluster settings. You can create / resize / remove clusters.
+      </div>
+    </div>
+    <script type="text/ng-template" id="modalDialog.html">
+        <div class="modal-header">
+            <h3 class="modal-title">Delete cluster!</h3>
+        </div>
+        <div class="modal-body">
+          Do you want to delete this cluster?
+          <br></br>
+          Take snapshot!
+          <input type="checkbox" ng-model="snapshot">
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-success" ng-click="ok()">OK</button>
+            <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+        </div>
+    </script>
+  </div>
+  <div>
+    <div class="row">
+      <div class="col-md-12">
+        <div class="clusterSettingAdd"
+             ng-show="showAddNewSetting">
+          <hr />
+          <div class="col-md-12"
+             ng-show="showAddNewSettingSpark">
+            <div class="form-group">
+            <h4>Create new cluster Spark</h4>
+
+            <table class="table table-striped properties">
+              <tr>
+                <th>name</th>
+                <th>memory</th>
+              </tr>
+              <tr>
+                <td>
+                  <input id="newClusterSettingName"
+                     input pu-elastic-input
+                     pu-elastic-input-minwidth="180px"
+                     ng-model="newClusterSettingSpark.name">
+                  </input>
+                </td>
+                <td>
+                  <input id="newClusterSettingMemory"
+                     input pu-elastic-input
+                     type="number"
+                     min="8" max="1024" step="1"
+                     pu-elastic-input-minwidth="180px"
+                     ng-model="newClusterSettingSpark.memory">
+                  </input>
+                </td>
+              </tr>
+            </table>
+
+            <span class="btn btn-success"
+                  ng-click="addNewClusterSetting('spark')">
+              Create
+            </span>
+            <span class="btn btn-default"
+                  ng-click="showAddNewSetting=false">
+              Cancel
+            </span>
+            </div>
+          </div>
+          <div class="col-md-12"
+             ng-show="showAddNewSettingHadoop">
+            <div class="form-group">
+            <h4>Create new cluster Hadoop</h4>
+            <table class="table table-striped properties">
+              <tr>
+                <th>name</th>
+                <th>nodes</th>
+              </tr>
+              <tr>
+                <td>
+                  <input id="newClusterSettingName"
+                     input pu-elastic-input
+                     pu-elastic-input-minwidth="180px"
+                     ng-model="newClusterSettingHadoop.name">
+              </input>
+                </td>
+                <td>
+                  <input id="newClusterSettingMemory"
+                     type="number"
+                     min="2" max="30" step="1"
+                     input pu-elastic-input
+                     pu-elastic-input-minwidth="180px"
+                     ng-model="newClusterSettingHadoop.slaves">
+                  </input>
+                </td>
+
+              </tr>
+            </table>
+            <span class="btn btn-success"
+                  ng-click="addNewClusterSetting('hadoop')">
+              Create
+            </span>
+            <span class="btn btn-default"
+                  ng-click="showAddNewSetting=false">
+              Cancel
+            </span>
+            </div>
+          </div>
+          <div class="col-md-12"
+             ng-show="showAddNewSettingRedshift">
+            <div class="form-group">
+            <h4>Create new cluster Redshift</h4>
+            <table class="table table-striped properties">
+              <tr>
+                <th>name</th>
+                <th>nodes</th>
+                <th>type</th>
+              </tr>
+              <tr>
+                <td>
+                  <input id="newClusterSettingName"
+                     input pu-elastic-input
+                     pu-elastic-input-minwidth="180px"
+                     ng-model="newClusterSettingRedshift.name">
+                  </input>
+                </td>
+                <td>
+                  <input id="newClusterSettingMemory"
+                     input pu-elastic-input
+                     type="number"
+                     min="2" max="30" step="1"
+                     pu-elastic-input-minwidth="180px"
+                     ng-model="newClusterSettingRedshift.nodes">
+                  </input>
+                </td>
+                  <td>
+                    <select class="form-control" style="height:33px; width:130px" ng-model="instance">
+                      <option value="0">ds2.xlarge</option>
+                      <option value="1">ds2.8xlarge</option>
+                    </select>
+                  </td>
+              </tr>
+            </table>
+            <span class="btn btn-success"
+                  ng-click="addNewClusterSetting('redshift')">
+              Create
+            </span>
+            <span class="btn btn-default"
+                  ng-click="showAddNewSetting=false">
+              Cancel
+            </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="box width-full home"
+     ng-repeat="setting in interpreterSettings">
+  <div>
+    <div class="row interpreter">
+      <div class="col-md-12">
+        <h3 class="new_h3" style="float:left">
+          {{setting.type}}
+        </h3>
+        <span style="float:right">
+          <button class="btn btn-default btn-xs"
+                  ng-click="valueform.$show();
+                  copyOriginInterpreterSettingProperties(setting.id)">
+            <span class="fa fa-pencil"></span> resize</button>
+          <button class="btn btn-default btn-xs"
+                  ng-click="removeClusterSetting(setting.id)">
+            <span class="fa fa-remove"></span> remove</button>
+        </span>
+      </div>
+    </div>
+    <div class="row interpreter">
+      <div class="col-md-12">
+        <table class="table table-striped">
+          <tr>
+            <th style="width:15%">name</th>
+            <th style="width:10%">{{setting.column}}</th>
+            <th style="width:15%">status</th>
+            <th style="width:50%">master</th>
+          </tr>
+          <tr>
+            <td>{{setting.name}}</td>
+            <td>
+              <span editable-textarea="setting.memory" e-form="valueform" e-msd-elastic>
+                {{setting.memory}}
+              </span>
+            </td>
+            <td>
+              <div class="progress" style="width: 80px">
+                <div  ng-class="{running : 'progress-bar progress-bar-success', waiting : 'progress-bar progress-bar-success', available : 'progress-bar progress-bar-success', starting : 'progress-bar progress-bar-striped active', error : 'progress-bar progress-bar-danger', removing : 'progress-bar progress-bar-danger', terminating : 'progress-bar progress-bar-danger',terminated : 'progress-bar progress-bar-danger'}[setting.status]"
+                          role="progressbar" aria-valuemax="100" style="width:100%">
+                  {{setting.status}}
+                </div>
+              </div>
+            </td>
+            <td>{{setting.url}}</td>
+            <!--
+            <td ng-if="setting.type == 'hadoop'">
+              <span ng-repeat="ui in setting.ui">
+                <div><a target="_blank" href={{ui.url}}>{{ui.tag}}</a></div>
+              </span>
+            </td>
+            -->
+          </tr>
+        </table>
+        <form editable-form name="valueform" onaftersave="updateClusterSetting(setting.id)" ng-show="valueform.$visible">
+          <button type="submit" class="btn btn-success"
+                  ng-disabled="valueform.$waiting">
+            Save
+          </button>
+          <button type="button" class="btn btn-default"
+                  ng-disabled="valueform.$waiting"
+                  ng-click="valueform.$cancel(); resetClusterSetting(setting.id)">
+            Cancel
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
