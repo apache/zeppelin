@@ -44,7 +44,7 @@ limitations under the License.
             <span ng-repeat="interpreter in setting.interpreterGroup"
                   title="{{interpreter.class}}">
               <span ng-show="!$first">, </span>
-              %{{interpreter.name}}
+              %{{setting.name}}.{{interpreter.name}}
             </span>
           </small>
         </h3>
