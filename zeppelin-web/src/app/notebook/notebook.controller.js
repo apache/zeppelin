@@ -16,6 +16,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, websocketMsgSrv, baseUrlSrv, $timeout) {
+  var notebookCtrl = this;
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -98,10 +99,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   $scope.saveNote = function() {
-    _.forEach($scope.note.paragraphs, function(n, key) {
-      angular.element('#' + n.id + '_paragraphColumn_main').scope().saveParagraph();
-    });
-    $scope.isNoteDirty = null;
+    if ($scope.note && $scope.note.paragraphs) {
+      _.forEach($scope.note.paragraphs, function(n, key) {
+        angular.element('#' + n.id + '_paragraphColumn_main').scope().saveParagraph();
+      });
+      $scope.isNoteDirty = null;
+    }
   };
 
   $scope.toggleAllEditor = function() {
@@ -150,21 +153,31 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     return running;
   };
 
-  $scope.killSaveTimer = function() {
-    if($scope.saveTimer){
+  notebookCtrl.killSaveTimer = function() {
+    if ($scope.saveTimer) {
       $timeout.cancel($scope.saveTimer);
       $scope.saveTimer = null;
     }
   };
 
   $scope.startSaveTimer = function() {
-    $scope.killSaveTimer();
+    notebookCtrl.killSaveTimer();
     $scope.isNoteDirty = true;
-    //console.log('startSaveTimer called ' + $scope.note.id);
-    $scope.saveTimer = $timeout(function(){
+    console.log('startSaveTimer called ' + $scope.note.id);
+    $scope.saveTimer = $timeout(function() {
       $scope.saveNote();
     }, 10000);
   };
+
+  jQuery(window).on('unload', function(e) {
+    $scope.saveNote();
+  });
+
+  $scope.$on('$destroy', function() {
+    jQuery(window).off('unload');
+    notebookCtrl.killSaveTimer();
+    $scope.saveNote();
+  });
 
   $scope.setLookAndFeel = function(looknfeel) {
     $scope.note.config.looknfeel = looknfeel;

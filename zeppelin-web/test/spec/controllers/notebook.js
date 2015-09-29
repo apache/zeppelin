@@ -37,7 +37,7 @@ describe('Controller: NotebookCtrl', function() {
 
   var functions = ['getCronOptionNameFromValue', 'removeNote', 'runNote', 'saveNote', 'toggleAllEditor',
     'showAllEditor', 'hideAllEditor', 'toggleAllTable', 'hideAllTable', 'showAllTable', 'isNoteRunning',
-    'killSaveTimer', 'startSaveTimer', 'setLookAndFeel', 'setCronScheduler', 'setConfig', 'sendNewName',
+    'startSaveTimer', 'setLookAndFeel', 'setCronScheduler', 'setConfig', 'sendNewName',
     'openSetting', 'closeSetting', 'saveSetting', 'toggleSetting'];
 
   functions.forEach(function(fn) {
@@ -90,16 +90,10 @@ describe('Controller: NotebookCtrl', function() {
 
   it('should first call killSaveTimer() when calling startSaveTimer()', function() {
     expect(scope.saveTimer).toEqual(null);
-    spyOn(scope, 'killSaveTimer');
     scope.startSaveTimer();
-    expect(scope.killSaveTimer).toHaveBeenCalled();
-  });
-
-  it('should set "saveTimer" when saveTimer() and killSaveTimer() are called', function() {
-    expect(scope.saveTimer).toEqual(null);
-    scope.startSaveTimer();
+    expect(scope.isNoteDirty).toEqual(true);
     expect(scope.saveTimer).toBeTruthy();
-    scope.killSaveTimer();
+    NotebookCtrl.killSaveTimer();
     expect(scope.saveTimer).toEqual(null);
   });
 
