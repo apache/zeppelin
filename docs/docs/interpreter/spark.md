@@ -157,7 +157,7 @@ In sql environment, you can create form in simple template.
 
 ```
 %sql
-select * from ${table=defualtTableName} where text like '%${search}%'
+select * from ${table=defaultTableName} where text like '%${search}%'
 ```
 
 To learn more about dynamic form, checkout [Dynamic Form](../dynamicform.html).
