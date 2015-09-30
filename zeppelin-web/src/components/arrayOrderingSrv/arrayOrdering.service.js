@@ -11,32 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+'use strict';
 
-/**
- * Theme for homescreen
- */
+angular.module('zeppelinWebApp').service('arrayOrderingSrv', function() {
 
-body {
-  background: #ecf0f1;
-}
+  this.notebookListOrdering = function(note) {
+    return (note.name ? note.name : 'Note ' + note.id);
+  };
 
-.editor,
-.executionTime,
-.nv-controlsWrap {
-  display: block;
-}
-
-.paragraph .control {
-  visibility: hidden;
-}
-
-.noteAction span,
-.noteAction button,
-.noteAction form {
-  visibility: hidden;
-}
-
-.executionTime,
-.nv-controlsWrap {
-  display: none;
-}
+});

@@ -43,8 +43,7 @@ angular.module('zeppelinWebApp', [
   .config(function ($routeProvider, ngToastProvider) {
     $routeProvider
       .when('/', {
-        templateUrl: 'app/home/home.html',
-        controller: 'HomeCtrl'
+        templateUrl: 'app/home/home.html'
       })
       .when('/notebook/:noteId', {
         templateUrl: 'app/notebook/notebook.html',

@@ -43,13 +43,7 @@ angular.module('zeppelinWebApp')
 
     initializeDefault();
 
-    if (!$scope.lastData) {
-      $scope.lastData = {};
-    }
-
     if ($scope.getResultType() === 'TABLE') {
-      $scope.lastData.settings = angular.copy($scope.paragraph.settings);
-      $scope.lastData.config = angular.copy($scope.paragraph.config);
       $scope.loadTableData($scope.paragraph.result);
       $scope.setGraphMode($scope.getGraphMode(), false, false);
     } else if ($scope.getResultType() === 'HTML') {
@@ -70,7 +64,6 @@ angular.module('zeppelinWebApp')
           console.log('HTML rendering error %o', err);
         }
       } else {
-        $timeout(retryRenderer,10);
       }
     };
     $timeout(retryRenderer);
@@ -157,22 +150,17 @@ angular.module('zeppelinWebApp')
   // TODO: this may have impact on performance when there are many paragraphs in a note.
   $scope.$on('updateParagraph', function(event, data) {
     if (data.paragraph.id === $scope.paragraph.id &&
-        (
-      data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
-      data.paragraph.dateFinished !== $scope.paragraph.dateFinished ||
-      data.paragraph.dateStarted !== $scope.paragraph.dateStarted ||
-      data.paragraph.dateUpdated !== $scope.paragraph.dateUpdated ||
-      data.paragraph.status !== $scope.paragraph.status ||
-      data.paragraph.jobName !== $scope.paragraph.jobName ||
-      data.paragraph.title !== $scope.paragraph.title ||
-      data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
-      !angular.equals(data.paragraph.settings, $scope.lastData.settings) ||
-      !angular.equals(data.paragraph.config, $scope.lastData.config)
-    )
+        (data.paragraph.dateCreated !== $scope.paragraph.dateCreated ||
+         data.paragraph.dateFinished !== $scope.paragraph.dateFinished ||
+         data.paragraph.dateStarted !== $scope.paragraph.dateStarted ||
+         data.paragraph.dateUpdated !== $scope.paragraph.dateUpdated ||
+         data.paragraph.status !== $scope.paragraph.status ||
+         data.paragraph.jobName !== $scope.paragraph.jobName ||
+         data.paragraph.title !== $scope.paragraph.title ||
+         data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
+         !angular.equals(data.paragraph.settings, $scope.paragraph.settings) ||
+         !angular.equals(data.paragraph.config, $scope.paragraph.config))
        ) {
-      // store original data for comparison
-      $scope.lastData.settings = angular.copy(data.paragraph.settings);
-      $scope.lastData.config = angular.copy(data.paragraph.config);
 
       var oldType = $scope.getResultType();
       var newType = $scope.getResultType(data.paragraph);
@@ -230,9 +218,9 @@ angular.module('zeppelinWebApp')
         } else {
           $scope.setGraphMode(newGraphMode, false, true);
         }
-      } else if (newType === 'HTML') {
+      } else if (newType === 'HTML' && resultRefreshed) {
         $scope.renderHtml();
-      } else if (newType === 'ANGULAR') {
+      } else if (newType === 'ANGULAR' && resultRefreshed) {
         $scope.renderAngular();
       }
     }
@@ -437,8 +425,8 @@ angular.module('zeppelinWebApp')
     var langTools = ace.require('ace/ext/language_tools');
     var Range = ace.require('ace/range').Range;
 
-    $scope.editor = _editor;
     _editor.$blockScrolling = Infinity;
+    $scope.editor = _editor;
     if (_editor.container.id !== '{{paragraph.id}}_editor') {
       $scope.editor.renderer.setShowGutter($scope.paragraph.config.lineNumbers);
       $scope.editor.setShowFoldWidgets(false);
@@ -446,8 +434,8 @@ angular.module('zeppelinWebApp')
       $scope.editor.setHighlightGutterLine(false);
       $scope.editor.setTheme('ace/theme/chrome');
       $scope.editor.focus();
-      var hight = $scope.editor.getSession().getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
-      setEditorHeight(_editor.container.id, hight);
+      var height = $scope.editor.getSession().getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
+      setEditorHeight(_editor.container.id, height);
 
       $scope.editor.getSession().setUseWrapMode(true);
       if (navigator.appVersion.indexOf('Mac') !== -1 ) {
@@ -539,8 +527,8 @@ angular.module('zeppelinWebApp')
 
 
       $scope.editor.getSession().on('change', function(e, editSession) {
-        hight = editSession.getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
-        setEditorHeight(_editor.container.id, hight);
+        height = editSession.getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
+        setEditorHeight(_editor.container.id, height);
         $scope.editor.resize();
       });
 
@@ -630,7 +618,7 @@ angular.module('zeppelinWebApp')
     return desc;
   };  
 
-  $scope.isResultOutdated = function() {      
+  $scope.isResultOutdated = function() {
     var pdata = $scope.paragraph;
     if (pdata.dateUpdated !==undefined && Date.parse(pdata.dateUpdated) > Date.parse(pdata.dateStarted)){
       return true;

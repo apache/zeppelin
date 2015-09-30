@@ -393,7 +393,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SSL_TRUSTSTORE_TYPE("zeppelin.ssl.truststore.type", null),
     ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
     ZEPPELIN_WAR("zeppelin.war", "../zeppelin-web/dist"),
-    ZEPPELIN_API_WAR("zeppelin.api.war", "../zeppelin-docs/src/main/swagger"),
     ZEPPELIN_INTERPRETERS("zeppelin.interpreters", "org.apache.zeppelin.spark.SparkInterpreter,"
         + "org.apache.zeppelin.spark.PySparkInterpreter,"
         + "org.apache.zeppelin.spark.SparkSqlInterpreter,"

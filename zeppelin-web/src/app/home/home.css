@@ -13,11 +13,14 @@
  */
 
 body {
-  padding-top: 60px;
+  padding-top: 50px;
   color: #212121;
 }
 
-html,body { height: 100%;}
+html,
+body {
+  height: 100%;
+}
 
 .bodyAsIframe {
   background: white;
@@ -27,12 +30,12 @@ html,body { height: 100%;}
   display: inline !important;
 }
 
-
 body.asIframe {
   padding-top: 0px;
 }
+
 body .navbar {
-  margin-bottom: 10px;
+  margin-bottom: 0px;
 }
 
 .container {
@@ -50,16 +53,20 @@ body .navbar {
   font-size: 18px;
 }
 
-.navbar-inverse .navbar-nav > .open > a, .navbar-inverse .navbar-nav > .open > a:hover, .navbar-inverse .navbar-nav > .open > a:focus {
+.navbar-inverse .navbar-nav > .open > a,
+.navbar-inverse .navbar-nav > .open > a:hover,
+.navbar-inverse .navbar-nav > .open > a:focus {
   color: #fff;
   background-color: #3071a9;
 }
 
-.navbar-inverse .navbar-toggle:hover, .navbar-inverse .navbar-toggle:focus {
+.navbar-inverse .navbar-toggle:hover,
+.navbar-inverse .navbar-toggle:focus {
   background-color: #3071a9;
 }
 
-.navbar-inverse .navbar-nav > li > a:hover, .navbar-inverse .navbar-nav > li > a:focus {
+.navbar-inverse .navbar-nav > li > a:hover,
+.navbar-inverse .navbar-nav > li > a:focus {
   color: #fff;
   background-color: rgba(0, 0, 0, 0.2);
 
@@ -69,7 +76,9 @@ body .navbar {
   border-color: #FFFFFF;
 }
 
-.navbar-inverse .navbar-nav > .active > a, .navbar-inverse .navbar-nav > .active > a:hover, .navbar-inverse .navbar-nav > .active > a:focus {
+.navbar-inverse .navbar-nav > .active > a,
+.navbar-inverse .navbar-nav > .active > a:hover,
+.navbar-inverse .navbar-nav > .active > a:focus {
   color: #fff;
   background-color: #080808;
 }
@@ -99,6 +108,7 @@ a.navbar-brand:hover {
   color: #333;
   white-space: nowrap;
 }
+
 .dropdown-menu > .scrollbar-container > li > a:hover,
 .dropdown-menu > .scrollbar-container > li > a:focus {
   color: #262626;
@@ -148,11 +158,8 @@ a.navbar-brand:hover {
   }
 }
 
-
 #main {
-  padding-left: 10px;
-  padding-right: 10px;
-  padding-bottom: 10px;
+  padding: 10px;
   height: 100%;
 }
 
@@ -168,7 +175,7 @@ a.navbar-brand:hover {
 }
 
 .server-status {
-  font-size:12px;
+  font-size: 12px;
   margin-top: 6px;
 }
 
@@ -182,14 +189,10 @@ a.navbar-brand:hover {
   font-weight: bold !important;
 }
 
-
-/**
- * Box and well
- */
-.box{
+.box {
   border-style: solid;
   min-height: 20px;
-  padding: 10px;
+  padding: 19px;
   margin-bottom: 20px;
 }
 
@@ -203,38 +206,26 @@ a.navbar-brand:hover {
   box-shadow: none;
 }
 
-.box-heading{
-  position:relative;
+.box-heading {
+  position: relative;
   max-width: 100%;
-  /*font-size: 20px;*/
   font-weight:300;
   white-space: nowrap;
-  /*overflow:hidden;*/
   text-overflow: ellipsis;
   vertical-align: middle;
   margin: 0 0 15px;
   padding-bottom: 2px;
 }
-/**
-h1.box-heading,
-h2.box-heading,
-h3.box-heading,
-h4.box-heading,
-h5.box-heading,
-h6.box-heading{
-  font-size: 20px;
-}*/
+
 .box-heading > .btn-group,
-.box-heading > .btn{
+.box-heading > .btn {
   margin-top: -3px;
 }
 
-
-.icheck-label{
+.icheck-label {
   position: relative;
   top: 0;
 }
-
 
 .zeppelin {
   background-image: url('/assets/images/zepLogo.png');
@@ -285,7 +276,9 @@ kbd {
   min-height: 400px;
 }
 
-/* ngToast style */
+/*
+  ngToast Style
+*/
 
 .ng-toast .alert {
   color: white !important;
@@ -314,5 +307,5 @@ This part should be removed when new version of bootstrap handles this issue.
 */
 .btn-group > .tooltip + .btn,
 .btn-group > .popover + .btn {
-  margin-left:-1px;
+  margin-left: -1px;
 }

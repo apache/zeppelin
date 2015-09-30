@@ -19,7 +19,7 @@ limitations under the License.
           Clusters
         </h3>
         <div class="dropdown" style="float:right;margin-top:10px;">
-          <button class="btn btn-success dropdown-toggle fa fa-plus" type="button" id="dropdownMenu1" data-toggle="dropdown">
+          <button class="btn btn-default dropdown-toggle fa fa-plus" type="button" id="dropdownMenu1" data-toggle="dropdown">
           Create
           </button>
           <ul class="dropdown-menu dropdown-menu-right" role="menu" aria-labelledby="dropdownMenu1">
@@ -46,7 +46,7 @@ limitations under the License.
           <input type="checkbox" ng-model="snapshot">
         </div>
         <div class="modal-footer">
-            <button class="btn btn-success" ng-click="ok()">OK</button>
+            <button class="btn btn-info" ng-click="ok()">OK</button>
             <button class="btn btn-default" ng-click="cancel()">Cancel</button>
         </div>
     </script>
@@ -87,7 +87,7 @@ limitations under the License.
               </tr>
             </table>
 
-            <span class="btn btn-success"
+            <span class="btn btn-info"
                   ng-click="addNewClusterSetting('spark')">
               Create
             </span>
@@ -126,7 +126,7 @@ limitations under the License.
 
               </tr>
             </table>
-            <span class="btn btn-success"
+            <span class="btn btn-info"
                   ng-click="addNewClusterSetting('hadoop')">
               Create
             </span>
@@ -171,7 +171,7 @@ limitations under the License.
                   </td>
               </tr>
             </table>
-            <span class="btn btn-success"
+            <span class="btn btn-info"
                   ng-click="addNewClusterSetting('redshift')">
               Create
             </span>
@@ -241,7 +241,7 @@ limitations under the License.
           </tr>
         </table>
         <form editable-form name="valueform" onaftersave="updateClusterSetting(setting.id)" ng-show="valueform.$visible">
-          <button type="submit" class="btn btn-success"
+          <button type="submit" class="btn btn-info"
                   ng-disabled="valueform.$waiting">
             Save
           </button>

@@ -42,10 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
 
 /**
  * Interpreter Rest API
@@ -53,7 +49,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
  */
 @Path("/interpreter")
 @Produces("application/json")
-@Api(value = "/interpreter", description = "Zeppelin Interpreter REST API")
 public class InterpreterRestApi {
   Logger logger = LoggerFactory.getLogger(InterpreterRestApi.class);
 
@@ -71,12 +66,10 @@ public class InterpreterRestApi {
 
   /**
    * List all interpreter settings
-     * @return
+   * @return
    */
   @GET
   @Path("setting")
-  @ApiOperation(httpMethod = "GET", value = "List all interpreter setting")
-  @ApiResponses(value = {@ApiResponse(code = 500, message = "When something goes wrong")})
   public Response listSettings() {
     List<InterpreterSetting> interpreterSettings = null;
     interpreterSettings = interpreterFactory.get();
@@ -92,8 +85,6 @@ public class InterpreterRestApi {
    */
   @POST
   @Path("setting")
-  @ApiOperation(httpMethod = "GET", value = "Create new interpreter setting")
-  @ApiResponses(value = {@ApiResponse(code = 201, message = "On success")})
   public Response newSettings(String message) throws InterpreterException, IOException {
     NewInterpreterSettingRequest request = gson.fromJson(message,
         NewInterpreterSettingRequest.class);
@@ -132,21 +123,22 @@ public class InterpreterRestApi {
     return new JsonResponse(Status.OK, "", setting).build();
   }
 
+  /**
+   * Remove interpreter setting
+   */
   @DELETE
   @Path("setting/{settingId}")
-  @ApiOperation(httpMethod = "GET", value = "Remove interpreter setting")
-  @ApiResponses(value = {@ApiResponse(code = 500, message = "When something goes wrong")})
   public Response removeSetting(@PathParam("settingId") String settingId) throws IOException {
     logger.info("Remove interpreterSetting {}", settingId);
     interpreterFactory.remove(settingId);
     return new JsonResponse(Status.OK).build();
   }
 
+  /**
+   * Restart interpreter setting
+   */
   @PUT
   @Path("setting/restart/{settingId}")
-  @ApiOperation(httpMethod = "GET", value = "restart interpreter setting")
-  @ApiResponses(value = {
-      @ApiResponse(code = 404, message = "Not found")})
   public Response restartSetting(@PathParam("settingId") String settingId) {
     logger.info("Restart interpreterSetting {}", settingId);
     try {
@@ -166,9 +158,6 @@ public class InterpreterRestApi {
    * List all available interpreters by group
    */
   @GET
-  @ApiOperation(httpMethod = "GET", value = "List all available interpreters")
-  @ApiResponses(value = {
-      @ApiResponse(code = 500, message = "When something goes wrong")})
   public Response listInterpreter(String message) {
     Map<String, RegisteredInterpreter> m = Interpreter.registeredInterpreters;
     return new JsonResponse(Status.OK, "", m).build();

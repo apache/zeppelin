@@ -125,6 +125,7 @@ public class SparkSqlInterpreter extends Interpreter {
       sc.setLocalProperty("spark.scheduler.pool", null);
     }
 
+    sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
     Object rdd = null;
     try {
       // method signature of sqlc.sql() is changed
@@ -139,6 +140,7 @@ public class SparkSqlInterpreter extends Interpreter {
     }
 
     String msg = ZeppelinContext.showDF(sc, context, rdd, maxResult);
+    sc.clearJobGroup();
     return new InterpreterResult(Code.SUCCESS, msg);
   }
 

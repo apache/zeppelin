@@ -52,14 +52,6 @@ if [[ -z "${ZEPPELIN_WAR}" ]]; then
   fi
 fi
 
-if [[ -z "${ZEPPELIN_API_WAR}" ]]; then
-  if [[ -d "${ZEPPELIN_HOME}/zeppelin-docs/src/main/swagger" ]]; then
-    export ZEPPELIN_API_WAR="${ZEPPELIN_HOME}/zeppelin-docs/src/main/swagger"
-  else
-    export ZEPPELIN_API_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-api-ui*.war")
-  fi
-fi
-
 if [[ -z "$ZEPPELIN_INTERPRETER_DIR" ]]; then
   export ZEPPELIN_INTERPRETER_DIR="${ZEPPELIN_HOME}/interpreter"
 fi

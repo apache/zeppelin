@@ -63,15 +63,20 @@ if [[ -d "${ZEPPELIN_HOME}/zeppelin-zengine/target/classes" ]]; then
   ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-zengine/target/classes"
 fi
 
-if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
-  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
+if [[ -d "${ZEPPELIN_HOME}/zeppelin-metal/zeppelin-metal-emr/target/classes" ]]; then
+  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-metal/zeppelin-metal-emr/target/classes"
+fi
+
+if [[ -d "${ZEPPELIN_HOME}/zeppelin-metal/zeppelin-metal-server/target/classes" ]]; then
+  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-metal/zeppelin-metal-server/target/classes"
 fi
 
 addJarInDir "${ZEPPELIN_HOME}"
 addJarInDir "${ZEPPELIN_HOME}/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
-addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
+addJarInDir "${ZEPPELIN_HOME}/zeppelin-metal/zeppelin-metal-server/target/lib"
+addJarInDir "${ZEPPELIN_HOME}/zeppelin-metal/zeppelin-metal-emr/target/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
 
 CLASSPATH+=":${ZEPPELIN_CLASSPATH}"

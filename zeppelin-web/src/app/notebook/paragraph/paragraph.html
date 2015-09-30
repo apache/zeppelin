@@ -13,7 +13,7 @@ limitations under the License.
 -->
 
 <div id="{{paragraph.id}}_container"
-     ng-class="{'paragraph outlineOnFocus': !asIframe, 'paragraphAsIframe': asIframe}">
+     ng-class="{'paragraph': !asIframe, 'paragraphAsIframe': asIframe}">
 
   <div ng-show="paragraph.config.title"
        id="{{paragraph.id}}_title"
@@ -41,7 +41,7 @@ limitations under the License.
                      require : ['ace/ext/language_tools']
                    }"
            ng-model="paragraph.text"
-           ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING', dirty : dirtyText}">
+           ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING', 'paragraph-text--dirty' : dirtyText}">
       </div>
     </div>
 
@@ -69,7 +69,7 @@ limitations under the License.
            ng-repeat="formulaire in paragraph.settings.forms"
            ng-Init="loadForm(formulaire, paragraph.settings.params)">
         <label class="control-label input-sm" ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">{{formulaire.name}}</label>
-        <div class="">
+        <div>
 
           <input class="form-control input-sm"
                  ng-if="!paragraph.settings.forms[formulaire.name].options"
@@ -132,11 +132,11 @@ limitations under the License.
       </div>
       <span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && !asIframe && !viewOnly"
             style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
-        <a class="btnText" ng-if="paragraph.config.graph.optionOpen"
+        <a ng-if="paragraph.config.graph.optionOpen"
            ng-click="toggleGraphOption()">
           settings <span class="fa fa-caret-up"></span>
         </a>
-        <a class="btnText" ng-if="!paragraph.config.graph.optionOpen"
+        <a ng-if="!paragraph.config.graph.optionOpen"
            ng-click="toggleGraphOption()" >
           settings <span class="fa fa-caret-down"></span>
         </a>
@@ -371,8 +371,7 @@ limitations under the License.
            ng-bind="paragraph.errorMessage">
       </div>
 
-      <div id="{{paragraph.id}}_executionTime" class="executionTime" ng-bind-html="getExecutionTime()">
-      </div>
+      <div ng-if="!asIframe" id="{{paragraph.id}}_executionTime" class="executionTime" ng-bind-html="getExecutionTime()"></div>
     </div>
   </div>
   <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
