@@ -211,9 +211,10 @@ limitations under the License.
         <table class="table table-striped">
           <tr>
             <th style="width:15%">name</th>
-            <th style="width:10%">{{setting.column}}</th>
+            <th style="width:10%">nodes</th>
             <th style="width:15%">status</th>
             <th style="width:50%">master</th>
+            <th style="width:10%" ng-if="setting.type != 'redshift'">ui</th>
           </tr>
           <tr>
             <td>{{setting.name}}</td>
@@ -231,13 +232,13 @@ limitations under the License.
               </div>
             </td>
             <td>{{setting.url}}</td>
-            <!--
-            <td ng-if="setting.type == 'hadoop'">
+
+            <td ng-if="setting.type != 'redshift'">
               <span ng-repeat="ui in setting.ui">
                 <div><a target="_blank" href={{ui.url}}>{{ui.tag}}</a></div>
               </span>
             </td>
-            -->
+
           </tr>
         </table>
         <form editable-form name="valueform" onaftersave="updateClusterSetting(setting.id)" ng-show="valueform.$visible">

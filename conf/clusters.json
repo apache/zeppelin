@@ -1,1 +1,16 @@
-{"clusterSettings":{}}
+{
+  "clusterSettings": {
+    "j-54QFKX2WG75C": {
+      "id": "j-54QFKX2WG75C",
+      "name": "hadoop-cls",
+      "slaves": 2,
+      "selected": "",
+      "status": "waiting",
+      "urls": {
+        "hue": "ec2-52-23-159-54.compute-1.amazonaws.com:8888",
+        "master": "ec2-52-23-159-54.compute-1.amazonaws.com:9026"
+      },
+      "type": "hadoop"
+    }
+  }
+}

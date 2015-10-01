@@ -23,30 +23,23 @@
  * Controller of interpreter, manage the note (update)
  */
 angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, $interval, $modal, $log, baseUrlSrv) {
-  var remoteSettingToLocalSetting = function(settingId, setting) {
-    var column = 'slaves';
-    var slaves = setting.slaves;
-    var url = setting.url;
-    var ui = [{'tag': 'Hue','url':'http://' + setting.url + ':8888'}, {'tag': 'Master','url':'http://' + setting.url + ':9026'}];
-    var uiTag = 'Hue';
-    if (setting.type === 'spark') {
-      column = 'memory';
-      slaves = setting.slaves * 7;
-      url = 'spark://' + setting.url + 7077;
-      ui = [{'tag': 'SparkUI','url':'http://' + setting.url + ':8080'}];
-    } else if (setting.type === 'redshift') {
-      column = 'nodes';
-      slaves = setting.slaves;
-      url = 'spark://' + setting.url + 5439;
+  var remoteSettingToLocalSetting = function(setting) {
+    var ui = [];
+    for (var key in setting.urls) {
+      ui.push({
+        'tag': key,
+        'url': setting.urls[key]
+      });
     }
+    console.log(ui);
     return {
-      id : settingId,
+      id : setting.id,
       name : setting.name,
-      memory : slaves,
+      memory : setting.slaves,
       status : setting.status,
-      url : setting.url,
+      master: setting.urls.master,
       type : setting.type,
-      column : column
+      ui: ui
     };
   };
 
@@ -58,9 +51,9 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
 
         for (var settingId in data.body) {
           var setting = data.body[settingId];
-          $scope.link = 'http://'+setting.url+':8080';
-          interpreterSettings.push(remoteSettingToLocalSetting(setting.id, setting));
-          console.log(setting.id);
+          console.log(setting);
+          interpreterSettings.push(remoteSettingToLocalSetting(setting));
+
           getStatusCluster(setting.id);
         }
         console.log('interpreterSettings=%o', interpreterSettings);
@@ -144,7 +137,6 @@ angular.module('zeppelinWebApp').controller('ClusterCtrl', function($scope, $rou
         type : type
       };
     }
-    console.log($scope.instance);
     $http.post(baseUrlSrv.getRestApiBase()+'/cluster/setting/' + type, newSetting).
       success(function(data, status, headers, config) {
         console.log('Success %o %o', status, data.message);
