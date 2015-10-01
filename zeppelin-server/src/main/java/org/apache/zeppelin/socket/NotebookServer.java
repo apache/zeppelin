@@ -376,7 +376,8 @@ public class NotebookServer extends WebSocketServlet implements
 
     return cronUpdated;
   }
-  private void createNote(WebSocket conn, Notebook notebook, Message message) throws IOException {
+  private void createNote(NotebookSocket conn, Notebook notebook,
+      Message message) throws IOException {
     Note note = notebook.createNote();
     note.addParagraph(); // it's an empty note. so add one paragraph
     if (message != null) {
@@ -388,6 +389,7 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     note.persist();
+    conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
     broadcastNote(note);
     broadcastNoteList();
   }
@@ -425,7 +427,7 @@ public class NotebookServer extends WebSocketServlet implements
     note.persist();
     broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
   }
-  
+
   private void cloneNote(NotebookSocket conn, Notebook notebook, Message fromMessage)
       throws IOException, CloneNotSupportedException {
     String noteId = getOpenNoteId(conn);
@@ -446,6 +448,7 @@ public class NotebookServer extends WebSocketServlet implements
       newNote.addParagraph(p);
     }
     newNote.persist();
+    conn.send(serializeMessage(new Message(OP.NOTE).put("note", newNote)));
     broadcastNote(newNote);
     broadcastNoteList();
   }
@@ -765,4 +768,3 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 }
-
