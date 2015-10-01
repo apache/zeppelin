@@ -2,7 +2,8 @@
 describe('Controller: NavCtrl', function() {
   // load the controller's module
   beforeEach(module('zeppelinWebApp'));
-  var NavCtrl, scope;
+  var NavCtrl;
+  var scope;
   // Initialize the controller and a mock scope
   beforeEach(inject(function($controller, $rootScope) {
     scope = $rootScope.$new();

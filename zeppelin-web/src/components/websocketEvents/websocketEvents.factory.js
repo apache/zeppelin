@@ -22,7 +22,7 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
   websocketCalls.ws.onOpen(function() {
     console.log('Websocket created');
     $rootScope.$broadcast('setConnectedStatus', true);
-    setInterval(function(){
+    setInterval(function() {
       websocketCalls.sendNewEvent({op: 'PING'});
     }, 10000);
   });

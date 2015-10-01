@@ -15,7 +15,9 @@
 
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams, notebookListDataFactory, websocketMsgSrv, arrayOrderingSrv) {
+angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams,
+                                                                notebookListDataFactory, websocketMsgSrv,
+                                                                arrayOrderingSrv) {
   /** Current list of notes (ids) */
 
   var vm = this;
@@ -23,24 +25,24 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   vm.connected = websocketMsgSrv.isConnected();
   vm.websocketMsgSrv = websocketMsgSrv;
   vm.arrayOrderingSrv = arrayOrderingSrv;
-  
+
   $('#notebook-list').perfectScrollbar({suppressScrollX: true});
-  
+
   $scope.$on('setNoteMenu', function(event, notes) {
     notebookListDataFactory.setNotes(notes);
   });
 
   $scope.$on('setConnectedStatus', function(event, param) {
-    vm.connected = param;
-  });
+      vm.connected = param;
+    });
 
   function loadNotes() {
-    websocketMsgSrv.getNotebookList();
-  }
+      websocketMsgSrv.getNotebookList();
+    }
 
   function isActive(noteId) {
-    return ($routeParams.noteId === noteId);
-  }
+      return ($routeParams.noteId === noteId);
+    }
 
   vm.loadNotes = loadNotes;
   vm.isActive = isActive;
