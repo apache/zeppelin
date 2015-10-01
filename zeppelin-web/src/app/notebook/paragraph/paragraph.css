@@ -153,10 +153,6 @@
   border-radius: 0;
 }
 
-.paragraph .runControl .progress .progress-bar {
-  z-index: 100;
-}
-
 .paragraph .control span {
     margin-left: 4px;
 }
