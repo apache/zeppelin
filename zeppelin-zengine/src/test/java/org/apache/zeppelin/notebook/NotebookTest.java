@@ -24,8 +24,10 @@ import static org.junit.Assert.assertNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -103,6 +105,47 @@ public class NotebookTest implements JobListenerFactory{
 		while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
 		assertEquals("repl2: hello world", p2.getResult().message());
 	}
+
+  @Test
+  public void testGetAllNotes() throws IOException {
+    // get all notes after copy the {notebookId}/note.json into notebookDir
+    File srcDir = new File("src/test/resources/2A94M5J1Z");
+    File destDir = new File(notebookDir.getAbsolutePath() + "/2A94M5J1Z");
+
+    try {
+      FileUtils.copyDirectory(srcDir, destDir);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    Note copiedNote = notebookRepo.get("2A94M5J1Z");
+
+    // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be false
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GET_FROM_REPO.getVarName(), "false");
+    List<Note> notes = notebook.getAllNotes();
+    assertEquals(notes.size(), 0);
+
+    // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be true
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GET_FROM_REPO.getVarName(), "true");
+    notes = notebook.getAllNotes();
+    assertEquals(notes.size(), 1);
+    assertEquals(notes.get(0).id(), copiedNote.id());
+    assertEquals(notes.get(0).getName(), copiedNote.getName());
+    assertEquals(notes.get(0).getParagraphs(), copiedNote.getParagraphs());
+
+    // get all notes after remove the {notebookId}/note.json from notebookDir
+    // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be false
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GET_FROM_REPO.getVarName(), "false");
+    // delete the notebook
+    FileUtils.deleteDirectory(destDir);
+    notes = notebook.getAllNotes();
+    assertEquals(notes.size(), 1);
+
+    // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be true
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GET_FROM_REPO.getVarName(), "true");
+    notes = notebook.getAllNotes();
+    assertEquals(notes.size(), 0);
+  }
 
 	@Test
 	public void testPersist() throws IOException, SchedulerException{
