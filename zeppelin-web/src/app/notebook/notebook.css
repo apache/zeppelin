@@ -74,8 +74,9 @@
   pointer-events: none;
 }
 
+.navbar-fixed-top,
 .navbar-fixed-top .dropdown-menu {
-  z-index: 1002;
+  z-index: 10002;
 }
 
 .noteAction {
@@ -87,7 +88,7 @@
   top: 50px;
   width: 100%;
   height: 54px;
-  z-index: 1001;
+  z-index: 10001;
 }
 
 .noteAction h3 {
