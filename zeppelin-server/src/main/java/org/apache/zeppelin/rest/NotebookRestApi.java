@@ -21,18 +21,19 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.message.InterpreterSettingListForNoteBind;
+import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
+import org.apache.zeppelin.rest.message.NewNotebookRequest;
 import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.socket.NotebookServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,11 +49,14 @@ public class NotebookRestApi {
   Logger logger = LoggerFactory.getLogger(NotebookRestApi.class);
   Gson gson = new Gson();
   private Notebook notebook;
+  private NotebookServer notebookServer;
 
   public NotebookRestApi() {}
 
-  public NotebookRestApi(Notebook notebook) {
+  public NotebookRestApi(Notebook notebook, NotebookServer notebookServer) {
+
     this.notebook = notebook;
+    this.notebookServer = notebookServer;
   }
 
   /**
@@ -108,5 +112,75 @@ public class NotebookRestApi {
       }
     }
     return new JsonResponse(Status.OK, "", settingList).build();
+  }
+
+  @GET
+  @Path("/")
+  public Response getNotebookList() throws IOException {
+    return new JsonResponse(Status.OK, "", notebook.getAllNotes() ).build();
+  }
+
+  /**
+   * Create new note REST API
+   * @param message - JSON with new note name
+   * @return JSON with new note ID
+   * @throws IOException
+   */
+  @POST
+  @Path("/")
+  public Response createNote(String message) throws IOException {
+    logger.info("Create new notebook by JSON {}" , message);
+    NewNotebookRequest request = gson.fromJson(message,
+        NewNotebookRequest.class);
+    Note note = notebook.createNote();
+    note.addParagraph(); // it's an empty note. so add one paragraph
+    String noteName = request.getName();
+    if (noteName.isEmpty()) {
+      noteName = "Note " + note.getId();
+    }
+    note.setName(noteName);
+    note.persist();
+    notebookServer.broadcastNote(note);
+    notebookServer.broadcastNoteList();
+    return new JsonResponse(Status.CREATED, "", note.getId() ).build();
+  }
+
+  /**
+   * Delete note REST API
+   * @param
+   * @return JSON with status.OK
+   * @throws IOException
+   */
+  @DELETE
+  @Path("{notebookId}")
+  public Response deleteNote(@PathParam("notebookId") String notebookId) throws IOException {
+    logger.info("Delete notebook {} ", notebookId);
+    if (!(notebookId.isEmpty())) {
+      Note note = notebook.getNote(notebookId);
+      if (note != null) {
+        notebook.removeNote(notebookId);
+      }
+    }
+    notebookServer.broadcastNoteList();
+    return new JsonResponse(Status.OK, "").build();
+  }
+  /**
+   * Clone note REST API
+   * @param
+   * @return JSON with status.CREATED
+   * @throws IOException
+   */
+  @POST
+  @Path("{notebookId}")
+  public Response cloneNote(@PathParam("notebookId") String notebookId, String message) throws
+      IOException, CloneNotSupportedException, IllegalArgumentException {
+    logger.info("clone notebook by JSON {}" , message);
+    NewNotebookRequest request = gson.fromJson(message,
+        NewNotebookRequest.class);
+    String newNoteName = request.getName();
+    Note newNote = notebook.cloneNote(notebookId, newNoteName);
+    notebookServer.broadcastNote(newNote);
+    notebookServer.broadcastNoteList();
+    return new JsonResponse(Status.CREATED, "", newNote.getId()).build();
   }
 }
