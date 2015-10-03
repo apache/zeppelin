@@ -13,7 +13,7 @@ Angular display system treats output as an view template of [AngularJS](https://
 It compiles templates and display inside of Zeppelin.
 
 Zeppelin provides gateway between your interpreter and your compiled AngularJS view teamplates.
-Therefore, you can not only update scope variable from your interpreter  but also watch your scope variable in the interpreter, which is JVM process.
+Therefore, you can not only update scope variable from your interpreter but also watch your scope variable in the interpreter, which is JVM process.
 
 <br />
 #### Print AngularJS view
@@ -21,7 +21,7 @@ Therefore, you can not only update scope variable from your interpreter  but als
 To use angular display system, your output should starts with "%angular".
 <img src="../../assets/themes/zeppelin/img/screenshots/display_angular.png" width=600px />
 
-Note that display system is backend independnet.
+Note that display system is backend independent.
 
 Because of variable 'name' is not defined, 'Hello \{\{name\}\}' display 'Hello '.
 
