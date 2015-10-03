@@ -133,6 +133,8 @@ public class NotebookRestApi {
       noteName = "Note " + note.getId();
     }
     note.setName(noteName);
+    note.persist();
+    //TODO(eranw): figure out how to broadcastNote(note); broadcastNoteList();
     return new JsonResponse(Status.CREATED, "", note.getId() ).build();
   }
 }

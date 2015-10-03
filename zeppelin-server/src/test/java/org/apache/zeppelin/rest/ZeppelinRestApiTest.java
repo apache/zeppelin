@@ -206,6 +206,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     LOG.info("newNotebookId:=" + newNotebookId);
     Note newNote = ZeppelinServer.notebook.getNote(newNotebookId);
     assertNotNull("Can not find new note by id", newNote);
+    // This is partial test as newNote is in memory but is not persistent
     String newNoteName = newNote.getName();
     LOG.info("new note name is: " + newNoteName);
     String expectedNoteName = noteName;
