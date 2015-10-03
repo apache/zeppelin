@@ -278,8 +278,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals("Compare note names", noteName, newNote.getName());
     assertEquals("Compare paragraphs count", note.getParagraphs().size(), newNote.getParagraphs().size());
     //cleanup
-    //ZeppelinServer.notebook.removeNote(note.getId());
-    //ZeppelinServer.notebook.removeNote(newNote.getId());
+    ZeppelinServer.notebook.removeNote(note.getId());
+    ZeppelinServer.notebook.removeNote(newNote.getId());
     post.releaseConnection();
   }
 }
