@@ -140,7 +140,6 @@ public class NotebookRestApi {
     }
     note.setName(noteName);
     note.persist();
-    //TODO(eranw): figure out how to broadcastNote(note); broadcastNoteList();
     notebookServer.broadcastNote(note);
     notebookServer.broadcastNoteList();
     return new JsonResponse(Status.CREATED, "", note.getId() ).build();
@@ -162,7 +161,6 @@ public class NotebookRestApi {
         notebook.removeNote(notebookId);
       }
     }
-    //TODO(eranw): figure out how to broadcastNoteList();
     notebookServer.broadcastNoteList();
     return new JsonResponse(Status.OK, "").build();
   }
