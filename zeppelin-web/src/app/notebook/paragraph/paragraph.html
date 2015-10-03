@@ -145,21 +145,22 @@ limitations under the License.
       <div class="option lightBold" style="overflow: visible;"
          ng-if="getResultType()=='TABLE' && getGraphMode()!='table'
          && paragraph.config.graph.optionOpen && !asIframe && !viewOnly">
-        <label>
-          <input type="checkbox"
-                 ng-model="paragraph.config.graph.forceY"
-                 ng-click="onGraphOptionChange()">
-          force Y to 0
-        </label>
-        <br />
+        <div ng-if="isGraphMode('lineChart') || isGraphMode('lineWithFocusChart')">
+          <label>
+            <input type="checkbox"
+                   ng-model="paragraph.config.graph.forceY"
+                   ng-click="onGraphOptionChange()">
+            force Y to 0
+          </label>
+          <br/>
 
-        <label>
-          <input type="checkbox"
-                 ng-model="paragraph.config.graph.lineWithFocus"
-                 ng-click="toggleLineWithFocus()">
-          show line chart with focus
-        </label>
-        <br />
+          <label>
+            <input type="checkbox"
+                   ng-model="paragraph.config.graph.lineWithFocus"
+                   ng-click="toggleLineWithFocus()">
+            show line chart with focus
+          </label>
+        </div>
 
         All fields:
         <div class="allFields row">
