@@ -118,6 +118,37 @@ public class Notebook {
     return note;
   }
 
+  /**
+   * Clone existing note.
+   * @param sourceNoteID - the note ID to clone
+   * @param newNoteName - the name of the new note
+   * @return noteId
+   * @throws IOException, CloneNotSupportedException, IllegalArgumentException
+   */
+  public Note cloneNote(String sourceNoteID, String newNoteName) throws
+      IOException, CloneNotSupportedException, IllegalArgumentException {
+
+    Note sourceNote = getNote(sourceNoteID);
+    if (sourceNote == null) {
+      throw new IllegalArgumentException(sourceNoteID + "not found");
+    }
+    Note newNote = createNote();
+    if (newNoteName != null) {
+      newNote.setName(newNoteName);
+    }
+    // Copy the interpreter bindings
+    List<String> boundInterpreterSettingsIds = getBindedInterpreterSettingsIds(sourceNote.id());
+    bindInterpretersToNote(newNote.id(), boundInterpreterSettingsIds);
+
+    List<Paragraph> paragraphs = sourceNote.getParagraphs();
+    for (Paragraph para : paragraphs) {
+      Paragraph p = (Paragraph) para.clone();
+      newNote.addParagraph(p);
+    }
+    newNote.persist();
+    return newNote;
+  }
+
   public void bindInterpretersToNote(String id,
       List<String> interpreterSettingIds) throws IOException {
     Note note = getNote(id);
