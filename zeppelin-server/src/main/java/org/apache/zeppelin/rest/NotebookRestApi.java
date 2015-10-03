@@ -21,17 +21,16 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.message.InterpreterSettingListForNoteBind;
+import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
+import org.apache.zeppelin.rest.message.NewNotebookRequest;
 import org.apache.zeppelin.server.JsonResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,5 +107,32 @@ public class NotebookRestApi {
       }
     }
     return new JsonResponse(Status.OK, "", settingList).build();
+  }
+
+  @GET
+  @Path("/")
+  public Response getNotebookList() throws IOException {
+    return new JsonResponse(Status.OK, "", notebook.getAllNotes() ).build();
+  }
+
+  /**
+   * Create new note REST API
+   * @param message - JSON with new note name
+   * @return JSON with new note ID
+   * @throws IOException
+   */
+  @POST
+  @Path("/")
+  public Response createNote(String message) throws IOException {
+    NewNotebookRequest request = gson.fromJson(message,
+        NewNotebookRequest.class);
+    Note note = notebook.createNote();
+    note.addParagraph(); // it's an empty note. so add one paragraph
+    String noteName = request.getName();
+    if (noteName.isEmpty()) {
+      noteName = "Note " + note.getId();
+    }
+    note.setName(noteName);
+    return new JsonResponse(Status.CREATED, "", note.getId() ).build();
   }
 }

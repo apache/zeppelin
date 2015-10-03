@@ -17,10 +17,6 @@
 
 package org.apache.zeppelin.rest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +39,9 @@ import org.junit.runners.MethodSorters;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import static org.junit.Assert.*;
+
 /**
  * BASIC Zeppelin rest api tests
  *
@@ -180,6 +179,44 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       Thread.sleep(100);
     }
     assertEquals("<p>markdown restarted</p>\n", p.getResult().message());
+  }
+
+  @Test
+  public void testNotebookCreateWithName() throws IOException {
+    String noteName = "Test note name";
+    testNotebookCreate (noteName);
+  }
+
+  @Test
+  public void testNotebookCreateNoName() throws IOException {
+    testNotebookCreate("");
+  }
+
+  private void testNotebookCreate(String noteName) throws IOException {
+    // Call Create Notebook REST API
+    String jsonRequest = "{\"name\":\"" + noteName + "\"}";
+    PostMethod post = httpPost("/notebook/", jsonRequest);
+    LOG.info("testNotebookCreate \n" + post.getResponseBodyAsString());
+    assertThat("test notebook create method:", post, isCreated());
+
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+
+    String newNotebookId =  (String) resp.get("body");
+    LOG.info("newNotebookId:=" + newNotebookId);
+    Note newNote = ZeppelinServer.notebook.getNote(newNotebookId);
+    assertNotNull("Can not find new note by id", newNote);
+    String newNoteName = newNote.getName();
+    LOG.info("new note name is: " + newNoteName);
+    String expectedNoteName = noteName;
+    if (noteName.isEmpty()) {
+      expectedNoteName = "Note " + newNotebookId;
+    }
+    assertEquals("compare note name", expectedNoteName, newNoteName);
+    // cleanup
+    ZeppelinServer.notebook.removeNote(newNotebookId);
+    post.releaseConnection();
+
   }
 }
 
