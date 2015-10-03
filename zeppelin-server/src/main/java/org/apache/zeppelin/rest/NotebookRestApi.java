@@ -124,6 +124,7 @@ public class NotebookRestApi {
   @POST
   @Path("/")
   public Response createNote(String message) throws IOException {
+    logger.info("Create new notebook by JSON {}" , message);
     NewNotebookRequest request = gson.fromJson(message,
         NewNotebookRequest.class);
     Note note = notebook.createNote();
@@ -136,5 +137,24 @@ public class NotebookRestApi {
     note.persist();
     //TODO(eranw): figure out how to broadcastNote(note); broadcastNoteList();
     return new JsonResponse(Status.CREATED, "", note.getId() ).build();
+  }
+  /**
+   * Delete note REST API
+   * @param
+   * @return JSON with status.OK
+   * @throws IOException
+   */
+  @DELETE
+  @Path("{notebookId}")
+  public Response deleteNote(@PathParam("notebookId") String notebookId) throws IOException {
+    logger.info("Delete notebook {} ", notebookId);
+    if (!(notebookId.isEmpty())) {
+      Note note = notebook.getNote(notebookId);
+      if (note != null) {
+        notebook.removeNote(notebookId);
+      }
+    }
+    //TODO(eranw): figure out how to broadcastNote(note); broadcastNoteList();
+    return new JsonResponse(Status.OK, "").build();
   }
 }

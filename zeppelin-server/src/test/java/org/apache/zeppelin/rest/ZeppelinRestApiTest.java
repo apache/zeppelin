@@ -184,7 +184,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   @Test
   public void testNotebookCreateWithName() throws IOException {
     String noteName = "Test note name";
-    testNotebookCreate (noteName);
+    testNotebookCreate(noteName);
   }
 
   @Test
@@ -218,6 +218,35 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     ZeppelinServer.notebook.removeNote(newNotebookId);
     post.releaseConnection();
 
+  }
+
+  @Test
+  public void  testDeleteNote() throws IOException {
+    LOG.info("testDeleteNote");
+    //Create note and get ID
+    Note note = ZeppelinServer.notebook.createNote();
+    String noteId = note.getId();
+    testDeleteNotebook(noteId);
+  }
+
+  @Test
+  public void testDeleteNoteBadId() throws IOException {
+    LOG.info("testDeleteNoteBadId");
+    testDeleteNotebook("2AZFXEX97");
+    testDeleteNotebook("bad_ID");
+  }
+
+  private void testDeleteNotebook(String notebookId) throws IOException {
+
+    DeleteMethod delete = httpDelete(("/notebook/" + notebookId));
+    LOG.info("testDeleteNotebook delete response\n" + delete.getResponseBodyAsString());
+    assertThat("Test delete method:", delete, isAllowed());
+    delete.releaseConnection();
+    // make sure note is deleted
+    if (!notebookId.isEmpty()) {
+      Note deletedNote = ZeppelinServer.notebook.getNote(notebookId);
+      assertNull("Deleted note should be null", deletedNote);
+    }
   }
 }
 
