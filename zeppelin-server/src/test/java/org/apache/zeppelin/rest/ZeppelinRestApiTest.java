@@ -248,5 +248,39 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       assertNull("Deleted note should be null", deletedNote);
     }
   }
+
+  @Test
+  public void testCloneNotebook() throws IOException, CloneNotSupportedException, IllegalArgumentException {
+    LOG.info("testCloneNotebook");
+    // Create note to clone
+    Note note = ZeppelinServer.notebook.createNote();
+    assertNotNull("cant create new note", note);
+    note.setName("source note for clone");
+    Paragraph paragraph = note.addParagraph();
+    paragraph.setText("%md This is my new paragraph in my new note");
+    note.persist();
+    String sourceNoteID = note.getId();
+
+    String noteName = "clone Note Name";
+    // Call Clone Notebook REST API
+    String jsonRequest = "{\"name\":\"" + noteName + "\"}";
+    PostMethod post = httpPost("/notebook/" + sourceNoteID, jsonRequest);
+    LOG.info("testNotebookClone \n" + post.getResponseBodyAsString());
+    assertThat("test notebook clone method:", post, isCreated());
+
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+
+    String newNotebookId =  (String) resp.get("body");
+    LOG.info("newNotebookId:=" + newNotebookId);
+    Note newNote = ZeppelinServer.notebook.getNote(newNotebookId);
+    assertNotNull("Can not find new note by id", newNote);
+    assertEquals("Compare note names", noteName, newNote.getName());
+    assertEquals("Compare paragraphs count", note.getParagraphs().size(), newNote.getParagraphs().size());
+    //cleanup
+    //ZeppelinServer.notebook.removeNote(note.getId());
+    //ZeppelinServer.notebook.removeNote(newNote.getId());
+    post.releaseConnection();
+  }
 }
 

@@ -32,6 +32,8 @@ import org.apache.zeppelin.rest.message.InterpreterSettingListForNoteBind;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.NewNotebookRequest;
 import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.server.ZeppelinServer;
+import org.apache.zeppelin.socket.NotebookServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,11 +49,14 @@ public class NotebookRestApi {
   Logger logger = LoggerFactory.getLogger(NotebookRestApi.class);
   Gson gson = new Gson();
   private Notebook notebook;
+  private NotebookServer notebookServer;
 
   public NotebookRestApi() {}
 
-  public NotebookRestApi(Notebook notebook) {
+  public NotebookRestApi(Notebook notebook, NotebookServer notebookServer) {
+
     this.notebook = notebook;
+    this.notebookServer = notebookServer;
   }
 
   /**
@@ -136,8 +141,11 @@ public class NotebookRestApi {
     note.setName(noteName);
     note.persist();
     //TODO(eranw): figure out how to broadcastNote(note); broadcastNoteList();
+    notebookServer.broadcastNote(note);
+    notebookServer.broadcastNoteList();
     return new JsonResponse(Status.CREATED, "", note.getId() ).build();
   }
+
   /**
    * Delete note REST API
    * @param
@@ -154,7 +162,27 @@ public class NotebookRestApi {
         notebook.removeNote(notebookId);
       }
     }
-    //TODO(eranw): figure out how to broadcastNote(note); broadcastNoteList();
+    //TODO(eranw): figure out how to broadcastNoteList();
+    notebookServer.broadcastNoteList();
     return new JsonResponse(Status.OK, "").build();
+  }
+  /**
+   * Clone note REST API
+   * @param
+   * @return JSON with status.CREATED
+   * @throws IOException
+   */
+  @POST
+  @Path("{notebookId}")
+  public Response cloneNote(@PathParam("notebookId") String notebookId, String message) throws
+      IOException, CloneNotSupportedException, IllegalArgumentException {
+    logger.info("clone notebook by JSON {}" , message);
+    NewNotebookRequest request = gson.fromJson(message,
+        NewNotebookRequest.class);
+    String newNoteName = request.getName();
+    Note newNote = notebook.cloneNote(notebookId, newNoteName);
+    notebookServer.broadcastNote(newNote);
+    notebookServer.broadcastNoteList();
+    return new JsonResponse(Status.CREATED, "", newNote.getId()).build();
   }
 }
