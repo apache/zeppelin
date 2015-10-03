@@ -96,6 +96,7 @@
     <module>geode</module>
     <module>postgresql</module>
     <module>tajo</module>
+    <module>file</module>
     <module>flink</module>
     <module>ignite</module>
     <module>kylin</module>

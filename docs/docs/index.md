@@ -20,6 +20,7 @@ group: nav-right
 **[Interpreters in zeppelin](manual/interpreters.html)**
 
 * [flink](../docs/pleasecontribute.html)
+* [hdfs](./interpreter/hdfs.html)
 * [hive](../docs/pleasecontribute.html)
 * [ignite](../docs/pleasecontribute.html)
 * [lens](../docs/pleasecontribute.html)
