@@ -418,12 +418,22 @@ public class NotebookServer extends WebSocketServlet implements
         .get("config");
     final Note note = notebook.getNote(getOpenNoteId(conn));
     Paragraph p = note.getParagraph(paragraphId);
+    String text = (String) fromMessage.get("paragraph");
     p.settings.setParams(params);
     p.setConfig(config);
     p.setTitle((String) fromMessage.get("title"));
-    p.setText((String) fromMessage.get("paragraph"));
-    note.persist();
-    broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
+    p.setText(text);
+    
+    boolean isTheLastParagraph = note.getLastParagraph().getId()
+      .equals(p.getId());
+    if (!Strings.isNullOrEmpty(text) && isTheLastParagraph) {
+      note.addParagraph();
+      note.persist();
+      broadcast(note.id(), new Message(OP.NOTE).put("note", note));
+    } else {
+      note.persist();
+      broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
+    }
   }
   
   private void cloneNote(NotebookSocket conn, Notebook notebook, Message fromMessage)

@@ -57,10 +57,14 @@ angular.module('zeppelinWebApp', [
         templateUrl: 'app/interpreter/interpreter.html',
         controller: 'InterpreterCtrl'
       })
+      .when('/cluster', {
+        templateUrl: 'app/cluster/cluster.html',
+        controller: 'ClusterCtrl'
+      })
       .otherwise({
         redirectTo: '/'
       });
-  
+
     ngToastProvider.configure({
       dismissButton: true,
       dismissOnClick: false,
