@@ -44,7 +44,7 @@ group: nav-right
 
 ### REST API
  * [Interpreter API](./rest-api/rest-interpreter.html)
- * [Notebook API](../docs/pleasecontribute.html)
+ * [Notebook API](./rest-api/rest-notebook.html)
 
 ### Development
 
