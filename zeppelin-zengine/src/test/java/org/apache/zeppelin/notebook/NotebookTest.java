@@ -121,12 +121,12 @@ public class NotebookTest implements JobListenerFactory{
     Note copiedNote = notebookRepo.get("2A94M5J1Z");
 
     // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be false
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GET_FROM_REPO.getVarName(), "false");
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "false");
     List<Note> notes = notebook.getAllNotes();
     assertEquals(notes.size(), 0);
 
     // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be true
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GET_FROM_REPO.getVarName(), "true");
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "true");
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 1);
     assertEquals(notes.get(0).id(), copiedNote.id());
@@ -135,14 +135,14 @@ public class NotebookTest implements JobListenerFactory{
 
     // get all notes after remove the {notebookId}/note.json from notebookDir
     // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be false
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GET_FROM_REPO.getVarName(), "false");
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "false");
     // delete the notebook
     FileUtils.deleteDirectory(destDir);
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 1);
 
     // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be true
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_GET_FROM_REPO.getVarName(), "true");
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "true");
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 0);
   }

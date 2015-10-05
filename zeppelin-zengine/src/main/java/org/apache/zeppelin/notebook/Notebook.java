@@ -305,11 +305,11 @@ public class Notebook {
   }
 
   public List<Note> getAllNotes() {
-    if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_GET_FROM_REPO)) {
+    if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE)) {
       try {
         reloadAllNotes();
       } catch (IOException e) {
-        e.printStackTrace();
+        logger.error("Cannot reload notes from storage", e);
       }
     }
     synchronized (notes) {

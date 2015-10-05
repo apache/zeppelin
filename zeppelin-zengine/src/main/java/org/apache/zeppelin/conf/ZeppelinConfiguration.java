@@ -425,7 +425,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     // Notebook list and contents will be always loaded from repository if set true.
     // If set false, modified notebooks or new notebooks added on file system level
     // won't be reflected on Zeppelin till user restarts Zeppelin.
-    ZEPPELIN_NOTEBOOK_GET_FROM_REPO("zeppelin.notebook.getAllNotesFromRepo", false),
+    ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE("zeppelin.notebook.reloadAllNotesFromStorage", false),
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner", "bin/interpreter.sh"),
     // Decide when new note is created, interpreter settings will be binded automatically or not.
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),
