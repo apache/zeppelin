@@ -111,21 +111,23 @@ public class RemoteSchedulerTest {
     scheduler.submit(job);
 
     int cycles = 0;
-    while (job.isRunning() == false && cycles < MAX_WAIT_CYCLES) {
+    while (!job.isRunning() && cycles < MAX_WAIT_CYCLES) {
       Thread.sleep(TICK_WAIT);
       cycles++;
     }
-    assertTrue(job.isRunning);
+    assertTrue(job.isRunning());
 
     Thread.sleep(5*TICK_WAIT);
     assertEquals(0, scheduler.getJobsWaiting().size());
     assertEquals(1, scheduler.getJobsRunning().size());
 
     cycles = 0;
-    while (!job.isRunning && cycles < MAX_WAIT_CYCLES) {
+    while (job.isRunning() && cycles < MAX_WAIT_CYCLES) {
       Thread.sleep(TICK_WAIT);
       cycles++;
     }
+    
+    assertTrue(!job.isRunning());
     assertEquals(0, scheduler.getJobsWaiting().size());
     assertEquals(0, scheduler.getJobsRunning().size());
 
