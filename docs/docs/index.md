@@ -19,7 +19,7 @@ group: nav-right
 
 **[Interpreters in zeppelin](manual/interpreters.html)**
 
-* [flink](../docs/pleasecontribute.html)
+* [flink](../docs/interpreter/flink.html)
 * [hive](../docs/pleasecontribute.html)
 * [ignite](../docs/pleasecontribute.html)
 * [lens](../docs/pleasecontribute.html)
@@ -51,6 +51,5 @@ group: nav-right
 * [Writing Zeppelin Interpreter](./development/writingzeppelininterpreter.html)
 * [How to contribute (code)](./development/howtocontribute.html)
 * [How to contribute (website)](./development/howtocontributewebsite.html)
-
 
 
