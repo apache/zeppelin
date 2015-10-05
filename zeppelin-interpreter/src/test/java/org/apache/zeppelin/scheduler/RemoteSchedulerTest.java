@@ -123,12 +123,12 @@ public class RemoteSchedulerTest {
     assertEquals(1, scheduler.getJobsRunning().size());
 
     cycles = 0;
-    while (job.isRunning() && cycles < MAX_WAIT_CYCLES) {
+    while (!job.isTerminated() && cycles < MAX_WAIT_CYCLES) {
       Thread.sleep(TICK_WAIT);
       cycles++;
     }
     
-    assertTrue(!job.isRunning());
+    assertTrue(job.isTerminated());
     assertEquals(0, scheduler.getJobsWaiting().size());
     assertEquals(0, scheduler.getJobsRunning().size());
 
