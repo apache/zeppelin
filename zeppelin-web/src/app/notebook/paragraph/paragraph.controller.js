@@ -52,7 +52,7 @@ angular.module('zeppelinWebApp')
       $scope.renderAngular();
     }
   };
-
+  
   $scope.renderHtml = function() {
     var retryRenderer = function() {
       if ($('#p'+$scope.paragraph.id+'_html').length) {
@@ -846,6 +846,57 @@ angular.module('zeppelinWebApp')
 
   };
 
+  var computeBulletValues = function (values, title) {
+      var lowRange = 40, midRange = 60, highRange=100;
+      lowRange = (lowRange / 100) * values[0];
+      midRange = (midRange / 100) * values[0];
+      highRange = (highRange / 100) * values[0];
+      var actualMeasure = values[1];
+      var targetMarker = values[0];
+
+      var divideBy = 1;
+      var range = 'absolute';
+      if(lowRange > 100000) {
+        divideBy = 100000;
+        range = 'hundred thousand';
+      } else if(lowRange > 1000000) {
+        divideBy = 1000000;
+        range = 'million';
+      } else if(lowRange > 10000000) {
+          divideBy = 10000000;
+          range = 'ten million';
+      } else if(lowRange > 100000000) {
+          divideBy = 100000000;
+          range = 'hundred million';
+      } else if(lowRange > 1000000000) {
+          divideBy = 1000000000;
+          range = 'billion';
+      }     
+
+      lowRange = lowRange / divideBy;
+      midRange = midRange / divideBy;
+      highRange = highRange / divideBy;
+      actualMeasure = actualMeasure / divideBy;
+      targetMarker = targetMarker / divideBy;
+
+      return {
+        'title':title,      //Label the bullet chart
+          'subtitle':'(in ' + range + ')',     //sub-label for bullet chart
+          'ranges':[lowRange,midRange,highRange],  //Minimum, mean and maximum values.
+          'measures':[actualMeasure],        //Value representing current measurement (the thick blue line in the example)
+          'markers':[targetMarker]          //Place a marker on the chart (the white triangle marker)
+       };
+  };
+  
+  var pivotDataToD3BulletFormat = function(data) {
+      // parse in the required data here into 'val' array
+    var colIndex=0;
+    var arrayOfValues = data.rows.map(function(row) {
+      return parseInt(row[colIndex]); 
+    });
+      return computeBulletValues(arrayOfValues, 'Number of users');
+    };
+    
   var setD3Chart = function(type, data, refresh) {
     if (!$scope.chart[type]) {
       var chart = nv.models[type]();
@@ -914,6 +965,8 @@ angular.module('zeppelinWebApp')
       } else if (type === 'multiBarChart') {
         d3g = pivotDataToD3ChartFormat(p, true, false, type).d3g;
         $scope.chart[type].yAxis.axisLabelDistance(50);
+      }  else if (type === 'bulletChart') {
+        d3g = pivotDataToD3BulletFormat(data);
       } else if (type === 'lineChart' || type === 'stackedAreaChart') {
         var pivotdata = pivotDataToD3ChartFormat(p, false, true);
         xLabels = pivotdata.xLabels;
