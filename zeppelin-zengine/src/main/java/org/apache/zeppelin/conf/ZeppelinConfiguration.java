@@ -521,6 +521,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.alluxio.AlluxioInterpreter,"
         + "org.apache.zeppelin.file.HDFSFileInterpreter,"
         + "org.apache.zeppelin.postgresql.PostgreSqlInterpreter,"
+        + "org.apache.zeppelin.pig.PigInterpreter,"
+        + "org.apache.zeppelin.pig.PigQueryInterpreter,"
         + "org.apache.zeppelin.flink.FlinkInterpreter,"
         + "org.apache.zeppelin.python.PythonInterpreter,"
         + "org.apache.zeppelin.python.PythonInterpreterPandasSql,"
