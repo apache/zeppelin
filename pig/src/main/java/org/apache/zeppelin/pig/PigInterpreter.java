@@ -21,7 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
-import java.util.ArrayList;
 import java.util.Arrays;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -40,16 +39,24 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Pig interpreter for Zeppelin.
- *
+ * Closely follows code for shell interpreter
  * @author abajwa-hw
  *
  */
 public class PigInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(PigInterpreter.class);
-  int commandTimeOut = 600000;
 
+  //Executable name used to start grunt shell 
+  static final String PIG_START_EXE = "pig.executable";
+  static final String DEFAULT_START_EXE = "pig";
+
+  //Arguments to start pig with. More details available via 'pig -help'
   static final String PIG_START_ARGS = "pig.start.args";
   static final String DEFAULT_START_ARGS = "-useHCatalog -exectype tez";
+
+  //How long to wait before timing out (ms)
+  static final String PIG_TIMEOUT_MS = "pig.timeout.ms";
+  static final String DEFAULT_TIMEOUT_MS = "600000";
 
   static {
     Interpreter.register(
@@ -57,7 +64,9 @@ public class PigInterpreter extends Interpreter {
       "pig",
       PigInterpreter.class.getName(),
       new InterpreterPropertyBuilder()
+        .add(PIG_START_EXE, DEFAULT_START_EXE, "Pig executable used to start grunt shell")
         .add(PIG_START_ARGS, DEFAULT_START_ARGS, "Starting arguments")
+        .add(PIG_TIMEOUT_MS, DEFAULT_TIMEOUT_MS, "Timeout (ms)")
         .build()
     );
   }
@@ -75,11 +84,12 @@ public class PigInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
+    // use commandline to store string corresponding to pig shell command
+    // start with pig exectable name (or full path if provided)...
+    CommandLine cmdLine = CommandLine.parse(getProperty(PIG_START_EXE).trim());
 
-    CommandLine cmdLine = CommandLine.parse("pig");
-
-    // add any arguments specified
-    String startArgs = getProperty((PIG_START_ARGS).trim());
+    // ...add any CLI arguments specified by user in interpreter settings
+    String startArgs = getProperty(PIG_START_ARGS).trim();
     if (startArgs.length() > 0){
       logger.info("Start arguments passed to pig: " + startArgs);
       List<String> argList = Arrays.asList(startArgs.split("\\s+"));
@@ -87,15 +97,18 @@ public class PigInterpreter extends Interpreter {
         cmdLine.addArgument(arg, false);
       }
     }
-
+    // ...finally add contents of pig cell after the -e flag 
     logger.info("Run pig command '" + cmd + "'");
     long start = System.currentTimeMillis();
     cmdLine.addArgument("-e", false);
     cmdLine.addArgument(cmd, false);
+
+    // execute command and return success/failure based on its exit value
     DefaultExecutor executor = new DefaultExecutor();
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     executor.setStreamHandler(new PumpStreamHandler(outputStream));
 
+    int commandTimeOut = Integer.parseInt(getProperty(PIG_TIMEOUT_MS));
     executor.setWatchdog(new ExecuteWatchdog(commandTimeOut));
     try {
       int exitValue = executor.execute(cmdLine);
