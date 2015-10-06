@@ -845,6 +845,7 @@ angular.module('zeppelinWebApp')
     donutFlag = flag;
   }
   var setD3Chart = function(type, data, refresh) {
+    /*jshint camelcase: false */
     if (!$scope.chart[type]) {
       var chart = nv.models[type]();
       $scope.chart[type] = chart;
@@ -940,27 +941,29 @@ angular.module('zeppelinWebApp')
     
     var pivotDataToBoxFormat = function(data) {
       // parse in the required data here into 'val' array
-      var col_index=0;
-      var i;
+      var columnIndex=0;
+      /* commented the code for column selection as it is WIP. Will add once ready.
       while ( box_column != data.columnNames[col_index].name)
       {
           col_index++;
-      }
+      }*/
+      
       var val = data.rows.map(function(row) {
-        return parseInt(row[col_index]); 
+        return parseInt(row[columnIndex]); 
       });
       
       return  [ 
         {
-          label: data.columnNames[col_index].name,
+          label: data.columnNames[columnIndex].name,
           values: computeBoxValues(val),
         }
       ];
     };
     
     var computeBoxValues = function (values){
+      /*jshint camelcase: false */
       var Q1,Q2,Q3;
-      var iqr,low,high,whisker_high,whisker_low;
+      var iqr,low,high,whiskerHigh,whiskerLow;
       var i = 0; var j = 0;
 
       var firstHalfOfArr = (values.length % 2 == 0) ? values.slice(0, (values.length / 2)) : values.slice(0, Math.floor(values.length / 2));
@@ -977,16 +980,16 @@ angular.module('zeppelinWebApp')
       var outliers = firstHalfOfArr.filter(function(n){
         return (n<low);
       });     
-      whisker_low = firstHalfOfArr[i];
+      whiskerLow = firstHalfOfArr[i];
       while(secondHalfOfArr[j]<high) { j++;}
-      whisker_high = secondHalfOfArr[j-1];
+      whiskerHigh = secondHalfOfArr[j-1];
       outliers = outliers.concat(secondHalfOfArrr.splice(j,secondHalfOfArr.length));
       return {
         Q1 : Q1,
         Q2 : Q2,
         Q3 : Q3,
-        whisker_low : whisker_low,
-        whisker_high : whisker_high,
+        whisker_low : whiskerLow,
+        whisker_high : whiskerHigh,
         outliers : outliers
       };
     };
