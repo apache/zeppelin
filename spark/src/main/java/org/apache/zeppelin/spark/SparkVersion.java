@@ -31,7 +31,8 @@ public enum SparkVersion {
   SPARK_1_3_1,
   SPARK_1_4_0,
   SPARK_1_4_1,
-  SPARK_1_5_0;
+  SPARK_1_5_0,
+  SPARK_1_5_1;
 
   private int version;
 
