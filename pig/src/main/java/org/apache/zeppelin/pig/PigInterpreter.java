@@ -40,24 +40,25 @@ import org.slf4j.LoggerFactory;
 /**
  * Pig interpreter for Zeppelin.
  * Closely follows code for shell interpreter
- * @author abajwa-hw
- *
  */
 public class PigInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(PigInterpreter.class);
 
+  private static final String NEWLINE = "\n";
+
   //Executable name used to start grunt shell 
-  static final String PIG_START_EXE = "pig.executable";
-  static final String DEFAULT_START_EXE = "pig";
+  public static final String PIG_START_EXE = "pig.executable";
+  public static final String DEFAULT_START_EXE = "pig";
 
   //Arguments to start pig with. More details available via 'pig -help'
-  static final String PIG_START_ARGS = "pig.start.args";
-  static final String DEFAULT_START_ARGS = "-useHCatalog -exectype tez";
+  public static final String PIG_START_ARGS = "pig.start.args";
+  public static final String DEFAULT_START_ARGS = "-useHCatalog -exectype local";
 
   //How long to wait before timing out (ms)
-  static final String PIG_TIMEOUT_MS = "pig.timeout.ms";
-  static final String DEFAULT_TIMEOUT_MS = "600000";
+  public static final String PIG_TIMEOUT_MS = "pig.timeout.ms";
+  public static final String DEFAULT_TIMEOUT_MS = "600000";
 
+  DefaultExecutor executor = null;
   static {
     Interpreter.register(
       "pig",
@@ -104,7 +105,7 @@ public class PigInterpreter extends Interpreter {
     cmdLine.addArgument(cmd, false);
 
     // execute command and return success/failure based on its exit value
-    DefaultExecutor executor = new DefaultExecutor();
+    executor = new DefaultExecutor();
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     executor.setStreamHandler(new PumpStreamHandler(outputStream));
 
@@ -115,15 +116,20 @@ public class PigInterpreter extends Interpreter {
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, outputStream.toString());
     } catch (ExecuteException e) {
       logger.error("Can not run " + cmd, e);
-      return new InterpreterResult(Code.ERROR, e.getMessage());
+      return new InterpreterResult(Code.ERROR, e.getMessage() + NEWLINE + outputStream.toString());
     } catch (IOException e) {
       logger.error("Can not run " + cmd, e);
-      return new InterpreterResult(Code.ERROR, e.getMessage());
+      return new InterpreterResult(Code.ERROR, e.getMessage() + NEWLINE + outputStream.toString());
     }
   }
 
   @Override
-  public void cancel(InterpreterContext context) {}
+  public void cancel(InterpreterContext context) {
+    if (executor != null) {
+      executor.getWatchdog().destroyProcess();
+    }
+  }
+  
 
   @Override
   public FormType getFormType() {
