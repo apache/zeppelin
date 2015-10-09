@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Tutorial"
-description: ""
+description: "Tutorial is valid for Spark 1.3 and higher"
 group: tutorial
 ---
 
@@ -21,10 +21,12 @@ Before you start Zeppelin tutorial, you will need to download [bank.zip](http://
 First, to transform data from csv format into RDD of `Bank` objects, run following script. This will also remove header using `filter` function.
 
 ```scala
+
 val bankText = sc.textFile("yourPath/bank/bank-full.csv")
 
 case class Bank(age:Integer, job:String, marital : String, education : String, balance : Integer)
 
+// split each line, filter out header (starts with "age"), and map it into Bank case class  
 val bank = bankText.map(s=>s.split(";")).filter(s=>s(0)!="\"age\"").map(
     s=>Bank(s(0).toInt, 
             s(1).replaceAll("\"", ""),
@@ -34,9 +36,7 @@ val bank = bankText.map(s=>s.split(";")).filter(s=>s(0)!="\"age\"").map(
         )
 )
 
-// Below line works only in spark 1.3.0.
-// For spark 1.1.x and spark 1.2.x,
-// use bank.registerTempTable("bank") instead.
+// convert to DataFrame and create temporal table
 bank.toDF().registerTempTable("bank")
 ```
 
