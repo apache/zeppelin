@@ -1,7 +1,7 @@
 ---
 layout: page
 title: "Tutorial"
-description: "Tutorial is valid for Spark 1.5"
+description: "Tutorial is valid for Spark 1.3 and higher"
 group: tutorial
 ---
 
