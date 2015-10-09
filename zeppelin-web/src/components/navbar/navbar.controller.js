@@ -16,10 +16,12 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams, notebookListDataFactory, websocketMsgSrv, arrayOrderingSrv, $http) {
-  $rootScope.ticket = {
-    'principal':'anonymous',
-    'ticket':'anonymous'
-  };
+  if (!$rootScope.ticket) {
+    $rootScope.ticket = {
+      'principal':'anonymous',
+      'ticket':'anonymous'
+    };
+  }
   /** Current list of notes (ids) */
 
   var vm = this;
@@ -27,7 +29,7 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   vm.connected = websocketMsgSrv.isConnected();
   vm.websocketMsgSrv = websocketMsgSrv;
   vm.arrayOrderingSrv = arrayOrderingSrv;
-  
+
   $('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
   $scope.$on('setNoteMenu', function(event, notes) {
