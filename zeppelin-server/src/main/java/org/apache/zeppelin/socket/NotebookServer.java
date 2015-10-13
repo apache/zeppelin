@@ -261,6 +261,26 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
+  private void broadcastExcept(String noteId, Message m, NotebookSocket exclude) {
+    synchronized (noteSocketMap) {
+      List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
+      if (socketLists == null || socketLists.size() == 0) {
+        return;
+      }
+      LOG.info("SEND >> " + m.op);
+      for (NotebookSocket conn : socketLists) {
+        if (exclude.equals(conn)) {
+          continue;
+        }
+        try {
+          conn.send(serializeMessage(m));
+        } catch (IOException e) {
+          LOG.error("socket error", e);
+        }
+      }
+    }
+  }
+
   private void broadcastAll(Message m) {
     synchronized (connectedSockets) {
       for (NotebookSocket conn : connectedSockets) {
@@ -425,7 +445,7 @@ public class NotebookServer extends WebSocketServlet implements
     note.persist();
     broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
   }
-  
+
   private void cloneNote(NotebookSocket conn, Notebook notebook, Message fromMessage)
       throws IOException, CloneNotSupportedException {
     String noteId = getOpenNoteId(conn);
@@ -475,7 +495,7 @@ public class NotebookServer extends WebSocketServlet implements
    * @param notebook the notebook.
    * @param fromMessage the message.
    */
-  private void angularObjectUpdated(WebSocket conn, Notebook notebook,
+  private void angularObjectUpdated(NotebookSocket conn, Notebook notebook,
       Message fromMessage) {
     String noteId = (String) fromMessage.get("noteId");
     String interpreterGroupId = (String) fromMessage.get("interpreterGroupId");
@@ -529,20 +549,22 @@ public class NotebookServer extends WebSocketServlet implements
           if (interpreterGroupId.equals(setting.getInterpreterGroup().getId())) {
             AngularObjectRegistry angularObjectRegistry = setting
                 .getInterpreterGroup().getAngularObjectRegistry();
-            this.broadcast(
+            this.broadcastExcept(
                 n.id(),
                 new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", ao)
                     .put("interpreterGroupId", interpreterGroupId)
-                    .put("noteId", n.id()));
+                    .put("noteId", n.id()),
+                conn);
           }
         }
       }
     } else { // broadcast to all web session for the note
-      this.broadcast(
+      this.broadcastExcept(
           note.id(),
           new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", ao)
               .put("interpreterGroupId", interpreterGroupId)
-              .put("noteId", note.id()));
+              .put("noteId", note.id()),
+          conn);
     }
   }
 
