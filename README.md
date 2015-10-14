@@ -33,6 +33,7 @@ sudo apt-get install openjdk-7-jdk
 sudo apt-get install git
 sudo apt-get install maven
 sudo apt-get install npm
+sudo apt-get install libfontconfig
 ```
 
 ### Build
