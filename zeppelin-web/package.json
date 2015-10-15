@@ -8,7 +8,7 @@
   "devDependencies": {
     "bower": "",
     "grunt": "^0.4.1",
-    "grunt-autoprefixer": "^0.7.3",
+    "grunt-autoprefixer": "^3.0.3",
     "grunt-concurrent": "^0.5.0",
     "grunt-contrib-clean": "^0.5.0",
     "grunt-contrib-concat": "^0.4.0",
