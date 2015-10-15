@@ -11,7 +11,7 @@ group: rest-api
  
  All REST API are available starting with the following endpoint ```http://[zeppelin-server]:[zeppelin-port]/api```
  
- Note that zeppein REST API receive or return JSON objects, it it recomended you install some JSON view such as 
+ Note that zeppein REST API receive or return JSON objects, it it recommended you install some JSON view such as 
  [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc)
  
  

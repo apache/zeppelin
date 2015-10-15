@@ -306,11 +306,11 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  private void broadcastNote(Note note) {
+  public void broadcastNote(Note note) {
     broadcast(note.id(), new Message(OP.NOTE).put("note", note));
   }
 
-  private void broadcastNoteList(NotebookSocket conn, Message fromMessage) {
+  public void broadcastNoteList(NotebookSocket conn, Message fromMessage) {
     Notebook notebook = notebook();
     ZeppelinConfiguration conf = notebook.getConf();
     String homescreenNotebookId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
@@ -460,25 +460,7 @@ public class NotebookServer extends WebSocketServlet implements
       throws IOException, CloneNotSupportedException {
     String noteId = getOpenNoteId(conn);
     String name = (String) fromMessage.get("name");
-    Note sourceNote = notebook.getNote(noteId, fromMessage.principal);
-    Note newNote = notebook.createNote(fromMessage.principal);
-    if (name != null) {
-      newNote.setName(name);
-    }
-    // Copy the interpreter bindings
-    List<String> boundInterpreterSettingsIds = notebook
-        .getBindedInterpreterSettingsIds(sourceNote.id(), fromMessage.principal);
-    notebook.bindInterpretersToNote(
-        newNote.id(),
-        boundInterpreterSettingsIds,
-        fromMessage.principal);
-
-    List<Paragraph> paragraphs = sourceNote.getParagraphs();
-    for (Paragraph para : paragraphs) {
-      Paragraph p = (Paragraph) para.clone();
-      newNote.addParagraph(p);
-    }
-    newNote.persist();
+    Note newNote = notebook.cloneNote(noteId, name, fromMessage.principal);
     broadcastNote(newNote);
     broadcastNoteList(conn, fromMessage);
   }
