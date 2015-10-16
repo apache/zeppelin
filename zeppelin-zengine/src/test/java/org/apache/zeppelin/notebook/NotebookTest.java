@@ -73,7 +73,7 @@ public class NotebookTest implements JobListenerFactory{
     this.schedulerFactory = new SchedulerFactory();
 
     MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
-    MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
+    MockInterpreter2.register("mock2", "group2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
 
@@ -100,7 +100,7 @@ public class NotebookTest implements JobListenerFactory{
 
     // run with specific repl
     Paragraph p2 = note.addParagraph();
-    p2.setText("%mock2 hello world");
+    p2.setText("%group2.mock2 hello world");
     note.run(p2.getId());
     while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
     assertEquals("repl2: hello world", p2.getResult().message());
