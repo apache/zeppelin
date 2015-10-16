@@ -146,7 +146,7 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
     verifyAllResultSetsClosed();
     verifyAllStatementsClosed();
   }
-  
+
   @Test
   public void testSelectQuery() throws SQLException {
 
