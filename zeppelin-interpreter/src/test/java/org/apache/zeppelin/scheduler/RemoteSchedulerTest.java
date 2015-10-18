@@ -18,6 +18,7 @@
 package org.apache.zeppelin.scheduler;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.HashMap;
@@ -39,6 +40,8 @@ import org.junit.Test;
 public class RemoteSchedulerTest {
 
   private SchedulerFactory schedulerSvc;
+  private static final int TICK_WAIT = 100;
+  private static final int MAX_WAIT_CYCLES = 100;
 
   @Before
   public void setUp() throws Exception{
@@ -108,16 +111,24 @@ public class RemoteSchedulerTest {
     };
     scheduler.submit(job);
 
-    while (job.isRunning() == false) {
-      Thread.sleep(100);
+    int cycles = 0;
+    while (!job.isRunning() && cycles < MAX_WAIT_CYCLES) {
+      Thread.sleep(TICK_WAIT);
+      cycles++;
     }
+    assertTrue(job.isRunning());
 
-    Thread.sleep(500);
+    Thread.sleep(5*TICK_WAIT);
     assertEquals(0, scheduler.getJobsWaiting().size());
     assertEquals(1, scheduler.getJobsRunning().size());
 
-    Thread.sleep(500);
-
+    cycles = 0;
+    while (!job.isTerminated() && cycles < MAX_WAIT_CYCLES) {
+      Thread.sleep(TICK_WAIT);
+      cycles++;
+    }
+    
+    assertTrue(job.isTerminated());
     assertEquals(0, scheduler.getJobsWaiting().size());
     assertEquals(0, scheduler.getJobsRunning().size());
 

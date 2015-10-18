@@ -294,6 +294,23 @@ public class Notebook {
     }
   }
 
+  /**
+   * Reload all notes from repository after clearing `notes`
+   * to reflect the changes of added/deleted/modified notebooks on file system level.
+   *
+   * @return
+   * @throws IOException
+   */
+  private void reloadAllNotes() throws IOException {
+    synchronized (notes) {
+      notes.clear();
+    }
+    List<NoteInfo> noteInfos = notebookRepo.list();
+    for (NoteInfo info : noteInfos) {
+      loadNoteFromRepo(info.getId());
+    }
+  }
+
   class SnapshotAngularObject {
     String intpGroupId;
     AngularObject angularObject;
@@ -319,6 +336,13 @@ public class Notebook {
   }
 
   public List<Note> getAllNotes() {
+    if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE)) {
+      try {
+        reloadAllNotes();
+      } catch (IOException e) {
+        logger.error("Cannot reload notes from storage", e);
+      }
+    }
     synchronized (notes) {
       List<Note> noteList = new ArrayList<Note>(notes.values());
       Collections.sort(noteList, new Comparator() {
