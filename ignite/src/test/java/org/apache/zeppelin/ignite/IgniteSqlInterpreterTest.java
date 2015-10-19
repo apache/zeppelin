@@ -58,14 +58,14 @@ public class IgniteSqlInterpreterTest {
 
     IgniteConfiguration cfg = new IgniteConfiguration();
     cfg.setDiscoverySpi(discoSpi);
+    cfg.setPeerClassLoadingEnabled(true);
 
     cfg.setGridName("test");
 
     ignite = Ignition.start(cfg);
 
     Properties props = new Properties();
-    props.setProperty(IgniteSqlInterpreter.IGNITE_JDBC_URL, "jdbc:ignite://localhost:11211/person");
-    props.setProperty(IgniteInterpreter.IGNITE_CLIENT_MODE, "false");
+    props.setProperty(IgniteSqlInterpreter.IGNITE_JDBC_URL, "jdbc:ignite:cfg://cache=person@default-ignite-jdbc.xml");
 
     intp = new IgniteSqlInterpreter(props);
 

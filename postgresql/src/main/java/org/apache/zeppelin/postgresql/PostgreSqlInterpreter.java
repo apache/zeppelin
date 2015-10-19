@@ -89,6 +89,7 @@ public class PostgreSqlInterpreter extends Interpreter {
   static final String POSTGRESQL_SERVER_PASSWORD = "postgresql.password";
   static final String POSTGRESQL_SERVER_DRIVER_NAME = "postgresql.driver.name";
   static final String POSTGRESQL_SERVER_MAX_RESULT = "postgresql.max.result";
+  static final String EMPTY_COLUMN_VALUE = "";
 
   static {
     Interpreter.register(
@@ -275,6 +276,9 @@ public class PostgreSqlInterpreter extends Interpreter {
    * For %table response replace Tab and Newline characters from the content.
    */
   private String replaceReservedChars(boolean isTableResponseType, String str) {
+    if (str == null) {
+      return EMPTY_COLUMN_VALUE;
+    }
     return (!isTableResponseType) ? str : str.replace(TAB, WhITESPACE).replace(NEWLINE, WhITESPACE);
   }
 
