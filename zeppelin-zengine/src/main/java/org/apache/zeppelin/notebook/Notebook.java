@@ -138,7 +138,8 @@ public class Notebook {
       newNote.setName(newNoteName);
     }
     // Copy the interpreter bindings
-    List<String> boundInterpreterSettingsIds = getBindedInterpreterSettingsIds(sourceNote.id());
+    List<String> boundInterpreterSettingsIds =
+        getBindedInterpreterSettingsIds(sourceNote.id(), principal);
     bindInterpretersToNote(newNote.id(), boundInterpreterSettingsIds, principal);
 
     List<Paragraph> paragraphs = sourceNote.getParagraphs();
@@ -307,7 +308,7 @@ public class Notebook {
     }
     List<NoteInfo> noteInfos = notebookRepo.list();
     for (NoteInfo info : noteInfos) {
-      loadNoteFromRepo(info.getId());
+      loadNoteFromRepo(info.getId(), info.getOwner());
     }
   }
 

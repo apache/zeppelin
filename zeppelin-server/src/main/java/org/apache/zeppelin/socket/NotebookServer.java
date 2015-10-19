@@ -108,10 +108,12 @@ public class NotebookServer extends WebSocketServlet implements
       if (ticket != null && !ticket.equals(messagereceived.ticket))
         throw new Exception("Invalid ticket " + messagereceived.ticket + " != " + ticket);
 
+      addConnectionToUserSocketMap(conn, messagereceived);
+
       /** Lets be elegant here */
       switch (messagereceived.op) {
           case LIST_NOTES:
-            broadcastNoteList(conn, messagereceived);
+            broadcastNoteList(messagereceived.principal);
             break;
           case GET_HOME_NOTE:
             sendHomeNote(conn, notebook, messagereceived);
@@ -159,11 +161,29 @@ public class NotebookServer extends WebSocketServlet implements
             angularObjectUpdated(conn, notebook, messagereceived);
             break;
           default:
-            broadcastNoteList(conn, messagereceived);
+            broadcastNoteList(messagereceived.principal);
             break;
       }
     } catch (Exception e) {
       LOG.error("Can't handle message", e);
+    }
+  }
+
+  private void addConnectionToUserSocketMap(NotebookSocket conn, Message messagereceived) {
+    List<NotebookSocket> conns = userSocketMap.get(messagereceived.principal);
+
+    if (conns == null) {
+      synchronized (userSocketMap) {
+        conns = userSocketMap.get(messagereceived.principal);
+        if (conns == null) {
+          conns = new LinkedList<>();
+          userSocketMap.put(messagereceived.principal, conns);
+        }
+      }
+    }
+
+    if (!conns.contains(conn)) {
+      conns.add(conn);
     }
   }
 
@@ -284,7 +304,7 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  private void broadcastAll(NotebookSocket conn, Message m) {
+  private void broadcastAll(Message m) {
     synchronized (userSocketMap) {
       List<Map<String, String>> notesInfo = (List<Map<String, String>>) m.get("notes");
       String principal = m.principal;
@@ -293,45 +313,47 @@ public class NotebookServer extends WebSocketServlet implements
         conns = new LinkedList<>();
         userSocketMap.put(principal, conns);
       }
-      if (!conns.contains(conn)) {
-        conns.add(conn);
-      }
+
       for (NotebookSocket theconn : conns) {
         try {
           theconn.send(serializeMessage(m));
         } catch (IOException e) {
-          e.printStackTrace();
+          LOG.error("socket error", e);
         }
       }
     }
   }
 
-  public void broadcastNote(Note note) {
-    broadcast(note.id(), new Message(OP.NOTE).put("note", note));
-  }
-
-  public void broadcastNoteList(NotebookSocket conn, Message fromMessage) {
+  public void broadcastNoteList(String principal) {
     Notebook notebook = notebook();
+
     ZeppelinConfiguration conf = notebook.getConf();
     String homescreenNotebookId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
     boolean hideHomeScreenNotebookFromList = conf
         .getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
 
-    List<Note> notes = notebook.getAllNotes(fromMessage.principal);
-    List<Map<String, String>> notesInfo = new LinkedList<Map<String, String>>();
+    List<Note> notes = notebook.getAllNotes(principal);
+    List<Map<String, String>> notesInfo = new LinkedList<>();
     for (Note note : notes) {
       Map<String, String> info = new HashMap<>();
+
       if (hideHomeScreenNotebookFromList && note.id().equals(homescreenNotebookId)) {
         continue;
       }
+
       info.put("id", note.id());
       info.put("name", note.getName());
-      info.put("principal", fromMessage.principal);
+      info.put("principal", principal);
       notesInfo.add(info);
     }
+
     Message message = new Message(OP.NOTES_INFO).put("notes", notesInfo);
-    message.principal = fromMessage.principal;
-    broadcastAll(conn, message);
+    message.principal = principal;
+    broadcastAll(message);
+  }
+
+  public void broadcastNote(Note note) {
+    broadcast(note.id(), new Message(OP.NOTE).put("note", note));
   }
 
   private void sendNote(NotebookSocket conn, Notebook notebook,
@@ -389,7 +411,7 @@ public class NotebookServer extends WebSocketServlet implements
 
       note.persist();
       broadcastNote(note);
-      broadcastNoteList(conn, fromMessage);
+      broadcastNoteList(fromMessage.principal);
     }
   }
 
@@ -422,7 +444,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     note.persist();
     broadcastNote(note);
-    broadcastNoteList(conn, fromMsg);
+    broadcastNoteList(fromMsg.principal);
   }
 
   private void removeNote(NotebookSocket conn, Notebook notebook, Message fromMessage)
@@ -435,7 +457,7 @@ public class NotebookServer extends WebSocketServlet implements
     note.unpersist();
     notebook.removeNote(noteId, fromMessage.principal);
     removeNote(noteId);
-    broadcastNoteList(conn, fromMessage);
+    broadcastNoteList(fromMessage.principal);
   }
 
   private void updateParagraph(NotebookSocket conn, Notebook notebook,
@@ -462,7 +484,7 @@ public class NotebookServer extends WebSocketServlet implements
     String name = (String) fromMessage.get("name");
     Note newNote = notebook.cloneNote(noteId, name, fromMessage.principal);
     broadcastNote(newNote);
-    broadcastNoteList(conn, fromMessage);
+    broadcastNoteList(fromMessage.principal);
   }
 
   private void removeParagraph(NotebookSocket conn, Notebook notebook,
