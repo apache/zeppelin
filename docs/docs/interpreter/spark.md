@@ -56,14 +56,14 @@ Note that scala / python environment shares the same SparkContext, SQLContext, Z
 <br />
 ### Dependency loading
 
-When your code requires external library, instead of doing download/copy/restart Zeppelin, you can eaily do following jobs using %dep interpreter.
+When your code requires external library, instead of doing download/copy/restart Zeppelin, you can easily do following jobs using %dep interpreter.
 
  * Load libraries recursively from Maven repository
  * Load libraries from local filesystem
  * Add additional maven repository
  * Automatically add libraries to SparkCluster (You can turn off)
 
-Dep interpreter leverages scala environment. So you can write any scala code here.
+Dep interpreter leverages scala environment. So you can write any Scala code here.
 
 Here's usages.
 
@@ -107,7 +107,7 @@ Note that %dep interpreter should be used before %spark, %pyspark, %sql.
 ### ZeppelinContext
 
 
-Zeppelin automatically injects ZeppelinContext as variable 'z' in your scala/python environment. ZeppelinContext provides some addtional functions and utility.
+Zeppelin automatically injects ZeppelinContext as variable 'z' in your scala/python environment. ZeppelinContext provides some additional functions and utility.
 
 <br />
 #### Object exchange
