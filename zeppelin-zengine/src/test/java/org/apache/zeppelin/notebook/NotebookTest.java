@@ -109,7 +109,8 @@ public class NotebookTest implements JobListenerFactory{
   public void testGetAllNotes() throws IOException {
     // get all notes after copy the {notebookId}/note.json into notebookDir
     File srcDir = new File("src/test/resources/2A94M5J1Z");
-    File destDir = new File(notebookDir.getAbsolutePath() + "/2A94M5J1Z");
+    File destDir = new File(notebookDir.getAbsolutePath() + "/users/anonymous/2A94M5J1Z");
+    destDir.getParentFile().mkdirs();
 
     try {
       FileUtils.copyDirectory(srcDir, destDir);
