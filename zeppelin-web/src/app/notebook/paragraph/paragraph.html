@@ -186,9 +186,9 @@ limitations under the License.
                   jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
                   class="list-unstyled">
                 <li ng-repeat="item in paragraph.config.graph.keys">
-                  <button class="btn btn-primary btn-xs">
+                  <div class="btn btn-primary btn-xs">
                     {{item.name}} <span class="fa fa-close" ng-click="removeGraphOptionKeys($index)"></span>
-                  </button>
+                  </div>
                 </li>
               </ul>
             </span>
@@ -201,9 +201,9 @@ limitations under the License.
                   jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
                   class="list-unstyled">
                 <li ng-repeat="item in paragraph.config.graph.groups">
-                  <button class="btn btn-success btn-xs">
+                  <div class="btn btn-success btn-xs">
                     {{item.name}} <span class="fa fa-close" ng-click="removeGraphOptionGroups($index)"></span>
-                  </button>
+                  </div>
                 </li>
               </ul>
             </span>
