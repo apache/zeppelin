@@ -49,7 +49,8 @@ describe('Controller: ParagraphCtrl', function() {
     expect(scope.paragraphFocused).toEqual(false);
   });
 
-  it('should call loadTableData() and getGraphMode() should return "table" when the result type is "TABLE"', function() {
+  it('should call loadTableData() and getGraphMode() should return "table" when the result type is "TABLE"',
+    function() {
     scope.getResultType = jasmine.createSpy('getResultType spy').andCallFake(function() {
       return 'TABLE';
     });

@@ -34,13 +34,13 @@ angular.module('zeppelinWebApp', [
     'ngToast'
   ])
   .filter('breakFilter', function() {
-    return function (text) {
+    return function(text) {
       if (!!text) {
         return text.replace(/\n/g, '<br />');
       }
     };
   })
-  .config(function ($routeProvider, ngToastProvider) {
+  .config(function($routeProvider, ngToastProvider) {
     $routeProvider
       .when('/', {
         templateUrl: 'app/home/home.html'
@@ -60,7 +60,7 @@ angular.module('zeppelinWebApp', [
       .otherwise({
         redirectTo: '/'
       });
-  
+
     ngToastProvider.configure({
       dismissButton: true,
       dismissOnClick: false,
