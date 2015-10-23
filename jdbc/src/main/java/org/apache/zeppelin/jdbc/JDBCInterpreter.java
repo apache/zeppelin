@@ -57,7 +57,7 @@ import com.google.common.collect.Sets.SetView;
  * 
  * <p>
  * How to use: <br/>
- * {@code %psql.sql} <br/>
+ * {@code %jdbc.sql} <br/>
  * {@code 
  *  SELECT store_id, count(*) 
  *  FROM retail_demo.order_lineitems_pxf 
@@ -84,23 +84,23 @@ public class JDBCInterpreter extends Interpreter {
   static final String DEFAULT_JDBC_DRIVER_NAME = "org.postgresql.Driver";
   static final String DEFAULT_MAX_RESULT = "1000";
 
-  static final String JDBC_SERVER_URL = "psql.url";
-  static final String JDBC_SERVER_USER = "psql.user";
-  static final String JDBC_SERVER_PASSWORD = "psql.password";
-  static final String JDBC_SERVER_DRIVER_NAME = "psql.driver.name";
-  static final String JDBC_SERVER_MAX_RESULT = "psql.max.result";
+  static final String JDBC_SERVER_URL = "jdbc.url";
+  static final String JDBC_SERVER_USER = "jdbc.user";
+  static final String JDBC_SERVER_PASSWORD = "jdbc.password";
+  static final String JDBC_SERVER_DRIVER_NAME = "jdbc.driver.name";
+  static final String JDBC_SERVER_MAX_RESULT = "jdbc.max.result";
   static final String EMPTY_COLUMN_VALUE = "";
 
   static {
     Interpreter.register(
         "sql",
-        "psql",
+        "jdbc",
         JDBCInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add(JDBC_SERVER_URL, DEFAULT_JDBC_URL, "The URL for PostgreSQL.")
-            .add(JDBC_SERVER_USER, DEFAULT_JDBC_USER_NAME, "The PostgreSQL user name")
+            .add(JDBC_SERVER_URL, DEFAULT_JDBC_URL, "The URL for JDBC.")
+            .add(JDBC_SERVER_USER, DEFAULT_JDBC_USER_NAME, "The JDBC user name")
             .add(JDBC_SERVER_PASSWORD, DEFAULT_JDBC_USER_PASSWORD,
-                "The PostgreSQL user password")
+                "The JDBC user password")
             .add(JDBC_SERVER_DRIVER_NAME, DEFAULT_JDBC_DRIVER_NAME, "JDBC Driver Name")
             .add(JDBC_SERVER_MAX_RESULT, DEFAULT_MAX_RESULT,
                 "Max number of SQL result to display.").build());
@@ -129,7 +129,7 @@ public class JDBCInterpreter extends Interpreter {
   @Override
   public void open() {
 
-    logger.info("Open psql connection!");
+    logger.info("Open jdbc connection!");
 
     // Ensure that no previous connections are left open.
     close();
@@ -148,7 +148,7 @@ public class JDBCInterpreter extends Interpreter {
       sqlCompleter = createSqlCompleter(jdbcConnection);
 
       exceptionOnConnect = null;
-      logger.info("Successfully created psql connection");
+      logger.info("Successfully created jdbc connection");
 
     } catch (ClassNotFoundException | SQLException e) {
       logger.error("Cannot open connection", e);
@@ -177,7 +177,7 @@ public class JDBCInterpreter extends Interpreter {
   @Override
   public void close() {
 
-    logger.info("Close psql connection!");
+    logger.info("Close jdbc connection!");
 
     try {
       if (getJdbcConnection() != null) {
