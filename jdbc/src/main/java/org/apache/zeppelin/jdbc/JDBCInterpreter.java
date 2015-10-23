@@ -44,15 +44,15 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 
 /**
- * PostgreSQL interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ and
- * GreenplumDB.
+ * JDBC interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ,
+ * GreenplumDB, MariaDB, MySQL, Postgres and Redshit.
  * 
  * <ul>
- * <li>{@code postgresql.url} - JDBC URL to connect to.</li>
- * <li>{@code postgresql.user} - JDBC user name..</li>
- * <li>{@code postgresql.password} - JDBC password..</li>
- * <li>{@code postgresql.driver.name} - JDBC driver name.</li>
- * <li>{@code postgresql.max.result} - Max number of SQL result to display.</li>
+ * <li>{@code jdbc.url} - JDBC URL to connect to.</li>
+ * <li>{@code jdbc.user} - JDBC user name..</li>
+ * <li>{@code jdbc.password} - JDBC password..</li>
+ * <li>{@code jdbc.driver.name} - JDBC driver name.</li>
+ * <li>{@code jdbc.max.result} - Max number of SQL result to display.</li>
  * </ul>
  * 
  * <p>

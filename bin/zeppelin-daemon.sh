@@ -68,7 +68,7 @@ if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
 fi
 
 # Add jdbc connector jar
-ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/jdbc/jdbc/postgresql-9.4-1204.jdbc4.jar"
+# ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/jdbc/jdbc/connector jar"
 
 addJarInDir "${ZEPPELIN_HOME}"
 addJarInDir "${ZEPPELIN_HOME}/lib"
