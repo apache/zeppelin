@@ -21,7 +21,7 @@ group: nav-right
 
 * [flink](./interpreter/flink.html)
 * [hive](../docs/pleasecontribute.html)
-* [ignite](../docs/pleasecontribute.html)
+* [ignite](./interpreter/ignite.html)
 * [lens](../docs/pleasecontribute.html)
 * [md](../docs/pleasecontribute.html)
 * [sh](../docs/pleasecontribute.html)
