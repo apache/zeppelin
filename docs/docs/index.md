@@ -19,7 +19,7 @@ group: nav-right
 
 **[Interpreters in zeppelin](manual/interpreters.html)**
 
-* [flink](./docs/interpreter/flink.html)
+* [flink](./interpreter/flink.html)
 * [hive](../docs/pleasecontribute.html)
 * [ignite](../docs/pleasecontribute.html)
 * [lens](../docs/pleasecontribute.html)

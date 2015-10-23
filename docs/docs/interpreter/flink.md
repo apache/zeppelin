@@ -17,11 +17,30 @@ Zeppelin comes with pre-configured flink-local interpreter, which starts Flink i
 ### How to configure interpreter to point to Flink cluster
 At the "Interpreters" menu, you have to create a new Flink interpreter and provide next properties:
 
-property | value    | Description
----------|----------|-----
-host	 | local    | host name of running JobManager. 'local' runs flink in local mode (default)
-port	 | 6123     | port of running JobManager
-xxx    | yyy      | anything else from [Flink Configuration](https://ci.apache.org/projects/flink/flink-docs-release-0.9/setup/config.html)
+<table class="table-configuration">
+  <tr>
+    <th>property</th>
+    <th>value</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>host</td>
+    <td>local</td>
+    <td>host name of running JobManager. 'local' runs flink in local mode (default)</td>
+  </tr>
+  <tr>
+    <td>port</td>
+    <td>6123</td>
+    <td>port of running JobManager</td>
+  </tr>
+  <tr>
+    <td>xxx</td>
+    <td>yyy</td>
+    <td>anything else from [Flink Configuration](https://ci.apache.org/projects/flink/flink-docs-release-0.9/setup/config.html)</td>
+  </tr>
+</table>
+<br />
+
 
 ### How to test it's working
 

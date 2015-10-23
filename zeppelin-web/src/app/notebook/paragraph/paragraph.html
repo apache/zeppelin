@@ -186,9 +186,9 @@ limitations under the License.
                   jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
                   class="list-unstyled">
                 <li ng-repeat="item in paragraph.config.graph.keys">
-                  <button class="btn btn-primary btn-xs">
+                  <div class="btn btn-primary btn-xs">
                     {{item.name}} <span class="fa fa-close" ng-click="removeGraphOptionKeys($index)"></span>
-                  </button>
+                  </div>
                 </li>
               </ul>
             </span>
@@ -201,9 +201,9 @@ limitations under the License.
                   jqyoui-droppable="{multiple:true, onDrop:'onGraphOptionChange()'}"
                   class="list-unstyled">
                 <li ng-repeat="item in paragraph.config.graph.groups">
-                  <button class="btn btn-success btn-xs">
+                  <div class="btn btn-success btn-xs">
                     {{item.name}} <span class="fa fa-close" ng-click="removeGraphOptionGroups($index)"></span>
-                  </button>
+                  </div>
                 </li>
               </ul>
             </span>
@@ -248,9 +248,9 @@ limitations under the License.
                   class="list-unstyled"
                   style="height:36px">
                 <li ng-if="paragraph.config.graph.scatter.xAxis">
-                  <button class="btn btn-primary btn-xs">
+                  <div class="btn btn-primary btn-xs">
                     {{paragraph.config.graph.scatter.xAxis.name}} <span class="fa fa-close" ng-click="removeScatterOptionXaxis($index)"></span>
-                  </button>
+                  </div>
                 </li>
               </ul>
             </span>
@@ -264,9 +264,9 @@ limitations under the License.
                   class="list-unstyled"
                   style="height:36px">
                 <li ng-if="paragraph.config.graph.scatter.yAxis">
-                  <button class="btn btn-success btn-xs">
+                  <div class="btn btn-success btn-xs">
                     {{paragraph.config.graph.scatter.yAxis.name}} <span class="fa fa-close" ng-click="removeScatterOptionYaxis($index)"></span>
-                  </button>
+                  </div>
                 </li>
               </ul>
             </span>
@@ -280,9 +280,9 @@ limitations under the License.
                   class="list-unstyled"
                   style="height:36px">
                 <li ng-if="paragraph.config.graph.scatter.group">
-                  <button class="btn btn-info btn-xs">
+                  <div class="btn btn-info btn-xs">
                     {{paragraph.config.graph.scatter.group.name}} <span class="fa fa-close" ng-click="removeScatterOptionGroup($index)"></span>
-                  </button>
+                  </div>
                 </li>
               </ul>
             </span>
@@ -302,9 +302,9 @@ limitations under the License.
                   class="list-unstyled"
                   style="height:36px">
                 <li ng-if="paragraph.config.graph.scatter.size">
-                  <button class="btn btn-xs" style="color:white" ng-class="{'btn-warning': isValidSizeOption(paragraph.config.graph.scatter, paragraph.result.rows)}">
+                  <div class="btn btn-xs" style="color:white" ng-class="{'btn-warning': isValidSizeOption(paragraph.config.graph.scatter, paragraph.result.rows)}">
                     {{paragraph.config.graph.scatter.size.name}} <span class="fa fa-close" ng-click="removeScatterOptionSize($index)"></span>
-                  </button>
+                  </div>
                 </li>
               </ul>
             </span>
