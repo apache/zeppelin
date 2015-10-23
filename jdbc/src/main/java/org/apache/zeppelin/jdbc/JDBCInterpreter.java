@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.zeppelin.postgresql;
+package org.apache.zeppelin.jdbc;
 
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 
@@ -67,9 +67,9 @@ import com.google.common.collect.Sets.SetView;
  * 
  * For SQL auto-completion use the (Ctrl+.) shortcut.
  */
-public class PostgreSqlInterpreter extends Interpreter {
+public class JDBCInterpreter extends Interpreter {
 
-  private Logger logger = LoggerFactory.getLogger(PostgreSqlInterpreter.class);
+  private Logger logger = LoggerFactory.getLogger(JDBCInterpreter.class);
 
   private static final char WhITESPACE = ' ';
   private static final char NEWLINE = '\n';
@@ -84,25 +84,25 @@ public class PostgreSqlInterpreter extends Interpreter {
   static final String DEFAULT_JDBC_DRIVER_NAME = "org.postgresql.Driver";
   static final String DEFAULT_MAX_RESULT = "1000";
 
-  static final String POSTGRESQL_SERVER_URL = "postgresql.url";
-  static final String POSTGRESQL_SERVER_USER = "postgresql.user";
-  static final String POSTGRESQL_SERVER_PASSWORD = "postgresql.password";
-  static final String POSTGRESQL_SERVER_DRIVER_NAME = "postgresql.driver.name";
-  static final String POSTGRESQL_SERVER_MAX_RESULT = "postgresql.max.result";
+  static final String JDBC_SERVER_URL = "psql.url";
+  static final String JDBC_SERVER_USER = "psql.user";
+  static final String JDBC_SERVER_PASSWORD = "psql.password";
+  static final String JDBC_SERVER_DRIVER_NAME = "psql.driver.name";
+  static final String JDBC_SERVER_MAX_RESULT = "psql.max.result";
   static final String EMPTY_COLUMN_VALUE = "";
 
   static {
     Interpreter.register(
         "sql",
         "psql",
-        PostgreSqlInterpreter.class.getName(),
+        JDBCInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add(POSTGRESQL_SERVER_URL, DEFAULT_JDBC_URL, "The URL for PostgreSQL.")
-            .add(POSTGRESQL_SERVER_USER, DEFAULT_JDBC_USER_NAME, "The PostgreSQL user name")
-            .add(POSTGRESQL_SERVER_PASSWORD, DEFAULT_JDBC_USER_PASSWORD,
+            .add(JDBC_SERVER_URL, DEFAULT_JDBC_URL, "The URL for PostgreSQL.")
+            .add(JDBC_SERVER_USER, DEFAULT_JDBC_USER_NAME, "The PostgreSQL user name")
+            .add(JDBC_SERVER_PASSWORD, DEFAULT_JDBC_USER_PASSWORD,
                 "The PostgreSQL user password")
-            .add(POSTGRESQL_SERVER_DRIVER_NAME, DEFAULT_JDBC_DRIVER_NAME, "JDBC Driver Name")
-            .add(POSTGRESQL_SERVER_MAX_RESULT, DEFAULT_MAX_RESULT,
+            .add(JDBC_SERVER_DRIVER_NAME, DEFAULT_JDBC_DRIVER_NAME, "JDBC Driver Name")
+            .add(JDBC_SERVER_MAX_RESULT, DEFAULT_MAX_RESULT,
                 "Max number of SQL result to display.").build());
   }
 
@@ -122,7 +122,7 @@ public class PostgreSqlInterpreter extends Interpreter {
 
   private static final List<String> NO_COMPLETION = new ArrayList<String>();
 
-  public PostgreSqlInterpreter(Properties property) {
+  public JDBCInterpreter(Properties property) {
     super(property);
   }
 
@@ -135,12 +135,11 @@ public class PostgreSqlInterpreter extends Interpreter {
     close();
 
     try {
-
-      String driverName = getProperty(POSTGRESQL_SERVER_DRIVER_NAME);
-      String url = getProperty(POSTGRESQL_SERVER_URL);
-      String user = getProperty(POSTGRESQL_SERVER_USER);
-      String password = getProperty(POSTGRESQL_SERVER_PASSWORD);
-      maxResult = Integer.valueOf(getProperty(POSTGRESQL_SERVER_MAX_RESULT));
+      String driverName = getProperty(JDBC_SERVER_DRIVER_NAME);
+      String url = getProperty(JDBC_SERVER_URL);
+      String user = getProperty(JDBC_SERVER_USER);
+      String password = getProperty(JDBC_SERVER_PASSWORD);
+      maxResult = Integer.valueOf(getProperty(JDBC_SERVER_MAX_RESULT));
 
       Class.forName(driverName);
 
@@ -316,7 +315,7 @@ public class PostgreSqlInterpreter extends Interpreter {
   @Override
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        PostgreSqlInterpreter.class.getName() + this.hashCode());
+        JDBCInterpreter.class.getName() + this.hashCode());
   }
 
   @Override
