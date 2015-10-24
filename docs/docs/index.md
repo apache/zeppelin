@@ -22,7 +22,7 @@ group: nav-right
 * [flink](./interpreter/flink.html)
 * [hive](../docs/pleasecontribute.html)
 * [ignite](../docs/pleasecontribute.html)
-* [lens](../docs/pleasecontribute.html)
+* [lens](./interpreter/lens.html)
 * [md](../docs/pleasecontribute.html)
 * [sh](../docs/pleasecontribute.html)
 * [spark](./interpreter/spark.html)
