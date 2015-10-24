@@ -41,7 +41,7 @@ At the "Interpreters" menu, you can to edit Lens interpreter or create new one. 
   <tr>
       <td>lens.query.enable.persistent.resultset</td>
       <td>false</td>
-      <td></td>
+      <td>Whether to enable persistent resultset for queries. When enabled, server will fetch results from driver, custom format them if any and store in a configured location. The file name of query output is queryhandle-id, with configured extensions</td>
   </tr>
   <tr>
       <td>lens.server.base.url</td>
@@ -50,7 +50,7 @@ At the "Interpreters" menu, you can to edit Lens interpreter or create new one. 
    </tr>
    <tr>
       <td>lens.session.cluster.user </td>
-      <td>defalut</td>
+      <td>default</td>
       <td>Hadoop cluster username</td>
   </tr>
   <tr>
@@ -61,7 +61,7 @@ At the "Interpreters" menu, you can to edit Lens interpreter or create new one. 
   <tr>
       <td>zeppelin.lens.maxThreads</td>
       <td>10</td>
-      <td></td>
+      <td>If concurrency is true then how many threads?</td>
   </tr>
   <tr>
       <td>zeppelin.lens.run.concurrent</td>
@@ -71,7 +71,7 @@ At the "Interpreters" menu, you can to edit Lens interpreter or create new one. 
   <tr>
       <td>xxx</td>
       <td>yyy</td>
-      <td>anything else from [Lens server configuration](http://lens.apache.org/admin/config.html)</td>
+      <td>anything else from [Configuring lens server](https://lens.apache.org/admin/config-server.html)</td>
   </tr>
  </table>
 
