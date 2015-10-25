@@ -18,7 +18,7 @@ You can use Zeppelin to retrieve distributed data from cache using Ignite SQL in
 ### Installing and Running Ignite example
 In order to use Ignite interpreters, you may install Apache Ignite in some simple steps:
 
-  1. Download Ignite [source release](https://ignite.apache.org/download.html#sources) or [binary release](https://ignite.apache.org/download.html#binaries) whatever you want. But you must download Ignite as the same version of Zeppelin's. If it is not, you can't use scala code on Zeppelin. You can find ignite version in Zepplin at the pom.xml which is placed under `path/to/your-Zeppelin/ignite/pom.xml` . please check `ignite.version` .
+  1. Download Ignite [source release](https://ignite.apache.org/download.html#sources) or [binary release](https://ignite.apache.org/download.html#binaries) whatever you want. But you must download Ignite as the same version of Zeppelin's. If it is not, you can't use scala code on Zeppelin. You can find ignite version in Zepplin at the pom.xml which is placed under `path/to/your-Zeppelin/ignite/pom.xml` ( Of course, in Zeppelin source release ). Please check `ignite.version` .<br>Currently, Zeppelin provides ignite only in Zeppelin source release. So, if you download Zeppelin binary release( `zeppelin-0.5.0-incubating-bin-spark-xxx-hadoop-xx` ), you can not use ignite interpreter on Zeppelin. We are planning to include ignite in the next binary release.
   
   2. Examples are shipped as a separate Maven project, so to start running you simply need to import provided <dest_dir>/apache-ignite-fabric-1.2.0-incubating-bin/pom.xml file into your favourite IDE, such as Eclipse. 
 
@@ -26,7 +26,7 @@ In order to use Ignite interpreters, you may install Apache Ignite in some simpl
    * Set examples directory path to Eclipse and select the pom.xml.
    * Then start `org.apache.ignite.examples.ExampleNodeStartup` (or whatever you want) to run at least one or more ignite node. When you run example code, you may notice that the number of node is increase one by one. 
   
-> **Tip. If you want to run Ignite examples on the cli not IDE, you can export executable Jar file from IDE. Then run it by using below command.**
+  > **Tip. If you want to run Ignite examples on the cli not IDE, you can export executable Jar file from IDE. Then run it by using below command.**
       
   ``` 
   $ nohup java -jar </path/to/your Jar file name> 
