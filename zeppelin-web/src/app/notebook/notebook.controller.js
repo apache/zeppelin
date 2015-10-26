@@ -169,6 +169,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   jQuery(window).on('unload', function(e) {
+    $scope.killSaveTimer();
     $scope.saveNote();
   });
 
