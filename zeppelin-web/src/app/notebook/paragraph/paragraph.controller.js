@@ -273,6 +273,10 @@ angular.module('zeppelinWebApp')
     }
   };
 
+  $scope.clearParagraphOutput = function() {
+    websocketMsgSrv.clearParagraphOutput($scope.paragraph.id);
+  };
+
   $scope.toggleEditor = function() {
     if ($scope.paragraph.config.editorHide) {
       $scope.openEditor();
@@ -633,7 +637,7 @@ angular.module('zeppelinWebApp')
       desc += ' (outdated)';
     }
     return desc;
-  };  
+  };
 
   $scope.isResultOutdated = function() {
     var pdata = $scope.paragraph;

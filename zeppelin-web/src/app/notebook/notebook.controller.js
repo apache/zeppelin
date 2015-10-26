@@ -79,6 +79,13 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
+  $scope.clearAllParagraphOutput = function(noteId) {
+    var result = confirm('Do you want to clear all paragraph output?');
+    if (result) {
+      websocketMsgSrv.deleteNotebook(noteId);
+    }
+  };
+
   //Clone note
   $scope.cloneNote = function(noteId) {
     var result = confirm('Do you want to clone this notebook?');
@@ -102,6 +109,15 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       angular.element('#' + n.id + '_paragraphColumn_main').scope().saveParagraph();
     });
     $scope.isNoteDirty = null;
+  };
+
+  $scope.clearAllParagraphOutput = function() {
+    var result = confirm('Do you want to clear all output?');
+    if (result) {
+      _.forEach($scope.note.paragraphs, function(n, key) {
+        angular.element('#' + n.id + '_paragraphColumn_main').scope().clearParagraphOutput(n.id);
+      });
+    }
   };
 
   $scope.toggleAllEditor = function() {
