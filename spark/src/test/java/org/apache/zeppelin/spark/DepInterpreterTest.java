@@ -92,7 +92,7 @@ public class DepInterpreterTest {
     assertEquals(1, dep.getDependencyContext().getFilesDist().size());
 
     // Add a test for the spark-packages repo - default in additionalRemoteRepository
-    ret = dep.interpret("z.load(\"com.databricks:spark-csv_2.11:1.2.0\")", context);
+    ret = dep.interpret("z.load(\"amplab:spark-indexedrdd:0.3\")", context);
     assertEquals(Code.SUCCESS, ret.code());
 
     // Reset at the end of the test
