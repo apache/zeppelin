@@ -83,14 +83,15 @@ public class DependencyResolver {
                                                     "org.apache.zeppelin:zeppelin-spark",
                                                     "org.apache.zeppelin:zeppelin-server"};
 
-  public DependencyResolver(SparkIMain intp, SparkContext sc, String localRepoPath) {
+  public DependencyResolver(SparkIMain intp, SparkContext sc, String localRepoPath,
+                            String additionalRemoteRepository) {
     this.intp = intp;
     this.global = intp.global();
     this.sc = sc;
     session = Booter.newRepositorySystemSession(system, localRepoPath);
     repos.add(Booter.newCentralRepository()); // add maven central
-    repos.add(new RemoteRepository("local", "default", "file://"
-        + System.getProperty("user.home") + "/.m2/repository"));
+    repos.add(Booter.newLocalRepository());
+    addRepoFromProperty(additionalRemoteRepository);
   }
 
   public void addRepo(String id, String url, boolean snapshot) {
@@ -114,6 +115,23 @@ public class DependencyResolver {
       }
     }
     return null;
+  }
+
+  private void addRepoFromProperty(String listOfRepo) {
+    if (listOfRepo != null) {
+      String[] repos = listOfRepo.split(";");
+      for (String repo : repos) {
+        String[] parts = repo.split(",");
+        if (parts.length == 3) {
+          String id = parts[0].trim();
+          String url = parts[1].trim();
+          boolean isSnapshot = Boolean.parseBoolean(parts[2].trim());
+          if (id.length() > 1 && url.length() > 1) {
+            addRepo(id, url, isSnapshot);
+          }
+        }
+      }
+    }
   }
 
   private void updateCompilerClassPath(URL[] urls) throws IllegalAccessException,
