@@ -33,7 +33,7 @@
 # export ZEPPELIN_NOTEBOOK_S3_USER      # User in bucket where notebook saved. For example bucket/user/notebook/2A94M5J1Z/note.json
 # export ZEPPELIN_IDENT_STRING   		# A string representing this instance of zeppelin. $USER by default.
 # export ZEPPELIN_NICENESS       		# The scheduling priority for daemons. Defaults to 0.
-
+# export ZEPPELIN_READ_ONLY         # Read-only mode. Disabled editing or creating notebook when  this value set to "true". default "false"
 
 #### Spark interpreter configuration ####
 

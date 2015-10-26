@@ -15,7 +15,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams,
-    $location, notebookListDataFactory, websocketMsgSrv, arrayOrderingSrv) {
+    $location, notebookListDataFactory, websocketMsgSrv, arrayOrderingSrv, systemConfDataFactory) {
   /** Current list of notes (ids) */
 
   var vm = this;
@@ -23,6 +23,7 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   vm.connected = websocketMsgSrv.isConnected();
   vm.websocketMsgSrv = websocketMsgSrv;
   vm.arrayOrderingSrv = arrayOrderingSrv;
+  vm.systemConfDataFactory = systemConfDataFactory;
 
   angular.element('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
@@ -41,6 +42,10 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
     if (path === '/') {
       $scope.searchTerm = '';
     }
+  });
+
+  $scope.$on('setSystemConf', function(event, conf) {
+    systemConfDataFactory.setSystemConf(conf);
   });
 
   $scope.search = function() {

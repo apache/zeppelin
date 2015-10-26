@@ -15,7 +15,7 @@ limitations under the License.
   <h3>
     <input type="text" pu-elastic-input class="form-control2" placeholder="{{note.name || 'Note ' + note.id}}" style="min-width: 200px; max-width: 600px;"
            ng-show="showEditor" ng-model="note.name" ng-blur="sendNewName();showEditor = false;" ng-enter="sendNewName();showEditor = false;" ng-escape="note.name = oldName; showEditor = false" focus-if="showEditor" />
-    <p class="form-control-static2" ng-click="showEditor = true; oldName = note.name" ng-show="!showEditor">{{note.name || 'Note ' + note.id}}</p>
+    <p class="form-control-static2" ng-click="showEditor = !systemConfDataFactory.conf.readonly; oldName = note.name" ng-show="!showEditor">{{note.name || 'Note ' + note.id}}</p>
     <span class="labelBtn btn-group">
       <button type="button"
               class="btn btn-default btn-xs"
@@ -27,12 +27,14 @@ limitations under the License.
       <button type="button"
               class="btn btn-default btn-xs"
               ng-click="toggleAllEditor()"
+              ng-class="{'disabled':systemConfDataFactory.conf.readonly}"
               ng-hide="viewOnly"
               tooltip-placement="bottom" tooltip="Show/hide the code">
         <i ng-class="editorToggled ?  'fa icon-size-fullscreen' :'fa icon-size-actual'"></i></button>
       <button type="button"
               class="btn btn-default btn-xs"
               ng-click="toggleAllTable()"
+              ng-class="{'disabled':systemConfDataFactory.conf.readonly}"
               ng-hide="viewOnly"
               tooltip-placement="bottom" tooltip="Show/hide the output">
         <i ng-class="tableToggled ? 'fa icon-notebook' : 'fa icon-book-open'"></i>
@@ -48,6 +50,7 @@ limitations under the License.
       <button type="button"
               class="btn btn-default btn-xs"
               ng-click="removeNote(note.id)"
+              ng-class="{'disabled':systemConfDataFactory.conf.readonly}"
               ng-hide="viewOnly"
               tooltip-placement="bottom" tooltip="Remove the notebook">
         <i class="icon-trash"></i>
@@ -55,9 +58,10 @@ limitations under the License.
       <button type="button"
               class="btn btn-default btn-xs"
               ng-hide="viewOnly"
+              ng-class="{'disabled':systemConfDataFactory.conf.readonly}"
               tooltip-placement="bottom" tooltip="Clone the notebook"
               data-toggle="modal" data-target="#noteNameModal" data-clone="true"
-              >
+        >
         <i class="fa fa-copy"></i>
       </button>
       <button type="button"
@@ -74,7 +78,7 @@ limitations under the License.
         <div class="btn btn-default btn-xs dropdown-toggle"
              type="button"
              data-toggle="dropdown"
-             ng-class="{ 'btn-info' : note.config.cron, 'btn-danger' : note.info.cron, 'btn-default' : !note.config.cron}"
+             ng-class="{ 'btn-info' : note.config.cron, 'btn-danger' : note.info.cron, 'btn-default' : !note.config.cron, 'disabled':systemConfDataFactory.conf.readonly}"
              tooltip-placement="bottom" tooltip="Run scheduler">
           <span class="fa fa-clock-o"></span> {{getCronOptionNameFromValue(note.config.cron)}}
         </div>
@@ -119,12 +123,13 @@ limitations under the License.
             tooltip-placement="bottom" tooltip="List of shortcut">
         <i class="icon-question"></i>
       </span>
-      <span style="position:relative; top:2px; margin-right:4px; cursor:pointer;"
-            ng-click="toggleSetting()"
-            tooltip-placement="bottom" tooltip="Interpreter binding">
-        <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
+      <span ng-if="!systemConfDataFactory.conf.readonly">
+        <span style="position:relative; top:2px; margin-right:4px; cursor:pointer;"
+              ng-click="toggleSetting()"
+              tooltip-placement="bottom" tooltip="Interpreter binding">
+          <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
+        </span>
       </span>
-
       <span class="btn-group">
         <button type="button" class="btn btn-default btn-xs dropdown-toggle"
                 data-toggle="dropdown">

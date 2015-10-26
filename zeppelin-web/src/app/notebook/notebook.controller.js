@@ -1,5 +1,4 @@
 /* jshint loopfunc: true */
-/* global $: false */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +16,7 @@
 
 angular.module('zeppelinWebApp').controller('NotebookCtrl',
   function($scope, $route, $routeParams, $location, $rootScope, $http,
-    websocketMsgSrv, baseUrlSrv, $timeout, SaveAsService) {
+    websocketMsgSrv, baseUrlSrv, $timeout, SaveAsService, systemConfDataFactory) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -40,6 +39,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
   $scope.interpreterBindings = [];
   $scope.isNoteDirty = null;
   $scope.saveTimer = null;
+  $scope.systemConfDataFactory = systemConfDataFactory;
 
   var angularObjectRegistry = {};
   var connectedOnce = false;

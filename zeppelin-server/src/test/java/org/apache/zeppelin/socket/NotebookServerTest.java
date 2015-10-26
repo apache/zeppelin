@@ -19,10 +19,8 @@
  */
 package org.apache.zeppelin.socket;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-
+import com.google.gson.Gson;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
@@ -34,14 +32,13 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.google.gson.Gson;
-
-import java.net.UnknownHostException;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 
@@ -70,7 +67,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
   @Test
   public void checkOrigin() throws UnknownHostException {
-    NotebookServer server = new NotebookServer();
+    NotebookServer server = new NotebookServer(ZeppelinConfiguration.create());
     String origin = "http://" + InetAddress.getLocalHost().getHostName() + ":8080";
 
     assertTrue("Origin " + origin + " is not allowed. Please check your hostname.",
@@ -79,7 +76,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
   @Test
   public void checkInvalidOrigin(){
-    NotebookServer server = new NotebookServer();
+    NotebookServer server = new NotebookServer(ZeppelinConfiguration.create());
     assertFalse(server.checkOrigin(new TestHttpServletRequest(), "http://evillocalhost:8080"));
   }
 
