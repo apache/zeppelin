@@ -21,7 +21,6 @@ import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.Note.ExcludeFromJson;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.display.AngularObject;
 
