@@ -39,12 +39,14 @@ limitations under the License.
   <div>
     <div class="row interpreter">
       <div class="col-md-12">
-        <h3 class="interpreter-title">{{setting.name}} 
+        <h3 class="interpreter-title">{{setting.name}}
           <small>
             <span ng-repeat="interpreter in setting.interpreterGroup"
                   title="{{interpreter.class}}">
-              <span ng-show="!$first">, </span>
-              %{{interpreter.name}}
+              <span ng-show="$parent.$first && $first">%{{setting.name}} (default)</span>
+              <span ng-show="$parent.$first && !$first">, %{{interpreter.name}}</span>
+              <span ng-show="!$parent.$first && $first">%{{setting.name}}</span>
+              <span ng-show="!$parent.$first && !$first">, %{{setting.name}}.{{interpreter.name}}</span>
             </span>
           </small>
         </h3>

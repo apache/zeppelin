@@ -19,10 +19,10 @@ group: nav-right
 
 **[Interpreters in zeppelin](manual/interpreters.html)**
 
-* [flink](../docs/interpreter/flink.html)
+* [flink](./interpreter/flink.html)
 * [hive](../docs/pleasecontribute.html)
 * [ignite](../docs/pleasecontribute.html)
-* [lens](../docs/pleasecontribute.html)
+* [lens](./interpreter/lens.html)
 * [md](../docs/pleasecontribute.html)
 * [sh](../docs/pleasecontribute.html)
 * [spark](./interpreter/spark.html)
@@ -44,12 +44,10 @@ group: nav-right
 
 ### REST API
  * [Interpreter API](./rest-api/rest-interpreter.html)
- * [Notebook API](../docs/pleasecontribute.html)
+ * [Notebook API](./rest-api/rest-notebook.html)
 
 ### Development
 
 * [Writing Zeppelin Interpreter](./development/writingzeppelininterpreter.html)
 * [How to contribute (code)](./development/howtocontribute.html)
 * [How to contribute (website)](./development/howtocontributewebsite.html)
-
-

@@ -79,6 +79,7 @@
             <exclude>bower.json</exclude>
             <exclude>package.json</exclude>
             <exclude>*.md</exclude>
+            <exclude>reports/**</exclude>
           </excludes>
         </configuration>
       </plugin>
@@ -95,7 +96,7 @@
               <goal>install-node-and-npm</goal>
             </goals>
             <configuration>
-              <nodeVersion>v0.10.18</nodeVersion>
+              <nodeVersion>v0.10.22</nodeVersion>
               <npmVersion>1.3.8</npmVersion>
             </configuration>
           </execution>

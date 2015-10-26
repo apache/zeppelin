@@ -50,7 +50,7 @@
     <akka.group>org.spark-project.akka</akka.group>
     <akka.version>2.3.4-spark</akka.version>
 
-    <spark.download.url>http://www.apache.org/dist/spark/spark-${spark.version}/spark-${spark.version}.tgz</spark.download.url>
+    <spark.download.url>http://archive.apache.org/dist/spark/spark-${spark.version}/spark-${spark.version}.tgz</spark.download.url>
     <py4j.version>0.8.2.1</py4j.version>
   </properties>
 
@@ -594,7 +594,7 @@
     <profile>
       <id>pyspark</id>
       <properties>
-        <spark.download.url>http://www.apache.org/dist/spark/spark-${spark.version}/spark-${spark.version}.tgz
+        <spark.download.url>http://archive.apache.org/dist/spark/spark-${spark.version}/spark-${spark.version}.tgz
         </spark.download.url>
       </properties>
       <build>

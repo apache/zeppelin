@@ -118,6 +118,37 @@ public class Notebook {
     return note;
   }
 
+  /**
+   * Clone existing note.
+   * @param sourceNoteID - the note ID to clone
+   * @param newNoteName - the name of the new note
+   * @return noteId
+   * @throws IOException, CloneNotSupportedException, IllegalArgumentException
+   */
+  public Note cloneNote(String sourceNoteID, String newNoteName) throws
+      IOException, CloneNotSupportedException, IllegalArgumentException {
+
+    Note sourceNote = getNote(sourceNoteID);
+    if (sourceNote == null) {
+      throw new IllegalArgumentException(sourceNoteID + "not found");
+    }
+    Note newNote = createNote();
+    if (newNoteName != null) {
+      newNote.setName(newNoteName);
+    }
+    // Copy the interpreter bindings
+    List<String> boundInterpreterSettingsIds = getBindedInterpreterSettingsIds(sourceNote.id());
+    bindInterpretersToNote(newNote.id(), boundInterpreterSettingsIds);
+
+    List<Paragraph> paragraphs = sourceNote.getParagraphs();
+    for (Paragraph para : paragraphs) {
+      Paragraph p = (Paragraph) para.clone();
+      newNote.addParagraph(p);
+    }
+    newNote.persist();
+    return newNote;
+  }
+
   public void bindInterpretersToNote(String id,
       List<String> interpreterSettingIds) throws IOException {
     Note note = getNote(id);
@@ -263,6 +294,23 @@ public class Notebook {
     }
   }
 
+  /**
+   * Reload all notes from repository after clearing `notes`
+   * to reflect the changes of added/deleted/modified notebooks on file system level.
+   *
+   * @return
+   * @throws IOException
+   */
+  private void reloadAllNotes() throws IOException {
+    synchronized (notes) {
+      notes.clear();
+    }
+    List<NoteInfo> noteInfos = notebookRepo.list();
+    for (NoteInfo info : noteInfos) {
+      loadNoteFromRepo(info.getId());
+    }
+  }
+
   class SnapshotAngularObject {
     String intpGroupId;
     AngularObject angularObject;
@@ -288,6 +336,13 @@ public class Notebook {
   }
 
   public List<Note> getAllNotes() {
+    if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE)) {
+      try {
+        reloadAllNotes();
+      } catch (IOException e) {
+        logger.error("Cannot reload notes from storage", e);
+      }
+    }
     synchronized (notes) {
       List<Note> noteList = new ArrayList<Note>(notes.values());
       Collections.sort(noteList, new Comparator() {

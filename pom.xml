@@ -342,6 +342,27 @@
       </plugin>
 
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-remote-resources-plugin</artifactId>
+        <version>1.4</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>process</goal>
+            </goals>
+            <configuration>
+              <resourceBundles>
+                <!-- Will generate META-INF/DEPENDENCIES META-INF/LICENSE META-INF/NOTICE -->
+                <resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5-SNAPSHOT</resourceBundle>
+                <!-- Will generate META-INF/DISCLAIMER  -->
+                <resourceBundle>org.apache.apache.resources:apache-incubator-disclaimer-resource-bundle:1.2-SNAPSHOT</resourceBundle>
+              </resourceBundles>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9.1</version>
         <configuration><!-- Default configuration for all reports -->
