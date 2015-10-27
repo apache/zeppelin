@@ -161,6 +161,21 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
+  public void testClearParagraphOutput() throws IOException, SchedulerException{
+    Note note = notebook.createNote();
+    Paragraph p1 = note.addParagraph();
+    p1.setText("hello world");
+    note.run(p1.getId());
+
+    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+    assertEquals("repl1: hello world", p1.getResult().message());
+
+    // clear paragraph output/result
+    note.clearParagraphOutput(p1.getId());
+    assertNull(p1.getResult());
+  }
+
+  @Test
   public void testRunAll() throws IOException {
     Note note = notebook.createNote();
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
