@@ -23,6 +23,7 @@ import java.util.*;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.notebook.repo.S3NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.slf4j.Logger;
@@ -37,6 +38,8 @@ import org.slf4j.LoggerFactory;
  */
 public class ZeppelinConfiguration extends XMLConfiguration {
   private static final String ZEPPELIN_SITE_XML = "zeppelin-site.xml";
+  private static final String ZEPPELIN_INTERPRETER_SETTINGS_JSON = "interpreter.json";
+
   private static final long serialVersionUID = 4749305895693848035L;
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinConfiguration.class);
   private static ZeppelinConfiguration conf;
@@ -322,11 +325,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getNotebookDir() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
-  
+
   public String getUser() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_USER);
   }
-  
+
   public String getBucketName() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_BUCKET);
   }
@@ -336,7 +339,12 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   }
 
   public String getInterpreterSettingPath() {
-    return getRelativeDir(String.format("%s/interpreter.json", getConfDir()));
+    final String value = getString(ConfVars.ZEPPELIN_INTERPRETER_SETTINGS_FILE);
+
+    if (StringUtils.isBlank(value) || ZEPPELIN_INTERPRETER_SETTINGS_JSON.equals(value)) {
+      return getConfDir() + "/" + ZEPPELIN_INTERPRETER_SETTINGS_JSON;
+    }
+    return value;
   }
 
   public String getInterpreterRemoteRunnerPath() {
@@ -413,6 +421,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.kylin.KylinInterpreter"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),
+    ZEPPELIN_INTERPRETER_SETTINGS_FILE("zeppelin.interpreter.settings.file", null),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
     // use specified notebook (id) as homescreen
