@@ -104,8 +104,7 @@ function make_binary_release() {
     fi
 
     # re-create package with proper dir name
-    cd zeppelin-distribution/target
-    rm zeppelin-*.tar.gz
+    cd zeppelin-distribution/target/zeppelin-*
     mv zeppelin-* zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
     ${TAR} cvzf zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
 
@@ -123,8 +122,7 @@ function make_binary_release() {
     rm -rf ${WORKING_DIR}/zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
 }
 
-make_binary_release spark-1.4.0_hadoop-2.3 -Pyarn -Pspark-1.4 -Dspark.version=1.4.0 -Phadoop-2.3
-make_binary_release spark-1.3.1_hadoop-2.3 -Pyarn -Pspark-1.3 -Dspark.version=1.3.1 -Phadoop-2.3
+make_binary_release all -Pyarn
 
 # remove non release files and dirs
 rm -rf ${WORKING_DIR}/zeppelin
