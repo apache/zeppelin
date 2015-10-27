@@ -108,7 +108,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     var result = confirm('Do you want to clear all output?');
     if (result) {
       _.forEach($scope.note.paragraphs, function(n, key) {
-        angular.element('#' + n.id + '_paragraphColumn_main').scope().clearParagraphOutput(n.id);
+        angular.element('#' + n.id + '_paragraphColumn_main').scope().clearParagraphOutput();
       });
     }
   };
