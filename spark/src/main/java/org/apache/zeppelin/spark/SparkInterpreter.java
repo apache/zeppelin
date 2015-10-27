@@ -279,19 +279,8 @@ public class SparkInterpreter extends Interpreter {
       }
     }
 
-    SparkConf conf =
-        new SparkConf()
-            .setMaster(getProperty("master"))
-            .setAppName(getProperty("spark.app.name"))
-            .set("spark.repl.class.uri", classServerUri);
+    final SparkConf conf = new SparkConf();
 
-    if (jars.length > 0) {
-      conf.setJars(jars);
-    }
-
-    if (execUri != null) {
-      conf.set("spark.executor.uri", execUri);
-    }
     if (System.getenv("SPARK_HOME") != null) {
       conf.setSparkHome(System.getenv("SPARK_HOME"));
 
@@ -306,6 +295,18 @@ public class SparkInterpreter extends Interpreter {
       for (Map.Entry<String, String> entry : sparkConfigs.entrySet()) {
         conf.set(entry.getKey(), entry.getValue());
       }
+    }
+
+    conf.setMaster(getProperty("master"));
+    conf.setAppName(getProperty("spark.app.name"));
+    conf.set("spark.repl.class.uri", classServerUri);
+
+    if (jars.length > 0) {
+      conf.setJars(jars);
+    }
+
+    if (execUri != null) {
+      conf.set("spark.executor.uri", execUri);
     }
 
     conf.set("spark.scheduler.mode", "FAIR");
