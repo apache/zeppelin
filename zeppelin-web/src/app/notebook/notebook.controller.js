@@ -79,13 +79,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
-  $scope.clearAllParagraphOutput = function(noteId) {
-    var result = confirm('Do you want to clear all paragraph output?');
-    if (result) {
-      websocketMsgSrv.deleteNotebook(noteId);
-    }
-  };
-
   //Clone note
   $scope.cloneNote = function(noteId) {
     var result = confirm('Do you want to clone this notebook?');
