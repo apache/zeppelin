@@ -27,6 +27,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.Map;
 
 import com.google.common.base.Joiner;
 
@@ -44,6 +45,7 @@ import org.apache.spark.scheduler.Pool;
 import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.jobs.JobProgressListener;
+import org.apache.spark.util.Utils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -292,7 +294,20 @@ public class SparkInterpreter extends Interpreter {
     }
     if (System.getenv("SPARK_HOME") != null) {
       conf.setSparkHome(System.getenv("SPARK_HOME"));
+
+      // load configs from spark properties file
+      final String sparkPropertiesFile =
+          Utils.getDefaultPropertiesFile(JavaConversions.asScalaMap(System.getenv()));
+      logger.info("Loading spark properties file at " + sparkPropertiesFile);
+
+      final Map<String, String> sparkConfigs =
+          JavaConversions.asJavaMap(Utils.getPropertiesFromFile(sparkPropertiesFile));
+
+      for (Map.Entry<String, String> entry : sparkConfigs.entrySet()) {
+        conf.set(entry.getKey(), entry.getValue());
+      }
     }
+
     conf.set("spark.scheduler.mode", "FAIR");
 
     Properties intpProperty = getProperty();
