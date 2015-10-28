@@ -89,7 +89,6 @@ public class NotebookRepoSyncTest implements JobListenerFactory{
 
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
     
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "true");
     notebookRepoSync = new NotebookRepoSync(conf);
     notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this);
   }
