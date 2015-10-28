@@ -29,9 +29,11 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.interpreter.ResultRepoFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.ParagraphSerializer;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,13 +80,19 @@ public class S3NotebookRepo implements NotebookRepo {
 
   private static String bucketName = "";
   private String user = "";
-  
+  private ResultRepoFactory factory;
   
   private ZeppelinConfiguration conf;
   
   public S3NotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
     user = conf.getUser();
+    try {
+      factory = new ResultRepoFactory(conf);
+    } catch (ReflectiveOperationException e) {
+      throw new IOException(e);
+    }
+ 
     bucketName = conf.getBucketName();
   }
 
@@ -132,8 +140,8 @@ public class S3NotebookRepo implements NotebookRepo {
   private Note getNote(String key) throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
+    gsonBuilder.registerTypeAdapter(Paragraph.class, new ParagraphSerializer(factory));
     Gson gson = gsonBuilder.create();
-    
     S3Object s3object = s3client.getObject(new GetObjectRequest(
         bucketName, key));
     
@@ -164,6 +172,7 @@ public class S3NotebookRepo implements NotebookRepo {
   public void save(Note note) throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
+    gsonBuilder.registerTypeAdapter(Paragraph.class, new ParagraphSerializer(factory));
     Gson gson = gsonBuilder.create();
     String json = gson.toJson(note);
     String key = user + "/" + "notebook" + "/" + note.id() + "/" + "note.json";

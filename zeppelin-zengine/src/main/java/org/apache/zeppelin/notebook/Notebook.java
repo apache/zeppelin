@@ -35,6 +35,7 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.ResultRepoFactory;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -58,6 +59,7 @@ public class Notebook {
   Logger logger = LoggerFactory.getLogger(Notebook.class);
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
+
   /** Keep the order. */
   Map<String, Note> notes = new LinkedHashMap<String, Note>();
   private ZeppelinConfiguration conf;
@@ -67,8 +69,9 @@ public class Notebook {
   private NotebookRepo notebookRepo;
 
   public Notebook(ZeppelinConfiguration conf, NotebookRepo notebookRepo,
-      SchedulerFactory schedulerFactory,
-      InterpreterFactory replFactory, JobListenerFactory jobListenerFactory) throws IOException,
+    SchedulerFactory schedulerFactory, InterpreterFactory replFactory,
+    JobListenerFactory jobListenerFactory)
+      throws IOException,
       SchedulerException {
     this.conf = conf;
     this.notebookRepo = notebookRepo;
@@ -218,7 +221,7 @@ public class Notebook {
 
     // set NoteInterpreterLoader
     NoteInterpreterLoader noteInterpreterLoader = new NoteInterpreterLoader(
-        replFactory);
+      replFactory);
     note.setReplLoader(noteInterpreterLoader);
     noteInterpreterLoader.setNoteId(note.id());
 

@@ -36,9 +36,11 @@ import org.apache.commons.vfs2.Selectors;
 import org.apache.commons.vfs2.VFS;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.interpreter.ResultRepoFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.ParagraphSerializer;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +58,8 @@ public class VFSNotebookRepo implements NotebookRepo {
   private URI filesystemRoot;
 
   private ZeppelinConfiguration conf;
-
+  private ResultRepoFactory factory;
+  
   public VFSNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
 
@@ -77,6 +80,13 @@ public class VFSNotebookRepo implements NotebookRepo {
       this.filesystemRoot = filesystemRoot;
     }
     fsManager = VFS.getManager();
+    
+    try {
+      factory = new ResultRepoFactory(conf);
+    } catch (ReflectiveOperationException e) {
+      throw new IOException(e);
+    }
+    
   }
 
   private String getPath(String path) {
@@ -148,6 +158,8 @@ public class VFSNotebookRepo implements NotebookRepo {
     }
 
     GsonBuilder gsonBuilder = new GsonBuilder();
+    gsonBuilder.registerTypeAdapter(Paragraph.class, new ParagraphSerializer(factory));
+    
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
 
@@ -199,6 +211,7 @@ public class VFSNotebookRepo implements NotebookRepo {
   @Override
   public void save(Note note) throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
+    gsonBuilder.registerTypeAdapter(Paragraph.class, new ParagraphSerializer(factory));
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
     String json = gson.toJson(note);
