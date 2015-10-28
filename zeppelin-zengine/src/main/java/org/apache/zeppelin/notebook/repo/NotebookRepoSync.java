@@ -42,12 +42,15 @@ public class NotebookRepoSync implements NotebookRepo{
   private static final int maxRepoNum = 2;
   private static final String pushKey = "pushNoteIDs";
   private static final String pullKey = "pullNoteIDs";
+  private static ZeppelinConfiguration config;
 
   /**
    * @param (conf)
    * @throws - Exception
    */
   public NotebookRepoSync(ZeppelinConfiguration conf) throws Exception {
+
+    config = conf;
     
     String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
     if (allStorageClassNames.isEmpty()) {
@@ -72,6 +75,9 @@ public class NotebookRepoSync implements NotebookRepo{
 
   /* by default lists from first repository */
   public List<NoteInfo> list() throws IOException {
+    if (config.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE) && getRepoCount() > 1) {
+      sync(0, 1);
+    }
     return getRepo(0).list();
   }
   
