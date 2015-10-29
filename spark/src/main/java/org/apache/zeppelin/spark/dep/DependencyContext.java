@@ -21,6 +21,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
@@ -28,6 +30,7 @@ import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
 import org.sonatype.aether.graph.DependencyFilter;
 import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.resolution.ArtifactResolutionException;
 import org.sonatype.aether.resolution.ArtifactResult;
 import org.sonatype.aether.resolution.DependencyRequest;
@@ -44,6 +47,7 @@ import org.sonatype.aether.util.filter.PatternExclusionsDependencyFilter;
 public class DependencyContext {
   List<Dependency> dependencies = new LinkedList<Dependency>();
   List<Repository> repositories = new LinkedList<Repository>();
+  Map<String, Authentication> auths = new HashMap<String, Authentication>();
 
   List<File> files = new LinkedList<File>();
   List<File> filesDist = new LinkedList<File>();
@@ -72,6 +76,11 @@ public class DependencyContext {
     Repository rep = new Repository(name);
     repositories.add(rep);
     return rep;
+  }
+
+  public void addCredential(String reponame, String user, String password) {
+    auths.put(reponame, new Authentication(user, password));
+    return;
   }
 
   public void reset() {
@@ -132,6 +141,10 @@ public class DependencyContext {
     for (Repository repo : repositories) {
       RemoteRepository rr = new RemoteRepository(repo.getName(), "default", repo.getUrl());
       rr.setPolicy(repo.isSnapshot(), null);
+      Authentication auth = auths.get(repo.getName());
+      if (auth != null) {
+        rr.setAuthentication(auth);
+      }
       collectRequest.addRepository(rr);
     }
 
