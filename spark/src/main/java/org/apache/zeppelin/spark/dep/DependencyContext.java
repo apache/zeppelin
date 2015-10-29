@@ -80,7 +80,6 @@ public class DependencyContext {
 
   public void addCredential(String reponame, String user, String password) {
     auths.put(reponame, new Authentication(user, password));
-    return;
   }
 
   public void reset() {
