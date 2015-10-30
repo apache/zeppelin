@@ -93,7 +93,6 @@
     <module>shell</module>
     <module>hive</module>
     <module>phoenix</module>
-    <module>geode</module>
     <module>postgresql</module>
     <module>tajo</module>
     <module>flink</module>
@@ -587,6 +586,14 @@
   </build>
 
   <profiles>
+    <!-- Geode can be enabled by -Pgeode. see https://issues.apache.org/jira/browse/ZEPPELIN-375 -->
+    <profile>
+      <id>geode</id>
+      <modules>
+        <module>geode</module>
+      </modules>
+    </profile>
+
     <profile>
       <id>build-distr</id>
       <activation>
