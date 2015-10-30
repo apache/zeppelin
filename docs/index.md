@@ -81,7 +81,7 @@ Zeppelin can dynamically create some input forms into your notebook.
 
 <img class="img-responsive" src="./assets/themes/zeppelin/img/screenshots/form_input.png" />
 
-Learn more about [Dynamic Forms](./docs/dynamicform.html).
+Learn more about [Dynamic Forms](./docs/manual/dynamicform.html).
 
 
 <br />
