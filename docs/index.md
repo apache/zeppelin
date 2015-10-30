@@ -71,7 +71,7 @@ With simple drag and drop Zeppelin aggeregates the values and display them in pi
     <img class="img-responsive" src="./assets/themes/zeppelin/img/screenshots/pivot.png" />
   </div>
 </div>
-Learn more about Zeppelin's [Display system](./docs/display.html).
+Learn more about Zeppelin's Display system. ( [text](./docs/displaysystem/display.html), [html](./docs/displaysystem/display.html#html), [table](./docs/displaysystem/table.html), [angular](./docs/displaysystem/angular.html) )
 
 
 <br />
@@ -81,7 +81,7 @@ Zeppelin can dynamically create some input forms into your notebook.
 
 <img class="img-responsive" src="./assets/themes/zeppelin/img/screenshots/form_input.png" />
 
-Learn more about [Dynamic Forms](./docs/dynamicform.html).
+Learn more about [Dynamic Forms](./docs/manual/dynamicform.html).
 
 
 <br />
