@@ -88,6 +88,7 @@ public class DependencyContext {
 
     files = new LinkedList<File>();
     filesDist = new LinkedList<File>();
+    auths = new HashMap<String, Authentication>();
   }
 
   private void addRepoFromProperty(String listOfRepo) {
