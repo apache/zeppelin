@@ -183,8 +183,9 @@ public class DepInterpreter extends Interpreter {
 
     if (sparkInterpreter != null && sparkInterpreter.isSparkContextInitialized()) {
       return new InterpreterResult(Code.ERROR,
-          "Must be used before SparkInterpreter (%spark) initialized\n"+
-          "Hint: put this snippet before any spark/scala snippet or/and restart Zeppelin" );
+          "Must be used before SparkInterpreter (%spark) initialized\n" +
+          "Hint: put this snippet before any spark/scala snippet or/and " +
+          "restart Zeppelin" );
     }
 
     scala.tools.nsc.interpreter.Results.Result ret = intp.interpret(st);
