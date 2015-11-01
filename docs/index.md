@@ -71,7 +71,7 @@ With simple drag and drop Zeppelin aggeregates the values and display them in pi
     <img class="img-responsive" src="./assets/themes/zeppelin/img/screenshots/pivot.png" />
   </div>
 </div>
-Learn more about Zeppelin's [Display system](./docs/display.html).
+Learn more about Zeppelin's [Display system](./docs/displaysystem/display.html).
 
 
 <br />
