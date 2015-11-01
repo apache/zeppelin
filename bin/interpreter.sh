@@ -121,9 +121,9 @@ fi
 CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
 if [[ -n "${SPARK_SUBMIT}" ]]; then
-    ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path "${CLASSPATH}" --driver-java-options "${JAVA_INTP_OPTS}" ${SPARK_SUBMIT_OPTIONS} ${SPARK_APP_JAR} ${PORT} &
+    ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path "${CLASSPATH_OVERRIDES}:${CLASSPATH}" --driver-java-options "${JAVA_INTP_OPTS}" ${SPARK_SUBMIT_OPTIONS} ${SPARK_APP_JAR} ${PORT} &
 else
-    ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} -cp ${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
+    ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} -cp ${CLASSPATH_OVERRIDES}:${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
 fi
 
 pid=$!
