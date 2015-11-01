@@ -85,7 +85,7 @@ public class ZeppelinServer extends Application {
     jettyServer = setupJettyServer(conf);
 
     // REST api
-    final ServletContextHandler restApi = setupRestApiContextHandler();
+    final ServletContextHandler restApi = setupRestApiContextHandler(conf);
 
     // Notebook server
     final ServletContextHandler notebook = setupNotebookServer(conf);
@@ -168,7 +168,7 @@ public class ZeppelinServer extends Application {
         ServletContextHandler.SESSIONS);
 
     cxfContext.setSessionHandler(new SessionHandler());
-    cxfContext.setContextPath("/");
+    cxfContext.setContextPath(conf.getContextPath());
     cxfContext.addServlet(servletHolder, "/ws/*");
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
         EnumSet.allOf(DispatcherType.class));
@@ -208,7 +208,7 @@ public class ZeppelinServer extends Application {
     return scf.getSslContext();
   }
 
-  private static ServletContextHandler setupRestApiContextHandler() {
+  private static ServletContextHandler setupRestApiContextHandler(ZeppelinConfiguration conf) {
     final ServletHolder cxfServletHolder = new ServletHolder(new CXFNonSpringJaxrsServlet());
     cxfServletHolder.setInitParameter("javax.ws.rs.Application", ZeppelinServer.class.getName());
     cxfServletHolder.setName("rest");
@@ -216,7 +216,7 @@ public class ZeppelinServer extends Application {
 
     final ServletContextHandler cxfContext = new ServletContextHandler();
     cxfContext.setSessionHandler(new SessionHandler());
-    cxfContext.setContextPath("/api");
+    cxfContext.setContextPath(conf.getContextPath() + "/api");
     cxfContext.addServlet(cxfServletHolder, "/*");
 
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
@@ -233,7 +233,7 @@ public class ZeppelinServer extends Application {
       // Development mode, read from FS
       // webApp.setDescriptor(warPath+"/WEB-INF/web.xml");
       webApp.setResourceBase(warPath.getPath());
-      webApp.setContextPath("/");
+      webApp.setContextPath(conf.getContextPath());
       webApp.setParentLoaderPriority(true);
     } else {
       // use packaged WAR
