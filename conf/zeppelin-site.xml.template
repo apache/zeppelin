@@ -32,6 +32,12 @@
 </property>
 
 <property>
+  <name>zeppelin.server.context.path</name>
+  <value>/</value>
+  <description>Context Path of the Web Application</description>
+</property>
+
+<property>
   <name>zeppelin.notebook.dir</name>
   <value>notebook</value>
   <description>path or URI for notebook persist</description>
