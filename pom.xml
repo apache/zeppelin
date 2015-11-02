@@ -456,6 +456,7 @@
               <exclude>STYLE.md</exclude>
               <exclude>Roadmap.md</exclude>
               <exclude>conf/interpreter.json</exclude>
+              <exclude>conf/zeppelin-env.sh</exclude>
               <exclude>spark-*-bin*/**</exclude>
             </excludes>
           </configuration>
