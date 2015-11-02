@@ -65,7 +65,7 @@ public class Repository {
   }
   
   protected Authentication getCredentials() {
-    if(this.username != null & this.password != null)
+    if(this.username != null && this.password != null)
       return new Authentication(this.username, this.password)
     return null;
   }
