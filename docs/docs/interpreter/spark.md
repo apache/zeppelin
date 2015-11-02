@@ -71,14 +71,14 @@ Here's usages.
 %dep
 z.reset() // clean up previously added artifact and repository
 
-// add credentials for private maven repository
-z.addCredential("RepoName","username","password")
-
 // add maven repository
 z.addRepo("RepoName").url("RepoURL")
 
 // add maven snapshot repository
 z.addRepo("RepoName").url("RepoURL").snapshot()
+
+// add credentials for private maven repository
+z.addRepo("RepoName").url("RepoURL).username("username").password("password")
 
 // add artifact from filesystem
 z.load("/path/to.jar")
