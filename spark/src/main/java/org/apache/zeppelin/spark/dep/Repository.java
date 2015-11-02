@@ -25,8 +25,8 @@ public class Repository {
   private boolean snapshot = false;
   private String name;
   private String url;
-  private String username = "";
-  private String password = "";
+  private String username = null;
+  private String password = null;
 
   public Repository(String name){
     this.name = name;
@@ -54,15 +54,17 @@ public class Repository {
     return url;
   }
   
-  public void setUserName(String username) {
+  public void username(String username) {
     this.username = username;
   }
   
-  public String setPassword(String password) {
+  public String password(String password) {
     this.password = password;
   }
   
-  public Authentication getCredentials() {
-    return new Authentication(this.username, this.password)
+  protected Authentication getCredentials() {
+    if(this.username != null & this.password != null)
+      return new Authentication(this.username, this.password)
+    return null;
   }
 }
