@@ -16,7 +16,7 @@
  */
 
 package org.apache.zeppelin.spark.dep;
-
+import org.sonatype.aether.repository.Authentication;
 /**
  *
  *
@@ -25,6 +25,8 @@ public class Repository {
   private boolean snapshot = false;
   private String name;
   private String url;
+  private String username = "";
+  private String password = "";
 
   public Repository(String name){
     this.name = name;
@@ -50,5 +52,17 @@ public class Repository {
 
   public String getUrl() {
     return url;
+  }
+  
+  public void setUserName(String username) {
+    this.username = username;
+  }
+  
+  public String setPassword(String password) {
+    this.password = password;
+  }
+  
+  public Authentication getCredentials() {
+    return new Authentication(this.username, this.password)
   }
 }
