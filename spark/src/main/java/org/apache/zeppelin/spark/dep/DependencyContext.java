@@ -47,7 +47,6 @@ import org.sonatype.aether.util.filter.PatternExclusionsDependencyFilter;
 public class DependencyContext {
   List<Dependency> dependencies = new LinkedList<Dependency>();
   List<Repository> repositories = new LinkedList<Repository>();
-  Map<String, Authentication> auths = new HashMap<String, Authentication>();
 
   List<File> files = new LinkedList<File>();
   List<File> filesDist = new LinkedList<File>();
@@ -78,17 +77,12 @@ public class DependencyContext {
     return rep;
   }
 
-  public void addCredential(String reponame, String user, String password) {
-    auths.put(reponame, new Authentication(user, password));
-  }
-
   public void reset() {
     dependencies = new LinkedList<Dependency>();
     repositories = new LinkedList<Repository>();
 
     files = new LinkedList<File>();
     filesDist = new LinkedList<File>();
-    auths = new HashMap<String, Authentication>();
   }
 
   private void addRepoFromProperty(String listOfRepo) {
@@ -162,7 +156,7 @@ public class DependencyContext {
     for (Repository repo : repositories) {
       RemoteRepository rr = new RemoteRepository(repo.getName(), "default", repo.getUrl());
       rr.setPolicy(repo.isSnapshot(), null);
-      Authentication auth = auths.get(repo.getName());
+      Authentication auth = repo.getAuthentication();
       if (auth != null) {
         rr.setAuthentication(auth);
       }
