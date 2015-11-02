@@ -54,12 +54,14 @@ public class Repository {
     return url;
   }
   
-  public void username(String username) {
+  public Repository username(String username) {
     this.username = username;
+    return this;
   }
   
-  public String password(String password) {
+  public Repository password(String password) {
     this.password = password;
+    return this;
   }
   
   protected Authentication getCredentials() {
