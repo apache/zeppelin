@@ -64,10 +64,11 @@ public class Repository {
     return this;
   }
   
-  protected Authentication getCredentials() {
-    if(this.username != null && this.password != null) {
-      return new Authentication(this.username, this.password)
+  protected Authentication getAuthentication() {
+    Authentication auth = null;
+    if (this.username != null && this.password != null) {
+      auth = new Authentication(this.username, this.password);
     }
-    return null;
+    return auth;
   }
 }
