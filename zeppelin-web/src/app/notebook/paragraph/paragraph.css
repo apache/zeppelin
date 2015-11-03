@@ -178,7 +178,7 @@
 
 .paragraph .title {
   margin: 3px 0px 0px 0px;
-  height: 20px;
+  min-height: 20px;
   font-size: 12px;
 }
 
