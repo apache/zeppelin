@@ -72,7 +72,7 @@ public class Repository {
   
   protected Authentication getAuthentication() {
     Authentication auth = null;
-    if (this.username != null) {
+    if (this.username != null && this.password != null) {
       auth = new Authentication(this.username, this.password);
     }
     return auth;
