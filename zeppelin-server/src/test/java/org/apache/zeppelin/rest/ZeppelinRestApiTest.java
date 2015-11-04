@@ -145,6 +145,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertTrue(0 < body.size());
 
     get.releaseConnection();
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note.getId());
   }
 
   @Test
@@ -179,6 +181,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       Thread.sleep(100);
     }
     assertEquals("<p>markdown restarted</p>\n", p.getResult().message());
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note.getId());
   }
 
   @Test
