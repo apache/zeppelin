@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -281,8 +282,8 @@ public class NotebookTest implements JobListenerFactory{
 	/* run all */
     note.runAll();
 
-    /* all are pending in the beginning */
-    assertEquals(Job.Status.PENDING, p1.getStatus());
+    /* all are pending in the beginning (first one possibly started)*/
+    assertTrue(p1.getStatus() == Job.Status.PENDING || p1.getStatus() == Job.Status.RUNNING);
     assertEquals(Job.Status.PENDING, p2.getStatus());
     assertEquals(Job.Status.PENDING, p3.getStatus());
     assertEquals(Job.Status.PENDING, p4.getStatus());
