@@ -31,9 +31,7 @@ group: rest-api
     <tr>
       <td>Description</td>
       <td>This ```GET``` method list the available notebooks on your server.
-          Notebook JSON contains the ```name``` and ```id``` of the notebook as well as ```config``` and ```info``` sections.
-          <br/>```config``` section contains the ```looknfeel``` attribute (defaults\simple\report) and the ```corn``` attribute with the corn expression.
-          <br/>The ```info``` section contains the cron expression validity message if exist.
+          Notebook JSON contains the ```name``` and ```id``` of all notebooks.
       </td>
     </tr>
     <tr>

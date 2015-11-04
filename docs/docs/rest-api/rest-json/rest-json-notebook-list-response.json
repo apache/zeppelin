@@ -1,1 +1,1 @@
-{"status":"OK","message":"","body":[{"name":"Homepage","id":"2AV4WUEMK","config":{"looknfeel":"report"},"info":{}},{"name":"Zeppelin Tutorial","id":"2A94M5J1Z","config":{"looknfeel":"default"},"info":{}},{"name":"hive demo","id":"2B1H13MQG","config":{"looknfeel":"default","cron":"1"},"info":{"cron":"CronExpression \u00271\u0027 is invalid."}},{"name":"test dispaly","id":"2B2RSPF4A","config":{"looknfeel":"default","cron":"0 0 0 * * ?"},"info":{}}]}
+{"status":"OK","message":"","body":[{"name":"Homepage","id":"2AV4WUEMK"},{"name":"Zeppelin Tutorial","id":"2A94M5J1Z"}]}
