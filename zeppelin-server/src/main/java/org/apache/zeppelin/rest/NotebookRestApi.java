@@ -20,6 +20,7 @@ package org.apache.zeppelin.rest;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
@@ -117,7 +118,8 @@ public class NotebookRestApi {
   @GET
   @Path("/")
   public Response getNotebookList() throws IOException {
-    return new JsonResponse(Status.OK, "", notebook.getAllNotes() ).build();
+    List<Map<String, String>> notesInfo = notebookServer.generateNotebooksInfo();
+    return new JsonResponse(Status.OK, "", notesInfo ).build();
   }
 
   /**
