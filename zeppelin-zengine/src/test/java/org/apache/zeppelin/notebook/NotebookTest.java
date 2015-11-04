@@ -257,6 +257,54 @@ public class NotebookTest implements JobListenerFactory{
     notebook.removeNote(note.id());
   }
 
+  @Test
+  public void testAbortParagraphStatusOnInterpreterRestart() throws InterruptedException,
+      IOException {
+    Note note = notebook.createNote();
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
+    Paragraph p1 = note.addParagraph();
+    p1.setText("p1");
+    Paragraph p2 = note.addParagraph();
+    p2.setText("p2");
+    Paragraph p3 = note.addParagraph();
+    p3.setText("p3");
+    Paragraph p4 = note.addParagraph();
+    p4.setText("p4");
+
+    /* all jobs are ready to run */
+    assertEquals(Job.Status.READY, p1.getStatus());
+    assertEquals(Job.Status.READY, p2.getStatus());
+    assertEquals(Job.Status.READY, p3.getStatus());
+    assertEquals(Job.Status.READY, p4.getStatus());
+
+	/* run all */
+    note.runAll();
+
+    /* all are pending in the beginning */
+    assertEquals(Job.Status.PENDING, p1.getStatus());
+    assertEquals(Job.Status.PENDING, p2.getStatus());
+    assertEquals(Job.Status.PENDING, p3.getStatus());
+    assertEquals(Job.Status.PENDING, p4.getStatus());
+
+    /* wait till first job is terminated and second starts running */
+    while(p1.isTerminated() == false || (p2.getStatus() == Job.Status.PENDING)) Thread.yield();
+
+    assertEquals(Job.Status.FINISHED, p1.getStatus());
+    assertEquals(Job.Status.RUNNING, p2.getStatus());
+    assertEquals(Job.Status.PENDING, p3.getStatus());
+    assertEquals(Job.Status.PENDING, p4.getStatus());
+
+    /* restart interpreter */
+    factory.restart(note.getNoteReplLoader().getInterpreterSettings().get(0).id());
+
+    /* pending and running jobs have been aborted */
+    assertEquals(Job.Status.FINISHED, p1.getStatus());
+    assertEquals(Job.Status.ABORT, p2.getStatus());
+    assertEquals(Job.Status.ABORT, p3.getStatus());
+    assertEquals(Job.Status.ABORT, p4.getStatus());
+  }
+
   private void delete(File file){
     if(file.isFile()) file.delete();
     else if(file.isDirectory()){
@@ -269,7 +317,7 @@ public class NotebookTest implements JobListenerFactory{
       file.delete();
     }
   }
-
+  
   @Override
   public JobListener getParagraphJobListener(Note note) {
     return new JobListener(){
