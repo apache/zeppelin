@@ -17,26 +17,24 @@
 # -- Documentation
 #
 #We need to build image:
-#    docker build -t incubator-zeppelin .
+#    docker build -t base-incubator-zeppelin .
 #
 #We can play with the image to run goal maven:
-#  docker run -ti p 8080:8080 --rm [-v ~/.m2:/home/zeppelin/.m2] $(pwd):/home/zeppelin/incubator-zeppelin --name iz incubator-zeppelin mvn clean install -DskipTests [-Pspark-XXX -Dhadoop.version=XXX -Phadoop-XXX]
+#  docker run -ti p 8080:8080 --rm [-v ~/.m2:/root/.m2] $(pwd):/root/incubator-zeppelin -w /root/incubator-zeppelin --name iz base-incubator-zeppelin mvn clean install -DskipTests [-Pspark-XXX -Dhadoop.version=XXX -Phadoop-XXX]
 #
-# We must mount your project directory with "/home/zeppelin/incubator-zeppelin"
-#  -v "$(path project zeppelin):/home/zeppelin/incubator-zeppelin"
+# We must mount your project directory with "/root/incubator-zeppelin"
+#  -v "$(path project zeppelin):/root/incubator-zeppelin"
 # We can mount your directory ".m2" with VOLUME "/home/zeppelin/.m2"
-#  -v "~/.m2:/home/zeppelin/.m2"
+#  -v "~/.m2:/root/.m2"
 #
 #Remove container:
 #  docker rm -f iz
 #Stop:
 #  docker stop iz
 #Remove image:
-#  docker rmi -f incubator-zeppelin
-#Run with bash: 
-#  docker run -p 8080:8080 -ti --rm [-v ~/.m2:/home/zeppelin/.m2] -v $(pwd):/home/zeppelin/incubator-zeppelin --name iz incubator-zeppelin
+#  docker rmi -f base-incubator-zeppelin
 #Push:
-#  docker push incubator-zeppelin
+#  docker push base-incubator-zeppelin
 FROM centos:latest
 
 MAINTAINER Zeppelin Project (incubating) 
@@ -66,20 +64,6 @@ RUN rpm -ivh /tmp/jdk.rpm
 RUN curl -L http://wwwftp.ciril.fr/pub/apache/maven/maven-3/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz -o /tmp/apache-maven.tar.gz 
 RUN mkdir -p $MAVEN_HOME 
 RUN tar --strip-components 1 -xzvf /tmp/apache-maven.tar.gz -C $MAVEN_HOME 
-RUN curl -L http://central.maven.org/maven2/org/apache/maven/wagon/wagon-http-lightweight/2.10/wagon-http-lightweight-2.10.jar -o /usr/local/maven/lib/ext/wagon-http-lightweight-2.10.jar
 
 #clear download
 RUN rm -f /tmp/apache-maven.tar.gz /tmp/jdk.rpm
-
-
-#Add user zeppelin
-RUN useradd -ms /bin/bash zeppelin
-RUN mkdir -p touch /home/zeppelin/.m2; touch /home/zeppelin/.m2/toChown.txt
-RUN mkdir -p /home/zeppelin/incubator-zeppelin; touch /home/zeppelin/incubator-zeppelin/toChown.txt
-RUN chown -R zeppelin:zeppelin /home/zeppelin/.m2
-RUN chown -R zeppelin:zeppelin /home/zeppelin/incubator-zeppelin
-
-USER zeppelin
-WORKDIR /home/zeppelin/incubator-zeppelin
-
-VOLUME ["/home/zeppelin/.m2", "/home/zeppelin/incubator-zeppelin"]

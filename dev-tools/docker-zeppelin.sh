@@ -26,23 +26,25 @@ display_usage() {
  echo -e "$0 run-zeppelin [-Pspark-XXX -Dhadoop.version=XXX -Phadoop-XXX] $green#to run the image \"incubator-zeppelin\" in daemon, mount your ~.m2 with container and run goal maven and start zeppelin$reset_color" 
 } 
 
+current=$(dirname "${BASH_SOURCE-$0}")
+folderZeppelin=$(cd "${current}/..">/dev/null; pwd)
 command="${1}"
 
 case ${command} in
   build)
      echo "Build docker incubator-zeppelin"
-     docker build -t incubator-zeppelin .
+     docker build -t base-incubator-zeppelin -f $current/Dockerfile .
      ;;
   run)
-     docker run -p 8080:8080 -ti --rm -v $(pwd):/home/zeppelin/incubator-zeppelin --name iz incubator-zeppelin
+     docker run -p :8080 -ti --rm -v $folderZeppelin:/root/incubator-zeppelin -w /root/incubator-zeppelin --name iz base-incubator-zeppelin
      ;;
   run-with-m2)
-     docker run -p 8080:8080 -ti --rm -v ~/.m2:/home/zeppelin/.m2 -v $(pwd):/home/zeppelin/incubator-zeppelin --name iz incubator-zeppelin
+     docker run -p :8080 -ti --rm -v ~/.m2:/root/.m2 -v $folderZeppelin:/root/incubator-zeppelin -w /root/incubator-zeppelin --name iz base-incubator-zeppelin
      ;;
   run-zeppelin)
      configuration_maven=${@:2}
      container=$(date "+iz-%Y%m%d%H%M")
-     docker run -p 8080:8080 -d -v ~/.m2:/home/zeppelin/.m2 -v $(pwd):/home/zeppelin/incubator-zeppelin --name $container incubator-zeppelin \
+     docker run -p :8080 -d -v ~/.m2:/root/.m2 -v $folderZeppelin:/root/incubator-zeppelin -w /root/incubator-zeppelin --name $container base-incubator-zeppelin \
         /bin/bash -c  "mvn clean package -DskipTests $configuration_maven; /home/zeppelin/incubator-zeppelin/bin/zeppelin.sh"
      echo "You can follow logs docker logs -f $container" 
      ;;
