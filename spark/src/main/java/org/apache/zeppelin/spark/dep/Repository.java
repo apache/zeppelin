@@ -64,6 +64,12 @@ public class Repository {
     return this;
   }
   
+  public Repository credentials(String username, String password) {
+    this.username = username;
+    this.password = password;
+    return this;
+  }
+  
   protected Authentication getAuthentication() {
     Authentication auth = null;
     if (this.username != null) {
