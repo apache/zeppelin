@@ -20,35 +20,20 @@ package org.apache.zeppelin.server;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import org.apache.zeppelin.interpreter.InterpreterOption;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.display.AngularObject;
-
-import java.util.List;
 
 /**
  * Created by eranw on 8/30/15.
- * Omit classes from serialization
+ * Omit InterpreterOption from serialization
  */
 public class JsonExclusionStrategy implements ExclusionStrategy {
 
   public boolean shouldSkipClass(Class<?> arg0) {
-
-    return (InterpreterOption.class.equals(arg0) ||
-        Paragraph.class.equals(arg0) ||
-        AngularObject.class.equals(arg0));
+    //exclude only InterpreterOption
+    return InterpreterOption.class.equals(arg0);
   }
 
   public boolean shouldSkipField(FieldAttributes f) {
 
-    Boolean shouldSkip = false;
-    // Exclude Note angularObjects
-    if (f.getDeclaringClass().equals(Note.class) && f.getName().equals("angularObjects")) {
-      shouldSkip = true;
-      // Exclude Note paragraphs
-    } else if (f.getDeclaringClass().equals(Note.class) && f.getName().equals("paragraphs")) {
-      shouldSkip = true;
-    }
-    return shouldSkip;
+    return false;
   }
 }
