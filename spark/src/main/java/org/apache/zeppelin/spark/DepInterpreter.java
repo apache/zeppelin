@@ -184,7 +184,7 @@ public class DepInterpreter extends Interpreter {
     if (sparkInterpreter != null && sparkInterpreter.isSparkContextInitialized()) {
       return new InterpreterResult(Code.ERROR,
           "Must be used before SparkInterpreter (%spark) initialized\n" +
-          "Hint: put this cell before any Spark code and " +
+          "Hint: put this paragraph before any Spark code and " +
           "restart Zeppelin/Interpreter" );
     }
 
