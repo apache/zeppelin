@@ -68,6 +68,26 @@ CDH 5.X
 ```
 mvn clean package -Pspark-1.2 -Dhadoop.version=2.5.0-cdh5.3.0 -Phadoop-2.4 -DskipTests
 ```
+For the MapR Hadoop Distribution, these profiles will handle the Hadoop version. As MapR allows different versions
+of Spark to be installed, you should specify which version of Spark is installed on the cluster by adding a Spark profile (-Pspark-1.2, -Pspark-1.3, etc.) as needed. For Hive, check the hive/pom.xml and adjust the version installed as well. The correct Maven
+artifacts can be found for every version of MapR at http://doc.mapr.com
+
+MapR 3.x
+```
+mvn clean package -Pmapr3 -DskipTests
+```
+MapR 4.0.x
+```
+mvn clean package -Pmapr40 -DskipTests
+```
+MapR 4.1
+```
+mvn clean package -Pmapr41 -DskipTests
+```
+MapR 5.0
+```
+mvn clean package -Pmapr50 -DskipTests
+```
 Yarn (Hadoop 2.7.x)
 ```
 mvn clean package -Pspark-1.4 -Dspark.version=1.4.1 -Dhadoop.version=2.7.0 -Phadoop-2.6 -Pyarn -DskipTests
