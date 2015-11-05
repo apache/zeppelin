@@ -203,13 +203,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       settings.clear();
     } else if (repl.getFormType() == FormType.SIMPLE) {
       String scriptBody = getScriptBody();
-      Map<String, Input> inputs = Input.extractSimpleQueryParam(scriptBody); // inputs
-                                                                             // will
-                                                                             // be
-                                                                             // built
-                                                                             // from
-                                                                             // script
-                                                                             // body
+      Map<String, Input> inputs = Input.extractSimpleQueryParam(scriptBody); // inputs will be built
+                                                                             // from script body
       settings.setForms(inputs);
       script = Input.getSimpleQuery(settings.getParams(), scriptBody);
     }
