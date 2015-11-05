@@ -19,7 +19,7 @@ angular.module('zeppelinWebApp').factory('notebookListDataFactory', function($lo
   notes.list = [];
 
   notes.setNotes = function(notesList) {
-  	if(notes.list.length!==0 && notes.list.length+1===notesList.length){
+  	if(notes.list.length && notes.list.length+1===notesList.length){
 		var newNoteID = getNewNoteID(notesList);
 		$location.path('/notebook/'+newNoteID);
     }
