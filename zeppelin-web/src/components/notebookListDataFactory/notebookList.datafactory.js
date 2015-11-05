@@ -13,14 +13,28 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').factory('notebookListDataFactory', function() {
+angular.module('zeppelinWebApp').factory('notebookListDataFactory', function($location) {
   var notes = {};
 
   notes.list = [];
 
   notes.setNotes = function(notesList) {
+  	if(notes.list.length!==0 && notes.list.length+1===notesList.length){
+		var newNoteID = getNewNoteID(notesList);
+		$location.path('/notebook/'+newNoteID);
+    }
     notes.list = angular.copy(notesList);
   };
+
+  function getNewNoteID(newNotes){
+    var currentNotes = notes.list.map(function(note){return note.id;});
+    var newestNote = newNotes.filter(function(note){
+      if(currentNotes.indexOf(note.id)===-1){
+        return true;
+      }
+    });
+    return newestNote[0].id;
+  }
 
   return notes;
 });
