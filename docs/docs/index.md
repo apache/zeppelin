@@ -30,6 +30,9 @@ group: nav-right
 * [postgresql, hawq](./interpreter/postgresql.html)
 * [geode](./interpreter/geode.html)
 
+### Storage
+* [S3 Storage](./storage/storage.html)
+
 ### Display System
 
 * [text](./displaysystem/display.html)
