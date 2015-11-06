@@ -34,7 +34,7 @@
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin</artifactId>
   <packaging>pom</packaging>
-  <version>0.5.5-incubating-SNAPSHOT</version>
+  <version>0.5.5-incubating</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
   <url>http://zeppelin.incubator.apache.org/</url>
@@ -57,7 +57,7 @@
     <url>https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</url>
     <connection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</connection>
     <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>v0.5.5</tag>
   </scm>
 
   <developers>
