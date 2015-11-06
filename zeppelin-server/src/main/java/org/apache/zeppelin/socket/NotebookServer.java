@@ -273,6 +273,10 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
+  public void broadcastNewNote(Note note) {
+    broadcastAll(new Message(OP.LIST_NEW_NOTE).put("note", note));
+  }
+
   public void broadcastNote(Note note) {
     broadcast(note.id(), new Message(OP.NOTE).put("note", note));
   }
@@ -390,6 +394,7 @@ public class NotebookServer extends WebSocketServlet implements
     note.persist();
     broadcastNote(note);
     broadcastNoteList();
+    broadcastNewNote(note);
   }
 
   private void removeNote(WebSocket conn, Notebook notebook, Message fromMessage)
@@ -433,6 +438,7 @@ public class NotebookServer extends WebSocketServlet implements
     Note newNote = notebook.cloneNote(noteId, name);
     broadcastNote(newNote);
     broadcastNoteList();
+    broadcastNewNote(newNote);
   }
 
   private void removeParagraph(NotebookSocket conn, Notebook notebook,
