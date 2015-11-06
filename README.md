@@ -130,6 +130,33 @@ Ignite (1.1.0-incubating and later)
 mvn clean package -Dignite.version=1.1.0-incubating -DskipTests
 ```
 
+Spark-Cassandra integration (Spark 1.1.x)
+```
+mvn clean package -Pcassandra-spark-1.1 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
+```
+
+Spark-Cassandra integration (Spark 1.2.x)
+```
+mvn clean package -Pcassandra-spark-1.2 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
+```
+
+Spark-Cassandra integration (Spark 1.3.x)
+```
+mvn clean package -Pcassandra-spark-1.3 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
+```
+
+Spark-Cassandra integration (Spark 1.4.x)
+```
+mvn clean package -Pcassandra-spark-1.4 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
+```
+
+Spark-Cassandra integration (Spark 1.5.x)
+```
+mvn clean package -Pcassandra-spark-1.5 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
+```
+
+
+
 ### Configure
 If you wish to configure Zeppelin option (like port number), configure the following files:
 
