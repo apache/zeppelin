@@ -187,7 +187,7 @@
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright 2014, NFLabs inc.
+   Copyright [yyyy] [name of copyright owner]
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -202,6 +202,7 @@
    limitations under the License.
 
 
+============================================================================
    APACHE ZEPPELIN SUBCOMPONENTS:
 
    The Apache Zeppelin project contains subcomponents with separate copyright
@@ -209,7 +210,7 @@
    subcomponents is subject to the terms and conditions of the following
    licenses.
 
-   For the PostgreSQL JDBC driver jar file:
+For the PostgreSQL JDBC driver jar file:
 
    Copyright (c) 1997-2011, PostgreSQL Global Development Group
    All rights reserved.
@@ -237,3 +238,40 @@
    CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE.
+
+
+This product contains webfonts from 'Font Awesome', which can be obtains at:
+
+  * LICENSE:
+    * SIL OFL 1.1 (http://scripts.sil.org/OFL)
+  * HOMEPAGE:
+    * http://fortawesome.github.io/Font-Awesome/
+
+
+
+This product contains a stylesheet from 'Font Awesome', which can be obtains at:
+
+  * LICENSE:
+    * MIT License (http://opensource.org/licenses/mit-license.html)
+  * HOMEPAGE:
+    * http://fortawesome.github.io/Font-Awesome/
+
+
+
+This product contains embeddable code editor 'Ace', which can be obtains at:
+
+  * LICENSE:
+    * BSD (https://github.com/ajaxorg/ace/blob/master/LICENSE)
+      Copyright (c) 2010, Ajax.org B.V.
+      All rights reserved. 
+  * HOMEPAGE:
+    * http://ace.c9.io/
+
+
+
+This product contains 'Simple line icons', which can be obtains at:
+
+  * LICENSE:
+    * MIT License (http://opensource.org/licenses/mit-license.html)
+  * HOMEPAGE:
+    * http://thesabbir.github.io/simple-line-icons/
