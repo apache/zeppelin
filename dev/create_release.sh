@@ -122,7 +122,7 @@ function make_binary_release() {
     rm -rf ${WORKING_DIR}/zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
 }
 
-make_binary_release all -Pyarn
+make_binary_release all "-Pyarn -Ppyspark"
 
 # remove non release files and dirs
 rm -rf ${WORKING_DIR}/zeppelin
