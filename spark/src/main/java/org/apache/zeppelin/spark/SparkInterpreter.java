@@ -228,7 +228,10 @@ public class SparkInterpreter extends Interpreter {
 
   public DependencyResolver getDependencyResolver() {
     if (dep == null) {
-      dep = new DependencyResolver(intp, sc, getProperty("zeppelin.dep.localrepo"));
+      dep = new DependencyResolver(intp,
+                                   sc,
+                                   getProperty("zeppelin.dep.localrepo"),
+                                   getProperty("zeppelin.dep.additionalRemoteRepository"));
     }
     return dep;
   }

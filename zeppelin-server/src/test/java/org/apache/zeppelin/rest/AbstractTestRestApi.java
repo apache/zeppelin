@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,6 +30,7 @@ import java.util.concurrent.Executors;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.*;
+import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -197,6 +199,13 @@ public abstract class AbstractTestRestApi {
 
   protected static void shutDown() throws Exception {
     if (!wasRunning) {
+      // restart interpreter to stop all interpreter processes
+      List<String> settingList = ZeppelinServer.notebook.getInterpreterFactory()
+          .getDefaultInterpreterSettingList();
+      for (String setting : settingList) {
+        ZeppelinServer.notebook.getInterpreterFactory().restart(setting);
+      }
+
       LOG.info("Terminating test Zeppelin...");
       ZeppelinServer.jettyServer.stop();
       executor.shutdown();
