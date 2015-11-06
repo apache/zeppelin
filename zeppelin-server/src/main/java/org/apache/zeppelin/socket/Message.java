@@ -91,6 +91,8 @@ public class Message {
 
     LIST_NOTES, // [c-s] ask list of note
 
+    LIST_NEW_NOTE, // [s-c] ask for newly created note id
+
     NOTES_INFO, // [s-c] list of note infos
                 // @param notes serialized List<NoteInfo> object
 
