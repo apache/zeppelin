@@ -170,7 +170,7 @@ public class ZeppelinServer extends Application {
         ServletContextHandler.SESSIONS);
 
     cxfContext.setSessionHandler(new SessionHandler());
-    cxfContext.setContextPath(conf.getContextPath());
+    cxfContext.setContextPath(conf.getServerContextPath());
     cxfContext.addServlet(servletHolder, "/ws/*");
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
         EnumSet.allOf(DispatcherType.class));
@@ -218,7 +218,7 @@ public class ZeppelinServer extends Application {
 
     final ServletContextHandler cxfContext = new ServletContextHandler();
     cxfContext.setSessionHandler(new SessionHandler());
-    cxfContext.setContextPath(conf.getContextPath() + "/api");
+    cxfContext.setContextPath(conf.getServerContextPath() + "/api");
     cxfContext.addServlet(cxfServletHolder, "/*");
 
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
@@ -235,7 +235,7 @@ public class ZeppelinServer extends Application {
       // Development mode, read from FS
       // webApp.setDescriptor(warPath+"/WEB-INF/web.xml");
       webApp.setResourceBase(warPath.getPath());
-      webApp.setContextPath(conf.getContextPath());
+      webApp.setContextPath(conf.getServerContextPath());
       webApp.setParentLoaderPriority(true);
     } else {
       // use packaged WAR

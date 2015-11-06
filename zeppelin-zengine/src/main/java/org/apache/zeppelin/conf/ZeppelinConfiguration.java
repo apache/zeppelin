@@ -268,8 +268,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getInt(ConfVars.ZEPPELIN_PORT);
   }
 
-  public String getContextPath() {
-    return getString(ConfVars.ZEPPELIN_CONTEXT_PATH);
+  public String getServerContextPath() {
+    return getString(ConfVars.ZEPPELIN_SERVER_CONTEXT_PATH);
   }
 
   public String getKeyStorePath() {
@@ -387,7 +387,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_HOME("zeppelin.home", "../"),
     ZEPPELIN_ADDR("zeppelin.server.addr", "0.0.0.0"),
     ZEPPELIN_PORT("zeppelin.server.port", 8080),
-    ZEPPELIN_CONTEXT_PATH("zeppelin.server.context.path", "/"),
+    ZEPPELIN_SERVER_CONTEXT_PATH("zeppelin.server.context.path", "/"),
     ZEPPELIN_SSL("zeppelin.ssl", false),
     ZEPPELIN_SSL_CLIENT_AUTH("zeppelin.ssl.client.auth", false),
     ZEPPELIN_SSL_KEYSTORE_PATH("zeppelin.ssl.keystore.path", "keystore"),
