@@ -224,6 +224,12 @@ angular.module('zeppelinWebApp')
         $scope.renderAngular();
       }
     }
+
+    if (resultRefreshed && !$scope.isRunning()) {
+      // when last paragraph runs, zeppelin automatically appends new paragraph.
+      // this broadcast will focus to the newly inserted paragraph
+      $rootScope.$broadcast('scrollToCursor');
+    }
   });
 
   $scope.isRunning = function() {
@@ -542,7 +548,6 @@ angular.module('zeppelinWebApp')
         $scope.handleFocus(false);
       });
 
-
       $scope.editor.getSession().on('change', function(e, editSession) {
         height = editSession.getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
         setEditorHeight(_editor.container.id, height);
@@ -612,39 +617,50 @@ angular.module('zeppelinWebApp')
     }
   };
 
+  $rootScope.$on('scrollToCursor', function(event) {
+    console.log("scrollto cursor broadcasted %o", $scope.paragraph.id);
+    $scope.scrollToCursor($scope.paragraph.id, 0);
+  });
+
   /** scrollToCursor if it is necessary
    * when cursor touches scrollTriggerEdgeMargin from the top (or bottom) of the screen, it autoscroll to place cursor around 1/3 of screen height from the top (or bottom)
    * paragraphId : paragraph that has active cursor
    * lastCursorMove : 1(down), 0, -1(up) last cursor move event
    **/
   $scope.scrollToCursor = function(paragraphId, lastCursorMove) {
+    if (!$scope.editor.isFocused()) {
+     // only make sense when editor is focused
+     return;
+    }
     var lineHeight = 16;  // Line height
     var headerHeight = 103; // menubar, notebook titlebar
     var scrollTriggerEdgeMargin = 50;
-
+    
     var documentHeight = $(document).height();
     var windowHeight = $(window).height();  // actual viewport height
 
     var scrollPosition = $(document).scrollTop();
-    var editorPosition = $('#'+$scope.paragraph.id+'_editor').offset();
+    var editorPosition = $('#'+paragraphId+'_editor').offset();
     var position = $scope.editor.getCursorPosition();
     var lastCursorPosition = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
 
     var calculatedCursorPosition = editorPosition.top + lastCursorPosition.top + 16*lastCursorMove;
 
     if (calculatedCursorPosition < scrollPosition + headerHeight + scrollTriggerEdgeMargin) {
+      console.log("scrollUp");
       var scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight-headerHeight)/3);
       if (scrollTargetPos < 0) {
         scrollTargetPos = 0;
       }
       $('body').scrollTo(scrollTargetPos, {duration:200});
     } else if(calculatedCursorPosition > scrollPosition + scrollTriggerEdgeMargin + windowHeight - headerHeight) {
+      console.log("scrollDown");
       var scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight-headerHeight)*2/3);
 
       if (scrollTargetPos > documentHeight) {
         scrollTargetPos = documentHeight;
       }
-      $('body').scrollTo(scrollTargetPos, {duration:200});
+      $('body').scrollTo(scrollTargetPos, {offsetTop: 2*headerHeight, duration:200});
     }
   };
 
@@ -693,7 +709,9 @@ angular.module('zeppelinWebApp')
   $scope.$on('focusParagraph', function(event, paragraphId, cursorPos) {
     if ($scope.paragraph.id === paragraphId) {
       // focus editor
+      console.log("Focus %o", paragraphId);
       $scope.editor.focus();
+      /*
       // move cursor to the first row (or the last row)
       if (cursorPos >= 0) {
         var row = cursorPos;
@@ -703,6 +721,7 @@ angular.module('zeppelinWebApp')
         var row = $scope.editor.session.getLength() - 1;
         $scope.editor.gotoLine(row + 1, 0);
       }
+      */
       $scope.scrollToCursor($scope.paragraph.id, 0);
     }
   });
