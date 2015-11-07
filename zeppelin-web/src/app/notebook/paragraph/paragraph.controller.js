@@ -647,14 +647,12 @@ angular.module('zeppelinWebApp')
     var calculatedCursorPosition = editorPosition.top + lastCursorPosition.top + 16*lastCursorMove;
 
     if (calculatedCursorPosition < scrollPosition + headerHeight + scrollTriggerEdgeMargin) {
-      console.log("scrollUp");
       var scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight-headerHeight)/3);
       if (scrollTargetPos < 0) {
         scrollTargetPos = 0;
       }
       $('body').scrollTo(scrollTargetPos, {duration:200});
     } else if(calculatedCursorPosition > scrollPosition + scrollTriggerEdgeMargin + windowHeight - headerHeight) {
-      console.log("scrollDown");
       var scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight-headerHeight)*2/3);
 
       if (scrollTargetPos > documentHeight) {
@@ -709,7 +707,6 @@ angular.module('zeppelinWebApp')
   $scope.$on('focusParagraph', function(event, paragraphId, cursorPos) {
     if ($scope.paragraph.id === paragraphId) {
       // focus editor
-      console.log("Focus %o", paragraphId);
       $scope.editor.focus();
 
       // move cursor to the first row (or the last row)
