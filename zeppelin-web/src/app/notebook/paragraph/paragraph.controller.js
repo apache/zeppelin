@@ -449,12 +449,15 @@ angular.module('zeppelinWebApp')
       $scope.editor.setShowFoldWidgets(false);
       $scope.editor.setHighlightActiveLine(false);
       $scope.editor.setHighlightGutterLine(false);
+      $scope.editor.getSession().setUseWrapMode(true);
       $scope.editor.setTheme('ace/theme/chrome');
       $scope.editor.focus();
-      var height = $scope.editor.getSession().getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
-      setEditorHeight(_editor.container.id, height);
 
-      $scope.editor.getSession().setUseWrapMode(true);
+      autoAdjustEditorHeight(_editor.container.id);
+      $(window).resize(function(){
+        autoAdjustEditorHeight(_editor.container.id);
+      });
+
       if (navigator.appVersion.indexOf('Mac') !== -1 ) {
         $scope.editor.setKeyboardHandler('ace/keyboard/emacs');
       } else if (navigator.appVersion.indexOf('Win') !== -1 ||
@@ -542,11 +545,8 @@ angular.module('zeppelinWebApp')
         $scope.handleFocus(false);
       });
 
-
       $scope.editor.getSession().on('change', function(e, editSession) {
-        height = editSession.getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
-        setEditorHeight(_editor.container.id, height);
-        $scope.editor.resize();
+        autoAdjustEditorHeight(_editor.container.id);
       });
 
       $scope.setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue());
@@ -607,8 +607,12 @@ angular.module('zeppelinWebApp')
     }
   };
 
-  var setEditorHeight = function(id, height) {
+  var autoAdjustEditorHeight = function(id) {
+    var editor = $scope.editor;
+    var height = editor.getSession().getScreenLength() * editor.renderer.lineHeight + editor.renderer.scrollBar.getWidth();
+
     $('#' + id).height(height.toString() + 'px');
+    editor.resize();
   };
 
   $scope.getEditorValue = function() {
