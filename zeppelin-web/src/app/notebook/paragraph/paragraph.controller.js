@@ -586,12 +586,15 @@ angular.module('zeppelinWebApp')
         } else {
           var numRows;
           var currentRow;
+
           if (keyCode === 38 || (keyCode === 80 && e.ctrlKey)) {  // UP
             numRows = $scope.editor.getSession().getLength();
             currentRow = $scope.editor.getCursorPosition().row;
             if (currentRow === 0) {
               // move focus to previous paragraph
               $scope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
+            } else {
+              $scope.scrollToCursor($scope.paragraph.id, -1);
             }
           } else if (keyCode === 40 || (keyCode === 78 && e.ctrlKey)) {  // DOWN
             numRows = $scope.editor.getSession().getLength();
@@ -599,11 +602,49 @@ angular.module('zeppelinWebApp')
             if (currentRow === numRows-1) {
               // move focus to next paragraph
               $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
+            } else {
+              $scope.scrollToCursor($scope.paragraph.id, 1);
             }
           }
         }
         this.origOnCommandKey(e, hashId, keyCode);
       };
+    }
+  };
+
+  /** scrollToCursor if it is necessary
+   * when cursor touches scrollTriggerEdgeMargin from the top (or bottom) of the screen, it autoscroll to place cursor around 1/3 of screen height from the top (or bottom)
+   * paragraphId : paragraph that has active cursor
+   * lastCursorMove : 1(down), 0, -1(up) last cursor move event
+   **/
+  $scope.scrollToCursor = function(paragraphId, lastCursorMove) {
+    var lineHeight = 16;  // Line height
+    var headerHeight = 103; // menubar, notebook titlebar
+    var scrollTriggerEdgeMargin = 50;
+
+    var documentHeight = $(document).height();
+    var windowHeight = $(window).height();  // actual viewport height
+
+    var scrollPosition = $(document).scrollTop();
+    var editorPosition = $('#'+$scope.paragraph.id+'_editor').offset();
+    var position = $scope.editor.getCursorPosition();
+    var lastCursorPosition = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
+
+    var calculatedCursorPosition = editorPosition.top + lastCursorPosition.top + 16*lastCursorMove;
+
+    if (calculatedCursorPosition < scrollPosition + headerHeight + scrollTriggerEdgeMargin) {
+      var scrollTargetPos = calculatedCursorPosition - ((windowHeight-headerHeight)/3);
+      if (scrollTargetPos < 0) {
+        scrollTargetPos = 0;
+      }
+      $('body').scrollTo(scrollTargetPos, {duration:200});
+    } else if(calculatedCursorPosition > scrollPosition + scrollTriggerEdgeMargin + windowHeight - headerHeight) {
+      var scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight-headerHeight)*2/3);
+
+      if (scrollTargetPos > documentHeight) {
+        scrollTargetPos = documentHeight;
+      }
+      $('body').scrollTo(scrollTargetPos, {duration:200});
     }
   };
 
@@ -652,7 +693,7 @@ angular.module('zeppelinWebApp')
   $scope.$on('focusParagraph', function(event, paragraphId) {
     if ($scope.paragraph.id === paragraphId) {
       $scope.editor.focus();
-      $('body').scrollTo('#'+paragraphId+'_editor', 300, {offset:-60});
+      $scope.scrollToCursor($scope.paragraph.id, 0);
     }
   });
 
