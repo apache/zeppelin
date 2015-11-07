@@ -167,6 +167,7 @@ angular.module('zeppelinWebApp')
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
       var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished);
+      var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
 
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
 
@@ -223,13 +224,14 @@ angular.module('zeppelinWebApp')
       } else if (newType === 'ANGULAR' && resultRefreshed) {
         $scope.renderAngular();
       }
+
+      if (statusChanged || resultRefreshed) {
+        // when last paragraph runs, zeppelin automatically appends new paragraph.
+        // this broadcast will focus to the newly inserted paragraph
+        $rootScope.$broadcast('scrollToCursor');
+      }
     }
 
-    if (resultRefreshed && !$scope.isRunning()) {
-      // when last paragraph runs, zeppelin automatically appends new paragraph.
-      // this broadcast will focus to the newly inserted paragraph
-      $rootScope.$broadcast('scrollToCursor');
-    }
   });
 
   $scope.isRunning = function() {
@@ -618,7 +620,6 @@ angular.module('zeppelinWebApp')
   };
 
   $rootScope.$on('scrollToCursor', function(event) {
-    console.log("scrollto cursor broadcasted %o", $scope.paragraph.id);
     $scope.scrollToCursor($scope.paragraph.id, 0);
   });
 
@@ -636,34 +637,34 @@ angular.module('zeppelinWebApp')
     var headerHeight = 103; // menubar, notebook titlebar
     var scrollTriggerEdgeMargin = 50;
     
-    var documentHeight = $(document).height();
-    var windowHeight = $(window).height();  // actual viewport height
+    var documentHeight = angular.element(document).height();
+    var windowHeight = angular.element(window).height();  // actual viewport height
 
-    var scrollPosition = $(document).scrollTop();
-    var editorPosition = $('#'+paragraphId+'_editor').offset();
+    var scrollPosition = angular.element(document).scrollTop();
+    var editorPosition = angular.element('#'+paragraphId+'_editor').offset();
     var position = $scope.editor.getCursorPosition();
     var lastCursorPosition = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
 
     var calculatedCursorPosition = editorPosition.top + lastCursorPosition.top + 16*lastCursorMove;
 
+    var scrollTargetPos;
     if (calculatedCursorPosition < scrollPosition + headerHeight + scrollTriggerEdgeMargin) {
-      var scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight-headerHeight)/3);
+      scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight-headerHeight)/3);
       if (scrollTargetPos < 0) {
         scrollTargetPos = 0;
       }
-      $('body').scrollTo(scrollTargetPos, {duration:200});
     } else if(calculatedCursorPosition > scrollPosition + scrollTriggerEdgeMargin + windowHeight - headerHeight) {
-      var scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight-headerHeight)*2/3);
+      scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight-headerHeight)*2/3);
 
       if (scrollTargetPos > documentHeight) {
         scrollTargetPos = documentHeight;
       }
-      $('body').scrollTo(scrollTargetPos, {offsetTop: 2*headerHeight, duration:200});
     }
+    angular.element('body').scrollTo(scrollTargetPos, {duration:200});
   };
 
   var setEditorHeight = function(id, height) {
-    $('#' + id).height(height.toString() + 'px');
+    angular.element('#' + id).height(height.toString() + 'px');
   };
 
   $scope.getEditorValue = function() {
@@ -710,12 +711,13 @@ angular.module('zeppelinWebApp')
       $scope.editor.focus();
 
       // move cursor to the first row (or the last row)
+      var row;
       if (cursorPos >= 0) {
-        var row = cursorPos;
+        row = cursorPos;
         var column = 0;
         $scope.editor.gotoLine(row, 0);
       } else {
-        var row = $scope.editor.session.getLength() - 1;
+        row = $scope.editor.session.getLength() - 1;
         $scope.editor.gotoLine(row + 1, 0);
       }
 
