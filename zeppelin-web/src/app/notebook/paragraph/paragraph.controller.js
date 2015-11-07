@@ -632,7 +632,7 @@ angular.module('zeppelinWebApp')
      // only make sense when editor is focused
      return;
     }
-    var lineHeight = 16;  // Line height
+    var lineHeight = $scope.editor.renderer.lineHeight;
     var headerHeight = 103; // menubar, notebook titlebar
     var scrollTriggerEdgeMargin = 50;
     
