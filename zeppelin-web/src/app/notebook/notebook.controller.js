@@ -304,7 +304,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       } else {
         var p = $scope.note.paragraphs[i];
         if (!p.config.hide && !p.config.editorHide && !p.config.tableHide) {
-          $scope.$broadcast('focusParagraph', $scope.note.paragraphs[i].id);
+          $scope.$broadcast('focusParagraph', $scope.note.paragraphs[i].id, -1);
           break;
         }
       }
@@ -322,7 +322,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       } else {
         var p = $scope.note.paragraphs[i];
         if (!p.config.hide && !p.config.editorHide && !p.config.tableHide) {
-          $scope.$broadcast('focusParagraph', $scope.note.paragraphs[i].id);
+          $scope.$broadcast('focusParagraph', $scope.note.paragraphs[i].id, 0);
           break;
         }
       }

@@ -633,7 +633,7 @@ angular.module('zeppelinWebApp')
     var calculatedCursorPosition = editorPosition.top + lastCursorPosition.top + 16*lastCursorMove;
 
     if (calculatedCursorPosition < scrollPosition + headerHeight + scrollTriggerEdgeMargin) {
-      var scrollTargetPos = calculatedCursorPosition - ((windowHeight-headerHeight)/3);
+      var scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight-headerHeight)/3);
       if (scrollTargetPos < 0) {
         scrollTargetPos = 0;
       }
@@ -690,9 +690,19 @@ angular.module('zeppelinWebApp')
     }
   });
 
-  $scope.$on('focusParagraph', function(event, paragraphId) {
+  $scope.$on('focusParagraph', function(event, paragraphId, cursorPos) {
     if ($scope.paragraph.id === paragraphId) {
+      // focus editor
       $scope.editor.focus();
+      // move cursor to the first row (or the last row)
+      if (cursorPos >= 0) {
+        var row = cursorPos;
+        var column = 0;
+        $scope.editor.gotoLine(row, 0);
+      } else {
+        var row = $scope.editor.session.getLength() - 1;
+        $scope.editor.gotoLine(row + 1, 0);
+      }
       $scope.scrollToCursor($scope.paragraph.id, 0);
     }
   });
