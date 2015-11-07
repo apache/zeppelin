@@ -711,7 +711,7 @@ angular.module('zeppelinWebApp')
       // focus editor
       console.log("Focus %o", paragraphId);
       $scope.editor.focus();
-      /*
+
       // move cursor to the first row (or the last row)
       if (cursorPos >= 0) {
         var row = cursorPos;
@@ -721,7 +721,7 @@ angular.module('zeppelinWebApp')
         var row = $scope.editor.session.getLength() - 1;
         $scope.editor.gotoLine(row + 1, 0);
       }
-      */
+
       $scope.scrollToCursor($scope.paragraph.id, 0);
     }
   });
