@@ -4,6 +4,19 @@ title: "Interpreter REST API"
 description: ""
 group: rest-api
 ---
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 {% include JB/setup %}
 
 ## Zeppelin REST API
@@ -47,7 +60,7 @@ group: rest-api
     <tr>
       <td> sample JSON response
       </td>
-      <td> [Interpreter list sample](rest-json/rest-json-interpreter-list.json)
+      <td> [Interpreter list sample](rest-json/rest-json-interpreter-list.html)
       </td>
     </tr>
   </table>
@@ -79,7 +92,7 @@ group: rest-api
     <tr>
       <td> sample JSON response
       </td>
-      <td> [Setting list sample](rest-json/rest-json-interpreter-setting.json)
+      <td> [Setting list sample](rest-json/rest-json-interpreter-setting.html)
       </td>
     </tr>
   </table>
@@ -111,13 +124,13 @@ group: rest-api
     <tr>
       <td> sample JSON input
       </td>
-      <td> [Create JSON sample](rest-json/rest-json-interpreter-create.json)
+      <td> [Create JSON sample](rest-json/rest-json-interpreter-create.html)
       </td>
     </tr>
     <tr>
       <td> sample JSON response
       </td>
-      <td> [Create response sample](rest-json/rest-json-interpreter-create-response.json)
+      <td> [Create response sample](rest-json/rest-json-interpreter-create-response.html)
       </td>
     </tr>
   </table>
@@ -150,13 +163,13 @@ group: rest-api
     <tr>
       <td> sample JSON input
       </td>
-      <td> [Update JSON sample](rest-json/rest-json-interpreter-update.json)
+      <td> [Update JSON sample](rest-json/rest-json-interpreter-update.html)
       </td>
     </tr>
     <tr>
       <td> sample JSON response
       </td>
-      <td> [Update response sample](rest-json/rest-json-interpreter-update-response.json)
+      <td> [Update response sample](rest-json/rest-json-interpreter-update-response.html)
       </td>
     </tr>
   </table>
@@ -189,7 +202,7 @@ group: rest-api
     <tr>
       <td> sample JSON response
       </td>
-      <td> [Delete response sample](rest-json/rest-json-interpreter-delete-response.json)
+      <td> [Delete response sample](rest-json/rest-json-interpreter-delete-response.html)
       </td>
     </tr>
   </table>
