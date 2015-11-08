@@ -40,11 +40,11 @@ sudo apt-get install libfontconfig
 ```
 
 _Note:_ 
-Ensure node is installed by running `node --version`  
-Ensure maven is running version 3.1.x or higher with `mvn -version`
+ - Ensure node is installed by running `node --version`  
+ - Ensure maven is running version 3.1.x or higher with `mvn -version`
 
 ### Build
-If you want to build Zeppelin from the source, please first clone this repository. And then:
+If you want to build Zeppelin from the source, please first clone this repository, then:
 
 ```
 mvn clean package -DskipTests
@@ -52,15 +52,17 @@ mvn clean package -DskipTests
 
 To build with a specific Spark version, Hadoop version or specific features, define one or more of the `spark`, `pyspark`, `hadoop` and `yarn` profiles, such as:
 
--Pspark-1.5   [Version to run in local spark mode]
--Ppyspark     [optional: enable PYTHON support in spark via the %pyspark interpreter]
--Pyarn        [optional: enable YARN support]
--Dhadoop.version=2.2.0  [hadoop distribution]
--Phadoop-2.2            [hadoop version]
+ -Pspark-1.5   [Version to run in local spark mode]
+ -Ppyspark     [optional: enable PYTHON support in spark via the %pyspark interpreter]
+ -Pyarn        [optional: enable YARN support]
+ -Dhadoop.version=2.2.0  [hadoop distribution]
+ -Phadoop-2.2            [hadoop version]
 
-The current default build command runs as:
+Currently, final/full distributions run with:
 
+```
 mvn clean package -Pspark-1.5 -Phadoop-2.4 -Pyarn -Ppyspark
+```
 
 Spark 1.5.x
 
