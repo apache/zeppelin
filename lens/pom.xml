@@ -228,7 +228,7 @@
 
   <profiles>
     <profile>
-      <id>vender-repo</id>
+      <id>vendor-repo</id>
       <repositories>
         <repository>
           <id>cloudera</id>
