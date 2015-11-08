@@ -145,6 +145,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertTrue(0 < body.size());
 
     get.releaseConnection();
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note.getId());
   }
 
   @Test
@@ -179,6 +181,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       Thread.sleep(100);
     }
     assertEquals("<p>markdown restarted</p>\n", p.getResult().message());
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note.getId());
   }
 
   @Test
@@ -236,6 +240,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     testDeleteNotebook("bad_ID");
   }
 
+
   private void testDeleteNotebook(String notebookId) throws IOException {
 
     DeleteMethod delete = httpDelete(("/notebook/" + notebookId));
@@ -282,5 +287,18 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     ZeppelinServer.notebook.removeNote(newNote.getId());
     post.releaseConnection();
   }
+
+  @Test
+  public void testListNotebooks() throws IOException {
+    LOG.info("testListNotebooks");
+    GetMethod get = httpGet("/notebook/ ");
+    assertThat("List notebooks method", get, isAllowed());
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
+    assertEquals("List notebooks are equal", ZeppelinServer.notebook.getAllNotes().size(), body.size());
+    get.releaseConnection();
+  }
+
 }
 

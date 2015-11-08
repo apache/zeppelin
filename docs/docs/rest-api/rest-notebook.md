@@ -20,8 +20,40 @@ group: rest-api
  <br />
 ### Notebook REST API list
   
-  Notebooks can be created, deleted or cloned using the following REST API
+  Notebooks REST API supports the following operations: List, Create, Delete & Clone as detailed in the following table 
   
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <th>List notebooks</th>
+      <th></th>
+    </tr>
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method list the available notebooks on your server.
+          Notebook JSON contains the ```name``` and ```id``` of all notebooks.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td> [List response sample](rest-json/rest-json-notebook-list-response.json) </td>
+    </tr>
+  </table>
+  
+<br/>
+
   <table class="table-configuration">
     <col width="200">
     <tr>

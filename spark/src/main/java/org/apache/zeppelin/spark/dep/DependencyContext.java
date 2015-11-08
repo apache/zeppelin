@@ -21,6 +21,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
@@ -28,6 +30,7 @@ import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
 import org.sonatype.aether.graph.DependencyFilter;
 import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.resolution.ArtifactResolutionException;
 import org.sonatype.aether.resolution.ArtifactResult;
 import org.sonatype.aether.resolution.DependencyRequest;
@@ -153,6 +156,10 @@ public class DependencyContext {
     for (Repository repo : repositories) {
       RemoteRepository rr = new RemoteRepository(repo.getName(), "default", repo.getUrl());
       rr.setPolicy(repo.isSnapshot(), null);
+      Authentication auth = repo.getAuthentication();
+      if (auth != null) {
+        rr.setAuthentication(auth);
+      }
       collectRequest.addRepository(rr);
     }
 
