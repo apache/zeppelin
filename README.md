@@ -36,9 +36,9 @@ sudo apt-get install npm
 sudo apt-get install libfontconfig
 
 # install maven
-wget http://apache-mirror.rbc.ru/pub/apache/maven/maven-3/3.2.2/binaries/apache-maven-3.2.2-bin.tar.gz
-tar -zxf apache-maven-3.2.2-bin.tar.gz /usr/local/
-ln -s /usr/local/apache-maven-3.2.2/bin/mvn /usr/local/bin/mvn
+wget http://www.eu.apache.org/dist/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
+sudo tar -zxf apache-maven-3.3.3-bin.tar.gz -C /usr/local/
+sudo ln -s /usr/local/apache-maven-3.3.3/bin/mvn /usr/local/bin/mvn
 ```
 
 _Notes:_ 
