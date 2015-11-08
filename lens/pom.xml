@@ -225,80 +225,16 @@
 
     </plugins>
   </build>
-  <repositories>
-    <repository>
-      <id>inmobi.repo</id>
-      <url>https://github.com/InMobi/mvn-repo/raw/master/releases</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>inmobi.snapshots</id>
-      <url>https://github.com/InMobi/mvn-repo/raw/master/snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>central</id>
-      <url>http://repo1.maven.org/maven2</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>cloudera</id>
-      <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>never</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-        <updatePolicy>never</updatePolicy>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>Codehaus repository</id>
-      <url>http://repository.codehaus.org/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>apache.snapshots.repo</id>
-      <url>https://repository.apache.org/content/groups/snapshots</url>
-      <name>Apache Snapshots Repository</name>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>default</id>
-      <url>https://repository.apache.org/content/groups/public/</url>
-    </repository>
-    <repository>
-      <id>projectlombok.org</id>
-      <url>http://projectlombok.org/mavenrepo</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <!-- see https://jira.springsource.org/browse/SHL-52 -->
-    <repository>
-      <id>ext-release-local</id>
-      <url>http://repo.springsource.org/simple/ext-release-local/</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
 
+  <profiles>
+    <profile>
+      <id>vendor-repo</id>
+      <repositories>
+        <repository>
+          <id>cloudera</id>
+          <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
 </project>
