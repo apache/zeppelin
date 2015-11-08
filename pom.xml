@@ -484,6 +484,7 @@
               
               <!-- docs (website) build target dir -->
               <exclude>docs/_site/**</exclude>
+              <exclude>docs/Gemfile.lock</exclude>
             </excludes>
           </configuration>
 
