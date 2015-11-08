@@ -30,16 +30,18 @@ If you don't have requirements prepared, install it.
 
 ```
 sudo apt-get update
-sudo apt-get install openjdk-7-jdk
 sudo apt-get install git
-sudo apt-get install maven
-sudo apt-get install nodejs
+sudo apt-get install openjdk-7-jdk
 sudo apt-get install npm
-sudo ln -s /usr/bin/nodejs /usr/bin/node
 sudo apt-get install libfontconfig
+
+# install maven
+wget http://apache-mirror.rbc.ru/pub/apache/maven/maven-3/3.2.2/binaries/apache-maven-3.2.2-bin.tar.gz
+tar -zxf apache-maven-3.2.2-bin.tar.gz /usr/local/
+ln -s /usr/local/apache-maven-3.2.2/bin/mvn /usr/local/bin/mvn
 ```
 
-_Note:_ 
+_Notes:_ 
  - Ensure node is installed by running `node --version`  
  - Ensure maven is running version 3.1.x or higher with `mvn -version`
 
