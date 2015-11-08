@@ -52,11 +52,13 @@ mvn clean package -DskipTests
 
 To build with a specific Spark version, Hadoop version or specific features, define one or more of the `spark`, `pyspark`, `hadoop` and `yarn` profiles, such as:
 
- -Pspark-1.5   [Version to run in local spark mode]
- -Ppyspark     [optional: enable PYTHON support in spark via the %pyspark interpreter]
- -Pyarn        [optional: enable YARN support]
- -Dhadoop.version=2.2.0  [hadoop distribution]
- -Phadoop-2.2            [hadoop version]
+```
+-Pspark-1.5   [Version to run in local spark mode]
+-Ppyspark     [optional: enable PYTHON support in spark via the %pyspark interpreter]
+-Pyarn        [optional: enable YARN support]
+-Dhadoop.version=2.2.0  [hadoop distribution]
+-Phadoop-2.2            [hadoop version]
+```
 
 Currently, final/full distributions run with:
 
