@@ -175,7 +175,7 @@ Yarn
 For configuration details check __./conf__ subdirectory.
 
 ### Package
-To package the final distribution includint the compressed archive, run:
+To package the final distribution including the compressed archive, run:
 
       mvn clean package -Pbuild-distr
 
