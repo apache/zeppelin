@@ -44,7 +44,9 @@ limitations under the License.
             <span style="display:inline-block" ng-repeat="interpreter in setting.interpreterGroup"
                   title="{{interpreter.class}}">
               <span ng-show="!$first">, </span>
-              %<span ng-show="setting.group !== interpreter.name && !$parent.$first">{{setting.group}}.</span>{{interpreter.name}}
+              %<span ng-show="!$parent.$first || $first">{{setting.group}}</span
+              ><span ng-show="(!$parent.$first || $first) && !$first">.</span
+              ><span ng-show="!$first">{{interpreter.name}}</span>
               <span ng-show="$parent.$first && $first">(default)</span>
             </span>
           </small>
