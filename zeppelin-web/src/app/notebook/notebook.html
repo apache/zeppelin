@@ -149,7 +149,16 @@ limitations under the License.
           <div as-sortable-item-handle
                ng-click="item.selected = !item.selected"
                class="btn"
-               ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}"><font style="font-size:16px">{{item.name}}</font> <small><span ng-repeat="intp in item.interpreters"><span ng-show="!$first">, </span>%{{intp.name}}</span></small></div>
+               ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">
+            <font style="font-size:16px">{{item.name}}</font>
+            <small>
+              <span style="display:inline-block" ng-repeat="intp in item.interpreters">
+                <span ng-show="!$first">, </span>
+                %<span ng-show="item.group !== intp.name && !$parent.$first">{{item.group}}.</span>{{intp.name}}
+                <span ng-show="$parent.$first && $first">(default)</span>
+              </span>
+            </small>
+          </div>
         </div>
       </div>
     </div>
