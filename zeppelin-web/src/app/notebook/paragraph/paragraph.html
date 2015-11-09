@@ -29,7 +29,87 @@ limitations under the License.
          ng-bind-html="paragraph.title || 'Untitled'">
     </div>
   </div>
+  <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
 
+    <span>
+      {{paragraph.status}}
+    </span>
+
+    <span ng-if="paragraph.status=='RUNNING'">
+      {{getProgress()}}%
+    </span>
+
+    <!-- Run / Cancel button -->
+    <span class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph (Shift+Enter)"
+          ng-click="runParagraph(getEditorValue())"
+          ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING'"></span>
+    <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top" tooltip="Cancel"
+          ng-click="cancelParagraph()"
+          ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
+    <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide') + ' editor'}}"
+          ng-click="toggleEditor()"></span>
+    <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
+          ng-click="toggleOutput()"></span>
+    <span  style="cursor:pointer;"
+           ng-click="saveParagraph()"
+           ng-show="dirtyText"></span>
+    <span class="dropdown navbar-right">
+      <span class="icon-settings" style="cursor:pointer"
+            data-toggle="dropdown"
+            type="button">
+      </span>
+      <ul class="dropdown-menu" role="menu" style="width:200px;">
+        <li>
+          <a class="fa fa-arrows-h dropdown"> Width
+            <form style="display:inline; margin-left:5px;">
+              <select ng-model="paragraph.config.colWidth"
+                      class="selectpicker"
+                      ng-change="changeColWidth()"
+                      ng-options="col for col in colWidthOption"></select>
+            </form>
+          </a>
+        </li>
+        <li>
+          <a class="icon-arrow-up" style="cursor:pointer"
+             ng-click="moveUp()"> Move Up</a>
+        </li>
+        <li>
+          <a class="icon-arrow-down" style="cursor:pointer"
+             ng-click="moveDown()"> Move Down</a>
+        </li>
+        <li>
+          <a class="icon-plus" style="cursor:pointer"
+             ng-click="insertNew()"> Insert New</a>
+        </li>
+        <li>
+          <!-- paragraph handler -->
+          <a class="fa fa-font" style="cursor:pointer"
+             ng-click="hideTitle()"
+             ng-show="paragraph.config.title"> Hide title</a>
+          <a class="fa fa-font" style="cursor:pointer"
+             ng-click="showTitle()"
+             ng-show="!paragraph.config.title"> Show title</a>
+        </li>
+        <li>
+          <a class="fa fa-list-ol" style="cursor:pointer"
+             ng-click="hideLineNumbers()"
+             ng-show="paragraph.config.lineNumbers"> Hide line numbers</a>
+          <a class="fa fa-list-ol" style="cursor:pointer"
+             ng-click="showLineNumbers()"
+             ng-show="!paragraph.config.lineNumbers"> Show line numbers</a>
+        </li>
+
+        <li><a class="icon-share-alt" style="cursor:pointer"
+               ng-click="goToSingleParagraph()"> Link this paragraph</a>
+        </li>
+        <li>
+          <!-- remove paragraph -->
+          <a class="fa fa-times" style="cursor:pointer"
+             ng-click="removeParagraph()"> Remove</a>
+        </li>
+      </ul>
+    </span>
+  </div>
   <div>
     <div ng-show="!paragraph.config.editorHide && !viewOnly">
       <div id="{{paragraph.id}}_editor"
@@ -395,86 +475,5 @@ limitations under the License.
 
       <div ng-if="!asIframe" id="{{paragraph.id}}_executionTime" class="executionTime" ng-bind-html="getExecutionTime()"></div>
     </div>
-  </div>
-  <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
-
-    <span>
-      {{paragraph.status}}
-    </span>
-
-    <span ng-if="paragraph.status=='RUNNING'">
-      {{getProgress()}}%
-    </span>
-
-    <!-- Run / Cancel button -->
-    <span class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph (Shift+Enter)"
-          ng-click="runParagraph(getEditorValue())"
-          ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING'"></span>
-    <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top" tooltip="Cancel"
-          ng-click="cancelParagraph()"
-          ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
-    <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide') + ' editor'}}"
-          ng-click="toggleEditor()"></span>
-    <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
-          ng-click="toggleOutput()"></span>
-    <span  style="cursor:pointer;"
-          ng-click="saveParagraph()"
-          ng-show="dirtyText"></span>
-    <span class="dropdown navbar-right">
-      <span class="icon-settings" style="cursor:pointer"
-            data-toggle="dropdown"
-            type="button">
-      </span>
-      <ul class="dropdown-menu" role="menu" style="width:200px;">
-        <li>
-          <a class="fa fa-arrows-h dropdown"> Width
-          <form style="display:inline; margin-left:5px;">
-            <select ng-model="paragraph.config.colWidth"
-                    class="selectpicker"
-                    ng-change="changeColWidth()"
-                    ng-options="col for col in colWidthOption"></select>
-          </form>
-          </a>
-        </li>
-        <li>
-          <a class="icon-arrow-up" style="cursor:pointer"
-             ng-click="moveUp()"> Move Up</a>
-        </li>
-        <li>
-          <a class="icon-arrow-down" style="cursor:pointer"
-             ng-click="moveDown()"> Move Down</a>
-        </li>
-        <li>
-          <a class="icon-plus" style="cursor:pointer"
-             ng-click="insertNew()"> Insert New</a>
-        </li>
-        <li>
-          <!-- paragraph handler -->
-          <a class="fa fa-font" style="cursor:pointer"
-             ng-click="hideTitle()"
-             ng-show="paragraph.config.title"> Hide title</a>
-          <a class="fa fa-font" style="cursor:pointer"
-             ng-click="showTitle()"
-             ng-show="!paragraph.config.title"> Show title</a>
-        </li>
-        <li>
-          <a class="fa fa-list-ol" style="cursor:pointer"
-             ng-click="hideLineNumbers()"
-             ng-show="paragraph.config.lineNumbers"> Hide line numbers</a>
-          <a class="fa fa-list-ol" style="cursor:pointer"
-             ng-click="showLineNumbers()"
-             ng-show="!paragraph.config.lineNumbers"> Show line numbers</a>
-        </li>
-
-        <li><a class="icon-share-alt" style="cursor:pointer"
-               ng-click="goToSingleParagraph()"> Link this paragraph</a>
-        </li>
-        <li>
-          <!-- remove paragraph -->
-          <a class="fa fa-times" style="cursor:pointer"
-             ng-click="removeParagraph()"> Remove</a>
-        </li>
-      </ul>
-    </span>
   </div>
 </div>
