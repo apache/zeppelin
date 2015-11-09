@@ -61,11 +61,11 @@ limitations under the License.
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td> [Create JSON sample](rest-json/rest-json-notebook-create.html)</td>
+      <td><pre>{"name": "name of new notebook"}</pre></td>
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td> [Create response sample](rest-json/rest-json-notebook-create-response.html) </td>
+      <td><pre>{"status": "CREATED","message": "","body": "2AZPHY918"}</pre></td>
     </tr>
   </table>
   
@@ -96,7 +96,7 @@ limitations under the License.
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td> [Delete response sample](rest-json/rest-json-notebook-delete-response.html) </td>
+      <td><pre>{"status":"OK","message":""}</pre></td>
     </tr>
   </table>
   
@@ -129,11 +129,11 @@ limitations under the License.
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td> [Clone JSON sample](rest-json/rest-json-notebook-create.html)</td>
+      <td><pre>{"name": "name of new notebook"}</pre></td>
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td> [Clone response sample](rest-json/rest-json-notebook-create-response.html) </td>
+      <td><pre>{"status": "CREATED","message": "","body": "2AZPHY918"}</pre></td>
     </tr>
   </table>
   
