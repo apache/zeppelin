@@ -165,17 +165,15 @@ public class ZeppelinIT {
     }
   }
 
-	@Test
+  @Test
   public void testAngularDisplay() throws InterruptedException{
     if (!endToEndTestEnabled()) {
       return;
     }
+    createNewNote();
 
-	  String noteName = createNewNoteAndGetName();
-	  driver.findElement(By.partialLinkText(noteName)).click();
-
-	  // wait for first paragraph's " READY " status text
-	  waitForParagraph(1, "READY");
+    // wait for first paragraph's " READY " status text
+    waitForParagraph(1, "READY");
 
     /*
      * print angular template
@@ -293,7 +291,7 @@ public class ZeppelinIT {
     System.out.println("testCreateNotebook Test executed");
   }
 
-  private String createNewNoteAndGetName() {
+  private void createNewNote() {
     List<WebElement> notebookLinks = driver.findElements(By
         .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));    
     List<String> notebookTitles = new LinkedList<String>();
@@ -301,32 +299,17 @@ public class ZeppelinIT {
       notebookTitles.add(el.getText());
     }
     
-	WebElement createNoteLink = driver.findElement(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a"));
-	createNoteLink.click();
+    WebElement createNoteLink = driver.findElement(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a"));
+    createNoteLink.click();
 
-	WebDriverWait block = new WebDriverWait(driver, 10);
-	WebElement modal = block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteNameModal")));
-	WebElement createNoteButton = modal.findElement(By.id("createNoteButton"));
-	createNoteButton.click();
+    WebDriverWait block = new WebDriverWait(driver, 10);
+    WebElement modal = block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteNameModal")));
+    WebElement createNoteButton = modal.findElement(By.id("createNoteButton"));
+    createNoteButton.click();
 
     try {
       Thread.sleep(500); // wait for notebook list updated
     } catch (InterruptedException e) {
     } 
-
-    List<WebElement> notebookLinksAfterCreate = driver.findElements(By
-        .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));
-
-    Iterator<WebElement> it = notebookLinksAfterCreate.iterator();
-    while (it.hasNext()) {
-      WebElement newEl = it.next();
-      if (notebookTitles.contains(newEl.getText())) {
-        
-        it.remove();
-      }
-    }
-
-    assertEquals(1, notebookLinksAfterCreate.size());
-    return notebookLinksAfterCreate.get(0).getText();
   }
 }
