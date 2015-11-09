@@ -34,6 +34,9 @@ group: nav-right
 ### Storage
 * [S3 Storage](./storage/storage.html)
 
+### Storage
+* [S3 Storage](./storage/storage.html)
+
 ### Display System
 
 * [text](./displaysystem/display.html)
