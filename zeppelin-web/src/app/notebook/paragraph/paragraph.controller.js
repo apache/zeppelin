@@ -167,6 +167,7 @@ angular.module('zeppelinWebApp')
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
       var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished);
+      var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
 
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
 
@@ -223,7 +224,14 @@ angular.module('zeppelinWebApp')
       } else if (newType === 'ANGULAR' && resultRefreshed) {
         $scope.renderAngular();
       }
+
+      if (statusChanged || resultRefreshed) {
+        // when last paragraph runs, zeppelin automatically appends new paragraph.
+        // this broadcast will focus to the newly inserted paragraph
+        $rootScope.$broadcast('scrollToCursor');
+      }
     }
+
   });
 
   $scope.isRunning = function() {
@@ -542,7 +550,6 @@ angular.module('zeppelinWebApp')
         $scope.handleFocus(false);
       });
 
-
       $scope.editor.getSession().on('change', function(e, editSession) {
         height = editSession.getScreenLength() * $scope.editor.renderer.lineHeight + $scope.editor.renderer.scrollBar.getWidth();
         setEditorHeight(_editor.container.id, height);
@@ -586,12 +593,15 @@ angular.module('zeppelinWebApp')
         } else {
           var numRows;
           var currentRow;
+
           if (keyCode === 38 || (keyCode === 80 && e.ctrlKey)) {  // UP
             numRows = $scope.editor.getSession().getLength();
             currentRow = $scope.editor.getCursorPosition().row;
             if (currentRow === 0) {
               // move focus to previous paragraph
               $scope.$emit('moveFocusToPreviousParagraph', $scope.paragraph.id);
+            } else {
+              $scope.scrollToCursor($scope.paragraph.id, -1);
             }
           } else if (keyCode === 40 || (keyCode === 78 && e.ctrlKey)) {  // DOWN
             numRows = $scope.editor.getSession().getLength();
@@ -599,6 +609,8 @@ angular.module('zeppelinWebApp')
             if (currentRow === numRows-1) {
               // move focus to next paragraph
               $scope.$emit('moveFocusToNextParagraph', $scope.paragraph.id);
+            } else {
+              $scope.scrollToCursor($scope.paragraph.id, 1);
             }
           }
         }
@@ -607,8 +619,52 @@ angular.module('zeppelinWebApp')
     }
   };
 
+  $rootScope.$on('scrollToCursor', function(event) {
+    $scope.scrollToCursor($scope.paragraph.id, 0);
+  });
+
+  /** scrollToCursor if it is necessary
+   * when cursor touches scrollTriggerEdgeMargin from the top (or bottom) of the screen, it autoscroll to place cursor around 1/3 of screen height from the top (or bottom)
+   * paragraphId : paragraph that has active cursor
+   * lastCursorMove : 1(down), 0, -1(up) last cursor move event
+   **/
+  $scope.scrollToCursor = function(paragraphId, lastCursorMove) {
+    if (!$scope.editor.isFocused()) {
+     // only make sense when editor is focused
+     return;
+    }
+    var lineHeight = $scope.editor.renderer.lineHeight;
+    var headerHeight = 103; // menubar, notebook titlebar
+    var scrollTriggerEdgeMargin = 50;
+    
+    var documentHeight = angular.element(document).height();
+    var windowHeight = angular.element(window).height();  // actual viewport height
+
+    var scrollPosition = angular.element(document).scrollTop();
+    var editorPosition = angular.element('#'+paragraphId+'_editor').offset();
+    var position = $scope.editor.getCursorPosition();
+    var lastCursorPosition = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
+
+    var calculatedCursorPosition = editorPosition.top + lastCursorPosition.top + 16*lastCursorMove;
+
+    var scrollTargetPos;
+    if (calculatedCursorPosition < scrollPosition + headerHeight + scrollTriggerEdgeMargin) {
+      scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight-headerHeight)/3);
+      if (scrollTargetPos < 0) {
+        scrollTargetPos = 0;
+      }
+    } else if(calculatedCursorPosition > scrollPosition + scrollTriggerEdgeMargin + windowHeight - headerHeight) {
+      scrollTargetPos = calculatedCursorPosition - headerHeight - ((windowHeight-headerHeight)*2/3);
+
+      if (scrollTargetPos > documentHeight) {
+        scrollTargetPos = documentHeight;
+      }
+    }
+    angular.element('body').scrollTo(scrollTargetPos, {duration:200});
+  };
+
   var setEditorHeight = function(id, height) {
-    $('#' + id).height(height.toString() + 'px');
+    angular.element('#' + id).height(height.toString() + 'px');
   };
 
   $scope.getEditorValue = function() {
@@ -649,10 +705,23 @@ angular.module('zeppelinWebApp')
     }
   });
 
-  $scope.$on('focusParagraph', function(event, paragraphId) {
+  $scope.$on('focusParagraph', function(event, paragraphId, cursorPos) {
     if ($scope.paragraph.id === paragraphId) {
+      // focus editor
       $scope.editor.focus();
-      $('body').scrollTo('#'+paragraphId+'_editor', 300, {offset:-60});
+
+      // move cursor to the first row (or the last row)
+      var row;
+      if (cursorPos >= 0) {
+        row = cursorPos;
+        var column = 0;
+        $scope.editor.gotoLine(row, 0);
+      } else {
+        row = $scope.editor.session.getLength() - 1;
+        $scope.editor.gotoLine(row + 1, 0);
+      }
+
+      $scope.scrollToCursor($scope.paragraph.id, 0);
     }
   });
 
