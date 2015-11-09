@@ -459,7 +459,7 @@
               <exclude>spark-*-bin*/**</exclude>
 
               <!-- bundled from bootstrap -->
-              <exclude>docs/assets/themes/zeppelin/bootstrap/fonts/glyphicons-halflings-regular.svg</exclude>
+              <exclude>docs/assets/themes/zeppelin/bootstrap/**</exclude>
               <exclude>docs/assets/themes/zeppelin/css/style.css</exclude>
               <exclude>docs/_includes/themes/zeppelin/_jumbotron.html</exclude>
               <exclude>docs/_includes/themes/zeppelin/_navigation.html</exclude>
