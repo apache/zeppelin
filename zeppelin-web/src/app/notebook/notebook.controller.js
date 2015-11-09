@@ -15,7 +15,9 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, websocketMsgSrv, baseUrlSrv, $timeout) {
+angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location,
+                                                                     $rootScope, $http, websocketMsgSrv, baseUrlSrv,
+                                                                     $timeout, browserDetectService) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -81,13 +83,25 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   //Export notebook
   $scope.exportNotebook = function() {
-    var jsonContent = 'data:image/svg;charset=utf-8,' + encodeURIComponent(JSON.stringify($scope.note));
-    jQuery('h3').append('<a class="exportNotebook"></a>');
-    jQuery('h3 a.exportNotebook').attr('href', jsonContent);
-    jQuery('h3 a.exportNotebook').attr('download', $scope.note.name + '.json');
-    jQuery('h3 a.exportNotebook').attr('target', '_blank');
-    jQuery('h3 a.exportNotebook')[0].click();
-    jQuery('h3 a.exportNotebook').remove();
+    var jsonContent = JSON.stringify($scope.note);
+    if (browserDetectService.detectIE()) {
+      jQuery('h3').append('<iframe id="myFrame" style="display:none"></iframe>');
+      var myFrame = jQuery('#myFrame')[0].contentWindow;
+      myFrame.document.open('text/html', 'replace');
+      myFrame.document.write(jsonContent);
+      myFrame.document.close();
+      myFrame.focus();
+      myFrame.document.execCommand('SaveAs', true, $scope.note.name + '.json');
+      jQuery('h3 iframe').remove();
+    } else {
+      jsonContent = 'data:image/svg;charset=utf-8,' + encodeURIComponent(jsonContent);
+      jQuery('h3').append('<a class="exportNotebook"></a>');
+      jQuery('h3 a.exportNotebook').attr('href', jsonContent);
+      jQuery('h3 a.exportNotebook').attr('download', $scope.note.name + '.json');
+      jQuery('h3 a.exportNotebook').attr('target', '_blank');
+      jQuery('h3 a.exportNotebook')[0].click();
+      jQuery('h3 a.exportNotebook').remove();
+    }
   };
 
   //Clone note
