@@ -32,7 +32,7 @@
   <version>0.6.0-incubating-SNAPSHOT</version>
   <name>Zeppelin: Hive interpreter</name>
   <url>http://www.apache.org</url>
-
+<!--
   <repositories>
    <repository>
        <id>mapr-releases</id>
@@ -41,7 +41,7 @@
        <releases><enabled>true</enabled></releases>
      </repository>
   </repositories>
-
+-->
   <properties>
     <hive.hive.version>0.14.0</hive.hive.version>
     <hive.hadoop.version>2.6.0</hive.hadoop.version>
