@@ -309,19 +309,3 @@ This part should be removed when new version of bootstrap handles this issue.
 .btn-group > .popover + .btn {
   margin-left: -1px;
 }
-
-.dropdown-menu > li > label {
-  display: block;
-  font-weight: normal;
-  padding: 3px 20px;
-  line-height: 1.42857143;
-  color: #333;
-  white-space: nowrap;
-  margin: 0;
-}
-
-.dropdown-menu>li>label:hover {
-  color: #262626;
-  text-decoration: none;
-  background-color: #f5f5f5;
-}

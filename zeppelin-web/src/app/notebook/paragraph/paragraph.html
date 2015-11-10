@@ -437,10 +437,6 @@ limitations under the License.
           </a>
         </li>
         <li>
-         <label>
-            <input ng-model="paragraph.config.enabled" type="checkbox" ng-change="toggleEnableDisable();$event.stopPropagation();" /> {{paragraph.config.enabled ? "Disable" : "Enable"}}  paragraph</label>
-        </li>
-        <li>
           <a class="icon-arrow-up" style="cursor:pointer"
              ng-click="moveUp()"> Move Up</a>
         </li>
@@ -469,7 +465,10 @@ limitations under the License.
              ng-click="showLineNumbers()"
              ng-show="!paragraph.config.lineNumbers"> Show line numbers</a>
         </li>
-
+        <li>
+          <a class="fa" ng-class="{'fa-check-square-o': paragraph.config.enabled, 'fa-square-o': !paragraph.config.enabled}" style="cursor:pointer"
+             ng-click="toggleEnableDisable()"> {{paragraph.config.enabled ? "Disable" : "Enable"}}  paragraph</a>
+        </li>
         <li><a class="icon-share-alt" style="cursor:pointer"
                ng-click="goToSingleParagraph()"> Link this paragraph</a>
         </li>
