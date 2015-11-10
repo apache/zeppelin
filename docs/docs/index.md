@@ -31,6 +31,9 @@ group: nav-right
 * [spark](./interpreter/spark.html)
 * [tajo](../docs/pleasecontribute.html)
 
+### Storage
+* [S3 Storage](./storage/storage.html)
+
 ### Display System
 
 * [text](./displaysystem/display.html)
