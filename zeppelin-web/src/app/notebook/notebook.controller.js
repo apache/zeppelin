@@ -168,13 +168,13 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }, 10000);
   };
 
-  angular.element(window).on('unload', function(e) {
+  angular.element(window).on('beforeunload', function(e) {
     $scope.killSaveTimer();
     $scope.saveNote();
   });
 
   $scope.$on('$destroy', function() {
-    angular.element(window).off('unload');
+    angular.element(window).off('beforeunload');
     $scope.killSaveTimer();
     $scope.saveNote();
   });
