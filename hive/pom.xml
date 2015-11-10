@@ -32,10 +32,21 @@
   <version>0.6.0-incubating-SNAPSHOT</version>
   <name>Zeppelin: Hive interpreter</name>
   <url>http://www.apache.org</url>
-
+<!--
+  <repositories>
+   <repository>
+       <id>mapr-releases</id>
+       <url>http://repository.mapr.com/maven/</url>
+       <snapshots><enabled>false</enabled></snapshots>
+       <releases><enabled>true</enabled></releases>
+     </repository>
+  </repositories>
+-->
   <properties>
     <hive.hive.version>0.14.0</hive.hive.version>
     <hive.hadoop.version>2.6.0</hive.hadoop.version>
+<!--<hive.hive.version>1.0.0-mapr-1504</hive.hive.version>
+    <hive.hadoop.version>2.7.0-mapr-1506</hive.hadoop.version> -->
   </properties>
   <dependencies>
     <dependency>
