@@ -224,6 +224,10 @@
   Ace Text Editor CSS
 */
 
+.paragraph .editor-container {
+  clear: both;
+}
+
 .paragraph .editor {
   width: 100%;
   border-left: 4px solid #DDDDDD;
