@@ -108,10 +108,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   $scope.saveNote = function() {
-    _.forEach($scope.note.paragraphs, function(n, key) {
-      angular.element('#' + n.id + '_paragraphColumn_main').scope().saveParagraph();
-    });
-    $scope.isNoteDirty = null;
+    if ($scope.note && $scope.note.paragraphs) {
+      _.forEach($scope.note.paragraphs, function(n, key) {
+        angular.element('#' + n.id + '_paragraphColumn_main').scope().saveParagraph();
+      });
+      $scope.isNoteDirty = null;
+    }
   };
 
   $scope.toggleAllEditor = function() {
@@ -161,7 +163,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   $scope.killSaveTimer = function() {
-    if($scope.saveTimer){
+    if ($scope.saveTimer) {
       $timeout.cancel($scope.saveTimer);
       $scope.saveTimer = null;
     }
@@ -175,6 +177,17 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       $scope.saveNote();
     }, 10000);
   };
+
+  angular.element(window).on('beforeunload', function(e) {
+    $scope.killSaveTimer();
+    $scope.saveNote();
+  });
+
+  $scope.$on('$destroy', function() {
+    angular.element(window).off('beforeunload');
+    $scope.killSaveTimer();
+    $scope.saveNote();
+  });
 
   $scope.setLookAndFeel = function(looknfeel) {
     $scope.note.config.looknfeel = looknfeel;
