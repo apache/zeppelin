@@ -15,7 +15,9 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, websocketMsgSrv, baseUrlSrv, $timeout) {
+angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location,
+                                                                     $rootScope, $http, websocketMsgSrv, baseUrlSrv,
+                                                                     $timeout, SaveAsService) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -81,12 +83,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   //Export notebook
   $scope.exportNotebook = function() {
-    var jsonContent = 'data:text/json;charset=utf-8,' + JSON.stringify($scope.note);
-    var encodedUri = encodeURI(jsonContent);
-    var link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', $scope.note.name + '.json');
-    link.click();
+    var jsonContent = JSON.stringify($scope.note);
+    SaveAsService.SaveAs(jsonContent, $scope.note.name, 'json');
   };
 
   //Clone note
