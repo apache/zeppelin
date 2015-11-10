@@ -55,13 +55,6 @@
   </properties>
 
   <repositories>
-   <repository>
-     <id>mapr-releases</id>
-     <url>http://repository.mapr.com/maven/</url>
-     <snapshots><enabled>false</enabled></snapshots>
-     <releases><enabled>true</enabled></releases>
-   </repository>
-
     <repository>
       <id>cloudera</id>
       <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
@@ -549,6 +542,14 @@
         <yarn.version>2.3.0-mapr-4.0.0-FCS</yarn.version>
         <jets3t.version>0.7.1</jets3t.version>
       </properties>
+      <repositories>
+         <repository>
+           <id>mapr-releases</id>
+           <url>http://repository.mapr.com/maven/</url>
+           <snapshots><enabled>false</enabled></snapshots>
+           <releases><enabled>true</enabled></releases>
+         </repository>
+      </repositories>
     </profile>
 
     <profile>
@@ -579,6 +580,14 @@
           <version>3.4.5-mapr-1503</version>
         </dependency>
       </dependencies>
+      <repositories>
+         <repository>
+           <id>mapr-releases</id>
+           <url>http://repository.mapr.com/maven/</url>
+           <snapshots><enabled>false</enabled></snapshots>
+           <releases><enabled>true</enabled></releases>
+         </repository>
+      </repositories>
     </profile>
 
     <profile>
@@ -609,6 +618,14 @@
           <version>3.4.5-mapr-1503</version>
         </dependency>
       </dependencies>
+      <repositories>
+         <repository>
+           <id>mapr-releases</id>
+           <url>http://repository.mapr.com/maven/</url>
+           <snapshots><enabled>false</enabled></snapshots>
+           <releases><enabled>true</enabled></releases>
+         </repository>
+      </repositories>
     </profile>
 
     <profile>
@@ -639,6 +656,14 @@
           <version>3.4.5-mapr-1503</version>
         </dependency>
       </dependencies>
+      <repositories>
+         <repository>
+           <id>mapr-releases</id>
+           <url>http://repository.mapr.com/maven/</url>
+           <snapshots><enabled>false</enabled></snapshots>
+           <releases><enabled>true</enabled></releases>
+         </repository>
+      </repositories>
     </profile>
 
     <profile>
