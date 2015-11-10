@@ -53,6 +53,13 @@ limitations under the License.
               >
         <i class="fa fa-copy"></i>
       </button>
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-hide="viewOnly"
+              ng-click="exportNotebook()"
+              tooltip-placement="bottom" tooltip="Export the notebook">
+        <i class="fa fa-download"></i>
+      </button>
     </span>
 
     <span ng-hide="viewOnly">

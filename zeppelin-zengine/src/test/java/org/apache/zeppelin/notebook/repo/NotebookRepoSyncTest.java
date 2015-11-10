@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
@@ -178,6 +179,40 @@ public class NotebookRepoSyncTest implements JobListenerFactory{
         notebookRepoSync.list(0).get(0).getId()).getLastParagraph().getId());
     assertEquals(p1.getId(), notebookRepoSync.get(1,
         notebookRepoSync.list(1).get(0).getId()).getLastParagraph().getId());
+  }
+  
+  @Test
+  public void testSyncOnList() throws IOException {
+	
+	/* check that both storage repos are empty */
+	assertTrue(notebookRepoSync.getRepoCount() > 1);
+	assertEquals(0, notebookRepoSync.list(0).size());
+	assertEquals(0, notebookRepoSync.list(1).size());
+	    
+	File srcDir = new File("src/test/resources/2A94M5J1Z");
+	File destDir = new File(secNotebookDir + "/2A94M5J1Z");
+	
+	/* copy manually new notebook into secondary storage repo and check repos */
+    try {
+        FileUtils.copyDirectory(srcDir, destDir);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    assertEquals(0, notebookRepoSync.list(0).size());
+    assertEquals(1, notebookRepoSync.list(1).size());
+    
+    /* Although new notebook is added to secondary storage it's not displayed 
+     * on list() with ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE set to false
+     */
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "false");
+    assertEquals(0, notebookRepoSync.list().size());
+    
+    /* notebook is synced after ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE variable is set to true */
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "true");
+    assertEquals(1, notebookRepoSync.list().size());
+    
+    assertEquals(1, notebookRepoSync.list(0).size());
+	assertEquals(1, notebookRepoSync.list(1).size());
   }
   
   private void delete(File file){

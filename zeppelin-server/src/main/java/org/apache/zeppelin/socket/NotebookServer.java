@@ -273,17 +273,13 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  public void broadcastNote(Note note) {
-    broadcast(note.id(), new Message(OP.NOTE).put("note", note));
-  }
-
-  public void broadcastNoteList() {
+  public List<Map<String, String>> generateNotebooksInfo (){
     Notebook notebook = notebook();
 
     ZeppelinConfiguration conf = notebook.getConf();
     String homescreenNotebookId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
     boolean hideHomeScreenNotebookFromList = conf
-        .getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
+            .getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
 
     List<Note> notes = notebook.getAllNotes();
     List<Map<String, String>> notesInfo = new LinkedList<>();
@@ -299,6 +295,16 @@ public class NotebookServer extends WebSocketServlet implements
       notesInfo.add(info);
     }
 
+    return notesInfo;
+  }
+
+  public void broadcastNote(Note note) {
+    broadcast(note.id(), new Message(OP.NOTE).put("note", note));
+  }
+
+  public void broadcastNoteList() {
+
+    List<Map<String, String>> notesInfo = generateNotebooksInfo();
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
   }
 

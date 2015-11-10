@@ -79,6 +79,16 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
+  //Export notebook
+  $scope.exportNotebook = function() {
+    var jsonContent = 'data:text/json;charset=utf-8,' + JSON.stringify($scope.note);
+    var encodedUri = encodeURI(jsonContent);
+    var link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', $scope.note.name + '.json');
+    link.click();
+  };
+
   //Clone note
   $scope.cloneNote = function(noteId) {
     var result = confirm('Do you want to clone this notebook?');
