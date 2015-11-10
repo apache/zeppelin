@@ -454,6 +454,8 @@
               <exclude>CONTRIBUTING.md</exclude>
               <exclude>STYLE.md</exclude>
               <exclude>Roadmap.md</exclude>
+              <exclude>**/licenses/**</exclude>
+              <exclude>**/zeppelin-distribution/src/bin_license/**</exclude>
               <exclude>conf/interpreter.json</exclude>
               <exclude>conf/zeppelin-env.sh</exclude>
               <exclude>spark-*-bin*/**</exclude>
