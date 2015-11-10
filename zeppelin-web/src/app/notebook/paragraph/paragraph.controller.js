@@ -673,7 +673,7 @@ angular.module('zeppelinWebApp')
         scrollTargetPos = documentHeight;
       }
     }
-    angular.element('body').scrollTo(scrollTargetPos, {duration:200});
+    angular.element('body').scrollTo(scrollTargetPos, {axis: 'y', interrupt: true, duration:200});
   };
 
   var setEditorHeight = function(id, height) {
