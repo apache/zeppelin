@@ -65,6 +65,9 @@
       <fileMode>0755</fileMode>
     </fileSet>
     <fileSet>
+      <directory>../licenses</directory>
+    </fileSet>
+    <fileSet>
       <directory>../conf</directory>
     </fileSet>
     <fileSet>

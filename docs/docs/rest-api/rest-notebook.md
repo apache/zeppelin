@@ -4,6 +4,19 @@ title: "Notebook REST API"
 description: ""
 group: rest-api
 ---
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 {% include JB/setup %}
 
 ## Zeppelin REST API
@@ -48,11 +61,11 @@ group: rest-api
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td> [Create JSON sample](rest-json/rest-json-notebook-create.json)</td>
+      <td><pre>{"name": "name of new notebook"}</pre></td>
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td> [Create response sample](rest-json/rest-json-notebook-create-response.json) </td>
+      <td><pre>{"status": "CREATED","message": "","body": "2AZPHY918"}</pre></td>
     </tr>
   </table>
   
@@ -83,7 +96,7 @@ group: rest-api
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td> [Delete response sample](rest-json/rest-json-notebook-delete-response.json) </td>
+      <td><pre>{"status":"OK","message":""}</pre></td>
     </tr>
   </table>
   
@@ -116,11 +129,11 @@ group: rest-api
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td> [Clone JSON sample](rest-json/rest-json-notebook-create.json)</td>
+      <td><pre>{"name": "name of new notebook"}</pre></td>
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td> [Clone response sample](rest-json/rest-json-notebook-create-response.json) </td>
+      <td><pre>{"status": "CREATED","message": "","body": "2AZPHY918"}</pre></td>
     </tr>
   </table>
   
