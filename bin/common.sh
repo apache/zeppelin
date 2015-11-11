@@ -36,10 +36,6 @@ if [[ -z "${ZEPPELIN_LOG_DIR}" ]]; then
   export ZEPPELIN_LOG_DIR="${ZEPPELIN_HOME}/logs"
 fi
 
-if [[ -z "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
-  export ZEPPELIN_NOTEBOOK_DIR="${ZEPPELIN_HOME}/notebook"
-fi
-
 if [[ -z "$ZEPPELIN_PID_DIR" ]]; then
   export ZEPPELIN_PID_DIR="${ZEPPELIN_HOME}/run"
 fi
@@ -50,10 +46,6 @@ if [[ -z "${ZEPPELIN_WAR}" ]]; then
   else
     export ZEPPELIN_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web*.war")
   fi
-fi
-
-if [[ -z "$ZEPPELIN_INTERPRETER_DIR" ]]; then
-  export ZEPPELIN_INTERPRETER_DIR="${ZEPPELIN_HOME}/interpreter"
 fi
 
 if [[ -f "${ZEPPELIN_CONF_DIR}/zeppelin-env.sh" ]]; then
