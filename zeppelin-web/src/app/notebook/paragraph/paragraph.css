@@ -152,18 +152,17 @@
 }
 
 .paragraph .control {
-  background-color: rgba(255,255,255,0.85);
+  background-color: rgba(255,255,255,.85);
   float: right;
   color: #999;
-  margin-top: 1px;
   margin-right: 5px;
-  position: absolute;
-  clear: both;
   right: 15px;
-  top: 16px;
   text-align: right;
   font-size: 12px;
-  padding: 4px;
+  padding: 0px 0px 5px;
+  width: 100%;
+  border-bottom: 1px solid #efefef;
+  margin-bottom: 10px;
 }
 
 .paragraph .control li {
@@ -224,6 +223,10 @@
 /*
   Ace Text Editor CSS
 */
+
+.paragraph .editor-container {
+  clear: both;
+}
 
 .paragraph .editor {
   width: 100%;
