@@ -30,10 +30,10 @@ before_script:
 script:
  # spark 1.5
   - mvn package -Pbuild-distr -Phadoop-2.3 -Ppyspark -B
-  - ./testing/startSparkCluster.sh 1.5.1 2.3
-  - echo "export SPARK_HOME=`pwd`/spark-1.5.1-bin-hadoop2.3" > conf/zeppelin-env.sh
+  - ./testing/startSparkCluster.sh 1.5.2 2.3
+  - echo "export SPARK_HOME=`pwd`/spark-1.5.2-bin-hadoop2.3" > conf/zeppelin-env.sh
   - mvn verify -Pusing-packaged-distr -Phadoop-2.3 -Ppyspark -B
-  - ./testing/stopSparkCluster.sh 1.5.1 2.3
+  - ./testing/stopSparkCluster.sh 1.5.2 2.3
  # spark 1.4
   - rm -rf `pwd`/interpreter/spark
   - mvn package -DskipTests -Pspark-1.4 -Phadoop-2.3 -Ppyspark -B -pl 'zeppelin-interpreter,spark-dependencies,spark'
