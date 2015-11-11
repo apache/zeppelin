@@ -19,7 +19,7 @@ To know more about Zeppelin, visit our web site [http://zeppelin.incubator.apach
 ## Requirements
  * Java 1.7
  * Tested on Mac OSX, Ubuntu 14.X, CentOS 6.X
- * Maven (if you want to build from the source code)
+ * Maven **3.3.x** (if you want to build from the source code)
  * Node.js Package Manager
 
 ## Getting Started

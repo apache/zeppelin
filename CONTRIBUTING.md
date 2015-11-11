@@ -56,7 +56,7 @@ Test coverage report location are in `${submodule}/target/site/cobertura/index.h
 
 To build the code, install
  * Oracle Java 7
- * Apache Maven
+ * Apache Maven 3.3.x
 
 ## Getting the source code
 First of all, you need the Zeppelin source code. The official location for Zeppelin is [https://github.com/apache/incubator-zeppelin](https://github.com/apache/incubator-zeppelin)
