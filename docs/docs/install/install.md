@@ -101,16 +101,6 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
     <td>JVM Options</td>
 </table>
 
-#### Add jars, files
-
-spark.jars, spark.files property in *ZEPPELIN\_JAVA\_OPTS* adds jars, files into SparkContext.
-for example, 
-
-    ZEPPELIN_JAVA_OPTS="-Dspark.jars=/mylib1.jar,/mylib2.jar -Dspark.files=/myfile1.dat,/myfile2.dat"
-
-or you can do it dynamically with [dependency loader](../interpreter/spark.html#dependencyloading)
-
-
 ## Start/Stop
 #### Start Zeppelin
 
