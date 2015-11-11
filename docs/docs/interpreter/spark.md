@@ -67,6 +67,7 @@ When your code requires external library, instead of doing download/copy/restart
  * Automatically add libraries to SparkCluster (You can turn off)
 
 Dep interpreter leverages scala environment. So you can write any Scala code here.
+Note that %dep interpreter should be used before %spark, %pyspark, %sql.
 
 Here's usages.
 
@@ -104,7 +105,6 @@ z.load("groupId:artifactId:version").exclude("groupId:*")
 z.load("groupId:artifactId:version").local()
 ```
 
-Note that %dep interpreter should be used before %spark, %pyspark, %sql.
 
 <br />
 #### 2. Loading Spark Properties
