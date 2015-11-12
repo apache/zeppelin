@@ -4,6 +4,19 @@ title: "Interpreter REST API"
 description: ""
 group: rest-api
 ---
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 {% include JB/setup %}
 
 ## Zeppelin REST API
@@ -47,7 +60,50 @@ group: rest-api
     <tr>
       <td> sample JSON response
       </td>
-      <td> [Interpreter list sample](rest-json/rest-json-interpreter-list.json)
+      <td>
+        <pre>
+{
+  "status": "OK",
+  "message": "",
+  "body": {
+    "md.md": {
+      "name": "md",
+      "group": "md",
+      "className": "org.apache.zeppelin.markdown.Markdown",
+      "properties": {},
+      "path": "/zeppelin/interpreter/md"
+    },
+    "spark.spark": {
+      "name": "spark",
+      "group": "spark",
+      "className": "org.apache.zeppelin.spark.SparkInterpreter",
+      "properties": {
+        "spark.executor.memory": {
+          "defaultValue": "512m",
+          "description": "Executor memory per worker instance. ex) 512m, 32g"
+        },
+        "spark.cores.max": {
+          "defaultValue": "",
+          "description": "Total number of cores to use. Empty value uses all available core."
+        },
+      },
+      "path": "/zeppelin/interpreter/spark"
+    },
+    "spark.sql": {
+      "name": "sql",
+      "group": "spark",
+      "className": "org.apache.zeppelin.spark.SparkSqlInterpreter",
+      "properties": {
+        "zeppelin.spark.maxResult": {
+          "defaultValue": "1000",
+          "description": "Max number of SparkSQL result to display."
+        }
+      },
+      "path": "/zeppelin/interpreter/spark"
+    }
+  }
+}
+        </pre>
       </td>
     </tr>
   </table>
@@ -79,7 +135,48 @@ group: rest-api
     <tr>
       <td> sample JSON response
       </td>
-      <td> [Setting list sample](rest-json/rest-json-interpreter-setting.json)
+      <td>
+        <pre>
+{
+  "status": "OK",
+  "message": "",
+  "body": [
+    {
+      "id": "2AYUGP2D5",
+      "name": "md",
+      "group": "md",
+      "properties": {
+        "_empty_": ""
+      },
+      "interpreterGroup": [
+        {
+          "class": "org.apache.zeppelin.markdown.Markdown",
+          "name": "md"
+        }
+      ]
+    },  
+    {
+      "id": "2AY6GV7Q3",
+      "name": "spark",
+      "group": "spark",
+      "properties": {
+        "spark.cores.max": "",
+        "spark.executor.memory": "512m",
+      },
+      "interpreterGroup": [
+        {
+          "class": "org.apache.zeppelin.spark.SparkInterpreter",
+          "name": "spark"
+        },
+        {
+          "class": "org.apache.zeppelin.spark.SparkSqlInterpreter",
+          "name": "sql"
+        }
+      ]
+    }
+  ]
+}
+        </pre>
       </td>
     </tr>
   </table>
@@ -111,13 +208,48 @@ group: rest-api
     <tr>
       <td> sample JSON input
       </td>
-      <td> [Create JSON sample](rest-json/rest-json-interpreter-create.json)
+      <td>
+        <pre>
+{
+  "name": "Markdown setting name",
+  "group": "md",
+  "properties": {
+    "propname": "propvalue"
+  },
+  "interpreterGroup": [
+    {
+      "class": "org.apache.zeppelin.markdown.Markdown",
+      "name": "md"
+    }
+  ]
+}
+        </pre>
       </td>
     </tr>
     <tr>
       <td> sample JSON response
       </td>
-      <td> [Create response sample](rest-json/rest-json-interpreter-create-response.json)
+      <td>
+        <pre>
+{
+  "status": "CREATED",
+  "message": "",
+  "body": {
+    "id": "2AYW25ANY",
+    "name": "Markdown setting name",
+    "group": "md",
+    "properties": {
+      "propname": "propvalue"
+    },
+    "interpreterGroup": [
+      {
+        "class": "org.apache.zeppelin.markdown.Markdown",
+        "name": "md"
+      }
+    ]
+  }
+}
+        </pre>
       </td>
     </tr>
   </table>
@@ -150,13 +282,48 @@ group: rest-api
     <tr>
       <td> sample JSON input
       </td>
-      <td> [Update JSON sample](rest-json/rest-json-interpreter-update.json)
+      <td>
+        <pre>
+{
+  "name": "Markdown setting name",
+  "group": "md",
+  "properties": {
+    "propname": "Otherpropvalue"
+  },
+  "interpreterGroup": [
+    {
+      "class": "org.apache.zeppelin.markdown.Markdown",
+      "name": "md"
+    }
+  ]
+}
+        </pre>
       </td>
     </tr>
     <tr>
       <td> sample JSON response
       </td>
-      <td> [Update response sample](rest-json/rest-json-interpreter-update-response.json)
+      <td>
+        <pre>
+{
+  "status": "OK",
+  "message": "",
+  "body": {
+    "id": "2AYW25ANY",
+    "name": "Markdown setting name",
+    "group": "md",
+    "properties": {
+      "propname": "Otherpropvalue"
+    },
+    "interpreterGroup": [
+      {
+        "class": "org.apache.zeppelin.markdown.Markdown",
+        "name": "md"
+      }
+    ]
+  }
+}
+        </pre>
       </td>
     </tr>
   </table>
@@ -189,7 +356,8 @@ group: rest-api
     <tr>
       <td> sample JSON response
       </td>
-      <td> [Delete response sample](rest-json/rest-json-interpreter-delete-response.json)
+      <td>
+        <pre>{"status":"OK"}</pre>
       </td>
     </tr>
   </table>
