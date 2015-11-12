@@ -188,6 +188,25 @@ public class Note implements Serializable, JobListener {
   }
 
   /**
+   * Clear paragraph output by id.
+   *
+   * @param paragraphId
+   * @return
+   */
+  public Paragraph clearParagraphOutput(String paragraphId) {
+    synchronized (paragraphs) {
+      for (int i = 0; i < paragraphs.size(); i++) {
+        Paragraph p = paragraphs.get(i);
+        if (p.getId().equals(paragraphId)) {
+          p.setReturn(null, null);
+          return p;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
    * Move paragraph into the new index (order from 0 ~ n-1).
    *
    * @param paragraphId

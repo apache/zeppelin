@@ -137,6 +137,9 @@ public class NotebookServer extends WebSocketServlet implements
           case PARAGRAPH_REMOVE:
             removeParagraph(conn, notebook, messagereceived);
             break;
+          case PARAGRAPH_CLEAR_OUTPUT:
+            clearParagraphOutput(conn, notebook, messagereceived);
+            break;
           case NOTE_UPDATE:
             updateNote(conn, notebook, messagereceived);
             break;
@@ -394,6 +397,7 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     note.persist();
+    addConnectionToNote(note.id(), (NotebookSocket) conn);
     broadcastNote(note);
     broadcastNoteList();
   }
@@ -437,6 +441,7 @@ public class NotebookServer extends WebSocketServlet implements
     String noteId = getOpenNoteId(conn);
     String name = (String) fromMessage.get("name");
     Note newNote = notebook.cloneNote(noteId, name);
+    addConnectionToNote(newNote.id(), (NotebookSocket) conn);
     broadcastNote(newNote);
     broadcastNoteList();
   }
@@ -455,6 +460,18 @@ public class NotebookServer extends WebSocketServlet implements
       note.persist();
       broadcastNote(note);
     }
+  }
+
+  private void clearParagraphOutput(NotebookSocket conn, Notebook notebook,
+      Message fromMessage) throws IOException {
+    final String paragraphId = (String) fromMessage.get("id");
+    if (paragraphId == null) {
+      return;
+    }
+
+    final Note note = notebook.getNote(getOpenNoteId(conn));
+    note.clearParagraphOutput(paragraphId);
+    broadcastNote(note);
   }
 
   private void completion(NotebookSocket conn, Notebook notebook,
