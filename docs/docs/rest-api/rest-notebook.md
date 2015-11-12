@@ -61,7 +61,7 @@ limitations under the License.
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td> [List response sample](rest-json/rest-json-notebook-list-response.json) </td>
+      <td><pre>{"status":"OK","message":"","body":[{"name":"Homepage","id":"2AV4WUEMK"},{"name":"Zeppelin Tutorial","id":"2A94M5J1Z"}]}</pre></td>
     </tr>
   </table>
   
