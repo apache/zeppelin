@@ -40,10 +40,10 @@ z.angularBind(String name, Object object)
 z.angularBindGlobal(String name, Object object)
 
 // unbind angular scope variable 'name' in current notebook.
-z.angularBind(String name)
+z.angularUnbind(String name)
 
 // unbind angular scope variable 'name' in all notebooks related to current interpreter.
-z.angularBindGlobal(String name)
+z.angularUnbindGlobal(String name)
 
 ```
 
