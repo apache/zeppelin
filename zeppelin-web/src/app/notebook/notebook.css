@@ -112,12 +112,18 @@
 
 .setting {
   background-color: white;
-  padding: 10px 15px 15px 15px;
-  margin-left: -10px;
-  margin-right: -10px;
+  padding: 4px 15px 15px 15px;
+  margin: 8px -10px 0px -10px;
   font-family: 'Roboto', sans-serif;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   border-bottom: 1px solid #E5E5E5;
+  position: fixed;
+  width: 100%;
+  z-index: 3;
+}
+
+.setting hr {
+  margin: 10px 0px 10px 0px;
 }
 
 .setting .interpreterSettings {
