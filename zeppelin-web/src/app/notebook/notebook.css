@@ -112,14 +112,29 @@
 
 .setting {
   background-color: white;
-  padding: 4px 15px 15px 15px;
-  margin: 8px -10px 0px -10px;
+  padding: 0px 0px 15px 0px;
+  margin: 44px -10px 0px -10px;
   font-family: 'Roboto', sans-serif;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   border-bottom: 1px solid #E5E5E5;
   position: fixed;
   width: 100%;
   z-index: 3;
+  max-height: calc(100% - 54px - 49px);
+  overflow: auto;
+}
+
+.setting .settings-header {
+  position: fixed;
+  background-color: white;
+  width: 100%;
+}
+.setting .settings-body {
+  margin-top: 55px;
+}
+
+.settings-content-padding {
+  padding: 0px 15px 0px 15px;
 }
 
 .setting hr {
