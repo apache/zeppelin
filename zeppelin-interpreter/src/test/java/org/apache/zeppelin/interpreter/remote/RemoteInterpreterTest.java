@@ -17,10 +17,7 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +35,6 @@ import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer.InterpretJob;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterB;
 import org.apache.zeppelin.scheduler.Job;
@@ -63,7 +59,7 @@ public class RemoteInterpreterTest {
 
   @After
   public void tearDown() throws Exception {
-    intpGroup.clone();
+    intpGroup.close();
     intpGroup.destroy();
   }
 
@@ -225,7 +221,7 @@ public class RemoteInterpreterTest {
     intpB.close();
 
     RemoteInterpreterProcess process = intpA.getInterpreterProcess();
-    assertFalse(process.isRunning());
+    assertNull(process);
   }
 
   @Test
@@ -343,7 +339,7 @@ public class RemoteInterpreterTest {
     intpB.close();
 
     RemoteInterpreterProcess process = intpA.getInterpreterProcess();
-    assertFalse(process.isRunning());
+    assertNull(process);
   }
 
   @Test
@@ -555,7 +551,75 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testInterpreterGroupResetDuringProcessRunning() {
+  public void testInterpreterGroupResetDuringProcessRunning() throws InterruptedException {
+    Properties p = new Properties();
+
+    final RemoteInterpreter intpA = new RemoteInterpreter(
+        p,
+        MockInterpreterA.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        env,
+        10 * 1000
+        );
+
+    intpGroup.add(intpA);
+    intpA.setInterpreterGroup(intpGroup);
+
+    intpA.open();
+
+    Job jobA = new Job("jobA", null) {
+
+      @Override
+      public int progress() {
+        return 0;
+      }
+
+      @Override
+      public Map<String, Object> info() {
+        return null;
+      }
+
+      @Override
+      protected Object jobRun() throws Throwable {
+        return intpA.interpret("2000",
+            new InterpreterContext(
+                "note",
+                "jobA",
+                "title",
+                "text",
+                new HashMap<String, Object>(),
+                new GUI(),
+                new AngularObjectRegistry(intpGroup.getId(), null),
+                new LinkedList<InterpreterContextRunner>()));
+      }
+
+      @Override
+      protected boolean jobAbort() {
+        return false;
+      }
+
+    };
+    intpA.getScheduler().submit(jobA);
+
+    // wait for job started
+    while (intpA.getScheduler().getJobsRunning().size() == 0) {
+      Thread.sleep(100);
+    }
+
+    // restart interpreter
+    RemoteInterpreterProcess processA = intpA.getInterpreterProcess();
+    intpA.close();
+    intpA.setInterpreterGroup(new InterpreterGroup(intpA.getInterpreterGroup().getId()));
+    intpA.open();
+    RemoteInterpreterProcess processB = intpA.getInterpreterProcess();
+
+    assertNotSame(processA.hashCode(), processB.hashCode());
+
+  }
+
+  @Test
+  public void testRemoteInterpreterSharesTheSameSchedulerInstanceInTheSameGroup() {
     Properties p = new Properties();
 
     RemoteInterpreter intpA = new RemoteInterpreter(
@@ -567,16 +631,24 @@ public class RemoteInterpreterTest {
         10 * 1000
         );
 
+    intpGroup.add(intpA);
     intpA.setInterpreterGroup(intpGroup);
-    RemoteInterpreterProcess processA = intpA.getInterpreterProcess();
+
+    RemoteInterpreter intpB = new RemoteInterpreter(
+        p,
+        MockInterpreterB.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        env,
+        10 * 1000
+        );
+
+    intpGroup.add(intpB);
+    intpB.setInterpreterGroup(intpGroup);
+
     intpA.open();
+    intpB.open();
 
-    intpA.setInterpreterGroup(new InterpreterGroup(intpA.getInterpreterGroup().getId()));
-    RemoteInterpreterProcess processB = intpA.getInterpreterProcess();
-
-    assertEquals(processA.hashCode(), processB.hashCode());
-
-    processA.dereference();     // intpA.close();
-
+    assertEquals(intpA.getScheduler(), intpB.getScheduler());
   }
 }
