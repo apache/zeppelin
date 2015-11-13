@@ -98,7 +98,7 @@ public class NotebookServer extends WebSocketServlet implements
     Notebook notebook = notebook();
     try {
       Message messagereceived = deserializeMessage(msg);
-      LOG.info("RECEIVE << " + messagereceived.op);
+      LOG.debug("RECEIVE << " + messagereceived.op);
       /** Lets be elegant here */
       switch (messagereceived.op) {
           case LIST_NOTES:
@@ -253,7 +253,7 @@ public class NotebookServer extends WebSocketServlet implements
       if (socketLists == null || socketLists.size() == 0) {
         return;
       }
-      LOG.info("SEND >> " + m.op);
+      LOG.debug("SEND >> " + m.op);
       for (NotebookSocket conn : socketLists) {
         try {
           conn.send(serializeMessage(m));
@@ -435,7 +435,7 @@ public class NotebookServer extends WebSocketServlet implements
     note.persist();
     broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
   }
-  
+
   private void cloneNote(NotebookSocket conn, Notebook notebook, Message fromMessage)
       throws IOException, CloneNotSupportedException {
     String noteId = getOpenNoteId(conn);
