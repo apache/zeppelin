@@ -120,7 +120,8 @@
   position: fixed;
   width: 100%;
   z-index: 3;
-  max-height: calc(100% - 54px - 49px);
+  /* max-height = page - (Navbar 54px + ActionBar 49px + Style Margin 30px) */
+  max-height: calc(100% - 133px);
   overflow: auto;
 }
 
