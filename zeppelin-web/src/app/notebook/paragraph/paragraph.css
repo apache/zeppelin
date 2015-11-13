@@ -18,7 +18,8 @@
 
 .paragraph-space {
   margin-bottom: 5px !important;
-  padding: 10px !important;
+  padding: 10px 10px 10px 10px !important;
+  min-height : 30px;
 }
 
 .paragraph-margin {
@@ -42,6 +43,7 @@
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
   font-size: 12px !important;
   margin-bottom: 5px !important;
+  padding-top: 2px;
 }
 
 .paragraph table {
@@ -69,6 +71,10 @@
 
 .resizable-helper {
   border: 3px solid #DDDDDD;
+}
+
+.paragraph .paragraphFooter { 
+  height: 9px;
 }
 
 .paragraph .executionTime {
@@ -181,8 +187,7 @@
 */
 
 .paragraph .title {
-  margin: 3px 0px 0px 0px;
-  min-height: 20px;
+  margin: 0px 0px 0px 0px;
   font-size: 12px;
 }
 
@@ -288,6 +293,12 @@
 /*
   Table Display CSS
 */
+
+.tableDisplay {
+}
+
+.tableDisplay div {
+}
 
 .tableDisplay img {
   display: block;
