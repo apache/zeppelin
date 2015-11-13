@@ -40,9 +40,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   private transient NoteInterpreterLoader replLoader;
   private transient Note note;
 
-  String title;
-  String text;
-  Date dateUpdated;
+  private String title;
+  private String text;
+  private Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
 
@@ -71,6 +71,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.dateUpdated = new Date();
   }
 
+  public Date getDateUpdated() {
+    return this.dateUpdated;
+  }
 
   public String getTitle() {
     return title;

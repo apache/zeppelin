@@ -256,6 +256,16 @@ public class Note implements Serializable, JobListener {
     return true;
   }
 
+  public List<Paragraph> getAllParagraphs() {
+    List<Paragraph> allParagraphs;
+
+    synchronized (paragraphs) {
+      allParagraphs = new LinkedList<Paragraph>(paragraphs);
+    }
+
+    return allParagraphs;
+  }
+
   public Paragraph getParagraph(String paragraphId) {
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {

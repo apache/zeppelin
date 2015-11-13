@@ -29,6 +29,13 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
 
   initHome();
 
+  $scope.time2TimeAgo = function(timeLocaleString) {
+    var momentDate = moment(timeLocaleString);
+    var agoString = momentDate.fromNow(true);
+    
+    return agoString;
+  };
+
   $scope.$on('setNoteContent', function(event, note) {
     if (note) {
       vm.note = note;
