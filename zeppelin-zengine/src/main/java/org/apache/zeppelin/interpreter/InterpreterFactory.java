@@ -49,6 +49,8 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
+import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.ParagraphSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +63,17 @@ import com.google.gson.GsonBuilder;
  */
 public class InterpreterFactory {
   Logger logger = LoggerFactory.getLogger(InterpreterFactory.class);
+  ResultRepoFactory resultRepoFactory;
+
+  public ResultRepoFactory getResultRepoFactory() {
+    return resultRepoFactory;
+  }
+
+
+  public void setResultRepoFactory(ResultRepoFactory resultRepoFactory) {
+    this.resultRepoFactory = resultRepoFactory;
+  }
+
 
   private Map<String, URLClassLoader> cleanCl = Collections
       .synchronizedMap(new HashMap<String, URLClassLoader>());
@@ -80,24 +93,28 @@ public class InterpreterFactory {
   AngularObjectRegistryListener angularObjectRegistryListener;
 
   public InterpreterFactory(ZeppelinConfiguration conf,
-      AngularObjectRegistryListener angularObjectRegistryListener)
+      AngularObjectRegistryListener angularObjectRegistryListener,
+      ResultRepoFactory resultrepo)
       throws InterpreterException, IOException {
-    this(conf, new InterpreterOption(true), angularObjectRegistryListener);
+    this(conf, new InterpreterOption(true), angularObjectRegistryListener, resultrepo);
   }
 
 
   public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
-      AngularObjectRegistryListener angularObjectRegistryListener)
+      AngularObjectRegistryListener angularObjectRegistryListener, ResultRepoFactory resultrepo)
       throws InterpreterException, IOException {
     this.conf = conf;
     this.defaultOption = defaultOption;
     this.angularObjectRegistryListener = angularObjectRegistryListener;
+    this.resultRepoFactory = resultrepo;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
     interpreterClassList = replsConf.split(",");
 
     GsonBuilder builder = new GsonBuilder();
     builder.setPrettyPrinting();
     builder.registerTypeAdapter(Interpreter.class, new InterpreterSerializer());
+   /* builder.registerTypeAdapter(JdbcInterpreterResult.class,
+      new InterpreterResultSerializer(resultRepoFactory)); */
     gson = builder.create();
 
     init();
@@ -197,6 +214,7 @@ public class InterpreterFactory {
     GsonBuilder builder = new GsonBuilder();
     builder.setPrettyPrinting();
     builder.registerTypeAdapter(Interpreter.class, new InterpreterSerializer());
+    builder.registerTypeAdapter(Paragraph.class, new ParagraphSerializer(resultRepoFactory));
     Gson gson = builder.create();
 
     File settingFile = new File(conf.getInterpreterSettingPath());
@@ -227,8 +245,6 @@ public class InterpreterFactory {
       // previously created setting should turn this feature on here.
       setting.getOption().setRemote(true);
 
-
-
       InterpreterSetting intpSetting = new InterpreterSetting(
           setting.id(),
           setting.getName(),
@@ -247,7 +263,6 @@ public class InterpreterFactory {
 
     this.interpreterBindings = info.interpreterBindings;
   }
-
 
   private void saveToFile() throws IOException {
     String jsonString;

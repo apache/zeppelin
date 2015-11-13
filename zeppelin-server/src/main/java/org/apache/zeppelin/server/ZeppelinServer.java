@@ -33,6 +33,7 @@ import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
+import org.apache.zeppelin.interpreter.ResultRepoFactory;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
@@ -68,6 +69,8 @@ public class ZeppelinServer extends Application {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
 
   private SchedulerFactory schedulerFactory;
+  private ResultRepoFactory resultRepoFactory;
+  
   public static Notebook notebook;
 
   public static NotebookServer notebookServer;
@@ -252,8 +255,10 @@ public class ZeppelinServer extends Application {
 
     this.schedulerFactory = new SchedulerFactory();
 
-    this.replFactory = new InterpreterFactory(conf, notebookServer);
+    this.resultRepoFactory = new ResultRepoFactory(conf);
+    this.replFactory = new InterpreterFactory(conf, notebookServer, resultRepoFactory);
     this.notebookRepo = new NotebookRepoSync(conf);
+   
     notebook = new Notebook(conf, notebookRepo, schedulerFactory, replFactory, notebookServer);
   }
 

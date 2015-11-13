@@ -20,7 +20,6 @@ package org.apache.zeppelin.hive;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
@@ -32,6 +31,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.JdbcInterpreterResult;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -117,10 +117,12 @@ public class HiveInterpreter extends Interpreter {
   Statement currentStatement;
   private InterpreterResult executeSql(String sql) {
     try {
+      logger.debug("Running execute.");
       if (exceptionOnConnect != null) {
         return new InterpreterResult(Code.ERROR, exceptionOnConnect.getMessage());
       }
       currentStatement = jdbcConnection.createStatement();
+      logger.debug("Created statement.");
       StringBuilder msg = null;
       if (StringUtils.containsIgnoreCase(sql, "EXPLAIN ")) {
         //return the explain as text, make this visual explain later
@@ -129,23 +131,12 @@ public class HiveInterpreter extends Interpreter {
       else {
         msg = new StringBuilder("%table ");
       }
+      logger.debug("Building JDBC result");
+      
       ResultSet res = currentStatement.executeQuery(sql);
+
       try {
-        ResultSetMetaData md = res.getMetaData();
-        for (int i = 1; i < md.getColumnCount() + 1; i++) {
-          if (i == 1) {
-            msg.append(md.getColumnName(i));
-          } else {
-            msg.append("\t" + md.getColumnName(i));
-          }
-        }
-        msg.append("\n");
-        while (res.next()) {
-          for (int i = 1; i < md.getColumnCount() + 1; i++) {
-            msg.append(res.getString(i) + "\t");
-          }
-          msg.append("\n");
-        }
+        return new JdbcInterpreterResult(Code.SUCCESS, res);
       }
       finally {
         try {
@@ -157,8 +148,6 @@ public class HiveInterpreter extends Interpreter {
         }
       }
 
-      InterpreterResult rett = new InterpreterResult(Code.SUCCESS, msg.toString());
-      return rett;
     }
     catch (SQLException ex) {
       logger.error("Can not run " + sql, ex);

@@ -27,6 +27,7 @@ import org.apache.zeppelin.scheduler.JobListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
@@ -43,8 +44,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   String title;
   String text;
   Date dateUpdated;
-  private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
-  public final GUI settings;          // form and parameter settings
+  private Map<String, Object> config; // paragraph configs like isOpen,
+                                      // colWidth, etc
+  public final GUI settings; // form and parameter settings
 
   public Paragraph(Note note, JobListener listener, NoteInterpreterLoader replLoader) {
     super(generateId(), listener);
@@ -55,11 +57,14 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     dateUpdated = null;
     settings = new GUI();
     config = new HashMap<String, Object>();
+    config.put("RESULT_REPO",
+        "org.apache.zeppelin.interpreter.FilesystemResultRepo");
+        //replLoader.getResultFactory().getDefaultRepo().getClass().getName());
   }
 
   private static String generateId() {
-    return "paragraph_" + System.currentTimeMillis() + "_"
-           + new Random(System.currentTimeMillis()).nextInt();
+    return "paragraph_" + System.currentTimeMillis()
+       + "_" + new Random(System.currentTimeMillis()).nextInt();
   }
 
   public String getText() {
@@ -70,7 +75,6 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.text = newText;
     this.dateUpdated = new Date();
   }
-
 
   public String getTitle() {
     return title;
@@ -118,6 +122,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   private String getScriptBody() {
+
     return getScriptBody(text);
   }
 
@@ -204,6 +209,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       script = Input.getSimpleQuery(settings.getParams(), scriptBody);
     }
     logger().debug("RUN : " + script);
+    // Delete existing result before setting new one.
+    
     InterpreterResult ret = repl.interpret(script, getInterpreterContext());
     return ret;
   }
@@ -228,15 +235,9 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       runners.add(new ParagraphRunner(note, note.id(), p.getId()));
     }
 
-    InterpreterContext interpreterContext = new InterpreterContext(
-            note.id(),
-            getId(),
-            this.getTitle(),
-            this.getText(),
-            this.getConfig(),
-            this.settings,
-            registry,
-            runners);
+    InterpreterContext interpreterContext = new InterpreterContext
+    (note.id(), getId(), this.getTitle(), this.getText(),
+      this.getConfig(), this.settings, registry, runners);
     return interpreterContext;
   }
 
@@ -254,12 +255,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
   }
 
-
   private Logger logger() {
     Logger logger = LoggerFactory.getLogger(Paragraph.class);
     return logger;
   }
-
 
   public Map<String, Object> getConfig() {
     return config;

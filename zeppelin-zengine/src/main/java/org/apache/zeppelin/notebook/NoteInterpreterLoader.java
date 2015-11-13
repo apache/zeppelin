@@ -18,8 +18,6 @@
 package org.apache.zeppelin.notebook;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
@@ -27,6 +25,7 @@ import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.ResultRepoFactory;
 
 /**
  * Repl loader per note.
@@ -37,6 +36,10 @@ public class NoteInterpreterLoader {
 
   public NoteInterpreterLoader(InterpreterFactory factory) {
     this.factory = factory;
+  }
+
+  public ResultRepoFactory getResultFactory() {
+    return factory.getResultRepoFactory();
   }
 
   public void setNoteId(String noteId) {
@@ -147,4 +150,5 @@ public class NoteInterpreterLoader {
 
     throw new InterpreterException(replName + " interpreter not found");
   }
+
 }

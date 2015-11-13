@@ -24,6 +24,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterSerializer;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
