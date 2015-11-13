@@ -21,96 +21,51 @@ package org.apache.zeppelin.socket;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
 import java.io.IOException;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
-import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
-import org.apache.zeppelin.scheduler.JobListener;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.socket.Message.OP;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
 import com.google.gson.Gson;
+
 import java.net.UnknownHostException;
 import java.net.InetAddress;
 import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
+
 import static org.mockito.Mockito.*;
 
 
 /**
  * BASIC Zeppelin rest api tests
  */
-public class NotebookServerTest implements JobListenerFactory {
+public class NotebookServerTest extends AbstractTestRestApi {
 
-  private File tmpDir;
-  private ZeppelinConfiguration conf;
-  private SchedulerFactory schedulerFactory;
-  private File notebookDir;
-  private Notebook notebook;
-  private NotebookRepo notebookRepo;
-  private InterpreterFactory factory;
-  private NotebookServer notebookServer;
-  private Gson gson;
 
-  @Before
-  public void setUp() throws Exception {
+  private static Notebook notebook;
+  private static NotebookServer notebookServer;
+  private static Gson gson;
+
+  @BeforeClass
+  public static void init() throws Exception {
+    AbstractTestRestApi.startUp();
     gson = new Gson();
-    tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
-    tmpDir.mkdirs();
-    new File(tmpDir, "conf").mkdirs();
-    notebookDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis()+"/notebook");
-    notebookDir.mkdirs();
-
-    System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName(), notebookDir.getAbsolutePath());
-    System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
-
-    conf = ZeppelinConfiguration.create();
-
-    this.schedulerFactory = new SchedulerFactory();
-
-    MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
-
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
-
-    notebookRepo = new VFSNotebookRepo(conf);
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this);
-
-    notebookServer = new NotebookServer();
-    ZeppelinServer.notebook = notebook;
-    ZeppelinServer.notebookServer = notebookServer;
+    notebook = ZeppelinServer.notebook;
+    notebookServer = ZeppelinServer.notebookServer;
   }
 
-  @After
-  public void tearDown() throws Exception {
-    delete(tmpDir);
-  }
-
-  private void delete(File file){
-    if(file.isFile()) file.delete();
-    else if(file.isDirectory()){
-      File [] files = file.listFiles();
-      if(files!=null && files.length>0){
-        for(File f : files){
-          delete(f);
-        }
-      }
-      file.delete();
-    }
+  @AfterClass
+  public static void destroy() throws Exception {
+    AbstractTestRestApi.shutDown();
   }
 
   @Test
@@ -157,11 +112,13 @@ public class NotebookServerTest implements JobListenerFactory {
 
     notebookServer.onOpen(sock1);
     notebookServer.onOpen(sock2);
-
+    verify(sock1, times(0)).send(anyString()); // getNote, getAngularObject
     // open the same notebook from sockets
     notebookServer.onMessage(sock1, gson.toJson(new Message(OP.GET_NOTE).put("id", note1.getId())));
     notebookServer.onMessage(sock2, gson.toJson(new Message(OP.GET_NOTE).put("id", note1.getId())));
 
+    reset(sock1);
+    reset(sock2);
 
     // update object from sock1
     notebookServer.onMessage(sock1, gson.toJson(
@@ -173,8 +130,8 @@ public class NotebookServerTest implements JobListenerFactory {
 
 
     // expect object is broadcasted except for where the update is created
-    verify(sock1, times(2)).send(anyString()); // getNote, getAngularObject
-    verify(sock2, times(3)).send(anyString()); // getNote, getAngularObject, updateAngularObject
+    verify(sock1, times(0)).send(anyString());
+    verify(sock2, times(1)).send(anyString());
 
     notebook.removeNote(note1.getId());
   }
@@ -187,11 +144,6 @@ public class NotebookServerTest implements JobListenerFactory {
 
   private HttpServletRequest createHttpServletRequest() {
     return mock(HttpServletRequest.class);
-  }
-
-  @Override
-  public JobListener getParagraphJobListener(Note note) {
-    return null;
   }
 }
 
