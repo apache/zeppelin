@@ -554,10 +554,10 @@ public class RemoteInterpreterTest {
   }
 
   @Test
-  public void testInterpreterGroupResetDuringProcessRunning() {
+  public void testInterpreterGroupResetDuringProcessRunning() throws InterruptedException {
     Properties p = new Properties();
 
-    RemoteInterpreter intpA = new RemoteInterpreter(
+    final RemoteInterpreter intpA = new RemoteInterpreter(
         p,
         MockInterpreterA.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
@@ -566,16 +566,58 @@ public class RemoteInterpreterTest {
         10 * 1000
         );
 
+    intpGroup.add(intpA);
     intpA.setInterpreterGroup(intpGroup);
-    RemoteInterpreterProcess processA = intpA.getInterpreterProcess();
+
     intpA.open();
 
+    Job jobA = new Job("jobA", null) {
+
+      @Override
+      public int progress() {
+        return 0;
+      }
+
+      @Override
+      public Map<String, Object> info() {
+        return null;
+      }
+
+      @Override
+      protected Object jobRun() throws Throwable {
+        return intpA.interpret("2000",
+            new InterpreterContext(
+                "note",
+                "jobA",
+                "title",
+                "text",
+                new HashMap<String, Object>(),
+                new GUI(),
+                new AngularObjectRegistry(intpGroup.getId(), null),
+                new LinkedList<InterpreterContextRunner>()));
+      }
+
+      @Override
+      protected boolean jobAbort() {
+        return false;
+      }
+
+    };
+    intpA.getScheduler().submit(jobA);
+
+    // wait for job started
+    while (intpA.getScheduler().getJobsRunning().size() == 0) {
+      Thread.sleep(100);
+    }
+
+    // restart interpreter
+    RemoteInterpreterProcess processA = intpA.getInterpreterProcess();
+    intpA.close();
     intpA.setInterpreterGroup(new InterpreterGroup(intpA.getInterpreterGroup().getId()));
+    intpA.open();
     RemoteInterpreterProcess processB = intpA.getInterpreterProcess();
 
-    assertEquals(processA.hashCode(), processB.hashCode());
-
-    processA.dereference();     // intpA.close();
+    assertNotSame(processA.hashCode(), processB.hashCode());
 
   }
 

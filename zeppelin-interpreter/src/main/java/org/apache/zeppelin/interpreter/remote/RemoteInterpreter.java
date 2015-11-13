@@ -181,7 +181,13 @@ public class RemoteInterpreter extends Interpreter {
       interpreterProcess.releaseClient(client);
     }
 
-    interpreterProcess.dereference();
+    int r = interpreterProcess.dereference();
+    if (r == 0) {
+      synchronized (interpreterGroupReference) {
+        InterpreterGroup intpGroup = getInterpreterGroup();
+        interpreterGroupReference.remove(getInterpreterGroupKey(intpGroup));
+      }
+    }
   }
 
   @Override
