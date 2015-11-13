@@ -697,7 +697,7 @@ angular.module('zeppelinWebApp')
       }
       return '';
     }
-    var desc = 'Took ' + (timeMs/1000) + ' seconds.';
+    var desc = 'Took ' + (timeMs/1000) + ' seconds';
     if ($scope.isResultOutdated()){
       desc += ' (outdated)';
     }
