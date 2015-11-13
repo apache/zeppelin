@@ -18,7 +18,7 @@
 
 .paragraph-space {
   margin-bottom: 5px !important;
-  padding: 10px 10px 0px 10px !important;
+  padding: 10px 10px 10px 10px !important;
   min-height : 30px;
 }
 
@@ -75,7 +75,6 @@
 
 .paragraph .paragraphFooter { 
   height: 9px;
-  margin-bottom: 10px;
 }
 
 .paragraph .executionTime {
