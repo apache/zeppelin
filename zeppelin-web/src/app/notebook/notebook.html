@@ -12,7 +12,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <!-- Here the controller <NotebookCtrl> is not needed because explicitly set in the app.js (route) -->
-<div class="noteAction" ng-show="note.id && !paragraphUrl">
+<div class="noteAction" ng-class="{'noBoxShadow':showSetting}" ng-show="note.id && !paragraphUrl">
   <h3>
     <input type="text" class="form-control2" placeholder="{{note.name || 'Note ' + note.id}}" style="width:200px;"
            ng-show="showEditor" ng-model="note.name" ng-enter="sendNewName()" ng-escape="showEditor = false" autofocus/>
