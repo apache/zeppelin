@@ -17,10 +17,7 @@
 
 package org.apache.zeppelin.interpreter.remote;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -224,7 +221,7 @@ public class RemoteInterpreterTest {
     intpB.close();
 
     RemoteInterpreterProcess process = intpA.getInterpreterProcess();
-    assertFalse(process.isRunning());
+    assertNull(process);
   }
 
   @Test
@@ -342,7 +339,7 @@ public class RemoteInterpreterTest {
     intpB.close();
 
     RemoteInterpreterProcess process = intpA.getInterpreterProcess();
-    assertFalse(process.isRunning());
+    assertNull(process);
   }
 
   @Test

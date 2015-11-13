@@ -106,7 +106,8 @@ public class RemoteInterpreter extends Interpreter {
           throw new InterpreterException(e);
         }
       } else {
-        throw new InterpreterException("Unexpected error");
+        // closed or not opened yet
+        return null;
       }
     }
   }
