@@ -12,7 +12,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <!-- Here the controller <NotebookCtrl> is not needed because explicitly set in the app.js (route) -->
-<div class="noteAction" ng-show="note.id && !paragraphUrl">
+<div class="noteAction" ng-class="{'noBoxShadow':showSetting}" ng-show="note.id && !paragraphUrl">
   <h3>
     <input type="text" class="form-control2" placeholder="{{note.name || 'Note ' + note.id}}" style="width:200px;"
            ng-show="showEditor" ng-model="note.name" ng-enter="sendNewName()" ng-escape="showEditor = false" autofocus/>
@@ -135,38 +135,41 @@ limitations under the License.
   </h3>
 </div>
 
-<div style="padding-top: 36px;">
-  <!-- settings -->
-  <div ng-if="showSetting" class="setting">
+<!-- settings -->
+<div ng-if="showSetting" class="setting">
+  <div class="settings-header settings-content-padding">
     <div>
       <h4>Settings</h4>
     </div>
     <hr />
-    <div>
-      <h5>Interpreter binding</h5>
-      <p>
-        Bind interpreter for this note.
-        Click to Bind/Unbind interpreter.
-        Drag and drop to reorder interpreters. <br />
-        The first interpreter on the list becomes default. To create/remove interpreters, go to <a href="/#/interpreter">Interpreter</a> menu.
-      </p>
+  </div>
+  <div class="settings-body settings-content-padding">
+    <h5>Interpreter binding</h5>
+    <p>
+      Bind interpreter for this note.
+      Click to Bind/Unbind interpreter.
+      Drag and drop to reorder interpreters. <br />
+      The first interpreter on the list becomes default. To create/remove interpreters, go to <a href="/#/interpreter">Interpreter</a> menu.
+    </p>
 
-      <div class="interpreterSettings"
-           as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
-        <div data-ng-repeat="item in interpreterBindings" as-sortable-item>
-          <div as-sortable-item-handle
-               ng-click="item.selected = !item.selected"
-               class="btn"
-               ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}"><font style="font-size:16px">{{item.name}}</font> <small><span ng-repeat="intp in item.interpreters"><span ng-show="!$first">, </span>%{{intp.name}}</span></small></div>
-        </div>
+    <div class="interpreterSettings"
+         as-sortable="interpreterSelectionListeners" data-ng-model="interpreterBindings">
+      <div data-ng-repeat="item in interpreterBindings" as-sortable-item>
+        <div as-sortable-item-handle
+             ng-click="item.selected = !item.selected"
+             class="btn"
+             ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}"><font style="font-size:16px">{{item.name}}</font> <small><span ng-repeat="intp in item.interpreters"><span ng-show="!$first">, </span>%{{intp.name}}</span></small></div>
       </div>
     </div>
-    <br />
-    <div>
-      <button class="btn btn-primary" ng-click="saveSetting()">Save</button>
-      <button class="btn btn-default" ng-click="closeSetting()">Cancel</button>
-    </div>
   </div>
+  <br />
+  <div class="settings-content-padding">
+    <button class="btn btn-primary" ng-click="saveSetting()">Save</button>
+    <button class="btn btn-default" ng-click="closeSetting()">Cancel</button>
+  </div>
+</div>
+
+<div style="padding-top: 36px;">
 
   <div class="note-jump"></div>
 
