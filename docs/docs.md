@@ -35,14 +35,14 @@ limitations under the License.
 * [cassandra](./interpreter/cassandra.html)
 * [flink](./interpreter/flink.html)
 * [geode](./interpreter/geode.html)
-* [hive](../docs/pleasecontribute.html)
+* [hive](../pleasecontribute.html)
 * [ignite](./interpreter/ignite.html)
 * [lens](./interpreter/lens.html)
-* [md](../docs/pleasecontribute.html)
+* [md](../pleasecontribute.html)
 * [postgresql, hawq](./interpreter/postgresql.html)
-* [sh](../docs/pleasecontribute.html)
+* [sh](../pleasecontribute.html)
 * [spark](./interpreter/spark.html)
-* [tajo](../docs/pleasecontribute.html)
+* [tajo](../pleasecontribute.html)
 
 ### Storage
 * [S3 Storage](./storage/storage.html)
