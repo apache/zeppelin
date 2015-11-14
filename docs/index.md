@@ -46,7 +46,7 @@ Currently Zeppelin supports many interpreters such as Scala(with Apache Spark), 
 
 <img class="img-responsive" src="assets/themes/zeppelin/img/screenshots/multiple_language_backend.png" />
 
-Adding new language-backend is really simple. Learn [how to write a zeppelin interpreter](./docs/development/writingzeppelininterpreter.html).
+Adding new language-backend is really simple. Learn [how to write a zeppelin interpreter](./development/writingzeppelininterpreter.html).
 
 
 <br />
@@ -59,7 +59,7 @@ Zeppelin provides built-in Apache Spark integration. You don't need to build a s
 Zeppelin's Spark integration provides
 
 - Automatic SparkContext and SQLContext injection
-- Runtime jar dependency loading from local filesystem or maven repository. Learn more about [dependency loader](./docs/interpreter/spark.html#dependencyloading).
+- Runtime jar dependency loading from local filesystem or maven repository. Learn more about [dependency loader](./interpreter/spark.html#dependencyloading).
 - Canceling job and displaying its progress
 
 <br />
@@ -85,7 +85,7 @@ With simple drag and drop Zeppelin aggeregates the values and display them in pi
     <img class="img-responsive" src="./assets/themes/zeppelin/img/screenshots/pivot.png" />
   </div>
 </div>
-Learn more about Zeppelin's Display system. ( [text](./docs/displaysystem/display.html), [html](./docs/displaysystem/display.html#html), [table](./docs/displaysystem/table.html), [angular](./docs/displaysystem/angular.html) )
+Learn more about Zeppelin's Display system. ( [text](./displaysystem/display.html), [html](./displaysystem/display.html#html), [table](./displaysystem/table.html), [angular](./displaysystem/angular.html) )
 
 
 <br />
@@ -95,7 +95,7 @@ Zeppelin can dynamically create some input forms into your notebook.
 
 <img class="img-responsive" src="./assets/themes/zeppelin/img/screenshots/form_input.png" />
 
-Learn more about [Dynamic Forms](./docs/manual/dynamicform.html).
+Learn more about [Dynamic Forms](./manual/dynamicform.html).
 
 
 <br />
@@ -118,7 +118,7 @@ This way, you can easily embed it as an iframe inside of your website.</p>
 <br />
 ### 100% Opensource
 
-Apache Zeppelin (incubating) is Apache2 Licensed software. Please check out the [source repository](https://github.com/apache/incubator-zeppelin) and [How to contribute](./docs/development/howtocontribute.html)
+Apache Zeppelin (incubating) is Apache2 Licensed software. Please check out the [source repository](https://github.com/apache/incubator-zeppelin) and [How to contribute](./development/howtocontribute.html)
 
 Zeppelin has a very active development community.
 Join the [Mailing list](./community.html) and report issues on our [Issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN).
