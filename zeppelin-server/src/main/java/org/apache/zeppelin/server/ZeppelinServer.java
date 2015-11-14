@@ -218,8 +218,8 @@ public class ZeppelinServer extends Application {
 
     final ServletContextHandler cxfContext = new ServletContextHandler();
     cxfContext.setSessionHandler(new SessionHandler());
-    cxfContext.setContextPath(conf.getServerContextPath() + "/api");
-    cxfContext.addServlet(cxfServletHolder, "/*");
+    cxfContext.setContextPath(conf.getServerContextPath());
+    cxfContext.addServlet(cxfServletHolder, "/api/*");
 
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
         EnumSet.allOf(DispatcherType.class));
