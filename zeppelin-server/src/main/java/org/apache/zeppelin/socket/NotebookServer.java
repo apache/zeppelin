@@ -267,7 +267,7 @@ public class NotebookServer extends WebSocketServlet implements
       if (socketLists == null || socketLists.size() == 0) {
         return;
       }
-      LOG.info("SEND >> " + m.op);
+      LOG.debug("SEND >> " + m.op);
       for (NotebookSocket conn : socketLists) {
         if (exclude.equals(conn)) {
           continue;
