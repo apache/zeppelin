@@ -1,7 +1,8 @@
 ---
 layout: page
-title: Zeppelin
+title: Overview
 tagline: Less Development, More analysis!
+group: nav-right
 ---
 <!--
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +18,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 {% include JB/setup %}
-
+<br />
 <div class="row">
  <div class="col-md-5">
 <h2>Multi-purpose Notebook</h2>
