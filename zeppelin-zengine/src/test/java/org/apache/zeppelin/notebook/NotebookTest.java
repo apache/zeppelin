@@ -18,6 +18,7 @@
 package org.apache.zeppelin.notebook;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -219,6 +220,26 @@ public class NotebookTest implements JobListenerFactory{
     assertNotNull(dateFinished);
     Thread.sleep(1*1000);
     assertEquals(dateFinished, p.getDateFinished());
+  }
+
+  @Test
+  public void testCloneNote() throws IOException, CloneNotSupportedException,
+      InterruptedException {
+    Note note = notebook.createNote();
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
+    final Paragraph p = note.addParagraph();
+    p.setText("hello world");
+    note.runAll();
+    while(p.isTerminated()==false || p.getResult()==null) Thread.yield();
+
+    p.setStatus(Status.RUNNING);
+    Note cloneNote = notebook.cloneNote(note.getId(), "clone note");
+    Paragraph cp = cloneNote.paragraphs.get(0);
+    assertEquals(cp.getStatus(), Status.READY);
+    assertNotEquals(cp.getId(), p.getId());
+    assertEquals(cp.text, p.text);
+    assertEquals(cp.getResult().message(), p.getResult().message());
   }
 
   @Test
