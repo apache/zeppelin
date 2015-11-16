@@ -466,8 +466,8 @@ limitations under the License.
              ng-show="!paragraph.config.lineNumbers"> Show line numbers</a>
         </li>
         <li>
-          <a class="fa" ng-class="{'fa-check-square-o': paragraph.config.enabled, 'fa-square-o': !paragraph.config.enabled}" style="cursor:pointer"
-             ng-click="toggleEnableDisable()"> {{paragraph.config.enabled ? "Disable" : "Enable"}}  paragraph</a>
+          <a class="icon-control-play" style="cursor:pointer"
+             ng-click="toggleEnableDisable()"> {{paragraph.config.enabled ? "Disable" : "Enable"}}  run</a>
         </li>
         <li><a class="icon-share-alt" style="cursor:pointer"
                ng-click="goToSingleParagraph()"> Link this paragraph</a>
