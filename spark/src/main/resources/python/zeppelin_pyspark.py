@@ -82,7 +82,10 @@ class PyZeppelinContext(dict):
     return self.z.input(name, defaultValue)
 
   def select(self, name, options, defaultValue = ""):
-    optionsTuple = map(lambda items: __tupleToScalaTuple2(items), options)
+    # auto_convert to ArrayList doesn't match the method signature on JVM side
+    tuples = map(lambda items: self.__tupleToScalaTuple2(items), options)
+    iterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(tuples)
+    return self.z.select(name, defaultValue, iterables)
 
   def __tupleToScalaTuple2(self, tuple):
     if (len(tuple) == 2):
