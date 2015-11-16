@@ -77,6 +77,10 @@
   font-family: 'Roboto', sans-serif;
 }
 
+.paragraph .resultContained {
+  overflow: auto;
+}
+
 /*
   Paragraph as Iframe CSS
 */

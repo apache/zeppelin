@@ -372,11 +372,13 @@ limitations under the License.
       </div>
 
       <div id="p{{paragraph.id}}_html"
+           class="resultContained"
            ng-if="paragraph.result.type == 'HTML'"
            ng-Init="loadResultType(paragraph.result)">
       </div>
 
       <div id="p{{paragraph.id}}_angular"
+           class="resultContained"
            ng-if="paragraph.result.type == 'ANGULAR'"
            ng-Init="loadResultType(paragraph.result)">
       </div>
