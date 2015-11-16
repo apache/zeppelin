@@ -24,6 +24,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -61,6 +63,7 @@ public class NotebookServer extends WebSocketServlet implements
   Gson gson = new Gson();
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   final List<NotebookSocket> connectedSockets = new LinkedList<>();
+  final ExecutorService executorPool = Executors.newCachedThreadPool();
 
   private Notebook notebook() {
     return ZeppelinServer.notebook;
@@ -255,11 +258,7 @@ public class NotebookServer extends WebSocketServlet implements
       }
       LOG.debug("SEND >> " + m.op);
       for (NotebookSocket conn : socketLists) {
-        try {
-          conn.send(serializeMessage(m));
-        } catch (IOException e) {
-          LOG.error("socket error", e);
-        }
+        executorPool.execute(new SendThread(conn, m));
       }
     }
   }
@@ -287,11 +286,7 @@ public class NotebookServer extends WebSocketServlet implements
   private void broadcastAll(Message m) {
     synchronized (connectedSockets) {
       for (NotebookSocket conn : connectedSockets) {
-        try {
-          conn.send(serializeMessage(m));
-        } catch (IOException e) {
-          LOG.error("socket error", e);
-        }
+        executorPool.execute(new SendThread(conn, m));
       }
     }
   }
@@ -791,6 +786,26 @@ public class NotebookServer extends WebSocketServlet implements
               new Message(OP.ANGULAR_OBJECT_REMOVE).put("name", name).put(
                       "noteId", noteId));
         }
+      }
+    }
+  }
+
+  class SendThread implements Runnable {
+    private NotebookSocket conn;
+    private Message m;
+
+
+    public SendThread(NotebookSocket conn, Message m){
+      this.conn = conn;
+      this.m = m;
+    }
+
+    @Override
+    public void run() {
+      try {
+        conn.send(serializeMessage(m));
+      } catch (IOException e) {
+        LOG.error("socket error", e);
       }
     }
   }
