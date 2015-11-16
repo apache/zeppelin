@@ -33,7 +33,7 @@
   <url>http://www.apache.org</url>
 
   <properties>
-    <tajo.version>0.10.0</tajo.version>
+    <tajo.version>0.11.0</tajo.version>
   </properties>
 
   <dependencies>
