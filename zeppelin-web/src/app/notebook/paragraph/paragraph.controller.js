@@ -1,4 +1,3 @@
-/* global $:false, jQuery:false, ace:false, confirm:false, d3:false, nv:false*/
 /*jshint loopfunc: true, unused:false */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -649,7 +648,7 @@ angular.module('zeppelinWebApp')
     var lineHeight = $scope.editor.renderer.lineHeight;
     var headerHeight = 103; // menubar, notebook titlebar
     var scrollTriggerEdgeMargin = 50;
-    
+
     var documentHeight = angular.element(document).height();
     var windowHeight = angular.element(window).height();  // actual viewport height
 
