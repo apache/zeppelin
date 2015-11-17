@@ -18,16 +18,11 @@
 
 package org.apache.zeppelin.tajo;
 
-import com.google.gson.JsonParseException;
-import org.apache.tajo.catalog.CatalogConstants;
-import org.apache.tajo.conf.TajoConf;
 import org.apache.tajo.jdbc.TajoDriver;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.util.Properties;
