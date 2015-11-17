@@ -610,9 +610,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     note.persist();
     try {
-      if ((Boolean) config.get("enabled")) {
-        note.run(paragraphId);
-      }
+      note.run(paragraphId);
     } catch (Exception ex) {
       LOG.error("Exception from run", ex);
       if (p != null) {
