@@ -61,7 +61,7 @@ Also you can separate option's display name and value, using _${formName=default
 <br />
 ### Creates Programmatically
 
-Some language backend uses programmatic way to create form. For example [ZeppelinContext](./interpreter/spark.html#zeppelincontext) provides form creation API
+Some language backend uses programmatic way to create form. For example [ZeppelinContext](../interpreter/spark.html#zeppelincontext) provides form creation API
 
 Here're some examples.
 
