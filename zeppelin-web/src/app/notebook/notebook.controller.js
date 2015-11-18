@@ -293,7 +293,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     var newIndex = -1;
     for (var i=0; i<$scope.note.paragraphs.length; i++) {
       if ($scope.note.paragraphs[i].id === paragraphId) {
-        newIndex = i+1;
+        newIndex = i;
         break;
       }
     }

@@ -37,6 +37,33 @@
   margin-top: 20px;
 }
 
+/*
+  Add New Paragraph
+ */
+
+.new-paragraph{
+  text-align:center; 
+  height:15px;
+  margin:-5px 2px 0 2px;
+  cursor: pointer;
+}
+
+.new-paragraph:hover{  
+  background-color: #d3e5ea;
+}
+
+.new-paragraph:hover .plus-sign{  
+  display: block;
+}
+
+.plus-sign{
+  display: none;
+  height:15px;
+  margin: 0;
+  color:rgb(153, 153, 153);
+  line-height: 11px;
+}
+
 .noteBtnfa {
     margin-left: 3px;
 }
