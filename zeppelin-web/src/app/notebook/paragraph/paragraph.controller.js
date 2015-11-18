@@ -228,7 +228,7 @@ angular.module('zeppelinWebApp')
       if (statusChanged || resultRefreshed) {
         // when last paragraph runs, zeppelin automatically appends new paragraph.
         // this broadcast will focus to the newly inserted paragraph
-        var paragraphs = $('div[id$="_paragraphColumn_main"');
+        var paragraphs = angular.element('div[id$="_paragraphColumn_main"');
         if (paragraphs.length >= 2 && paragraphs[paragraphs.length-2].id.startsWith($scope.paragraph.id)) {
           // rendering output can took some time. So delay scrolling event firing for sometime.
           setTimeout(function() {
@@ -603,7 +603,7 @@ angular.module('zeppelinWebApp')
         if ($scope.editor.completer && $scope.editor.completer.activated) { // if autocompleter is active
         } else {
           // fix ace editor focus issue in chrome (textarea element goes to top: -1000px after focused by cursor move)
-          $('#' + $scope.paragraph.id + '_editor > textarea').css("top", 0);
+          angular.element('#' + $scope.paragraph.id + '_editor > textarea').css("top", 0);
 
           var numRows;
           var currentRow;
@@ -643,7 +643,7 @@ angular.module('zeppelinWebApp')
 
   $rootScope.$on('scrollToCursor', function(event) {
     // scroll on 'scrollToCursor' event only when cursor is in the last paragraph
-    var paragraphs = $('div[id$="_paragraphColumn_main"');
+    var paragraphs = angular.element('div[id$="_paragraphColumn_main"');
     if (paragraphs[paragraphs.length-1].id.startsWith($scope.paragraph.id)) {
       $scope.scrollToCursor($scope.paragraph.id, 0);
     }
