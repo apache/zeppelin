@@ -22,8 +22,8 @@ limitations under the License.
 ## Zeppelin Release 0.5.5-incubating
 
 The Apache Zeppelin (incubating) community is pleased to announce the availability of the 0.5.5-incubating release.
-The community put sigificant effort into improving Apache Zeppelin since the last release, focusing on having
-new backend support, improvements on stability and simplifying the configuratin. More than 60 contributors provided new features,
+The community puts significant effort into improving Apache Zeppelin since the last release, focusing on having
+new backend support, improvements on stability and simplifying the configuration. More than 60 contributors provided new features,
 improvements and verifying release. More than 90 issues has been resolved.
 
 We encourage [download](../../download.html) the latest release. Feedback through the [mailing lists](../../community.html) is very welcome.
