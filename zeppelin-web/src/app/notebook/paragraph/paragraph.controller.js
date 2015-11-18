@@ -228,11 +228,13 @@ angular.module('zeppelinWebApp')
       if (statusChanged || resultRefreshed) {
         // when last paragraph runs, zeppelin automatically appends new paragraph.
         // this broadcast will focus to the newly inserted paragraph
-
-        // rendering output can took some time. So delay scrolling event firing for sometime.
-        setTimeout(function() {
-          $rootScope.$broadcast('scrollToCursor');
-        }, 500);
+        var paragraphs = $('div[id$="_paragraphColumn_main"');
+        if (paragraphs.length >= 2 && paragraphs[paragraphs.length-2].id.startsWith($scope.paragraph.id)) {
+          // rendering output can took some time. So delay scrolling event firing for sometime.
+          setTimeout(function() {
+            $rootScope.$broadcast('scrollToCursor');
+          }, 500);
+        }
       }
     }
 
