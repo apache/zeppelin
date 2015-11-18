@@ -67,12 +67,60 @@ Here're some examples.
 
 Text input form
 
+You can do this in Scala
+```scala
+%spark
+println("Hello "+z.input("name"))
+```
+
+Or Python
+```python
+%pyspark
+print("Hello "+z.input("name"))
+```
+
 <img src="../../assets/themes/zeppelin/img/screenshots/form_input_prog.png" />
 
 Text input form with default value
 
+Scala
+```scala
+%spark
+println("Hello "+z.input("name", "sun"))
+```
+
+Python
+```python
+%pyspark
+print("Hello "+z.input("name", "sun"))
+```
+
 <img src="../../assets/themes/zeppelin/img/screenshots/form_input_default_prog.png" />
 
 Select form
+
+Scala
+```scala
+%spark
+println("Hello "+z.select("day", Seq(("1","mon"),
+                                    ("2","tue"),
+                                    ("3","wed"),
+                                    ("4","thurs"),
+                                    ("5","fri"),
+                                    ("6","sat"),
+                                    ("7","sun"))))
+```
+
+Python
+```python
+%pyspark
+print("Hello "+z.select("day", [("1","mon"),
+                                ("2","tue"),
+                                ("3","wed"),
+                                ("4","thurs"),
+                                ("5","fri"),
+                                ("6","sat"),
+                                ("7","sun")]))
+```
 
 <img src="../../assets/themes/zeppelin/img/screenshots/form_select_prog.png" />
