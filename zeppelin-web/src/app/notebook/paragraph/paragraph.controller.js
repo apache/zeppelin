@@ -600,6 +600,9 @@ angular.module('zeppelinWebApp')
       $scope.editor.keyBinding.onCommandKey = function(e, hashId, keyCode) {
         if ($scope.editor.completer && $scope.editor.completer.activated) { // if autocompleter is active
         } else {
+          // fix ace editor focus issue in chrome (textarea element goes to top: -1000px after focused by cursor move)
+          $('#' + $scope.paragraph.id + '_editor > textarea').css("top", 0);
+
           var numRows;
           var currentRow;
 
@@ -741,7 +744,6 @@ angular.module('zeppelinWebApp')
         row = $scope.editor.session.getLength() - 1;
         $scope.editor.gotoLine(row + 1, 0);
       }
-
       $scope.scrollToCursor($scope.paragraph.id, 0);
     }
   });
