@@ -91,19 +91,18 @@ The following developers contributed to this release:
 * DuyHai DOAN - Cassandra interpreter. Improvements in Spark interpreter.
 * Eran Witkon - New features in Core. Bug fixes in UI. Improvements in Core and UI.
 * Eric Charles - Bug fixes in UI.
-* Felix Cheung - New features and Improvements in Spark interpreter, Build system and Documentation. Improvements in UI. Improvements and Bug fixes in UI.
 * Felix Cheung - New feature in Spark interpreter. Improvements and Bug fixes in UI, Documentation and Spark interpreter.
 * Hyung sung Shim - Improvements in Core.
 * Jeff Steinmetz - Improvements in Documentation.
 * Joel Zambrano - New features, Improvements and Bug fixes in Core.
-* Jon Buffington - Improvments in Cassandra interpreter.
+* Jon Buffington - Improvements in Cassandra interpreter.
 * Jongyoul Lee - Improvements in Core, Build system and Spark interpreter.
 * Ivan Vasyliev - New features in Core.
 * Karuppayya - New features in Core and UI.
 * Kevin (SangWoo) Kim - Improvements in UI.
 * Kirill A. Korinsky - New features in UI.
 * Khalid Huseynov - New features in Core.
-* Lee moon soo - New features in Core, UI and Spark interpreter. Improvements and Bug fixes in Core, UI, Build system and Spark interpreter. Improvments in Documentation, Flink interpreter.
+* Lee moon soo - New features in Core, UI and Spark interpreter. Improvements and Bug fixes in Core, UI, Build system and Spark interpreter. Improvements in Documentation, Flink interpreter.
 * Luca Rosellini - Improvements in Spark interpreter.
 * Madhuka Udantha- New features and Bug fixes in UI. Improvements in Build system.
 * Michael Koltsov - Improvements in UI.
@@ -131,8 +130,8 @@ The following developers contributed to this release:
 * Zeng Linxi - Bug fixes in Core.
 * Zhong Jian - Kylin interpreter.
 * caofangkun - New features and Improvements in Build system.
-* fantazic - Improvments in Documentation.
-* george.jw - Improvments in Documentation.
+* fantazic - Improvements in Documentation.
+* george.jw - Improvements in Documentation.
 * opsun - Improvements in UI.
 
 
