@@ -23,10 +23,15 @@ import org.junit.Test;
 public class SparkVersionTest {
 
   @Test
+  public void testUnknownSparkVersion() {
+    assertEquals(999, SparkVersion.fromVersionString("DEV-10.10").toNumber());
+  }
+
+  @Test
   public void testSparkVersion() {
     // test equals
-    assertTrue(SparkVersion.SPARK_1_2_0 == SparkVersion.fromVersionString("1.2.0"));
-    assertTrue(SparkVersion.SPARK_1_5_0 == SparkVersion.fromVersionString("1.5.0-SNAPSHOT"));
+    assertEquals(SparkVersion.SPARK_1_2_0, SparkVersion.fromVersionString("1.2.0"));
+    assertEquals(SparkVersion.SPARK_1_5_0, SparkVersion.fromVersionString("1.5.0-SNAPSHOT"));
 
     // test newer than
     assertFalse(SparkVersion.SPARK_1_2_0.newerThan(SparkVersion.SPARK_1_2_0));
