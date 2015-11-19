@@ -47,7 +47,7 @@ It is essential that you [verify](https://www.apache.org/info/verification.html)
 
 ### Build from source
 
-For developers, to get latest *0.6.0-incubating-SNAPSHOT* check [install](./docs/snapshot/install/install.html) section.
+For developers, to get latest *0.6.0-incubating-SNAPSHOT* check [README](https://github.com/apache/incubator-zeppelin/blob/master/README.md).
 
 
 
