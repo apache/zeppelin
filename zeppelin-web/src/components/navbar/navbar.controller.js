@@ -15,8 +15,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams,
-                                                                notebookListDataFactory, websocketMsgSrv,
-                                                                arrayOrderingSrv) {
+    notebookListDataFactory, websocketMsgSrv,arrayOrderingSrv, searchService) {
   /** Current list of notes (ids) */
 
   var vm = this;
@@ -34,6 +33,13 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   $scope.$on('setConnectedStatus', function(event, param) {
     vm.connected = param;
   });
+
+  $scope.search = function() {
+    $scope.page = 0;
+    $scope.recipes = [];
+    $scope.allResults = false;
+    searchService.search({'q': $scope.searchTerm});
+  };
 
   function loadNotes() {
     websocketMsgSrv.getNotebookList();
