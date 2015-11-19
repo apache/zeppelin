@@ -24,7 +24,7 @@ angular.module('zeppelinWebApp').service('searchService', function($http, baseUr
     $http
       .get(baseUrlSrv.getRestApiBase() + '/notebook/search?q=' + encQuery)
       .then(function successCallback(response) {
-        console.log('Found: %o', response);
+        console.log('Found: %o', response.data.body);
         //TODO(bzz): navigate to SearchResult page/controller
       }, function errorCallback(response) {
         console.log('Error: %o', response);

@@ -388,13 +388,14 @@ public class NotebookRestApi {
   }  
 
  /**
- * Search for a Note
+ * Search for a Notes
  */
  @GET
  @Path("search")
  public Response search(@QueryParam("q") String query) {
    logger.info("Searching notebooks for {}", query);
    Map<String, String> notebooksFound = searchNotebooks(query);
+   logger.info("Notbooks {} found", notebooksFound.size());
    return new JsonResponse<>(Status.OK, notebooksFound).build();
  }
 
