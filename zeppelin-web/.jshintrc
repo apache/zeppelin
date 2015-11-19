@@ -29,7 +29,6 @@
     "confirm": false,
     "alert": false,
     "nv": false,
-    "$": false,
     "ace": false,
     "d3": false
   }

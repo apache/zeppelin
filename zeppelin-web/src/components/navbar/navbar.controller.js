@@ -14,7 +14,9 @@
 
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams, notebookListDataFactory, websocketMsgSrv, arrayOrderingSrv) {
+angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams,
+                                                                notebookListDataFactory, websocketMsgSrv,
+                                                                arrayOrderingSrv) {
   /** Current list of notes (ids) */
 
   var vm = this;
@@ -23,7 +25,7 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   vm.websocketMsgSrv = websocketMsgSrv;
   vm.arrayOrderingSrv = arrayOrderingSrv;
 
-  $('#notebook-list').perfectScrollbar({suppressScrollX: true});
+  jQuery('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
   $scope.$on('setNoteMenu', function(event, notes) {
     notebookListDataFactory.setNotes(notes);
