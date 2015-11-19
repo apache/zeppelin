@@ -188,7 +188,7 @@ limitations under the License.
        ng-Init="init(currentParagraph)"
        ng-class="columnWidthClass(currentParagraph.config.colWidth)"
        class="paragraph-col">
-    <div class="new-paragraph" ng-click="insertNew()">
+    <div class="new-paragraph" ng-click="insertNew()" ng-hide="viewOnly">
       <h4 class="plus-sign">&#43;</h4>
     </div>
     <div id="{{currentParagraph.id}}_paragraphColumn"
