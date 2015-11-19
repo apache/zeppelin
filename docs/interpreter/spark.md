@@ -48,6 +48,7 @@ Spark Interpreter group, which consisted of 4 interpreters.
 
 Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need following two simple steps.
 
+
 #### 1. export SPARK_HOME
 
 In **conf/zeppelin-env.sh**, export SPARK_HOME environment variable with your Spark installation path.
@@ -83,6 +84,7 @@ for example,
 <br />
 That's it. Zeppelin will work with any version of Spark and any deployment type without rebuild Zeppelin in this way. (Zeppelin 0.5.5-incubating release works up to Spark 1.5.1)
 
+Note that without exporting SPARK_HOME, it's running in local mode with included version of Spark. The included version may vary depending on the build profile.
 
 <br /> <br />
 ### SparkContext, SQLContext, ZeppelinContext
