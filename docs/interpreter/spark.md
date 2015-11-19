@@ -184,7 +184,6 @@ Note that adding jar to pyspark is only availabe via %dep interpreter at the mom
 <br/>
 Here are few examples:
 
-##### 0.5.5 and later
 * SPARK\_SUBMIT\_OPTIONS in conf/zeppelin-env.sh
 
 		export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0 --jars /path/mylib1.jar,/path/mylib2.jar --files /path/mylib1.py,/path/mylib2.zip,/path/mylib3.egg"
@@ -195,14 +194,6 @@ Here are few examples:
 		spark.jars.packages		com.databricks:spark-csv_2.10:1.2.0
 		spark.files				/path/mylib1.py,/path/mylib2.egg,/path/mylib3.zip
 
-##### 0.5.0
-* ZEPPELIN\_JAVA\_OPTS in conf/zeppelin-env.sh
-
-		export ZEPPELIN_JAVA_OPTS="-Dspark.jars=/path/mylib1.jar,/path/mylib2.jar -Dspark.files=/path/myfile1.dat,/path/myfile2.dat"
-<br />
-
-
-<a name="zeppelincontext"> </a>
 <br />
 <br />
 ### ZeppelinContext
