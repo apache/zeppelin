@@ -54,12 +54,14 @@ angular.module('zeppelinWebApp')
 
   $scope.renderHtml = function() {
     var retryRenderer = function() {
-      if ($('#p'+$scope.paragraph.id+'_html').length) {
+      if (angular.element('#p' + $scope.paragraph.id + '_html').length) {
         try {
-          $('#p'+$scope.paragraph.id+'_html').html($scope.paragraph.result.msg);
+          angular.element('#p' + $scope.paragraph.id + '_html').html($scope.paragraph.result.msg);
 
-          $('#p'+$scope.paragraph.id+'_html').find('pre code').each(function(i, e) { hljs.highlightBlock(e); });
-        } catch(err) {
+          angular.element('#p' + $scope.paragraph.id + '_html').find('pre code').each(function(i, e) {
+            hljs.highlightBlock(e);
+          });
+        } catch (err) {
           console.log('HTML rendering error %o', err);
         }
       } else {
@@ -131,7 +133,7 @@ angular.module('zeppelinWebApp')
   $scope.getIframeDimensions = function () {
     if ($scope.asIframe) {
       var paragraphid = '#' + $routeParams.paragraphId + '_container';
-      var height = $(paragraphid).height();
+      var height = angular.element(paragraphid).height();
       return height;
     }
     return 0;
@@ -471,7 +473,7 @@ angular.module('zeppelinWebApp')
       $scope.editor.focus();
 
       autoAdjustEditorHeight(_editor.container.id);
-      $(window).resize(function(){
+      angular.element(window).resize(function() {
         autoAdjustEditorHeight(_editor.container.id);
       });
 
@@ -636,7 +638,7 @@ angular.module('zeppelinWebApp')
     var editor = $scope.editor;
     var height = editor.getSession().getScreenLength() * editor.renderer.lineHeight + editor.renderer.scrollBar.getWidth();
 
-    $('#' + id).height(height.toString() + 'px');
+    angular.element('#' + id).height(height.toString() + 'px');
     editor.resize();
   };
 
@@ -847,7 +849,7 @@ angular.module('zeppelinWebApp')
       clearUnknownColsFromGraphOption();
       // set graph height
       var height = $scope.paragraph.config.graph.height;
-      $('#p'+$scope.paragraph.id+'_graph').height(height);
+      angular.element('#p' + $scope.paragraph.id + '_graph').height(height);
 
       if (!type || type === 'table') {
         setTable($scope.paragraph.result, refresh);
@@ -933,16 +935,16 @@ angular.module('zeppelinWebApp')
 
       html += '</table>';
 
-      $('#p' + $scope.paragraph.id + '_table').html(html);
-      $('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
+      angular.element('#p' + $scope.paragraph.id + '_table').html(html);
+      angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
 
       // set table height
       var height = $scope.paragraph.config.graph.height;
-      $('#p'+$scope.paragraph.id+'_table').height(height);
+      angular.element('#p' + $scope.paragraph.id + '_table').height(height);
     };
 
     var retryRenderer = function() {
-      if ($('#p'+$scope.paragraph.id+'_table').length) {
+      if (angular.element('#p' + $scope.paragraph.id + '_table').length) {
         try {
           renderTable();
         } catch(err) {
@@ -1076,7 +1078,7 @@ angular.module('zeppelinWebApp')
     };
 
     var retryRenderer = function() {
-      if ($('#p'+$scope.paragraph.id+'_'+type+' svg').length !== 0) {
+      if (angular.element('#p' + $scope.paragraph.id + '_' + type + ' svg').length !== 0) {
         try {
           renderChart();
         } catch(err) {
@@ -1751,7 +1753,7 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.setGraphHeight = function() {
-    var height = $('#p'+$scope.paragraph.id+'_graph').height();
+    var height = angular.element('#p' + $scope.paragraph.id + '_graph').height();
 
     var newParams = angular.copy($scope.paragraph.settings.params);
     var newConfig = angular.copy($scope.paragraph.config);
