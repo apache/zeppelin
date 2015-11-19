@@ -7,7 +7,7 @@ group: manual
 {% include JB/setup %}
 
 
-## Spark
+## Spark Interpreter
 
 [Apache Spark](http://spark.apache.org) is supported in Zeppelin with 
 Spark Interpreter group, which consisted of 4 interpreters.
@@ -41,10 +41,52 @@ Spark Interpreter group, which consisted of 4 interpreters.
 </table>
 
 
+<br /><br />
+
+### Configuration
+<hr />
+
+Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need following two simple steps.
+
+#### 1. export SPARK_HOME
+
+In **conf/zeppelin-env.sh**, export SPARK_HOME environment variable with your Spark installation path.
+
+for example
+
+```bash
+export SPARK_HOME=/usr/lib/spark
+```
+
+You can optionally export HADOOP\_CONF\_DIR and SPARK\_SUBMIT\_OPTIONS
+
+```bash
+export HADOOP_CONF_DIR=/usr/lib/hadoop
+export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0"
+```
+
+
 <br />
+#### 2. set master in Interpreter menu.
+
+After start Zeppelin, go to **Interpreter** menu and edit **master** property in your Spark interpreter setting. The value may vary depending on your Spark cluster deployment type.
+
+for example,
+
+ * *local[*]* in local mode,
+ * *spark://master:7077* in standalone cluster,
+ * *yarn-client* in Yarn client mode
+ * *mesos://host:5050* in Mesos cluster
 
 
+
+<br />
+That's it. Zeppelin will work with any version of Spark and any deployment type without rebuild Zeppelin in this way. (Zeppelin 0.5.5-incubating release works up to Spark 1.5.1)
+
+
+<br /> <br />
 ### SparkContext, SQLContext, ZeppelinContext
+<hr />
 
 SparkContext, SQLContext, ZeppelinContext are automatically created and exposed as variable names 'sc', 'sqlContext' and 'z', respectively, both in scala and python environments.
 
@@ -55,6 +97,7 @@ Note that scala / python environment shares the same SparkContext, SQLContext, Z
 <br />
 <br />
 ### Dependency Management
+<hr />
 There are two ways to load external library in spark interpreter. First is using Zeppelin's %dep interpreter and second is loading Spark properties.
 
 #### 1. Dynamic Dependency Loading via %dep interpreter
@@ -163,7 +206,7 @@ Here are few examples:
 <br />
 <br />
 ### ZeppelinContext
-
+<hr />
 
 Zeppelin automatically injects ZeppelinContext as variable 'z' in your scala/python environment. ZeppelinContext provides some additional functions and utility.
 
