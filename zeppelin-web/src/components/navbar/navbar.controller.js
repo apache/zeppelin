@@ -25,7 +25,7 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   vm.websocketMsgSrv = websocketMsgSrv;
   vm.arrayOrderingSrv = arrayOrderingSrv;
 
-  jQuery('#notebook-list').perfectScrollbar({suppressScrollX: true});
+  angular.element('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
   $scope.$on('setNoteMenu', function(event, notes) {
     notebookListDataFactory.setNotes(notes);
