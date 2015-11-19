@@ -83,6 +83,12 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
     <td>Zeppelin server port. Note that port+1 is used for web socket</td>
   </tr>
   <tr>
+    <td>ZEPPELIN_SERVER_CONTEXT_PATH</td>
+    <td>zeppelin.server.context.path</td>
+    <td>/</td>
+    <td>Context Path of the Web Application</td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_NOTEBOOK_DIR</td>
     <td>zeppelin.notebook.dir</td>
     <td>notebook</td>
