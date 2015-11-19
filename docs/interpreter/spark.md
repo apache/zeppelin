@@ -261,4 +261,4 @@ In sql environment, you can create form in simple template.
 select * from ${table=defaultTableName} where text like '%${search}%'
 ```
 
-To learn more about dynamic form, checkout [Dynamic Form](../dynamicform.html).
+To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.html).
