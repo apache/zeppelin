@@ -18,11 +18,19 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.*;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -32,15 +40,14 @@ import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.message.CronRequest;
 import org.apache.zeppelin.rest.message.InterpreterSettingListForNoteBind;
-import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.NewNotebookRequest;
 import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -379,4 +386,20 @@ public class NotebookRestApi {
     
     return new JsonResponse(Status.OK, note.getConfig().get("cron")).build();
   }  
+
+ /**
+ * Search for a Note
+ */
+ @GET
+ @Path("search")
+ public Response search(@QueryParam("q") String query) {
+   logger.info("Searching notebooks for {}", query);
+   Map<String, String> notebooksFound = searchNotebooks(query);
+   return new JsonResponse<>(Status.OK, notebooksFound).build();
+ }
+
+  private Map<String, String> searchNotebooks(String query) {
+    return ImmutableMap.of("NOTE_ID", "HTML_PREVIEW");
+  }
+
 }
