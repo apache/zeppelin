@@ -11,7 +11,7 @@ group: manual
 ### Overview
 [Apache Lens](https://lens.apache.org/) provides an Unified Analytics interface. Lens aims to cut the Data Analytics silos by providing a single view of data across multiple tiered data stores and optimal execution environment for the analytical query. It seamlessly integrates Hadoop with traditional data warehouses to appear like one.
 
-![Apache Lens](/assets/themes/zeppelin/img/docs-img/lens-logo.png)
+![Apache Lens](../assets/themes/zeppelin/img/docs-img/lens-logo.png)
 
 ### Installing and Running Lens
 In order to use Lens interpreters, you may install Apache Lens in some simple steps:
@@ -75,11 +75,11 @@ At the "Interpreters" menu, you can to edit Lens interpreter or create new one. 
   </tr>
  </table>
 
-![Apache Lens Interpreter Setting](/assets/themes/zeppelin/img/docs-img/lens-interpreter-setting.png)
+![Apache Lens Interpreter Setting](../assets/themes/zeppelin/img/docs-img/lens-interpreter-setting.png)
 
 ### Interpreter Bindging for Zeppelin Notebook
 After configuring Lens interpreter, create your own notebook, then you can bind interpreters like below image. 
-![Zeppelin Notebook Interpreter Biding](/assets/themes/zeppelin/img/docs-img/lens-interpreter-binding.png)
+![Zeppelin Notebook Interpreter Biding](../assets/themes/zeppelin/img/docs-img/lens-interpreter-binding.png)
 
 For more interpreter binding information see [here](http://zeppelin.incubator.apache.org/docs/manual/interpreters.html).
 
@@ -159,14 +159,14 @@ As you can see in this video, they are using Lens Client Shell(./bin/lens-cli.sh
   ```
   
   
-  ![Lens Query Result](/assets/themes/zeppelin/img/docs-img/lens-result.png)
+  ![Lens Query Result](../assets/themes/zeppelin/img/docs-img/lens-result.png)
 
 These are just examples that provided in advance by Lens. If you want to explore whole tutorials of Lens, see the [tutorial video](https://cwiki.apache.org/confluence/display/LENS/2015/07/13/20+Minute+video+demo+of+Apache+Lens+through+examples).
 
 ### Lens UI Service 
 Lens also provides web UI service. Once the server starts up, you can open the service on http://serverhost:19999/index.html and browse. You may also check the structure that you made and use query easily here.
  
- ![Lens UI Servive](/assets/themes/zeppelin/img/docs-img/lens-ui-service.png)
+ ![Lens UI Servive](../assets/themes/zeppelin/img/docs-img/lens-ui-service.png)
 
 
 

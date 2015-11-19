@@ -37,12 +37,12 @@ To create text input form, use _${formName}_ templates.
 
 for example
 
-<img src="../../assets/themes/zeppelin/img/screenshots/form_input.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/form_input.png" />
 
 
 Also you can provide default value, using _${formName=defaultValue}_.
 
-<img src="../../assets/themes/zeppelin/img/screenshots/form_input_default.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/form_input_default.png" />
 
 
 <br />
@@ -52,11 +52,11 @@ To create select form, use _${formName=defaultValue,option1|option2...}_
 
 for example
 
-<img src="../../assets/themes/zeppelin/img/screenshots/form_select.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/form_select.png" />
 
 Also you can separate option's display name and value, using _${formName=defaultValue,option1(DisplayName)|option2(DisplayName)...}_
 
-<img src="../../assets/themes/zeppelin/img/screenshots/form_select_displayname.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/form_select_displayname.png" />
 
 <br />
 ### Creates Programmatically
@@ -79,7 +79,7 @@ Or Python
 print("Hello "+z.input("name"))
 ```
 
-<img src="../../assets/themes/zeppelin/img/screenshots/form_input_prog.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/form_input_prog.png" />
 
 Text input form with default value
 
@@ -95,7 +95,7 @@ Python
 print("Hello "+z.input("name", "sun"))
 ```
 
-<img src="../../assets/themes/zeppelin/img/screenshots/form_input_default_prog.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/form_input_default_prog.png" />
 
 Select form
 
@@ -123,4 +123,4 @@ print("Hello "+z.select("day", [("1","mon"),
                                 ("7","sun")]))
 ```
 
-<img src="../../assets/themes/zeppelin/img/screenshots/form_select_prog.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/form_select_prog.png" />
