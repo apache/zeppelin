@@ -230,12 +230,12 @@ public class ZeppelinServer extends Application {
       ZeppelinConfiguration conf) {
 
     WebAppContext webApp = new WebAppContext();
+    webApp.setContextPath(conf.getServerContextPath());
     File warPath = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
     if (warPath.isDirectory()) {
       // Development mode, read from FS
       // webApp.setDescriptor(warPath+"/WEB-INF/web.xml");
       webApp.setResourceBase(warPath.getPath());
-      webApp.setContextPath(conf.getServerContextPath());
       webApp.setParentLoaderPriority(true);
     } else {
       // use packaged WAR
