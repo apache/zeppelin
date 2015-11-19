@@ -75,6 +75,12 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
     <td>Allows a way to specify a ',' separated list of allowed origins for rest and websockets. i.e. http://localhost:8080</td>
   </tr>
   <tr>
+    <td>ZEPPELIN_SERVER_CONTEXT_PATH</td>
+    <td>zeppelin.server.context.path</td>
+    <td>/</td>
+    <td>Context Path of the Web Application</td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_SSL</td>
     <td>zeppelin.ssl</td>
     <td>false</td>
