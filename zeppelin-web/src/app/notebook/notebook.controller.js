@@ -1,4 +1,3 @@
-/* global confirm:false, alert:false */
 /* jshint loopfunc: true */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -298,10 +297,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       }
     }
 
-    if (newIndex === $scope.note.paragraphs.length) {
-      alert('Cannot insert after the last paragraph.');
-      return;
-    }
     if (newIndex < 0 || newIndex > $scope.note.paragraphs.length) {
       return;
     }

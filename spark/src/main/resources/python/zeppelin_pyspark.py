@@ -78,6 +78,22 @@ class PyZeppelinContext(dict):
   def get(self, key):
     return self.__getitem__(key)
 
+  def input(self, name, defaultValue = ""):
+    return self.z.input(name, defaultValue)
+
+  def select(self, name, options, defaultValue = ""):
+    # auto_convert to ArrayList doesn't match the method signature on JVM side
+    tuples = map(lambda items: self.__tupleToScalaTuple2(items), options)
+    iterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(tuples)
+    return self.z.select(name, defaultValue, iterables)
+
+  def __tupleToScalaTuple2(self, tuple):
+    if (len(tuple) == 2):
+      return gateway.jvm.scala.Tuple2(tuple[0], tuple[1])
+    else:
+      raise IndexError("options must be a list of tuple of 2")
+
+
 class SparkVersion(object):
   SPARK_1_4_0 = 140
   SPARK_1_3_0 = 130

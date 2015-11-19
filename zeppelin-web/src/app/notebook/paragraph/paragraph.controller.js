@@ -1,4 +1,3 @@
-/* global $:false, jQuery:false, ace:false, confirm:false, d3:false, nv:false*/
 /*jshint loopfunc: true, unused:false */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -228,7 +227,13 @@ angular.module('zeppelinWebApp')
       if (statusChanged || resultRefreshed) {
         // when last paragraph runs, zeppelin automatically appends new paragraph.
         // this broadcast will focus to the newly inserted paragraph
-        $rootScope.$broadcast('scrollToCursor');
+        var paragraphs = angular.element('div[id$="_paragraphColumn_main"');
+        if (paragraphs.length >= 2 && paragraphs[paragraphs.length-2].id.startsWith($scope.paragraph.id)) {
+          // rendering output can took some time. So delay scrolling event firing for sometime.
+          setTimeout(function() {
+            $rootScope.$broadcast('scrollToCursor');
+          }, 500);
+        }
       }
     }
 
@@ -596,6 +601,9 @@ angular.module('zeppelinWebApp')
       $scope.editor.keyBinding.onCommandKey = function(e, hashId, keyCode) {
         if ($scope.editor.completer && $scope.editor.completer.activated) { // if autocompleter is active
         } else {
+          // fix ace editor focus issue in chrome (textarea element goes to top: -1000px after focused by cursor move)
+          angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top', 0);
+
           var numRows;
           var currentRow;
 
@@ -633,7 +641,11 @@ angular.module('zeppelinWebApp')
   };
 
   $rootScope.$on('scrollToCursor', function(event) {
-    $scope.scrollToCursor($scope.paragraph.id, 0);
+    // scroll on 'scrollToCursor' event only when cursor is in the last paragraph
+    var paragraphs = angular.element('div[id$="_paragraphColumn_main"');
+    if (paragraphs[paragraphs.length-1].id.startsWith($scope.paragraph.id)) {
+      $scope.scrollToCursor($scope.paragraph.id, 0);
+    }
   });
 
   /** scrollToCursor if it is necessary
@@ -649,7 +661,7 @@ angular.module('zeppelinWebApp')
     var lineHeight = $scope.editor.renderer.lineHeight;
     var headerHeight = 103; // menubar, notebook titlebar
     var scrollTriggerEdgeMargin = 50;
-    
+
     var documentHeight = angular.element(document).height();
     var windowHeight = angular.element(window).height();  // actual viewport height
 
@@ -733,7 +745,6 @@ angular.module('zeppelinWebApp')
         row = $scope.editor.session.getLength() - 1;
         $scope.editor.gotoLine(row + 1, 0);
       }
-
       $scope.scrollToCursor($scope.paragraph.id, 0);
     }
   });
