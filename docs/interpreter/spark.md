@@ -73,10 +73,10 @@ After start Zeppelin, go to **Interpreter** menu and edit **master** property in
 
 for example,
 
- * *local[*]* in local mode,
- * *spark://master:7077* in standalone cluster,
- * *yarn-client* in Yarn client mode
- * *mesos://host:5050* in Mesos cluster
+ * **local[*]** in local mode
+ * **spark://master:7077** in standalone cluster
+ * **yarn-client** in Yarn client mode
+ * **mesos://host:5050** in Mesos cluster
 
 
 
