@@ -188,7 +188,7 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
 </table>
 
 <br />
-You'll also need to configure individual interpreter. Informations can be cound in 'Interpreter' section in this documentation.
+You'll also need to configure individual interpreter. Information can be found in 'Interpreter' section in this documentation.
 
 For example [Spark](../interpreter/spark.html).
 
