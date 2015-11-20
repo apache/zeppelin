@@ -210,7 +210,7 @@ public class NotebookTest implements JobListenerFactory{
     note.setConfig(config);
     notebook.refreshCron(note.id(), "anonymous");
     Thread.sleep(1*1000);
-    
+
     // remove cron scheduler.
     config.put("cron", null);
     note.setConfig(config);
@@ -286,8 +286,8 @@ public class NotebookTest implements JobListenerFactory{
     // restart interpreter
     factory.restart(note.getNoteReplLoader().getInterpreterSettings().get(0).id());
     registry = note.getNoteReplLoader()
-    .getInterpreterSettings().get(0).getInterpreterGroup()
-    .getAngularObjectRegistry();
+        .getInterpreterSettings().get(0).getInterpreterGroup()
+        .getAngularObjectRegistry();
 
     // local and global scope object should be removed
     assertNull(registry.get("o1", note.id()));
@@ -355,7 +355,7 @@ public class NotebookTest implements JobListenerFactory{
       file.delete();
     }
   }
-  
+
   @Override
   public JobListener getParagraphJobListener(Note note) {
     return new JobListener(){

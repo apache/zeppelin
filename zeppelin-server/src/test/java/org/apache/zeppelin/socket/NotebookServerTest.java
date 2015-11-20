@@ -86,7 +86,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
   @Test
   public void testMakeSureNoAngularObjectBroadcastToWebsocketWhoFireTheEvent() throws IOException {
     // create a notebook
-    Note note1 = notebook.createNote();
+    Note note1 = notebook.createNote("anonymous");
 
     // get reference to interpreterGroup
     InterpreterGroup interpreterGroup = null;
@@ -133,7 +133,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     verify(sock1, times(0)).send(anyString());
     verify(sock2, times(1)).send(anyString());
 
-    notebook.removeNote(note1.getId());
+    notebook.removeNote(note1.getId(), "anonymous");
   }
 
   private NotebookSocket createWebSocket() {
