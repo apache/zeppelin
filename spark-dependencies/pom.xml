@@ -782,7 +782,9 @@
                   <target>
                     <delete dir="../interpreter/spark/pyspark"/>
                     <copy todir="../interpreter/spark/pyspark"
-                        file="${project.build.directory}/spark-dist/spark-${spark.version}/python/lib/py4j-${py4j.version}-src.zip"/>
+                          file="${project.build.directory}/spark-dist/spark-${spark.version}/python/lib/py4j-${py4j.version}-src.zip"/>
+                    <copy todir="../interpreter/spark/r"
+                          file="../spark/lib/rscala_2.10-1.0.6.jar"/>
                     <zip destfile="${project.build.directory}/../../interpreter/spark/pyspark/pyspark.zip"
                          basedir="${project.build.directory}/spark-dist/spark-${spark.version}/python"
                          includes="pyspark/*.py,pyspark/**/*.py"/>
