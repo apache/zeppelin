@@ -174,6 +174,9 @@ public class NotebookTest implements JobListenerFactory{
   public void testClearParagraphOutput() throws IOException, SchedulerException{
     Note note = notebook.createNote();
     Paragraph p1 = note.addParagraph();
+    Map config = p1.getConfig();
+    config.put("enabled", true);
+    p1.setConfig(config);
     p1.setText("hello world");
     note.run(p1.getId());
 
