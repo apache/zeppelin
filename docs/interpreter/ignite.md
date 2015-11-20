@@ -11,7 +11,7 @@ group: manual
 ### Overview
 [Apache Ignite](https://ignite.apache.org/) In-Memory Data Fabric is a high-performance, integrated and distributed in-memory platform for computing and transacting on large-scale data sets in real-time, orders of magnitude faster than possible with traditional disk-based or flash technologies.
 
-![Apache Ignite](/assets/themes/zeppelin/img/docs-img/ignite-logo.png)
+![Apache Ignite](../assets/themes/zeppelin/img/docs-img/ignite-logo.png)
 
 You can use Zeppelin to retrieve distributed data from cache using Ignite SQL interpreter. Moreover, Ignite interpreter allows you to execute any Scala code in cases when SQL doesn't fit to your requirements. For example, you can populate data into your caches or execute distributed computations.
 
@@ -68,12 +68,12 @@ At the "Interpreters" menu, you may edit Ignite interpreter or create new one. Z
   </tr>
  </table>
 
-![Configuration of Ignite Interpreter](/assets/themes/zeppelin/img/docs-img/ignite-interpreter-setting.png)
+![Configuration of Ignite Interpreter](../assets/themes/zeppelin/img/docs-img/ignite-interpreter-setting.png)
 
 ### Interpreter Binding for Zeppelin Notebook
 After configuring Ignite interpreter, create your own notebook. Then you can bind interpreters like below image.
 
-![Binding Interpreters](/assets/themes/zeppelin/img/docs-img/ignite-interpreter-binding.png)
+![Binding Interpreters](../assets/themes/zeppelin/img/docs-img/ignite-interpreter-binding.png)
 
 For more interpreter binding information see [here](http://zeppelin.incubator.apache.org/docs/manual/interpreters.html).
 
@@ -87,7 +87,7 @@ For example, you can select top 10 words in the words cache using the following 
   select _val, count(_val) as cnt from String group by _val order by cnt desc limit 10 
   ``` 
   
-  ![IgniteSql on Zeppelin](/assets/themes/zeppelin/img/docs-img/ignite-sql-example.png)
+  ![IgniteSql on Zeppelin](../assets/themes/zeppelin/img/docs-img/ignite-sql-example.png)
   
 As long as your Ignite version and Zeppelin Ignite version is same, you can also use scala code. Please check the Zeppelin Ignite version before you download your own Ignite. 
 
@@ -109,7 +109,7 @@ As long as your Ignite version and Zeppelin Ignite version is same, you can also
   collectionAsScalaIterable(res).foreach(println _)
   ```
   
-  ![Using Scala Code](/assets/themes/zeppelin/img/docs-img/ignite-scala-example.png)
+  ![Using Scala Code](../assets/themes/zeppelin/img/docs-img/ignite-scala-example.png)
 
 Apache Ignite also provides a guide docs for Zeppelin ["Ignite with Apache Zeppelin"](https://apacheignite.readme.io/docs/data-analysis-with-apache-zeppelin)
  
