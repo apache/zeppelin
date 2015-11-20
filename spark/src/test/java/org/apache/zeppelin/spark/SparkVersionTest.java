@@ -28,6 +28,13 @@ public class SparkVersionTest {
   }
 
   @Test
+  public void testUnsupportedVersion() {
+    assertTrue(SparkVersion.fromVersionString("9.9.9").isUnsupportedVersion());
+    assertFalse(SparkVersion.fromVersionString("1.5.9").isUnsupportedVersion());
+    assertTrue(SparkVersion.fromVersionString("0.9.0").isUnsupportedVersion());
+  }
+
+  @Test
   public void testSparkVersion() {
     // test equals
     assertEquals(SparkVersion.SPARK_1_2_0, SparkVersion.fromVersionString("1.2.0"));

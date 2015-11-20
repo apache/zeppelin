@@ -31,7 +31,10 @@ public class SparkVersion {
   public static final SparkVersion SPARK_1_3_0 = SparkVersion.fromVersionString("1.3.0");
   public static final SparkVersion SPARK_1_4_0 = SparkVersion.fromVersionString("1.4.0");
   public static final SparkVersion SPARK_1_5_0 = SparkVersion.fromVersionString("1.5.0");
+  public static final SparkVersion SPARK_1_6_0 = SparkVersion.fromVersionString("1.6.0");
 
+  public static final SparkVersion MIN_SUPPORTED_VERSION =  SPARK_1_0_0;
+  public static final SparkVersion UNSUPPORTED_FUTURE_VERSION = SPARK_1_6_0;
 
   private int version;
   private String versionString;
@@ -63,6 +66,11 @@ public class SparkVersion {
   public String toString() {
     return versionString;
   }
+
+  public boolean isUnsupportedVersion() {
+    return olderThan(MIN_SUPPORTED_VERSION) || newerThanEquals(UNSUPPORTED_FUTURE_VERSION);
+  }
+
 
   public static SparkVersion fromVersionString(String versionString) {
     return new SparkVersion(versionString);
