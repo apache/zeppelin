@@ -18,7 +18,6 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +46,7 @@ import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -79,7 +79,7 @@ public class NotebookRestApi {
   public Response bind(@PathParam("noteId") String noteId, String req) throws IOException {
     List<String> settingIdList = gson.fromJson(req, new TypeToken<List<String>>(){}.getType());
     notebook.bindInterpretersToNote(noteId, settingIdList);
-    return new JsonResponse(Status.OK).build();
+    return new JsonResponse<>(Status.OK).build();
   }
 
   /**
@@ -122,14 +122,14 @@ public class NotebookRestApi {
         );
       }
     }
-    return new JsonResponse(Status.OK, "", settingList).build();
+    return new JsonResponse<>(Status.OK, "", settingList).build();
   }
 
   @GET
   @Path("/")
   public Response getNotebookList() throws IOException {
     List<Map<String, String>> notesInfo = notebookServer.generateNotebooksInfo();
-    return new JsonResponse(Status.OK, "", notesInfo ).build();
+    return new JsonResponse<>(Status.OK, "", notesInfo ).build();
   }
 
   /**
@@ -154,7 +154,7 @@ public class NotebookRestApi {
     note.persist();
     notebookServer.broadcastNote(note);
     notebookServer.broadcastNoteList();
-    return new JsonResponse(Status.CREATED, "", note.getId() ).build();
+    return new JsonResponse<>(Status.CREATED, "", note.getId() ).build();
   }
 
   /**
@@ -174,7 +174,7 @@ public class NotebookRestApi {
       }
     }
     notebookServer.broadcastNoteList();
-    return new JsonResponse(Status.OK, "").build();
+    return new JsonResponse<>(Status.OK, "").build();
   }
   
   /**
@@ -194,7 +194,7 @@ public class NotebookRestApi {
     Note newNote = notebook.cloneNote(notebookId, newNoteName);
     notebookServer.broadcastNote(newNote);
     notebookServer.broadcastNoteList();
-    return new JsonResponse(Status.CREATED, "", newNote.getId()).build();
+    return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }
   
   /**
@@ -394,13 +394,17 @@ public class NotebookRestApi {
  @Path("search")
  public Response search(@QueryParam("q") String query) {
    logger.info("Searching notebooks for {}", query);
-   Map<String, String> notebooksFound = searchNotebooks(query);
-   logger.info("Notbooks {} found", notebooksFound.size());
-   return new JsonResponse<>(Status.OK, notebooksFound).build();
+   //List<Map<String, String>> notebooksFound = searchNotebooks(query);
+   ImmutableList<ImmutableMap<String, String>> foundNotebooks = ImmutableList.of(
+       ImmutableMap.of("id", "XXXX", "name", "Test Notebook"),
+       ImmutableMap.of("id", "YYYY", "name", "Another Notebook")
+   );
+   logger.info("Notbooks {} found", foundNotebooks.size());
+   return new JsonResponse<>(Status.OK, foundNotebooks).build();
  }
 
-  private Map<String, String> searchNotebooks(String query) {
-    return ImmutableMap.of("NOTE_ID", "HTML_PREVIEW");
+  private List<Map<String, String>> searchNotebooks(String query) {
+    return null;
   }
 
 }
