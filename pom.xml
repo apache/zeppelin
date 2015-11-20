@@ -425,6 +425,7 @@
           <configuration>
             <excludes>
               <exclude>**/*.keywords</exclude>
+              <exclude>reports/**</exclude>
               <exclude>**/.idea/</exclude>
               <exclude>**/*.iml</exclude>
               <exclude>.git/</exclude>
@@ -435,7 +436,6 @@
               <exclude>**/*.avsc</exclude>
               <exclude>**/*.avro</exclude>
               <exclude>**/*.log</exclude>
-              <exclude>**/docs/**</exclude>
               <exclude>**/test/resources/**</exclude>
               <exclude>**/.settings/*</exclude>
               <exclude>**/.classpath</exclude>
@@ -451,13 +451,44 @@
               <exclude>**/notebook/**</exclude>
               <exclude>_tools/site/css/*</exclude>
               <exclude>**/README.md</exclude>
+              <exclude>DEPENDENCIES</exclude>
               <exclude>DEPLOY.md</exclude>
               <exclude>CONTRIBUTING.md</exclude>
               <exclude>STYLE.md</exclude>
               <exclude>Roadmap.md</exclude>
+              <exclude>**/licenses/**</exclude>
+              <exclude>**/zeppelin-distribution/src/bin_license/**</exclude>
               <exclude>conf/interpreter.json</exclude>
               <exclude>conf/zeppelin-env.sh</exclude>
               <exclude>spark-*-bin*/**</exclude>
+
+              <!-- bundled from bootstrap -->
+              <exclude>docs/assets/themes/zeppelin/bootstrap/**</exclude>
+              <exclude>docs/assets/themes/zeppelin/css/style.css</exclude>
+              <exclude>docs/_includes/themes/zeppelin/_jumbotron.html</exclude>
+              <exclude>docs/_includes/themes/zeppelin/_navigation.html</exclude>
+
+              <!-- bundled from jekyll-bootstrap -->
+              <exclude>docs/404.html</exclude>
+              <exclude>docs/_config.yml</exclude>
+              <exclude>docs/_includes/JB/**</exclude>
+              <exclude>docs/_layouts/**</exclude>
+              <exclude>docs/_plugins/**</exclude>
+              <exclude>docs/atom.xml</exclude>
+              <exclude>docs/_includes/themes/zeppelin/default.html</exclude>
+              <exclude>docs/_includes/themes/zeppelin/page.html</exclude>
+              <exclude>docs/_includes/themes/zeppelin/post.html</exclude>
+              <exclude>docs/_includes/themes/zeppelin/settings.yml</exclude>
+              <exclude>docs/Rakefile</exclude>
+              <exclude>docs/rss.xml</exclude>
+              <exclude>docs/sitemap.txt</exclude>
+
+              <!-- bundled from jekyll -->
+              <exclude>docs/assets/themes/zeppelin/css/syntax.css</exclude>
+
+              <!-- docs (website) build target dir -->
+              <exclude>docs/_site/**</exclude>
+              <exclude>docs/Gemfile.lock</exclude>
             </excludes>
           </configuration>
 

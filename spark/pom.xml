@@ -43,13 +43,6 @@
     <py4j.version>0.8.2.1</py4j.version>
   </properties>
 
-  <repositories>
-    <repository>
-      <id>cloudera</id>
-      <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
-    </repository>
-  </repositories>
-  
   <dependencies>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -300,6 +293,18 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <id>vendor-repo</id>
+      <repositories>
+        <repository>
+          <id>cloudera</id>
+          <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
 
   <build>
     <plugins>

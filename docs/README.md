@@ -1,6 +1,4 @@
-## Zeppelin project website
-
-Welcome to the Zeppelin documentation!
+## Zeppelin documentation
 
 This readme will walk you through building the Zeppelin documentation, which is included here with the Zeppelin source code.
 
@@ -32,7 +30,7 @@ See https://help.github.com/articles/using-jekyll-with-pages#installing-jekyll
     ```
     svn co https://svn.apache.org/repos/asf/incubator/zeppelin asf-zepplelin
     ```
- 3. copy zeppelin/_site to asf-zepplelin/site
+ 3. copy zeppelin/_site to asf-zepplelin/site/docs/[VERSION]
  4. ```svn commit```
 
 ## Adding a new page

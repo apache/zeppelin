@@ -81,7 +81,7 @@ module.exports = function(config) {
       'PhantomJS'
     ],
 
-    reporters: 'coverage',
+    reporters: ['coverage','progress'],
 
     preprocessors: {
       'src/*/{*.js,!(test)/**/*.js}': 'coverage'
@@ -89,7 +89,8 @@ module.exports = function(config) {
 
     coverageReporter: {
       type: 'html',
-      dir: 'reports/coverage'
+      dir: '../reports/zeppelin-web-coverage',
+      subdir: '.'
     },
 
     // Which plugins to enable

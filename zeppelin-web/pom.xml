@@ -79,7 +79,6 @@
             <exclude>bower.json</exclude>
             <exclude>package.json</exclude>
             <exclude>*.md</exclude>
-            <exclude>reports/**</exclude>
           </excludes>
         </configuration>
       </plugin>

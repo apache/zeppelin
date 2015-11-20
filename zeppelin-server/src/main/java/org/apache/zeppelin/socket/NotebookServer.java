@@ -98,7 +98,7 @@ public class NotebookServer extends WebSocketServlet implements
     Notebook notebook = notebook();
     try {
       Message messagereceived = deserializeMessage(msg);
-      LOG.info("RECEIVE << " + messagereceived.op);
+      LOG.debug("RECEIVE << " + messagereceived.op);
       /** Lets be elegant here */
       switch (messagereceived.op) {
           case LIST_NOTES:
@@ -136,6 +136,9 @@ public class NotebookServer extends WebSocketServlet implements
             break;
           case PARAGRAPH_REMOVE:
             removeParagraph(conn, notebook, messagereceived);
+            break;
+          case PARAGRAPH_CLEAR_OUTPUT:
+            clearParagraphOutput(conn, notebook, messagereceived);
             break;
           case NOTE_UPDATE:
             updateNote(conn, notebook, messagereceived);
@@ -250,8 +253,28 @@ public class NotebookServer extends WebSocketServlet implements
       if (socketLists == null || socketLists.size() == 0) {
         return;
       }
-      LOG.info("SEND >> " + m.op);
+      LOG.debug("SEND >> " + m.op);
       for (NotebookSocket conn : socketLists) {
+        try {
+          conn.send(serializeMessage(m));
+        } catch (IOException e) {
+          LOG.error("socket error", e);
+        }
+      }
+    }
+  }
+
+  private void broadcastExcept(String noteId, Message m, NotebookSocket exclude) {
+    synchronized (noteSocketMap) {
+      List<NotebookSocket> socketLists = noteSocketMap.get(noteId);
+      if (socketLists == null || socketLists.size() == 0) {
+        return;
+      }
+      LOG.debug("SEND >> " + m.op);
+      for (NotebookSocket conn : socketLists) {
+        if (exclude.equals(conn)) {
+          continue;
+        }
         try {
           conn.send(serializeMessage(m));
         } catch (IOException e) {
@@ -273,17 +296,13 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  public void broadcastNote(Note note) {
-    broadcast(note.id(), new Message(OP.NOTE).put("note", note));
-  }
-
-  public void broadcastNoteList() {
+  public List<Map<String, String>> generateNotebooksInfo (){
     Notebook notebook = notebook();
 
     ZeppelinConfiguration conf = notebook.getConf();
     String homescreenNotebookId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
     boolean hideHomeScreenNotebookFromList = conf
-        .getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
+            .getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
 
     List<Note> notes = notebook.getAllNotes();
     List<Map<String, String>> notesInfo = new LinkedList<>();
@@ -299,6 +318,16 @@ public class NotebookServer extends WebSocketServlet implements
       notesInfo.add(info);
     }
 
+    return notesInfo;
+  }
+
+  public void broadcastNote(Note note) {
+    broadcast(note.id(), new Message(OP.NOTE).put("note", note));
+  }
+
+  public void broadcastNoteList() {
+
+    List<Map<String, String>> notesInfo = generateNotebooksInfo();
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
   }
 
@@ -330,6 +359,7 @@ public class NotebookServer extends WebSocketServlet implements
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
       sendAllAngularObjects(note, conn);
     } else {
+      removeConnectionFromAllNote(conn);
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", null)));
     }
   }
@@ -388,6 +418,7 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     note.persist();
+    addConnectionToNote(note.id(), (NotebookSocket) conn);
     broadcastNote(note);
     broadcastNoteList();
   }
@@ -425,12 +456,13 @@ public class NotebookServer extends WebSocketServlet implements
     note.persist();
     broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
   }
-  
+
   private void cloneNote(NotebookSocket conn, Notebook notebook, Message fromMessage)
       throws IOException, CloneNotSupportedException {
     String noteId = getOpenNoteId(conn);
     String name = (String) fromMessage.get("name");
     Note newNote = notebook.cloneNote(noteId, name);
+    addConnectionToNote(newNote.id(), (NotebookSocket) conn);
     broadcastNote(newNote);
     broadcastNoteList();
   }
@@ -449,6 +481,18 @@ public class NotebookServer extends WebSocketServlet implements
       note.persist();
       broadcastNote(note);
     }
+  }
+
+  private void clearParagraphOutput(NotebookSocket conn, Notebook notebook,
+      Message fromMessage) throws IOException {
+    final String paragraphId = (String) fromMessage.get("id");
+    if (paragraphId == null) {
+      return;
+    }
+
+    final Note note = notebook.getNote(getOpenNoteId(conn));
+    note.clearParagraphOutput(paragraphId);
+    broadcastNote(note);
   }
 
   private void completion(NotebookSocket conn, Notebook notebook,
@@ -475,7 +519,7 @@ public class NotebookServer extends WebSocketServlet implements
    * @param notebook the notebook.
    * @param fromMessage the message.
    */
-  private void angularObjectUpdated(WebSocket conn, Notebook notebook,
+  private void angularObjectUpdated(NotebookSocket conn, Notebook notebook,
       Message fromMessage) {
     String noteId = (String) fromMessage.get("noteId");
     String interpreterGroupId = (String) fromMessage.get("interpreterGroupId");
@@ -529,20 +573,22 @@ public class NotebookServer extends WebSocketServlet implements
           if (interpreterGroupId.equals(setting.getInterpreterGroup().getId())) {
             AngularObjectRegistry angularObjectRegistry = setting
                 .getInterpreterGroup().getAngularObjectRegistry();
-            this.broadcast(
+            this.broadcastExcept(
                 n.id(),
                 new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", ao)
                     .put("interpreterGroupId", interpreterGroupId)
-                    .put("noteId", n.id()));
+                    .put("noteId", n.id()),
+                conn);
           }
         }
       }
     } else { // broadcast to all web session for the note
-      this.broadcast(
+      this.broadcastExcept(
           note.id(),
           new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", ao)
               .put("interpreterGroupId", interpreterGroupId)
-              .put("noteId", note.id()));
+              .put("noteId", note.id()),
+          conn);
     }
   }
 

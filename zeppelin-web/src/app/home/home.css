@@ -20,6 +20,7 @@ body {
 html,
 body {
   height: 100%;
+  -ms-overflow-style: scrollbar;
 }
 
 .bodyAsIframe {

@@ -103,9 +103,12 @@ function make_binary_release() {
         exit 1
     fi
 
-    # re-create package with proper dir name
+    # re-create package with proper dir name with binary license
     cd zeppelin-distribution/target/zeppelin-*
     mv zeppelin-* zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
+    cat ../../src/bin_license/LICENSE >> zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}/LICENSE
+    cat ../../src/bin_license/NOTICE >> zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}/NOTICE
+    cp ../../src/bin_license/licenses/* zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}/licenses/
     ${TAR} cvzf zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}.tgz zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
 
     # sign bin package
@@ -122,7 +125,7 @@ function make_binary_release() {
     rm -rf ${WORKING_DIR}/zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
 }
 
-make_binary_release all -Pyarn
+make_binary_release all "-Pspark-1.5 -Phadoop-2.4 -Pyarn -Ppyspark"
 
 # remove non release files and dirs
 rm -rf ${WORKING_DIR}/zeppelin
