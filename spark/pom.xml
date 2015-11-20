@@ -35,6 +35,7 @@
   <url>http://zeppelin.incubator.apache.org</url>
 
   <properties>
+    <rscala.version>1.0.6</rscala.version>
     <spark.version>1.4.1</spark.version>
     <scala.version>2.10.4</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
@@ -231,6 +232,13 @@
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.ddahl</groupId>
+      <artifactId>rscala</artifactId>
+      <version>${rscala.version}</version>
+      <scope>system</scope>
+      <systemPath>${basedir}/lib/rscala_2.10-${rscala.version}.jar</systemPath>
+    </dependency>
 
     <!--TEST-->
     <dependency>

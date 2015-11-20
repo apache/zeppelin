@@ -1,0 +1,555 @@
+{
+  "paragraphs": [
+    {
+      "text": "%md # R",
+      "dateUpdated": "Dec 28, 2015 12:23:19 PM",
+      "config": {
+        "colWidth": 4.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/markdown"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1447943767235_-1973080838",
+      "id": "20151119-153607_125619830",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch1\u003eR\u003c/h1\u003e\n"
+      },
+      "dateCreated": "Nov 19, 2015 3:36:07 PM",
+      "dateStarted": "Dec 28, 2015 12:23:19 PM",
+      "dateFinished": "Dec 28, 2015 12:23:20 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%r\nfoo \u003c- TRUE\nprint(foo)\nbare \u003c- c(1,2.5, 4)\nprint(bare)\ndouble \u003c- 15.0\nprint(double)",
+      "dateUpdated": "Dec 28, 2015 12:42:04 PM",
+      "config": {
+        "colWidth": 4.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1429882946244_-381648689",
+      "id": "20150424-154226_261270952",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp class\u003d\u0027text\u0027\u003e[1] TRUE\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e[1] 1.0 2.5 4.0\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e[1] 15\u003cbr\u003e\u003c/p\u003e\u003cbr\u003e"
+      },
+      "dateCreated": "Apr 24, 2015 3:42:26 PM",
+      "dateStarted": "Dec 28, 2015 12:42:04 PM",
+      "dateFinished": "Dec 28, 2015 12:42:25 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%r\nlibrary(data.table)\ndt \u003c- data.table(1:3)\nprint(dt)\nfor (i in 1:5) {\n  print(i*2)\n}\nprint(1:50)",
+      "dateUpdated": "Dec 28, 2015 12:23:58 PM",
+      "config": {
+        "colWidth": 4.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1429882976611_1352445253",
+      "id": "20150424-154256_645296307",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp class\u003d\u0027text\u0027\u003edata.table 1.9.4  For help type: ?data.table\u003cbr\u003e*** NB: by\u003d.EACHI is now explicit. See README to restore previous behaviour.Attaching package: \u0026#39;data.table\u0026#39;The following objects are masked from \u0026#39;package:SparkR\u0026#39;:    between, hour, last, like, month, quarter, tables, year\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e   V1\u003cbr\u003e1:  1\u003cbr\u003e2:  2\u003cbr\u003e3:  3\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e[1] 2\u003cbr\u003e[1] 4\u003cbr\u003e[1] 6\u003cbr\u003e[1] 8\u003cbr\u003e[1] 10\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23\u003cbr\u003e[24] 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46\u003cbr\u003e[47] 47 48 49 50\u003cbr\u003e\u003c/p\u003e\u003cbr\u003e"
+      },
+      "dateCreated": "Apr 24, 2015 3:42:56 PM",
+      "dateStarted": "Dec 28, 2015 12:23:58 PM",
+      "dateFinished": "Dec 28, 2015 12:23:58 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md # Scala -\u003e R",
+      "dateUpdated": "Dec 28, 2015 12:24:00 PM",
+      "config": {
+        "colWidth": 4.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/markdown"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1447943831405_-1472629788",
+      "id": "20151119-153711_254841308",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch1\u003eScala -\u003e R\u003c/h1\u003e\n"
+      },
+      "dateCreated": "Nov 19, 2015 3:37:11 PM",
+      "dateStarted": "Dec 28, 2015 12:24:00 PM",
+      "dateFinished": "Dec 28, 2015 12:24:00 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "val s \u003d \"hello R from scala\"\nz.put(\"s\", s)\nval b \u003d new Integer(42)\nz.put(\"b\", b)\nval a: Array[Double] \u003d Array[Double](30.0, 20.0)\nz.put(\"a\", a)\nval m \u003d Array(Array(1, 2), Array(3, 4))\nz.put(\"m2\", m)\n// val v \u003d Vector(1, 2, 3, 4)\n// z.put(\"v\", v)",
+      "dateUpdated": "Dec 28, 2015 12:24:01 PM",
+      "config": {
+        "colWidth": 4.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1429862281402_-79250404",
+      "id": "20150424-095801_125725189",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "s: String \u003d hello R from scala\nres0: Object \u003d null\nb: Integer \u003d 42\nres1: Object \u003d null\na: Array[Double] \u003d Array(30.0, 20.0)\nres2: Object \u003d null\nm: Array[Array[Int]] \u003d Array(Array(1, 2), Array(3, 4))\nres3: Object \u003d null\n"
+      },
+      "dateCreated": "Apr 24, 2015 9:58:01 AM",
+      "dateStarted": "Dec 28, 2015 12:24:02 PM",
+      "dateFinished": "Dec 28, 2015 12:24:03 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%r\nz.get(\"s\")\nz.get(\"b\")\nz.get(\"a\")\nz.get(\"m2\")\n\n\n",
+      "dateUpdated": "Dec 28, 2015 12:24:22 PM",
+      "config": {
+        "colWidth": 4.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1438930802740_-1781296534",
+      "id": "20150807-090002_1514685133",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp class\u003d\u0027text\u0027\u003e[1] \u0026quot;hello R from scala\u0026quot;\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e[1] 42\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e[[1]]\u003cbr\u003e[1] 30[[2]]\u003cbr\u003e[1] 20\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003eJava ref type [[I id 5 \u003cbr\u003e\u003c/p\u003e\u003cbr\u003e"
+      },
+      "dateCreated": "Aug 7, 2015 9:00:02 AM",
+      "dateStarted": "Dec 28, 2015 12:24:22 PM",
+      "dateFinished": "Dec 28, 2015 12:24:22 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "import org.apache.commons.io.IOUtils\nimport java.net.URL\nimport java.nio.charset.Charset\n\nval bankText \u003d sc.parallelize(\n    IOUtils.toString(\n        new URL(\"https://s3.amazonaws.com/apache-zeppelin/tutorial/bank/bank.csv\"),\n        Charset.forName(\"utf8\")).split(\"\\n\"))\n\ncase class Bank(age: Integer, job: String, marital: String, education: String, balance: Integer)\n\nval bank \u003d bankText.map(s \u003d\u003e s.split(\";\")).filter(s \u003d\u003e s(0) !\u003d \"\\\"age\\\"\").map(\n    s \u003d\u003e Bank(s(0).toInt, \n            s(1).replaceAll(\"\\\"\", \"\"),\n            s(2).replaceAll(\"\\\"\", \"\"),\n            s(3).replaceAll(\"\\\"\", \"\"),\n            s(5).replaceAll(\"\\\"\", \"\").toInt\n        )\n).toDF()\nbank.registerTempTable(\"bank\")",
+      "dateUpdated": "Dec 28, 2015 12:24:40 PM",
+      "config": {
+        "colWidth": 6.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1451298863525_-385860549",
+      "id": "20151228-113423_1590666718",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "import org.apache.commons.io.IOUtils\nimport java.net.URL\nimport java.nio.charset.Charset\nbankText: org.apache.spark.rdd.RDD[String] \u003d ParallelCollectionRDD[0] at parallelize at \u003cconsole\u003e:27\ndefined class Bank\nbank: org.apache.spark.sql.DataFrame \u003d [age: int, job: string, marital: string, education: string, balance: int]\n"
+      },
+      "dateCreated": "Dec 28, 2015 11:34:23 AM",
+      "dateStarted": "Dec 28, 2015 12:24:40 PM",
+      "dateFinished": "Dec 28, 2015 12:24:44 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%r\nsql(sqlContext, \"SELECT * from bank\")\n\n\n\nsql(sqlContext, \"SELECT count(*) from bank\")\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+      "dateUpdated": "Dec 28, 2015 12:24:46 PM",
+      "config": {
+        "colWidth": 6.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1451298866909_1989609809",
+      "id": "20151228-113426_152293011",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp class\u003d\u0027text\u0027\u003eDataFrame[age:int, job:string, marital:string, education:string, balance:int]\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003eDataFrame[_c0:bigint]\u003cbr\u003e\u003c/p\u003e\u003cbr\u003e"
+      },
+      "dateCreated": "Dec 28, 2015 11:34:26 AM",
+      "dateStarted": "Dec 28, 2015 12:24:46 PM",
+      "dateFinished": "Dec 28, 2015 12:24:47 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md # R -\u003e Scala",
+      "dateUpdated": "Dec 28, 2015 12:24:50 PM",
+      "config": {
+        "colWidth": 4.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/markdown"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1447943883205_204013973",
+      "id": "20151119-153803_1559674700",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch1\u003eR -\u003e Scala\u003c/h1\u003e\n"
+      },
+      "dateCreated": "Nov 19, 2015 3:38:03 PM",
+      "dateStarted": "Dec 28, 2015 12:24:50 PM",
+      "dateFinished": "Dec 28, 2015 12:24:50 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%r\nb \u003c- TRUE\nprint(b)\nz.put(\"b\", b)\nm \u003c- c(1, 2.5, 4)\nprint(m)\nz.put(\"m\", m)\nd \u003c- 15.0\nprint(d)\nz.put(\"d\", d)\ns \u003c- \"hello scala from R\"\nprint(s)\nz.put(\"s\", s)\n",
+      "dateUpdated": "Dec 28, 2015 12:24:51 PM",
+      "config": {
+        "colWidth": 4.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1438930852876_-718342592",
+      "id": "20150807-090052_1745884278",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp class\u003d\u0027text\u0027\u003e[1] TRUE\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e[1] 42\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e[1] 1.0 2.5 4.0\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003eWarning in if (is.na(object)) {: the condition has length \u0026gt; 1 and only the\u003cbr\u003efirst element will be used\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003eNULL\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e[1] 15\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003eNULL\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e[1] \u0026quot;hello scala from R\u0026quot;\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e[1] \u0026quot;hello R from scala\u0026quot;\u003cbr\u003e\u003c/p\u003e\u003cbr\u003e"
+      },
+      "dateCreated": "Aug 7, 2015 9:00:52 AM",
+      "dateStarted": "Dec 28, 2015 12:24:51 PM",
+      "dateFinished": "Dec 28, 2015 12:24:51 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "println(\"b\u003d\"+ z.get(\"b\"))\nprintln(\"m\u003d\"+ z.get(\"m\"))\n//println(\"m\u003d\"+ z.get(\"m\").asInstanceOf[Array[Double]].toSeq)\nprintln(\"d\u003d\"+ z.get(\"d\"))\nprintln(\"s\u003d\"+ z.get(\"s\"))",
+      "dateUpdated": "Dec 28, 2015 12:24:53 PM",
+      "config": {
+        "colWidth": 4.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1447943897090_1581830433",
+      "id": "20151119-153817_680930724",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TEXT",
+        "msg": "b\u003dtrue\nm\u003d1.0\nd\u003d15.0\ns\u003dhello scala from R\n"
+      },
+      "dateCreated": "Nov 19, 2015 3:38:17 PM",
+      "dateStarted": "Dec 28, 2015 12:24:53 PM",
+      "dateFinished": "Dec 28, 2015 12:24:54 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%r \nlocalDF \u003c- data.frame(name\u003dc(\"John\", \"Smith\", \"Sarah\"), age\u003dc(19, 23, 18))\ndf \u003c- createDataFrame(sqlContext, localDF)\nprintSchema(df)\nregisterTempTable(df, \"df\")\nSparkR::head(df)",
+      "dateUpdated": "Dec 28, 2015 12:24:56 PM",
+      "config": {
+        "colWidth": 6.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1451299943247_-1445699273",
+      "id": "20151228-115223_736768965",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp class\u003d\u0027text\u0027\u003eroot\u003cbr\u003e |-- name: string (nullable \u003d true)\u003cbr\u003e |-- age: double (nullable \u003d true)\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e   name age\u003cbr\u003e1  John  19\u003cbr\u003e2 Smith  23\u003cbr\u003e3 Sarah  18\u003cbr\u003e\u003c/p\u003e\u003cbr\u003e"
+      },
+      "dateCreated": "Dec 28, 2015 11:52:23 AM",
+      "dateStarted": "Dec 28, 2015 12:24:56 PM",
+      "dateFinished": "Dec 28, 2015 12:24:57 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sql select * from df",
+      "dateUpdated": "Dec 28, 2015 12:25:00 PM",
+      "config": {
+        "colWidth": 6.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/sql"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1451299952159_-764293646",
+      "id": "20151228-115232_1220817599",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TABLE",
+        "msg": "name\tage\nJohn\t19.0\nSmith\t23.0\nSarah\t18.0\n"
+      },
+      "dateCreated": "Dec 28, 2015 11:52:32 AM",
+      "dateStarted": "Dec 28, 2015 12:25:00 PM",
+      "dateFinished": "Dec 28, 2015 12:25:00 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md # Plot",
+      "dateUpdated": "Dec 28, 2015 12:25:12 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/markdown"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1447943992625_1434410307",
+      "id": "20151119-153952_1460064444",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch1\u003ePlot\u003c/h1\u003e\n"
+      },
+      "dateCreated": "Nov 19, 2015 3:39:52 PM",
+      "dateStarted": "Dec 28, 2015 12:25:12 PM",
+      "dateFinished": "Dec 28, 2015 12:25:12 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%r\nlibrary(data.table)\ndt \u003c- data.table(1:3)\nplot(dt[[1]], 1:3)",
+      "dateUpdated": "Dec 28, 2015 12:25:12 PM",
+      "config": {
+        "colWidth": 6.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1447944037701_859635966",
+      "id": "20151119-154037_1358012653",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003e\u003cimg src\u003d\"data:image/png;base64,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\u003d\u003d\" alt\u003d\"plot of chunk unnamed-chunk-1\"/\u003e \u003c/p\u003e\u003cbr\u003e"
+      },
+      "dateCreated": "Nov 19, 2015 3:40:37 PM",
+      "dateStarted": "Dec 28, 2015 12:25:13 PM",
+      "dateFinished": "Dec 28, 2015 12:25:13 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%r pres_rating \u003c- data.frame(\n  rating \u003d as.numeric(presidents),\n  year \u003d as.numeric(floor(time(presidents))),\n  quarter \u003d as.numeric(cycle(presidents))\n)\n# pres_rating\nlibrary(ggplot2)\np \u003c- ggplot(pres_rating, aes(x\u003dyear, y\u003dquarter, fill\u003drating))\np + geom_raster()",
+      "dateUpdated": "Dec 28, 2015 12:25:14 PM",
+      "config": {
+        "colWidth": 6.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        }
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1438930880648_-1572054429",
+      "id": "20150807-090120_1060568667",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp\u003e\u003cimg src\u003d\"data:image/png;base64,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\u003d\" alt\u003d\"plot of chunk unnamed-chunk-1\"/\u003e \u003c/p\u003e\u003cbr\u003e"
+      },
+      "dateCreated": "Aug 7, 2015 9:01:20 AM",
+      "dateStarted": "Dec 28, 2015 12:25:14 PM",
+      "dateFinished": "Dec 28, 2015 12:25:14 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "config": {},
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1447927763146_1861998495",
+      "id": "20151119-110923_1342815093",
+      "dateCreated": "Nov 19, 2015 11:09:23 AM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "R Tutorial",
+  "id": "r",
+  "angularObjects": {
+    "2B7199TE7": [],
+    "2B4M18KJE": [],
+    "2B3WY2YWV": [],
+    "2B7FKRYHZ": []
+  },
+  "config": {
+    "looknfeel": "default"
+  },
+  "info": {}
+}
