@@ -42,4 +42,6 @@ See https://help.github.com/articles/using-jekyll-with-pages#installing-jekyll
 ## Bumping up version
 
    * `BASE_PATH` property in _config.yml
-   * `ZEPPELIN <small>([VERSION])</small>` in _includes/themes/zeppelin/_navigation.html need to be updated
+   * `ZEPPELIN <small>([VERSION])</small>` in _includes/themes/zeppelin/_navigation.html 
+
+need to be updated
