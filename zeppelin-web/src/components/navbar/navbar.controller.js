@@ -49,11 +49,15 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
    * */
   $http.get('/api/security/ticket').
     success(function(ticket, status, headers, config) {
-      $rootScope.ticket = angular.fromJson(ticket).body;
-      vm.loadNotes = loadNotes;
-      vm.isActive = isActive;
-
-      vm.loadNotes();
+      if (status === 401 || status === 403) {
+        // Dislay error message here
+      }
+      else {
+        $rootScope.ticket = angular.fromJson(ticket).body;
+        vm.loadNotes = loadNotes;
+        vm.isActive = isActive;
+        vm.loadNotes();
+      }
     }).
     error(function(data, status, headers, config) {
       console.log('Could not get ticket');

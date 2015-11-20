@@ -108,6 +108,13 @@ public class NotebookServer extends WebSocketServlet implements
       if (ticket != null && !ticket.equals(messagereceived.ticket))
         throw new Exception("Invalid ticket " + messagereceived.ticket + " != " + ticket);
 
+      ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+      boolean allowAnonymous = conf.
+          getBoolean(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED);
+      if (!allowAnonymous && messagereceived.principal.equals("anonymous")) {
+        throw new Exception("Anonymous access not allowed ");
+      }
+
       addConnectionToUserSocketMap(conn, messagereceived);
 
       /** Lets be elegant here */
