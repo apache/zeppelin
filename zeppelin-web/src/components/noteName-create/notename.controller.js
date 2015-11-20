@@ -26,6 +26,14 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, $ro
   	  	 vm.websocketMsgSrv.cloneNotebook(noteId, $scope.note.notename);
   	  }
   };
+
+  $scope.$on('setNoteContent', function(event, note) {
+    if(note !== undefined) {
+      window.location = '#/notebook/' + note.id;
+      console.log(note);
+    }
+  });
+
   vm.preVisible = function(clone){
 		var generatedName = vm.generateName();
 		$scope.note.notename = 'Note ' + generatedName;

@@ -100,10 +100,26 @@ public class RemoteInterpreterServer
 
   @Override
   public void shutdown() throws TException {
+    interpreterGroup.close();
+    interpreterGroup.destroy();
+
+    server.stop();
+
     // server.stop() does not always finish server.serve() loop
     // sometimes server.serve() is hanging even after server.stop() call.
     // this case, need to force kill the process
-    server.stop();
+
+    long startTime = System.currentTimeMillis();
+    while (System.currentTimeMillis() - startTime < 2000 && server.isServing()) {
+      try {
+        Thread.sleep(300);
+      } catch (InterruptedException e) {
+      }
+    }
+
+    if (server.isServing()) {
+      System.exit(0);
+    }
   }
 
   public int getPort() {

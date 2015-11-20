@@ -113,6 +113,7 @@ public class ZeppelinServer extends Application {
         LOG.info("Shutting down Zeppelin Server ... ");
         try {
           jettyServer.stop();
+          ZeppelinServer.notebook.getInterpreterFactory().close();
         } catch (Exception e) {
           LOG.error("Error while stopping servlet container", e);
         }
@@ -132,6 +133,7 @@ public class ZeppelinServer extends Application {
     }
 
     jettyServer.join();
+    ZeppelinServer.notebook.getInterpreterFactory().close();
   }
 
   private static Server setupJettyServer(ZeppelinConfiguration conf)

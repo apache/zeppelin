@@ -49,6 +49,8 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
+import org.apache.zeppelin.scheduler.Job;
+import org.apache.zeppelin.scheduler.Job.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -538,6 +540,22 @@ public class InterpreterFactory {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
       if (intpsetting != null) {
+
+        for (Interpreter intp : intpsetting.getInterpreterGroup()) {
+          for (Job job : intp.getScheduler().getJobsRunning()) {
+            job.abort();
+            job.setStatus(Status.ABORT);
+            logger.info("Job " + job.getJobName() + " aborted ");
+          }
+              
+          for (Job job : intp.getScheduler().getJobsWaiting()) {
+            job.abort();
+            job.setStatus(Status.ABORT);
+            logger.info("Job " + job.getJobName() + " aborted ");
+          }
+        }
+
+
         intpsetting.getInterpreterGroup().close();
         intpsetting.getInterpreterGroup().destroy();
 

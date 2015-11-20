@@ -143,9 +143,8 @@ public class Notebook {
     bindInterpretersToNote(newNote.id(), boundInterpreterSettingsIds, principal);
 
     List<Paragraph> paragraphs = sourceNote.getParagraphs();
-    for (Paragraph para : paragraphs) {
-      Paragraph p = (Paragraph) para.clone();
-      newNote.addParagraph(p);
+    for (Paragraph p : paragraphs) {
+      newNote.addCloneParagraph(p);
     }
     newNote.persist();
     return newNote;

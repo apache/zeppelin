@@ -165,18 +165,16 @@ public class TajoInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
-    // Currently, Tajo doesn't provide JDBC cancel method. It will be implemented in
-    // Tajo 0.11.0 version. You can find related issue progress at TAJO-751.
-//    if (statement != null) {
-//      try {
-//        statement.cancel();
-//      }
-//      catch (SQLException ex) {
-//      }
-//      finally {
-//        statement = null;
-//      }
-//    }
+    if (statement != null) {
+      try {
+        statement.cancel();
+      }
+      catch (SQLException ex) {
+      }
+      finally {
+        statement = null;
+      }
+    }
   }
 
   @Override

@@ -305,7 +305,8 @@ body {
 }
 
 .navbar-brand small {
-    font-size: 60%;
+    font-size: 14px;
+    font-family: 'Helvetica Neue', Helvetica;
     color: #FFF; }
 
 .navbar-collapse.collapse {
