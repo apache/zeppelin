@@ -19,11 +19,10 @@ package org.apache.zeppelin.notebook.repo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -34,10 +33,8 @@ import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
@@ -149,6 +146,9 @@ public class NotebookRepoSyncTest implements JobListenerFactory{
     /* create note */
     Note note = notebookSync.createNote();
     Paragraph p1 = note.addParagraph();
+    Map config = p1.getConfig();
+    config.put("enabled", true);
+    p1.setConfig(config);
     p1.setText("hello world");
     
     /* new paragraph exists in note instance */

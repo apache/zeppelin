@@ -128,6 +128,10 @@ angular.module('zeppelinWebApp')
     if (!config.graph.scatter) {
       config.graph.scatter = {};
     }
+
+    if (config.enabled === undefined) {
+      config.enabled = true;
+    }
   };
 
   $scope.getIframeDimensions = function () {
@@ -266,6 +270,13 @@ angular.module('zeppelinWebApp')
     }
     commitParagraph($scope.paragraph.title, $scope.dirtyText, $scope.paragraph.config, $scope.paragraph.settings.params);
     $scope.dirtyText = undefined;
+  };
+
+  $scope.toggleEnableDisable = function () {
+    $scope.paragraph.config.enabled = $scope.paragraph.config.enabled ? false : true;
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
   $scope.moveUp = function() {
