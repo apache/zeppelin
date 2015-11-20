@@ -18,6 +18,8 @@
 package org.apache.zeppelin.scheduler;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -163,6 +165,15 @@ public class RemoteSchedulerTest {
         10);
 
     Job job1 = new Job("jobId1", "jobName1", null, 200) {
+      InterpreterContext context = new InterpreterContext(
+          "note",
+          "jobId1",
+          "title",
+          "text",
+          new HashMap<String, Object>(),
+          new GUI(),
+          new AngularObjectRegistry(intpGroup.getId(), null),
+          new LinkedList<InterpreterContextRunner>());
 
       @Override
       public int progress() {
@@ -176,25 +187,29 @@ public class RemoteSchedulerTest {
 
       @Override
       protected Object jobRun() throws Throwable {
-        intpA.interpret("1000", new InterpreterContext(
-            "note",
-            "jobId1",
-            "title",
-            "text",
-            new HashMap<String, Object>(),
-            new GUI(),
-            new AngularObjectRegistry(intpGroup.getId(), null),
-            new LinkedList<InterpreterContextRunner>()));
+        intpA.interpret("1000", context);
         return "1000";
       }
 
       @Override
       protected boolean jobAbort() {
-        return false;
+        if (isRunning()) {
+          intpA.cancel(context);
+        }
+        return true;
       }
     };
 
     Job job2 = new Job("jobId2", "jobName2", null, 200) {
+      InterpreterContext context = new InterpreterContext(
+          "note",
+          "jobId2",
+          "title",
+          "text",
+          new HashMap<String, Object>(),
+          new GUI(),
+          new AngularObjectRegistry(intpGroup.getId(), null),
+          new LinkedList<InterpreterContextRunner>());
 
       @Override
       public int progress() {
@@ -208,21 +223,16 @@ public class RemoteSchedulerTest {
 
       @Override
       protected Object jobRun() throws Throwable {
-        intpA.interpret("1000", new InterpreterContext(
-            "note",
-            "jobId2",
-            "title",
-            "text",
-            new HashMap<String, Object>(),
-            new GUI(),
-            new AngularObjectRegistry(intpGroup.getId(), null),
-            new LinkedList<InterpreterContextRunner>()));
+        intpA.interpret("1000", context);
         return "1000";
       }
 
       @Override
       protected boolean jobAbort() {
-        return false;
+        if (isRunning()) {
+          intpA.cancel(context);
+        }
+        return true;
       }
     };
     scheduler.submit(job1);
@@ -244,8 +254,10 @@ public class RemoteSchedulerTest {
       cycles++;
     }
 
+    assertNotNull(job1.getDateFinished());
     assertTrue(job1.isTerminated());
-    assertTrue(job2.isAborted());
+    assertNull(job2.getDateFinished());
+    assertTrue(job2.isTerminated());
 
     intpA.close();
     schedulerSvc.removeScheduler("test");

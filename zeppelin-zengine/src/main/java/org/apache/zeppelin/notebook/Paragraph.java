@@ -211,7 +211,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   @Override
   protected boolean jobAbort() {
     Interpreter repl = getRepl(getRequiredReplName());
-    repl.cancel(getInterpreterContext());
+    Job job = repl.getScheduler().removeFromWaitingQueue(getId());
+    if (job != null) {
+      job.setStatus(Status.ABORT);
+    } else {
+      repl.cancel(getInterpreterContext());
+    }
     return true;
   }
 

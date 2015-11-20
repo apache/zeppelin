@@ -37,7 +37,6 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.ClassloaderInterpreter;
 import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -62,7 +61,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 /**
- *
+ * Entry point for Interpreter process.
+ * Accepting thrift connections from ZeppelinServer.
  */
 public class RemoteInterpreterServer
   extends Thread
@@ -233,6 +233,11 @@ public class RemoteInterpreterServer
       result = new InterpreterResult(Code.ERROR, Job.getStack(job.getException()));
     } else {
       result = (InterpreterResult) job.getReturn();
+
+      // in case of job abort in PENDING status, result can be null
+      if (result == null) {
+        result = new InterpreterResult(Code.SUCCESS);
+      }
     }
     return convert(result,
         context.getConfig(),
@@ -303,8 +308,16 @@ public class RemoteInterpreterServer
   @Override
   public void cancel(String className, RemoteInterpreterContext interpreterContext)
       throws TException {
+    logger.info("cancel {} {}", className, interpreterContext.getParagraphId());
     Interpreter intp = getInterpreter(className);
-    intp.cancel(convert(interpreterContext));
+    String jobId = interpreterContext.getParagraphId();
+    Job job = intp.getScheduler().removeFromWaitingQueue(jobId);
+
+    if (job != null) {
+      job.setStatus(Status.ABORT);
+    } else {
+      intp.cancel(convert(interpreterContext));
+    }
   }
 
   @Override

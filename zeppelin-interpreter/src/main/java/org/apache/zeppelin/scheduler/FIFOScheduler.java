@@ -18,6 +18,7 @@
 package org.apache.zeppelin.scheduler;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -25,10 +26,7 @@ import java.util.concurrent.ExecutorService;
 import org.apache.zeppelin.scheduler.Job.Status;
 
 /**
- * TODO(moon) : add description.
- *
- * @author Leemoonsoo
- *
+ * FIFOScheduler runs submitted job sequentially
  */
 public class FIFOScheduler implements Scheduler {
   List<Job> queue = new LinkedList<Job>();
@@ -83,20 +81,38 @@ public class FIFOScheduler implements Scheduler {
     }
   }
 
+
+  @Override
+  public Job removeFromWaitingQueue(String jobId) {
+    synchronized (queue) {
+      Iterator<Job> it = queue.iterator();
+      while (it.hasNext()) {
+        Job job = it.next();
+        if (job.getId().equals(jobId)) {
+          it.remove();
+          return job;
+        }
+      }
+    }
+    return null;
+  }
+
   @Override
   public void run() {
 
     synchronized (queue) {
       while (terminate == false) {
-        if (runningJob != null || queue.isEmpty() == true) {
-          try {
-            queue.wait(500);
-          } catch (InterruptedException e) {
+        synchronized (queue) {
+          if (runningJob != null || queue.isEmpty() == true) {
+            try {
+              queue.wait(500);
+            } catch (InterruptedException e) {
+            }
+            continue;
           }
-          continue;
-        }
 
-        runningJob = queue.remove(0);
+          runningJob = queue.remove(0);
+        }
 
         final Scheduler scheduler = this;
         this.executor.execute(new Runnable() {
