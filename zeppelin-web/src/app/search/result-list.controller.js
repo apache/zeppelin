@@ -1,3 +1,4 @@
+/* jshint loopfunc: true */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +14,16 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').service('searchService', function($resource, baseUrlSrv) {
+angular.module('zeppelinWebApp').controller('SearchResultCtrl', function($scope, $routeParams, searchService) {
 
-  this.search = function(term) {
-     console.log('Searching for: %o', term.q);
-    if (!term.q) { //TODO(bzz): empty string check
-      return;
-    }
-    var encQuery = window.encodeURIComponent(term.q);
-    return $resource(baseUrlSrv.getRestApiBase()+'/notebook/search?q='+encQuery, {}, {
-      query: {method:'GET'}
-    });
-  };
+  var results = searchService.search({'q': $routeParams.searchTerm}).query();
 
+  console.log("Found: %o", results);
+  results.$promise.then(function(result) {
+    $scope.notes = result.body;
+  });
+  console.log("Found body: %o", $scope.notes);
+
+  $scope.page = 0;
+  $scope.allResults = false;  
 });
