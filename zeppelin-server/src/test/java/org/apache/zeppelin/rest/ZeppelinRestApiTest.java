@@ -18,6 +18,7 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -153,8 +154,11 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note note = ZeppelinServer.notebook.createNote();
     note.addParagraph();
     Paragraph p = note.getLastParagraph();
+    Map config = p.getConfig();
+    config.put("enabled", true);
 
     // run markdown paragraph
+    p.setConfig(config);
     p.setText("%md markdown");
     note.run(p.getId());
     while (p.getStatus() != Status.FINISHED) {
@@ -173,6 +177,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
     // run markdown paragraph, again
     p = note.addParagraph();
+    p.setConfig(config);
     p.setText("%md markdown restarted");
     note.run(p.getId());
     while (p.getStatus() != Status.FINISHED) {
@@ -257,6 +262,9 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertNotNull("cant create new note", note);
     note.setName("source note for clone");
     Paragraph paragraph = note.addParagraph();
+    Map config = paragraph.getConfig();
+    config.put("enabled", true);
+    paragraph.setConfig(config);
     paragraph.setText("%md This is my new paragraph in my new note");
     note.persist();
     String sourceNoteID = note.getId();
