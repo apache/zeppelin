@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,8 +17,19 @@
  */
 package org.apache.zeppelin.hive;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import com.google.common.base.Joiner;
 import org.apache.commons.lang.StringUtils;
@@ -39,7 +50,6 @@ import static java.lang.String.format;
  */
 public class HiveInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(HiveInterpreter.class);
-  int commandTimeOut = 600000;
 
   static final String DEFAULT_KEY = "default";
   static final String DRIVER_KEY = "driver";
@@ -79,20 +89,6 @@ public class HiveInterpreter extends Interpreter {
     return propertiesMap;
   }
 
-//  Connection jdbcConnection;
-//  Exception exceptionOnConnect;
-
-  //Test only method
-
-/*  public Connection getJdbcConnection()
-      throws SQLException {
-    String url = getProperty(DEFAULT_URL);
-    String user = getProperty(DEFAULT_USER);
-    String password = getProperty(DEFAULT_PASSWORD);
-
-    return DriverManager.getConnection(url, user, password);
-  }*/
-
   @Override
   public void open() {
     logger.debug("property: {}", property);
@@ -127,27 +123,6 @@ public class HiveInterpreter extends Interpreter {
     }
 
     logger.debug("propertiesMap: {}", propertiesMap);
-
-    // old below
-/*
-    logger.info("Jdbc open connection called!");
-    try {
-      String driverName = "org.apache.hive.jdbc.HiveDriver";
-      Class.forName(driverName);
-    } catch (ClassNotFoundException e) {
-      logger.error("Can not open connection", e);
-      exceptionOnConnect = e;
-      return;
-    }
-    try {
-      jdbcConnection = getJdbcConnection();
-      exceptionOnConnect = null;
-      logger.info("Successfully created Jdbc connection");
-    }
-    catch (SQLException e) {
-      logger.error("Cannot open connection", e);
-      exceptionOnConnect = e;
-    }*/
   }
 
   @Override
@@ -163,18 +138,6 @@ public class HiveInterpreter extends Interpreter {
     } catch (SQLException e) {
       logger.error("Error while closing...", e);
     }
-/*    try {
-      if (jdbcConnection != null) {
-        jdbcConnection.close();
-      }
-    }
-    catch (SQLException e) {
-      logger.error("Cannot close connection", e);
-    }
-    finally {
-      jdbcConnection = null;
-      exceptionOnConnect = null;
-    }*/
   }
 
   private Connection getConnection(String propertyKey) throws ClassNotFoundException, SQLException {
