@@ -17,23 +17,25 @@
  */
 package org.apache.zeppelin.hive;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
-import java.util.Calendar;
-import java.util.Map;
-import java.util.Properties;
+import java.sql.Date;
+import java.util.*;
 import java.util.concurrent.Executor;
 
+import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * Hive interpreter unit tests
@@ -61,6 +63,55 @@ public class HiveInterpreterTest {
     assertEquals(result.type(), InterpreterResult.Type.TEXT);
     t.close();
   }
+
+  @Test
+  public void parseMultiplePropertiesMap() {
+    Properties properties = new Properties();
+    properties.setProperty("default.driver", "defaultDriver");
+    properties.setProperty("default.url", "defaultUri");
+    properties.setProperty("default.user", "defaultUser");
+    HiveInterpreter hi = new HiveInterpreter(properties);
+    assertNotNull("propertiesMap is not null", hi.getPropertiesMap());
+    assertNotNull("propertiesMap.get(default) is not null", hi.getPropertiesMap().get("default"));
+    assertTrue("default exists", "defaultDriver".equals(hi.getPropertiesMap().get("default").getProperty("driver")));
+  }
+
+  @Test
+  public void ignoreInvalidSettings() {
+    Properties properties = new Properties();
+    properties.setProperty("default.driver", "defaultDriver");
+    properties.setProperty("default.url", "defaultUri");
+    properties.setProperty("default.user", "defaultUser");
+    properties.setProperty("presto.driver", "com.facebook.presto.jdbc.PrestoDriver");
+    HiveInterpreter hi = new HiveInterpreter(properties);
+    assertTrue("default exists", hi.getPropertiesMap().containsKey("default"));
+    assertFalse("presto doesn't exists", hi.getPropertiesMap().containsKey("presto"));
+  }
+
+  @Test
+  public void getPropertyKey() {
+    HiveInterpreter hi = new HiveInterpreter(new Properties());
+    String testCommand = "(default)\nshow tables";
+    assertEquals("get key of default", "default", hi.getPropertyKey(testCommand));
+    testCommand = "(default) show tables";
+    assertEquals("get key of default", "default", hi.getPropertyKey(testCommand));
+  }
+
+  @Test
+  public void prestoTest() {
+    InterpreterContext interpreterContext = new InterpreterContext("", "a", "", "", new HashMap<String, Object>(), new GUI(), new AngularObjectRegistry("", null), new ArrayList<InterpreterContextRunner>());
+
+    Properties properties = new Properties();
+    properties.setProperty("default.driver", "defaultDriver");
+    properties.setProperty("default.url", "defaultUri");
+    properties.setProperty("default.user", "defaultUser");
+    properties.setProperty("presto.driver", "com.facebook.presto.jdbc.PrestoDriver");
+    properties.setProperty("presto.url", "jdbc:presto://10.10.36.191:8080/hive");
+    HiveInterpreter hi = new HiveInterpreter(properties);
+    hi.open();
+    InterpreterResult interpreterResult = hi.interpret("(presto)\nshow catalogs", interpreterContext);
+    System.out.println(interpreterResult.message());
+  }
 }
 
 class MockHiveInterpreter extends HiveInterpreter {
@@ -69,11 +120,6 @@ class MockHiveInterpreter extends HiveInterpreter {
     super(property);
   }
 
-  @Override
-  public Connection getJdbcConnection()
-    throws SQLException {
-    return new MockConnection();
-  }
 }
 
 class MockResultSetMetadata implements ResultSetMetaData {

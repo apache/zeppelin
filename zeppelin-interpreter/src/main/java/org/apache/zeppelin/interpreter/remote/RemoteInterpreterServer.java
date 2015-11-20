@@ -203,6 +203,7 @@ public class RemoteInterpreterServer
   @Override
   public RemoteInterpreterResult interpret(String className, String st,
       RemoteInterpreterContext interpreterContext) throws TException {
+    logger.debug("st: {}", st);
     Interpreter intp = getInterpreter(className);
     InterpreterContext context = convert(interpreterContext);
 
