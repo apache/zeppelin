@@ -33,6 +33,7 @@ import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA;
+import org.apache.zeppelin.scheduler.Job.Status;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -127,10 +128,124 @@ public class RemoteSchedulerTest {
       Thread.sleep(TICK_WAIT);
       cycles++;
     }
-    
+
     assertTrue(job.isTerminated());
     assertEquals(0, scheduler.getJobsWaiting().size());
     assertEquals(0, scheduler.getJobsRunning().size());
+
+    intpA.close();
+    schedulerSvc.removeScheduler("test");
+  }
+
+  @Test
+  public void testAbortOnPending() throws Exception {
+    Properties p = new Properties();
+    final InterpreterGroup intpGroup = new InterpreterGroup();
+    Map<String, String> env = new HashMap<String, String>();
+    env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
+
+    final RemoteInterpreter intpA = new RemoteInterpreter(
+        p,
+        MockInterpreterA.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        env,
+        10 * 1000
+        );
+
+    intpGroup.add(intpA);
+    intpA.setInterpreterGroup(intpGroup);
+
+    intpA.open();
+
+    Scheduler scheduler = schedulerSvc.createOrGetRemoteScheduler("test",
+        intpA.getInterpreterProcess(),
+        10);
+
+    Job job1 = new Job("jobId1", "jobName1", null, 200) {
+
+      @Override
+      public int progress() {
+        return 0;
+      }
+
+      @Override
+      public Map<String, Object> info() {
+        return null;
+      }
+
+      @Override
+      protected Object jobRun() throws Throwable {
+        intpA.interpret("1000", new InterpreterContext(
+            "note",
+            "jobId1",
+            "title",
+            "text",
+            new HashMap<String, Object>(),
+            new GUI(),
+            new AngularObjectRegistry(intpGroup.getId(), null),
+            new LinkedList<InterpreterContextRunner>()));
+        return "1000";
+      }
+
+      @Override
+      protected boolean jobAbort() {
+        return false;
+      }
+    };
+
+    Job job2 = new Job("jobId2", "jobName2", null, 200) {
+
+      @Override
+      public int progress() {
+        return 0;
+      }
+
+      @Override
+      public Map<String, Object> info() {
+        return null;
+      }
+
+      @Override
+      protected Object jobRun() throws Throwable {
+        intpA.interpret("1000", new InterpreterContext(
+            "note",
+            "jobId2",
+            "title",
+            "text",
+            new HashMap<String, Object>(),
+            new GUI(),
+            new AngularObjectRegistry(intpGroup.getId(), null),
+            new LinkedList<InterpreterContextRunner>()));
+        return "1000";
+      }
+
+      @Override
+      protected boolean jobAbort() {
+        return false;
+      }
+    };
+    scheduler.submit(job1);
+    scheduler.submit(job2);
+
+    int cycles = 0;
+    while (!job1.isRunning() && cycles < MAX_WAIT_CYCLES) {
+      Thread.sleep(TICK_WAIT);
+      cycles++;
+    }
+    assertTrue(job1.isRunning());
+    assertTrue(job2.getStatus() == Status.PENDING);
+
+    job2.abort();
+
+    cycles = 0;
+    while (!job1.isTerminated() && cycles < MAX_WAIT_CYCLES) {
+      Thread.sleep(TICK_WAIT);
+      cycles++;
+    }
+
+    assertTrue(job1.isTerminated());
+    assertTrue(job2.isAborted());
 
     intpA.close();
     schedulerSvc.removeScheduler("test");
