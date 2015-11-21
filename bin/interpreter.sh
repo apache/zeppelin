@@ -72,12 +72,12 @@ fi
 
 # set spark related env variables
 if [[ "${INTERPRETER_ID}" == "spark" ]]; then
+  JAVA_INTP_OPTS+=" -DCUSTOM_SPARK_REPL_DIR_PATH=/tmp/zeppelin_spark/"
   if [[ -n "${SPARK_HOME}" ]]; then
     export SPARK_SUBMIT="${SPARK_HOME}/bin/spark-submit"
     SPARK_APP_JAR="$(ls ${ZEPPELIN_HOME}/interpreter/spark/zeppelin-spark*.jar)"
     # This will evantually passes SPARK_APP_JAR to classpath of SparkIMain
     ZEPPELIN_CLASSPATH=${SPARK_APP_JAR}
-    JAVA_INTP_OPTS+=" -DCUSTOM_SPARK_REPL_DIR_PATH=/tmp/zeppelin_spark/
 
     export PYTHONPATH="$SPARK_HOME/python/:$PYTHONPATH"
     export PYTHONPATH="$SPARK_HOME/python/lib/py4j-0.8.2.1-src.zip:$PYTHONPATH"    
