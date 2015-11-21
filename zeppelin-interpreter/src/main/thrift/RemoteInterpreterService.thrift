@@ -59,7 +59,7 @@ service RemoteInterpreterService {
   void cancel(1: string className, 2: RemoteInterpreterContext interpreterContext);
   i32 getProgress(1: string className, 2: RemoteInterpreterContext interpreterContext);
   string getFormType(1: string className);
-  list<string> completion(1: string className, 2: string buf, 3: i32 cursor);
+  list<string> completion(1: string className, 2: string buf, 3: i32 cursor, 4: RemoteInterpreterContext interpreterContext);
   void shutdown();
 
   string getStatus(1:string jobId);

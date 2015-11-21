@@ -155,7 +155,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       return null;
     }
 
-    return repl.completion(body, cursor);
+    return repl.completion(body, cursor,getInterpreterContext());
   }
 
   public void setNoteReplLoader(NoteInterpreterLoader repls) {

@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
  * open(), close(), interpreter() is three the most important method you need to implement.
  * cancel(), getProgress(), completion() is good to have
  * getFormType(), getScheduler() determine Zeppelin's behavior
- *
+ *c
  */
 public abstract class Interpreter {
 
@@ -95,9 +95,10 @@ public abstract class Interpreter {
    *
    * @param buf statements
    * @param cursor cursor position in statements
+   * @param context
    * @return list of possible completion. Return empty list if there're nothing to return.
    */
-  public abstract List<String> completion(String buf, int cursor);
+  public abstract List<String> completion(String buf, int cursor, InterpreterContext context);
 
   /**
    * Interpreter can implements it's own scheduler by overriding this method.

@@ -190,7 +190,7 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<String> completion(String buf, int cursor, InterpreterContext context) {
     return null;
   }
 }

@@ -37,7 +37,6 @@ import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.ClassloaderInterpreter;
 import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
@@ -306,9 +305,9 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public List<String> completion(String className, String buf, int cursor) throws TException {
+  public List<String> completion(String className, String buf, int cursor, RemoteInterpreterContext interpreterContext) throws TException {
     Interpreter intp = getInterpreter(className);
-    return intp.completion(buf, cursor);
+    return intp.completion(buf, cursor, convert(interpreterContext));
   }
 
   private InterpreterContext convert(RemoteInterpreterContext ric) {

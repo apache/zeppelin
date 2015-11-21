@@ -67,6 +67,8 @@ public class NotebookServer extends WebSocketServlet implements
   }
   @Override
   public boolean checkOrigin(HttpServletRequest request, String origin) {
+    URI sourceUri = null;
+    String currentHost = null;
 
     try {
       return SecurityUtils.isValidOrigin(origin, ZeppelinConfiguration.create());

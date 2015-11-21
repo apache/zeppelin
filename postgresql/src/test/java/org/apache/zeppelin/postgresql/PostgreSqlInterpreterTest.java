@@ -253,8 +253,8 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
   @Test
   public void testAutoCompletion() throws SQLException {
     psqlInterpreter.open();
-    assertEquals(1, psqlInterpreter.completion("SEL", 0).size());
-    assertEquals("SELECT ", psqlInterpreter.completion("SEL", 0).iterator().next());
-    assertEquals(0, psqlInterpreter.completion("SEL", 100).size());
+    assertEquals(1, psqlInterpreter.completion("SEL", 0,null).size());
+    assertEquals("SELECT ", psqlInterpreter.completion("SEL", 0,null).iterator().next());
+    assertEquals(0, psqlInterpreter.completion("SEL", 100,null).size());
   }
 }

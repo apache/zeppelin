@@ -1,3 +1,5 @@
+notebook/
+*.patch
 *.class
 
 # Package Files #

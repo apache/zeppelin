@@ -224,7 +224,7 @@ public class PhoenixInterpreter extends Interpreter {
   }
 
   @Override
-  public List<String> completion(String buf, int cursor) {
+  public List<String> completion(String buf, int cursor,InterpreterContext interpreterContext) {
     return null;
   }
 
