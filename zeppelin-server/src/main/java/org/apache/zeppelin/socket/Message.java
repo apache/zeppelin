@@ -101,7 +101,10 @@ public class Message {
     ANGULAR_OBJECT_UPDATE,  // [s-c] add/update angular object
     ANGULAR_OBJECT_REMOVE,  // [s-c] add angular object del
 
-    ANGULAR_OBJECT_UPDATED  // [c-s] angular object value updated
+    ANGULAR_OBJECT_UPDATED,  // [c-s] angular object value updated
+
+    IMPORT_NOTEBOOK  // [c-s] import notebook
+                     // @param object notebook
   }
 
   public OP op;
