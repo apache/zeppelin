@@ -1,0 +1,3 @@
+- name: Install openjdk-7
+  apt: pkg=openjdk-7-jdk state=present
+  

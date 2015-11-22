@@ -1,0 +1,20 @@
+# setup zeppelin python dependencies
+# Assumes Ubuntu Server 14.04 LTS (HVM) - ami-f64f77b3    64 bit
+# Assumes Java 7 installed as part of the top level playbook
+---
+
+- name: Install python dependencies. This will take a while.
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - python-pip
+    - python-matplotlib
+    - python-scipy
+    - python-numpy
+    - python-pandas
+
+# Change python backend that pyspark can render 
+# matplotlib plots without an interactive window
+# Fully quoted because of the ': ' on the line.
+- name: use Agg as pythons default window instead of tkAgg
+  lineinfile: "dest=/etc/matplotlibrc regexp='^backend' line='backend : Agg'"
+

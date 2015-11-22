@@ -1,0 +1,22 @@
+# setup maven
+# Assumes Ubuntu Server 14.04 LTS (HVM)
+# Assumes Java 7+ jdk installed
+---
+- name: download maven
+  get_url: url=http://apache.mirrorcatalogs.com/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
+           dest=/tmp/apache-maven-3.3.3-bin.tar.gz
+           mode=0440
+           validate_certs=False
+
+
+- name: extract maven tgz
+  unarchive: src=/tmp/apache-maven-3.3.3-bin.tar.gz
+             dest=/usr/local/
+             copy=no
+             creates=/usr/local/apache-maven-3.3.3
+
+- name: create symlink to this maven version
+  file: src=/usr/local/apache-maven-3.3.3/bin/mvn
+        path=/usr/bin/mvn
+        state=link
+

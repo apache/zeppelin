@@ -1,0 +1,16 @@
+- name: call apt-get update
+  # this must be first so that apt-get installs to point to correct resources
+  # Only run "update_cache=yes" if the last one is more than 3600 seconds (1 hour) ago
+  apt: update_cache=yes cache_valid_time=3600
+
+- name: Install unzip
+  apt: pkg=unzip state=present
+
+- name: Install curl
+  apt: pkg=curl state=present
+
+- name: Install git
+  apt: pkg=git state=present
+
+- name: Install libfontconfig to avoid phatomJs missing dependency issues
+  apt: pkg=libfontconfig state=present

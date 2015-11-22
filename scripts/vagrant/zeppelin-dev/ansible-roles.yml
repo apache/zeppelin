@@ -1,0 +1,10 @@
+---
+- name: Run Ansible
+  hosts: all
+  sudo: yes
+  roles:
+    - common
+    - java7jdk
+    - nodejs
+    - maven
+    - python-addons
