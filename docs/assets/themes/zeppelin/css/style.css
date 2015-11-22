@@ -351,3 +351,15 @@ and (max-width : 1024px) {
       padding-right: 0;
   }
 }
+
+
+/* docs dropdown menu */
+#menu {
+
+}
+
+#menu .dropdown-menu li span {
+  padding : 3px 10px 10px 10px;
+  font-size: 13px;
+
+}

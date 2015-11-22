@@ -1,4 +1,4 @@
-    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div id="menu" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -14,14 +14,67 @@
         </div>
         <nav class="navbar-collapse collapse" role="navigation">
           <ul class="nav navbar-nav">
-            {% assign pages_list = site.pages %}
-            {% assign group = 'nav-left' %}
-            {% include JB/pages_list %}
-          </ul>
-          <ul class="nav navbar-nav navbar-right">
-            {% assign pages_list = site.pages %}
-            {% assign group = 'nav-right' %}
-            {% include JB/pages_list %}
+            <li>
+              <a href="#" data-toggle="dropdown" class="dropdown-toggle">Quick Start <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <!-- li><span><b>Overview</b><span></li -->
+                <li><a href="{{BASE_PATH}}/index.html">Overview</a></li>
+                <li role="separator" class="divider"></li>
+                <!-- li><span><b>Install</b><span></li -->
+                <li><a href="{{BASE_PATH}}/install/install.html">Install</a></li>
+                <li><a href="{{BASE_PATH}}/install/yarn_install.html">YARN Install</a></li>
+                <li role="separator" class="divider"></li>
+                <!-- li><span><b>Tutorial</b><span></li -->
+                <li><a href="{{BASE_PATH}}/tutorial/tutorial.html">Tutorial</a></li>
+                <li role="separator" class="divider"></li>
+                <!-- li><span><b>Guide</b><span></li -->
+                <li><a href="{{BASE_PATH}}/manual/dynamicform.html">Dynamic Form</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="#" data-toggle="dropdown" class="dropdown-toggle">Interpreter <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="{{BASE_PATH}}/interpreter/cassandra.html">Cassandra</a></li>
+                <li><a href="{{BASE_PATH}}/interpreter/flink.html">Flink</a></li>
+                <li><a href="{{BASE_PATH}}/interpreter/geode.html">Geode</a></li>
+                <li><a href="{{BASE_PATH}}/pleasecontribute.html">Hive</a></li>
+                <li><a href="{{BASE_PATH}}/interpreter/ignite.html">Ignite</a></li>
+                <li><a href="{{BASE_PATH}}/interpreter/lens.html">Lens</a></li>
+                <li><a href="{{BASE_PATH}}/pleasecontribute.html">Markdown</a></li>
+                <li><a href="{{BASE_PATH}}/interpreter/postgresql.html">Postgresql, hawq</a></li>
+                <li><a href="{{BASE_PATH}}/pleasecontribute.html">Shell</a></li>
+                <li><a href="{{BASE_PATH}}/interpreter/spark.html">Spark</a></li>
+                <li><a href="{{BASE_PATH}}/pleasecontribute.html">Tajo</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="#" data-toggle="dropdown" class="dropdown-toggle">Display System <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="{{BASE_PATH}}/displaysystem/display.html">Text</a></li>
+                <li><a href="{{BASE_PATH}}/displaysystem/display.html#html">Html</a></li>
+                <li><a href="{{BASE_PATH}}/displaysystem/table.html">Table</a></li>
+                <li><a href="{{BASE_PATH}}/displaysystem/angular.html">Angular</a></li>
+              </ul>
+            </li>
+            <li>
+              <a href="#" data-toggle="dropdown" class="dropdown-toggle">More <b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <!-- li><span><b>Manual</b><span></li -->
+                <li><a href="{{BASE_PATH}}/manual/notebookashomepage.html">Notebook as Homepage</a></li>
+                <li role="separator" class="divider"></li>
+                <!-- li><span><b>Notebook Storage</b><span></li -->
+                <li><a href="{{BASE_PATH}}/storage/storage.html">S3 Storage</a></li>
+                <li role="separator" class="divider"></li>
+                <!-- li><span><b>REST API</b><span></li -->
+                <li><a href="{{BASE_PATH}}/rest-api/rest-interpreter.html">Interpreter API</a></li>
+                <li><a href="{{BASE_PATH}}/rest-api/rest-notebook.html">Notebook API</a></li>
+                <li role="separator" class="divider"></li>
+                <!-- li><span><b>Development</b><span></li -->
+                <li><a href="{{BASE_PATH}}/development/writingzeppelininterpreter.html">Writing Zeppelin Interpreter</a></li>
+                <li><a href="{{BASE_PATH}}/development/howtocontribute.html">How to contribute (code)</a></li>
+                <li><a href="{{BASE_PATH}}/development/howtocontributewebsite.html">How to contribute (website)</a></li>
+              </ul>
+            </li>
           </ul>
         </nav><!--/.navbar-collapse -->
       </div>
