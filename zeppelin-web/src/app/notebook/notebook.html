@@ -40,6 +40,14 @@ limitations under the License.
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
+              ng-click="clearAllParagraphOutput()"
+              ng-hide="viewOnly"
+              ng-class="{'disabled':isNoteRunning()}"
+              tooltip-placement="bottom" tooltip="Clear output">
+        <i class="fa fa-eraser"></i>
+      </button>
+      <button type="button"
+              class="btn btn-default btn-xs"
               ng-click="removeNote(note.id)"
               ng-hide="viewOnly"
               tooltip-placement="bottom" tooltip="Remove the notebook">
@@ -52,6 +60,13 @@ limitations under the License.
               data-toggle="modal" data-target="#noteNameModal" data-clone="true"
               >
         <i class="fa fa-copy"></i>
+      </button>
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-hide="viewOnly"
+              ng-click="exportNotebook()"
+              tooltip-placement="bottom" tooltip="Export the notebook">
+        <i class="fa fa-download"></i>
       </button>
     </span>
 
@@ -142,7 +157,18 @@ limitations under the License.
           <div as-sortable-item-handle
                ng-click="item.selected = !item.selected"
                class="btn"
-               ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}"><font style="font-size:16px">{{item.name}}</font> <small><span ng-repeat="intp in item.interpreters"><span ng-show="!$first">, </span>%{{intp.name}}</span></small></div>
+               ng-class="{'btn-info': item.selected, 'btn-default': !item.selected}">
+            <font style="font-size:16px">{{item.name}}</font>
+            <small>
+              <span style="display:inline-block" ng-repeat="intp in item.interpreters">
+                <span ng-show="!$first">, </span>
+                %<span ng-show="!$parent.$first || $first">{{item.group}}</span
+                ><span ng-show="(!$parent.$first || $first) && !$first">.</span
+                ><span ng-show="!$first">{{intp.name}}</span>
+                <span ng-show="$parent.$first && $first">(default)</span>
+              </span>
+            </small>
+          </div>
         </div>
       </div>
     </div>

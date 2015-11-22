@@ -41,7 +41,7 @@ limitations under the License.
                      require : ['ace/ext/language_tools']
                    }"
            ng-model="paragraph.text"
-           ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING', 'paragraph-text--dirty' : dirtyText}">
+           ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING', 'paragraph-text--dirty' : dirtyText !== undefined}">
       </div>
     </div>
 
@@ -372,11 +372,13 @@ limitations under the License.
       </div>
 
       <div id="p{{paragraph.id}}_html"
+           class="resultContained"
            ng-if="paragraph.result.type == 'HTML'"
            ng-Init="loadResultType(paragraph.result)">
       </div>
 
       <div id="p{{paragraph.id}}_angular"
+           class="resultContained"
            ng-if="paragraph.result.type == 'ANGULAR'"
            ng-Init="loadResultType(paragraph.result)">
       </div>
@@ -392,10 +394,9 @@ limitations under the License.
            ng-if="paragraph.status == 'ERROR'"
            ng-bind="paragraph.errorMessage">
       </div>
-
-      <div ng-if="!asIframe" id="{{paragraph.id}}_executionTime" class="executionTime" ng-bind-html="getExecutionTime()"></div>
     </div>
   </div>
+
   <div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
 
     <span>
@@ -417,9 +418,6 @@ limitations under the License.
           ng-click="toggleEditor()"></span>
     <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
           ng-click="toggleOutput()"></span>
-    <span  style="cursor:pointer;"
-          ng-click="saveParagraph()"
-          ng-show="dirtyText"></span>
     <span class="dropdown navbar-right">
       <span class="icon-settings" style="cursor:pointer"
             data-toggle="dropdown"
@@ -470,6 +468,10 @@ limitations under the License.
                ng-click="goToSingleParagraph()"> Link this paragraph</a>
         </li>
         <li>
+          <a class="fa fa-eraser" style="cursor:pointer"
+             ng-click="clearParagraphOutput()"> Clear output</a>
+        </li>
+        <li>
           <!-- remove paragraph -->
           <a class="fa fa-times" style="cursor:pointer"
              ng-click="removeParagraph()"> Remove</a>
@@ -477,4 +479,10 @@ limitations under the License.
       </ul>
     </span>
   </div>
+
+  <div ng-if="!asIframe" class="paragraphFooter">
+    <div ng-show="!paragraph.config.tableHide && !viewOnly" id="{{paragraph.id}}_executionTime" class="executionTime" ng-bind-html="getExecutionTime()">
+    </div>
+  </div>
+  
 </div>

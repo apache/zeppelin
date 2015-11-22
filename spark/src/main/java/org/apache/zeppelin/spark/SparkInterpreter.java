@@ -100,10 +100,6 @@ public class SparkInterpreter extends Interpreter {
             .add("spark.cores.max",
                 getSystemDefault(null, "spark.cores.max", ""),
                 "Total number of cores to use. Empty value uses all available core.")
-            .add("spark.yarn.jar",
-                getSystemDefault("SPARK_YARN_JAR", "spark.yarn.jar", ""),
-                "The location of the Spark jar file. If you use yarn as a cluster, "
-                + "we should set this value")
             .add("zeppelin.spark.useHiveContext",
                 getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT",
                     "zeppelin.spark.useHiveContext", "true"),
@@ -310,7 +306,7 @@ public class SparkInterpreter extends Interpreter {
     }
 
     //TODO(jongyoul): Move these codes into PySparkInterpreter.java
-    String pysparkBasePath = getSystemDefault("SPARK_HOME", "spark.home", null);
+    String pysparkBasePath = getSystemDefault("SPARK_HOME", null, null);
     File pysparkPath;
     if (null == pysparkBasePath) {
       pysparkBasePath = getSystemDefault("ZEPPELIN_HOME", "zeppelin.home", "../");
@@ -609,6 +605,11 @@ public class SparkInterpreter extends Interpreter {
    */
   @Override
   public InterpreterResult interpret(String line, InterpreterContext context) {
+    if (sparkVersion.isUnsupportedVersion()) {
+      return new InterpreterResult(Code.ERROR, "Spark " + sparkVersion.toString()
+          + " is not supported");
+    }
+
     z.setInterpreterContext(context);
     if (line == null || line.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);

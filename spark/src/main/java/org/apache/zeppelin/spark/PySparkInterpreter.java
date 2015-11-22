@@ -82,9 +82,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
         "spark",
         PySparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-          .add("spark.home",
-               SparkInterpreter.getSystemDefault("SPARK_HOME", "spark.home", ""),
-               "Spark home path. Should be provided for pyspark")
           .add("zeppelin.pyspark.python",
                SparkInterpreter.getSystemDefault("PYSPARK_PYTHON", null, "python"),
                "Python command to run pyspark with").build());
@@ -95,16 +92,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     scriptPath = System.getProperty("java.io.tmpdir") + "/zeppelin_pyspark.py";
   }
-
-  private String getSparkHome() {
-    String sparkHome = getProperty("spark.home");
-    if (sparkHome == null) {
-      throw new InterpreterException("spark.home is undefined");
-    } else {
-      return sparkHome;
-    }
-  }
-
 
   private void createPythonScript() {
     ClassLoader classLoader = getClass().getClassLoader();
@@ -297,6 +284,12 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    if (sparkInterpreter.getSparkVersion().isUnsupportedVersion()) {
+      return new InterpreterResult(Code.ERROR, "Spark "
+          + sparkInterpreter.getSparkVersion().toString() + " is not supported");
+    }
+
     if (!pythonscriptRunning) {
       return new InterpreterResult(Code.ERROR, "python process not running"
           + outputStream.toString());
@@ -327,7 +320,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
           + outputStream.toString());
     }
 
-    SparkInterpreter sparkInterpreter = getSparkInterpreter();
     if (!sparkInterpreter.getSparkVersion().isPysparkSupported()) {
       return new InterpreterResult(Code.ERROR, "pyspark "
           + sparkInterpreter.getSparkContext().version() + " is not supported");

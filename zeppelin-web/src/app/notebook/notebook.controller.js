@@ -1,4 +1,3 @@
-/* global confirm:false, alert:false */
 /* jshint loopfunc: true */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +14,9 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, websocketMsgSrv, baseUrlSrv, $timeout) {
+angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location,
+                                                                     $rootScope, $http, websocketMsgSrv, baseUrlSrv,
+                                                                     $timeout, SaveAsService) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -79,6 +80,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
+  //Export notebook
+  $scope.exportNotebook = function() {
+    var jsonContent = JSON.stringify($scope.note);
+    SaveAsService.SaveAs(jsonContent, $scope.note.name, 'json');
+  };
+
   //Clone note
   $scope.cloneNote = function(noteId) {
     var result = confirm('Do you want to clone this notebook?');
@@ -98,10 +105,21 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   $scope.saveNote = function() {
-    _.forEach($scope.note.paragraphs, function(n, key) {
-      angular.element('#' + n.id + '_paragraphColumn_main').scope().saveParagraph();
-    });
-    $scope.isNoteDirty = null;
+    if ($scope.note && $scope.note.paragraphs) {
+      _.forEach($scope.note.paragraphs, function(n, key) {
+        angular.element('#' + n.id + '_paragraphColumn_main').scope().saveParagraph();
+      });
+      $scope.isNoteDirty = null;
+    }
+  };
+
+  $scope.clearAllParagraphOutput = function() {
+    var result = confirm('Do you want to clear all output?');
+    if (result) {
+      _.forEach($scope.note.paragraphs, function(n, key) {
+        angular.element('#' + n.id + '_paragraphColumn_main').scope().clearParagraphOutput();
+      });
+    }
   };
 
   $scope.toggleAllEditor = function() {
@@ -151,7 +169,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   $scope.killSaveTimer = function() {
-    if($scope.saveTimer){
+    if ($scope.saveTimer) {
       $timeout.cancel($scope.saveTimer);
       $scope.saveTimer = null;
     }
@@ -165,6 +183,17 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       $scope.saveNote();
     }, 10000);
   };
+
+  angular.element(window).on('beforeunload', function(e) {
+    $scope.killSaveTimer();
+    $scope.saveNote();
+  });
+
+  $scope.$on('$destroy', function() {
+    angular.element(window).off('beforeunload');
+    $scope.killSaveTimer();
+    $scope.saveNote();
+  });
 
   $scope.setLookAndFeel = function(looknfeel) {
     $scope.note.config.looknfeel = looknfeel;
@@ -251,10 +280,13 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         break;
       }
     }
-
     if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
       return;
     }
+    // save dirtyText of moving paragraphs.
+    var prevParagraphId = $scope.note.paragraphs[newIndex].id;
+    angular.element('#' + paragraphId + '_paragraphColumn_main').scope().saveParagraph();
+    angular.element('#' + prevParagraphId + '_paragraphColumn_main').scope().saveParagraph();
     websocketMsgSrv.moveParagraph(paragraphId, newIndex);
   });
 
@@ -268,10 +300,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       }
     }
 
-    if (newIndex === $scope.note.paragraphs.length) {
-      alert('Cannot insert after the last paragraph.');
-      return;
-    }
     if (newIndex < 0 || newIndex > $scope.note.paragraphs.length) {
       return;
     }
@@ -290,6 +318,10 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
       return;
     }
+    // save dirtyText of moving paragraphs.
+    var nextParagraphId = $scope.note.paragraphs[newIndex].id;
+    angular.element('#' + paragraphId + '_paragraphColumn_main').scope().saveParagraph();
+    angular.element('#' + nextParagraphId + '_paragraphColumn_main').scope().saveParagraph();
     websocketMsgSrv.moveParagraph(paragraphId, newIndex);
   });
 
@@ -303,8 +335,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         }
       } else {
         var p = $scope.note.paragraphs[i];
-        if (!p.config.hide && !p.config.editorHide && !p.config.tableHide) {
-          $scope.$broadcast('focusParagraph', $scope.note.paragraphs[i].id);
+        if (!p.config.hide && !p.config.editorHide) {
+          $scope.$broadcast('focusParagraph', $scope.note.paragraphs[i].id, -1);
           break;
         }
       }
@@ -321,8 +353,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         }
       } else {
         var p = $scope.note.paragraphs[i];
-        if (!p.config.hide && !p.config.editorHide && !p.config.tableHide) {
-          $scope.$broadcast('focusParagraph', $scope.note.paragraphs[i].id);
+        if (!p.config.hide && !p.config.editorHide) {
+          $scope.$broadcast('focusParagraph', $scope.note.paragraphs[i].id, 0);
           break;
         }
       }
@@ -387,7 +419,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $http.get(baseUrlSrv.getRestApiBase()+ '/notebook/interpreter/bind/' +$scope.note.id).
     success(function(data, status, headers, config) {
       $scope.interpreterBindings = data.body;
-      $scope.interpreterBindingsOrig = jQuery.extend(true, [], $scope.interpreterBindings); // to check dirty
+      $scope.interpreterBindingsOrig = angular.copy($scope.interpreterBindings); // to check dirty
       if (callback) {
         callback();
       }

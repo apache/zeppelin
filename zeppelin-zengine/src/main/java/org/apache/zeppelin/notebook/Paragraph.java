@@ -276,19 +276,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   @Override
   public Object clone() throws CloneNotSupportedException {
-    Paragraph paraClone = (Paragraph) super.clone();
-    Map<String, Object> config = new HashMap<>(this.getConfig());
-    // Show the editor by default
-    String hideEditorKey = "editorHide";
-    Object object = config.get(hideEditorKey);
-    if (object != null && object == Boolean.TRUE) {
-      config.put(hideEditorKey, Boolean.FALSE);
-    }
-    Map<String, Object> param = new HashMap<>(this.settings.getParams());
-    paraClone.setConfig(config);
-    paraClone.settings.setParams(param);
-    paraClone.setTitle(this.getTitle());
-    paraClone.setText(this.getText());
+    Paragraph paraClone = (Paragraph) this.clone();
     return paraClone;
   }
 }

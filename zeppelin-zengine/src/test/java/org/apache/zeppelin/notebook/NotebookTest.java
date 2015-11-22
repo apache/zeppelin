@@ -18,8 +18,10 @@
 package org.apache.zeppelin.notebook;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -161,6 +163,21 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
+  public void testClearParagraphOutput() throws IOException, SchedulerException{
+    Note note = notebook.createNote();
+    Paragraph p1 = note.addParagraph();
+    p1.setText("hello world");
+    note.run(p1.getId());
+
+    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+    assertEquals("repl1: hello world", p1.getResult().message());
+
+    // clear paragraph output/result
+    note.clearParagraphOutput(p1.getId());
+    assertNull(p1.getResult());
+  }
+
+  @Test
   public void testRunAll() throws IOException {
     Note note = notebook.createNote();
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
@@ -193,15 +210,36 @@ public class NotebookTest implements JobListenerFactory{
     note.setConfig(config);
     notebook.refreshCron(note.id());
     Thread.sleep(1*1000);
-    dateFinished = p.getDateFinished();
-    assertNotNull(dateFinished);
-
+    
     // remove cron scheduler.
     config.put("cron", null);
     note.setConfig(config);
     notebook.refreshCron(note.id());
+    Thread.sleep(1000);
+    dateFinished = p.getDateFinished();
+    assertNotNull(dateFinished);
     Thread.sleep(1*1000);
     assertEquals(dateFinished, p.getDateFinished());
+  }
+
+  @Test
+  public void testCloneNote() throws IOException, CloneNotSupportedException,
+      InterruptedException {
+    Note note = notebook.createNote();
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
+    final Paragraph p = note.addParagraph();
+    p.setText("hello world");
+    note.runAll();
+    while(p.isTerminated()==false || p.getResult()==null) Thread.yield();
+
+    p.setStatus(Status.RUNNING);
+    Note cloneNote = notebook.cloneNote(note.getId(), "clone note");
+    Paragraph cp = cloneNote.paragraphs.get(0);
+    assertEquals(cp.getStatus(), Status.READY);
+    assertNotEquals(cp.getId(), p.getId());
+    assertEquals(cp.text, p.text);
+    assertEquals(cp.getResult().message(), p.getResult().message());
   }
 
   @Test
@@ -257,6 +295,54 @@ public class NotebookTest implements JobListenerFactory{
     notebook.removeNote(note.id());
   }
 
+  @Test
+  public void testAbortParagraphStatusOnInterpreterRestart() throws InterruptedException,
+      IOException {
+    Note note = notebook.createNote();
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
+    Paragraph p1 = note.addParagraph();
+    p1.setText("p1");
+    Paragraph p2 = note.addParagraph();
+    p2.setText("p2");
+    Paragraph p3 = note.addParagraph();
+    p3.setText("p3");
+    Paragraph p4 = note.addParagraph();
+    p4.setText("p4");
+
+    /* all jobs are ready to run */
+    assertEquals(Job.Status.READY, p1.getStatus());
+    assertEquals(Job.Status.READY, p2.getStatus());
+    assertEquals(Job.Status.READY, p3.getStatus());
+    assertEquals(Job.Status.READY, p4.getStatus());
+
+	/* run all */
+    note.runAll();
+
+    /* all are pending in the beginning (first one possibly started)*/
+    assertTrue(p1.getStatus() == Job.Status.PENDING || p1.getStatus() == Job.Status.RUNNING);
+    assertEquals(Job.Status.PENDING, p2.getStatus());
+    assertEquals(Job.Status.PENDING, p3.getStatus());
+    assertEquals(Job.Status.PENDING, p4.getStatus());
+
+    /* wait till first job is terminated and second starts running */
+    while(p1.isTerminated() == false || (p2.getStatus() == Job.Status.PENDING)) Thread.yield();
+
+    assertEquals(Job.Status.FINISHED, p1.getStatus());
+    assertEquals(Job.Status.RUNNING, p2.getStatus());
+    assertEquals(Job.Status.PENDING, p3.getStatus());
+    assertEquals(Job.Status.PENDING, p4.getStatus());
+
+    /* restart interpreter */
+    factory.restart(note.getNoteReplLoader().getInterpreterSettings().get(0).id());
+
+    /* pending and running jobs have been aborted */
+    assertEquals(Job.Status.FINISHED, p1.getStatus());
+    assertEquals(Job.Status.ABORT, p2.getStatus());
+    assertEquals(Job.Status.ABORT, p3.getStatus());
+    assertEquals(Job.Status.ABORT, p4.getStatus());
+  }
+
   private void delete(File file){
     if(file.isFile()) file.delete();
     else if(file.isDirectory()){
@@ -269,7 +355,7 @@ public class NotebookTest implements JobListenerFactory{
       file.delete();
     }
   }
-
+  
   @Override
   public JobListener getParagraphJobListener(Note note) {
     return new JobListener(){

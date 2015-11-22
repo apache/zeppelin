@@ -16,28 +16,47 @@
  */
 package org.apache.zeppelin.spark;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Provide reading comparing capability of spark version returned from SparkContext.version()
  */
-public enum SparkVersion {
-  SPARK_1_0_0,
-  SPARK_1_0_1,
-  SPARK_1_1_0,
-  SPARK_1_1_1,
-  SPARK_1_2_0,
-  SPARK_1_2_1,
-  SPARK_1_2_2,
-  SPARK_1_3_0,
-  SPARK_1_3_1,
-  SPARK_1_4_0,
-  SPARK_1_4_1,
-  SPARK_1_5_0,
-  SPARK_1_5_1;
+public class SparkVersion {
+  Logger logger = LoggerFactory.getLogger(SparkVersion.class);
+
+  public static final SparkVersion SPARK_1_0_0 = SparkVersion.fromVersionString("1.0.0");
+  public static final SparkVersion SPARK_1_1_0 = SparkVersion.fromVersionString("1.1.0");
+  public static final SparkVersion SPARK_1_2_0 = SparkVersion.fromVersionString("1.2.0");
+  public static final SparkVersion SPARK_1_3_0 = SparkVersion.fromVersionString("1.3.0");
+  public static final SparkVersion SPARK_1_4_0 = SparkVersion.fromVersionString("1.4.0");
+  public static final SparkVersion SPARK_1_5_0 = SparkVersion.fromVersionString("1.5.0");
+  public static final SparkVersion SPARK_1_6_0 = SparkVersion.fromVersionString("1.6.0");
+
+  public static final SparkVersion MIN_SUPPORTED_VERSION =  SPARK_1_0_0;
+  public static final SparkVersion UNSUPPORTED_FUTURE_VERSION = SPARK_1_6_0;
 
   private int version;
+  private String versionString;
 
-  SparkVersion() {
-    version = Integer.parseInt(name().substring("SPARK_".length()).replaceAll("_", ""));
+  SparkVersion(String versionString) {
+    this.versionString = versionString;
+
+    try {
+      int pos = versionString.indexOf('-');
+
+      String numberPart = versionString;
+      if (pos > 0) {
+        numberPart = versionString.substring(0, pos);
+      }
+      version = Integer.parseInt(numberPart.replaceAll("\\.", ""));
+    } catch (Exception e) {
+      logger.error("Can not recognize Spark version " + versionString +
+          ". Assume it's a future release", e);
+
+      // assume it is future release
+      version = 999;
+    }
   }
 
   public int toNumber() {
@@ -45,17 +64,16 @@ public enum SparkVersion {
   }
 
   public String toString() {
-    return name().substring("SPARK_".length()).replaceAll("_", ".");
+    return versionString;
   }
 
+  public boolean isUnsupportedVersion() {
+    return olderThan(MIN_SUPPORTED_VERSION) || newerThanEquals(UNSUPPORTED_FUTURE_VERSION);
+  }
+
+
   public static SparkVersion fromVersionString(String versionString) {
-    for (SparkVersion v : values()) {
-      // Check for the beginning of the version string to allow for "1.5.0-SNAPSHOT"
-      if (versionString.startsWith(v.toString())) {
-        return v;
-      }
-    }
-    throw new IllegalArgumentException();
+    return new SparkVersion(versionString);
   }
 
   public boolean isPysparkSupported() {
@@ -76,6 +94,10 @@ public enum SparkVersion {
 
   public boolean oldSqlContextImplicits() {
     return this.olderThan(SPARK_1_3_0);
+  }
+
+  public boolean equals(Object versionToCompare) {
+    return version == ((SparkVersion) versionToCompare).version;
   }
 
   public boolean newerThan(SparkVersion versionToCompare) {

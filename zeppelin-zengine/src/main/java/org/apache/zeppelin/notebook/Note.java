@@ -28,9 +28,11 @@ import java.util.Random;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.utility.IdHashes;
@@ -39,6 +41,8 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
 
 /**
  * Binded interpreters for a note
@@ -144,13 +148,30 @@ public class Note implements Serializable, JobListener {
   }
 
   /**
-   * Add the paragraph p to the list of paras in note.
+   * Clone paragraph and add it to note.
    *
-   * @param p
+   * @param srcParagraph
    */
-  public void addParagraph(Paragraph p) {
+  public void addCloneParagraph(Paragraph srcParagraph) {
+    Paragraph newParagraph = new Paragraph(this, this, replLoader);
+
+    Map<String, Object> config = new HashMap<>(srcParagraph.getConfig());
+    Map<String, Object> param = new HashMap<>(srcParagraph.settings.getParams());
+    Map<String, Input> form = new HashMap<>(srcParagraph.settings.getForms());
+    Gson gson = new Gson();
+    InterpreterResult result = gson.fromJson(
+        gson.toJson(srcParagraph.getReturn()),
+        InterpreterResult.class);
+
+    newParagraph.setConfig(config);
+    newParagraph.settings.setParams(param);
+    newParagraph.settings.setForms(form);
+    newParagraph.setText(srcParagraph.getText());
+    newParagraph.setTitle(srcParagraph.getTitle());
+    newParagraph.setReturn(result, null);
+
     synchronized (paragraphs) {
-      paragraphs.add(p);
+      paragraphs.add(newParagraph);
     }
   }
   
@@ -180,6 +201,25 @@ public class Note implements Serializable, JobListener {
         Paragraph p = paragraphs.get(i);
         if (p.getId().equals(paragraphId)) {
           paragraphs.remove(i);
+          return p;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Clear paragraph output by id.
+   *
+   * @param paragraphId
+   * @return
+   */
+  public Paragraph clearParagraphOutput(String paragraphId) {
+    synchronized (paragraphs) {
+      for (int i = 0; i < paragraphs.size(); i++) {
+        Paragraph p = paragraphs.get(i);
+        if (p.getId().equals(paragraphId)) {
+          p.setReturn(null, null);
           return p;
         }
       }
