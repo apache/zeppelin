@@ -235,8 +235,12 @@ public class RemoteSchedulerTest {
         return true;
       }
     };
+
+    job2.setResult("result2");
+
     scheduler.submit(job1);
     scheduler.submit(job2);
+
 
     int cycles = 0;
     while (!job1.isRunning() && cycles < MAX_WAIT_CYCLES) {
@@ -258,6 +262,7 @@ public class RemoteSchedulerTest {
     assertTrue(job1.isTerminated());
     assertNull(job2.getDateFinished());
     assertTrue(job2.isTerminated());
+    assertEquals("result2", job2.getReturn());
 
     intpA.close();
     schedulerSvc.removeScheduler("test");

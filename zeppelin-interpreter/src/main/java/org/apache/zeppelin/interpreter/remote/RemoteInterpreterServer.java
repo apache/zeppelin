@@ -236,7 +236,7 @@ public class RemoteInterpreterServer
 
       // in case of job abort in PENDING status, result can be null
       if (result == null) {
-        result = new InterpreterResult(Code.SUCCESS);
+        result = new InterpreterResult(Code.KEEP_PREVIOUS_RESULT);
       }
     }
     return convert(result,
