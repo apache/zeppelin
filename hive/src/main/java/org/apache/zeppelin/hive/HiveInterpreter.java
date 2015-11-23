@@ -58,16 +58,17 @@ public class HiveInterpreter extends Interpreter {
   static final String PASSWORD_KEY = "password";
   static final String DOT = ".";
 
-  static final char TSV_KEY = '\t';
+  static final char TSV = '\t';
+  static final char LINEFEED = '\n';
 
   static final String DEFAULT_DRIVER = DEFAULT_KEY + DOT + DRIVER_KEY;
   static final String DEFAULT_URL = DEFAULT_KEY + DOT + URL_KEY;
   static final String DEFAULT_USER = DEFAULT_KEY + DOT + USER_KEY;
   static final String DEFAULT_PASSWORD = DEFAULT_KEY + DOT + PASSWORD_KEY;
 
-  private final HashMap<String, Properties> propertiesMap = new HashMap<>();
-  private final Map<String, Connection> keyConnectionMap = new HashMap<>();
-  private final Map<String, Statement> paragraphIdStatementMap = new HashMap<>();
+  private final HashMap<String, Properties> propertiesMap;
+  private final Map<String, Connection> keyConnectionMap;
+  private final Map<String, Statement> paragraphIdStatementMap;
 
   static {
     Interpreter.register(
@@ -83,6 +84,9 @@ public class HiveInterpreter extends Interpreter {
 
   public HiveInterpreter(Properties property) {
     super(property);
+    propertiesMap = new HashMap<>();
+    keyConnectionMap = new HashMap<>();
+    paragraphIdStatementMap = new HashMap<>();
   }
 
   public HashMap<String, Properties> getPropertiesMap() {
@@ -113,7 +117,7 @@ public class HiveInterpreter extends Interpreter {
     for (String key : propertiesMap.keySet()) {
       Properties properties = propertiesMap.get(key);
       if (!properties.containsKey(DRIVER_KEY) || !properties.containsKey(URL_KEY)) {
-        logger.error("{} will be ignored. {}.driver and {}.uri is mandatory.", key, key, key);
+        logger.error("{} will be ignored. {}.{} and {}.{} is mandatory.", key, DRIVER_KEY, key, key, URL_KEY);
         removeKeySet.add(key);
       }
     }
@@ -140,7 +144,7 @@ public class HiveInterpreter extends Interpreter {
     }
   }
 
-  private Connection getConnection(String propertyKey) throws ClassNotFoundException, SQLException {
+  public Connection getConnection(String propertyKey) throws ClassNotFoundException, SQLException {
     Connection connection = null;
     if (keyConnectionMap.containsKey(propertyKey)) {
       connection = keyConnectionMap.get(propertyKey);
@@ -166,7 +170,7 @@ public class HiveInterpreter extends Interpreter {
     return connection;
   }
 
-  private Statement getStatement(String propertyKey, String paragraphId)
+  public Statement getStatement(String propertyKey, String paragraphId)
       throws SQLException, ClassNotFoundException {
     Statement statement = null;
     if (paragraphIdStatementMap.containsKey(paragraphId)) {
@@ -183,7 +187,7 @@ public class HiveInterpreter extends Interpreter {
     return statement;
   }
 
-  private ResultSet executeSql(String propertyKey,
+  public ResultSet executeSql(String propertyKey,
                                String sql,
                                InterpreterContext interpreterContext)
       throws SQLException, ClassNotFoundException {
@@ -223,23 +227,23 @@ public class HiveInterpreter extends Interpreter {
         fields.add(resultSetMetaData.getColumnName(i + 1));
       }
 
-      sb.append(Joiner.on(TSV_KEY).join(fields));
-      sb.append("\n");
+      sb.append(Joiner.on(TSV).join(fields));
+      sb.append(LINEFEED);
 
       while (resultSet.next()) {
         fields.clear();
         for (int i = 0; i < columnCount; i++) {
           fields.add(resultSet.getString(i + 1));
         }
-        sb.append(Joiner.on(TSV_KEY).join(fields));
-        sb.append("\n");
+        sb.append(Joiner.on(TSV).join(fields));
+        sb.append(LINEFEED);
       }
 
       return new InterpreterResult(Code.SUCCESS, sb.toString());
 
     } catch (ClassNotFoundException | SQLException e) {
       return new InterpreterResult(Code.ERROR,
-          format("%s\n%s", e.getClass().getName(), e.getMessage()));
+          format("%s%c%s", e.getClass().getName(), LINEFEED, e.getMessage()));
     }
   }
 
@@ -287,5 +291,4 @@ public class HiveInterpreter extends Interpreter {
   public List<String> completion(String buf, int cursor) {
     return null;
   }
-
 }
