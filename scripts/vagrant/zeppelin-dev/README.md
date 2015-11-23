@@ -6,12 +6,15 @@ This script creates a virtual machine that launches a repeatable, known set of c
 
 This script requires three applications, [Ansible](http://docs.ansible.com/ansible/intro_installation.html#latest-releases-via-pip "Ansible"), [Vagrant](http://www.vagrantup.com/downloads "Vagrant") and [Virtual Box](https://www.virtualbox.org/ "Virtual Box").  All of these applications are freely available as Open Source projects and extremely easy to set up on most operating systems.
 
-### Create a Zeppelin Ready VM in 4 Steps
+### Create a Zeppelin Ready VM in 4 Steps (5 on Windows)
+
+*If you are running Windows and don't yet have python installed, install Python 2.7.x*  [Python Windows Installer](https://www.python.org/downloads/release/python-2710/)
 
 1. Download and Install Vagrant:  [Vagrant Downloads](http://www.vagrantup.com/downloads)
 2. Install Ansible:  [Ansible Python pip install](http://docs.ansible.com/ansible/intro_installation.html#latest-releases-via-pip)  
 `sudo easy_install pip` then   
-`sudo pip install ansible`
+`sudo pip install ansible`  
+`ansible --version` should now report version 1.9.2 or higher
 3. Install Virtual Box: [Virtual Box Downloads](https://www.virtualbox.org/ "Virtual Box")
 4. Type `vagrant up`  from within the `/scripts/vagrant/zeppelin-dev` directory
 
@@ -31,11 +34,11 @@ curl -fsSL https://raw.githubusercontent.com/NFLabs/z-manager/master/zeppelin-in
 
 You can now `git clone https://github.com/apache/incubator-zeppelin.git` into a directory on your host machine, or directly in your virtual machine.
 
-Cloning zeppelin into the `/scripts/vagrant/zeppelin-dev` directory from the host, will allow the directory to be shared between you host and the guest machine.
+Cloning zeppelin into the `/scripts/vagrant/zeppelin-dev` directory from the host, will allow the directory to be shared between your host and the guest machine.
 
 Cloning the project again may seem counter intuitive, since this script likley originated from the project repository.  Consider copying just the vagrant/zeppelin-dev script from the zeppelin project as a stand alone directory, then once again clone the specific branch you wish to build.
 
-Synced folders enable Vagrant to sync a folder on the host machine to the guest machine, allowing you to continue working on your project's files on your host machine, but use the resources in the guest machine to compile or run your project.[^1]
+Synced folders enable Vagrant to sync a folder on the host machine to the guest machine, allowing you to continue working on your project's files on your host machine, but use the resources in the guest machine to compile or run your project. _[(1) Synced Folder Description from Vagrant Up](https://docs.vagrantup.com/v2/synced-folders/index.html)_
 
 By default, Vagrant will share your project directory (the directory with the Vagrantfile) to `/vagrant`.  Which means you should be able to build within the guest machine after you   
 `cd /vagrant/incubator-zeppelin`
@@ -43,7 +46,7 @@ By default, Vagrant will share your project directory (the directory with the Va
 
 ### What's in this VM?
 
-Run the following commands, and should see the expected versions:
+Runing the following commands in the guest machine should display these expected versions:
 
 `node --version` should report *v0.12.7*  
 `mvn --version` should report *Apache Maven 3.3.3* and *Java version: 1.7.0_85*
@@ -82,15 +85,15 @@ If you [turned off port forwarding](#tweakvm) in the `Vagrantfile` browse to `ht
 
 If you plan to run this virtual machine along side other Vagrant images, you may wish to bind the virtual machine to a specific IP address, and not use port fowarding from your local host.
 
-Comment out the "forward_port" line, and uncomment the private_network line in Vagrantfile, such as:
+Comment out the `forward_port` line, and uncomment the `private_network` line in Vagrantfile.  The subnet that works best for your local network will vary so adjust `192.168.*.*` accordingly.
 
 ```
 #config.vm.network "forwarded_port", guest: 8080, host: 8080
 config.vm.network "private_network", ip: "192.168.51.52"
 ```
 
-`vagrant halt` followed by `vagrant up` will restart the guest machine bound to the IP address of 192.168.51.52.  
-This approach usually is typically required if running other virtual machines that discover each other directly by IP address, such as Spark Masters and Slaves as well as Cassandra Nodes, Elasticsearch Nodes, and other Spark data sources.  You may wish to launch nodes in virtual machines with IP Addresses such as: 192.168.51.53, 192.168.51.54, 192.168.51.53, etc..
+`vagrant halt` followed by `vagrant up` will restart the guest machine bound to the IP address of `192.168.51.52`.  
+This approach usually is typically required if running other virtual machines that discover each other directly by IP address, such as Spark Masters and Slaves as well as Cassandra Nodes, Elasticsearch Nodes, and other Spark data sources.  You may wish to launch nodes in virtual machines with IP Addresses in a subnet that works for your local network, such as: 192.168.51.53, 192.168.51.54, 192.168.51.53, etc..
 
 
 ### [Python Extras](id:pythonextras)
@@ -143,9 +146,6 @@ plt.title('How fast do you want to go today?')
 
 show(plt)
 ``` 
-
-
-[^1]:  Text referenced from the Vagrant instuctions: [https://docs.vagrantup.com/v2/synced-folders/index.html](https://docs.vagrantup.com/v2/synced-folders/index.html)
 
 
 
