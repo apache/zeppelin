@@ -63,8 +63,6 @@ The virtual machine consists of:
  - libfontconfig to avoid phatomJs missing dependency issues
  - openjdk-7-jdk
  - Python addons: pip, matplotlib, scipy, numpy, pandas
- - Changes are made to the python backend configuration so that pyspark can render matplotlib plots without an interactive window
- 
  
 ### How to build & run Zeppelin
 
