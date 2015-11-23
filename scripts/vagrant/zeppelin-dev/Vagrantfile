@@ -36,8 +36,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # within the machine from a port on the host machine.
 
   # Forward local host port 8080 to zeppelin port 8080
+  # Forward local host port 4040 to spark UI port 4040
   # comment out the following line out to use a fixed IP
   config.vm.network "forwarded_port", guest: 8080, host: 8080
+  config.vm.network "forwarded_port", guest: 4040, host: 4040
+
 
   # Uncomment to create a private network, which allows access to the machine
   # using a specific IP.  Port forwarding not required in this case.
@@ -45,10 +48,20 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # in your network environment.  192.168.x.x is an example
   #config.vm.network "private_network", ip: "192.168.51.52"
 
+  # Set the hostname.  Comment this out if you don't want the hostname managed by the VM
+  config.vm.hostname = "zeppelinvm"
 
- config.vm.provider "virtualbox" do |vb|
+  # Modify the number of CPUs and memory used by the VM
+  # by adjusting
+  #   --memory
+  # and uncommenting and/or updating
+  #   --cpus
+
+  config.vm.provider "virtualbox" do |vb|
      vb.customize ["modifyvm", :id, "--memory", "2048"]
- end
+     #vb.customize ["modifyvm", :id, "--cpus", "2"]
+     vb.name = "zeppelinvm"
+  end
 
   config.vm.provision "ansible" do |ansible|
      ansible.playbook = "ansible-roles.yml"

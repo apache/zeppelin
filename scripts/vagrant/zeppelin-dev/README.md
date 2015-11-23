@@ -120,6 +120,7 @@ To Test plotting using matplotlib into a rendered %html SVG image, try
 %pyspark
 
 import matplotlib
+matplotlib.use('Agg')   # turn off interactive charting so this works for server side SVG rendering
 import matplotlib.pyplot as plt
 import numpy as np
 import StringIO
