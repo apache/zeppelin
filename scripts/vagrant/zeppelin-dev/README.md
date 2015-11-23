@@ -1,3 +1,16 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
 ## Vagrant Virtual Machine for Apache Zeppelin
   
 This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin.  It can also be used to run an existing Zeppelin build if you don't plan to build from source.  For pyspark users, this script also includes several helpful [Python Libraries and one obscure configuration to help with matplotlib plotting inside Zeppelin](#pythonextras)
@@ -46,7 +59,7 @@ By default, Vagrant will share your project directory (the directory with the Va
 
 ### What's in this VM?
 
-Runing the following commands in the guest machine should display these expected versions:
+Running the following commands in the guest machine should display these expected versions:
 
 `node --version` should report *v0.12.7*  
 `mvn --version` should report *Apache Maven 3.3.3* and *Java version: 1.7.0_85*
