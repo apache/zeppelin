@@ -117,7 +117,8 @@ public class HiveInterpreter extends Interpreter {
     for (String key : propertiesMap.keySet()) {
       Properties properties = propertiesMap.get(key);
       if (!properties.containsKey(DRIVER_KEY) || !properties.containsKey(URL_KEY)) {
-        logger.error("{} will be ignored. {}.{} and {}.{} is mandatory.", key, DRIVER_KEY, key, key, URL_KEY);
+        logger.error("{} will be ignored. {}.{} and {}.{} is mandatory.",
+            key, DRIVER_KEY, key, key, URL_KEY);
         removeKeySet.add(key);
       }
     }
