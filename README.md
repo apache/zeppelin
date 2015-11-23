@@ -25,13 +25,8 @@ To know more about Zeppelin, visit our web site [http://zeppelin.incubator.apach
 ## Getting Started
 
 ### Before Build
-If you don't have requirements prepared, you will need to install them.  
-
-A script to launch a virtual machine with all of the requirements is also available 
-under `/scripts/vagrant/zeppelin-dev`.  
-View the README.md at `/scripts/vagrant/zeppelin-dev/README.md` if you wish to use the virtual machine.
-
-The installation method may vary according to your environment, the following example is for Ubuntu.
+If you don't have requirements prepared, install it. 
+(The installation method may vary according to your environment, example is for Ubuntu.)
 
 ```
 sudo apt-get update
