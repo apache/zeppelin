@@ -17,12 +17,18 @@
 # Assumes Ubuntu Server 14.04 LTS (HVM)
 # Assumes Java 7+ jdk installed
 ---
+
+- name: get apache maven mirror location
+  script: apache-mirror-selector.py http://www.apache.org/dyn/closer.cgi?path=maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
+  register: mavenURL
+
+- debug: var=mavenURL.stdout_lines[0]
+
 - name: download maven
-  get_url: url=http://apache.mirrorcatalogs.com/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
+  get_url: url="{{mavenURL.stdout_lines[0]}}"
            dest=/tmp/apache-maven-3.3.3-bin.tar.gz
            mode=0440
            validate_certs=False
-
 
 - name: extract maven tgz
   unarchive: src=/tmp/apache-maven-3.3.3-bin.tar.gz
@@ -34,4 +40,3 @@
   file: src=/usr/local/apache-maven-3.3.3/bin/mvn
         path=/usr/bin/mvn
         state=link
-
