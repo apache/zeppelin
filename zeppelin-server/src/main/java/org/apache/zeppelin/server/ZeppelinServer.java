@@ -38,6 +38,7 @@ import org.apache.zeppelin.rest.InterpreterRestApi;
 import org.apache.zeppelin.rest.NotebookRestApi;
 import org.apache.zeppelin.rest.ZeppelinRestApi;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.eclipse.jetty.server.AbstractConnector;
 import org.eclipse.jetty.server.Handler;
@@ -63,13 +64,14 @@ import org.slf4j.LoggerFactory;
 public class ZeppelinServer extends Application {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
 
-  private SchedulerFactory schedulerFactory;
   public static Notebook notebook;
   public static NotebookServer notebookServer;
   public static Server jettyServer;
 
+  private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
   private NotebookRepo notebookRepo;
+  private SearchService notebookIndex;
 
   public static void main(String[] args) throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -251,9 +253,10 @@ public class ZeppelinServer extends Application {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
     this.schedulerFactory = new SchedulerFactory();
-
     this.replFactory = new InterpreterFactory(conf, notebookServer);
-    this.notebookRepo = new NotebookRepoSync(conf);
+    this.notebookIndex = new SearchService();
+    this.notebookRepo = new NotebookRepoSync(conf, notebookIndex);
+
     notebook = new Notebook(conf, notebookRepo, schedulerFactory, replFactory, notebookServer);
   }
 
@@ -271,7 +274,7 @@ public class ZeppelinServer extends Application {
     ZeppelinRestApi root = new ZeppelinRestApi();
     singletons.add(root);
 
-    NotebookRestApi notebookApi = new NotebookRestApi(notebook, notebookServer);
+    NotebookRestApi notebookApi = new NotebookRestApi(notebook, notebookServer, notebookIndex);
     singletons.add(notebookApi);
 
     InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory);

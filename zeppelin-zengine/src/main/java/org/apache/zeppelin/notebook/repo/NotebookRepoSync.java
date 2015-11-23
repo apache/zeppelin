@@ -30,6 +30,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.search.SearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +38,7 @@ import org.slf4j.LoggerFactory;
  * Notebook repository sync with remote storage
  */
 public class NotebookRepoSync implements NotebookRepo {
+  private SearchService notebookIndex;
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSync.class);
   private static final int maxRepoNum = 2;
   private static final String pushKey = "pushNoteIDs";
@@ -46,11 +48,12 @@ public class NotebookRepoSync implements NotebookRepo {
   private List<NotebookRepo> repos = new ArrayList<NotebookRepo>();
 
   /**
+   * @param notebookIndex 
    * @param (conf)
    * @throws - Exception
    */
-  public NotebookRepoSync(ZeppelinConfiguration conf) throws Exception {
-
+  public NotebookRepoSync(ZeppelinConfiguration conf, SearchService notebookIndex) throws Exception {
+    this.notebookIndex = notebookIndex;
     config = conf;
 
     String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
@@ -137,12 +140,23 @@ public class NotebookRepoSync implements NotebookRepo {
    * copy new/updated notes from source to destination storage
    * @throws IOException
    */
-  void sync(int sourceRepoIndex, int destRepoIndex) throws IOException {
+  public void sync(int sourceRepoIndex, int destRepoIndex) throws IOException {    
     LOG.info("Sync started");
     NotebookRepo sourceRepo = getRepo(sourceRepoIndex);
     NotebookRepo destRepo = getRepo(destRepoIndex);
     List <NoteInfo> sourceNotes = sourceRepo.list();
     List <NoteInfo> destNotes = destRepo.list();
+
+    //TODO(bzz): find a better place
+    if (notebookIndex != null) {
+      List<Note> notebooks = new ArrayList<>();
+      for (NoteInfo i: sourceNotes) {
+        notebooks.add(sourceRepo.get(i.getId()));
+      }
+      LOG.info("Index started");
+      notebookIndex.index(notebooks);
+      LOG.info("Index ended");
+    }
 
     Map<String, List<String>> noteIDs = notesCheckDiff(sourceNotes,
                                                        sourceRepo,

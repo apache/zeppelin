@@ -40,14 +40,13 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.message.CronRequest;
 import org.apache.zeppelin.rest.message.InterpreterSettingListForNoteBind;
 import org.apache.zeppelin.rest.message.NewNotebookRequest;
+import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -57,17 +56,18 @@ import com.google.gson.reflect.TypeToken;
 @Path("/notebook")
 @Produces("application/json")
 public class NotebookRestApi {
-  Logger logger = LoggerFactory.getLogger(NotebookRestApi.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NotebookRestApi.class);
   Gson gson = new Gson();
   private Notebook notebook;
   private NotebookServer notebookServer;
+  private SearchService notebookIndex;
 
   public NotebookRestApi() {}
 
-  public NotebookRestApi(Notebook notebook, NotebookServer notebookServer) {
-
+  public NotebookRestApi(Notebook notebook, NotebookServer notebookServer, SearchService search) {
     this.notebook = notebook;
     this.notebookServer = notebookServer;
+    this.notebookIndex = search;
   }
 
   /**
@@ -141,7 +141,7 @@ public class NotebookRestApi {
   @POST
   @Path("/")
   public Response createNote(String message) throws IOException {
-    logger.info("Create new notebook by JSON {}" , message);
+    LOG.info("Create new notebook by JSON {}" , message);
     NewNotebookRequest request = gson.fromJson(message,
         NewNotebookRequest.class);
     Note note = notebook.createNote();
@@ -166,7 +166,7 @@ public class NotebookRestApi {
   @DELETE
   @Path("{notebookId}")
   public Response deleteNote(@PathParam("notebookId") String notebookId) throws IOException {
-    logger.info("Delete notebook {} ", notebookId);
+    LOG.info("Delete notebook {} ", notebookId);
     if (!(notebookId.isEmpty())) {
       Note note = notebook.getNote(notebookId);
       if (note != null) {
@@ -187,7 +187,7 @@ public class NotebookRestApi {
   @Path("{notebookId}")
   public Response cloneNote(@PathParam("notebookId") String notebookId, String message) throws
       IOException, CloneNotSupportedException, IllegalArgumentException {
-    logger.info("clone notebook by JSON {}" , message);
+    LOG.info("clone notebook by JSON {}" , message);
     NewNotebookRequest request = gson.fromJson(message,
         NewNotebookRequest.class);
     String newNoteName = request.getName();
@@ -207,7 +207,7 @@ public class NotebookRestApi {
   @Path("job/{notebookId}")
   public Response runNoteJobs(@PathParam("notebookId") String notebookId) throws
       IOException, IllegalArgumentException {
-    logger.info("run notebook jobs {} ", notebookId);
+    LOG.info("run notebook jobs {} ", notebookId);
     Note note = notebook.getNote(notebookId);
     if (note == null) {
       return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
@@ -227,7 +227,7 @@ public class NotebookRestApi {
   @Path("job/{notebookId}")
   public Response stopNoteJobs(@PathParam("notebookId") String notebookId) throws
       IOException, IllegalArgumentException {
-    logger.info("stop notebook jobs {} ", notebookId);
+    LOG.info("stop notebook jobs {} ", notebookId);
     Note note = notebook.getNote(notebookId);
     if (note == null) {
       return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
@@ -251,7 +251,7 @@ public class NotebookRestApi {
   @Path("job/{notebookId}")
   public Response getNoteJobStatus(@PathParam("notebookId") String notebookId) throws
       IOException, IllegalArgumentException {
-    logger.info("get notebook job status.");
+    LOG.info("get notebook job status.");
     Note note = notebook.getNote(notebookId);
     if (note == null) {
       return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
@@ -271,7 +271,7 @@ public class NotebookRestApi {
   public Response runParagraph(@PathParam("notebookId") String notebookId, 
                                @PathParam("paragraphId") String paragraphId) throws
                                IOException, IllegalArgumentException {
-    logger.info("run paragraph job {} {} ", notebookId, paragraphId);
+    LOG.info("run paragraph job {} {} ", notebookId, paragraphId);
     Note note = notebook.getNote(notebookId);
     if (note == null) {
       return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
@@ -296,7 +296,7 @@ public class NotebookRestApi {
   public Response stopParagraph(@PathParam("notebookId") String notebookId, 
                                 @PathParam("paragraphId") String paragraphId) throws
                                 IOException, IllegalArgumentException {
-    logger.info("stop paragraph job {} ", notebookId);
+    LOG.info("stop paragraph job {} ", notebookId);
     Note note = notebook.getNote(notebookId);
     if (note == null) {
       return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
@@ -320,7 +320,7 @@ public class NotebookRestApi {
   @Path("cron/{notebookId}")
   public Response registerCronJob(@PathParam("notebookId") String notebookId, String message) throws
       IOException, IllegalArgumentException {
-    logger.info("Register cron job note={} request cron msg={}", notebookId, message);
+    LOG.info("Register cron job note={} request cron msg={}", notebookId, message);
 
     CronRequest request = gson.fromJson(message,
                           CronRequest.class);
@@ -352,7 +352,7 @@ public class NotebookRestApi {
   @Path("cron/{notebookId}")
   public Response removeCronJob(@PathParam("notebookId") String notebookId) throws
       IOException, IllegalArgumentException {
-    logger.info("Remove cron job note {}", notebookId);
+    LOG.info("Remove cron job note {}", notebookId);
 
     Note note = notebook.getNote(notebookId);
     if (note == null) {
@@ -377,7 +377,7 @@ public class NotebookRestApi {
   @Path("cron/{notebookId}")
   public Response getCronJob(@PathParam("notebookId") String notebookId) throws
       IOException, IllegalArgumentException {
-    logger.info("Get cron job note {}", notebookId);
+    LOG.info("Get cron job note {}", notebookId);
 
     Note note = notebook.getNote(notebookId);
     if (note == null) {
@@ -393,18 +393,10 @@ public class NotebookRestApi {
  @GET
  @Path("search")
  public Response search(@QueryParam("q") String query) {
-   logger.info("Searching notebooks for {}", query);
-   //List<Map<String, String>> notebooksFound = searchNotebooks(query);
-   ImmutableList<ImmutableMap<String, String>> foundNotebooks = ImmutableList.of(
-       ImmutableMap.of("id", "XXXX", "name", "Test Notebook"),
-       ImmutableMap.of("id", "YYYY", "name", "Another Notebook")
-   );
-   logger.info("Notbooks {} found", foundNotebooks.size());
-   return new JsonResponse<>(Status.OK, foundNotebooks).build();
+   LOG.info("Searching notebooks for {}", query);
+   List<Map<String, String>> notebooksFound = notebookIndex.search(query);
+   LOG.info("Notbooks {} found", notebooksFound.size());
+   return new JsonResponse<>(Status.OK, notebooksFound).build();
  }
-
-  private List<Map<String, String>> searchNotebooks(String query) {
-    return null;
-  }
 
 }
