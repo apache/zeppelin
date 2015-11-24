@@ -201,7 +201,7 @@ public class NotebookRestApi {
       IOException, IllegalArgumentException {
     logger.info("run notebook jobs {} ", notebookId);
     Note note = notebook.getNote(notebookId);
-    if(note == null) {
+    if (note == null) {
       return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
     }
     
@@ -221,12 +221,12 @@ public class NotebookRestApi {
       IOException, IllegalArgumentException {
     logger.info("stop notebook jobs {} ", notebookId);
     Note note = notebook.getNote(notebookId);
-    if(note == null) {
+    if (note == null) {
       return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
     }
 
     for (Paragraph p : note.getParagraphs()) {
-      if(!p.isTerminated()) {
+      if (!p.isTerminated()) {
         p.abort();
       }
     }
@@ -245,7 +245,7 @@ public class NotebookRestApi {
       IOException, IllegalArgumentException {
     logger.info("get notebook job status.");
     Note note = notebook.getNote(notebookId);
-    if(note == null) {
+    if (note == null) {
       return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
     }
 
@@ -264,11 +264,11 @@ public class NotebookRestApi {
       IOException, IllegalArgumentException {
     logger.info("run paragraph job {} {} ", notebookId, paragraphId);
     Note note = notebook.getNote(notebookId);
-    if(note == null) {
+    if (note == null) {
       return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
     }
     
-    if(note.getParagraph(paragraphId) == null) {
+    if (note.getParagraph(paragraphId) == null) {
       return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
     }
 
@@ -288,12 +288,12 @@ public class NotebookRestApi {
       IOException, IllegalArgumentException {
     logger.info("stop paragraph job {} ", notebookId);
     Note note = notebook.getNote(notebookId);
-    if(note == null) {
+    if (note == null) {
       return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
     }
 
     Paragraph p = note.getParagraph(paragraphId);
-    if(p == null) {
+    if (p == null) {
       return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
     }
     p.abort();
