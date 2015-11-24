@@ -284,8 +284,8 @@ public class HiveInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetParallelScheduler(
-        HiveInterpreter.class.getName() + this.hashCode(), 10);
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
+        HiveInterpreter.class.getName() + this.hashCode());
   }
 
   @Override
