@@ -14,7 +14,7 @@
 
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, $rootScope, $routeParams, websocketMsgSrv) {
+angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, $rootScope, $routeParams, websocketMsgSrv, $location) {
   var vm = this;
   vm.websocketMsgSrv = websocketMsgSrv;
   $scope.note = {};
@@ -29,9 +29,10 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, $ro
   };
 
   $scope.$on('setNoteContent', function(event, note) {
-    if (note !== undefined) {
-      window.location = '#/notebook/' + note.id;
-      console.log(note);
+    //a hack, to make it run only after notebook creation
+    //it should not run i.e in case of linking to the paragraph
+    if (note && $location.path().indexOf(note.id) < 0) {
+      $location.path('notebook/' + note.id);
     }
   });
 
