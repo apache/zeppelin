@@ -114,7 +114,7 @@ public class NotebookTest implements JobListenerFactory{
     p2.setText("%mock2 hello world");
     note.run(p2.getId());
     while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
-    assertEquals("repl2:  hello world", p2.getResult().message());
+    assertEquals("repl2: hello world", p2.getResult().message());
   }
 
   @Test
