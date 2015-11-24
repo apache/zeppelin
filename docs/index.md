@@ -34,7 +34,7 @@ limitations under the License.
 </ul>
 
  </div>
- <div class="col-md-7"><img class="img-responsive" style="border: 1px solid #ecf0f1;" height="auto" src="assets/themes/zeppelin/img/notebook.png" /></div>
+ <div class="col-md-7"><img class="img-responsive" style="border: 1px solid #ecf0f1;" height="auto" src="/assets/themes/zeppelin/img/notebook.png" /></div>
 </div>
 
 
@@ -44,17 +44,16 @@ limitations under the License.
 Zeppelin interpreter concept allows any language/data-processing-backend to be plugged into Zeppelin.
 Currently Zeppelin supports many interpreters such as Scala(with Apache Spark), Python(with Apache Spark), SparkSQL, Hive, Markdown and Shell.
 
-<img class="img-responsive" src="assets/themes/zeppelin/img/screenshots/multiple_language_backend.png" />
+<img class="img-responsive" src="/assets/themes/zeppelin/img/screenshots/multiple_language_backend.png" />
 
 Adding new language-backend is really simple. Learn [how to write a zeppelin interpreter](./development/writingzeppelininterpreter.html).
-
 
 <br />
 ### Apache Spark integration
 
 Zeppelin provides built-in Apache Spark integration. You don't need to build a separate module, plugin or library for it.
 
-<img src="assets/themes/zeppelin/img/spark_logo.jpg" width="80px" />
+<img src="/assets/themes/zeppelin/img/spark_logo.jpg" width="80px" />
 
 Zeppelin's Spark integration provides
 
@@ -69,10 +68,10 @@ Some basic charts are already included in Zeppelin. Visualizations are not limit
 
 <div class="row">
   <div class="col-md-6">
-    <img class="img-responsive" src="./assets/themes/zeppelin/img/graph1.png" />
+    <img class="img-responsive" src="/assets/themes/zeppelin/img/graph1.png" />
   </div>
   <div class="col-md-6">
-    <img class="img-responsive" src="./assets/themes/zeppelin/img/graph2.png" />
+    <img class="img-responsive" src="/assets/themes/zeppelin/img/graph2.png" />
   </div>
 </div>
 
@@ -82,7 +81,7 @@ With simple drag and drop Zeppelin aggeregates the values and display them in pi
 
 <div class="row">
   <div class="col-md-8">
-    <img class="img-responsive" src="./assets/themes/zeppelin/img/screenshots/pivot.png" />
+    <img class="img-responsive" src="/assets/themes/zeppelin/img/screenshots/pivot.png" />
   </div>
 </div>
 Learn more about Zeppelin's Display system. ( [text](./displaysystem/display.html), [html](./displaysystem/display.html#html), [table](./displaysystem/table.html), [angular](./displaysystem/angular.html) )
@@ -93,7 +92,7 @@ Learn more about Zeppelin's Display system. ( [text](./displaysystem/display.htm
 
 Zeppelin can dynamically create some input forms into your notebook.
 
-<img class="img-responsive" src="./assets/themes/zeppelin/img/screenshots/form_input.png" />
+<img class="img-responsive" src="/assets/themes/zeppelin/img/screenshots/form_input.png" />
 
 Learn more about [Dynamic Forms](./manual/dynamicform.html).
 
@@ -103,7 +102,7 @@ Learn more about [Dynamic Forms](./manual/dynamicform.html).
 
 Notebook URL can be shared among collaborators. Zeppelin can then broadcast any changes in realtime, just like the collaboration in Google docs.
 
-<img src="./assets/themes/zeppelin/img/screenshots/collaboration.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/collaboration.png" />
 
 <br />
 ### Publish
@@ -112,7 +111,7 @@ Notebook URL can be shared among collaborators. Zeppelin can then broadcast any 
 This way, you can easily embed it as an iframe inside of your website.</p>
 
 <div class="row">
-  <img class="img-responsive center-block" src="./assets/themes/zeppelin/img/screenshots/publish.png" />
+  <img class="img-responsive center-block" src="/assets/themes/zeppelin/img/screenshots/publish.png" />
 </div>
 
 <br />

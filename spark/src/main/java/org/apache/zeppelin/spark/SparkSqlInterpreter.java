@@ -115,9 +115,14 @@ public class SparkSqlInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     SQLContext sqlc = null;
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+
+    if (sparkInterpreter.getSparkVersion().isUnsupportedVersion()) {
+      return new InterpreterResult(Code.ERROR, "Spark "
+          + sparkInterpreter.getSparkVersion().toString() + " is not supported");
+    }
 
     sqlc = getSparkInterpreter().getSQLContext();
-
     SparkContext sc = sqlc.sparkContext();
     if (concurrentSQL()) {
       sc.setLocalProperty("spark.scheduler.pool", "fair");

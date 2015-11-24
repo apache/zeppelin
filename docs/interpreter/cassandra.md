@@ -30,9 +30,9 @@ group: manual
  In a notebook, to enable the **Cassandra** interpreter, click on the **Gear** icon and select **Cassandra**
  
  <center>
- ![Interpreter Binding](/assets/themes/zeppelin/img/docs-img/cassandra-InterpreterBinding.png)
- 
- ![Interpreter Selection](/assets/themes/zeppelin/img/docs-img/cassandra-InterpreterSelection.png)
+ ![Interpreter Binding](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterBinding.png)
+
+ ![Interpreter Selection](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterSelection.png)
  </center>
 
 <hr/>
@@ -44,7 +44,7 @@ group: manual
  To access the interactive help, type **HELP;**
  
  <center>
-  ![Interactive Help](/assets/themes/zeppelin/img/docs-img/cassandra-InteractiveHelp.png)
+  ![Interactive Help](../assets/themes/zeppelin/img/docs-img/cassandra-InteractiveHelp.png)
  </center>
 
 <hr/>
@@ -283,7 +283,7 @@ There is a drop-down menu on the top left corner to expand objects details. On t
 
 <br/>
 <center>
-  ![Describe Schema](/assets/themes/zeppelin/img/docs-img/cassandra-DescribeSchema.png)
+  ![Describe Schema](../assets/themes/zeppelin/img/docs-img/cassandra-DescribeSchema.png)
 </center>
 
 <hr/>
@@ -551,7 +551,7 @@ For this, first go to the **Interpreter** menu and click on the **Create** butto
 <br/>
 <br/>
 <center>
-  ![Create Interpreter](/assets/themes/zeppelin/img/docs-img/cassandra-NewInterpreterInstance.png)
+  ![Create Interpreter](../assets/themes/zeppelin/img/docs-img/cassandra-NewInterpreterInstance.png)
 </center>
  
 In the interpreter creation form, put **cass-instance2** as **Name** and select the **cassandra** 
@@ -559,7 +559,7 @@ in the interpreter drop-down list
 <br/>
 <br/>
 <center>
-  ![Interpreter Name](/assets/themes/zeppelin/img/docs-img/cassandra-InterpreterName.png)
+  ![Interpreter Name](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterName.png)
 </center>                         
 
  Click on **Save** to create the new interpreter instance. Now you should be able to see it in the interpreter list.
@@ -567,7 +567,7 @@ in the interpreter drop-down list
 <br/>
 <br/>
 <center>
-  ![Interpreter In List](/assets/themes/zeppelin/img/docs-img/cassandra-NewInterpreterInList.png)
+  ![Interpreter In List](../assets/themes/zeppelin/img/docs-img/cassandra-NewInterpreterInList.png)
 </center>                         
 
 Go back to your notebook and click on the **Gear** icon to configure interpreter bindings.
@@ -577,7 +577,7 @@ interpreter list instead of the standard **cassandra** instance.
 <br/>
 <br/>
 <center>
-  ![Interpreter Instance Selection](/assets/themes/zeppelin/img/docs-img/cassandra-InterpreterInstanceSelection.png)
+  ![Interpreter Instance Selection](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterInstanceSelection.png)
 </center> 
 
 <hr/>

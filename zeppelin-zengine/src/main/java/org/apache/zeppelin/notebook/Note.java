@@ -323,7 +323,9 @@ public class Note implements Serializable, JobListener {
     if (intp == null) {
       throw new InterpreterException("Interpreter " + p.getRequiredReplName() + " not found");
     }
-    intp.getScheduler().submit(p);
+    if ((Boolean) p.getConfig().get("enabled")) {
+      intp.getScheduler().submit(p);
+    }
   }
 
   public List<String> completion(String paragraphId, String buffer, int cursor) {

@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -95,6 +96,9 @@ public class NotebookTest implements JobListenerFactory{
 
     // run with defatul repl
     Paragraph p1 = note.addParagraph();
+    Map config = p1.getConfig();
+    config.put("enabled", true);
+    p1.setConfig(config);
     p1.setText("hello world");
     note.run(p1.getId());
     while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
@@ -102,6 +106,7 @@ public class NotebookTest implements JobListenerFactory{
 
     // run with specific repl
     Paragraph p2 = note.addParagraph();
+    p2.setConfig(config);
     p2.setText("%mock2 hello world");
     note.run(p2.getId());
     while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
@@ -155,6 +160,9 @@ public class NotebookTest implements JobListenerFactory{
 
     // run with default repl
     Paragraph p1 = note.addParagraph();
+    Map config = p1.getConfig();
+    config.put("enabled", true);
+    p1.setConfig(config);
     p1.setText("hello world");
     note.persist();
 
@@ -166,6 +174,9 @@ public class NotebookTest implements JobListenerFactory{
   public void testClearParagraphOutput() throws IOException, SchedulerException{
     Note note = notebook.createNote();
     Paragraph p1 = note.addParagraph();
+    Map config = p1.getConfig();
+    config.put("enabled", true);
+    p1.setConfig(config);
     p1.setText("hello world");
     note.run(p1.getId());
 
@@ -181,10 +192,14 @@ public class NotebookTest implements JobListenerFactory{
   public void testRunAll() throws IOException {
     Note note = notebook.createNote();
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
-
     Paragraph p1 = note.addParagraph();
+    Map config = p1.getConfig();
+    config.put("enabled", true);
+    p1.setConfig(config);
     p1.setText("p1");
     Paragraph p2 = note.addParagraph();
+    Map config1 = p2.getConfig();
+    p2.setConfig(config1);
     p2.setText("p2");
     assertEquals(null, p2.getResult());
     note.runAll();
@@ -200,12 +215,15 @@ public class NotebookTest implements JobListenerFactory{
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     Paragraph p = note.addParagraph();
+    Map config = new HashMap<String, Object>();
+    p.setConfig(config);
     p.setText("p1");
     Date dateFinished = p.getDateFinished();
     assertNull(dateFinished);
 
     // set cron scheduler, once a second
-    Map<String, Object> config = note.getConfig();
+    config = note.getConfig();
+    config.put("enabled", true);
     config.put("cron", "* * * * * ?");
     note.setConfig(config);
     notebook.refreshCron(note.id());

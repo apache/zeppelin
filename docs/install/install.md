@@ -21,46 +21,14 @@ limitations under the License.
 
 
 
-## Build
+## From binary package
 
-#### Prerequisites
+   Download latest binary package from [Download](../download.html).
 
- * Java 1.7
- * None root account
- * Apache Maven
 
-Build tested on OSX, CentOS 6.
+## Build from source
 
-Checkout source code from [https://github.com/apache/incubator-zeppelin](https://github.com/apache/incubator-zeppelin)
-
-#### Local mode
-
-```
-mvn install -DskipTests
-```
-
-#### Cluster mode
-
-```
-mvn install -DskipTests -Dspark.version=1.1.0 -Dhadoop.version=2.2.0
-```
-
-Change spark.version and hadoop.version to your cluster's one.
-
-#### Custom built Spark
-
-Note that is you uses custom build spark, you need build Zeppelin with custome built spark artifact. To do that, deploy spark artifact to local maven repository using
-
-```
-sbt/sbt publish-local
-```
-
-and then build Zeppelin with your custom built Spark
-
-```
-mvn install -DskipTests -Dspark.version=1.1.0-Custom -Dhadoop.version=2.2.0
-```
-
+   Check instructions in [README](https://github.com/apache/incubator-zeppelin/blob/master/README.md) to build from source.
 
 
 
@@ -80,8 +48,104 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
     <td>ZEPPELIN_PORT</td>
     <td>zeppelin.server.port</td>
     <td>8080</td>
-    <td>Zeppelin server port. Note that port+1 is used for web socket</td>
+    <td>Zeppelin server port.</td>
   </tr>
+  <tr>
+    <td>ZEPPELIN_MEM</td>
+    <td>N/A</td>
+    <td>-Xmx1024m -XX:MaxPermSize=512m</td>
+    <td>JVM mem options</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_INTP_MEM</td>
+    <td>N/A</td>
+    <td>ZEPPELIN_MEM</td>
+    <td>JVM mem options for interpreter process</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_JAVA_OPTS</td>
+    <td>N/A</td>
+    <td></td>
+    <td>JVM Options</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_ALLOWED_ORIGINS</td>
+    <td>zeppelin.server.allowed.origins</td>
+    <td>*</td>
+    <td>Allows a way to specify a ',' separated list of allowed origins for rest and websockets. i.e. http://localhost:8080</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SERVER_CONTEXT_PATH</td>
+    <td>zeppelin.server.context.path</td>
+    <td>/</td>
+    <td>Context Path of the Web Application</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SSL</td>
+    <td>zeppelin.ssl</td>
+    <td>false</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SSL_CLIENT_AUTH</td>
+    <td>zeppelin.ssl.client.auth</td>
+    <td>false</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SSL_KEYSTORE_PATH</td>
+    <td>zeppelin.ssl.keystore.path</td>
+    <td>keystore</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SSL_KEYSTORE_TYPE</td>
+    <td>zeppelin.ssl.keystore.type</td>
+    <td>JKS</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SSL_KEYSTORE_PASSWORD</td>
+    <td>zeppelin.ssl.keystore.password</td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SSL_KEY_MANAGER_PASSWORD</td>
+    <td>zeppelin.ssl.key.manager.password</td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SSL_TRUSTSTORE_PATH</td>
+    <td>zeppelin.ssl.truststore.path</td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SSL_TRUSTSTORE_TYPE</td>
+    <td>zeppelin.ssl.truststore.type</td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_SSL_TRUSTSTORE_PASSWORD</td>
+    <td>zeppelin.ssl.truststore.password</td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_HOMESCREEN</td>
+    <td>zeppelin.notebook.homescreen</td>
+    <td></td>
+    <td>Id of notebook to be displayed in homescreen ex) 2A94M5J1Z</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE</td>
+    <td>zeppelin.notebook.homescreen.hide</td>
+    <td>false</td>
+    <td>hide homescreen notebook from list when this value set to "true"</td>
+  </tr>  
   <tr>
     <td>ZEPPELIN_NOTEBOOK_DIR</td>
     <td>zeppelin.notebook.dir</td>
@@ -89,10 +153,36 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
     <td>Where notebook file is saved</td>
   </tr>
   <tr>
+    <td>ZEPPELIN_NOTEBOOK_S3_BUCKET</td>
+    <td>zeppelin.notebook.s3.bucket</td>
+    <td>zeppelin</td>
+    <td>Bucket where notebook saved</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_S3_USER</td>
+    <td>zeppelin.notebook.s3.user</td>
+    <td>user</td>
+    <td>User in bucket where notebook saved. For example bucket/user/notebook/2A94M5J1Z/note.json</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_STORAGE</td>
+    <td>zeppelin.notebook.storage</td>
+    <td>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</td>
+    <td>Comma separated list of notebook storage</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE</td>
+    <td>zeppelin.notebook.reloadAllNotesFromStorage</td>
+    <td>false</td>
+    <td>Notebook list and contents will be always loaded from repository if set true. If set false, modified notebooks or new notebooks added on file system level won't be reflected on Zeppelin till user restarts Zeppelin.</td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_INTERPRETERS</td>
     <td>zeppelin.interpreters</td>
   <description></description>
-    <td>org.apache.zeppelin.spark.SparkInterpreter,<br />org.apache.zeppelin.spark.PySparkInterpreter,<br />org.apache.zeppelin.spark.SparkSqlInterpreter,<br />org.apache.zeppelin.spark.DepInterpreter,<br />org.apache.zeppelin.markdown.Markdown,<br />org.apache.zeppelin.shell.ShellInterpreter,<br />org.apache.zeppelin.hive.HiveInterpreter</td>
+    <td>org.apache.zeppelin.spark.SparkInterpreter,<br />org.apache.zeppelin.spark.PySparkInterpreter,<br />org.apache.zeppelin.spark.SparkSqlInterpreter,<br />org.apache.zeppelin.spark.DepInterpreter,<br />org.apache.zeppelin.markdown.Markdown,<br />org.apache.zeppelin.shell.ShellInterpreter,<br />org.apache.zeppelin.hive.HiveInterpreter<br />
+    ...
+    </td>
     <td>Comma separated interpreter configurations [Class]. First interpreter become a default</td>
   </tr>
   <tr>
@@ -101,19 +191,14 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
     <td>interpreter</td>
     <td>Zeppelin interpreter directory</td>
   </tr>
-  <tr>
-    <td>MASTER</td>
-    <td></td>
-    <td>N/A</td>
-    <td>Spark master url. eg. spark://master_addr:7077. Leave empty if you want to use local mode</td>
-  </tr>
-  <tr>
-    <td>ZEPPELIN_JAVA_OPTS</td>
-    <td></td>
-    <td>N/A</td>
-    <td>JVM Options</td>
 </table>
 
+<br />
+You'll also need to configure individual interpreter. Information can be found in 'Interpreter' section in this documentation.
+
+For example [Spark](../interpreter/spark.html).
+
+<br />
 ## Start/Stop
 #### Start Zeppelin
 
@@ -121,7 +206,6 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
 bin/zeppelin-daemon.sh start
 ```
 After successful start, visit http://localhost:8080 with your web browser.
-Note that port **8081** also need to be accessible for websocket connection.
 
 #### Stop Zeppelin
 

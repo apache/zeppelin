@@ -41,7 +41,7 @@ limitations under the License.
                      require : ['ace/ext/language_tools']
                    }"
            ng-model="paragraph.text"
-           ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING', 'paragraph-text--dirty' : dirtyText}">
+           ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING', 'paragraph-text--dirty' : dirtyText !== undefined}">
       </div>
     </div>
 
@@ -410,7 +410,7 @@ limitations under the License.
     <!-- Run / Cancel button -->
     <span class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph (Shift+Enter)"
           ng-click="runParagraph(getEditorValue())"
-          ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING'"></span>
+          ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING' && paragraph.config.enabled"></span>
     <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top" tooltip="Cancel"
           ng-click="cancelParagraph()"
           ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
@@ -418,9 +418,6 @@ limitations under the License.
           ng-click="toggleEditor()"></span>
     <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
           ng-click="toggleOutput()"></span>
-    <span  style="cursor:pointer;"
-          ng-click="saveParagraph()"
-          ng-show="dirtyText"></span>
     <span class="dropdown navbar-right">
       <span class="icon-settings" style="cursor:pointer"
             data-toggle="dropdown"
@@ -466,7 +463,10 @@ limitations under the License.
              ng-click="showLineNumbers()"
              ng-show="!paragraph.config.lineNumbers"> Show line numbers</a>
         </li>
-
+        <li>
+          <a class="icon-control-play" style="cursor:pointer"
+             ng-click="toggleEnableDisable()"> {{paragraph.config.enabled ? "Disable" : "Enable"}}  run</a>
+        </li>
         <li><a class="icon-share-alt" style="cursor:pointer"
                ng-click="goToSingleParagraph()"> Link this paragraph</a>
         </li>

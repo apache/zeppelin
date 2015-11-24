@@ -69,3 +69,7 @@ body {
 .lastEmptyParagraph {
   display: none;
 }
+
+.noteAction button.btn {
+  border-radius: 4px !important;
+}

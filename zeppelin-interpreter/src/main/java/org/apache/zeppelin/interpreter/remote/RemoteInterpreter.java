@@ -329,9 +329,13 @@ public class RemoteInterpreter extends Interpreter {
   public Scheduler getScheduler() {
     int maxConcurrency = 10;
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
-    return SchedulerFactory.singleton().createOrGetRemoteScheduler(
-        "remoteinterpreter_" + interpreterProcess.hashCode(), getInterpreterProcess(),
-        maxConcurrency);
+    if (interpreterProcess == null) {
+      return null;
+    } else {
+      return SchedulerFactory.singleton().createOrGetRemoteScheduler(
+          "remoteinterpreter_" + interpreterProcess.hashCode(), getInterpreterProcess(),
+          maxConcurrency);
+    }
   }
 
 

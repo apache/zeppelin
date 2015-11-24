@@ -605,6 +605,11 @@ public class SparkInterpreter extends Interpreter {
    */
   @Override
   public InterpreterResult interpret(String line, InterpreterContext context) {
+    if (sparkVersion.isUnsupportedVersion()) {
+      return new InterpreterResult(Code.ERROR, "Spark " + sparkVersion.toString()
+          + " is not supported");
+    }
+
     z.setInterpreterContext(context);
     if (line == null || line.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);

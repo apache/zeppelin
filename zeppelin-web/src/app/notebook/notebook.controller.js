@@ -280,10 +280,13 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         break;
       }
     }
-
     if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
       return;
     }
+    // save dirtyText of moving paragraphs.
+    var prevParagraphId = $scope.note.paragraphs[newIndex].id;
+    angular.element('#' + paragraphId + '_paragraphColumn_main').scope().saveParagraph();
+    angular.element('#' + prevParagraphId + '_paragraphColumn_main').scope().saveParagraph();
     websocketMsgSrv.moveParagraph(paragraphId, newIndex);
   });
 
@@ -315,6 +318,10 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
       return;
     }
+    // save dirtyText of moving paragraphs.
+    var nextParagraphId = $scope.note.paragraphs[newIndex].id;
+    angular.element('#' + paragraphId + '_paragraphColumn_main').scope().saveParagraph();
+    angular.element('#' + nextParagraphId + '_paragraphColumn_main').scope().saveParagraph();
     websocketMsgSrv.moveParagraph(paragraphId, newIndex);
   });
 
@@ -412,7 +419,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $http.get(baseUrlSrv.getRestApiBase()+ '/notebook/interpreter/bind/' +$scope.note.id).
     success(function(data, status, headers, config) {
       $scope.interpreterBindings = data.body;
-      $scope.interpreterBindingsOrig = jQuery.extend(true, [], $scope.interpreterBindings); // to check dirty
+      $scope.interpreterBindingsOrig = angular.copy($scope.interpreterBindings); // to check dirty
       if (callback) {
         callback();
       }
