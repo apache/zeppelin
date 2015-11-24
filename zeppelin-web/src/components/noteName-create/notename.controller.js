@@ -18,37 +18,40 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, $ro
   var vm = this;
   vm.websocketMsgSrv = websocketMsgSrv;
   $scope.note = {};
-  vm.createNote = function(){
-  	  if(!vm.clone){
-		  vm.websocketMsgSrv.createNotebook($scope.note.notename);
-  	  }else{
-	  	 var noteId = $routeParams.noteId;
-  	  	 vm.websocketMsgSrv.cloneNotebook(noteId, $scope.note.notename);
-  	  }
+
+  vm.createNote = function() {
+      if (!vm.clone) {
+        vm.websocketMsgSrv.createNotebook($scope.note.notename);
+      } else {
+       var noteId = $routeParams.noteId;
+       vm.websocketMsgSrv.cloneNotebook(noteId, $scope.note.notename);
+      }
   };
 
   $scope.$on('setNoteContent', function(event, note) {
-    if(note !== undefined) {
+    if (note !== undefined) {
       window.location = '#/notebook/' + note.id;
       console.log(note);
     }
   });
 
-  vm.preVisible = function(clone){
-		var generatedName = vm.generateName();
-		$scope.note.notename = 'Note ' + generatedName;
-		vm.clone = clone;
-		$scope.$apply();
+  vm.preVisible = function(clone) {
+    var generatedName = vm.generateName();
+    $scope.note.notename = 'Note ' + generatedName;
+    vm.clone = clone;
+    $scope.$apply();
   };
+
   vm.generateName = function () {
-		var DICTIONARY = [ '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B',
-				'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'M', 'N', 'P', 'Q', 'R',
-				'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' ];
-		var randIndex, name = '';
-		for (var i = 0; i < 9; i++) {
-			randIndex = Math.floor(Math.random() * 32);
-			name += DICTIONARY[randIndex];
-		}
-		return name;
-	};
+    var DICTIONARY = [ '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B',
+        'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'M', 'N', 'P', 'Q', 'R',
+        'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' ];
+    var randIndex, name = '';
+    for (var i = 0; i < 9; i++) {
+      randIndex = Math.floor(Math.random() * 32);
+      name += DICTIONARY[randIndex];
+    }
+    return name;
+  };
+
 });
