@@ -22,7 +22,7 @@ before_install:
   - "sh -e /etc/init.d/xvfb start"
 
 install:
-  - mvn package -DskipTests -Phadoop-2.3 -Ppyspark -B
+  - mvn package -DskipTests -Pspark-1.5 -Phadoop-2.3 -Ppyspark -B
 
 before_script:
   -
