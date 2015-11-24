@@ -52,7 +52,9 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   }
 
   private void waitForFinish(Paragraph p) {
-    while (p.getStatus() != Status.FINISHED) {
+    while (p.getStatus() != Status.FINISHED
+        && p.getStatus() != Status.ERROR
+        && p.getStatus() != Status.ABORT) {
       try {
         Thread.sleep(100);
       } catch (InterruptedException e) {
@@ -71,6 +73,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     p.setText("%spark print(sc.parallelize(1 to 10).reduce(_ + _))");
     note.run(p.getId());
     waitForFinish(p);
+    assertEquals(Status.FINISHED, p.getStatus());
     assertEquals("55", p.getResult().message());
     ZeppelinServer.notebook.removeNote(note.id());
   }
@@ -87,6 +90,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       p.setText("%pyspark print(sc.parallelize(range(1, 11)).reduce(lambda a, b: a + b))");
       note.run(p.getId());
       waitForFinish(p);
+      assertEquals(Status.FINISHED, p.getStatus());
       assertEquals("55\n", p.getResult().message());
     }
     ZeppelinServer.notebook.removeNote(note.id());
@@ -106,6 +110,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
           + "print(sqlContext.range(0, 10).withColumn('uniform', rand(seed=10) * 3.14).count())");
       note.run(p.getId());
       waitForFinish(p);
+      assertEquals(Status.FINISHED, p.getStatus());
       assertEquals("10\n", p.getResult().message());
     }
     ZeppelinServer.notebook.removeNote(note.id());
@@ -124,9 +129,11 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
     note.run(p0.getId());
     waitForFinish(p0);
+    assertEquals(Status.FINISHED, p0.getStatus());
 
     note.run(p2.getId());
     waitForFinish(p2);
+    assertEquals(Status.FINISHED, p2.getStatus());
     assertEquals("10", p2.getResult().message());
 
     ZeppelinServer.notebook.removeNote(note.id());
@@ -154,6 +161,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       p0.setText("%dep z.load(\"com.databricks:spark-csv_2.11:1.2.0\")");
       note.run(p0.getId());
       waitForFinish(p0);
+      assertEquals(Status.FINISHED, p0.getStatus());
 
       // write test csv file
       File tmpFile = File.createTempFile("test", "csv");
@@ -168,6 +176,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       note.run(p1.getId());
 
       waitForFinish(p1);
+      assertEquals(Status.FINISHED, p1.getStatus());
       assertEquals("2\n", p1.getResult().message());
     }
   }
@@ -181,6 +190,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     p.setText("%spark print(sc.version)");
     note.run(p.getId());
     waitForFinish(p);
+    assertEquals(Status.FINISHED, p.getStatus());
     String sparkVersion = p.getResult().message();
     System.out.println("Spark version detected " + sparkVersion);
     String[] split = sparkVersion.split("\\.");
