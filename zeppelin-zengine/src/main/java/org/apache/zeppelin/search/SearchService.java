@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -22,6 +23,12 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.highlight.Highlighter;
+import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
+import org.apache.lucene.search.highlight.QueryScorer;
+import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
+import org.apache.lucene.search.highlight.TextFragment;
+import org.apache.lucene.search.highlight.TokenSources;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.zeppelin.notebook.Note;
@@ -40,7 +47,7 @@ public class SearchService {
 
   Directory ramDirectory;
   static final String SEARCH_FIELD = "contents";
-  static final String ID_FIELD = "contents";
+  static final String ID_FIELD = "id";
 
   public List<Map<String, String>> search(String queryStr) {
     List<Map<String, String>> result = Collections.emptyList();
@@ -52,7 +59,10 @@ public class SearchService {
       Query query = parser.parse(queryStr);
       LOG.info("Searching for: " + query.toString(SEARCH_FIELD));
 
-      result = doSearch(indexSearcher, query);
+      SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter();
+      Highlighter highlighter = new Highlighter(htmlFormatter, new QueryScorer(query));
+
+      result = doSearch(indexSearcher, query, analyzer, highlighter);
 
     } catch (IOException e) {
       LOG.error("Faild to open index dir", e);
@@ -62,7 +72,7 @@ public class SearchService {
     return result;
   }
 
-  private List<Map<String, String>> doSearch(IndexSearcher searcher, Query query) {
+  private List<Map<String, String>> doSearch(IndexSearcher searcher, Query query, Analyzer analyzer, Highlighter highlighter) {
     List<Map<String, String>> matchingParagraphs = Lists.newArrayList();
     ScoreDoc[] hits;
     try {
@@ -70,7 +80,8 @@ public class SearchService {
       for (int i = 0; i < hits.length; i++) {
         LOG.info("doc={} score={}", hits[i].doc, hits[i].score);
 
-        Document doc = searcher.doc(hits[i].doc);
+        int id = hits[i].doc;
+        Document doc = searcher.doc(id);
         String path = doc.get(ID_FIELD);
         if (path != null) {
           LOG.info((i + 1) + ". " + path);
@@ -78,13 +89,26 @@ public class SearchService {
           if (title != null) {
             LOG.info("   Title: {}", doc.get("title"));
           }
-          matchingParagraphs.add(ImmutableMap.of("id", path, "name", title));
+
+          String text = doc.get(SEARCH_FIELD);
+          TokenStream tokenStream = TokenSources.getTokenStream(searcher.getIndexReader(), id, SEARCH_FIELD, analyzer);
+          TextFragment[] frag = highlighter.getBestTextFragments(tokenStream, text, false, 3);
+          //TODO(bzz): remove this as too verbose
+          LOG.info("    {} fragments found for query '{}' in '{}'", frag.length, query, text);
+          for (int j = 0; j < frag.length; j++) {
+            if ((frag[j] != null) && (frag[j].getScore() > 0)) {
+              LOG.info("    Fragment: {}", frag[j].toString());
+            }
+          }
+          String fragment = (frag != null && frag.length > 0) ? frag[0].toString() : "";
+
+          matchingParagraphs.add(ImmutableMap.of("id", path, "name", title, "fragment", fragment));
         } else {
           LOG.info("{}. No {} for this document", i + 1, ID_FIELD);
         }
       }
-    } catch (IOException e) {
-      e.printStackTrace();
+    } catch (IOException | InvalidTokenOffsetsException e) {
+      LOG.error("Exception on searching for {}", query, e);;
     }
     return matchingParagraphs;
   }
