@@ -16,13 +16,11 @@
  */
 package org.apache.zeppelin.socket;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 
-import com.google.gson.JsonElement;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
@@ -118,6 +116,9 @@ public class NotebookServer extends WebSocketServlet implements
           case CLONE_NOTE:
             cloneNote(conn, notebook, messagereceived);
             break;
+          case IMPORT_NOTE:
+            importNote(conn, notebook, messagereceived);
+            break;
           case COMMIT_PARAGRAPH:
             updateParagraph(conn, notebook, messagereceived);
             break;
@@ -150,9 +151,6 @@ public class NotebookServer extends WebSocketServlet implements
             break;
           case ANGULAR_OBJECT_UPDATED:
             angularObjectUpdated(conn, notebook, messagereceived);
-            break;
-          case IMPORT_NOTEBOOK:
-            importNotebook(conn, notebook, messagereceived);
             break;
           default:
             broadcastNoteList();
@@ -469,7 +467,7 @@ public class NotebookServer extends WebSocketServlet implements
     broadcastNoteList();
   }
 
-  protected Note importNotebook(NotebookSocket conn, Notebook notebook, Message fromMessage)
+  protected Note importNote(NotebookSocket conn, Notebook notebook, Message fromMessage)
       throws IOException {
 
     Note note = notebook.createNote();

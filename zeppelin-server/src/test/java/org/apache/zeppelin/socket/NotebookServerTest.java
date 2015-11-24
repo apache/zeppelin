@@ -138,7 +138,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
   @Test
   public void testImportNotebook() throws IOException {
-    String msg = "{\"op\":\"IMPORT_NOTEBOOK\",\"data\":" +
+    String msg = "{\"op\":\"IMPORT_NOTE\",\"data\":" +
         "{\"notebook\":{\"paragraphs\": [{\"text\": \"Test " +
         "paragraphs import\",\"config\":{},\"settings\":{}}]," +
         "\"name\": \"Test Zeppelin notebook import\",\"config\": " +
@@ -146,7 +146,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     Message messageReceived = notebookServer.deserializeMessage(msg);
     Note note = null;
     try {
-      note = notebookServer.importNotebook(null, notebook, messageReceived);
+      note = notebookServer.importNote(null, notebook, messageReceived);
     } catch (NullPointerException e) {
       //broadcastNoteList(); failed nothing to worry.
     }

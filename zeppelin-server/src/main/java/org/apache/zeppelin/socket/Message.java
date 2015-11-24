@@ -55,6 +55,8 @@ public class Message {
     CLONE_NOTE, // [c-s] clone new notebook
                 // @param id id of note to clone
                 // @param name name fpor the cloned note
+    IMPORT_NOTE,  // [c-s] import notebook
+                  // @param object notebook
     NOTE_UPDATE,
 
     RUN_PARAGRAPH, // [c-s] run paragraph
@@ -101,10 +103,7 @@ public class Message {
     ANGULAR_OBJECT_UPDATE,  // [s-c] add/update angular object
     ANGULAR_OBJECT_REMOVE,  // [s-c] add angular object del
 
-    ANGULAR_OBJECT_UPDATED,  // [c-s] angular object value updated
-
-    IMPORT_NOTEBOOK  // [c-s] import notebook
-                     // @param object notebook
+    ANGULAR_OBJECT_UPDATED  // [c-s] angular object value updated
   }
 
   public OP op;
