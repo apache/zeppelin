@@ -202,11 +202,11 @@ public class NotebookRestApi {
     logger.info("run notebook jobs {} ", notebookId);
     Note note = notebook.getNote(notebookId);
     if(note == null) {
-      throw new IllegalArgumentException(notebookId + " not found");
+      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
     }
     
     note.runAll();
-    return new JsonResponse(Status.ACCEPTED, "", note.getId()).build();
+    return new JsonResponse(Status.ACCEPTED).build();
   }
 
   /**
@@ -222,7 +222,7 @@ public class NotebookRestApi {
     logger.info("stop notebook jobs {} ", notebookId);
     Note note = notebook.getNote(notebookId);
     if(note == null) {
-      throw new IllegalArgumentException(notebookId + " not found");
+      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
     }
 
     for (Paragraph p : note.getParagraphs()) {
@@ -230,7 +230,7 @@ public class NotebookRestApi {
         p.abort();
       }
     }
-    return new JsonResponse(Status.ACCEPTED, "", note.getId()).build();
+    return new JsonResponse(Status.ACCEPTED).build();
   }
   
   /**
@@ -246,10 +246,10 @@ public class NotebookRestApi {
     logger.info("get notebook job status.");
     Note note = notebook.getNote(notebookId);
     if(note == null) {
-      throw new IllegalArgumentException(notebookId + " not found");
+      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
     }
 
-    return new JsonResponse(Status.OK, "", note.generateParagraphsInfo()).build();
+    return new JsonResponse(Status.OK, null, note.generateParagraphsInfo()).build();
   }
   
   /**
@@ -265,15 +265,15 @@ public class NotebookRestApi {
     logger.info("run paragraph job {} {} ", notebookId, paragraphId);
     Note note = notebook.getNote(notebookId);
     if(note == null) {
-      throw new IllegalArgumentException(notebookId + " note not found");
+      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
     }
     
     if(note.getParagraph(paragraphId) == null) {
-      throw new IllegalArgumentException(notebookId + " paragraph not found");
+      return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
     }
 
     note.run(paragraphId);
-    return new JsonResponse(Status.ACCEPTED, null, note.getId()).build();
+    return new JsonResponse(Status.ACCEPTED).build();
   }
 
   /**
@@ -289,14 +289,14 @@ public class NotebookRestApi {
     logger.info("stop paragraph job {} ", notebookId);
     Note note = notebook.getNote(notebookId);
     if(note == null) {
-      throw new IllegalArgumentException(notebookId + " note not found");
+      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
     }
 
     Paragraph p = note.getParagraph(paragraphId);
     if(p == null) {
-    	throw new IllegalArgumentException(notebookId + " paragraph not found");
+      return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
     }
     p.abort();
-    return new JsonResponse(Status.ACCEPTED, "", note.getId()).build();
+    return new JsonResponse(Status.ACCEPTED).build();
   }
 }
