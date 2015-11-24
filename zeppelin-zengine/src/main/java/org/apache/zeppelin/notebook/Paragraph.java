@@ -135,7 +135,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     if (magic.length() + 1 >= text.length()) {
       return "";
     }
-    return text.substring(magic.length() + 1);
+    return text.substring(magic.length() + 1).trim();
   }
 
   public NoteInterpreterLoader getNoteReplLoader() {
