@@ -11,9 +11,7 @@ body {
 }
 
 .navbar-brand {
-  padding: 12px 12px;
-  padding-top: 15px;
-  padding-bottom: 10px;
+  padding: 15px 5px;
 }
 
 .navbar {
@@ -350,4 +348,30 @@ and (max-width : 1024px) {
   .navbar-collapse.collapse {
       padding-right: 0;
   }
+}
+
+
+/* docs dropdown menu */
+#menu {
+
+}
+
+#menu .dropdown-menu li span {
+  padding : 3px 10px 10px 10px;
+  font-size: 13px;
+
+}
+
+#menu .caret {
+  border-top-color: white;
+  border-bottom-color: white;
+}
+
+#menu .open .caret {
+  border-top-color: #428bca;
+  border-bottom-color: #428bca;
+}
+
+#menu .navbar-nav {
+    margin-left:50px;
 }
