@@ -393,6 +393,8 @@ public abstract class AbstractTestRestApi {
 
   protected Matcher<? super HttpMethodBase> isCreated() { return responsesWith(201); }
 
+  protected Matcher<? super HttpMethodBase> isAccepted() { return responsesWith(202); }
+
   protected Matcher<? super HttpMethodBase> isNotAllowed() {
     return responsesWith(405);
   }

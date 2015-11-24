@@ -33,7 +33,6 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.message.InterpreterSettingListForNoteBind;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.NewNotebookRequest;
-import org.apache.zeppelin.rest.message.RunNotebookRequest;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.socket.NotebookServer;

@@ -259,7 +259,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     LOG.info("testCloneNotebook");
     // Create note to clone
     Note note = ZeppelinServer.notebook.createNote();
-    assertNotNull("cant create new note", note);
+    assertNotNull("can't create new note", note);
     note.setName("source note for clone");
     Paragraph paragraph = note.addParagraph();
     paragraph.setText("%md This is my new paragraph in my new note");
@@ -300,5 +300,134 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     get.releaseConnection();
   }
 
+  @Test
+  public void testRunNoteJobs() throws IOException, InterruptedException {
+    LOG.info("testRunNoteJobs");
+    // Create note to run test.
+    Note note = ZeppelinServer.notebook.createNote();
+    assertNotNull("can't create new note", note);
+    note.setName("note for run test");
+    Paragraph paragraph = note.addParagraph();
+    paragraph.setText("%md This is test paragraph.");
+    note.persist();
+    String noteID = note.getId();
+
+    // Call Run Notebook Jobs REST API
+    PostMethod post = httpPost("/notebook/job/" + noteID, "");
+    assertThat("test notebook jobs run:", post, isAccepted());
+
+    // wait until job is finished or timeout.
+    int timeout = 1;
+    while(paragraph.getStatus() == Status.PENDING) {
+      Thread.sleep(1000);
+      if (timeout++ > 10) {
+        LOG.info("testRunNoteJobs timeout job.");
+        break;
+      }
+    }
+    
+    assertEquals("testRunNoteJobs has finished", true, paragraph.isTerminated());
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note.getId());
+    post.releaseConnection();    
+  }
+
+
+  @Test
+  public void testStopNoteJobs() throws IOException, InterruptedException {
+    LOG.info("testStopNoteJobs");
+    // Create note to stop test.
+    Note note = ZeppelinServer.notebook.createNote();
+    assertNotNull("can't create new note", note);
+    note.setName("note for stop test");
+    Paragraph paragraph = note.addParagraph();
+    paragraph.setText("%md This is test paragraph.");
+    note.persist();
+    String noteID = note.getId();
+
+    note.runAll();
+
+    // Call Stop Notebook Jobs REST API
+    DeleteMethod delete = httpDelete("/notebook/job/" + noteID);
+    assertThat("test notebook stop:", delete, isAccepted());
+
+    // wait until job is finished or timeout.
+    int timeout = 1;
+    while(paragraph.getStatus() == Status.PENDING) {
+      Thread.sleep(1000);
+      if (timeout++ > 10) {
+        LOG.info("testStopNoteJobs timeout job.");
+        break;
+      }
+    }
+    assertEquals("testStopNoteJobs has finished", paragraph.getStatus(), Status.ABORT);
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note.getId());
+    delete.releaseConnection();    
+  }  
+  @Test
+  public void testRunParagraph() throws IOException, InterruptedException {
+    LOG.info("testRunParagraph");
+    // Create note to run test.
+    Note note = ZeppelinServer.notebook.createNote();
+    assertNotNull("can't create new note", note);
+    note.setName("note for run test");
+    Paragraph paragraph = note.addParagraph();
+    paragraph.setText("%md This is test paragraph.");
+    note.persist();
+    String noteID = note.getId();
+
+    // Call Run Notebook REST API
+    PostMethod post = httpPost("/notebook/job/" + noteID + "/" + paragraph.getId(), "");
+    assertThat("test paragraph run:", post, isAccepted());
+
+    // wait until job is finished or timeout.
+    int timeout = 1;
+    while(paragraph.getStatus() == Status.PENDING) {
+      Thread.sleep(1000);
+      if (timeout++ > 10) {
+        LOG.info("testRunParagraph timeout job.");
+        break;
+      }
+    }
+    
+    assertEquals("testRunParagraph finish", true, paragraph.isTerminated());
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note.getId());
+    post.releaseConnection();    
+  }
+  
+  @Test
+  public void testStopParagraph() throws IOException, InterruptedException {
+    LOG.info("testStopParagraph");
+    // Create note to stop test.
+    Note note = ZeppelinServer.notebook.createNote();
+    assertNotNull("can't create new note", note);
+    note.setName("note for stop test");
+    Paragraph paragraph = note.addParagraph();
+    paragraph.setText("%md This is test paragraph.");
+    note.persist();
+    String noteID = note.getId();
+
+    note.run(paragraph.getId());
+
+    // Call stop Notebook REST API
+    DeleteMethod delete = httpDelete("/notebook/job/" + noteID + "/" + paragraph.getId());
+    assertThat("test paragraph stop:", delete, isAccepted());
+    
+    // wait until job is finished or timeout.
+    int timeout = 1;
+    while(paragraph.getStatus() == Status.PENDING) {
+      Thread.sleep(1000);
+      if (timeout++ > 10) {
+        LOG.info("testStopParagraph timeout job.");
+        break;
+      }
+    }
+    assertEquals("testStopParagraph finish", paragraph.getStatus(), Status.ABORT);
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note.getId());
+    delete.releaseConnection();    
+  }  
 }
 
