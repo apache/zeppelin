@@ -260,8 +260,9 @@ public class NotebookRestApi {
    */
   @POST
   @Path("job/{notebookId}/{paragraphId}")
-  public Response runParagraph(@PathParam("notebookId") String notebookId, @PathParam("paragraphId") String paragraphId) throws
-      IOException, IllegalArgumentException {
+  public Response runParagraph(@PathParam("notebookId") String notebookId, 
+                               @PathParam("paragraphId") String paragraphId) throws
+                               IOException, IllegalArgumentException {
     logger.info("run paragraph job {} {} ", notebookId, paragraphId);
     Note note = notebook.getNote(notebookId);
     if (note == null) {
@@ -284,8 +285,9 @@ public class NotebookRestApi {
    */
   @DELETE
   @Path("job/{notebookId}/{paragraphId}")
-  public Response stopParagraph(@PathParam("notebookId") String notebookId, @PathParam("paragraphId") String paragraphId) throws
-      IOException, IllegalArgumentException {
+  public Response stopParagraph(@PathParam("notebookId") String notebookId, 
+                                @PathParam("paragraphId") String paragraphId) throws
+                                IOException, IllegalArgumentException {
     logger.info("stop paragraph job {} ", notebookId);
     Note note = notebook.getNote(notebookId);
     if (note == null) {
