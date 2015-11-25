@@ -947,7 +947,11 @@ angular.module('zeppelinWebApp')
       html += '</table>';
 
       angular.element('#p' + $scope.paragraph.id + '_table').html(html);
-      angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
+      if ($scope.paragraph.result.msgTable.length > 10000) {
+        angular.element('#p' + $scope.paragraph.id + '_table').css('overflow', 'scroll');
+      } else {
+        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
+      }
 
       // set table height
       var height = $scope.paragraph.config.graph.height;
