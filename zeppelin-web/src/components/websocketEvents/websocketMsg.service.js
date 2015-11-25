@@ -113,6 +113,15 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
+    importNotebook: function(notebook) {
+      websocketEvents.sendNewEvent({
+        op: 'IMPORT_NOTE',
+        data: {
+          notebook: notebook
+        }
+      });
+    },
+
     isConnected: function(){
       return websocketEvents.isConnected();
     }

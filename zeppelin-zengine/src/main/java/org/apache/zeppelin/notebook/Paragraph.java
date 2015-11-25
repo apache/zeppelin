@@ -22,6 +22,8 @@ import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.slf4j.Logger;
@@ -205,13 +207,22 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     }
     logger().debug("RUN : " + script);
     InterpreterResult ret = repl.interpret(script, getInterpreterContext());
+
+    if (Code.KEEP_PREVIOUS_RESULT == ret.code()) {
+      return getReturn();
+    }
     return ret;
   }
 
   @Override
   protected boolean jobAbort() {
     Interpreter repl = getRepl(getRequiredReplName());
-    repl.cancel(getInterpreterContext());
+    Job job = repl.getScheduler().removeFromWaitingQueue(getId());
+    if (job != null) {
+      job.setStatus(Status.ABORT);
+    } else {
+      repl.cancel(getInterpreterContext());
+    }
     return true;
   }
 
