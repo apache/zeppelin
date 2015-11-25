@@ -60,8 +60,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Main class of Zeppelin.
  *
- * @author Leemoonsoo
- *
  */
 
 public class ZeppelinServer extends Application {
