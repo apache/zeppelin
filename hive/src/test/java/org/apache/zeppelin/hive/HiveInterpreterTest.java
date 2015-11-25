@@ -34,6 +34,8 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.*;
 import static java.lang.String.format;
@@ -71,8 +73,72 @@ public class HiveInterpreterTest {
   }
 
   @Test
+  public void readTest() throws IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    HiveInterpreter t = new HiveInterpreter(properties);
+    t.open();
+
+    assertEquals("SCHEMA_NAME\nINFORMATION_SCHEMA\nPUBLIC\n",
+        t.interpret("show databases", new InterpreterContext("", "1", "","", null,null,null,null)).message());
+    assertEquals("ID\tNAME\na\ta_name\nb\tb_name\n",
+        t.interpret("select * from test_table", new InterpreterContext("", "1", "","", null,null,null,null)).message());
+  }
+
+  @Test
+  public void readTestWithConfiguration() throws IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "wrong.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    properties.setProperty("h2.driver", "org.h2.Driver");
+    properties.setProperty("h2.url", getJdbcConnection());
+    properties.setProperty("h2.user", "");
+    properties.setProperty("h2.password", "");
+    HiveInterpreter t = new HiveInterpreter(properties);
+    t.open();
+
+    assertEquals("SCHEMA_NAME\nINFORMATION_SCHEMA\nPUBLIC\n",
+        t.interpret("(h2) show databases", new InterpreterContext("", "1", "","", null,null,null,null)).message());
+    assertEquals("ID\tNAME\na\ta_name\nb\tb_name\n",
+        t.interpret("(h2)\n select * from test_table", new InterpreterContext("", "1", "","", null,null,null,null)).message());
+  }
+
+  @Test
+  public void jdbcRestart() throws IOException, SQLException, ClassNotFoundException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    HiveInterpreter t = new HiveInterpreter(properties);
+    t.open();
+
+    assertEquals("SCHEMA_NAME\nINFORMATION_SCHEMA\nPUBLIC\n",
+        t.interpret("show databases", new InterpreterContext("", "1", "","", null,null,null,null)).message());
+
+    t.getConnection("default").close();
+
+    InterpreterResult interpreterResult =
+        t.interpret("select * from test_table", new InterpreterContext("", "1", "","", null,null,null,null));
+    assertEquals("ID\tNAME\na\ta_name\nb\tb_name\n", interpreterResult.message());
+  }
+
+  @Test
   public void test() throws IOException {
     Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
     properties.setProperty("default.driver", "org.h2.Driver");
     properties.setProperty("default.url", getJdbcConnection());
     properties.setProperty("default.user", "");
@@ -95,6 +161,8 @@ public class HiveInterpreterTest {
   @Test
   public void parseMultiplePropertiesMap() {
     Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
     properties.setProperty("default.driver", "defaultDriver");
     properties.setProperty("default.url", "defaultUri");
     properties.setProperty("default.user", "defaultUser");
@@ -109,6 +177,8 @@ public class HiveInterpreterTest {
   @Test
   public void ignoreInvalidSettings() {
     Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
     properties.setProperty("default.driver", "defaultDriver");
     properties.setProperty("default.url", "defaultUri");
     properties.setProperty("default.user", "defaultUser");
@@ -123,6 +193,7 @@ public class HiveInterpreterTest {
   @Test
   public void getPropertyKey() {
     HiveInterpreter hi = new HiveInterpreter(new Properties());
+    hi.open();
     String testCommand = "(default)\nshow tables";
     assertEquals("get key of default", "default", hi.getPropertyKey(testCommand));
     testCommand = "(default) show tables";

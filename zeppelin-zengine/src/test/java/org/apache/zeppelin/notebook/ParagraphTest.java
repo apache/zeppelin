@@ -23,8 +23,16 @@ import static org.junit.Assert.assertEquals;
 
 public class ParagraphTest {
   @Test
-  public void scriptBody() {
+  public void scriptBodyWithReplName() {
     String text = "%spark(1234567";
     assertEquals("(1234567", Paragraph.getScriptBody(text));
+
+    text = "%table 1234567";
+    assertEquals("1234567", Paragraph.getScriptBody(text));
+  }
+  @Test
+  public void scriptBodyWithoutReplName() {
+    String text = "12345678";
+    assertEquals(text, Paragraph.getScriptBody(text));
   }
 }
