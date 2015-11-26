@@ -316,30 +316,25 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     PostMethod postNoteJobs = httpPost("/notebook/job/" + noteID, "");
     assertThat("test notebook jobs run:", postNoteJobs, isAccepted());
     postNoteJobs.releaseConnection();
+    Thread.sleep(1000);
 
-    // wait until job is finished or timeout.
-    int timeout = 1;
-    while (paragraph.getStatus() == Status.PENDING || paragraph.isTerminated()) {
-      Thread.sleep(1000);
-      if (timeout++ > 10) {
-        LOG.info("testNoteJobs timeout job.");
-        break;
-      }
-    }
     // Call Stop Notebook Jobs REST API
     DeleteMethod deleteNoteJobs = httpDelete("/notebook/job/" + noteID);
     assertThat("test notebook stop:", deleteNoteJobs, isAccepted());
     deleteNoteJobs.releaseConnection();    
+    Thread.sleep(1000);
     
     // Call Run paragraph REST API
     PostMethod postParagraph = httpPost("/notebook/job/" + noteID + "/" + paragraph.getId(), "");
     assertThat("test paragraph run:", postParagraph, isAccepted());
     postParagraph.releaseConnection();    
+    Thread.sleep(1000);
     
     // Call Stop paragraph REST API
     DeleteMethod deleteParagraph = httpDelete("/notebook/job/" + noteID + "/" + paragraph.getId());
     assertThat("test paragraph stop:", deleteParagraph, isAccepted());
     deleteParagraph.releaseConnection();    
+    Thread.sleep(1000);
     
     //cleanup
     ZeppelinServer.notebook.removeNote(note.getId());
