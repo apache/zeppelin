@@ -61,12 +61,17 @@ if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
   ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
 fi
 
-addJarInDir "${ZEPPELIN_HOME}"
-addJarInDir "${ZEPPELIN_HOME}/lib"
-addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
-addJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
-addJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
-addJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
+addEachJarInDir "${ZEPPELIN_HOME}"
+addEachJarInDir "${ZEPPELIN_HOME}/lib"
+addEachJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
+addEachJarInDir "${ZEPPELIN_HOME}/zeppelin-zengine/target/lib"
+addEachJarInDir "${ZEPPELIN_HOME}/zeppelin-server/target/lib"
+addEachJarInDir "${ZEPPELIN_HOME}/zeppelin-web/target/lib"
+
+if [[ "${ZEPPELIN_CLASSPATH}" != *"zeppelin-server-"* ]]; then
+    echo "Please build Zeppelin before running it, or download the binary package."
+    exit 1
+fi
 
 CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 
@@ -85,4 +90,4 @@ if [[ ! -d "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
   $(mkdir -p "${ZEPPELIN_NOTEBOOK_DIR}")
 fi
 
-$(exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:$CLASSPATH $ZEPPELIN_SERVER "$@")
+$(exec $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_SERVER "$@")
