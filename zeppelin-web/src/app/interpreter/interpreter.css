@@ -13,12 +13,9 @@
  */
 
 .interpreterHead {
-  margin-left: -10px;
-  margin-right: -10px;
-  margin-top: -10px;
-  margin-bottom: 20px;
+  margin: -10px -10px 20px;
   padding: 10px 15px 15px 15px;
-  background-color: white;
+  background: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   border-bottom: 1px solid #E5E5E5;
 }
@@ -42,12 +39,12 @@
   font-weight: bold;
   color: #3071a9;
   float: left;
-  margin-top: 0px;
+  margin-top: 0;
 }
 
 .interpreter ul {
-  margin: 0px 0px 0px 0px;
-  padding: 0px 0px 0px 0px;
+  margin: 0;
+  padding: 0;
 }
 
 .interpreter .interpreterInfo {
