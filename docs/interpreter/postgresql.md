@@ -147,7 +147,7 @@ This will produce output like this:
 
 #### Apply Zeppelin Dynamic Forms
 
-You can leverage [Zeppelin Dynamic Form](https://zeppelin.incubator.apache.org/docs/manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parametrization features
+You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parametrization features
 
 ```sql
 %psql.sql
