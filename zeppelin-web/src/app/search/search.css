@@ -1,0 +1,22 @@
+.search-results {
+  list-style-type: none;
+  margin-top: 10%;
+}
+
+.search-result {
+  height: 200px;
+}
+
+.search-results-header {
+  text-decoration: none;
+}
+
+.search-results-highlight {
+  background-color: yellow;
+  position: absolute;
+}
+
+/* remove error highlighting */
+.search-results .ace_invalid {
+  background: none !important;
+}

@@ -14,13 +14,24 @@ limitations under the License.
 <div ng-controller="SearchResultCtrl" class="searchResults">
   <div class="row">
     <div class="col-md-8 col-md-offset-3">
-      <ul style="list-style-type: none; margin-top: 10%;">
+      <ul class="search-results">
         <li ng-repeat="note in notes">
-          <i style="font-size: 10px;" class="icon-doc"></i>
-          <a style="text-decoration: none;" 
-             href="#/notebook/{{note.id}}">
-            {{note.name || 'Note ' + note.id}}
-          </a>
+          <h4>
+            <i style="font-size: 10px;" class="icon-doc"></i>
+            <a class="search-results-header"
+               href="#/notebook/{{note.id}}">
+                {{note.name || 'Note ' + note.id}}
+            </a>
+          </h4>
+          <div
+            class="search-result"
+            ui-ace="{
+              onLoad: highlightSearchResults(note),
+              require: ['ace/ext/language_tools']
+            }"
+            ng-model="_"
+          >
+          </div>
        </li>
     </div>
   </div>
