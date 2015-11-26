@@ -30,12 +30,14 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.rest.message.CronRequest;
 import org.apache.zeppelin.rest.message.InterpreterSettingListForNoteBind;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.NewNotebookRequest;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.socket.NotebookServer;
+import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -300,4 +302,81 @@ public class NotebookRestApi {
     p.abort();
     return new JsonResponse(Status.ACCEPTED).build();
   }
+    
+  /**
+   * Register cron job REST API
+   * @param message - JSON with cron expressions.
+   * @return JSON with status.ACCEPTED
+   * @throws IOException, IllegalArgumentException
+   */
+  @POST
+  @Path("cron/{notebookId}")
+  public Response registerCronJob(@PathParam("notebookId") String notebookId, String message) throws
+      IOException, IllegalArgumentException {
+    logger.info("Register cron job note={} request cron msg={}", notebookId, message);
+
+    CronRequest request = gson.fromJson(message,
+                          CronRequest.class);
+    
+    Note note = notebook.getNote(notebookId);
+    if (note == null) {
+      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+    }
+    
+    if (!CronExpression.isValidExpression(request.getCronString())) {
+      return new JsonResponse(Status.BAD_REQUEST, "wrong cron expressions.").build();
+    }
+
+    Map<String, Object> config = note.getConfig();
+    config.put("cron", request.getCronString());
+    note.setConfig(config);
+    notebook.refreshCron(note.id());
+    
+    return new JsonResponse(Status.ACCEPTED).build();
+  }
+  
+  /**
+   * Remove cron job REST API
+   * @param
+   * @return JSON with status.ACCEPTED
+   * @throws IOException, IllegalArgumentException
+   */
+  @DELETE
+  @Path("cron/{notebookId}")
+  public Response removeCronJob(@PathParam("notebookId") String notebookId) throws
+      IOException, IllegalArgumentException {
+    logger.info("Remove cron job note {}", notebookId);
+
+    Note note = notebook.getNote(notebookId);
+    if (note == null) {
+      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+    }
+    
+    Map<String, Object> config = note.getConfig();
+    config.put("cron", null);
+    note.setConfig(config);
+    notebook.refreshCron(note.id());
+    
+    return new JsonResponse(Status.ACCEPTED).build();
+  }  
+  
+  /**
+   * Get cron job REST API
+   * @param
+   * @return JSON with status.ACCEPTED
+   * @throws IOException, IllegalArgumentException
+   */
+  @GET
+  @Path("cron/{notebookId}")
+  public Response getCronJob(@PathParam("notebookId") String notebookId) throws
+      IOException, IllegalArgumentException {
+    logger.info("Get cron job note {}", notebookId);
+
+    Note note = notebook.getNote(notebookId);
+    if (note == null) {
+      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+    }
+    
+    return new JsonResponse(Status.ACCEPTED, note.getConfig().get("cron")).build();
+  }  
 }

@@ -339,5 +339,41 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     //cleanup
     ZeppelinServer.notebook.removeNote(note.getId());
   }
+  
+  @Test
+  public void testCronJobs() throws InterruptedException, IOException{
+    // create a note and a paragraph
+    Note note = ZeppelinServer.notebook.createNote();
+
+    note.setName("note for run test");
+    Paragraph paragraph = note.addParagraph();
+    paragraph.setText("%md This is test paragraph.");
+    
+    String jsonRequest = "{\"cron\":\"* * * * * ?\" }";
+    // right cron expression but not exist note.
+    PostMethod postCron = httpPost("/notebook/cron/notexistnote", jsonRequest);
+    assertThat("", postCron, isNotFound());
+    postCron.releaseConnection();
+    Thread.sleep(1000);
+    
+    // right cron expression.
+    postCron = httpPost("/notebook/cron/" + note.getId(), jsonRequest);
+    assertThat("", postCron, isAccepted());
+    postCron.releaseConnection();
+    Thread.sleep(1000);
+    
+    // wrong cron expression.
+    jsonRequest = "{\"cron\":\"a * * * * ?\" }";
+    postCron = httpPost("/notebook/cron/" + note.getId(), jsonRequest);
+    assertThat("", postCron, isBadRequest());
+    postCron.releaseConnection();
+    Thread.sleep(1000);
+    
+    // remove cron job.
+    DeleteMethod deleteCron = httpDelete("/notebook/cron/" + note.getId());
+    assertThat("", deleteCron, isAccepted());
+    deleteCron.releaseConnection();
+    ZeppelinServer.notebook.removeNote(note.getId());
+  }  
 }
 
