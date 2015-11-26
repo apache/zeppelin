@@ -14,9 +14,9 @@ Zeppelin uses markdown4j, for more examples and extension support checkout [mark
 In Zeppelin notebook you can use ``` %md ``` in the beginning of a paragraph to invoke the Markdown interpreter to generate static html from Markdown plain text.
 
 In Zeppelin, Markdown interpreter is enabled by default.
-<img src="/assets/themes/zeppelin/img/docs-img/markdown-interpreter-setting.png" width="600px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/markdown-interpreter-setting.png" width="600px" />
 
 ### Example
 The following example demonstrates the basic usage of Markdown in a Zeppelin notebook.
 
-<img src="/assets/themes/zeppelin/img/docs-img/markdown-example.png" width="800px" />
+<img src="{{BASE_PATH}}/assets/themes/zeppelin/img/docs-img/markdown-example.png" width="800px" />
