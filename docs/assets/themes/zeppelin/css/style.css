@@ -302,7 +302,11 @@ a.anchor {
 /* <code> */
 .container code{
     color:#000000;
+<<<<<<< HEAD
     font-size: 90%;
+=======
+    font-size: 12px;
+>>>>>>> 4029fd4518ec940b174ad333b4288d79c30d7aa6
     font-family: "Menlo", "Lucida Console", monospace;
     background-color: #f8f8f8;
     border: 1px solid #cccccc;
@@ -317,7 +321,11 @@ a.anchor {
     padding: 6px 10px;
     border-radius: 3px;}
 .container pre code {
+<<<<<<< HEAD
     font-size: 95%;
+=======
+    font-size: 12px;
+>>>>>>> 4029fd4518ec940b174ad333b4288d79c30d7aa6
     margin: 0;
     padding: 0;
     white-space: pre;
