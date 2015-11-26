@@ -363,7 +363,7 @@ public class NotebookRestApi {
   /**
    * Get cron job REST API
    * @param
-   * @return JSON with status.ACCEPTED
+   * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
    */
   @GET
@@ -377,6 +377,6 @@ public class NotebookRestApi {
       return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
     }
     
-    return new JsonResponse(Status.ACCEPTED, note.getConfig().get("cron")).build();
+    return new JsonResponse(Status.OK, note.getConfig().get("cron")).build();
   }  
 }
