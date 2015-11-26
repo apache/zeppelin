@@ -32,11 +32,11 @@ body {
 }
 
 body.asIframe {
-  padding-top: 0px;
+  padding-top: 0;
 }
 
 body .navbar {
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 .container {
@@ -48,7 +48,7 @@ body .navbar {
 }
 
 .navbar-inverse {
-  background-color: #3071a9;
+  background: #3071a9;
   color: #fff;
   border-color: #3071a9;
   font-size: 18px;
@@ -58,18 +58,18 @@ body .navbar {
 .navbar-inverse .navbar-nav > .open > a:hover,
 .navbar-inverse .navbar-nav > .open > a:focus {
   color: #fff;
-  background-color: #3071a9;
+  background: #3071a9;
 }
 
 .navbar-inverse .navbar-toggle:hover,
 .navbar-inverse .navbar-toggle:focus {
-  background-color: #3071a9;
+  background: #3071a9;
 }
 
 .navbar-inverse .navbar-nav > li > a:hover,
 .navbar-inverse .navbar-nav > li > a:focus {
   color: #fff;
-  background-color: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.2);
 
 }
 
@@ -81,7 +81,7 @@ body .navbar {
 .navbar-inverse .navbar-nav > .active > a:hover,
 .navbar-inverse .navbar-nav > .active > a:focus {
   color: #fff;
-  background-color: #080808;
+  background: #080808;
 }
 
 .navbar-inverse .navbar-nav > li > a {
@@ -114,7 +114,7 @@ a.navbar-brand:hover {
 .dropdown-menu > .scrollbar-container > li > a:focus {
   color: #262626;
   text-decoration: none;
-  background-color: #f5f5f5;
+  background: #f5f5f5;
 }
 
 .dropdown-menu > .scrollbar-container > .active > a,
@@ -122,7 +122,7 @@ a.navbar-brand:hover {
 .dropdown-menu > .scrollbar-container > .active > a:focus {
   color: #fff;
   text-decoration: none;
-  background-color: #428bca;
+  background: #428bca;
   outline: 0;
 }
 
@@ -143,14 +143,14 @@ a.navbar-brand:hover {
   .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:hover,
   .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > li > a:focus {
     color: #fff;
-    background-color: transparent;
+    background: transparent;
   }
 
   .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a,
   .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a:hover,
   .navbar-inverse .navbar-nav .open .dropdown-menu > .scrollbar-container > .active > a:focus {
     color: #fff;
-    background-color: #080808;
+    background: #080808;
   }
 
   .server-status {
@@ -158,7 +158,7 @@ a.navbar-brand:hover {
   }
 
   .navbar-inverse .navbar-nav .open .dropdown-menu .divider {
-    background-color: #3071A9;
+    background: #3071A9;
   }
 
   .navbar-inverse .navbar-collapse, .navbar-inverse .navbar-form {
@@ -206,7 +206,7 @@ a.navbar-brand:hover {
 
 .box,
 .well {
-  background-color: #ffffff;
+  background: #ffffff;
   border-color: #e5e5e5;
   border-width: 1px 1px 2px;
   border-radius: 3px;
@@ -236,17 +236,13 @@ a.navbar-brand:hover {
 }
 
 .zeppelin {
-  background-image: url('/assets/images/zepLogo.png');
-  background-repeat: no-repeat;
-  background-position: right;
+  background: url('/assets/images/zepLogo.png') no-repeat right;
   height: 380px;
   opacity: 0.2;
 }
 
 .zeppelin2 {
-  background-image: url('/assets/images/zepLogo.png');
-  background-repeat: no-repeat;
-  background-position: right;
+  background: url('/assets/images/zepLogo.png') no-repeat right;
   background-position-y: 12px;
   height: 380px;
   opacity: 0.2;
@@ -261,13 +257,12 @@ a.navbar-brand:hover {
 
 .kbd-dark {
   color: #eee;
-  background-color: #222;
-  background-image: none;
+  background: #222 none;
   border: 0;
 }
 
 kbd {
-  background-color: #e7e7e7;
+  background: #e7e7e7;
   background-image: -webkit-linear-gradient(#fefefe, #e7e7e7);
   background-image: linear-gradient(#fefefe, #e7e7e7);
   background-repeat: repeat-x;
@@ -294,19 +289,19 @@ kbd {
 }
 
 .ng-toast .alert-danger {
-  background-color: #A94442 !important;
+  background: #A94442 !important;
 }
 
 .ng-toast .alert-warning {
-  background-color: #CE9532 !important;
+  background: #CE9532 !important;
 }
 
 .ng-toast .alert-info {
-  background-color: #589EC1 !important;
+  background: #589EC1 !important;
 }
 
 .ng-toast .alert-success {
-  background-color: #428443 !important;
+  background: #428443 !important;
 }
 
 /*
@@ -333,7 +328,7 @@ This part should be removed when new version of bootstrap handles this issue.
 }
 
 #noteImportModal .display-inline a {
-  background-color: #fff;
+  background: #fff;
   border: 1px solid #ddd;
   border-radius: 5px;
   color: #999;
@@ -350,7 +345,7 @@ This part should be removed when new version of bootstrap handles this issue.
 }
 
 #noteImportModal .display-inline a:hover {
-  background-color: #eee;
+  background: #eee;
 }
 
 #noteImportModal .display-inline a p {

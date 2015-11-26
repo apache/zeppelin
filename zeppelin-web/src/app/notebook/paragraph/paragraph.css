@@ -19,7 +19,7 @@
 .paragraph-space {
   margin-bottom: 5px !important;
   padding: 10px 10px 10px 10px !important;
-  min-height : 30px;
+  min-height: 30px;
 }
 
 .paragraph-margin {
@@ -36,7 +36,7 @@
   display: block;
   unicode-bidi: embed;
   display: block !important;
-  margin: 0 0 0px !important;
+  margin: 0 0 0 !important;
   line-height: 1.42857143 !important;
   word-break: break-all !important;
   word-wrap: break-word !important;
@@ -47,15 +47,15 @@
 }
 
 .paragraph table {
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 .paragraph p {
-  margin : 0 0 0 0px;
+  margin: 0;
 }
 
 .paragraph div svg {
-  width : 100%;
+  width: 100%;
 }
 
 .graphContainer {
@@ -92,27 +92,27 @@
 */
 
 .paragraphAsIframe {
-  padding: 0px 0px 0px 0px;
+  padding: 0;
   margin-top: -79px;
   margin-left: -10px;
   margin-right: -10px;
 }
 
 .paragraphAsIframe .control {
-  background-color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.9);
   border-top: 1px solid #EFEFEF;
   display: none;
   float: right;
   color: #999;
   margin-top: -9px;
-  margin-right: 0px;
+  margin-right: 0;
   position: absolute;
   clear: both;
   right: 25px;
 }
 
 .paragraphAsIframe table {
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 .paragraphAsIframe .editor {
@@ -142,7 +142,7 @@
   font-size: 1px;
   color: #AAAAAA;
   height:4px;
-  margin: 1px 0px 0px 0px;
+  margin: 1px 0 0 0;
 }
 
 .paragraph .runControl .progress {
@@ -150,7 +150,7 @@
   width: 100%;
   height: 4px;
   z-index: 100;
-  border-radius: 0px;
+  border-radius: 0;
 }
 
 .paragraph .runControl .progress .progress-bar {
@@ -162,7 +162,7 @@
 }
 
 .paragraph .control {
-  background-color: rgba(255,255,255,0.85);
+  background: rgba(255,255,255,0.85);
   float: right;
   color: #999;
   margin-top: 1px;
@@ -195,7 +195,7 @@
 */
 
 .paragraph .title {
-  margin: 0px 0px 0px 0px;
+  margin: 0;
   font-size: 12px;
 }
 
@@ -211,10 +211,9 @@
   width: 80%;
   line-height: 1.42857143;
   color: #555;
-  background-color: #fff;
-  background-image: none;
+  background: #fff none;
   border: 1px solid #ccc;
-  border-radius: 0px;
+  border-radius: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
   -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
@@ -230,8 +229,8 @@
 */
 
 .paragraphForm.form-horizontal .form-group {
-  margin-right: 0px;
-  margin-left:  0px;
+  margin-right: 0;
+  margin-left:  0;
 }
 
 .paragraphForm.form-horizontal .form-group label {
@@ -246,7 +245,7 @@
   width: 100%;
   border-left: 4px solid #DDDDDD;
   background: rgba(255, 255, 255, 0.0);
-  margin: 7px 0 2px 0px;
+  margin: 7px 0 2px 0;
 }
 
 .paragraph-text--dirty {
@@ -266,7 +265,7 @@
 }
 
 .ace-tm {
-  background-color: #FFFFFF;
+  background: #FFFFFF;
   color: black;
 }
 
@@ -294,7 +293,7 @@
 }
 
 #main .emacs-mode .ace_cursor {
-  background-color: #C0C0C0!important;
+  background: #C0C0C0!important;
   border: none !important;
 }
 
@@ -315,7 +314,7 @@
 }
 
 .tableDisplay .btn-group span {
-  margin: 10px 0px 0px 10px;
+  margin: 10px 0 0 10px;
   font-size: 12px;
 }
 .tableDisplay .btn-group span a {
@@ -326,7 +325,7 @@
   padding: 5px 5px 5px 5px;
   font-size: 12px;
   height: auto;
-  overflow : auto;
+  overflow: auto;
   border-top: 1px solid #ecf0f1;
 
 }
@@ -336,10 +335,10 @@
 }
 
 .tableDisplay .option .columns ul {
-  background-color: white;
+  background: white;
   width: auto;
   padding: 3px 3px 3px 3px;
-  height : 150px;
+  height: 150px;
   border: 1px solid #CCC;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
   -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
@@ -363,8 +362,8 @@
 }
 
 .tableDisplay .option .columns ul li div ul li a {
-  padding: 0px;
-  margin: 0px;
+  padding: 0;
+  margin: 0;
   cursor: pointer;
 }
 
@@ -372,7 +371,7 @@
 .tableDisplay .option .columns a:hover {
   text-decoration: none;
   outline: 0;
-  outline-offset: 0px;
+  outline-offset: 0;
 }
 
 .paragraph .tableDisplay .hljs {
