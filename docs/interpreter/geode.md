@@ -85,7 +85,7 @@ You can modify the configuration of the Geode from the `Interpreter` section.  T
 
 #### Create / Destroy Regions
 
-The OQL specification does not support  [Geode Regions](https://cwiki.apache.org/confluence/display/GEODE/Index#Index-MainConceptsandComponents) mutation operations. To `creaate`/`destroy` regions one should use the [GFSH](http://geode-docs.cfapps.io/docs/tools_modules/gfsh/chapter_overview.html) shell tool instead. In the following it is assumed that the GFSH is colocated with Zeppelin server.
+The OQL specification does not support  [Geode Regions](https://cwiki.apache.org/confluence/display/GEODE/Index#Index-MainConceptsandComponents) mutation operations. To `create`/`destroy` regions one should use the [GFSH](http://geode-docs.cfapps.io/docs/tools_modules/gfsh/chapter_overview.html) shell tool instead. In the following it is assumed that the GFSH is colocated with Zeppelin server.
 
 ```bash
 %sh
@@ -110,7 +110,7 @@ Above snippet re-creates two regions: `regionEmployee` and `regionCompany`. Note
 
 ```sql
 %geode.oql
-SELECT count(*) FROM /regionEmploee
+SELECT count(*) FROM /regionEmployee
 ```
 
 OQL `IN` and `SET` filters:
@@ -160,7 +160,7 @@ gfsh -e "connect" -e "list members"
 
 #### Apply Zeppelin Dynamic Forms
 
-You can leverage [Zepplein Dynamic Form](https://zeppelin.incubator.apache.org/docs/manual/dynamicform.html) inside your OQL queries. You can use both the `text input` and `select form` parametrization features
+You can leverage [Zeppelin Dynamic Form](https://zeppelin.incubator.apache.org/docs/manual/dynamicform.html) inside your OQL queries. You can use both the `text input` and `select form` parameterization features
 
 ```sql
 %geode.oql
