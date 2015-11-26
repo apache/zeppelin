@@ -15,16 +15,11 @@
 
 # Install Node.js via NodeSource
 ---
-- name: Ensure the system can use the HTTPS transport for APT
-  stat:
-    path: /usr/lib/apt/methods/https
-  register: apt_https_transport
 
 - name: Install HTTPS transport for APT
   apt: 
     pkg: apt-transport-https
     state: installed
-  when: not apt_https_transport.stat.exists
 
 - name: Import the NodeSource GPG key into apt
   apt_key:
@@ -43,7 +38,7 @@
 
 - name: Add NodeSource repository preferences
   template:
-    src: etc/apt/preferences.d/deb_nodesource_com_node.pref.2
+    src: deb_nodesource_com_node.pref.2
     dest: /etc/apt/preferences.d/deb_nodesource_com_node.pref
 
 - name: Install Node.js
