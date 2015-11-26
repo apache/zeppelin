@@ -12,14 +12,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+# setup ruby
+# Assumes Ubuntu Server 14.04 LTS
 ---
-- name: Run Ansible
-  hosts: all
-  sudo: yes
-  roles:
-    - common
-    - ruby
-    - java7jdk
-    - nodejs
-    - maven
-    - python-addons
+
+- name: Install ruby 1.9.3
+  apt: pkg=ruby1.9.3 state=present
+
+- name: set global ruby version
+  alternatives: name=ruby path=/usr/bin/ruby1.9.1 link=/usr/bin/ruby
+
+- name: Install make
+  apt: pkg=make state=latest
+
+- name: Install latest available version of rake.
+  gem: name=rake state=latest user_install=no
+
+- name: Install latest available version of bundler.
+  gem: name=bundler state=latest user_install=no

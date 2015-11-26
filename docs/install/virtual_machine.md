@@ -83,6 +83,7 @@ The virtual machine consists of:
  - Ubuntu Server 14.04 LTS
  - Node.js 0.12.7
  - npm 2.11.3
+ - ruby 1.9.3 + rake, make and bundler (only required if building jekyll documentation)
  - Maven 3.3.3
  - Git
  - Unzip
