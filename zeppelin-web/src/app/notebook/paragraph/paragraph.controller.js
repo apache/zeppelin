@@ -615,7 +615,11 @@ angular.module('zeppelinWebApp')
         if ($scope.editor.completer && $scope.editor.completer.activated) { // if autocompleter is active
         } else {
           // fix ace editor focus issue in chrome (textarea element goes to top: -1000px after focused by cursor move)
-          angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top', 0);
+          if (parseInt(angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top').replace('px', '')) < 0) {
+            var position = $scope.editor.getCursorPosition();
+            var cursorPos = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
+            angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top', cursorPos.top);
+          }
 
           var numRows;
           var currentRow;
@@ -683,7 +687,7 @@ angular.module('zeppelinWebApp')
     var position = $scope.editor.getCursorPosition();
     var lastCursorPosition = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
 
-    var calculatedCursorPosition = editorPosition.top + lastCursorPosition.top + 16*lastCursorMove;
+    var calculatedCursorPosition = editorPosition.top + lastCursorPosition.top + lineHeight*lastCursorMove;
 
     var scrollTargetPos;
     if (calculatedCursorPosition < scrollPosition + headerHeight + scrollTriggerEdgeMargin) {
@@ -698,7 +702,9 @@ angular.module('zeppelinWebApp')
         scrollTargetPos = documentHeight;
       }
     }
-    angular.element('body').scrollTo(scrollTargetPos, {axis: 'y', interrupt: true, duration:200});
+    angular.element('body').stop();
+    angular.element('body').finish();
+    angular.element('body').scrollTo(scrollTargetPos, {axis: 'y', interrupt: true, duration:100});
   };
 
   var setEditorHeight = function(id, height) {
@@ -752,11 +758,10 @@ angular.module('zeppelinWebApp')
       var row;
       if (cursorPos >= 0) {
         row = cursorPos;
-        var column = 0;
         $scope.editor.gotoLine(row, 0);
       } else {
-        row = $scope.editor.session.getLength() - 1;
-        $scope.editor.gotoLine(row + 1, 0);
+        row = $scope.editor.session.getLength();
+        $scope.editor.gotoLine(row, 0);
       }
       $scope.scrollToCursor($scope.paragraph.id, 0);
     }
