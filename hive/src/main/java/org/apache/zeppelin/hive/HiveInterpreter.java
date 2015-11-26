@@ -1,20 +1,20 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.zeppelin.hive;
 
 import java.sql.Connection;
@@ -51,8 +51,6 @@ public class HiveInterpreter extends Interpreter {
   static final String COMMON_KEY = "common";
   static final String MAX_LINE_KEY = "max_count";
   static final String MAX_LINE_DEFAULT = "1000";
-  static final String MAX_RETRY_KEY = "max_retry";
-  static final String MAX_RETRY_DEFAULT = "3";
 
   static final String DEFAULT_KEY = "default";
   static final String DRIVER_KEY = "driver";
@@ -68,7 +66,6 @@ public class HiveInterpreter extends Interpreter {
   static final String UPDATE_COUNT_HEADER = "Update Count";
 
   static final String COMMON_MAX_LINE = COMMON_KEY + DOT + MAX_LINE_KEY;
-  static final String COMMON_MAX_RETRY = COMMON_KEY + DOT + MAX_RETRY_KEY;
 
   static final String DEFAULT_DRIVER = DEFAULT_KEY + DOT + DRIVER_KEY;
   static final String DEFAULT_URL = DEFAULT_KEY + DOT + URL_KEY;
@@ -86,7 +83,6 @@ public class HiveInterpreter extends Interpreter {
         HiveInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .add(COMMON_MAX_LINE, MAX_LINE_DEFAULT, "Maximum line of results")
-            .add(COMMON_MAX_RETRY, MAX_RETRY_DEFAULT, "Maximum number of retry while error")
             .add(DEFAULT_DRIVER, "org.apache.hive.jdbc.HiveDriver", "Hive JDBC driver")
             .add(DEFAULT_URL, "jdbc:hive2://localhost:10000", "The URL for HiveServer2.")
             .add(DEFAULT_USER, "hive", "The hive user")
@@ -203,8 +199,7 @@ public class HiveInterpreter extends Interpreter {
     return statement;
   }
 
-  public InterpreterResult executeSql(String propertyKey,
-                                      String sql,
+  public InterpreterResult executeSql(String propertyKey, String sql,
                                       InterpreterContext interpreterContext) {
     String paragraphId = interpreterContext.getParagraphId();
 
@@ -214,7 +209,7 @@ public class HiveInterpreter extends Interpreter {
 
       statement.setMaxRows(getMaxResult());
 
-      StringBuilder msg = null;
+      StringBuilder msg;
 
       if (containsIgnoreCase(sql, EXPLAIN_PREDICATE)) {
         msg = new StringBuilder();
@@ -300,11 +295,6 @@ public class HiveInterpreter extends Interpreter {
   private int getMaxResult() {
     return Integer.valueOf(
         propertiesMap.get(COMMON_KEY).getProperty(MAX_LINE_KEY, MAX_LINE_DEFAULT));
-  }
-
-  private int getMaxRetry() {
-    return Integer.valueOf(
-        propertiesMap.get(COMMON_KEY).getProperty(MAX_RETRY_KEY, MAX_RETRY_DEFAULT));
   }
 
   public String getPropertyKey(String cmd) {
