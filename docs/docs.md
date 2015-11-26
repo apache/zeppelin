@@ -23,6 +23,7 @@ limitations under the License.
 
 * [Install](./install/install.html)
 * [YARN Install](./install/yarn_install.html)
+* [Virtual Machine Install](./install/virtual_machine.html)
 
 ### Tutorial
 
