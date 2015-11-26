@@ -15,14 +15,17 @@ limitations under the License.
   <div class="row">
     <div class="col-md-8 col-md-offset-3">
       <ul class="search-results">
-        <li ng-repeat="note in notes">
-          <h4>
-            <i style="font-size: 10px;" class="icon-doc"></i>
-            <a class="search-results-header"
-               href="#/notebook/{{note.id}}">
-                {{note.name || 'Note ' + note.id}}
-            </a>
-          </h4>
+        <li class="panel panel-default" ng-repeat="note in notes">
+          <div class="panel-heading">
+            <h4>
+              <i style="font-size: 10px;" class="icon-doc"></i>
+              <a class="search-results-header"
+                 href="#/notebook/{{note.id}}">
+                  {{note.name || 'Note ' + note.id}}
+              </a>
+            </h4>
+          </div>
+          <div class="panel-body">
           <div
             class="search-result"
             ui-ace="{
@@ -31,6 +34,7 @@ limitations under the License.
             }"
             ng-model="_"
           >
+          </div>
           </div>
        </li>
     </div>
