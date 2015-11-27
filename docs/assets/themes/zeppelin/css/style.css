@@ -11,7 +11,8 @@ body {
 }
 
 .navbar-brand {
-  padding: 15px 5px;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 .navbar {
@@ -25,12 +26,27 @@ body {
  background-color:#3071a9;
 }
 
-.navbar-inverse .navbar-nav > li > a:hover, 
+.navbar-inverse .navbar-nav > li > a:hover,
 .navbar-inverse .navbar-nav > li > a:focus {
-  color: #ffffff;
-  background-color: #2C6094;
+  color: #ffffff !important;
+  background-color: #2C6094 !important;
 }
-.navbar-inverse .navbar-nav > li > a.active:hover, 
+
+.navbar-inverse .navbar-collapse.in .navbar-nav .dropdown-menu > li > a:hover,
+.navbar-inverse .navbar-collapse.in .navbar-nav .dropdown-menu > li > a:focus {
+  color: #ffffff !important;
+  background-color: #2C6094 !important;
+}
+
+.navbar-inverse .navbar-collapse.in .navbar-nav .dropdown-menu > li > a {
+  color: white !important;
+}
+
+.navbar-inverse .navbar-collapse.in .navbar-nav .divider {
+  background-color: #286090;
+}
+
+.navbar-inverse .navbar-nav > li > a.active:hover,
 .navbar-inverse .navbar-nav > li > a.active:focus {
   text-decoration: none;
   background-color: #265380;
@@ -322,7 +338,8 @@ body {
   background-color: #286090;
 }
 
-/* Custom, iPhone Retina */ 
+
+/* Custom, iPhone Retina */
 @media only screen and (max-width : 480px) {
   .jumbotron h1 {
     display: none;
@@ -372,6 +389,6 @@ and (max-width : 1024px) {
   border-bottom-color: #428bca;
 }
 
-#menu .navbar-nav {
-    margin-left:50px;
+#menu .navbar-brand {
+    margin-right:50px;
 }
