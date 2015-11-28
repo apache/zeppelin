@@ -68,12 +68,14 @@ Here're some examples.
 Text input form
 
 You can do this in Scala
+
 ```scala
 %spark
 println("Hello "+z.input("name"))
 ```
 
 Or Python
+
 ```python
 %pyspark
 print("Hello "+z.input("name"))
@@ -84,12 +86,14 @@ print("Hello "+z.input("name"))
 Text input form with default value
 
 Scala
+
 ```scala
 %spark
 println("Hello "+z.input("name", "sun"))
 ```
 
 Python
+
 ```python
 %pyspark
 print("Hello "+z.input("name", "sun"))
@@ -100,6 +104,7 @@ print("Hello "+z.input("name", "sun"))
 Select form
 
 Scala
+
 ```scala
 %spark
 println("Hello "+z.select("day", Seq(("1","mon"),
@@ -112,6 +117,7 @@ println("Hello "+z.select("day", Seq(("1","mon"),
 ```
 
 Python
+
 ```python
 %pyspark
 print("Hello "+z.select("day", [("1","mon"),
