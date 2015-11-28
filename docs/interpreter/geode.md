@@ -160,7 +160,7 @@ gfsh -e "connect" -e "list members"
 
 #### Apply Zeppelin Dynamic Forms
 
-You can leverage [Zeppelin Dynamic Form](https://zeppelin.incubator.apache.org/docs/manual/dynamicform.html) inside your OQL queries. You can use both the `text input` and `select form` parameterization features
+You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html) inside your OQL queries. You can use both the `text input` and `select form` parameterization features
 
 ```sql
 %geode.oql
