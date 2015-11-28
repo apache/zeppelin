@@ -190,7 +190,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory{
 	assertEquals(0, notebookRepoSync.list(1).size());
 	    
 	File srcDir = new File("src/test/resources/2A94M5J1Z");
-	File destDir = new File(secNotebookDir + "/2A94M5J1Z");
+	File destDir = new File(secNotebookDir + "/users/anonymous/2A94M5J1Z");
 	
 	/* copy manually new notebook into secondary storage repo and check repos */
     try {
