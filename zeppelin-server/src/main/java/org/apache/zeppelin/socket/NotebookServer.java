@@ -439,6 +439,7 @@ public class NotebookServer extends WebSocketServlet implements
   private void updateParagraph(NotebookSocket conn, Notebook notebook,
       Message fromMessage) throws IOException {
     String paragraphId = (String) fromMessage.get("id");
+    String text = (String) fromMessage.get("paragraph");
     if (paragraphId == null) {
       return;
     }
@@ -452,9 +453,19 @@ public class NotebookServer extends WebSocketServlet implements
     p.settings.setParams(params);
     p.setConfig(config);
     p.setTitle((String) fromMessage.get("title"));
-    p.setText((String) fromMessage.get("paragraph"));
+    p.setText(text);
+    
+    boolean isTheLastParagraph = note.getLastParagraph().getId()
+        .equals(p.getId());
     note.persist();
-    broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
+    if (!Strings.isNullOrEmpty(text) && isTheLastParagraph) {
+      note.addParagraph();
+      note.persist();
+      broadcast(note.id(), new Message(OP.NOTE).put("note", note));
+    } else {
+      note.persist();
+      broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
+    }
   }
 
   private void cloneNote(NotebookSocket conn, Notebook notebook, Message fromMessage)
