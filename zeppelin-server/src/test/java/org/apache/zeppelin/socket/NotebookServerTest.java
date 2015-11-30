@@ -136,6 +136,27 @@ public class NotebookServerTest extends AbstractTestRestApi {
     notebook.removeNote(note1.getId());
   }
 
+  @Test
+  public void testImportNotebook() throws IOException {
+    String msg = "{\"op\":\"IMPORT_NOTE\",\"data\":" +
+        "{\"notebook\":{\"paragraphs\": [{\"text\": \"Test " +
+        "paragraphs import\",\"config\":{},\"settings\":{}}]," +
+        "\"name\": \"Test Zeppelin notebook import\",\"config\": " +
+        "{}}}}";
+    Message messageReceived = notebookServer.deserializeMessage(msg);
+    Note note = null;
+    try {
+      note = notebookServer.importNote(null, notebook, messageReceived);
+    } catch (NullPointerException e) {
+      //broadcastNoteList(); failed nothing to worry.
+    }
+
+    assertNotEquals(null, notebook.getNote(note.getId()));
+    assertEquals("Test Zeppelin notebook import", notebook.getNote(note.getId()).getName());
+    assertEquals("Test paragraphs import", notebook.getNote(note.getId()).getParagraphs().get(0).getText());
+    notebook.removeNote(note.getId());
+  }
+
   private NotebookSocket createWebSocket() {
     NotebookSocket sock = mock(NotebookSocket.class);
     when(sock.getRequest()).thenReturn(createHttpServletRequest());

@@ -20,7 +20,9 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -52,7 +54,9 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
   }
 
   private void waitForFinish(Paragraph p) {
-    while (p.getStatus() != Status.FINISHED) {
+    while (p.getStatus() != Status.FINISHED
+        && p.getStatus() != Status.ERROR
+        && p.getStatus() != Status.ABORT) {
       try {
         Thread.sleep(100);
       } catch (InterruptedException e) {
@@ -68,9 +72,13 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
     // run markdown paragraph, again
     Paragraph p = note.addParagraph();
+    Map config = p.getConfig();
+    config.put("enabled", true);
+    p.setConfig(config);
     p.setText("%spark print(sc.parallelize(1 to 10).reduce(_ + _))");
     note.run(p.getId());
     waitForFinish(p);
+    assertEquals(Status.FINISHED, p.getStatus());
     assertEquals("55", p.getResult().message());
     ZeppelinServer.notebook.removeNote(note.id());
   }
@@ -84,9 +92,13 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     if (isPyspark() && sparkVersion >= 12) {   // pyspark supported from 1.2.1
       // run markdown paragraph, again
       Paragraph p = note.addParagraph();
+      Map config = p.getConfig();
+      config.put("enabled", true);
+      p.setConfig(config);
       p.setText("%pyspark print(sc.parallelize(range(1, 11)).reduce(lambda a, b: a + b))");
       note.run(p.getId());
       waitForFinish(p);
+      assertEquals(Status.FINISHED, p.getStatus());
       assertEquals("55\n", p.getResult().message());
     }
     ZeppelinServer.notebook.removeNote(note.id());
@@ -102,10 +114,14 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     if (isPyspark() && sparkVersion >= 14) {   // auto_convert enabled from spark 1.4
       // run markdown paragraph, again
       Paragraph p = note.addParagraph();
+      Map config = p.getConfig();
+      config.put("enabled", true);
+      p.setConfig(config);
       p.setText("%pyspark\nfrom pyspark.sql.functions import *\n"
           + "print(sqlContext.range(0, 10).withColumn('uniform', rand(seed=10) * 3.14).count())");
       note.run(p.getId());
       waitForFinish(p);
+      assertEquals(Status.FINISHED, p.getStatus());
       assertEquals("10\n", p.getResult().message());
     }
     ZeppelinServer.notebook.removeNote(note.id());
@@ -116,17 +132,28 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
     // create new note
     Note note = ZeppelinServer.notebook.createNote();
     Paragraph p0 = note.addParagraph();
+    Map config0 = p0.getConfig();
+    config0.put("enabled", true);
+    p0.setConfig(config0);
     p0.setText("%spark z.run(1)");
     Paragraph p1 = note.addParagraph();
+    Map config1 = p1.getConfig();
+    config1.put("enabled", true);
+    p1.setConfig(config1);
     p1.setText("%spark val a=10");
     Paragraph p2 = note.addParagraph();
+    Map config2 = p2.getConfig();
+    config2.put("enabled", true);
+    p2.setConfig(config2);
     p2.setText("%spark print(a)");
 
     note.run(p0.getId());
     waitForFinish(p0);
+    assertEquals(Status.FINISHED, p0.getStatus());
 
     note.run(p2.getId());
     waitForFinish(p2);
+    assertEquals(Status.FINISHED, p2.getStatus());
     assertEquals("10", p2.getResult().message());
 
     ZeppelinServer.notebook.removeNote(note.id());
@@ -151,9 +178,13 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
       // load dep
       Paragraph p0 = note.addParagraph();
+      Map config = p0.getConfig();
+      config.put("enabled", true);
+      p0.setConfig(config);
       p0.setText("%dep z.load(\"com.databricks:spark-csv_2.11:1.2.0\")");
       note.run(p0.getId());
       waitForFinish(p0);
+      assertEquals(Status.FINISHED, p0.getStatus());
 
       // write test csv file
       File tmpFile = File.createTempFile("test", "csv");
@@ -161,6 +192,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
 
       // load data using libraries from dep loader
       Paragraph p1 = note.addParagraph();
+      p1.setConfig(config);
       p1.setText("%pyspark\n" +
         "from pyspark.sql import SQLContext\n" +
         "print(sqlContext.read.format('com.databricks.spark.csv')" +
@@ -168,6 +200,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       note.run(p1.getId());
 
       waitForFinish(p1);
+      assertEquals(Status.FINISHED, p1.getStatus());
       assertEquals("2\n", p1.getResult().message());
     }
   }
@@ -178,9 +211,13 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
    */
   private int getSparkVersionNumber(Note note) {
     Paragraph p = note.addParagraph();
+    Map config = p.getConfig();
+    config.put("enabled", true);
+    p.setConfig(config);
     p.setText("%spark print(sc.version)");
     note.run(p.getId());
     waitForFinish(p);
+    assertEquals(Status.FINISHED, p.getStatus());
     String sparkVersion = p.getResult().message();
     System.out.println("Spark version detected " + sparkVersion);
     String[] split = sparkVersion.split("\\.");

@@ -51,7 +51,7 @@ The process for creating your homepage is very simple as shown below:
   
   for example
   
-  <img src="../../assets/themes/zeppelin/img/screenshots/homepage_notebook_id.png" />
+  <img src="/assets/themes/zeppelin/img/screenshots/homepage_notebook_id.png" />
 
   Set the notebook id to the ```ZEPPELIN_NOTEBOOK_HOMESCREEN``` environment variable 
   or ```zeppelin.notebook.homescreen``` property. 
@@ -97,7 +97,7 @@ you need to do is use our %angular support.
   ```
   
   After running the notebook you will see output similar to this one:
-  <img src="../../assets/themes/zeppelin/img/screenshots/homepage_notebook_list.png" />
+  <img src="/assets/themes/zeppelin/img/screenshots/homepage_notebook_list.png" />
   
   The main trick here relays in linking the ```<div>``` to the controller:
   

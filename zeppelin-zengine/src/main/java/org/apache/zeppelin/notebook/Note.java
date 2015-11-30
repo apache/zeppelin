@@ -294,21 +294,6 @@ public class Note implements Serializable, JobListener {
     }
   }
 
-  public List<Map<String, String>> generateParagraphsInfo (){
-    List<Map<String, String>> paragraphsInfo = new LinkedList<>();
-    synchronized (paragraphs) {
-      for (Paragraph p : paragraphs) {
-        Map<String, String> info = new HashMap<>();
-        info.put("id", p.getId());
-        info.put("status", p.getStatus().toString());
-        info.put("started", p.getDateStarted().toString());
-        info.put("finished", p.getDateFinished().toString());
-        paragraphsInfo.add(info);
-      }
-    }
-    return paragraphsInfo;
-  }
-
   /**
    * Run all paragraphs sequentially.
    *
@@ -334,14 +319,13 @@ public class Note implements Serializable, JobListener {
     Paragraph p = getParagraph(paragraphId);
     p.setNoteReplLoader(replLoader);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
-    logger.info("Note Run Paragraph=" + p);
     Interpreter intp = replLoader.get(p.getRequiredReplName());
-    logger.info("Note Run intp=" + intp);
     if (intp == null) {
       throw new InterpreterException("Interpreter " + p.getRequiredReplName() + " not found");
     }
-    logger.info("Note Run intp=" + intp);
-    intp.getScheduler().submit(p);
+    if ((Boolean) p.getConfig().get("enabled")) {
+      intp.getScheduler().submit(p);
+    }
   }
 
   public List<String> completion(String paragraphId, String buffer, int cursor) {
