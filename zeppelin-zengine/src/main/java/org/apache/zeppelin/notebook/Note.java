@@ -341,6 +341,7 @@ public class Note implements Serializable, JobListener {
     if (intp == null) {
       throw new InterpreterException("Interpreter " + p.getRequiredReplName() + " not found");
     }
+    logger.info("run note paragraphId={}, p={}, p.getConfig()={}", paragraphId, p, p.getConfig());
     if ((Boolean) p.getConfig().get("enabled")) {
       intp.getScheduler().submit(p);
     }
