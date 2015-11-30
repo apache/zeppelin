@@ -182,7 +182,7 @@ public class VFSNotebookRepo implements NotebookRepo {
     return getNote(noteDir);
   }
 
-  private FileObject getRootDir() throws IOException {
+  protected FileObject getRootDir() throws IOException {
     FileObject rootDir = fsManager.resolveFile(getPath("/"));
 
     if (!rootDir.exists()) {

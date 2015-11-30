@@ -22,6 +22,11 @@ import java.util.List;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.internal.storage.file.FileRepository;
+import org.eclipse.jgit.lib.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * NotebookRepo that hosts all the notebook FS in a single Git repo
@@ -29,18 +34,24 @@ import org.apache.zeppelin.notebook.Note;
  * This impl intended to be simple and straightforward:
  *   - does not handle branches
  *   - only basic git, no Github push\pull yet
- * 
- * 
+ *
+ *
  * TODO(bzz): describe config
  *  GIT_URL remote
  *  auth credentials
  */
 public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVersioned {
+  private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepo.class);
 
-  // I. First usefull case: 
+  private Repository localRepo;
+  private Git git;
+
+  private String localPath;
+
+  // I. First usefull case:
   //   start \w repo + tutorial notebook
   //   all modifications results in a commit
-  
+
   // II. Next case:
   //   start \wo .git
   //   create one
@@ -48,12 +59,17 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
   //   ..and then I...
 
   // III. Next case:
-  //   start \w repo 
+  //   start \w repo
   //   show history
   //   user can switch to REV in read-only
-  
+
   public GitNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     super(conf);
+
+    localPath = getRootDir().getName().getBaseName();
+    LOG.info("Opening a git repo at {}", localPath);
+    localRepo = new FileRepository(localPath  + "/.git");
+    git = new Git(localRepo);
 
     //TODO(bzz):
     // - check that ./notebooks/.git exists
