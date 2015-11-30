@@ -316,21 +316,28 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertNotNull("can't create new note", note);
     note.setName("note for run test");
     Paragraph paragraph = note.addParagraph();
+    
+    Map config = paragraph.getConfig();
+    config.put("enabled", true);
+    paragraph.setConfig(config);
+    
     paragraph.setText("%md This is test paragraph.");
     note.persist();
     String noteID = note.getId();
-    
-    // Call Run Notebook Jobs REST API
-    PostMethod postNoteJobs = httpPost("/notebook/job/" + noteID, "");
+
+    note.runAll();
     // wait until job is finished or timeout.
     int timeout = 1;
-    while (paragraph.getStatus() == Status.PENDING || !paragraph.isTerminated()) {
+    while (!paragraph.isTerminated()) {
       Thread.sleep(1000);
       if (timeout++ > 10) {
         LOG.info("testNoteJobs timeout job.");
         break;
       }
     }
+    
+    // Call Run Notebook Jobs REST API
+    PostMethod postNoteJobs = httpPost("/notebook/job/" + noteID, "");
     assertThat("test notebook jobs run:", postNoteJobs, isAccepted());
     postNoteJobs.releaseConnection();
 
@@ -365,13 +372,14 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Paragraph paragraph = note.addParagraph();
     paragraph.setText("%md This is test paragraph.");
     
-    String jsonRequest = "{\"cron\":\"* * * * * ?\" }";
-    // right cron expression but not exist note.
-    PostMethod postCron = httpPost("/notebook/cron/notexistnote", jsonRequest);
+    Map config = paragraph.getConfig();
+    config.put("enabled", true);
+    paragraph.setConfig(config);
 
+    note.runAll();
     // wait until job is finished or timeout.
     int timeout = 1;
-    while (paragraph.getStatus() == Status.PENDING || !paragraph.isTerminated()) {
+    while (!paragraph.isTerminated()) {
       Thread.sleep(1000);
       if (timeout++ > 10) {
         LOG.info("testNoteJobs timeout job.");
@@ -379,6 +387,9 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
       }
     }
     
+    String jsonRequest = "{\"cron\":\"* * * * * ?\" }";
+    // right cron expression but not exist note.
+    PostMethod postCron = httpPost("/notebook/cron/notexistnote", jsonRequest);
     assertThat("", postCron, isNotFound());
     postCron.releaseConnection();
     
