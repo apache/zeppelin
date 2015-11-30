@@ -334,10 +334,13 @@ public class Note implements Serializable, JobListener {
     Paragraph p = getParagraph(paragraphId);
     p.setNoteReplLoader(replLoader);
     p.setListener(jobListenerFactory.getParagraphJobListener(this));
+    logger.info("Note Run Paragraph=" + p);
     Interpreter intp = replLoader.get(p.getRequiredReplName());
+    logger.info("Note Run intp=" + intp);
     if (intp == null) {
       throw new InterpreterException("Interpreter " + p.getRequiredReplName() + " not found");
     }
+    logger.info("Note Run intp=" + intp);
     intp.getScheduler().submit(p);
   }
 

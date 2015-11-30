@@ -311,12 +311,20 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     paragraph.setText("%md This is test paragraph.");
     note.persist();
     String noteID = note.getId();
-
+    
     // Call Run Notebook Jobs REST API
     PostMethod postNoteJobs = httpPost("/notebook/job/" + noteID, "");
+    // wait until job is finished or timeout.
+    int timeout = 1;
+    while (paragraph.getStatus() == Status.PENDING || !paragraph.isTerminated()) {
+      Thread.sleep(1000);
+      if (timeout++ > 10) {
+        LOG.info("testNoteJobs timeout job.");
+        break;
+      }
+    }
     assertThat("test notebook jobs run:", postNoteJobs, isAccepted());
     postNoteJobs.releaseConnection();
-    Thread.sleep(1000);
 
     // Call Stop Notebook Jobs REST API
     DeleteMethod deleteNoteJobs = httpDelete("/notebook/job/" + noteID);
@@ -352,9 +360,19 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     String jsonRequest = "{\"cron\":\"* * * * * ?\" }";
     // right cron expression but not exist note.
     PostMethod postCron = httpPost("/notebook/cron/notexistnote", jsonRequest);
+
+    // wait until job is finished or timeout.
+    int timeout = 1;
+    while (paragraph.getStatus() == Status.PENDING || !paragraph.isTerminated()) {
+      Thread.sleep(1000);
+      if (timeout++ > 10) {
+        LOG.info("testNoteJobs timeout job.");
+        break;
+      }
+    }
+    
     assertThat("", postCron, isNotFound());
     postCron.releaseConnection();
-    Thread.sleep(1000);
     
     // right cron expression.
     postCron = httpPost("/notebook/cron/" + note.getId(), jsonRequest);
