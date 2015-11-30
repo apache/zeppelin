@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -48,8 +49,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.SchedulerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NotebookTest implements JobListenerFactory{
+  private static final Logger logger = LoggerFactory.getLogger(NotebookTest.class);
 
   private File tmpDir;
   private ZeppelinConfiguration conf;
@@ -228,7 +232,7 @@ public class NotebookTest implements JobListenerFactory{
     note.setConfig(config);
     notebook.refreshCron(note.id());
     Thread.sleep(1*1000);
-    
+
     // remove cron scheduler.
     config.put("cron", null);
     note.setConfig(config);
@@ -319,46 +323,35 @@ public class NotebookTest implements JobListenerFactory{
     Note note = notebook.createNote();
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
-    Paragraph p1 = note.addParagraph();
-    p1.setText("p1");
-    Paragraph p2 = note.addParagraph();
-    p2.setText("p2");
-    Paragraph p3 = note.addParagraph();
-    p3.setText("p3");
-    Paragraph p4 = note.addParagraph();
-    p4.setText("p4");
+    ArrayList<Paragraph> paragraphs = new ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      Paragraph tmp = note.addParagraph();
+      tmp.setText("p" + tmp.getId());
+      paragraphs.add(tmp);
+    }
 
-    /* all jobs are ready to run */
-    assertEquals(Job.Status.READY, p1.getStatus());
-    assertEquals(Job.Status.READY, p2.getStatus());
-    assertEquals(Job.Status.READY, p3.getStatus());
-    assertEquals(Job.Status.READY, p4.getStatus());
+    for (Paragraph p : paragraphs) {
+      assertEquals(Job.Status.READY, p.getStatus());
+    }
 
-	/* run all */
     note.runAll();
 
-    /* all are pending in the beginning (first one possibly started)*/
-    assertTrue(p1.getStatus() == Job.Status.PENDING || p1.getStatus() == Job.Status.RUNNING);
-    assertEquals(Job.Status.PENDING, p2.getStatus());
-    assertEquals(Job.Status.PENDING, p3.getStatus());
-    assertEquals(Job.Status.PENDING, p4.getStatus());
+    while (paragraphs.get(0).getStatus() != Status.FINISHED) Thread.yield();
 
-    /* wait till first job is terminated and second starts running */
-    while(p1.isTerminated() == false || (p2.getStatus() == Job.Status.PENDING)) Thread.yield();
-
-    assertEquals(Job.Status.FINISHED, p1.getStatus());
-    assertEquals(Job.Status.RUNNING, p2.getStatus());
-    assertEquals(Job.Status.PENDING, p3.getStatus());
-    assertEquals(Job.Status.PENDING, p4.getStatus());
-
-    /* restart interpreter */
     factory.restart(note.getNoteReplLoader().getInterpreterSettings().get(0).id());
 
-    /* pending and running jobs have been aborted */
-    assertEquals(Job.Status.FINISHED, p1.getStatus());
-    assertEquals(Job.Status.ABORT, p2.getStatus());
-    assertEquals(Job.Status.ABORT, p3.getStatus());
-    assertEquals(Job.Status.ABORT, p4.getStatus());
+    boolean isAborted = false;
+    for (Paragraph p : paragraphs) {
+      logger.debug(p.getStatus().name());
+      if (isAborted) {
+        assertEquals(Job.Status.ABORT, p.getStatus());
+      }
+      if (p.getStatus() == Status.ABORT) {
+        isAborted = true;
+      }
+    }
+
+    assertTrue(isAborted);
   }
 
   private void delete(File file){
@@ -373,7 +366,7 @@ public class NotebookTest implements JobListenerFactory{
       file.delete();
     }
   }
-  
+
   @Override
   public JobListener getParagraphJobListener(Note note) {
     return new JobListener(){

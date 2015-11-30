@@ -73,7 +73,7 @@
   border: 3px solid #DDDDDD;
 }
 
-.paragraph .paragraphFooter { 
+.paragraph .paragraphFooter {
   height: 9px;
 }
 
@@ -180,6 +180,14 @@
   font-size: 12px;
   margin-bottom: 4px;
   color: #333333;
+}
+
+/*
+  Paragraph Menu
+*/
+
+.dropdown-menu > li > a {
+  cursor: pointer;
 }
 
 /*

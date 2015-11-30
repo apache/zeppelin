@@ -37,23 +37,23 @@ This interpreter supports the [Geode](http://geode.incubator.apache.org/) [Objec
 
 This [Video Tutorial](https://www.youtube.com/watch?v=zvzzA9GXu3Q) illustrates some of the features provided by the `Geode Interpreter`.
 
-### Create Interpreter 
+### Create Interpreter
 
-By default Zeppelin creates one `Geode/OQL` instance. You can remove it or create more instances. 
+By default Zeppelin creates one `Geode/OQL` instance. You can remove it or create more instances.
 
-Multiple Geode instances can be created, each configured to the same or different backend Geode cluster. But over time a  `Notebook` can have only one Geode interpreter instance `bound`. That means you _can not_ connect to different Geode clusters in the same `Notebook`. This is a known Zeppelin limitation. 
+Multiple Geode instances can be created, each configured to the same or different backend Geode cluster. But over time a  `Notebook` can have only one Geode interpreter instance `bound`. That means you _cannot_ connect to different Geode clusters in the same `Notebook`. This is a known Zeppelin limitation.
 
-To create new Geode instance open the `Interprter` section and click the `+Create` button. Pick a `Name` of your choice and from the `Interpreter` drop-down select `geode`.  Then follow the configuration instructions and `Save` the new instance. 
+To create new Geode instance open the `Interpreter` section and click the `+Create` button. Pick a `Name` of your choice and from the `Interpreter` drop-down select `geode`.  Then follow the configuration instructions and `Save` the new instance.
 
-> Note: The `Name` of the instance is used only to distinct the instances while binding them to the `Notebook`. The `Name` is irrelevant inside the `Notebook`. In the `Notebook` you must use `%geode.oql` tag. 
+> Note: The `Name` of the instance is used only to distinguish the instances while binding them to the `Notebook`. The `Name` is irrelevant inside the `Notebook`. In the `Notebook` you must use `%geode.oql` tag.
 
 ### Bind to Notebook
 In the `Notebook` click on the `settings` icon in the top right corner. The select/deselect the interpreters to be bound with the `Notebook`.
 
 ### Configuration
-You can modify the configuration of the Geode from the `Interpreter` section.  The Geode interpreter express the following properties:
+You can modify the configuration of the Geode from the `Interpreter` section.  The Geode interpreter expresses the following properties:
 
- 
+
  <table class="table-configuration">
    <tr>
      <th>Property Name</th>
@@ -76,16 +76,16 @@ You can modify the configuration of the Geode from the `Interpreter` section.  T
      <td>1000</td>
    </tr>
  </table>
- 
+
 ### How to use
 
 > *Tip 1: Use (CTRL + .) for OQL auto-completion.*
 
-> *Tip 2: Alawys start the paragraphs with the full `%geode.oql` prefix tag! The short notation: `%geode` would still be able run the OQL queries but the syntax highlighting and the auto-completions will be disabled.*
+> *Tip 2: Always start the paragraphs with the full `%geode.oql` prefix tag! The short notation: `%geode` would still be able run the OQL queries but the syntax highlighting and the auto-completions will be disabled.*
 
 #### Create / Destroy Regions
 
-The OQL sepecification does not support  [Geode Regions](https://cwiki.apache.org/confluence/display/GEODE/Index#Index-MainConceptsandComponents) mutation operations. To `creaate`/`destroy` regions one should use the [GFSH](http://geode-docs.cfapps.io/docs/tools_modules/gfsh/chapter_overview.html) shell tool instead. To wokr this it assumes that the GFSH is colocated with Zeppelin server.
+The OQL specification does not support  [Geode Regions](https://cwiki.apache.org/confluence/display/GEODE/Index#Index-MainConceptsandComponents) mutation operations. To `create`/`destroy` regions one should use the [GFSH](http://geode-docs.cfapps.io/docs/tools_modules/gfsh/chapter_overview.html) shell tool instead. In the following it is assumed that the GFSH is colocated with Zeppelin server.
 
 ```bash
 %sh
@@ -98,26 +98,26 @@ gfsh << EOF
  destroy region --name=/regionCompany
  create region --name=regionEmployee --type=REPLICATE
  create region --name=regionCompany --type=REPLICATE
- 
+
  exit;
 EOF
 ```
 
-Above snippet re-creates two regions: `regionEmployee` and `regionCompany`. Note that you have to explicetely specify the locator host and port. The values should match those you have used in the Geode Interpreter configuration. Comprehensive  list of [GFSH Commands by Functional Area](http://geode-docs.cfapps.io/docs/tools_modules/gfsh/gfsh_quick_reference.html).
+Above snippet re-creates two regions: `regionEmployee` and `regionCompany`. Note that you have to explicitly specify the locator host and port. The values should match those you have used in the Geode Interpreter configuration. Comprehensive list of [GFSH Commands by Functional Area](http://geode-docs.cfapps.io/docs/tools_modules/gfsh/gfsh_quick_reference.html).
 
 #### Basic OQL  
 
 
-```sql 
-%geode.oql 
-SELECT count(*) FROM /regionEmploee
+```sql
+%geode.oql
+SELECT count(*) FROM /regionEmployee
 ```
 
 OQL `IN` and `SET` filters:
 
 ```sql
 %geode.oql
-SELECT * FROM /regionEmployee 
+SELECT * FROM /regionEmployee
 WHERE companyId IN SET(2) OR lastName IN SET('Tzolov13', 'Tzolov73')
 ```
 
@@ -126,15 +126,15 @@ OQL `JOIN` operations
 ```sql
 %geode.oql
 SELECT e.employeeId, e.firstName, e.lastName, c.id as companyId, c.companyName, c.address
-FROM /regionEmployee e, /regionCompany c 
+FROM /regionEmployee e, /regionCompany c
 WHERE e.companyId = c.id
 ```
 
-By default the QOL responses contain only the region entry values. To access the keys,  query the `EntrySet` instead:
+By default the QOL responses contain only the region entry values. To access the keys, query the `EntrySet` instead:
 
 ```sql
 %geode.oql
-SELECT e.key, e.value.companyId, e.value.email 
+SELECT e.key, e.value.companyId, e.value.email
 FROM /regionEmployee.entrySet e
 ```
 Following query will return the EntrySet value as a Blob:
@@ -160,7 +160,7 @@ gfsh -e "connect" -e "list members"
 
 #### Apply Zeppelin Dynamic Forms
 
-You can leverage [Zepplein Dynamic Form](https://zeppelin.incubator.apache.org/docs/manual/dynamicform.html) inside your OQL queries. You can use both the `text input` and `select form` parametrization features
+You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html) inside your OQL queries. You can use both the `text input` and `select form` parameterization features
 
 ```sql
 %geode.oql
@@ -197,7 +197,5 @@ http-service-port=8484
 start-dev-rest-api=true
 ```
 
-### Auto-completion 
-The Geode Interpreter provides a basic auto-completion functionality. On `(Ctrl+.)` it list the most relevant suggesntions in a pop-up window. 
-
-
+### Auto-completion
+The Geode Interpreter provides a basic auto-completion functionality. On `(Ctrl+.)` it list the most relevant suggestions in a pop-up window.

@@ -23,6 +23,7 @@ limitations under the License.
 
 * [Install](./install/install.html)
 * [YARN Install](./install/yarn_install.html)
+* [Virtual Machine Install](./install/virtual_machine.html)
 
 ### Tutorial
 
@@ -38,7 +39,7 @@ limitations under the License.
 * [hive](./pleasecontribute.html)
 * [ignite](./interpreter/ignite.html)
 * [lens](./interpreter/lens.html)
-* [md](./pleasecontribute.html)
+* [md](./interpreter/markdown.html)
 * [postgresql, hawq](./interpreter/postgresql.html)
 * [sh](./pleasecontribute.html)
 * [spark](./interpreter/spark.html)
