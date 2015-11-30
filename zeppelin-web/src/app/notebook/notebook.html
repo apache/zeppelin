@@ -197,6 +197,9 @@ limitations under the License.
                     'lastEmptyParagraph': !paragraph.text && !paragraph.result}"
          ng-hide="currentParagraph.config.tableHide && viewOnly">
     </div>
+    <div class="new-paragraph" ng-click="insertNew(true);" ng-hide="!$last || viewOnly">
+      <h4 class="plus-sign">&#43;</h4>
+    </div>
   </div>
   <div style="clear:both;height:10px"></div>
 </div>
