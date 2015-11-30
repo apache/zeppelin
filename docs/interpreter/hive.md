@@ -70,7 +70,7 @@ group: manual
   </tr>
 </table>
 
-This interpreter provides multiple configuration wih ${prefix}. User can set a multiple connection properties by this prefix. It can be used like `%hive(${prefix})`.
+This interpreter provides multiple configuration with ${prefix}. User can set a multiple connection properties by this prefix. It can be used like `%hive(${prefix})`.
  
 ### How to use
 
@@ -93,7 +93,7 @@ You can also run multiple queries up to 10 by default. Changing these settings i
 
 #### Apply Zeppelin Dynamic Forms
 
-You can leverage [Zepplein Dynamic Form](https://zeppelin.incubator.apache.org/docs/manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parametrization features
+You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parameterization features
 
 ```sql
 %hive
