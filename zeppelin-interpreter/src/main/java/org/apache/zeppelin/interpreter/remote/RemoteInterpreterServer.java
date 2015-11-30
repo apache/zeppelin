@@ -294,8 +294,13 @@ public class RemoteInterpreterServer
 
     @Override
     protected Object jobRun() throws Throwable {
-      InterpreterResult result = interpreter.interpret(script, context);
-      return result;
+      try {
+        InterpreterContext.set(context);
+        InterpreterResult result = interpreter.interpret(script, context);
+        return result;
+      } finally {
+        InterpreterContext.remove();
+      }
     }
 
     @Override
