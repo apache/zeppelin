@@ -587,7 +587,10 @@ angular.module('zeppelinWebApp')
         exec: function(editor) {
           var editorValue = editor.getValue();
           if (editorValue) {
-            $scope.runParagraph(editorValue);
+            if (!($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING'))
+            {
+              $scope.runParagraph(editorValue);
+            }
           }
         },
         readOnly: false
