@@ -88,7 +88,30 @@ public class FIFOSchedulerTest extends TestCase {
 
 		assertTrue((500 > (Long)job1.getReturn()));
 		assertEquals(null, job2.getReturn());
-
-
 	}
+
+	 public void testRemoveFromWaitingQueue() throws InterruptedException{
+	    Scheduler s = schedulerSvc.createOrGetFIFOScheduler("test");
+	    assertEquals(0, s.getJobsRunning().size());
+	    assertEquals(0, s.getJobsWaiting().size());
+
+	    Job job1 = new SleepingJob("job1", null, 500);
+	    Job job2 = new SleepingJob("job2", null, 500);
+
+	    s.submit(job1);
+	    s.submit(job2);
+
+	    Thread.sleep(200);
+
+	    job1.abort();
+	    job2.abort();
+
+	    Thread.sleep(200);
+
+	    assertEquals(Status.ABORT, job1.getStatus());
+	    assertEquals(Status.ABORT, job2.getStatus());
+
+	    assertTrue((500 > (Long)job1.getReturn()));
+	    assertEquals(null, job2.getReturn());
+	  }
 }

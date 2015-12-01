@@ -49,132 +49,108 @@ _Notes:_
 If you want to build Zeppelin from the source, please first clone this repository, then:
 
 ```
-mvn clean package -DskipTests
+mvn clean package -DskipTests [Options]
 ```
 
-To build with a specific Spark version, Hadoop version or specific features, define one or more of the `spark`, `pyspark`, `hadoop` and `yarn` profiles, such as:
+Each Interpreter requires different Options.
+
+
+#### Spark Interpreter
+
+To build with a specific Spark version, Hadoop version or specific features, define one or more of the following profiles and options:
+
+##### -Pspark-[version]
+
+Set spark major version
+
+Available profiles are
 
 ```
--Pspark-1.5   [Version to run in local spark mode]
--Ppyspark     [optional: enable PYTHON support in spark via the %pyspark interpreter]
--Pyarn        [optional: enable YARN support]
--Dhadoop.version=2.2.0  [hadoop distribution]
--Phadoop-2.2            [hadoop version]
+-Pspark-1.5
+-Pspark-1.4
+-Pspark-1.3
+-Pspark-1.2
+-Pspark-1.1
+-Pcassandra-spark-1.5
+-Pcassandra-spark-1.4
+-Pcassandra-spark-1.3
+-Pcassandra-spark-1.2
+-Pcassandra-spark-1.1
 ```
 
-Currently, final/full distributions run with:
+minor version can be adjusted by `-Dspark.version=x.x.x`
+
+
+##### -Phadoop-[version]
+
+set hadoop major version
+
+Available profiles are
 
 ```
-mvn clean package -Pspark-1.5 -Phadoop-2.4 -Pyarn -Ppyspark
+-Phadoop-0.23
+-Phadoop-1
+-Phadoop-2.2
+-Phadoop-2.3
+-Phadoop-2.4
+-Phadoop-2.6
 ```
 
-Spark 1.5.x
+minor version can be adjusted by `-Dhadoop.version=x.x.x`
 
-```
-mvn clean package -Pspark-1.5 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests
-```
-Spark 1.4.x
+##### -Pyarn (optional)
 
-```
-mvn clean package -Pspark-1.4 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests
-```
-Spark 1.3.x
+enable YARN support for local mode
 
-```
-mvn clean package -Pspark-1.3 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests
-```
-Spark 1.2.x
 
-```
-mvn clean package -Pspark-1.2 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests 
-```
-Spark 1.1.x
+##### -Ppyspark (optional)
 
-```
-mvn clean package -Pspark-1.1 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests 
-```
-CDH 5.X
+enable PySpark support for local mode
 
-```
-mvn clean package -Pspark-1.2 -Dhadoop.version=2.5.0-cdh5.3.0 -Phadoop-2.4 -DskipTests
-```
+
+##### -Pvendor-repo (optional)
+
+enable 3rd party vendor repository (cloudera)
+
+
+##### -Pmapr[version] (optional)
+
 For the MapR Hadoop Distribution, these profiles will handle the Hadoop version. As MapR allows different versions
 of Spark to be installed, you should specify which version of Spark is installed on the cluster by adding a Spark profile (-Pspark-1.2, -Pspark-1.3, etc.) as needed. For Hive, check the hive/pom.xml and adjust the version installed as well. The correct Maven
 artifacts can be found for every version of MapR at http://doc.mapr.com
 
-MapR 3.x
-```
-mvn clean package -Pmapr3 -DskipTests
-```
-MapR 4.0.x
-```
-mvn clean package -Pmapr40 -DskipTests
-```
-MapR 4.1
-```
-mvn clean package -Pmapr41 -DskipTests
-```
-MapR 5.0
-```
-mvn clean package -Pmapr50 -DskipTests
-```
-Yarn (Hadoop 2.7.x)
+Available profiles are
 
 ```
-mvn clean package -Pspark-1.4 -Dspark.version=1.4.1 -Dhadoop.version=2.7.0 -Phadoop-2.6 -Pyarn -DskipTests
-```
-Yarn (Hadoop 2.6.x)
-
-```
-mvn clean package -Pspark-1.1 -Dhadoop.version=2.6.0 -Phadoop-2.6 -Pyarn -DskipTests
-```
-Yarn (Hadoop 2.4.x)
-
-```
-mvn clean package -Pspark-1.1 -Dhadoop.version=2.4.0 -Phadoop-2.4 -Pyarn -DskipTests
-```
-Yarn (Hadoop 2.3.x)
-
-```
-mvn clean package -Pspark-1.1 -Dhadoop.version=2.3.0 -Phadoop-2.3 -Pyarn -DskipTests
-```
-Yarn (Hadoop 2.2.x)
-
-```
-mvn clean package -Pspark-1.1 -Dhadoop.version=2.2.0 -Phadoop-2.2 -Pyarn -DskipTests
+-Pmapr3
+-Pmapr40
+-Pmapr41
+-Pmapr50
 ```
 
-Ignite (1.1.0-incubating and later)
+
+Here're some examples:
+
+```
+# basic build
+mvn clean package -Pspark-1.5 -Phadoop-2.4 -Pyarn -Ppyspark
+
+# spark-cassandra integration
+mvn clean package -Pcassandra-spark-1.5 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
+
+# with CDH
+mvn clean package -Pspark-1.2 -Dhadoop.version=2.5.0-cdh5.3.0 -Phadoop-2.4 -Pvendor-repo -DskipTests
+
+# with MapR
+mvn clean package -Pspark-1.5 -Pmapr50 -DskipTests
+```
+
+
+#### Ignite Interpreter
 
 ```
 mvn clean package -Dignite.version=1.1.0-incubating -DskipTests
 ```
-
-Spark-Cassandra integration (Spark 1.1.x)
-```
-mvn clean package -Pcassandra-spark-1.1 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
-```
-
-Spark-Cassandra integration (Spark 1.2.x)
-```
-mvn clean package -Pcassandra-spark-1.2 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
-```
-
-Spark-Cassandra integration (Spark 1.3.x)
-```
-mvn clean package -Pcassandra-spark-1.3 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
-```
-
-Spark-Cassandra integration (Spark 1.4.x)
-```
-mvn clean package -Pcassandra-spark-1.4 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
-```
-
-Spark-Cassandra integration (Spark 1.5.x)
-```
-mvn clean package -Pcassandra-spark-1.5 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
-```
-
 
 
 ### Configure

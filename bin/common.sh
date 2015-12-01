@@ -76,8 +76,6 @@ function addJarInDir(){
   fi
 }
 
-export ZEPPELIN_CLASSPATH
-
 # Text encoding for 
 # read/write job into files,
 # receiving/displaying query/result.
