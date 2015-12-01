@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.notebook.repo;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -26,10 +27,13 @@ import org.apache.zeppelin.notebook.Note;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Joiner;
 
 /**
  * NotebookRepo that hosts all the notebook FS in a single Git repo
@@ -46,12 +50,10 @@ import org.slf4j.LoggerFactory;
 public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVersioned {
   private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepo.class);
 
-  //private Repository localRepo;
+  private String localPath;
   private Git git;
 
-  private String localPath;
-
-  // I. First usefull case:
+  // I. First useful case:
   //   start \w repo + tutorial notebook
   //   all modifications results in a commit
 
@@ -59,7 +61,7 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
   //   start \wo .git
   //   create one
   //   add existing notebooks
-  //   ..and then I...
+  //   ..and then case I. ...
 
   // III. Next case:
   //   start \w repo
@@ -68,39 +70,42 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
 
   public GitNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     super(conf);
-
-    //TODO(bzz):
-    // - check that ./notebooks/.git exists
-    // - git init
-    // - git add + git commit -m "Inital notebooks"
-
-    localPath = getRootDir().getName().getBaseName();
-    LOG.info("Opening a git repo at {}", localPath);
-
-    Repository localRepo = new FileRepository(localPath  + "/.git");
+    localPath = getRootDir().getName().getPath();
+    LOG.info("Opening a git repo at '{}'", localPath);
+    Repository localRepo = new FileRepository(Joiner.on(File.separator).join(localPath, ".git"));
+    if (!localRepo.getDirectory().exists()) {
+      LOG.info("Git repo {} does not exist, creating a new one", localRepo.getDirectory());
+      localRepo.create();
+    }
     git = new Git(localRepo);
+    maybeAddAndCommit(".");
   }
 
   @Override
   public synchronized void save(Note note) throws IOException {
     super.save(note);
+    maybeAddAndCommit(note.getId());
+  }
+
+  private void maybeAddAndCommit(String pattern) {
     try {
       List<DiffEntry> gitDiff = git.diff().call();
       if (!gitDiff.isEmpty()) {
-        LOG.info("Changes found on savig notebook {}: {}", note.getId(), gitDiff);
-        git.add().addFilepattern(note.getId()).call();
-        git.commit().setMessage("Updated " + note.getId()).call();
+        LOG.info("Changes found for pattern {}: {}", pattern, gitDiff);
+        DirCache added = git.add().addFilepattern(pattern).call();
+        LOG.info("{} changes area about to be commited", added.getEntryCount());
+        git.commit().setMessage("Updated " + pattern).call();
       } else {
-        LOG.info("No changes found on saving {}", note.getId());
+        LOG.info("No changes found {}", pattern);
       }
     } catch (GitAPIException e) {
-      LOG.error("Faild to save notebook {} to Git", note.getId(), e);
+      LOG.error("Faild to add+comit {} to Git", pattern, e);
     }
   }
 
   @Override
   public Note get(String noteId, String rev) throws IOException {
-    //TODO(alex): something instead of 'git checkout rev', which will not change-the-world
+    //TODO(alex): something instead of 'git checkout rev', that will not change-the-world
     return super.get(noteId);
   }
 
@@ -108,6 +113,15 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
   public List<String> history(String noteId) {
     //TODO(alex): git logs -- "noteId"
     return Collections.emptyList();
+  }
+
+  //DI replacements for Tests
+  Git getGit() {
+    return git;
+  }
+
+  void setGit(Git git) {
+    this.git = git;
   }
 
 }
