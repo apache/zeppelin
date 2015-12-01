@@ -28,6 +28,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
+import org.apache.zeppelin.notebook.repo.NotebookRepoVersioned.Rev;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -38,12 +39,13 @@ import org.junit.Test;
 import com.google.common.base.Joiner;
 
 public class GitNotebookRepoTest {
-  private File zeppelinDir;
-  //private Notebook notebook;
-  private GitNotebookRepo notebookRepo;
 
+  private static final String TEST_NOTE_ID = "2A94M5J1Z";
+
+  private File zeppelinDir;
   private String notebooksDir;
   private ZeppelinConfiguration conf;
+  private GitNotebookRepo notebookRepo;
 
   @Before
   public void setUp() throws Exception {
@@ -56,9 +58,8 @@ public class GitNotebookRepoTest {
     File notebookDir = new File(notebooksDir);
     notebookDir.mkdirs();
 
-    String testNoteId = "2A94M5J1Z";
-    String testNoteDir = Joiner.on(File.separator).join(notebooksDir, testNoteId);
-    FileUtils.copyDirectory(new File(Joiner.on(File.separator).join("src", "test", "resources", testNoteId)),
+    String testNoteDir = Joiner.on(File.separator).join(notebooksDir, TEST_NOTE_ID);
+    FileUtils.copyDirectory(new File(Joiner.on(File.separator).join("src", "test", "resources", TEST_NOTE_ID)),
         new File(testNoteDir)
     );
 
@@ -108,6 +109,19 @@ public class GitNotebookRepoTest {
 
     List<DiffEntry> diff = git.diff().call();
     assertThat(diff).isEmpty();
+  }
+
+  @Test
+  public void showNotebookHistory() throws GitAPIException, IOException {
+    //given
+    notebookRepo = new GitNotebookRepo(conf);
+    assertThat(notebookRepo.list()).isNotEmpty();
+
+    //when
+    List<Rev> testNotebookHistory = notebookRepo.history(TEST_NOTE_ID);
+
+    //then
+    assertThat(testNotebookHistory).isNotEmpty();
   }
 
 }

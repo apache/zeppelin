@@ -19,7 +19,6 @@ package org.apache.zeppelin.notebook.repo;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -30,43 +29,27 @@ import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 
 /**
  * NotebookRepo that hosts all the notebook FS in a single Git repo
  *
  * This impl intended to be simple and straightforward:
  *   - does not handle branches
- *   - only basic git, no Github push\pull yet
+ *   - only basic local git file repo, no remote Github push\pull yet
  *
- *
- * TODO(bzz): describe config
- *  GIT_REMOTE_URL remote
- *  auth credentials
+ *   TODO(bzz): add default .gitignore
  */
 public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVersioned {
   private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepo.class);
 
   private String localPath;
   private Git git;
-
-  // I. First useful case:
-  //   start \w repo + tutorial notebook
-  //   all modifications results in a commit
-
-  // II. Next case:
-  //   start \wo .git
-  //   create one
-  //   add existing notebooks
-  //   ..and then case I. ...
-
-  // III. Next case:
-  //   start \w repo
-  //   show history
-  //   user can switch to REV in read-only
 
   public GitNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     super(conf);
@@ -91,9 +74,9 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
     try {
       List<DiffEntry> gitDiff = git.diff().call();
       if (!gitDiff.isEmpty()) {
-        LOG.info("Changes found for pattern {}: {}", pattern, gitDiff);
+        LOG.debug("Changes found for pattern '{}': {}", pattern, gitDiff);
         DirCache added = git.add().addFilepattern(pattern).call();
-        LOG.info("{} changes area about to be commited", added.getEntryCount());
+        LOG.debug("{} changes are about to be commited", added.getEntryCount());
         git.commit().setMessage("Updated " + pattern).call();
       } else {
         LOG.info("No changes found {}", pattern);
@@ -105,14 +88,24 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
 
   @Override
   public Note get(String noteId, String rev) throws IOException {
-    //TODO(alex): something instead of 'git checkout rev', that will not change-the-world
+    //TODO(bzz): something like 'git checkout rev', that will not change-the-world though
     return super.get(noteId);
   }
 
   @Override
-  public List<String> history(String noteId) {
-    //TODO(alex): git logs -- "noteId"
-    return Collections.emptyList();
+  public List<Rev> history(String noteId) {
+    List<Rev> history = Lists.newArrayList();
+    LOG.debug("Listing history for {}:", noteId);
+    try {
+      Iterable<RevCommit> logs = git.log().addPath(noteId).call();
+      for (RevCommit log: logs) {
+        history.add(new Rev(log.getName(), log.getCommitTime()));
+        LOG.debug(" - ({},{})", log.getName(), log.getCommitTime());
+      }
+    } catch (GitAPIException e) {
+      LOG.error("Failed to get logs for {}", noteId, e);
+    }
+    return history;
   }
 
   //DI replacements for Tests
