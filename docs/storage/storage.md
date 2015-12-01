@@ -19,10 +19,27 @@ limitations under the License.
 -->
 ### Notebook Storage
 
-In Zeppelin there are two option for storage Notebook, by default the notebook is storage in the notebook folder in your local File System and the second option is S3.
+Zeppelin a pluggable notebook storage mechanism with multiple implementations.
+There are few Notebook storage options avaialble for a use,
+ - (default) all notes are saved in the notebook folder in your local File System - `VFSNotebookRepo`
+ - there is also an option to version it using local Git repository - `GitNotebookRepo`
+ - another option is Amazon S3 service - `S3NotebookRepo`
 
 </br>
-#### Notebook Storage in S3
+#### Notebook Storage in local Git repository <a name="Git"></a>
+
+To enable versioning for all your local notebooks though a standard Git repository - uncomment the next property in `zeppelin-site.xml` in order to use GitNotebookRepo class:
+
+```
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+```
+
+</br>
+#### Notebook Storage in S3  <a name="S3"></a>
 
 For notebook storage in S3 you need the AWS credentials, for this there are three options, the enviroment variable ```AWS_ACCESS_KEY_ID``` and ```AWS_ACCESS_SECRET_KEY```,  credentials file in the folder .aws in you home and IAM role for your instance. For complete the need steps is necessary:
 
