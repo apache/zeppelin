@@ -168,6 +168,7 @@
       <groupId>com.google.truth</groupId>
       <artifactId>truth</artifactId>
       <version>0.27</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
