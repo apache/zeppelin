@@ -188,7 +188,7 @@ limitations under the License.
        ng-Init="init(currentParagraph)"
        ng-class="columnWidthClass(currentParagraph.config.colWidth)"
        class="paragraph-col">
-    <div class="new-paragraph" ng-click="insertNew()" ng-hide="viewOnly">
+    <div class="new-paragraph" ng-click="insertNew('above')" ng-hide="viewOnly">
       <h4 class="plus-sign">&#43;</h4>
     </div>
     <div id="{{currentParagraph.id}}_paragraphColumn"
@@ -197,7 +197,7 @@ limitations under the License.
                     'lastEmptyParagraph': !paragraph.text && !paragraph.result}"
          ng-hide="currentParagraph.config.tableHide && viewOnly">
     </div>
-    <div class="new-paragraph" ng-click="insertNew(true);" ng-hide="!$last || viewOnly">
+    <div class="new-paragraph" ng-click="insertNew('below');" ng-hide="!$last || viewOnly">
       <h4 class="plus-sign">&#43;</h4>
     </div>
   </div>
