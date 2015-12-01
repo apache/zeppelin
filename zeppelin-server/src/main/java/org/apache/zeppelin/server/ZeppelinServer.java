@@ -19,14 +19,12 @@ package org.apache.zeppelin.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.net.ssl.SSLContext;
 import javax.servlet.DispatcherType;
-import javax.servlet.Servlet;
 import javax.ws.rs.core.Application;
 
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
@@ -240,6 +238,10 @@ public class ZeppelinServer extends Application {
     } else {
       // use packaged WAR
       webApp.setWar(warPath.getAbsolutePath());
+      File warTempDirectory = new File(conf.getString(ConfVars.ZEPPELIN_WAR_TEMPDIR));
+      warTempDirectory.mkdir();
+      LOG.info("ZeppelinServer Webapp path: {}", warTempDirectory.getPath());
+      webApp.setTempDirectory(warTempDirectory);
     }
     // Explicit bind to root
     webApp.addServlet(
