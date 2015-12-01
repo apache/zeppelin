@@ -18,11 +18,14 @@
 package org.apache.zeppelin.notebook.repo;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Repository;
 import org.slf4j.Logger;
@@ -37,13 +40,13 @@ import org.slf4j.LoggerFactory;
  *
  *
  * TODO(bzz): describe config
- *  GIT_URL remote
+ *  GIT_REMOTE_URL remote
  *  auth credentials
  */
 public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVersioned {
   private static final Logger LOG = LoggerFactory.getLogger(GitNotebookRepo.class);
 
-  private Repository localRepo;
+  //private Repository localRepo;
   private Git git;
 
   private String localPath;
@@ -66,21 +69,33 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
   public GitNotebookRepo(ZeppelinConfiguration conf) throws IOException {
     super(conf);
 
-    localPath = getRootDir().getName().getBaseName();
-    LOG.info("Opening a git repo at {}", localPath);
-    localRepo = new FileRepository(localPath  + "/.git");
-    git = new Git(localRepo);
-
     //TODO(bzz):
     // - check that ./notebooks/.git exists
     // - git init
-    // - setup EGit
+    // - git add + git commit -m "Inital notebooks"
+
+    localPath = getRootDir().getName().getBaseName();
+    LOG.info("Opening a git repo at {}", localPath);
+
+    Repository localRepo = new FileRepository(localPath  + "/.git");
+    git = new Git(localRepo);
   }
 
   @Override
-  public void save(Note note) throws IOException {
+  public synchronized void save(Note note) throws IOException {
     super.save(note);
-    //TODO(alex): if (git diff) { git add; git commit }
+    try {
+      List<DiffEntry> gitDiff = git.diff().call();
+      if (!gitDiff.isEmpty()) {
+        LOG.info("Changes found on savig notebook {}: {}", note.getId(), gitDiff);
+        git.add().addFilepattern(note.getId()).call();
+        git.commit().setMessage("Updated " + note.getId()).call();
+      } else {
+        LOG.info("No changes found on saving {}", note.getId());
+      }
+    } catch (GitAPIException e) {
+      LOG.error("Faild to save notebook {} to Git", note.getId(), e);
+    }
   }
 
   @Override
@@ -91,8 +106,8 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
 
   @Override
   public List<String> history(String noteId) {
-    //TODO(alex): git logs
-    return null;
+    //TODO(alex): git logs -- "noteId"
+    return Collections.emptyList();
   }
 
 }
