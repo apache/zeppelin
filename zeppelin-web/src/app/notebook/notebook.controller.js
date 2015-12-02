@@ -73,11 +73,16 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   /** Remove the note and go back tot he main page */
   /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
   $scope.removeNote = function(noteId) {
-    var result = confirm('Do you want to delete this notebook?');
-    if (result) {
-      websocketMsgSrv.deleteNotebook(noteId);
-      $location.path('/#');
-    }
+    BootstrapDialog.confirm({
+      title: '',
+      message: 'Do you want to delete this notebook?',
+      callback: function(result) {
+        if (result) {
+          websocketMsgSrv.deleteNotebook(noteId);
+          $location.path('/#');
+        }
+      }
+    });
   };
 
   //Export notebook
@@ -88,20 +93,30 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   //Clone note
   $scope.cloneNote = function(noteId) {
-    var result = confirm('Do you want to clone this notebook?');
-    if (result) {
-      websocketMsgSrv.cloneNotebook(noteId);
-      $location.path('/#');
-    }
+    BootstrapDialog.confirm({
+      title: '',
+      message: 'Do you want to clone this notebook?',
+      callback: function(result) {
+        if (result) {
+          websocketMsgSrv.cloneNotebook(noteId);
+          $location.path('/#');
+        }
+      }
+    });
   };
 
   $scope.runNote = function() {
-    var result = confirm('Run all paragraphs?');
-    if (result) {
-      _.forEach($scope.note.paragraphs, function(n, key) {
-        angular.element('#' + n.id + '_paragraphColumn_main').scope().runParagraph(n.text);
-      });
-    }
+    BootstrapDialog.confirm({
+      title: '',
+      message: 'Run all paragraphs?',
+      callback: function(result) {
+        if (result) {
+          _.forEach($scope.note.paragraphs, function (n, key) {
+            angular.element('#' + n.id + '_paragraphColumn_main').scope().runParagraph(n.text);
+          });
+        }
+      }
+    });
   };
 
   $scope.saveNote = function() {
@@ -114,12 +129,17 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   $scope.clearAllParagraphOutput = function() {
-    var result = confirm('Do you want to clear all output?');
-    if (result) {
-      _.forEach($scope.note.paragraphs, function(n, key) {
-        angular.element('#' + n.id + '_paragraphColumn_main').scope().clearParagraphOutput();
-      });
-    }
+    BootstrapDialog.confirm({
+      title: '',
+      message: 'Do you want to clear all output?',
+      callback: function(result) {
+        if (result) {
+          _.forEach($scope.note.paragraphs, function(n, key) {
+            angular.element('#' + n.id + '_paragraphColumn_main').scope().clearParagraphOutput();
+          });
+        }
+      }
+    });
   };
 
   $scope.toggleAllEditor = function() {
@@ -471,12 +491,18 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.closeSetting = function() {
     if (isSettingDirty()) {
-      var result = confirm('Changes will be discarded');
-      if (!result) {
-        return;
-      }
+      BootstrapDialog.confirm({
+        title: '',
+        message: 'Changes will be discarded',
+        callback: function(result) {
+          if (result) {
+            $scope.$apply(function () {
+              $scope.showSetting = false;
+            });
+          }
+        }
+      });
     }
-    $scope.showSetting = false;
   };
 
   $scope.saveSetting = function() {
