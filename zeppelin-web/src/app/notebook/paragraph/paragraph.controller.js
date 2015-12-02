@@ -19,6 +19,7 @@ angular.module('zeppelinWebApp')
                                          $timeout, $compile, websocketMsgSrv) {
 
   $scope.paragraph = null;
+  $scope.originalText = '';
   $scope.editor = null;
 
   var editorModes = {
@@ -31,6 +32,7 @@ angular.module('zeppelinWebApp')
   // Controller init
   $scope.init = function(newParagraph) {
     $scope.paragraph = newParagraph;
+    $scope.originalText = angular.copy(newParagraph.text);
     $scope.chart = {};
     $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
     $scope.showTitleEditor = false;
@@ -265,10 +267,12 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.saveParagraph = function(){
-    if($scope.dirtyText === undefined){
+    if($scope.dirtyText === undefined || $scope.dirtyText === $scope.originalText){
       return;
     }
+
     commitParagraph($scope.paragraph.title, $scope.dirtyText, $scope.paragraph.config, $scope.paragraph.settings.params);
+    $scope.originalText = angular.copy($scope.dirtyText);
     $scope.dirtyText = undefined;
   };
 
@@ -459,7 +463,6 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.aceChanged = function() {
-
     $scope.dirtyText = $scope.editor.getSession().getValue();
     $scope.startSaveTimer();
 
