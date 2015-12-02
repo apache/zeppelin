@@ -18,8 +18,8 @@ When a Pull Request is submitted, it is being merged or rejected by following re
 
 * Anybody can be a reviewer and may comment on the change and suggest modifications.
 * Reviewer can indicate that a patch looks suitable for merging with a comment such as : "Looks good", "LGTM", "+1".
-* Pullrequest is open for 1 or 2 days for potential additional review, unless it's got enough indication of suitable for merging.
 * At least one indication of suitable for merging(eg. "LGTM") from committer is required to be merged.
+* Pullrequest is open for 1 or 2 days for potential additional review, unless it's got enough indication of suitable for merging.
 * Committer can initiate lazy consensus ("Merge if there is no more discusssion") and the code can be merged after certain time (normally 24 hours) when there is no review exists.
 * Contributor can ping reviewers (including committer) by commenting 'Ready to review' or suitable indication.
 
