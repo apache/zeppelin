@@ -40,7 +40,7 @@
         <lz4.version>1.2.0</lz4.version>
         <scala.version>2.11.7</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
-        <commons-lang.version>3.3.2</commons-lang.version>
+        <commons-lang.version>3.4</commons-lang.version>
         <scalate.version>1.7.1</scalate.version>
 
         <!--TEST-->
