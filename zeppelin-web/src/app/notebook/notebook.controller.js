@@ -384,6 +384,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
           $scope.note.paragraphs.splice(index, 0, note.paragraphs[index]);
           break;
         }
+        $scope.$broadcast('updateParagraph', {paragraph: note.paragraphs[index]});
       }
     }
 
