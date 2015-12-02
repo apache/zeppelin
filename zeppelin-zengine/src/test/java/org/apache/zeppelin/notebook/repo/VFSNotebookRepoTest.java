@@ -84,7 +84,6 @@ public class VFSNotebookRepoTest implements JobListenerFactory{
         break;
       }
     }
-    
     int i = 0;
     int TEST_COUNT = 10;
     while (i++ < TEST_COUNT) {
