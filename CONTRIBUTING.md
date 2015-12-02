@@ -11,8 +11,30 @@ Contributing to Zeppelin (Source code, Documents, Image, Website) means you agre
 ## SourceControl Workflow
 Zeppelin follows [Fork & Pull] (https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git:-Fork,-Branching,-Commits,-and-Pull-Request) model.
 
+
+## The Review Process
+
+When a Pull Request is submitted, it is being merged or rejected by following review process.
+
+* Anybody can be a reviewer and may comment on the change and suggest modifications.
+* Reviewer can indicate that a patch looks suitable for merging with a comment such as : "Looks good", "LGTM", "+1".
+* Pullrequest is open for 1 or 2 days for potential additional review, unless it's got enough indication of suitable for merging.
+* At least one indication of suitable for merging(eg. "LGTM") from committer is required to be merged.
+  * Committer can initiate lazy consensus ("Merge if there is no more discusssion") and the code can be merged after certain time (normally 24 hours) when there is no review exists.
+* Contributor can ping reviewers (including committer) by commenting 'Ready to review' or suitable indication.
+
+
+## Becoming a Committer
+
+The PPMC adds new committers from the active contributors, based on their contribution to Zeppelin. The qualifications for new committers include:
+
+1. Sustained contributions : Committers should have a history of constant contributions to Zeppelin.
+2. Quality of contributions : Committers more than any other community member should submit simple, well-tested, and well-designed patches.
+3. Community involvement : Committers should have a constructive and friendly attitude in all community interactions. They should also be active on the dev, user list and reviewing patches. Also help new contributors and users.
+
+
 ## Setting up
-Here are some things you will need to build and test Zeppelin. 
+Here are some things you will need to build and test Zeppelin.
 
 ### Software Configuration Management(SCM)
 
