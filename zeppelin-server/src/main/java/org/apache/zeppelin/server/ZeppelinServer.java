@@ -240,6 +240,10 @@ public class ZeppelinServer extends Application {
     } else {
       // use packaged WAR
       webApp.setWar(warPath.getAbsolutePath());
+      File warTempDirectory = new File(conf.getRelativeDir(ConfVars.ZEPPELIN_WAR_TEMPDIR));
+      warTempDirectory.mkdir();
+      LOG.info("ZeppelinServer Webapp path: {}", warTempDirectory.getPath());
+      webApp.setTempDirectory(warTempDirectory);
     }
     // Explicit bind to root
     webApp.addServlet(
