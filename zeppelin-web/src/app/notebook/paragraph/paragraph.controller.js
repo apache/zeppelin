@@ -287,8 +287,8 @@ angular.module('zeppelinWebApp')
     $scope.$emit('moveParagraphDown', $scope.paragraph.id);
   };
 
-  $scope.insertNew = function() {
-    $scope.$emit('insertParagraph', $scope.paragraph.id);
+  $scope.insertNew = function(position) {
+    $scope.$emit('insertParagraph', $scope.paragraph.id, position || 'below');
   };
 
   $scope.removeParagraph = function() {
