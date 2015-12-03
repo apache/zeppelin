@@ -79,7 +79,7 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
         LOG.debug("{} changes are about to be commited", added.getEntryCount());
         git.commit().setMessage("Updated " + pattern).call();
       } else {
-        LOG.info("No changes found {}", pattern);
+        LOG.debug("No changes found {}", pattern);
       }
     } catch (GitAPIException e) {
       LOG.error("Faild to add+comit {} to Git", pattern, e);
