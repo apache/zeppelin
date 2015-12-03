@@ -108,6 +108,11 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
     return history;
   }
 
+  @Override
+  public void close() {
+    git.getRepository().close();
+  }
+
   //DI replacements for Tests
   Git getGit() {
     return git;
@@ -116,5 +121,6 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
   void setGit(Git git) {
     this.git = git;
   }
+
 
 }

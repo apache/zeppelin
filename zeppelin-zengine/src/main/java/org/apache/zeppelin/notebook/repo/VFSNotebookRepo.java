@@ -54,7 +54,6 @@ public class VFSNotebookRepo implements NotebookRepo {
 
   private FileSystemManager fsManager;
   private URI filesystemRoot;
-
   private ZeppelinConfiguration conf;
 
   public VFSNotebookRepo(ZeppelinConfiguration conf) throws IOException {
@@ -239,4 +238,10 @@ public class VFSNotebookRepo implements NotebookRepo {
 
     noteDir.delete(Selectors.SELECT_SELF_AND_CHILDREN);
   }
+
+  @Override
+  public void close() {
+    //no-op    
+  }
+
 }

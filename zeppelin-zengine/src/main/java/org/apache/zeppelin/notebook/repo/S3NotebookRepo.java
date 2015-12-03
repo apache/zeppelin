@@ -184,4 +184,9 @@ public class S3NotebookRepo implements NotebookRepo {
       objects = s3client.listNextBatchOfObjects(objects);
     } while (objects.isTruncated());
   }
+
+  @Override
+  public void close() {
+    //no-op
+  }
 }

@@ -313,4 +313,12 @@ public class NotebookRepoSync implements NotebookRepo {
     }
   }
 
+  @Override
+  public void close() {
+    LOG.info("Closing all notebook storages");
+    for (NotebookRepo repo: repos) {
+      repo.close();
+    }
+  }
+
 }

@@ -72,18 +72,6 @@ public class GitNotebookRepoTest {
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
     conf = ZeppelinConfiguration.create();
-
-    /*
-    notebookRepo = new GitNotebookRepo(conf);
-    SchedulerFactory schedulerFactory = new SchedulerFactory();
-    InterpreterFactory replFactory = new InterpreterFactory(conf, new InterpreterOption(false), null);
-    JobListenerFactory jobListFactory = new JobListenerFactory() {
-      @Override public JobListener getParagraphJobListener(Note note) {
-        return null;
-      }
-    };
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, replFactory, jobListFactory);
-    */
   }
 
   @After

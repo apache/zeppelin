@@ -19,14 +19,12 @@ package org.apache.zeppelin.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.net.ssl.SSLContext;
 import javax.servlet.DispatcherType;
-import javax.servlet.Servlet;
 import javax.ws.rs.core.Application;
 
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
@@ -67,13 +65,10 @@ public class ZeppelinServer extends Application {
 
   private SchedulerFactory schedulerFactory;
   public static Notebook notebook;
-
   public static NotebookServer notebookServer;
-
   public static Server jettyServer;
 
   private InterpreterFactory replFactory;
-
   private NotebookRepo notebookRepo;
 
   public static void main(String[] args) throws Exception {
@@ -111,6 +106,7 @@ public class ZeppelinServer extends Application {
         try {
           jettyServer.stop();
           ZeppelinServer.notebook.getInterpreterFactory().close();
+          ZeppelinServer.notebook.close();
         } catch (Exception e) {
           LOG.error("Error while stopping servlet container", e);
         }

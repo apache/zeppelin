@@ -35,7 +35,7 @@ public interface NotebookRepoVersioned extends NotebookRepo {
    * @return a Notebook
    * @throws IOException
    */
-  public abstract Note get(String noteId, String rev) throws IOException;
+  public Note get(String noteId, String rev) throws IOException;
 
   /**
    * List of revisions of the given Notebook
@@ -43,7 +43,7 @@ public interface NotebookRepoVersioned extends NotebookRepo {
    * @param noteId id of the Notebook
    * @return list of revisions
    */
-  public abstract List<Rev> history(String noteId);
+  public List<Rev> history(String noteId);
 
   /**
    * Represents the 'Revision' a point in life of the notebook
