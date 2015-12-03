@@ -73,7 +73,7 @@
   border: 3px solid #DDDDDD;
 }
 
-.paragraph .paragraphFooter { 
+.paragraph .paragraphFooter {
   height: 9px;
 }
 
@@ -186,9 +186,9 @@
   display: block;
   visibility: hidden;
   opacity: 0;
-  -webkit-transition: opacity 0.1s linear;
-  -moz-transition: opacity 0.1s linear;
-  transition: opacity 0.1s linear;
+  -webkit-transition: opacity 0.2s linear;
+  -moz-transition: opacity 0.2s linear;
+  transition: opacity 0.2s linear;
 }
 
 .open > .dropdown-menu {
