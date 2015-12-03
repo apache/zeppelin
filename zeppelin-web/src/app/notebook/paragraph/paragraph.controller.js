@@ -40,6 +40,12 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.config = {};
     }
 
+    $scope.showTitleEditorInput = function() {
+      setTimeout(function() {
+        angular.element('#' + $scope.paragraph.id + '_container input[ng-show="showTitleEditor"]').focus();
+      }, 100);
+    };
+
     initializeDefault();
 
     if ($scope.getResultType() === 'TABLE') {
