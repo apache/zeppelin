@@ -206,12 +206,18 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       script = Input.getSimpleQuery(settings.getParams(), scriptBody);
     }
     logger().debug("RUN : " + script);
-    InterpreterResult ret = repl.interpret(script, getInterpreterContext());
+    try {
+      InterpreterContext context = getInterpreterContext();
+      InterpreterContext.set(context);
+      InterpreterResult ret = repl.interpret(script, context);
 
-    if (Code.KEEP_PREVIOUS_RESULT == ret.code()) {
-      return getReturn();
+      if (Code.KEEP_PREVIOUS_RESULT == ret.code()) {
+        return getReturn();
+      }
+      return ret;
+    } finally {
+      InterpreterContext.remove();
     }
-    return ret;
   }
 
   @Override

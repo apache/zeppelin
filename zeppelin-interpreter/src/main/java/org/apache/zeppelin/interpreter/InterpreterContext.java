@@ -27,6 +27,21 @@ import org.apache.zeppelin.display.GUI;
  * Interpreter context
  */
 public class InterpreterContext {
+  private static final ThreadLocal<InterpreterContext> threadIC =
+      new ThreadLocal<InterpreterContext>();
+
+  public static InterpreterContext get() {
+    return threadIC.get();
+  }
+
+  public static void set(InterpreterContext ic) {
+    threadIC.set(ic);
+  }
+
+  public static void remove() {
+    threadIC.remove();
+  }
+
   private final String noteId;
   private final String paragraphTitle;
   private final String paragraphId;
@@ -55,7 +70,7 @@ public class InterpreterContext {
     this.runners = runners;
   }
 
-  
+
   public String getNoteId() {
     return noteId;
   }
