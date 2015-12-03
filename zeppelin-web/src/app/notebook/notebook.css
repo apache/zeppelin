@@ -174,3 +174,29 @@
 .setting .modal-footer {
   border: 0;
 }
+
+.cron-preset-container {
+  padding: 10px 20px 0 20px;
+  font-weight: normal;
+  word-wrap: break-word;
+}
+
+.cron-preset-container > div {
+  margin: 10px 0;
+}
+
+.cron-preset {
+  margin: 0px 2px;
+  cursor: pointer;
+}
+
+.cron-info {
+  margin: 5px;
+  font-size: 11px;
+}
+
+.cron-preset.selected {
+  color: #000;
+  text-decoration: none;
+  cursor: default;
+}
