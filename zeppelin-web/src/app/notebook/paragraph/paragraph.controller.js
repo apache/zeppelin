@@ -183,11 +183,13 @@ angular.module('zeppelinWebApp')
           if ($scope.dirtyText === data.paragraph.text ) {  // when local update is the same from remote, clear local update
             $scope.paragraph.text = data.paragraph.text;
             $scope.dirtyText = undefined;
+            $scope.originalText = angular.copy(data.paragraph.text);
           } else { // if there're local update, keep it.
             $scope.paragraph.text = $scope.dirtyText;
           }
         } else {
           $scope.paragraph.text = data.paragraph.text;
+          $scope.originalText = angular.copy(data.paragraph.text);
         }
       }
 
@@ -263,6 +265,7 @@ angular.module('zeppelinWebApp')
   $scope.runParagraph = function(data) {
     websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
                                  data, $scope.paragraph.config, $scope.paragraph.settings.params);
+    $scope.originalText = angular.copy(data);
     $scope.dirtyText = undefined;
   };
 
@@ -270,7 +273,6 @@ angular.module('zeppelinWebApp')
     if($scope.dirtyText === undefined || $scope.dirtyText === $scope.originalText){
       return;
     }
-
     commitParagraph($scope.paragraph.title, $scope.dirtyText, $scope.paragraph.config, $scope.paragraph.settings.params);
     $scope.originalText = angular.copy($scope.dirtyText);
     $scope.dirtyText = undefined;
