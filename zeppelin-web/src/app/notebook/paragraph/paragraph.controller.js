@@ -67,10 +67,10 @@ angular.module('zeppelinWebApp')
           console.log('HTML rendering error %o', err);
         }
       } else {
+        $timeout(retryRenderer, 10);
       }
     };
     $timeout(retryRenderer);
-
   };
 
   $scope.renderAngular = function() {
@@ -84,11 +84,10 @@ angular.module('zeppelinWebApp')
           console.log('ANGULAR rendering error %o', err);
         }
       } else {
-        $timeout(retryRenderer,10);
+        $timeout(retryRenderer, 10);
       }
     };
     $timeout(retryRenderer);
-
   };
 
 

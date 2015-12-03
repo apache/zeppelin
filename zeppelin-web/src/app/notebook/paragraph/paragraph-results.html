@@ -3,32 +3,27 @@
 <div id="{{paragraph.id}}_comment"
      class="text"
      ng-if="getResultType()=='TABLE' && paragraph.result.comment"
-     ng-Init="loadResultType(paragraph.result)"
      ng-bind-html="paragraph.result.comment">
 </div>
 
 <div id="{{paragraph.id}}_text"
      class="text"
      ng-if="paragraph.result.type == 'TEXT'"
-     ng-Init="loadResultType(paragraph.result)"
      ng-bind="paragraph.result.msg">
 </div>
 
 <div id="p{{paragraph.id}}_html"
      class="resultContained"
-     ng-if="paragraph.result.type == 'HTML'"
-     ng-Init="loadResultType(paragraph.result)">
+     ng-if="paragraph.result.type == 'HTML'">
 </div>
 
 <div id="p{{paragraph.id}}_angular"
      class="resultContained"
-     ng-if="paragraph.result.type == 'ANGULAR'"
-     ng-Init="loadResultType(paragraph.result)">
+     ng-if="paragraph.result.type == 'ANGULAR'">
 </div>
 
 <img id="{{paragraph.id}}_img"
      ng-if="paragraph.result.type == 'IMG'"
-     ng-Init="loadResultType(paragraph.result)"
      ng-src="{{getBase64ImageSrc(paragraph.result.msg)}}">
 </img>
 
