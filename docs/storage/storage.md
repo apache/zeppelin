@@ -19,11 +19,14 @@ limitations under the License.
 -->
 ### Notebook Storage
 
-Zeppelin a pluggable notebook storage mechanism with multiple implementations.
-There are few Notebook storage options avaialble for a use,
+Zeppelin has a pluggable notebook storage mechanism controlled by `zeppelin.notebook.storage` configuration option with multiple implementations.
+There are few Notebook storages avaialble for a use out of the box:
  - (default) all notes are saved in the notebook folder in your local File System - `VFSNotebookRepo`
  - there is also an option to version it using local Git repository - `GitNotebookRepo`
  - another option is Amazon S3 service - `S3NotebookRepo`
+
+Multiple storages can be used at the same time by providing a comma-separated list of the calss-names in the confiruration.
+By default, only first two of them will be automatically kept in sync by Zeppelin.
 
 </br>
 #### Notebook Storage in local Git repository <a name="Git"></a>
