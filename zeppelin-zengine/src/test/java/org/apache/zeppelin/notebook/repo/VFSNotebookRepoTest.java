@@ -116,7 +116,6 @@ public class VFSNotebookRepoTest implements JobListenerFactory{
 
   @Override
   public JobListener getParagraphJobListener(Note note) {
-    // TODO Auto-generated method stub
     return null;
   }
 }
