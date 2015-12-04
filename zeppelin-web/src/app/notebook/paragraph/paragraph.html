@@ -426,7 +426,7 @@ limitations under the License.
       </span>
       <ul class="dropdown-menu" role="menu" style="width:200px;">
         <li>
-          <a class="dropdown"><span class="fa fa-arrows-h"></span> Width
+          <a ng-click="$event.stopPropagation()" class="dropdown"><span class="fa fa-arrows-h"></span> Width
             <form style="display:inline; margin-left:5px;">
               <select ng-model="paragraph.config.colWidth"
                       class="selectpicker"
