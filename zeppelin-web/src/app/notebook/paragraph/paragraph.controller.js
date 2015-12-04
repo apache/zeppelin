@@ -19,6 +19,7 @@ angular.module('zeppelinWebApp')
                                          $timeout, $compile, websocketMsgSrv) {
 
   $scope.paragraph = null;
+  $scope.originalText = '';
   $scope.editor = null;
 
   var editorModes = {
@@ -31,6 +32,7 @@ angular.module('zeppelinWebApp')
   // Controller init
   $scope.init = function(newParagraph) {
     $scope.paragraph = newParagraph;
+    $scope.originalText = angular.copy(newParagraph.text);
     $scope.chart = {};
     $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
     $scope.showTitleEditor = false;
@@ -181,11 +183,13 @@ angular.module('zeppelinWebApp')
           if ($scope.dirtyText === data.paragraph.text ) {  // when local update is the same from remote, clear local update
             $scope.paragraph.text = data.paragraph.text;
             $scope.dirtyText = undefined;
+            $scope.originalText = angular.copy(data.paragraph.text);
           } else { // if there're local update, keep it.
             $scope.paragraph.text = $scope.dirtyText;
           }
         } else {
           $scope.paragraph.text = data.paragraph.text;
+          $scope.originalText = angular.copy(data.paragraph.text);
         }
       }
 
@@ -261,14 +265,16 @@ angular.module('zeppelinWebApp')
   $scope.runParagraph = function(data) {
     websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
                                  data, $scope.paragraph.config, $scope.paragraph.settings.params);
+    $scope.originalText = angular.copy(data);
     $scope.dirtyText = undefined;
   };
 
   $scope.saveParagraph = function(){
-    if($scope.dirtyText === undefined){
+    if($scope.dirtyText === undefined || $scope.dirtyText === $scope.originalText){
       return;
     }
     commitParagraph($scope.paragraph.title, $scope.dirtyText, $scope.paragraph.config, $scope.paragraph.settings.params);
+    $scope.originalText = angular.copy($scope.dirtyText);
     $scope.dirtyText = undefined;
   };
 
@@ -287,8 +293,8 @@ angular.module('zeppelinWebApp')
     $scope.$emit('moveParagraphDown', $scope.paragraph.id);
   };
 
-  $scope.insertNew = function() {
-    $scope.$emit('insertParagraph', $scope.paragraph.id);
+  $scope.insertNew = function(position) {
+    $scope.$emit('insertParagraph', $scope.paragraph.id, position || 'below');
   };
 
   $scope.removeParagraph = function() {
@@ -459,7 +465,6 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.aceChanged = function() {
-
     $scope.dirtyText = $scope.editor.getSession().getValue();
     $scope.startSaveTimer();
 

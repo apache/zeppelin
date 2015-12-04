@@ -36,7 +36,7 @@ limitations under the License.
 * [cassandra](./interpreter/cassandra.html)
 * [flink](./interpreter/flink.html)
 * [geode](./interpreter/geode.html)
-* [hive](./pleasecontribute.html)
+* [hive](./interpreter/hive.html)
 * [ignite](./interpreter/ignite.html)
 * [lens](./interpreter/lens.html)
 * [md](./interpreter/markdown.html)

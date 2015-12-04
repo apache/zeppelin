@@ -193,6 +193,7 @@ public class RemoteInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    logger.debug("st: {}", st);
     FormType form = getFormType();
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
     Client client = null;
