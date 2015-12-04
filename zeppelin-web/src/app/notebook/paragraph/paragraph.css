@@ -404,3 +404,7 @@
 .lightBold {
   font-weight: 500;
 }
+
+.dropdown-menu > li:first-child > a:hover {
+  background-color: transparent;
+}

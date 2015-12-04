@@ -406,7 +406,7 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.changeColWidth = function() {
-
+    angular.element('.navbar-right.open').removeClass('open');
     var newParams = angular.copy($scope.paragraph.settings.params);
     var newConfig = angular.copy($scope.paragraph.config);
 
