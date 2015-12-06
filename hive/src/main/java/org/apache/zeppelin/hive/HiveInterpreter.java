@@ -73,7 +73,7 @@ public class HiveInterpreter extends Interpreter {
   static final String DEFAULT_PASSWORD = DEFAULT_KEY + DOT + PASSWORD_KEY;
 
   private final HashMap<String, Properties> propertiesMap;
-  private final Map<String, Connection> keyConnectionMap;
+  private final Map<String, Connection> propertyKeyConnectionMap;
   private final Map<String, Statement> paragraphIdStatementMap;
 
   static {
@@ -92,7 +92,7 @@ public class HiveInterpreter extends Interpreter {
   public HiveInterpreter(Properties property) {
     super(property);
     propertiesMap = new HashMap<>();
-    keyConnectionMap = new HashMap<>();
+    propertyKeyConnectionMap = new HashMap<>();
     paragraphIdStatementMap = new HashMap<>();
   }
 
@@ -147,10 +147,10 @@ public class HiveInterpreter extends Interpreter {
       }
       paragraphIdStatementMap.clear();
 
-      for (Connection connection : keyConnectionMap.values()) {
+      for (Connection connection : propertyKeyConnectionMap.values()) {
         connection.close();
       }
-      keyConnectionMap.clear();
+      propertyKeyConnectionMap.clear();
     } catch (SQLException e) {
       logger.error("Error while closing...", e);
     }
@@ -158,12 +158,12 @@ public class HiveInterpreter extends Interpreter {
 
   public Connection getConnection(String propertyKey) throws ClassNotFoundException, SQLException {
     Connection connection = null;
-    if (keyConnectionMap.containsKey(propertyKey)) {
-      connection = keyConnectionMap.get(propertyKey);
+    if (propertyKeyConnectionMap.containsKey(propertyKey)) {
+      connection = propertyKeyConnectionMap.get(propertyKey);
       if (connection.isClosed() || !connection.isValid(10)) {
         connection.close();
         connection = null;
-        keyConnectionMap.remove(propertyKey);
+        propertyKeyConnectionMap.remove(propertyKey);
       }
     }
     if (null == connection) {
@@ -177,7 +177,7 @@ public class HiveInterpreter extends Interpreter {
       } else {
         connection = DriverManager.getConnection(url, properties);
       }
-      keyConnectionMap.put(propertyKey, connection);
+      propertyKeyConnectionMap.put(propertyKey, connection);
     }
     return connection;
   }
