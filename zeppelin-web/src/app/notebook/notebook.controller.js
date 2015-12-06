@@ -43,6 +43,14 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   var angularObjectRegistry = {};
   var connectedOnce = false;
 
+  $scope.$watch('showEditor', function(newValue, oldValue) {
+    if (newValue) {
+      setTimeout(function() {
+        angular.element('input[ng-show="showEditor"]').focus();
+      }, 100);
+    }
+  });
+
   $scope.$on('setConnectedStatus', function(event, param) {
     if(connectedOnce && param){
       initNotebook();

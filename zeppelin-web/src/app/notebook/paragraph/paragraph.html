@@ -24,7 +24,7 @@ limitations under the License.
            ng-show="showTitleEditor"
            ng-escape="showTitleEditor = false"
            ng-enter="setTitle(); showTitleEditor = false"/>
-    <div ng-click="showTitleEditor = !asIframe && !viewOnly"
+    <div ng-click="showTitleEditor = !asIframe && !viewOnly;showTitleEditorInput();"
          ng-show="!showTitleEditor"
          ng-bind-html="paragraph.title || 'Untitled'">
     </div>
