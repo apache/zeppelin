@@ -63,7 +63,7 @@ public class ElasticsearchInterpreter extends Interpreter {
 
   static {
     Interpreter.register(
-      "els",
+      "elasticsearch",
       "elasticsearch",
       ElasticsearchInterpreter.class.getName(),
         new InterpreterPropertyBuilder()

@@ -48,7 +48,7 @@ In a notebook, to enable the **Elasticsearch** interpreter, click the **Gear** i
 
 ### Using the Elasticsearch Interpreter
 
-In a paragraph, use `%els` to select the Elasticsearch interpreter and then input all commands.
+In a paragraph, use `%elasticsearch` to select the Elasticsearch interpreter and then input all commands.
 
 #### get
 With the `get` command, you can find a document by id.
@@ -110,7 +110,7 @@ With the `delete` command, you can delete a document.
 You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parameterization features
 
 ```bash
-%els
+%elasticsearch
 search /index/type ${limit=10} { "query": { "match_all": {} } }
 ```
 
