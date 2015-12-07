@@ -8,24 +8,46 @@ Contributing to Zeppelin (Source code, Documents, Image, Website) means you agre
 3. Contribute your patch via Pull Request.
 
 
-## SourceControl Workflow
-Zeppelin follows [Fork & Pull] (https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git:-Fork,-Branching,-Commits,-and-Pull-Request) model.
+## Source Control Workflow
+Zeppelin follows [Fork & Pull] (https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git: -Fork, -Branching, -Commits, -and-Pull-Request) model.
+
+
+## The Review Process
+
+When a Pull Request is submitted, it is being merged or rejected by following review process.
+
+* Anybody can be a reviewer and may comment on the change and suggest modifications.
+* Reviewer can indicate that a patch looks suitable for merging with a comment such as: "Looks good", "LGTM", "+1".
+* At least one indication of suitable for merging (e.g. "LGTM") from committer is required to be merged.
+* Pull request is open for 1 or 2 days for potential additional review, unless it's got enough indication of suitable for merging.
+* Committer can initiate lazy consensus ("Merge if there is no more discussion") and the code can be merged after certain time (normally 24 hours) when there is no review exists.
+* Contributor can ping reviewers (including committer) by commenting 'Ready to review' or suitable indication.
+
+
+## Becoming a Committer
+
+The PPMC adds new committers from the active contributors, based on their contribution to Zeppelin. The qualifications for new committers include:
+
+1. Sustained contributions: Committers should have a history of constant contributions to Zeppelin.
+2. Quality of contributions: Committers more than any other community member should submit simple, well-tested, and well-designed patches.
+3. Community involvement: Committers should have a constructive and friendly attitude in all community interactions. They should also be active on the dev, user list and reviewing patches. Also help new contributors and users.
+
 
 ## Setting up
-Here are some things you will need to build and test Zeppelin. 
+Here are some things you will need to build and test Zeppelin.
 
-### Software Configuration Management(SCM)
+### Software Configuration Management (SCM)
 
-Zeppelin uses Git for it's SCM system. Hosted by github.com. `https://github.com/apache/incubator-zeppelin` You'll need git client installed in your development machine.
+Zeppelin uses Git for its SCM system. Hosted by github.com. `https://github.com/apache/incubator-zeppelin` you'll need git client installed in your development machine.
 
-### Integrated Development Environment(IDE)
+### Integrated Development Environment (IDE)
 
 You are free to use whatever IDE you prefer, or your favorite command line editor.
  
 ### Project Structure
 
 Zeppelin project is based on Maven. Maven works by convention & defines [directory structure] (https://maven.apache.org/guides/introduction/introduction-to-the-standard-directory-layout.html) for a project.
-The top level pom.xml describes the basic project structure. Currently Zeppelin has the following modules.
+The top-level pom.xml describes the basic project structure. Currently Zeppelin has the following modules.
 
     <module>zeppelin-interpreter</module>
     <module>zeppelin-zengine</module>
@@ -49,7 +71,7 @@ We are following Google Code style:
 * [Java style](http://google-styleguide.googlecode.com/svn/trunk/javaguide.html) 
 * [Shell style](https://google-styleguide.googlecode.com/svn/trunk/shell.xml)
 
-Checkstyle report location are in `${submodule}/target/site/checkstyle.html`
+Check style report location are in `${submodule}/target/site/checkstyle.html`
 Test coverage report location are in `${submodule}/target/site/cobertura/index.html`
 
 #### Build Tools
@@ -105,9 +127,9 @@ Each new File should have its own accompanying unit tests. Each new interpreter 
   
 Zeppelin has 3 types of tests:
 
-  1. Unit Tests: The unit tests run as part of each package's build. E.g SparkInterpeter Module's unit test is SparkInterpreterTest
-  2. Integration Tests: The intergration tests run after all modules are build. The integration tests launch an instance of Zeppelin server. ZeppelinRestApiTest is an example integration test. 
-  3. GUI integration tests: These tests validate the Zeppelin UI elements. These tests require a running Zepplein server and lauches a web browser to validate Notebook UI elements like Notes and their execution. See ZeppelinIT as an example.  
+  1. Unit Tests: The unit tests run as part of each package's build. E.g. SparkInterpeter Module's unit test is SparkInterpreterTest
+  2. Integration Tests: The integration tests run after all modules are build. The integration tests launch an instance of Zeppelin server. ZeppelinRestApiTest is an example integration test. 
+  3. GUI integration tests: These tests validate the Zeppelin UI elements. These tests require a running Zeppelin server and launches a web browser to validate Notebook UI elements like Notes and their execution. See ZeppelinIT as an example.  
 
 Currently the GUI integration tests are not run in the Maven and are only run in the CI environment when the pull request is submitted to github. Make sure to watch the [CI results] (https://travis-ci.org/apache/incubator-zeppelin/pull_requests) for your pull request.
 
@@ -116,7 +138,7 @@ Currently the GUI integration tests are not run in the Maven and are only run in
 Zeppelin uses Travis for CI. In the project root there is .travis.yml that configures CI and [publishes CI results] (https://travis-ci.org/apache/incubator-zeppelin/builds)
   
 
-## Run Zepplin server in development mode
+## Run Zeppelin server in development mode
 
 ```
 cd zeppelin-server
@@ -136,7 +158,7 @@ Server will be run on http://localhost:8080
 Zeppelin manages it's issues in Jira. [https://issues.apache.org/jira/browse/ZEPPELIN](https://issues.apache.org/jira/browse/ZEPPELIN)
 
 ## Stay involved
-Everyone is welcome to join our mailling list:
+Everyone is welcome to join our mailing list:
 
  * [users@zeppelin.incubator.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-users/) is for usage questions, help, and announcements [ [subscribe](mailto:users-subscribe@zeppelin.incubator.apache.org?subject=send%20this%20email%20to%20subscribe), [unsubscribe](mailto:users-unsubscribe@zeppelin.incubator.apache.org?subject=send%20this%20email%20to%20unsubscribe), [archive](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-users/) ]
  * [dev@zeppelin.incubator.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-users/) is for people who want to contribute code to Zeppelin.[ [subscribe](mailto:dev-subscribe@zeppelin.incubator.apache.org?subject=send%20this%20email%20to%20subscribe), [unsubscribe](mailto:dev-unsubscribe@zeppelin.incubator.apache.org?subject=send%20this%20email%20to%20unsubscribe), [archive](http://mail-archives.apache.org/mod_mbox/incubator-zeppelin-dev/) ]

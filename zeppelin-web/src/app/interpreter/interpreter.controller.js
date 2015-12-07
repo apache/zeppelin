@@ -163,6 +163,10 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     });
   };
 
+  $scope.cancelInterpreterSetting = function() {
+    $scope.showAddNewSetting = false;
+  };
+
   $scope.resetNewInterpreterSetting = function() {
     $scope.newInterpreterSetting = {
       name : undefined,

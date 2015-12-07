@@ -19,6 +19,7 @@ angular.module('zeppelinWebApp')
                                          $timeout, $compile, websocketMsgSrv) {
 
   $scope.paragraph = null;
+  $scope.originalText = '';
   $scope.editor = null;
 
   var editorModes = {
@@ -31,6 +32,7 @@ angular.module('zeppelinWebApp')
   // Controller init
   $scope.init = function(newParagraph) {
     $scope.paragraph = newParagraph;
+    $scope.originalText = angular.copy(newParagraph.text);
     $scope.chart = {};
     $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
     $scope.showTitleEditor = false;
@@ -181,11 +183,13 @@ angular.module('zeppelinWebApp')
           if ($scope.dirtyText === data.paragraph.text ) {  // when local update is the same from remote, clear local update
             $scope.paragraph.text = data.paragraph.text;
             $scope.dirtyText = undefined;
+            $scope.originalText = angular.copy(data.paragraph.text);
           } else { // if there're local update, keep it.
             $scope.paragraph.text = $scope.dirtyText;
           }
         } else {
           $scope.paragraph.text = data.paragraph.text;
+          $scope.originalText = angular.copy(data.paragraph.text);
         }
       }
 
@@ -261,14 +265,16 @@ angular.module('zeppelinWebApp')
   $scope.runParagraph = function(data) {
     websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
                                  data, $scope.paragraph.config, $scope.paragraph.settings.params);
+    $scope.originalText = angular.copy(data);
     $scope.dirtyText = undefined;
   };
 
   $scope.saveParagraph = function(){
-    if($scope.dirtyText === undefined){
+    if($scope.dirtyText === undefined || $scope.dirtyText === $scope.originalText){
       return;
     }
     commitParagraph($scope.paragraph.title, $scope.dirtyText, $scope.paragraph.config, $scope.paragraph.settings.params);
+    $scope.originalText = angular.copy($scope.dirtyText);
     $scope.dirtyText = undefined;
   };
 
@@ -287,8 +293,8 @@ angular.module('zeppelinWebApp')
     $scope.$emit('moveParagraphDown', $scope.paragraph.id);
   };
 
-  $scope.insertNew = function() {
-    $scope.$emit('insertParagraph', $scope.paragraph.id);
+  $scope.insertNew = function(position) {
+    $scope.$emit('insertParagraph', $scope.paragraph.id, position || 'below');
   };
 
   $scope.removeParagraph = function() {
@@ -459,7 +465,6 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.aceChanged = function() {
-
     $scope.dirtyText = $scope.editor.getSession().getValue();
     $scope.startSaveTimer();
 
@@ -587,7 +592,9 @@ angular.module('zeppelinWebApp')
         exec: function(editor) {
           var editorValue = editor.getValue();
           if (editorValue) {
-            $scope.runParagraph(editorValue);
+            if (!($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING')) {
+              $scope.runParagraph(editorValue);
+            }
           }
         },
         readOnly: false
@@ -615,7 +622,11 @@ angular.module('zeppelinWebApp')
         if ($scope.editor.completer && $scope.editor.completer.activated) { // if autocompleter is active
         } else {
           // fix ace editor focus issue in chrome (textarea element goes to top: -1000px after focused by cursor move)
-          angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top', 0);
+          if (parseInt(angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top').replace('px', '')) < 0) {
+            var position = $scope.editor.getCursorPosition();
+            var cursorPos = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
+            angular.element('#' + $scope.paragraph.id + '_editor > textarea').css('top', cursorPos.top);
+          }
 
           var numRows;
           var currentRow;
@@ -683,7 +694,7 @@ angular.module('zeppelinWebApp')
     var position = $scope.editor.getCursorPosition();
     var lastCursorPosition = $scope.editor.renderer.$cursorLayer.getPixelPosition(position, true);
 
-    var calculatedCursorPosition = editorPosition.top + lastCursorPosition.top + 16*lastCursorMove;
+    var calculatedCursorPosition = editorPosition.top + lastCursorPosition.top + lineHeight*lastCursorMove;
 
     var scrollTargetPos;
     if (calculatedCursorPosition < scrollPosition + headerHeight + scrollTriggerEdgeMargin) {
@@ -698,7 +709,14 @@ angular.module('zeppelinWebApp')
         scrollTargetPos = documentHeight;
       }
     }
-    angular.element('body').scrollTo(scrollTargetPos, {axis: 'y', interrupt: true, duration:200});
+
+    // cancel previous scroll animation
+    var bodyEl = angular.element('body');
+    bodyEl.stop();
+    bodyEl.finish();
+
+    // scroll to scrollTargetPos
+    bodyEl.scrollTo(scrollTargetPos, {axis: 'y', interrupt: true, duration:100});
   };
 
   var setEditorHeight = function(id, height) {
@@ -752,11 +770,10 @@ angular.module('zeppelinWebApp')
       var row;
       if (cursorPos >= 0) {
         row = cursorPos;
-        var column = 0;
         $scope.editor.gotoLine(row, 0);
       } else {
-        row = $scope.editor.session.getLength() - 1;
-        $scope.editor.gotoLine(row + 1, 0);
+        row = $scope.editor.session.getLength();
+        $scope.editor.gotoLine(row, 0);
       }
       $scope.scrollToCursor($scope.paragraph.id, 0);
     }
@@ -947,7 +964,11 @@ angular.module('zeppelinWebApp')
       html += '</table>';
 
       angular.element('#p' + $scope.paragraph.id + '_table').html(html);
-      angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
+      if ($scope.paragraph.result.msgTable.length > 10000) {
+        angular.element('#p' + $scope.paragraph.id + '_table').css('overflow', 'scroll');
+      } else {
+        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
+      }
 
       // set table height
       var height = $scope.paragraph.config.graph.height;

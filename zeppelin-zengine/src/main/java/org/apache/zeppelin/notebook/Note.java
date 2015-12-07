@@ -93,7 +93,7 @@ public class Note implements Serializable, JobListener {
   public String id() {
     return id;
   }
-  
+
   public String getId() {
     return id;
   }
@@ -174,7 +174,7 @@ public class Note implements Serializable, JobListener {
       paragraphs.add(newParagraph);
     }
   }
-  
+
   /**
    * Insert paragraph in given index.
    *
@@ -323,7 +323,7 @@ public class Note implements Serializable, JobListener {
     if (intp == null) {
       throw new InterpreterException("Interpreter " + p.getRequiredReplName() + " not found");
     }
-    if ((Boolean) p.getConfig().get("enabled")) {
+    if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
       intp.getScheduler().submit(p);
     }
   }

@@ -197,7 +197,7 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void save(Note note) throws IOException {
+  public synchronized void save(Note note) throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
@@ -214,11 +214,12 @@ public class VFSNotebookRepo implements NotebookRepo {
       throw new IOException(noteDir.getName().toString() + " is not a directory");
     }
 
-    FileObject noteJson = noteDir.resolveFile("note.json", NameScope.CHILD);
+    FileObject noteJson = noteDir.resolveFile(".note.json", NameScope.CHILD);
     // false means not appending. creates file if not exists
     OutputStream out = noteJson.getContent().getOutputStream(false);
     out.write(json.getBytes(conf.getString(ConfVars.ZEPPELIN_ENCODING)));
     out.close();
+    noteJson.moveTo(noteDir.resolveFile("note.json", NameScope.CHILD));
   }
 
   @Override
