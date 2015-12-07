@@ -205,7 +205,7 @@ public class HiveInterpreter extends Interpreter {
     }
 
     Statement statement = connection.createStatement();
-    if (statement.isClosed()) {
+    if (isStatementClosed(statement)) {
       connection = getConnection(propertyKey);
       statement = connection.createStatement();
     }
@@ -213,6 +213,15 @@ public class HiveInterpreter extends Interpreter {
     paragraphIdStatementMap.put(paragraphId, statement);
 
     return statement;
+  }
+
+  private boolean isStatementClosed(Statement statement) {
+    try {
+      return statement.isClosed();
+    } catch (Throwable t) {
+      logger.debug("{} doesn't support isClosed method", statement);
+      return false;
+    }
   }
 
   public InterpreterResult executeSql(String propertyKey, String sql,
