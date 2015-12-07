@@ -25,12 +25,10 @@ limitations under the License.
 Zeppelin dynamically creates input forms. Depending on language backend, there're two different ways to create dynamic form.
 Custom language backend can select which type of form creation it wants to use.
 
-<br />
 ### Using form Templates
 
 This mode creates form using simple template language. It's simple and easy to use. For example Markdown, Shell, SparkSql language backend uses it.
 
-<br />
 #### Text input form
 
 To create text input form, use _${formName}_ templates.
@@ -45,7 +43,6 @@ Also you can provide default value, using _${formName=defaultValue}_.
 <img src="/assets/themes/zeppelin/img/screenshots/form_input_default.png" />
 
 
-<br />
 #### Select form
 
 To create select form, use _${formName=defaultValue,option1|option2...}_
@@ -58,54 +55,74 @@ Also you can separate option's display name and value, using _${formName=default
 
 <img src="/assets/themes/zeppelin/img/screenshots/form_select_displayname.png" />
 
-<br />
 ### Creates Programmatically
 
 Some language backend uses programmatic way to create form. For example [ZeppelinContext](../interpreter/spark.html#zeppelincontext) provides form creation API
 
 Here're some examples.
 
-Text input form
+####Text input form
 
-You can do this in Scala
-
-```scala
+<ul class="nav nav-tabs" data-tabs"tabs">
+  <li class="active"><a href="#scala_1" data-toggle="tab">Scala</a></li>
+  <li><a href="#python_1" data-toggle="tab">Python</a></li>
+</ul>
+<div class="tab-content">
+    <div id="scala_1" class="tab-pane active">
+        <pre>
+            <code class="scala language-scala">
 %spark
 println("Hello "+z.input("name"))
-```
-
-Or Python
-
-```python
+            </code>
+        </pre>
+    </div>
+    <div id="python_1" class="tab-pane">
+        <pre>
+            <code class="python language-python">
 %pyspark
 print("Hello "+z.input("name"))
-```
-
+            </code>
+        </pre>
+    </div>
+</div>
 <img src="/assets/themes/zeppelin/img/screenshots/form_input_prog.png" />
 
-Text input form with default value
+####Text input form with default value
 
-Scala
-
-```scala
+<ul class="nav nav-tabs" data-tabs"tabs">
+    <li class="active"><a href="#scala_2" data-toggle="tab">Scala</a></li>
+    <li><a href="#python_2" data-toggle="tab">Python</a></li>
+</ul>
+<div class="tab-content">
+    <div id="scala_2" class="tab-pane active">
+        <pre>
+            <code class="scala language-scala">
 %spark
-println("Hello "+z.input("name", "sun"))
-```
-
-Python
-
-```python
+println("Hello "+z.input("name", "sun")) 
+            </code>
+        </pre>
+    </div>
+    <div id="python_2" class="tab-pane">
+        <pre>
+            <code class="python language-python">   
 %pyspark
 print("Hello "+z.input("name", "sun"))
-```
-
+            </code>
+        </pre>
+    </div>
+</div>
 <img src="/assets/themes/zeppelin/img/screenshots/form_input_default_prog.png" />
 
-Select form
+####Select form
 
-Scala
-
-```scala
+<ul class="nav nav-tabs" data-tabs"tabs">
+    <li class="active"><a href="#scala_3" data-toggle="tab">Scala</a></li>
+    <li><a href="#python_3" data-toggle="tab">Python</a></li>
+</ul>
+<div class="tab-content">
+    <div id="scala_3" class="tab-pane active">
+        <pre>
+            <code class="scala language-scala">
 %spark
 println("Hello "+z.select("day", Seq(("1","mon"),
                                     ("2","tue"),
@@ -114,11 +131,12 @@ println("Hello "+z.select("day", Seq(("1","mon"),
                                     ("5","fri"),
                                     ("6","sat"),
                                     ("7","sun"))))
-```
-
-Python
-
-```python
+            </code>
+        </pre>
+    </div>
+    <div id="python_3" class="tab-pane">
+        <pre>
+            <code class="python language-python">   
 %pyspark
 print("Hello "+z.select("day", [("1","mon"),
                                 ("2","tue"),
@@ -127,6 +145,8 @@ print("Hello "+z.select("day", [("1","mon"),
                                 ("5","fri"),
                                 ("6","sat"),
                                 ("7","sun")]))
-```
-
+            </code>
+        </pre>
+    </div>
+</div>
 <img src="/assets/themes/zeppelin/img/screenshots/form_select_prog.png" />
