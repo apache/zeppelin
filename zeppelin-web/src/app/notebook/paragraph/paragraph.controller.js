@@ -95,10 +95,6 @@ angular.module('zeppelinWebApp')
   var initializeDefault = function() {
     var config = $scope.paragraph.config;
 
-    if (!$scope.paragraph.title) {
-      $scope.paragraph.title = 'Untitled';
-    }
-
     if (!config.colWidth) {
       config.colWidth = 12;
     }
