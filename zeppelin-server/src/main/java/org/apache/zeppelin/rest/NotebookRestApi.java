@@ -193,7 +193,7 @@ public class NotebookRestApi {
   /**
    * Run notebook jobs REST API
    * @param
-   * @return JSON with status.ACCEPTED
+   * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
    */
   @POST
@@ -207,13 +207,13 @@ public class NotebookRestApi {
     }
     
     note.runAll();
-    return new JsonResponse(Status.ACCEPTED).build();
+    return new JsonResponse(Status.OK).build();
   }
 
   /**
    * Stop(delete) notebook jobs REST API
    * @param
-   * @return JSON with status.ACCEPTED
+   * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
    */
   @DELETE
@@ -231,7 +231,7 @@ public class NotebookRestApi {
         p.abort();
       }
     }
-    return new JsonResponse(Status.ACCEPTED).build();
+    return new JsonResponse(Status.OK).build();
   }
   
   /**
@@ -256,7 +256,7 @@ public class NotebookRestApi {
   /**
    * Run paragraph job REST API
    * @param
-   * @return JSON with status.ACCEPTED
+   * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
    */
   @POST
@@ -275,13 +275,13 @@ public class NotebookRestApi {
     }
 
     note.run(paragraphId);
-    return new JsonResponse(Status.ACCEPTED).build();
+    return new JsonResponse(Status.OK).build();
   }
 
   /**
    * Stop(delete) paragraph job REST API
    * @param
-   * @return JSON with status.ACCEPTED
+   * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
    */
   @DELETE
@@ -300,13 +300,13 @@ public class NotebookRestApi {
       return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
     }
     p.abort();
-    return new JsonResponse(Status.ACCEPTED).build();
+    return new JsonResponse(Status.OK).build();
   }
     
   /**
    * Register cron job REST API
    * @param message - JSON with cron expressions.
-   * @return JSON with status.ACCEPTED
+   * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
    */
   @POST
@@ -332,13 +332,13 @@ public class NotebookRestApi {
     note.setConfig(config);
     notebook.refreshCron(note.id());
     
-    return new JsonResponse(Status.ACCEPTED).build();
+    return new JsonResponse(Status.OK).build();
   }
   
   /**
    * Remove cron job REST API
    * @param
-   * @return JSON with status.ACCEPTED
+   * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
    */
   @DELETE
@@ -357,7 +357,7 @@ public class NotebookRestApi {
     note.setConfig(config);
     notebook.refreshCron(note.id());
     
-    return new JsonResponse(Status.ACCEPTED).build();
+    return new JsonResponse(Status.OK).build();
   }  
   
   /**
