@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Date;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -51,7 +52,8 @@ public class ElasticsearchInterpreterTest {
 
   private static final String ELS_CLUSTER_NAME = "zeppelin-elasticsearch-interpreter-test";
   private static final String ELS_HOST = "localhost";
-  private static final String ELS_PORT = "10300";
+  private static final String ELS_TRANSPORT_PORT = "10300";
+  private static final String ELS_HTTP_PORT = "10200";
   private static final String ELS_PATH = "/tmp/els";
 
 
@@ -61,7 +63,8 @@ public class ElasticsearchInterpreterTest {
     final Settings settings = Settings.settingsBuilder()
       .put("cluster.name", ELS_CLUSTER_NAME)
       .put("network.host", ELS_HOST)
-      .put("transport.tcp.port", ELS_PORT)
+      .put("http.port", ELS_HTTP_PORT)
+      .put("transport.tcp.port", ELS_TRANSPORT_PORT)
       .put("path.home", ELS_PATH)
       .build();
 
@@ -74,15 +77,18 @@ public class ElasticsearchInterpreterTest {
         .setSource(jsonBuilder()
           .startObject()
             .field("date", new Date())
-            .field("method", METHODS[RandomUtils.nextInt(METHODS.length)])
+            .startObject("request")
+              .field("method", METHODS[RandomUtils.nextInt(METHODS.length)])
+              .field("url", "/zeppelin/" + UUID.randomUUID().toString())
+            .endObject()
             .field("status", STATUS[RandomUtils.nextInt(STATUS.length)])
           )
         .get();
     }
-        
+
     final Properties props = new Properties();
     props.put(ElasticsearchInterpreter.ELASTICSEARCH_HOST, ELS_HOST);
-    props.put(ElasticsearchInterpreter.ELASTICSEARCH_PORT, ELS_PORT);
+    props.put(ElasticsearchInterpreter.ELASTICSEARCH_PORT, ELS_TRANSPORT_PORT);
     props.put(ElasticsearchInterpreter.ELASTICSEARCH_CLUSTER_NAME, ELS_CLUSTER_NAME);
     interpreter = new ElasticsearchInterpreter(props);
     interpreter.open();

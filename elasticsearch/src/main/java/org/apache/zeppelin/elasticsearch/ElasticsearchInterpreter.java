@@ -19,7 +19,9 @@ package org.apache.zeppelin.elasticsearch;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -45,17 +47,33 @@ import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.wnameless.json.flattener.JsonFlattener;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
  * Elasticsearch Interpreter for Zeppelin.
- *
- * @author Bruno Bonnin
  */
 public class ElasticsearchInterpreter extends Interpreter {
 
   private static Logger logger = LoggerFactory.getLogger(ElasticsearchInterpreter.class);
+
+  private static final String HELP = "Elasticsearch interpreter:\n"
+    + "General format: <command> /<indices>/<types>/<id> <option> <JSON>\n"
+    + "  - indices: list of indices separated by commas (depends on the command)\n"
+    + "  - types: list of document types separated by commas (depends on the command)\n"
+    + "Commands:\n"
+    + "  - get /index/type/id\n"
+    + "  - delete /index/type/id\n"
+    + "  - count /indices/<types>\n"
+    + "    . indices and types can be omited\n"
+    + "  - search /indices/types <limit> <json-formatted query>\n"
+    + "    . indices and types can be omited\n"
+    + "    . if a query is provided, the limit must also be provided\n"
+    + "  - index /ndex/type/id <json-formatted document>\n"
+    + "    . the id can be omitted, elasticsearch will generate one";
+    
 
   public static final String ELASTICSEARCH_HOST = "elasticsearch.host";
   public static final String ELASTICSEARCH_PORT = "elasticsearch.port";
@@ -89,8 +107,11 @@ public class ElasticsearchInterpreter extends Interpreter {
   @Override
   public void open() {
     try {
+      logger.info("prop={}", getProperty());
       final Settings settings = Settings.settingsBuilder()
-        .put("cluster.name", clusterName).build();
+        .put("cluster.name", clusterName)
+        .put(getProperty())
+        .build();
       client = TransportClient.builder().settings(settings).build()
         .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(host), port));
     }
@@ -109,14 +130,15 @@ public class ElasticsearchInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext interpreterContext) {
     logger.info("Run Elasticsearch command '" + cmd + "'");
-    // RULES for an elasticsearch command:
-    // <Method> /<index>/<type>/ <option> <JSON>
-    // Method = search, get, index, delete, count
 
     final String[] items = StringUtils.split(cmd.trim(), " ", 3);
 
+    if ("help".equalsIgnoreCase(items[0])) {
+      return processHelp(InterpreterResult.Code.SUCCESS, null);
+    }
+
     if (items.length < 2) {
-      return new InterpreterResult(InterpreterResult.Code.ERROR, "Arguments missing");
+      return processHelp(InterpreterResult.Code.ERROR, "Arguments missing");
     }
 
     final String method = items[0];
@@ -141,8 +163,8 @@ public class ElasticsearchInterpreter extends Interpreter {
       else if ("delete".equalsIgnoreCase(method)) {
         return processDelete(urlItems);
       }
-    
-      return new InterpreterResult(InterpreterResult.Code.ERROR, "Unknown method");
+
+      return processHelp(InterpreterResult.Code.ERROR, "Unknown method");
     }
     catch (Exception e) {
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Error : " + e.getMessage());
@@ -166,10 +188,19 @@ public class ElasticsearchInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String s, int i) {
-    if (i == 0) {
-      return Arrays.asList("search", "get", "index", "delete", "count");
+    return new ArrayList<>();
+  }
+
+  private InterpreterResult processHelp(InterpreterResult.Code code, String additionalMessage) {
+    final StringBuffer buffer = new StringBuffer();
+
+    if (additionalMessage != null) {
+      buffer.append(additionalMessage).append("\n");
     }
-    return null;
+
+    buffer.append(HELP).append("\n");
+
+    return new InterpreterResult(code, InterpreterResult.Type.TEXT, buffer.toString());
   }
 
   /**
@@ -303,7 +334,9 @@ public class ElasticsearchInterpreter extends Interpreter {
     
   private SearchResponse searchData(String[] urlItems, String data) {
 
-    final SearchRequestBuilder reqBuilder = new SearchRequestBuilder(client, SearchAction.INSTANCE);
+    final SearchRequestBuilder reqBuilder = new SearchRequestBuilder(
+      client, SearchAction.INSTANCE);
+    reqBuilder.setIndices();
         
     if (urlItems.length >= 1) {
       reqBuilder.setIndices(StringUtils.split(urlItems[0], ","));
@@ -324,7 +357,7 @@ public class ElasticsearchInterpreter extends Interpreter {
     }
 
     final SearchResponse response = reqBuilder.get();
-        
+
     return response;
   }
 
@@ -333,12 +366,17 @@ public class ElasticsearchInterpreter extends Interpreter {
     if (hits == null || hits.length == 0) {
       return "";
     }
-        
+
     //First : get all the keys in order to build an ordered list of the values for each hit
     //
+    final List<Map<String, Object>> flattenHits = new LinkedList<>();
     final Set<String> keys = new TreeSet<>();
     for (SearchHit hit : hits) {
-      for (String key : hit.getSource().keySet()) {
+      final String json = hit.getSourceAsString();
+      final Map<String, Object> flattenMap = JsonFlattener.flattenAsMap(json);
+      flattenHits.add(flattenMap);
+
+      for (String key : flattenMap.keySet()) {
         keys.add(key);
       }
     }
@@ -353,9 +391,9 @@ public class ElasticsearchInterpreter extends Interpreter {
 
     // Finally : build the result by using the key set
     //
-    for (SearchHit hit : hits) {
+    for (Map<String, Object> hit : flattenHits) {
       for (String key : keys) {
-        final Object val = hit.getSource().get(key);
+        final Object val = hit.get(key);
         if (val != null) {
           buffer.append(val);
         }

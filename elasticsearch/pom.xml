@@ -36,6 +36,7 @@
   <properties>
     <elasticsearch.version>2.1.0</elasticsearch.version>
     <guava.version>18.0</guava.version>
+    <json-flattener.version>0.1.1</json-flattener.version>
   </properties>
 
   <dependencies>
@@ -56,6 +57,12 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>${guava.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.wnameless</groupId>
+      <artifactId>json-flattener</artifactId>
+      <version>${json-flattener.version}</version>
     </dependency>
     
     <dependency>
