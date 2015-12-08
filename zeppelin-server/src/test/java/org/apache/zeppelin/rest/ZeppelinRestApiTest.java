@@ -338,24 +338,24 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     
     // Call Run Notebook Jobs REST API
     PostMethod postNoteJobs = httpPost("/notebook/job/" + noteID, "");
-    assertThat("test notebook jobs run:", postNoteJobs, isAccepted());
+    assertThat("test notebook jobs run:", postNoteJobs, isAllowed());
     postNoteJobs.releaseConnection();
 
     // Call Stop Notebook Jobs REST API
     DeleteMethod deleteNoteJobs = httpDelete("/notebook/job/" + noteID);
-    assertThat("test notebook stop:", deleteNoteJobs, isAccepted());
+    assertThat("test notebook stop:", deleteNoteJobs, isAllowed());
     deleteNoteJobs.releaseConnection();    
     Thread.sleep(1000);
     
     // Call Run paragraph REST API
     PostMethod postParagraph = httpPost("/notebook/job/" + noteID + "/" + paragraph.getId(), "");
-    assertThat("test paragraph run:", postParagraph, isAccepted());
+    assertThat("test paragraph run:", postParagraph, isAllowed());
     postParagraph.releaseConnection();    
     Thread.sleep(1000);
     
     // Call Stop paragraph REST API
     DeleteMethod deleteParagraph = httpDelete("/notebook/job/" + noteID + "/" + paragraph.getId());
-    assertThat("test paragraph stop:", deleteParagraph, isAccepted());
+    assertThat("test paragraph stop:", deleteParagraph, isAllowed());
     deleteParagraph.releaseConnection();    
     Thread.sleep(1000);
     
@@ -395,7 +395,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     
     // right cron expression.
     postCron = httpPost("/notebook/cron/" + note.getId(), jsonRequest);
-    assertThat("", postCron, isAccepted());
+    assertThat("", postCron, isAllowed());
     postCron.releaseConnection();
     Thread.sleep(1000);
     
@@ -408,7 +408,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     
     // remove cron job.
     DeleteMethod deleteCron = httpDelete("/notebook/cron/" + note.getId());
-    assertThat("", deleteCron, isAccepted());
+    assertThat("", deleteCron, isAllowed());
     deleteCron.releaseConnection();
     ZeppelinServer.notebook.removeNote(note.getId());
   }  
