@@ -42,7 +42,7 @@ group: manual
 
 You can add more properties to configure the Elasticsearch client.
 For example, if you use Shield, you can add a property named `shield.user` (the value is the name and the password).
-For more details about shield configuration, consult the [shield reference guide](https://www.elastic.co/guide/en/shield/current/_using_elasticsearch_java_clients_with_shield.html)
+For more details about Shield configuration, consult the Shield reference guide.
 
 
 
@@ -92,7 +92,7 @@ The data will be flattened like this:
 
 date | request.headers[0] | request.headers[1] | request.method | request.url | status
 -----|--------------------|--------------------|----------------|-------------|-------
-2015-12-08T21:03:13.588Z | Accept: *.* | Host: apache.org | GET | /zeppelin/4cd001cd-c517-4fa9-b8e5-a06b8f4056c4 | 404
+2015-12-08T21:03:13.588Z | Accept: *.* | Host: apache.org | GET | /zeppelin/4cd001cd-c517-4fa9-b8e5-a06b8f4056c4 | 403
 
 
 Examples:
