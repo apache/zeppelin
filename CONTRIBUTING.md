@@ -40,8 +40,7 @@ javascript:(function() {var e = document.getElementById('pull_request_body');if 
 ``
 
 ## Source Control Workflow
-Zeppelin follows [Fork & Pull] (https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git: -Fork, -Branching, -Commits, -and-Pull-Request) model.
-
+Zeppelin follows [Fork & Pull] (https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git:-Fork,-Branching,-Commits,-and-Pull-Request) model.
 
 ## The Review Process
 
