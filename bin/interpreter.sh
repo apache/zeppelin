@@ -52,6 +52,9 @@ ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 # construct classpath
 if [[ -d "${ZEPPELIN_HOME}/zeppelin-interpreter/target/classes" ]]; then
   ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-interpreter/target/classes"
+else
+  ZEPPELIN_INTERPRETER_JAR="$(ls ${ZEPPELIN_HOME}/lib/zeppelin-interpreter*.jar)"
+  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_INTERPRETER_JAR}"
 fi
 
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
