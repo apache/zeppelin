@@ -15,6 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#
+# This utility creates a local branch from specified pullrequest, to help the test and review
+# You'll need to run this utility from master branch with command 
+#
+#    dev/test_zeppelin_pr.py [#PR]
+#
+# then pr[#PR] branch will be created.
+#
+
 import sys, os, subprocess
 import json, urllib
 
