@@ -21,19 +21,40 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
 
 /**
- * Notebook repository (persistence layer) abstraction
+ * Notebook repository w/ versions
  */
-public interface NotebookRepo {
-  public List<NoteInfo> list() throws IOException;
-  public Note get(String noteId) throws IOException;
-  public void save(Note note) throws IOException;
-  public void remove(String noteId) throws IOException;
+public interface NotebookRepoVersioned extends NotebookRepo {
 
   /**
-   * Release any underlying resources
+   * Get particular revision of the Notebooks
+   *
+   * @param noteId Id of the Notebook
+   * @param rev revision of the Notebook
+   * @return a Notebook
+   * @throws IOException
    */
-  public void close();
+  public Note get(String noteId, String rev) throws IOException;
+
+  /**
+   * List of revisions of the given Notebook
+   *
+   * @param noteId id of the Notebook
+   * @return list of revisions
+   */
+  public List<Rev> history(String noteId);
+
+  /**
+   * Represents the 'Revision' a point in life of the notebook
+   */
+  static class Rev {
+    public Rev(String name, int time) {
+      this.name = name;
+      this.time = time;
+    }
+    String name;
+    int time;
+  }
+
 }

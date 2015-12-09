@@ -46,7 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class NotebookRepoSyncTest implements JobListenerFactory{
+public class NotebookRepoSyncTest implements JobListenerFactory {
 
   private File mainZepDir;
   private ZeppelinConfiguration conf;
@@ -215,7 +215,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory{
 	assertEquals(1, notebookRepoSync.list(1).size());
   }
   
-  private void delete(File file){
+  static void delete(File file){
     if(file.isFile()) file.delete();
       else if(file.isDirectory()){
         File [] files = file.listFiles();

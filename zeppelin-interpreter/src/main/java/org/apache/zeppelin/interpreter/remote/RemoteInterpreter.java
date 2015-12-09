@@ -334,7 +334,7 @@ public class RemoteInterpreter extends Interpreter {
       return null;
     } else {
       return SchedulerFactory.singleton().createOrGetRemoteScheduler(
-          "remoteinterpreter_" + interpreterProcess.hashCode(), getInterpreterProcess(),
+          "remoteinterpreter_" + interpreterProcess.hashCode(), interpreterProcess,
           maxConcurrency);
     }
   }
