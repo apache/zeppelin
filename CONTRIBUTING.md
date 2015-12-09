@@ -95,6 +95,9 @@ The top-level pom.xml describes the basic project structure. Currently Zeppelin 
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
     
+### Web Project Contribution Guidelines
+If you plan on making a contribution to Zeppelin's WebApplication,
+please check [its own contribution guidelines](https://github.com/apache/incubator-zeppelin/blob/master/zeppelin-web/CONTRIBUTING.md)
 
 ### Code convention
 We are following Google Code style:
