@@ -40,6 +40,11 @@ group: manual
 </center>
 
 
+You can add more properties to configure the Elasticsearch client.
+For example, if you use Shield, you can add a property named `shield.user` (the value is the name and the password).
+For more details about shield configuration, consult the ![shield reference guide](https://www.elastic.co/guide/en/shield/current/_using_elasticsearch_java_clients_with_shield.html)
+
+
 
 ### Enabling the Elasticsearch Interpreter
 
@@ -68,13 +73,37 @@ With the `search` command, you can send a search query to Elasticsearch.
 | search /index1,index2,.../type1,type2,... <size of the response> <JSON document containing the query>
 ```
 
-Example:
+**Important**: a document in Elasticsearch is a JSON document, so it is hierachical, not flat as a row in a SQL table.
+For the Elastic interpreter, the result of a search query is flattened.
+Suppose we have a JSON document:
+```json
+{
+  "date": "2015-12-08T21:03:13.588Z",
+  "request": {
+    "method": "GET",
+    "url": "/zeppelin/4cd001cd-c517-4fa9-b8e5-a06b8f4056c4",
+    "headers": [ "Accept: *.*", "Host: apache.org"]
+  },
+  "status": "403"
+}
+```
+
+The data will be flattened like this:
+date | request.headers[0] | request.headers[1] | request.method | request.url | status
+-----|--------------------|--------------------|----------------|-------------|-------
+2015-12-08T21:03:13.588Z | Accept: *.* | Host: apache.org | GET | /zeppelin/4cd001cd-c517-4fa9-b8e5-a06b8f4056c4 | 404
+
+
+Examples:
 * With a table containing the results:
 ![Elasticsearch - Search - table](../assets/themes/zeppelin/img/docs-img/elasticsearch-search-table.png)
 
 
 * You can also use a predefined diagram:
 ![Elasticsearch - Search - diagram](../assets/themes/zeppelin/img/docs-img/elasticsearch-search-pie.png)
+
+* With a JSON query:
+![Elasticsearch - Search with query](../assets/themes/zeppelin/img/docs-img/elasticsearch-search-json-query-table.png)
 
 
 #### count
