@@ -73,6 +73,9 @@ public class ElasticsearchInterpreter extends Interpreter {
     + "    . if a query is provided, the limit must also be provided\n"
     + "  - index /ndex/type/id <json-formatted document>\n"
     + "    . the id can be omitted, elasticsearch will generate one";
+
+  private static final List<String> COMMANDS = Arrays.asList(
+    "count", "delete", "get", "help", "index", "search");
     
 
   public static final String ELASTICSEARCH_HOST = "elasticsearch.host";
@@ -188,7 +191,20 @@ public class ElasticsearchInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String s, int i) {
-    return new ArrayList<>();
+    final List<String> suggestions = new ArrayList<>();
+
+    if (StringUtils.isEmpty(s)) {
+      suggestions.addAll(COMMANDS);
+    }
+    else {
+      for (String cmd : COMMANDS) {
+        if (cmd.toLowerCase().contains(s)) {
+          suggestions.add(cmd);
+        }
+      }
+    }
+
+    return suggestions;
   }
 
   private InterpreterResult processHelp(InterpreterResult.Code code, String additionalMessage) {
