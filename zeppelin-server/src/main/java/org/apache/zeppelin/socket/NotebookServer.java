@@ -527,7 +527,7 @@ public class NotebookServer extends WebSocketServlet implements
   protected Note importNote(NotebookSocket conn, Notebook notebook, Message fromMessage)
       throws IOException {
 
-    Note note = notebook.createNote();
+    Note note = notebook.createNote(fromMessage.principal);
     if (fromMessage != null) {
       String noteName = (String) ((Map) fromMessage.get("notebook")).get("name");
       if (noteName == null || noteName.isEmpty()) {
@@ -575,7 +575,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     note.persist();
     broadcastNote(note);
-    broadcastNoteList();
+    broadcastNoteList(fromMessage.principal);
     return note;
   }
 

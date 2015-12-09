@@ -219,7 +219,7 @@ public class VFSNotebookRepo implements NotebookRepo {
     return getNote(noteDir);
   }
 
-  private FileObject getRootDir(String owner) throws IOException {
+  protected FileObject getRootDir(String owner) throws IOException {
     FileObject rootDir = fsManager.resolveFile(getPath(owner != null ? "/users/" + owner : "/"));
 
     if (!rootDir.exists()) {
@@ -233,7 +233,7 @@ public class VFSNotebookRepo implements NotebookRepo {
     return rootDir;
   }
 
-  private FileObject getRootDir() throws IOException {
+  protected FileObject getRootDir() throws IOException {
     return getRootDir(null);
   }
 

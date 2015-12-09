@@ -32,10 +32,11 @@ public interface NotebookRepoVersioned extends NotebookRepo {
    *
    * @param noteId Id of the Notebook
    * @param rev revision of the Notebook
+   * @param owner revision of the Notebook
    * @return a Notebook
    * @throws IOException
    */
-  public Note get(String noteId, String rev) throws IOException;
+  public Note get(String noteId, String rev, String owner) throws IOException;
 
   /**
    * List of revisions of the given Notebook

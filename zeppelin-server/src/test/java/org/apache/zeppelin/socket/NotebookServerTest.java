@@ -151,10 +151,10 @@ public class NotebookServerTest extends AbstractTestRestApi {
       //broadcastNoteList(); failed nothing to worry.
     }
 
-    assertNotEquals(null, notebook.getNote(note.getId()));
-    assertEquals("Test Zeppelin notebook import", notebook.getNote(note.getId()).getName());
-    assertEquals("Test paragraphs import", notebook.getNote(note.getId()).getParagraphs().get(0).getText());
-    notebook.removeNote(note.getId());
+    assertNotEquals(null, notebook.getNote(note.getId(), "anonymous"));
+    assertEquals("Test Zeppelin notebook import", notebook.getNote(note.getId(), "anonymous").getName());
+    assertEquals("Test paragraphs import", notebook.getNote(note.getId(), "anonymous").getParagraphs().get(0).getText());
+    notebook.removeNote(note.getId(), "anonymous");
   }
 
   private NotebookSocket createWebSocket() {
