@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.rest;
 
+import org.apache.shiro.subject.Subject;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
@@ -55,33 +56,28 @@ public class SecurityRestApi {
   @Path("ticket")
   public Response ticket() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    boolean allowAnonymous = conf.
-        getBoolean(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED);
-    Object oprincipal = SecurityUtils.getSubject().getPrincipal();
+    Subject subject = SecurityUtils.getSubject();
     String principal;
-    if (oprincipal == null)
-      principal = "anonymous";
-    else
-      principal = oprincipal.toString();
-
-    JsonResponse response;
-    if (!allowAnonymous && principal.equals("anonymous")) {
-      response = new JsonResponse(Response.Status.FORBIDDEN);
+    if (subject.isAuthenticated()) {
+      principal = subject.getPrincipal().toString();
     }
     else {
-      // ticket set to anonymous for anonymous user. Simplify testing.
-      String ticket;
-      if ("anonymous".equals(principal))
-        ticket = "anonymous";
-      else
-        ticket = TicketContainer.instance.getTicket(principal);
-
-      Map<String, String> data = new HashMap<>();
-      data.put("principal", principal);
-      data.put("ticket", ticket);
-
-      response = new JsonResponse(Response.Status.OK, "", data);
+      principal = "anonymous";
     }
+
+    JsonResponse response;
+    // ticket set to anonymous for anonymous user. Simplify testing.
+    String ticket;
+    if ("anonymous".equals(principal))
+      ticket = "anonymous";
+    else
+      ticket = TicketContainer.instance.getTicket(principal);
+
+    Map<String, String> data = new HashMap<>();
+    data.put("principal", principal);
+    data.put("ticket", ticket);
+
+    response = new JsonResponse(Response.Status.OK, "", data);
     return response.build();
   }
 }
