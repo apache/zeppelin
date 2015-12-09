@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Properties;
 import java.util.UUID;
@@ -80,6 +81,7 @@ public class ElasticsearchInterpreterTest {
             .startObject("request")
               .field("method", METHODS[RandomUtils.nextInt(METHODS.length)])
               .field("url", "/zeppelin/" + UUID.randomUUID().toString())
+              .field("headers", Arrays.asList("Accept: *.*", "Host: apache.org"))
             .endObject()
             .field("status", STATUS[RandomUtils.nextInt(STATUS.length)])
           )
