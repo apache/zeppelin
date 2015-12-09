@@ -35,9 +35,7 @@ Outline the steps to test the PR here.
 
 You can also use this small bookmarklet tool to fill your Pull Request fields automatically:
 
-``
-javascript:(function() {var e = document.getElementById('pull_request_body');if (e) {e.value += '### What is this PR for?\nA few sentences describing the overall goals of the pull request's commits.\n\n### What type of PR is it?\n[Bug Fix | Improvement | Feature | Documentation | Hot Fix | Refactoring]\n\n### Todos\n* [ ] - Task\n\n### Is there a relevant Jira issue?\n\n### How should this be tested?\nOutline the steps to test the PR here.\n\n### Screenshots (if appropriate)\n\n### Questions:\n* Does the licenses files need update?\n* Is there breaking changes for older versions?\n* Does this needs documentation?';}})();
-``
+``javascript:(function() {var e = document.getElementById('pull_request_body');if (e) {e.value += '### What is this PR for?\nA few sentences describing the overall goals of the pull request\'s commits.\n\n### What type of PR is it?\n[Bug Fix | Improvement | Feature | Documentation | Hot Fix | Refactoring]\n\n### Todos\n* [ ] - Task\n\n### Is there a relevant Jira issue?\n\n### How should this be tested?\nOutline the steps to test the PR here.\n\n### Screenshots (if appropriate)\n\n### Questions:\n* Does the licenses files need update?\n* Is there breaking changes for older versions?\n* Does this needs documentation?';}})();``
 
 ## Source Control Workflow
 Zeppelin follows [Fork & Pull] (https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git:-Fork,-Branching,-Commits,-and-Pull-Request) model.
