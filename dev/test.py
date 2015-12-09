@@ -86,7 +86,7 @@ if exitCode != 0:
     sys.stderr.write("Can not merge\n")
     sys.exit(1)
     
-exitCode = os.system('git commit -a --author "' + prAuthor + '" --date "' + prAuthorDate + '" -m"' + commitMsg + '"')
+exitCode = os.system('git commit -a --author "' + prAuthor + '" --date "' + prAuthorDate + '" -m"' + commitMsg.encode('utf-8') + '"')
 if exitCode != 0:
     sys.stderr.write("Commit failed\n")
     sys.exit(1)
