@@ -38,7 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
@@ -52,13 +51,10 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
- * 
- * @author vgmartinez
- *
+ * Backend for storing Notebooks on S3
  */
 public class S3NotebookRepo implements NotebookRepo {
-  
-  Logger logger = LoggerFactory.getLogger(S3NotebookRepo.class);
+  private static final Logger LOG = LoggerFactory.getLogger(S3NotebookRepo.class);
 
   // Use a credential provider chain so that instance profiles can be utilized
   // on an EC2 instance. The order of locations where credentials are searched
@@ -75,13 +71,11 @@ public class S3NotebookRepo implements NotebookRepo {
   //       shared by all AWS SDKs and the AWS CLI
   //  4. Instance profile credentials delivered through the Amazon EC2 metadata service
   private AmazonS3 s3client = new AmazonS3Client(new DefaultAWSCredentialsProviderChain());
-
   private static String bucketName = "";
   private String user = "";
-  
-  
+
   private ZeppelinConfiguration conf;
-  
+
   public S3NotebookRepo(ZeppelinConfiguration conf) throws IOException {
     this.conf = conf;
     user = conf.getUser();
@@ -96,11 +90,11 @@ public class S3NotebookRepo implements NotebookRepo {
       ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
           .withBucketName(bucketName)
           .withPrefix(user + "/" + "notebook");
-      ObjectListing objectListing;            
+      ObjectListing objectListing;
       do {
         objectListing = s3client.listObjects(listObjectsRequest);
-        
-        for (S3ObjectSummary objectSummary : 
+
+        for (S3ObjectSummary objectSummary :
           objectListing.getObjectSummaries()) {
           if (objectSummary.getKey().contains("note.json")) {
             try {
@@ -109,22 +103,21 @@ public class S3NotebookRepo implements NotebookRepo {
                 infos.add(info);
               }
             } catch (IOException e) {
-              logger.error("Can't read note ", e);
+              LOG.error("Can't read note ", e);
             }
           }
         }
-        
         listObjectsRequest.setMarker(objectListing.getNextMarker());
       } while (objectListing.isTruncated());
     } catch (AmazonServiceException ase) {
-             
+
     } catch (AmazonClientException ace) {
-      logger.info("Caught an AmazonClientException, " +
+      LOG.info("Caught an AmazonClientException, " +
           "which means the client encountered " +
           "an internal error while trying to communicate" +
           " with S3, " +
           "such as not being able to access the network.");
-      logger.info("Error Message: " + ace.getMessage());
+      LOG.info("Error Message: " + ace.getMessage());
     }
     return infos;
   }
@@ -133,10 +126,10 @@ public class S3NotebookRepo implements NotebookRepo {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
-    
+
     S3Object s3object = s3client.getObject(new GetObjectRequest(
         bucketName, key));
-    
+
     InputStream ins = s3object.getObjectContent();
     String json = IOUtils.toString(ins, conf.getString(ConfVars.ZEPPELIN_ENCODING));
     ins.close();
@@ -167,20 +160,18 @@ public class S3NotebookRepo implements NotebookRepo {
     Gson gson = gsonBuilder.create();
     String json = gson.toJson(note);
     String key = user + "/" + "notebook" + "/" + note.id() + "/" + "note.json";
-    
+
     File file = File.createTempFile("note", "json");
     file.deleteOnExit();
     Writer writer = new OutputStreamWriter(new FileOutputStream(file));
-    
+
     writer.write(json);
     writer.close();
-    s3client.putObject(new PutObjectRequest(
-        bucketName, key, file));
+    s3client.putObject(new PutObjectRequest(bucketName, key, file));
   }
-  
+
   @Override
   public void remove(String noteId) throws IOException {
-    
     String key = user + "/" + "notebook" + "/" + noteId;
     final ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
         .withBucketName(bucketName).withPrefix(key);
@@ -192,5 +183,10 @@ public class S3NotebookRepo implements NotebookRepo {
       }
       objects = s3client.listNextBatchOfObjects(objects);
     } while (objects.isTruncated());
+  }
+
+  @Override
+  public void close() {
+    //no-op
   }
 }

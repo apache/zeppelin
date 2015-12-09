@@ -182,20 +182,6 @@
   color: #333333;
 }
 
-.dropdown-menu {
-  display: block;
-  visibility: hidden;
-  opacity: 0;
-  -webkit-transition: opacity 0.2s linear;
-  -moz-transition: opacity 0.2s linear;
-  transition: opacity 0.2s linear;
-}
-
-.open > .dropdown-menu {
-  visibility: visible;
-  opacity: 1;
-}
-
 /*
   Paragraph Menu
 */
@@ -417,4 +403,8 @@
 
 .lightBold {
   font-weight: 500;
+}
+
+.dropdown-menu > li:first-child > a:hover {
+  background-color: transparent;
 }

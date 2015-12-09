@@ -406,7 +406,7 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.changeColWidth = function() {
-
+    angular.element('.navbar-right.open').removeClass('open');
     var newParams = angular.copy($scope.paragraph.settings.params);
     var newConfig = angular.copy($scope.paragraph.config);
 
@@ -990,6 +990,31 @@ angular.module('zeppelinWebApp')
 
   };
 
+  var integerFormatter = d3.format(',.1d');
+
+  var customAbbrevFormatter = function(x) {
+    var s = d3.format('.3s')(x);
+    switch (s[s.length - 1]) {
+      case 'G': return s.slice(0, -1) + 'B';
+    }
+    return s;
+  };
+
+  var xAxisTickFormat = function(d, xLabels) {
+    if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
+      return xLabels[d];
+    } else {
+      return d;
+    }
+  };
+
+  var yAxisTickFormat = function(d) {
+    if(d >= Math.pow(10,6)){
+      return customAbbrevFormatter(d);
+    }
+    return integerFormatter(d);
+  };
+
   var setD3Chart = function(type, data, refresh) {
     if (!$scope.chart[type]) {
       var chart = nv.models[type]();
@@ -1007,21 +1032,8 @@ angular.module('zeppelinWebApp')
       yLabels = scatterData.yLabels;
       d3g = scatterData.d3g;
 
-      $scope.chart[type].xAxis.tickFormat(function(d) {
-        if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) {
-          return xLabels[d];
-        } else {
-          return d;
-        }
-      });
-
-      $scope.chart[type].yAxis.tickFormat(function(d) {
-        if (yLabels[d] && (isNaN(parseFloat(yLabels[d])) || !isFinite(yLabels[d]))) {
-          return yLabels[d];
-        } else {
-          return d;
-        }
-      });
+      $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
+      $scope.chart[type].yAxis.tickFormat(function(d) {return xAxisTickFormat(d, yLabels);});
 
       // configure how the tooltip looks.
       $scope.chart[type].tooltipContent(function(key, x, y, data) {
@@ -1058,17 +1070,13 @@ angular.module('zeppelinWebApp')
       } else if (type === 'multiBarChart') {
         d3g = pivotDataToD3ChartFormat(p, true, false, type).d3g;
         $scope.chart[type].yAxis.axisLabelDistance(50);
+        $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d);});
       } else if (type === 'lineChart' || type === 'stackedAreaChart' || type === 'lineWithFocusChart') {
         var pivotdata = pivotDataToD3ChartFormat(p, false, true);
         xLabels = pivotdata.xLabels;
         d3g = pivotdata.d3g;
-        $scope.chart[type].xAxis.tickFormat(function(d) {
-          if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
-            return xLabels[d];
-          } else {
-            return d;
-          }
-        });
+        $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
+        $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d);});
         $scope.chart[type].yAxis.axisLabelDistance(50);
         if ($scope.chart[type].useInteractiveGuideline) { // lineWithFocusChart hasn't got useInteractiveGuideline
           $scope.chart[type].useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)
