@@ -28,7 +28,6 @@ import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * Zeppelin configuration.
  *
@@ -268,6 +267,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getInt(ConfVars.ZEPPELIN_PORT);
   }
 
+  public String getServerContextPath() {
+    return getString(ConfVars.ZEPPELIN_SERVER_CONTEXT_PATH);
+  }
+
   public String getKeyStorePath() {
     return getRelativeDir(
             String.format("%s/%s",
@@ -322,11 +325,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
   public String getNotebookDir() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_DIR);
   }
-  
+
   public String getUser() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_USER);
   }
-  
+
   public String getBucketName() {
     return getString(ConfVars.ZEPPELIN_NOTEBOOK_S3_BUCKET);
   }
@@ -383,6 +386,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_HOME("zeppelin.home", "../"),
     ZEPPELIN_ADDR("zeppelin.server.addr", "0.0.0.0"),
     ZEPPELIN_PORT("zeppelin.server.port", 8080),
+    ZEPPELIN_SERVER_CONTEXT_PATH("zeppelin.server.context.path", "/"),
     ZEPPELIN_SSL("zeppelin.ssl", false),
     ZEPPELIN_SSL_CLIENT_AUTH("zeppelin.ssl.client.auth", false),
     ZEPPELIN_SSL_KEYSTORE_PATH("zeppelin.ssl.keystore.path", "keystore"),
@@ -393,6 +397,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_SSL_TRUSTSTORE_TYPE("zeppelin.ssl.truststore.type", null),
     ZEPPELIN_SSL_TRUSTSTORE_PASSWORD("zeppelin.ssl.truststore.password", null),
     ZEPPELIN_WAR("zeppelin.war", "../zeppelin-web/dist"),
+    ZEPPELIN_WAR_TEMPDIR("zeppelin.war.tempdir", "webapps"),
     ZEPPELIN_INTERPRETERS("zeppelin.interpreters", "org.apache.zeppelin.spark.SparkInterpreter,"
         + "org.apache.zeppelin.spark.PySparkInterpreter,"
         + "org.apache.zeppelin.spark.SparkSqlInterpreter,"

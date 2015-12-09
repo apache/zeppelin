@@ -32,4 +32,8 @@ public interface NotebookRepo {
   public Note get(String noteId, String owner) throws IOException;
   public void save(Note note) throws IOException;
   public void remove(String noteId, String owner) throws IOException;
+  /**
+   * Release any underlying resources
+   */
+  public void close();
 }

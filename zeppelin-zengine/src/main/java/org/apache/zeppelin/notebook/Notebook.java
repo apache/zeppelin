@@ -277,7 +277,7 @@ public class Notebook {
           String noteId = snapshot.getAngularObject().getNoteId();
           // at this point, remote interpreter process is not created.
           // so does not make sense add it to the remote.
-          // 
+          //
           // therefore instead of addAndNotifyRemoteProcess(), need to use add()
           // that results add angularObject only in ZeppelinServer side not remoteProcessSide
           registry.add(name, snapshot.getAngularObject().get(), noteId);
@@ -488,6 +488,10 @@ public class Notebook {
 
   public ZeppelinConfiguration getConf() {
     return conf;
+  }
+
+  public void close() {
+    this.notebookRepo.close();
   }
 
 }

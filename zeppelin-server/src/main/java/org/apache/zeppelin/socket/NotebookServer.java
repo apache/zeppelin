@@ -17,15 +17,9 @@
 package org.apache.zeppelin.socket;
 
 import java.io.IOException;
-import java.util.*;
-
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -33,6 +27,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.JobListenerFactory;
@@ -137,6 +132,9 @@ public class NotebookServer extends WebSocketServlet implements
           case CLONE_NOTE:
             cloneNote(conn, notebook, messagereceived);
             break;
+          case IMPORT_NOTE:
+            importNote(conn, notebook, messagereceived);
+            break;
           case COMMIT_PARAGRAPH:
             updateParagraph(conn, notebook, messagereceived);
             break;
@@ -221,7 +219,7 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  private Message deserializeMessage(String msg) {
+  protected Message deserializeMessage(String msg) {
     return gson.fromJson(msg, Message.class);
   }
 
@@ -524,6 +522,61 @@ public class NotebookServer extends WebSocketServlet implements
     addConnectionToNote(newNote.id(), conn);
     broadcastNote(newNote);
     broadcastNoteList(fromMessage.principal);
+  }
+
+  protected Note importNote(NotebookSocket conn, Notebook notebook, Message fromMessage)
+      throws IOException {
+
+    Note note = notebook.createNote();
+    if (fromMessage != null) {
+      String noteName = (String) ((Map) fromMessage.get("notebook")).get("name");
+      if (noteName == null || noteName.isEmpty()) {
+        noteName = "Note " + note.getId();
+      }
+      note.setName(noteName);
+      ArrayList<Map> paragraphs = ((Map<String, ArrayList>) fromMessage.get("notebook"))
+          .get("paragraphs");
+      if (paragraphs.size() > 0) {
+        for (Map paragraph : paragraphs) {
+          try {
+            Paragraph p = note.addParagraph();
+            String text = (String) paragraph.get("text");
+            p.setText(text);
+            p.setTitle((String) paragraph.get("title"));
+            Map<String, Object> params = (Map<String, Object>) ((Map) paragraph
+                .get("settings")).get("params");
+            Map<String, Input> forms = (Map<String, Input>) ((Map) paragraph
+                .get("settings")).get("forms");
+            if (params != null) {
+              p.settings.setParams(params);
+            }
+            if (forms != null) {
+              p.settings.setForms(forms);
+            }
+            Map<String, Object> result = (Map) paragraph.get("result");
+            if (result != null) {
+              InterpreterResult.Code code = InterpreterResult.Code
+                  .valueOf((String) result.get("code"));
+              InterpreterResult.Type type = InterpreterResult.Type
+                  .valueOf((String) result.get("type"));
+              String msg = (String) result.get("msg");
+              p.setReturn(new InterpreterResult(code, type, msg), null);
+            }
+
+            Map<String, Object> config = (Map<String, Object>) paragraph
+                .get("config");
+            p.setConfig(config);
+          } catch (Exception e) {
+            LOG.error("Exception while setting parameter in paragraph", e);
+          }
+        }
+      }
+    }
+
+    note.persist();
+    broadcastNote(note);
+    broadcastNoteList();
+    return note;
   }
 
   private void removeParagraph(NotebookSocket conn, Notebook notebook,

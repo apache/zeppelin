@@ -37,12 +37,12 @@ To create text input form, use _${formName}_ templates.
 
 for example
 
-<img src="../../assets/themes/zeppelin/img/screenshots/form_input.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/form_input.png" />
 
 
 Also you can provide default value, using _${formName=defaultValue}_.
 
-<img src="../../assets/themes/zeppelin/img/screenshots/form_input_default.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/form_input_default.png" />
 
 
 <br />
@@ -52,11 +52,11 @@ To create select form, use _${formName=defaultValue,option1|option2...}_
 
 for example
 
-<img src="../../assets/themes/zeppelin/img/screenshots/form_select.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/form_select.png" />
 
 Also you can separate option's display name and value, using _${formName=defaultValue,option1(DisplayName)|option2(DisplayName)...}_
 
-<img src="../../assets/themes/zeppelin/img/screenshots/form_select_displayname.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/form_select_displayname.png" />
 
 <br />
 ### Creates Programmatically
@@ -68,38 +68,43 @@ Here're some examples.
 Text input form
 
 You can do this in Scala
+
 ```scala
 %spark
 println("Hello "+z.input("name"))
 ```
 
 Or Python
+
 ```python
 %pyspark
 print("Hello "+z.input("name"))
 ```
 
-<img src="../../assets/themes/zeppelin/img/screenshots/form_input_prog.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/form_input_prog.png" />
 
 Text input form with default value
 
 Scala
+
 ```scala
 %spark
 println("Hello "+z.input("name", "sun"))
 ```
 
 Python
+
 ```python
 %pyspark
 print("Hello "+z.input("name", "sun"))
 ```
 
-<img src="../../assets/themes/zeppelin/img/screenshots/form_input_default_prog.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/form_input_default_prog.png" />
 
 Select form
 
 Scala
+
 ```scala
 %spark
 println("Hello "+z.select("day", Seq(("1","mon"),
@@ -112,6 +117,7 @@ println("Hello "+z.select("day", Seq(("1","mon"),
 ```
 
 Python
+
 ```python
 %pyspark
 print("Hello "+z.select("day", [("1","mon"),
@@ -123,4 +129,4 @@ print("Hello "+z.select("day", [("1","mon"),
                                 ("7","sun")]))
 ```
 
-<img src="../../assets/themes/zeppelin/img/screenshots/form_select_prog.png" />
+<img src="/assets/themes/zeppelin/img/screenshots/form_select_prog.png" />

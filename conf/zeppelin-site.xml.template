@@ -32,6 +32,18 @@
 </property>
 
 <property>
+  <name>zeppelin.server.context.path</name>
+  <value>/</value>
+  <description>Context Path of the Web Application</description>
+</property>
+
+<property>
+  <name>zeppelin.war.tempdir</name>
+  <value>webapps</value>
+  <description>Location of jetty temporary directory</description>
+</property>
+
+<property>
   <name>zeppelin.notebook.dir</name>
   <value>notebook</value>
   <description>path or URI for notebook persist</description>
@@ -67,6 +79,14 @@
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.S3NotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+-->
+
+<!-- For versioning your local norebook storage using Git repository
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
   <description>notebook persistence layer implementation</description>
 </property>
 -->

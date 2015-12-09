@@ -23,6 +23,7 @@ limitations under the License.
 
 * [Install](./install/install.html)
 * [YARN Install](./install/yarn_install.html)
+* [Virtual Machine Install](./install/virtual_machine.html)
 
 ### Tutorial
 
@@ -35,14 +36,14 @@ limitations under the License.
 * [cassandra](./interpreter/cassandra.html)
 * [flink](./interpreter/flink.html)
 * [geode](./interpreter/geode.html)
-* [hive](../pleasecontribute.html)
+* [hive](./interpreter/hive.html)
 * [ignite](./interpreter/ignite.html)
 * [lens](./interpreter/lens.html)
-* [md](../pleasecontribute.html)
+* [md](./interpreter/markdown.html)
 * [postgresql, hawq](./interpreter/postgresql.html)
-* [sh](../pleasecontribute.html)
+* [sh](./pleasecontribute.html)
 * [spark](./interpreter/spark.html)
-* [tajo](../pleasecontribute.html)
+* [tajo](./pleasecontribute.html)
 
 ### Storage
 * [S3 Storage](./storage/storage.html)

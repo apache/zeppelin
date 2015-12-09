@@ -23,7 +23,7 @@ body {
 
 .box:hover,
 .well:hover {
-  background-color: #ffffff;
+  background: #ffffff;
   border: 1px solid #DDDDDD;
 }
 
@@ -40,12 +40,12 @@ body {
 }
 
 .paragraph-space {
-  padding: 0px 2px 0px 2px !important;
+  padding: 0 2px 0 2px !important;
 }
 
 .paragraph .control {
   visibility: hidden;
-  top: 7px !important;
+  top: 5px !important;
   right: 10px !important;
 }
 
@@ -55,7 +55,7 @@ body {
 
 .paragraph .paragraphFooter {
   visibility: hidden;
-  height: 0px;
+  height: 0;
   position: relative;
   top : -13px;
   z-index: 99;

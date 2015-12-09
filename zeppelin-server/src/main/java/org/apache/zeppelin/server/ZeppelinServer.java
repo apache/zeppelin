@@ -19,14 +19,12 @@ package org.apache.zeppelin.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.net.ssl.SSLContext;
 import javax.servlet.DispatcherType;
-import javax.servlet.Servlet;
 import javax.ws.rs.core.Application;
 
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
@@ -61,8 +59,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Main class of Zeppelin.
  *
- * @author Leemoonsoo
- *
  */
 
 public class ZeppelinServer extends Application {
@@ -70,13 +66,10 @@ public class ZeppelinServer extends Application {
 
   private SchedulerFactory schedulerFactory;
   public static Notebook notebook;
-
   public static NotebookServer notebookServer;
-
   public static Server jettyServer;
 
   private InterpreterFactory replFactory;
-
   private NotebookRepo notebookRepo;
 
   public static void main(String[] args) throws Exception {
@@ -86,7 +79,7 @@ public class ZeppelinServer extends Application {
     jettyServer = setupJettyServer(conf);
 
     // REST api
-    final ServletContextHandler restApi = setupRestApiContextHandler();
+    final ServletContextHandler restApi = setupRestApiContextHandler(conf);
 
     // Notebook server
     final ServletContextHandler notebook = setupNotebookServer(conf);
@@ -114,6 +107,7 @@ public class ZeppelinServer extends Application {
         try {
           jettyServer.stop();
           ZeppelinServer.notebook.getInterpreterFactory().close();
+          ZeppelinServer.notebook.close();
         } catch (Exception e) {
           LOG.error("Error while stopping servlet container", e);
         }
@@ -171,7 +165,7 @@ public class ZeppelinServer extends Application {
         ServletContextHandler.SESSIONS);
 
     cxfContext.setSessionHandler(new SessionHandler());
-    cxfContext.setContextPath("/");
+    cxfContext.setContextPath(conf.getServerContextPath());
     cxfContext.addServlet(servletHolder, "/ws/*");
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
         EnumSet.allOf(DispatcherType.class));
@@ -211,7 +205,7 @@ public class ZeppelinServer extends Application {
     return scf.getSslContext();
   }
 
-  private static ServletContextHandler setupRestApiContextHandler() {
+  private static ServletContextHandler setupRestApiContextHandler(ZeppelinConfiguration conf) {
     final ServletHolder cxfServletHolder = new ServletHolder(new CXFNonSpringJaxrsServlet());
     cxfServletHolder.setInitParameter("javax.ws.rs.Application", ZeppelinServer.class.getName());
     cxfServletHolder.setName("rest");
@@ -219,8 +213,8 @@ public class ZeppelinServer extends Application {
 
     final ServletContextHandler cxfContext = new ServletContextHandler();
     cxfContext.setSessionHandler(new SessionHandler());
-    cxfContext.setContextPath("/api");
-    cxfContext.addServlet(cxfServletHolder, "/*");
+    cxfContext.setContextPath(conf.getServerContextPath());
+    cxfContext.addServlet(cxfServletHolder, "/api/*");
 
     cxfContext.addFilter(new FilterHolder(CorsFilter.class), "/*",
         EnumSet.allOf(DispatcherType.class));
@@ -237,16 +231,20 @@ public class ZeppelinServer extends Application {
       ZeppelinConfiguration conf) {
 
     WebAppContext webApp = new WebAppContext();
+    webApp.setContextPath(conf.getServerContextPath());
     File warPath = new File(conf.getString(ConfVars.ZEPPELIN_WAR));
     if (warPath.isDirectory()) {
       // Development mode, read from FS
       // webApp.setDescriptor(warPath+"/WEB-INF/web.xml");
       webApp.setResourceBase(warPath.getPath());
-      webApp.setContextPath("/");
       webApp.setParentLoaderPriority(true);
     } else {
       // use packaged WAR
       webApp.setWar(warPath.getAbsolutePath());
+      File warTempDirectory = new File(conf.getRelativeDir(ConfVars.ZEPPELIN_WAR_TEMPDIR));
+      warTempDirectory.mkdir();
+      LOG.info("ZeppelinServer Webapp path: {}", warTempDirectory.getPath());
+      webApp.setTempDirectory(warTempDirectory);
     }
     // Explicit bind to root
     webApp.addServlet(

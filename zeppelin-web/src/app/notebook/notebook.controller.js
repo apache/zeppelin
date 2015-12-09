@@ -280,19 +280,27 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         break;
       }
     }
-
     if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
       return;
     }
+    // save dirtyText of moving paragraphs.
+    var prevParagraphId = $scope.note.paragraphs[newIndex].id;
+    angular.element('#' + paragraphId + '_paragraphColumn_main').scope().saveParagraph();
+    angular.element('#' + prevParagraphId + '_paragraphColumn_main').scope().saveParagraph();
     websocketMsgSrv.moveParagraph(paragraphId, newIndex);
   });
 
   // create new paragraph on current position
-  $scope.$on('insertParagraph', function(event, paragraphId) {
+  $scope.$on('insertParagraph', function(event, paragraphId, position) {
     var newIndex = -1;
     for (var i=0; i<$scope.note.paragraphs.length; i++) {
-      if ($scope.note.paragraphs[i].id === paragraphId) {
-        newIndex = i+1;
+      if ( $scope.note.paragraphs[i].id === paragraphId ) {        
+        //determine position of where to add new paragraph; default is below
+        if ( position === 'above' ) {         
+          newIndex = i;
+        } else {     
+          newIndex = i+1;
+        }
         break;
       }
     }
@@ -315,6 +323,10 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
       return;
     }
+    // save dirtyText of moving paragraphs.
+    var nextParagraphId = $scope.note.paragraphs[newIndex].id;
+    angular.element('#' + paragraphId + '_paragraphColumn_main').scope().saveParagraph();
+    angular.element('#' + nextParagraphId + '_paragraphColumn_main').scope().saveParagraph();
     websocketMsgSrv.moveParagraph(paragraphId, newIndex);
   });
 
@@ -377,6 +389,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
           $scope.note.paragraphs.splice(index, 0, note.paragraphs[index]);
           break;
         }
+        $scope.$broadcast('updateParagraph', {paragraph: note.paragraphs[index]});
       }
     }
 
@@ -412,7 +425,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     $http.get(baseUrlSrv.getRestApiBase()+ '/notebook/interpreter/bind/' +$scope.note.id).
     success(function(data, status, headers, config) {
       $scope.interpreterBindings = data.body;
-      $scope.interpreterBindingsOrig = jQuery.extend(true, [], $scope.interpreterBindings); // to check dirty
+      $scope.interpreterBindingsOrig = angular.copy($scope.interpreterBindings); // to check dirty
       if (callback) {
         callback();
       }

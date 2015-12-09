@@ -22,6 +22,8 @@ import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
+import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.slf4j.Logger;
@@ -101,7 +103,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     int scriptHeadIndex = 0;
     for (int i = 0; i < text.length(); i++) {
       char ch = text.charAt(i);
-      if (ch == ' ' || ch == '\n') {
+      if (ch == ' ' || ch == '\n' || ch == '(') {
         scriptHeadIndex = i;
         break;
       }
@@ -130,10 +132,10 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     if (magic == null) {
       return text;
     }
-    if (magic.length() + 2 >= text.length()) {
+    if (magic.length() + 1 >= text.length()) {
       return "";
     }
-    return text.substring(magic.length() + 2);
+    return text.substring(magic.length() + 1).trim();
   }
 
   public NoteInterpreterLoader getNoteReplLoader() {
@@ -204,14 +206,29 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       script = Input.getSimpleQuery(settings.getParams(), scriptBody);
     }
     logger().debug("RUN : " + script);
-    InterpreterResult ret = repl.interpret(script, getInterpreterContext());
-    return ret;
+    try {
+      InterpreterContext context = getInterpreterContext();
+      InterpreterContext.set(context);
+      InterpreterResult ret = repl.interpret(script, context);
+
+      if (Code.KEEP_PREVIOUS_RESULT == ret.code()) {
+        return getReturn();
+      }
+      return ret;
+    } finally {
+      InterpreterContext.remove();
+    }
   }
 
   @Override
   protected boolean jobAbort() {
     Interpreter repl = getRepl(getRequiredReplName());
-    repl.cancel(getInterpreterContext());
+    Job job = repl.getScheduler().removeFromWaitingQueue(getId());
+    if (job != null) {
+      job.setStatus(Status.ABORT);
+    } else {
+      repl.cancel(getInterpreterContext());
+    }
     return true;
   }
 

@@ -17,18 +17,18 @@ body {
 }
 
 .box {
-  border: 0px;
-  min-height: 0px;
+  border: 0;
+  min-height: 0;
 }
 
 .box:hover,
 .well:hover {
-  background-color: white;
-  border: 0px;
+  background: white;
+  border: 0;
 }
 
 .paragraph-col {
-  border: 0px solid white;
+  border: 0 solid white;
 }
 
 .paragraph-space {
@@ -68,4 +68,8 @@ body {
 .nv-controlsWrap,
 .lastEmptyParagraph {
   display: none;
+}
+
+.noteAction button.btn {
+  border-radius: 4px !important;
 }
