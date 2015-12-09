@@ -42,17 +42,17 @@
  */
 
 .new-paragraph{
-  text-align: center; 
+  text-align: center;
   height: 7px;
   margin: -7px 2px 0 2px;
   cursor: pointer;
 }
 
-.new-paragraph:hover{  
+.new-paragraph:hover{
   background: #d3e5ea;
 }
 
-.new-paragraph:hover .plus-sign{  
+.new-paragraph:hover .plus-sign{
   display: block;
 }
 
@@ -97,11 +97,6 @@
   font-size: 12px;
   margin-bottom: 4px;
   color: #333333;
-}
-
-.new_h3 {
-  margin-top: 1px;
-  padding-top: 7px;
 }
 
 .form-control2 {

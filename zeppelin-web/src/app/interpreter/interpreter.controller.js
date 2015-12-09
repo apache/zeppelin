@@ -135,6 +135,11 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     });
   };
 
+  $scope.getInterpreterPropertiesCount = function (settingId) {
+    var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
+    return _.keys($scope.interpreterSettings[index].properties).length;
+  };
+
   $scope.addNewInterpreterSetting = function() {
     if (!$scope.newInterpreterSetting.name || !$scope.newInterpreterSetting.group) {
       alert('Please determine name and interpreter');
@@ -203,6 +208,9 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
       var setting = $scope.interpreterSettings[index];
 
+      if (!setting.propertyKey || setting.propertyKey === '') {
+        return;
+      }
       setting.properties[setting.propertyKey] = setting.propertyValue;
       emptyNewProperty(setting);
     }

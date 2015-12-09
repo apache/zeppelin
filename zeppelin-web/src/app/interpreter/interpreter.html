@@ -15,7 +15,7 @@ limitations under the License.
   <div class="header">
     <div class="row">
       <div class="col-md-12">
-        <h3 class="new_h3" style="float:left">
+        <h3 class="new_h3">
           Interpreters
         </h3>
         <span class="btn btn-default fa fa-plus"
@@ -67,15 +67,20 @@ limitations under the License.
     </div>
     <br />
     <div class="row interpreter">
-      <div class="col-md-12">
-        <b>Properties</b>
+      <div ng-show="getInterpreterPropertiesCount(setting.id) === 0 || valueform.$hidden" class="col-md-12 empty-properties-message">
+        <em>Currently there are no properties set for this interpreter</em>
+      </div>
+      <div class="col-md-12" ng-show="getInterpreterPropertiesCount(setting.id) > 0 || valueform.$visible">
+        <h5>Properties</h5>
         <table class="table table-striped">
-          <tr>
-            <th style="width:30%">name</th>
-            <th>value</th>
-            <th ng-if="valueform.$visible">action</th>
-          </tr>
-          <tr ng-repeat="(key, value) in setting.properties">
+          <thead>
+            <tr>
+              <th style="width:30%">name</th>
+              <th>value</th>
+              <th ng-if="valueform.$visible">action</th>
+            </tr>
+          </thead>
+          <tr ng-repeat="(key, value) in setting.properties" >
             <td>{{key}}</td>
             <td>
               <span editable-textarea="setting.properties[key]" e-form="valueform" e-msd-elastic>
