@@ -46,8 +46,8 @@ limitations under the License.
       <ul class="nav navbar-nav navbar-right" style="margin-top:10px; margin-right:5px;">
         <li class="server-status">
           <i class="fa fa-circle" ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
-          <span ng-show="navbar.connected">{{ticket.principal}} Connected</span>
-          <span ng-show="!navbar.connected">Disconnected</span>
+          <span ng-show="navbar.authenticated">{{ticket.principal}} connected</span>
+          <span ng-show="!navbar.authenticated">Disconnected</span>
         </li>
       </ul>
     </div>

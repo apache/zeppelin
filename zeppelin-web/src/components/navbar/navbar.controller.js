@@ -31,6 +31,7 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   vm.connected = websocketMsgSrv.isConnected();
   vm.websocketMsgSrv = websocketMsgSrv;
   vm.arrayOrderingSrv = arrayOrderingSrv;
+  vm.authenticated = $rootScope.ticket.principal !== 'anonymous';
 
   angular.element('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
@@ -41,6 +42,8 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   $scope.$on('setConnectedStatus', function(event, param) {
     vm.connected = param;
   });
+
+
 
   function loadNotes() {
     websocketMsgSrv.getNotebookList();
@@ -59,6 +62,7 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
         vm.loadNotes = loadNotes;
         vm.isActive = isActive;
         vm.loadNotes();
+        vm.authenticated = $rootScope.ticket.principal !== 'anonymous';
       }
     }).
     error(function(data, status, headers, config) {
