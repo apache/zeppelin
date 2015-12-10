@@ -580,9 +580,47 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
+
+    String completionText = getCompletionTargetString(buf, cursor);
+    cursor = completionText.length() - 1;
     ScalaCompleter c = completor.completer();
-    Candidates ret = c.complete(buf, cursor);
+    Candidates ret = c.complete(completionText, cursor);
     return scala.collection.JavaConversions.asJavaList(ret.candidates());
+  }
+
+  private String getCompletionTargetString(String text, int cursor) {
+    String[] completionSeqCharaters = {" ", "\n", "\t"};
+    int completionEndPosition = cursor;
+    int completionStartPosition = cursor;
+    int indexOfReverseSeqPostion = cursor;
+
+    String resultCompletionText = "";
+    String completionScriptText = text.substring(0, cursor);
+    completionEndPosition = completionScriptText.length();
+
+    logger.info("completion text cursor[" + cursor + "][" + completionScriptText + "]");
+    String tempReverseCompletionText = new StringBuilder(completionScriptText).reverse().toString();
+
+    for (String seqCharacter : completionSeqCharaters) {
+      indexOfReverseSeqPostion = tempReverseCompletionText.indexOf(seqCharacter);
+
+      if (indexOfReverseSeqPostion < completionStartPosition && indexOfReverseSeqPostion > 0) {
+        completionStartPosition = indexOfReverseSeqPostion;
+      }
+
+    }
+
+    if (completionStartPosition == completionEndPosition) {
+      completionStartPosition = 0;
+    }
+    else
+    {
+      completionStartPosition = completionEndPosition - completionStartPosition;
+    }
+    resultCompletionText = completionScriptText.substring(
+            completionStartPosition , completionEndPosition);
+
+    return resultCompletionText;
   }
 
   public Object getValue(String name) {
