@@ -1,5 +1,5 @@
 #Zeppelin 
-             
+              
 
 **Documentation:** [User Guide](http://zeppelin.incubator.apache.org/docs/index.html)<br/>
 **Mailing List:** [User and Dev mailing list](http://zeppelin.incubator.apache.org/community.html)<br/>
