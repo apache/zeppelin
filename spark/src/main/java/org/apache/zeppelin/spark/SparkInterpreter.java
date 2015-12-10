@@ -598,7 +598,6 @@ public class SparkInterpreter extends Interpreter {
     String completionScriptText = text.substring(0, cursor);
     completionEndPosition = completionScriptText.length();
 
-    logger.info("completion text cursor[" + cursor + "][" + completionScriptText + "]");
     String tempReverseCompletionText = new StringBuilder(completionScriptText).reverse().toString();
 
     for (String seqCharacter : completionSeqCharaters) {
