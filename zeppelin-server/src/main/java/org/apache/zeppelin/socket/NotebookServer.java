@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 package org.apache.zeppelin.socket;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
@@ -46,15 +47,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
+
 /**
  * Zeppelin websocket service.
  *
- * @author anthonycorbacho
  */
 public class NotebookServer extends WebSocketServlet implements
         NotebookSocketListener, JobListenerFactory, AngularObjectRegistryListener {
-  private static final Logger LOG = LoggerFactory
-          .getLogger(NotebookServer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
   Gson gson = new Gson();
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   final List<NotebookSocket> connectedSockets = new LinkedList<>();
@@ -62,9 +62,9 @@ public class NotebookServer extends WebSocketServlet implements
   private Notebook notebook() {
     return ZeppelinServer.notebook;
   }
+
   @Override
   public boolean checkOrigin(HttpServletRequest request, String origin) {
-
     try {
       return SecurityUtils.isValidOrigin(origin, ZeppelinConfiguration.create());
     } catch (UnknownHostException e) {
@@ -72,7 +72,6 @@ public class NotebookServer extends WebSocketServlet implements
     } catch (URISyntaxException e) {
       e.printStackTrace();
     }
-
     return false;
   }
 
