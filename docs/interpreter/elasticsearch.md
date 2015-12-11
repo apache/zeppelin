@@ -66,10 +66,10 @@ General format: <command> /<indices>/<types>/<id> <option> <JSON>
 Commands:
   - get /index/type/id
   - delete /index/type/id
-  - count /indices/<types>
+  - count /indices/types <json-formatted query>
     . indices and types can be omitted
   - search /indices/types <limit> <json-formatted query>
-    . indices and types can be omited
+    . indices and types can be omitted
     . if a query is provided, the limit must also be provided
   - index /ndex/type/id <json-formatted document>
     . the id can be omitted, elasticsearch will generate one
@@ -132,15 +132,18 @@ Examples:
 
 
 #### count
-With the `count` command, you can count documents available in some indices and types.
+With the `count` command, you can count documents available in some indices and types. You can also provide a query.
 
 ```bash
-| count /index1,index2,.../type1,type2,... 
+| count /index1,index2,.../type1,type2,... <JSON document containing the query>
 ```
 
-Example:
-
+Examples:
+* Without query:
 ![Elasticsearch - Count](../assets/themes/zeppelin/img/docs-img/elasticsearch-count.png)
+
+* With a query:
+![Elasticsearch - Count with query](../assets/themes/zeppelin/img/docs-img/elasticsearch-count-with-query.png)
 
 
 #### index
