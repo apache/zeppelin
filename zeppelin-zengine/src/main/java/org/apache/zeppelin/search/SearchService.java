@@ -49,6 +49,12 @@ public class SearchService {
   static final String SEARCH_FIELD = "contents";
   static final String ID_FIELD = "id";
 
+  /**
+   * Full-text search in all the notebooks
+   *
+   * @param queryStr a query
+   * @return A list of matching paragraphs (id, text, snippet w/ highlight)
+   */
   public List<Map<String, String>> search(String queryStr) {
     List<Map<String, String>> result = Collections.emptyList();
     try (IndexReader indexReader = DirectoryReader.open(ramDirectory)) {
@@ -72,7 +78,8 @@ public class SearchService {
     return result;
   }
 
-  private List<Map<String, String>> doSearch(IndexSearcher searcher, Query query, Analyzer analyzer, Highlighter highlighter) {
+  private List<Map<String, String>> doSearch(IndexSearcher searcher, Query query,
+      Analyzer analyzer, Highlighter highlighter) {
     List<Map<String, String>> matchingParagraphs = Lists.newArrayList();
     ScoreDoc[] hits;
     try {
@@ -91,9 +98,10 @@ public class SearchService {
           }
 
           String text = doc.get(SEARCH_FIELD);
-          TokenStream tokenStream = TokenSources.getTokenStream(searcher.getIndexReader(), id, SEARCH_FIELD, analyzer);
+          TokenStream tokenStream = TokenSources.getTokenStream(searcher.getIndexReader(), id,
+              SEARCH_FIELD, analyzer);
           TextFragment[] frag = highlighter.getBestTextFragments(tokenStream, text, true, 3);
-          //TODO(bzz): remove this as too verbose
+          // TODO(bzz): remove this as too verbose
           LOG.info("    {} fragments found for query '{}' in '{}'", frag.length, query, text);
           for (int j = 0; j < frag.length; j++) {
             if ((frag[j] != null) && (frag[j].getScore() > 0)) {
@@ -102,13 +110,15 @@ public class SearchService {
           }
           String fragment = (frag != null && frag.length > 0) ? frag[0].toString() : "";
 
-          matchingParagraphs.add(ImmutableMap.of("id", path, "name", title, "fragment", fragment, "text", text));
+          matchingParagraphs.add(ImmutableMap.of("id", path,
+              "name", title, "fragment", fragment, "text", text));
         } else {
           LOG.info("{}. No {} for this document", i + 1, ID_FIELD);
         }
       }
     } catch (IOException | InvalidTokenOffsetsException e) {
-      LOG.error("Exception on searching for {}", query, e);;
+      LOG.error("Exception on searching for {}", query, e);
+      ;
     }
     return matchingParagraphs;
   }
@@ -134,13 +144,17 @@ public class SearchService {
   /**
    * Indexes the given list of notebooks
    *
-   * @param writer Writer to the index where the given file/dir info will be stored
-   * @param path The file to index, or the directory to recurse into to find files to index
-   * @throws IOException If there is a low-level I/O error
+   * @param writer
+   *          Writer to the index where the given file/dir info will be stored
+   * @param path
+   *          The file to index, or the directory to recurse into to find files
+   *          to index
+   * @throws IOException
+   *           If there is a low-level I/O error
    */
   void indexDocs(final IndexWriter writer, List<Note> docs) throws IOException {
-    for (Note note: docs) {
-      for (Paragraph doc: note.getParagraphs()) {
+    for (Note note : docs) {
+      for (Paragraph doc : note.getParagraphs()) {
         if (doc.getText() == null) {
           LOG.info("Skipping empty paragraph");
           continue;
@@ -152,20 +166,20 @@ public class SearchService {
 
   /** Indexes a single paragraph = document */
   void indexDoc(IndexWriter writer, Note note, Paragraph p) throws IOException {
-      Document doc = new Document();
+    Document doc = new Document();
 
-      //<note-id>/paragraph/<paragraph-id>
-      String id = String.format("%s/paragraph/%s", note.getId(), p.getId());
-      Field pathField = new StringField(ID_FIELD, id, Field.Store.YES);
-      doc.add(pathField);
+    // <note-id>/paragraph/<paragraph-id>
+    String id = String.format("%s/paragraph/%s", note.getId(), p.getId());
+    Field pathField = new StringField(ID_FIELD, id, Field.Store.YES);
+    doc.add(pathField);
 
-      doc.add(new StringField("title", note.getName(), Field.Store.YES));
+    doc.add(new StringField("title", note.getName(), Field.Store.YES));
 
-      Date date = p.getDateStarted() != null ? p.getDateStarted() : p.getDateCreated();
-      doc.add(new LongField("modified", date.getTime(), Field.Store.NO));
-      doc.add(new TextField(SEARCH_FIELD, p.getText(), Field.Store.YES));
+    Date date = p.getDateStarted() != null ? p.getDateStarted() : p.getDateCreated();
+    doc.add(new LongField("modified", date.getTime(), Field.Store.NO));
+    doc.add(new TextField(SEARCH_FIELD, p.getText(), Field.Store.YES));
 
-      writer.addDocument(doc);
+    writer.addDocument(doc);
   }
 
 }

@@ -48,12 +48,12 @@ public class NotebookRepoSync implements NotebookRepo {
   private List<NotebookRepo> repos = new ArrayList<NotebookRepo>();
 
   /**
-   * @param notebookIndex 
+   * @param noteIndex
    * @param (conf)
    * @throws - Exception
    */
-  public NotebookRepoSync(ZeppelinConfiguration conf, SearchService notebookIndex) throws Exception {
-    this.notebookIndex = notebookIndex;
+  public NotebookRepoSync(ZeppelinConfiguration conf, SearchService noteIndex) throws Exception {
+    this.notebookIndex = noteIndex;
     config = conf;
 
     String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
@@ -142,26 +142,23 @@ public class NotebookRepoSync implements NotebookRepo {
    */
   public void sync(int sourceRepoIndex, int destRepoIndex) throws IOException {    
     LOG.info("Sync started");
-    NotebookRepo sourceRepo = getRepo(sourceRepoIndex);
-    NotebookRepo destRepo = getRepo(destRepoIndex);
-    List <NoteInfo> sourceNotes = sourceRepo.list();
-    List <NoteInfo> destNotes = destRepo.list();
+    NotebookRepo srcRepo = getRepo(sourceRepoIndex);
+    NotebookRepo dstRepo = getRepo(destRepoIndex);
+    List <NoteInfo> srcNotes = srcRepo.list();
+    List <NoteInfo> dstNotes = dstRepo.list();
 
     //TODO(bzz): find a better place
     if (notebookIndex != null) {
       List<Note> notebooks = new ArrayList<>();
-      for (NoteInfo i: sourceNotes) {
-        notebooks.add(sourceRepo.get(i.getId()));
+      for (NoteInfo i: srcNotes) {
+        notebooks.add(srcRepo.get(i.getId()));
       }
       LOG.info("Index started");
       notebookIndex.index(notebooks);
       LOG.info("Index ended");
     }
 
-    Map<String, List<String>> noteIDs = notesCheckDiff(sourceNotes,
-                                                       sourceRepo,
-                                                       destNotes,
-                                                       destRepo);
+    Map<String, List<String>> noteIDs = notesCheckDiff(srcNotes, srcRepo, dstNotes, dstRepo);
     List<String> pushNoteIDs = noteIDs.get(pushKey);
     List<String> pullNoteIDs = noteIDs.get(pullKey);
     if (!pushNoteIDs.isEmpty()) {
@@ -169,7 +166,7 @@ public class NotebookRepoSync implements NotebookRepo {
       for (String id : pushNoteIDs) {
         LOG.info("ID : " + id);
       }
-      pushNotes(pushNoteIDs, sourceRepo, destRepo);
+      pushNotes(pushNoteIDs, srcRepo, dstRepo);
     } else {
       LOG.info("Nothing to push");
     }
@@ -179,7 +176,7 @@ public class NotebookRepoSync implements NotebookRepo {
       for (String id : pullNoteIDs) {
         LOG.info("ID : " + id);
       }
-      pushNotes(pullNoteIDs, destRepo, sourceRepo);
+      pushNotes(pullNoteIDs, dstRepo, srcRepo);
     } else {
       LOG.info("Nothing to pull");
     }

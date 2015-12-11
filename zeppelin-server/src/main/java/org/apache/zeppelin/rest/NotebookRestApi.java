@@ -387,16 +387,16 @@ public class NotebookRestApi {
     return new JsonResponse<>(Status.OK, note.getConfig().get("cron")).build();
   }  
 
- /**
- * Search for a Notes
- */
- @GET
- @Path("search")
- public Response search(@QueryParam("q") String query) {
-   LOG.info("Searching notebooks for {}", query);
-   List<Map<String, String>> notebooksFound = notebookIndex.search(query);
-   LOG.info("Notbooks {} found", notebooksFound.size());
-   return new JsonResponse<>(Status.OK, notebooksFound).build();
- }
+  /**
+   * Search for a Notes
+   */
+  @GET
+  @Path("search")
+  public Response search(@QueryParam("q") String query) {
+    LOG.info("Searching notebooks for {}", query);
+    List<Map<String, String>> notebooksFound = notebookIndex.search(query);
+    LOG.info("Notbooks {} found", notebooksFound.size());
+    return new JsonResponse<>(Status.OK, notebooksFound).build();
+  }
 
 }
