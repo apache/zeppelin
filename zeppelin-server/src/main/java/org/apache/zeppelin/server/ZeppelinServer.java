@@ -255,9 +255,10 @@ public class ZeppelinServer extends Application {
     this.schedulerFactory = new SchedulerFactory();
     this.replFactory = new InterpreterFactory(conf, notebookServer);
     this.notebookIndex = new SearchService();
-    this.notebookRepo = new NotebookRepoSync(conf, notebookIndex);
+    this.notebookRepo = new NotebookRepoSync(conf);
 
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, replFactory, notebookServer);
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, replFactory,
+        notebookServer, notebookIndex);
   }
 
   @Override

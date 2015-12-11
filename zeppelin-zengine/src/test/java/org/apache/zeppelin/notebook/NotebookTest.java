@@ -85,7 +85,7 @@ public class NotebookTest implements JobListenerFactory{
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
 
     notebookRepo = new VFSNotebookRepo(conf);
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this);
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, null);
   }
 
   @After
@@ -170,7 +170,8 @@ public class NotebookTest implements JobListenerFactory{
     p1.setText("hello world");
     note.persist();
 
-    Notebook notebook2 = new Notebook(conf, notebookRepo, schedulerFactory, new InterpreterFactory(conf, null), this);
+    Notebook notebook2 = new Notebook(
+        conf, notebookRepo, schedulerFactory, new InterpreterFactory(conf, null), this, null);
     assertEquals(1, notebook2.getAllNotes().size());
   }
 

@@ -44,8 +44,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class VFSNotebookRepoTest implements JobListenerFactory{
-  private static final Logger logger = LoggerFactory.getLogger(NotebookTest.class);
-
   private ZeppelinConfiguration conf;
   private SchedulerFactory schedulerFactory;
   private Notebook notebook;
@@ -53,16 +51,15 @@ public class VFSNotebookRepoTest implements JobListenerFactory{
   private InterpreterFactory factory;
 
   private File mainZepDir;
-
   private File mainNotebookDir;
 
   @Before
   public void setUp() throws Exception {
-    String zpath = System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis();
+    String zpath = System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis();
     mainZepDir = new File(zpath);
     mainZepDir.mkdirs();
     new File(mainZepDir, "conf").mkdirs();
-    String mainNotePath = zpath+"/notebook";
+    String mainNotePath = zpath + "/notebook";
     mainNotebookDir = new File(mainNotePath);
     mainNotebookDir.mkdirs();
 
@@ -80,7 +77,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory{
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
 
     notebookRepo = new VFSNotebookRepo(conf);
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this);
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, null);
   }
 
   @After

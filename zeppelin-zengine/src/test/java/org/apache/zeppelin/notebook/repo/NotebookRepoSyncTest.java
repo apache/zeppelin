@@ -86,8 +86,8 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
 
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
     
-    notebookRepoSync = new NotebookRepoSync(conf, null);
-    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this);
+    notebookRepoSync = new NotebookRepoSync(conf);
+    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this, null);
   }
 
   @After

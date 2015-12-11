@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -38,6 +39,7 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.search.SearchService;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobBuilder;
@@ -65,22 +67,45 @@ public class Notebook {
   private org.quartz.Scheduler quartzSched;
   private JobListenerFactory jobListenerFactory;
   private NotebookRepo notebookRepo;
+  private SearchService notebookIndex;
 
+  /**
+   * Main constructor \w manual Dependency Injection
+   *
+   * @param conf
+   * @param notebookRepo
+   * @param schedulerFactory
+   * @param replFactory
+   * @param jobListenerFactory
+   * @param notebookIndex - (nullable) for indexing all notebooks on creating.
+   *
+   * @throws IOException
+   * @throws SchedulerException
+   */
   public Notebook(ZeppelinConfiguration conf, NotebookRepo notebookRepo,
       SchedulerFactory schedulerFactory,
-      InterpreterFactory replFactory, JobListenerFactory jobListenerFactory) throws IOException,
-      SchedulerException {
+      InterpreterFactory replFactory, JobListenerFactory jobListenerFactory,
+      SearchService notebookIndex) throws IOException, SchedulerException {
     this.conf = conf;
     this.notebookRepo = notebookRepo;
     this.schedulerFactory = schedulerFactory;
     this.replFactory = replFactory;
     this.jobListenerFactory = jobListenerFactory;
+    this.notebookIndex = notebookIndex;
     quertzSchedFact = new org.quartz.impl.StdSchedulerFactory();
     quartzSched = quertzSchedFact.getScheduler();
     quartzSched.start();
     CronJob.notebook = this;
 
     loadAllNotes();
+    if (this.notebookIndex != null) {
+      long start = System.nanoTime();
+      logger.info("Notebook indexing started...");
+      notebookIndex.index(notes.values());
+      logger.info("Notebook indexing finished: {} indexed in {}s", notes.size(),
+          TimeUnit.NANOSECONDS.toSeconds(start - System.nanoTime()));
+    }
+
   }
 
   /**

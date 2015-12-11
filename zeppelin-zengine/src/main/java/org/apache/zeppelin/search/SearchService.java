@@ -1,6 +1,7 @@
 package org.apache.zeppelin.search;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -126,7 +127,7 @@ public class SearchService {
     return matchingParagraphs;
   }
 
-  public void index(List<Note> notebooks) {
+  public void index(Collection<Note> collection) {
     try {
       Date start = new Date();
       ramDirectory = new RAMDirectory();
@@ -134,7 +135,7 @@ public class SearchService {
       IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
       IndexWriter writer = new IndexWriter(ramDirectory, iwc);
 
-      indexDocs(writer, notebooks);
+      indexDocs(writer, collection);
 
       writer.close();
       Date end = new Date();
@@ -155,8 +156,8 @@ public class SearchService {
    * @throws IOException
    *           If there is a low-level I/O error
    */
-  void indexDocs(final IndexWriter writer, List<Note> docs) throws IOException {
-    for (Note note : docs) {
+  void indexDocs(final IndexWriter writer, Collection<Note> notes) throws IOException {
+    for (Note note : notes) {
       for (Paragraph doc : note.getParagraphs()) {
         if (doc.getText() == null) {
           LOG.info("Skipping empty paragraph");

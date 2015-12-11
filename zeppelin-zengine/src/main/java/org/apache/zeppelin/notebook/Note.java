@@ -372,6 +372,8 @@ public class Note implements Serializable, JobListener {
   }
 
   public void persist() throws IOException {
+    //TODO(bzz): update index
+    //notebookIndex.
     snapshotAngularObjectRegistry();
     repo.save(this);
   }
