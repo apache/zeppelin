@@ -29,7 +29,6 @@ angular
   $scope.page = 0;
   $scope.allResults = false;
 
-
   $scope.highlightSearchResults = function(note) {
     return function(_editor) {
       function getEditorMode(text) {
@@ -38,11 +37,11 @@ angular
           'ace/mode/sql': /^%(\w*\.)?\wql/,
           'ace/mode/markdown': /^%md/,
           'ace/mode/sh': /^%sh/
-        }
+        };
 
         return Object.keys(editorModes).reduce(function(res, mode) {
-          return editorModes[mode].test(text)? mode : res
-        }, 'ace/mode/scala')
+          return editorModes[mode].test(text)? mode : res;
+        }, 'ace/mode/scala');
       }
 
       var Range = ace.require('ace/range').Range;
@@ -62,28 +61,28 @@ angular
             indeces.push(i);
           }
           return indeces;
-        }
+        };
       }
 
       var lines = note.fragment
         .split('\n')
         .map(function(line, row) {
-          var match = line.match(/<B>(.+?)<\/B>/)
+          var match = line.match(/<B>(.+?)<\/B>/);
 
         // return early if nothing to highlight
           if (!match) {
-            return line
+            return line;
           }
 
-          var term = match[1]
+          var term = match[1];
           var __line = line
             .replace(/<B>/g, '')
-            .replace(/<\/B>/g, '')
+            .replace(/<\/B>/g, '');
 
-          var indeces = getIndeces(term)(__line)
+          var indeces = getIndeces(term)(__line);
 
           indeces.forEach(function(start) {
-            var end = start + term.length
+            var end = start + term.length;
             _editor
               .getSession()
               .addMarker(
@@ -91,20 +90,20 @@ angular
                 'search-results-highlight',
                 'line'
               );
-          })
+          });
 
-          return __line
-        })
+          return __line;
+        });
 
       // resize editor based on content length
       _editor.setOption(
         'maxLines',
-        lines.reduce(function(len, line) {return len + line.length}, 0)
-      )
+        lines.reduce(function(len, line) {return len + line.length;}, 0)
+      );
 
-      _editor.getSession().setValue(lines.join('\n'))
+      _editor.getSession().setValue(lines.join('\n'));
 
-    }
-  }
+    };
+  };
 
 });
