@@ -96,7 +96,7 @@ With the `search` command, you can send a search query to Elasticsearch. You can
 | search /index1,index2,.../type1,type2,... <size of the response> <JSON document containing the query>
 ```
 
-> **Important**: a document in Elasticsearch is a JSON document, so it is hierachical, not flat as a row in a SQL table.
+> **Important**: a document in Elasticsearch is a JSON document, so it is hierarchical, not flat as a row in a SQL table.
 For the Elastic interpreter, the result of a search query is flattened.
 
 Suppose we have a JSON document:
