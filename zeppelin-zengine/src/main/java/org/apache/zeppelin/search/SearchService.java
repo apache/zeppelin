@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
@@ -19,6 +20,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
@@ -42,13 +44,29 @@ import com.google.common.collect.Lists;
 
 /**
  * TODO(bzz): find a better name
+ * TODO(bzz): document thread-safety for writer
  */
 public class SearchService {
   private static final Logger LOG = LoggerFactory.getLogger(SearchService.class);
 
-  Directory ramDirectory;
   static final String SEARCH_FIELD = "contents";
   static final String ID_FIELD = "id";
+
+  Directory ramDirectory;
+  Analyzer analyzer;
+  IndexWriterConfig iwc;
+  IndexWriter writer;
+
+  public SearchService() {
+    ramDirectory = new RAMDirectory();
+    analyzer = new StandardAnalyzer();
+    iwc = new IndexWriterConfig(analyzer);
+    try {
+      writer = new IndexWriter(ramDirectory, iwc);
+    } catch (IOException e) {
+      LOG.error("Failed to reate new IndexWriter", e);
+    }
+  }
 
   /**
    * Full-text search in all the notebooks
@@ -58,7 +76,8 @@ public class SearchService {
    */
   public List<Map<String, String>> search(String queryStr) {
     if (null == ramDirectory) {
-      throw new IllegalStateException("Please call .index() first!");
+      throw new IllegalStateException(
+          "Something went wrong on instance creation time, index dir is null");
     }
     List<Map<String, String>> result = Collections.emptyList();
     try (IndexReader indexReader = DirectoryReader.open(ramDirectory)) {
@@ -127,23 +146,44 @@ public class SearchService {
     return matchingParagraphs;
   }
 
+  /**
+   * Indexes full collection of notes: all the paragraph
+   *
+   * @param collection of Notes
+   */
   public void index(Collection<Note> collection) {
-    try {
-      Date start = new Date();
-      ramDirectory = new RAMDirectory();
-      Analyzer analyzer = new StandardAnalyzer();
-      IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
-      IndexWriter writer = new IndexWriter(ramDirectory, iwc);
-
+    long start = System.nanoTime();
+    try { //TODO(bzz): document thread-safety
       indexDocs(writer, collection);
-
-      writer.close();
-      Date end = new Date();
-      LOG.info(end.getTime() - start.getTime() + " total milliseconds");
+      long end = System.nanoTime();
+      LOG.info("Indexing {} notebooks took {}ms",
+          collection.size(), TimeUnit.NANOSECONDS.toMillis(end - start));
     } catch (Exception e) {
       LOG.error("Failed to index all Notebooks", e);
     }
   }
+
+  public void updateDoc(String noteId, String noteName, Paragraph p) throws IOException {
+    Document doc = newDocument(noteId, noteName, p);
+    try {
+      writer.updateDocument(new Term(ID_FIELD, formatId(noteId, p.getId())), doc);
+      writer.commit();
+    } catch (Exception e) {
+      LOG.error("Failed to index all Notebooks", e);
+    }
+  }
+
+  /**
+   * Frees the recourses used by Lucene index
+   */
+  public void close() {
+    try {
+      writer.close();
+    } catch (IOException e) {
+      LOG.error("Failed to .close() the notebook index", e);
+    }
+  }
+
 
   /**
    * Indexes the given list of notebooks
@@ -163,27 +203,45 @@ public class SearchService {
           LOG.info("Skipping empty paragraph");
           continue;
         }
-        indexDoc(writer, note, doc);
+        indexDoc(writer, note.getId(), note.getName(), doc);
       }
     }
+    writer.commit();
   }
 
-  /** Indexes a single paragraph = document */
-  void indexDoc(IndexWriter writer, Note note, Paragraph p) throws IOException {
+  /**
+   * Indexes a single paragraph = document
+   */
+  void indexDoc(IndexWriter w, String noteId, String noteName, Paragraph p) throws IOException {
+    Document doc = newDocument(noteId, noteName, p);
+    w.addDocument(doc);
+  }
+
+  private Document newDocument(String noteId, String noteName, Paragraph p) {
     Document doc = new Document();
 
-    // <note-id>/paragraph/<paragraph-id>
-    String id = String.format("%s/paragraph/%s", note.getId(), p.getId());
+    String id = formatId(noteId, p.getId());
     Field pathField = new StringField(ID_FIELD, id, Field.Store.YES);
     doc.add(pathField);
 
-    doc.add(new StringField("title", note.getName(), Field.Store.YES));
+    doc.add(new StringField("title", noteName, Field.Store.YES));
 
     Date date = p.getDateStarted() != null ? p.getDateStarted() : p.getDateCreated();
     doc.add(new LongField("modified", date.getTime(), Field.Store.NO));
     doc.add(new TextField(SEARCH_FIELD, p.getText(), Field.Store.YES));
+    return doc;
+  }
 
-    writer.addDocument(doc);
+  /**
+   * ID looks like '<note-id>/paragraph/<paragraph-id>'
+   *
+   * @param noteId If of the Note
+   * @param paragraphId Id of the paragraph
+   *
+   * @return
+   */
+  private String formatId(String noteId, String paragraphId) {
+    return String.format("%s/paragraph/%s", noteId, paragraphId);
   }
 
 }

@@ -484,6 +484,7 @@ public class Notebook {
 
   public void close() {
     this.notebookRepo.close();
+    this.notebookIndex.close();
   }
 
 }
