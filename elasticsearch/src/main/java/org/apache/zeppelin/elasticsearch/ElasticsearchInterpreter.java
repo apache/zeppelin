@@ -66,10 +66,10 @@ public class ElasticsearchInterpreter extends Interpreter {
     + "Commands:\n"
     + "  - get /index/type/id\n"
     + "  - delete /index/type/id\n"
-    + "  - count /indices/<types>\n"
-    + "    . indices and types can be omited\n"
+    + "  - count /indices/types <json-formatted query>\n"
+    + "    . indices and types can be omitted\n"
     + "  - search /indices/types <limit> <json-formatted query>\n"
-    + "    . indices and types can be omited\n"
+    + "    . indices and types can be omitted\n"
     + "    . if a query is provided, the limit must also be provided\n"
     + "  - index /ndex/type/id <json-formatted document>\n"
     + "    . the id can be omitted, elasticsearch will generate one";
@@ -155,7 +155,7 @@ public class ElasticsearchInterpreter extends Interpreter {
         return processGet(urlItems);
       }
       else if ("count".equalsIgnoreCase(method)) {
-        return processCount(urlItems);
+        return processCount(urlItems, data);
       }
       else if ("search".equalsIgnoreCase(method)) {
         return processSearch(urlItems, data);
@@ -167,7 +167,7 @@ public class ElasticsearchInterpreter extends Interpreter {
         return processDelete(urlItems);
       }
 
-      return processHelp(InterpreterResult.Code.ERROR, "Unknown method");
+      return processHelp(InterpreterResult.Code.ERROR, "Unknown command");
     }
     catch (Exception e) {
       return new InterpreterResult(InterpreterResult.Code.ERROR, "Error : " + e.getMessage());
@@ -254,16 +254,21 @@ public class ElasticsearchInterpreter extends Interpreter {
    * Processes a "count" request.
    * 
    * @param urlItems Items of the URL
+   * @param data May contains the JSON of the request
    * @return Result of the count request, it contains the total hits
    */
-  private InterpreterResult processCount(String[] urlItems) {
+  private InterpreterResult processCount(String[] urlItems, String data) {
 
     if (urlItems.length > 2) {
       return new InterpreterResult(InterpreterResult.Code.ERROR,
                                    "Bad URL (it should be /index1,index2,.../type1,type2,...)");
     }
 
-    final SearchResponse response = searchData(urlItems, "0");
+    String searchQuery = "0";
+    if (!StringUtils.isEmpty(data)) {
+      searchQuery += " " + data;
+    }
+    final SearchResponse response = searchData(urlItems, searchQuery);
 
     return new InterpreterResult(
       InterpreterResult.Code.SUCCESS,
