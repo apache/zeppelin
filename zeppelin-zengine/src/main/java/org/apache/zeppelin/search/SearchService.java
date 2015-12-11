@@ -56,6 +56,9 @@ public class SearchService {
    * @return A list of matching paragraphs (id, text, snippet w/ highlight)
    */
   public List<Map<String, String>> search(String queryStr) {
+    if (null == ramDirectory) {
+      throw new IllegalStateException("Please call .index() first!");
+    }
     List<Map<String, String>> result = Collections.emptyList();
     try (IndexReader indexReader = DirectoryReader.open(ramDirectory)) {
       IndexSearcher indexSearcher = new IndexSearcher(indexReader);
@@ -110,8 +113,8 @@ public class SearchService {
           }
           String fragment = (frag != null && frag.length > 0) ? frag[0].toString() : "";
 
-          matchingParagraphs.add(ImmutableMap.of("id", path,
-              "name", title, "fragment", fragment, "text", text));
+          matchingParagraphs.add(ImmutableMap.of("id", path, // <noteId>/paragraph/<paragraphId>
+              "name", title, "snippet", fragment, "text", text));
         } else {
           LOG.info("{}. No {} for this document", i + 1, ID_FIELD);
         }

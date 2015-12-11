@@ -24,7 +24,6 @@ angular
   results.$promise.then(function(result) {
     $scope.notes = result.body;
   });
-  console.log('Found body: %o', $scope.notes);
 
   $scope.page = 0;
   $scope.allResults = false;
@@ -64,7 +63,7 @@ angular
         };
       }
 
-      var lines = note.fragment
+      var lines = note.snippet
         .split('\n')
         .map(function(line, row) {
           var match = line.match(/<B>(.+?)<\/B>/);
