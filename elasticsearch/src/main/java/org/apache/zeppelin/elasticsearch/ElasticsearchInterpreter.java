@@ -134,6 +134,11 @@ public class ElasticsearchInterpreter extends Interpreter {
   public InterpreterResult interpret(String cmd, InterpreterContext interpreterContext) {
     logger.info("Run Elasticsearch command '" + cmd + "'");
 
+    if (client == null) {
+      return new InterpreterResult(InterpreterResult.Code.ERROR,
+        "Problem with the Elasticsearch client, please check your configuration (host, port,...)");
+    }
+
     final String[] items = StringUtils.split(cmd.trim(), " ", 3);
 
     if ("help".equalsIgnoreCase(items[0])) {
