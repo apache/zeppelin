@@ -210,11 +210,11 @@ public class NotebookRestApi {
     LOG.info("run notebook jobs {} ", notebookId);
     Note note = notebook.getNote(notebookId);
     if (note == null) {
-      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+      return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
     
     note.runAll();
-    return new JsonResponse(Status.OK).build();
+    return new JsonResponse<>(Status.OK).build();
   }
 
   /**
@@ -230,7 +230,7 @@ public class NotebookRestApi {
     LOG.info("stop notebook jobs {} ", notebookId);
     Note note = notebook.getNote(notebookId);
     if (note == null) {
-      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+      return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
 
     for (Paragraph p : note.getParagraphs()) {
@@ -238,7 +238,7 @@ public class NotebookRestApi {
         p.abort();
       }
     }
-    return new JsonResponse(Status.OK).build();
+    return new JsonResponse<>(Status.OK).build();
   }
   
   /**
@@ -254,10 +254,10 @@ public class NotebookRestApi {
     LOG.info("get notebook job status.");
     Note note = notebook.getNote(notebookId);
     if (note == null) {
-      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+      return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
 
-    return new JsonResponse(Status.OK, null, note.generateParagraphsInfo()).build();
+    return new JsonResponse<>(Status.OK, null, note.generateParagraphsInfo()).build();
   }
   
   /**
@@ -274,15 +274,15 @@ public class NotebookRestApi {
     LOG.info("run paragraph job {} {} ", notebookId, paragraphId);
     Note note = notebook.getNote(notebookId);
     if (note == null) {
-      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+      return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
     
     if (note.getParagraph(paragraphId) == null) {
-      return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
+      return new JsonResponse<>(Status.NOT_FOUND, "paragraph not found.").build();
     }
 
     note.run(paragraphId);
-    return new JsonResponse(Status.OK).build();
+    return new JsonResponse<>(Status.OK).build();
   }
 
   /**
@@ -299,15 +299,15 @@ public class NotebookRestApi {
     LOG.info("stop paragraph job {} ", notebookId);
     Note note = notebook.getNote(notebookId);
     if (note == null) {
-      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+      return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
 
     Paragraph p = note.getParagraph(paragraphId);
     if (p == null) {
-      return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
+      return new JsonResponse<>(Status.NOT_FOUND, "paragraph not found.").build();
     }
     p.abort();
-    return new JsonResponse(Status.OK).build();
+    return new JsonResponse<>(Status.OK).build();
   }
     
   /**
@@ -327,11 +327,11 @@ public class NotebookRestApi {
     
     Note note = notebook.getNote(notebookId);
     if (note == null) {
-      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+      return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
     
     if (!CronExpression.isValidExpression(request.getCronString())) {
-      return new JsonResponse(Status.BAD_REQUEST, "wrong cron expressions.").build();
+      return new JsonResponse<>(Status.BAD_REQUEST, "wrong cron expressions.").build();
     }
 
     Map<String, Object> config = note.getConfig();
@@ -339,7 +339,7 @@ public class NotebookRestApi {
     note.setConfig(config);
     notebook.refreshCron(note.id());
     
-    return new JsonResponse(Status.OK).build();
+    return new JsonResponse<>(Status.OK).build();
   }
   
   /**
@@ -356,7 +356,7 @@ public class NotebookRestApi {
 
     Note note = notebook.getNote(notebookId);
     if (note == null) {
-      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+      return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
     
     Map<String, Object> config = note.getConfig();
@@ -364,7 +364,7 @@ public class NotebookRestApi {
     note.setConfig(config);
     notebook.refreshCron(note.id());
     
-    return new JsonResponse(Status.OK).build();
+    return new JsonResponse<>(Status.OK).build();
   }  
   
   /**
@@ -381,10 +381,10 @@ public class NotebookRestApi {
 
     Note note = notebook.getNote(notebookId);
     if (note == null) {
-      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+      return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
     
-    return new JsonResponse(Status.OK, note.getConfig().get("cron")).build();
+    return new JsonResponse<>(Status.OK, note.getConfig().get("cron")).build();
   }  
 
  /**
