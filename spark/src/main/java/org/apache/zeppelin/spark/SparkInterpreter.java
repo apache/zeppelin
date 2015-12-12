@@ -577,8 +577,7 @@ public class SparkInterpreter extends Interpreter {
     }
     return paths;
   }
-
-
+  
   @Override
   public List<String> completion(String buf, int cursor) {
     if (buf.length() < cursor) {
