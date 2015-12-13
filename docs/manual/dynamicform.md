@@ -1,4 +1,4 @@
----
+    ---
 layout: page
 title: "Dynamic Form"
 description: ""
@@ -109,12 +109,12 @@ print("Hello "+z.input("name", "sun"))
 {% highlight scala %}
 %spark
 println("Hello "+z.select("day", Seq(("1","mon"),
-                                        ("2","tue"),
-                                        ("3","wed"),
-                                        ("4","thurs"),
-                                        ("5","fri"),
-                                        ("6","sat"),
-                                        ("7","sun"))))
+                                    ("2","tue"),
+                                    ("3","wed"),
+                                    ("4","thurs"),
+                                    ("5","fri"),
+                                    ("6","sat"),
+                                    ("7","sun"))))
 {% endhighlight %}
 
     </div>
@@ -123,12 +123,12 @@ println("Hello "+z.select("day", Seq(("1","mon"),
 {% highlight python %}
 %pyspark
 print("Hello "+z.select("day", [("1","mon"),
-                                    ("2","tue"),
-                                    ("3","wed"),
-                                    ("4","thurs"),
-                                    ("5","fri"),
-                                    ("6","sat"),
-                                    ("7","sun")]))
+                                ("2","tue"),
+                                ("3","wed"),
+                                ("4","thurs"),
+                                ("5","fri"),
+                                ("6","sat"),
+                                ("7","sun")]))
 {% endhighlight %}
 
     </div>
