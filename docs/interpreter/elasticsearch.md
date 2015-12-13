@@ -41,6 +41,7 @@ group: manual
 
 
 > Note #1: you can add more properties to configure the Elasticsearch client.
+
 > Note #2: if you use Shield, you can add a property named `shield.user` with a value containing the name and the password (format: `username:password`). For more details about Shield configuration, consult the [Shield reference guide](https://www.elastic.co/guide/en/shield/current/_using_elasticsearch_java_clients_with_shield.html). Do not forget, to copy the shield client jar in the interpreter directory (`ZEPPELIN_HOME/interpreters/elasticsearch`).
 
 
@@ -90,10 +91,16 @@ Example:
 
 
 #### search
-With the `search` command, you can send a search query to Elasticsearch. You can provide a query, that is exactly what you can provide when you use the REST API of Elasticsearch.  See [Elasticsearch reference document](https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html) for more details about the content of the queries.
+With the `search` command, you can send a search query to Elasticsearch. You can provide a query, that is exactly what you can provide when you use the REST API of Elasticsearch.  
+* See [Elasticsearch search API reference document](https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html) for more details about the content of the search queries.
+* See [Elasticsearch query DSL reference document](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html) for more details about the content of the query DSL.
 
 ```bash
 | search /index1,index2,.../type1,type2,... <size of the response> <JSON document containing the query>
+
+Examples:
+| search / 100 { "query": { "match_all": {} } }
+| search /logs 100 { "query": { "query_string": { "query": "request.method:GET AND status:200" } } }
 ```
 
 > **Important**: a document in Elasticsearch is a JSON document, so it is hierarchical, not flat as a row in a SQL table.
