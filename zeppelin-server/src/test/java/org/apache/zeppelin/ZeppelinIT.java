@@ -224,7 +224,7 @@ public class ZeppelinIT {
     driver.switchTo().alert().accept();
     ZeppelinITUtils.sleep(100, true);
 
-    System.out.println("testCreateNotebook Test executed");
+    LOG.info("testCreateNotebook Test executed");
   }
 
   private void createNewNote() {

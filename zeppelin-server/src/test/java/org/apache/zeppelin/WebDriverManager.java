@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin;
 
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
@@ -27,16 +28,21 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.nio.file.Paths;
+import java.io.IOException;
+import java.net.URL;
 
 import static org.junit.Assert.fail;
 
 
 public class WebDriverManager {
 
-  private static String downLoadsDir = "/tmp";
+  public final static Logger LOG = LoggerFactory.getLogger(WebDriverManager.class);
+
+  private static String downLoadsDir = "";
 
   static WebDriver getWebDriver() {
     WebDriver driver = null;
@@ -49,19 +55,16 @@ public class WebDriverManager {
           // run with DISPLAY 99
         }
         int firefoxVersion = WebDriverManager.getFirefoxVersion();
+        LOG.info("Firefox version " + firefoxVersion + " detected");
 
-        String firebug = null;
-        if (firefoxVersion < 23)
-          firebug = "firebug-1.11.4";
-        else if (firefoxVersion >= 23 && firefoxVersion < 30)
-          firebug = "firebug-1.12.8";
-        else if (firefoxVersion >= 30)
-          firebug = "firebug-2.0.7-fx";
+        downLoadsDir = FileUtils.getTempDirectory().toString();
 
-        String path = Paths.get(".").toAbsolutePath().getParent().toString();
+        String tempPath = downLoadsDir + "/firebug/";
 
-        final String firebugPath = path + "/src/test/resources/firebug/" + firebug + ".xpi";
-        final String firepathPath = path + "/src/test/resources/firebug/firepath-0.9.7.1-fx.xpi";
+        downloadFireBug(firefoxVersion, tempPath);
+
+        final String firebugPath = tempPath + "firebug.xpi";
+        final String firepathPath = tempPath + "firepath.xpi";
 
         FirefoxProfile profile = new FirefoxProfile();
         profile.setPreference("browser.download.folderList", 2);
@@ -132,6 +135,38 @@ public class WebDriverManager {
     }
 
     return driver;
+  }
+
+  private static void downloadFireBug(int firefoxVersion, String tempPath) {
+    String firebugUrlString = null;
+    if (firefoxVersion < 23)
+      firebugUrlString = "http://getfirebug.com/releases/firebug/1.11/firebug-1.11.4.xpi";
+    else if (firefoxVersion >= 23 && firefoxVersion < 30)
+      firebugUrlString = "http://getfirebug.com/releases/firebug/1.12/firebug-1.12.8.xpi";
+    else if (firefoxVersion >= 30)
+      firebugUrlString = "http://getfirebug.com/releases/firebug/2.0/firebug-2.0.7.xpi";
+
+
+    LOG.info("firebug version: " + firefoxVersion + ", will be downloaded to " + tempPath);
+    try {
+      File firebugFile = new File(tempPath + "firebug.xpi");
+      URL firebugUrl = new URL(firebugUrlString);
+      if (!firebugFile.exists()) {
+        FileUtils.copyURLToFile(firebugUrl, firebugFile);
+      }
+
+
+      File firepathFile = new File(tempPath + "firepath.xpi");
+      URL firepathUrl = new URL("https://addons.cdn.mozilla.net/user-media/addons/11900/firepath-0.9.7.1-fx.xpi");
+      if (!firepathFile.exists()) {
+        FileUtils.copyURLToFile(firepathUrl, firepathFile);
+      }
+
+    } catch (IOException e) {
+      LOG.error("Download of firebug version: " + firefoxVersion + ", falied in path " + tempPath);
+      LOG.error(e.toString());
+    }
+    LOG.info("Download of firebug version: " + firefoxVersion + ", successful");
   }
 
   public static int getFirefoxVersion() {
