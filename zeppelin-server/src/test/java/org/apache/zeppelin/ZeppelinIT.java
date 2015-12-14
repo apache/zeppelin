@@ -17,107 +17,42 @@
 
 package org.apache.zeppelin;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.openqa.selenium.*;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.firefox.FirefoxBinary;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.safari.SafariDriver;
-import org.openqa.selenium.support.ui.ExpectedCondition;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
+import static org.junit.Assert.*;
 
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test Zeppelin with web brower.
- *
+ * 
  * To test, ZeppelinServer should be running on port 8080
- * On OSX, you'll need firefox 42.0 installed.
+ * On OSX, you'll need firefox 31.0 installed. 
  *
  */
 public class ZeppelinIT {
   private WebDriver driver;
-
-  private WebDriver getWebDriver() {
-    WebDriver driver = null;
-
-    if (driver == null) {
-      try {
-        FirefoxBinary ffox = new FirefoxBinary();
-        if ("true".equals(System.getenv("TRAVIS"))) {
-          ffox.setEnvironmentProperty("DISPLAY", ":99"); // xvfb is supposed to
-                                                         // run with DISPLAY 99
-        }
-        FirefoxProfile profile = new FirefoxProfile();
-        driver = new FirefoxDriver(ffox, profile);
-      } catch (Exception e) {
-      }
-    }
-
-    if (driver == null) {
-      try {
-        driver = new ChromeDriver();
-      } catch (Exception e) {
-      }
-    }
-
-    if (driver == null) {
-      try {
-        driver = new SafariDriver();
-      } catch (Exception e) {
-      }
-    }
-
-    String url;
-    if (System.getProperty("url") != null) {
-      url = System.getProperty("url");
-    } else {
-      url = "http://localhost:8080";
-    }
-
-    long start = System.currentTimeMillis();
-    boolean loaded = false;
-    driver.get(url);
-
-    while (System.currentTimeMillis() - start < 60 * 1000) {
-      // wait for page load
-      try {
-        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
-          @Override
-          public Boolean apply(WebDriver d) {
-            return d.findElement(By.partialLinkText("Create new note"))
-                .isDisplayed();
-          }
-        });
-        loaded = true;
-        break;
-      } catch (TimeoutException e) {
-        driver.navigate().to(url);
-      }
-    }
-
-    if (loaded == false) {
-      fail();
-    }
-
-    return driver;
-  }
+  public final static Logger LOG = LoggerFactory.getLogger(ZeppelinIT.class);
 
   @Before
   public void startUp() {
     if (!endToEndTestEnabled()) {
       return;
     }
-
-    driver = getWebDriver();
+    driver = WebDriverManager.getWebDriver();
   }
 
   @After
@@ -137,11 +72,9 @@ public class ZeppelinIT {
     (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
       public Boolean apply(WebDriver d) {
         return driver.findElement(By.xpath(getParagraphXPath(paragraphNo)
-            + "//div[contains(@class, 'control')]//span[1][contains(.,'" + state + "')]"))
+                + "//div[@class=\"control\"]//span[1][text()=\" " + state + " \"]"))
             .isDisplayed();
-      }
-
-      ;
+      };
     });
   }
 
@@ -285,6 +218,11 @@ public class ZeppelinIT {
     // check expected text
     waitForText("BindingTest_1_",
         By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+
+    driver.findElement(By.xpath("//*[@id='main']/div/div[1]/h3/span[1]/button[@tooltip='Remove the notebook']")).click();
+    ZeppelinITUtils.sleep(100, true);
+    driver.switchTo().alert().accept();
+    ZeppelinITUtils.sleep(100, true);
 
     System.out.println("testCreateNotebook Test executed");
   }
