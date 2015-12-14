@@ -16,7 +16,7 @@
 
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv) {
+                                         $timeout, $compile, websocketMsgSrv, $http, baseUrlSrv, baseInterpreterService) {
 
   $scope.paragraph = null;
   $scope.originalText = '';
@@ -206,6 +206,8 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.status = data.paragraph.status;
       $scope.paragraph.result = data.paragraph.result;
       $scope.paragraph.settings = data.paragraph.settings;
+      $scope.paragraph.interpreterRestarting = undefined;
+      $scope.paragraph.interpreterRestarted = undefined;
 
       if (!$scope.asIframe) {
         $scope.paragraph.config = data.paragraph.config;
@@ -1846,5 +1848,34 @@ angular.module('zeppelinWebApp')
     var noteId = $route.current.pathParams.noteId;
     var redirectToUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId + '/paragraph/' + $scope.paragraph.id+'?asIframe';
     $window.open(redirectToUrl);
+  };
+
+  $scope.restartInterpreterSetting = function() {
+    var result = confirm('Do you want to restart this interpreter?');
+    if (!result) {
+      return;
+    }
+
+    $scope.paragraph.interpreterRestarting = true;
+
+    var settingId = Object.keys($scope.note.angularObjects)[0];
+    if ($scope.paragraph.text.split('\n')[0][0] !== '%') {
+      baseInterpreterService.restartInterpreterSetting(settingId).then(function() {
+        $scope.paragraph.interpreterRestarted = true;
+      });
+    } else {
+      var language = $scope.paragraph.text.split('\n')[0].split(' ')[0].split('.')[0].split('%')[1];
+      baseInterpreterService.getInterpreterSettings().then(function(settings) {
+        for (var settingIndex in settings) {
+          if (settings[settingIndex].name === language) {
+            settingId = settings[settingIndex].id;
+            break;
+          }
+        }
+        baseInterpreterService.restartInterpreterSetting(settingId).then(function(interpreterSettings) {
+          $scope.paragraph.interpreterRestarted = true;
+        });
+      });
+    }
   };
 });
