@@ -32,7 +32,6 @@
 */
 
 .paragraph .text {
-  white-space: pre;
   display: block;
   unicode-bidi: embed;
   display: block !important;
