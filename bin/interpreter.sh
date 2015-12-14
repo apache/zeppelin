@@ -52,6 +52,9 @@ ZEPPELIN_CLASSPATH+=":${ZEPPELIN_CONF_DIR}"
 # construct classpath
 if [[ -d "${ZEPPELIN_HOME}/zeppelin-interpreter/target/classes" ]]; then
   ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-interpreter/target/classes"
+else
+  ZEPPELIN_INTERPRETER_JAR="$(ls ${ZEPPELIN_HOME}/lib/zeppelin-interpreter*.jar)"
+  ZEPPELIN_CLASSPATH+=":${ZEPPELIN_INTERPRETER_JAR}"
 fi
 
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
@@ -123,7 +126,7 @@ CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 if [[ -n "${SPARK_SUBMIT}" ]]; then
     ${SPARK_SUBMIT} --class ${ZEPPELIN_SERVER} --driver-class-path "${ZEPPELIN_CLASSPATH_OVERRIDES}:${CLASSPATH}" --driver-java-options "${JAVA_INTP_OPTS}" ${SPARK_SUBMIT_OPTIONS} ${SPARK_APP_JAR} ${PORT} &
 else
-    ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} -cp ${ZEPPELIN_CLASSPATH_OVERRIDES}:${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
+    ${ZEPPELIN_RUNNER} ${JAVA_INTP_OPTS} ${ZEPPELIN_INTP_MEM} -cp ${ZEPPELIN_CLASSPATH_OVERRIDES}:${CLASSPATH} ${ZEPPELIN_SERVER} ${PORT} &
 fi
 
 pid=$!

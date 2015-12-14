@@ -56,15 +56,7 @@ public class SecurityRestApi {
   @Path("ticket")
   public Response ticket() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    Subject subject = SecurityUtils.getSubject();
-    String principal;
-    if (subject.isAuthenticated()) {
-      principal = subject.getPrincipal().toString();
-    }
-    else {
-      principal = "anonymous";
-    }
-
+    String principal = org.apache.zeppelin.utils.SecurityUtils.getPrincipal();
     JsonResponse response;
     // ticket set to anonymous for anonymous user. Simplify testing.
     String ticket;
