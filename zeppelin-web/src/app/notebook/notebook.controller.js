@@ -115,7 +115,10 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
             angular.element('#' + n.id + '_paragraphColumn_main').scope().runParagraph(n.text);
           });
         }
-      }
+      },
+      closable: true,
+      closeByBackdrop: false,
+      closeByKeyboard: false,
     });
   };
 
@@ -314,11 +317,11 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.$on('insertParagraph', function(event, paragraphId, position) {
     var newIndex = -1;
     for (var i=0; i<$scope.note.paragraphs.length; i++) {
-      if ( $scope.note.paragraphs[i].id === paragraphId ) {        
+      if ( $scope.note.paragraphs[i].id === paragraphId ) {
         //determine position of where to add new paragraph; default is below
-        if ( position === 'above' ) {         
+        if ( position === 'above' ) {
           newIndex = i;
-        } else {     
+        } else {
           newIndex = i+1;
         }
         break;
