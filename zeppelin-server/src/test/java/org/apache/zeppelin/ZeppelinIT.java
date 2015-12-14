@@ -219,9 +219,11 @@ public class ZeppelinIT {
     waitForText("BindingTest_1_",
         By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
-    driver.findElement(By.xpath("//*[@id='main']/div/div[1]/h3/span[1]/button[@tooltip='Remove the notebook']")).click();
-    ZeppelinITUtils.sleep(100, true);
-    driver.switchTo().alert().accept();
+    driver.findElement(By.xpath("//*[@id='main']/div/div[1]/h3/span[1]/" +
+        "button[@tooltip='Remove the notebook']")).sendKeys(Keys.ENTER);
+    ZeppelinITUtils.sleep(1000, true);
+    driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
+        "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
     ZeppelinITUtils.sleep(100, true);
 
     LOG.info("testCreateNotebook Test executed");
