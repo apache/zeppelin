@@ -577,7 +577,7 @@ public class SparkInterpreter extends Interpreter {
     }
     return paths;
   }
-  
+
   @Override
   public List<String> completion(String buf, int cursor) {
     if (buf.length() < cursor) {
@@ -585,9 +585,9 @@ public class SparkInterpreter extends Interpreter {
     }
     String completionText = getCompletionTargetString(buf, cursor);
     if (completionText == null) {
-      return new LinkedList<String>();
+      completionText = "";
+      cursor = completionText.length();
     }
-    cursor = completionText.length() - 1;
     ScalaCompleter c = completor.completer();
     Candidates ret = c.complete(completionText, cursor);
     return scala.collection.JavaConversions.asJavaList(ret.candidates());
