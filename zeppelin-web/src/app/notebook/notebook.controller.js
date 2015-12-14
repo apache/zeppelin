@@ -1,4 +1,5 @@
 /* jshint loopfunc: true */
+/* global $: false */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +15,9 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location,
-                                                                     $rootScope, $http, websocketMsgSrv, baseUrlSrv,
-                                                                     $timeout, SaveAsService) {
+angular.module('zeppelinWebApp').controller('NotebookCtrl',
+  function($scope, $route, $routeParams, $location, $rootScope, $http,
+    websocketMsgSrv, baseUrlSrv, $timeout, SaveAsService) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -66,6 +67,21 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   /** Init the new controller */
   var initNotebook = function() {
     websocketMsgSrv.getNotebook($routeParams.noteId);
+
+    var currentRoute = $route.current;
+
+    if (currentRoute) {
+      var routeParams = currentRoute.params;
+      var id = '#' + routeParams.paragraph + '_container';
+      setTimeout(
+        function() {
+          // adjust for navbar
+          var top = $(id).offset().top - 103;
+          $('html, body').scrollTo({top: top, left: 0});
+        },
+        1000
+      );
+    }
   };
 
   initNotebook();
@@ -314,11 +330,11 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.$on('insertParagraph', function(event, paragraphId, position) {
     var newIndex = -1;
     for (var i=0; i<$scope.note.paragraphs.length; i++) {
-      if ( $scope.note.paragraphs[i].id === paragraphId ) {        
+      if ( $scope.note.paragraphs[i].id === paragraphId ) {
         //determine position of where to add new paragraph; default is below
-        if ( position === 'above' ) {         
+        if ( position === 'above' ) {
           newIndex = i;
-        } else {     
+        } else {
           newIndex = i+1;
         }
         break;

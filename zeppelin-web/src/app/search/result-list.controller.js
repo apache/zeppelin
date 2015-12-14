@@ -20,9 +20,14 @@ angular
 
   var results = searchService.search({'q': $routeParams.searchTerm}).query();
 
-  console.log('Found: %o', results);
   results.$promise.then(function(result) {
-    $scope.notes = result.body;
+    $scope.notes = result.body.map(function(note) {
+      note.id = note.id.replace('paragraph/', '?paragraph=') +
+        '&term=' +
+        $routeParams.searchTerm;
+
+      return note;
+    });
   });
 
   $scope.page = 0;

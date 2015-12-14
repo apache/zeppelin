@@ -51,6 +51,10 @@ angular.module('zeppelinWebApp', [
         templateUrl: 'app/notebook/notebook.html',
         controller: 'NotebookCtrl'
       })
+      .when('/notebook/:noteId/paragraph?=:paragraphId', {
+        templateUrl: 'app/notebook/notebook.html',
+        controller: 'NotebookCtrl'
+      })
       .when('/notebook/:noteId/paragraph/:paragraphId?', {
         templateUrl: 'app/notebook/notebook.html',
         controller: 'NotebookCtrl'
