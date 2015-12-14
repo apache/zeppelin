@@ -1850,6 +1850,17 @@ angular.module('zeppelinWebApp')
     $window.open(redirectToUrl);
   };
 
+  $scope.checkErrorForRestart = function(){
+    var errorText = $scope.paragraph.result.msg;
+    if (errorText) {
+      errorText = errorText.toLowerCase();
+      if (errorText.indexOf('timed out') > 0 || (errorText.indexOf('thrift') > 0) && errorText.indexOf('except') > 0) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   $scope.restartInterpreterSetting = function() {
     var result = confirm('Do you want to restart this interpreter?');
     if (!result) {
