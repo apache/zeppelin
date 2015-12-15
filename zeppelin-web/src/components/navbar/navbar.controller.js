@@ -1,12 +1,12 @@
 /*
- * Licensed under the Apache License, Version 2.0 (the 'License');
+ * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an 'AS IS' BASIS,
+ * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -36,10 +36,8 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
 
   $rootScope.$on('$locationChangeSuccess', function () {
     var path = $location.path();
-    // felizbear:
-    // this is a somewhat hacky solution to clear search bar,
-    // as I couldn't figure out how to make ng-click work in navbar
-    // on the other hand, what is not hacky in current zeppelin-web ;)
+    // hacky solution to clear search bar
+    // TODO(felizbear): figure out how to make ng-click work in navbar
     if (path === '/') {
       $scope.searchTerm = '';
     }
