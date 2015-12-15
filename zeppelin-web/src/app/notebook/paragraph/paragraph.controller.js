@@ -67,10 +67,10 @@ angular.module('zeppelinWebApp')
           console.log('HTML rendering error %o', err);
         }
       } else {
+        $timeout(retryRenderer, 10);
       }
     };
     $timeout(retryRenderer);
-
   };
 
   $scope.renderAngular = function() {
@@ -84,11 +84,10 @@ angular.module('zeppelinWebApp')
           console.log('ANGULAR rendering error %o', err);
         }
       } else {
-        $timeout(retryRenderer,10);
+        $timeout(retryRenderer, 10);
       }
     };
     $timeout(retryRenderer);
-
   };
 
 
@@ -298,11 +297,16 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.removeParagraph = function() {
-    var result = confirm('Do you want to delete this paragraph?');
-    if (result) {
-      console.log('Remove paragraph');
-      websocketMsgSrv.removeParagraph($scope.paragraph.id);
-    }
+    BootstrapDialog.confirm({
+      title: '',
+      message: 'Do you want to delete this paragraph?',
+      callback: function(result) {
+        if (result) {
+          console.log('Remove paragraph');
+          websocketMsgSrv.removeParagraph($scope.paragraph.id);
+        }
+      }
+    });
   };
 
   $scope.clearParagraphOutput = function() {

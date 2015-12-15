@@ -17,20 +17,10 @@
 
 package org.apache.zeppelin;
 
-import static org.junit.Assert.*;
-
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -40,11 +30,17 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 /**
  * Test Zeppelin with web brower.
- * 
+ *
  * To test, ZeppelinServer should be running on port 8080
- * On OSX, you'll need firefox 31.0 installed. 
+ * On OSX, you'll need firefox 42.0 installed.
  *
  */
 public class ZeppelinIT {
@@ -141,9 +137,11 @@ public class ZeppelinIT {
     (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
       public Boolean apply(WebDriver d) {
         return driver.findElement(By.xpath(getParagraphXPath(paragraphNo)
-                + "//div[@class=\"control\"]//span[1][text()=\" " + state + " \"]"))
+            + "//div[contains(@class, 'control')]//span[1][contains(.,'" + state + "')]"))
             .isDisplayed();
-      };
+      }
+
+      ;
     });
   }
 
@@ -213,7 +211,7 @@ public class ZeppelinIT {
      */
     WebElement paragraph3Editor = driver.findElement(By.xpath(getParagraphXPath(3) + "//textarea"));
     paragraph3Editor.sendKeys(
-        "print" + Keys.chord(Keys.SHIFT, "9") + "\"myVar=\"" + Keys.chord(Keys.ADD) 
+        "print" + Keys.chord(Keys.SHIFT, "9") + "\"myVar=\"" + Keys.chord(Keys.ADD)
         + "z.angular" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\"))");
     paragraph3Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
     waitForParagraph(3, "FINISHED");
@@ -241,7 +239,7 @@ public class ZeppelinIT {
     WebElement paragraph4Editor = driver.findElement(By.xpath(getParagraphXPath(4) + "//textarea"));
     paragraph4Editor.sendKeys(
         "z.angularWatch" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\", "
-        + Keys.chord(Keys.SHIFT, "9") 
+        + Keys.chord(Keys.SHIFT, "9")
         + "before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext)"
         + Keys.EQUALS + ">{ z.run" +Keys.chord(Keys.SHIFT, "9") + "2, context)}");
     paragraph4Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
@@ -293,12 +291,12 @@ public class ZeppelinIT {
 
   private void createNewNote() {
     List<WebElement> notebookLinks = driver.findElements(By
-        .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));    
+        .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));
     List<String> notebookTitles = new LinkedList<String>();
     for (WebElement el : notebookLinks) {
       notebookTitles.add(el.getText());
     }
-    
+
     WebElement createNoteLink = driver.findElement(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new note')]"));
     createNoteLink.click();
 
@@ -310,6 +308,6 @@ public class ZeppelinIT {
     try {
       Thread.sleep(500); // wait for notebook list updated
     } catch (InterruptedException e) {
-    } 
+    }
   }
 }
