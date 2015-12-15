@@ -299,6 +299,7 @@ angular.module('zeppelinWebApp')
 
   $scope.removeParagraph = function() {
     BootstrapDialog.confirm({
+      closable: true,
       title: '',
       message: 'Do you want to delete this paragraph?',
       callback: function(result) {
