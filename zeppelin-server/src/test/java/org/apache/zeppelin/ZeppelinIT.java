@@ -72,7 +72,7 @@ public class ZeppelinIT {
     (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
       public Boolean apply(WebDriver d) {
         return driver.findElement(By.xpath(getParagraphXPath(paragraphNo)
-                + "//div[@class=\"control\"]//span[1][text()=\" " + state + " \"]"))
+                + "//div//span[1][contains(.,'" +state+ "')]"))
             .isDisplayed();
       };
     });
@@ -219,8 +219,8 @@ public class ZeppelinIT {
     waitForText("BindingTest_1_",
         By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
-    driver.findElement(By.xpath("//*[@id='main']/div/div[1]/h3/span[1]/" +
-        "button[@tooltip='Remove the notebook']")).sendKeys(Keys.ENTER);
+    driver.findElement(By.xpath("//*[@id='main']/div//h3/span[1]/button[@tooltip='Remove the notebook']"))
+        .sendKeys(Keys.ENTER);
     ZeppelinITUtils.sleep(1000, true);
     driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
         "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
