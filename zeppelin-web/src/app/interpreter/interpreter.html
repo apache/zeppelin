@@ -65,12 +65,11 @@ limitations under the License.
         </span>
       </div>
     </div>
-    <br />
     <div class="row interpreter">
-      <div ng-show="getInterpreterPropertiesCount(setting.id) === 0 || valueform.$hidden" class="col-md-12 empty-properties-message">
+      <div ng-show="_.isEmpty(setting.properties) || valueform.$hidden" class="col-md-12 empty-properties-message">
         <em>Currently there are no properties set for this interpreter</em>
       </div>
-      <div class="col-md-12" ng-show="getInterpreterPropertiesCount(setting.id) > 0 || valueform.$visible">
+      <div class="col-md-12" ng-show="!_.isEmpty(setting.properties) || valueform.$visible">
         <h5>Properties</h5>
         <table class="table table-striped">
           <thead>

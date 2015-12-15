@@ -81,11 +81,6 @@
   float: left;
 }
 
-.table-striped thead {
-  background: #ddd;
-  color: #333;
-}
-
 .empty-properties-message {
   color: #666;
 }
