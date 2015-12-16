@@ -31,6 +31,7 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job.Status;
+import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -188,6 +189,39 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals("<p>markdown restarted</p>\n", p.getResult().message());
     //cleanup
     ZeppelinServer.notebook.removeNote(note.getId());
+  }
+
+  @Test
+  public void testGetNotebookInfo() throws IOException {
+    LOG.info("testGetNotebookInfo");
+    // Create note to get info
+    Note note = ZeppelinServer.notebook.createNote();
+    assertNotNull("can't create new note", note);
+    note.setName("note");
+    Paragraph paragraph = note.addParagraph();
+    Map config = paragraph.getConfig();
+    config.put("enabled", true);
+    paragraph.setConfig(config);
+    String paragraphText = "%md This is my new paragraph in my new note";
+    paragraph.setText(paragraphText);
+    note.persist();
+
+    String sourceNoteID = note.getId();
+    GetMethod get = httpGet("/notebook/" + sourceNoteID);
+    LOG.info("testGetNotebookInfo \n" + get.getResponseBodyAsString());
+    assertThat("test notebook get method:", get, isAllowed());
+
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+
+    assertNotNull(resp);
+    assertEquals("OK", resp.get("status"));
+
+    Map<String, Object> body = (Map<String, Object>) resp.get("body");
+    List<Map<String, Object>> paragraphs = (List<Map<String, Object>>) body.get("paragraphs");
+
+    assertTrue(paragraphs.size() > 0);
+    assertEquals(paragraphText, paragraphs.get(0).get("text"));
   }
 
   @Test

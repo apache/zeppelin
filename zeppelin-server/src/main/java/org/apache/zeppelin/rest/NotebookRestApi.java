@@ -125,6 +125,17 @@ public class NotebookRestApi {
     return new JsonResponse(Status.OK, "", notesInfo ).build();
   }
 
+  @GET
+  @Path("{notebookId}")
+  public Response getNotebook(@PathParam("notebookId") String notebookId) throws IOException {
+    Note note = notebook.getNote(notebookId);
+    if (note == null) {
+      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+    }
+
+    return new JsonResponse(Status.OK, "", note).build();
+  }
+
   /**
    * Create new note REST API
    * @param message - JSON with new note name
