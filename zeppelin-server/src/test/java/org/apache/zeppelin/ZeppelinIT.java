@@ -137,7 +137,7 @@ public class ZeppelinIT {
     (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
       public Boolean apply(WebDriver d) {
         return driver.findElement(By.xpath(getParagraphXPath(paragraphNo)
-            + "//div[@class='control']//span[1][contains(.,'" + state + "')]"))
+            + "//div[contains(@class, 'control')]//span[1][contains(.,'" + state + "')]"))
             .isDisplayed();
       }
 
@@ -211,7 +211,7 @@ public class ZeppelinIT {
      */
     WebElement paragraph3Editor = driver.findElement(By.xpath(getParagraphXPath(3) + "//textarea"));
     paragraph3Editor.sendKeys(
-        "print" + Keys.chord(Keys.SHIFT, "9") + "\"myVar=\"" + Keys.chord(Keys.ADD) 
+        "print" + Keys.chord(Keys.SHIFT, "9") + "\"myVar=\"" + Keys.chord(Keys.ADD)
         + "z.angular" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\"))");
     paragraph3Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
     waitForParagraph(3, "FINISHED");
@@ -239,7 +239,7 @@ public class ZeppelinIT {
     WebElement paragraph4Editor = driver.findElement(By.xpath(getParagraphXPath(4) + "//textarea"));
     paragraph4Editor.sendKeys(
         "z.angularWatch" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\", "
-        + Keys.chord(Keys.SHIFT, "9") 
+        + Keys.chord(Keys.SHIFT, "9")
         + "before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext)"
         + Keys.EQUALS + ">{ z.run" +Keys.chord(Keys.SHIFT, "9") + "2, context)}");
     paragraph4Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
@@ -291,12 +291,12 @@ public class ZeppelinIT {
 
   private void createNewNote() {
     List<WebElement> notebookLinks = driver.findElements(By
-        .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));    
+        .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));
     List<String> notebookTitles = new LinkedList<String>();
     for (WebElement el : notebookLinks) {
       notebookTitles.add(el.getText());
     }
-    
+
     WebElement createNoteLink = driver.findElement(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new note')]"));
     createNoteLink.click();
 
@@ -308,6 +308,6 @@ public class ZeppelinIT {
     try {
       Thread.sleep(500); // wait for notebook list updated
     } catch (InterruptedException e) {
-    } 
+    }
   }
 }

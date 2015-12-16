@@ -318,6 +318,14 @@ This part should be removed when new version of bootstrap handles this issue.
   float: left;
 }
 
+.modal-backdrop {
+  z-index: 10002 !important;
+}
+
+.modal-dialog, .modal {
+  z-index: 10003 !important;
+}
+
 #noteImportModal .modal-body {
   min-height: 420px;
   overflow: hidden;

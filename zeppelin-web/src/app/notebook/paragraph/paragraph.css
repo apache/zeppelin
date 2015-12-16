@@ -32,7 +32,6 @@
 */
 
 .paragraph .text {
-  white-space: pre;
   display: block;
   unicode-bidi: embed;
   display: block !important;
@@ -142,7 +141,7 @@
   font-size: 1px;
   color: #AAAAAA;
   height:4px;
-  margin: 1px 0 0 0;
+  margin: 0px 0px 3px 0px;
 }
 
 .paragraph .runControl .progress {
@@ -151,10 +150,6 @@
   height: 4px;
   z-index: 100;
   border-radius: 0;
-}
-
-.paragraph .runControl .progress .progress-bar {
-  z-index: 100;
 }
 
 .paragraph .control span {

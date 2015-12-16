@@ -67,10 +67,10 @@ angular.module('zeppelinWebApp')
           console.log('HTML rendering error %o', err);
         }
       } else {
+        $timeout(retryRenderer, 10);
       }
     };
     $timeout(retryRenderer);
-
   };
 
   $scope.renderAngular = function() {
@@ -84,11 +84,10 @@ angular.module('zeppelinWebApp')
           console.log('ANGULAR rendering error %o', err);
         }
       } else {
-        $timeout(retryRenderer,10);
+        $timeout(retryRenderer, 10);
       }
     };
     $timeout(retryRenderer);
-
   };
 
 
@@ -541,35 +540,8 @@ angular.module('zeppelinWebApp')
 
           pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
           var buf = session.getValue();
-          var completionString = buf;
 
-          if (pos > 0) {
-            var completionStartPosition = pos;
-            var completionSeqCharaters = [' ', '\n'];
-
-            // replace \r\n or \n\r other to \n
-            var reverseCompletionString = buf.replace(/\r?\n|\r/g, '\n').substr(0, pos).split('').reverse();
-            for (var seqCharacterIndex in completionSeqCharaters) {
-              var indexOfReverseSeqPostion = reverseCompletionString.indexOf(completionSeqCharaters[seqCharacterIndex]);
-
-              if (indexOfReverseSeqPostion < completionStartPosition && indexOfReverseSeqPostion > 0) {
-                completionStartPosition = indexOfReverseSeqPostion;
-              }
-            }
-
-            if (completionStartPosition === pos) {
-              completionStartPosition = 0;
-            }
-            else
-            {
-              completionStartPosition = pos - completionStartPosition;
-            }
-
-            completionString = buf.substr( completionStartPosition , pos);
-            pos = completionString.length -1;
-          }
-
-          websocketMsgSrv.completion($scope.paragraph.id, completionString, pos);
+          websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
 
           $scope.$on('completionList', function(event, data) {
             if (data.completions) {
