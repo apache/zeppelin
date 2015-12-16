@@ -3,7 +3,7 @@
 **Zeppelin** is [Apache2 License](https://github.com/apache/incubator-zeppelin/blob/master/CONTRIBUTING.md) Software.
 Contributing to Zeppelin (Source code, Documents, Image, Website) means you agree to the Apache2 License.
 
-1. Make sure your issue is not already in the [Jira issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN)
+1. Make sure your issue is already in the [Jira issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN)
 2. If not, create a ticket describing the change you're proposing in the [Jira issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN)
 3. Contribute your patch via Pull Request.
 
