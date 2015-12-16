@@ -352,7 +352,6 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-<<<<<<< HEAD
         <artifactId>maven-shade-plugin</artifactId>
         <version>2.3</version>
         <configuration>
