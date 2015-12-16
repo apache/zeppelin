@@ -32,16 +32,12 @@ import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.NotebookTest;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.scheduler.Job.Status;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class VFSNotebookRepoTest implements JobListenerFactory{
   private ZeppelinConfiguration conf;
@@ -91,7 +87,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory{
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
 
     Paragraph p1 = note.addParagraph();
-    Map config = p1.getConfig();
+    Map<String, Object> config = p1.getConfig();
     config.put("enabled", true);
     p1.setConfig(config);
     p1.setText("%mock1 hello world");

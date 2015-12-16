@@ -134,10 +134,11 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   /**
-   * copy new/updated notes from source to destination storage
+   * Copies new/updated notes from source to destination storage
+   *
    * @throws IOException
    */
-  public void sync(int sourceRepoIndex, int destRepoIndex) throws IOException {    
+  void sync(int sourceRepoIndex, int destRepoIndex) throws IOException {
     LOG.info("Sync started");
     NotebookRepo srcRepo = getRepo(sourceRepoIndex);
     NotebookRepo dstRepo = getRepo(destRepoIndex);
