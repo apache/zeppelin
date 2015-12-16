@@ -428,7 +428,7 @@ limitations under the License.
   <table class="table-configuration">
     <col width="200">
     <tr>
-      <th>Full-text search though the paragraphs in all notebooks</th>
+      <th>Full-text search through the paragraphs in all notebooks</th>
       <th></th>
     </tr>
     <tr>
