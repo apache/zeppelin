@@ -362,7 +362,52 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     //cleanup
     ZeppelinServer.notebook.removeNote(note.getId());
   }
-  
+
+  @Test
+  public void testRunParagraphWithParams() throws IOException, InterruptedException {
+    LOG.info("testRunParagraphWithParams");
+    // Create note to run test.
+    Note note = ZeppelinServer.notebook.createNote();
+    assertNotNull("can't create new note", note);
+    note.setName("note for run test");
+    Paragraph paragraph = note.addParagraph();
+
+    Map config = paragraph.getConfig();
+    config.put("enabled", true);
+    paragraph.setConfig(config);
+
+    paragraph.setText("%spark\nval param = z.input(\"param\").toString\nprintln(param)");
+    note.persist();
+    String noteID = note.getId();
+
+    note.runAll();
+    // wait until job is finished or timeout.
+    int timeout = 1;
+    while (!paragraph.isTerminated()) {
+      Thread.sleep(1000);
+      if (timeout++ > 30) {
+        LOG.info("testRunParagraphWithParams timeout job.");
+        break;
+      }
+    }
+
+    // Call Run paragraph REST API
+    PostMethod postParagraph = httpPost("/notebook/job/" + noteID + "/" + paragraph.getId(),
+        "{\"params\": {\"param\": \"hello\", \"param2\": \"world\"}}");
+    assertThat("test paragraph run:", postParagraph, isAllowed());
+    postParagraph.releaseConnection();
+    Thread.sleep(1000);
+
+    Note retrNote = ZeppelinServer.notebook.getNote(noteID);
+    Paragraph retrParagraph = retrNote.getParagraph(paragraph.getId());
+    Map<String, Object> params = retrParagraph.settings.getParams();
+    assertEquals("hello", params.get("param"));
+    assertEquals("world", params.get("param2"));
+
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note.getId());
+  }
+
   @Test
   public void testCronJobs() throws InterruptedException, IOException{
     // create a note and a paragraph
