@@ -236,7 +236,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   /** Update the note name */
   $scope.sendNewName = function() {
-    $scope.showEditor = false;
     if ($scope.note.name) {
       websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, $scope.note.config);
     }
