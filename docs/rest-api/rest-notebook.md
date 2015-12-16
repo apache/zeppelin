@@ -24,7 +24,7 @@ limitations under the License.
  
  All REST API are available starting with the following endpoint ```http://[zeppelin-server]:[zeppelin-port]/api```
  
- Note that zeppein REST API receive or return JSON objects, it it recommended you install some JSON view such as 
+ Note that zeppelin REST API receive or return JSON objects, it it recommended you install some JSON view such as 
  [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc)
  
  
@@ -428,7 +428,7 @@ limitations under the License.
   <table class="table-configuration">
     <col width="200">
     <tr>
-      <th>Full-text search thoug the paragraps in all notebooks</th>
+      <th>Full-text search though the paragraphs in all notebooks</th>
       <th></th>
     </tr>
     <tr>
