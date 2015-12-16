@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-import sys, getopt, traceback, json
+import sys, getopt, traceback, json, re
 
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
 from py4j.protocol import Py4JJavaError
@@ -149,7 +149,8 @@ class PySparkCompletion:
     if len(completionList) <= 0:
       print ""
     else:
-      print json.dumps(list(completionList))
+      resultCompletion = filter(lambda x : not re.match("__.*__", x), list(completionList))
+      print json.dumps(resultCompletion)
 
 
 output = Logger()
