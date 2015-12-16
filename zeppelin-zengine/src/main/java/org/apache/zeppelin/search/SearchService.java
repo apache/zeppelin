@@ -43,8 +43,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 /**
- * TODO(bzz): find a better name
- * TODO(bzz): document thread-safety for writer
+ * Service for search (indexing and query) the notebooks
+ *
+ * TODO(bzz): document thread-safety
  */
 public class SearchService {
   private static final Logger LOG = LoggerFactory.getLogger(SearchService.class);
@@ -92,11 +93,11 @@ public class SearchService {
       Highlighter highlighter = new Highlighter(htmlFormatter, new QueryScorer(query));
 
       result = doSearch(indexSearcher, query, analyzer, highlighter);
-
+      indexReader.close();
     } catch (IOException e) {
-      LOG.error("Faild to open index dir", e);
+      LOG.error("Failed to open index dir {}, make sure indexing finished OK", ramDirectory, e);
     } catch (ParseException e) {
-      LOG.error("Faild to parse query " + queryStr, e);
+      LOG.error("Failed to parse query " + queryStr, e);
     }
     return result;
   }
@@ -153,13 +154,19 @@ public class SearchService {
    */
   public void index(Collection<Note> collection) {
     long start = System.nanoTime();
-    try { //TODO(bzz): document thread-safety
+    try {
       indexDocs(writer, collection);
       long end = System.nanoTime();
       LOG.info("Indexing {} notebooks took {}ms",
           collection.size(), TimeUnit.NANOSECONDS.toMillis(end - start));
-    } catch (Exception e) {
+    } catch (IOException e) {
       LOG.error("Failed to index all Notebooks", e);
+    } finally {
+      try { // save what's been indexed, even if not full collection
+        writer.commit();
+      } catch (IOException e) {
+        LOG.error("Failed to save index", e);
+      }
     }
   }
 
@@ -201,13 +208,12 @@ public class SearchService {
       indexDoc(writer, note.getId(), note.getName());
       for (Paragraph doc : note.getParagraphs()) {
         if (doc.getText() == null) {
-          LOG.info("Skipping empty paragraph");
+          LOG.debug("Skipping empty paragraph");
           continue;
         }
         indexDoc(writer, note.getId(), note.getName(), doc);
       }
     }
-    writer.commit();
   }
 
   /**
@@ -215,6 +221,11 @@ public class SearchService {
    * @throws IOException
    */
   private void indexDoc(IndexWriter w, String noteId, String noteName) throws IOException {
+    LOG.debug("Indexing Notebook {}, '{}'", noteId, noteName);
+    if (null == noteName || noteName.isEmpty()) {
+      LOG.debug("Skipping empty notebook name");
+      return;
+    }
     Document doc = newDocument(noteId, noteName);
     w.addDocument(doc);
   }
