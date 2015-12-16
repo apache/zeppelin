@@ -18,6 +18,7 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +27,12 @@ import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.rest.message.NewParagraphRequest;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.junit.AfterClass;
@@ -199,6 +202,46 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   @Test
   public void testNotebookCreateNoName() throws IOException {
     testNotebookCreate("");
+  }
+
+  @Test
+  public void testNotebookCreateWithParagraphs() throws IOException {
+    // Call Create Notebook REST API
+    String noteName = "test";
+    String jsonRequest = "{\"name\":\"" + noteName + "\", \"paragraphs\": [" +
+        "{\"title\": \"title1\", \"text\": \"text1\"}," +
+        "{\"title\": \"title2\", \"text\": \"text2\"}" +
+        "]}";
+    PostMethod post = httpPost("/notebook/", jsonRequest);
+    LOG.info("testNotebookCreate \n" + post.getResponseBodyAsString());
+    assertThat("test notebook create method:", post, isCreated());
+
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+
+    String newNotebookId =  (String) resp.get("body");
+    LOG.info("newNotebookId:=" + newNotebookId);
+    Note newNote = ZeppelinServer.notebook.getNote(newNotebookId);
+    assertNotNull("Can not find new note by id", newNote);
+    // This is partial test as newNote is in memory but is not persistent
+    String newNoteName = newNote.getName();
+    LOG.info("new note name is: " + newNoteName);
+    String expectedNoteName = noteName;
+    if (noteName.isEmpty()) {
+      expectedNoteName = "Note " + newNotebookId;
+    }
+    assertEquals("compare note name", expectedNoteName, newNoteName);
+    assertEquals("initial paragraph check failed", 3, newNote.getParagraphs().size());
+    for (Paragraph p : newNote.getParagraphs()) {
+      if (StringUtils.isEmpty(p.getText())) {
+        continue;
+      }
+      assertTrue("paragraph title check failed", p.getTitle().startsWith("title"));
+      assertTrue("paragraph text check failed", p.getText().startsWith("text"));
+    }
+    // cleanup
+    ZeppelinServer.notebook.removeNote(newNotebookId);
+    post.releaseConnection();
   }
 
   private void testNotebookCreate(String noteName) throws IOException {
