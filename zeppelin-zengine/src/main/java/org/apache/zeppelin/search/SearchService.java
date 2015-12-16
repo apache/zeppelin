@@ -198,6 +198,7 @@ public class SearchService {
    */
   void indexDocs(final IndexWriter writer, Collection<Note> notes) throws IOException {
     for (Note note : notes) {
+      indexDoc(writer, note.getId(), note.getName());
       for (Paragraph doc : note.getParagraphs()) {
         if (doc.getText() == null) {
           LOG.info("Skipping empty paragraph");
@@ -207,6 +208,15 @@ public class SearchService {
       }
     }
     writer.commit();
+  }
+
+  /**
+   * Indexes a notebook name
+   * @throws IOException
+   */
+  private void indexDoc(IndexWriter w, String noteId, String noteName) throws IOException {
+    Document doc = newDocument(noteId, noteName);
+    w.addDocument(doc);
   }
 
   /**
@@ -229,6 +239,20 @@ public class SearchService {
     Date date = p.getDateStarted() != null ? p.getDateStarted() : p.getDateCreated();
     doc.add(new LongField("modified", date.getTime(), Field.Store.NO));
     doc.add(new TextField(SEARCH_FIELD, p.getText(), Field.Store.YES));
+    return doc;
+  }
+
+  //TODO(bzz): refactor and re-use code from above
+  private Document newDocument(String noteId, String noteName) {
+    Document doc = new Document();
+
+    Field pathField = new StringField(ID_FIELD, noteId, Field.Store.YES);
+    doc.add(pathField);
+
+    doc.add(new StringField("title", noteName, Field.Store.YES));
+
+    //doc.add(new LongField("modified", date.getTime(), Field.Store.NO));
+    doc.add(new TextField(SEARCH_FIELD, noteName, Field.Store.YES));
     return doc;
   }
 

@@ -47,6 +47,22 @@ public class SearchServiceTest {
         String.format("%s/paragraph/%s", note2.getId(), note2.getLastParagraph().getId()));
   }
 
+  @Test public void canIndexAndQueryByNotebookName() {
+    //given
+    Note note1 = newNoteWithParapgraph("Notebook1", "test");
+    Note note2 = newNoteWithParapgraphs("Notebook2", "not test", "not test at all");
+    notebookIndex.index(Arrays.asList(note1, note2));
+
+    //when
+    List<Map<String, String>> results = notebookIndex.search("Notebook1");
+
+    //then
+    assertThat(results).isNotEmpty();
+    assertThat(results.size()).isEqualTo(1);
+    assertThat(results.get(0)).containsEntry("id", note1.getId());
+  }
+
+
   @Test //(expected=IllegalStateException.class)
   public void canNotSearchBeforeIndexing() {
     //given no notebookIndex.index() was made
