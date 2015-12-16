@@ -71,13 +71,18 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     var currentRoute = $route.current;
 
     if (currentRoute) {
-      var routeParams = currentRoute.params;
-      var id = '#' + routeParams.paragraph + '_container';
+
       setTimeout(
         function() {
-          // adjust for navbar
-          var top = $(id).offset().top - 103;
-          $('html, body').scrollTo({top: top, left: 0});
+          var routeParams = currentRoute.params;
+          var $id = $('#' + routeParams.paragraph + '_container');
+
+          if ($id.length > 0) {
+            // adjust for navbar
+            var top = $id.offset().top - 103;
+            $('html, body').scrollTo({top: top, left: 0});
+          }
+
         },
         1000
       );

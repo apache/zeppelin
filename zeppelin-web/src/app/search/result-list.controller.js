@@ -22,6 +22,12 @@ angular
 
   results.$promise.then(function(result) {
     $scope.notes = result.body.map(function(note) {
+      // redirect to notebook when search result is a notebook itself,
+      // not a paragraph
+      if (!/\/paragraph\//.test(note.id)) {
+        return note;
+      }
+
       note.id = note.id.replace('paragraph/', '?paragraph=') +
         '&term=' +
         $routeParams.searchTerm;
