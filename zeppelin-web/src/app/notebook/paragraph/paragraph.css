@@ -405,3 +405,8 @@
 .dropdown-menu > li:first-child > a:hover {
   background-color: transparent;
 }
+
+table.table-striped {
+  border-top: 1px solid #ddd;
+  margin-top: 20px;
+}
