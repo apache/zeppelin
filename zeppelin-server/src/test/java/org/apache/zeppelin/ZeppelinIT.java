@@ -90,7 +90,7 @@ public class ZeppelinIT {
     while (System.currentTimeMillis() - start < 60 * 1000) {
       // wait for page load
       try {
-        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
+        (new WebDriverWait(driver, 30)).until(new ExpectedCondition<Boolean>() {
           @Override
           public Boolean apply(WebDriver d) {
             return d.findElement(By.partialLinkText("Create new note"))
@@ -151,7 +151,7 @@ public class ZeppelinIT {
 
   boolean waitForText(final String txt, final By by) {
     try {
-      new WebDriverWait(driver, 5).until(new ExpectedCondition<Boolean>() {
+      new WebDriverWait(driver, 30).until(new ExpectedCondition<Boolean>() {
         @Override
         public Boolean apply(WebDriver d) {
           return txt.equals(driver.findElement(by).getText());
@@ -300,7 +300,7 @@ public class ZeppelinIT {
     WebElement createNoteLink = driver.findElement(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new note')]"));
     createNoteLink.click();
 
-    WebDriverWait block = new WebDriverWait(driver, 10);
+    WebDriverWait block = new WebDriverWait(driver, 30);
     WebElement modal = block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteNameModal")));
     WebElement createNoteButton = modal.findElement(By.id("createNoteButton"));
     createNoteButton.click();
