@@ -38,7 +38,7 @@ sudo apt-get install libfontconfig
 sudo npm -g install grunt-cli
 sudo npm -g install bower
 
-# Optional: If you're behind limited to what ports you can access externally
+# Optional: If you're limited to what ports you can access externally
 # git config --global url."https://".insteadOf git://
 
 # install maven
