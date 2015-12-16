@@ -44,6 +44,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Apache Tajo (http://tajo.apache.org/)
     (Apache 2.0) Apache Flink (http://flink.apache.org/)
     (Apache 2.0) Apache Thrift (http://thrift.apache.org/)
+    (Apache 2.0) Apache Lucene (https://lucene.apache.org/)
     (Apache 2.0) Apache Zookeeper (org.apache.zookeeper:zookeeper:jar:3.4.5 - http://zookeeper.apache.org/)
     (Apache 2.0) Chill (com.twitter:chill-java:jar:0.5.0 - https://github.com/twitter/chill/)
     (Apache 2.0) Codehaus Plexus (org.codehaus.plexus:plexus:jar:1.5.6 - https://codehaus-plexus.github.io/)
@@ -104,7 +105,7 @@ The following components are provided under the MIT License.
     (The MIT License) Objenesis (org.objenesis:objenesis:2.1 - https://github.com/easymock/objenesis) - Copyright (c) 2006-2015 the original author and authors
     (The MIT License) JCL 1.1.1 implemented over SLF4J (org.slf4j:jcl-over-slf4j:1.7.5 - http://www.slf4j.org)    
     (The MIT License) JUL to SLF4J bridge (org.slf4j:jul-to-slf4j:1.7.5 - http://www.slf4j.org)
-
+    (The MIT License) angular-resource (angular-resource - https://github.com/angular/angular.js/tree/master/src/ngResource)
 
 
 ========================================================================
