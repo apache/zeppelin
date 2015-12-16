@@ -65,11 +65,13 @@ public class SearchServiceTest {
 
   @Test //(expected=IllegalStateException.class)
   public void canNotSearchBeforeIndexing() {
-    //given no notebookIndex.index() was made
+    //given NO notebookIndex.index() was called
     //when
     List<Map<String, String>> result = notebookIndex.search("anything");
     //then
     assertThat(result).isEmpty();
+    //assert logs were printed
+    //"ERROR org.apache.zeppelin.search.SearchService:97 - Failed to open index dir RAMDirectory"
   }
 
   @Test public void canIndexAndReIndex() throws IOException {
