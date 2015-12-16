@@ -35,6 +35,11 @@ sudo apt-get install git
 sudo apt-get install openjdk-7-jdk
 sudo apt-get install npm
 sudo apt-get install libfontconfig
+sudo npm -g install grunt-cli
+sudo npm -g install bower
+
+# Optional: If you're behind limited to what ports you can access externally
+# git config --global url."https://".insteadOf git://
 
 # install maven
 wget http://www.eu.apache.org/dist/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
