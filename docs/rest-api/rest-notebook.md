@@ -93,7 +93,21 @@ limitations under the License.
     </tr>
     <tr>
       <td> sample JSON input </td>
-      <td><pre>{"name": "name of new notebook"}</pre></td>
+      <td><pre>
+{
+  "name": "name of new notebook", 
+  "paragraphs": [
+    {
+      "title": "paragraph title1",
+      "text": "paragraph text1"
+    },
+    {
+      "title": "paragraph title2",
+      "text": "paragraph text2"
+    }
+  ]
+}
+      </pre></td>
     </tr>
     <tr>
       <td> sample JSON response </td>
