@@ -33,6 +33,11 @@ group: manual
     <td>9300</td>
     <td>Connection port <b>(important: this is not the HTTP port, but the transport port)</b></td>
   </tr>
+  <tr>
+    <td>elasticsearch.result.size</td>
+    <td>10</td>
+    <td>The size of the result set of a search query</td>
+  </tr>
 </table>
 
 <center>
@@ -61,17 +66,21 @@ In a paragraph, use `%elasticsearch` to select the Elasticsearch interpreter and
 ```bash
 | %elasticsearch
 | help
+Elasticsearch interpreter:
 General format: <command> /<indices>/<types>/<id> <option> <JSON>
   - indices: list of indices separated by commas (depends on the command)
   - types: list of document types separated by commas (depends on the command)
 Commands:
+  - search /indices/types <query>
+    . indices and types can be omitted (at least, you have to provide '/')
+    . a query is either a JSON-formatted query, nor a lucene query
+  - size <value>
+    . defines the size of the result set (default value is in the config)
+    . if used, this command must be declared before a search command
+  - count /indices/types <query>
+    . same comments as for the search
   - get /index/type/id
   - delete /index/type/id
-  - count /indices/types <json-formatted query>
-    . indices and types can be omitted
-  - search /indices/types <limit> <json-formatted query>
-    . indices and types can be omitted
-    . if a query is provided, the limit must also be provided
   - index /ndex/type/id <json-formatted document>
     . the id can be omitted, elasticsearch will generate one
 ```
@@ -91,16 +100,35 @@ Example:
 
 
 #### search
-With the `search` command, you can send a search query to Elasticsearch. You can provide a query, that is exactly what you can provide when you use the REST API of Elasticsearch.  
-* See [Elasticsearch search API reference document](https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html) for more details about the content of the search queries.
-* See [Elasticsearch query DSL reference document](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl.html) for more details about the content of the query DSL.
+With the `search` command, you can send a search query to Elasticsearch. There are two formats of query:
+* You can provide a JSON-formatted query, that is exactly what you can provide when you use the REST API of Elasticsearch.  
+** See [Elasticsearch search API reference document](https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html) for more details about the content of the search queries.
+* You can also provide the content of a `query_string`
+** This is a shortcut to a query like that: `{ "query": { "query_string": { "query": "__HERE YOUR QUERY__", "analyze_wildcard": true } } }` 
+** See [Elasticsearch query string syntax](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax) for more details about the content of such a query.
 
 ```bash
-| search /index1,index2,.../type1,type2,... <size of the response> <JSON document containing the query>
+| search /index1,index2,.../type1,type2,...  <JSON document containing the query or query_string elements>
+```
+
+> If you want to modify the size of the result set, you can add a line before your search command, that is setting the size.
+
+```bash
+| size 50
+| search /index1,index2,.../type1,type2,...  <JSON document containing the query or query_string elements>
+```
+
 
 Examples:
-| search / 100 { "query": { "match_all": {} } }
-| search /logs 100 { "query": { "query_string": { "query": "request.method:GET AND status:200" } } }
+* With a JSON query:
+```bash
+| search / { "query": { "match_all": {} } }
+| search /logs { "query": { "query_string": { "query": "request.method:GET AND status:200" } } }
+```
+
+* With query_string elements:
+| search /logs request.method:GET AND status:200
+| search /logs (404 AND (POST OR DELETE))
 ```
 
 > **Important**: a document in Elasticsearch is a JSON document, so it is hierarchical, not flat as a row in a SQL table.
@@ -137,12 +165,15 @@ Examples:
 * With a JSON query:
 ![Elasticsearch - Search with query](../assets/themes/zeppelin/img/docs-img/elasticsearch-search-json-query-table.png)
 
+* With a query string:
+![Elasticsearch - Search with query string](../assets/themes/zeppelin/img/docs-img/elasticsearch-query-string.png)
+
 
 #### count
 With the `count` command, you can count documents available in some indices and types. You can also provide a query.
 
 ```bash
-| count /index1,index2,.../type1,type2,... <JSON document containing the query>
+| count /index1,index2,.../type1,type2,... <JSON document containing the query OR a query string>
 ```
 
 Examples:

@@ -43,6 +43,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +52,8 @@ import com.github.wnameless.json.flattener.JsonFlattener;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
+
 
 /**
  * Elasticsearch Interpreter for Zeppelin.
@@ -64,13 +67,16 @@ public class ElasticsearchInterpreter extends Interpreter {
     + "  - indices: list of indices separated by commas (depends on the command)\n"
     + "  - types: list of document types separated by commas (depends on the command)\n"
     + "Commands:\n"
+    + "  - search /indices/types <query>\n"
+    + "    . indices and types can be omitted (at least, you have to provide '/')\n"
+    + "    . a query is either a JSON-formatted query, nor a lucene query\n"
+    + "  - size <value>\n"
+    + "    . defines the size of the result set (default value is in the config)\n"
+    + "    . if used, this command must be declared before a search command\n"
+    + "  - count /indices/types <query>\n"
+    + "    . same comments as for the search\n"
     + "  - get /index/type/id\n"
     + "  - delete /index/type/id\n"
-    + "  - count /indices/types <json-formatted query>\n"
-    + "    . indices and types can be omitted\n"
-    + "  - search /indices/types <limit> <json-formatted query>\n"
-    + "    . indices and types can be omitted\n"
-    + "    . if a query is provided, the limit must also be provided\n"
     + "  - index /ndex/type/id <json-formatted document>\n"
     + "    . the id can be omitted, elasticsearch will generate one";
 
@@ -81,6 +87,7 @@ public class ElasticsearchInterpreter extends Interpreter {
   public static final String ELASTICSEARCH_HOST = "elasticsearch.host";
   public static final String ELASTICSEARCH_PORT = "elasticsearch.port";
   public static final String ELASTICSEARCH_CLUSTER_NAME = "elasticsearch.cluster.name";
+  public static final String ELASTICSEARCH_RESULT_SIZE = "elasticsearch.result.size";
 
   static {
     Interpreter.register(
@@ -91,6 +98,7 @@ public class ElasticsearchInterpreter extends Interpreter {
           .add(ELASTICSEARCH_HOST, "localhost", "The host for Elasticsearch")
           .add(ELASTICSEARCH_PORT, "9300", "The port for Elasticsearch")
           .add(ELASTICSEARCH_CLUSTER_NAME, "elasticsearch", "The cluster name for Elasticsearch")
+          .add(ELASTICSEARCH_RESULT_SIZE, "10", "The size of the result set of a search query")
           .build());
   }
 
@@ -99,12 +107,14 @@ public class ElasticsearchInterpreter extends Interpreter {
   private String host = "localhost";
   private int port = 9300;
   private String clusterName = "elasticsearch";
+  private int resultSize = 10;
 
   public ElasticsearchInterpreter(Properties property) {
     super(property);
     this.host = getProperty(ELASTICSEARCH_HOST);
     this.port = Integer.parseInt(getProperty(ELASTICSEARCH_PORT));
     this.clusterName = getProperty(ELASTICSEARCH_CLUSTER_NAME);
+    this.resultSize = Integer.parseInt(getProperty(ELASTICSEARCH_RESULT_SIZE));
   }
 
   @Override
@@ -134,15 +144,37 @@ public class ElasticsearchInterpreter extends Interpreter {
   public InterpreterResult interpret(String cmd, InterpreterContext interpreterContext) {
     logger.info("Run Elasticsearch command '" + cmd + "'");
 
+    int currentResultSize = resultSize;
+
     if (client == null) {
       return new InterpreterResult(InterpreterResult.Code.ERROR,
         "Problem with the Elasticsearch client, please check your configuration (host, port,...)");
     }
 
-    final String[] items = StringUtils.split(cmd.trim(), " ", 3);
+    String[] items = StringUtils.split(cmd.trim(), " ", 3);
 
+    // Process some specific commands (help, size, ...)
     if ("help".equalsIgnoreCase(items[0])) {
       return processHelp(InterpreterResult.Code.SUCCESS, null);
+    }
+
+    if ("size".equalsIgnoreCase(items[0])) {
+      // In this case, the line with size must be followed by a search,
+      // so we will continue with the next lines
+      final String[] lines = StringUtils.split(cmd.trim(), "\n", 2);
+
+      if (lines.length < 2) {
+        return processHelp(InterpreterResult.Code.ERROR,
+                           "Size cmd must be followed by a search");
+      }
+
+      final String[] sizeLine = StringUtils.split(lines[0], " ", 2);
+      if (sizeLine.length != 2) {
+        return processHelp(InterpreterResult.Code.ERROR, "Right format is : size <value>");
+      }
+      currentResultSize = Integer.parseInt(sizeLine[1]);
+
+      items = StringUtils.split(lines[1].trim(), " ", 3);
     }
 
     if (items.length < 2) {
@@ -163,7 +195,7 @@ public class ElasticsearchInterpreter extends Interpreter {
         return processCount(urlItems, data);
       }
       else if ("search".equalsIgnoreCase(method)) {
-        return processSearch(urlItems, data);
+        return processSearch(urlItems, data, currentResultSize);
       }
       else if ("index".equalsIgnoreCase(method)) {
         return processIndex(urlItems, data);
@@ -269,11 +301,7 @@ public class ElasticsearchInterpreter extends Interpreter {
                                    "Bad URL (it should be /index1,index2,.../type1,type2,...)");
     }
 
-    String searchQuery = "0";
-    if (!StringUtils.isEmpty(data)) {
-      searchQuery += " " + data;
-    }
-    final SearchResponse response = searchData(urlItems, searchQuery);
+    final SearchResponse response = searchData(urlItems, data, 0);
 
     return new InterpreterResult(
       InterpreterResult.Code.SUCCESS,
@@ -288,14 +316,14 @@ public class ElasticsearchInterpreter extends Interpreter {
    * @param data May contains the limit and the JSON of the request
    * @return Result of the search request, it contains a tab-formatted string of the matching hits
    */
-  private InterpreterResult processSearch(String[] urlItems, String data) {
+  private InterpreterResult processSearch(String[] urlItems, String data, int size) {
 
     if (urlItems.length > 2) {
       return new InterpreterResult(InterpreterResult.Code.ERROR,
                                    "Bad URL (it should be /index1,index2,.../type1,type2,...)");
     }
         
-    final SearchResponse response = searchData(urlItems, data);
+    final SearchResponse response = searchData(urlItems, data, size);
 
     return new InterpreterResult(
       InterpreterResult.Code.SUCCESS,
@@ -358,7 +386,7 @@ public class ElasticsearchInterpreter extends Interpreter {
     return new InterpreterResult(InterpreterResult.Code.ERROR, "Document not found");
   }
     
-  private SearchResponse searchData(String[] urlItems, String data) {
+  private SearchResponse searchData(String[] urlItems, String query, int size) {
 
     final SearchRequestBuilder reqBuilder = new SearchRequestBuilder(
       client, SearchAction.INSTANCE);
@@ -371,16 +399,20 @@ public class ElasticsearchInterpreter extends Interpreter {
       reqBuilder.setTypes(StringUtils.split(urlItems[1], ","));
     }
 
-    if (!StringUtils.isEmpty(data)) {
-      // If size is 1 : we have a limit
-      // If size is 2 : we have a limit and a JSON
-      final String[] splittedData = StringUtils.split(data, " ", 2);
-      if (splittedData.length == 2) {
-        final Map source = gson.fromJson(splittedData[1], Map.class);
+    if (!StringUtils.isEmpty(query)) {
+      // The query can be either JSON-formatted, nor a Lucene query
+      // So, try to parse as a JSON => if there is an error, consider the query a Lucene one
+      try {
+        final Map source = gson.fromJson(query, Map.class);
         reqBuilder.setExtraSource(source);
       }
-      reqBuilder.setSize(Integer.parseInt(splittedData[0]));
+      catch (JsonParseException e) {
+        // This is not a JSON (or maybe not well formatted...)
+        reqBuilder.setQuery(QueryBuilders.queryStringQuery(query).analyzeWildcard(true));
+      }
     }
+
+    reqBuilder.setSize(size);
 
     final SearchResponse response = reqBuilder.get();
 
