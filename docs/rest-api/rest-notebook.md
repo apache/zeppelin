@@ -75,7 +75,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```POST``` methods create a new notebook using the given name or default name if none given.
+      <td>This ```POST``` method creates a new notebook using the given name or default name if none given.
           The body field of the returned JSON contains the new notebook id.
       </td>
     </tr>
@@ -129,7 +129,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` methods delete a notebook by the given notebook id.
+      <td>This ```DELETE``` method deletes a notebook by the given notebook id.
       </td>
     </tr>
     <tr>
@@ -160,7 +160,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```POST``` methods clone a notebook by the given id and create a new notebook using the given name 
+      <td>This ```POST``` method clones a notebook by the given id and create a new notebook using the given name 
           or default name if none given.
           The body field of the returned JSON contains the new notebook id.
       </td>
