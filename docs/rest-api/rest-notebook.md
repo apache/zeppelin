@@ -92,8 +92,26 @@ limitations under the License.
       <td> 500 </td>
     </tr>
     <tr>
-      <td> sample JSON input </td>
-      <td><pre>{"name": "name of new notebook"}</pre></td>
+      <td> sample JSON input (without paragraphs) </td>
+      <td><pre>{ "name": "name of new notebook" }</pre></td>
+    </tr>
+    <tr>
+      <td> sample JSON input (with initial paragraphs) </td>
+      <td><pre>
+{
+  "name": "name of new notebook", 
+  "paragraphs": [
+    {
+      "title": "paragraph title1",
+      "text": "paragraph text1"
+    },
+    {
+      "title": "paragraph title2",
+      "text": "paragraph text2"
+    }
+  ]
+}
+      </pre></td>
     </tr>
     <tr>
       <td> sample JSON response </td>
