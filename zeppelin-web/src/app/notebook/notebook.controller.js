@@ -74,6 +74,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
   $scope.removeNote = function(noteId) {
     BootstrapDialog.confirm({
+      closable: true,
       title: '',
       message: 'Do you want to delete this notebook?',
       callback: function(result) {
@@ -94,6 +95,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   //Clone note
   $scope.cloneNote = function(noteId) {
     BootstrapDialog.confirm({
+      closable: true,
       title: '',
       message: 'Do you want to clone this notebook?',
       callback: function(result) {
@@ -107,6 +109,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.runNote = function() {
     BootstrapDialog.confirm({
+      closable: true,
       title: '',
       message: 'Run all paragraphs?',
       callback: function(result) {
@@ -130,6 +133,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.clearAllParagraphOutput = function() {
     BootstrapDialog.confirm({
+      closable: true,
       title: '',
       message: 'Do you want to clear all output?',
       callback: function(result) {
@@ -313,11 +317,11 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.$on('insertParagraph', function(event, paragraphId, position) {
     var newIndex = -1;
     for (var i=0; i<$scope.note.paragraphs.length; i++) {
-      if ( $scope.note.paragraphs[i].id === paragraphId ) {        
+      if ( $scope.note.paragraphs[i].id === paragraphId ) {
         //determine position of where to add new paragraph; default is below
-        if ( position === 'above' ) {         
+        if ( position === 'above' ) {
           newIndex = i;
-        } else {     
+        } else {
           newIndex = i+1;
         }
         break;
@@ -497,6 +501,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   $scope.closeSetting = function() {
     if (isSettingDirty()) {
       BootstrapDialog.confirm({
+        closable: true,
         title: '',
         message: 'Changes will be discarded.',
         callback: function(result) {
