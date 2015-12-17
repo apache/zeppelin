@@ -33,7 +33,8 @@ angular.module('zeppelinWebApp', [
     'xeditable',
     'ngToast',
     'focus-if',
-    'ngResource'
+    'ngResource',
+    'pascalprecht.translate'
   ])
   .filter('breakFilter', function() {
     return function (text) {
@@ -42,7 +43,7 @@ angular.module('zeppelinWebApp', [
       }
     };
   })
-  .config(function ($routeProvider, ngToastProvider) {
+  .config(function ($routeProvider, ngToastProvider, $translateProvider) {
     $routeProvider
       .when('/', {
         templateUrl: 'app/home/home.html'
@@ -76,4 +77,8 @@ angular.module('zeppelinWebApp', [
       dismissOnClick: false,
       timeout: 6000
     });
+
+    $translateProvider.preferredLanguage('en');
+    $translateProvider.fallbackLanguage('en');
+    $translateProvider.useSanitizeValueStrategy('sanitize');
   });

@@ -27,7 +27,7 @@ limitations under the License.
     <div class="collapse navbar-collapse" ng-controller="NavCtrl as navbar">
       <ul class="nav navbar-nav">
         <li class="dropdown" dropdown>
-          <a href="#" class="dropdown-toggle" dropdown-toggle>Notebook <span class="caret"></span></a>
+          <a href="#" class="dropdown-toggle" dropdown-toggle><span translate='components.navbar.MENU_NOTEBOOK'></span> <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
             <li><a href="" data-toggle="modal" data-target="#noteNameModal"><i class="fa fa-plus"></i> Create new note</a></li>
             <li class="divider"></li>
@@ -40,7 +40,7 @@ limitations under the License.
           </ul>
         </li>
         <li>
-          <a href="#/interpreter">Interpreter</a>
+          <a href="#/interpreter" translate='components.navbar.MENU_INTERPRETER'></a>
         </li>
       </ul>
 
@@ -73,8 +73,8 @@ limitations under the License.
         </li>
         <li class="server-status">
           <i class="fa fa-circle" ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
-          <span ng-show="navbar.connected">Connected</span>
-          <span ng-show="!navbar.connected">Disconnected</span>
+          <span ng-show="navbar.connected" translate='components.navbar.STATUS_CONNECTED'></span>
+          <span ng-show="!navbar.connected" translate='components.navbar.STATUS_DISCONNECTED'></span>
         </li>
       </ul>
     </div>

@@ -18,6 +18,7 @@
   "unused": "vars",
   "strict": true,
   "trailing": true,
+  "multistr": true,
   "smarttabs": true,
   "jasmine": true,
   "predef": [ "inject" ],
