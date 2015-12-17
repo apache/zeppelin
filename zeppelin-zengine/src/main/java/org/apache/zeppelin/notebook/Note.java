@@ -50,9 +50,10 @@ import com.google.gson.Gson;
 public class Note implements Serializable, JobListener {
   transient Logger logger = LoggerFactory.getLogger(Note.class);
   List<Paragraph> paragraphs = new LinkedList<Paragraph>();
-  private String name;
+  private String name = "";
   private String id;
 
+  @SuppressWarnings("rawtypes")
   Map<String, List<AngularObject>> angularObjects = new HashMap<String, List<AngularObject>>();
 
   private transient NoteInterpreterLoader replLoader;
