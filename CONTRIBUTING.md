@@ -7,10 +7,40 @@ Contributing to Zeppelin (Source code, Documents, Image, Website) means you agre
 2. If not, create a ticket describing the change you're proposing in the [Jira issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN)
 3. Contribute your patch via Pull Request.
 
+## Creating a Pull Request
+In order to make the review process easier, please follow this template when making a Pull Request:
+
+```
+### What is this PR for?
+A few sentences describing the overall goals of the pull request's commits.
+
+### What type of PR is it?
+[Bug Fix | Improvement | Feature | Documentation | Hot Fix | Refactoring]
+
+### Todos
+* [ ] - Task
+
+### Is there a relevant Jira issue?
+
+### How should this be tested?
+Outline the steps to test the PR here.
+
+### Screenshots (if appropriate)
+
+### Questions:
+* Does the licenses files need update?
+* Is there breaking changes for older versions?
+* Does this needs documentation?
+```
+
+You can also use this small bookmarklet tool to fill your Pull Request fields automatically:
+
+```
+javascript:(function() {var e = document.getElementById('pull_request_body');if (e) {e.value += '### What is this PR for?\nA few sentences describing the overall goals of the pull request\'s commits.\n\n### What type of PR is it?\n[Bug Fix | Improvement | Feature | Documentation | Hot Fix | Refactoring]\n\n### Todos\n* [ ] - Task\n\n### Is there a relevant Jira issue?\n\n### How should this be tested?\nOutline the steps to test the PR here.\n\n### Screenshots (if appropriate)\n\n### Questions:\n* Does the licenses files need update?\n* Is there breaking changes for older versions?\n* Does this needs documentation?';}})();
+```
 
 ## Source Control Workflow
-Zeppelin follows [Fork & Pull] (https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git: -Fork, -Branching, -Commits, -and-Pull-Request) model.
-
+Zeppelin follows [Fork & Pull] (https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git:-Fork,-Branching,-Commits,-and-Pull-Request) model.
 
 ## The Review Process
 
@@ -65,6 +95,9 @@ The top-level pom.xml describes the basic project structure. Currently Zeppelin 
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
     
+### Web Project Contribution Guidelines
+If you plan on making a contribution to Zeppelin's WebApplication,
+please check [its own contribution guidelines](https://github.com/apache/incubator-zeppelin/blob/master/zeppelin-web/CONTRIBUTING.md)
 
 ### Code convention
 We are following Google Code style:

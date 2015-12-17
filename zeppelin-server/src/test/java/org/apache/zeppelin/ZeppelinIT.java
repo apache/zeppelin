@@ -17,17 +17,23 @@
 
 package org.apache.zeppelin;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
-import java.util.Iterator;
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.ElementNotVisibleException;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -36,22 +42,32 @@ import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.safari.SafariDriver;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Function;
 
 /**
- * Test Zeppelin with web brower.
- * 
+ * Test Zeppelin with web browser.
+ *
  * To test, ZeppelinServer should be running on port 8080
- * On OSX, you'll need firefox 31.0 installed. 
+ * On OSX, you'll need firefox 42.0 installed, then you can run with
+ *
+ * PATH=~/Applications/Firefox.app/Contents/MacOS/:$PATH CI="" \
+ *    mvn -Dtest=org.apache.zeppelin.ZeppelinIT -Denforcer.skip=true \
+ *    test -pl zeppelin-server
  *
  */
 public class ZeppelinIT {
+  private static final Logger LOG = LoggerFactory.getLogger(ZeppelinIT.class);
+  private static final long MAX_BROWSER_TIMEOUT_SEC = 30;
   private WebDriver driver;
 
-  private WebDriver getWebDriver() {
-    WebDriver driver = null;
+  private void setWebDriver() {
 
     if (driver == null) {
       try {
@@ -63,6 +79,7 @@ public class ZeppelinIT {
         FirefoxProfile profile = new FirefoxProfile();
         driver = new FirefoxDriver(ffox, profile);
       } catch (Exception e) {
+        LOG.error("Starting Firefox failed",e);
       }
     }
 
@@ -70,6 +87,7 @@ public class ZeppelinIT {
       try {
         driver = new ChromeDriver();
       } catch (Exception e) {
+        LOG.error("Starting Chrome failed",e);
       }
     }
 
@@ -77,6 +95,7 @@ public class ZeppelinIT {
       try {
         driver = new SafariDriver();
       } catch (Exception e) {
+        LOG.error("Starting Safari failed",e);
       }
     }
 
@@ -92,16 +111,9 @@ public class ZeppelinIT {
     driver.get(url);
 
     while (System.currentTimeMillis() - start < 60 * 1000) {
-      // wait for page load
-      try {
-        (new WebDriverWait(driver, 5)).until(new ExpectedCondition<Boolean>() {
-          @Override
-          public Boolean apply(WebDriver d) {
-            return d.findElement(By.partialLinkText("Create new note"))
-                .isDisplayed();
-          }
-        });
-        loaded = true;
+      try { // wait for page load
+        WebElement element = pollingWait(By.partialLinkText("Create new note"));
+        loaded = element.isDisplayed();
         break;
       } catch (TimeoutException e) {
         driver.navigate().to(url);
@@ -111,8 +123,6 @@ public class ZeppelinIT {
     if (loaded == false) {
       fail();
     }
-
-    return driver;
   }
 
   @Before
@@ -120,8 +130,7 @@ public class ZeppelinIT {
     if (!endToEndTestEnabled()) {
       return;
     }
-
-    driver = getWebDriver();
+    setWebDriver();
   }
 
   @After
@@ -137,32 +146,37 @@ public class ZeppelinIT {
     return "//div[@ng-controller=\"ParagraphCtrl\"][" + paragraphNo +"]";
   }
 
-  void waitForParagraph(final int paragraphNo, final String state) {
-    (new WebDriverWait(driver, 60)).until(new ExpectedCondition<Boolean>() {
-      public Boolean apply(WebDriver d) {
-        return driver.findElement(By.xpath(getParagraphXPath(paragraphNo)
-                + "//div[@class=\"control\"]//span[1][text()=\" " + state + " \"]"))
-            .isDisplayed();
-      };
-    });
+  boolean waitForParagraph(final int paragraphNo, final String state) {
+    By locator = By.xpath(getParagraphXPath(paragraphNo)
+        + "//div[contains(@class, 'control')]//span[1][contains(.,'" + state + "')]");
+    WebElement element = pollingWait(locator);
+    return element.isDisplayed();
   }
 
-  boolean endToEndTestEnabled() {
-    return null != System.getenv("CI");
-  }
-
-  boolean waitForText(final String txt, final By by) {
+  boolean waitForText(final String txt, final By locator) {
     try {
-      new WebDriverWait(driver, 5).until(new ExpectedCondition<Boolean>() {
-        @Override
-        public Boolean apply(WebDriver d) {
-          return txt.equals(driver.findElement(by).getText());
-        }
-      });
-      return true;
+      WebElement element = pollingWait(locator);
+      return txt.equals(element.getText());
     } catch (TimeoutException e) {
       return false;
     }
+  }
+
+  public WebElement pollingWait(final By locator) {
+    Wait<WebDriver> wait = new FluentWait<WebDriver>(driver)
+            .withTimeout(MAX_BROWSER_TIMEOUT_SEC, TimeUnit.SECONDS)
+            .pollingEvery(1, TimeUnit.SECONDS)
+            .ignoring(NoSuchElementException.class);
+
+    return wait.until(new Function<WebDriver, WebElement>() {
+        public WebElement apply(WebDriver driver) {
+            return driver.findElement(locator);
+        }
+    });
+  };
+
+  boolean endToEndTestEnabled() {
+    return null != System.getenv("CI");
   }
 
   @Test
@@ -170,6 +184,7 @@ public class ZeppelinIT {
     if (!endToEndTestEnabled()) {
       return;
     }
+    try {
     createNewNote();
 
     // wait for first paragraph's " READY " status text
@@ -213,7 +228,7 @@ public class ZeppelinIT {
      */
     WebElement paragraph3Editor = driver.findElement(By.xpath(getParagraphXPath(3) + "//textarea"));
     paragraph3Editor.sendKeys(
-        "print" + Keys.chord(Keys.SHIFT, "9") + "\"myVar=\"" + Keys.chord(Keys.ADD) 
+        "print" + Keys.chord(Keys.SHIFT, "9") + "\"myVar=\"" + Keys.chord(Keys.ADD)
         + "z.angular" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\"))");
     paragraph3Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
     waitForParagraph(3, "FINISHED");
@@ -241,7 +256,7 @@ public class ZeppelinIT {
     WebElement paragraph4Editor = driver.findElement(By.xpath(getParagraphXPath(4) + "//textarea"));
     paragraph4Editor.sendKeys(
         "z.angularWatch" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\", "
-        + Keys.chord(Keys.SHIFT, "9") 
+        + Keys.chord(Keys.SHIFT, "9")
         + "before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext)"
         + Keys.EQUALS + ">{ z.run" +Keys.chord(Keys.SHIFT, "9") + "2, context)}");
     paragraph4Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
@@ -289,20 +304,24 @@ public class ZeppelinIT {
         By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
     System.out.println("testCreateNotebook Test executed");
+    } catch (ElementNotVisibleException e) {
+      File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+
+    }
   }
 
   private void createNewNote() {
     List<WebElement> notebookLinks = driver.findElements(By
-        .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));    
+        .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));
     List<String> notebookTitles = new LinkedList<String>();
     for (WebElement el : notebookLinks) {
       notebookTitles.add(el.getText());
     }
-    
+
     WebElement createNoteLink = driver.findElement(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new note')]"));
     createNoteLink.click();
 
-    WebDriverWait block = new WebDriverWait(driver, 10);
+    WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
     WebElement modal = block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteNameModal")));
     WebElement createNoteButton = modal.findElement(By.id("createNoteButton"));
     createNoteButton.click();
@@ -310,6 +329,6 @@ public class ZeppelinIT {
     try {
       Thread.sleep(500); // wait for notebook list updated
     } catch (InterruptedException e) {
-    } 
+    }
   }
 }

@@ -18,6 +18,7 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +27,12 @@ import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.rest.message.NewParagraphRequest;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.junit.AfterClass;
@@ -201,6 +204,46 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     testNotebookCreate("");
   }
 
+  @Test
+  public void testNotebookCreateWithParagraphs() throws IOException {
+    // Call Create Notebook REST API
+    String noteName = "test";
+    String jsonRequest = "{\"name\":\"" + noteName + "\", \"paragraphs\": [" +
+        "{\"title\": \"title1\", \"text\": \"text1\"}," +
+        "{\"title\": \"title2\", \"text\": \"text2\"}" +
+        "]}";
+    PostMethod post = httpPost("/notebook/", jsonRequest);
+    LOG.info("testNotebookCreate \n" + post.getResponseBodyAsString());
+    assertThat("test notebook create method:", post, isCreated());
+
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+
+    String newNotebookId =  (String) resp.get("body");
+    LOG.info("newNotebookId:=" + newNotebookId);
+    Note newNote = ZeppelinServer.notebook.getNote(newNotebookId);
+    assertNotNull("Can not find new note by id", newNote);
+    // This is partial test as newNote is in memory but is not persistent
+    String newNoteName = newNote.getName();
+    LOG.info("new note name is: " + newNoteName);
+    String expectedNoteName = noteName;
+    if (noteName.isEmpty()) {
+      expectedNoteName = "Note " + newNotebookId;
+    }
+    assertEquals("compare note name", expectedNoteName, newNoteName);
+    assertEquals("initial paragraph check failed", 3, newNote.getParagraphs().size());
+    for (Paragraph p : newNote.getParagraphs()) {
+      if (StringUtils.isEmpty(p.getText())) {
+        continue;
+      }
+      assertTrue("paragraph title check failed", p.getTitle().startsWith("title"));
+      assertTrue("paragraph text check failed", p.getText().startsWith("text"));
+    }
+    // cleanup
+    ZeppelinServer.notebook.removeNote(newNotebookId);
+    post.releaseConnection();
+  }
+
   private void testNotebookCreate(String noteName) throws IOException {
     // Call Create Notebook REST API
     String jsonRequest = "{\"name\":\"" + noteName + "\"}";
@@ -264,7 +307,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     LOG.info("testCloneNotebook");
     // Create note to clone
     Note note = ZeppelinServer.notebook.createNote();
-    assertNotNull("cant create new note", note);
+    assertNotNull("can't create new note", note);
     note.setName("source note for clone");
     Paragraph paragraph = note.addParagraph();
     Map config = paragraph.getConfig();
@@ -308,5 +351,109 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     get.releaseConnection();
   }
 
+  @Test
+  public void testNoteJobs() throws IOException, InterruptedException {
+    LOG.info("testNoteJobs");
+    // Create note to run test.
+    Note note = ZeppelinServer.notebook.createNote();
+    assertNotNull("can't create new note", note);
+    note.setName("note for run test");
+    Paragraph paragraph = note.addParagraph();
+    
+    Map config = paragraph.getConfig();
+    config.put("enabled", true);
+    paragraph.setConfig(config);
+    
+    paragraph.setText("%md This is test paragraph.");
+    note.persist();
+    String noteID = note.getId();
+
+    note.runAll();
+    // wait until job is finished or timeout.
+    int timeout = 1;
+    while (!paragraph.isTerminated()) {
+      Thread.sleep(1000);
+      if (timeout++ > 10) {
+        LOG.info("testNoteJobs timeout job.");
+        break;
+      }
+    }
+    
+    // Call Run Notebook Jobs REST API
+    PostMethod postNoteJobs = httpPost("/notebook/job/" + noteID, "");
+    assertThat("test notebook jobs run:", postNoteJobs, isAllowed());
+    postNoteJobs.releaseConnection();
+
+    // Call Stop Notebook Jobs REST API
+    DeleteMethod deleteNoteJobs = httpDelete("/notebook/job/" + noteID);
+    assertThat("test notebook stop:", deleteNoteJobs, isAllowed());
+    deleteNoteJobs.releaseConnection();    
+    Thread.sleep(1000);
+    
+    // Call Run paragraph REST API
+    PostMethod postParagraph = httpPost("/notebook/job/" + noteID + "/" + paragraph.getId(), "");
+    assertThat("test paragraph run:", postParagraph, isAllowed());
+    postParagraph.releaseConnection();    
+    Thread.sleep(1000);
+    
+    // Call Stop paragraph REST API
+    DeleteMethod deleteParagraph = httpDelete("/notebook/job/" + noteID + "/" + paragraph.getId());
+    assertThat("test paragraph stop:", deleteParagraph, isAllowed());
+    deleteParagraph.releaseConnection();    
+    Thread.sleep(1000);
+    
+    //cleanup
+    ZeppelinServer.notebook.removeNote(note.getId());
+  }
+  
+  @Test
+  public void testCronJobs() throws InterruptedException, IOException{
+    // create a note and a paragraph
+    Note note = ZeppelinServer.notebook.createNote();
+
+    note.setName("note for run test");
+    Paragraph paragraph = note.addParagraph();
+    paragraph.setText("%md This is test paragraph.");
+    
+    Map config = paragraph.getConfig();
+    config.put("enabled", true);
+    paragraph.setConfig(config);
+
+    note.runAll();
+    // wait until job is finished or timeout.
+    int timeout = 1;
+    while (!paragraph.isTerminated()) {
+      Thread.sleep(1000);
+      if (timeout++ > 10) {
+        LOG.info("testNoteJobs timeout job.");
+        break;
+      }
+    }
+    
+    String jsonRequest = "{\"cron\":\"* * * * * ?\" }";
+    // right cron expression but not exist note.
+    PostMethod postCron = httpPost("/notebook/cron/notexistnote", jsonRequest);
+    assertThat("", postCron, isNotFound());
+    postCron.releaseConnection();
+    
+    // right cron expression.
+    postCron = httpPost("/notebook/cron/" + note.getId(), jsonRequest);
+    assertThat("", postCron, isAllowed());
+    postCron.releaseConnection();
+    Thread.sleep(1000);
+    
+    // wrong cron expression.
+    jsonRequest = "{\"cron\":\"a * * * * ?\" }";
+    postCron = httpPost("/notebook/cron/" + note.getId(), jsonRequest);
+    assertThat("", postCron, isBadRequest());
+    postCron.releaseConnection();
+    Thread.sleep(1000);
+    
+    // remove cron job.
+    DeleteMethod deleteCron = httpDelete("/notebook/cron/" + note.getId());
+    assertThat("", deleteCron, isAllowed());
+    deleteCron.releaseConnection();
+    ZeppelinServer.notebook.removeNote(note.getId());
+  }  
 }
 

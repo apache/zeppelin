@@ -42,17 +42,17 @@
  */
 
 .new-paragraph{
-  text-align: center; 
+  text-align: center;
   height: 7px;
   margin: -7px 2px 0 2px;
   cursor: pointer;
 }
 
-.new-paragraph:hover{  
+.new-paragraph:hover{
   background: #d3e5ea;
 }
 
-.new-paragraph:hover .plus-sign{  
+.new-paragraph:hover .plus-sign{
   display: block;
 }
 
@@ -74,6 +74,11 @@
   pointer-events: none;
 }
 
+.navbar-fixed-top,
+.navbar-fixed-top .dropdown-menu {
+  z-index: 10002;
+}
+
 .noteAction {
   margin-left: -10px;
   margin-right: -10px;
@@ -83,7 +88,7 @@
   top: 50px;
   width: 100%;
   height: 54px;
-  z-index: 3;
+  z-index: 10001;
 }
 
 .noteAction h3 {
@@ -99,25 +104,19 @@
   color: #333333;
 }
 
-.new_h3 {
-  margin-top: 1px;
-  padding-top: 7px;
-}
-
 .form-control2 {
   width: 100%;
-  margin-left: 15px;
+  height: 40px;
   font-size: 29px;
-  line-height: 1.42857143;
+  line-height: 1.2;
   color: #555;
   background: #fff;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-  -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
-  -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
-  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  padding: 7px 0;
+  margin: 2px 0 0 14px;
 }
 
 .form-control-static2 {

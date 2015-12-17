@@ -31,7 +31,8 @@ angular.module('zeppelinWebApp', [
     'monospaced.elastic',
     'puElasticInput',
     'xeditable',
-    'ngToast'
+    'ngToast',
+    'focus-if'
   ])
   .filter('breakFilter', function() {
     return function (text) {
@@ -60,7 +61,7 @@ angular.module('zeppelinWebApp', [
       .otherwise({
         redirectTo: '/'
       });
-  
+
     ngToastProvider.configure({
       dismissButton: true,
       dismissOnClick: false,

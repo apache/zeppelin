@@ -17,28 +17,22 @@
 
 package org.apache.zeppelin.rest.message;
 
-import java.util.List;
 import java.util.Map;
 
 import org.apache.zeppelin.interpreter.InterpreterOption;
 
 /**
- *  NewNotebookRequest rest api request message
+ *  CronRequest rest api request message
  *
  */
-public class NewNotebookRequest {
-  String name;
-  List<NewParagraphRequest> paragraphs;
+public class CronRequest {
+  String cron;
 
-  public NewNotebookRequest (){
+  public CronRequest (){
 
   }
 
-  public String getName() {
-    return name;
-  }
-
-  public List<NewParagraphRequest> getParagraphs() {
-    return paragraphs;
+  public String getCronString() {
+    return cron;
   }
 }
