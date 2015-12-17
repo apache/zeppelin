@@ -91,6 +91,7 @@
     <module>markdown</module>
     <module>angular</module>
     <module>shell</module>
+    <module>scalding</module>
     <module>hive</module>
     <module>phoenix</module>
     <module>postgresql</module>
