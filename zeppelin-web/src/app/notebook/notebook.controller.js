@@ -500,7 +500,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       BootstrapDialog.confirm({
         title: '',
         message : 'Changes will be discarded.',
-        callback: function(result) {
+        callback : function(result) {
           if (result) {
             $scope.$apply(function () {
               $scope.showSetting = false;
@@ -510,17 +510,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       });
     }
     else {
-      BootstrapDialog.confirm({
-      title: '',
-      message : 'Nothing is changed.',
-      callback: function(result) {
-        if (result) {
-          $scope.$apply(function () {
-            $scope.showSetting = false;
-            });
-          }
-        }
-      });
+      $scope.showSetting = false;
     }
   };
 
