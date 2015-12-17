@@ -20,12 +20,12 @@ limitations under the License.
 {% include JB/setup %}
 
 ## Zeppelin REST API
- Zeppelin provides several REST API's for interaction and remote activation of zeppelin functionality.
+ Zeppelin provides several REST APIs for interaction and remote activation of zeppelin functionality.
  
- All REST API are available starting with the following endpoint ```http://[zeppelin-server]:[zeppelin-port]/api```
+ All REST APIs are available starting with the following endpoint ```http://[zeppelin-server]:[zeppelin-port]/api```
  
- Note that zeppein REST API receive or return JSON objects, it it recommended you install some JSON view such as 
- [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc)
+ Note that zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewer
+  such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc)
  
  
  If you work with zeppelin and find a need for an additional REST API please [file an issue or send us mail](../../community.html) 
@@ -43,7 +43,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method list the available notebooks on your server.
+      <td>This ```GET``` method lists the available notebooks on your server.
           Notebook JSON contains the ```name``` and ```id``` of all notebooks.
       </td>
     </tr>
@@ -75,8 +75,8 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method create a new notebook using the given name or default name if none given.
-          The body field of the returned JSON contain the new notebook id.
+      <td>This ```POST``` methods create a new notebook using the given name or default name if none given.
+          The body field of the returned JSON contains the new notebook id.
       </td>
     </tr>
     <tr>
@@ -129,7 +129,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method delete a notebook by the given notebook id.
+      <td>This ```DELETE``` methods delete a notebook by the given notebook id.
       </td>
     </tr>
     <tr>
@@ -160,9 +160,9 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method clone a notebook by the given id and create a new notebook using the given name 
+      <td>This ```POST``` methods clone a notebook by the given id and create a new notebook using the given name 
           or default name if none given.
-          The body field of the returned JSON contain the new notebook id.
+          The body field of the returned JSON contains the new notebook id.
       </td>
     </tr>
     <tr>
@@ -197,7 +197,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method run all paragraph in the given notebook id.
+      <td>This ```POST``` method runs all paragraph in the given notebook id.
       </td>
     </tr>
     <tr>
@@ -228,7 +228,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method stop all paragraph in the given notebook id. 
+      <td>This ```DELETE``` method stops all paragraph in the given notebook id. 
       </td>
     </tr>
     <tr>
@@ -261,7 +261,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method get all paragraph status by the given notebook id. 
+      <td>This ```GET``` method gets all paragraph status by the given notebook id. 
           The body field of the returned JSON contains of the array that compose of the paragraph id, paragraph status, paragraph finish date, paragraph started date.
       </td>
     </tr>
@@ -293,7 +293,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method run the paragraph by given notebook and paragraph id. 
+      <td>This ```POST``` method runs the paragraph by given notebook and paragraph id. 
       </td>
     </tr>
     <tr>
@@ -324,7 +324,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method stop the paragraph by given notebook and paragraph id. 
+      <td>This ```DELETE``` method stops the paragraph by given notebook and paragraph id. 
       </td>
     </tr>
     <tr>
@@ -355,7 +355,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```POST``` method add cron job by the given notebook id. 
+      <td>This ```POST``` method adds cron job by the given notebook id. 
       </td>
     </tr>
     <tr>
@@ -390,7 +390,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```DELETE``` method remove cron job by the given notebook id. 
+      <td>This ```DELETE``` method removes cron job by the given notebook id. 
       </td>
     </tr>
     <tr>
@@ -416,13 +416,13 @@ limitations under the License.
   <table class="table-configuration">
     <col width="200">
     <tr>
-      <th>Get clone job</th>
+      <th>Get cron job</th>
       <th></th>
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method get cron job expression of given notebook id. 
-          The body field of the returned JSON contain the cron expression.
+      <td>This ```GET``` method gets cron job expression of given notebook id. 
+          The body field of the returned JSON contains the cron expression.
       </td>
     </tr>
     <tr>
