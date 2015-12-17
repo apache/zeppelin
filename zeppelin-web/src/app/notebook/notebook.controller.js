@@ -499,11 +499,24 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if (isSettingDirty()) {
       BootstrapDialog.confirm({
         title: '',
-        message: 'Changes will be discarded',
+        message : 'Changes will be discarded.',
         callback: function(result) {
           if (result) {
             $scope.$apply(function () {
               $scope.showSetting = false;
+            });
+          }
+        }
+      });
+    }
+    else {
+      BootstrapDialog.confirm({
+      title: '',
+      message : 'Notihing is changed.',
+      callback: function(result) {
+        if (result) {
+          $scope.$apply(function () {
+            $scope.showSetting = false;
             });
           }
         }
