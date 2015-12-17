@@ -22,7 +22,27 @@ angular.module('zeppelinWebApp')
     'app.home': {
       'WELCOME_MSG': 'Welcome to Zeppelin!',
       'ZEPPELIN_DESC': 'Zeppelin is web-based notebook that enables interactive data analytics.<br/>\
-        You can make beautiful data-driven, interactive, collaborative document with SQL, code and even more!<br>'
+        You can make beautiful data-driven, interactive, collaborative document with SQL, code and even more!<br/>',
+      'sections': {
+        'community': {
+          'TITLE': 'Community',
+          'DESC': 'Please feel free to help us to improve Zeppelin, <br>\
+            Any contribution are welcome!<br/><br/>',
+          'MAILINGLIST_MENU': 'Mailing list',
+          'ISSUETRACKING_MENU': 'Issues tracking',
+          'GITHUB_MENU': 'Github'
+        },
+        'help': {
+          'TITLE': 'Help',
+          'DESC': 'Get started with',
+          'ZEPPELINDOC_LINK': 'Zeppelin documentation'
+        },
+        'notebooks': {
+          'TITLE': 'Notebooks',
+          'IMPORT_MENU': 'Import note',
+          'CREATE_MENU': 'Create new note'
+        }
+      }
     },
     'components.navbar': {
       'MENU_NOTEBOOK': 'Notebooks',

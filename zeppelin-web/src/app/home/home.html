@@ -18,13 +18,11 @@ limitations under the License.
       <div class="zeppelin2"></div>
     </div>
     <div style="margin-top: -380px;">
-      <h1 class="box-heading" id="welcome">
-        {{'app.home.WELCOME_MSG' | translate}}
-      </h1>
-      <p translate='app.home.ZEPPELIN_DESC'></p>
+      <h1 class="box-heading" id="welcome" translate='app.home.WELCOME_MSG'></h1>
+      <span translate='app.home.ZEPPELIN_DESC'></span>
       <div class="row">
         <div class="col-md-4">
-          <h4>Notebook
+          <h4 translate="app.home.sections.notebooks.TITLE">
             <i ng-class="isReloadingNotes ? 'fa fa-refresh fa-spin' : 'fa fa-refresh'"
               ng-style="!isReloadingNotes && {'cursor': 'pointer'}" style="font-size: 13px;"
               ng-click="reloadNotebookList();">
@@ -32,9 +30,9 @@ limitations under the License.
           </h4>
           <div>
             <h5><a href="" data-toggle="modal" data-target="#noteImportModal" style="text-decoration: none;">
-              <i style="font-size: 15px;" class="fa fa-upload"></i> Import note</a></h5>
+              <i style="font-size: 15px;" class="fa fa-upload"></i> <span translate="app.home.sections.notebooks.IMPORT_MENU"></span></a></h5>
             <h5><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;">
-              <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
+              <i style="font-size: 15px;" class="icon-notebook"></i> <span translate="app.home.sections.notebooks.CREATE_MENU"></span></a></h5>
             <ul style="list-style-type: none;">
               <li ng-repeat="note in home.notes.list | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">
                 <i style="font-size: 10px;" class="icon-doc"></i>
@@ -44,19 +42,22 @@ limitations under the License.
           </div>
         </div>
         <div class="col-md-6">
-          <h4>Help</h4>
-          Get started with <a style="text-decoration: none;" target="_blank"
-                              href="http://zeppelin.incubator.apache.org/docs/latest/index.html">Zeppelin documentation</a><br>
-
-          <h4>Community</h4>
-          Please feel free to help us to improve Zeppelin, <br>
-          Any contribution are welcome!<br><br>
-          <a style="text-decoration: none;" href="http://zeppelin.incubator.apache.org/community.html"
-             target="_blank"><i style="font-size: 15px;" class="fa fa-users"></i> Mailing list</a><br>
-          <a style="text-decoration: none;" href="https://issues.apache.org/jira/browse/ZEPPELIN"
-             target="_blank"><i style="font-size: 15px;" class="fa fa-bug"></i> Issues tracking</a><br>
-          <a style="text-decoration: none;" href="https://github.com/apache/incubator-zeppelin"
-             target="_blank"><i style="font-size: 20px;" class="fa fa-github"></i> Github</a>
+          <h4 translate="app.home.sections.help.TITLE"></h4>
+          <span translate="app.home.sections.help.DESC"></span>
+          <a style="text-decoration: none;" target="_blank"
+            href="http://zeppelin.incubator.apache.org/docs/latest/index.html"
+            translate="app.home.sections.help.ZEPPELINDOC_LINK"></a><br/>
+          <h4 translate="app.home.sections.community.TITLE"></h4>
+          <span translate="app.home.sections.community.DESC"></span>
+          <a style="text-decoration: none;" href="http://zeppelin.incubator.apache.org/community.html" target="_blank">
+             <i style="font-size: 15px;" class="fa fa-users"></i> <span translate="app.home.sections.community.MAILINGLIST_MENU"></span>
+          </a><br>
+          <a style="text-decoration: none;" href="https://issues.apache.org/jira/browse/ZEPPELIN" target="_blank">
+             <i style="font-size: 15px;" class="fa fa-bug"></i> <span translate="app.home.sections.community.ISSUETRACKING_MENU"></span>
+          </a><br>
+          <a style="text-decoration: none;" href="https://github.com/apache/incubator-zeppelin" target="_blank">
+            <i style="font-size: 20px;" class="fa fa-github"></i> <span translate="app.home.sections.community.GITHUB_MENU"></span>
+          </a>
         </div>
       </div>
     </div>
