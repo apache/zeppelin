@@ -135,14 +135,17 @@ public class ElasticsearchInterpreterTest {
   @Test
   public void testSearch() {
         
-    InterpreterResult res = interpreter.interpret("search /logs 1", null);
+    InterpreterResult res = interpreter.interpret("size 10\nsearch /logs *", null);
     assertEquals(Code.SUCCESS, res.code());
        
-    res = interpreter.interpret("search /logs 10 {{{hello}}}", null);
+    res = interpreter.interpret("search /logs {{{hello}}}", null);
     assertEquals(Code.ERROR, res.code());
         
-    res = interpreter.interpret("search /logs 5 { \"query\": { \"match\": { \"status\": 500 } } }", null);
+    res = interpreter.interpret("search /logs { \"query\": { \"match\": { \"status\": 500 } } }", null);
     assertEquals(Code.SUCCESS, res.code());
+
+    res = interpreter.interpret("search /logs status:404", null);
+    assertEquals(Code.SUCCESS, res.code());   
   }
     
   @Test
