@@ -149,7 +149,7 @@ class PySparkCompletion:
     if len(completionList) <= 0:
       print ""
     else:
-      print json.dumps(filter(lambda x : not re.match("__.+[^__]$", x), list(completionList)))
+      print json.dumps(filter(lambda x : not re.match("^__.*", x), list(completionList)))
 
 
 output = Logger()
