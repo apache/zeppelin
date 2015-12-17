@@ -59,6 +59,7 @@ In a notebook, to enable the **Elasticsearch** interpreter, click the **Gear** i
 
 <hr/>
 
+
 ### 3. Using the Elasticsearch Interpreter
 
 In a paragraph, use `%elasticsearch` to select the Elasticsearch interpreter and then input all commands. To get the list of available commands, use `help`.
@@ -92,6 +93,7 @@ Commands:
 With the `get` command, you can find a document by id. The result is a JSON document.
 
 ```bash
+| %elasticsearch
 | get /index/type/id
 ```
 
@@ -102,18 +104,20 @@ Example:
 #### search
 With the `search` command, you can send a search query to Elasticsearch. There are two formats of query:
 * You can provide a JSON-formatted query, that is exactly what you can provide when you use the REST API of Elasticsearch.  
-** See [Elasticsearch search API reference document](https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html) for more details about the content of the search queries.
+  * See [Elasticsearch search API reference document](https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html) for more details about the content of the search queries.
 * You can also provide the content of a `query_string`
-** This is a shortcut to a query like that: `{ "query": { "query_string": { "query": "__HERE YOUR QUERY__", "analyze_wildcard": true } } }` 
-** See [Elasticsearch query string syntax](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax) for more details about the content of such a query.
+  * This is a shortcut to a query like that: `{ "query": { "query_string": { "query": "__HERE YOUR QUERY__", "analyze_wildcard": true } } }` 
+  * See [Elasticsearch query string syntax](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax) for more details about the content of such a query.
 
 ```bash
+| %elasticsearch
 | search /index1,index2,.../type1,type2,...  <JSON document containing the query or query_string elements>
 ```
 
-> If you want to modify the size of the result set, you can add a line before your search command, that is setting the size.
+If you want to modify the size of the result set, you can add a line that is setting the size, before your search command.
 
 ```bash
+| %elasticsearch
 | size 50
 | search /index1,index2,.../type1,type2,...  <JSON document containing the query or query_string elements>
 ```
@@ -122,12 +126,19 @@ With the `search` command, you can send a search query to Elasticsearch. There a
 Examples:
 * With a JSON query:
 ```bash
+| %elasticsearch
 | search / { "query": { "match_all": {} } }
+
+| %elasticsearch
 | search /logs { "query": { "query_string": { "query": "request.method:GET AND status:200" } } }
 ```
 
 * With query_string elements:
+```bash
+| %elasticsearch
 | search /logs request.method:GET AND status:200
+
+| %elasticsearch
 | search /logs (404 AND (POST OR DELETE))
 ```
 
@@ -173,6 +184,7 @@ Examples:
 With the `count` command, you can count documents available in some indices and types. You can also provide a query.
 
 ```bash
+| %elasticsearch
 | count /index1,index2,.../type1,type2,... <JSON document containing the query OR a query string>
 ```
 
@@ -187,7 +199,10 @@ Examples:
 #### index
 With the `index` command, you can insert/update a document in Elasticsearch.
 ```bash
+| %elasticsearch
 | index /index/type/id <JSON document>
+
+| %elasticsearch
 | index /index/type <JSON document>
 ```
 
@@ -195,6 +210,7 @@ With the `index` command, you can insert/update a document in Elasticsearch.
 With the `delete` command, you can delete a document.
 
 ```bash
+| %elasticsearch
 | delete /index/type/id
 ```
 
@@ -206,6 +222,7 @@ You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) 
 
 ```bash
 %elasticsearch
-search /index/type ${limit=10} { "query": { "match_all": {} } }
+size ${limit=10}
+search /index/type { "query": { "match_all": {} } }
 ```
 
