@@ -33,6 +33,18 @@
   <name>Zeppelin: Scalding interpreter</name>
   <url>http://zeppelin.incubator.apache.org</url>
 
+  <properties>
+    <scala.version>2.10.5</scala.version>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>conjars</id>
+      <name>Concurrent Maven Repo</name>
+      <url>http://conjars.org/repo</url>
+    </repository>
+  </repositories>
+
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
@@ -61,6 +73,36 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.twitter</groupId>
+      <artifactId>scalding-core_2.10</artifactId>
+      <version>0.15.1-RC13</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.twitter</groupId>
+      <artifactId>scalding-repl_2.10</artifactId>
+      <version>0.15.1-RC13</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-compiler</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-reflect</artifactId>
+      <version>${scala.version}</version>
     </dependency>
   </dependencies>
 
@@ -125,6 +167,33 @@
                 </artifactItem>
               </artifactItems>              
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Plugin to compile Scala code -->
+      <plugin>
+        <groupId>org.scala-tools</groupId>
+        <artifactId>maven-scala-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>compile</id>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <phase>compile</phase>
+          </execution>
+          <execution>
+            <id>test-compile</id>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+            <phase>test-compile</phase>
+          </execution>
+          <execution>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
