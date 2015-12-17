@@ -35,28 +35,42 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Interpreter for Apache. Look at https://drill.apache.org for more details.
+ * Interpreter for Apache Drill. Look at https://drill.apache.org for more details.
+ * 
+ * @author malur
  */
 public class DrillInterpreter
     extends Interpreter {
-
-  private static final String RS_ROW_DELIM = "\n";
-
-  private static final String RS_COL_DELIM = "\t";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DrillInterpreter.class);
 
   private static final String DRILL_JDBC_DRIVER = "org.apache.drill.jdbc.Driver";
 
-  private static final String STORAGE_PLUGIN = "drill.storage.plugin";
+  private static final String DEFAULT_ZK_CONNECT = "localhost:2181";
 
-  private static final String ZK_CONNECT = "drill.zk.connect";
+  private static final String DEFAULT_DRILL_DIRECTORY = "/Drill";
 
-  private static final String DIRECTORY = "drill.zk.directory";
+  private static final String DEFAULT_DRILL_CLUSTER_ID = "drillbits1";
 
-  private static final String CLUSTER_ID = "drill.cluster.id";
+  private static final String DEFAULT_STORAGE_PLUGIN = "hive";
 
   private static final String JDBC_URI_FORMAT = "jdbc:drill:schema=%s;zk=%s%s/%s";
+
+  private static final char RS_ROW_DELIM = '\n';
+
+  private static final char RS_COL_DELIM = '\t';
+
+  private static final char WHITESPACE = ' ';
+
+  static final String STORAGE_PLUGIN = "drill.storage.plugin";
+
+  static final String ZK_CONNECT = "drill.zk.connect";
+
+  static final String DRILL_DIRECTORY = "drill.zk.directory";
+
+  static final String DRILL_CLUSTER_ID = "drill.cluster.id";
+
+  static final String EMPTY_COLUMN_VALUE = "";
 
   private Connection connection;
 
@@ -71,10 +85,11 @@ public class DrillInterpreter
   // Register Drill Interpreter
   static {
     Interpreter.register("drill", "drill", DrillInterpreter.class.getName(),
-        new InterpreterPropertyBuilder().add(STORAGE_PLUGIN, "hive", "Storage Plugin")
-            .add(ZK_CONNECT, "localhost:2181", "Zookeeper Connect")
-            .add(DIRECTORY, "/Drill", "Drill Directory in Zookeeper")
-            .add(CLUSTER_ID, "drillbits1", "Drill Cluster ID").build());
+        new InterpreterPropertyBuilder()
+            .add(STORAGE_PLUGIN, DEFAULT_STORAGE_PLUGIN, "Storage Plugin")
+            .add(ZK_CONNECT, DEFAULT_ZK_CONNECT, "Zookeeper Connect")
+            .add(DRILL_DIRECTORY, DEFAULT_DRILL_DIRECTORY, "Drill Directory in Zookeeper")
+            .add(DRILL_CLUSTER_ID, DEFAULT_DRILL_CLUSTER_ID, "Drill Cluster ID").build());
   }
 
   /**
@@ -85,9 +100,11 @@ public class DrillInterpreter
     Properties properties) {
 
     super(properties);
-    this.jdbcURI = String.format(JDBC_URI_FORMAT, properties.getProperty(STORAGE_PLUGIN),
-        properties.getProperty(ZK_CONNECT), properties.getProperty(DIRECTORY),
-        properties.getProperty(CLUSTER_ID));
+    this.jdbcURI = String.format(JDBC_URI_FORMAT,
+        properties.getProperty(STORAGE_PLUGIN, DEFAULT_STORAGE_PLUGIN),
+        properties.getProperty(ZK_CONNECT, DEFAULT_ZK_CONNECT),
+        properties.getProperty(DRILL_DIRECTORY, DEFAULT_DRILL_DIRECTORY),
+        properties.getProperty(DRILL_CLUSTER_ID, DEFAULT_DRILL_CLUSTER_ID));
     LOGGER.info("Created DrillInterpreter for JDBC URI {}", this.jdbcURI);
   }
 
@@ -95,6 +112,10 @@ public class DrillInterpreter
   public void open() {
 
     LOGGER.info("Initializing Drill JDBC Connection");
+
+    // Close if open already
+    this.close();
+
     try {
       Class.forName(DRILL_JDBC_DRIVER);
       this.connection = DriverManager.getConnection(this.jdbcURI);
@@ -111,7 +132,7 @@ public class DrillInterpreter
   @Override
   public InterpreterResult interpret(
     String sql,
-    InterpreterContext arg1) {
+    InterpreterContext interpreterContext) {
 
     ResultSet results = null;
     InterpreterResult interpreterResult = null;
@@ -121,23 +142,27 @@ public class DrillInterpreter
         return new InterpreterResult(Code.ERROR, initError);
       }
 
-      this.statement = this.connection.createStatement();
+      this.statement = getConnection().createStatement();
       StringBuilder interpreterResultStr = new StringBuilder("%table ");
 
       results = this.statement.executeQuery(sql);
-      ResultSetMetaData rsMetaData = results.getMetaData();
-      for (int i = 1; i < rsMetaData.getColumnCount() + 1; i++) {
-        if (i == 1) {
-          interpreterResultStr.append(rsMetaData.getColumnName(i));
-        } else {
-          interpreterResultStr.append(RS_COL_DELIM + rsMetaData.getColumnName(i));
+
+      ResultSetMetaData md = results.getMetaData();
+
+      for (int i = 1; i < md.getColumnCount() + 1; i++) {
+        if (i > 1) {
+          interpreterResultStr.append(RS_COL_DELIM);
         }
+        interpreterResultStr.append(replaceReservedChars(true, md.getColumnName(i)));
       }
       interpreterResultStr.append(RS_ROW_DELIM);
 
       while (results.next()) {
-        for (int i = 1; i < rsMetaData.getColumnCount() + 1; i++) {
-          interpreterResultStr.append(results.getString(i) + RS_COL_DELIM);
+        for (int i = 1; i < md.getColumnCount() + 1; i++) {
+          interpreterResultStr.append(replaceReservedChars(true, results.getString(i)));
+          if (i != md.getColumnCount()) {
+            interpreterResultStr.append(RS_COL_DELIM);
+          }
         }
         interpreterResultStr.append(RS_ROW_DELIM);
       }
@@ -165,12 +190,13 @@ public class DrillInterpreter
   public void close() {
 
     try {
-      if (this.initialised && this.connection != null) {
-        this.connection.close();
-        this.connection = null;
+      if (getConnection() != null) {
+        getConnection().close();
       }
     } catch (Exception e) {
       LOGGER.error("Error while Closing Drill JDBC Connection", e);
+    } finally {
+      this.initError = null;
     }
   }
 
@@ -184,7 +210,6 @@ public class DrillInterpreter
   public int getProgress(
     InterpreterContext context) {
 
-    // TODO(malur): Return progress
     return 0;
   }
 
@@ -207,6 +232,45 @@ public class DrillInterpreter
   public void cancel(
     InterpreterContext arg0) {
 
-    // TODO(malur): Support Cancel
+    if (statement != null) {
+      try {
+        statement.cancel();
+      } catch (SQLException e) {
+        LOGGER.error("Error while Cancelling the SQL execution", e);
+      }
+    }
   }
+
+  private String replaceReservedChars(
+    boolean isTableResponseType,
+    String str) {
+
+    if (str == null) {
+      return EMPTY_COLUMN_VALUE;
+    }
+    return (!isTableResponseType) ? str
+        : str.replace(RS_COL_DELIM, WHITESPACE).replace(RS_ROW_DELIM, WHITESPACE);
+  }
+
+  boolean isInitialised() {
+
+    return initialised;
+  }
+
+  // Test only methods
+  protected Connection getConnection() {
+
+    return connection;
+  }
+
+  String getJdbcURI() {
+
+    return this.jdbcURI;
+  }
+
+  String getInitError() {
+
+    return this.initError;
+  }
+
 }
