@@ -48,7 +48,8 @@ angular.module('zeppelinWebApp')
       'MENU_NOTEBOOK': 'Notebooks',
       'MENU_INTERPRETER': 'Interpreters',
       'STATUS_CONNECTED': 'Connected',
-      'STATUS_DISCONNECTED': 'Disconnected'
+      'STATUS_DISCONNECTED': 'Disconnected',
+      'CREATE_MENU': 'Create new note'
     }
   });
 });

@@ -49,7 +49,8 @@ angular.module('zeppelinWebApp')
       'MENU_NOTEBOOK': 'Notebooks',
       'MENU_INTERPRETER': 'Interpreters',
       'STATUS_CONNECTED': 'Connecté',
-      'STATUS_DISCONNECTED': 'Déconnecté'
+      'STATUS_DISCONNECTED': 'Déconnecté',
+      'CREATE_MENU': 'Créer une note'
     }
   });
 });

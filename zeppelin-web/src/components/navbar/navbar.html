@@ -29,7 +29,9 @@ limitations under the License.
         <li class="dropdown" dropdown>
           <a href="#" class="dropdown-toggle" dropdown-toggle><span translate='components.navbar.MENU_NOTEBOOK'></span> <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
-            <li><a href="" data-toggle="modal" data-target="#noteNameModal"><i class="fa fa-plus"></i> Create new note</a></li>
+            <li><a href="" data-toggle="modal" data-target="#noteNameModal">
+              <i class="fa fa-plus"></i> <span translate='components.navbar.CREATE_MENU'></span>
+            </a></li>
             <li class="divider"></li>
             <div id="notebook-list" class="scrollbar-container">
               <li ng-repeat="note in navbar.notes.list | orderBy:navbar.arrayOrderingSrv.notebookListOrdering track by $index"
