@@ -512,7 +512,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     else {
       BootstrapDialog.confirm({
       title: '',
-      message : 'Notihing is changed.',
+      message : 'Nothing is changed.',
       callback: function(result) {
         if (result) {
           $scope.$apply(function () {
