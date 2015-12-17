@@ -17,28 +17,25 @@
 
 package org.apache.zeppelin.rest.message;
 
-import java.util.List;
-import java.util.Map;
-
-import org.apache.zeppelin.interpreter.InterpreterOption;
-
 /**
- *  NewNotebookRequest rest api request message
+ * NewParagraphRequest rest api request message
+ *
+ * It is used for NewNotebookRequest with initial paragraphs
  *
  */
-public class NewNotebookRequest {
-  String name;
-  List<NewParagraphRequest> paragraphs;
+public class NewParagraphRequest {
+  String title;
+  String text;
 
-  public NewNotebookRequest (){
+  public NewParagraphRequest() {
 
   }
 
-  public String getName() {
-    return name;
+  public String getTitle() {
+    return title;
   }
 
-  public List<NewParagraphRequest> getParagraphs() {
-    return paragraphs;
+  public String getText() {
+    return text;
   }
 }

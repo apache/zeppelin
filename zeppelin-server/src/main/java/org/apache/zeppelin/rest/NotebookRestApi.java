@@ -30,10 +30,7 @@ import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.rest.message.CronRequest;
-import org.apache.zeppelin.rest.message.InterpreterSettingListForNoteBind;
-import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
-import org.apache.zeppelin.rest.message.NewNotebookRequest;
+import org.apache.zeppelin.rest.message.*;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.socket.NotebookServer;
@@ -138,7 +135,15 @@ public class NotebookRestApi {
     NewNotebookRequest request = gson.fromJson(message,
         NewNotebookRequest.class);
     Note note = notebook.createNote();
-    note.addParagraph(); // it's an empty note. so add one paragraph
+    List<NewParagraphRequest> initialParagraphs = request.getParagraphs();
+    if (initialParagraphs != null) {
+      for (NewParagraphRequest paragraphRequest : initialParagraphs) {
+        Paragraph p = note.addParagraph();
+        p.setTitle(paragraphRequest.getTitle());
+        p.setText(paragraphRequest.getText());
+      }
+    }
+    note.addParagraph(); // add one paragraph to the last
     String noteName = request.getName();
     if (noteName.isEmpty()) {
       noteName = "Note " + note.getId();
