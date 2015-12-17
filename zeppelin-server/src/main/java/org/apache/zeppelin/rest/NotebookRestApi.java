@@ -218,7 +218,125 @@ public class NotebookRestApi {
     notebookServer.broadcastNoteList();
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }
-  
+
+  /**
+   * Insert paragraph REST API
+   * @param message - JSON containing paragraph's information
+   * @return JSON with status.OK
+   * @throws IOException
+   */
+  @POST
+  @Path("{notebookId}/paragraph")
+  public Response insertParagraph(@PathParam("notebookId") String notebookId, String message)
+      throws IOException {
+    LOG.info("insert paragraph {} {}", notebookId, message);
+
+    Note note = notebook.getNote(notebookId);
+    if (note == null) {
+      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+    }
+
+    NewParagraphRequest request = gson.fromJson(message, NewParagraphRequest.class);
+
+    Paragraph p;
+    Double indexDouble = request.getIndex();
+    if (indexDouble == null) {
+      p = note.addParagraph();
+    } else {
+      p = note.insertParagraph(indexDouble.intValue());
+    }
+    p.setTitle(request.getTitle());
+    p.setText(request.getText());
+
+    note.persist();
+    notebookServer.broadcastNote(note);
+    return new JsonResponse(Status.OK, "").build();
+  }
+
+  /**
+   * Get paragraph REST API
+   * @param
+   * @return JSON with information of the paragraph
+   * @throws IOException
+   */
+  @GET
+  @Path("{notebookId}/paragraph/{paragraphId}")
+  public Response getParagraph(@PathParam("notebookId") String notebookId,
+                               @PathParam("paragraphId") String paragraphId) throws IOException {
+    LOG.info("get paragraph {} {}", notebookId, paragraphId);
+
+    Note note = notebook.getNote(notebookId);
+    if (note == null) {
+      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+    }
+
+    Paragraph p = note.getParagraph(paragraphId);
+    if (p == null) {
+      return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
+    }
+
+    return new JsonResponse(Status.OK, "", p).build();
+  }
+
+  /**
+   * Move paragraph REST API
+   * @param newIndex - new index to move
+   * @return JSON with status.OK
+   * @throws IOException
+   */
+  @POST
+  @Path("{notebookId}/paragraph/{paragraphId}/move/{newIndex}")
+  public Response moveParagraph(@PathParam("notebookId") String notebookId,
+                                @PathParam("paragraphId") String paragraphId,
+                                @PathParam("newIndex") String newIndex) throws IOException {
+    LOG.info("move paragraph {} {} {}", notebookId, paragraphId, newIndex);
+
+    Note note = notebook.getNote(notebookId);
+    if (note == null) {
+      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+    }
+
+    Paragraph p = note.getParagraph(paragraphId);
+    if (p == null) {
+      return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
+    }
+
+    note.moveParagraph(paragraphId, Integer.parseInt(newIndex));
+    note.persist();
+    notebookServer.broadcastNote(note);
+
+    return new JsonResponse(Status.OK, "").build();
+  }
+
+  /**
+   * Delete paragraph REST API
+   * @param
+   * @return JSON with status.OK
+   * @throws IOException
+   */
+  @DELETE
+  @Path("{notebookId}/paragraph/{paragraphId}")
+  public Response deleteParagraph(@PathParam("notebookId") String notebookId,
+                                  @PathParam("paragraphId") String paragraphId) throws IOException {
+    LOG.info("delete paragraph {} {}", notebookId, paragraphId);
+
+    Note note = notebook.getNote(notebookId);
+    if (note == null) {
+      return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
+    }
+
+    Paragraph p = note.getParagraph(paragraphId);
+    if (p == null) {
+      return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
+    }
+
+    note.removeParagraph(paragraphId);
+    note.persist();
+    notebookServer.broadcastNote(note);
+
+    return new JsonResponse(Status.OK, "").build();
+  }
+
   /**
    * Run notebook jobs REST API
    * @param
