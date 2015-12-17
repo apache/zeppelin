@@ -103,7 +103,7 @@ Example:
 
 #### search
 With the `search` command, you can send a search query to Elasticsearch. There are two formats of query:
-* You can provide a JSON-formatted query, that is exactly what you can provide when you use the REST API of Elasticsearch.  
+* You can provide a JSON-formatted query, that is exactly what you provide when you use the REST API of Elasticsearch.  
   * See [Elasticsearch search API reference document](https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html) for more details about the content of the search queries.
 * You can also provide the content of a `query_string`
   * This is a shortcut to a query like that: `{ "query": { "query_string": { "query": "__HERE YOUR QUERY__", "analyze_wildcard": true } } }` 
