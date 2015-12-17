@@ -221,13 +221,13 @@ public class SearchService {
    */
   void indexDocs(final IndexWriter writer, Collection<Note> notes) throws IOException {
     for (Note note : notes) {
-      indexDoc(writer, note.getId(), note.getName());
+      indexNoteName(writer, note.getId(), note.getName());
       for (Paragraph doc : note.getParagraphs()) {
         if (doc.getText() == null) {
-          LOG.debug("Skipping empty paragraph");
+          LOG.info("Skipping empty paragraph");
           continue;
         }
-        indexDoc(writer, note.getId(), note.getName(), doc);
+        indexParagraph(writer, note.getId(), note.getName(), doc);
       }
     }
   }
@@ -236,10 +236,10 @@ public class SearchService {
    * Indexes a notebook name
    * @throws IOException
    */
-  private void indexDoc(IndexWriter w, String noteId, String noteName) throws IOException {
-    LOG.debug("Indexing Notebook {}, '{}'", noteId, noteName);
+  private void indexNoteName(IndexWriter w, String noteId, String noteName) throws IOException {
+    LOG.info("Indexing Notebook {}, '{}'", noteId, noteName);
     if (null == noteName || noteName.isEmpty()) {
-      LOG.debug("Skipping empty notebook name");
+      LOG.info("Skipping empty notebook name");
       return;
     }
     Document doc = newDocument(noteId, noteName);
@@ -249,7 +249,8 @@ public class SearchService {
   /**
    * Indexes a single paragraph = document
    */
-  void indexDoc(IndexWriter w, String noteId, String noteName, Paragraph p) throws IOException {
+  void indexParagraph(IndexWriter w, String noteId, String noteName, Paragraph p)
+      throws IOException {
     Document doc = newDocument(noteId, noteName, p);
     w.addDocument(doc);
   }
