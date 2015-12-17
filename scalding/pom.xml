@@ -35,6 +35,7 @@
 
   <properties>
     <scala.version>2.10.5</scala.version>
+    <hadoop.version>2.5.0</hadoop.version>
   </properties>
 
   <repositories>
@@ -103,6 +104,12 @@
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-reflect</artifactId>
       <version>${scala.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client</artifactId>
+      <version>${hadoop.version}</version>
     </dependency>
   </dependencies>
 

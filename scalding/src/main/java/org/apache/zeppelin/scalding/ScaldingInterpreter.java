@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import com.twitter.scalding.ScaldingILoop;
 
+import scala.Console;
 import scala.Some;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
@@ -56,9 +57,11 @@ public class ScaldingInterpreter extends Interpreter {
   }
 
   private ScaldingILoop interpreter;
+  private ByteArrayOutputStream out;
 
   public ScaldingInterpreter(Properties property) {
     super(property);
+    out = new ByteArrayOutputStream();
   }
 
   @Override
@@ -177,6 +180,8 @@ public class ScaldingInterpreter extends Interpreter {
     }
     linesToRun[lines.length] = "print(\"\")";
 
+    Console.setOut(new PrintStream(out));
+    out.reset();
     Code r = null;
     String incomplete = "";
 
@@ -203,7 +208,7 @@ public class ScaldingInterpreter extends Interpreter {
       r = getResultCode(res);
 
       if (r == Code.ERROR) {
-        return new InterpreterResult(r);
+        return new InterpreterResult(r, out.toString());
       } else if (r == Code.INCOMPLETE) {
         incomplete += s + "\n";
       } else {
@@ -214,7 +219,7 @@ public class ScaldingInterpreter extends Interpreter {
     if (r == Code.INCOMPLETE) {
       return new InterpreterResult(r, "Incomplete expression");
     } else {
-      return new InterpreterResult(r);
+      return new InterpreterResult(r, out.toString());
     }
   }
 
