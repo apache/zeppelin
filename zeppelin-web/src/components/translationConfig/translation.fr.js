@@ -22,8 +22,28 @@ angular.module('zeppelinWebApp')
     'app.home': {
       'WELCOME_MSG': 'Bienvenue sur Zeppelin!',
       'ZEPPELIN_DESC': 'Zeppelin est une application web de gestion de notebook, permettant l\'analyse de données\
-        de façon interactive.<br/>Vous pouvez créer de superbes documents interactif et collaboratif\
-        pour vos données, en utilisant des requêtes SQL, du code et bien plus!<br>'
+        de façon interactive.<br/>Vous pouvez créer de superbes documents interactifs et collaboratifs\
+        pour vos données, en utilisant des requêtes SQL, du code et bien plus!<br/><br/>',
+        'sections': {
+          'community': {
+            'TITLE': 'Communauté',
+            'DESC': 'N\'hésitez pas à nous aider à améliorer Zeppelin, <br/>\
+              Toute contribution est la bienvenue!<br/><br/>',
+            'MAILINGLIST_MENU': 'Mailing list',
+            'ISSUETRACKING_MENU': 'Issues tracking',
+            'GITHUB_MENU': 'Github'
+          },
+          'help': {
+            'TITLE': 'Aide',
+            'DESC': 'Commencez par visiter la',
+            'ZEPPELINDOC_LINK': 'documentation de Zeppelin'
+          },
+          'notebooks': {
+            'TITLE': 'Notebooks',
+            'IMPORT_MENU': 'Importer une note',
+            'CREATE_MENU': 'Créer une note'
+          }
+        }
     },
     'components.navbar': {
       'MENU_NOTEBOOK': 'Notebooks',

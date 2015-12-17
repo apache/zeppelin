@@ -22,7 +22,7 @@ angular.module('zeppelinWebApp')
     'app.home': {
       'WELCOME_MSG': 'Welcome to Zeppelin!',
       'ZEPPELIN_DESC': 'Zeppelin is web-based notebook that enables interactive data analytics.<br/>\
-        You can make beautiful data-driven, interactive, collaborative document with SQL, code and even more!<br/>',
+        You can make beautiful data-driven, interactive, collaborative document with SQL, code and even more!<br/><br/>',
       'sections': {
         'community': {
           'TITLE': 'Community',
