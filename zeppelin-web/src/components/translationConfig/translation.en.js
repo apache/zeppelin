@@ -38,19 +38,13 @@ angular.module('zeppelinWebApp')
           'ZEPPELINDOC_LINK': 'Zeppelin documentation'
         },
         'notebooks': {
-          'TITLE': 'Notebooks',
+          'TITLE': 'Notebook',
           'IMPORT_MENU': 'Import note',
           'CREATE_MENU': 'Create new note'
         }
       }
     },
     'app.interpreter': {
-      'header': {
-        'TITLE': 'Interpreters',
-        'DESC': 'Manage interpreters settings. You can create create / remove settings.\
-          Note can bind/unbind these interpreter settings.',
-        'CREATE_BTN': 'Create'
-      },
       'card': {
         'EDIT_BTN': 'edit',
         'RESTART_BTN': 'restart',
@@ -72,10 +66,16 @@ angular.module('zeppelinWebApp')
       'editForm': {
         'SAVE_BTN': 'Save',
         'CANCEL_BTN': 'Cancel'
+      },
+      'header': {
+        'TITLE': 'Interpreters',
+        'DESC': 'Manage interpreters settings. You can create create / remove settings.\
+          Note can bind/unbind these interpreter settings.',
+        'CREATE_BTN': 'Create'
       }
     },
     'components.navbar': {
-      'MENU_NOTEBOOK': 'Notebooks',
+      'MENU_NOTEBOOK': 'Notebook',
       'MENU_INTERPRETER': 'Interpreters',
       'STATUS_CONNECTED': 'Connected',
       'STATUS_DISCONNECTED': 'Disconnected',

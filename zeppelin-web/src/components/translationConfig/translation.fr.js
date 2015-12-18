@@ -39,14 +39,44 @@ angular.module('zeppelinWebApp')
             'ZEPPELINDOC_LINK': 'documentation de Zeppelin'
           },
           'notebooks': {
-            'TITLE': 'Notebooks',
+            'TITLE': 'Notebook',
             'IMPORT_MENU': 'Importer une note',
             'CREATE_MENU': 'Créer une note'
           }
         }
     },
+    'app.interpreter': {
+      'card': {
+        'EDIT_BTN': 'modifier',
+        'RESTART_BTN': 'redémarrer',
+        'REMOVE_BTN': 'supprimer',
+        'TABLE_TITLE': 'Propriétés',
+        'TABLE_NAME_COL': 'nom',
+        'TABLE_ACTION_COL': 'action',
+        'TABLE_VALUE_COL': 'valeur',
+        'EMPTY_PROPERTIES': 'Il n\'y a actuellement aucune configuration pour cet interpreter'
+      },
+      'createform': {
+        'TITLE': 'Créer un nouvel Interpreter',
+        'NAME_LABEL': 'Nom',
+        'INTERPRETER_LABEL': 'Interpreter',
+        'TABLE_DESC_COL': 'description',
+        'SAVE_BTN': 'Sauvegarder',
+        'CANCEL_BTN': 'Annuler'
+      },
+      'editForm': {
+        'SAVE_BTN': 'Sauvegarder',
+        'CANCEL_BTN': 'Annuler'
+      },
+      'header': {
+        'TITLE': 'Interpreters',
+        'DESC': 'Gérez les configurations de vos interpreters. Vous pouvez ajouter / retirer\
+          des propriétés, les Interpreters peuvent ensuite être utilisés dans les Notes.',
+        'CREATE_BTN': 'Créer'
+      }
+    },
     'components.navbar': {
-      'MENU_NOTEBOOK': 'Notebooks',
+      'MENU_NOTEBOOK': 'Notebook',
       'MENU_INTERPRETER': 'Interpreters',
       'STATUS_CONNECTED': 'Connecté',
       'STATUS_DISCONNECTED': 'Déconnecté',
