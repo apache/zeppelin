@@ -42,6 +42,7 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 import org.apache.lucene.search.highlight.QueryScorer;
@@ -55,11 +56,12 @@ import org.apache.zeppelin.notebook.Paragraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 /**
- * Service for search (indexing and query) the notebooks
+ * Service for search (both, indexing and query) the notebooks
  *
  * TODO(bzz): document thread-safety
  */
@@ -91,7 +93,7 @@ public class SearchService {
    * @param queryStr a query
    * @return A list of matching paragraphs (id, text, snippet w/ highlight)
    */
-  public List<Map<String, String>> search(String queryStr) {
+  public List<Map<String, String>> query(String queryStr) {
     if (null == ramDirectory) {
       throw new IllegalStateException(
           "Something went wrong on instance creation time, index dir is null");
@@ -163,18 +165,38 @@ public class SearchService {
     return matchingParagraphs;
   }
 
+  public void updateIndexDoc(Note note) throws IOException {
+    updateDoc(note.getId(), note.getName(), null);
+  }
+
+  void updateIndexDoc(Note note, Paragraph p) throws IOException {
+    updateDoc(note.getId(), note.getName(), p);
+  }
+
+  private void updateDoc(String noteId, String noteName, Paragraph p) throws IOException {
+    String id = formatId(noteId, p);
+    Document doc = newDocument(id, noteName, p);
+    try {
+      writer.updateDocument(new Term(ID_FIELD, id), doc);
+      writer.commit();
+    } catch (IOException e) {
+      LOG.error("Failed to updaet index of notebook {}", noteId, e);
+    }
+  }
+
   /**
    * Indexes full collection of notes: all the paragraphs + Note names
    *
    * @param collection of Notes
    */
-  public void index(Collection<Note> collection) {
+  public void addIndexDocs(Collection<Note> collection) {
+    int docsIndexed = 0;
     long start = System.nanoTime();
     try {
-      indexDocs(writer, collection);
-      long end = System.nanoTime();
-      LOG.info("Indexing {} notebooks took {}ms",
-          collection.size(), TimeUnit.NANOSECONDS.toMillis(end - start));
+      for (Note note : collection) {
+        addIndexDoc(note);
+        docsIndexed++;
+      }
     } catch (IOException e) {
       LOG.error("Failed to index all Notebooks", e);
     } finally {
@@ -183,17 +205,40 @@ public class SearchService {
       } catch (IOException e) {
         LOG.error("Failed to save index", e);
       }
+      long end = System.nanoTime();
+      LOG.info("Indexing {} notebooks took {}ms",
+          docsIndexed, TimeUnit.NANOSECONDS.toMillis(end - start));
     }
   }
 
-  public void updateDoc(String noteId, String noteName, Paragraph p) throws IOException {
-    Document doc = newDocument(noteId, noteName, p);
-    try {
-      writer.updateDocument(new Term(ID_FIELD, formatId(noteId, p.getId())), doc);
-      writer.commit();
-    } catch (Exception e) {
-      LOG.error("Failed to index all Notebooks", e);
+  /**
+   * Indexes the given notebook
+   *
+   * @throws IOException If there is a low-level I/O error
+   */
+  public void addIndexDoc(Note note) throws IOException {
+    indexNoteName(writer, note.getId(), note.getName());
+    for (Paragraph doc : note.getParagraphs()) {
+      if (doc.getText() == null) {
+        LOG.debug("Skipping empty paragraph");
+        continue;
+      }
+      indexDoc(writer, note.getId(), note.getName(), doc);
     }
+  }
+
+  /**
+   * Deletes all docs no given Note from index
+   */
+  public void deleteIndexDocs(Note note) {
+    LOG.debug("Deleting note {}, out of: {}", note.getId(), writer.numDocs());
+    try {
+      writer.deleteDocuments(new WildcardQuery(new Term(ID_FIELD, note.getId()  + "*")));
+      writer.commit();
+    } catch (IOException e) {
+      LOG.error("Failed to delete a notebook {} from index", note, e);
+    }
+    LOG.debug("Done, index contains {} docs now" + writer.numDocs());
   }
 
   /**
@@ -207,31 +252,6 @@ public class SearchService {
     }
   }
 
-
-  /**
-   * Indexes the given list of notebooks
-   *
-   * @param writer
-   *          Writer to the index where the given file/dir info will be stored
-   * @param path
-   *          The file to index, or the directory to recurse into to find files
-   *          to index
-   * @throws IOException
-   *           If there is a low-level I/O error
-   */
-  void indexDocs(final IndexWriter writer, Collection<Note> notes) throws IOException {
-    for (Note note : notes) {
-      indexNoteName(writer, note.getId(), note.getName());
-      for (Paragraph doc : note.getParagraphs()) {
-        if (doc.getText() == null) {
-          LOG.debug("Skipping empty paragraph");
-          continue;
-        }
-        indexParagraph(writer, note.getId(), note.getName(), doc);
-      }
-    }
-  }
-
   /**
    * Indexes a notebook name
    * @throws IOException
@@ -242,58 +262,58 @@ public class SearchService {
       LOG.debug("Skipping empty notebook name");
       return;
     }
-    Document doc = newDocument(noteId, noteName);
-    w.addDocument(doc);
+    indexDoc(w, noteId, noteName, null);
   }
 
   /**
-   * Indexes a single paragraph = document
+   * Indexes a single document
+   *  - code of the paragraph (if non-null)
+   *  - or just note name
    */
-  void indexParagraph(IndexWriter w, String noteId, String noteName, Paragraph p)
+  private void indexDoc(IndexWriter w, String noteId, String noteName, Paragraph p)
       throws IOException {
-    Document doc = newDocument(noteId, noteName, p);
+    String id = formatId(noteId, p);
+    Document doc = newDocument(id, noteName, p);
     w.addDocument(doc);
   }
 
-  private Document newDocument(String noteId, String noteName, Paragraph p) {
-    Document doc = new Document();
-
-    String id = formatId(noteId, p.getId());
-    Field pathField = new StringField(ID_FIELD, id, Field.Store.YES);
-    doc.add(pathField);
-
-    doc.add(new StringField("title", noteName, Field.Store.YES));
-
-    Date date = p.getDateStarted() != null ? p.getDateStarted() : p.getDateCreated();
-    doc.add(new LongField("modified", date.getTime(), Field.Store.NO));
-    doc.add(new TextField(SEARCH_FIELD, p.getText(), Field.Store.YES));
-    return doc;
-  }
-
-  //TODO(bzz): refactor and re-use code from above
-  private Document newDocument(String noteId, String noteName) {
-    Document doc = new Document();
-
-    Field pathField = new StringField(ID_FIELD, noteId, Field.Store.YES);
-    doc.add(pathField);
-
-    doc.add(new StringField("title", noteName, Field.Store.YES));
-
-    //doc.add(new LongField("modified", date.getTime(), Field.Store.NO));
-    doc.add(new TextField(SEARCH_FIELD, noteName, Field.Store.YES));
-    return doc;
-  }
-
   /**
-   * ID looks like '<note-id>/paragraph/<paragraph-id>'
+   * If paragraph is not null, indexes code in the paragraph,
+   * otherwise indexes the notebook name.
    *
-   * @param noteId If of the Note
-   * @param paragraphId Id of the paragraph
-   *
+   * @param id id of the document, different for Note name and paragraph
+   * @param noteName name of the note
+   * @param p paragraph
    * @return
    */
-  private String formatId(String noteId, String paragraphId) {
-    return String.format("%s/paragraph/%s", noteId, paragraphId);
+  private Document newDocument(String id, String noteName, Paragraph p) {
+    Document doc = new Document();
+
+    Field pathField = new StringField(ID_FIELD, id, Field.Store.YES);
+    doc.add(pathField);
+    doc.add(new StringField("title", noteName, Field.Store.YES));
+
+    if (null != p) {
+      doc.add(new TextField(SEARCH_FIELD, p.getText(), Field.Store.YES));
+      Date date = p.getDateStarted() != null ? p.getDateStarted() : p.getDateCreated();
+      doc.add(new LongField("modified", date.getTime(), Field.Store.NO));
+    } else {
+      doc.add(new TextField(SEARCH_FIELD, noteName, Field.Store.YES));
+    }
+    return doc;
   }
+
+  /**
+   * If paragraph is not null, id is <noteId>/paragraphs/<paragraphId>,
+   * otherwise it's just <noteId>.
+   */
+  static String formatId(String noteId, Paragraph p) {
+    String id = noteId;
+    if (null != p) {
+      id = Joiner.on('/').join(id, "paragraphs", p.getId());
+    }
+    return id;
+  }
+
 
 }

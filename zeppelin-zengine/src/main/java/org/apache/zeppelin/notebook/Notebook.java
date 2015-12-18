@@ -101,7 +101,7 @@ public class Notebook {
     if (this.notebookIndex != null) {
       long start = System.nanoTime();
       logger.info("Notebook indexing started...");
-      notebookIndex.index(notes.values());
+      notebookIndex.addIndexDocs(notes.values());
       logger.info("Notebook indexing finished: {} indexed in {}s", notes.size(),
           TimeUnit.NANOSECONDS.toSeconds(start - System.nanoTime()));
     }
@@ -115,11 +115,14 @@ public class Notebook {
    * @throws IOException
    */
   public Note createNote() throws IOException {
+    Note note;
     if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
-      return createNote(replFactory.getDefaultInterpreterSettingList());
+      note = createNote(replFactory.getDefaultInterpreterSettingList());
     } else {
-      return createNote(null);
+      note = createNote(null);
     }
+    notebookIndex.addIndexDoc(note);
+    return note;
   }
 
   /**
@@ -139,6 +142,7 @@ public class Notebook {
       bindInterpretersToNote(note.id(), interpreterIds);
     }
 
+    notebookIndex.addIndexDoc(note);
     note.persist();
     return note;
   }
@@ -169,6 +173,8 @@ public class Notebook {
     for (Paragraph p : paragraphs) {
       newNote.addCloneParagraph(p);
     }
+
+    notebookIndex.addIndexDoc(newNote);
     newNote.persist();
     return newNote;
   }
@@ -208,9 +214,11 @@ public class Notebook {
 
   public void removeNote(String id) {
     Note note;
+
     synchronized (notes) {
       note = notes.remove(id);
     }
+    notebookIndex.deleteIndexDocs(note);
 
     // remove from all interpreter instance's angular object registry
     for (InterpreterSetting settings : replFactory.get()) {
@@ -369,12 +377,9 @@ public class Notebook {
     }
     synchronized (notes) {
       List<Note> noteList = new ArrayList<Note>(notes.values());
-      Collections.sort(noteList, new Comparator() {
+      Collections.sort(noteList, new Comparator<Note>() {
         @Override
-        public int compare(Object one, Object two) {
-          Note note1 = (Note) one;
-          Note note2 = (Note) two;
-
+        public int compare(Note note1, Note note2) {
           String name1 = note1.id();
           if (note1.getName() != null) {
             name1 = note1.getName();
@@ -383,7 +388,6 @@ public class Notebook {
           if (note2.getName() != null) {
             name2 = note2.getName();
           }
-          ((Note) one).getName();
           return name1.compareTo(name2);
         }
       });

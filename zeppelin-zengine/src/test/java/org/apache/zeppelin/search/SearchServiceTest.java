@@ -17,6 +17,7 @@
 package org.apache.zeppelin.search;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.apache.zeppelin.search.SearchService.formatId;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -25,6 +26,7 @@ import java.util.Map;
 
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,6 +39,11 @@ public class SearchServiceTest {
     notebookIndex = new SearchService();
   }
 
+  @After
+  public void shutDown() {
+    notebookIndex.close();
+  }
+
   @Test public void canIndexNotebook() {
     //give
     Note note1 = newNoteWithParapgraph("Notebook1", "test");
@@ -44,33 +51,33 @@ public class SearchServiceTest {
     List<Note> notebook = Arrays.asList(note1, note2);
 
     //when
-    notebookIndex.index(notebook);
+    notebookIndex.addIndexDocs(notebook);
   }
 
   @Test public void canIndexAndQuery() {
     //given
     Note note1 = newNoteWithParapgraph("Notebook1", "test");
     Note note2 = newNoteWithParapgraphs("Notebook2", "not test", "not test at all");
-    notebookIndex.index(Arrays.asList(note1, note2));
+    notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
 
     //when
-    List<Map<String, String>> results = notebookIndex.search("all");
+    List<Map<String, String>> results = notebookIndex.query("all");
 
     //then
     assertThat(results).isNotEmpty();
     assertThat(results.size()).isEqualTo(1);
-    assertThat(results.get(0)).containsEntry("id",
-        String.format("%s/paragraph/%s", note2.getId(), note2.getLastParagraph().getId()));
+    assertThat(results.get(0))
+      .containsEntry("id", formatId(note2.getId(), note2.getLastParagraph()));
   }
 
   @Test public void canIndexAndQueryByNotebookName() {
     //given
     Note note1 = newNoteWithParapgraph("Notebook1", "test");
     Note note2 = newNoteWithParapgraphs("Notebook2", "not test", "not test at all");
-    notebookIndex.index(Arrays.asList(note1, note2));
+    notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
 
     //when
-    List<Map<String, String>> results = notebookIndex.search("Notebook1");
+    List<Map<String, String>> results = notebookIndex.query("Notebook1");
 
     //then
     assertThat(results).isNotEmpty();
@@ -83,7 +90,7 @@ public class SearchServiceTest {
   public void canNotSearchBeforeIndexing() {
     //given NO notebookIndex.index() was called
     //when
-    List<Map<String, String>> result = notebookIndex.search("anything");
+    List<Map<String, String>> result = notebookIndex.query("anything");
     //then
     assertThat(result).isEmpty();
     //assert logs were printed
@@ -94,19 +101,42 @@ public class SearchServiceTest {
     //given
     Note note1 = newNoteWithParapgraph("Notebook1", "test");
     Note note2 = newNoteWithParapgraphs("Notebook2", "not test", "not test at all");
-    notebookIndex.index(Arrays.asList(note1, note2));
+    notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
 
     //when
     Paragraph p2 = note2.getLastParagraph();
     p2.setText("test indeed");
-    notebookIndex.updateDoc(note2.getId(), note2.getName(), p2);
+    notebookIndex.updateIndexDoc(note2, p2);
 
     //then
-    List<Map<String, String>> results = notebookIndex.search("all");
+    List<Map<String, String>> results = notebookIndex.query("all");
     assertThat(results).isEmpty();
 
-    results = notebookIndex.search("indeed");
+    results = notebookIndex.query("indeed");
     assertThat(results).isNotEmpty();
+  }
+
+  @Test public void canDeleteFromIndex() throws IOException {
+    //given
+    Note note1 = newNoteWithParapgraph("Notebook1", "test");
+    Note note2 = newNoteWithParapgraphs("Notebook2", "not test", "not test at all");
+    notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
+    assertThat(resultForQuery("Notebook2")).isNotEmpty();
+
+    //when
+    notebookIndex.deleteIndexDocs(note2);
+
+    //then
+    assertThat(notebookIndex.query("all")).isEmpty();
+    assertThat(resultForQuery("Notebook2")).isEmpty();
+
+    List<Map<String, String>> results = resultForQuery("test");
+    assertThat(results).isNotEmpty();
+    assertThat(results.size()).isEqualTo(1);
+  }
+
+  private List<Map<String, String>> resultForQuery(String q) {
+    return notebookIndex.query(q);
   }
 
   /**

@@ -401,9 +401,9 @@ public class NotebookRestApi {
    */
   @GET
   @Path("search")
-  public Response search(@QueryParam("q") String query) {
-    LOG.info("Searching notebooks for {}", query);
-    List<Map<String, String>> notebooksFound = notebookIndex.search(query);
+  public Response search(@QueryParam("q") String queryTerm) {
+    LOG.info("Searching notebooks for {}", queryTerm);
+    List<Map<String, String>> notebooksFound = notebookIndex.query(queryTerm);
     LOG.info("Notbooks {} found", notebooksFound.size());
     return new JsonResponse<>(Status.OK, notebooksFound).build();
   }
