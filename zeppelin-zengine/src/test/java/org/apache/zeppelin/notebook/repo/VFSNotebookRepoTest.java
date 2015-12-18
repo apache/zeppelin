@@ -81,7 +81,10 @@ public class VFSNotebookRepoTest implements JobListenerFactory{
 
   @After
   public void tearDown() throws Exception {
-    FileUtils.deleteDirectory(mainZepDir);
+    //FileUtils.deleteDirectory(mainZepDir);
+    if (!FileUtils.deleteQuietly(mainZepDir)) {
+      logger.error("Failed to delete {} ", mainZepDir.getName());
+    }
   }
 
   @Test
