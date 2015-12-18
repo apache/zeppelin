@@ -20,11 +20,13 @@ package org.apache.zeppelin.scalding;
 import java.io.File;
 import java.util.Properties;
 import java.util.List;
+import java.util.Map;
 import java.util.LinkedList;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -35,10 +37,11 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.twitter.scalding.ScaldingILoop;
+//import com.twitter.scalding.ScaldingILoop;
 
 import scala.Console;
 import scala.Some;
+import scala.None;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.settings.MutableSettings.BooleanSetting;
 import scala.tools.nsc.settings.MutableSettings.PathSetting;
@@ -58,6 +61,7 @@ public class ScaldingInterpreter extends Interpreter {
 
   private ScaldingILoop interpreter;
   private ByteArrayOutputStream out;
+  private Map<String, Object> binder;
 
   public ScaldingInterpreter(Properties property) {
     super(property);
@@ -115,9 +119,26 @@ public class ScaldingInterpreter extends Interpreter {
     settings.scala$tools$nsc$settings$StandardScalaSettings$_setter_$usejavacp_$eq(b);
 
     /* Scalding interpreter */
-    interpreter = new ScaldingILoop();
+    PrintStream printStream = new PrintStream(out);
+    interpreter = new ScaldingILoop(null, new PrintWriter(out));
     interpreter.settings_$eq(settings);
     interpreter.createInterpreter();
+
+    interpreter.intp().
+      interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
+    binder = (Map<String, Object>) getValue("_binder");
+    binder.put("out", printStream);
+  }
+
+  private Object getValue(String name) {
+    Object ret = interpreter.intp().valueOfTerm(name);
+    if (ret instanceof None) {
+      return null;
+    } else if (ret instanceof Some) {
+      return ((Some) ret).get();
+    } else {
+      return ret;
+    }
   }
 
   private List<File> currentClassPath() {
@@ -182,9 +203,7 @@ public class ScaldingInterpreter extends Interpreter {
     }
     linesToRun[lines.length] = "print(\"\")";
 
-    PrintStream ps = new PrintStream(out);
-    Console.setOut(ps);
-    Console.setErr(ps);
+    Console.setOut((java.io.PrintStream) binder.get("out"));
     out.reset();
     Code r = null;
     String incomplete = "";
@@ -212,7 +231,7 @@ public class ScaldingInterpreter extends Interpreter {
       r = getResultCode(res);
 
       if (r == Code.ERROR) {
-        ps.flush();
+        Console.flush();
         return new InterpreterResult(r, out.toString());
       } else if (r == Code.INCOMPLETE) {
         incomplete += s + "\n";
@@ -224,7 +243,7 @@ public class ScaldingInterpreter extends Interpreter {
     if (r == Code.INCOMPLETE) {
       return new InterpreterResult(r, "Incomplete expression");
     } else {
-      ps.flush();
+      Console.flush();
       return new InterpreterResult(r, out.toString());
     }
   }
