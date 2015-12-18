@@ -36,6 +36,7 @@
   <properties>
     <scala.version>2.10.5</scala.version>
     <hadoop.version>2.5.0</hadoop.version>
+    <scalding.version>0.15.1-RC13</scalding.version>
   </properties>
 
   <repositories>
@@ -79,13 +80,13 @@
     <dependency>
       <groupId>com.twitter</groupId>
       <artifactId>scalding-core_2.10</artifactId>
-      <version>0.15.1-RC13</version>
+      <version>${scalding.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.twitter</groupId>
       <artifactId>scalding-repl_2.10</artifactId>
-      <version>0.15.1-RC13</version>
+      <version>${scalding.version}</version>
     </dependency>
 
     <dependency>

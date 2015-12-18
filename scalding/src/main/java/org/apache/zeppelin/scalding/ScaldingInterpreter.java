@@ -150,7 +150,9 @@ public class ScaldingInterpreter extends Interpreter {
   }
 
   @Override
-  public void close() {}
+  public void close() {
+    interpreter.intp().close();
+  }
 
 
   @Override
@@ -180,7 +182,9 @@ public class ScaldingInterpreter extends Interpreter {
     }
     linesToRun[lines.length] = "print(\"\")";
 
-    Console.setOut(new PrintStream(out));
+    PrintStream ps = new PrintStream(out);
+    Console.setOut(ps);
+    Console.setErr(ps);
     out.reset();
     Code r = null;
     String incomplete = "";
@@ -208,6 +212,7 @@ public class ScaldingInterpreter extends Interpreter {
       r = getResultCode(res);
 
       if (r == Code.ERROR) {
+        ps.flush();
         return new InterpreterResult(r, out.toString());
       } else if (r == Code.INCOMPLETE) {
         incomplete += s + "\n";
@@ -219,6 +224,7 @@ public class ScaldingInterpreter extends Interpreter {
     if (r == Code.INCOMPLETE) {
       return new InterpreterResult(r, "Incomplete expression");
     } else {
+      ps.flush();
       return new InterpreterResult(r, out.toString());
     }
   }
