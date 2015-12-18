@@ -15,19 +15,17 @@ limitations under the License.
   <div class="header">
     <div class="row">
       <div class="col-md-12">
-        <h3 class="new_h3">
-          Interpreters
-        </h3>
+        <h3 class="new_h3" style="float:left" translate='app.interpreter.header.TITLE'></h3>
         <span class="btn btn-default fa fa-plus"
               ng-click="showAddNewSetting = !showAddNewSetting"
               style="float:right;margin-top:10px;">
-          Create
+              <span translate='app.interpreter.header.CREATE_BTN'></span>
         </span>
       </div>
     </div>
     <div class="row">
       <div class="col-md-12">
-        Manage interpreters settings. You can create create / remove settings. Note can bind/unbind these interpreter settings.
+        <span translate='app.interpreter.header.DESC'></span>
       </div>
     </div>
   </div>
@@ -55,28 +53,28 @@ limitations under the License.
           <button class="btn btn-default btn-xs"
                   ng-click="valueform.$show();
                   copyOriginInterpreterSettingProperties(setting.id)">
-            <span class="fa fa-pencil"></span> edit</button>
+            <span class="fa fa-pencil"></span> <span translate='app.interpreter.card.EDIT_BTN'></span></button>
           <button class="btn btn-default btn-xs"
                   ng-click="restartInterpreterSetting(setting.id)">
-            <span class="fa fa-refresh"></span> restart</button>
+            <span class="fa fa-refresh"></span> <span translate='app.interpreter.card.RESTART_BTN'></span></button>
           <button class="btn btn-default btn-xs"
                   ng-click="removeInterpreterSetting(setting.id)">
-            <span class="fa fa-remove"></span> remove</button>
+            <span class="fa fa-remove"></span> <span translate='app.interpreter.card.REMOVE_BTN'></span></button>
         </span>
       </div>
     </div>
     <div class="row interpreter">
       <div ng-show="_.isEmpty(setting.properties) || valueform.$hidden" class="col-md-12 empty-properties-message">
-        <em>Currently there are no properties set for this interpreter</em>
+        <em translate='app.interpreter.card.EMPTY_PROPERTIES'></em>
       </div>
       <div class="col-md-12" ng-show="!_.isEmpty(setting.properties) || valueform.$visible">
-        <h5>Properties</h5>
+        <h5 translate='app.interpreter.card.TABLE_TITLE'></h5>
         <table class="table table-striped">
           <thead>
             <tr>
-              <th style="width:30%">name</th>
-              <th>value</th>
-              <th ng-if="valueform.$visible">action</th>
+              <th style="width:30%" translate='app.interpreter.card.TABLE_NAME_COL'></th>
+              <th translate='app.interpreter.card.TABLE_VALUE_COL'></th>
+              <th ng-if="valueform.$visible" translate='app.interpreter.card.TABLE_ACTION_COL'></th>
             </tr>
           </thead>
           <tr ng-repeat="(key, value) in setting.properties" >
@@ -110,15 +108,11 @@ limitations under the License.
           </tr>
         </table>
         <form editable-form name="valueform" onaftersave="updateInterpreterSetting(setting.id)" ng-show="valueform.$visible">
-          <button type="submit" class="btn btn-primary"
-                  ng-disabled="valueform.$waiting">
-            Save
-          </button>
-          <button type="button" class="btn btn-default"
-                  ng-disabled="valueform.$waiting"
-                  ng-click="valueform.$cancel(); resetInterpreterSetting(setting.id)">
-            Cancel
-          </button>
+          <button type="submit" class="btn btn-primary" ng-disabled="valueform.$waiting"
+                  translate='app.interpreter.editForm.SAVE_BTN'></button>
+          <button type="button" class="btn btn-default" ng-disabled="valueform.$waiting"
+                  ng-click="valueform.$cancel(); resetInterpreterSetting(setting.id)"
+                  translate='app.interpreter.editForm.CANCEL_BTN'></button>
         </form>
       </div>
     </div>

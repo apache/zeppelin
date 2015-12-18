@@ -16,15 +16,15 @@ limitations under the License.
     <div class="col-md-12">
       <div class="interpreterSettingAdd" ng-show="showAddNewSetting">
         <hr />
-        <h4>Create new interpreter</h4>
+        <h4 translate='app.interpreter.createform.TITLE'></h4>
 
         <div class="form-group" style="width:200px">
-          <b>Name</b>
+          <b translate='app.interpreter.createform.NAME_LABEL'></b>
           <input id="newInterpreterSettingName" input pu-elastic-input
                  pu-elastic-input-minwidth="180px" ng-model="newInterpreterSetting.name" />
         </div>
 
-        <b>Interpreter</b>
+        <b translate='app.interpreter.createform.INTERPRETER_LABEL'></b>
         <div class="form-group"
              style="width:180px">
           <select class="form-control input-sm" ng-model="newInterpreterSetting.group"
@@ -35,13 +35,13 @@ limitations under the License.
           </select>
         </div>
 
-        <b>Properties</b>
+        <b translate='app.interpreter.card.TABLE_TITLE'></b>
         <table class="table table-striped properties">
           <tr>
-            <th>name</th>
-            <th>value</th>
-            <th>description</th>
-            <th>action</th>
+            <th translate='app.interpreter.card.TABLE_NAME_COL'></th>
+            <th translate='app.interpreter.card.TABLE_VALUE_COL'></th>
+            <th translate='app.interpreter.createform.TABLE_DESC_COL'></th>
+            <th translate='app.interpreter.card.TABLE_ACTION_COL'></th>
           </tr>
           <tr ng-repeat="(key, value) in newInterpreterSetting.properties">
             <td>{{key}}</td>
@@ -67,12 +67,10 @@ limitations under the License.
           </tr>
         </table>
 
-        <span class="btn btn-primary" ng-click="addNewInterpreterSetting()">
-          Save
-        </span>
-        <span class="btn btn-default" ng-click="cancelInterpreterSetting()">
-          Cancel
-        </span>
+        <span class="btn btn-primary" ng-click="addNewInterpreterSetting()"
+          translate='app.interpreter.createform.SAVE_BTN'></span>
+        <span class="btn btn-default" ng-click="cancelInterpreterSetting()"
+        translate='app.interpreter.createform.CANCEL_BTN'></span>
       </div>
     </div>
   </div>

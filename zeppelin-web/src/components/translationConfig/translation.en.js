@@ -44,6 +44,36 @@ angular.module('zeppelinWebApp')
         }
       }
     },
+    'app.interpreter': {
+      'header': {
+        'TITLE': 'Interpreters',
+        'DESC': 'Manage interpreters settings. You can create create / remove settings.\
+          Note can bind/unbind these interpreter settings.',
+        'CREATE_BTN': 'Create'
+      },
+      'card': {
+        'EDIT_BTN': 'edit',
+        'RESTART_BTN': 'restart',
+        'REMOVE_BTN': 'remove',
+        'TABLE_TITLE': 'Properties',
+        'TABLE_NAME_COL': 'name',
+        'TABLE_ACTION_COL': 'action',
+        'TABLE_VALUE_COL': 'value',
+        'EMPTY_PROPERTIES': 'Currently there are no properties set for this interpreter'
+      },
+      'createform': {
+        'TITLE': 'Create new interpreter',
+        'NAME_LABEL': 'Name',
+        'INTERPRETER_LABEL': 'Interpreter',
+        'TABLE_DESC_COL': 'description',
+        'SAVE_BTN': 'Save',
+        'CANCEL_BTN': 'Cancel'
+      },
+      'editForm': {
+        'SAVE_BTN': 'Save',
+        'CANCEL_BTN': 'Cancel'
+      }
+    },
     'components.navbar': {
       'MENU_NOTEBOOK': 'Notebooks',
       'MENU_INTERPRETER': 'Interpreters',
