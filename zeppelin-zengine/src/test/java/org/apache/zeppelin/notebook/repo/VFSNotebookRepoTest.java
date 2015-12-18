@@ -40,8 +40,11 @@ import org.apache.zeppelin.search.SearchService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class VFSNotebookRepoTest implements JobListenerFactory{
+public class VFSNotebookRepoTest implements JobListenerFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(VFSNotebookRepoTest.class);
   private ZeppelinConfiguration conf;
   private SchedulerFactory schedulerFactory;
   private Notebook notebook;
@@ -81,9 +84,8 @@ public class VFSNotebookRepoTest implements JobListenerFactory{
 
   @After
   public void tearDown() throws Exception {
-    //FileUtils.deleteDirectory(mainZepDir);
     if (!FileUtils.deleteQuietly(mainZepDir)) {
-      logger.error("Failed to delete {} ", mainZepDir.getName());
+      LOG.error("Failed to delete {} ", mainZepDir.getName());
     }
   }
 
