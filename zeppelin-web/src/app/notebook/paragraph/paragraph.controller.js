@@ -942,7 +942,7 @@ angular.module('zeppelinWebApp')
     var renderTable = function() {
       var html = '';
 
-      html += '<table class="table table-hover table-condensed" style="position: absolute;">';
+      html += '<table class="table table-hover table-condensed" style="top: 0; position: absolute;">';
       html += '  <thead>';
       html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
       for (var c in $scope.paragraph.result.columnNames) {
