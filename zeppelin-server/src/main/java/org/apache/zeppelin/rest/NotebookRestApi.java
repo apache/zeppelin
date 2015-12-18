@@ -250,7 +250,7 @@ public class NotebookRestApi {
 
     note.persist();
     notebookServer.broadcastNote(note);
-    return new JsonResponse(Status.OK, "").build();
+    return new JsonResponse(Status.CREATED, "", p.getId()).build();
   }
 
   /**

@@ -610,18 +610,30 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     String jsonRequest = "{\"title\": \"title1\", \"text\": \"text1\"}";
     PostMethod post = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest);
     LOG.info("testInsertParagraph response\n" + post.getResponseBodyAsString());
-    assertThat("Test insert method:", post, isAllowed());
+    assertThat("Test insert method:", post, isCreated());
     post.releaseConnection();
 
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+
+    String newParagraphId = (String) resp.get("body");
+    LOG.info("newParagraphId:=" + newParagraphId);
+
+    Note retrNote = ZeppelinServer.notebook.getNote(note.getId());
+    Paragraph newParagraph = retrNote.getParagraph(newParagraphId);
+    assertNotNull("Can not find new paragraph by id", newParagraph);
+
+    assertEquals("title1", newParagraph.getTitle());
+    assertEquals("text1", newParagraph.getText());
+
     Paragraph lastParagraph = note.getLastParagraph();
-    assertEquals("title1", lastParagraph.getTitle());
-    assertEquals("text1", lastParagraph.getText());
+    assertEquals(newParagraph.getId(), lastParagraph.getId());
 
     // insert to index 0
     String jsonRequest2 = "{\"index\": 0, \"title\": \"title2\", \"text\": \"text2\"}";
     PostMethod post2 = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest2);
     LOG.info("testInsertParagraph response2\n" + post.getResponseBodyAsString());
-    assertThat("Test insert method:", post, isAllowed());
+    assertThat("Test insert method:", post, isCreated());
     post.releaseConnection();
 
     Paragraph paragraphAtIdx0 = note.getParagraphs().get(0);
