@@ -62,10 +62,6 @@
   overflow-y: auto;
 }
 
-.interpreter table tr {
-  height : 45px;
-}
-
 .interpreterSettingAdd {
   margin : 5px 5px 5px 5px;
   padding : 10px 10px 10px 10px;
@@ -73,4 +69,18 @@
 
 .editable-wrap {
   width : 100%;
+}
+
+.interpreter h5 {
+  font-weight: bold;
+}
+
+.new_h3 {
+  margin-top: 1px;
+  padding-top: 7px;
+  float: left;
+}
+
+.empty-properties-message {
+  color: #666;
 }

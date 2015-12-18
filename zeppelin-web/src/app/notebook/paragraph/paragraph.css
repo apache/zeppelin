@@ -32,7 +32,6 @@
 */
 
 .paragraph .text {
-  white-space: pre;
   display: block;
   unicode-bidi: embed;
   display: block !important;
@@ -404,4 +403,9 @@
 
 .dropdown-menu > li:first-child > a:hover {
   background-color: transparent;
+}
+
+table.table-striped {
+  border-top: 1px solid #ddd;
+  margin-top: 20px;
 }
