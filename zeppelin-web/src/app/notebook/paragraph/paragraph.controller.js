@@ -67,10 +67,10 @@ angular.module('zeppelinWebApp')
           console.log('HTML rendering error %o', err);
         }
       } else {
+        $timeout(retryRenderer, 10);
       }
     };
     $timeout(retryRenderer);
-
   };
 
   $scope.renderAngular = function() {
@@ -84,11 +84,10 @@ angular.module('zeppelinWebApp')
           console.log('ANGULAR rendering error %o', err);
         }
       } else {
-        $timeout(retryRenderer,10);
+        $timeout(retryRenderer, 10);
       }
     };
     $timeout(retryRenderer);
-
   };
 
 
@@ -542,35 +541,8 @@ angular.module('zeppelinWebApp')
 
           pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
           var buf = session.getValue();
-          var completionString = buf;
 
-          if (pos > 0) {
-            var completionStartPosition = pos;
-            var completionSeqCharaters = [' ', '\n'];
-
-            // replace \r\n or \n\r other to \n
-            var reverseCompletionString = buf.replace(/\r?\n|\r/g, '\n').substr(0, pos).split('').reverse();
-            for (var seqCharacterIndex in completionSeqCharaters) {
-              var indexOfReverseSeqPostion = reverseCompletionString.indexOf(completionSeqCharaters[seqCharacterIndex]);
-
-              if (indexOfReverseSeqPostion < completionStartPosition && indexOfReverseSeqPostion > 0) {
-                completionStartPosition = indexOfReverseSeqPostion;
-              }
-            }
-
-            if (completionStartPosition === pos) {
-              completionStartPosition = 0;
-            }
-            else
-            {
-              completionStartPosition = pos - completionStartPosition;
-            }
-
-            completionString = buf.substr( completionStartPosition , pos);
-            pos = completionString.length -1;
-          }
-
-          websocketMsgSrv.completion($scope.paragraph.id, completionString, pos);
+          websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
 
           $scope.$on('completionList', function(event, data) {
             if (data.completions) {
@@ -1850,11 +1822,13 @@ angular.module('zeppelinWebApp')
     $window.open(redirectToUrl);
   };
 
-  $scope.checkErrorForRestart = function(){
+  $scope.checkErrorForRestart = function() {
     var errorText = $scope.paragraph.result.msg;
     if (errorText) {
       errorText = errorText.toLowerCase();
-      if (errorText.indexOf('timed out') > 0 || (errorText.indexOf('thrift') > 0) && errorText.indexOf('except') > 0) {
+      if (errorText.indexOf('timed out') > 0 ||
+        (errorText.indexOf('thrift') > 0) && errorText.indexOf('except') > 0 ||
+        errorText.indexOf('connection refused') > 0) {
         return true;
       }
     }
@@ -1862,31 +1836,34 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.restartInterpreterSetting = function() {
-    var result = confirm('Do you want to restart this interpreter?');
-    if (!result) {
-      return;
-    }
+    BootstrapDialog.confirm({
+      title: '',
+      message: 'Do you want to restart this interpreter?',
+      callback: function(result) {
+        if (result) {
+          $scope.paragraph.interpreterRestarting = true;
 
-    $scope.paragraph.interpreterRestarting = true;
-
-    var settingId = Object.keys($scope.note.angularObjects)[0];
-    if ($scope.paragraph.text.split('\n')[0][0] !== '%') {
-      baseInterpreterService.restartInterpreterSetting(settingId).then(function() {
-        $scope.paragraph.interpreterRestarted = true;
-      });
-    } else {
-      var language = $scope.paragraph.text.split('\n')[0].split(' ')[0].split('.')[0].split('%')[1];
-      baseInterpreterService.getInterpreterSettings().then(function(settings) {
-        for (var settingIndex in settings) {
-          if (settings[settingIndex].name === language) {
-            settingId = settings[settingIndex].id;
-            break;
+          var settingId = Object.keys($scope.note.angularObjects)[0];
+          if ($scope.paragraph.text.split('\n')[0][0] !== '%') {
+            baseInterpreterService.restartInterpreterSetting(settingId).then(function() {
+              $scope.paragraph.interpreterRestarted = true;
+            });
+          } else {
+            var language = $scope.paragraph.text.split('\n')[0].split(' ')[0].split('.')[0].split('%')[1];
+            baseInterpreterService.getInterpreterSettings().then(function(settings) {
+              for (var settingIndex in settings) {
+                if (settings[settingIndex].name === language) {
+                  settingId = settings[settingIndex].id;
+                  break;
+                }
+              }
+              baseInterpreterService.restartInterpreterSetting(settingId).then(function(interpreterSettings) {
+                $scope.paragraph.interpreterRestarted = true;
+              });
+            });
           }
         }
-        baseInterpreterService.restartInterpreterSetting(settingId).then(function(interpreterSettings) {
-          $scope.paragraph.interpreterRestarted = true;
-        });
-      });
-    }
+      }
+    });
   };
 });

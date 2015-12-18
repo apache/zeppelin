@@ -275,10 +275,6 @@ kbd {
   border-radius: 2px;
 }
 
-.home {
-  min-height: 400px;
-}
-
 /*
   ngToast Style
 */
@@ -316,6 +312,14 @@ This part should be removed when new version of bootstrap handles this issue.
 .display-inline {
   display: inline;
   float: left;
+}
+
+.modal-backdrop {
+  z-index: 10002 !important;
+}
+
+.modal-dialog, .modal {
+  z-index: 10003 !important;
 }
 
 #noteImportModal .modal-body {

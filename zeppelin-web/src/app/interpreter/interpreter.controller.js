@@ -20,6 +20,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   $scope.interpreterSettings = [];
   $scope.availableInterpreters = {};
   $scope.showAddNewSetting = false;
+  $scope._ = _;
 
 
   var getAvailableInterpreters = function() {
@@ -205,6 +206,9 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
       var setting = $scope.interpreterSettings[index];
 
+      if (!setting.propertyKey || setting.propertyKey === '') {
+        return;
+      }
       setting.properties[setting.propertyKey] = setting.propertyValue;
       emptyNewProperty(setting);
     }
