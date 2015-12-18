@@ -941,6 +941,17 @@ angular.module('zeppelinWebApp')
 
     var renderTable = function() {
       var html = '';
+
+      html += '<table class="table table-hover table-condensed" style="position: absolute;">';
+      html += '  <thead>';
+      html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
+      for (var c in $scope.paragraph.result.columnNames) {
+        html += '<th>'+$scope.paragraph.result.columnNames[c].name+'</th>';
+      }
+      html += '    </tr>';
+      html += '  </thead>';
+      html += '</table>';
+
       html += '<table class="table table-hover table-condensed">';
       html += '  <thead>';
       html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
