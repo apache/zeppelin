@@ -25,6 +25,8 @@ import java.io.{BufferedReader, FileReader}
 
 /**
  * A class providing Scalding specific commands for inclusion in the Scalding REPL.
+ * This is currently forked from Scalding, but should eventually make it into Scalding itself:
+ * https://github.com/twitter/scalding/blob/develop/scalding-repl/src/main/scala/com/twitter/scalding/ScaldingILoop.scala
  */
  class ScaldingILoop(in0: Option[BufferedReader], out: JPrintWriter)
     extends ILoop(in0, out) {
