@@ -30,6 +30,7 @@
     "alert": false,
     "nv": false,
     "ace": false,
-    "d3": false
+    "d3": false,
+    "BootstrapDialog": false
   }
 }

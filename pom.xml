@@ -702,4 +702,15 @@
       </build>
     </profile>
   </profiles>
+  <distributionManagement>
+    <site>
+      <id>Website</id>
+      <url>${site_url}</url>
+    </site>
+    <repository>
+      <id>${repoid}</id>
+      <name>${reponame}</name>
+      <url>${repourl}</url>
+    </repository>
+  </distributionManagement>
 </project>

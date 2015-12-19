@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.rest.message;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.zeppelin.interpreter.InterpreterOption;
@@ -27,6 +28,7 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
  */
 public class NewNotebookRequest {
   String name;
+  List<NewParagraphRequest> paragraphs;
 
   public NewNotebookRequest (){
 
@@ -34,5 +36,9 @@ public class NewNotebookRequest {
 
   public String getName() {
     return name;
+  }
+
+  public List<NewParagraphRequest> getParagraphs() {
+    return paragraphs;
   }
 }
