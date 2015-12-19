@@ -60,7 +60,7 @@ public class NotebookServer extends WebSocketServlet implements
   final List<NotebookSocket> connectedSockets = new LinkedList<>();
 
   private Notebook notebook() {
-    return ZeppelinServer.notebook;
+    return ZeppelinServer.NOTEBOOK;
   }
   @Override
   public boolean checkOrigin(HttpServletRequest request, String origin) {
@@ -147,8 +147,7 @@ public class NotebookServer extends WebSocketServlet implements
             completion(conn, notebook, messagereceived);
             break;
           case PING:
-            pong();
-            break;
+            break; //do nothing
           case ANGULAR_OBJECT_UPDATED:
             angularObjectUpdated(conn, notebook, messagereceived);
             break;
@@ -730,6 +729,7 @@ public class NotebookServer extends WebSocketServlet implements
   public static class ParagraphJobListener implements JobListener {
     private NotebookServer notebookServer;
     private Note note;
+
     public ParagraphJobListener(NotebookServer notebookServer, Note note) {
       this.notebookServer = notebookServer;
       this.note = note;
@@ -770,8 +770,6 @@ public class NotebookServer extends WebSocketServlet implements
   @Override
   public JobListener getParagraphJobListener(Note note) {
     return new ParagraphJobListener(this, note);
-  }
-  private void pong() {
   }
 
   private void sendAllAngularObjects(Note note, NotebookSocket conn) throws IOException {
