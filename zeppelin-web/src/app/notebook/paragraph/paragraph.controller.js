@@ -971,6 +971,8 @@ angular.module('zeppelinWebApp')
       if ($scope.paragraph.result.msgTable.length > 10000) {
         angular.element('#p' + $scope.paragraph.id + '_table').css('overflow', 'scroll');
       } else {
+        angular.element('#p' + $scope.paragraph.id + '_table').css('position', 'relative');
+        angular.element('#p' + $scope.paragraph.id + '_table').css('height', '100%');
         angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
       }
 
