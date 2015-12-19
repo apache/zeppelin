@@ -502,7 +502,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
         message: 'Changes will be discarded.',
         callback: function(result) {
           if (result) {
-            $scope.$apply(function () {
+            $scope.$apply(function() {
               $scope.showSetting = false;
             });
           }
