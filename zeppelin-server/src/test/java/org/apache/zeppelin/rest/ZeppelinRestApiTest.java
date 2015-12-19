@@ -174,8 +174,10 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     // restart interpreter
     for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {
       if (setting.getName().equals("md")) {
-        // restart
-        ZeppelinServer.notebook.getInterpreterFactory().restart(setting.id());
+        // Call Restart Interpreter REST API
+        PutMethod put = httpPut("/interpreter/setting/restart/" + setting.id(), "");
+        assertThat("test interpreter restart:", put, isAllowed());
+        put.releaseConnection();
         break;
       }
     }
