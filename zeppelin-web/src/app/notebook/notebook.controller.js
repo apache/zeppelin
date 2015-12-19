@@ -508,8 +508,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
           }
         }
       });
-    }
-    else {
+    } else {
       $scope.showSetting = false;
     }
   };
