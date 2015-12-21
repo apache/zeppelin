@@ -361,3 +361,37 @@ limitations under the License.
       </td>
     </tr>
   </table>
+
+  
+<br/>
+   
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <th>Restart an interpreter</th>
+      <th></th>
+    </tr>
+    <tr>
+      <td>Description</td>
+      <td>This ```PUT``` method restart the given interpreter id.</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/setting/restart/[interpreter ID]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON response
+      </td>
+      <td>
+        <pre>{"status":"OK"}</pre>
+      </td>
+    </tr>
+  </table>

@@ -87,7 +87,7 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
     # add Hadoop jars into classpath
     if [[ -n "${HADOOP_HOME}" ]]; then
       # Apache
-      addEachJarInDir "${HADOOP_HOME}/share"
+      addEachJarInDirRecursive "${HADOOP_HOME}/share"
 
       # CDH
       addJarInDir "${HADOOP_HOME}"

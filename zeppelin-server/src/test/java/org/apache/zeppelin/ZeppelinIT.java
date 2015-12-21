@@ -65,6 +65,7 @@ import com.google.common.base.Function;
 public class ZeppelinIT {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinIT.class);
   private static final long MAX_BROWSER_TIMEOUT_SEC = 30;
+  private static final long MAX_PARAGRAPH_TIMEOUT_SEC = 60;
   private WebDriver driver;
 
   private void setWebDriver() {
@@ -112,7 +113,7 @@ public class ZeppelinIT {
 
     while (System.currentTimeMillis() - start < 60 * 1000) {
       try { // wait for page load
-        WebElement element = pollingWait(By.partialLinkText("Create new note"));
+        WebElement element = pollingWait(By.partialLinkText("Create new note"), MAX_BROWSER_TIMEOUT_SEC);
         loaded = element.isDisplayed();
         break;
       } catch (TimeoutException e) {
@@ -149,22 +150,22 @@ public class ZeppelinIT {
   boolean waitForParagraph(final int paragraphNo, final String state) {
     By locator = By.xpath(getParagraphXPath(paragraphNo)
         + "//div[contains(@class, 'control')]//span[1][contains(.,'" + state + "')]");
-    WebElement element = pollingWait(locator);
+    WebElement element = pollingWait(locator, MAX_PARAGRAPH_TIMEOUT_SEC);
     return element.isDisplayed();
   }
 
   boolean waitForText(final String txt, final By locator) {
     try {
-      WebElement element = pollingWait(locator);
+      WebElement element = pollingWait(locator, MAX_BROWSER_TIMEOUT_SEC);
       return txt.equals(element.getText());
     } catch (TimeoutException e) {
       return false;
     }
   }
 
-  public WebElement pollingWait(final By locator) {
+  public WebElement pollingWait(final By locator, final long timeWait) {
     Wait<WebDriver> wait = new FluentWait<WebDriver>(driver)
-            .withTimeout(MAX_BROWSER_TIMEOUT_SEC, TimeUnit.SECONDS)
+            .withTimeout(timeWait, TimeUnit.SECONDS)
             .pollingEvery(1, TimeUnit.SECONDS)
             .ignoring(NoSuchElementException.class);
 
