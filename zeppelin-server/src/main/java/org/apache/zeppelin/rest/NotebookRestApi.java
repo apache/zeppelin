@@ -26,6 +26,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
@@ -260,26 +262,41 @@ public class NotebookRestApi {
   
   /**
    * Run paragraph job REST API
-   * @param
+   * @param message - JSON with params if user wants to update dynamic form's value
+   *                null, empty string, empty json if user doesn't want to update
    * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
    */
   @POST
   @Path("job/{notebookId}/{paragraphId}")
   public Response runParagraph(@PathParam("notebookId") String notebookId, 
-                               @PathParam("paragraphId") String paragraphId) throws
+                               @PathParam("paragraphId") String paragraphId,
+                               String message) throws
                                IOException, IllegalArgumentException {
-    logger.info("run paragraph job {} {} ", notebookId, paragraphId);
+    logger.info("run paragraph job {} {} {}", notebookId, paragraphId, message);
+
     Note note = notebook.getNote(notebookId);
     if (note == null) {
       return new JsonResponse(Status.NOT_FOUND, "note not found.").build();
     }
-    
-    if (note.getParagraph(paragraphId) == null) {
+
+    Paragraph paragraph = note.getParagraph(paragraphId);
+    if (paragraph == null) {
       return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
     }
 
-    note.run(paragraphId);
+    // handle params if presented
+    if (!StringUtils.isEmpty(message)) {
+      RunParagraphWithParametersRequest request = gson.fromJson(message,
+          RunParagraphWithParametersRequest.class);
+      Map<String, Object> paramsForUpdating = request.getParams();
+      if (paramsForUpdating != null) {
+        paragraph.settings.getParams().putAll(paramsForUpdating);
+        note.persist();
+      }
+    }
+
+    note.run(paragraph.getId());
     return new JsonResponse(Status.OK).build();
   }
 

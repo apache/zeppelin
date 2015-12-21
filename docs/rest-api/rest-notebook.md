@@ -309,6 +309,18 @@ limitations under the License.
       <td> 500 </td>
     </tr>
     <tr>
+      <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
+      <td><pre>
+{
+  "name": "name of new notebook",
+  "params": {
+    "formLabel1": "value1",
+    "formLabel2": "value2"
+  }
+}
+      </pre></td>
+    </tr>
+    <tr>
       <td> sample JSON response </td>
       <td><pre>{"status":"OK"}</pre></td>
     </tr>
