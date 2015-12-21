@@ -16,6 +16,8 @@
 angular.module('zeppelinWebApp').controller('MainCtrl', function($scope, $rootScope, $window) {
   $rootScope.compiledScope = $scope.$new(true, $rootScope);
   $scope.looknfeel = 'default';
+  $rootScope.windowFocus = true;
+  $rootScope.hasNewStatus = false;
 
   var init = function() {
     $scope.asIframe = (($window.location.href.indexOf('asIframe') > -1) ? true : false);
@@ -44,5 +46,43 @@ angular.module('zeppelinWebApp').controller('MainCtrl', function($scope, $rootSc
 
   BootstrapDialog.defaultOptions.onshown = function() {
     angular.element('#' + this.id).find('.btn:last').focus();
+  };
+
+  $rootScope.$on('hasNewStatus', function(event, data) {
+    if (!event.defaultPrevented && data && data === true && $rootScope.hasNewStatus === false) {
+      $rootScope.hasNewStatus = true;
+      pageTitleNotification.On('You have a job finished!!!', 1000);
+      event.preventDefault();
+    }
+  });
+
+  // Blinking page title for finished job notification
+  $window.onblur = function (){
+    $rootScope.windowFocus = false;
+  };
+
+  $window.onfocus = function (){
+    $rootScope.windowFocus = true;
+    if($rootScope.hasNewStatus === true) {
+      $rootScope.hasNewStatus = false;
+      pageTitleNotification.Off();
+    }
+  };
+
+  var pageTitleNotification = {
+    vars:{
+      originalTitle: document.title,
+      interval: null
+    },    
+    On: function(notification, intervalSpeed){
+      var _this = this;
+      _this.vars.interval = setInterval(function(){
+        document.title = (_this.vars.originalTitle === document.title) ? notification : _this.vars.originalTitle;
+      }, (intervalSpeed) ? intervalSpeed : 1000);
+    },
+    Off: function(){
+      clearInterval(this.vars.interval);
+      document.title = this.vars.originalTitle;   
+    }
   };
 });
