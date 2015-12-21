@@ -21,10 +21,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.Properties;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.net.URL;
 import java.net.URLClassLoader;
 
@@ -53,6 +54,8 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
  */
 public class ScaldingInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(ScaldingInterpreter.class);
+
+  public static final List<String> NO_COMPLETION = new ArrayList<>();
 
   static {
     Interpreter.register("scalding", ScaldingInterpreter.class.getName());
@@ -177,7 +180,7 @@ public class ScaldingInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
-    logger.info("Run Scalding command '" + cmd + "'");
+    logger.info("Running Scalding command '" + cmd + "'");
 
     if (cmd == null || cmd.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);
@@ -222,7 +225,6 @@ public class ScaldingInterpreter extends Interpreter {
       try {
         res = interpreter.intp().interpret(incomplete + s);
       } catch (Exception e) {
-        e.printStackTrace();
         logger.error("Interpreter exception: ", e);
         return new InterpreterResult(Code.ERROR, e.getMessage());
       }
@@ -264,12 +266,12 @@ public class ScaldingInterpreter extends Interpreter {
 
   @Override
   public FormType getFormType() {
-    return FormType.SIMPLE;
+    return FormType.NATIVE;
   }
 
   @Override
   public int getProgress(InterpreterContext context) {
-    // not implemented - return 0
+    // fine-grained progress not implemented - return 0
     return 0;
   }
 
@@ -281,7 +283,6 @@ public class ScaldingInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
-    return null;
+    return NO_COMPLETION;
   }
-
 }
