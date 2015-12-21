@@ -66,6 +66,31 @@ The following components are provided under Apache License.
     (Apache 2.0) lz4-java (net.jpountz.lz4:lz4:jar:1.3.0 - https://github.com/jpountz/lz4-java)
     (Apache 2.0) RoaringBitmap (org.roaringbitmap:RoaringBitmap:jar:0.4.5 - https://github.com/lemire/RoaringBitmap)
     (Apache 2.0) json4s (org.json4s:json4s-ast_2.10:jar:3.2.10 - https://github.com/json4s/json4s)
+    (Apache 2.0) HPPC Collections (com.carrotsearch:hppc:0.7.1 - http://labs.carrotsearch.com/hppc.html/hppc)
+    (Apache 2.0) Jackson-dataformat-CBOR (com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.6.2 - http://wiki.fasterxml.com/JacksonForCbor)
+    (Apache 2.0) Jackson-dataformat-Smile (com.fasterxml.jackson.dataformat:jackson-dataformat-smile:2.6.2 - http://wiki.fasterxml.com/JacksonForSmile)
+    (Apache 2.0) Jackson-dataformat-YAML (com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.6.2 - https://github.com/FasterXML/jackson)
+    (Apache 2.0) json-flattener (com.github.wnameless:json-flattener:0.1.1 - https://github.com/wnameless/json-flattener)
+    (Apache 2.0) Spatial4J (com.spatial4j:spatial4j:0.4.1 - https://github.com/spatial4j/spatial4j)
+    (Apache 2.0) T-Digest (com.tdunning:t-digest:3.0 - https://github.com/tdunning/t-digest)
+    (Apache 2.0) Netty (io.netty:netty:3.10.5.Final - http://netty.io/)
+    (Apache 2.0) Lucene Common Analyzers (org.apache.lucene:lucene-analyzers-common:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-analyzers-common)
+    (Apache 2.0) Lucene Memory (org.apache.lucene:lucene-backward-codecs:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-backward-codecs)
+    (Apache 2.0) Lucene Core (org.apache.lucene:lucene-core:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-core)
+    (Apache 2.0) Lucene Grouping (org.apache.lucene:lucene-grouping:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-grouping)
+    (Apache 2.0) Lucene Highlighter (org.apache.lucene:lucene-highlighter:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-highlighter)
+    (Apache 2.0) Lucene Join (org.apache.lucene:lucene-join:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-join)
+    (Apache 2.0) Lucene Memory (org.apache.lucene:lucene-memory:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-memory)
+    (Apache 2.0) Lucene Miscellaneous (org.apache.lucene:lucene-misc:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-misc)
+    (Apache 2.0) Lucene Queries (org.apache.lucene:lucene-queries:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-queries)
+    (Apache 2.0) Lucene QueryParsers (org.apache.lucene:lucene-queryparser:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-queryparser)
+    (Apache 2.0) Lucene Sandbox (org.apache.lucene:lucene-sandbox:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-sandbox)
+    (Apache 2.0) Lucene Spatial (org.apache.lucene:lucene-spatial:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-spatial)
+    (Apache 2.0) Lucene Spatial 3D (org.apache.lucene:lucene-spatial3d:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-spatial3d)
+    (Apache 2.0) Lucene Suggest (org.apache.lucene:lucene-suggest:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-suggest)
+    (Apache 2.0) Elasticsearch: Core (org.elasticsearch:elasticsearch:2.1.0 - http://nexus.sonatype.org/oss-repository-hosting.html/parent/elasticsearch)
+    (Apache 2.0) Joda convert (org.joda:joda-convert:1.2 - http://joda-convert.sourceforge.net)
+    (Apache 2.0) SnakeYAML (org.yaml:snakeyaml:1.15 - http://www.snakeyaml.org)
 
 
 
@@ -104,6 +129,7 @@ The following components are provided under the MIT License.
     (The MIT License) Objenesis (org.objenesis:objenesis:2.1 - https://github.com/easymock/objenesis) - Copyright (c) 2006-2015 the original author and authors
     (The MIT License) JCL 1.1.1 implemented over SLF4J (org.slf4j:jcl-over-slf4j:1.7.5 - http://www.slf4j.org)    
     (The MIT License) JUL to SLF4J bridge (org.slf4j:jul-to-slf4j:1.7.5 - http://www.slf4j.org)
+    (The MIT License) minimal-json (com.eclipsesource.minimal-json:minimal-json:0.9.4 - https://github.com/ralfstx/minimal-json)
 
 
 
@@ -178,3 +204,10 @@ See licenses/LICENSE-postgresql
 
 
 
+========================================================================
+Creative Commons CC0 (http://creativecommons.org/publicdomain/zero/1.0/)
+========================================================================
+
+    (CC0 1.0 Universal) JSR166e (com.twitter:jsr166e:1.1.0 - http://github.com/twitter/jsr166e)
+    (Public Domain, per Creative Commons CC0) HdrHistogram (org.hdrhistogram:HdrHistogram:2.1.6 - http://hdrhistogram.github.io/HdrHistogram/)
+     
