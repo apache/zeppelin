@@ -602,5 +602,127 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
 
     ZeppelinServer.notebook.removeNote(note.getId());
   }
+
+  @Test
+  public void testInsertParagraph() throws IOException {
+    Note note = ZeppelinServer.notebook.createNote();
+
+    String jsonRequest = "{\"title\": \"title1\", \"text\": \"text1\"}";
+    PostMethod post = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest);
+    LOG.info("testInsertParagraph response\n" + post.getResponseBodyAsString());
+    assertThat("Test insert method:", post, isCreated());
+    post.releaseConnection();
+
+    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+
+    String newParagraphId = (String) resp.get("body");
+    LOG.info("newParagraphId:=" + newParagraphId);
+
+    Note retrNote = ZeppelinServer.notebook.getNote(note.getId());
+    Paragraph newParagraph = retrNote.getParagraph(newParagraphId);
+    assertNotNull("Can not find new paragraph by id", newParagraph);
+
+    assertEquals("title1", newParagraph.getTitle());
+    assertEquals("text1", newParagraph.getText());
+
+    Paragraph lastParagraph = note.getLastParagraph();
+    assertEquals(newParagraph.getId(), lastParagraph.getId());
+
+    // insert to index 0
+    String jsonRequest2 = "{\"index\": 0, \"title\": \"title2\", \"text\": \"text2\"}";
+    PostMethod post2 = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest2);
+    LOG.info("testInsertParagraph response2\n" + post2.getResponseBodyAsString());
+    assertThat("Test insert method:", post2, isCreated());
+    post2.releaseConnection();
+
+    Paragraph paragraphAtIdx0 = note.getParagraphs().get(0);
+    assertEquals("title2", paragraphAtIdx0.getTitle());
+    assertEquals("text2", paragraphAtIdx0.getText());
+
+    ZeppelinServer.notebook.removeNote(note.getId());
+  }
+
+  @Test
+  public void testGetParagraph() throws IOException {
+    Note note = ZeppelinServer.notebook.createNote();
+
+    Paragraph p = note.addParagraph();
+    p.setTitle("hello");
+    p.setText("world");
+    note.persist();
+
+    GetMethod get = httpGet("/notebook/" + note.getId() + "/paragraph/" + p.getId());
+    LOG.info("testGetParagraph response\n" + get.getResponseBodyAsString());
+    assertThat("Test get method: ", get, isAllowed());
+    get.releaseConnection();
+
+    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+
+    assertNotNull(resp);
+    assertEquals("OK", resp.get("status"));
+
+    Map<String, Object> body = (Map<String, Object>) resp.get("body");
+
+    assertEquals(p.getId(), body.get("id"));
+    assertEquals("hello", body.get("title"));
+    assertEquals("world", body.get("text"));
+
+    ZeppelinServer.notebook.removeNote(note.getId());
+  }
+
+  @Test
+  public void testMoveParagraph() throws IOException {
+    Note note = ZeppelinServer.notebook.createNote();
+
+    Paragraph p = note.addParagraph();
+    p.setTitle("title1");
+    p.setText("text1");
+
+    Paragraph p2 = note.addParagraph();
+    p2.setTitle("title2");
+    p2.setText("text2");
+
+    note.persist();
+
+    PostMethod post = httpPost("/notebook/" + note.getId() + "/paragraph/" + p2.getId() + "/move/" + 0, "");
+    assertThat("Test post method: ", post, isAllowed());
+    post.releaseConnection();
+
+    Note retrNote = ZeppelinServer.notebook.getNote(note.getId());
+    Paragraph paragraphAtIdx0 = retrNote.getParagraphs().get(0);
+
+    assertEquals(p2.getId(), paragraphAtIdx0.getId());
+    assertEquals(p2.getTitle(), paragraphAtIdx0.getTitle());
+    assertEquals(p2.getText(), paragraphAtIdx0.getText());
+
+    PostMethod post2 = httpPost("/notebook/" + note.getId() + "/paragraph/" + p2.getId() + "/move/" + 10, "");
+    assertThat("Test post method: ", post2, isBadRequest());
+    post.releaseConnection();
+
+    ZeppelinServer.notebook.removeNote(note.getId());
+  }
+
+  @Test
+  public void testDeleteParagraph() throws IOException {
+    Note note = ZeppelinServer.notebook.createNote();
+
+    Paragraph p = note.addParagraph();
+    p.setTitle("title1");
+    p.setText("text1");
+
+    note.persist();
+
+    DeleteMethod delete = httpDelete("/notebook/" + note.getId() + "/paragraph/" + p.getId());
+    assertThat("Test delete method: ", delete, isAllowed());
+    delete.releaseConnection();
+
+    Note retrNote = ZeppelinServer.notebook.getNote(note.getId());
+    Paragraph retrParagrah = retrNote.getParagraph(p.getId());
+    assertNull("paragraph should be deleted", retrParagrah);
+
+    ZeppelinServer.notebook.removeNote(note.getId());
+  }
 }
 
