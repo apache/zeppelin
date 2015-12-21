@@ -95,6 +95,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
   /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
   $scope.removeNote = function(noteId) {
     BootstrapDialog.confirm({
+      closable: true,
       title: '',
       message: 'Do you want to delete this notebook?',
       callback: function(result) {
@@ -115,6 +116,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
   //Clone note
   $scope.cloneNote = function(noteId) {
     BootstrapDialog.confirm({
+      closable: true,
       title: '',
       message: 'Do you want to clone this notebook?',
       callback: function(result) {
@@ -128,6 +130,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
 
   $scope.runNote = function() {
     BootstrapDialog.confirm({
+      closable: true,
       title: '',
       message: 'Run all paragraphs?',
       callback: function(result) {
@@ -151,6 +154,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
 
   $scope.clearAllParagraphOutput = function() {
     BootstrapDialog.confirm({
+      closable: true,
       title: '',
       message: 'Do you want to clear all output?',
       callback: function(result) {
@@ -257,7 +261,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
 
   /** Update the note name */
   $scope.sendNewName = function() {
-    $scope.showEditor = false;
     if ($scope.note.name) {
       websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, $scope.note.config);
     }
@@ -519,16 +522,19 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
   $scope.closeSetting = function() {
     if (isSettingDirty()) {
       BootstrapDialog.confirm({
+        closable: true,
         title: '',
-        message: 'Changes will be discarded',
+        message: 'Changes will be discarded.',
         callback: function(result) {
           if (result) {
-            $scope.$apply(function () {
+            $scope.$apply(function() {
               $scope.showSetting = false;
             });
           }
         }
       });
+    } else {
+      $scope.showSetting = false;
     }
   };
 
