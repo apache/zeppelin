@@ -385,7 +385,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     int timeout = 1;
     while (!paragraph.isTerminated()) {
       Thread.sleep(1000);
-      if (timeout++ > 30) {
+      if (timeout++ > 120) {
         LOG.info("testRunParagraphWithParams timeout job.");
         break;
       }
