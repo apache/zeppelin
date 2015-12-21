@@ -17,16 +17,16 @@
 
 package org.apache.zeppelin.scalding;
 
-import java.io.File;
-import java.util.Properties;
-import java.util.List;
-import java.util.Map;
-import java.util.LinkedList;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.Properties;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.net.URL;
+import java.net.URLClassLoader;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -34,10 +34,9 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-//import com.twitter.scalding.ScaldingILoop;
 
 import scala.Console;
 import scala.Some;
@@ -259,7 +258,9 @@ public class ScaldingInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {}
+  public void cancel(InterpreterContext context) {
+    // not implemented
+  }
 
   @Override
   public FormType getFormType() {
@@ -268,6 +269,7 @@ public class ScaldingInterpreter extends Interpreter {
 
   @Override
   public int getProgress(InterpreterContext context) {
+    // not implemented - return 0
     return 0;
   }
 

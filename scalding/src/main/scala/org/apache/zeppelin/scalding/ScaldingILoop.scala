@@ -14,16 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.apache.zeppelin.scalding;
 
-import java.io.File
+import java.io.{BufferedReader, File, FileReader}
 
-import scala.tools.nsc.interpreter.IR
 import scala.tools.nsc.GenericRunnerSettings
-import scala.tools.nsc.interpreter.{JPrintWriter, ILoop}
+import scala.tools.nsc.interpreter.{ILoop, IR, JPrintWriter}
 
-import java.io.{BufferedReader, FileReader}
 
 /**
  * A class providing Scalding specific commands for inclusion in the Scalding REPL.
