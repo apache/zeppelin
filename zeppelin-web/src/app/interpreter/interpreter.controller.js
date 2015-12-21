@@ -20,6 +20,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   $scope.interpreterSettings = [];
   $scope.availableInterpreters = {};
   $scope.showAddNewSetting = false;
+  $scope._ = _;
 
   var getInterpreterSettings = function() {
     $http.get(baseUrlSrv.getRestApiBase()+'/interpreter/setting').
@@ -56,6 +57,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
 
   $scope.updateInterpreterSetting = function(settingId) {
     BootstrapDialog.confirm({
+      closable: true,
       title: '',
       message: 'Do you want to update this interpreter and restart with new settings?',
       callback: function(result) {
@@ -88,6 +90,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
 
   $scope.removeInterpreterSetting = function(settingId) {
     BootstrapDialog.confirm({
+      closable: true,
       title: '',
       message: 'Do you want to delete this interpreter setting?',
       callback: function(result) {
@@ -125,6 +128,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
 
   $scope.restartInterpreterSetting = function(settingId) {
     BootstrapDialog.confirm({
+      closable: true,
       title: '',
       message: 'Do you want to restart this interpreter?',
       callback: function(result) {
@@ -145,6 +149,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   $scope.addNewInterpreterSetting = function() {
     if (!$scope.newInterpreterSetting.name || !$scope.newInterpreterSetting.group) {
       BootstrapDialog.alert({
+        closable: true,
         title: 'Add interpreter',
         message: 'Please determine name and interpreter'
       });
@@ -153,6 +158,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
 
     if (_.findIndex($scope.interpreterSettings, { 'name': $scope.newInterpreterSetting.name }) >= 0) {
       BootstrapDialog.alert({
+        closable: true,
         title: 'Add interpreter',
         message: 'Name ' + $scope.newInterpreterSetting.name + ' already exists'
       });
@@ -216,6 +222,9 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       var index = _.findIndex($scope.interpreterSettings, { 'id': settingId });
       var setting = $scope.interpreterSettings[index];
 
+      if (!setting.propertyKey || setting.propertyKey === '') {
+        return;
+      }
       setting.properties[setting.propertyKey] = setting.propertyValue;
       emptyNewProperty(setting);
     }

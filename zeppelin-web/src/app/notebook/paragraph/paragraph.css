@@ -32,17 +32,16 @@
 */
 
 .paragraph .text {
-  display: block;
-  unicode-bidi: embed;
   display: block !important;
-  margin: 0 0 0 !important;
+  font-family: "Monaco","Menlo","Ubuntu Mono","Consolas","source-code-pro",monospace;
+  font-size: 12px !important;
   line-height: 1.42857143 !important;
+  margin: 0 0 5px !important;
+  padding-top: 2px;
+  unicode-bidi: embed;
+  white-space: pre-wrap;
   word-break: break-all !important;
   word-wrap: break-word !important;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
-  font-size: 12px !important;
-  margin-bottom: 5px !important;
-  padding-top: 2px;
 }
 
 .paragraph table {
@@ -403,4 +402,9 @@
 
 .dropdown-menu > li:first-child > a:hover {
   background-color: transparent;
+}
+
+table.table-striped {
+  border-top: 1px solid #ddd;
+  margin-top: 20px;
 }

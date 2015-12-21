@@ -298,6 +298,7 @@ angular.module('zeppelinWebApp')
 
   $scope.removeParagraph = function() {
     BootstrapDialog.confirm({
+      closable: true,
       title: '',
       message: 'Do you want to delete this paragraph?',
       callback: function(result) {
@@ -941,14 +942,18 @@ angular.module('zeppelinWebApp')
 
     var renderTable = function() {
       var html = '';
-      html += '<table class="table table-hover table-condensed">';
+
+      html += '<table class="table table-hover table-condensed" style="top: 0; position: absolute;">';
       html += '  <thead>';
       html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
-      for (var c in $scope.paragraph.result.columnNames) {
-        html += '<th>'+$scope.paragraph.result.columnNames[c].name+'</th>';
+      for (var titleIndex in $scope.paragraph.result.columnNames) {
+        html += '<th>'+$scope.paragraph.result.columnNames[titleIndex].name+'</th>';
       }
       html += '    </tr>';
       html += '  </thead>';
+      html += '</table>';
+
+      html += '<table class="table table-hover table-condensed" style="margin-top: 31px;">';
 
       for (var r in $scope.paragraph.result.msgTable) {
         var row = $scope.paragraph.result.msgTable[r];
