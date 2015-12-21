@@ -301,11 +301,15 @@ public class NotebookRestApi {
       return new JsonResponse(Status.NOT_FOUND, "paragraph not found.").build();
     }
 
-    note.moveParagraph(paragraphId, Integer.parseInt(newIndex));
-    note.persist();
-    notebookServer.broadcastNote(note);
+    try {
+      note.moveParagraph(paragraphId, Integer.parseInt(newIndex), true);
 
-    return new JsonResponse(Status.OK, "").build();
+      note.persist();
+      notebookServer.broadcastNote(note);
+      return new JsonResponse(Status.OK, "").build();
+    } catch (IndexOutOfBoundsException e) {
+      return new JsonResponse(Status.BAD_REQUEST, "paragraph's new index is out of bound").build();
+    }
   }
 
   /**

@@ -632,13 +632,15 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     // insert to index 0
     String jsonRequest2 = "{\"index\": 0, \"title\": \"title2\", \"text\": \"text2\"}";
     PostMethod post2 = httpPost("/notebook/" + note.getId() + "/paragraph", jsonRequest2);
-    LOG.info("testInsertParagraph response2\n" + post.getResponseBodyAsString());
-    assertThat("Test insert method:", post, isCreated());
-    post.releaseConnection();
+    LOG.info("testInsertParagraph response2\n" + post2.getResponseBodyAsString());
+    assertThat("Test insert method:", post2, isCreated());
+    post2.releaseConnection();
 
     Paragraph paragraphAtIdx0 = note.getParagraphs().get(0);
     assertEquals("title2", paragraphAtIdx0.getTitle());
     assertEquals("text2", paragraphAtIdx0.getText());
+
+    ZeppelinServer.notebook.removeNote(note.getId());
   }
 
   @Test
@@ -666,6 +668,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals(p.getId(), body.get("id"));
     assertEquals("hello", body.get("title"));
     assertEquals("world", body.get("text"));
+
+    ZeppelinServer.notebook.removeNote(note.getId());
   }
 
   @Test
@@ -677,8 +681,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     p.setText("text1");
 
     Paragraph p2 = note.addParagraph();
-    p.setTitle("title2");
-    p.setText("text2");
+    p2.setTitle("title2");
+    p2.setText("text2");
 
     note.persist();
 
@@ -692,6 +696,12 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertEquals(p2.getId(), paragraphAtIdx0.getId());
     assertEquals(p2.getTitle(), paragraphAtIdx0.getTitle());
     assertEquals(p2.getText(), paragraphAtIdx0.getText());
+
+    PostMethod post2 = httpPost("/notebook/" + note.getId() + "/paragraph/" + p2.getId() + "/move/" + 10, "");
+    assertThat("Test post method: ", post2, isBadRequest());
+    post.releaseConnection();
+
+    ZeppelinServer.notebook.removeNote(note.getId());
   }
 
   @Test
@@ -711,6 +721,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Note retrNote = ZeppelinServer.notebook.getNote(note.getId());
     Paragraph retrParagrah = retrNote.getParagraph(p.getId());
     assertNull("paragraph should be deleted", retrParagrah);
+
+    ZeppelinServer.notebook.removeNote(note.getId());
   }
 }
 
