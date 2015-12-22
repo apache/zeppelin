@@ -972,6 +972,9 @@ angular.module('zeppelinWebApp')
       angular.element('#p' + $scope.paragraph.id + '_table').html(html);
       if ($scope.paragraph.result.msgTable.length > 10000) {
         angular.element('#p' + $scope.paragraph.id + '_table').css('overflow', 'scroll');
+        // set table height
+        var height = $scope.paragraph.config.graph.height;
+        angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
       } else {
         var dataTable = angular.element('#p' + $scope.paragraph.id + '_table .table');
         dataTable.floatThead({
@@ -981,13 +984,15 @@ angular.module('zeppelinWebApp')
         });
         angular.element('#p' + $scope.paragraph.id + '_table').css('position', 'relative');
         angular.element('#p' + $scope.paragraph.id + '_table').css('height', '100%');
-        angular.element('.ps-scrollbar-y-rail').css('z-index', '1002');
         angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar('destroy');
         angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
+        angular.element('.ps-scrollbar-y-rail').css('z-index', '1002');
+        // set table height
+        var height = $scope.paragraph.config.graph.height;
+        angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
+        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar('update');
       }
-      // set table height
-      var height = $scope.paragraph.config.graph.height;
-      angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
+
     };
 
     var retryRenderer = function() {
