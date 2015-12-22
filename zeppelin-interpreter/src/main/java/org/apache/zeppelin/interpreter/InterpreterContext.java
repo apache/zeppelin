@@ -29,6 +29,7 @@ import org.apache.zeppelin.display.GUI;
 public class InterpreterContext {
   private static final ThreadLocal<InterpreterContext> threadIC =
       new ThreadLocal<InterpreterContext>();
+  public final InterpreterOutput out;
 
   public static InterpreterContext get() {
     return threadIC.get();
@@ -58,7 +59,8 @@ public class InterpreterContext {
                             Map<String, Object> config,
                             GUI gui,
                             AngularObjectRegistry angularObjectRegistry,
-                            List<InterpreterContextRunner> runners
+                            List<InterpreterContextRunner> runners,
+                            InterpreterOutput out
                             ) {
     this.noteId = noteId;
     this.paragraphId = paragraphId;
@@ -68,6 +70,7 @@ public class InterpreterContext {
     this.gui = gui;
     this.angularObjectRegistry = angularObjectRegistry;
     this.runners = runners;
+    this.out = out;
   }
 
 
