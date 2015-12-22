@@ -58,7 +58,10 @@ import org.slf4j.LoggerFactory;
  */
 public class Notebook {
   Logger logger = LoggerFactory.getLogger(Notebook.class);
+
+  @SuppressWarnings("unused") @Deprecated //TODO(bzz): remove unused
   private SchedulerFactory schedulerFactory;
+
   private InterpreterFactory replFactory;
   /** Keep the order. */
   Map<String, Note> notes = new LinkedHashMap<String, Note>();
@@ -237,6 +240,7 @@ public class Notebook {
     }
   }
 
+  @SuppressWarnings("rawtypes")
   private Note loadNoteFromRepo(String id) {
     Note note = null;
     try {
@@ -249,10 +253,9 @@ public class Notebook {
     }
 
     // set NoteInterpreterLoader
-    NoteInterpreterLoader noteInterpreterLoader = new NoteInterpreterLoader(
-        replFactory);
-    note.setReplLoader(noteInterpreterLoader);
-    noteInterpreterLoader.setNoteId(note.id());
+    NoteInterpreterLoader replLoader = new NoteInterpreterLoader(replFactory);
+    note.setReplLoader(replLoader);
+    replLoader.setNoteId(note.id());
 
     // set JobListenerFactory
     note.setJobListenerFactory(jobListenerFactory);
@@ -260,8 +263,7 @@ public class Notebook {
     // set notebookRepo
     note.setNotebookRepo(notebookRepo);
 
-    Map<String, SnapshotAngularObject> angularObjectSnapshot =
-        new HashMap<String, SnapshotAngularObject>();
+    Map<String, SnapshotAngularObject> angularObjectSnapshot = new HashMap<>();
 
     // restore angular object --------------
     Date lastUpdatedDate = new Date(0);
@@ -279,15 +281,11 @@ public class Notebook {
       for (String intpGroupName : savedObjects.keySet()) {
         List<AngularObject> objectList = savedObjects.get(intpGroupName);
 
-        for (AngularObject savedObject : objectList) {
-          SnapshotAngularObject snapshot = angularObjectSnapshot.get(savedObject.getName());
+        for (AngularObject object : objectList) {
+          SnapshotAngularObject snapshot = angularObjectSnapshot.get(object.getName());
           if (snapshot == null || snapshot.getLastUpdate().before(lastUpdatedDate)) {
-            angularObjectSnapshot.put(
-                savedObject.getName(),
-                new SnapshotAngularObject(
-                    intpGroupName,
-                    savedObject,
-                    lastUpdatedDate));
+            angularObjectSnapshot.put(object.getName(),
+                new SnapshotAngularObject(intpGroupName, object, lastUpdatedDate));
           }
         }
       }
@@ -343,6 +341,7 @@ public class Notebook {
     }
   }
 
+  @SuppressWarnings("rawtypes")
   class SnapshotAngularObject {
     String intpGroupId;
     AngularObject angularObject;
