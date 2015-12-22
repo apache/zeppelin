@@ -36,7 +36,8 @@ import java.util.*;
  *
  */
 public class Paragraph extends Job implements Serializable, Cloneable {
-  private static final transient long serialVersionUID = -6328572073497992016L;
+  private static final long serialVersionUID = -6328572073497992016L;
+
   private transient NoteInterpreterLoader replLoader;
   private transient Note note;
 
