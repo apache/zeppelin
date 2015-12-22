@@ -180,10 +180,21 @@ public class SearchService {
   }
 
   private void updateIndexNoteName(Note note) throws IOException {
-    updateDoc(note.getId(), note.getName(), null);
+    String noteName = note.getName();
+    String noteId = note.getId();
+    LOG.debug("Indexing Notebook {}, '{}'", noteId, noteName);
+    if (null == noteName || noteName.isEmpty()) {
+      LOG.debug("Skipping empty notebook name");
+      return;
+    }
+    updateDoc(noteId, noteName, null);
   }
 
   private void updateIndexParagraph(Note note, Paragraph p) throws IOException {
+    if (p.getText() == null) {
+      LOG.debug("Skipping empty paragraph");
+      return;
+    }
     updateDoc(note.getId(), note.getName(), p);
   }
 
