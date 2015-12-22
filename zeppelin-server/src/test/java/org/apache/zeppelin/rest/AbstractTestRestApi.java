@@ -29,8 +29,12 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.methods.*;
-import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
+import org.apache.commons.httpclient.methods.DeleteMethod;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -207,7 +211,7 @@ public abstract class AbstractTestRestApi {
       }
 
       LOG.info("Terminating test Zeppelin...");
-      ZeppelinServer.jettyServer.stop();
+      ZeppelinServer.jettyWebServer.stop();
       executor.shutdown();
 
       long s = System.currentTimeMillis();
