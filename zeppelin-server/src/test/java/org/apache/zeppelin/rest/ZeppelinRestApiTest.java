@@ -533,6 +533,28 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertThat("", deleteCron, isAllowed());
     deleteCron.releaseConnection();
     ZeppelinServer.notebook.removeNote(note.getId());
-  }  
+  }
+
+  @Test
+  public void testRegressionZEPPELIN_527() throws IOException {
+    Note note = ZeppelinServer.notebook.createNote();
+
+    note.setName("note for run test");
+    Paragraph paragraph = note.addParagraph();
+    paragraph.setText("%spark\nval param = z.input(\"param\").toString\nprintln(param)");
+
+    note.persist();
+
+    GetMethod getNoteJobs = httpGet("/notebook/job/" + note.getId());
+    assertThat("test notebook jobs run:", getNoteJobs, isAllowed());
+    Map<String, Object> resp = gson.fromJson(getNoteJobs.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
+    assertNull(body.get(0).get("started"));
+    assertNull(body.get(0).get("finished"));
+    getNoteJobs.releaseConnection();
+
+    ZeppelinServer.notebook.removeNote(note.getId());
+  }
 }
 

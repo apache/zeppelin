@@ -19,11 +19,7 @@ package org.apache.zeppelin.notebook;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
@@ -293,7 +289,7 @@ public class Note implements Serializable, JobListener {
       return paragraphs.get(paragraphs.size() - 1);
     }
   }
-  
+
   public List<Map<String, String>> generateParagraphsInfo (){
     List<Map<String, String>> paragraphsInfo = new LinkedList<>();
     synchronized (paragraphs) {
@@ -301,13 +297,13 @@ public class Note implements Serializable, JobListener {
         Map<String, String> info = new HashMap<>();
         info.put("id", p.getId());
         info.put("status", p.getStatus().toString());
-        info.put("started", p.getDateStarted().toString());
-        info.put("finished", p.getDateFinished().toString());
+        info.put("started", p.getDateStarted() == null ? null : p.getDateStarted().toString());
+        info.put("finished", p.getDateFinished() == null ? null : p.getDateFinished().toString());
         paragraphsInfo.add(info);
       }
     }
     return paragraphsInfo;
-  }  
+  }
 
   /**
    * Run all paragraphs sequentially.
