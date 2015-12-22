@@ -33,6 +33,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
@@ -41,6 +42,7 @@ import org.apache.zeppelin.rest.message.CronRequest;
 import org.apache.zeppelin.rest.message.InterpreterSettingListForNoteBind;
 import org.apache.zeppelin.rest.message.NewNotebookRequest;
 import org.apache.zeppelin.rest.message.NewParagraphRequest;
+import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
@@ -131,6 +133,17 @@ public class NotebookRestApi {
   public Response getNotebookList() throws IOException {
     List<Map<String, String>> notesInfo = notebookServer.generateNotebooksInfo();
     return new JsonResponse<>(Status.OK, "", notesInfo ).build();
+  }
+
+  @GET
+  @Path("{notebookId}")
+  public Response getNotebook(@PathParam("notebookId") String notebookId) throws IOException {
+    Note note = notebook.getNote(notebookId);
+    if (note == null) {
+      return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
+    }
+
+    return new JsonResponse<>(Status.OK, "", note).build();
   }
 
   /**
@@ -271,26 +284,43 @@ public class NotebookRestApi {
   
   /**
    * Run paragraph job REST API
-   * @param
+   * 
+   * @param message - JSON with params if user wants to update dynamic form's value
+   *                null, empty string, empty json if user doesn't want to update
+   *
    * @return JSON with status.OK
    * @throws IOException, IllegalArgumentException
    */
   @POST
   @Path("job/{notebookId}/{paragraphId}")
   public Response runParagraph(@PathParam("notebookId") String notebookId, 
-                               @PathParam("paragraphId") String paragraphId) throws
+                               @PathParam("paragraphId") String paragraphId,
+                               String message) throws
                                IOException, IllegalArgumentException {
-    LOG.info("run paragraph job {} {} ", notebookId, paragraphId);
+    LOG.info("run paragraph job {} {} {}", notebookId, paragraphId, message);
+
     Note note = notebook.getNote(notebookId);
     if (note == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "note not found.").build();
     }
-    
-    if (note.getParagraph(paragraphId) == null) {
+
+    Paragraph paragraph = note.getParagraph(paragraphId);
+    if (paragraph == null) {
       return new JsonResponse<>(Status.NOT_FOUND, "paragraph not found.").build();
     }
 
-    note.run(paragraphId);
+    // handle params if presented
+    if (!StringUtils.isEmpty(message)) {
+      RunParagraphWithParametersRequest request = gson.fromJson(message,
+          RunParagraphWithParametersRequest.class);
+      Map<String, Object> paramsForUpdating = request.getParams();
+      if (paramsForUpdating != null) {
+        paragraph.settings.getParams().putAll(paramsForUpdating);
+        note.persist();
+      }
+    }
+
+    note.run(paragraph.getId());
     return new JsonResponse<>(Status.OK).build();
   }
 

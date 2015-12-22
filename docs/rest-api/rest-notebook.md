@@ -33,7 +33,7 @@ limitations under the License.
  <br />
 ### Notebook REST API list
   
-  Notebooks REST API supports the following operations: List, Create, Delete & Clone as detailed in the following table 
+  Notebooks REST API supports the following operations: List, Create, Get, Delete, Clone, Run as detailed in the following table 
   
   <table class="table-configuration">
     <col width="200">
@@ -116,6 +116,108 @@ limitations under the License.
     <tr>
       <td> sample JSON response </td>
       <td><pre>{"status": "CREATED","message": "","body": "2AZPHY918"}</pre></td>
+    </tr>
+  </table>
+  
+<br/>
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <th>Get notebook</th>
+      <th></th>
+    </tr>
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method retrieves an existing notebook's information using the given id.
+          The body field of the returned JSON contain information about paragraphs in the notebook.
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/[notebookId]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON response </td>
+      <td><pre>
+{
+  "status": "OK",
+  "message": "",
+  "body": {
+    "paragraphs": [
+      {
+        "text": "%sql \nselect age, count(1) value\nfrom bank \nwhere age < 30 \ngroup by age \norder by age",
+        "config": {
+          "colWidth": 4,
+          "graph": {
+            "mode": "multiBarChart",
+            "height": 300,
+            "optionOpen": false,
+            "keys": [
+              {
+                "name": "age",
+                "index": 0,
+                "aggr": "sum"
+              }
+            ],
+            "values": [
+              {
+                "name": "value",
+                "index": 1,
+                "aggr": "sum"
+              }
+            ],
+            "groups": [],
+            "scatter": {
+              "xAxis": {
+                "name": "age",
+                "index": 0,
+                "aggr": "sum"
+              },
+              "yAxis": {
+                "name": "value",
+                "index": 1,
+                "aggr": "sum"
+              }
+            }
+          }
+        },
+        "settings": {
+          "params": {},
+          "forms": {}
+        },
+        "jobName": "paragraph_1423500782552_-1439281894",
+        "id": "20150210-015302_1492795503",
+        "result": {
+          "code": "SUCCESS",
+          "type": "TABLE",
+          "msg": "age\tvalue\n19\t4\n20\t3\n21\t7\n22\t9\n23\t20\n24\t24\n25\t44\n26\t77\n27\t94\n28\t103\n29\t97\n"
+        },
+        "dateCreated": "Feb 10, 2015 1:53:02 AM",
+        "dateStarted": "Jul 3, 2015 1:43:17 PM",
+        "dateFinished": "Jul 3, 2015 1:43:23 PM",
+        "status": "FINISHED",
+        "progressUpdateIntervalMs": 500
+      }
+    ],
+    "name": "Zeppelin Tutorial",
+    "id": "2A94M5J1Z",
+    "angularObjects": {},
+    "config": {
+      "looknfeel": "default"
+    },
+    "info": {}
+  }
+}
+      </pre></td>
     </tr>
   </table>
   
@@ -307,6 +409,18 @@ limitations under the License.
     <tr>
       <td> Fail code</td>
       <td> 500 </td>
+    </tr>
+    <tr>
+      <td> sample JSON input (optional, only needed when if you want to update dynamic form's value) </td>
+      <td><pre>
+{
+  "name": "name of new notebook",
+  "params": {
+    "formLabel1": "value1",
+    "formLabel2": "value2"
+  }
+}
+      </pre></td>
     </tr>
     <tr>
       <td> sample JSON response </td>
