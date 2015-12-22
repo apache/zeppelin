@@ -38,6 +38,7 @@ import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
+import org.apache.zeppelin.search.SearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +61,7 @@ public class Note implements Serializable, JobListener {
   private transient NoteInterpreterLoader replLoader;
   private transient JobListenerFactory jobListenerFactory;
   private transient NotebookRepo repo;
+  private transient SearchService index;
 
   /**
    * note configurations.
@@ -78,10 +80,12 @@ public class Note implements Serializable, JobListener {
 
   public Note() {}
 
-  public Note(NotebookRepo repo, NoteInterpreterLoader replLoader, JobListenerFactory jlFactory) {
+  public Note(NotebookRepo repo, NoteInterpreterLoader replLoader,
+      JobListenerFactory jlFactory, SearchService noteIndex) {
     this.repo = repo;
     this.replLoader = replLoader;
     this.jobListenerFactory = jlFactory;
+    this.index = noteIndex;
     generateId();
   }
 
@@ -293,7 +297,7 @@ public class Note implements Serializable, JobListener {
       return paragraphs.get(paragraphs.size() - 1);
     }
   }
-  
+
   public List<Map<String, String>> generateParagraphsInfo (){
     List<Map<String, String>> paragraphsInfo = new LinkedList<>();
     synchronized (paragraphs) {
@@ -307,7 +311,7 @@ public class Note implements Serializable, JobListener {
       }
     }
     return paragraphsInfo;
-  }  
+  }
 
   /**
    * Run all paragraphs sequentially.
@@ -373,6 +377,7 @@ public class Note implements Serializable, JobListener {
 
   public void persist() throws IOException {
     snapshotAngularObjectRegistry();
+    index.updateIndexDoc(this);
     repo.save(this);
   }
 

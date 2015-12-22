@@ -160,19 +160,42 @@ public class SearchService {
       }
     } catch (IOException | InvalidTokenOffsetsException e) {
       LOG.error("Exception on searching for {}", query, e);
-      ;
     }
     return matchingParagraphs;
   }
 
+  /**
+   * Updates all documents in index for the given note:
+   *  - name
+   *  - all paragraphs
+   *
+   * @param note a Note to update index for
+   * @throws IOException
+   */
   public void updateIndexDoc(Note note) throws IOException {
+    updateIndexNoteName(note);
+    for (Paragraph p: note.getParagraphs()) {
+      updateIndexParagraph(note, p);
+    }
+  }
+
+  private void updateIndexNoteName(Note note) throws IOException {
     updateDoc(note.getId(), note.getName(), null);
   }
 
-  void updateIndexDoc(Note note, Paragraph p) throws IOException {
+  private void updateIndexParagraph(Note note, Paragraph p) throws IOException {
     updateDoc(note.getId(), note.getName(), p);
   }
 
+  /**
+   * Updates index for the given note: either note.name or a paragraph
+   * If paragraph is <code>null</code> - updates only for the note.name
+   *
+   * @param noteId
+   * @param noteName
+   * @param p
+   * @throws IOException
+   */
   private void updateDoc(String noteId, String noteName, Paragraph p) throws IOException {
     String id = formatId(noteId, p);
     Document doc = newDocument(id, noteName, p);
@@ -182,6 +205,44 @@ public class SearchService {
     } catch (IOException e) {
       LOG.error("Failed to updaet index of notebook {}", noteId, e);
     }
+  }
+
+  /**
+   * If paragraph is not null, id is <noteId>/paragraphs/<paragraphId>,
+   * otherwise it's just <noteId>.
+   */
+  static String formatId(String noteId, Paragraph p) {
+    String id = noteId;
+    if (null != p) {
+      id = Joiner.on('/').join(id, "paragraphs", p.getId());
+    }
+    return id;
+  }
+
+  /**
+   * If paragraph is not null, indexes code in the paragraph,
+   * otherwise indexes the notebook name.
+   *
+   * @param id id of the document, different for Note name and paragraph
+   * @param noteName name of the note
+   * @param p paragraph
+   * @return
+   */
+  private Document newDocument(String id, String noteName, Paragraph p) {
+    Document doc = new Document();
+
+    Field pathField = new StringField(ID_FIELD, id, Field.Store.YES);
+    doc.add(pathField);
+    doc.add(new StringField("title", noteName, Field.Store.YES));
+
+    if (null != p) {
+      doc.add(new TextField(SEARCH_FIELD, p.getText(), Field.Store.YES));
+      Date date = p.getDateStarted() != null ? p.getDateStarted() : p.getDateCreated();
+      doc.add(new LongField("modified", date.getTime(), Field.Store.NO));
+    } else {
+      doc.add(new TextField(SEARCH_FIELD, noteName, Field.Store.YES));
+    }
+    return doc;
   }
 
   /**
@@ -276,44 +337,5 @@ public class SearchService {
     Document doc = newDocument(id, noteName, p);
     w.addDocument(doc);
   }
-
-  /**
-   * If paragraph is not null, indexes code in the paragraph,
-   * otherwise indexes the notebook name.
-   *
-   * @param id id of the document, different for Note name and paragraph
-   * @param noteName name of the note
-   * @param p paragraph
-   * @return
-   */
-  private Document newDocument(String id, String noteName, Paragraph p) {
-    Document doc = new Document();
-
-    Field pathField = new StringField(ID_FIELD, id, Field.Store.YES);
-    doc.add(pathField);
-    doc.add(new StringField("title", noteName, Field.Store.YES));
-
-    if (null != p) {
-      doc.add(new TextField(SEARCH_FIELD, p.getText(), Field.Store.YES));
-      Date date = p.getDateStarted() != null ? p.getDateStarted() : p.getDateCreated();
-      doc.add(new LongField("modified", date.getTime(), Field.Store.NO));
-    } else {
-      doc.add(new TextField(SEARCH_FIELD, noteName, Field.Store.YES));
-    }
-    return doc;
-  }
-
-  /**
-   * If paragraph is not null, id is <noteId>/paragraphs/<paragraphId>,
-   * otherwise it's just <noteId>.
-   */
-  static String formatId(String noteId, Paragraph p) {
-    String id = noteId;
-    if (null != p) {
-      id = Joiner.on('/').join(id, "paragraphs", p.getId());
-    }
-    return id;
-  }
-
 
 }

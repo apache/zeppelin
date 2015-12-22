@@ -17,6 +17,7 @@
 package org.apache.zeppelin.search;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.*;
 import static org.apache.zeppelin.search.SearchService.formatId;
 
 import java.io.IOException;
@@ -24,15 +25,32 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
+import org.apache.zeppelin.notebook.NoteInterpreterLoader;
 import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.google.common.collect.ImmutableList;
 
 public class SearchServiceTest {
 
-  SearchService notebookIndex;
+  private static NoteInterpreterLoader replLoaderMock;
+  private static NotebookRepo notebookRepoMock;
+  private SearchService notebookIndex;
+
+  @BeforeClass
+  public static void beforeStartUp() {
+    notebookRepoMock = mock(NotebookRepo.class);
+    replLoaderMock = mock(NoteInterpreterLoader.class);
+
+    when(replLoaderMock.getInterpreterSettings())
+      .thenReturn(ImmutableList.<InterpreterSetting>of());
+  }
 
   @Before
   public void startUp() {
@@ -106,7 +124,7 @@ public class SearchServiceTest {
     //when
     Paragraph p2 = note2.getLastParagraph();
     p2.setText("test indeed");
-    notebookIndex.updateIndexDoc(note2, p2);
+    notebookIndex.updateIndexDoc(note2);
 
     //then
     List<Map<String, String>> results = notebookIndex.query("all");
@@ -133,6 +151,48 @@ public class SearchServiceTest {
     List<Map<String, String>> results = resultForQuery("test");
     assertThat(results).isNotEmpty();
     assertThat(results.size()).isEqualTo(1);
+  }
+
+  @Test public void indexParagraphUpdatedOnNoteSave() throws IOException {
+    //given: total 2 notebooks, 3 paragraphs
+    Note note1 = newNoteWithParapgraph("Notebook1", "test");
+    Note note2 = newNoteWithParapgraphs("Notebook2", "not test", "not test at all");
+    notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
+    assertThat(resultForQuery("test").size()).isEqualTo(3);
+
+    //when
+    Paragraph p1 = note1.getLastParagraph();
+    p1.setText("no no no");
+    note1.persist();
+
+    //then
+    assertThat(resultForQuery("Notebook1").size()).isEqualTo(1);
+
+    List<Map<String, String>> results = resultForQuery("test");
+    assertThat(results).isNotEmpty();
+    assertThat(results.size()).isEqualTo(2);
+
+    //does not include Notebook1's paragraph any more
+    for (Map<String, String> result: results) {
+      assertThat(result.get("id").startsWith(note1.getId())).isFalse();;
+    }
+  }
+
+  @Test public void indexNoteNameUpdatedOnNoteSave() throws IOException {
+    //given: total 2 notebooks, 3 paragraphs
+    Note note1 = newNoteWithParapgraph("Notebook1", "test");
+    Note note2 = newNoteWithParapgraphs("Notebook2", "not test", "not test at all");
+    notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
+    assertThat(resultForQuery("test").size()).isEqualTo(3);
+
+    //when
+    note1.setName("NotebookN");
+    note1.persist();
+
+    //then
+    assertThat(resultForQuery("Notebook1")).isEmpty();
+    assertThat(resultForQuery("NotebookN")).isNotEmpty();
+    assertThat(resultForQuery("NotebookN").size()).isEqualTo(1);
   }
 
   private List<Map<String, String>> resultForQuery(String q) {
@@ -172,7 +232,7 @@ public class SearchServiceTest {
   }
 
   private Note newNote(String name) {
-    Note note = new Note(null, null, null);
+    Note note = new Note(notebookRepoMock, replLoaderMock, null, notebookIndex);
     note.setName(name);
     return note;
   }

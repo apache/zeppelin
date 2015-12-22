@@ -136,7 +136,7 @@ public class Notebook {
    */
   public Note createNote(List<String> interpreterIds) throws IOException {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory);
+    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, notebookIndex);
     intpLoader.setNoteId(note.id());
     synchronized (notes) {
       notes.put(note.id(), note);
