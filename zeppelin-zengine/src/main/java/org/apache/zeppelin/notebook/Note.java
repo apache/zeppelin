@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
@@ -49,15 +48,16 @@ import com.google.gson.Gson;
  */
 public class Note implements Serializable, JobListener {
   transient Logger logger = LoggerFactory.getLogger(Note.class);
-  List<Paragraph> paragraphs = new LinkedList<Paragraph>();
+  private static final long serialVersionUID = 7920699076577612429L;
+
+  List<Paragraph> paragraphs = new LinkedList<>();
   private String name = "";
   private String id;
 
   @SuppressWarnings("rawtypes")
-  Map<String, List<AngularObject>> angularObjects = new HashMap<String, List<AngularObject>>();
+  Map<String, List<AngularObject>> angularObjects = new HashMap<>();
 
   private transient NoteInterpreterLoader replLoader;
-  private transient ZeppelinConfiguration conf;
   private transient JobListenerFactory jobListenerFactory;
   private transient NotebookRepo repo;
 
@@ -66,24 +66,22 @@ public class Note implements Serializable, JobListener {
    *
    * - looknfeel - cron
    */
-  private Map<String, Object> config = new HashMap<String, Object>();
+  private Map<String, Object> config = new HashMap<>();
 
   /**
    * note information.
    *
    * - cron : cron expression validity.
    */
-  private Map<String, Object> info = new HashMap<String, Object>();
+  private Map<String, Object> info = new HashMap<>();
 
 
   public Note() {}
 
-  public Note(NotebookRepo repo,
-      NoteInterpreterLoader replLoader,
-      JobListenerFactory jobListenerFactory) {
+  public Note(NotebookRepo repo, NoteInterpreterLoader replLoader, JobListenerFactory jlFactory) {
     this.repo = repo;
     this.replLoader = replLoader;
-    this.jobListenerFactory = jobListenerFactory;
+    this.jobListenerFactory = jlFactory;
     generateId();
   }
 
@@ -131,6 +129,7 @@ public class Note implements Serializable, JobListener {
     this.repo = repo;
   }
 
+  @SuppressWarnings("rawtypes")
   public Map<String, List<AngularObject>> getAngularObjects() {
     return angularObjects;
   }
@@ -358,7 +357,7 @@ public class Note implements Serializable, JobListener {
   }
 
   private void snapshotAngularObjectRegistry() {
-    angularObjects = new HashMap<String, List<AngularObject>>();
+    angularObjects = new HashMap<>();
 
     List<InterpreterSetting> settings = replLoader.getInterpreterSettings();
     if (settings == null || settings.size() == 0) {
@@ -383,7 +382,7 @@ public class Note implements Serializable, JobListener {
 
   public Map<String, Object> getConfig() {
     if (config == null) {
-      config = new HashMap<String, Object>();
+      config = new HashMap<>();
     }
     return config;
   }
@@ -394,7 +393,7 @@ public class Note implements Serializable, JobListener {
 
   public Map<String, Object> getInfo() {
     if (info == null) {
-      info = new HashMap<String, Object>();
+      info = new HashMap<>();
     }
     return info;
   }
@@ -405,17 +404,10 @@ public class Note implements Serializable, JobListener {
 
   @Override
   public void beforeStatusChange(Job job, Status before, Status after) {
-    Paragraph p = (Paragraph) job;
   }
 
   @Override
   public void afterStatusChange(Job job, Status before, Status after) {
-    Paragraph p = (Paragraph) job;
-  }
-
-  private static Logger logger() {
-    Logger logger = LoggerFactory.getLogger(Note.class);
-    return logger;
   }
 
   @Override
