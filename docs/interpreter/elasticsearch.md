@@ -103,6 +103,7 @@ Example:
 
 #### search
 With the `search` command, you can send a search query to Elasticsearch. There are two formats of query:
+
 * You can provide a JSON-formatted query, that is exactly what you provide when you use the REST API of Elasticsearch.  
   * See [Elasticsearch search API reference document](https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html) for more details about the content of the search queries.
 * You can also provide the content of a `query_string`
@@ -124,29 +125,33 @@ If you want to modify the size of the result set, you can add a line that is set
 
 
 Examples:
-* With a JSON query:
-```bash
+
+  * With a JSON query:
+
+  ```bash
 | %elasticsearch
 | search / { "query": { "match_all": {} } }
-
+|
 | %elasticsearch
 | search /logs { "query": { "query_string": { "query": "request.method:GET AND status:200" } } }
-```
+  ```
 
-* With query_string elements:
-```bash
+  * With query_string elements:
+
+  ```bash
 | %elasticsearch
 | search /logs request.method:GET AND status:200
-
+|
 | %elasticsearch
 | search /logs (404 AND (POST OR DELETE))
-```
+  ```
 
 > **Important**: a document in Elasticsearch is a JSON document, so it is hierarchical, not flat as a row in a SQL table.
 For the Elastic interpreter, the result of a search query is flattened.
 
 Suppose we have a JSON document:
-```json
+
+```
 {
   "date": "2015-12-08T21:03:13.588Z",
   "request": {
@@ -160,15 +165,16 @@ Suppose we have a JSON document:
 
 The data will be flattened like this:
 
+
 date | request.headers[0] | request.headers[1] | request.method | request.url | status
 -----|--------------------|--------------------|----------------|-------------|-------
 2015-12-08T21:03:13.588Z | Accept: \*.\* | Host: apache.org | GET | /zeppelin/4cd001cd-c517-4fa9-b8e5-a06b8f4056c4 | 403
 
 
 Examples:
+
 * With a table containing the results:
 ![Elasticsearch - Search - table](../assets/themes/zeppelin/img/docs-img/elasticsearch-search-table.png)
-
 
 * You can also use a predefined diagram:
 ![Elasticsearch - Search - diagram](../assets/themes/zeppelin/img/docs-img/elasticsearch-search-pie.png)
@@ -189,6 +195,7 @@ With the `count` command, you can count documents available in some indices and 
 ```
 
 Examples:
+
 * Without query:
 ![Elasticsearch - Count](../assets/themes/zeppelin/img/docs-img/elasticsearch-count.png)
 
@@ -198,10 +205,11 @@ Examples:
 
 #### index
 With the `index` command, you can insert/update a document in Elasticsearch.
+
 ```bash
 | %elasticsearch
 | index /index/type/id <JSON document>
-
+|
 | %elasticsearch
 | index /index/type <JSON document>
 ```
@@ -221,8 +229,8 @@ With the `delete` command, you can delete a document.
 You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parameterization features
 
 ```bash
-%elasticsearch
-size ${limit=10}
-search /index/type { "query": { "match_all": {} } }
+| %elasticsearch
+| size ${limit=10}
+| search /index/type { "query": { "match_all": {} } }
 ```
 
