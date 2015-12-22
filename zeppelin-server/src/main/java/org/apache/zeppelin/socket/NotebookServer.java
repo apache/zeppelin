@@ -62,7 +62,7 @@ public class NotebookServer extends WebSocketServlet implements
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
 
   private Notebook notebook() {
-    return ZeppelinServer.NOTEBOOK;
+    return ZeppelinServer.notebook;
   }
   @Override
   public boolean checkOrigin(HttpServletRequest request, String origin) {

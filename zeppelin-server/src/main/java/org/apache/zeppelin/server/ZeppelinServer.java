@@ -59,23 +59,32 @@ import org.slf4j.LoggerFactory;
  * Main class of Zeppelin.
  *
  */
-
 public class ZeppelinServer extends Application {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinServer.class);
 
-  public static Notebook NOTEBOOK;
-  public static NotebookServer NOTEBOOK_SERVER;
-  public static Server JETTY_SERVER;
+  public static Notebook notebook;
+  public static Server jettyWebServer;
+  public static NotebookServer notebookWsServer;
 
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
   private NotebookRepo notebookRepo;
 
+  public ZeppelinServer() throws Exception {
+    LOG.info("Constructor starteds");
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+
+    this.schedulerFactory = new SchedulerFactory();
+    this.replFactory = new InterpreterFactory(conf, notebookWsServer);
+    this.notebookRepo = new NotebookRepoSync(conf);
+
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, replFactory, notebookWsServer);
+    LOG.info("Constructor finished");
+  }
+
   public static void main(String[] args) throws InterruptedException {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     conf.setProperty("args", args);
-
-    JETTY_SERVER = setupJettyServer(conf);
 
     // REST api
     final ServletContextHandler restApiContext = setupRestApiContextHandler(conf);
@@ -89,24 +98,26 @@ public class ZeppelinServer extends Application {
     // add all handlers
     ContextHandlerCollection contexts = new ContextHandlerCollection();
     contexts.setHandlers(new Handler[]{restApiContext, notebookContext, webApp});
-    JETTY_SERVER.setHandler(contexts);
 
-    LOG.info("Start zeppelin server");
+    jettyWebServer = setupJettyServer(conf);
+    jettyWebServer.setHandler(contexts);
+
+    LOG.info("Starting zeppelin server");
     try {
-      JETTY_SERVER.start();
+      jettyWebServer.start(); //Instantiates ZeppelinServer
     } catch (Exception e) {
       LOG.error("Error while running jettyServer", e);
       System.exit(-1);
     }
-    LOG.info("Started zeppelin server");
+    LOG.info("Done, zeppelin server started");
 
     Runtime.getRuntime().addShutdownHook(new Thread(){
       @Override public void run() {
         LOG.info("Shutting down Zeppelin Server ... ");
         try {
-          JETTY_SERVER.stop();
-          NOTEBOOK.getInterpreterFactory().close();
-          NOTEBOOK.close();
+          jettyWebServer.stop();
+          notebook.getInterpreterFactory().close();
+          notebook.close();
         } catch (Exception e) {
           LOG.error("Error while stopping servlet container", e);
         }
@@ -125,8 +136,8 @@ public class ZeppelinServer extends Application {
       System.exit(0);
     }
 
-    JETTY_SERVER.join();
-    ZeppelinServer.NOTEBOOK.getInterpreterFactory().close();
+    jettyWebServer.join();
+    ZeppelinServer.notebook.getInterpreterFactory().close();
   }
 
   private static Server setupJettyServer(ZeppelinConfiguration conf) {
@@ -151,8 +162,8 @@ public class ZeppelinServer extends Application {
   }
 
   private static ServletContextHandler setupNotebookServer(ZeppelinConfiguration conf) {
-    NOTEBOOK_SERVER = new NotebookServer();
-    final ServletHolder servletHolder = new ServletHolder(NOTEBOOK_SERVER);
+    notebookWsServer = new NotebookServer();
+    final ServletHolder servletHolder = new ServletHolder(notebookWsServer);
     servletHolder.setInitParameter("maxTextMessageSize", "1024000");
 
     final ServletContextHandler cxfContext = new ServletContextHandler(
@@ -239,16 +250,6 @@ public class ZeppelinServer extends Application {
     return webApp;
   }
 
-  public ZeppelinServer() throws Exception {
-    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-
-    this.schedulerFactory = new SchedulerFactory();
-    this.replFactory = new InterpreterFactory(conf, NOTEBOOK_SERVER);
-    this.notebookRepo = new NotebookRepoSync(conf);
-
-    NOTEBOOK = new Notebook(conf, notebookRepo, schedulerFactory, replFactory, NOTEBOOK_SERVER);
-  }
-
   @Override
   public Set<Class<?>> getClasses() {
     Set<Class<?>> classes = new HashSet<Class<?>>();
@@ -263,7 +264,7 @@ public class ZeppelinServer extends Application {
     ZeppelinRestApi root = new ZeppelinRestApi();
     singletons.add(root);
 
-    NotebookRestApi notebookApi = new NotebookRestApi(NOTEBOOK, NOTEBOOK_SERVER);
+    NotebookRestApi notebookApi = new NotebookRestApi(notebook, notebookWsServer);
     singletons.add(notebookApi);
 
     InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory);

@@ -29,8 +29,12 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.methods.*;
-import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
+import org.apache.commons.httpclient.methods.DeleteMethod;
+import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -113,7 +117,7 @@ public abstract class AbstractTestRestApi {
       if ("true".equals(System.getenv("CI"))) {
         // assume first one is spark
         InterpreterSetting sparkIntpSetting = null;
-        for(InterpreterSetting intpSetting : ZeppelinServer.NOTEBOOK.getInterpreterFactory().get()) {
+        for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
           if (intpSetting.getGroup().equals("spark")) {
             sparkIntpSetting = intpSetting;
           }
@@ -126,11 +130,11 @@ public abstract class AbstractTestRestApi {
         sparkIntpSetting.getProperties().setProperty("spark.home", getSparkHome());
         pySpark = true;
 
-        ZeppelinServer.NOTEBOOK.getInterpreterFactory().restart(sparkIntpSetting.id());
+        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.id());
       } else {
         // assume first one is spark
         InterpreterSetting sparkIntpSetting = null;
-        for(InterpreterSetting intpSetting : ZeppelinServer.NOTEBOOK.getInterpreterFactory().get()) {
+        for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
           if (intpSetting.getGroup().equals("spark")) {
             sparkIntpSetting = intpSetting;
           }
@@ -143,7 +147,7 @@ public abstract class AbstractTestRestApi {
           pySpark = true;
         }
 
-        ZeppelinServer.NOTEBOOK.getInterpreterFactory().restart(sparkIntpSetting.id());
+        ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.id());
       }
     }
   }
@@ -200,14 +204,14 @@ public abstract class AbstractTestRestApi {
   protected static void shutDown() throws Exception {
     if (!wasRunning) {
       // restart interpreter to stop all interpreter processes
-      List<String> settingList = ZeppelinServer.NOTEBOOK.getInterpreterFactory()
+      List<String> settingList = ZeppelinServer.notebook.getInterpreterFactory()
           .getDefaultInterpreterSettingList();
       for (String setting : settingList) {
-        ZeppelinServer.NOTEBOOK.getInterpreterFactory().restart(setting);
+        ZeppelinServer.notebook.getInterpreterFactory().restart(setting);
       }
 
       LOG.info("Terminating test Zeppelin...");
-      ZeppelinServer.JETTY_SERVER.stop();
+      ZeppelinServer.jettyWebServer.stop();
       executor.shutdown();
 
       long s = System.currentTimeMillis();
@@ -359,7 +363,7 @@ public abstract class AbstractTestRestApi {
   //Create new Setting and return Setting ID
   protected String createTempSetting(String tempName) throws IOException {
 
-    InterpreterGroup interpreterGroup =  ZeppelinServer.NOTEBOOK.getInterpreterFactory().add(tempName,"newGroup",
+    InterpreterGroup interpreterGroup =  ZeppelinServer.notebook.getInterpreterFactory().add(tempName,"newGroup",
         new InterpreterOption(false),new Properties());
     return interpreterGroup.getId();
   }
