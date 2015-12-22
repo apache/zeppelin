@@ -941,9 +941,9 @@ angular.module('zeppelinWebApp')
 
 
     var renderTable = function() {
-      var html = '';
 
-      html += '<table class="table table-hover table-condensed" style="top: 0; position: absolute;">';
+      var html = '';
+      html += '<table class="table table-hover table-condensed">';
       html += '  <thead>';
       html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
       for (var titleIndex in $scope.paragraph.result.columnNames) {
@@ -951,10 +951,7 @@ angular.module('zeppelinWebApp')
       }
       html += '    </tr>';
       html += '  </thead>';
-      html += '</table>';
-
-      html += '<table class="table table-hover table-condensed" style="margin-top: 31px;">';
-
+      html += '  <tbody>';
       for (var r in $scope.paragraph.result.msgTable) {
         var row = $scope.paragraph.result.msgTable[r];
         html += '    <tr>';
@@ -969,19 +966,28 @@ angular.module('zeppelinWebApp')
         }
         html += '    </tr>';
       }
-
+      html += '  </tbody>';
       html += '</table>';
 
       angular.element('#p' + $scope.paragraph.id + '_table').html(html);
       if ($scope.paragraph.result.msgTable.length > 10000) {
         angular.element('#p' + $scope.paragraph.id + '_table').css('overflow', 'scroll');
       } else {
+        var dataTable = angular.element('#p' + $scope.paragraph.id + '_table .table');
+        dataTable.floatThead({
+          scrollContainer: function (dataTable) {
+            return angular.element('#p' + $scope.paragraph.id + '_table');
+          }
+        });
+        angular.element('#p' + $scope.paragraph.id + '_table').css('position', 'relative');
+        angular.element('#p' + $scope.paragraph.id + '_table').css('height', '100%');
+        angular.element('.ps-scrollbar-y-rail').css('z-index', '1002');
+        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar('destroy');
         angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
       }
-
       // set table height
       var height = $scope.paragraph.config.graph.height;
-      angular.element('#p' + $scope.paragraph.id + '_table').height(height);
+      angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
     };
 
     var retryRenderer = function() {
