@@ -988,8 +988,8 @@ angular.module('zeppelinWebApp')
         angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
         angular.element('.ps-scrollbar-y-rail').css('z-index', '1002');
         // set table height
-        var height = $scope.paragraph.config.graph.height;
-        angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
+        var psHeight = $scope.paragraph.config.graph.height;
+        angular.element('#p' + $scope.paragraph.id + '_table').css('height', psHeight);
         angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar('update');
       }
 
