@@ -78,6 +78,7 @@ public class ZeppelinServer extends Application {
     this.schedulerFactory = new SchedulerFactory();
     this.replFactory = new InterpreterFactory(conf, notebookWsServer);
     this.notebookRepo = new NotebookRepoSync(conf);
+    this.notebookIndex = new SearchService();
 
     notebook = new Notebook(conf, 
         notebookRepo, schedulerFactory, replFactory, notebookWsServer, notebookIndex);
