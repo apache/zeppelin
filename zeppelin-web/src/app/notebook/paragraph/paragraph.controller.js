@@ -941,7 +941,6 @@ angular.module('zeppelinWebApp')
 
 
     var renderTable = function() {
-
       var html = '';
       html += '<table class="table table-hover table-condensed">';
       html += '  <thead>';
@@ -982,11 +981,13 @@ angular.module('zeppelinWebApp')
             return angular.element('#p' + $scope.paragraph.id + '_table');
           }
         });
+
         angular.element('#p' + $scope.paragraph.id + '_table').css('position', 'relative');
         angular.element('#p' + $scope.paragraph.id + '_table').css('height', '100%');
         angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar('destroy');
         angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
         angular.element('.ps-scrollbar-y-rail').css('z-index', '1002');
+        
         // set table height
         var psHeight = $scope.paragraph.config.graph.height;
         angular.element('#p' + $scope.paragraph.id + '_table').css('height', psHeight);
