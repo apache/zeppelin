@@ -58,15 +58,15 @@ public abstract class Job {
     FINISHED,
     ERROR,
     ABORT;
-    boolean isReady() {
+    public boolean isReady() {
       return this == READY;
     }
 
-    boolean isRunning() {
+    public boolean isRunning() {
       return this == RUNNING;
     }
 
-    boolean isPending() {
+    public boolean isPending() {
       return this == PENDING;
     }
   }
