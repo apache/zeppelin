@@ -209,7 +209,20 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       InterpreterContext context = getInterpreterContext();
       InterpreterContext.set(context);
       InterpreterResult ret = repl.interpret(script, context);
+      byte[] interpreterOutput = context.out.toByteArray(true);
 
+      // data from context.out is prepended to ret.message for now.
+      // later context.out should be streamed to the front-end.
+      String message = null;
+      if (interpreterOutput != null && interpreterOutput.length > 0) {
+        // something printed in InterpreterOutput
+        message = new String(interpreterOutput);
+
+        if (ret.message() != null) {
+          message += ret.message();
+        }
+        return new InterpreterResult(ret.code(), message);
+      }
       if (Code.KEEP_PREVIOUS_RESULT == ret.code()) {
         return getReturn();
       }
@@ -252,7 +265,8 @@ public class Paragraph extends Job implements Serializable, Cloneable {
             this.getConfig(),
             this.settings,
             registry,
-            runners);
+            runners,
+            new InterpreterOutput());
     return interpreterContext;
   }
 
