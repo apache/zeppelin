@@ -39,6 +39,7 @@ import org.apache.zeppelin.rest.NotebookRestApi;
 import org.apache.zeppelin.rest.ZeppelinRestApi;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.search.LuceneSearch;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.eclipse.jetty.server.AbstractConnector;
 import org.eclipse.jetty.server.Handler;
@@ -78,7 +79,7 @@ public class ZeppelinServer extends Application {
     this.schedulerFactory = new SchedulerFactory();
     this.replFactory = new InterpreterFactory(conf, notebookWsServer);
     this.notebookRepo = new NotebookRepoSync(conf);
-    this.notebookIndex = new SearchService();
+    this.notebookIndex = new LuceneSearch();
 
     notebook = new Notebook(conf, 
         notebookRepo, schedulerFactory, replFactory, notebookWsServer, notebookIndex);

@@ -18,7 +18,7 @@ package org.apache.zeppelin.search;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.*;
-import static org.apache.zeppelin.search.SearchService.formatId;
+import static org.apache.zeppelin.search.LuceneSearch.formatId;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -38,7 +38,7 @@ import org.junit.Test;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
-public class SearchServiceTest {
+public class LuceneSearchTest {
 
   private static NoteInterpreterLoader replLoaderMock;
   private static NotebookRepo notebookRepoMock;
@@ -55,7 +55,7 @@ public class SearchServiceTest {
 
   @Before
   public void startUp() {
-    notebookIndex = new SearchService();
+    notebookIndex = new LuceneSearch();
   }
 
   @After
@@ -110,10 +110,10 @@ public class SearchServiceTest {
     //when
     notebookIndex.addIndexDoc(note1);
     //then
-    String id = resultForQuery("test").get(0).get(SearchService.ID_FIELD);
+    String id = resultForQuery("test").get(0).get(LuceneSearch.ID_FIELD);
 
     assertThat(Splitter.on("/").split(id)) //key structure <noteId>/paragraph/<paragraphId>
-      .containsAllOf(note1.getId(), SearchService.PARAGRAPH, note1.getLastParagraph().getId());
+      .containsAllOf(note1.getId(), LuceneSearch.PARAGRAPH, note1.getLastParagraph().getId());
   }
 
   @Test //(expected=IllegalStateException.class)
