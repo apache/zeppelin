@@ -36,4 +36,6 @@ echo '# or for a specific build'
 echo
 echo 'mvn clean package -Pspark-1.5 -Ppyspark -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests'
 echo './bin/zeppelin-daemon.sh start'
+echo
+echo 'On your host machine browse to http://localhost:8080/'
 
