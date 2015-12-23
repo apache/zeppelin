@@ -107,7 +107,7 @@ public class SearchService {
       QueryParser parser = new QueryParser(SEARCH_FIELD, analyzer);
 
       Query query = parser.parse(queryStr);
-      LOG.info("Searching for: " + query.toString(SEARCH_FIELD));
+      LOG.debug("Searching for: " + query.toString(SEARCH_FIELD));
 
       SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter();
       Highlighter highlighter = new Highlighter(htmlFormatter, new QueryScorer(query));
@@ -129,26 +129,26 @@ public class SearchService {
     try {
       hits = searcher.search(query, 20).scoreDocs;
       for (int i = 0; i < hits.length; i++) {
-        LOG.info("doc={} score={}", hits[i].doc, hits[i].score);
+        LOG.debug("doc={} score={}", hits[i].doc, hits[i].score);
 
         int id = hits[i].doc;
         Document doc = searcher.doc(id);
         String path = doc.get(ID_FIELD);
         if (path != null) {
-          LOG.info((i + 1) + ". " + path);
+          LOG.debug((i + 1) + ". " + path);
           String title = doc.get("title");
           if (title != null) {
-            LOG.info("   Title: {}", doc.get("title"));
+            LOG.debug("   Title: {}", doc.get("title"));
           }
 
           String text = doc.get(SEARCH_FIELD);
           TokenStream tokenStream = TokenSources.getTokenStream(searcher.getIndexReader(), id,
               SEARCH_FIELD, analyzer);
           TextFragment[] frag = highlighter.getBestTextFragments(tokenStream, text, true, 3);
-          LOG.info("    {} fragments found for query '{}'", frag.length, query);
+          LOG.debug("    {} fragments found for query '{}'", frag.length, query);
           for (int j = 0; j < frag.length; j++) {
             if ((frag[j] != null) && (frag[j].getScore() > 0)) {
-              LOG.info("    Fragment: {}", frag[j].toString());
+              LOG.debug("    Fragment: {}", frag[j].toString());
             }
           }
           String fragment = (frag != null && frag.length > 0) ? frag[0].toString() : "";
