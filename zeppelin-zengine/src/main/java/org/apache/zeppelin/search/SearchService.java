@@ -198,8 +198,8 @@ public class SearchService {
   }
 
   /**
-   * Updates index for the given note: either note.name or a paragraph
-   * If paragraph is <code>null</code> - updates only for the note.name
+   * Updates index for the given note: either note.name or a paragraph If
+   * paragraph is <code>null</code> - updates only for the note.name
    *
    * @param noteId
    * @param noteName
@@ -229,9 +229,19 @@ public class SearchService {
     return id;
   }
 
+  static String formatDeleteId(String noteId, Paragraph p) {
+    String id = noteId;
+    if (null != p) {
+      id = Joiner.on('/').join(id, "paragraphs", p.getId());
+    } else {
+      id = id + "*";
+    }
+    return id;
+  }
+
   /**
-   * If paragraph is not null, indexes code in the paragraph,
-   * otherwise indexes the notebook name.
+   * If paragraph is not null, indexes code in the paragraph, otherwise indexes
+   * the notebook name.
    *
    * @param id id of the document, different for Note name and paragraph
    * @param noteName name of the note
@@ -277,8 +287,8 @@ public class SearchService {
         LOG.error("Failed to save index", e);
       }
       long end = System.nanoTime();
-      LOG.info("Indexing {} notebooks took {}ms",
-          docsIndexed, TimeUnit.NANOSECONDS.toMillis(end - start));
+      LOG.info("Indexing {} notebooks took {}ms", docsIndexed,
+          TimeUnit.NANOSECONDS.toMillis(end - start));
     }
   }
 
@@ -302,19 +312,34 @@ public class SearchService {
    * Deletes all docs no given Note from index
    */
   public void deleteIndexDocs(Note note) {
+    deleteDoc(note, null);
+  }
+
+  private void deleteDoc(Note note, Paragraph p) {
     if (null == note) {
       LOG.error("Trying to delete note by reference to NULL");
       return;
     }
-
+    String fullNoteOrJustParagraph = formatDeleteId(note.getId(), p);
     LOG.debug("Deleting note {}, out of: {}", note.getId(), writer.numDocs());
     try {
-      writer.deleteDocuments(new WildcardQuery(new Term(ID_FIELD, note.getId()  + "*")));
+      writer.deleteDocuments(new WildcardQuery(new Term(ID_FIELD, fullNoteOrJustParagraph)));
       writer.commit();
     } catch (IOException e) {
-      LOG.error("Failed to delete a notebook {} from index", note, e);
+      LOG.error("Failed to delete {} from index by '{}'", note, fullNoteOrJustParagraph, e);
     }
     LOG.debug("Done, index contains {} docs now" + writer.numDocs());
+  }
+
+  /**
+   * Deletes doc for a given
+   *
+   * @param note
+   * @param p
+   * @throws IOException
+   */
+  public void deleteIndexDoc(Note note, Paragraph p) {
+    deleteDoc(note, p);
   }
 
   /**
@@ -330,6 +355,7 @@ public class SearchService {
 
   /**
    * Indexes a notebook name
+   *
    * @throws IOException
    */
   private void indexNoteName(IndexWriter w, String noteId, String noteName) throws IOException {
@@ -342,9 +368,9 @@ public class SearchService {
   }
 
   /**
-   * Indexes a single document
+   * Indexes a single document:
    *  - code of the paragraph (if non-null)
-   *  - or just note name
+   *  - or just a note name
    */
   private void indexDoc(IndexWriter w, String noteId, String noteName, Paragraph p)
       throws IOException {

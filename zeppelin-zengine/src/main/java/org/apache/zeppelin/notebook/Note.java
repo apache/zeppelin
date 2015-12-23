@@ -20,6 +20,7 @@ package org.apache.zeppelin.notebook;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -201,14 +202,16 @@ public class Note implements Serializable, JobListener {
    * Remove paragraph by id.
    *
    * @param paragraphId
-   * @return
+   * @return a paragraph that was deleted, or <code>null</code> otherwise
    */
   public Paragraph removeParagraph(String paragraphId) {
     synchronized (paragraphs) {
-      for (int i = 0; i < paragraphs.size(); i++) {
-        Paragraph p = paragraphs.get(i);
+      Iterator<Paragraph> i = paragraphs.iterator();
+      while (i.hasNext()) {
+        Paragraph p = i.next();
         if (p.getId().equals(paragraphId)) {
-          paragraphs.remove(i);
+          index.deleteIndexDoc(this, p);
+          i.remove();
           return p;
         }
       }
