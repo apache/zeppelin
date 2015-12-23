@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
 public class SearchServiceTest {
@@ -103,6 +104,17 @@ public class SearchServiceTest {
     assertThat(results.get(0)).containsEntry("id", note1.getId());
   }
 
+  @Test public void indexKeyContract() throws IOException {
+    //give
+    Note note1 = newNoteWithParapgraph("Notebook1", "test");
+    //when
+    notebookIndex.addIndexDoc(note1);
+    //then
+    String id = resultForQuery("test").get(0).get(SearchService.ID_FIELD);
+
+    assertThat(Splitter.on("/").split(id)) //key structure <noteId>/paragraph/<paragraphId>
+      .containsAllOf(note1.getId(), SearchService.PARAGRAPH, note1.getLastParagraph().getId());
+  }
 
   @Test //(expected=IllegalStateException.class)
   public void canNotSearchBeforeIndexing() {

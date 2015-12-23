@@ -61,14 +61,16 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 /**
- * Service for search (both, indexing and query) the notebooks
+ * Service for search (both, indexing and query) the notebooks.
  *
- * TODO(bzz): document thread-safety
+ * Query is thread-safe, as creates new IndexReader every time.
+ * Index is thread-safe, as re-uses single IndexWriter, which is thread-safe.
  */
 public class SearchService {
   private static final Logger LOG = LoggerFactory.getLogger(SearchService.class);
 
-  static final String SEARCH_FIELD = "contents";
+  private static final String SEARCH_FIELD = "contents";
+  static final String PARAGRAPH = "paragraph";
   static final String ID_FIELD = "id";
 
   Directory ramDirectory;
@@ -224,7 +226,7 @@ public class SearchService {
   static String formatId(String noteId, Paragraph p) {
     String id = noteId;
     if (null != p) {
-      id = Joiner.on('/').join(id, "paragraphs", p.getId());
+      id = Joiner.on('/').join(id, PARAGRAPH, p.getId());
     }
     return id;
   }
@@ -232,7 +234,7 @@ public class SearchService {
   static String formatDeleteId(String noteId, Paragraph p) {
     String id = noteId;
     if (null != p) {
-      id = Joiner.on('/').join(id, "paragraphs", p.getId());
+      id = Joiner.on('/').join(id, PARAGRAPH, p.getId());
     } else {
       id = id + "*";
     }
@@ -275,7 +277,7 @@ public class SearchService {
     long start = System.nanoTime();
     try {
       for (Note note : collection) {
-        addIndexDoc(note);
+        addIndexDocAsync(note);
         docsIndexed++;
       }
     } catch (IOException e) {
@@ -293,11 +295,26 @@ public class SearchService {
   }
 
   /**
-   * Indexes the given notebook
+   * Indexes the given notebook.
    *
    * @throws IOException If there is a low-level I/O error
    */
-  public void addIndexDoc(Note note) throws IOException {
+  public void addIndexDoc(Note note) {
+    try {
+      addIndexDocAsync(note);
+      writer.commit();
+    } catch (IOException e) {
+      LOG.error("Failed to add note {} to index", note, e);
+    }
+  }
+
+  /**
+   * Indexes the given notebook, but does not commit changes.
+   *
+   * @param note
+   * @throws IOException
+   */
+  private void addIndexDocAsync(Note note) throws IOException {
     indexNoteName(writer, note.getId(), note.getName());
     for (Paragraph doc : note.getParagraphs()) {
       if (doc.getText() == null) {
@@ -315,6 +332,17 @@ public class SearchService {
     deleteDoc(note, null);
   }
 
+  /**
+   * Deletes doc for a given
+   *
+   * @param note
+   * @param p
+   * @throws IOException
+   */
+  public void deleteIndexDoc(Note note, Paragraph p) {
+    deleteDoc(note, p);
+  }
+
   private void deleteDoc(Note note, Paragraph p) {
     if (null == note) {
       LOG.error("Trying to delete note by reference to NULL");
@@ -329,17 +357,6 @@ public class SearchService {
       LOG.error("Failed to delete {} from index by '{}'", note, fullNoteOrJustParagraph, e);
     }
     LOG.debug("Done, index contains {} docs now" + writer.numDocs());
-  }
-
-  /**
-   * Deletes doc for a given
-   *
-   * @param note
-   * @param p
-   * @throws IOException
-   */
-  public void deleteIndexDoc(Note note, Paragraph p) {
-    deleteDoc(note, p);
   }
 
   /**
