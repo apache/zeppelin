@@ -297,8 +297,12 @@ public class Note implements Serializable, JobListener {
         Map<String, String> info = new HashMap<>();
         info.put("id", p.getId());
         info.put("status", p.getStatus().toString());
-        info.put("started", p.getDateStarted() == null ? null : p.getDateStarted().toString());
-        info.put("finished", p.getDateFinished() == null ? null : p.getDateFinished().toString());
+        if (p.getDateStarted() != null) {
+          info.put("started", p.getDateStarted().toString());
+        }
+        if (p.getDateFinished() != null) {
+          info.put("finished", p.getDateFinished().toString());
+        }
         paragraphsInfo.add(info);
       }
     }

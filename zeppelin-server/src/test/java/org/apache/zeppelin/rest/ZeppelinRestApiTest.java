@@ -550,8 +550,8 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     Map<String, Object> resp = gson.fromJson(getNoteJobs.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
     }.getType());
     List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
-    assertNull(body.get(0).get("started"));
-    assertNull(body.get(0).get("finished"));
+    assertFalse(body.get(0).containsKey("started"));
+    assertFalse(body.get(0).containsKey("finished"));
     getNoteJobs.releaseConnection();
 
     ZeppelinServer.notebook.removeNote(note.getId());
