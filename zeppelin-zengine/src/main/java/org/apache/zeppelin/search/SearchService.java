@@ -143,8 +143,7 @@ public class SearchService {
           TokenStream tokenStream = TokenSources.getTokenStream(searcher.getIndexReader(), id,
               SEARCH_FIELD, analyzer);
           TextFragment[] frag = highlighter.getBestTextFragments(tokenStream, text, true, 3);
-          // TODO(bzz): remove this as too verbose
-          LOG.info("    {} fragments found for query '{}' in '{}'", frag.length, query, text);
+          LOG.info("    {} fragments found for query '{}'", frag.length, query);
           for (int j = 0; j < frag.length; j++) {
             if ((frag[j] != null) && (frag[j].getScore() > 0)) {
               LOG.info("    Fragment: {}", frag[j].toString());
