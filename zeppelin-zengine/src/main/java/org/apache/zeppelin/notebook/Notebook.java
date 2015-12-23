@@ -252,15 +252,14 @@ public class Notebook {
       return null;
     }
 
-    // set NoteInterpreterLoader
+    //Manually inject ALL dependencies, as DI constructor was NOT used
+    note.setIndex(this.notebookIndex);
+
     NoteInterpreterLoader replLoader = new NoteInterpreterLoader(replFactory);
     note.setReplLoader(replLoader);
     replLoader.setNoteId(note.id());
 
-    // set JobListenerFactory
     note.setJobListenerFactory(jobListenerFactory);
-
-    // set notebookRepo
     note.setNotebookRepo(notebookRepo);
 
     Map<String, SnapshotAngularObject> angularObjectSnapshot = new HashMap<>();

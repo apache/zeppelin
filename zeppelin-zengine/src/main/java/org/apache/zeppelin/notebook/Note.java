@@ -133,6 +133,10 @@ public class Note implements Serializable, JobListener {
     this.repo = repo;
   }
 
+  public void setIndex(SearchService index) {
+    this.index = index;
+  }
+
   @SuppressWarnings("rawtypes")
   public Map<String, List<AngularObject>> getAngularObjects() {
     return angularObjects;
