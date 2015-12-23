@@ -134,6 +134,13 @@ public class SearchServiceTest {
     assertThat(results).isNotEmpty();
   }
 
+  @Test public void canDeleteNull() throws IOException {
+    //give
+    // looks like a bug in web UI: it tries to delete a note twice (after it has just been deleted)
+    //when
+    notebookIndex.deleteIndexDocs(null);
+  }
+
   @Test public void canDeleteFromIndex() throws IOException {
     //given
     Note note1 = newNoteWithParapgraph("Notebook1", "test");

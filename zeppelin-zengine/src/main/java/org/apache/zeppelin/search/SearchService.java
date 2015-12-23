@@ -302,6 +302,11 @@ public class SearchService {
    * Deletes all docs no given Note from index
    */
   public void deleteIndexDocs(Note note) {
+    if (null == note) {
+      LOG.error("Trying to delete note by reference to NULL");
+      return;
+    }
+
     LOG.debug("Deleting note {}, out of: {}", note.getId(), writer.numDocs());
     try {
       writer.deleteDocuments(new WildcardQuery(new Term(ID_FIELD, note.getId()  + "*")));
