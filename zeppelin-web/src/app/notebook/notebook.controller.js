@@ -1,4 +1,5 @@
 /* jshint loopfunc: true */
+/* global $: false */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +15,9 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location,
-                                                                     $rootScope, $http, websocketMsgSrv, baseUrlSrv,
-                                                                     $timeout, SaveAsService) {
+angular.module('zeppelinWebApp').controller('NotebookCtrl',
+  function($scope, $route, $routeParams, $location, $rootScope, $http,
+    websocketMsgSrv, baseUrlSrv, $timeout, SaveAsService) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -66,6 +67,26 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   /** Init the new controller */
   var initNotebook = function() {
     websocketMsgSrv.getNotebook($routeParams.noteId);
+
+    var currentRoute = $route.current;
+
+    if (currentRoute) {
+
+      setTimeout(
+        function() {
+          var routeParams = currentRoute.params;
+          var $id = $('#' + routeParams.paragraph + '_container');
+
+          if ($id.length > 0) {
+            // adjust for navbar
+            var top = $id.offset().top - 103;
+            $('html, body').scrollTo({top: top, left: 0});
+          }
+
+        },
+        1000
+      );
+    }
   };
 
   initNotebook();
@@ -73,11 +94,17 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   /** Remove the note and go back tot he main page */
   /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
   $scope.removeNote = function(noteId) {
-    var result = confirm('Do you want to delete this notebook?');
-    if (result) {
-      websocketMsgSrv.deleteNotebook(noteId);
-      $location.path('/#');
-    }
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: 'Do you want to delete this notebook?',
+      callback: function(result) {
+        if (result) {
+          websocketMsgSrv.deleteNotebook(noteId);
+          $location.path('/#');
+        }
+      }
+    });
   };
 
   //Export notebook
@@ -88,20 +115,32 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   //Clone note
   $scope.cloneNote = function(noteId) {
-    var result = confirm('Do you want to clone this notebook?');
-    if (result) {
-      websocketMsgSrv.cloneNotebook(noteId);
-      $location.path('/#');
-    }
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: 'Do you want to clone this notebook?',
+      callback: function(result) {
+        if (result) {
+          websocketMsgSrv.cloneNotebook(noteId);
+          $location.path('/#');
+        }
+      }
+    });
   };
 
   $scope.runNote = function() {
-    var result = confirm('Run all paragraphs?');
-    if (result) {
-      _.forEach($scope.note.paragraphs, function(n, key) {
-        angular.element('#' + n.id + '_paragraphColumn_main').scope().runParagraph(n.text);
-      });
-    }
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: 'Run all paragraphs?',
+      callback: function(result) {
+        if (result) {
+          _.forEach($scope.note.paragraphs, function (n, key) {
+            angular.element('#' + n.id + '_paragraphColumn_main').scope().runParagraph(n.text);
+          });
+        }
+      }
+    });
   };
 
   $scope.saveNote = function() {
@@ -114,12 +153,18 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   };
 
   $scope.clearAllParagraphOutput = function() {
-    var result = confirm('Do you want to clear all output?');
-    if (result) {
-      _.forEach($scope.note.paragraphs, function(n, key) {
-        angular.element('#' + n.id + '_paragraphColumn_main').scope().clearParagraphOutput();
-      });
-    }
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: 'Do you want to clear all output?',
+      callback: function(result) {
+        if (result) {
+          _.forEach($scope.note.paragraphs, function(n, key) {
+            angular.element('#' + n.id + '_paragraphColumn_main').scope().clearParagraphOutput();
+          });
+        }
+      }
+    });
   };
 
   $scope.toggleAllEditor = function() {
@@ -216,7 +261,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   /** Update the note name */
   $scope.sendNewName = function() {
-    $scope.showEditor = false;
     if ($scope.note.name) {
       websocketMsgSrv.updateNotebook($scope.note.id, $scope.note.name, $scope.note.config);
     }
@@ -291,11 +335,16 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   });
 
   // create new paragraph on current position
-  $scope.$on('insertParagraph', function(event, paragraphId) {
+  $scope.$on('insertParagraph', function(event, paragraphId, position) {
     var newIndex = -1;
     for (var i=0; i<$scope.note.paragraphs.length; i++) {
-      if ($scope.note.paragraphs[i].id === paragraphId) {
-        newIndex = i+1;
+      if ( $scope.note.paragraphs[i].id === paragraphId ) {
+        //determine position of where to add new paragraph; default is below
+        if ( position === 'above' ) {
+          newIndex = i;
+        } else {
+          newIndex = i+1;
+        }
         break;
       }
     }
@@ -384,6 +433,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
           $scope.note.paragraphs.splice(index, 0, note.paragraphs[index]);
           break;
         }
+        $scope.$broadcast('updateParagraph', {paragraph: note.paragraphs[index]});
       }
     }
 
@@ -471,12 +521,21 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.closeSetting = function() {
     if (isSettingDirty()) {
-      var result = confirm('Changes will be discarded');
-      if (!result) {
-        return;
-      }
+      BootstrapDialog.confirm({
+        closable: true,
+        title: '',
+        message: 'Changes will be discarded.',
+        callback: function(result) {
+          if (result) {
+            $scope.$apply(function() {
+              $scope.showSetting = false;
+            });
+          }
+        }
+      });
+    } else {
+      $scope.showSetting = false;
     }
-    $scope.showSetting = false;
   };
 
   $scope.saveSetting = function() {

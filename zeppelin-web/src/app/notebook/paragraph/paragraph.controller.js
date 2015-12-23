@@ -19,6 +19,7 @@ angular.module('zeppelinWebApp')
                                          $timeout, $compile, websocketMsgSrv) {
 
   $scope.paragraph = null;
+  $scope.originalText = '';
   $scope.editor = null;
 
   var editorModes = {
@@ -31,6 +32,7 @@ angular.module('zeppelinWebApp')
   // Controller init
   $scope.init = function(newParagraph) {
     $scope.paragraph = newParagraph;
+    $scope.originalText = angular.copy(newParagraph.text);
     $scope.chart = {};
     $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
     $scope.showTitleEditor = false;
@@ -65,10 +67,10 @@ angular.module('zeppelinWebApp')
           console.log('HTML rendering error %o', err);
         }
       } else {
+        $timeout(retryRenderer, 10);
       }
     };
     $timeout(retryRenderer);
-
   };
 
   $scope.renderAngular = function() {
@@ -82,11 +84,10 @@ angular.module('zeppelinWebApp')
           console.log('ANGULAR rendering error %o', err);
         }
       } else {
-        $timeout(retryRenderer,10);
+        $timeout(retryRenderer, 10);
       }
     };
     $timeout(retryRenderer);
-
   };
 
 
@@ -181,11 +182,13 @@ angular.module('zeppelinWebApp')
           if ($scope.dirtyText === data.paragraph.text ) {  // when local update is the same from remote, clear local update
             $scope.paragraph.text = data.paragraph.text;
             $scope.dirtyText = undefined;
+            $scope.originalText = angular.copy(data.paragraph.text);
           } else { // if there're local update, keep it.
             $scope.paragraph.text = $scope.dirtyText;
           }
         } else {
           $scope.paragraph.text = data.paragraph.text;
+          $scope.originalText = angular.copy(data.paragraph.text);
         }
       }
 
@@ -261,14 +264,16 @@ angular.module('zeppelinWebApp')
   $scope.runParagraph = function(data) {
     websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
                                  data, $scope.paragraph.config, $scope.paragraph.settings.params);
+    $scope.originalText = angular.copy(data);
     $scope.dirtyText = undefined;
   };
 
   $scope.saveParagraph = function(){
-    if($scope.dirtyText === undefined){
+    if($scope.dirtyText === undefined || $scope.dirtyText === $scope.originalText){
       return;
     }
     commitParagraph($scope.paragraph.title, $scope.dirtyText, $scope.paragraph.config, $scope.paragraph.settings.params);
+    $scope.originalText = angular.copy($scope.dirtyText);
     $scope.dirtyText = undefined;
   };
 
@@ -287,16 +292,22 @@ angular.module('zeppelinWebApp')
     $scope.$emit('moveParagraphDown', $scope.paragraph.id);
   };
 
-  $scope.insertNew = function() {
-    $scope.$emit('insertParagraph', $scope.paragraph.id);
+  $scope.insertNew = function(position) {
+    $scope.$emit('insertParagraph', $scope.paragraph.id, position || 'below');
   };
 
   $scope.removeParagraph = function() {
-    var result = confirm('Do you want to delete this paragraph?');
-    if (result) {
-      console.log('Remove paragraph');
-      websocketMsgSrv.removeParagraph($scope.paragraph.id);
-    }
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: 'Do you want to delete this paragraph?',
+      callback: function(result) {
+        if (result) {
+          console.log('Remove paragraph');
+          websocketMsgSrv.removeParagraph($scope.paragraph.id);
+        }
+      }
+    });
   };
 
   $scope.clearParagraphOutput = function() {
@@ -400,7 +411,7 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.changeColWidth = function() {
-
+    angular.element('.navbar-right.open').removeClass('open');
     var newParams = angular.copy($scope.paragraph.settings.params);
     var newConfig = angular.copy($scope.paragraph.config);
 
@@ -459,7 +470,6 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.aceChanged = function() {
-
     $scope.dirtyText = $scope.editor.getSession().getValue();
     $scope.startSaveTimer();
 
@@ -587,7 +597,9 @@ angular.module('zeppelinWebApp')
         exec: function(editor) {
           var editorValue = editor.getValue();
           if (editorValue) {
-            $scope.runParagraph(editorValue);
+            if (!($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING')) {
+              $scope.runParagraph(editorValue);
+            }
           }
         },
         readOnly: false
@@ -930,14 +942,18 @@ angular.module('zeppelinWebApp')
 
     var renderTable = function() {
       var html = '';
-      html += '<table class="table table-hover table-condensed">';
+
+      html += '<table class="table table-hover table-condensed" style="top: 0; position: absolute;">';
       html += '  <thead>';
       html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
-      for (var c in $scope.paragraph.result.columnNames) {
-        html += '<th>'+$scope.paragraph.result.columnNames[c].name+'</th>';
+      for (var titleIndex in $scope.paragraph.result.columnNames) {
+        html += '<th>'+$scope.paragraph.result.columnNames[titleIndex].name+'</th>';
       }
       html += '    </tr>';
       html += '  </thead>';
+      html += '</table>';
+
+      html += '<table class="table table-hover table-condensed" style="margin-top: 31px;">';
 
       for (var r in $scope.paragraph.result.msgTable) {
         var row = $scope.paragraph.result.msgTable[r];
@@ -983,6 +999,31 @@ angular.module('zeppelinWebApp')
 
   };
 
+  var integerFormatter = d3.format(',.1d');
+
+  var customAbbrevFormatter = function(x) {
+    var s = d3.format('.3s')(x);
+    switch (s[s.length - 1]) {
+      case 'G': return s.slice(0, -1) + 'B';
+    }
+    return s;
+  };
+
+  var xAxisTickFormat = function(d, xLabels) {
+    if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
+      return xLabels[d];
+    } else {
+      return d;
+    }
+  };
+
+  var yAxisTickFormat = function(d) {
+    if(d >= Math.pow(10,6)){
+      return customAbbrevFormatter(d);
+    }
+    return integerFormatter(d);
+  };
+
   var setD3Chart = function(type, data, refresh) {
     if (!$scope.chart[type]) {
       var chart = nv.models[type]();
@@ -1000,21 +1041,8 @@ angular.module('zeppelinWebApp')
       yLabels = scatterData.yLabels;
       d3g = scatterData.d3g;
 
-      $scope.chart[type].xAxis.tickFormat(function(d) {
-        if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) {
-          return xLabels[d];
-        } else {
-          return d;
-        }
-      });
-
-      $scope.chart[type].yAxis.tickFormat(function(d) {
-        if (yLabels[d] && (isNaN(parseFloat(yLabels[d])) || !isFinite(yLabels[d]))) {
-          return yLabels[d];
-        } else {
-          return d;
-        }
-      });
+      $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
+      $scope.chart[type].yAxis.tickFormat(function(d) {return xAxisTickFormat(d, yLabels);});
 
       // configure how the tooltip looks.
       $scope.chart[type].tooltipContent(function(key, x, y, data) {
@@ -1051,17 +1079,13 @@ angular.module('zeppelinWebApp')
       } else if (type === 'multiBarChart') {
         d3g = pivotDataToD3ChartFormat(p, true, false, type).d3g;
         $scope.chart[type].yAxis.axisLabelDistance(50);
+        $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d);});
       } else if (type === 'lineChart' || type === 'stackedAreaChart' || type === 'lineWithFocusChart') {
         var pivotdata = pivotDataToD3ChartFormat(p, false, true);
         xLabels = pivotdata.xLabels;
         d3g = pivotdata.d3g;
-        $scope.chart[type].xAxis.tickFormat(function(d) {
-          if (xLabels[d] && (isNaN(parseFloat(xLabels[d])) || !isFinite(xLabels[d]))) { // to handle string type xlabel
-            return xLabels[d];
-          } else {
-            return d;
-          }
-        });
+        $scope.chart[type].xAxis.tickFormat(function(d) {return xAxisTickFormat(d, xLabels);});
+        $scope.chart[type].yAxis.tickFormat(function(d) {return yAxisTickFormat(d);});
         $scope.chart[type].yAxis.axisLabelDistance(50);
         if ($scope.chart[type].useInteractiveGuideline) { // lineWithFocusChart hasn't got useInteractiveGuideline
           $scope.chart[type].useInteractiveGuideline(true); // for better UX and performance issue. (https://github.com/novus/nvd3/issues/691)

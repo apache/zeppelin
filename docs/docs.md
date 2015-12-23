@@ -36,7 +36,7 @@ limitations under the License.
 * [cassandra](./interpreter/cassandra.html)
 * [flink](./interpreter/flink.html)
 * [geode](./interpreter/geode.html)
-* [hive](./pleasecontribute.html)
+* [hive](./interpreter/hive.html)
 * [ignite](./interpreter/ignite.html)
 * [lens](./interpreter/lens.html)
 * [md](./interpreter/markdown.html)
@@ -44,6 +44,7 @@ limitations under the License.
 * [sh](./pleasecontribute.html)
 * [spark](./interpreter/spark.html)
 * [tajo](./pleasecontribute.html)
+* [elasticsearch](./interpreter/elasticsearch.html)
 
 ### Storage
 * [S3 Storage](./storage/storage.html)

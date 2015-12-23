@@ -101,6 +101,7 @@
     <module>kylin</module>
     <module>lens</module>
     <module>cassandra</module>
+    <module>elasticsearch</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
@@ -702,4 +703,15 @@
       </build>
     </profile>
   </profiles>
+  <distributionManagement>
+    <site>
+      <id>Website</id>
+      <url>${site_url}</url>
+    </site>
+    <repository>
+      <id>${repoid}</id>
+      <name>${reponame}</name>
+      <url>${repourl}</url>
+    </repository>
+  </distributionManagement>
 </project>

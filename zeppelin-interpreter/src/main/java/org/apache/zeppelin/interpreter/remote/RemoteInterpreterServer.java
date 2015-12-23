@@ -203,6 +203,7 @@ public class RemoteInterpreterServer
   @Override
   public RemoteInterpreterResult interpret(String className, String st,
       RemoteInterpreterContext interpreterContext) throws TException {
+    logger.debug("st: {}", st);
     Interpreter intp = getInterpreter(className);
     InterpreterContext context = convert(interpreterContext);
 
@@ -294,8 +295,13 @@ public class RemoteInterpreterServer
 
     @Override
     protected Object jobRun() throws Throwable {
-      InterpreterResult result = interpreter.interpret(script, context);
-      return result;
+      try {
+        InterpreterContext.set(context);
+        InterpreterResult result = interpreter.interpret(script, context);
+        return result;
+      } finally {
+        InterpreterContext.remove();
+      }
     }
 
     @Override

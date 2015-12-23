@@ -32,18 +32,16 @@
 */
 
 .paragraph .text {
-  white-space: pre;
-  display: block;
-  unicode-bidi: embed;
   display: block !important;
-  margin: 0 0 0 !important;
+  font-family: "Monaco","Menlo","Ubuntu Mono","Consolas","source-code-pro",monospace;
+  font-size: 12px !important;
   line-height: 1.42857143 !important;
+  margin: 0 0 5px !important;
+  padding-top: 2px;
+  unicode-bidi: embed;
+  white-space: pre-wrap;
   word-break: break-all !important;
   word-wrap: break-word !important;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
-  font-size: 12px !important;
-  margin-bottom: 5px !important;
-  padding-top: 2px;
 }
 
 .paragraph table {
@@ -142,7 +140,7 @@
   font-size: 1px;
   color: #AAAAAA;
   height:4px;
-  margin: 1px 0 0 0;
+  margin: 0px 0px 3px 0px;
 }
 
 .paragraph .runControl .progress {
@@ -151,10 +149,6 @@
   height: 4px;
   z-index: 100;
   border-radius: 0;
-}
-
-.paragraph .runControl .progress .progress-bar {
-  z-index: 100;
 }
 
 .paragraph .control span {
@@ -209,6 +203,7 @@
 
 .paragraph .title input {
   width: 80%;
+  height: 24px;
   line-height: 1.42857143;
   color: #555;
   background: #fff none;
@@ -216,12 +211,12 @@
   border-radius: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-  -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
-  -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
-  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
   text-transform: capitalize;
   font-family: 'Roboto', sans-serif;
-  font-size: 14px!important;
+  font-size: 17px !important;
+  font-weight: bold;
+  padding: 0 2px;
+  margin-left: -3px;
 }
 
 /*
@@ -403,4 +398,13 @@
 
 .lightBold {
   font-weight: 500;
+}
+
+.dropdown-menu > li:first-child > a:hover {
+  background-color: transparent;
+}
+
+table.table-striped {
+  border-top: 1px solid #ddd;
+  margin-top: 20px;
 }

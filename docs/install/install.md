@@ -145,7 +145,13 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
     <td>zeppelin.notebook.homescreen.hide</td>
     <td>false</td>
     <td>hide homescreen notebook from list when this value set to "true"</td>
-  </tr>  
+  </tr>
+  <tr>
+    <td>ZEPPELIN_WAR_TEMPDIR</td>
+    <td>zeppelin.war.tempdir</td>
+    <td>webapps</td>
+    <td>The location of jetty temporary directory.</td>
+  </tr>
   <tr>
     <td>ZEPPELIN_NOTEBOOK_DIR</td>
     <td>zeppelin.notebook.dir</td>

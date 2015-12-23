@@ -54,7 +54,6 @@ public class VFSNotebookRepo implements NotebookRepo {
 
   private FileSystemManager fsManager;
   private URI filesystemRoot;
-
   private ZeppelinConfiguration conf;
 
   public VFSNotebookRepo(ZeppelinConfiguration conf) throws IOException {
@@ -182,7 +181,7 @@ public class VFSNotebookRepo implements NotebookRepo {
     return getNote(noteDir);
   }
 
-  private FileObject getRootDir() throws IOException {
+  protected FileObject getRootDir() throws IOException {
     FileObject rootDir = fsManager.resolveFile(getPath("/"));
 
     if (!rootDir.exists()) {
@@ -197,7 +196,7 @@ public class VFSNotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void save(Note note) throws IOException {
+  public synchronized void save(Note note) throws IOException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
@@ -239,4 +238,10 @@ public class VFSNotebookRepo implements NotebookRepo {
 
     noteDir.delete(Selectors.SELECT_SELF_AND_CHILDREN);
   }
+
+  @Override
+  public void close() {
+    //no-op    
+  }
+
 }

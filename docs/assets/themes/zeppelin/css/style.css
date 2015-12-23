@@ -15,6 +15,10 @@ body {
   padding-bottom: 10px;
 }
 
+.navbar-brand img {
+  margin: 0;
+}
+
 .navbar {
   background: #3071a9;
   border-bottom: 0px;
@@ -209,13 +213,8 @@ body {
 
 /* Table for property */
 .table-configuration {
-<<<<<<< HEAD
     width : 100%;
     border : 1px solid gray;
-=======
-  width: 800px;
-  border: 1px solid gray;
->>>>>>> PR_TOOL_MERGE_PR_483
 }
 .table-configuration tr td {
   border: 1px solid gray;
@@ -238,7 +237,6 @@ body {
 }
 
 /* Custom container */
-<<<<<<< HEAD
 /* <a> */
 .container a {
     color: #4183C4; }
@@ -359,8 +357,6 @@ a.anchor {
     margin: 12px 0; 
 }
 
-=======
->>>>>>> PR_TOOL_MERGE_PR_483
 .container-narrow {
   margin: 0 auto;
 }
@@ -518,5 +514,9 @@ and (max-width: 1024px) {
 }
 
 #menu .navbar-brand {
-    margin-right: 50px;
+  margin-right: 50px;
+}
+
+.row img {
+  max-width: 100%;
 }

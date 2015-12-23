@@ -29,6 +29,7 @@ module.exports = function(config) {
       'bower_components/angular-animate/angular-animate.js',
       'bower_components/angular-touch/angular-touch.js',
       'bower_components/angular-route/angular-route.js',
+      'bower_components/angular-resource/angular-resource.js',
       'bower_components/angular-bootstrap/ui-bootstrap-tpls.js',
       'bower_components/angular-websocket/angular-websocket.min.js',
       'bower_components/ace-builds/src-noconflict/ace.js',
@@ -54,6 +55,8 @@ module.exports = function(config) {
       'bower_components/lodash/lodash.js',
       'bower_components/angular-filter/dist/angular-filter.min.js',
       'bower_components/ngtoast/dist/ngToast.js',
+      'bower_components/ng-focus-if/focusIf.js',
+      'bower_components/bootstrap3-dialog/dist/js/bootstrap-dialog.min.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'src/app/app.js',
