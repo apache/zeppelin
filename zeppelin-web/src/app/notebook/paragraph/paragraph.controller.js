@@ -619,6 +619,10 @@ angular.module('zeppelinWebApp')
       });
       */
 
+      // remove binding
+      $scope.editor.commands.bindKey('ctrl-alt-n.', null);
+
+
       // autocomplete on 'ctrl+.'
       $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
       $scope.editor.commands.bindKey('ctrl-space', null);
@@ -638,7 +642,7 @@ angular.module('zeppelinWebApp')
           var numRows;
           var currentRow;
 
-          if (keyCode === 38 || (keyCode === 80 && e.ctrlKey)) {  // UP
+          if (keyCode === 38 || (keyCode === 80 && e.ctrlKey && !e.altKey)) {  // UP
             numRows = $scope.editor.getSession().getLength();
             currentRow = $scope.editor.getCursorPosition().row;
             if (currentRow === 0) {
@@ -647,7 +651,7 @@ angular.module('zeppelinWebApp')
             } else {
               $scope.scrollToCursor($scope.paragraph.id, -1);
             }
-          } else if (keyCode === 40 || (keyCode === 78 && e.ctrlKey)) {  // DOWN
+          } else if (keyCode === 40 || (keyCode === 78 && e.ctrlKey && !e.altKey)) {  // DOWN
             numRows = $scope.editor.getSession().getLength();
             currentRow = $scope.editor.getCursorPosition().row;
             if (currentRow === numRows-1) {
@@ -776,14 +780,16 @@ angular.module('zeppelinWebApp')
       var noShortcutDefined = false;
       var editorHide = $scope.paragraph.config.editorHide;
 
-      if (editorHide && (keyCode === 38 || (keyCode === 80 && keyEvent.ctrlKey))) { // up
+      if (editorHide && (keyCode === 38 || (keyCode === 80 && keyEvent.ctrlKey && !keyEvent.altKey))) { // up
         // move focus to previous paragraph
         $scope.$emit('moveFocusToPreviousParagraph', paragraphId);
-      } else if (editorHide && (keyCode === 40 || (keyCode === 78 && keyEvent.ctrlKey))) { // down
+      } else if (editorHide && (keyCode === 40 || (keyCode === 78 && keyEvent.ctrlKey && !keyEvent.altKey))) { // down
         // move focus to next paragraph
         $scope.$emit('moveFocusToNextParagraph', paragraphId);
       } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
         $scope.run();
+      } else if (keyEvent.ctrlKey && keyCode === 67) { // Ctrl + c
+        $scope.cancelParagraph();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
         $scope.removeParagraph();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 75) { // Ctrl + Alt + k
@@ -796,6 +802,31 @@ angular.module('zeppelinWebApp')
         $scope.toggleOutput();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e
         $scope.toggleEditor();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 78) { // Ctrl + Alt + n
+        if ($scope.paragraph.config.lineNumbers) {
+          $scope.hideLineNumbers();
+        } else {
+          $scope.showLineNumbers();
+        }
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && ((keyCode >= 48 && keyCode <=57) || keyCode === 189 || keyCode === 187)) { // Ctrl + Alt + [1~9,0,-,=]
+        var colWidth = 12;
+        if (keyCode === 48) {
+          colWidth = 10;
+        } else if (keyCode === 189) {
+          colWidth = 11;
+        } else if (keyCode === 187) {
+          colWidth = 12;
+        } else {
+          colWidth = keyCode - 48;
+        }
+        $scope.paragraph.config.colWidth = colWidth;
+        $scope.changeColWidth();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 84) { // Ctrl + Alt + t
+        if ($scope.paragraph.config.title) {
+          $scope.hideTitle();
+        } else {
+          $scope.showTitle();
+        }
       } else {
         noShortcutDefined = true;
       }
