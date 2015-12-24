@@ -766,11 +766,13 @@ angular.module('zeppelinWebApp')
     }
   });
 
-  $scope.$on('focusParagraph', function(event, paragraphId, cursorPos) {
+  $scope.$on('focusParagraph', function(event, paragraphId, cursorPos, mouseEvent) {
     if ($scope.paragraph.id === paragraphId) {
+
       // focus editor
       $scope.editor.focus();
 
+      if (!mouseEvent) {
       // move cursor to the first row (or the last row)
       var row;
       if (cursorPos >= 0) {
@@ -780,7 +782,8 @@ angular.module('zeppelinWebApp')
         row = $scope.editor.session.getLength();
         $scope.editor.gotoLine(row, 0);
       }
-      $scope.scrollToCursor($scope.paragraph.id, 0);
+        $scope.scrollToCursor($scope.paragraph.id, 0);
+      }
     }
   });
 

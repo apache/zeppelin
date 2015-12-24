@@ -71,7 +71,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     var currentRoute = $route.current;
 
     if (currentRoute) {
-
       setTimeout(
         function() {
           var routeParams = currentRoute.params;
@@ -90,6 +89,21 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
   };
 
   initNotebook();
+
+
+  $scope.focusParagraphOnClick = function(clickEvent) {
+    // check if click event target is in [paragraph.id]_container
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      var paragraphId = $scope.note.paragraphs[i].id;
+      if (jQuery.contains(angular.element('#' + paragraphId + "_container")[0], clickEvent.target)) {
+        $scope.$broadcast('focusParagraph', paragraphId, 0, true);
+        break;
+      }
+    }
+  };
+
+  // register mouseevent handler for focus paragraph
+  document.addEventListener("click", $scope.focusParagraphOnClick);
 
   /** Remove the note and go back tot he main page */
   /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
@@ -238,6 +252,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     angular.element(window).off('beforeunload');
     $scope.killSaveTimer();
     $scope.saveNote();
+
+    document.removeEventListener("click", $scope.focusParagraphOnClick);
   });
 
   $scope.setLookAndFeel = function(looknfeel) {
