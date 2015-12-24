@@ -778,17 +778,17 @@ angular.module('zeppelinWebApp')
         $scope.$emit('moveFocusToNextParagraph', paragraphId);
       } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
         $scope.run();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode == 68) { // Ctrl + Alt + d
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
         $scope.removeParagraph();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode == 75) { // Ctrl + Alt + k
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 75) { // Ctrl + Alt + k
         $scope.moveUp();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode == 74) { // Ctrl + Alt + j
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 74) { // Ctrl + Alt + j
         $scope.moveDown();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode == 66) { // Ctrl + Alt + b
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 66) { // Ctrl + Alt + b
         $scope.insertNew();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode == 79) { // Ctrl + Alt + o
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 79) { // Ctrl + Alt + o
         $scope.toggleOutput();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode == 69) { // Ctrl + Alt + e
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e
         $scope.toggleEditor();
       } else {
         noShortcutDefined = true;

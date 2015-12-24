@@ -412,7 +412,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
           continue;
         }
       } else {
-        var p = $scope.note.paragraphs[i];
         $scope.$broadcast('focusParagraph', $scope.note.paragraphs[i].id, -1);
         break;
       }
@@ -428,7 +427,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
           continue;
         }
       } else {
-        var p = $scope.note.paragraphs[i];
         $scope.$broadcast('focusParagraph', $scope.note.paragraphs[i].id, 0);
         break;
       }
