@@ -403,9 +403,6 @@ public class Notebook {
 
   /**
    * Cron task for the note.
-   *
-   * @author Leemoonsoo
-   *
    */
   public static class CronJob implements org.quartz.Job {
     public static Notebook notebook;

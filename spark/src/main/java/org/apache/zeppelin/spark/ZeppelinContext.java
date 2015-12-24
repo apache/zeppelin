@@ -51,9 +51,6 @@ import scala.collection.Iterable;
 
 /**
  * Spark context for zeppelin.
- *
- * @author Leemoonsoo
- *
  */
 public class ZeppelinContext extends HashMap<String, Object> {
   private DependencyResolver dep;
