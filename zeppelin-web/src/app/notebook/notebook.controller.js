@@ -345,24 +345,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     return noteCopy;
   };
 
-  $scope.$on('moveParagraphUp', function(event, paragraphId) {
-    var newIndex = -1;
-    for (var i=0; i<$scope.note.paragraphs.length; i++) {
-      if ($scope.note.paragraphs[i].id === paragraphId) {
-        newIndex = i-1;
-        break;
-      }
-    }
-    if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
-      return;
-    }
-    // save dirtyText of moving paragraphs.
-    var prevParagraphId = $scope.note.paragraphs[newIndex].id;
-    angular.element('#' + paragraphId + '_paragraphColumn_main').scope().saveParagraph();
-    angular.element('#' + prevParagraphId + '_paragraphColumn_main').scope().saveParagraph();
-    websocketMsgSrv.moveParagraph(paragraphId, newIndex);
-  });
-
   // create new paragraph on current position
   $scope.$on('insertParagraph', function(event, paragraphId, position) {
     var newIndex = -1;
@@ -382,6 +364,24 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       return;
     }
     websocketMsgSrv.insertParagraph(newIndex);
+  });
+
+  $scope.$on('moveParagraphUp', function(event, paragraphId) {
+    var newIndex = -1;
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      if ($scope.note.paragraphs[i].id === paragraphId) {
+        newIndex = i-1;
+        break;
+      }
+    }
+    if (newIndex<0 || newIndex>=$scope.note.paragraphs.length) {
+      return;
+    }
+    // save dirtyText of moving paragraphs.
+    var prevParagraphId = $scope.note.paragraphs[newIndex].id;
+    angular.element('#' + paragraphId + '_paragraphColumn_main').scope().saveParagraph();
+    angular.element('#' + prevParagraphId + '_paragraphColumn_main').scope().saveParagraph();
+    websocketMsgSrv.moveParagraph(paragraphId, newIndex);
   });
 
   $scope.$on('moveParagraphDown', function(event, paragraphId) {
@@ -449,11 +449,22 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     var numNewParagraphs = newParagraphIds.length;
     var numOldParagraphs = oldParagraphIds.length;
 
+    var paragraphToBeFocused;
+    var focusedParagraph;
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      var paragraphId = $scope.note.paragraphs[i].id;
+      if (angular.element('#' + paragraphId + '_paragraphColumn_main').scope().paragraphFocused) {
+        focusedParagraph = paragraphId;
+        break;
+      }
+    }
+
     /** add a new paragraph */
     if (numNewParagraphs > numOldParagraphs) {
       for (var index in newParagraphIds) {
         if (oldParagraphIds[index] !== newParagraphIds[index]) {
           $scope.note.paragraphs.splice(index, 0, note.paragraphs[index]);
+          paragraphToBeFocused = note.paragraphs[index].id;
           break;
         }
         $scope.$broadcast('updateParagraph', {paragraph: note.paragraphs[index]});
@@ -474,6 +485,10 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
           // rebuild id list since paragraph has moved.
           oldParagraphIds = $scope.note.paragraphs.map(function(x) {return x.id;});
         }
+
+        if (focusedParagraph === newParagraphIds[idx]) {
+          paragraphToBeFocused = focusedParagraph;
+        }
       }
     }
 
@@ -484,6 +499,13 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
           $scope.note.paragraphs.splice(oldidx, 1);
           break;
         }
+      }
+    }
+
+    // restore focus of paragraph
+    for (var f=0; f<$scope.note.paragraphs.length; f++) {
+      if (paragraphToBeFocused === $scope.note.paragraphs[f].id) {
+        $scope.note.paragraphs[f].focus = true;
       }
     }
   };

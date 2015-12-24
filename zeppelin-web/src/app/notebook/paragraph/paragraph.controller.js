@@ -37,6 +37,9 @@ angular.module('zeppelinWebApp')
     $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
     $scope.showTitleEditor = false;
     $scope.paragraphFocused = false;
+    if (newParagraph.focus) {
+      $scope.paragraphFocused = true;
+    }
 
     if (!$scope.paragraph.config) {
       $scope.paragraph.config = {};
@@ -244,6 +247,7 @@ angular.module('zeppelinWebApp')
           }, 500);
         }
       }
+
     }
 
   });
@@ -500,7 +504,9 @@ angular.module('zeppelinWebApp')
       $scope.editor.setHighlightGutterLine(false);
       $scope.editor.getSession().setUseWrapMode(true);
       $scope.editor.setTheme('ace/theme/chrome');
-      $scope.editor.focus();
+      if ($scope.paragraphFocused) {
+        $scope.editor.focus();
+      }
 
       autoAdjustEditorHeight(_editor.container.id);
       angular.element(window).resize(function() {
