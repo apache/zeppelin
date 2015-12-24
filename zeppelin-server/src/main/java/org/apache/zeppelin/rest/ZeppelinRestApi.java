@@ -24,7 +24,6 @@ import javax.ws.rs.core.Response;
 /**
  * Zeppelin root rest api endpoint.
  *
- * @author anthonycorbacho
  * @since 0.3.4
  */
 @Path("/")

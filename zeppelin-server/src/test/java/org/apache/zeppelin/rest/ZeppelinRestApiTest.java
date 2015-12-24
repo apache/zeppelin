@@ -18,8 +18,6 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,13 +26,10 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.rest.message.NewParagraphRequest;
 import org.apache.zeppelin.scheduler.Job.Status;
-import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -49,8 +44,6 @@ import static org.junit.Assert.*;
 
 /**
  * BASIC Zeppelin rest api tests
- *
- * @author anthonycorbacho
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -533,6 +526,28 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertThat("", deleteCron, isAllowed());
     deleteCron.releaseConnection();
     ZeppelinServer.notebook.removeNote(note.getId());
-  }  
+  }
+
+  @Test
+  public void testRegressionZEPPELIN_527() throws IOException {
+    Note note = ZeppelinServer.notebook.createNote();
+
+    note.setName("note for run test");
+    Paragraph paragraph = note.addParagraph();
+    paragraph.setText("%spark\nval param = z.input(\"param\").toString\nprintln(param)");
+
+    note.persist();
+
+    GetMethod getNoteJobs = httpGet("/notebook/job/" + note.getId());
+    assertThat("test notebook jobs run:", getNoteJobs, isAllowed());
+    Map<String, Object> resp = gson.fromJson(getNoteJobs.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
+    assertFalse(body.get(0).containsKey("started"));
+    assertFalse(body.get(0).containsKey("finished"));
+    getNoteJobs.releaseConnection();
+
+    ZeppelinServer.notebook.removeNote(note.getId());
+  }
 }
 

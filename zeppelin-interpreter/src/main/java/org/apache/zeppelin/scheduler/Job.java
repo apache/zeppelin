@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
  *  and saving/loading jobs from disk.
  *  Changing/adding/deleting non transitive field name need consideration of that.
  *
- *  @author Leemoonsoo
  */
 public abstract class Job {
   /**

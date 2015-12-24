@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +46,8 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.search.LuceneSearch;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -84,8 +87,9 @@ public class NotebookTest implements JobListenerFactory{
 
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
 
+    SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this);
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search);
   }
 
   @After
@@ -170,7 +174,8 @@ public class NotebookTest implements JobListenerFactory{
     p1.setText("hello world");
     note.persist();
 
-    Notebook notebook2 = new Notebook(conf, notebookRepo, schedulerFactory, new InterpreterFactory(conf, null), this);
+    Notebook notebook2 = new Notebook(
+        conf, notebookRepo, schedulerFactory, new InterpreterFactory(conf, null), this, null);
     assertEquals(1, notebook2.getAllNotes().size());
   }
 
