@@ -35,10 +35,6 @@ import static org.mockito.Mockito.*;
 
 /**
  * BASIC Cors rest api tests
- *
- *
- * @author joelz
- *
  */
 public class CorsFilterTest {
 

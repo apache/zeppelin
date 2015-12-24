@@ -376,9 +376,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   /**
    * Wrapper class.
-   *
-   * @author Leemoonsoo
-   *
    */
   public static enum ConfVars {
     ZEPPELIN_HOME("zeppelin.home", "../"),

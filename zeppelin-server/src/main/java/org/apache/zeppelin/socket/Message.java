@@ -22,16 +22,10 @@ import java.util.Map;
 
 /**
  * Zeppelin websocker massage template class.
- *
- * @author Leemoonsoo
- *
  */
 public class Message {
   /**
    * Representation of event type.
-   *
-   * @author Leemoonsoo
-   *
    */
   public static enum OP {
     GET_HOME_NOTE, // [c-s] load note for home screen
