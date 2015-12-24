@@ -176,6 +176,10 @@
   color: #333333;
 }
 
+.paragraph .control .tooltip {
+  z-index: 10003;
+}
+
 /*
   Paragraph Menu
 */
