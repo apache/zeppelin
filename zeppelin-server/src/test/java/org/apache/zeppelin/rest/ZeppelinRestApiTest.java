@@ -17,12 +17,6 @@
 
 package org.apache.zeppelin.rest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +39,8 @@ import org.junit.runners.MethodSorters;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import static org.junit.Assert.*;
 
 /**
  * BASIC Zeppelin rest api tests
@@ -530,6 +526,28 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     assertThat("", deleteCron, isAllowed());
     deleteCron.releaseConnection();
     ZeppelinServer.notebook.removeNote(note.getId());
-  }  
+  }
+
+  @Test
+  public void testRegressionZEPPELIN_527() throws IOException {
+    Note note = ZeppelinServer.notebook.createNote();
+
+    note.setName("note for run test");
+    Paragraph paragraph = note.addParagraph();
+    paragraph.setText("%spark\nval param = z.input(\"param\").toString\nprintln(param)");
+
+    note.persist();
+
+    GetMethod getNoteJobs = httpGet("/notebook/job/" + note.getId());
+    assertThat("test notebook jobs run:", getNoteJobs, isAllowed());
+    Map<String, Object> resp = gson.fromJson(getNoteJobs.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
+    }.getType());
+    List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
+    assertFalse(body.get(0).containsKey("started"));
+    assertFalse(body.get(0).containsKey("finished"));
+    getNoteJobs.releaseConnection();
+
+    ZeppelinServer.notebook.removeNote(note.getId());
+  }
 }
 
