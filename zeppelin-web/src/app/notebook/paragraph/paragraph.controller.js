@@ -605,6 +605,60 @@ angular.module('zeppelinWebApp')
         readOnly: false
       });
 
+      $scope.editor.commands.addCommand({
+        name: 'removeParagraph',
+        bindKey: {win: 'Ctrl-Alt-d', mac: 'Ctrl-Alt-d'},
+        exec: function() {
+          $scope.removeParagraph();
+        },
+        readOnly: false
+      });
+
+      $scope.editor.commands.addCommand({
+        name: 'moveUp',
+        bindKey: {win: 'Ctrl-Alt-k', mac: 'Ctrl-Alt-k'},
+        exec: function() {
+          $scope.moveUp();
+        },
+        readOnly: false
+      });
+
+      $scope.editor.commands.addCommand({
+        name: 'moveDown',
+        bindKey: {win: 'Ctrl-Alt-j', mac: 'Ctrl-Alt-j'},
+        exec: function() {
+          $scope.moveDown();
+        },
+        readOnly: false
+      });
+
+      $scope.editor.commands.addCommand({
+        name: 'insertNew',
+        bindKey: {win: 'Ctrl-Alt-b', mac: 'Ctrl-Alt-b'},
+        exec: function() {
+          $scope.insertNew();
+        },
+        readOnly: false
+      });
+
+      $scope.editor.commands.addCommand({
+        name: 'toggleOutput',
+        bindKey: {win: 'Ctrl-Alt-o', mac: 'Ctrl-Alt-o'},
+        exec: function() {
+          $scope.toggleOutput();
+        },
+        readOnly: false
+      });
+
+      $scope.editor.commands.addCommand({
+        name: 'toggleEditor',
+        bindKey: {win: 'Ctrl-Alt-e', mac: 'Ctrl-Alt-e'},
+        exec: function() {
+          $scope.toggleEditor();
+        },
+        readOnly: false
+      });
+
       // autocomplete on '.'
       /*
       $scope.editor.commands.on("afterExec", function(e, t) {
@@ -773,15 +827,15 @@ angular.module('zeppelinWebApp')
       $scope.editor.focus();
 
       if (!mouseEvent) {
-      // move cursor to the first row (or the last row)
-      var row;
-      if (cursorPos >= 0) {
-        row = cursorPos;
-        $scope.editor.gotoLine(row, 0);
-      } else {
-        row = $scope.editor.session.getLength();
-        $scope.editor.gotoLine(row, 0);
-      }
+        // move cursor to the first row (or the last row)
+        var row;
+        if (cursorPos >= 0) {
+          row = cursorPos;
+          $scope.editor.gotoLine(row, 0);
+        } else {
+          row = $scope.editor.session.getLength();
+          $scope.editor.gotoLine(row, 0);
+        }
         $scope.scrollToCursor($scope.paragraph.id, 0);
       }
     }
@@ -1344,7 +1398,7 @@ angular.module('zeppelinWebApp')
             order : k,
             index : key.index,
             type : 'key',
-            children : {}
+            chiren : {}
           };
         }
         s = s[key.name].children;
