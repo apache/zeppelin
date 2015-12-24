@@ -1,4 +1,5 @@
 /* jshint loopfunc: true */
+/* global $: false */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +15,9 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location,
-                                                                     $rootScope, $http, websocketMsgSrv, baseUrlSrv,
-                                                                     $timeout, SaveAsService) {
+angular.module('zeppelinWebApp').controller('NotebookCtrl',
+  function($scope, $route, $routeParams, $location, $rootScope, $http,
+    websocketMsgSrv, baseUrlSrv, $timeout, SaveAsService) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -66,6 +67,26 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
   /** Init the new controller */
   var initNotebook = function() {
     websocketMsgSrv.getNotebook($routeParams.noteId);
+
+    var currentRoute = $route.current;
+
+    if (currentRoute) {
+
+      setTimeout(
+        function() {
+          var routeParams = currentRoute.params;
+          var $id = $('#' + routeParams.paragraph + '_container');
+
+          if ($id.length > 0) {
+            // adjust for navbar
+            var top = $id.offset().top - 103;
+            $('html, body').scrollTo({top: top, left: 0});
+          }
+
+        },
+        1000
+      );
+    }
   };
 
   initNotebook();

@@ -46,11 +46,11 @@ public class NotebookRepoSync implements NotebookRepo {
   private List<NotebookRepo> repos = new ArrayList<NotebookRepo>();
 
   /**
+   * @param noteIndex
    * @param (conf)
    * @throws - Exception
    */
   public NotebookRepoSync(ZeppelinConfiguration conf) throws Exception {
-
     config = conf;
 
     String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
@@ -134,20 +134,18 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   /**
-   * copy new/updated notes from source to destination storage
+   * Copies new/updated notes from source to destination storage
+   *
    * @throws IOException
    */
   void sync(int sourceRepoIndex, int destRepoIndex) throws IOException {
     LOG.info("Sync started");
-    NotebookRepo sourceRepo = getRepo(sourceRepoIndex);
-    NotebookRepo destRepo = getRepo(destRepoIndex);
-    List <NoteInfo> sourceNotes = sourceRepo.list();
-    List <NoteInfo> destNotes = destRepo.list();
+    NotebookRepo srcRepo = getRepo(sourceRepoIndex);
+    NotebookRepo dstRepo = getRepo(destRepoIndex);
+    List <NoteInfo> srcNotes = srcRepo.list();
+    List <NoteInfo> dstNotes = dstRepo.list();
 
-    Map<String, List<String>> noteIDs = notesCheckDiff(sourceNotes,
-                                                       sourceRepo,
-                                                       destNotes,
-                                                       destRepo);
+    Map<String, List<String>> noteIDs = notesCheckDiff(srcNotes, srcRepo, dstNotes, dstRepo);
     List<String> pushNoteIDs = noteIDs.get(pushKey);
     List<String> pullNoteIDs = noteIDs.get(pullKey);
     if (!pushNoteIDs.isEmpty()) {
@@ -155,7 +153,7 @@ public class NotebookRepoSync implements NotebookRepo {
       for (String id : pushNoteIDs) {
         LOG.info("ID : " + id);
       }
-      pushNotes(pushNoteIDs, sourceRepo, destRepo);
+      pushNotes(pushNoteIDs, srcRepo, dstRepo);
     } else {
       LOG.info("Nothing to push");
     }
@@ -165,7 +163,7 @@ public class NotebookRepoSync implements NotebookRepo {
       for (String id : pullNoteIDs) {
         LOG.info("ID : " + id);
       }
-      pushNotes(pullNoteIDs, destRepo, sourceRepo);
+      pushNotes(pullNoteIDs, dstRepo, srcRepo);
     } else {
       LOG.info("Nothing to pull");
     }

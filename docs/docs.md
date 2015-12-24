@@ -44,6 +44,7 @@ limitations under the License.
 * [sh](./pleasecontribute.html)
 * [spark](./interpreter/spark.html)
 * [tajo](./pleasecontribute.html)
+* [elasticsearch](./interpreter/elasticsearch.html)
 
 ### Storage
 * [S3 Storage](./storage/storage.html)
