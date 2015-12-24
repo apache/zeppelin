@@ -764,16 +764,16 @@ angular.module('zeppelinWebApp')
 
   $scope.$on('keyEvent', function(event, keyEvent) {
     if ($scope.paragraphFocused) {
-      console.log("KeyEvent received %o at %o", keyEvent);
 
       var paragraphId = $scope.paragraph.id;
       var keyCode = keyEvent.keyCode;
       var noShortcutDefined = false;
+      var editorHide = $scope.paragraph.config.editorHide;
 
-      if (keyCode === 38 || (keyCode === 80 && keyEvent.ctrlKey)) { // up
+      if (editorHide && (keyCode === 38 || (keyCode === 80 && keyEvent.ctrlKey))) { // up
         // move focus to previous paragraph
         $scope.$emit('moveFocusToPreviousParagraph', paragraphId);
-      } else if (keyCode === 40 || (keyCode === 78 && keyEvent.ctrlKey)) { // down
+      } else if (editorHide && (keyCode === 40 || (keyCode === 78 && keyEvent.ctrlKey))) { // down
         // move focus to next paragraph
         $scope.$emit('moveFocusToNextParagraph', paragraphId);
       } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
