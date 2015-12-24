@@ -12,8 +12,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<div id="{{paragraph.id}}_runControl" class="runControl" ng-show="paragraph.status=='RUNNING'">
-  <div id="{{paragraph.id}}_progress" class="progress">
+<div id="{{paragraph.id}}_runControl" class="runControl">
+  <div id="{{paragraph.id}}_progress" class="progress" ng-show="paragraph.status=='RUNNING'">
       <div ng-if="getProgress()>0 && getProgress()<100 && paragraph.status=='RUNNING'"
         class="progress-bar" role="progressbar" style="width:{{getProgress()}}%;"></div>
       <div ng-if="(getProgress()<=0 || getProgress()>=100) && (paragraph.status=='RUNNING' )"
