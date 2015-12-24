@@ -318,6 +318,9 @@ public class Note implements Serializable, JobListener {
         if (p.getDateFinished() != null) {
           info.put("finished", p.getDateFinished().toString());
         }
+        if (p.getStatus().isRunning()) {
+          info.put("progress", String.valueOf(p.progress()));
+        }
         paragraphsInfo.add(info);
       }
     }

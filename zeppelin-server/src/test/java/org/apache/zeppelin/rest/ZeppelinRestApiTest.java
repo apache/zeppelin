@@ -434,6 +434,59 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
+  public void testGetNotebookJob() throws IOException, InterruptedException {
+    LOG.info("testGetNotebookJob");
+    // Create note to run test.
+    Note note = ZeppelinServer.notebook.createNote();
+    assertNotNull("can't create new note", note);
+    note.setName("note for run test");
+    Paragraph paragraph = note.addParagraph();
+
+    Map config = paragraph.getConfig();
+    config.put("enabled", true);
+    paragraph.setConfig(config);
+
+    paragraph.setText("%sh sleep 1");
+    note.persist();
+    String noteID = note.getId();
+
+    note.runAll();
+
+    // wait until paragraph gets started
+    while (!paragraph.getStatus().isRunning()) {
+      Thread.sleep(100);
+    }
+
+    // assume that status of the paragraph is running
+    GetMethod get = httpGet("/notebook/job/" + noteID);
+    assertThat("test get notebook job: ", get, isAllowed());
+    String responseBody = get.getResponseBodyAsString();
+    get.releaseConnection();
+
+    LOG.info("test get notebook job: \n" + responseBody);
+    Map<String, Object> resp = gson.fromJson(responseBody, new TypeToken<Map<String, Object>>() {
+    }.getType());
+
+    List<Map<String, Object>> paragraphs = (List<Map<String, Object>>) resp.get("body");
+    assertEquals(1, paragraphs.size());
+    assertTrue(paragraphs.get(0).containsKey("progress"));
+    int progress = Integer.parseInt((String) paragraphs.get(0).get("progress"));
+    assertTrue(progress >= 0 && progress <= 100);
+
+    // wait until job is finished or timeout.
+    int timeout = 1;
+    while (!paragraph.isTerminated()) {
+      Thread.sleep(100);
+      if (timeout++ > 10) {
+        LOG.info("testGetNotebookJob timeout job.");
+        break;
+      }
+    }
+
+    ZeppelinServer.notebook.removeNote(note.getId());
+  }
+
+  @Test
   public void testRunParagraphWithParams() throws IOException, InterruptedException {
     LOG.info("testRunParagraphWithParams");
     // Create note to run test.

@@ -381,7 +381,7 @@ limitations under the License.
     </tr>
     <tr>
       <td> sample JSON response </td>
-      <td><pre>{"status":"OK","body":[{"id":"20151121-212654_766735423","status":"FINISHED","finished":"Tue Nov 24 14:21:40 KST 2015","started":"Tue Nov 24 14:21:39 KST 2015"},{"id":"20151121-212657_730976687","status":"FINISHED","finished":"Tue Nov 24 14:21:40 KST 2015","started":"Tue Nov 24 14:21:40 KST 2015"}]}</pre></td>
+      <td><pre>{"status":"OK","body":[{"id":"20151121-212654_766735423","status":"FINISHED","finished":"Tue Nov 24 14:21:40 KST 2015","started":"Tue Nov 24 14:21:39 KST 2015"},{"progress":"1","id":"20151121-212657_730976687","status":"RUNNING","finished":"Tue Nov 24 14:21:35 KST 2015","started":"Tue Nov 24 14:21:40 KST 2015"}]}</pre></td>
     </tr>
   </table>
   
