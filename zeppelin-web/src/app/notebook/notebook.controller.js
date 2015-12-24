@@ -92,7 +92,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
 
 
   $scope.focusParagraphOnClick = function(clickEvent) {
-    // check if click event target is in [paragraph.id]_container
+    if (!$scope.note) {
+      return;
+    }
     for (var i=0; i<$scope.note.paragraphs.length; i++) {
       var paragraphId = $scope.note.paragraphs[i].id;
       if (jQuery.contains(angular.element('#' + paragraphId + '_container')[0], clickEvent.target)) {
@@ -104,6 +106,16 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
 
   // register mouseevent handler for focus paragraph
   document.addEventListener('click', $scope.focusParagraphOnClick);
+
+
+  $scope.keyboardShortcut = function(keyEvent) {
+    // handle keyevent
+    $scope.$broadcast('keyEvent', keyEvent);
+  };
+
+  // register mouseevent handler for focus paragraph
+  document.addEventListener('keydown', $scope.keyboardShortcut);
+
 
   /** Remove the note and go back tot he main page */
   /** TODO(anthony): In the nearly future, go back to the main page and telle to the dude that the note have been remove */
@@ -254,6 +266,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     $scope.saveNote();
 
     document.removeEventListener('click', $scope.focusParagraphOnClick);
+    document.removeEventListener('keydown', $scope.keyboardShortcut);
   });
 
   $scope.setLookAndFeel = function(looknfeel) {
@@ -400,10 +413,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
         }
       } else {
         var p = $scope.note.paragraphs[i];
-        if (!p.config.hide && !p.config.editorHide) {
-          $scope.$broadcast('focusParagraph', $scope.note.paragraphs[i].id, -1);
-          break;
-        }
+        $scope.$broadcast('focusParagraph', $scope.note.paragraphs[i].id, -1);
+        break;
       }
     }
   });
@@ -418,10 +429,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
         }
       } else {
         var p = $scope.note.paragraphs[i];
-        if (!p.config.hide && !p.config.editorHide) {
-          $scope.$broadcast('focusParagraph', $scope.note.paragraphs[i].id, 0);
-          break;
-        }
+        $scope.$broadcast('focusParagraph', $scope.note.paragraphs[i].id, 0);
+        break;
       }
     }
   });

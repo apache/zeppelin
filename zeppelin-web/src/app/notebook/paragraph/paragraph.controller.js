@@ -284,6 +284,15 @@ angular.module('zeppelinWebApp')
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
+  $scope.run = function() {
+    var editorValue = $scope.editor.getValue();
+    if (editorValue) {
+      if (!($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING')) {
+        $scope.runParagraph(editorValue);
+      }
+    }
+  };
+
   $scope.moveUp = function() {
     $scope.$emit('moveParagraphUp', $scope.paragraph.id);
   };
@@ -591,73 +600,6 @@ angular.module('zeppelinWebApp')
 
       $scope.setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue());
 
-      $scope.editor.commands.addCommand({
-        name: 'run',
-        bindKey: {win: 'Shift-Enter', mac: 'Shift-Enter'},
-        exec: function(editor) {
-          var editorValue = editor.getValue();
-          if (editorValue) {
-            if (!($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING')) {
-              $scope.runParagraph(editorValue);
-            }
-          }
-        },
-        readOnly: false
-      });
-
-      $scope.editor.commands.addCommand({
-        name: 'removeParagraph',
-        bindKey: {win: 'Ctrl-Alt-d', mac: 'Ctrl-Alt-d'},
-        exec: function() {
-          $scope.removeParagraph();
-        },
-        readOnly: false
-      });
-
-      $scope.editor.commands.addCommand({
-        name: 'moveUp',
-        bindKey: {win: 'Ctrl-Alt-k', mac: 'Ctrl-Alt-k'},
-        exec: function() {
-          $scope.moveUp();
-        },
-        readOnly: false
-      });
-
-      $scope.editor.commands.addCommand({
-        name: 'moveDown',
-        bindKey: {win: 'Ctrl-Alt-j', mac: 'Ctrl-Alt-j'},
-        exec: function() {
-          $scope.moveDown();
-        },
-        readOnly: false
-      });
-
-      $scope.editor.commands.addCommand({
-        name: 'insertNew',
-        bindKey: {win: 'Ctrl-Alt-b', mac: 'Ctrl-Alt-b'},
-        exec: function() {
-          $scope.insertNew();
-        },
-        readOnly: false
-      });
-
-      $scope.editor.commands.addCommand({
-        name: 'toggleOutput',
-        bindKey: {win: 'Ctrl-Alt-o', mac: 'Ctrl-Alt-o'},
-        exec: function() {
-          $scope.toggleOutput();
-        },
-        readOnly: false
-      });
-
-      $scope.editor.commands.addCommand({
-        name: 'toggleEditor',
-        bindKey: {win: 'Ctrl-Alt-e', mac: 'Ctrl-Alt-e'},
-        exec: function() {
-          $scope.toggleEditor();
-        },
-        readOnly: false
-      });
 
       // autocomplete on '.'
       /*
@@ -820,24 +762,67 @@ angular.module('zeppelinWebApp')
     }
   });
 
+  $scope.$on('keyEvent', function(event, keyEvent) {
+    if ($scope.paragraphFocused) {
+      console.log("KeyEvent received %o at %o", keyEvent);
+
+      var paragraphId = $scope.paragraph.id;
+      var keyCode = keyEvent.keyCode;
+      var noShortcutDefined = false;
+
+      if (keyCode === 38 || (keyCode === 80 && keyEvent.ctrlKey)) { // up
+        // move focus to previous paragraph
+        $scope.$emit('moveFocusToPreviousParagraph', paragraphId);
+      } else if (keyCode === 40 || (keyCode === 78 && keyEvent.ctrlKey)) { // down
+        // move focus to next paragraph
+        $scope.$emit('moveFocusToNextParagraph', paragraphId);
+      } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
+        $scope.run();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode == 68) { // Ctrl + Alt + d
+        $scope.removeParagraph();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode == 75) { // Ctrl + Alt + k
+        $scope.moveUp();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode == 74) { // Ctrl + Alt + j
+        $scope.moveDown();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode == 66) { // Ctrl + Alt + b
+        $scope.insertNew();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode == 79) { // Ctrl + Alt + o
+        $scope.toggleOutput();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode == 69) { // Ctrl + Alt + e
+        $scope.toggleEditor();
+      } else {
+        noShortcutDefined = true;
+      }
+
+      if (!noShortcutDefined) {
+        keyEvent.preventDefault();
+      }
+    }
+  });
+
   $scope.$on('focusParagraph', function(event, paragraphId, cursorPos, mouseEvent) {
     if ($scope.paragraph.id === paragraphId) {
-
       // focus editor
-      $scope.editor.focus();
+      if (!$scope.paragraph.config.editorHide) {
+        $scope.editor.focus();
 
-      if (!mouseEvent) {
-        // move cursor to the first row (or the last row)
-        var row;
-        if (cursorPos >= 0) {
-          row = cursorPos;
-          $scope.editor.gotoLine(row, 0);
-        } else {
-          row = $scope.editor.session.getLength();
-          $scope.editor.gotoLine(row, 0);
+        if (!mouseEvent) {
+          // move cursor to the first row (or the last row)
+          var row;
+          if (cursorPos >= 0) {
+            row = cursorPos;
+            $scope.editor.gotoLine(row, 0);
+          } else {
+            row = $scope.editor.session.getLength();
+            $scope.editor.gotoLine(row, 0);
+          }
+          $scope.scrollToCursor($scope.paragraph.id, 0);
         }
-        $scope.scrollToCursor($scope.paragraph.id, 0);
       }
+      $scope.handleFocus(true);
+    } else {
+      $scope.editor.blur();
+      $scope.handleFocus(false);
     }
   });
 
