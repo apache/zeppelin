@@ -413,6 +413,26 @@ public class Notebook {
       String noteId = context.getJobDetail().getJobDataMap().getString("noteId");
       Note note = notebook.getNote(noteId);
       note.runAll();
+    
+      while (!note.getLastParagraph().isTerminated()) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+      
+      boolean releaseResource = false;
+      try {
+        releaseResource = (boolean) note.getConfig().get("releaseresource");
+      } catch (java.lang.ClassCastException e) {
+        e.printStackTrace();
+      }
+      if (releaseResource) {
+        for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {
+          notebook.getInterpreterFactory().restart(setting.id());
+        }
+      }      
     }
   }
 
