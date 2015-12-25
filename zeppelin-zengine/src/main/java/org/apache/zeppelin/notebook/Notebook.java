@@ -398,7 +398,12 @@ public class Notebook {
         }
       }
       
-      boolean releaseResource = (boolean) note.getConfig().get("releaseresource");
+      boolean releaseResource = false;
+      try {
+        releaseResource = (boolean) note.getConfig().get("releaseresource");
+      } catch (java.lang.ClassCastException e) {
+        e.printStackTrace();
+      }
       if (releaseResource) {
         for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {
           notebook.getInterpreterFactory().restart(setting.id());

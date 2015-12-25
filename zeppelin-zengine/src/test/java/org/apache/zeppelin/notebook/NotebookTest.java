@@ -37,6 +37,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
@@ -49,6 +50,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.quartz.SchedulerException;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -242,6 +245,47 @@ public class NotebookTest implements JobListenerFactory{
     assertNotNull(dateFinished);
     Thread.sleep(1*1000);
     assertEquals(dateFinished, p.getDateFinished());
+  }
+
+  @Test
+  public void testAutoRestartInterpreterAfterSchedule() throws InterruptedException, IOException{
+    // create a note and a paragraph
+    Note note = notebook.createNote();
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+    
+    Paragraph p = note.addParagraph();
+    Map config = new HashMap<String, Object>();
+    p.setConfig(config);
+    p.setText("p1");
+
+    // set cron scheduler, once a second
+    config = note.getConfig();
+    config.put("enabled", true);
+    config.put("cron", "* * * * * ?");
+    config.put("releaseresource", "true");
+    note.setConfig(config);
+    notebook.refreshCron(note.id());
+    while (p.getStatus() != Status.FINISHED) {
+      Thread.sleep(100);
+    }
+    Date dateFinished = p.getDateFinished();
+    assertNotNull(dateFinished);
+
+    // restart interpreter
+    for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {
+      notebook.getInterpreterFactory().restart(setting.id());
+    }
+
+    Thread.sleep(1000);
+    while (p.getStatus() != Status.FINISHED) {
+      Thread.sleep(100);
+    }
+    assertNotEquals(dateFinished, p.getDateFinished());
+    
+    // remove cron scheduler.
+    config.put("cron", null);
+    note.setConfig(config);
+    notebook.refreshCron(note.id());
   }
 
   @Test
