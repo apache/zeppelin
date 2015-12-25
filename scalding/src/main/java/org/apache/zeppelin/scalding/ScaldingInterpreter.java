@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -49,13 +50,12 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
 /**
  * Scalding interpreter for Zeppelin. Based off the Spark interpreter code.
  *
- * @author sriramkrishnan
- *
  */
 public class ScaldingInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(ScaldingInterpreter.class);
 
-  public static final List<String> NO_COMPLETION = new ArrayList<>();
+  public static final List<String> NO_COMPLETION = 
+    Collections.unmodifiableList(new ArrayList<String>());
 
   static {
     Interpreter.register("scalding", ScaldingInterpreter.class.getName());

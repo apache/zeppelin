@@ -37,6 +37,10 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
+/**
+ * Tests for the Scalding interpreter for Zeppelin.
+ *
+ */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ScaldingInterpreterTest {
   public static ScaldingInterpreter repl;

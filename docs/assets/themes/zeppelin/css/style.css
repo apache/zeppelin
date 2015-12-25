@@ -514,5 +514,9 @@ and (max-width: 1024px) {
 }
 
 #menu .navbar-brand {
-    margin-right: 50px;
+  margin-right: 50px;
+}
+
+.row img {
+  max-width: 100%;
 }
