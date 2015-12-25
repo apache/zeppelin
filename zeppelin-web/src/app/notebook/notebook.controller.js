@@ -110,7 +110,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
 
   $scope.keyboardShortcut = function(keyEvent) {
     // handle keyevent
-    $scope.$broadcast('keyEvent', keyEvent);
+    if (!$scope.viewOnly) {
+      $scope.$broadcast('keyEvent', keyEvent);
+    }
   };
 
   // register mouseevent handler for focus paragraph
