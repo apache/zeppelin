@@ -788,7 +788,7 @@ angular.module('zeppelinWebApp')
         $scope.$emit('moveFocusToNextParagraph', paragraphId);
       } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
         $scope.run();
-      } else if (keyEvent.ctrlKey && keyCode === 67) { // Ctrl + c
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
         $scope.cancelParagraph();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
         $scope.removeParagraph();
