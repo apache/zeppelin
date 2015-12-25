@@ -1420,7 +1420,7 @@ angular.module('zeppelinWebApp')
             order : k,
             index : key.index,
             type : 'key',
-            chiren : {}
+            children : {}
           };
         }
         s = s[key.name].children;
