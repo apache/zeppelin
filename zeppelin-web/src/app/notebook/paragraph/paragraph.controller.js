@@ -802,7 +802,7 @@ angular.module('zeppelinWebApp')
         $scope.toggleOutput();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e
         $scope.toggleEditor();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 78) { // Ctrl + Alt + n
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 77) { // Ctrl + Alt + m
         if ($scope.paragraph.config.lineNumbers) {
           $scope.hideLineNumbers();
         } else {
