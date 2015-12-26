@@ -330,7 +330,7 @@ public class Notebook {
    * @return
    * @throws IOException
    */
-  private void reloadAllNotes() throws IOException {
+  public void reloadAllNotes() throws IOException {
     synchronized (notes) {
       notes.clear();
     }
@@ -366,13 +366,6 @@ public class Notebook {
   }
 
   public List<Note> getAllNotes() {
-    if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE)) {
-      try {
-        reloadAllNotes();
-      } catch (IOException e) {
-        logger.error("Cannot reload notes from storage", e);
-      }
-    }
     synchronized (notes) {
       List<Note> noteList = new ArrayList<Note>(notes.values());
       Collections.sort(noteList, new Comparator<Note>() {
