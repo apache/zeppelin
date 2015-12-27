@@ -177,12 +177,6 @@ Configuration can be done by both environment variable(conf/zeppelin-env.sh) and
     <td>Comma separated list of notebook storage</td>
   </tr>
   <tr>
-    <td>ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE</td>
-    <td>zeppelin.notebook.reloadAllNotesFromStorage</td>
-    <td>false</td>
-    <td>Notebook list and contents will be always loaded from repository if set true. If set false, modified notebooks or new notebooks added on file system level won't be reflected on Zeppelin till user restarts Zeppelin.</td>
-  </tr>
-  <tr>
     <td>ZEPPELIN_INTERPRETERS</td>
     <td>zeppelin.interpreters</td>
   <description></description>
