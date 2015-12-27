@@ -50,7 +50,7 @@ public class InterpreterOutputChangeWatcher extends Thread {
   private boolean stop;
 
   public InterpreterOutputChangeWatcher(InterpreterOutputChangeListener listener)
-          throws IOException {
+      throws IOException {
     watcher = FileSystems.getDefault().newWatchService();
     this.listener = listener;
   }

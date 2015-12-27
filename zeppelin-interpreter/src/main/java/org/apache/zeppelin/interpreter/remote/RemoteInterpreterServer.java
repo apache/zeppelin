@@ -363,7 +363,7 @@ public class RemoteInterpreterServer
     List<InterpreterContextRunner> contextRunners = new LinkedList<InterpreterContextRunner>();
     List<InterpreterContextRunner> runners = gson.fromJson(ric.getRunners(),
             new TypeToken<List<RemoteInterpreterContextRunner>>() {
-            }.getType());
+        }.getType());
 
     for (InterpreterContextRunner r : runners) {
       contextRunners.add(new ParagraphRunner(this, r.getNoteId(), r.getParagraphId()));
