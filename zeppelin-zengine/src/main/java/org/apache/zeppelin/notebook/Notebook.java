@@ -37,7 +37,7 @@ import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
-import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.quartz.CronScheduleBuilder;
@@ -69,7 +69,7 @@ public class Notebook {
   private StdSchedulerFactory quertzSchedFact;
   private org.quartz.Scheduler quartzSched;
   private JobListenerFactory jobListenerFactory;
-  private NotebookRepo notebookRepo;
+  private NotebookRepoSync notebookRepo;
   private SearchService notebookIndex;
 
   /**
@@ -85,7 +85,7 @@ public class Notebook {
    * @throws IOException
    * @throws SchedulerException
    */
-  public Notebook(ZeppelinConfiguration conf, NotebookRepo notebookRepo,
+  public Notebook(ZeppelinConfiguration conf, NotebookRepoSync notebookRepo,
       SchedulerFactory schedulerFactory,
       InterpreterFactory replFactory, JobListenerFactory jobListenerFactory,
       SearchService notebookIndex) throws IOException, SchedulerException {
@@ -333,6 +333,9 @@ public class Notebook {
   public void reloadAllNotes() throws IOException {
     synchronized (notes) {
       notes.clear();
+    }
+    if (notebookRepo.getRepoCount() > 1) {
+      notebookRepo.sync();
     }
     List<NoteInfo> noteInfos = notebookRepo.list();
     for (NoteInfo info : noteInfos) {

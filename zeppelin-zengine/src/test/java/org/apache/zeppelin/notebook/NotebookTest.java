@@ -38,8 +38,7 @@ import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
-import org.apache.zeppelin.notebook.repo.NotebookRepo;
-import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
@@ -60,7 +59,7 @@ public class NotebookTest implements JobListenerFactory{
   private SchedulerFactory schedulerFactory;
   private File notebookDir;
   private Notebook notebook;
-  private NotebookRepo notebookRepo;
+  private NotebookRepoSync notebookRepo;
   private InterpreterFactory factory;
 
   @Before
@@ -85,7 +84,7 @@ public class NotebookTest implements JobListenerFactory{
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
 
     SearchService search = mock(SearchService.class);
-    notebookRepo = new VFSNotebookRepo(conf);
+    notebookRepo = new NotebookRepoSync(conf);
     notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search);
   }
 

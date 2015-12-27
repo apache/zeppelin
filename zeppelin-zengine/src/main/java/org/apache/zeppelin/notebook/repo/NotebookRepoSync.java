@@ -176,7 +176,7 @@ public class NotebookRepoSync implements NotebookRepo {
     }
   }
 
-  int getRepoCount() {
+  public int getRepoCount() {
     return repos.size();
   }
 
