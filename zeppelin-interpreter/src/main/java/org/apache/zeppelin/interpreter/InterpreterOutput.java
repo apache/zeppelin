@@ -27,12 +27,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * InterpreterOutput
+ * InterpreterOutput is OutputStream that supposed to print content on notebook
+ * in addition to InterpreterResult which used to return from Interpreter.interpret().
  */
 public class InterpreterOutput extends OutputStream {
   private final List<Object> outList = new LinkedList<Object>();
   private InterpreterOutputChangeWatcher watcher;
-  Object header;
 
   public InterpreterOutput() {
     clear();
@@ -45,17 +45,12 @@ public class InterpreterOutput extends OutputStream {
   }
 
   public void clear() {
-    header = null;
     synchronized (outList) {
       outList.clear();
       if (watcher != null) {
         watcher.clear();
       }
     }
-  }
-
-  public void setHeader(String o) {
-    this.header = o.getBytes();
   }
 
   @Override
@@ -141,9 +136,6 @@ public class InterpreterOutput extends OutputStream {
     List<Object> all = new LinkedList<Object>();
 
     synchronized (outList) {
-      if (header != null) {
-        all.add(header);
-      }
       all.addAll(outList);
     }
 
