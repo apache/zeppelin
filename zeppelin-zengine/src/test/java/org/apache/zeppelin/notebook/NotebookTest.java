@@ -29,8 +29,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -115,6 +117,44 @@ public class NotebookTest implements JobListenerFactory{
     note.run(p2.getId());
     while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
     assertEquals("repl2: hello world", p2.getResult().message());
+  }
+
+  @Test
+  public void testReloadAllNotes() throws IOException {
+    File srcDir = new File("src/test/resources/2A94M5J1Z");
+    File destDir = new File(notebookDir.getAbsolutePath() + "/2A94M5J1Z");
+
+    // copy the notebook
+    try {
+      FileUtils.copyDirectory(srcDir, destDir);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    // doesn't have copied notebook in memory before reloading
+    List<Note> notes = notebook.getAllNotes();
+    assertEquals(notes.size(), 0);
+
+    // load copied notebook on memory when reloadAllNotes() is called
+    Note copiedNote = notebookRepo.get("2A94M5J1Z");
+    notebook.reloadAllNotes();
+    notes = notebook.getAllNotes();
+    assertEquals(notes.size(), 1);
+    assertEquals(notes.get(0).id(), copiedNote.id());
+    assertEquals(notes.get(0).getName(), copiedNote.getName());
+    assertEquals(notes.get(0).getParagraphs(), copiedNote.getParagraphs());
+
+    // delete the notebook
+    FileUtils.deleteDirectory(destDir);
+
+    // keep notebook in memory before reloading
+    notes = notebook.getAllNotes();
+    assertEquals(notes.size(), 1);
+
+    // delete notebook from notebook list when reloadAllNotes() is called
+    notebook.reloadAllNotes();
+    notes = notebook.getAllNotes();
+    assertEquals(notes.size(), 0);
   }
 
   @Test
