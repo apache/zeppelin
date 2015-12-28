@@ -140,7 +140,7 @@
   font-size: 1px;
   color: #AAAAAA;
   height:4px;
-  margin: 0px 0px 3px 0px;
+  margin: 0px 0px 0px 0px;
 }
 
 .paragraph .runControl .progress {
@@ -174,6 +174,10 @@
   font-size: 12px;
   margin-bottom: 4px;
   color: #333333;
+}
+
+.paragraph .control .tooltip {
+  z-index: 10003;
 }
 
 /*
@@ -297,6 +301,7 @@
 */
 
 .tableDisplay {
+  margin-top: 2px;
 }
 
 .tableDisplay div {

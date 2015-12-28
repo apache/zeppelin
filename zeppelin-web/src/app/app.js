@@ -32,7 +32,8 @@ angular.module('zeppelinWebApp', [
     'puElasticInput',
     'xeditable',
     'ngToast',
-    'focus-if'
+    'focus-if',
+    'ngResource'
   ])
   .filter('breakFilter', function() {
     return function (text) {
@@ -50,6 +51,10 @@ angular.module('zeppelinWebApp', [
         templateUrl: 'app/notebook/notebook.html',
         controller: 'NotebookCtrl'
       })
+      .when('/notebook/:noteId/paragraph?=:paragraphId', {
+        templateUrl: 'app/notebook/notebook.html',
+        controller: 'NotebookCtrl'
+      })
       .when('/notebook/:noteId/paragraph/:paragraphId?', {
         templateUrl: 'app/notebook/notebook.html',
         controller: 'NotebookCtrl'
@@ -57,6 +62,10 @@ angular.module('zeppelinWebApp', [
       .when('/interpreter', {
         templateUrl: 'app/interpreter/interpreter.html',
         controller: 'InterpreterCtrl'
+      })
+      .when('/search/:searchTerm', {
+        templateUrl: 'app/search/result-list.html',
+        controller: 'SearchResultCtrl'
       })
       .otherwise({
         redirectTo: '/'

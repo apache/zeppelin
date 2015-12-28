@@ -60,7 +60,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     AbstractTestRestApi.startUp();
     gson = new Gson();
     notebook = ZeppelinServer.notebook;
-    notebookServer = ZeppelinServer.notebookServer;
+    notebookServer = ZeppelinServer.notebookWsServer;
   }
 
   @AfterClass
