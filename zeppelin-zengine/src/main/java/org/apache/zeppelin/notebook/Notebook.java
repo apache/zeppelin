@@ -96,7 +96,7 @@ public class Notebook {
     if (this.notebookIndex != null) {
       long start = System.nanoTime();
       logger.info("Notebook indexing started...");
-      notebookIndex.addIndexDocs(notes.values());
+      //notebookIndex.addIndexDocs(notes.values());
       logger.info("Notebook indexing finished: {} indexed in {}s", notes.size(),
           TimeUnit.NANOSECONDS.toSeconds(start - System.nanoTime()));
     }
@@ -137,7 +137,7 @@ public class Notebook {
    */
   public Note createNote(List<String> interpreterIds, String principal) throws IOException {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, principal, notebookIndex);
+    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, notebookIndex, principal);
     intpLoader.setNoteId(note.id());
     synchronized (notes) {
       getUserNotes(principal).put(note.id(), note);
