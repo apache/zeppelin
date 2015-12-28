@@ -97,9 +97,10 @@
       <version>${scala.version}</version>
     </dependency>
 
+    <!-- Scalding REPL needs org.apache.hadoop.conf.Configuration even in local mode -->
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-client</artifactId>
+      <artifactId>hadoop-common</artifactId>
       <version>${hadoop.version}</version>
     </dependency>
   </dependencies>
