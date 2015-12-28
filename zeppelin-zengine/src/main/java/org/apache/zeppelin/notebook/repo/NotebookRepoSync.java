@@ -142,19 +142,20 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   /**
-   * copy new/updated notes from source to destination storage
+   * Copies new/updated notes from source to destination storage
+   *
    * @throws IOException
    */
   void sync(int sourceRepoIndex, int destRepoIndex) throws IOException {
     LOG.info("Sync started");
-    NotebookRepo sourceRepo = getRepo(sourceRepoIndex);
-    NotebookRepo destRepo = getRepo(destRepoIndex);
-    List <NoteInfo> sourceNotes = sourceRepo.list();
-    List <NoteInfo> destNotes = destRepo.list();
-    Map<String, List<NoteInfo>> noteIDs = notesCheckDiff(sourceNotes,
-                                                       sourceRepo,
-                                                       destNotes,
-                                                       destRepo);
+    NotebookRepo srcRepo = getRepo(sourceRepoIndex);
+    NotebookRepo dstRepo = getRepo(destRepoIndex);
+    List <NoteInfo> srcNotes = srcRepo.list();
+    List <NoteInfo> dstNotes = dstRepo.list();
+    Map<String, List<NoteInfo>> noteIDs = notesCheckDiff(srcNotes,
+                                                       srcRepo,
+                                                       dstNotes,
+                                                       dstRepo);
     List<NoteInfo> pushNoteIDs = noteIDs.get(pushKey);
     List<NoteInfo> pullNoteIDs = noteIDs.get(pullKey);
     if (!pushNoteIDs.isEmpty()) {
@@ -162,7 +163,7 @@ public class NotebookRepoSync implements NotebookRepo {
       for (NoteInfo noteInfo : pushNoteIDs) {
         LOG.info("ID : " + noteInfo.getId());
       }
-      pushNotes(pushNoteIDs, sourceRepo, destRepo);
+      pushNotes(pushNoteIDs, srcRepo, dstRepo);
     } else {
       LOG.info("Nothing to push");
     }
@@ -172,7 +173,7 @@ public class NotebookRepoSync implements NotebookRepo {
       for (NoteInfo noteInfo : pullNoteIDs) {
         LOG.info("ID : " + noteInfo.getId());
       }
-      pushNotes(pullNoteIDs, sourceRepo, destRepo);
+      pushNotes(pullNoteIDs, dstRepo, srcRepo);
     } else {
       LOG.info("Nothing to pull");
     }

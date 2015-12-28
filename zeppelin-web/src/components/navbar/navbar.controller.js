@@ -15,9 +15,7 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams,
-                                                                notebookListDataFactory, websocketMsgSrv,
-                                                                arrayOrderingSrv,
-                                                                $http) {
+                          $location, notebookListDataFactory, websocketMsgSrv, arrayOrderingSrv, $http) {
   if (!$rootScope.ticket) {
     $rootScope.ticket = {
       'principal':'anonymous',
@@ -43,7 +41,18 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
     vm.connected = param;
   });
 
+  $rootScope.$on('$locationChangeSuccess', function () {
+    var path = $location.path();
+    // hacky solution to clear search bar
+    // TODO(felizbear): figure out how to make ng-click work in navbar
+    if (path === '/') {
+      $scope.searchTerm = '';
+    }
+  });
 
+  $scope.search = function() {
+    $location.url(/search/ + $scope.searchTerm);
+  };
 
   function loadNotes() {
     websocketMsgSrv.getNotebookList();

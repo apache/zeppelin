@@ -37,6 +37,9 @@ angular.module('zeppelinWebApp')
     $scope.colWidthOption = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ];
     $scope.showTitleEditor = false;
     $scope.paragraphFocused = false;
+    if (newParagraph.focus) {
+      $scope.paragraphFocused = true;
+    }
 
     if (!$scope.paragraph.config) {
       $scope.paragraph.config = {};
@@ -67,10 +70,10 @@ angular.module('zeppelinWebApp')
           console.log('HTML rendering error %o', err);
         }
       } else {
+        $timeout(retryRenderer, 10);
       }
     };
     $timeout(retryRenderer);
-
   };
 
   $scope.renderAngular = function() {
@@ -84,11 +87,10 @@ angular.module('zeppelinWebApp')
           console.log('ANGULAR rendering error %o', err);
         }
       } else {
-        $timeout(retryRenderer,10);
+        $timeout(retryRenderer, 10);
       }
     };
     $timeout(retryRenderer);
-
   };
 
 
@@ -245,6 +247,7 @@ angular.module('zeppelinWebApp')
           }, 500);
         }
       }
+
     }
 
   });
@@ -285,6 +288,15 @@ angular.module('zeppelinWebApp')
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
+  $scope.run = function() {
+    var editorValue = $scope.editor.getValue();
+    if (editorValue) {
+      if (!($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING')) {
+        $scope.runParagraph(editorValue);
+      }
+    }
+  };
+
   $scope.moveUp = function() {
     $scope.$emit('moveParagraphUp', $scope.paragraph.id);
   };
@@ -299,6 +311,7 @@ angular.module('zeppelinWebApp')
 
   $scope.removeParagraph = function() {
     BootstrapDialog.confirm({
+      closable: true,
       title: '',
       message: 'Do you want to delete this paragraph?',
       callback: function(result) {
@@ -491,7 +504,9 @@ angular.module('zeppelinWebApp')
       $scope.editor.setHighlightGutterLine(false);
       $scope.editor.getSession().setUseWrapMode(true);
       $scope.editor.setTheme('ace/theme/chrome');
-      $scope.editor.focus();
+      if ($scope.paragraphFocused) {
+        $scope.editor.focus();
+      }
 
       autoAdjustEditorHeight(_editor.container.id);
       angular.element(window).resize(function() {
@@ -540,35 +555,8 @@ angular.module('zeppelinWebApp')
 
           pos = session.getTextRange(new Range(0, 0, pos.row, pos.column)).length;
           var buf = session.getValue();
-          var completionString = buf;
 
-          if (pos > 0) {
-            var completionStartPosition = pos;
-            var completionSeqCharaters = [' ', '\n'];
-
-            // replace \r\n or \n\r other to \n
-            var reverseCompletionString = buf.replace(/\r?\n|\r/g, '\n').substr(0, pos).split('').reverse();
-            for (var seqCharacterIndex in completionSeqCharaters) {
-              var indexOfReverseSeqPostion = reverseCompletionString.indexOf(completionSeqCharaters[seqCharacterIndex]);
-
-              if (indexOfReverseSeqPostion < completionStartPosition && indexOfReverseSeqPostion > 0) {
-                completionStartPosition = indexOfReverseSeqPostion;
-              }
-            }
-
-            if (completionStartPosition === pos) {
-              completionStartPosition = 0;
-            }
-            else
-            {
-              completionStartPosition = pos - completionStartPosition;
-            }
-
-            completionString = buf.substr( completionStartPosition , pos);
-            pos = completionString.length -1;
-          }
-
-          websocketMsgSrv.completion($scope.paragraph.id, completionString, pos);
+          websocketMsgSrv.completion($scope.paragraph.id, buf, pos);
 
           $scope.$on('completionList', function(event, data) {
             if (data.completions) {
@@ -618,19 +606,6 @@ angular.module('zeppelinWebApp')
 
       $scope.setParagraphMode($scope.editor.getSession(), $scope.editor.getSession().getValue());
 
-      $scope.editor.commands.addCommand({
-        name: 'run',
-        bindKey: {win: 'Shift-Enter', mac: 'Shift-Enter'},
-        exec: function(editor) {
-          var editorValue = editor.getValue();
-          if (editorValue) {
-            if (!($scope.paragraph.status === 'RUNNING' || $scope.paragraph.status === 'PENDING')) {
-              $scope.runParagraph(editorValue);
-            }
-          }
-        },
-        readOnly: false
-      });
 
       // autocomplete on '.'
       /*
@@ -643,6 +618,10 @@ angular.module('zeppelinWebApp')
     }
       });
       */
+
+      // remove binding
+      $scope.editor.commands.bindKey('ctrl-alt-n.', null);
+
 
       // autocomplete on 'ctrl+.'
       $scope.editor.commands.bindKey('ctrl-.', 'startAutocomplete');
@@ -663,7 +642,7 @@ angular.module('zeppelinWebApp')
           var numRows;
           var currentRow;
 
-          if (keyCode === 38 || (keyCode === 80 && e.ctrlKey)) {  // UP
+          if (keyCode === 38 || (keyCode === 80 && e.ctrlKey && !e.altKey)) {  // UP
             numRows = $scope.editor.getSession().getLength();
             currentRow = $scope.editor.getCursorPosition().row;
             if (currentRow === 0) {
@@ -672,7 +651,7 @@ angular.module('zeppelinWebApp')
             } else {
               $scope.scrollToCursor($scope.paragraph.id, -1);
             }
-          } else if (keyCode === 40 || (keyCode === 78 && e.ctrlKey)) {  // DOWN
+          } else if (keyCode === 40 || (keyCode === 78 && e.ctrlKey && !e.altKey)) {  // DOWN
             numRows = $scope.editor.getSession().getLength();
             currentRow = $scope.editor.getCursorPosition().row;
             if (currentRow === numRows-1) {
@@ -793,21 +772,94 @@ angular.module('zeppelinWebApp')
     }
   });
 
-  $scope.$on('focusParagraph', function(event, paragraphId, cursorPos) {
+  $scope.$on('keyEvent', function(event, keyEvent) {
+    if ($scope.paragraphFocused) {
+
+      var paragraphId = $scope.paragraph.id;
+      var keyCode = keyEvent.keyCode;
+      var noShortcutDefined = false;
+      var editorHide = $scope.paragraph.config.editorHide;
+
+      if (editorHide && (keyCode === 38 || (keyCode === 80 && keyEvent.ctrlKey && !keyEvent.altKey))) { // up
+        // move focus to previous paragraph
+        $scope.$emit('moveFocusToPreviousParagraph', paragraphId);
+      } else if (editorHide && (keyCode === 40 || (keyCode === 78 && keyEvent.ctrlKey && !keyEvent.altKey))) { // down
+        // move focus to next paragraph
+        $scope.$emit('moveFocusToNextParagraph', paragraphId);
+      } else if (keyEvent.shiftKey && keyCode === 13) { // Shift + Enter
+        $scope.run();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 67) { // Ctrl + Alt + c
+        $scope.cancelParagraph();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 68) { // Ctrl + Alt + d
+        $scope.removeParagraph();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 75) { // Ctrl + Alt + k
+        $scope.moveUp();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 74) { // Ctrl + Alt + j
+        $scope.moveDown();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 66) { // Ctrl + Alt + b
+        $scope.insertNew();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 79) { // Ctrl + Alt + o
+        $scope.toggleOutput();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e
+        $scope.toggleEditor();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 77) { // Ctrl + Alt + m
+        if ($scope.paragraph.config.lineNumbers) {
+          $scope.hideLineNumbers();
+        } else {
+          $scope.showLineNumbers();
+        }
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && ((keyCode >= 48 && keyCode <=57) || keyCode === 189 || keyCode === 187)) { // Ctrl + Alt + [1~9,0,-,=]
+        var colWidth = 12;
+        if (keyCode === 48) {
+          colWidth = 10;
+        } else if (keyCode === 189) {
+          colWidth = 11;
+        } else if (keyCode === 187) {
+          colWidth = 12;
+        } else {
+          colWidth = keyCode - 48;
+        }
+        $scope.paragraph.config.colWidth = colWidth;
+        $scope.changeColWidth();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 84) { // Ctrl + Alt + t
+        if ($scope.paragraph.config.title) {
+          $scope.hideTitle();
+        } else {
+          $scope.showTitle();
+        }
+      } else {
+        noShortcutDefined = true;
+      }
+
+      if (!noShortcutDefined) {
+        keyEvent.preventDefault();
+      }
+    }
+  });
+
+  $scope.$on('focusParagraph', function(event, paragraphId, cursorPos, mouseEvent) {
     if ($scope.paragraph.id === paragraphId) {
       // focus editor
-      $scope.editor.focus();
+      if (!$scope.paragraph.config.editorHide) {
+        $scope.editor.focus();
 
-      // move cursor to the first row (or the last row)
-      var row;
-      if (cursorPos >= 0) {
-        row = cursorPos;
-        $scope.editor.gotoLine(row, 0);
-      } else {
-        row = $scope.editor.session.getLength();
-        $scope.editor.gotoLine(row, 0);
+        if (!mouseEvent) {
+          // move cursor to the first row (or the last row)
+          var row;
+          if (cursorPos >= 0) {
+            row = cursorPos;
+            $scope.editor.gotoLine(row, 0);
+          } else {
+            row = $scope.editor.session.getLength();
+            $scope.editor.gotoLine(row, 0);
+          }
+          $scope.scrollToCursor($scope.paragraph.id, 0);
+        }
       }
-      $scope.scrollToCursor($scope.paragraph.id, 0);
+      $scope.handleFocus(true);
+    } else {
+      $scope.editor.blur();
+      $scope.handleFocus(false);
     }
   });
 
@@ -969,14 +1021,18 @@ angular.module('zeppelinWebApp')
 
     var renderTable = function() {
       var html = '';
-      html += '<table class="table table-hover table-condensed">';
+
+      html += '<table class="table table-hover table-condensed" style="top: 0; position: absolute;">';
       html += '  <thead>';
       html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
-      for (var c in $scope.paragraph.result.columnNames) {
-        html += '<th>'+$scope.paragraph.result.columnNames[c].name+'</th>';
+      for (var titleIndex in $scope.paragraph.result.columnNames) {
+        html += '<th>'+$scope.paragraph.result.columnNames[titleIndex].name+'</th>';
       }
       html += '    </tr>';
       html += '  </thead>';
+      html += '</table>';
+
+      html += '<table class="table table-hover table-condensed" style="margin-top: 31px;">';
 
       for (var r in $scope.paragraph.result.msgTable) {
         var row = $scope.paragraph.result.msgTable[r];

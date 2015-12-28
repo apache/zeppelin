@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -46,21 +48,21 @@ import org.eclipse.jetty.websocket.WebSocketServlet;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 
 /**
  * Zeppelin websocket service.
  *
- * @author anthonycorbacho
  */
 public class NotebookServer extends WebSocketServlet implements
     NotebookSocketListener, JobListenerFactory, AngularObjectRegistryListener {
-  private static final Logger LOG = LoggerFactory
-      .getLogger(NotebookServer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
   Gson gson = new Gson();
   Map<String, List<NotebookSocket>> userSocketMap = new HashMap<>();
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
+  final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
 
   private Notebook notebook() {
     return ZeppelinServer.notebook;
@@ -68,7 +70,6 @@ public class NotebookServer extends WebSocketServlet implements
 
   @Override
   public boolean checkOrigin(HttpServletRequest request, String origin) {
-
     try {
       return SecurityUtils.isValidOrigin(origin, ZeppelinConfiguration.create());
     } catch (UnknownHostException e) {
@@ -76,7 +77,6 @@ public class NotebookServer extends WebSocketServlet implements
     } catch (URISyntaxException e) {
       e.printStackTrace();
     }
-
     return false;
   }
 
@@ -89,6 +89,7 @@ public class NotebookServer extends WebSocketServlet implements
   public void onOpen(NotebookSocket conn) {
     LOG.info("New connection from {} : {}", conn.getRequest().getRemoteAddr(),
         conn.getRequest().getRemotePort());
+    connectedSockets.add(conn);
   }
 
   @Override
@@ -163,8 +164,7 @@ public class NotebookServer extends WebSocketServlet implements
             completion(conn, notebook, messagereceived);
             break;
           case PING:
-            pong();
-            break;
+            break; //do nothing
           case ANGULAR_OBJECT_UPDATED:
             angularObjectUpdated(conn, notebook, messagereceived);
             break;
@@ -217,6 +217,7 @@ public class NotebookServer extends WebSocketServlet implements
         userList.remove(conn);
       }
     }
+    connectedSockets.remove(conn);
   }
 
   protected Message deserializeMessage(String msg) {
@@ -427,8 +428,7 @@ public class NotebookServer extends WebSocketServlet implements
       throws SchedulerException, IOException {
     String noteId = (String) fromMessage.get("id");
     String name = (String) fromMessage.get("name");
-    Map<String, Object> config = (Map<String, Object>) fromMessage
-        .get("config");
+    Map<String, Object> config = (Map<String, Object>) fromMessage.get("config");
     if (noteId == null) {
       return;
     }
@@ -823,9 +823,6 @@ public class NotebookServer extends WebSocketServlet implements
   @Override
   public JobListener getParagraphJobListener(Note note) {
     return new ParagraphJobListener(this, note);
-  }
-
-  private void pong() {
   }
 
   private void sendAllAngularObjects(Note note, NotebookSocket conn) throws IOException {

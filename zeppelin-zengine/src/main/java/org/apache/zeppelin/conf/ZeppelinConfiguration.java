@@ -18,20 +18,18 @@
 package org.apache.zeppelin.conf;
 
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
-import org.apache.zeppelin.notebook.repo.S3NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Zeppelin configuration.
- *
- * @author Leemoonsoo
  *
  */
 public class ZeppelinConfiguration extends XMLConfiguration {
@@ -378,9 +376,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   /**
    * Wrapper class.
-   *
-   * @author Leemoonsoo
-   *
    */
   public static enum ConfVars {
     ZEPPELIN_HOME("zeppelin.home", "../"),
@@ -415,7 +410,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.cassandra.CassandraInterpreter,"
         + "org.apache.zeppelin.geode.GeodeOqlInterpreter,"
         + "org.apache.zeppelin.postgresql.PostgreSqlInterpreter,"
-        + "org.apache.zeppelin.kylin.KylinInterpreter"),
+        + "org.apache.zeppelin.kylin.KylinInterpreter,"
+        + "org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
