@@ -17,17 +17,10 @@
 
 package org.apache.zeppelin.elasticsearch;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-
+import com.github.wnameless.json.flattener.JsonFlattener;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -43,16 +36,21 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.xcontent.XContentHelper;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
+import org.elasticsearch.search.aggregations.bucket.InternalSingleBucketAggregation;
+import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
+import org.elasticsearch.search.aggregations.metrics.InternalMetricsAggregation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.wnameless.json.flattener.JsonFlattener;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParseException;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.*;
 
 
 /**
@@ -313,7 +311,8 @@ public class ElasticsearchInterpreter extends Interpreter {
    * Processes a "search" request.
    * 
    * @param urlItems Items of the URL
-   * @param data May contains the limit and the JSON of the request
+   * @param data May contains the JSON of the request
+   * @param size Limit of result set
    * @return Result of the search request, it contains a tab-formatted string of the matching hits
    */
   private InterpreterResult processSearch(String[] urlItems, String data, int size) {
@@ -325,10 +324,7 @@ public class ElasticsearchInterpreter extends Interpreter {
         
     final SearchResponse response = searchData(urlItems, data, size);
 
-    return new InterpreterResult(
-      InterpreterResult.Code.SUCCESS,
-      InterpreterResult.Type.TABLE,
-      buildResponseMessage(response.getHits().getHits()));
+    return buildResponseMessage(response);
   }
 
   /**
@@ -419,7 +415,39 @@ public class ElasticsearchInterpreter extends Interpreter {
     return response;
   }
 
-  private String buildResponseMessage(SearchHit[] hits) {
+  private InterpreterResult buildAggResponseMessage(Aggregations aggregations) {
+
+    // Only the result of the first aggregation is returned
+    //
+    final Aggregation agg = aggregations.asList().get(0);
+    InterpreterResult.Type resType = InterpreterResult.Type.TEXT;
+    String resMsg = "";
+
+    if (agg instanceof InternalMetricsAggregation) {
+      resMsg = XContentHelper.toString((InternalMetricsAggregation) agg).toString();
+    }
+    else if (agg instanceof InternalSingleBucketAggregation) {
+      resMsg = XContentHelper.toString((InternalSingleBucketAggregation) agg).toString();
+    }
+    else if (agg instanceof InternalMultiBucketAggregation) {
+      final StringBuffer buffer = new StringBuffer("key\tdoc_count");
+
+      final InternalMultiBucketAggregation multiBucketAgg = (InternalMultiBucketAggregation) agg;
+      for (MultiBucketsAggregation.Bucket bucket : multiBucketAgg.getBuckets()) {
+        buffer.append("\n")
+          .append(bucket.getKeyAsString())
+          .append("\t")
+          .append(bucket.getDocCount());
+      }
+
+      resType = InterpreterResult.Type.TABLE;
+      resMsg = buffer.toString();
+    }
+
+    return new InterpreterResult(InterpreterResult.Code.SUCCESS, resType, resMsg);
+  }
+
+  private String buildSearchHitsResponseMessage(SearchHit[] hits) {
         
     if (hits == null || hits.length == 0) {
       return "";
@@ -461,5 +489,19 @@ public class ElasticsearchInterpreter extends Interpreter {
     }
 
     return buffer.toString();
+  }
+
+  private InterpreterResult buildResponseMessage(SearchResponse response) {
+
+    final Aggregations aggregations = response.getAggregations();
+
+    if (aggregations != null && aggregations.asList().size() > 0) {
+      return buildAggResponseMessage(aggregations);
+    }
+
+    return new InterpreterResult(
+      InterpreterResult.Code.SUCCESS,
+      InterpreterResult.Type.TABLE,
+      buildSearchHitsResponseMessage(response.getHits().getHits()));
   }
 }
