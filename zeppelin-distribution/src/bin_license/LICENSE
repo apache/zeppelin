@@ -111,6 +111,13 @@ The following components are provided under Apache License.
     (Apache 2.0) Bijection Macros (com.twitter:bijection-macros_2.10:jar:0.8.1 - https://github.com/twitter/bijection)
     (Apache 2.0) Scala Test (org.scalatest:scalatest_2.10:jar:2.2.2 - http://www.scalatest.org/)
     (Apache 2.0) Hadoop Common (org.apache.hadoop:hadoop-common:jar:2.5.0 - http://hadoop.apache.org)
+    (Apache 2.0) Hadoop Auth (org.apache.hadoop:hadoop-auth:jar:2.5.0 - http://hadoop.apache.org)
+    (Apache 2.0) Jackson Mapper ASL (org.codehaus.jackson:jackson-mapper-asl:1.9.13 - http://jackson.codehaus.org/)
+    (Apache 2.0) Apache Avro (org.apache.avro:avro:jar:1.7.4 - https://github.com/apache/avro)
+    (Apache 2.0) Apache Directory Server (org.apache.directory.server:apacheds-kerberos-codec:jar:2.0.0-M15 - https://github.com/apache/directory-server)
+    (Apache 2.0) Apache Directory Server i18n (org.apache.directory.server:apacheds-i18n:jar:2.0.0-M15 - https://github.com/apache/directory-server)
+    (Apache 2.0) Apache Directory API ASN1 (org.apache.directory.api:api-asn1-api:jar:1.0.0-M20 - https://directory.apache.org/api/)
+    (Apache 2.0) Apache Directory API Util (org.apache.directory.api:api-util:jar:1.0.0-M20 - https://directory.apache.org/api/)
 
 ========================================================================
 MIT licenses
@@ -164,8 +171,9 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (BSD Style) dom4j v1.6.1 (http://www.dom4j.org) - https://github.com/dom4j/dom4j/blob/dom4j_1_6_1/LICENSE.txt
     (BSD Style) JSch v0.1.53 (http://www.jcraft.com) - http://www.jcraft.com/jsch/LICENSE.txt
     (BSD 3 Clause) highlightjs v8.4.0 (https://highlightjs.org/) - https://github.com/isagalaev/highlight.js/blob/8.4/LICENSE
-
-
+    (BSD 3 Clause) xmlenc v0.52 (http://xmlenc.sourceforge.net/) - http://xmlenc.cvs.sourceforge.net/viewvc/xmlenc/xmlenc/COPYRIGHT?view=markup&pathrev=RELEASE_0_52
+    (BSD 3 Clause) Paranamer v2.3 (https://github.com/paul-hammant/paranamer) - https://github.com/paul-hammant/paranamer/blob/master/LICENSE.txt
+    (BSD 3 Clause) Google Protobuf v2.5.0 (https://github.com/google/protobuf) - https://github.com/google/protobuf/blob/master/LICENSE
 
 The following components are provided under the BSD-style License.
 
@@ -234,4 +242,5 @@ Creative Commons CC0 (http://creativecommons.org/publicdomain/zero/1.0/)
 Unknown license
 ========================================================================
     (Unknown license) jgrapht-jdk1.6 (thirdparty:jgrapht-jdk1.6:0.8.1 - no url defined)
+    (Unknown license) tukaani-xz (org.tukaani:xz:jar:1.0 - http://git.tukaani.org/?p=xz-java.git;a=blob;f=COPYING;hb=HEAD)
 
