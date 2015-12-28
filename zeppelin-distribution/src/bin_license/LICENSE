@@ -238,9 +238,14 @@ Creative Commons CC0 (http://creativecommons.org/publicdomain/zero/1.0/)
     (CC0 1.0 Universal) JSR166e (com.twitter:jsr166e:1.1.0 - http://github.com/twitter/jsr166e)
     (Public Domain, per Creative Commons CC0) HdrHistogram (org.hdrhistogram:HdrHistogram:2.1.6 - http://hdrhistogram.github.io/HdrHistogram/)
 
+
+========================================================================
+For the org.tukaani:xz:jar:1.0
+========================================================================
+    See zeppelin-distribution/src/bin_license/licenses/LICENSE-tukaani-xy-1.0
+
+
 ========================================================================
 Unknown license
 ========================================================================
     (Unknown license) jgrapht-jdk1.6 (thirdparty:jgrapht-jdk1.6:0.8.1 - no url defined)
-    (Unknown license) tukaani-xz (org.tukaani:xz:jar:1.0 - http://git.tukaani.org/?p=xz-java.git;a=blob;f=COPYING;hb=HEAD)
-
