@@ -97,6 +97,10 @@ The following components are provided under Apache License.
     (Apache 2.0) Scalding Date (com.twitter:scalding-date_2.10:jar:0.15.1-RC13 - https://github.com/twitter/scalding)
     (Apache 2.0) Scalding Serialization (com.twitter:scalding-serialization_2.10:jar:0.15.1-RC13 - https://github.com/twitter/scalding)
     (Apache 2.0) Scalding Maple (com.twitter:maple:jar:0.15.1-RC13 - https://github.com/twitter/scalding/tree/develop/maple)
+    (Apache 2.0) Cascading (cascading:cascading-core:jar:2.6.1 - https://github.com/Cascading/cascading)
+    (Apache 2.0) Cascading Hadoop (cascading:cascading-hadoop:jar:2.6.1 - https://github.com/Cascading/cascading)
+    (Apache 2.0) Cascading Local (cascading:cascading-local:jar:2.6.1 - https://github.com/Cascading/cascading)
+    (Apache 2.0) Riffle (riffle:riffle:jar:0.1-dev - https://github.com/cwensel/riffle)
 
 
 ========================================================================
@@ -169,8 +173,8 @@ The following components are provided under the BSD-style License.
     (BSD-like) ASM (asm:asm:jar:3.1 - http://asm.ow2.org/) - Copyright (c) 2000-2011 INRIA, France Telecom
     (New BSD License) Py4J (net.sf.py4j:py4j:0.9 - http://py4j.sourceforge.net/)
     (New BSD License) Markdown4j (org.commonjava.googlecode.markdown4j:markdown4j:jar:2.2-cj-1.0 - https://code.google.com/p/markdown4j/)
-     
-
+    (New BSD License) Janino (org.codehaus.janino:janino:jar:2.7.5 - http://janino.net/)
+    (New BSD License) Janino Commons Compiler (org.codehaus.janino:commons-compiler:jar:2.7.5 - http://janino.net/)
 
 ========================================================================
 CDDL license
@@ -215,4 +219,9 @@ Creative Commons CC0 (http://creativecommons.org/publicdomain/zero/1.0/)
 
     (CC0 1.0 Universal) JSR166e (com.twitter:jsr166e:1.1.0 - http://github.com/twitter/jsr166e)
     (Public Domain, per Creative Commons CC0) HdrHistogram (org.hdrhistogram:HdrHistogram:2.1.6 - http://hdrhistogram.github.io/HdrHistogram/)
-     
+
+========================================================================
+Unknown license
+========================================================================
+    (Unknown license) jgrapht-jdk1.6 (thirdparty:jgrapht-jdk1.6:0.8.1 - no url defined)
+
