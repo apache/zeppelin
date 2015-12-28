@@ -19,6 +19,7 @@ package org.apache.zeppelin.interpreter.remote;
 
 import java.util.List;
 
+import org.apache.thrift.TException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
@@ -77,15 +78,19 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
     }
 
     Client client = null;
+    boolean broken = false;
     try {
       client = remoteInterpreterProcess.getClient();
       client.angularObjectAdd(name, noteId, gson.toJson(o));
       return super.add(name, o, noteId, true);
+    } catch (TException e) {
+      broken = true;
+      logger.error("Error", e);
     } catch (Exception e) {
       logger.error("Error", e);
     } finally {
       if (client != null) {
-        remoteInterpreterProcess.releaseClient(client);
+        remoteInterpreterProcess.releaseClient(client, broken);
       }
     }
     return null;
@@ -106,15 +111,19 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
     }
 
     Client client = null;
+    boolean broken = false;
     try {
       client = remoteInterpreterProcess.getClient();
       client.angularObjectRemove(name, noteId);
       return super.remove(name, noteId);
+    } catch (TException e) {
+      broken = true;
+      logger.error("Error", e);
     } catch (Exception e) {
       logger.error("Error", e);
     } finally {
       if (client != null) {
-        remoteInterpreterProcess.releaseClient(client);
+        remoteInterpreterProcess.releaseClient(client, broken);
       }
     }
     return null;
