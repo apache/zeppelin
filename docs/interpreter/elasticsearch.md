@@ -110,8 +110,6 @@ With the `search` command, you can send a search query to Elasticsearch. There a
   * This is a shortcut to a query like that: `{ "query": { "query_string": { "query": "__HERE YOUR QUERY__", "analyze_wildcard": true } } }` 
   * See [Elasticsearch query string syntax](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax) for more details about the content of such a query.
 
-> A search query can also contain [aggregations](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html). If there is at least one aggregation, the result of the first aggregation is shown, otherwise, you get the search hits.
-
 
 ```bash
 | %elasticsearch
@@ -125,6 +123,9 @@ If you want to modify the size of the result set, you can add a line that is set
 | size 50
 | search /index1,index2,.../type1,type2,...  <JSON document containing the query or query_string elements>
 ```
+
+
+> A search query can also contain [aggregations](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html). If there is at least one aggregation, the result of the first aggregation is shown, otherwise, you get the search hits.
 
 
 Examples:
