@@ -70,6 +70,10 @@ public class DrillInterpreter
 
   static final String DRILL_CLUSTER_ID = "drill.cluster.id";
 
+  static final String DRILL_MAX_RESULT = "drill.max.result";
+
+  static final String DEFAULT_MAX_RESULT = "1000";
+
   static final String EMPTY_COLUMN_VALUE = "";
 
   private Connection connection;
@@ -82,6 +86,8 @@ public class DrillInterpreter
 
   private String jdbcURI;
 
+  private int maxResult;
+
   // Register Drill Interpreter
   static {
     Interpreter.register("drill", "drill", DrillInterpreter.class.getName(),
@@ -89,7 +95,9 @@ public class DrillInterpreter
             .add(STORAGE_PLUGIN, DEFAULT_STORAGE_PLUGIN, "Storage Plugin")
             .add(ZK_CONNECT, DEFAULT_ZK_CONNECT, "Zookeeper Connect")
             .add(DRILL_DIRECTORY, DEFAULT_DRILL_DIRECTORY, "Drill Directory in Zookeeper")
-            .add(DRILL_CLUSTER_ID, DEFAULT_DRILL_CLUSTER_ID, "Drill Cluster ID").build());
+            .add(DRILL_CLUSTER_ID, DEFAULT_DRILL_CLUSTER_ID, "Drill Cluster ID")
+            .add(DRILL_MAX_RESULT, DEFAULT_MAX_RESULT, "Max number of SQL result to display.")
+            .build());
   }
 
   /**
@@ -105,6 +113,7 @@ public class DrillInterpreter
         properties.getProperty(ZK_CONNECT, DEFAULT_ZK_CONNECT),
         properties.getProperty(DRILL_DIRECTORY, DEFAULT_DRILL_DIRECTORY),
         properties.getProperty(DRILL_CLUSTER_ID, DEFAULT_DRILL_CLUSTER_ID));
+    this.maxResult = Integer.valueOf(properties.getProperty(DRILL_MAX_RESULT, DEFAULT_MAX_RESULT));
     LOGGER.info("Created DrillInterpreter for JDBC URI {}", this.jdbcURI);
   }
 
@@ -143,6 +152,7 @@ public class DrillInterpreter
       }
 
       this.statement = getConnection().createStatement();
+      this.statement.setMaxRows(this.maxResult);
       StringBuilder interpreterResultStr = new StringBuilder("%table ");
 
       results = this.statement.executeQuery(sql);
@@ -273,4 +283,8 @@ public class DrillInterpreter
     return this.initError;
   }
 
+  int getMaxResult() {
+
+    return this.maxResult;
+  }
 }

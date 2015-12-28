@@ -64,6 +64,7 @@ public class DrillInterpreterTest
     this.properties.put(DrillInterpreter.STORAGE_PLUGIN, "hive");
     this.properties.put(DrillInterpreter.DRILL_DIRECTORY, "/DrillDir");
     this.properties.put(DrillInterpreter.DRILL_CLUSTER_ID, "drillbits");
+    this.properties.put(DrillInterpreter.DRILL_MAX_RESULT, "100");
   }
 
   @Test
@@ -77,6 +78,7 @@ public class DrillInterpreterTest
     Assert.assertNull(drillInterpreter.getConnection());
     Assert.assertEquals("Invalid JDBC URI",
         "jdbc:drill:schema=hive;zk=zkhost:2181/DrillDir/drillbits", drillInterpreter.getJdbcURI());
+    Assert.assertEquals("Wrong value for max result", 100, drillInterpreter.getMaxResult());
   }
 
   @Test
@@ -89,6 +91,9 @@ public class DrillInterpreterTest
     Assert.assertNull(drillInterpreter.getConnection());
     Assert.assertEquals("Invalid JDBC URI",
         "jdbc:drill:schema=hive;zk=localhost:2181/Drill/drillbits1", drillInterpreter.getJdbcURI());
+    Assert.assertEquals("Wrong default value for max result",
+        Integer.valueOf(DrillInterpreter.DEFAULT_MAX_RESULT).intValue(),
+        drillInterpreter.getMaxResult());
   }
 
   @Test
