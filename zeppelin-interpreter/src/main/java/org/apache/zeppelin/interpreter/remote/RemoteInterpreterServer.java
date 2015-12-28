@@ -559,4 +559,9 @@ public class RemoteInterpreterServer
     AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
     registry.remove(name, noteId, false);
   }
+
+  @Override
+  public String ping() throws TException {
+    return "pong";
+  }
 }
