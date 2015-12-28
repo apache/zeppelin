@@ -34,8 +34,8 @@
   <url>http://zeppelin.incubator.apache.org</url>
 
   <properties>
-    <scala.version>2.10.5</scala.version>
-    <hadoop.version>2.5.0</hadoop.version>
+    <scala.version>2.10.4</scala.version>
+    <hadoop.version>2.3.0</hadoop.version>
     <scalding.version>0.15.1-RC13</scalding.version>
   </properties>
 
