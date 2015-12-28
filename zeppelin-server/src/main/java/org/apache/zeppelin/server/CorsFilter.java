@@ -18,13 +18,11 @@
 package org.apache.zeppelin.server;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.utils.SecurityUtils;
+import org.apache.zeppelin.ticket.SecurityUtils;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.DateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 

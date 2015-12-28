@@ -19,7 +19,7 @@ package org.apache.zeppelin.security;
 import static org.junit.Assert.*;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
-import org.apache.zeppelin.utils.SecurityUtils;
+import org.apache.zeppelin.ticket.SecurityUtils;
 import org.junit.Test;
 
 import java.net.URISyntaxException;

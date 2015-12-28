@@ -46,7 +46,7 @@ import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
-import org.apache.zeppelin.utils.SecurityUtils;
+import org.apache.zeppelin.ticket.SecurityUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -507,7 +507,7 @@ public class NotebookRestApi {
     config.put("cron", request.getCronString());
     note.setConfig(config);
     notebook.refreshCron(note.id(),
-        org.apache.zeppelin.utils.SecurityUtils.getPrincipal());
+        SecurityUtils.getPrincipal());
     
     return new JsonResponse<>(Status.OK).build();
   }

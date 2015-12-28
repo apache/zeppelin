@@ -17,11 +17,9 @@
 
 package org.apache.zeppelin.rest;
 
-import org.apache.shiro.subject.Subject;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
-import org.apache.shiro.SecurityUtils;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -56,7 +54,7 @@ public class SecurityRestApi {
   @Path("ticket")
   public Response ticket() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
-    String principal = org.apache.zeppelin.utils.SecurityUtils.getPrincipal();
+    String principal = org.apache.zeppelin.ticket.SecurityUtils.getPrincipal();
     JsonResponse response;
     // ticket set to anonymous for anonymous user. Simplify testing.
     String ticket;
