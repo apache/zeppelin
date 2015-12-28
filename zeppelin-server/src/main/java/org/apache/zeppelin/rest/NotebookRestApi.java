@@ -137,7 +137,8 @@ public class NotebookRestApi {
   @GET
   @Path("/")
   public Response getNotebookList() throws IOException {
-    List<Map<String, String>> notesInfo = notebookServer.generateNotebooksInfo(SecurityUtils.getPrincipal());
+    List<Map<String, String>> notesInfo = notebookServer.
+        generateNotebooksInfo(SecurityUtils.getPrincipal());
     return new JsonResponse(Status.OK, "", notesInfo ).build();
   }
 
