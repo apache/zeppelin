@@ -1880,23 +1880,22 @@ angular.module('zeppelinWebApp')
     return true;
   };
 
-  $scope.resizeParagraph = function(width) {
+  $scope.resizeParagraph = function(width, height) {
     if ($scope.paragraph.config.colWidth !== width) {
 
         $scope.paragraph.config.colWidth = width;
         $scope.changeColWidth();
         $timeout(function() {
           autoAdjustEditorHeight($scope.paragraph.id + '_editor');
-          $scope.changeHeight();
+          $scope.changeHeight(height);
         }, 200);
 
     } else {
-      $scope.changeHeight();
+      $scope.changeHeight(height);
     }
   };
 
-  $scope.changeHeight = function(){
-    var height = angular.element('#p' + $scope.paragraph.id + '_resize').height();
+  $scope.changeHeight = function(height) {
     var newParams = angular.copy($scope.paragraph.settings.params);
     var newConfig = angular.copy($scope.paragraph.config);
 

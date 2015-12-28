@@ -14,7 +14,7 @@ limitations under the License.
 <div
   id="p{{paragraph.id}}_resize"
   resize='{"allowresize": "{{!asIframe && !viewOnly}}", "graphType": "{{getResultType()}}"}'
-     resizable on-resize="resizeParagraph(width);">
+     resizable on-resize="resizeParagraph(width, height);">
   <div ng-include src="'app/notebook/paragraph/paragraph-graph.html'"></div>
 
   <div id="{{paragraph.id}}_comment"
