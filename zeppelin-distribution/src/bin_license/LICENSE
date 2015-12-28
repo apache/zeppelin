@@ -1,7 +1,7 @@
     (Apache 2.0) nvd3.js v1.1.15-beta (http://nvd3.org/) - https://github.com/novus/nvd3/blob/v1.1.15-beta/LICENSE.md
     (Apache 2.0) gson v2.2 (com.google.code.gson:gson:jar:2.2 - https://github.com/google/gson) - https://github.com/google/gson/blob/gson-2.2/LICENSE
     (Apache 2.0) Amazon Web Services SDK for Java v1.10.1 (https://aws.amazon.com/sdk-for-java/) - https://raw.githubusercontent.com/aws/aws-sdk-java/1.10.1/LICENSE.txt
-    (Apache 2.0) JavaEWAH v0.7.9 (https://github.com/lemire/javaewah) - https://github.com/lemire/javaewah/blob/master/LICENSE-2.0.txt
+    (Apache 2.0) JavaEWAH v0.7.9, v0.6.6 (https://github.com/lemire/javaewah) - https://github.com/lemire/javaewah/blob/master/LICENSE-2.0.txt
 
 
 The following components are provided under Apache License.
@@ -95,13 +95,22 @@ The following components are provided under Apache License.
     (Apache 2.0) Scalding Core (com.twitter:scalding-core_2.10:jar:0.15.1-RC13 - https://github.com/twitter/scalding)
     (Apache 2.0) Scalding Args (com.twitter:scalding-args_2.10:jar:0.15.1-RC13 - https://github.com/twitter/scalding)
     (Apache 2.0) Scalding Date (com.twitter:scalding-date_2.10:jar:0.15.1-RC13 - https://github.com/twitter/scalding)
+    (Apache 2.0) Scalding REPL (com.twitter:scalding-repl_2.10:jar:0.15.1-RC13 - https://github.com/twitter/scalding)
     (Apache 2.0) Scalding Serialization (com.twitter:scalding-serialization_2.10:jar:0.15.1-RC13 - https://github.com/twitter/scalding)
     (Apache 2.0) Scalding Maple (com.twitter:maple:jar:0.15.1-RC13 - https://github.com/twitter/scalding/tree/develop/maple)
     (Apache 2.0) Cascading (cascading:cascading-core:jar:2.6.1 - https://github.com/Cascading/cascading)
     (Apache 2.0) Cascading Hadoop (cascading:cascading-hadoop:jar:2.6.1 - https://github.com/Cascading/cascading)
     (Apache 2.0) Cascading Local (cascading:cascading-local:jar:2.6.1 - https://github.com/Cascading/cascading)
     (Apache 2.0) Riffle (riffle:riffle:jar:0.1-dev - https://github.com/cwensel/riffle)
-
+    (Apache 2.0) Chill Hadoop (com.twitter:chill-hadoop:jar:0.7.0 - https://github.com/twitter/chill)
+    (Apache 2.0) Chill Java (com.twitter:chill-java:jar:0.7.0 - https://github.com/twitter/chill)
+    (Apache 2.0) Chill Algebird (com.twitter:chill-algebird_2.10:jar:0.7.0 - https://github.com/twitter/chill)
+    (Apache 2.0) Chill Scala (com.twitter:chill_2.10:jar:0.7.0 - https://github.com/twitter/chill)
+    (Apache 2.0) Algebird (com.twitter:algebird-core_2.10:jar:0.11.0 - https://github.com/twitter/algebird)
+    (Apache 2.0) Bijection Core (com.twitter:bijection-core_2.10:jar:0.8.1 - https://github.com/twitter/bijection)
+    (Apache 2.0) Bijection Macros (com.twitter:bijection-macros_2.10:jar:0.8.1 - https://github.com/twitter/bijection)
+    (Apache 2.0) Scala Test (org.scalatest:scalatest_2.10:jar:2.2.2 - http://www.scalatest.org/)
+    (Apache 2.0) Hadoop Common (org.apache.hadoop:hadoop-common:jar:2.5.0 - http://hadoop.apache.org)
 
 ========================================================================
 MIT licenses
@@ -170,6 +179,7 @@ The following components are provided under the BSD-style License.
     (BSD-like) Scala Actors library (org.scala-lang:scala-actors:2.10.4 - http://www.scala-lang.org/)
     (BSD-like) Scala Compiler (org.scala-lang:scala-compiler:2.10.4 - http://www.scala-lang.org/)
     (BSD-like) Scala Compiler (org.scala-lang:scala-reflect:2.10.4 - http://www.scala-lang.org/)
+    (BSD-like) Scala Macros Quasiquotes (org.scalamacros:quasiquotes_2.10:jar:2.0.1 - http://docs.scala-lang.org/overviews/quasiquotes/intro.html)
     (BSD-like) ASM (asm:asm:jar:3.1 - http://asm.ow2.org/) - Copyright (c) 2000-2011 INRIA, France Telecom
     (New BSD License) Py4J (net.sf.py4j:py4j:0.9 - http://py4j.sourceforge.net/)
     (New BSD License) Markdown4j (org.commonjava.googlecode.markdown4j:markdown4j:jar:2.2-cj-1.0 - https://code.google.com/p/markdown4j/)
