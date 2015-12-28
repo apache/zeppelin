@@ -961,7 +961,7 @@ angular.module('zeppelinWebApp')
       clearUnknownColsFromGraphOption();
       // set graph height
       var height = $scope.paragraph.config.graph.height;
-      angular.element('#p' + $scope.paragraph.id + '_graph').height(height);
+      angular.element('#p' + $scope.paragraph.id + '_resize').height(height);
 
       if (!type || type === 'table') {
         setTable($scope.paragraph.result, refresh);
@@ -1880,9 +1880,22 @@ angular.module('zeppelinWebApp')
     return true;
   };
 
-  $scope.setGraphHeight = function() {
-    var height = angular.element('#p' + $scope.paragraph.id + '_graph').height();
+  $scope.resizeParagraph = function(width, height) {
+    if ($scope.paragraph.config.colWidth !== width) {
 
+        $scope.paragraph.config.colWidth = width;
+        $scope.changeColWidth();
+        $timeout(function() {
+          autoAdjustEditorHeight($scope.paragraph.id + '_editor');
+          $scope.changeHeight(height);
+        }, 200);
+
+    } else {
+      $scope.changeHeight(height);
+    }
+  };
+
+  $scope.changeHeight = function(height) {
     var newParams = angular.copy($scope.paragraph.settings.params);
     var newConfig = angular.copy($scope.paragraph.config);
 
