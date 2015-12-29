@@ -38,6 +38,7 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.quartz.CronScheduleBuilder;
@@ -334,6 +335,14 @@ public class Notebook {
     synchronized (notes) {
       notes.clear();
     }
+
+    if (notebookRepo instanceof NotebookRepoSync) {
+      NotebookRepoSync mainRepo = (NotebookRepoSync) notebookRepo;
+      if (mainRepo.getRepoCount() > 1) {
+        mainRepo.sync();
+      }
+    }
+
     List<NoteInfo> noteInfos = notebookRepo.list();
     for (NoteInfo info : noteInfos) {
       loadNoteFromRepo(info.getId());
