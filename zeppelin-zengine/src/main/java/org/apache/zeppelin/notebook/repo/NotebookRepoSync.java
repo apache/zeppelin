@@ -41,7 +41,6 @@ public class NotebookRepoSync implements NotebookRepo {
   private static final int maxRepoNum = 2;
   private static final String pushKey = "pushNoteIDs";
   private static final String pullKey = "pullNoteIDs";
-  private static ZeppelinConfiguration config;
 
   private List<NotebookRepo> repos = new ArrayList<NotebookRepo>();
 
@@ -51,8 +50,6 @@ public class NotebookRepoSync implements NotebookRepo {
    * @throws - Exception
    */
   public NotebookRepoSync(ZeppelinConfiguration conf) throws Exception {
-    config = conf;
-
     String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
     if (allStorageClassNames.isEmpty()) {
       throw new IOException("Empty ZEPPELIN_NOTEBOOK_STORAGE conf parameter");
@@ -80,9 +77,6 @@ public class NotebookRepoSync implements NotebookRepo {
    */
   @Override
   public List<NoteInfo> list() throws IOException {
-    if (config.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE) && getRepoCount() > 1) {
-      sync(0, 1);
-    }
     return getRepo(0).list();
   }
 
@@ -182,7 +176,7 @@ public class NotebookRepoSync implements NotebookRepo {
     }
   }
 
-  int getRepoCount() {
+  public int getRepoCount() {
     return repos.size();
   }
 
