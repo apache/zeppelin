@@ -156,6 +156,20 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     });
   };
 
+  //Commit notebook
+  $scope.gitCommitNotebook = function(commitMessage) {
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: 'Commit notebook to local Git repository?',
+      callback: function(result) {
+        if (result) {
+          websocketMsgSrv.gitCommitNotebook($routeParams.noteId, commitMessage);
+        }
+      }
+    });
+  };
+
   $scope.runNote = function() {
     BootstrapDialog.confirm({
       closable: true,

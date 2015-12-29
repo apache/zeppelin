@@ -122,6 +122,16 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
+    gitCommitNotebook: function(noteId, gitCommitMessage) {
+      websocketEvents.sendNewEvent({
+        op: 'GIT_COMMIT_NOTEBOOK',
+        data: {
+          noteId: noteId,
+          gitCommitMessage: gitCommitMessage
+        }
+      });
+    },
+
     isConnected: function(){
       return websocketEvents.isConnected();
     }
