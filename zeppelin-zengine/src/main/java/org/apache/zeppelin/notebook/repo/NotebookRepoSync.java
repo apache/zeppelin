@@ -69,6 +69,7 @@ public class NotebookRepoSync implements NotebookRepo {
       Constructor<?> constructor = notebookStorageClass.getConstructor(
                 ZeppelinConfiguration.class);
       repos.add((NotebookRepo) constructor.newInstance(conf));
+      LOG.info("Initialized {} repository class", storageClassNames[i].trim());
     }
     if (getRepoCount() > 1) {
       sync(0, 1);
@@ -316,6 +317,17 @@ public class NotebookRepoSync implements NotebookRepo {
     LOG.info("Closing all notebook storages");
     for (NotebookRepo repo: repos) {
       repo.close();
+    }
+  }
+
+  public void gitCommitNotebook(String noteId, String commitMessage) throws IOException {
+    NotebookRepo localRepo = getRepo(0);
+    if (localRepo instanceof GitNotebookRepo) {
+      GitNotebookRepo gitRepo = (GitNotebookRepo) localRepo;
+      gitRepo.addAndCommit(noteId, commitMessage);
+    } else {
+      throw new IOException("Local repository isn't of class GitNotebookRepo : " +
+                            localRepo.getClass().toString());
     }
   }
 

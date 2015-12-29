@@ -38,6 +38,7 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.quartz.CronScheduleBuilder;
@@ -237,6 +238,16 @@ public class Notebook {
       note.unpersist();
     } catch (IOException e) {
       e.printStackTrace();
+    }
+  }
+
+  public void gitCommitNote(String noteId, String commitMessage) throws IOException {
+    if (notebookRepo instanceof NotebookRepoSync) {
+      NotebookRepoSync mainRepo = (NotebookRepoSync) notebookRepo;
+      mainRepo.gitCommitNotebook(noteId, commitMessage);
+    } else {
+      throw new IOException("Main repository isn't of class NotebookRepoSync : " +
+                            notebookRepo.getClass().toString());
     }
   }
 

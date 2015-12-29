@@ -61,28 +61,27 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
       localRepo.create();
     }
     git = new Git(localRepo);
-    maybeAddAndCommit(".");
+    addAndCommit(".", "initialization commit");
   }
 
   @Override
   public synchronized void save(Note note) throws IOException {
     super.save(note);
-    maybeAddAndCommit(note.getId());
   }
 
-  private void maybeAddAndCommit(String pattern) {
+  public void addAndCommit(String pattern, String commitMessage) {
     try {
       List<DiffEntry> gitDiff = git.diff().call();
       if (!gitDiff.isEmpty()) {
         LOG.debug("Changes found for pattern '{}': {}", pattern, gitDiff);
         DirCache added = git.add().addFilepattern(pattern).call();
         LOG.debug("{} changes are about to be commited", added.getEntryCount());
-        git.commit().setMessage("Updated " + pattern).call();
+        git.commit().setMessage("Updated " + pattern + ": " + commitMessage).call();
       } else {
         LOG.debug("No changes found {}", pattern);
       }
     } catch (GitAPIException e) {
-      LOG.error("Faild to add+comit {} to Git", pattern, e);
+      LOG.error("Failed to add+comit {} to Git", pattern, e);
     }
   }
 

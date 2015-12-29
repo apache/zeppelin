@@ -33,6 +33,9 @@ public class Message {
     GET_NOTE, // [c-s] client load note
               // @param id note id
 
+    GIT_COMMIT_NOTEBOOK, // [c-s] commit notebook to local git repo
+                         // @param note
+
     NOTE, // [s-c] note info
           // @param note serlialized Note object
 
