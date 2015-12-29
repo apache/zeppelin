@@ -46,6 +46,9 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
     var data = payload.data;
     if (op === 'NOTE') {
       $rootScope.$broadcast('setNoteContent', data.note);
+    } else if (op === 'NEW_NOTE' || op === 'CLONE_NOTE') {
+      $rootScope.$broadcast('createNoteContent', data.note);
+      $rootScope.$broadcast('setNoteContent', data.note);
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes);
     } else if (op === 'PARAGRAPH') {
