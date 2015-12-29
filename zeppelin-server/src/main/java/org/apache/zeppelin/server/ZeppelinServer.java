@@ -70,7 +70,7 @@ public class ZeppelinServer extends Application {
 
   private SchedulerFactory schedulerFactory;
   private InterpreterFactory replFactory;
-  private NotebookRepoSync notebookRepo;
+  private NotebookRepo notebookRepo;
   private SearchService notebookIndex;
 
   public ZeppelinServer() throws Exception {
