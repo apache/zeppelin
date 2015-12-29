@@ -167,6 +167,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     }
     assertEquals("<p>markdown</p>\n", p.getResult().message());
 
+    
     // restart interpreter
     for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {
       if (setting.getName().equals("md")) {
