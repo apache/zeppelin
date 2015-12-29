@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class RemoteInterpreterProcess implements ExecuteResultHandler {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterProcess.class);
-  
+
   private final AtomicInteger referenceCount;
   private DefaultExecutor executor;
   private ExecuteWatchdog watchdog;
@@ -124,7 +124,7 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
             }
           }
         }
-        
+
         clientPool = new GenericObjectPool<Client>(new ClientFactory("localhost", port));
 
         remoteInterpreterEventPoller.setInterpreterGroup(interpreterGroup);
@@ -151,13 +151,16 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
         remoteInterpreterEventPoller.shutdown();
 
         // first try shutdown
+        Client client = null;
         try {
-          Client client = getClient();
+          client = getClient();
           client.shutdown();
-          releaseClient(client);
         } catch (Exception e) {
-          logger.error("Error", e);
-          watchdog.destroyProcess();
+          // safely ignore exception while client.shutdown() may terminates remote process
+        } finally {
+          if (client != null) {
+            releaseClient(client);
+          }
         }
 
         clientPool.clear();

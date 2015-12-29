@@ -100,10 +100,6 @@ public class SparkInterpreter extends Interpreter {
             .add("spark.cores.max",
                 getSystemDefault(null, "spark.cores.max", ""),
                 "Total number of cores to use. Empty value uses all available core.")
-            .add("spark.yarn.jar",
-                getSystemDefault("SPARK_YARN_JAR", "spark.yarn.jar", ""),
-                "The location of the Spark jar file. If you use yarn as a cluster, "
-                + "we should set this value")
             .add("zeppelin.spark.useHiveContext",
                 getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT",
                     "zeppelin.spark.useHiveContext", "true"),
@@ -128,6 +124,7 @@ public class SparkInterpreter extends Interpreter {
 
   private Map<String, Object> binder;
   private SparkEnv env;
+  private SparkVersion sparkVersion;
 
 
   public SparkInterpreter(Properties property) {
@@ -156,15 +153,41 @@ public class SparkInterpreter extends Interpreter {
     return sc != null;
   }
 
-  private static JobProgressListener setupListeners(SparkContext context) {
+  static JobProgressListener setupListeners(SparkContext context) {
     JobProgressListener pl = new JobProgressListener(context.getConf());
     try {
       Object listenerBus = context.getClass().getMethod("listenerBus").invoke(context);
-      Method m = listenerBus.getClass().getMethod("addListener", SparkListener.class);
-      m.invoke(listenerBus, pl);
+
+      Method[] methods = listenerBus.getClass().getMethods();
+      Method addListenerMethod = null;
+      for (Method m : methods) {
+        if (!m.getName().equals("addListener")) {
+          continue;
+        }
+
+        Class<?>[] parameterTypes = m.getParameterTypes();
+
+        if (parameterTypes.length != 1) {
+          continue;
+        }
+
+        if (!parameterTypes[0].isAssignableFrom(JobProgressListener.class)) {
+          continue;
+        }
+
+        addListenerMethod = m;
+        break;
+      }
+
+      if (addListenerMethod != null) {
+        addListenerMethod.invoke(listenerBus, pl);
+      } else {
+        return null;
+      }
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
       e.printStackTrace();
+      return null;
     }
     return pl;
   }
@@ -201,7 +224,10 @@ public class SparkInterpreter extends Interpreter {
 
   public DependencyResolver getDependencyResolver() {
     if (dep == null) {
-      dep = new DependencyResolver(intp, sc, getProperty("zeppelin.dep.localrepo"));
+      dep = new DependencyResolver(intp,
+                                   sc,
+                                   getProperty("zeppelin.dep.localrepo"),
+                                   getProperty("zeppelin.dep.additionalRemoteRepository"));
     }
     return dep;
   }
@@ -280,8 +306,7 @@ public class SparkInterpreter extends Interpreter {
     }
 
     //TODO(jongyoul): Move these codes into PySparkInterpreter.java
-
-    String pysparkBasePath = getSystemDefault("SPARK_HOME", "spark.home", null);
+    String pysparkBasePath = getSystemDefault("SPARK_HOME", null, null);
     File pysparkPath;
     if (null == pysparkBasePath) {
       pysparkBasePath = getSystemDefault("ZEPPELIN_HOME", "zeppelin.home", "../");
@@ -303,9 +328,12 @@ public class SparkInterpreter extends Interpreter {
     pythonLibUris.trimToSize();
     if (pythonLibs.length == pythonLibUris.size()) {
       conf.set("spark.yarn.dist.files", Joiner.on(",").join(pythonLibUris));
-      conf.set("spark.files", conf.get("spark.yarn.dist.files"));
+      if (!useSparkSubmit()) {
+        conf.set("spark.files", conf.get("spark.yarn.dist.files"));
+      }
       conf.set("spark.submit.pyArchives", Joiner.on(":").join(pythonLibs));
     }
+
 
     SparkContext sparkContext = new SparkContext(conf);
     return sparkContext;
@@ -313,6 +341,10 @@ public class SparkInterpreter extends Interpreter {
 
   static final String toString(Object o) {
     return (o instanceof String) ? (String) o : "";
+  }
+
+  private boolean useSparkSubmit() {
+    return null != System.getenv("SPARK_SUBMIT");
   }
 
   public static String getSystemDefault(
@@ -438,6 +470,8 @@ public class SparkInterpreter extends Interpreter {
       sc.taskScheduler().rootPool().addSchedulable(pool);
     }
 
+    sparkVersion = SparkVersion.fromVersionString(sc.version());
+
     sqlc = getSQLContext();
 
     dep = getDependencyResolver();
@@ -462,15 +496,9 @@ public class SparkInterpreter extends Interpreter {
                  + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
     intp.interpret("import org.apache.spark.SparkContext._");
 
-    if (sc.version().startsWith("1.1")) {
+    if (sparkVersion.oldSqlContextImplicits()) {
       intp.interpret("import sqlContext._");
-    } else if (sc.version().startsWith("1.2")) {
-      intp.interpret("import sqlContext._");
-    } else if (sc.version().startsWith("1.3")) {
-      intp.interpret("import sqlContext.implicits._");
-      intp.interpret("import sqlContext.sql");
-      intp.interpret("import org.apache.spark.sql.functions._");
-    } else if (sc.version().startsWith("1.4")) {
+    } else {
       intp.interpret("import sqlContext.implicits._");
       intp.interpret("import sqlContext.sql");
       intp.interpret("import org.apache.spark.sql.functions._");
@@ -488,14 +516,10 @@ public class SparkInterpreter extends Interpreter {
      */
 
     try {
-      if (sc.version().startsWith("1.1") || sc.version().startsWith("1.2")) {
+      if (sparkVersion.oldLoadFilesMethodName()) {
         Method loadFiles = this.interpreter.getClass().getMethod("loadFiles", Settings.class);
         loadFiles.invoke(this.interpreter, settings);
-      } else if (sc.version().startsWith("1.3")) {
-        Method loadFiles = this.interpreter.getClass().getMethod(
-                "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
-        loadFiles.invoke(this.interpreter, settings);
-      } else if (sc.version().startsWith("1.4")) {
+      } else {
         Method loadFiles = this.interpreter.getClass().getMethod(
                 "org$apache$spark$repl$SparkILoop$$loadFiles", Settings.class);
         loadFiles.invoke(this.interpreter, settings);
@@ -556,9 +580,58 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
+    if (buf.length() < cursor) {
+      cursor = buf.length();
+    }
+    String completionText = getCompletionTargetString(buf, cursor);
+    if (completionText == null) {
+      completionText = "";
+      cursor = completionText.length();
+    }
     ScalaCompleter c = completor.completer();
-    Candidates ret = c.complete(buf, cursor);
+    Candidates ret = c.complete(completionText, cursor);
     return scala.collection.JavaConversions.asJavaList(ret.candidates());
+  }
+
+  private String getCompletionTargetString(String text, int cursor) {
+    String[] completionSeqCharaters = {" ", "\n", "\t"};
+    int completionEndPosition = cursor;
+    int completionStartPosition = cursor;
+    int indexOfReverseSeqPostion = cursor;
+
+    String resultCompletionText = "";
+    String completionScriptText = "";
+    try {
+      completionScriptText = text.substring(0, cursor);
+    }
+    catch (Exception e) {
+      logger.error(e.toString());
+      return null;
+    }
+    completionEndPosition = completionScriptText.length();
+
+    String tempReverseCompletionText = new StringBuilder(completionScriptText).reverse().toString();
+
+    for (String seqCharacter : completionSeqCharaters) {
+      indexOfReverseSeqPostion = tempReverseCompletionText.indexOf(seqCharacter);
+
+      if (indexOfReverseSeqPostion < completionStartPosition && indexOfReverseSeqPostion > 0) {
+        completionStartPosition = indexOfReverseSeqPostion;
+      }
+
+    }
+
+    if (completionStartPosition == completionEndPosition) {
+      completionStartPosition = 0;
+    }
+    else
+    {
+      completionStartPosition = completionEndPosition - completionStartPosition;
+    }
+    resultCompletionText = completionScriptText.substring(
+            completionStartPosition , completionEndPosition);
+
+    return resultCompletionText;
   }
 
   public Object getValue(String name) {
@@ -581,6 +654,11 @@ public class SparkInterpreter extends Interpreter {
    */
   @Override
   public InterpreterResult interpret(String line, InterpreterContext context) {
+    if (sparkVersion.isUnsupportedVersion()) {
+      return new InterpreterResult(Code.ERROR, "Spark " + sparkVersion.toString()
+          + " is not supported");
+    }
+
     z.setInterpreterContext(context);
     if (line == null || line.trim().length() == 0) {
       return new InterpreterResult(Code.SUCCESS);
@@ -677,23 +755,14 @@ public class SparkInterpreter extends Interpreter {
     while (it.hasNext()) {
       ActiveJob job = it.next();
       String g = (String) job.properties().get("spark.jobGroup.id");
-
       if (jobGroup.equals(g)) {
         int[] progressInfo = null;
         try {
           Object finalStage = job.getClass().getMethod("finalStage").invoke(job);
-          if (sc.version().startsWith("1.0")) {
+          if (sparkVersion.getProgress1_0()) {
             progressInfo = getProgressFromStage_1_0x(sparkListener, finalStage);
-          } else if (sc.version().startsWith("1.1")) {
-            progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);
-          } else if (sc.version().startsWith("1.2")) {
-            progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);
-          } else if (sc.version().startsWith("1.3")) {
-            progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);
-          } else if (sc.version().startsWith("1.4")) {
-            progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);
           } else {
-            continue;
+            progressInfo = getProgressFromStage_1_1x(sparkListener, finalStage);
           }
         } catch (IllegalAccessException | IllegalArgumentException
             | InvocationTargetException | NoSuchMethodException
@@ -757,7 +826,6 @@ public class SparkInterpreter extends Interpreter {
           this.getClass().forName("org.apache.spark.ui.jobs.UIData$StageUIData");
 
       Method numCompletedTasks = stageUIDataClass.getMethod("numCompleteTasks");
-
       Set<Tuple2<Object, Object>> keys =
           JavaConverters.asJavaSetConverter(stageIdData.keySet()).asJava();
       for (Tuple2<Object, Object> k : keys) {
@@ -817,5 +885,9 @@ public class SparkInterpreter extends Interpreter {
 
   public ZeppelinContext getZeppelinContext() {
     return z;
+  }
+
+  public SparkVersion getSparkVersion() {
+    return sparkVersion;
   }
 }

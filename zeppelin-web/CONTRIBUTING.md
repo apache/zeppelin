@@ -1,5 +1,12 @@
 # Contributing to Zeppelin-Web
 
+## Dev Mode
+When working on Zeppelin's WebApplication, it is recommended to run in dev mode.
+
+For that, start Zeppelin server normally, then use ``./grunt serve`` in _zeppelin-web_ directory.
+
+This will launch a Zeppelin WebApplication on port **9000** that will update on code changes.
+
 ## Technologies
 
 Zeppelin WebApplication is using **AngularJS** as main Framework, and **Grunt** and **Bower** as helpers.
@@ -16,8 +23,10 @@ So you might want to get familiar with it.
 
 But don't worry, JSHint will make you remember it for the most part.
 
-There is also a rule of **No JQuery except in directives**, If you want to include a library,
-please search for its **angularJS** directive first and if it doesn't exist, make one :)
+We try not to have **JQuery except in directives**, If you want to include a library,
+please search for its **angularJS** directive first.
+
+If you still need to use it, then please use ``angular.element()`` instead of ``$()``
 
 ## Folder Structure & Code Organization
 
@@ -94,7 +103,7 @@ The `components` folder is here to contains any reusable component (used more th
 
 Fonts files and their css are mixed together in the `fonts` folder
 
-## Compiling and using dev mode
+## New files includes
 
 As we do not use yeoman to generate controllers or other type of files with this new structure,
 we need to do some includes manually in `index.html` in order to use dev mode and compile correctly.

@@ -1,0 +1,50 @@
+
+{% if page.url == '/index.html' %}
+    <div class="jumbotron">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-5">
+            <h1>Zeppelin</h1>
+            <p>Simplyfying data analytics</p>
+          </div>
+          <div class="col-md-6 col-md-offset-1">
+            <div id="myCarousel" class="carousel slide" data-ride="carousel">
+              <!-- Indicators -->
+              <ol class="carousel-indicators">
+                <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                <li data-target="#myCarousel" data-slide-to="1"></li>
+              </ol>
+              <div class="carousel-inner">
+                <div class="item active">
+                  <div class="container">
+                    <div class="carousel-caption">
+                      <h3></h3>
+                      <a href="./screenshots.html"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/notebook.png" /></a>
+                      <p></p>
+                    </div>
+                  </div>
+                </div>
+                <div class="item">
+                  <div class="container">
+                    <div class="carousel-caption">
+                      <a href="./screenshots.html"><img class="thumbnail" src="assets/themes/zeppelin/img/screenshots/sparksql.png" /></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <a class="left carousel-control" href="#myCarousel" data-slide="prev"><span class="glyphicon glyphicon-chevron-left"></span></a>
+              <a class="right carousel-control" href="#myCarousel" data-slide="next"><span class="glyphicon glyphicon-chevron-right"></span></a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+{% else %}
+    <div class="jumbotron small">
+      <div class="container">
+        <div class="title">{{page.title}}</div><div class="subtitle">{{page.subtitle}}</div>
+	<p class="description">{{page.description}}</p>
+      </div>
+    </div>
+{% endif %}

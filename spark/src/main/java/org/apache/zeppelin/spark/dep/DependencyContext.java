@@ -21,6 +21,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
@@ -28,6 +30,7 @@ import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
 import org.sonatype.aether.graph.DependencyFilter;
 import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.resolution.ArtifactResolutionException;
 import org.sonatype.aether.resolution.ArtifactResult;
 import org.sonatype.aether.resolution.DependencyRequest;
@@ -49,13 +52,13 @@ public class DependencyContext {
   List<File> filesDist = new LinkedList<File>();
   private RepositorySystem system = Booter.newRepositorySystem();
   private RepositorySystemSession session;
-  private RemoteRepository mavenCentral = new RemoteRepository("central",
-      "default", "http://repo1.maven.org/maven2/");
-  private RemoteRepository mavenLocal = new RemoteRepository("local",
-      "default", "file://" + System.getProperty("user.home") + "/.m2/repository");
+  private RemoteRepository mavenCentral = Booter.newCentralRepository();
+  private RemoteRepository mavenLocal = Booter.newLocalRepository();
+  private List<RemoteRepository> additionalRepos = new LinkedList<RemoteRepository>();
 
-  public DependencyContext(String localRepoPath) {
+  public DependencyContext(String localRepoPath, String additionalRemoteRepository) {
     session =  Booter.newRepositorySystemSession(system, localRepoPath);
+    addRepoFromProperty(additionalRemoteRepository);
   }
 
   public Dependency load(String lib) {
@@ -82,6 +85,24 @@ public class DependencyContext {
     filesDist = new LinkedList<File>();
   }
 
+  private void addRepoFromProperty(String listOfRepo) {
+    if (listOfRepo != null) {
+      String[] repos = listOfRepo.split(";");
+      for (String repo : repos) {
+        String[] parts = repo.split(",");
+        if (parts.length == 3) {
+          String id = parts[0].trim();
+          String url = parts[1].trim();
+          boolean isSnapshot = Boolean.parseBoolean(parts[2].trim());
+          if (id.length() > 1 && url.length() > 1) {
+            RemoteRepository rr = new RemoteRepository(id, "default", url);
+            rr.setPolicy(isSnapshot, null);
+            additionalRepos.add(rr);
+          }
+        }
+      }
+    }
+  }
 
   /**
    * fetch all artifacts
@@ -129,9 +150,16 @@ public class DependencyContext {
 
     collectRequest.addRepository(mavenCentral);
     collectRequest.addRepository(mavenLocal);
+    for (RemoteRepository repo : additionalRepos) {
+      collectRequest.addRepository(repo);
+    }
     for (Repository repo : repositories) {
       RemoteRepository rr = new RemoteRepository(repo.getName(), "default", repo.getUrl());
       rr.setPolicy(repo.isSnapshot(), null);
+      Authentication auth = repo.getAuthentication();
+      if (auth != null) {
+        rr.setAuthentication(auth);
+      }
       collectRequest.addRepository(rr);
     }
 

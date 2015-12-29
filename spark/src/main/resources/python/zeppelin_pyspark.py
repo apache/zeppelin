@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-import sys, getopt, traceback
+import sys, getopt, traceback, json, re
 
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
 from py4j.protocol import Py4JJavaError
@@ -52,9 +52,9 @@ class PyZeppelinContext(dict):
   def show(self, obj):
     from pyspark.sql import DataFrame
     if isinstance(obj, DataFrame):
-      print gateway.jvm.org.apache.zeppelin.spark.ZeppelinContext.showDF(self.z, obj._jdf)
+      print(gateway.jvm.org.apache.zeppelin.spark.ZeppelinContext.showDF(self.z, obj._jdf))
     else:
-      print str(obj)
+      print(str(obj))
 
   # By implementing special methods it makes operating on it more Pythonic
   def __setitem__(self, key, item):
@@ -78,15 +78,88 @@ class PyZeppelinContext(dict):
   def get(self, key):
     return self.__getitem__(key)
 
+  def input(self, name, defaultValue = ""):
+    return self.z.input(name, defaultValue)
+
+  def select(self, name, options, defaultValue = ""):
+    # auto_convert to ArrayList doesn't match the method signature on JVM side
+    tuples = map(lambda items: self.__tupleToScalaTuple2(items), options)
+    iterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(tuples)
+    return self.z.select(name, defaultValue, iterables)
+
+  def __tupleToScalaTuple2(self, tuple):
+    if (len(tuple) == 2):
+      return gateway.jvm.scala.Tuple2(tuple[0], tuple[1])
+    else:
+      raise IndexError("options must be a list of tuple of 2")
+
+
+class SparkVersion(object):
+  SPARK_1_4_0 = 140
+  SPARK_1_3_0 = 130
+
+  def __init__(self, versionNumber):
+    self.version = versionNumber
+
+  def isAutoConvertEnabled(self):
+    return self.version >= self.SPARK_1_4_0
+
+  def isImportAllPackageUnderSparkSql(self):
+    return self.version >= self.SPARK_1_3_0
+
+class PySparkCompletion:
+  def getGlobalCompletion(self):
+    objectDefList = []
+    try:
+      for completionItem in list(globals().iterkeys()):
+        objectDefList.append(completionItem)
+    except:
+      return None
+    else:
+      return objectDefList
+
+  def getMethodCompletion(self, text_value):
+    objectDefList = []
+    completion_target = text_value
+    try:
+      if len(completion_target) <= 0:
+        return None
+      if text_value[-1] == ".":
+        completion_target = text_value[:-1]
+      exec("%s = %s(%s)" % ("objectDefList", "dir", completion_target))
+    except:
+      return None
+    else:
+      return objectDefList
+
+
+  def getCompletion(self, text_value):
+    completionList = set()
+
+    globalCompletionList = self.getGlobalCompletion()
+    if globalCompletionList != None:
+      for completionItem in list(globalCompletionList):
+        completionList.add(completionItem)
+
+    if text_value != None:
+      objectCompletionList = self.getMethodCompletion(text_value)
+      if objectCompletionList != None:
+        for completionItem in list(objectCompletionList):
+          completionList.add(completionItem)
+    if len(completionList) <= 0:
+      print ""
+    else:
+      print json.dumps(filter(lambda x : not re.match("^__.*", x), list(completionList)))
+
 
 output = Logger()
 sys.stdout = output
 sys.stderr = output
 
 client = GatewayClient(port=int(sys.argv[1]))
-sparkVersion = sys.argv[2]
+sparkVersion = SparkVersion(int(sys.argv[2]))
 
-if sparkVersion.startswith("1.4"):
+if sparkVersion.isAutoConvertEnabled():
   gateway = JavaGateway(client, auto_convert = True)
 else:
   gateway = JavaGateway(client)
@@ -102,17 +175,14 @@ intp.onPythonScriptInitialized()
 
 jsc = intp.getJavaSparkContext()
 
-if sparkVersion.startswith("1.2"):
+if sparkVersion.isImportAllPackageUnderSparkSql():
+  java_import(gateway.jvm, "org.apache.spark.sql.*")
+  java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
+else:
   java_import(gateway.jvm, "org.apache.spark.sql.SQLContext")
   java_import(gateway.jvm, "org.apache.spark.sql.hive.HiveContext")
   java_import(gateway.jvm, "org.apache.spark.sql.hive.LocalHiveContext")
   java_import(gateway.jvm, "org.apache.spark.sql.hive.TestHiveContext")
-elif sparkVersion.startswith("1.3"):
-  java_import(gateway.jvm, "org.apache.spark.sql.*")
-  java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
-elif sparkVersion.startswith("1.4"):
-  java_import(gateway.jvm, "org.apache.spark.sql.*")
-  java_import(gateway.jvm, "org.apache.spark.sql.hive.*")
 
 
 java_import(gateway.jvm, "scala.Tuple2")
@@ -123,6 +193,7 @@ sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
 sqlc = SQLContext(sc, intp.getSQLContext())
 sqlContext = sqlc
 
+completion = PySparkCompletion()
 z = PyZeppelinContext(intp.getZeppelinContext())
 
 while True :

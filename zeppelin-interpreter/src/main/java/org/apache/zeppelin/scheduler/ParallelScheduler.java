@@ -18,6 +18,7 @@
 package org.apache.zeppelin.scheduler;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -25,10 +26,7 @@ import java.util.concurrent.ExecutorService;
 import org.apache.zeppelin.scheduler.Job.Status;
 
 /**
- * TODO(moon) : add description.
- *
- * @author Leemoonsoo
- *
+ * Parallel scheduler runs submitted job concurrently.
  */
 public class ParallelScheduler implements Scheduler {
   List<Job> queue = new LinkedList<Job>();
@@ -64,6 +62,21 @@ public class ParallelScheduler implements Scheduler {
   }
 
   @Override
+  public Job removeFromWaitingQueue(String jobId) {
+    synchronized (queue) {
+      Iterator<Job> it = queue.iterator();
+      while (it.hasNext()) {
+        Job job = it.next();
+        if (job.getId().equals(jobId)) {
+          it.remove();
+          return job;
+        }
+      }
+    }
+    return null;
+  }
+
+  @Override
   public Collection<Job> getJobsRunning() {
     List<Job> ret = new LinkedList<Job>();
     synchronized (queue) {
@@ -87,9 +100,9 @@ public class ParallelScheduler implements Scheduler {
 
   @Override
   public void run() {
-
-    synchronized (queue) {
-      while (terminate == false) {
+    while (terminate == false) {
+      Job job = null;
+      synchronized (queue) {
         if (running.size() >= maxConcurrency || queue.isEmpty() == true) {
           try {
             queue.wait(500);
@@ -98,14 +111,12 @@ public class ParallelScheduler implements Scheduler {
           continue;
         }
 
-        Job job = queue.remove(0);
+        job = queue.remove(0);
         running.add(job);
-        Scheduler scheduler = this;
-
-        executor.execute(new JobRunner(scheduler, job));
       }
+      Scheduler scheduler = this;
 
-
+      executor.execute(new JobRunner(scheduler, job));
     }
   }
 

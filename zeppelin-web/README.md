@@ -24,7 +24,7 @@ Here are the basic commands to compile the WebApplication with a configured envi
 
 ``./grunt serve``
 
-This will launch a Zeppelin WebApplication on port **9000** and update on code changes.
+This will launch a Zeppelin WebApplication on port **9000** that will update on code changes.
 (You will need to have Zeppelin running on the side)
 
 

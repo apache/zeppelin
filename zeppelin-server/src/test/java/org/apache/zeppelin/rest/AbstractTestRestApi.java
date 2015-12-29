@@ -22,14 +22,21 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
+import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.hamcrest.Description;
@@ -93,14 +100,14 @@ public abstract class AbstractTestRestApi {
       long s = System.currentTimeMillis();
       boolean started = false;
       while (System.currentTimeMillis() - s < 1000 * 60 * 3) {  // 3 minutes
-    	  Thread.sleep(2000);
-    	  started = checkIfServerIsRuning();
-    	  if (started == true) {
-    		  break;
-    	  }
+        Thread.sleep(2000);
+        started = checkIfServerIsRuning();
+        if (started == true) {
+          break;
+        }
       }
       if (started == false) {
-    	  throw new RuntimeException("Can not start Zeppelin server");
+        throw new RuntimeException("Can not start Zeppelin server");
       }
       LOG.info("Test Zeppelin stared.");
 
@@ -108,6 +115,7 @@ public abstract class AbstractTestRestApi {
       // ci environment runs spark cluster for testing
       // so configure zeppelin use spark cluster
       if ("true".equals(System.getenv("CI"))) {
+        // assume first one is spark
         InterpreterSetting sparkIntpSetting = null;
         for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
           if (intpSetting.getGroup().equals("spark")) {
@@ -124,6 +132,7 @@ public abstract class AbstractTestRestApi {
 
         ZeppelinServer.notebook.getInterpreterFactory().restart(sparkIntpSetting.id());
       } else {
+        // assume first one is spark
         InterpreterSetting sparkIntpSetting = null;
         for(InterpreterSetting intpSetting : ZeppelinServer.notebook.getInterpreterFactory().get()) {
           if (intpSetting.getGroup().equals("spark")) {
@@ -194,8 +203,15 @@ public abstract class AbstractTestRestApi {
 
   protected static void shutDown() throws Exception {
     if (!wasRunning) {
+      // restart interpreter to stop all interpreter processes
+      List<String> settingList = ZeppelinServer.notebook.getInterpreterFactory()
+          .getDefaultInterpreterSettingList();
+      for (String setting : settingList) {
+        ZeppelinServer.notebook.getInterpreterFactory().restart(setting);
+      }
+
       LOG.info("Terminating test Zeppelin...");
-      ZeppelinServer.jettyServer.stop();
+      ZeppelinServer.jettyWebServer.stop();
       executor.shutdown();
 
       long s = System.currentTimeMillis();
@@ -235,17 +251,27 @@ public abstract class AbstractTestRestApi {
     LOG.info("Connecting to {}", url + path);
     HttpClient httpClient = new HttpClient();
     GetMethod getMethod = new GetMethod(url + path);
-    getMethod.addRequestHeader("Origin", "http://localhost:8080");
-            httpClient.executeMethod(getMethod);
+    getMethod.addRequestHeader("Origin", url);
+    httpClient.executeMethod(getMethod);
     LOG.info("{} - {}", getMethod.getStatusCode(), getMethod.getStatusText());
     return getMethod;
+  }
+
+  protected static DeleteMethod httpDelete(String path) throws IOException {
+    LOG.info("Connecting to {}", url + path);
+    HttpClient httpClient = new HttpClient();
+    DeleteMethod deleteMethod = new DeleteMethod(url + path);
+    deleteMethod.addRequestHeader("Origin", url);
+    httpClient.executeMethod(deleteMethod);
+    LOG.info("{} - {}", deleteMethod.getStatusCode(), deleteMethod.getStatusText());
+    return deleteMethod;
   }
 
   protected static PostMethod httpPost(String path, String body) throws IOException {
     LOG.info("Connecting to {}", url + path);
     HttpClient httpClient = new HttpClient();
     PostMethod postMethod = new PostMethod(url + path);
-    postMethod.addRequestHeader("Origin", "http://localhost:8080");
+    postMethod.addRequestHeader("Origin", url);
     RequestEntity entity = new ByteArrayRequestEntity(body.getBytes("UTF-8"));
     postMethod.setRequestEntity(entity);
     httpClient.executeMethod(postMethod);
@@ -253,14 +279,26 @@ public abstract class AbstractTestRestApi {
     return postMethod;
   }
 
-  protected Matcher<GetMethod> responsesWith(final int expectedStatusCode) {
-    return new TypeSafeMatcher<GetMethod>() {
-      WeakReference<GetMethod> method;
+  protected static PutMethod httpPut(String path, String body) throws IOException {
+    LOG.info("Connecting to {}", url + path);
+    HttpClient httpClient = new HttpClient();
+    PutMethod putMethod = new PutMethod(url + path);
+    putMethod.addRequestHeader("Origin", url);
+    RequestEntity entity = new ByteArrayRequestEntity(body.getBytes("UTF-8"));
+    putMethod.setRequestEntity(entity);
+    httpClient.executeMethod(putMethod);
+    LOG.info("{} - {}", putMethod.getStatusCode(), putMethod.getStatusText());
+    return putMethod;
+  }
+
+  protected Matcher<HttpMethodBase> responsesWith(final int expectedStatusCode) {
+    return new TypeSafeMatcher<HttpMethodBase>() {
+      WeakReference<HttpMethodBase> method;
 
       @Override
-      public boolean matchesSafely(GetMethod getMethod) {
-        method = (method == null) ? new WeakReference<GetMethod>(getMethod) : method;
-        return getMethod.getStatusCode() == expectedStatusCode;
+      public boolean matchesSafely(HttpMethodBase httpMethodBase) {
+        method = (method == null) ? new WeakReference<HttpMethodBase>(httpMethodBase) : method;
+        return httpMethodBase.getStatusCode() == expectedStatusCode;
       }
 
       @Override
@@ -270,7 +308,7 @@ public abstract class AbstractTestRestApi {
       }
 
       @Override
-      protected void describeMismatchSafely(GetMethod item, Description description) {
+      protected void describeMismatchSafely(HttpMethodBase item, Description description) {
         description.appendText("got ").appendValue(item.getStatusCode()).appendText(" ")
             .appendText(item.getStatusText());
       }
@@ -322,6 +360,14 @@ public abstract class AbstractTestRestApi {
     };
   }
 
+  //Create new Setting and return Setting ID
+  protected String createTempSetting(String tempName) throws IOException {
+
+    InterpreterGroup interpreterGroup =  ZeppelinServer.notebook.getInterpreterFactory().add(tempName,"newGroup",
+        new InterpreterOption(false),new Properties());
+    return interpreterGroup.getId();
+  }
+
   protected TypeSafeMatcher<? super JsonElement> hasRootElementNamed(final String memberName) {
     return new TypeSafeMatcher<JsonElement>() {
       @Override
@@ -343,15 +389,19 @@ public abstract class AbstractTestRestApi {
   }
 
   /** Status code matcher */
-  protected Matcher<? super GetMethod> isForbiden() {
-    return responsesWith(403);
-  }
+  protected Matcher<? super HttpMethodBase> isForbiden() { return responsesWith(403); }
 
-  protected Matcher<? super GetMethod> isAllowed() {
+  protected Matcher<? super HttpMethodBase> isAllowed() {
     return responsesWith(200);
   }
 
-  protected Matcher<? super GetMethod> isNotAllowed() {
+  protected Matcher<? super HttpMethodBase> isCreated() { return responsesWith(201); }
+
+  protected Matcher<? super HttpMethodBase> isBadRequest() { return responsesWith(400); }
+
+  protected Matcher<? super HttpMethodBase> isNotFound() { return responsesWith(404); }
+
+  protected Matcher<? super HttpMethodBase> isNotAllowed() {
     return responsesWith(405);
   }
 

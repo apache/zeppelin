@@ -19,10 +19,18 @@
   "strict": true,
   "trailing": true,
   "smarttabs": true,
+  "jasmine": true,
+  "predef": [ "inject" ],
   "globals": {
     "angular": false,
     "_": false,
     "jQuery": false,
-    "hljs": false
+    "hljs": false,
+    "confirm": false,
+    "alert": false,
+    "nv": false,
+    "ace": false,
+    "d3": false,
+    "BootstrapDialog": false
   }
 }

@@ -38,10 +38,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Shell interpreter for Zeppelin.
- *
- * @author Leemoonsoo
- * @author anthonycorbacho
- *
  */
 public class ShellInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(ShellInterpreter.class);
@@ -64,7 +60,7 @@ public class ShellInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
-    logger.info("Run shell command '" + cmd + "'");
+    logger.debug("Run shell command '" + cmd + "'");
     long start = System.currentTimeMillis();
     CommandLine cmdLine = CommandLine.parse("bash");
     cmdLine.addArgument("-c", false);

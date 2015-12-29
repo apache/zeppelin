@@ -27,9 +27,6 @@ import org.sonatype.aether.repository.RemoteRepository;
 
 /**
  * Manage mvn repository.
- *
- * @author anthonycorbacho
- *
  */
 public class Booter {
   public static RepositorySystem newRepositorySystem() {
@@ -66,5 +63,10 @@ public class Booter {
 
   public static RemoteRepository newCentralRepository() {
     return new RemoteRepository("central", "default", "http://repo1.maven.org/maven2/");
+  }
+
+  public static RemoteRepository newLocalRepository() {
+    return new RemoteRepository("local",
+        "default", "file://" + System.getProperty("user.home") + "/.m2/repository");
   }
 }

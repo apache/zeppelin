@@ -20,11 +20,12 @@ package org.apache.zeppelin.notebook.repo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
@@ -33,14 +34,14 @@ import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.JobListenerFactory;
 import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
-import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.search.LuceneSearch;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class NotebookRepoSyncTest implements JobListenerFactory{
+public class NotebookRepoSyncTest implements JobListenerFactory {
 
   private File mainZepDir;
   private ZeppelinConfiguration conf;
@@ -88,8 +89,9 @@ public class NotebookRepoSyncTest implements JobListenerFactory{
 
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
     
+    SearchService search = mock(SearchService.class);
     notebookRepoSync = new NotebookRepoSync(conf);
-    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this);
+    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this, search);
   }
 
   @After
@@ -148,6 +150,9 @@ public class NotebookRepoSyncTest implements JobListenerFactory{
     /* create note */
     Note note = notebookSync.createNote();
     Paragraph p1 = note.addParagraph();
+    Map config = p1.getConfig();
+    config.put("enabled", true);
+    p1.setConfig(config);
     p1.setText("hello world");
     
     /* new paragraph exists in note instance */
@@ -180,7 +185,41 @@ public class NotebookRepoSyncTest implements JobListenerFactory{
         notebookRepoSync.list(1).get(0).getId()).getLastParagraph().getId());
   }
   
-  private void delete(File file){
+  @Test
+  public void testSyncOnList() throws IOException {
+	
+	/* check that both storage repos are empty */
+	assertTrue(notebookRepoSync.getRepoCount() > 1);
+	assertEquals(0, notebookRepoSync.list(0).size());
+	assertEquals(0, notebookRepoSync.list(1).size());
+	    
+	File srcDir = new File("src/test/resources/2A94M5J1Z");
+	File destDir = new File(secNotebookDir + "/2A94M5J1Z");
+	
+	/* copy manually new notebook into secondary storage repo and check repos */
+    try {
+        FileUtils.copyDirectory(srcDir, destDir);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    assertEquals(0, notebookRepoSync.list(0).size());
+    assertEquals(1, notebookRepoSync.list(1).size());
+    
+    /* Although new notebook is added to secondary storage it's not displayed 
+     * on list() with ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE set to false
+     */
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "false");
+    assertEquals(0, notebookRepoSync.list().size());
+    
+    /* notebook is synced after ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE variable is set to true */
+    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "true");
+    assertEquals(1, notebookRepoSync.list().size());
+    
+    assertEquals(1, notebookRepoSync.list(0).size());
+	assertEquals(1, notebookRepoSync.list(1).size());
+  }
+  
+  static void delete(File file){
     if(file.isFile()) file.delete();
       else if(file.isDirectory()){
         File [] files = file.listFiles();

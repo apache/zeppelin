@@ -17,8 +17,10 @@
  */
 package org.apache.zeppelin.flink;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -55,6 +57,13 @@ public class FlinkInterpreterTest {
   }
 
   @Test
+  public void testSimpleStatementWithSystemOutput() {
+    InterpreterResult result = flink.interpret("val a=1", context);
+    result = flink.interpret("System.out.print(a)", context);
+    assertEquals("1", result.message());
+  }
+
+  @Test
   public void testNextlineInvoke() {
     InterpreterResult result = flink.interpret("\"123\"\n  .toInt", context);
     assertEquals("res0: Int = 123\n", result.message());    
@@ -66,5 +75,13 @@ public class FlinkInterpreterTest {
     flink.interpret("val counts = text.flatMap { _.toLowerCase.split(\" \") }.map { (_, 1) }.groupBy(0).sum(1)", context);
     InterpreterResult result = flink.interpret("counts.print()", context);
     assertEquals(Code.SUCCESS, result.code());
+
+    String[] expectedCounts = {"(to,2)", "(be,2)", "(or,1)", "(not,1)"};
+    Arrays.sort(expectedCounts);
+
+    String[] counts = result.message().split("\n");
+    Arrays.sort(counts);
+
+    assertArrayEquals(expectedCounts, counts);
   }
 }

@@ -56,7 +56,7 @@ public class RemoteInterpreterEventPoller extends Thread {
   public void run() {
     Client client = null;
 
-    while (!shutdown) {
+    while (!shutdown && interpreterProcess.isRunning()) {
       try {
         client = interpreterProcess.getClient();
       } catch (Exception e1) {

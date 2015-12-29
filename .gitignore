@@ -17,6 +17,7 @@ conf/interpreter.json
 
 # other generated files
 spark/dependency-reduced-pom.xml
+reports
 
 #webapp
 zeppelin-web/node_modules

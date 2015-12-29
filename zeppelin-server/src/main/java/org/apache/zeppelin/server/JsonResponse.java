@@ -31,8 +31,6 @@ import com.google.gson.GsonBuilder;
 /**
  * Json response builder.
  *
- * @author Leemoonsoo
- *
  * @param <T>
  */
 public class JsonResponse<T> {
@@ -105,6 +103,7 @@ public class JsonResponse<T> {
     if (pretty) {
       gsonBuilder.setPrettyPrinting();
     }
+    gsonBuilder.setExclusionStrategies(new JsonExclusionStrategy());
     Gson gson = gsonBuilder.create();
     return gson.toJson(this);
   }

@@ -26,15 +26,10 @@
 		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
 		<init-param>
 			<param-name>com.sun.jersey.config.property.packages</param-name>
-			<param-value>org.apache.zeppelin.rest;com.wordnik.swagger.jersey.listing</param-value>
+			<param-value>org.apache.zeppelin.rest</param-value>
 		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
-	<!-- This route is for swagger, must be different than root -->
-	<servlet-mapping>
-		<servlet-name>default</servlet-name>
-		<url-pattern>/rest/*</url-pattern>
-	</servlet-mapping>
 
 	<context-param>
 		<param-name>configuration</param-name>

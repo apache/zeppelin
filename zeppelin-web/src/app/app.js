@@ -30,7 +30,10 @@ angular.module('zeppelinWebApp', [
     'angular.filter',
     'monospaced.elastic',
     'puElasticInput',
-    'xeditable'
+    'xeditable',
+    'ngToast',
+    'focus-if',
+    'ngResource'
   ])
   .filter('breakFilter', function() {
     return function (text) {
@@ -39,13 +42,16 @@ angular.module('zeppelinWebApp', [
       }
     };
   })
-  .config(function ($routeProvider) {
+  .config(function ($routeProvider, ngToastProvider) {
     $routeProvider
       .when('/', {
-        templateUrl: 'app/home/home.html',
-        controller: 'HomeCtrl'
+        templateUrl: 'app/home/home.html'
       })
       .when('/notebook/:noteId', {
+        templateUrl: 'app/notebook/notebook.html',
+        controller: 'NotebookCtrl'
+      })
+      .when('/notebook/:noteId/paragraph?=:paragraphId', {
         templateUrl: 'app/notebook/notebook.html',
         controller: 'NotebookCtrl'
       })
@@ -57,7 +63,17 @@ angular.module('zeppelinWebApp', [
         templateUrl: 'app/interpreter/interpreter.html',
         controller: 'InterpreterCtrl'
       })
+      .when('/search/:searchTerm', {
+        templateUrl: 'app/search/result-list.html',
+        controller: 'SearchResultCtrl'
+      })
       .otherwise({
         redirectTo: '/'
       });
+
+    ngToastProvider.configure({
+      dismissButton: true,
+      dismissOnClick: false,
+      timeout: 6000
+    });
   });

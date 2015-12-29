@@ -28,7 +28,7 @@ import org.apache.zeppelin.interpreter.InterpreterOption;
 public class NewInterpreterSettingRequest {
   String name;
   String group;
-  InterpreterOption option;
+  // option was deprecated
   Map<String, String> properties;
 
   public NewInterpreterSettingRequest() {
@@ -47,7 +47,4 @@ public class NewInterpreterSettingRequest {
     return properties;
   }
 
-  public InterpreterOption getOption() {
-    return option;
-  }
 }

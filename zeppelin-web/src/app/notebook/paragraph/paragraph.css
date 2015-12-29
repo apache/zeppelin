@@ -1,0 +1,415 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+  Paragraph Style
+*/
+
+.paragraph-space {
+  margin-bottom: 5px !important;
+  padding: 10px 10px 10px 10px !important;
+  min-height: 30px;
+}
+
+.paragraph-margin {
+  margin-right: 2px;
+  margin-left: 2px;
+}
+
+/*
+  Paragraph Results
+*/
+
+.paragraph .text {
+  display: block !important;
+  font-family: "Monaco","Menlo","Ubuntu Mono","Consolas","source-code-pro",monospace;
+  font-size: 12px !important;
+  line-height: 1.42857143 !important;
+  margin: 0 0 5px !important;
+  padding-top: 2px;
+  unicode-bidi: embed;
+  white-space: pre-wrap;
+  word-break: break-all !important;
+  word-wrap: break-word !important;
+}
+
+.paragraph table {
+  margin-bottom: 0;
+}
+
+.paragraph p {
+  margin: 0;
+}
+
+.paragraph div svg {
+  width: 100%;
+}
+
+.graphContainer {
+  position: relative;
+  margin-bottom: 5px;
+  overflow: visible;
+}
+
+.graphContainer .table {
+  overflow: hidden;
+  margin-bottom: 5px !important;
+}
+
+.resizable-helper {
+  border: 3px solid #DDDDDD;
+}
+
+.paragraph .paragraphFooter {
+  height: 9px;
+}
+
+.paragraph .executionTime {
+  color: #999;
+  font-size: 10px;
+  font-family: 'Roboto', sans-serif;
+}
+
+.paragraph .resultContained {
+  overflow: auto;
+}
+
+/*
+  Paragraph as Iframe CSS
+*/
+
+.paragraphAsIframe {
+  padding: 0;
+  margin-top: -79px;
+  margin-left: -10px;
+  margin-right: -10px;
+}
+
+.paragraphAsIframe .control {
+  background: rgba(255,255,255,0.9);
+  border-top: 1px solid #EFEFEF;
+  display: none;
+  float: right;
+  color: #999;
+  margin-top: -9px;
+  margin-right: 0;
+  position: absolute;
+  clear: both;
+  right: 25px;
+}
+
+.paragraphAsIframe table {
+  margin-bottom: 0;
+}
+
+.paragraphAsIframe .editor {
+  width: 100%;
+  border-left: 4px solid #EEEEEE;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.paragraphAsIframe .text {
+  white-space: pre;
+  display: block;
+  unicode-bidi: embed;
+  display: block !important;
+  margin: 0 0 10px!important;
+  font-size: 12px!important;
+  line-height: 1.42857143!important;
+  word-break: break-all!important;
+  word-wrap: break-word!important;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+}
+
+/*
+  Paragraph Controls CSS
+*/
+
+.paragraph .runControl {
+  font-size: 1px;
+  color: #AAAAAA;
+  height:4px;
+  margin: 0px 0px 0px 0px;
+}
+
+.paragraph .runControl .progress {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  z-index: 100;
+  border-radius: 0;
+}
+
+.paragraph .control span {
+    margin-left: 4px;
+}
+
+.paragraph .control {
+  background: rgba(255,255,255,0.85);
+  float: right;
+  color: #999;
+  margin-top: 1px;
+  margin-right: 5px;
+  position: absolute;
+  clear: both;
+  right: 15px;
+  top: 16px;
+  text-align: right;
+  font-size: 12px;
+  padding: 4px;
+}
+
+.paragraph .control li {
+  font-size: 12px;
+  margin-bottom: 4px;
+  color: #333333;
+}
+
+.paragraph .control .tooltip {
+  z-index: 10003;
+}
+
+/*
+  Paragraph Menu
+*/
+
+.dropdown-menu > li > a {
+  cursor: pointer;
+}
+
+/*
+  Paragraph Title
+*/
+
+.paragraph .title {
+  margin: 0;
+  font-size: 12px;
+}
+
+.paragraph .title div {
+  width: 80%;
+  font-weight: bold;
+  font-family: 'Roboto', sans-serif;
+  font-size: 17px !important;
+  text-transform: capitalize;
+}
+
+.paragraph .title input {
+  width: 80%;
+  height: 24px;
+  line-height: 1.42857143;
+  color: #555;
+  background: #fff none;
+  border: 1px solid #ccc;
+  border-radius: 0;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  text-transform: capitalize;
+  font-family: 'Roboto', sans-serif;
+  font-size: 17px !important;
+  font-weight: bold;
+  padding: 0 2px;
+  margin-left: -3px;
+}
+
+/*
+  Paragraph Forms CSS
+*/
+
+.paragraphForm.form-horizontal .form-group {
+  margin-right: 0;
+  margin-left:  0;
+}
+
+.paragraphForm.form-horizontal .form-group label {
+  padding-left: 0;
+}
+
+/*
+  Ace Text Editor CSS
+*/
+
+.paragraph .editor {
+  width: 100%;
+  border-left: 4px solid #DDDDDD;
+  background: rgba(255, 255, 255, 0.0);
+  margin: 7px 0 2px 0;
+}
+
+.paragraph-text--dirty {
+  border-left: 4px solid #E67E22 !important;
+}
+
+.paragraph .ace_print-margin {
+  background: none !important;
+}
+
+.ace_marker-layer .ace_selection {
+    z-index: 0 !important;
+}
+
+.ace_marker-layer .ace_selected-word {
+    z-index: 0 !important;
+}
+
+.ace-tm {
+  background: #FFFFFF;
+  color: black;
+}
+
+.ace_editor {
+  position: relative;
+  overflow: hidden;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 12px;
+  line-height: normal;
+  direction: ltr;
+}
+
+.ace_hidden-cursors {
+  opacity: 0;
+}
+
+.ace_text-input, .ace_gutter, .ace_layer,
+.emacs-mode, .ace_text-layer, .ace_cursor-layer,
+.ace_cursor, .ace_scrollbar {
+  z-index: auto !important;
+}
+
+.ace_text-input.ace_composition {
+ opacity: 0 !important;
+}
+
+#main .emacs-mode .ace_cursor {
+  background: #C0C0C0!important;
+  border: none !important;
+}
+
+/*
+  Table Display CSS
+*/
+
+.tableDisplay {
+  margin-top: 2px;
+}
+
+.tableDisplay div {
+}
+
+.tableDisplay img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.tableDisplay .btn-group span {
+  margin: 10px 0 0 10px;
+  font-size: 12px;
+}
+.tableDisplay .btn-group span a {
+  cursor: pointer;
+}
+
+.tableDisplay .option {
+  padding: 5px 5px 5px 5px;
+  font-size: 12px;
+  height: auto;
+  overflow: auto;
+  border-top: 1px solid #ecf0f1;
+
+}
+
+.tableDisplay .option .columns {
+  height: 100%;
+}
+
+.tableDisplay .option .columns ul {
+  background: white;
+  width: auto;
+  padding: 3px 3px 3px 3px;
+  height: 150px;
+  border: 1px solid #CCC;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  -webkit-transition: border-color ease-in-out .15s, -webkit-box-shadow ease-in-out .15s;
+  -o-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+}
+
+.tableDisplay .option .columns ul li {
+  margin: 3px 3px 3px 3px;
+}
+
+.tableDisplay .option .columns ul li span {
+  cursor: pointer;
+  margin-left: 3px;
+  margin-top: 3px;
+}
+
+.tableDisplay .option .columns ul li div ul {
+  width: auto;
+  height: auto;
+}
+
+.tableDisplay .option .columns ul li div ul li a {
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.tableDisplay .option .columns a:focus,
+.tableDisplay .option .columns a:hover {
+  text-decoration: none;
+  outline: 0;
+  outline-offset: 0;
+}
+
+.paragraph .tableDisplay .hljs {
+  background: none;
+}
+
+/*
+  Pivot CSS
+*/
+
+.allFields {
+  margin-bottom: 10px;
+}
+
+.noDot {
+  list-style-type: none;
+  padding-left: 5px;
+}
+
+.liVertical {
+  display: block;
+  float: left;
+  padding: 5px;
+}
+
+/*
+  Paragaph Font CSS
+*/
+
+.lightBold {
+  font-weight: 500;
+}
+
+.dropdown-menu > li:first-child > a:hover {
+  background-color: transparent;
+}
+
+table.table-striped {
+  border-top: 1px solid #ddd;
+  margin-top: 20px;
+}

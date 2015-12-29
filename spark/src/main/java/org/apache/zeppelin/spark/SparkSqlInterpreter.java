@@ -27,6 +27,7 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
@@ -40,9 +41,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Spark SQL interpreter for Zeppelin.
- *
- * @author Leemoonsoo
- *
  */
 public class SparkSqlInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);
@@ -81,19 +79,27 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   private SparkInterpreter getSparkInterpreter() {
-    for (Interpreter intp : getInterpreterGroup()) {
-      if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
-        Interpreter p = intp;
-        while (p instanceof WrappedInterpreter) {
-          if (p instanceof LazyOpenInterpreter) {
-            p.open();
+    InterpreterGroup intpGroup = getInterpreterGroup();
+    LazyOpenInterpreter lazy = null;
+    SparkInterpreter spark = null;
+    synchronized (intpGroup) {
+      for (Interpreter intp : getInterpreterGroup()){
+        if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
+          Interpreter p = intp;
+          while (p instanceof WrappedInterpreter) {
+            if (p instanceof LazyOpenInterpreter) {
+              lazy = (LazyOpenInterpreter) p;
+            }
+            p = ((WrappedInterpreter) p).getInnerInterpreter();
           }
-          p = ((WrappedInterpreter) p).getInnerInterpreter();
+          spark = (SparkInterpreter) p;
         }
-        return (SparkInterpreter) p;
       }
     }
-    return null;
+    if (lazy != null) {
+      lazy.open();
+    }
+    return spark;
   }
 
   public boolean concurrentSQL() {
@@ -106,9 +112,14 @@ public class SparkSqlInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
     SQLContext sqlc = null;
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+
+    if (sparkInterpreter.getSparkVersion().isUnsupportedVersion()) {
+      return new InterpreterResult(Code.ERROR, "Spark "
+          + sparkInterpreter.getSparkVersion().toString() + " is not supported");
+    }
 
     sqlc = getSparkInterpreter().getSQLContext();
-
     SparkContext sc = sqlc.sparkContext();
     if (concurrentSQL()) {
       sc.setLocalProperty("spark.scheduler.pool", "fair");
@@ -116,6 +127,7 @@ public class SparkSqlInterpreter extends Interpreter {
       sc.setLocalProperty("spark.scheduler.pool", null);
     }
 
+    sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
     Object rdd = null;
     try {
       // method signature of sqlc.sql() is changed
@@ -130,6 +142,7 @@ public class SparkSqlInterpreter extends Interpreter {
     }
 
     String msg = ZeppelinContext.showDF(sc, context, rdd, maxResult);
+    sc.clearJobGroup();
     return new InterpreterResult(Code.SUCCESS, msg);
   }
 
@@ -152,7 +165,6 @@ public class SparkSqlInterpreter extends Interpreter {
     SparkInterpreter sparkInterpreter = getSparkInterpreter();
     return sparkInterpreter.getProgress(context);
   }
-
 
   @Override
   public Scheduler getScheduler() {
