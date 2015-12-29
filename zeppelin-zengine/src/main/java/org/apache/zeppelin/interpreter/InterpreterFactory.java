@@ -519,6 +519,21 @@ public class InterpreterFactory {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
       if (intpsetting != null) {
+
+        for (Interpreter intp : intpsetting.getInterpreterGroup()) {
+          for (Job job : intp.getScheduler().getJobsRunning()) {
+            job.abort();
+            job.setStatus(Status.ABORT);
+            logger.info("Job " + job.getJobName() + " aborted ");
+          }
+
+          for (Job job : intp.getScheduler().getJobsWaiting()) {
+            job.abort();
+            job.setStatus(Status.ABORT);
+            logger.info("Job " + job.getJobName() + " aborted ");
+          }
+        }
+
         intpsetting.getInterpreterGroup().close();
         intpsetting.getInterpreterGroup().destroy();
 
