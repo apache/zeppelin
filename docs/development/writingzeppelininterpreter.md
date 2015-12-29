@@ -73,7 +73,7 @@ To configure your interpreter you need to follow these steps:
   <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.hive.HiveInterpreter,com.me.MyNewInterpreter</value>
 </property>
 ```
-3. Start zeppelin by running `./bin/zeppelin-daemon start`.
+3. Start zeppelin by running `./bin/zeppelin-daemon.sh start`.
 
 4. In the interpreter page, click the +Create button and configure your interpreter properties.
 Now you are done and ready to use your interpreter.
