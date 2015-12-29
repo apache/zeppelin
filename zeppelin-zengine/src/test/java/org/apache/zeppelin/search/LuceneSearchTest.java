@@ -80,7 +80,7 @@ public class LuceneSearchTest {
     notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
 
     //when
-    List<Map<String, String>> results = notebookIndex.query("all");
+    List<Map<String, String>> results = notebookIndex.query("all", "anonymous");
 
     //then
     assertThat(results).isNotEmpty();
@@ -96,7 +96,7 @@ public class LuceneSearchTest {
     notebookIndex.addIndexDocs(Arrays.asList(note1, note2));
 
     //when
-    List<Map<String, String>> results = notebookIndex.query("Notebook1");
+    List<Map<String, String>> results = notebookIndex.query("Notebook1", "anonymous");
 
     //then
     assertThat(results).isNotEmpty();
@@ -120,7 +120,7 @@ public class LuceneSearchTest {
   public void canNotSearchBeforeIndexing() {
     //given NO notebookIndex.index() was called
     //when
-    List<Map<String, String>> result = notebookIndex.query("anything");
+    List<Map<String, String>> result = notebookIndex.query("anything", "anonymous");
     //then
     assertThat(result).isEmpty();
     //assert logs were printed
@@ -139,10 +139,10 @@ public class LuceneSearchTest {
     notebookIndex.updateIndexDoc(note2);
 
     //then
-    List<Map<String, String>> results = notebookIndex.query("all");
+    List<Map<String, String>> results = notebookIndex.query("all", "anonymous");
     assertThat(results).isEmpty();
 
-    results = notebookIndex.query("indeed");
+    results = notebookIndex.query("indeed", "anonymous");
     assertThat(results).isNotEmpty();
   }
 
@@ -164,7 +164,7 @@ public class LuceneSearchTest {
     notebookIndex.deleteIndexDocs(note2);
 
     //then
-    assertThat(notebookIndex.query("all")).isEmpty();
+    assertThat(notebookIndex.query("all", "anonymous")).isEmpty();
     assertThat(resultForQuery("Notebook2")).isEmpty();
 
     List<Map<String, String>> results = resultForQuery("test");
@@ -215,7 +215,7 @@ public class LuceneSearchTest {
   }
 
   private List<Map<String, String>> resultForQuery(String q) {
-    return notebookIndex.query(q);
+    return notebookIndex.query(q, "anonymous");
   }
 
   /**

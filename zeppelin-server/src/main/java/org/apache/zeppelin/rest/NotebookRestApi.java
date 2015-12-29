@@ -564,7 +564,8 @@ public class NotebookRestApi {
   @Path("search")
   public Response search(@QueryParam("q") String queryTerm) {
     LOG.info("Searching notebooks for: {}", queryTerm);
-    List<Map<String, String>> notebooksFound = notebookIndex.query(queryTerm);
+    List<Map<String, String>> notebooksFound = notebookIndex.query(queryTerm,
+        SecurityUtils.getPrincipal());
     LOG.info("{} notbooks found", notebooksFound.size());
     return new JsonResponse<>(Status.OK, notebooksFound).build();
   }

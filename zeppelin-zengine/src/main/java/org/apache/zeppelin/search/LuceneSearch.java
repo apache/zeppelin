@@ -72,6 +72,7 @@ public class LuceneSearch implements SearchService {
   private static final String SEARCH_FIELD = "contents";
   static final String PARAGRAPH = "paragraph";
   static final String ID_FIELD = "id";
+  static final String OWNER_FIELD = "owner";
 
   Directory ramDirectory;
   Analyzer analyzer;
@@ -93,7 +94,7 @@ public class LuceneSearch implements SearchService {
    * @see org.apache.zeppelin.search.Search#query(java.lang.String)
    */
   @Override
-  public List<Map<String, String>> query(String queryStr) {
+  public List<Map<String, String>> query(String queryStr, String owner) {
     if (null == ramDirectory) {
       throw new IllegalStateException(
           "Something went wrong on instance creation time, index dir is null");
@@ -110,7 +111,7 @@ public class LuceneSearch implements SearchService {
       SimpleHTMLFormatter htmlFormatter = new SimpleHTMLFormatter();
       Highlighter highlighter = new Highlighter(htmlFormatter, new QueryScorer(query));
 
-      result = doSearch(indexSearcher, query, analyzer, highlighter);
+      result = doSearch(indexSearcher, query, analyzer, highlighter, owner);
       indexReader.close();
     } catch (IOException e) {
       LOG.error("Failed to open index dir {}, make sure indexing finished OK", ramDirectory, e);
@@ -121,7 +122,7 @@ public class LuceneSearch implements SearchService {
   }
 
   private List<Map<String, String>> doSearch(IndexSearcher searcher, Query query,
-      Analyzer analyzer, Highlighter highlighter) {
+      Analyzer analyzer, Highlighter highlighter, String owner) {
     List<Map<String, String>> matchingParagraphs = Lists.newArrayList();
     ScoreDoc[] hits;
     try {
@@ -132,29 +133,33 @@ public class LuceneSearch implements SearchService {
         int id = hits[i].doc;
         Document doc = searcher.doc(id);
         String path = doc.get(ID_FIELD);
-        if (path != null) {
-          LOG.debug((i + 1) + ". " + path);
-          String title = doc.get("title");
-          if (title != null) {
-            LOG.debug("   Title: {}", doc.get("title"));
-          }
+        String docOwner = doc.get(OWNER_FIELD);
 
-          String text = doc.get(SEARCH_FIELD);
-          TokenStream tokenStream = TokenSources.getTokenStream(searcher.getIndexReader(), id,
-              SEARCH_FIELD, analyzer);
-          TextFragment[] frag = highlighter.getBestTextFragments(tokenStream, text, true, 3);
-          LOG.debug("    {} fragments found for query '{}'", frag.length, query);
-          for (int j = 0; j < frag.length; j++) {
-            if ((frag[j] != null) && (frag[j].getScore() > 0)) {
-              LOG.debug("    Fragment: {}", frag[j].toString());
+        if (docOwner != null && docOwner.equalsIgnoreCase(owner)) {
+          if (path != null) {
+            LOG.debug((i + 1) + ". " + path);
+            String title = doc.get("title");
+            if (title != null) {
+              LOG.debug("   Title: {}", doc.get("title"));
             }
-          }
-          String fragment = (frag != null && frag.length > 0) ? frag[0].toString() : "";
 
-          matchingParagraphs.add(ImmutableMap.of("id", path, // <noteId>/paragraph/<paragraphId>
-              "name", title, "snippet", fragment, "text", text));
-        } else {
-          LOG.info("{}. No {} for this document", i + 1, ID_FIELD);
+            String text = doc.get(SEARCH_FIELD);
+            TokenStream tokenStream = TokenSources.getTokenStream(searcher.getIndexReader(), id,
+                SEARCH_FIELD, analyzer);
+            TextFragment[] frag = highlighter.getBestTextFragments(tokenStream, text, true, 3);
+            LOG.debug("    {} fragments found for query '{}'", frag.length, query);
+            for (int j = 0; j < frag.length; j++) {
+              if ((frag[j] != null) && (frag[j].getScore() > 0)) {
+                LOG.debug("    Fragment: {}", frag[j].toString());
+              }
+            }
+            String fragment = (frag != null && frag.length > 0) ? frag[0].toString() : "";
+
+            matchingParagraphs.add(ImmutableMap.of("id", path, // <noteId>/paragraph/<paragraphId>
+                "name", title, "snippet", fragment, "text", text));
+          } else {
+            LOG.info("{}. No {} for this document", i + 1, ID_FIELD);
+          }
         }
       }
     } catch (IOException | InvalidTokenOffsetsException e) {
@@ -182,7 +187,7 @@ public class LuceneSearch implements SearchService {
       LOG.debug("Skipping empty notebook name");
       return;
     }
-    updateDoc(noteId, noteName, null);
+    updateDoc(noteId, noteName, null, note.getOwner());
   }
 
   private void updateIndexParagraph(Note note, Paragraph p) throws IOException {
@@ -190,7 +195,7 @@ public class LuceneSearch implements SearchService {
       LOG.debug("Skipping empty paragraph");
       return;
     }
-    updateDoc(note.getId(), note.getName(), p);
+    updateDoc(note.getId(), note.getName(), p, note.getOwner());
   }
 
   /**
@@ -202,9 +207,10 @@ public class LuceneSearch implements SearchService {
    * @param p
    * @throws IOException
    */
-  private void updateDoc(String noteId, String noteName, Paragraph p) throws IOException {
+  private void updateDoc(String noteId, String noteName, Paragraph p, String owner)
+      throws IOException {
     String id = formatId(noteId, p);
-    Document doc = newDocument(id, noteName, p);
+    Document doc = newDocument(id, noteName, p, owner);
     try {
       writer.updateDocument(new Term(ID_FIELD, id), doc);
       writer.commit();
@@ -244,12 +250,13 @@ public class LuceneSearch implements SearchService {
    * @param p paragraph
    * @return
    */
-  private Document newDocument(String id, String noteName, Paragraph p) {
+  private Document newDocument(String id, String noteName, Paragraph p, String owner) {
     Document doc = new Document();
 
     Field pathField = new StringField(ID_FIELD, id, Field.Store.YES);
     doc.add(pathField);
     doc.add(new StringField("title", noteName, Field.Store.YES));
+    doc.add(new StringField(OWNER_FIELD, owner, Field.Store.YES));
 
     if (null != p) {
       doc.add(new TextField(SEARCH_FIELD, p.getText(), Field.Store.YES));
@@ -307,13 +314,13 @@ public class LuceneSearch implements SearchService {
    * @throws IOException
    */
   private void addIndexDocAsync(Note note) throws IOException {
-    indexNoteName(writer, note.getId(), note.getName());
+    indexNoteName(writer, note.getId(), note.getName(), note.getOwner());
     for (Paragraph doc : note.getParagraphs()) {
       if (doc.getText() == null) {
         LOG.debug("Skipping empty paragraph");
         continue;
       }
-      indexDoc(writer, note.getId(), note.getName(), doc);
+      indexDoc(writer, note.getId(), note.getName(), doc, note.getOwner());
     }
   }
 
@@ -367,13 +374,14 @@ public class LuceneSearch implements SearchService {
    *
    * @throws IOException
    */
-  private void indexNoteName(IndexWriter w, String noteId, String noteName) throws IOException {
+  private void indexNoteName(IndexWriter w, String noteId, String noteName, String owner)
+      throws IOException {
     LOG.debug("Indexing Notebook {}, '{}'", noteId, noteName);
     if (null == noteName || noteName.isEmpty()) {
       LOG.debug("Skipping empty notebook name");
       return;
     }
-    indexDoc(w, noteId, noteName, null);
+    indexDoc(w, noteId, noteName, null, owner);
   }
 
   /**
@@ -381,10 +389,10 @@ public class LuceneSearch implements SearchService {
    *  - code of the paragraph (if non-null)
    *  - or just a note name
    */
-  private void indexDoc(IndexWriter w, String noteId, String noteName, Paragraph p)
+  private void indexDoc(IndexWriter w, String noteId, String noteName, Paragraph p, String owner)
       throws IOException {
     String id = formatId(noteId, p);
-    Document doc = newDocument(id, noteName, p);
+    Document doc = newDocument(id, noteName, p, owner);
     w.addDocument(doc);
   }
 

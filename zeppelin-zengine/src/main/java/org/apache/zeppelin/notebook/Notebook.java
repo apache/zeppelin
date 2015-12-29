@@ -96,7 +96,11 @@ public class Notebook {
     if (this.notebookIndex != null) {
       long start = System.nanoTime();
       logger.info("Notebook indexing started...");
-      //notebookIndex.addIndexDocs(notes.values());
+      Collection<Note> notesToIndex = new ArrayList<>();
+      for (Map<String, Note> userNotes : notes.values()) {
+        notesToIndex.addAll(userNotes.values());
+      }
+      notebookIndex.addIndexDocs(notesToIndex);
       logger.info("Notebook indexing finished: {} indexed in {}s", notes.size(),
           TimeUnit.NANOSECONDS.toSeconds(start - System.nanoTime()));
     }
