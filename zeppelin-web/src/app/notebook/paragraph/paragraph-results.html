@@ -26,7 +26,8 @@ limitations under the License.
   <div id="{{paragraph.id}}_text"
        class="text"
        ng-if="paragraph.result.type == 'TEXT'"
-       ng-bind="paragraph.result.msg">
+       ng-bind="paragraph.result.msg"
+       ng-class="{'result-error': paragraph.status=='ERROR'}">
   </div>
 
   <div id="p{{paragraph.id}}_html"
@@ -47,6 +48,7 @@ limitations under the License.
   <div id="{{paragraph.id}}_error"
        class="error"
        ng-if="paragraph.status == 'ERROR'"
-       ng-bind="paragraph.errorMessage">
+       ng-bind="paragraph.errorMessage"
+       ng-class="{'result-error': paragraph.status=='ERROR'}">
   </div>
 </div>
