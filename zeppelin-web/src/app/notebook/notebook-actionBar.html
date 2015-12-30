@@ -67,13 +67,6 @@ limitations under the License.
               tooltip-placement="bottom" tooltip="Export the notebook">
         <i class="fa fa-download"></i>
       </button>
-      <button type="button"
-              class="btn btn-default btn-xs dropdown-toggle"
-              ng-hide="viewOnly"
-              data-toggle="dropdown"
-              tooltip-placement="bottom" tooltip="Git menu">
-        <i class="fa fa-git"></i>
-      </button>
         <ul class="dropdown-menu" role="menu" style="width:250px">
           <li>
             <div class="cron-preset-container">
@@ -93,7 +86,13 @@ limitations under the License.
             </div>
           </li>
         </ul>
-
+        <button type="button"
+                class="btn btn-default btn-xs dropdown-toggle"
+                ng-hide="viewOnly"
+                data-toggle="dropdown"
+                tooltip-placement="bottom" tooltip="Git menu">
+          <i class="fa fa-git"></i>
+        </button>
     </span>
 
     <span ng-hide="viewOnly">
