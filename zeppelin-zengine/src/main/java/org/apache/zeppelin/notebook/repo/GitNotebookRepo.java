@@ -73,7 +73,7 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
    * @param pattern is the noteId
    * @param commitMessage is a part of commit message (checkpoint name)
    * (non-Javadoc)
-   * @see org.apache.zeppelin.notebook.repo.VFSNotebookRepo#checkpoint(java.lang.String, java.lang.String)
+   * @see org.apache.zeppelin.notebook.repo.VFSNotebookRepo#checkpoint(String, String)
    */
   @Override
   public void checkpoint(String pattern, String commitMessage) {

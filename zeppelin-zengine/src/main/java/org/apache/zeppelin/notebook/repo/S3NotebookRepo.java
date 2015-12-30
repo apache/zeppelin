@@ -194,7 +194,5 @@ public class S3NotebookRepo implements NotebookRepo {
   public void checkpoint(String noteId, String checkPointName) throws IOException {
     // no-op
     LOG.info("Checkpoint feature isn't suported in {}", this.getClass().toString());
-    //TODO: add a method to notify the front-end that can't checkpoint
-
   }
 }

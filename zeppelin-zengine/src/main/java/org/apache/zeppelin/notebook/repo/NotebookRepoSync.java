@@ -194,7 +194,7 @@ public class NotebookRepoSync implements NotebookRepo {
   private NotebookRepo getRepo(int repoIndex) {
     if (repoIndex < 0 || repoIndex >= getRepoCount()) {
       LOG.error("Requested storage index {} isn't initialized," +
-      		" repository count is {}", repoIndex, getRepoCount());
+        " repository count is {}", repoIndex, getRepoCount());
     }
     return repos.get(repoIndex);
   }
