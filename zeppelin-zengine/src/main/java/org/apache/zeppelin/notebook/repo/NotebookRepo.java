@@ -40,5 +40,5 @@ public interface NotebookRepo {
   /**
    * chekpoint (versioning) for notebooks (optional)
    */
-  public void checkpoint(String noteId, String checkPointName);
+  public void checkpoint(String noteId, String checkPointName) throws IOException;
 }

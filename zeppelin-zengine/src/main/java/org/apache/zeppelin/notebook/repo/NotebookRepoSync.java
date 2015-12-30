@@ -191,9 +191,10 @@ public class NotebookRepoSync implements NotebookRepo {
     return maxRepoNum;
   }
 
-  private NotebookRepo getRepo(int repoIndex) throws IOException {
+  private NotebookRepo getRepo(int repoIndex) {
     if (repoIndex < 0 || repoIndex >= getRepoCount()) {
-      throw new IOException("Storage repo index is out of range");
+      LOG.error("Requested storage index {} isn't initialized," +
+      		" repository count is {}", repoIndex, getRepoCount());
     }
     return repos.get(repoIndex);
   }
@@ -320,15 +321,27 @@ public class NotebookRepoSync implements NotebookRepo {
     }
   }
 
-  public void gitCommitNotebook(String noteId, String commitMessage) throws IOException {
-    NotebookRepo localRepo = getRepo(0);
-    if (localRepo instanceof GitNotebookRepo) {
-      GitNotebookRepo gitRepo = (GitNotebookRepo) localRepo;
-      gitRepo.addAndCommit(noteId, commitMessage);
-    } else {
-      throw new IOException("Local repository isn't of class GitNotebookRepo : " +
-                            localRepo.getClass().toString());
+  //checkpoint to all available storages
+  @Override
+  public void checkpoint(String noteId, String checkPointName) throws IOException {
+    int repoCount = getRepoCount();
+    int errorCount = 0;
+    String errorMessage = "";
+    for (int i = 0; i < Math.min(repoCount, getMaxRepoNum()); i++) {
+      try {
+        getRepo(i).checkpoint(noteId, checkPointName);
+      } catch (IOException e) {
+        LOG.warn("Couldn't checkpoint in {} storage with index {} for note {}", 
+          getRepo(i).getClass().toString(), i, noteId);
+        errorMessage += "Error on storage class " + getRepo(i).getClass().toString() + 
+          " with index " + i + " : " + e.getMessage() + "\n";
+        errorCount++;
+      }
     }
-  }
+    // throw exception if failed to commit for all initialized repos
+    if (errorCount == Math.min(repoCount, getMaxRepoNum())) {
+      throw new IOException(errorMessage);
+    }
 
+  }
 }

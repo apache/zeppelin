@@ -241,14 +241,8 @@ public class Notebook {
     }
   }
 
-  public void gitCommitNote(String noteId, String commitMessage) throws IOException {
-    if (notebookRepo instanceof NotebookRepoSync) {
-      NotebookRepoSync mainRepo = (NotebookRepoSync) notebookRepo;
-      mainRepo.gitCommitNotebook(noteId, commitMessage);
-    } else {
-      throw new IOException("Main repository isn't of class NotebookRepoSync : " +
-                            notebookRepo.getClass().toString());
-    }
+  public void checkpointNote(String noteId, String checkpointMessage) throws IOException {
+    notebookRepo.checkpoint(noteId, checkpointMessage);
   }
 
   @SuppressWarnings("rawtypes")

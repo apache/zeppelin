@@ -151,8 +151,8 @@ public class NotebookServer extends WebSocketServlet implements
           case ANGULAR_OBJECT_UPDATED:
             angularObjectUpdated(conn, notebook, messagereceived);
             break;
-          case GIT_COMMIT_NOTEBOOK:
-            gitCommitNotebook(conn, notebook, messagereceived);
+          case CHECKPOINT_NOTEBOOK:
+            checkpointNotebook(conn, notebook, messagereceived);
             break;
           default:
             broadcastNoteList();
@@ -721,11 +721,11 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  private void gitCommitNotebook(NotebookSocket conn, Notebook notebook,
+  private void checkpointNotebook(NotebookSocket conn, Notebook notebook,
       Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.get("noteId");
     String gitCommitMessage = (String) fromMessage.get("gitCommitMessage");
-    notebook.gitCommitNote(noteId, gitCommitMessage);
+    notebook.checkpointNote(noteId, gitCommitMessage);
   }
 
   /**

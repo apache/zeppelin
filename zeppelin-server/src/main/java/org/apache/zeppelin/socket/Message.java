@@ -33,9 +33,6 @@ public class Message {
     GET_NOTE, // [c-s] client load note
               // @param id note id
 
-    GIT_COMMIT_NOTEBOOK, // [c-s] commit notebook to local git repo
-                         // @param note
-
     NOTE, // [s-c] note info
           // @param note serlialized Note object
 
@@ -100,7 +97,11 @@ public class Message {
     ANGULAR_OBJECT_UPDATE,  // [s-c] add/update angular object
     ANGULAR_OBJECT_REMOVE,  // [s-c] add angular object del
 
-    ANGULAR_OBJECT_UPDATED  // [c-s] angular object value updated
+    ANGULAR_OBJECT_UPDATED, // [c-s] angular object value updated
+    
+    CHECKPOINT_NOTEBOOK     // [c-s] checkpoint notebook to storage repository
+                            // @param noteId
+                            // @param checkpointName
   }
 
   public OP op;

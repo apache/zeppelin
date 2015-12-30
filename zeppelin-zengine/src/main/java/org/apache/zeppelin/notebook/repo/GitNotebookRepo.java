@@ -61,7 +61,7 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
       localRepo.create();
     }
     git = new Git(localRepo);
-    addAndCommit(".", "initialization commit");
+    checkpoint(".", "initialization commit");
   }
 
   @Override
@@ -69,7 +69,14 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
     super.save(note);
   }
 
-  public void addAndCommit(String pattern, String commitMessage) {
+  /* implemented as git add+commit
+   * @param pattern is the noteId
+   * @param commitMessage is a part of commit message (checkpoint name)
+   * (non-Javadoc)
+   * @see org.apache.zeppelin.notebook.repo.VFSNotebookRepo#checkpoint(java.lang.String, java.lang.String)
+   */
+  @Override
+  public void checkpoint(String pattern, String commitMessage) {
     try {
       List<DiffEntry> gitDiff = git.diff().call();
       if (!gitDiff.isEmpty()) {
