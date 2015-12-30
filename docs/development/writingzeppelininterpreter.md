@@ -60,7 +60,7 @@ Once you have build your interpreter, you can place your interpreter under direc
 
 To configure your interpreter you need to follow these steps:
 
-1. Create conf/zeppelin-site.xml by copying conf/zeppelin-site.xml.template to `conf/zeppelin-site.xml `.
+1. Create conf/zeppelin-site.xml by copying conf/zeppelin-site.xml.template to `conf/zeppelin-site.xml`.
 
 2. Add your interpreter class name to the zeppelin.interpreters property in `conf/zeppelin-site.xml`.
 
@@ -73,7 +73,7 @@ To configure your interpreter you need to follow these steps:
   <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.hive.HiveInterpreter,com.me.MyNewInterpreter</value>
 </property>
 ```
-3. Start zeppelin by running `./bin/zeppelin-daemon.sh start`.
+3. Start Zeppelin by running `./bin/zeppelin-daemon.sh start`.
 
 4. In the interpreter page, click the +Create button and configure your interpreter properties.
 Now you are done and ready to use your interpreter.
@@ -101,7 +101,7 @@ Inside of a notebook, `%[INTERPRETER_GROUP].[INTERPRETER_NAME]` directive will c
 Note that the first interpreter configuration in zeppelin.interpreters will be the default one.
 
 You can omit either [INTERPRETER\_GROUP] or [INTERPRETER\_NAME]. If you omit [INTERPRETER\_NAME], then first available interpreter will be selected in the [INTERPRETER\_GROUP].
-Likewise, if you skip [INTERPRETER\_GROUP], then [INTERPRETER\_NAME]  will be chosen from default interpreter group.
+Likewise, if you skip [INTERPRETER\_GROUP], then [INTERPRETER\_NAME] will be chosen from default interpreter group.
 
 
 For example, if you have two interpreter myintp1 and myintp2 in group mygrp, you can call myintp1 like
