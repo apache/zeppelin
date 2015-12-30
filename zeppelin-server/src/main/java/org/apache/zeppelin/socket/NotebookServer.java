@@ -459,7 +459,7 @@ public class NotebookServer extends WebSocketServlet implements
     String name = (String) fromMessage.get("name");
     Note newNote = notebook.cloneNote(noteId, name);
     addConnectionToNote(newNote.id(), (NotebookSocket) conn);
-    conn.send(serializeMessage(new Message(OP.CLONE_NOTE).put("note", newNote)));
+    conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", newNote)));
     broadcastNoteList();
   }
 
