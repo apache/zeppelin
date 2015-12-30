@@ -58,7 +58,7 @@ public class NotebookRepoSync implements NotebookRepo {
 
     String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
     if (allStorageClassNames.isEmpty()) {
-      allStorageClassNames = "org.apache.zeppelin.notebook.repo.VFSNotebookRepo";
+      allStorageClassNames = defaultStorage;
       LOG.warn("Empty ZEPPELIN_NOTEBOOK_STORAGE conf parameter, using default {}", defaultStorage);
     }
     String[] storageClassNames = allStorageClassNames.split(",");
@@ -83,6 +83,7 @@ public class NotebookRepoSync implements NotebookRepo {
     }
     // couldn't initialize any storage, use default
     if (getRepoCount() == 0) {
+      LOG.info("No storages could be initialized, using default {} storage", defaultStorage);
       initializeDefaultStorage(conf);
     }
     if (getRepoCount() > 1) {

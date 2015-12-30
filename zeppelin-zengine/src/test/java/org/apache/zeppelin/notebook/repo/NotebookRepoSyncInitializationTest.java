@@ -107,7 +107,7 @@ public class NotebookRepoSyncInitializationTest {
   }
   
   @Test
-  public void InitUnsupporteNumberStoragesTest() throws IOException {
+  public void InitUnsupportedNumberStoragesTest() throws IOException {
     // initialize folders for each storage, currently for 2 only
     String zpath = System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis();
     File mainZepDir = new File(zpath);
