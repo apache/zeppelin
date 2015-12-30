@@ -81,11 +81,11 @@ limitations under the License.
                 <input type="text"
                        dropdown-input
                        placeholder="commit message"
-                       ng-model="note.git.commitmessage"/>
+                       ng-model="note.checkpoint.message"/>
                 <button type="button"
                   class="btn btn-default btn-xs"
                   ng-hide="viewOnly"
-                  ng-click="gitCommitNotebook(note.git.commitmessage)"
+                  ng-click="checkpointNotebook(note.checkpoint.message)"
                   tooltip-placement="bottom" tooltip="Commit the notebook">Commit
                 </button>
               </div>
