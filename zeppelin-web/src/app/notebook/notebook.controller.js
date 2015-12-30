@@ -168,7 +168,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
         }
       }
     });
-    document.getElementById("note.checkpoint.message").value="";
+    document.getElementById('note.checkpoint.message').value='';
   };
 
   $scope.runNote = function() {
