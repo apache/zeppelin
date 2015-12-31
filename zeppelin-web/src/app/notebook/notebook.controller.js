@@ -40,6 +40,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
   $scope.interpreterBindings = [];
   $scope.isNoteDirty = null;
   $scope.saveTimer = null;
+  $scope.paragraphClickFlag = 0;
+  $scope.alreadyclicked = false;
+  $scope.alreadyclickedTimeout = null;
 
   var angularObjectRegistry = {};
   var connectedOnce = false;
@@ -95,17 +98,47 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     if (!$scope.note) {
       return;
     }
-    for (var i=0; i<$scope.note.paragraphs.length; i++) {
-      var paragraphId = $scope.note.paragraphs[i].id;
-      if (jQuery.contains(angular.element('#' + paragraphId + '_container')[0], clickEvent.target)) {
-        $scope.$broadcast('focusParagraph', paragraphId, 0, true);
-        break;
+    try {
+      for (var i = 0; i < $scope.note.paragraphs.length; i++) {
+        var paragraphId = $scope.note.paragraphs[i].id;
+        if (jQuery.contains(angular.element('#' + paragraphId + '_container')[0], clickEvent.target)) {
+          $scope.$broadcast('focusParagraph', paragraphId, 0, true);
+          break;
+        }
       }
+    } catch (e) {
+      //nothing to worry. page changed.
     }
   };
 
-  // register mouseevent handler for focus paragraph
-  document.addEventListener('click', $scope.focusParagraphOnClick);
+  var doc = angular.element(document);
+
+  $scope.mouseDownHandler = function(evt) {
+    doc.on('mouseup mousemove', function handler(evt) {
+      if (evt.type === 'mouseup') {
+        if ($scope.alreadyclicked) {
+          // double
+          if ($scope.alreadyclickedTimeout) {
+            clearTimeout($scope.alreadyclickedTimeout);
+            setTimeout(function() {
+              // can be a tripple click
+              $scope.alreadyclicked = false;
+            }, 300);
+          }
+        } else {
+          // single
+          $scope.alreadyclicked = true;
+          $scope.alreadyclickedTimeout = setTimeout(function() {
+            $scope.alreadyclicked = false;
+            $scope.focusParagraphOnClick(evt);
+          }, 300);
+        }
+      }
+      doc.off('mouseup mousemove', handler);
+    });
+  };
+
+  doc.on('mousedown', $scope.mouseDownHandler);
 
 
   $scope.keyboardShortcut = function(keyEvent) {
@@ -267,7 +300,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     $scope.killSaveTimer();
     $scope.saveNote();
 
-    document.removeEventListener('click', $scope.focusParagraphOnClick);
+    doc.off('mousedown');
     document.removeEventListener('keydown', $scope.keyboardShortcut);
   });
 
