@@ -54,6 +54,7 @@ public class Note implements Serializable, JobListener {
   final List<Paragraph> paragraphs = new LinkedList<>();
   private String name = "";
   private String id;
+  private String owner = "anonymous";
 
   @SuppressWarnings("rawtypes")
   Map<String, List<AngularObject>> angularObjects = new HashMap<>();
@@ -80,12 +81,14 @@ public class Note implements Serializable, JobListener {
 
   public Note() {}
 
-  public Note(NotebookRepo repo, NoteInterpreterLoader replLoader,
-      JobListenerFactory jlFactory, SearchService noteIndex) {
+  public Note(NotebookRepo repo,
+      NoteInterpreterLoader replLoader,
+      JobListenerFactory jobListenerFactory, SearchService noteIndex, String owner) {
     this.repo = repo;
     this.replLoader = replLoader;
-    this.jobListenerFactory = jlFactory;
+    this.jobListenerFactory = jobListenerFactory;
     this.index = noteIndex;
+    this.owner = owner;
     generateId();
   }
 
@@ -100,6 +103,10 @@ public class Note implements Serializable, JobListener {
   public String getId() {
     return id;
   }
+
+  public String getOwner() { return this.owner; }
+
+  public String setOwner() { return this.owner; }
 
   public String getName() {
     return name;
@@ -145,7 +152,6 @@ public class Note implements Serializable, JobListener {
   /**
    * Add paragraph last.
    *
-   * @param p
    */
   public Paragraph addParagraph() {
     Paragraph p = new Paragraph(this, this, replLoader);
@@ -187,7 +193,6 @@ public class Note implements Serializable, JobListener {
    * Insert paragraph in given index.
    *
    * @param index
-   * @param p
    */
   public Paragraph insertParagraph(int index) {
     Paragraph p = new Paragraph(this, this, replLoader);
@@ -340,7 +345,6 @@ public class Note implements Serializable, JobListener {
   /**
    * Run all paragraphs sequentially.
    *
-   * @param jobListener
    */
   public void runAll() {
     synchronized (paragraphs) {
@@ -406,7 +410,7 @@ public class Note implements Serializable, JobListener {
   }
 
   public void unpersist() throws IOException {
-    repo.remove(id());
+    repo.remove(id(), this.owner);
   }
 
   public Map<String, Object> getConfig() {

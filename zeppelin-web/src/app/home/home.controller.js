@@ -14,7 +14,13 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, notebookListDataFactory, websocketMsgSrv, $rootScope, arrayOrderingSrv) {
-  
+  if (!$rootScope.ticket) {
+    $rootScope.ticket = {
+        'principal':'anonymous',
+        'ticket':'anonymous'
+    };
+  }
+
   var vm = this;
   vm.notes = notebookListDataFactory;
   vm.websocketMsgSrv = websocketMsgSrv;

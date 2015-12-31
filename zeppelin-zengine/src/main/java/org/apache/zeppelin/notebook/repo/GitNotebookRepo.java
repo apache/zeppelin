@@ -87,9 +87,9 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
   }
 
   @Override
-  public Note get(String noteId, String rev) throws IOException {
+  public Note get(String noteId, String rev, String owner) throws IOException {
     //TODO(bzz): something like 'git checkout rev', that will not change-the-world though
-    return super.get(noteId);
+    return super.get(noteId, owner);
   }
 
   @Override

@@ -184,7 +184,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
   }
 
   @Override
-  public void onRemove(String interpreterGroupId, String name, String noteId) {
+  public void onRemove(String interpreterGroupId, AngularObject object) {
     onRemove.incrementAndGet();
   }
 

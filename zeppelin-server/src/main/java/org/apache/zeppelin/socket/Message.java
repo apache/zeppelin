@@ -101,6 +101,8 @@ public class Message {
   }
 
   public OP op;
+  public String ticket;
+  public String principal;
   public Map<String, Object> data = new HashMap<String, Object>();
 
   public Message(OP op) {

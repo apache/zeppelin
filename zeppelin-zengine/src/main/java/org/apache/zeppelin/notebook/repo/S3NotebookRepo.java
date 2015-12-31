@@ -84,12 +84,18 @@ public class S3NotebookRepo implements NotebookRepo {
 
   @Override
   public List<NoteInfo> list() throws IOException {
+    return list(null);
+  }
+
+  @Override
+  public List<NoteInfo> list(String owner) throws IOException {
     List<NoteInfo> infos = new LinkedList<NoteInfo>();
     NoteInfo info = null;
+    String ownerPath = owner == null ? "" : "/users/" + owner;
     try {
       ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
           .withBucketName(bucketName)
-          .withPrefix(user + "/" + "notebook");
+          .withPrefix(user + "/" + "notebook" + ownerPath);
       ObjectListing objectListing;
       do {
         objectListing = s3client.listObjects(listObjectsRequest);
@@ -149,8 +155,8 @@ public class S3NotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public Note get(String noteId) throws IOException {
-    return getNote(user + "/" + "notebook" + "/" + noteId + "/" + "note.json");
+  public Note get(String noteId, String owner) throws IOException {
+    return getNote(user + "/notebook/users/" + owner + "/" + noteId + "/note.json");
   }
 
   @Override
@@ -159,8 +165,9 @@ public class S3NotebookRepo implements NotebookRepo {
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
     String json = gson.toJson(note);
-    String key = user + "/" + "notebook" + "/" + note.id() + "/" + "note.json";
-
+    String key = user + "/notebook/users/" +
+            note.getOwner() + "/" + note.id() + "/note.json";
+    
     File file = File.createTempFile("note", "json");
     file.deleteOnExit();
     Writer writer = new OutputStreamWriter(new FileOutputStream(file));
@@ -171,8 +178,9 @@ public class S3NotebookRepo implements NotebookRepo {
   }
 
   @Override
-  public void remove(String noteId) throws IOException {
-    String key = user + "/" + "notebook" + "/" + noteId;
+  public void remove(String noteId, String owner) throws IOException {
+    
+    String key = user + "/notebook/users/" + owner + "/" + noteId;
     final ListObjectsRequest listObjectsRequest = new ListObjectsRequest()
         .withBucketName(bucketName).withPrefix(key);
 

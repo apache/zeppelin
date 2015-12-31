@@ -26,18 +26,21 @@ import java.util.Map;
 public class NoteInfo {
   String id;
   String name;
+  String owner;
   private Map<String, Object> config = new HashMap<String, Object>();
 
-  public NoteInfo(String id, String name, Map<String, Object> config) {
+  public NoteInfo(String id, String name, String owner, Map<String, Object> config) {
     super();
     this.id = id;
     this.name = name;
+    this.owner = owner;
     this.config = config;
   }
 
   public NoteInfo(Note note) {
     id = note.id();
     name = note.getName();
+    owner = note.getOwner();
     config = note.getConfig();
   }
 
@@ -56,6 +59,10 @@ public class NoteInfo {
   public void setName(String name) {
     this.name = name;
   }
+
+  public String getOwner() { return owner; }
+
+  public void setOwner(String owner) { this.owner = owner; }
 
   public Map<String, Object> getConfig() {
     return config;
