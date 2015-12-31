@@ -35,12 +35,8 @@ public class AngularFunction extends AngularObjectWatcher {
   private final String noteId;
   private final AngularFunctionRunnable runnable;
 
-  // each invocation of from front-end proxy function will increase the counter
-  AngularObject counter;
-  // arguments of invocation from fron-end proxy function
-  AngularObject args;
-  // return value from AngularFunction to front-end proxy function
-  AngularObject ret;
+    // arguments of invocation from fron-end proxy function
+  AngularObject angularObject;
 
   protected AngularFunction(AngularObjectRegistry registry,
                          String name, String noteId,
@@ -53,23 +49,13 @@ public class AngularFunction extends AngularObjectWatcher {
 
     remove();
 
-    ret = registry.add(getRetName(name), null, noteId);
-    args = registry.add(getArgsName(name), null, noteId);
-    counter = registry.add(getCounterName(name), 0, noteId);
-    counter.addWatcher(this);
+    angularObject = registry.add(getFuncName(name), "", noteId);
+    angularObject.addWatcher(this);
   }
 
 
-  static String getCounterName(String name) {
-    return ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "COUNTER_" + name;
-  }
-
-  static String getArgsName(String name) {
-    return ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "ARGS_" + name;
-  }
-
-  static String getRetName(String name) {
-    return ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "RET_" + name;
+  static String getFuncName(String name) {
+    return ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + name;
   }
 
   @Override
@@ -78,22 +64,17 @@ public class AngularFunction extends AngularObjectWatcher {
       return;
     }
 
-    Object argumentList = args.get();
-    Object returnValue;
+    Object argumentList = angularObject.get();
     if (argumentList instanceof Object[]) {
-      returnValue = runnable.run((Object[]) args.get());
+      runnable.run((Object[]) angularObject.get());
     } else {
-      returnValue = runnable.run(args.get());
+      runnable.run(angularObject.get());
     }
-
-    ret.set(returnValue);
   }
 
 
   void remove() {
-    registry.remove(getCounterName(name), noteId);
-    registry.remove(getArgsName(name), noteId);
-    registry.remove(getRetName(name), noteId);
+    registry.remove(getFuncName(name), noteId);
   }
 
   public String getNoteId() {

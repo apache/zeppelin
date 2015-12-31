@@ -75,9 +75,7 @@ public class AngularObjectRegistry {
   }
 
   public void removeAngularFunction(String name, String noteId) {
-    remove(AngularFunction.getCounterName(name), noteId);
-    remove(AngularFunction.getArgsName(name), noteId);
-    remove(AngularFunction.getRetName(name), noteId);
+    remove(AngularFunction.getFuncName(name), noteId);
   }
 
   private String getRegistryKey(String noteId) {

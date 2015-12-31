@@ -659,18 +659,11 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       scope[varName] = data.angularObject.object;
 
       // create proxy for AngularFunction
-      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "COUNTER_")) {
-        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "COUNTER_").length);
+      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
         scope[funcName] = function() {
-          var counterName = ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "COUNTER_" + funcName;
-          var argsName = ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "ARGS_" + funcName;
-          var retName = ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "RET_" + funcName;
-
-          scope[argsName] = arguments;
-          scope[counterName] = scope[counterName] + 1;
-
-          // TODO wait for return
-          console.log("angular function called");
+          scope[varName] = arguments;
+          console.log("angular function invoked %o", arguments);
         };
 
         console.log("angular function created %o", scope[funcName]);
@@ -693,17 +686,10 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       scope[varName] = undefined;
 
       // remove proxy for AngularFunction
-      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "COUNTER_")) {
-        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "COUNTER_").length);        
+      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
         scope[funcName] = undefined;
       }
-    }
-  });
-
-  $scope.$on('evaluateJs', function(event, data) {
-    if (!data.noteId || data.noteId === $scope.note.id) {
-      console.log("eval %o", data.script);
-      eval(data.script);
     }
   });
 });
