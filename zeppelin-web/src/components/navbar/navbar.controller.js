@@ -15,7 +15,14 @@
 'use strict';
 
 angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams,
-    $location, notebookListDataFactory, websocketMsgSrv, arrayOrderingSrv) {
+    $location, notebookListDataFactory, websocketMsgSrv, arrayOrderingSrv, $http) {
+    if (!$rootScope.ticket) {
+        $rootScope.ticket = {
+            'principal':'anonymous',
+            'ticket':'anonymous'
+        };
+    }
+
   /** Current list of notes (ids) */
 
   var vm = this;
@@ -23,6 +30,7 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   vm.connected = websocketMsgSrv.isConnected();
   vm.websocketMsgSrv = websocketMsgSrv;
   vm.arrayOrderingSrv = arrayOrderingSrv;
+  vm.authenticated = $rootScope.ticket.principal !== 'anonymous';
 
   angular.element('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
@@ -51,7 +59,27 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
     websocketMsgSrv.getNotebookList();
   }
 
-  function isActive(noteId) {
+    /** ask for a ticket for websocket access
+     * Shiro will require credentials here
+     * */
+    $http.get('/api/security/ticket').
+    success(function(ticket, status, headers, config) {
+        if (status === 401 || status === 403) {
+            // Dislay error message here
+        }
+        else {
+            $rootScope.ticket = angular.fromJson(ticket).body;
+            vm.loadNotes = loadNotes;
+            vm.isActive = isActive;
+            vm.loadNotes();
+            vm.authenticated = $rootScope.ticket.principal !== 'anonymous';
+        }
+    }).
+    error(function(data, status, headers, config) {
+        console.log('Could not get ticket');
+    });
+
+    function isActive(noteId) {
     return ($routeParams.noteId === noteId);
   }
 
