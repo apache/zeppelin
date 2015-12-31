@@ -91,7 +91,6 @@
     <module>markdown</module>
     <module>angular</module>
     <module>shell</module>
-    <module>scalding</module>
     <module>hive</module>
     <module>phoenix</module>
     <module>postgresql</module>
@@ -625,6 +624,13 @@
       <id>geode</id>
       <modules>
         <module>geode</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>scalding</id>
+      <modules>
+        <module>scalding</module>
       </modules>
     </profile>
 
