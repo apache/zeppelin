@@ -1,7 +1,7 @@
     (Apache 2.0) nvd3.js v1.1.15-beta (http://nvd3.org/) - https://github.com/novus/nvd3/blob/v1.1.15-beta/LICENSE.md
     (Apache 2.0) gson v2.2 (com.google.code.gson:gson:jar:2.2 - https://github.com/google/gson) - https://github.com/google/gson/blob/gson-2.2/LICENSE
     (Apache 2.0) Amazon Web Services SDK for Java v1.10.1 (https://aws.amazon.com/sdk-for-java/) - https://raw.githubusercontent.com/aws/aws-sdk-java/1.10.1/LICENSE.txt
-    (Apache 2.0) JavaEWAH v0.7.9, v0.6.6 (https://github.com/lemire/javaewah) - https://github.com/lemire/javaewah/blob/master/LICENSE-2.0.txt
+    (Apache 2.0) JavaEWAH v0.7.9 (https://github.com/lemire/javaewah) - https://github.com/lemire/javaewah/blob/master/LICENSE-2.0.txt
 
 
 The following components are provided under Apache License.
@@ -92,32 +92,8 @@ The following components are provided under Apache License.
     (Apache 2.0) Elasticsearch: Core (org.elasticsearch:elasticsearch:2.1.0 - http://nexus.sonatype.org/oss-repository-hosting.html/parent/elasticsearch)
     (Apache 2.0) Joda convert (org.joda:joda-convert:1.2 - http://joda-convert.sourceforge.net)
     (Apache 2.0) SnakeYAML (org.yaml:snakeyaml:1.15 - http://www.snakeyaml.org)
-    (Apache 2.0) Scalding Core (com.twitter:scalding-core_2.10:jar:0.15.1-RC13 - https://github.com/twitter/scalding)
-    (Apache 2.0) Scalding Args (com.twitter:scalding-args_2.10:jar:0.15.1-RC13 - https://github.com/twitter/scalding)
-    (Apache 2.0) Scalding Date (com.twitter:scalding-date_2.10:jar:0.15.1-RC13 - https://github.com/twitter/scalding)
-    (Apache 2.0) Scalding REPL (com.twitter:scalding-repl_2.10:jar:0.15.1-RC13 - https://github.com/twitter/scalding)
-    (Apache 2.0) Scalding Serialization (com.twitter:scalding-serialization_2.10:jar:0.15.1-RC13 - https://github.com/twitter/scalding)
-    (Apache 2.0) Scalding Maple (com.twitter:maple:jar:0.15.1-RC13 - https://github.com/twitter/scalding/tree/develop/maple)
-    (Apache 2.0) Cascading (cascading:cascading-core:jar:2.6.1 - https://github.com/Cascading/cascading)
-    (Apache 2.0) Cascading Hadoop (cascading:cascading-hadoop:jar:2.6.1 - https://github.com/Cascading/cascading)
-    (Apache 2.0) Cascading Local (cascading:cascading-local:jar:2.6.1 - https://github.com/Cascading/cascading)
-    (Apache 2.0) Riffle (riffle:riffle:jar:0.1-dev - https://github.com/cwensel/riffle)
-    (Apache 2.0) Chill Hadoop (com.twitter:chill-hadoop:jar:0.7.0 - https://github.com/twitter/chill)
-    (Apache 2.0) Chill Java (com.twitter:chill-java:jar:0.7.0 - https://github.com/twitter/chill)
-    (Apache 2.0) Chill Algebird (com.twitter:chill-algebird_2.10:jar:0.7.0 - https://github.com/twitter/chill)
-    (Apache 2.0) Chill Scala (com.twitter:chill_2.10:jar:0.7.0 - https://github.com/twitter/chill)
-    (Apache 2.0) Algebird (com.twitter:algebird-core_2.10:jar:0.11.0 - https://github.com/twitter/algebird)
-    (Apache 2.0) Bijection Core (com.twitter:bijection-core_2.10:jar:0.8.1 - https://github.com/twitter/bijection)
-    (Apache 2.0) Bijection Macros (com.twitter:bijection-macros_2.10:jar:0.8.1 - https://github.com/twitter/bijection)
-    (Apache 2.0) Scala Test (org.scalatest:scalatest_2.10:jar:2.2.2 - http://www.scalatest.org/)
-    (Apache 2.0) Hadoop Common (org.apache.hadoop:hadoop-common:jar:2.5.0 - http://hadoop.apache.org)
-    (Apache 2.0) Hadoop Auth (org.apache.hadoop:hadoop-auth:jar:2.5.0 - http://hadoop.apache.org)
-    (Apache 2.0) Jackson Mapper ASL (org.codehaus.jackson:jackson-mapper-asl:1.9.13 - http://jackson.codehaus.org/)
-    (Apache 2.0) Apache Avro (org.apache.avro:avro:jar:1.7.4 - https://github.com/apache/avro)
-    (Apache 2.0) Apache Directory Server (org.apache.directory.server:apacheds-kerberos-codec:jar:2.0.0-M15 - https://github.com/apache/directory-server)
-    (Apache 2.0) Apache Directory Server i18n (org.apache.directory.server:apacheds-i18n:jar:2.0.0-M15 - https://github.com/apache/directory-server)
-    (Apache 2.0) Apache Directory API ASN1 (org.apache.directory.api:api-asn1-api:jar:1.0.0-M20 - https://directory.apache.org/api/)
-    (Apache 2.0) Apache Directory API Util (org.apache.directory.api:api-util:jar:1.0.0-M20 - https://directory.apache.org/api/)
+
+
 
 ========================================================================
 MIT licenses
@@ -171,9 +147,8 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (BSD Style) dom4j v1.6.1 (http://www.dom4j.org) - https://github.com/dom4j/dom4j/blob/dom4j_1_6_1/LICENSE.txt
     (BSD Style) JSch v0.1.53 (http://www.jcraft.com) - http://www.jcraft.com/jsch/LICENSE.txt
     (BSD 3 Clause) highlightjs v8.4.0 (https://highlightjs.org/) - https://github.com/isagalaev/highlight.js/blob/8.4/LICENSE
-    (BSD 3 Clause) xmlenc v0.52 (http://xmlenc.sourceforge.net/) - http://xmlenc.cvs.sourceforge.net/viewvc/xmlenc/xmlenc/COPYRIGHT?view=markup&pathrev=RELEASE_0_52
-    (BSD 3 Clause) Paranamer v2.3 (https://github.com/paul-hammant/paranamer) - https://github.com/paul-hammant/paranamer/blob/master/LICENSE.txt
-    (BSD 3 Clause) Google Protobuf v2.5.0 (https://github.com/google/protobuf) - https://github.com/google/protobuf/blob/master/LICENSE
+
+
 
 The following components are provided under the BSD-style License.
 
@@ -187,12 +162,11 @@ The following components are provided under the BSD-style License.
     (BSD-like) Scala Actors library (org.scala-lang:scala-actors:2.10.4 - http://www.scala-lang.org/)
     (BSD-like) Scala Compiler (org.scala-lang:scala-compiler:2.10.4 - http://www.scala-lang.org/)
     (BSD-like) Scala Compiler (org.scala-lang:scala-reflect:2.10.4 - http://www.scala-lang.org/)
-    (BSD-like) Scala Macros Quasiquotes (org.scalamacros:quasiquotes_2.10:jar:2.0.1 - http://docs.scala-lang.org/overviews/quasiquotes/intro.html)
     (BSD-like) ASM (asm:asm:jar:3.1 - http://asm.ow2.org/) - Copyright (c) 2000-2011 INRIA, France Telecom
     (New BSD License) Py4J (net.sf.py4j:py4j:0.9 - http://py4j.sourceforge.net/)
     (New BSD License) Markdown4j (org.commonjava.googlecode.markdown4j:markdown4j:jar:2.2-cj-1.0 - https://code.google.com/p/markdown4j/)
-    (New BSD License) Janino (org.codehaus.janino:janino:jar:2.7.5 - http://janino.net/)
-    (New BSD License) Janino Commons Compiler (org.codehaus.janino:commons-compiler:jar:2.7.5 - http://janino.net/)
+     
+
 
 ========================================================================
 CDDL license
@@ -237,15 +211,3 @@ Creative Commons CC0 (http://creativecommons.org/publicdomain/zero/1.0/)
 
     (CC0 1.0 Universal) JSR166e (com.twitter:jsr166e:1.1.0 - http://github.com/twitter/jsr166e)
     (Public Domain, per Creative Commons CC0) HdrHistogram (org.hdrhistogram:HdrHistogram:2.1.6 - http://hdrhistogram.github.io/HdrHistogram/)
-
-
-========================================================================
-For the org.tukaani:xz:jar:1.0
-========================================================================
-    See zeppelin-distribution/src/bin_license/licenses/LICENSE-tukaani-xy-1.0
-
-
-========================================================================
-Unknown license
-========================================================================
-    (Unknown license) jgrapht-jdk1.6 (thirdparty:jgrapht-jdk1.6:0.8.1 - no url defined)
