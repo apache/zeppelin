@@ -18,6 +18,8 @@
 angular.module('zeppelinWebApp').controller('NotebookCtrl',
   function($scope, $route, $routeParams, $location, $rootScope, $http,
     websocketMsgSrv, baseUrlSrv, $timeout, SaveAsService) {
+
+  var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = "_Z_ANGULAR_FUNC_";
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -655,6 +657,24 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
         });
       }
       scope[varName] = data.angularObject.object;
+
+      // create proxy for AngularFunction
+      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "COUNTER_")) {
+        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "COUNTER_").length);
+        scope[funcName] = function() {
+          var counterName = ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "COUNTER_" + funcName;
+          var argsName = ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "ARGS_" + funcName;
+          var retName = ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "RET_" + funcName;
+
+          scope[argsName] = arguments;
+          scope[counterName] = scope[counterName] + 1;
+
+          // TODO wait for return
+          console.log("angular function called");
+        };
+
+        console.log("angular function created %o", scope[funcName]);
+      }
     }
   });
 
@@ -671,7 +691,19 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
 
       // remove scope variable
       scope[varName] = undefined;
+
+      // remove proxy for AngularFunction
+      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "COUNTER_")) {
+        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX + "COUNTER_").length);        
+        scope[funcName] = undefined;
+      }
     }
   });
 
+  $scope.$on('evaluateJs', function(event, data) {
+    if (!data.noteId || data.noteId === $scope.note.id) {
+      console.log("eval %o", data.script);
+      eval(data.script);
+    }
+  });
 });
