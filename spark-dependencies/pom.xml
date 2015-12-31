@@ -517,17 +517,11 @@
     <profile>
       <id>spark-1.6</id>
       <properties>
-        <spark.version>1.5.2</spark.version>
-        <!-- TODO - no 1.6.0 version on maven repo yet...
         <spark.version>1.6.0</spark.version>
         <py4j.version>0.9</py4j.version>
-        -->
         <akka.group>com.typesafe.akka</akka.group>
         <akka.version>2.3.11</akka.version>
         <protobuf.version>2.5.0</protobuf.version>
-        <!-- TODO - update to release build
-        <spark.download.url>http://people.apache.org/~pwendell/spark-releases/spark-v${spark.version}-preview2-bin/spark-${spark.version}.tgz</spark.download.url>
-        -->
         </properties>
 
       <dependencies>

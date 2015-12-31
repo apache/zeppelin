@@ -91,11 +91,8 @@
     <profile>
       <id>spark-1.6</id>
       <properties>
-        <spark.version>1.5.2</spark.version>
-        <!-- TODO - no 1.6.0 version on maven repo yet...
         <spark.version>1.6.0</spark.version>
         <py4j.version>0.9</py4j.version>
-        -->
       </properties>
     </profile>
   </profiles>
