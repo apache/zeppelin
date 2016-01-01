@@ -19,7 +19,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
   function($scope, $route, $routeParams, $location, $rootScope, $http,
     websocketMsgSrv, baseUrlSrv, $timeout, SaveAsService) {
 
-  var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = "_Z_ANGULAR_FUNC_";
+  var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -663,10 +663,10 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
         var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
         scope[funcName] = function() {
           scope[varName] = arguments;
-          console.log("angular function invoked %o", arguments);
+          console.log('angular function invoked %o', arguments);
         };
 
-        console.log("angular function created %o", scope[funcName]);
+        console.log('angular function created %o', scope[funcName]);
       }
     }
   });
