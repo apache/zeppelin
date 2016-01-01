@@ -95,19 +95,16 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     if (!$scope.note) {
       return;
     }
-    try {
-      for (var i = 0; i < $scope.note.paragraphs.length; i++) {
-        var paragraphId = $scope.note.paragraphs[i].id;
-        if (jQuery.contains(angular.element('#' + paragraphId + '_container')[0], clickEvent.target)) {
-          $scope.$broadcast('focusParagraph', paragraphId, 0, true);
-          break;
-        }
+    for (var i=0; i<$scope.note.paragraphs.length; i++) {
+      var paragraphId = $scope.note.paragraphs[i].id;
+      if (jQuery.contains(angular.element('#' + paragraphId + '_container')[0], clickEvent.target)) {
+        $scope.$broadcast('focusParagraph', paragraphId, 0, true);
+        break;
       }
-    } catch (e) {
-      //nothing to worry. page changed.
     }
   };
 
+  // register mouseevent handler for focus paragraph
   document.addEventListener('click', $scope.focusParagraphOnClick);
 
   $scope.keyboardShortcut = function(keyEvent) {
