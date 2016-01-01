@@ -39,11 +39,12 @@ public class AngularObject<T> {
     = new LinkedList<AngularObjectWatcher>();
   
   private String noteId;   // noteId belonging to. null for global scope 
-
-  protected AngularObject(String name, T o, String noteId,
+  private String paragraphId; // paragraphId belongs to. null for notebook scope
+  protected AngularObject(String name, T o, String noteId, String paragraphId,
       AngularObjectListener listener) {
     this.name = name;
     this.noteId = noteId;
+    this.paragraphId = paragraphId;
     this.listener = listener;
     object = o;
   }
@@ -59,7 +60,15 @@ public class AngularObject<T> {
   public String getNoteId() {
     return noteId;
   }
-  
+
+  public String getParagraphId() {
+    return paragraphId;
+  }
+
+  public void setParagraphId(String paragraphId) {
+    this.paragraphId = paragraphId;
+  }
+
   public boolean isGlobal() {
     return noteId == null;
   }
@@ -70,7 +79,10 @@ public class AngularObject<T> {
       AngularObject ao = (AngularObject) o;
       if (noteId == null && ao.noteId == null ||
           (noteId != null && ao.noteId != null && noteId.equals(ao.noteId))) {
-        return name.equals(ao.name);
+        if (paragraphId == null && ao.paragraphId == null ||
+          (paragraphId != null && ao.paragraphId != null && paragraphId.equals(ao.paragraphId))) {
+          return name.equals(ao.name);
+        }
       }
     }
     return false;
