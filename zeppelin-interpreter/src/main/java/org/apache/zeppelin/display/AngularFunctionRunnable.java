@@ -20,5 +20,5 @@ package org.apache.zeppelin.display;
  * User provided function body for AngularFunction
  */
 public interface AngularFunctionRunnable {
-  public Object run (Object ... args);
+  public void run (Object ... args);
 }
