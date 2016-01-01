@@ -19,7 +19,7 @@ package org.apache.zeppelin.spark.dep;
 
 import static org.junit.Assert.assertEquals;
 
-import org.apache.zeppelin.spark.dep.DependencyResolver;
+import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 import org.junit.Test;
 
 public class DependencyResolverTest {
@@ -30,23 +30,23 @@ public class DependencyResolverTest {
     String scalaVersion = version[0] + "." + version[1];
 
     assertEquals("groupId:artifactId:version",
-        DependencyResolver.inferScalaVersion("groupId:artifactId:version"));
+        SparkDependencyResolver.inferScalaVersion("groupId:artifactId:version"));
     assertEquals("groupId:artifactId_" + scalaVersion + ":version",
-        DependencyResolver.inferScalaVersion("groupId::artifactId:version"));
+        SparkDependencyResolver.inferScalaVersion("groupId::artifactId:version"));
     assertEquals("groupId:artifactId:version::test",
-        DependencyResolver.inferScalaVersion("groupId:artifactId:version::test"));
+        SparkDependencyResolver.inferScalaVersion("groupId:artifactId:version::test"));
     assertEquals("*",
-        DependencyResolver.inferScalaVersion("*"));
+        SparkDependencyResolver.inferScalaVersion("*"));
     assertEquals("groupId:*",
-        DependencyResolver.inferScalaVersion("groupId:*"));
+        SparkDependencyResolver.inferScalaVersion("groupId:*"));
     assertEquals("groupId:artifactId*",
-        DependencyResolver.inferScalaVersion("groupId:artifactId*"));
+        SparkDependencyResolver.inferScalaVersion("groupId:artifactId*"));
     assertEquals("groupId:artifactId_" + scalaVersion,
-        DependencyResolver.inferScalaVersion("groupId::artifactId"));
+        SparkDependencyResolver.inferScalaVersion("groupId::artifactId"));
     assertEquals("groupId:artifactId_" + scalaVersion + "*",
-        DependencyResolver.inferScalaVersion("groupId::artifactId*"));
+        SparkDependencyResolver.inferScalaVersion("groupId::artifactId*"));
     assertEquals("groupId:artifactId_" + scalaVersion + ":*",
-        DependencyResolver.inferScalaVersion("groupId::artifactId:*"));
+        SparkDependencyResolver.inferScalaVersion("groupId::artifactId:*"));
   }
 
 }

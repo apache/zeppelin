@@ -38,32 +38,32 @@ import org.junit.Test;
 
 public class InterpreterFactoryTest {
 
-	private InterpreterFactory factory;
+  private InterpreterFactory factory;
   private File tmpDir;
   private ZeppelinConfiguration conf;
   private InterpreterContext context;
 
   @Before
-	public void setUp() throws Exception {
+  public void setUp() throws Exception {
     tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
     tmpDir.mkdirs();
     new File(tmpDir, "conf").mkdirs();
 
     MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
-	  MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
+    MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
-	  System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
-	  System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
-	  conf = new ZeppelinConfiguration();
-	  factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
-	  context = new InterpreterContext("note", "id", "title", "text", null, null, null, null);
+    System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
+    System.setProperty(ConfVars.ZEPPELIN_INTERPRETERS.getVarName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1,org.apache.zeppelin.interpreter.mock.MockInterpreter2");
+    conf = new ZeppelinConfiguration();
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null);
+    context = new InterpreterContext("note", "id", "title", "text", null, null, null, null);
 
-	}
+  }
 
-	@After
-	public void tearDown() throws Exception {
-	  delete(tmpDir);
-	}
+  @After
+  public void tearDown() throws Exception {
+    delete(tmpDir);
+  }
 
   private void delete(File file){
     if(file.isFile()) file.delete();
@@ -78,24 +78,24 @@ public class InterpreterFactoryTest {
     }
   }
 
-	@Test
-	public void testBasic() {
-	  List<String> all = factory.getDefaultInterpreterSettingList();
+  @Test
+  public void testBasic() {
+    List<String> all = factory.getDefaultInterpreterSettingList();
 
-		// get interpreter
-		Interpreter repl1 = factory.get(all.get(0)).getInterpreterGroup().getFirst();
-		assertFalse(((LazyOpenInterpreter) repl1).isOpen());
-		repl1.interpret("repl1", context);
-		assertTrue(((LazyOpenInterpreter) repl1).isOpen());
+    // get interpreter
+    Interpreter repl1 = factory.get(all.get(0)).getInterpreterGroup().getFirst();
+    assertFalse(((LazyOpenInterpreter) repl1).isOpen());
+    repl1.interpret("repl1", context);
+    assertTrue(((LazyOpenInterpreter) repl1).isOpen());
 
-		// try to get unavailable interpreter
-		assertNull(factory.get("unknown"));
+    // try to get unavailable interpreter
+    assertNull(factory.get("unknown"));
 
-		// restart interpreter
-		factory.restart(all.get(0));
-		repl1 = factory.get(all.get(0)).getInterpreterGroup().getFirst();
-		assertFalse(((LazyOpenInterpreter) repl1).isOpen());
-	}
+    // restart interpreter
+    factory.restart(all.get(0));
+    repl1 = factory.get(all.get(0)).getInterpreterGroup().getFirst();
+    assertFalse(((LazyOpenInterpreter) repl1).isOpen());
+  }
 
   @Test
   public void testFactoryDefaultList() throws IOException {
@@ -119,8 +119,8 @@ public class InterpreterFactoryTest {
     try {
       factory.add("a mock", "mock2", null, new Properties());
     } catch(NullArgumentException e) {
-        assertEquals("Test null option" , e.getMessage(),new NullArgumentException("option").getMessage());
-      }
+      assertEquals("Test null option" , e.getMessage(),new NullArgumentException("option").getMessage());
+    }
     try {
       factory.add("a mock" , "mock2" , new InterpreterOption(false),null);
     } catch (NullArgumentException e){
@@ -140,7 +140,7 @@ public class InterpreterFactoryTest {
     factory.add("newsetting", "mock1", new InterpreterOption(false), new Properties());
     assertEquals(3, factory.get().size());
 
-    InterpreterFactory factory2 = new InterpreterFactory(conf, null);
+    InterpreterFactory factory2 = new InterpreterFactory(conf, null, null);
     assertEquals(3, factory2.get().size());
   }
 }
