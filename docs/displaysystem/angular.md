@@ -96,3 +96,28 @@ z.angularBind("run", 0) will initialize 'run' to zero. And then register watcher
 After clicked button, you'll see both 'run' and numWatched are increased by 1
 
 <img src="/assets/themes/zeppelin/img/screenshots/display_angular3.png" width=600px />
+
+
+
+<br />
+#### Bind/Unbind function
+
+Through ZeppelinContext, you can bind/unbind function to AngularJS view.
+
+Currently it only works in Spark Interpreter (scala).
+
+```
+// bind function in current notebook.
+z.angularBindFunction(String name, { args: Seq[Object] => ... })
+
+// bind function in all notebooks related to current interpreter.
+z.angularBindGlobal(String name, Object object)
+
+// unbind function in current notebook.
+z.angularUnbind(String name)
+
+// unbind function in all notebooks related to current interpreter.
+z.angularUnbindGlobal(String name)
+
+```
+
