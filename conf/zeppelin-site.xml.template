@@ -182,7 +182,7 @@
 
 <property>
   <name>zeppelin.anonymous.allowed</name>
-  <value>false</value>
+  <value>true</value>
   <description>Anonymous user allowed by default</description>
 </property>
 
