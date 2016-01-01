@@ -21,7 +21,7 @@ angular.module('zeppelinWebApp')
   $scope.paragraph = null;
   $scope.originalText = '';
   $scope.editor = null;
-  var paragraphScope = $rootScope.notebookScope.$new(false, $rootScope.notebookScope);
+  var paragraphScope = $rootScope.$new(true, $rootScope);
   var angularObjectRegistry = {};
 
   var editorModes = {
@@ -97,7 +97,8 @@ angular.module('zeppelinWebApp')
 
 
   $scope.$on('angularObjectUpdate', function(event, data) {
-    if (data.noteId && data.paragraphId === $scope.paragraph.id) {
+    var noteId = $route.current.pathParams.noteId;
+    if (!data.noteId || (data.noteId === noteId && (!data.paragraphId || data.paragraphId === $scope.paragraph.id))) {
       var scope = paragraphScope;
       var varName = data.angularObject.name;
 
@@ -112,12 +113,16 @@ angular.module('zeppelinWebApp')
           noteId : data.noteId,
           paragraphId : data.paragraphId
         };
+      } else {
+        angularObjectRegistry[varName].noteId = angularObjectRegistry[varName].noteId || data.noteId;
+        angularObjectRegistry[varName].paragraphId = angularObjectRegistry[varName].paragraphId || data.paragraphId;
       }
 
       angularObjectRegistry[varName].skipEmit = true;
 
       if (!angularObjectRegistry[varName].clearWatcher) {
         angularObjectRegistry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
+          console.log('angular object (paragraph) updated %o %o', varName, angularObjectRegistry[varName]);
           if (angularObjectRegistry[varName].skipEmit) {
             angularObjectRegistry[varName].skipEmit = false;
             return;
@@ -130,6 +135,7 @@ angular.module('zeppelinWebApp')
             angularObjectRegistry[varName].interpreterGroupId);
         });
       }
+      console.log('angular object (paragraph) created %o', varName);
       scope[varName] = data.angularObject.object;
 
       // create proxy for AngularFunction
@@ -137,17 +143,18 @@ angular.module('zeppelinWebApp')
         var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
         scope[funcName] = function() {
           scope[varName] = arguments;
-          console.log('angular function invoked %o', arguments);
+          console.log('angular function (paragraph) invoked %o', arguments);
         };
 
-        console.log('angular function created %o', scope[funcName]);
+        console.log('angular function (paragraph) created %o', scope[funcName]);
       }
     }
   });
 
 
   $scope.$on('angularObjectRemove', function(event, data) {
-    if (!data.noteId || data.noteId && data.paragraphId === $scope.paragraph.id) {
+    var noteId = $route.current.pathParams.noteId;
+    if (!data.noteId || (data.noteId === noteId && (!data.paragraphId || data.paragraphId === $scope.paragraph.id))) {
       var scope = paragraphScope;
       var varName = data.name;
 
