@@ -45,8 +45,6 @@ import static org.mockito.Mockito.*;
  * BASIC Zeppelin rest api tests
  */
 public class NotebookServerTest extends AbstractTestRestApi {
-
-
   private static Notebook notebook;
   private static NotebookServer notebookServer;
   private static Gson gson;
@@ -97,7 +95,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     }
 
     // add angularObject
-    interpreterGroup.getAngularObjectRegistry().add("object1", "value1", note1.getId());
+    interpreterGroup.getAngularObjectRegistry().add("object1", "value1", note1.getId(), null);
 
     // create two sockets and open it
     NotebookSocket sock1 = createWebSocket();

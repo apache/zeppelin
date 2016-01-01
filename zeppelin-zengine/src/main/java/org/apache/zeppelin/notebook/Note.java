@@ -145,7 +145,6 @@ public class Note implements Serializable, JobListener {
   /**
    * Add paragraph last.
    *
-   * @param p
    */
   public Paragraph addParagraph() {
     Paragraph p = new Paragraph(this, this, replLoader);
@@ -187,7 +186,6 @@ public class Note implements Serializable, JobListener {
    * Insert paragraph in given index.
    *
    * @param index
-   * @param p
    */
   public Paragraph insertParagraph(int index) {
     Paragraph p = new Paragraph(this, this, replLoader);
@@ -215,6 +213,8 @@ public class Note implements Serializable, JobListener {
         }
       }
     }
+
+    removeAllAngularObjectInParagraph(paragraphId);
     return null;
   }
 
@@ -339,8 +339,6 @@ public class Note implements Serializable, JobListener {
 
   /**
    * Run all paragraphs sequentially.
-   *
-   * @param jobListener
    */
   public void runAll() {
     synchronized (paragraphs) {
@@ -396,6 +394,21 @@ public class Note implements Serializable, JobListener {
       InterpreterGroup intpGroup = setting.getInterpreterGroup();
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
       angularObjects.put(intpGroup.getId(), registry.getAllWithGlobal(id));
+    }
+  }
+
+  private void removeAllAngularObjectInParagraph(String paragraphId) {
+    angularObjects = new HashMap<String, List<AngularObject>>();
+
+    List<InterpreterSetting> settings = replLoader.getInterpreterSettings();
+    if (settings == null || settings.size() == 0) {
+      return;
+    }
+
+    for (InterpreterSetting setting : settings) {
+      InterpreterGroup intpGroup = setting.getInterpreterGroup();
+      AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
+      registry.removeAll(id, paragraphId);
     }
   }
 
