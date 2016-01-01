@@ -17,10 +17,12 @@
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
                                          $timeout, $compile, websocketMsgSrv) {
-
+  var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.paragraph = null;
   $scope.originalText = '';
   $scope.editor = null;
+  var paragraphScope = $rootScope.notebookScope.$new(false, $rootScope.notebookScope);
+  var angularObjectRegistry = {};
 
   var editorModes = {
     'ace/mode/scala': /^%spark/,
@@ -82,7 +84,7 @@ angular.module('zeppelinWebApp')
         try {
           angular.element('#p'+$scope.paragraph.id+'_angular').html($scope.paragraph.result.msg);
 
-          $compile(angular.element('#p'+$scope.paragraph.id+'_angular').contents())($rootScope.compiledScope);
+          $compile(angular.element('#p'+$scope.paragraph.id+'_angular').contents())(paragraphScope);
         } catch(err) {
           console.log('ANGULAR rendering error %o', err);
         }
@@ -93,6 +95,78 @@ angular.module('zeppelinWebApp')
     $timeout(retryRenderer);
   };
 
+
+  $scope.$on('angularObjectUpdate', function(event, data) {
+    if (data.noteId && data.paragraphId === $scope.paragraph.id) {
+      var scope = paragraphScope;
+      var varName = data.angularObject.name;
+
+      if (angular.equals(data.angularObject.object, scope[varName])) {
+        // return when update has no change
+        return;
+      }
+
+      if (!angularObjectRegistry[varName]) {
+        angularObjectRegistry[varName] = {
+          interpreterGroupId : data.interpreterGroupId,
+          noteId : data.noteId,
+          paragraphId : data.paragraphId
+        };
+      }
+
+      angularObjectRegistry[varName].skipEmit = true;
+
+      if (!angularObjectRegistry[varName].clearWatcher) {
+        angularObjectRegistry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
+          if (angularObjectRegistry[varName].skipEmit) {
+            angularObjectRegistry[varName].skipEmit = false;
+            return;
+          }
+          websocketMsgSrv.updateAngularObject(
+            angularObjectRegistry[varName].noteId,
+            angularObjectRegistry[varName].paragraphId,
+            varName,
+            newValue,
+            angularObjectRegistry[varName].interpreterGroupId);
+        });
+      }
+      scope[varName] = data.angularObject.object;
+
+      // create proxy for AngularFunction
+      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
+        scope[funcName] = function() {
+          scope[varName] = arguments;
+          console.log('angular function invoked %o', arguments);
+        };
+
+        console.log('angular function created %o', scope[funcName]);
+      }
+    }
+  });
+
+
+  $scope.$on('angularObjectRemove', function(event, data) {
+    if (!data.noteId || data.noteId && data.paragraphId === $scope.paragraph.id) {
+      var scope = paragraphScope;
+      var varName = data.name;
+
+      // clear watcher
+      if (angularObjectRegistry[varName]) {
+        angularObjectRegistry[varName].clearWatcher();
+        angularObjectRegistry[varName] = undefined;
+      }
+
+      // remove scope variable
+      scope[varName] = undefined;
+
+      // remove proxy for AngularFunction
+      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
+        scope[funcName] = undefined;
+      }
+    }
+  });
 
   var initializeDefault = function() {
     var config = $scope.paragraph.config;
