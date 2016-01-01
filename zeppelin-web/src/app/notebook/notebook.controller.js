@@ -41,7 +41,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
   $scope.isNoteDirty = null;
   $scope.saveTimer = null;
 
-  var angularObjectRegistry = {};
   var connectedOnce = false;
 
   $scope.$on('setConnectedStatus', function(event, param) {
