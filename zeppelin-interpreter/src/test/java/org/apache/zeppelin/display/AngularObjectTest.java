@@ -18,6 +18,7 @@
 package org.apache.zeppelin.display;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -25,6 +26,56 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.junit.Test;
 
 public class AngularObjectTest {
+
+  @Test
+  public void testEquals() {
+    assertEquals(
+            new AngularObject("name", "value", "note1", null, null),
+            new AngularObject("name", "value", "note1", null, null)
+    );
+
+    assertEquals(
+            new AngularObject("name", "value", "note1", "paragraph1", null),
+            new AngularObject("name", "value", "note1", "paragraph1", null)
+    );
+
+    assertEquals(
+            new AngularObject("name", "value", null, null, null),
+            new AngularObject("name", "value", null, null, null)
+    );
+
+    assertEquals(
+            new AngularObject("name", "value1", null, null, null),
+            new AngularObject("name", "value2", null, null, null)
+    );
+
+    assertNotSame(
+            new AngularObject("name1", "value", null, null, null),
+            new AngularObject("name2", "value", null, null, null)
+    );
+
+    assertNotSame(
+            new AngularObject("name1", "value", "note1", null, null),
+            new AngularObject("name2", "value", "note2", null, null)
+    );
+
+    assertNotSame(
+            new AngularObject("name1", "value", "note", null, null),
+            new AngularObject("name2", "value", null, null, null)
+    );
+
+    assertNotSame(
+            new AngularObject("name", "value", "note", "paragraph1", null),
+            new AngularObject("name", "value", "note", "paragraph2", null)
+    );
+
+    assertNotSame(
+            new AngularObject("name", "value", "note1", null, null),
+            new AngularObject("name", "value", "note1", "paragraph1", null)
+    );
+
+
+  }
 
   @Test
   public void testListener() {
