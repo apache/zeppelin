@@ -423,7 +423,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
 
   /**
    * Run paragraphs
-   * @param paragraphIdOrIdxs list of paragraph id or idx
+   * @param paragraphIdOrIdx list of paragraph id or idx
    */
   public void run(List<Object> paragraphIdOrIdx, InterpreterContext context) {
     for (Object idOrIdx : paragraphIdOrIdx) {
@@ -471,10 +471,10 @@ public class ZeppelinContext extends HashMap<String, Object> {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
     String noteId = interpreterContext.getNoteId();
     // try get local object
-    AngularObject ao = registry.get(name, interpreterContext.getNoteId());
+    AngularObject ao = registry.get(name, interpreterContext.getNoteId(), null);
     if (ao == null) {
       // then global object
-      ao = registry.get(name, null);
+      ao = registry.get(name, null, null);
     }
     return ao;
   }
@@ -501,7 +501,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
    */
   public Object angularGlobal(String name) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    AngularObject ao = registry.get(name, null);
+    AngularObject ao = registry.get(name, null, null);
     if (ao == null) {
       return null;
     } else {
@@ -653,10 +653,10 @@ public class ZeppelinContext extends HashMap<String, Object> {
   private void angularBind(String name, Object o, String noteId) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
 
-    if (registry.get(name, noteId) == null) {
-      registry.add(name, o, noteId);
+    if (registry.get(name, noteId, null) == null) {
+      registry.add(name, o, noteId, null);
     } else {
-      registry.get(name, noteId).set(o);
+      registry.get(name, noteId, null).set(o);
     }
   }
 
@@ -670,10 +670,10 @@ public class ZeppelinContext extends HashMap<String, Object> {
   private void angularBind(String name, Object o, String noteId, AngularObjectWatcher watcher) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
 
-    if (registry.get(name, noteId) == null) {
-      registry.add(name, o, noteId);
+    if (registry.get(name, noteId, null) == null) {
+      registry.add(name, o, noteId, null);
     } else {
-      registry.get(name, noteId).set(o);
+      registry.get(name, noteId, null).set(o);
     }
     angularWatch(name, watcher);
   }
@@ -686,8 +686,8 @@ public class ZeppelinContext extends HashMap<String, Object> {
   private void angularWatch(String name, String noteId, AngularObjectWatcher watcher) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
 
-    if (registry.get(name, noteId) != null) {
-      registry.get(name, noteId).addWatcher(watcher);
+    if (registry.get(name, noteId, null) != null) {
+      registry.get(name, noteId, null).addWatcher(watcher);
     }
   }
 
@@ -725,8 +725,8 @@ public class ZeppelinContext extends HashMap<String, Object> {
    */
   private void angularUnwatch(String name, String noteId, AngularObjectWatcher watcher) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    if (registry.get(name, noteId) != null) {
-      registry.get(name, noteId).removeWatcher(watcher);
+    if (registry.get(name, noteId, null) != null) {
+      registry.get(name, noteId, null).removeWatcher(watcher);
     }
   }
 
@@ -736,8 +736,8 @@ public class ZeppelinContext extends HashMap<String, Object> {
    */
   private void angularUnwatch(String name, String noteId) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    if (registry.get(name, noteId) != null) {
-      registry.get(name, noteId).clearAllWatchers();
+    if (registry.get(name, noteId, null) != null) {
+      registry.get(name, noteId, null).clearAllWatchers();
     }
   }
 
@@ -747,6 +747,6 @@ public class ZeppelinContext extends HashMap<String, Object> {
    */
   private void angularUnbind(String name, String noteId) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    registry.remove(name, noteId);
+    registry.remove(name, noteId, null);
   }
 }
