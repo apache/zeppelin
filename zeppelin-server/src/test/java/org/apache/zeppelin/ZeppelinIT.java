@@ -18,6 +18,7 @@
 package org.apache.zeppelin;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -99,7 +100,16 @@ public class ZeppelinIT {
   boolean waitForText(final String txt, final By locator) {
     try {
       WebElement element = pollingWait(locator, MAX_BROWSER_TIMEOUT_SEC);
-      return txt.equals(element.getText());
+      FluentWait<WebElement> wait = new FluentWait<WebElement>(element)
+              .withTimeout(MAX_BROWSER_TIMEOUT_SEC, TimeUnit.SECONDS)
+              .pollingEvery(1, TimeUnit.SECONDS);
+
+      return wait.until(new Function<WebElement, Boolean>() {
+        @Override
+        public Boolean apply(WebElement webElement) {
+          return txt.equals(webElement.getText());
+        }
+      });
     } catch (TimeoutException e) {
       return false;
     }
@@ -112,9 +122,9 @@ public class ZeppelinIT {
             .ignoring(NoSuchElementException.class);
 
     return wait.until(new Function<WebDriver, WebElement>() {
-        public WebElement apply(WebDriver driver) {
-            return driver.findElement(locator);
-        }
+      public WebElement apply(WebDriver driver) {
+        return driver.findElement(locator);
+      }
     });
   };
 
@@ -147,8 +157,8 @@ public class ZeppelinIT {
       waitForParagraph(1, "FINISHED");
 
       // check expected text
-      waitForText("BindingTest__", By.xpath(
-          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+      assertTrue(waitForText("BindingTest__", By.xpath(
+          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")));
 
       /*
        * Bind variable
@@ -161,8 +171,8 @@ public class ZeppelinIT {
       waitForParagraph(2, "FINISHED");
 
       // check expected text
-      waitForText("BindingTest_1_", By.xpath(
-          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+      assertTrue(waitForText("BindingTest_1_", By.xpath(
+          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")));
 
 
       /*
@@ -187,8 +197,8 @@ public class ZeppelinIT {
           getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
 
       // check expected text
-      waitForText("BindingTest_2_", By.xpath(
-          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+      assertTrue(waitForText("BindingTest_2_", By.xpath(
+          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")));
 
       /*
        * Register watcher
@@ -218,8 +228,8 @@ public class ZeppelinIT {
       waitForParagraph(3, "FINISHED");
 
       // check expected text by watcher
-      waitForText("myVar=3", By.xpath(
-          getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]"));
+      assertTrue(waitForText("myVar=3", By.xpath(
+          getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]")));
 
       /*
        * Unbind
@@ -232,8 +242,8 @@ public class ZeppelinIT {
       waitForParagraph(5, "FINISHED");
 
       // check expected text
-      waitForText("BindingTest__",
-          By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+      assertTrue(waitForText("BindingTest__",
+          By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")));
 
       /*
        * Bind again and see rebind works.
@@ -243,8 +253,8 @@ public class ZeppelinIT {
       waitForParagraph(2, "FINISHED");
 
       // check expected text
-      waitForText("BindingTest_1_",
-          By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+      assertTrue(waitForText("BindingTest_1_",
+          By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")));
 
       driver.findElement(By.xpath("//*[@id='main']/div//h3/span[1]/button[@tooltip='Remove the notebook']"))
           .sendKeys(Keys.ENTER);
@@ -256,7 +266,117 @@ public class ZeppelinIT {
       System.out.println("testCreateNotebook Test executed");
     } catch (ElementNotVisibleException e) {
       File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+      throw e;
+    }
+  }
 
+
+  @Test
+  public void testAngularFunction() throws InterruptedException{
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+
+      // wait for first paragraph's " READY " status text
+      waitForParagraph(1, "READY");
+
+      /*
+       * print angular template
+       * %angular <div id='angularTestButton' ng-click='myVar=myVar+1'>BindingTest_{{myVar}}_</div>
+       */
+      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
+      paragraph1Editor.sendKeys("println" + Keys.chord(Keys.SHIFT, "9") + "\""
+              + Keys.chord(Keys.SHIFT, "5")
+              + "angular <div id='angularTestButton' "
+              + "ng" + Keys.chord(Keys.SUBTRACT) + "click='myFunc" + Keys.chord(Keys.SHIFT, "9") + ")'>"
+              + "FunctionTest</div>\")");
+      paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      waitForParagraph(1, "FINISHED");
+
+      /*
+       * Bind variable
+       * var a=1
+       * z.angularFunction("myFunc", { args: Seq[Object] => a = a + 1 })
+       */
+      assertEquals(1, driver.findElements(By.xpath(getParagraphXPath(2) + "//textarea")).size());
+      WebElement paragraph2Editor = driver.findElement(By.xpath(getParagraphXPath(2) + "//textarea"));
+      paragraph2Editor.sendKeys("var a=1; z.angularBindFunction" + Keys.chord(Keys.SHIFT, "9") + "\"myFunc\", " +
+              "{ args: Seq[Object] => a = a " + Keys.chord(Keys.ADD) + " 1 })");
+      paragraph2Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      waitForParagraph(2, "FINISHED");
+
+      /*
+       * print variable
+       * print(a)
+       */
+      WebElement paragraph3Editor = driver.findElement(By.xpath(getParagraphXPath(3) + "//textarea"));
+      paragraph3Editor.sendKeys("print" + Keys.chord(Keys.SHIFT, "9") + "a)");
+      paragraph3Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      waitForParagraph(3, "FINISHED");
+
+      // check expected text
+      assertTrue(waitForText("1", By.xpath(
+              getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]")));
+
+
+      /*
+       * Click button
+       */
+      driver.findElement(By.xpath(
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+
+      /**
+       * Run paragarph3
+       */
+      paragraph3Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      waitForParagraph(3, "FINISHED");
+
+      // check expected text
+      assertTrue(waitForText("2", By.xpath(
+              getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]")));
+
+
+      /*
+       * unbind function
+       * z.angularUnbindFunction("myFunc")
+       */
+      WebElement paragraph4Editor = driver.findElement(By.xpath(getParagraphXPath(4) + "//textarea"));
+      paragraph4Editor.sendKeys("z.angularUnbindFunction" + Keys.chord(Keys.SHIFT, "9") + "\"myFunc\")");
+      paragraph4Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      waitForParagraph(4, "FINISHED");
+
+
+      /*
+       * Click button
+       */
+      driver.findElement(By.xpath(
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+
+      /**
+       * Run paragarph3
+       */
+      paragraph3Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      waitForParagraph(3, "FINISHED");
+
+      // check expected text
+      assertTrue(waitForText("2", By.xpath(
+              getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]")));
+
+
+      // remove notebook
+      driver.findElement(By.xpath("//*[@id='main']/div//h3/span[1]/button[@tooltip='Remove the notebook']"))
+              .sendKeys(Keys.ENTER);
+      ZeppelinITUtils.sleep(1000, true);
+      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
+              "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+      ZeppelinITUtils.sleep(100, true);
+
+      System.out.println("testCreateNotebook Test executed");
+    } catch (ElementNotVisibleException e) {
+      File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+      throw e;
     }
   }
 
