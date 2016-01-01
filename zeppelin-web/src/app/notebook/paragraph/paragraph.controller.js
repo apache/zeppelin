@@ -841,9 +841,8 @@ angular.module('zeppelinWebApp')
     if ($scope.paragraph.id === paragraphId) {
       // focus editor
       if (!$scope.paragraph.config.editorHide) {
-        $scope.editor.focus();
-
         if (!mouseEvent) {
+          $scope.editor.focus();
           // move cursor to the first row (or the last row)
           var row;
           if (cursorPos >= 0) {
