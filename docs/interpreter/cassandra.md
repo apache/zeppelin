@@ -6,10 +6,8 @@ group: manual
 ---
 {% include JB/setup %}
 
-<hr/>
 ## 1. Cassandra CQL Interpreter for Apache Zeppelin
 
-<br/>
 <table class="table-configuration">
   <tr>
     <th>Name</th>
@@ -23,35 +21,32 @@ group: manual
   </tr>
 </table>
 
-<hr/>
 
 ## 2. Enabling Cassandra Interpreter
 
- In a notebook, to enable the **Cassandra** interpreter, click on the **Gear** icon and select **Cassandra**
+ In a notebook, to enable the **Cassandra** interpreter, click on the **Gear** icon and select **Cassandra**.
  
- <center>
- ![Interpreter Binding](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterBinding.png)
-
- ![Interpreter Selection](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterSelection.png)
+<center>
+  <img src="../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterBinding.png" width="25%" height="25%">
+    <br>
+  <img src="../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterSelection.png" width="25%" height="25%">
  </center>
 
-<hr/>
- 
+
 ## 3. Using the Cassandra Interpreter
 
  In a paragraph, use **_%cassandra_** to select the **Cassandra** interpreter and then input all commands.
  
- To access the interactive help, type **HELP;**
+ To access the interactive help, type `HELP;`
  
- <center>
-  ![Interactive Help](../assets/themes/zeppelin/img/docs-img/cassandra-InteractiveHelp.png)
+<center>
+    <img src="../assets/themes/zeppelin/img/docs-img/cassandra-InteractiveHelp.png" width="50%" height="50%">
  </center>
 
-<hr/>
 
 ## 4. Interpreter Commands
 
- The **Cassandra** interpreter accepts the following commands
+ The **Cassandra** interpreter accepts the following commands.
  
 <center>
   <table class="table-configuration">
@@ -85,10 +80,9 @@ group: manual
       <td>All CQL-compatible statements (SELECT, INSERT, CREATE ...)</td>
       <td>All CQL statements are executed directly against the Cassandra server</td>
     </tr>
-  </table>  
+  </table>
 </center>
 
-<hr/>
 ## 5. CQL statements
  
 This interpreter is compatible with any CQL statement supported by Cassandra. Ex: 
@@ -97,7 +91,7 @@ This interpreter is compatible with any CQL statement supported by Cassandra. Ex
 
     INSERT INTO users(login,name) VALUES('jdoe','John DOE');
     SELECT * FROM users WHERE login='jdoe';
-```                                
+```
 
 Each statement should be separated by a semi-colon ( **;** ) except the special commands below:
 
@@ -149,7 +143,7 @@ This means that the following statements are equivalent and valid:
 ```
 
 The complete list of all CQL statements and versions can be found below:
-<center>                                 
+<center>
  <table class="table-configuration">
    <tr>
      <th>Cassandra Version</th>
@@ -163,7 +157,7 @@ The complete list of all CQL statements and versions can be found below:
           http://docs.datastax.com/en/cql/3.3/cql/cqlIntro.html
         </a>
      </td>
-   </tr>   
+   </tr>
    <tr>
      <td><strong>2.1 & 2.0</strong></td>
      <td>
@@ -172,7 +166,7 @@ The complete list of all CQL statements and versions can be found below:
           http://docs.datastax.com/en/cql/3.1/cql/cql_intro_c.html
         </a>
      </td>
-   </tr>   
+   </tr>
    <tr>
      <td><strong>1.2</strong></td>
      <td>
@@ -181,11 +175,10 @@ The complete list of all CQL statements and versions can be found below:
           http://docs.datastax.com/en/cql/3.0/cql/aboutCQL.html
         </a>
      </td>
-   </tr>   
+   </tr>
  </table>
 </center>
 
-<hr/>
 
 ## 6. Comments in statements
 
@@ -203,21 +196,19 @@ It is possible to add comments between statements. Single line comments start wi
     Insert into users(login,name) vAlues('hsue','Helen SUE');
 ```
 
-<hr/>
 
 ## 7. Syntax Validation
 
 The interpreters is shipped with a built-in syntax validator. This validator only checks for basic syntax errors. 
-All CQL-related syntax validation is delegated directly to **Cassandra** 
+All CQL-related syntax validation is delegated directly to **Cassandra**.
 
 Most of the time, syntax errors are due to **missing semi-colons** between statements or **typo errors**.
 
-<hr/>
                                     
 ## 8. Schema commands
 
 To make schema discovery easier and more interactive, the following commands are supported:
-<center>                                 
+<center>
  <table class="table-configuration">
    <tr>
      <th>Command</th>
@@ -226,67 +217,65 @@ To make schema discovery easier and more interactive, the following commands are
    <tr>
      <td><strong>DESCRIBE CLUSTER;</strong></td>
      <td>Show the current cluster name and its partitioner</td>
-   </tr>   
+   </tr>
    <tr>
      <td><strong>DESCRIBE KEYSPACES;</strong></td>
      <td>List all existing keyspaces in the cluster and their configuration (replication factor, durable write ...)</td>
-   </tr>   
+   </tr>
    <tr>
      <td><strong>DESCRIBE TABLES;</strong></td>
      <td>List all existing keyspaces in the cluster and for each, all the tables name</td>
-   </tr>   
+   </tr>
    <tr>
      <td><strong>DESCRIBE TYPES;</strong></td>
      <td>List all existing user defined types in the <strong>current (logged) keyspace</strong></td>
-   </tr>   
+   </tr>
    <tr>
      <td nowrap><strong>DESCRIBE FUNCTIONS &lt;keyspace_name&gt;;</strong></td>
      <td>List all existing user defined functions in the given keyspace</td>
-   </tr>   
+   </tr>
    <tr>
      <td nowrap><strong>DESCRIBE AGGREGATES &lt;keyspace_name&gt;;</strong></td>
      <td>List all existing user defined aggregates in the given keyspace</td>
-   </tr>   
+   </tr>
    <tr>
      <td nowrap><strong>DESCRIBE KEYSPACE &lt;keyspace_name&gt;;</strong></td>
-     <td>Describe the given keyspace configuration and all its table details (name, columns, ...)</td>
-   </tr>   
+     <td>Describe the given keyspace configuration and all its table details  (name, columns, ...)</td>
+   </tr>
    <tr>
      <td nowrap><strong>DESCRIBE TABLE (&lt;keyspace_name&gt;).&lt;table_name&gt;;</strong></td>
      <td>
         Describe the given table. If the keyspace is not provided, the current logged in keyspace is used. 
         If there is no logged in keyspace, the default system keyspace is used. 
-        If no table is found, an error message is raised
+        If no table is found, an error message is raised.
      </td>
-   </tr>   
+   </tr>
    <tr>
      <td nowrap><strong>DESCRIBE TYPE (&lt;keyspace_name&gt;).&lt;type_name&gt;;</strong></td>
      <td>
         Describe the given type(UDT). If the keyspace is not provided, the current logged in keyspace is used. 
         If there is no logged in keyspace, the default system keyspace is used. 
-        If no type is found, an error message is raised
+        If no type is found, an error message is raised.
      </td>
-   </tr>   
+   </tr>
    <tr>
      <td nowrap><strong>DESCRIBE FUNCTION (&lt;keyspace_name&gt;).&lt;function_name&gt;;</strong></td>
-     <td>Describe the given user defined function. The keyspace is optional</td>
-   </tr>   
+     <td>Describe the given user defined function. The keyspace is optional.</td>
+   </tr>
    <tr>
      <td nowrap><strong>DESCRIBE AGGREGATE (&lt;keyspace_name&gt;).&lt;aggregate_name&gt;;</strong></td>
-     <td>Describe the given user defined aggregate. The keyspace is optional</td>
-   </tr>   
+     <td>Describe the given user defined aggregate. The keyspace is optional.</td>
+   </tr>
  </table>
-</center>              
+</center>
                       
 The schema objects (cluster, keyspace, table, type, function and aggregate) are displayed in a tabular format. 
 There is a drop-down menu on the top left corner to expand objects details. On the top right menu is shown the Icon legend.
 
-<br/>
 <center>
   ![Describe Schema](../assets/themes/zeppelin/img/docs-img/cassandra-DescribeSchema.png)
 </center>
 
-<hr/>
 
 ## 9. Runtime Parameters
 
@@ -294,8 +283,7 @@ Sometimes you want to be able to pass runtime query parameters to your statement
 Those parameters are not part of the CQL specs and are specific to the interpreter. 
 Below is the list of all parameters: 
 
-<br/>
-<center>                                 
+<center>
  <table class="table-configuration">
    <tr>
      <th>Parameter</th>
@@ -305,38 +293,37 @@ Below is the list of all parameters:
    <tr>
      <td nowrap>Consistency Level</td>
      <td><strong>@consistency=<em>value</em></strong></td>
-     <td>Apply the given consistency level to all queries in the paragraph</td>
+     <td>Apply the given consistency level to all queries in the paragraph.</td>
    </tr>
    <tr>
      <td nowrap>Serial Consistency Level</td>
      <td><strong>@serialConsistency=<em>value</em></strong></td>
-     <td>Apply the given serial consistency level to all queries in the paragraph</td>
+     <td>Apply the given serial consistency level to all queries in the paragraph.</td>
    </tr>
    <tr>
      <td nowrap>Timestamp</td>
      <td><strong>@timestamp=<em>long value</em></strong></td>
      <td>
         Apply the given timestamp to all queries in the paragraph.
-        Please note that timestamp value passed directly in CQL statement will override this value
+        Please note that timestamp value passed directly in CQL statement will override this value.
       </td>
    </tr>
    <tr>
      <td nowrap>Retry Policy</td>
      <td><strong>@retryPolicy=<em>value</em></strong></td>
-     <td>Apply the given retry policy to all queries in the paragraph</td>
+     <td>Apply the given retry policy to all queries in the paragraph.</td>
    </tr>
    <tr>
      <td nowrap>Fetch Size</td>
      <td><strong>@fetchSize=<em>integer value</em></strong></td>
-     <td>Apply the given fetch size to all queries in the paragraph</td>
+     <td>Apply the given fetch size to all queries in the paragraph.</td>
    </tr>
  </table>
 </center>
 
  Some parameters only accept restricted values: 
 
-<br/>
-<center>                                 
+<center>
  <table class="table-configuration">
    <tr>
      <th>Parameter</th>
@@ -344,11 +331,11 @@ Below is the list of all parameters:
    </tr>
    <tr>
      <td nowrap>Consistency Level</td>
-     <td><strong>ALL, ANY, ONE, TWO, THREE, QUORUM, LOCAL_ONE, LOCAL_QUORUM, EACH_QUORUM</strong></td>
+     <td><strong>ALL, ANY, ONE, TWO, THREE, QUORUM, LOCAL\_ONE, LOCAL\_QUORUM, EACH\_QUORUM</strong></td>
    </tr>
    <tr>
      <td nowrap>Serial Consistency Level</td>
-     <td><strong>SERIAL, LOCAL_SERIAL</strong></td>
+     <td><strong>SERIAL, LOCAL\_SERIAL</strong></td>
    </tr>
    <tr>
      <td nowrap>Timestamp</td>
@@ -356,7 +343,7 @@ Below is the list of all parameters:
    </tr>
    <tr>
      <td nowrap>Retry Policy</td>
-     <td><strong>DEFAULT, DOWNGRADING_CONSISTENCY, FALLTHROUGH, LOGGING_DEFAULT, LOGGING_DOWNGRADING, LOGGING_FALLTHROUGH</strong></td>
+     <td><strong>DEFAULT, DOWNGRADING\_CONSISTENCY, FALLTHROUGH, LOGGING\_DEFAULT, LOGGING\_DOWNGRADING, LOGGING\_FALLTHROUGH</strong></td>
    </tr>
    <tr>
      <td nowrap>Fetch Size</td>
@@ -365,7 +352,7 @@ Below is the list of all parameters:
  </table>
 </center> 
 
->Please note that you should **not** add semi-colon ( **;** ) at the end of each parameter statement
+>Please note that you should **not** add semi-colon ( **;** ) at the end of each parameter statement.
 
 Some examples: 
 
@@ -395,12 +382,11 @@ Some examples:
                                 
 Some remarks about query parameters:
   
-> 1. **many** query parameters can be set in the same paragraph
-> 2. if the **same** query parameter is set many time with different values, the interpreter only take into account the first value
-> 3. each query parameter applies to **all CQL statements** in the same paragraph, unless you override the option using plain CQL text (like forcing timestamp with the USING clause)
-> 4. the order of each query parameter with regard to CQL statement does not matter
+> 1. **Many** query parameters can be set in the same paragraph.
+> 2. If the **same** query parameter is set many time with different values, the interpreter only take into account the first value.
+> 3. Each query parameter applies to **all CQL statements** in the same paragraph, unless you override the option using plain CQL text. ( Like forcing timestamp with the USING clause )
+> 4. The order of each query parameter with regard to CQL statement does not matter.
 
-<hr/>
 
 ## 10. Support for Prepared Statements
 
@@ -424,17 +410,15 @@ Example:
     @remove_prepare[statement_name]
 ```
 
-<br/>
 #### a. @prepare
-<br/>
-You can use the syntax _"@prepare[statement_name]=SELECT ..."_ to create a prepared statement. 
-The _statement_name_ is **mandatory** because the interpreter prepares the given statement with the Java driver and 
-saves the generated prepared statement in an **internal hash map**, using the provided _statement_name_ as search key.
+You can use the syntax `@prepare[statement_name]=SELECT ...` to create a prepared statement. 
+The `statement_name` is **mandatory** because the interpreter prepares the given statement with the Java driver and 
+saves the generated prepared statement in an **internal hash map**, using the provided `statement_name` as search key.
   
 > Please note that this internal prepared statement map is shared with **all notebooks** and **all paragraphs** because 
-there is only one instance of the interpreter for Cassandra
+there is only one instance of the interpreter for Cassandra.
   
-> If the interpreter encounters **many** @prepare for the **same _statement_name_ (key)**, only the **first** statement will be taken into account.
+> If the interpreter encounters **many** @prepare for the **same statement_name (key)**, only the **first** statement will be taken into account.
   
 Example: 
 
@@ -443,37 +427,36 @@ Example:
     @prepare[select]=SELECT * FROM spark_demo.albums LIMIT ?
 
     @prepare[select]=SELECT * FROM spark_demo.artists LIMIT ?
-```                                
+```
 
-For the above example, the prepared statement is _SELECT * FROM spark_demo.albums LIMIT ?_. 
-_SELECT * FROM spark_demo.artists LIMIT ?_ is ignored because an entry already exists in the prepared statements map with the key select. 
+For the above example, the prepared statement is `SELECT * FROM spark_demo.albums LIMIT ?`. 
+`SELECT * FROM spark_demo.artists LIMIT ?` is ignored because an entry already exists in the prepared statements map with the key select. 
 
 In the context of **Zeppelin**, a notebook can be scheduled to be executed at regular interval, 
 thus it is necessary to **avoid re-preparing many time the same statement (considered an anti-pattern)**.
-<br/>
-<br/>
+
 #### b. @bind
-<br/>
-Once the statement is prepared (possibly in a separated notebook/paragraph). You can bind values to it: 
+
+Once the statement is prepared ( possibly in a separated notebook/paragraph ). You can bind values to it: 
 
 ```
     @bind[select_first]=10
-```                                
+```
 
-Bound values are not mandatory for the **@bind** statement. However if you provide bound values, they need to comply to some syntax:
+Bound values are not mandatory for the `@bind` statement. However if you provide bound values, they need to comply to some syntax:
 
 * String values should be enclosed between simple quotes ( ‘ )
 * Date values should be enclosed between simple quotes ( ‘ ) and respect the formats:
   1. yyyy-MM-dd HH:MM:ss
   2. yyyy-MM-dd HH:MM:ss.SSS
-* **null** is parsed as-is
-* **boolean** (true|false) are parsed as-is
+* **Null** is parsed as-is.
+* **Boolean** (true|false) is parsed as-is.
 * collection values must follow the **[standard CQL syntax]**:
   * list: [‘list_item1’, ’list_item2’, ...]
   * set: {‘set_item1’, ‘set_item2’, …}
   * map: {‘key1’: ‘val1’, ‘key2’: ‘val2’, …}
-* **tuple** values should be enclosed between parenthesis (see **[Tuple CQL syntax]**): (‘text’, 123, true)
-* **udt** values should be enclosed between brackets (see **[UDT CQL syntax]**): {stree_name: ‘Beverly Hills’, number: 104, zip_code: 90020, state: ‘California’, …}
+* **Tuple** values should be enclosed between parenthesis ( see **[Tuple CQL syntax]** ): (‘text’, 123, true)
+* **Udt** values should be enclosed between brackets ( see **[UDT CQL syntax]** ): {stree_name: ‘Beverly Hills’, number: 104, zip_code: 90020, state: ‘California’, …}
 
 > It is possible to use the @bind statement inside a batch:
 > 
@@ -485,14 +468,12 @@ Bound values are not mandatory for the **@bind** statement. However if you provi
 >     APPLY BATCH;
 > ```
 
-<br/>
 #### c. @remove_prepare
-<br/>
+
 To avoid for a prepared statement to stay forever in the prepared statement map, you can use the 
-**@remove_prepare[statement_name]** syntax to remove it. 
+`@remove_prepare[statement_name]` syntax to remove it. 
 Removing a non-existing prepared statement yields no error.
 
-<hr/>
 
 ## 11. Using Dynamic Forms
 
@@ -529,7 +510,6 @@ It is also possible to use dynamic forms for **prepared statements**:
   
 {% endraw %}
 
-<hr/>
 
 ## 12. Execution parallelism and shared states
 
@@ -543,44 +523,34 @@ Consequently, if you use the **USE _keyspace name_;** statement to log into a ke
 per instance of **Cassandra** interpreter.
 
 The same remark does apply to the **prepared statement hash map**, it is shared by **all users** using the same instance of **Cassandra** interpreter.
-
 Until **Zeppelin** offers a real multi-users separation, there is a work-around to segregate user environment and states: 
-_create different **Cassandra** interpreter instances_
+create different **Cassandra** interpreter instances.
 
-For this, first go to the **Interpreter** menu and click on the **Create** button
-<br/>
-<br/>
+For this, first go to the **Interpreter** menu and click on the **Create** button.
 <center>
   ![Create Interpreter](../assets/themes/zeppelin/img/docs-img/cassandra-NewInterpreterInstance.png)
 </center>
  
 In the interpreter creation form, put **cass-instance2** as **Name** and select the **cassandra** 
-in the interpreter drop-down list  
-<br/>
-<br/>
+in the interpreter drop-down list
 <center>
   ![Interpreter Name](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterName.png)
-</center>                         
+</center>
 
  Click on **Save** to create the new interpreter instance. Now you should be able to see it in the interpreter list.
   
-<br/>
-<br/>
 <center>
   ![Interpreter In List](../assets/themes/zeppelin/img/docs-img/cassandra-NewInterpreterInList.png)
-</center>                         
+</center>
 
 Go back to your notebook and click on the **Gear** icon to configure interpreter bindings.
 You should be able to see and select the **cass-instance2** interpreter instance in the available
 interpreter list instead of the standard **cassandra** instance.
 
-<br/>
-<br/>
 <center>
   ![Interpreter Instance Selection](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterInstanceSelection.png)
 </center> 
 
-<hr/>
 
 ## 13. Interpreter Configuration
 
@@ -638,7 +608,7 @@ Below are the configuration parameters and their default value.
         <strong>
           It is strongly recommended to let the default value
           and prefix the table name with the actual keyspace
-          in all of your queries
+          in all of your queries.
         </strong>
      </td>
      <td>system</td>
@@ -649,7 +619,7 @@ Below are the configuration parameters and their default value.
         Load balancing policy. Default = <em>new TokenAwarePolicy(new DCAwareRoundRobinPolicy())</em>
         To Specify your own policy, provide the <strong>fully qualify class name (FQCN)</strong> of your policy.
         At runtime the interpreter will instantiate the policy using 
-        <strong>Class.forName(FQCN)</strong>
+        <strong>Class.forName(FQCN).</strong>
      </td>
      <td>DEFAULT</td>
    </tr>
@@ -723,7 +693,7 @@ Below are the configuration parameters and their default value.
      <td>
       Cassandra query default consistency level
       <br/>
-      Available values: ONE, TWO, THREE, QUORUM, LOCAL_ONE, LOCAL_QUORUM, EACH_QUORUM, ALL
+      Available values: ONE, TWO, THREE, QUORUM, LOCAL\_ONE, LOCAL\_QUORUM, EACH\_QUORUM, ALL
      </td>
      <td>ONE</td>
    </tr>
@@ -748,7 +718,7 @@ Below are the configuration parameters and their default value.
         Default = new ExponentialReconnectionPolicy(1000, 10 * 60 * 1000)
         To Specify your own policy, provide the <strong>fully qualify class name (FQCN)</strong> of your policy.
         At runtime the interpreter will instantiate the policy using 
-        <strong>Class.forName(FQCN)</strong>
+        <strong>Class.forName(FQCN).</strong>
      </td>
      <td>DEFAULT</td>
    </tr>
@@ -759,7 +729,7 @@ Below are the configuration parameters and their default value.
         Default = DefaultRetryPolicy.INSTANCE
         To Specify your own policy, provide the <strong>fully qualify class name (FQCN)</strong> of your policy.
         At runtime the interpreter will instantiate the policy using 
-        <strong>Class.forName(FQCN)</strong>
+        <strong>Class.forName(FQCN).</strong>
      </td>
      <td>DEFAULT</td>
    </tr>
@@ -785,18 +755,17 @@ Below are the configuration parameters and their default value.
         Default = NoSpeculativeExecutionPolicy.INSTANCE
         To Specify your own policy, provide the <strong>fully qualify class name (FQCN)</strong> of your policy.
         At runtime the interpreter will instantiate the policy using 
-        <strong>Class.forName(FQCN)</strong>
+        <strong>Class.forName(FQCN).</strong>
      </td>
      <td>DEFAULT</td>
    </tr>
  </table>
 
-<hr/>
 
 ## 14. Bugs & Contacts
 
  If you encounter a bug for this interpreter, please create a **[JIRA]** ticket and ping me on Twitter
- at **[@doanduyhai]**
+ at **[@doanduyhai]**.
 
 
 [Cassandra Java Driver]: https://github.com/datastax/java-driver
