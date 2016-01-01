@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.spark.dep;
+package org.apache.zeppelin.dep;
 
 import org.apache.maven.repository.internal.DefaultServiceLocator;
 import org.apache.maven.wagon.Wagon;

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.spark.dep;
+package org.apache.zeppelin.dep;
 import org.sonatype.aether.repository.Authentication;
 /**
  *
@@ -70,7 +70,7 @@ public class Repository {
     return this;
   }
   
-  protected Authentication getAuthentication() {
+  public Authentication getAuthentication() {
     Authentication auth = null;
     if (this.username != null && this.password != null) {
       auth = new Authentication(this.username, this.password);

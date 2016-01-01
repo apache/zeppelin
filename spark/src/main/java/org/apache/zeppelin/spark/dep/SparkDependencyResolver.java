@@ -30,6 +30,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.repl.SparkIMain;
+import org.apache.zeppelin.dep.Booter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositorySystem;
@@ -58,19 +59,14 @@ import scala.tools.nsc.util.MergedClassPath;
  * Deps resolver.
  * Add new dependencies from mvn repo (at runetime) to Zeppelin.
  */
-public class DependencyResolver {
-  Logger logger = LoggerFactory.getLogger(DependencyResolver.class);
+public class SparkDependencyResolver {
+  Logger logger = LoggerFactory.getLogger(SparkDependencyResolver.class);
   private Global global;
   private SparkIMain intp;
   private SparkContext sc;
   private RepositorySystem system = Booter.newRepositorySystem();
   private List<RemoteRepository> repos = new LinkedList<RemoteRepository>();
   private RepositorySystemSession session;
-  private DependencyFilter classpathFlter = DependencyFilterUtils.classpathFilter(
-                                                                                JavaScopes.COMPILE,
-                                                                                JavaScopes.PROVIDED,
-                                                                                JavaScopes.RUNTIME,
-                                                                                JavaScopes.SYSTEM);
 
   private final String[] exclusions = new String[] {"org.scala-lang:scala-library",
                                                     "org.scala-lang:scala-compiler",
@@ -80,7 +76,7 @@ public class DependencyResolver {
                                                     "org.apache.zeppelin:zeppelin-spark",
                                                     "org.apache.zeppelin:zeppelin-server"};
 
-  public DependencyResolver(SparkIMain intp, SparkContext sc, String localRepoPath,
+  public SparkDependencyResolver(SparkIMain intp, SparkContext sc, String localRepoPath,
                             String additionalRemoteRepository) {
     this.intp = intp;
     this.global = intp.global();
@@ -318,7 +314,7 @@ public class DependencyResolver {
   public List<ArtifactResult> getArtifactsWithDep(String dependency,
       Collection<String> excludes) throws Exception {
     Artifact artifact = new DefaultArtifact(inferScalaVersion(dependency));
-    DependencyFilter classpathFlter = DependencyFilterUtils.classpathFilter( JavaScopes.COMPILE );
+    DependencyFilter classpathFilter = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
     PatternExclusionsDependencyFilter exclusionFilter =
         new PatternExclusionsDependencyFilter(inferScalaVersion(excludes));
 
@@ -331,7 +327,7 @@ public class DependencyResolver {
       }
     }
     DependencyRequest dependencyRequest = new DependencyRequest(collectRequest,
-        DependencyFilterUtils.andFilter(exclusionFilter, classpathFlter));
+        DependencyFilterUtils.andFilter(exclusionFilter, classpathFilter));
     return system.resolveDependencies(session, dependencyRequest).getArtifactResults();
   }
 
