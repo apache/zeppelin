@@ -468,7 +468,6 @@
               <exclude>DEPLOY.md</exclude>
               <exclude>CONTRIBUTING.md</exclude>
               <exclude>STYLE.md</exclude>
-              <exclude>SECURITY-README.md</exclude>
               <exclude>Roadmap.md</exclude>
               <exclude>**/licenses/**</exclude>
               <exclude>**/zeppelin-distribution/src/bin_license/**</exclude>
