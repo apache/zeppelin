@@ -26,9 +26,9 @@ import org.scalatest.{Matchers, BeforeAndAfterEach, BeforeAndAfter, FlatSpec}
 /**
   * Test
   */
-class AngularDisplayElemTest
+class AngularElemTest
   extends FlatSpec with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
-  import AngularDisplayElem._
+  import AngularElem._
 
   override def beforeEach() {
     val intpGroup = new InterpreterGroup()
@@ -41,7 +41,7 @@ class AngularDisplayElemTest
     super.beforeEach() // To be stackable, must call super.beforeEach
   }
 
-  "DisplayUtilsElement" should "provide onclick method" in {
+  "AngularElem" should "provide onclick method" in {
     registry.getAll("note").size() should be(0)
 
     var a = 0
@@ -68,7 +68,7 @@ class AngularDisplayElemTest
     registry.getAll("note").size() should be(0)
   }
 
-  "display()" should "print angular display directive only once in a paragraph" in {
+  "AngularElem" should "print angular display directive only once in a paragraph" in {
     val out = new ByteArrayOutputStream()
     val printOut = new PrintStream(out)
 
@@ -80,16 +80,45 @@ class AngularDisplayElemTest
     out.toString should be("<div></div>")
   }
 
+  "AngularElem" should "bind angularObject to ng-model directive " in {
+    <div></div>.model("name", "value").toString should be("<div ng-model=\"name\"></div>")
+    <div></div>.model("name", "value").model() should be("value")
+    <div></div>.model() should be(None)
+  }
+
+  "AngularElem" should "able to disassociate AngularObjects" in {
+    val elem1 = <div></div>.model("name1", "value1")
+    val elem2 = <div></div>.model("name2", "value2")
+    val elem3 = <div></div>.model("name3", "value3")
+
+    registrySize should be(3)
+
+    elem1.disassociate()
+    registrySize should be(2)
+
+    AngularElem.disassociate()
+    registrySize should be(0)
+  }
+
+
   def registry = {
     InterpreterContext.get().getAngularObjectRegistry
   }
 
-  def click(elem: AngularDisplayElem) = {
+  def registrySize = {
+    registry.getAll(noteId).size
+  }
+
+  def noteId = {
+    InterpreterContext.get().getNoteId
+  }
+
+  def click(elem: AngularElem) = {
     fireEvent("ng-click", elem)
   }
 
   // simulate click
-  def fireEvent(eventName: String, elem: AngularDisplayElem) = {
+  def fireEvent(eventName: String, elem: AngularElem) = {
     val angularObject:AngularObject[Any] = elem.angularObjects(eventName);
     angularObject.set("event");
   }
