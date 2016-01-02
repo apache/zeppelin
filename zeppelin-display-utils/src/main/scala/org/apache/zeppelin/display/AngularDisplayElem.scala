@@ -22,7 +22,6 @@ import org.apache.zeppelin.interpreter.InterpreterContext
 import scala.xml._
 
 class AngularDisplayElem(val angularObjects: Map[String, AngularObject[Any]],
-                         val angularFunctions: Map[String, AngularFunction],
                          prefix: String,
                          label: String,
                          attributes1: MetaData,
@@ -47,29 +46,52 @@ class AngularDisplayElem(val angularObjects: Map[String, AngularObject[Any]],
     * @return
     */
   def onEvent(eventName: String, callback: () => Unit) : AngularDisplayElem = {
-    val interpreterContext = InterpreterContext.get
-    val registry = interpreterContext.getAngularObjectRegistry
+    val ic = InterpreterContext.get
+    val registry = ic.getAngularObjectRegistry
 
 
     // create AngularFunction in current paragraph
-    val functionName = uniqueId + "_" + eventName
-    val elem = this % Attribute(None, eventName, Text("functionName()"), Null)
+    val functionName = uniqueId + "_" + eventName.replaceAll("-", "_")
+    val elem = this % Attribute(None, eventName,
+      Text(s"""function(){${functionName}($$event)}"""),
+      Null)
 
-    val fn = new AngularFunction(
-      registry,
-      functionName,
-      interpreterContext.getNoteId,
-      interpreterContext.getParagraphId,
-      new AngularFunctionRunnable {
-        override def run(args: AnyRef*): Unit = {
-          callback()
-        }
-      })
+    val angularObject = registry.add(functionName, "", ic.getNoteId)
+      .asInstanceOf[AngularObject[Any]]
+
+    angularObject.addWatcher(new AngularObjectWatcher(ic) {
+      override def watch(oldObject: scala.Any, newObject: scala.Any, context: InterpreterContext)
+      : Unit = {
+        callback()
+      }
+    })
 
     new AngularDisplayElem(
-      angularObjects,
-      angularFunctions + (eventName -> fn),
+      angularObjects + (eventName -> angularObject),
       elem.prefix, elem.label, elem.attributes, elem.scope, elem.minimizeEmpty, elem.child:_*)
+  }
+
+  /**
+    * disassociate this element and it's child from front-end
+    * by removing angularobject
+    */
+  def disassociate() = {
+    remove(this)
+  }
+
+  /**
+    * Remove all angularObject recursively
+    * @param node
+    */
+  private def remove(node: Node) : Unit = {
+    if (node.isInstanceOf[AngularDisplayElem]) {
+      node.asInstanceOf[AngularDisplayElem].angularObjects.values.foreach{ ao =>
+        val ic = InterpreterContext.get()
+        ic.getAngularObjectRegistry.remove(ao.getName, ao.getNoteId)
+      }
+    }
+
+    node.child.foreach(remove _)
   }
 }
 
@@ -77,7 +99,6 @@ object AngularDisplayElem {
   implicit def Elem2AngularDisplayElem(elem: Elem) : AngularDisplayElem = {
     new AngularDisplayElem(
       Map[String, AngularObject[Any]](),
-      Map[String, AngularFunction](),
       elem.prefix, elem.label, elem.attributes, elem.scope, elem.minimizeEmpty, elem.child:_*);
   }
 }

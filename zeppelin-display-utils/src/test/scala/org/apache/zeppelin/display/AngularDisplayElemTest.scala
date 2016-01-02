@@ -41,16 +41,34 @@ class AngularDisplayElemTest
   }
 
   "DisplayUtilsElement" should "provide onclick method" in {
+    registry.getAll("note").size() should be(0)
+
     var a = 0
     val elem = <div></div>.onClick(() => {
       a = a + 1
     })
 
-    click(elem)
+    registry.getAll("note").size() should be(1)
 
     // click create thread for callback function to run. So it'll may not immediately invoked
     // after click. therefore eventually should be
-    eventually { a should be(1) }
+    click(elem)
+    eventually {
+      a should be(1)
+    }
+
+    click(elem)
+    eventually {
+      a should be(2)
+    }
+
+    // disassociate
+    elem.disassociate()
+    registry.getAll("note").size() should be(0)
+  }
+
+  def registry = {
+    InterpreterContext.get().getAngularObjectRegistry
   }
 
   def click(elem: AngularDisplayElem) = {
@@ -59,8 +77,7 @@ class AngularDisplayElemTest
 
   // simulate click
   def fireEvent(eventName: String, elem: AngularDisplayElem) = {
-    val angularFunction = elem.angularFunctions(eventName);
-    val angularObject = angularFunction.angularObject.asInstanceOf[AngularObject[Object]]
-    angularObject.set("invoke")
+    val angularObject:AngularObject[Any] = elem.angularObjects(eventName);
+    angularObject.set("event");
   }
 }
