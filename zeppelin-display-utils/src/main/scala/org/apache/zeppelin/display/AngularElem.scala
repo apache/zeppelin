@@ -22,14 +22,15 @@ import org.apache.zeppelin.interpreter.InterpreterContext
 import scala.collection.JavaConversions
 import scala.xml._
 
-class AngularElem(val modelName: String,
-                         val angularObjects: Map[String, AngularObject[Any]],
-                         prefix: String,
-                         label: String,
-                         attributes1: MetaData,
-                         scope: NamespaceBinding,
-                         minimizeEmpty: Boolean,
-                         child: Node*)
+class AngularElem(val interpreterContext: InterpreterContext,
+                  val modelName: String,
+                  val angularObjects: Map[String, AngularObject[Any]],
+                  prefix: String,
+                  label: String,
+                  attributes1: MetaData,
+                  scope: NamespaceBinding,
+                  minimizeEmpty: Boolean,
+                  child: Node*)
   extends Elem(prefix, label, attributes1, scope, minimizeEmpty, child:_*) {
   val uniqueId = java.util.UUID.randomUUID.toString.replaceAll("-", "_")
 
@@ -58,18 +59,18 @@ class AngularElem(val modelName: String,
     * @return
     */
   def model(name: String, value: Any): AngularElem = {
-    val ic = InterpreterContext.get
-    val registry = ic.getAngularObjectRegistry
+    val registry = interpreterContext.getAngularObjectRegistry
 
     // create AngularFunction in current paragraph
     val elem = this % Attribute(None, "ng-model",
       Text(s"${name}"),
       Null)
 
-    val angularObject = registry.add(name, value, ic.getNoteId)
+    val angularObject = registry.add(name, value, interpreterContext.getNoteId)
       .asInstanceOf[AngularObject[Any]]
 
     new AngularElem(
+      interpreterContext,
       name,
       angularObjects + (name -> angularObject),
       elem.prefix, elem.label, elem.attributes, elem.scope, elem.minimizeEmpty, elem.child:_*)
@@ -77,8 +78,7 @@ class AngularElem(val modelName: String,
 
 
   def model(name: String): AngularElem = {
-    val ic = InterpreterContext.get
-    val registry = ic.getAngularObjectRegistry
+    val registry = interpreterContext.getAngularObjectRegistry
 
     // create AngularFunction in current paragraph
     val elem = this % Attribute(None, "ng-model",
@@ -86,6 +86,7 @@ class AngularElem(val modelName: String,
       Null)
 
     new AngularElem(
+      interpreterContext,
       name,
       angularObjects,
       elem.prefix, elem.label, elem.attributes, elem.scope, elem.minimizeEmpty, elem.child:_*)
@@ -109,8 +110,7 @@ class AngularElem(val modelName: String,
     * @return
     */
   def onEvent(eventName: String, callback: () => Unit): AngularElem = {
-    val ic = InterpreterContext.get
-    val registry = ic.getAngularObjectRegistry
+    val registry = interpreterContext.getAngularObjectRegistry
 
     // create AngularFunction in current paragraph
     val functionName = eventName.replaceAll("-", "_") + "_" + uniqueId
@@ -118,17 +118,19 @@ class AngularElem(val modelName: String,
       Text(s"${functionName}=$$event.timeStamp"),
       Null)
 
-    val angularObject = registry.add(functionName, "", ic.getNoteId)
+    val angularObject = registry.add(functionName, "", interpreterContext.getNoteId)
       .asInstanceOf[AngularObject[Any]]
 
-    angularObject.addWatcher(new AngularObjectWatcher(ic) {
+    angularObject.addWatcher(new AngularObjectWatcher(interpreterContext) {
       override def watch(oldObject: scala.Any, newObject: scala.Any, context: InterpreterContext)
       :Unit = {
+        InterpreterContext.set(interpreterContext)
         callback()
       }
     })
 
     new AngularElem(
+      interpreterContext,
       modelName,
       angularObjects + (eventName -> angularObject),
       elem.prefix, elem.label, elem.attributes, elem.scope, elem.minimizeEmpty, elem.child:_*)
@@ -139,9 +141,8 @@ class AngularElem(val modelName: String,
     * @return
     */
   def display(out: java.io.PrintStream = Console.out): Unit = {
-    val ic = InterpreterContext.get()
-    if (AngularElem.angularDirectivePrinted != ic.hashCode()) {
-      AngularElem.angularDirectivePrinted = ic.hashCode()
+    if (AngularElem.angularDirectivePrinted != interpreterContext.hashCode()) {
+      AngularElem.angularDirectivePrinted = interpreterContext.hashCode()
       out.print("%angular ")
     }
     out.print(this.toString)
@@ -170,8 +171,7 @@ class AngularElem(val modelName: String,
   private def remove(node: Node): Unit = {
     if (node.isInstanceOf[AngularElem]) {
       node.asInstanceOf[AngularElem].angularObjects.values.foreach{ ao =>
-        val ic = InterpreterContext.get()
-        ic.getAngularObjectRegistry.remove(ao.getName, ao.getNoteId)
+        interpreterContext.getAngularObjectRegistry.remove(ao.getName, ao.getNoteId)
       }
     }
 
@@ -181,7 +181,7 @@ class AngularElem(val modelName: String,
 
 object AngularElem {
   implicit def Elem2AngularDisplayElem(elem: Elem) : AngularElem = {
-    new AngularElem(null,
+    new AngularElem(InterpreterContext.get(), null,
       Map[String, AngularObject[Any]](),
       elem.prefix, elem.label, elem.attributes, elem.scope, elem.minimizeEmpty, elem.child:_*);
   }

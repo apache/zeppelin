@@ -100,6 +100,19 @@ class AngularElemTest
     registrySize should be(0)
   }
 
+  "AngularElem" should "allow access to InterpreterContext inside of callback function" in {
+    AngularModel("name", "value")
+    var modelValue = ""
+
+    val elem = <div></div>.onClick(() =>
+      modelValue = AngularModel("name")().toString
+    )
+
+    click(elem)
+
+    eventually { modelValue should be("value")}
+  }
+
 
   def registry = {
     InterpreterContext.get().getAngularObjectRegistry
