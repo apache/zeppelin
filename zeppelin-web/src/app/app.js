@@ -15,65 +15,92 @@
  * limitations under the License.
  */
 'use strict';
+(function() {
+    var zeppelinWebApp = angular.module('zeppelinWebApp', [
+            'ngAnimate',
+            'ngCookies',
+            'ngRoute',
+            'ngSanitize',
+            'angular-websocket',
+            'ui.ace',
+            'ui.bootstrap',
+            'ui.sortable',
+            'ngTouch',
+            'ngDragDrop',
+            'angular.filter',
+            'monospaced.elastic',
+            'puElasticInput',
+            'xeditable',
+            'ngToast',
+            'focus-if',
+            'ngResource'
+        ])
+        .filter('breakFilter', function() {
+            return function (text) {
+                if (!!text) {
+                    return text.replace(/\n/g, '<br />');
+                }
+            };
+        })
+        .config(function ($routeProvider, ngToastProvider) {
+            $routeProvider
+                .when('/', {
+                    templateUrl: 'app/home/home.html'
+                })
+                .when('/notebook/:noteId', {
+                    templateUrl: 'app/notebook/notebook.html',
+                    controller: 'NotebookCtrl'
+                })
+                .when('/notebook/:noteId/paragraph?=:paragraphId', {
+                    templateUrl: 'app/notebook/notebook.html',
+                    controller: 'NotebookCtrl'
+                })
+                .when('/notebook/:noteId/paragraph/:paragraphId?', {
+                    templateUrl: 'app/notebook/notebook.html',
+                    controller: 'NotebookCtrl'
+                })
+                .when('/interpreter', {
+                    templateUrl: 'app/interpreter/interpreter.html',
+                    controller: 'InterpreterCtrl'
+                })
+                .when('/search/:searchTerm', {
+                    templateUrl: 'app/search/result-list.html',
+                    controller: 'SearchResultCtrl'
+                })
+                .otherwise({
+                    redirectTo: '/'
+                });
 
-angular.module('zeppelinWebApp', [
-    'ngAnimate',
-    'ngCookies',
-    'ngRoute',
-    'ngSanitize',
-    'angular-websocket',
-    'ui.ace',
-    'ui.bootstrap',
-    'ui.sortable',
-    'ngTouch',
-    'ngDragDrop',
-    'angular.filter',
-    'monospaced.elastic',
-    'puElasticInput',
-    'xeditable',
-    'ngToast',
-    'focus-if',
-    'ngResource'
-  ])
-  .filter('breakFilter', function() {
-    return function (text) {
-      if (!!text) {
-        return text.replace(/\n/g, '<br />');
-      }
-    };
-  })
-  .config(function ($routeProvider, ngToastProvider) {
-    $routeProvider
-      .when('/', {
-        templateUrl: 'app/home/home.html'
-      })
-      .when('/notebook/:noteId', {
-        templateUrl: 'app/notebook/notebook.html',
-        controller: 'NotebookCtrl'
-      })
-      .when('/notebook/:noteId/paragraph?=:paragraphId', {
-        templateUrl: 'app/notebook/notebook.html',
-        controller: 'NotebookCtrl'
-      })
-      .when('/notebook/:noteId/paragraph/:paragraphId?', {
-        templateUrl: 'app/notebook/notebook.html',
-        controller: 'NotebookCtrl'
-      })
-      .when('/interpreter', {
-        templateUrl: 'app/interpreter/interpreter.html',
-        controller: 'InterpreterCtrl'
-      })
-      .when('/search/:searchTerm', {
-        templateUrl: 'app/search/result-list.html',
-        controller: 'SearchResultCtrl'
-      })
-      .otherwise({
-        redirectTo: '/'
-      });
+            ngToastProvider.configure({
+                dismissButton: true,
+                dismissOnClick: false,
+                timeout: 6000
+            });
+        });
 
-    ngToastProvider.configure({
-      dismissButton: true,
-      dismissOnClick: false,
-      timeout: 6000
-    });
-  });
+
+    function auth() {
+        var initInjector = angular.injector(['ng']);
+        var $http = initInjector.get('$http');
+
+        return $http.get('/api/security/ticket').then(function(response) {
+            zeppelinWebApp.run(function($rootScope) {
+                console.log(response);
+                $rootScope.ticket = angular.fromJson(response.data).body;
+                console.log($rootScope.ticket);
+            });
+        }, function(errorResponse) {
+            // Handle error case
+        });
+    }
+
+    function bootstrapApplication() {
+        angular.element(document).ready(function() {
+            angular.bootstrap(document, ['zeppelinWebApp']);
+        });
+    }
+
+    auth().then(bootstrapApplication);
+
+}());
+
