@@ -24,21 +24,14 @@ import static scala.collection.JavaConversions.collectionAsScalaIterable;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.SQLContext.QueryExecution;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
 import org.apache.spark.sql.hive.HiveContext;
-import org.apache.zeppelin.display.AngularObject;
-import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.AngularObjectWatcher;
-import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.display.*;
 import org.apache.zeppelin.display.Input.ParamOption;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
@@ -48,6 +41,9 @@ import org.apache.zeppelin.spark.dep.DependencyResolver;
 import scala.Tuple2;
 import scala.Unit;
 import scala.collection.Iterable;
+import scala.collection.JavaConversions;
+import scala.collection.Seq;
+import scala.collection.mutable.Set;
 
 /**
  * Spark context for zeppelin.
@@ -748,5 +744,56 @@ public class ZeppelinContext extends HashMap<String, Object> {
   private void angularUnbind(String name, String noteId) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
     registry.remove(name, noteId);
+  }
+
+
+  public void angularBindFunction(String name, final scala.Function1<Seq<Object>, Unit> func) {
+    String noteId = interpreterContext.getNoteId();
+    angularBindFunction(name, noteId, new AngularFunctionRunnable() {
+      @Override
+      public void run(Object... args) {
+        Set<Object> sets = JavaConversions.asScalaSet(new HashSet<Object>(Arrays.asList(args)));
+        func.apply(sets.toSeq());
+      }
+    });
+  }
+
+  public void angularBindFunction(String name, AngularFunctionRunnable func) {
+    String noteId = interpreterContext.getNoteId();
+    angularBindFunction(name, noteId, func);
+  }
+
+  public void angularUnbindFunction(String name) {
+    String noteId = interpreterContext.getNoteId();
+    angularUnbindFunction(name, noteId);
+  }
+
+  public void angularBindFunctionGlobal(String name,
+                                        final scala.Function1<Seq<Object>, Unit> func) {
+    angularBindFunction(name, null, new AngularFunctionRunnable() {
+      @Override
+      public void run(Object... args) {
+        Set<Object> sets = JavaConversions.asScalaSet(new HashSet<Object>(Arrays.asList(args)));
+        func.apply(sets.toSeq());
+      }
+    });
+  }
+
+  public void angularBindFunctionGlobal(String name, AngularFunctionRunnable func) {
+    angularBindFunction(name, null, func);
+  }
+
+  public void angularUnbindFunctionGlobal(String name) {
+    angularUnbindFunction(name, null);
+  }
+
+  private void angularBindFunction(String name, String noteId, AngularFunctionRunnable func) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    registry.createAngularFunction(name, noteId, func);
+  }
+
+  private void angularUnbindFunction(String name, String noteId) {
+    AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
+    registry.removeAngularFunction(name, noteId);
   }
 }

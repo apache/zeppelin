@@ -31,7 +31,7 @@ import java.util.Map;
  *  - localRegistry: AngularObject is valid only inside of a single notebook
  */
 public class AngularObjectRegistry {
-  Map<String, Map<String, AngularObject>> registry = 
+  Map<String, Map<String, AngularObject>> registry =
       new HashMap<String, Map<String, AngularObject>>();
   private final String GLOBAL_KEY = "_GLOBAL_";
   private AngularObjectRegistryListener listener;
@@ -69,6 +69,15 @@ public class AngularObjectRegistry {
     return add(name, o, noteId, true);
   }
 
+  public AngularFunction createAngularFunction(String name, String noteId,
+                                               AngularFunctionRunnable func) {
+    return new AngularFunction(this, name, noteId, func);
+  }
+
+  public void removeAngularFunction(String name, String noteId) {
+    remove(AngularFunction.getFuncName(name), noteId);
+  }
+
   private String getRegistryKey(String noteId) {
     if (noteId == null) {
       return GLOBAL_KEY;
@@ -87,7 +96,7 @@ public class AngularObjectRegistry {
       return registry.get(key);
     }
   }
- 
+
   public AngularObject add(String name, Object o, String noteId, boolean emit) {
     AngularObject ao = createNewAngularObject(name, o, noteId);
 
