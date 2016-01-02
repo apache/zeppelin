@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.display
 
+import java.io.{PrintStream, ByteArrayOutputStream}
 import java.util
 
 import org.apache.zeppelin.interpreter.{InterpreterContextRunner, InterpreterContext, InterpreterGroup}
@@ -65,6 +66,18 @@ class AngularDisplayElemTest
     // disassociate
     elem.disassociate()
     registry.getAll("note").size() should be(0)
+  }
+
+  "display()" should "print angular display directive only once in a paragraph" in {
+    val out = new ByteArrayOutputStream()
+    val printOut = new PrintStream(out)
+
+    <div></div>.display(printOut)
+    out.toString should be("%angular <div></div>")
+
+    out.reset
+    <div></div>.display(printOut)
+    out.toString should be("<div></div>")
   }
 
   def registry = {

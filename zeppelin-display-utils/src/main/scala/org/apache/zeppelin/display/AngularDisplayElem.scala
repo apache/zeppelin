@@ -51,9 +51,9 @@ class AngularDisplayElem(val angularObjects: Map[String, AngularObject[Any]],
 
 
     // create AngularFunction in current paragraph
-    val functionName = uniqueId + "_" + eventName.replaceAll("-", "_")
+    val functionName = eventName.replaceAll("-", "_") + "_" + uniqueId
     val elem = this % Attribute(None, eventName,
-      Text(s"""function(){${functionName}($$event)}"""),
+      Text(s"""${functionName}=$$event.timeStamp"""),
       Null)
 
     val angularObject = registry.add(functionName, "", ic.getNoteId)
@@ -69,6 +69,24 @@ class AngularDisplayElem(val angularObjects: Map[String, AngularObject[Any]],
     new AngularDisplayElem(
       angularObjects + (eventName -> angularObject),
       elem.prefix, elem.label, elem.attributes, elem.scope, elem.minimizeEmpty, elem.child:_*)
+  }
+
+  /**
+    * Provided for the convinience in repl
+    * @return
+    */
+  def display(out : java.io.PrintStream = Console.out) : Unit = {
+    val ic = InterpreterContext.get()
+    if (AngularDisplayElem.angularDirectivePrinted != ic.hashCode()) {
+      AngularDisplayElem.angularDirectivePrinted = ic.hashCode()
+      out.print("%angular ")
+    }
+    out.print(this.toString)
+    out.flush()
+  }
+
+  def display() : Unit = {
+    display(Console.out)
   }
 
   /**
@@ -101,4 +119,6 @@ object AngularDisplayElem {
       Map[String, AngularObject[Any]](),
       elem.prefix, elem.label, elem.attributes, elem.scope, elem.minimizeEmpty, elem.child:_*);
   }
+
+  var angularDirectivePrinted: Int = 0
 }
