@@ -158,16 +158,9 @@
         <groupId>org.scalatest</groupId>
         <artifactId>scalatest-maven-plugin</artifactId>
         <version>1.0</version>
-        <configuration>
-          <stderr/>
-          <systemProperties>
-            <spark.testing>1</spark.testing>
-          </systemProperties>
-        </configuration>
         <executions>
           <execution>
             <id>test</id>
-            <phase>integration-test</phase>
             <goals>
               <goal>test</goal>
             </goals>

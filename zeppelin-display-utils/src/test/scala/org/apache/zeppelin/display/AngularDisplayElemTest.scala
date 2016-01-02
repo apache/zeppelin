@@ -19,13 +19,14 @@ package org.apache.zeppelin.display
 import java.util
 
 import org.apache.zeppelin.interpreter.{InterpreterContextRunner, InterpreterContext, InterpreterGroup}
+import org.scalatest.concurrent.Eventually
 import org.scalatest.{Matchers, BeforeAndAfterEach, BeforeAndAfter, FlatSpec}
 
 /**
   * Test
   */
 class AngularDisplayElemTest
-  extends FlatSpec with BeforeAndAfter with BeforeAndAfterEach with Matchers {
+  extends FlatSpec with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
   import AngularDisplayElem._
 
   override def beforeEach() {
@@ -47,7 +48,9 @@ class AngularDisplayElemTest
 
     click(elem)
 
-    a should be(1)
+    // click create thread for callback function to run. So it'll may not immediately invoked
+    // after click. therefore eventually should be
+    eventually { a should be(1) }
   }
 
   def click(elem: AngularDisplayElem) = {
