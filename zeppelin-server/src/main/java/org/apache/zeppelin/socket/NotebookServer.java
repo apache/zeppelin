@@ -61,6 +61,13 @@ public class NotebookServer extends WebSocketServlet implements
   Gson gson = new Gson();
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
   final Queue<NotebookSocket> connectedSockets = new ConcurrentLinkedQueue<>();
+  final boolean readOnlyMode;
+  final ZeppelinConfiguration conf;
+  
+  public NotebookServer(ZeppelinConfiguration conf) {
+    this.readOnlyMode = conf.getBoolean(ConfVars.ZEPPELIN_READ_ONLY);
+    this.conf = conf;
+  }
 
   private Notebook notebook() {
     return ZeppelinServer.notebook;
@@ -96,6 +103,11 @@ public class NotebookServer extends WebSocketServlet implements
     try {
       Message messagereceived = deserializeMessage(msg);
       LOG.debug("RECEIVE << " + messagereceived.op);
+      if (readOnlyMode && messagereceived.op.isModifyOp()) {
+        LOG.warn("This server is readonly mode. but " + messagereceived.op +
+            " is modify op. This op will be ignored.");
+        return;
+      }
       /** Lets be elegant here */
       switch (messagereceived.op) {
           case LIST_NOTES:
@@ -150,6 +162,9 @@ public class NotebookServer extends WebSocketServlet implements
             break; //do nothing
           case ANGULAR_OBJECT_UPDATED:
             angularObjectUpdated(conn, notebook, messagereceived);
+            break;
+          case GET_SYSTEM_CONF:
+            sendSystemConf(conn, notebook, messagereceived);
             break;
           default:
             broadcastNoteList();
@@ -446,8 +461,10 @@ public class NotebookServer extends WebSocketServlet implements
     Paragraph p = note.getParagraph(paragraphId);
     p.settings.setParams(params);
     p.setConfig(config);
-    p.setTitle((String) fromMessage.get("title"));
-    p.setText((String) fromMessage.get("paragraph"));
+    if (!conf.getBoolean(ConfVars.ZEPPELIN_READ_ONLY)) {
+      p.setTitle((String) fromMessage.get("title"));
+      p.setText((String) fromMessage.get("paragraph"));
+    }
     note.persist();
     broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
   }
@@ -642,6 +659,14 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
+  private void sendSystemConf(NotebookSocket conn, Notebook notebook,
+                        Message fromMessage) throws IOException {
+    Map<String, String> confProperty = new HashMap<String, String>();
+    confProperty.put("readonly", 
+        conf.getString(ConfVars.ZEPPELIN_READ_ONLY));
+    conn.send(serializeMessage(new Message(OP.GET_SYSTEM_CONF).put("conf", confProperty)));
+  }
+
   private void moveParagraph(NotebookSocket conn, Notebook notebook,
       Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
@@ -689,8 +714,12 @@ public class NotebookServer extends WebSocketServlet implements
     final Note note = notebook.getNote(getOpenNoteId(conn));
     Paragraph p = note.getParagraph(paragraphId);
     String text = (String) fromMessage.get("paragraph");
-    p.setText(text);
-    p.setTitle((String) fromMessage.get("title"));
+
+    if (!conf.getBoolean(ConfVars.ZEPPELIN_READ_ONLY)) {
+      p.setText(text);
+      p.setTitle((String) fromMessage.get("title"));
+    }
+
     Map<String, Object> params = (Map<String, Object>) fromMessage
        .get("params");
     p.settings.setParams(params);

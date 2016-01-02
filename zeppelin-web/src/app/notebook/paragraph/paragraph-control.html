@@ -34,57 +34,59 @@ limitations under the License.
   <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
         ng-click="toggleOutput()"></span>
   <span class="dropdown navbar-right">
-    <span class="icon-settings" style="cursor:pointer"
-          data-toggle="dropdown"
-          type="button">
+    <span ng-if="!systemConfDataFactory.conf.readonly">
+      <span class="icon-settings" style="cursor:pointer"
+            data-toggle="dropdown"
+            type="button">
+      </span>
+      <ul class="dropdown-menu" role="menu" style="width:200px;">
+        <li>
+          <a ng-click="$event.stopPropagation()" class="dropdown"><span class="fa fa-arrows-h"></span> Width
+            <form style="display:inline; margin-left:5px;">
+              <select ng-model="paragraph.config.colWidth"
+                      class="selectpicker"
+                      ng-change="changeColWidth()"
+                      ng-options="col for col in colWidthOption"></select>
+            </form>
+          </a>
+        </li>
+        <li>
+          <a ng-click="moveUp()"><span class="icon-arrow-up"></span> Move Up</a>
+        </li>
+        <li>
+          <a ng-click="moveDown()"><span class="icon-arrow-down"></span> Move Down</a>
+        </li>
+        <li>
+          <a ng-click="insertNew()"><span class="icon-plus"></span> Insert New</a>
+        </li>
+        <li>
+          <!-- paragraph handler -->
+          <a ng-click="hideTitle()"
+             ng-show="paragraph.config.title"><span class="fa fa-font"></span> Hide title</a>
+          <a ng-click="showTitle()"
+             ng-show="!paragraph.config.title"><span class="fa fa-font"></span> Show title</a>
+        </li>
+        <li>
+          <a ng-click="hideLineNumbers()"
+             ng-show="paragraph.config.lineNumbers"><span class="fa fa-list-ol"></span> Hide line numbers</a>
+          <a ng-click="showLineNumbers()"
+             ng-show="!paragraph.config.lineNumbers"><span class="fa fa-list-ol"></span> Show line numbers</a>
+        </li>
+        <li>
+          <a ng-click="toggleEnableDisable()"><span class="icon-control-play"></span>
+            {{paragraph.config.enabled ? "Disable" : "Enable"}} run</a>
+        </li>
+        <li>
+          <a ng-click="goToSingleParagraph()"><span class="icon-share-alt"></span> Link this paragraph</a>
+        </li>
+        <li>
+          <a ng-click="clearParagraphOutput()"><span class="fa fa-eraser"></span> Clear output</a>
+        </li>
+        <li>
+          <!-- remove paragraph -->
+          <a ng-click="removeParagraph()"><span class="fa fa-times"></span> Remove</a>
+        </li>
+      </ul>
     </span>
-    <ul class="dropdown-menu" role="menu" style="width:200px;">
-      <li>
-        <a ng-click="$event.stopPropagation()" class="dropdown"><span class="fa fa-arrows-h"></span> Width
-          <form style="display:inline; margin-left:5px;">
-            <select ng-model="paragraph.config.colWidth"
-                    class="selectpicker"
-                    ng-change="changeColWidth()"
-                    ng-options="col for col in colWidthOption"></select>
-          </form>
-        </a>
-      </li>
-      <li>
-        <a ng-click="moveUp()"><span class="icon-arrow-up"></span> Move Up</a>
-      </li>
-      <li>
-        <a ng-click="moveDown()"><span class="icon-arrow-down"></span> Move Down</a>
-      </li>
-      <li>
-        <a ng-click="insertNew()"><span class="icon-plus"></span> Insert New</a>
-      </li>
-      <li>
-        <!-- paragraph handler -->
-        <a ng-click="hideTitle()"
-           ng-show="paragraph.config.title"><span class="fa fa-font"></span> Hide title</a>
-        <a ng-click="showTitle()"
-           ng-show="!paragraph.config.title"><span class="fa fa-font"></span> Show title</a>
-      </li>
-      <li>
-        <a ng-click="hideLineNumbers()"
-           ng-show="paragraph.config.lineNumbers"><span class="fa fa-list-ol"></span> Hide line numbers</a>
-        <a ng-click="showLineNumbers()"
-           ng-show="!paragraph.config.lineNumbers"><span class="fa fa-list-ol"></span> Show line numbers</a>
-      </li>
-      <li>
-        <a ng-click="toggleEnableDisable()"><span class="icon-control-play"></span>
-          {{paragraph.config.enabled ? "Disable" : "Enable"}} run</a>
-      </li>
-      <li>
-        <a ng-click="goToSingleParagraph()"><span class="icon-share-alt"></span> Link this paragraph</a>
-      </li>
-      <li>
-        <a ng-click="clearParagraphOutput()"><span class="fa fa-eraser"></span> Clear output</a>
-      </li>
-      <li>
-        <!-- remove paragraph -->
-        <a ng-click="removeParagraph()"><span class="fa fa-times"></span> Remove</a>
-      </li>
-    </ul>
   </span>
 </div>

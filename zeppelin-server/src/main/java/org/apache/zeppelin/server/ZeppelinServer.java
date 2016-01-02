@@ -38,8 +38,8 @@ import org.apache.zeppelin.rest.InterpreterRestApi;
 import org.apache.zeppelin.rest.NotebookRestApi;
 import org.apache.zeppelin.rest.ZeppelinRestApi;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.search.LuceneSearch;
+import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.socket.NotebookServer;
 import org.eclipse.jetty.server.AbstractConnector;
 import org.eclipse.jetty.server.Handler;
@@ -165,7 +165,7 @@ public class ZeppelinServer extends Application {
   }
 
   private static ServletContextHandler setupNotebookServer(ZeppelinConfiguration conf) {
-    notebookWsServer = new NotebookServer();
+    notebookWsServer = new NotebookServer(conf);
     final ServletHolder servletHolder = new ServletHolder(notebookWsServer);
     servletHolder.setInitParameter("maxTextMessageSize", "1024000");
 
@@ -270,7 +270,7 @@ public class ZeppelinServer extends Application {
     NotebookRestApi notebookApi = new NotebookRestApi(notebook, notebookWsServer, notebookIndex);
     singletons.add(notebookApi);
 
-    InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory);
+    InterpreterRestApi interpreterApi = new InterpreterRestApi(replFactory, notebook.getConf());
     singletons.add(interpreterApi);
 
     return singletons;

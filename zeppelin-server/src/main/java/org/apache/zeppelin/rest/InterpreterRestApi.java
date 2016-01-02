@@ -33,6 +33,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
@@ -53,6 +55,7 @@ public class InterpreterRestApi {
   Logger logger = LoggerFactory.getLogger(InterpreterRestApi.class);
 
   private InterpreterFactory interpreterFactory;
+  private ZeppelinConfiguration conf;
 
   Gson gson = new Gson();
 
@@ -60,8 +63,9 @@ public class InterpreterRestApi {
 
   }
 
-  public InterpreterRestApi(InterpreterFactory interpreterFactory) {
+  public InterpreterRestApi(InterpreterFactory interpreterFactory, ZeppelinConfiguration conf) {
     this.interpreterFactory = interpreterFactory;
+    this.conf = conf;
   }
 
   /**
@@ -86,6 +90,7 @@ public class InterpreterRestApi {
   @POST
   @Path("setting")
   public Response newSettings(String message) throws InterpreterException, IOException {
+
     NewInterpreterSettingRequest request = gson.fromJson(message,
         NewInterpreterSettingRequest.class);
     Properties p = new Properties();
@@ -103,6 +108,9 @@ public class InterpreterRestApi {
   public Response updateSetting(String message, @PathParam("settingId") String settingId) {
     logger.info("Update interpreterSetting {}", settingId);
 
+    if (conf.getBoolean(ConfVars.ZEPPELIN_READ_ONLY)) {
+      return new JsonResponse(Status.FORBIDDEN).build();
+    }
     try {
       UpdateInterpreterSettingRequest p = gson.fromJson(message,
           UpdateInterpreterSettingRequest.class);
@@ -130,6 +138,9 @@ public class InterpreterRestApi {
   @Path("setting/{settingId}")
   public Response removeSetting(@PathParam("settingId") String settingId) throws IOException {
     logger.info("Remove interpreterSetting {}", settingId);
+    if (conf.getBoolean(ConfVars.ZEPPELIN_READ_ONLY)) {
+      return new JsonResponse(Status.FORBIDDEN).build();
+    }
     interpreterFactory.remove(settingId);
     return new JsonResponse(Status.OK).build();
   }
@@ -141,6 +152,9 @@ public class InterpreterRestApi {
   @Path("setting/restart/{settingId}")
   public Response restartSetting(@PathParam("settingId") String settingId) {
     logger.info("Restart interpreterSetting {}", settingId);
+    if (conf.getBoolean(ConfVars.ZEPPELIN_READ_ONLY)) {
+      return new JsonResponse(Status.FORBIDDEN).build();
+    }
     try {
       interpreterFactory.restart(settingId);
     } catch (InterpreterException e) {

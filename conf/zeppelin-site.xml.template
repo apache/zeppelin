@@ -44,6 +44,12 @@
 </property>
 
 <property>
+  <name>zeppelin.server.readonly</name>
+  <value>false</value>
+  <description>Read-only mode. Disabled editing or creating notebook when  this value set to "true". default "false"</description>
+</property>
+
+<property>
   <name>zeppelin.notebook.dir</name>
   <value>notebook</value>
   <description>path or URI for notebook persist</description>

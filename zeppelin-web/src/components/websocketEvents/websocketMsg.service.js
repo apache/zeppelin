@@ -21,6 +21,10 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       websocketEvents.sendNewEvent({op: 'GET_HOME_NOTE'});
     },
 
+    getSystemConf: function() {
+      websocketEvents.sendNewEvent({op:'GET_SYSTEM_CONF'});
+    },
+
     createNotebook: function(noteName) {
       websocketEvents.sendNewEvent({op: 'NEW_NOTE',data: {name: noteName}});
     },

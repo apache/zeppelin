@@ -16,11 +16,12 @@
 
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv) {
+                                         $timeout, $compile, websocketMsgSrv, systemConfDataFactory) {
 
   $scope.paragraph = null;
   $scope.originalText = '';
   $scope.editor = null;
+  $scope.systemConfDataFactory = systemConfDataFactory;
 
   var editorModes = {
     'ace/mode/scala': /^%spark/,
@@ -593,6 +594,9 @@ angular.module('zeppelinWebApp')
       };
 
       $scope.editor.on('focus', function() {
+        if(systemConfDataFactory.conf.readonly) {
+          $scope.editor.setReadOnly(systemConfDataFactory.conf.readonly);
+        }
         $scope.handleFocus(true);
       });
 

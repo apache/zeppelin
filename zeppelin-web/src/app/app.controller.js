@@ -13,12 +13,13 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('MainCtrl', function($scope, $rootScope, $window) {
+angular.module('zeppelinWebApp').controller('MainCtrl', function($scope, $rootScope, websocketMsgSrv, $window) {
   $rootScope.compiledScope = $scope.$new(true, $rootScope);
   $scope.looknfeel = 'default';
 
   var init = function() {
     $scope.asIframe = (($window.location.href.indexOf('asIframe') > -1) ? true : false);
+    websocketMsgSrv.getSystemConf();
   };
 
   init();
