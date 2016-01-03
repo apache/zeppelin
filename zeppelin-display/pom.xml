@@ -27,10 +27,10 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-display-utils</artifactId>
+  <artifactId>zeppelin-display</artifactId>
   <packaging>jar</packaging>
   <version>0.6.0-incubating-SNAPSHOT</version>
-  <name>Zeppelin: Display utils</name>
+  <name>Zeppelin: Display system apis</name>
   <url>http://incubator.zeppelin.apache.org</url>
 
   <properties>
