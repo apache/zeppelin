@@ -82,12 +82,11 @@
     function auth() {
         var initInjector = angular.injector(['ng']);
         var $http = initInjector.get('$http');
+        var baseUrlSrv = angular.injector(['zeppelinWebApp']).get('baseUrlSrv');
 
-        return $http.get('/api/security/ticket').then(function(response) {
+        return $http.get(baseUrlSrv.getRestApiBase()+'/security/ticket').then(function(response) {
             zeppelinWebApp.run(function($rootScope) {
-                console.log(response);
                 $rootScope.ticket = angular.fromJson(response.data).body;
-                console.log($rootScope.ticket);
             });
         }, function(errorResponse) {
             // Handle error case
@@ -95,12 +94,13 @@
     }
 
     function bootstrapApplication() {
-        angular.element(document).ready(function() {
-            angular.bootstrap(document, ['zeppelinWebApp']);
-        });
+        angular.bootstrap(document, ['zeppelinWebApp']);
     }
 
-    auth().then(bootstrapApplication);
+
+    angular.element(document).ready(function() {
+        auth().then(bootstrapApplication);
+    });
 
 }());
 
