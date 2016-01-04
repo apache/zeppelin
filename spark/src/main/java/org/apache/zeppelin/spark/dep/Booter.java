@@ -27,9 +27,6 @@ import org.sonatype.aether.repository.RemoteRepository;
 
 /**
  * Manage mvn repository.
- *
- * @author anthonycorbacho
- *
  */
 public class Booter {
   public static RepositorySystem newRepositorySystem() {

@@ -43,7 +43,34 @@ limitations under the License.
           <a href="#/interpreter">Interpreter</a>
         </li>
       </ul>
+
+
       <ul class="nav navbar-nav navbar-right" style="margin-top:10px; margin-right:5px;">
+        <li>
+        <!--TODO(bzz): move to Typeahead https://angular-ui.github.io/bootstrap  -->
+          <form role="search"
+            style="width: 300px; display: inline-block; margin: 0 10px"
+             ng-submit="search()">
+            <div class="input-group">
+              <input
+                type="text"
+                ng-model="searchTerm"
+                ng-disabled="!navbar.connected"
+                class="form-control"
+                placeholder="Search in your notebooks"
+              />
+              <span class="input-group-btn">
+                <button
+                  type="submit"
+                  class="btn btn-default"
+                  ng-disabled="!navbar.connected"
+                >
+                  <i class="glyphicon glyphicon-search"></i>
+                </button>
+              </span>
+            </div>
+          </form>
+        </li>
         <li class="server-status">
           <i class="fa fa-circle" ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
           <span ng-show="navbar.connected">Connected</span>

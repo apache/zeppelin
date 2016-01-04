@@ -23,7 +23,6 @@ import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.slf4j.Logger;
@@ -35,10 +34,10 @@ import java.util.*;
 /**
  * Paragraph is a representation of an execution unit.
  *
- * @author Leemoonsoo
  */
 public class Paragraph extends Job implements Serializable, Cloneable {
-  private static final transient long serialVersionUID = -6328572073497992016L;
+  private static final long serialVersionUID = -6328572073497992016L;
+
   private transient NoteInterpreterLoader replLoader;
   private transient Note note;
 

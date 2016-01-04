@@ -1,0 +1,49 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div id="{{paragraph.id}}_switch"
+     ng-if="paragraph.result.type == 'TABLE' && !asIframe && !viewOnly"
+     class="btn-group"
+     style='margin-bottom: 10px;'>
+  <button type="button" class="btn btn-default btn-sm"
+          ng-class="{'active': isGraphMode('table')}"
+          ng-click="setGraphMode('table', true)" ><i class="fa fa-table"></i>
+  </button>
+  <button type="button" class="btn btn-default btn-sm"
+          ng-class="{'active': isGraphMode('multiBarChart')}"
+          ng-click="setGraphMode('multiBarChart', true)"><i class="fa fa-bar-chart"></i>
+  </button>
+  <button type="button" class="btn btn-default btn-sm"
+          ng-class="{'active': isGraphMode('pieChart')}"
+          ng-click="setGraphMode('pieChart', true)"><i class="fa fa-pie-chart"></i>
+  </button>
+  <button type="button" class="btn btn-default btn-sm"
+          ng-class="{'active': isGraphMode('stackedAreaChart')}"
+          ng-click="setGraphMode('stackedAreaChart', true)"><i class="fa fa-area-chart"></i>
+  </button>
+  <button type="button" class="btn btn-default btn-sm"
+          ng-class="{'active': isGraphMode('lineChart') || isGraphMode('lineWithFocusChart')}"
+          ng-click="paragraph.config.graph.lineWithFocus ? setGraphMode('lineWithFocusChart', true) : setGraphMode('lineChart', true)"><i class="fa fa-line-chart"></i>
+  </button>
+  <button type="button" class="btn btn-default btn-sm"
+          ng-class="{'active': isGraphMode('scatterChart')}"
+          ng-click="setGraphMode('scatterChart', true)"><i class="cf cf-scatter-chart"></i>
+  </button>
+</div>
+<span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && !asIframe && !viewOnly"
+      style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
+  <a class="btnText" ng-click="toggleGraphOption()">
+    settings <span ng-class="paragraph.config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>
+  </a>
+</span>

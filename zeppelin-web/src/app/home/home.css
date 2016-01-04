@@ -36,6 +36,7 @@ body.asIframe {
 }
 
 body .navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
   margin-bottom: 0;
 }
 
@@ -275,10 +276,6 @@ kbd {
   border-radius: 2px;
 }
 
-.home {
-  min-height: 400px;
-}
-
 /*
   ngToast Style
 */
@@ -316,6 +313,14 @@ This part should be removed when new version of bootstrap handles this issue.
 .display-inline {
   display: inline;
   float: left;
+}
+
+.modal-backdrop {
+  z-index: 10002 !important;
+}
+
+.modal-dialog, .modal {
+  z-index: 10003 !important;
 }
 
 #noteImportModal .modal-body {
@@ -682,4 +687,8 @@ This part should be removed when new version of bootstrap handles this issue.
   -ms-transform: translateY(0);
   -webkit-transform: translateY(0);
   opacity: 1;
+}
+
+.bootstrap-dialog.type-primary .modal-header {
+  background: #3071a9;
 }

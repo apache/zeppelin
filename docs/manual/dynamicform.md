@@ -19,18 +19,15 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
-
 ## Dynamic Form
 
 Zeppelin dynamically creates input forms. Depending on language backend, there're two different ways to create dynamic form.
 Custom language backend can select which type of form creation it wants to use.
 
-<br />
 ### Using form Templates
 
 This mode creates form using simple template language. It's simple and easy to use. For example Markdown, Shell, SparkSql language backend uses it.
 
-<br />
 #### Text input form
 
 To create text input form, use _${formName}_ templates.
@@ -45,7 +42,6 @@ Also you can provide default value, using _${formName=defaultValue}_.
 <img src="/assets/themes/zeppelin/img/screenshots/form_input_default.png" />
 
 
-<br />
 #### Select form
 
 To create select form, use _${formName=defaultValue,option1|option2...}_
@@ -58,54 +54,59 @@ Also you can separate option's display name and value, using _${formName=default
 
 <img src="/assets/themes/zeppelin/img/screenshots/form_select_displayname.png" />
 
-<br />
 ### Creates Programmatically
 
 Some language backend uses programmatic way to create form. For example [ZeppelinContext](../interpreter/spark.html#zeppelincontext) provides form creation API
 
 Here're some examples.
 
-Text input form
+####Text input form
+<div class="codetabs">
+    <div data-lang="scala" markdown="1">
 
-You can do this in Scala
-
-```scala
+{% highlight scala %}
 %spark
 println("Hello "+z.input("name"))
-```
+{% endhighlight %}
 
-Or Python
+    </div>
+    <div data-lang="python" markdown="1">
 
-```python
+{% highlight python %}
 %pyspark
 print("Hello "+z.input("name"))
-```
+{% endhighlight %}
 
+    </div>
+</div>
 <img src="/assets/themes/zeppelin/img/screenshots/form_input_prog.png" />
 
-Text input form with default value
+####Text input form with default value
+<div class="codetabs">
+    <div data-lang="scala" markdown="1">
 
-Scala
-
-```scala
+{% highlight scala %}
 %spark
-println("Hello "+z.input("name", "sun"))
-```
+println("Hello "+z.input("name", "sun")) 
+{% endhighlight %}
 
-Python
+    </div>
+    <div data-lang="python" markdown="1">
 
-```python
+{% highlight python %}
 %pyspark
 print("Hello "+z.input("name", "sun"))
-```
+{% endhighlight %}
 
+    </div>
+</div>
 <img src="/assets/themes/zeppelin/img/screenshots/form_input_default_prog.png" />
 
-Select form
+####Select form
+<div class="codetabs">
+    <div data-lang="scala" markdown="1">
 
-Scala
-
-```scala
+{% highlight scala %}
 %spark
 println("Hello "+z.select("day", Seq(("1","mon"),
                                     ("2","tue"),
@@ -114,11 +115,12 @@ println("Hello "+z.select("day", Seq(("1","mon"),
                                     ("5","fri"),
                                     ("6","sat"),
                                     ("7","sun"))))
-```
+{% endhighlight %}
 
-Python
+    </div>
+    <div data-lang="python" markdown="1">
 
-```python
+{% highlight python %}
 %pyspark
 print("Hello "+z.select("day", [("1","mon"),
                                 ("2","tue"),
@@ -127,6 +129,8 @@ print("Hello "+z.select("day", [("1","mon"),
                                 ("5","fri"),
                                 ("6","sat"),
                                 ("7","sun")]))
-```
+{% endhighlight %}
 
+    </div>
+</div>
 <img src="/assets/themes/zeppelin/img/screenshots/form_select_prog.png" />
