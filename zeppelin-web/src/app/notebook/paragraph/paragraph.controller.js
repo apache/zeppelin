@@ -54,11 +54,13 @@ angular.module('zeppelinWebApp')
       $scope.renderHtml();
     } else if ($scope.getResultType() === 'ANGULAR') {
       $scope.renderAngular();
+    } else if ($scope.getResultType() === 'TEXT') {
+      $scope.renderText();
     }
   };
 
-  $scope.renderHtml = function() {
-    var retryRenderer = function() {
+    $scope.renderHtml = function() {
+      var retryRenderer = function() {
       if (angular.element('#p' + $scope.paragraph.id + '_html').length) {
         try {
           angular.element('#p' + $scope.paragraph.id + '_html').html($scope.paragraph.result.msg);
@@ -92,6 +94,39 @@ angular.module('zeppelinWebApp')
     };
     $timeout(retryRenderer);
   };
+
+  $scope.renderText = function() {
+    var retryRenderer = function() {
+      if (!$scope.paragraph.result || !$scope.paragraph.result.msg) {
+        // nothing to render
+        return;
+      }
+
+      var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
+      if (textEl.length) {
+        try {
+          var lines = $scope.paragraph.result.msg.split('\n');
+          for (var i=0; i < lines.length; i++) {
+            $scope.appendTextOutput(lines[i]);
+          }
+        } catch (err) {
+          console.log('TEXT rendering error %o', err);
+        }
+      } else {
+        $timeout(retryRenderer, 10);
+      }
+    };
+    $timeout(retryRenderer);
+  };
+
+
+    $scope.appendTextOutput = function(msg) {
+    var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
+    if (textEl.length) {
+      textEl.append(angular.element('<p></p>').text(msg));
+    }
+  };
+
 
 
   var initializeDefault = function() {
@@ -234,6 +269,8 @@ angular.module('zeppelinWebApp')
         $scope.renderHtml();
       } else if (newType === 'ANGULAR' && resultRefreshed) {
         $scope.renderAngular();
+      } else if (newType === 'TEXT' && resultRefreshed) {
+        $scope.renderText();
       }
 
       if (statusChanged || resultRefreshed) {
