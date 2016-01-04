@@ -1138,7 +1138,7 @@ angular.module('zeppelinWebApp')
       $scope.chart[type].yAxis.tickFormat(function(d) {return xAxisTickFormat(d, yLabels);});
 
       // configure how the tooltip looks.
-      $scope.chart[type].tooltipContent(function(key, x, y, data) {
+      $scope.chart[type].tooltipContent(function(key, x, y, graph, data) {
         var tooltipContent = '<h3>' + key + '</h3>';
         if ($scope.paragraph.config.graph.scatter.size &&
             $scope.isValidSizeOption($scope.paragraph.config.graph.scatter, $scope.paragraph.result.rows)) {
@@ -1149,9 +1149,8 @@ angular.module('zeppelinWebApp')
       });
 
       $scope.chart[type].showDistX(true)
-        .showDistY(true)
+        .showDistY(true);
       //handle the problem of tooltip not showing when muliple points have same value.
-        .scatter.useVoronoi(false);
     } else {
       var p = pivot(data);
       if (type === 'pieChart') {
