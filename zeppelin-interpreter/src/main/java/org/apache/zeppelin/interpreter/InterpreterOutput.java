@@ -16,12 +16,11 @@
  */
 package org.apache.zeppelin.interpreter;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,14 +30,23 @@ import java.util.List;
  * in addition to InterpreterResult which used to return from Interpreter.interpret().
  */
 public class InterpreterOutput extends OutputStream {
+  Logger logger = LoggerFactory.getLogger(InterpreterOutput.class);
+  private final int NEW_LINE_CHAR = '\n';
+
+  ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
   private final List<Object> outList = new LinkedList<Object>();
   private InterpreterOutputChangeWatcher watcher;
+  private final InterpreterOutputNewlineListener flushListener;
 
-  public InterpreterOutput() {
+  public InterpreterOutput(InterpreterOutputNewlineListener flushListener) {
+    this.flushListener = flushListener;
     clear();
   }
 
-  public InterpreterOutput(InterpreterOutputChangeListener listener) throws IOException {
+  public InterpreterOutput(InterpreterOutputNewlineListener flushListener,
+                           InterpreterOutputChangeListener listener) throws IOException {
+    this.flushListener = flushListener;
     clear();
     watcher = new InterpreterOutputChangeWatcher(listener);
     watcher.start();
@@ -52,27 +60,31 @@ public class InterpreterOutput extends OutputStream {
       }
     }
   }
-
   @Override
   public void write(int b) throws IOException {
     synchronized (outList) {
-      outList.add(b);
+      buffer.write(b);
+      if (b == NEW_LINE_CHAR) {
+        buffer.flush();
+        byte[] byteArray = buffer.toByteArray();
+        outList.add(byteArray);
+        flushListener.onNewLineDetected(byteArray);
+        buffer.reset();
+      }
     }
   }
 
   @Override
   public void write(byte [] b) throws IOException {
-    synchronized (outList) {
-      outList.add(b);
-    }
+    write(b, 0, b.length);
   }
 
   @Override
   public void write(byte [] b, int off, int len) throws IOException {
     synchronized (outList) {
-      byte[] buf = new byte[len];
-      System.arraycopy(b, off, buf, 0, len);
-      outList.add(buf);
+      for (int i = off; i < len; i++) {
+        write(b[i]);
+      }
     }
   }
 
@@ -182,6 +194,14 @@ public class InterpreterOutput extends OutputStream {
 
   @Override
   public void close() throws IOException {
+    synchronized (outList) {
+      buffer.flush();
+      byte[] bytes = buffer.toByteArray();
+      outList.add(bytes);
+      flushListener.onNewLineDetected(bytes);
+      buffer.close();
+    }
+
     if (watcher != null) {
       watcher.clear();
       watcher.shutdown();

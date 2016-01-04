@@ -26,13 +26,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class InterpreterOutputTest {
-  private InterpreterOutput out;
 
+public class InterpreterOutputTest implements InterpreterOutputNewlineListener {
+  private InterpreterOutput out;
+  int numNewLineDetected;
 
   @Before
   public void setUp() {
-    out = new InterpreterOutput();
+    out = new InterpreterOutput(this);
+    numNewLineDetected = 0;
   }
 
   @After
@@ -40,18 +42,30 @@ public class InterpreterOutputTest {
     out.close();
   }
 
-
   @Test
-  public void testWrite() throws IOException {
-    out.write(1);
-    assertEquals(1, out.toByteArray()[0]);
+  public void testDetectNewline() throws IOException {
+    out.write("hello\nworld");
+    assertEquals("hello\n", new String(out.toByteArray()));
+    assertEquals(1, numNewLineDetected);
+
+    out.write("\n");
+    assertEquals("hello\nworld\n", new String(out.toByteArray()));
+    assertEquals(2, numNewLineDetected);
   }
 
   @Test
-  public void testStringWrite() throws IOException {
-    Writer writer = new OutputStreamWriter(out);
-    writer.write("hello");
-    writer.flush();
-    assertEquals("hello", new String(out.toByteArray()));
+  public void testFlushInternalBufferOnClose() throws IOException {
+    out.write("hello\nworld");
+    assertEquals("hello\n", new String(out.toByteArray()));
+    assertEquals(1, numNewLineDetected);
+
+    out.close();
+    assertEquals("hello\nworld", new String(out.toByteArray()));
+    assertEquals(2, numNewLineDetected);
+  }
+
+  @Override
+  public void onNewLineDetected(byte[] line) {
+    numNewLineDetected++;
   }
 }
