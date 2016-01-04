@@ -522,7 +522,8 @@
         <akka.group>com.typesafe.akka</akka.group>
         <akka.version>2.3.11</akka.version>
         <protobuf.version>2.5.0</protobuf.version>
-        </properties>
+        <spark.download.url>http://apache.osuosl.org/spark/spark-${spark.version}/spark-${spark.version}.tgz</spark.download.url>
+      </properties>
 
       <dependencies>
       </dependencies>
