@@ -629,6 +629,13 @@
     </profile>
 
     <profile>
+      <id>scalding</id>
+      <modules>
+        <module>scalding</module>
+      </modules>
+    </profile>
+
+    <profile>
       <id>build-distr</id>
       <activation>
         <activeByDefault>false</activeByDefault>

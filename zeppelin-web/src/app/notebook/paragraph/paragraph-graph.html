@@ -15,8 +15,7 @@ limitations under the License.
      class="graphContainer"
      ng-class="{'noOverflow': getGraphMode()=='table'}"
      ng-if="getResultType()=='TABLE'"
-     allowresize="{{!asIframe && !viewOnly}}"
-     resizable on-resize="setGraphHeight();">
+     >
 
   <div ng-if="getGraphMode()=='table'"
        id="p{{paragraph.id}}_table"

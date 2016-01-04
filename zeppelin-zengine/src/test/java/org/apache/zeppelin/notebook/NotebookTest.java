@@ -38,6 +38,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
@@ -47,7 +48,6 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
-import org.apache.zeppelin.search.LuceneSearch;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -122,42 +122,39 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testGetAllNotes() throws IOException {
-    // get all notes after copy the {notebookId}/note.json into notebookDir
+  public void testReloadAllNotes() throws IOException {
     File srcDir = new File("src/test/resources/2A94M5J1Z");
     File destDir = new File(notebookDir.getAbsolutePath() + "/2A94M5J1Z");
 
+    // copy the notebook
     try {
       FileUtils.copyDirectory(srcDir, destDir);
     } catch (IOException e) {
       e.printStackTrace();
     }
 
-    Note copiedNote = notebookRepo.get("2A94M5J1Z");
-
-    // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be false
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "false");
+    // doesn't have copied notebook in memory before reloading
     List<Note> notes = notebook.getAllNotes();
     assertEquals(notes.size(), 0);
 
-    // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be true
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "true");
+    // load copied notebook on memory when reloadAllNotes() is called
+    Note copiedNote = notebookRepo.get("2A94M5J1Z");
+    notebook.reloadAllNotes();
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 1);
     assertEquals(notes.get(0).id(), copiedNote.id());
     assertEquals(notes.get(0).getName(), copiedNote.getName());
     assertEquals(notes.get(0).getParagraphs(), copiedNote.getParagraphs());
 
-    // get all notes after remove the {notebookId}/note.json from notebookDir
-    // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be false
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "false");
     // delete the notebook
     FileUtils.deleteDirectory(destDir);
+
+    // keep notebook in memory before reloading
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 1);
 
-    // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be true
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "true");
+    // delete notebook from notebook list when reloadAllNotes() is called
+    notebook.reloadAllNotes();
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 0);
   }
@@ -247,6 +244,47 @@ public class NotebookTest implements JobListenerFactory{
     assertNotNull(dateFinished);
     Thread.sleep(1*1000);
     assertEquals(dateFinished, p.getDateFinished());
+  }
+
+  @Test
+  public void testAutoRestartInterpreterAfterSchedule() throws InterruptedException, IOException{
+    // create a note and a paragraph
+    Note note = notebook.createNote();
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+    
+    Paragraph p = note.addParagraph();
+    Map config = new HashMap<String, Object>();
+    p.setConfig(config);
+    p.setText("p1");
+
+    // set cron scheduler, once a second
+    config = note.getConfig();
+    config.put("enabled", true);
+    config.put("cron", "* * * * * ?");
+    config.put("releaseresource", "true");
+    note.setConfig(config);
+    notebook.refreshCron(note.id());
+    while (p.getStatus() != Status.FINISHED) {
+      Thread.sleep(100);
+    }
+    Date dateFinished = p.getDateFinished();
+    assertNotNull(dateFinished);
+
+    // restart interpreter
+    for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {
+      notebook.getInterpreterFactory().restart(setting.id());
+    }
+
+    Thread.sleep(1000);
+    while (p.getStatus() != Status.FINISHED) {
+      Thread.sleep(100);
+    }
+    assertNotEquals(dateFinished, p.getDateFinished());
+    
+    // remove cron scheduler.
+    config.put("cron", null);
+    note.setConfig(config);
+    notebook.refreshCron(note.id());
   }
 
   @Test

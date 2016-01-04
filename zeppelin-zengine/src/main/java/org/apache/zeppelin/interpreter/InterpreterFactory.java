@@ -519,6 +519,9 @@ public class InterpreterFactory {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
       if (intpsetting != null) {
+
+        stopJobAllInterpreter(intpsetting);
+
         intpsetting.getInterpreterGroup().close();
         intpsetting.getInterpreterGroup().destroy();
 
@@ -541,20 +544,7 @@ public class InterpreterFactory {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
       if (intpsetting != null) {
 
-        for (Interpreter intp : intpsetting.getInterpreterGroup()) {
-          for (Job job : intp.getScheduler().getJobsRunning()) {
-            job.abort();
-            job.setStatus(Status.ABORT);
-            logger.info("Job " + job.getJobName() + " aborted ");
-          }
-              
-          for (Job job : intp.getScheduler().getJobsWaiting()) {
-            job.abort();
-            job.setStatus(Status.ABORT);
-            logger.info("Job " + job.getJobName() + " aborted ");
-          }
-        }
-
+        stopJobAllInterpreter(intpsetting);
 
         intpsetting.getInterpreterGroup().close();
         intpsetting.getInterpreterGroup().destroy();
@@ -570,6 +560,22 @@ public class InterpreterFactory {
     }
   }
 
+  private void stopJobAllInterpreter(InterpreterSetting intpsetting) {
+    if (intpsetting != null) {
+      for (Interpreter intp : intpsetting.getInterpreterGroup()) {
+        for (Job job : intp.getScheduler().getJobsRunning()) {
+          job.abort();
+          job.setStatus(Status.ABORT);
+          logger.info("Job " + job.getJobName() + " aborted ");
+        }
+        for (Job job : intp.getScheduler().getJobsWaiting()) {
+          job.abort();
+          job.setStatus(Status.ABORT);
+          logger.info("Job " + job.getJobName() + " aborted ");
+        }
+      }
+    }
+  }
 
   public void close() {
     List<Thread> closeThreads = new LinkedList<Thread>();

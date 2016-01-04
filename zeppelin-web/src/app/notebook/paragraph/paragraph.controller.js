@@ -841,9 +841,8 @@ angular.module('zeppelinWebApp')
     if ($scope.paragraph.id === paragraphId) {
       // focus editor
       if (!$scope.paragraph.config.editorHide) {
-        $scope.editor.focus();
-
         if (!mouseEvent) {
+          $scope.editor.focus();
           // move cursor to the first row (or the last row)
           var row;
           if (cursorPos >= 0) {
@@ -961,7 +960,7 @@ angular.module('zeppelinWebApp')
       clearUnknownColsFromGraphOption();
       // set graph height
       var height = $scope.paragraph.config.graph.height;
-      angular.element('#p' + $scope.paragraph.id + '_graph').height(height);
+      angular.element('#p' + $scope.paragraph.id + '_resize').height(height);
 
       if (!type || type === 'table') {
         setTable($scope.paragraph.result, refresh);
@@ -1021,8 +1020,7 @@ angular.module('zeppelinWebApp')
 
     var renderTable = function() {
       var html = '';
-
-      html += '<table class="table table-hover table-condensed" style="top: 0; position: absolute;">';
+      html += '<table class="table table-hover table-condensed">';
       html += '  <thead>';
       html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
       for (var titleIndex in $scope.paragraph.result.columnNames) {
@@ -1030,10 +1028,7 @@ angular.module('zeppelinWebApp')
       }
       html += '    </tr>';
       html += '  </thead>';
-      html += '</table>';
-
-      html += '<table class="table table-hover table-condensed" style="margin-top: 31px;">';
-
+      html += '  <tbody>';
       for (var r in $scope.paragraph.result.msgTable) {
         var row = $scope.paragraph.result.msgTable[r];
         html += '    <tr>';
@@ -1048,19 +1043,38 @@ angular.module('zeppelinWebApp')
         }
         html += '    </tr>';
       }
-
+      html += '  </tbody>';
       html += '</table>';
 
       angular.element('#p' + $scope.paragraph.id + '_table').html(html);
       if ($scope.paragraph.result.msgTable.length > 10000) {
         angular.element('#p' + $scope.paragraph.id + '_table').css('overflow', 'scroll');
+        // set table height
+        var height = $scope.paragraph.config.graph.height;
+        angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
       } else {
+        var dataTable = angular.element('#p' + $scope.paragraph.id + '_table .table');
+        dataTable.floatThead({
+          scrollContainer: function (dataTable) {
+            return angular.element('#p' + $scope.paragraph.id + '_table');
+          }
+        });
+        angular.element('#p' + $scope.paragraph.id + '_table .table').on('remove', function () {
+          angular.element('#p' + $scope.paragraph.id + '_table .table').floatThead('destroy');
+        });
+
+        angular.element('#p' + $scope.paragraph.id + '_table').css('position', 'relative');
+        angular.element('#p' + $scope.paragraph.id + '_table').css('height', '100%');
+        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar('destroy');
         angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
+        angular.element('.ps-scrollbar-y-rail').css('z-index', '1002');
+
+        // set table height
+        var psHeight = $scope.paragraph.config.graph.height;
+        angular.element('#p' + $scope.paragraph.id + '_table').css('height', psHeight);
+        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar('update');
       }
 
-      // set table height
-      var height = $scope.paragraph.config.graph.height;
-      angular.element('#p' + $scope.paragraph.id + '_table').height(height);
     };
 
     var retryRenderer = function() {
@@ -1880,9 +1894,22 @@ angular.module('zeppelinWebApp')
     return true;
   };
 
-  $scope.setGraphHeight = function() {
-    var height = angular.element('#p' + $scope.paragraph.id + '_graph').height();
+  $scope.resizeParagraph = function(width, height) {
+    if ($scope.paragraph.config.colWidth !== width) {
 
+        $scope.paragraph.config.colWidth = width;
+        $scope.changeColWidth();
+        $timeout(function() {
+          autoAdjustEditorHeight($scope.paragraph.id + '_editor');
+          $scope.changeHeight(height);
+        }, 200);
+
+    } else {
+      $scope.changeHeight(height);
+    }
+  };
+
+  $scope.changeHeight = function(height) {
     var newParams = angular.copy($scope.paragraph.settings.params);
     var newConfig = angular.copy($scope.paragraph.config);
 

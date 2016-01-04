@@ -41,6 +41,7 @@ limitations under the License.
 * [lens](./interpreter/lens.html)
 * [md](./interpreter/markdown.html)
 * [postgresql, hawq](./interpreter/postgresql.html)
+* [scalding](./interpreter/scalding.html)
 * [sh](./pleasecontribute.html)
 * [spark](./interpreter/spark.html)
 * [tajo](./pleasecontribute.html)
