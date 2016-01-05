@@ -147,7 +147,11 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
     if (broken) {
       releaseBrokenClient(client);
     } else {
-      clientPool.returnObject(client);
+      try {
+        clientPool.returnObject(client);
+      } catch (Exception e) {
+        logger.warn("exception occurred during releasing thrift client", e);
+      }
     }
   }
 
@@ -155,11 +159,7 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
     try {
       clientPool.invalidateObject(client);
     } catch (Exception e) {
-      if (e instanceof RuntimeException) {
-        throw (RuntimeException) e;
-      } else {
-        throw new RuntimeException(e);
-      }
+      logger.warn("exception occurred during releasing thrift client", e);
     }
   }
 
