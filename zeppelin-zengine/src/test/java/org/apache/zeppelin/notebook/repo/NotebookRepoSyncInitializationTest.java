@@ -107,7 +107,7 @@ public class NotebookRepoSyncInitializationTest {
   }
   
   @Test
-  public void InitUnsupportedNumberStoragesTest() throws IOException {
+  public void initUnsupportedNumberStoragesTest() throws IOException {
     // initialize folders for each storage, currently for 2 only
     String zpath = System.getProperty("java.io.tmpdir") + "/ZeppelinLTest_" + System.currentTimeMillis();
     File mainZepDir = new File(zpath);
@@ -134,7 +134,7 @@ public class NotebookRepoSyncInitializationTest {
   }
 
   @Test
-  public void InitEmptyStorageTest() throws IOException {
+  public void initEmptyStorageTest() throws IOException {
     // set confs
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), emptyStorageConf);
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
@@ -146,7 +146,7 @@ public class NotebookRepoSyncInitializationTest {
   }
   
   @Test
-  public void InitOneDummyStorageTest() throws IOException {
+  public void initOneDummyStorageTest() throws IOException {
  // set confs
     System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE.getVarName(), invalidStorageClass);
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
