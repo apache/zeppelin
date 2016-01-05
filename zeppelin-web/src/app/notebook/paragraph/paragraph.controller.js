@@ -120,10 +120,10 @@ angular.module('zeppelinWebApp')
   };
 
 
-    $scope.appendTextOutput = function(msg) {
+  $scope.appendTextOutput = function(msg) {
     var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
     if (textEl.length) {
-      textEl.append(angular.element('<p></p>').text(msg));
+      textEl.append(angular.element('<div></div>').text(msg));
     }
   };
 
@@ -287,6 +287,12 @@ angular.module('zeppelinWebApp')
 
     }
 
+  });
+
+  $scope.$on('appendParagraphOutput', function(event, data) {
+    if ($scope.paragraph.id === data.paragraphId) {
+      $scope.appendTextOutput(data.data);
+    }
   });
 
   $scope.isRunning = function() {

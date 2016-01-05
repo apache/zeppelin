@@ -37,14 +37,14 @@ public class InterpreterOutput extends OutputStream {
 
   private final List<Object> outList = new LinkedList<Object>();
   private InterpreterOutputChangeWatcher watcher;
-  private final InterpreterOutputNewlineListener flushListener;
+  private final InterpreterOutputListener flushListener;
 
-  public InterpreterOutput(InterpreterOutputNewlineListener flushListener) {
+  public InterpreterOutput(InterpreterOutputListener flushListener) {
     this.flushListener = flushListener;
     clear();
   }
 
-  public InterpreterOutput(InterpreterOutputNewlineListener flushListener,
+  public InterpreterOutput(InterpreterOutputListener flushListener,
                            InterpreterOutputChangeListener listener) throws IOException {
     this.flushListener = flushListener;
     clear();
@@ -68,7 +68,7 @@ public class InterpreterOutput extends OutputStream {
         buffer.flush();
         byte[] byteArray = buffer.toByteArray();
         outList.add(byteArray);
-        flushListener.onNewLineDetected(byteArray);
+        flushListener.onAppend(this, byteArray);
         buffer.reset();
       }
     }
@@ -198,7 +198,7 @@ public class InterpreterOutput extends OutputStream {
       buffer.flush();
       byte[] bytes = buffer.toByteArray();
       outList.add(bytes);
-      flushListener.onNewLineDetected(bytes);
+      flushListener.onAppend(this, bytes);
       buffer.close();
     }
 

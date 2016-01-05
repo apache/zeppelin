@@ -48,6 +48,7 @@ import com.google.gson.reflect.TypeToken;
  *
  */
 public class RemoteInterpreter extends Interpreter {
+  private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
   Logger logger = LoggerFactory.getLogger(RemoteInterpreter.class);
   Gson gson = new Gson();
   private String interpreterRunner;
@@ -60,32 +61,35 @@ public class RemoteInterpreter extends Interpreter {
   private int connectTimeout;
 
   public RemoteInterpreter(Properties property,
-      String className,
-      String interpreterRunner,
-      String interpreterPath,
-      int connectTimeout) {
+                           String className,
+                           String interpreterRunner,
+                           String interpreterPath,
+                           int connectTimeout,
+                           RemoteInterpreterProcessListener remoteInterpreterProcessListener) {
     super(property);
-
     this.className = className;
     initialized = false;
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
     env = new HashMap<String, String>();
     this.connectTimeout = connectTimeout;
+    this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
   }
 
   public RemoteInterpreter(Properties property,
-      String className,
-      String interpreterRunner,
-      String interpreterPath,
-      Map<String, String> env,
-      int connectTimeout) {
+                           String className,
+                           String interpreterRunner,
+                           String interpreterPath,
+                           Map<String, String> env,
+                           int connectTimeout,
+                           RemoteInterpreterProcessListener remoteInterpreterProcessListener) {
     super(property);
     this.className = className;
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
     this.env = env;
     this.connectTimeout = connectTimeout;
+    this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
   }
 
   @Override
@@ -103,7 +107,8 @@ public class RemoteInterpreter extends Interpreter {
       if (intpGroup.getRemoteInterpreterProcess() == null) {
         // create new remote process
         RemoteInterpreterProcess remoteProcess = new RemoteInterpreterProcess(
-                interpreterRunner, interpreterPath, env, connectTimeout);
+                interpreterRunner, interpreterPath, env, connectTimeout,
+                remoteInterpreterProcessListener);
 
         intpGroup.setRemoteInterpreterProcess(remoteProcess);
       }

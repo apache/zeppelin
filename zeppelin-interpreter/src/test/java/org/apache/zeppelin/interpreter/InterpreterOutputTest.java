@@ -19,15 +19,13 @@ package org.apache.zeppelin.interpreter;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 
-public class InterpreterOutputTest implements InterpreterOutputNewlineListener {
+public class InterpreterOutputTest implements InterpreterOutputListener {
   private InterpreterOutput out;
   int numNewLineDetected;
 
@@ -65,7 +63,12 @@ public class InterpreterOutputTest implements InterpreterOutputNewlineListener {
   }
 
   @Override
-  public void onNewLineDetected(byte[] line) {
+  public void onAppend(InterpreterOutput out, byte[] line) {
     numNewLineDetected++;
+  }
+
+  @Override
+  public void onUpdate(InterpreterOutput out, byte[] output) {
+
   }
 }

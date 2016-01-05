@@ -28,6 +28,7 @@ import org.apache.zeppelin.scheduler.JobListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
@@ -257,6 +258,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       runners.add(new ParagraphRunner(note, note.id(), p.getId()));
     }
 
+    final Paragraph self = this;
     InterpreterContext interpreterContext = new InterpreterContext(
             note.id(),
             getId(),
@@ -266,7 +268,33 @@ public class Paragraph extends Job implements Serializable, Cloneable {
             this.settings,
             registry,
             runners,
-            new InterpreterOutput());
+            new InterpreterOutput(new InterpreterOutputListener() {
+              @Override
+              public void onAppend(InterpreterOutput out, byte[] line) {
+                updateParagraphResult(out);
+                ((ParagraphJobListener) getListener()).onOutputAppend(self, out, new String(line));
+              }
+
+              @Override
+              public void onUpdate(InterpreterOutput out, byte[] output) {
+                updateParagraphResult(out);
+                ((ParagraphJobListener) getListener()).onOutputUpdate(self, out,
+                        new String(output));
+              }
+
+              private void updateParagraphResult(InterpreterOutput out) {
+                // update paragraph result
+                Throwable t = null;
+                String message = null;
+                try {
+                  message = new String(out.toByteArray());
+                } catch (IOException e) {
+                  logger().error(e.getMessage(), e);
+                  t = e;
+                }
+                self.setReturn(new InterpreterResult(Code.SUCCESS, message), t);
+              }
+            }));
     return interpreterContext;
   }
 

@@ -63,30 +63,38 @@ public class RemoteInterpreterTest {
     intpGroup.destroy();
   }
 
+  private RemoteInterpreter createMockInterpreterA(Properties p) {
+    return new RemoteInterpreter(
+            p,
+            MockInterpreterA.class.getName(),
+            new File("../bin/interpreter.sh").getAbsolutePath(),
+            "fake",
+            env,
+            10 * 1000,
+            null);
+  }
+
+  private RemoteInterpreter createMockInterpreterB(Properties p) {
+    return new RemoteInterpreter(
+            p,
+            MockInterpreterB.class.getName(),
+            new File("../bin/interpreter.sh").getAbsolutePath(),
+            "fake",
+            env,
+            10 * 1000,
+            null);
+  }
+
   @Test
   public void testRemoteInterperterCall() throws TTransportException, IOException {
     Properties p = new Properties();
 
-    RemoteInterpreter intpA = new RemoteInterpreter(
-        p,
-        MockInterpreterA.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
-        "fake",
-        env,
-        10 * 1000
-        );
+    RemoteInterpreter intpA = createMockInterpreterA(p);
 
     intpGroup.add(intpA);
     intpA.setInterpreterGroup(intpGroup);
 
-    RemoteInterpreter intpB = new RemoteInterpreter(
-        p,
-        MockInterpreterB.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
-        "fake",
-        env,
-        10 * 1000
-        );
+    RemoteInterpreter intpB = createMockInterpreterB(p);
 
     intpGroup.add(intpB);
     intpB.setInterpreterGroup(intpGroup);
@@ -131,14 +139,7 @@ public class RemoteInterpreterTest {
   public void testRemoteInterperterErrorStatus() throws TTransportException, IOException {
     Properties p = new Properties();
 
-    RemoteInterpreter intpA = new RemoteInterpreter(
-        p,
-        MockInterpreterA.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
-        "fake",
-        env,
-        10 * 1000
-        );
+    RemoteInterpreter intpA = createMockInterpreterA(p);
 
     intpGroup.add(intpA);
     intpA.setInterpreterGroup(intpGroup);
@@ -163,24 +164,26 @@ public class RemoteInterpreterTest {
     Properties p = new Properties();
 
     RemoteInterpreter intpA = new RemoteInterpreter(
-        p,
-        MockInterpreterA.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
-        "fake",
-        env,
-        10 * 1000
+            p,
+            MockInterpreterA.class.getName(),
+            new File("../bin/interpreter.sh").getAbsolutePath(),
+            "fake",
+            env,
+            10 * 1000,
+            null
         );
 
     intpGroup.add(intpA);
     intpA.setInterpreterGroup(intpGroup);
 
     RemoteInterpreter intpB = new RemoteInterpreter(
-        p,
-        MockInterpreterB.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
-        "fake",
-        env,
-        10 * 1000
+            p,
+            MockInterpreterB.class.getName(),
+            new File("../bin/interpreter.sh").getAbsolutePath(),
+            "fake",
+            env,
+            10 * 1000,
+            null
         );
 
     intpGroup.add(intpB);
@@ -225,26 +228,12 @@ public class RemoteInterpreterTest {
   public void testRemoteSchedulerSharingSubmit() throws TTransportException, IOException, InterruptedException {
     Properties p = new Properties();
 
-    final RemoteInterpreter intpA = new RemoteInterpreter(
-        p,
-        MockInterpreterA.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
-        "fake",
-        env,
-        10 * 1000
-        );
+    final RemoteInterpreter intpA = createMockInterpreterA(p);
 
     intpGroup.add(intpA);
     intpA.setInterpreterGroup(intpGroup);
 
-    final RemoteInterpreter intpB = new RemoteInterpreter(
-        p,
-        MockInterpreterB.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
-        "fake",
-        env,
-        10 * 1000
-        );
+    final RemoteInterpreter intpB = createMockInterpreterB(p);
 
     intpGroup.add(intpB);
     intpB.setInterpreterGroup(intpGroup);
@@ -340,14 +329,7 @@ public class RemoteInterpreterTest {
   public void testRunOrderPreserved() throws InterruptedException {
     Properties p = new Properties();
 
-    final RemoteInterpreter intpA = new RemoteInterpreter(
-        p,
-        MockInterpreterA.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
-        "fake",
-        env,
-        10 * 1000
-        );
+    final RemoteInterpreter intpA = createMockInterpreterA(p);
 
     intpGroup.add(intpA);
     intpA.setInterpreterGroup(intpGroup);
@@ -421,14 +403,7 @@ public class RemoteInterpreterTest {
     Properties p = new Properties();
     p.put("parallel", "true");
 
-    final RemoteInterpreter intpA = new RemoteInterpreter(
-        p,
-        MockInterpreterA.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
-        "fake",
-        env,
-        10 * 1000
-        );
+    final RemoteInterpreter intpA = createMockInterpreterA(p);
 
     intpGroup.add(intpA);
     intpA.setInterpreterGroup(intpGroup);
@@ -501,14 +476,7 @@ public class RemoteInterpreterTest {
   public void testInterpreterGroupResetBeforeProcessStarts() {
     Properties p = new Properties();
 
-    RemoteInterpreter intpA = new RemoteInterpreter(
-        p,
-        MockInterpreterA.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
-        "fake",
-        env,
-        10 * 1000
-        );
+    RemoteInterpreter intpA = createMockInterpreterA(p);
 
     intpA.setInterpreterGroup(intpGroup);
     RemoteInterpreterProcess processA = intpA.getInterpreterProcess();
@@ -523,14 +491,7 @@ public class RemoteInterpreterTest {
   public void testInterpreterGroupResetAfterProcessFinished() {
     Properties p = new Properties();
 
-    RemoteInterpreter intpA = new RemoteInterpreter(
-        p,
-        MockInterpreterA.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
-        "fake",
-        env,
-        10 * 1000
-        );
+    RemoteInterpreter intpA = createMockInterpreterA(p);
 
     intpA.setInterpreterGroup(intpGroup);
     RemoteInterpreterProcess processA = intpA.getInterpreterProcess();
@@ -548,14 +509,7 @@ public class RemoteInterpreterTest {
   public void testInterpreterGroupResetDuringProcessRunning() throws InterruptedException {
     Properties p = new Properties();
 
-    final RemoteInterpreter intpA = new RemoteInterpreter(
-        p,
-        MockInterpreterA.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
-        "fake",
-        env,
-        10 * 1000
-        );
+    final RemoteInterpreter intpA = createMockInterpreterA(p);
 
     intpGroup.add(intpA);
     intpA.setInterpreterGroup(intpGroup);
@@ -616,26 +570,12 @@ public class RemoteInterpreterTest {
   public void testRemoteInterpreterSharesTheSameSchedulerInstanceInTheSameGroup() {
     Properties p = new Properties();
 
-    RemoteInterpreter intpA = new RemoteInterpreter(
-        p,
-        MockInterpreterA.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
-        "fake",
-        env,
-        10 * 1000
-        );
+    RemoteInterpreter intpA = createMockInterpreterA(p);
 
     intpGroup.add(intpA);
     intpA.setInterpreterGroup(intpGroup);
 
-    RemoteInterpreter intpB = new RemoteInterpreter(
-        p,
-        MockInterpreterB.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
-        "fake",
-        env,
-        10 * 1000
-        );
+    RemoteInterpreter intpB = createMockInterpreterB(p);
 
     intpGroup.add(intpB);
     intpB.setInterpreterGroup(intpGroup);
