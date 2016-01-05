@@ -166,43 +166,17 @@
 
       <!-- Scala Compiler -->
       <plugin>
-	<groupId>net.alchim31.maven</groupId>
-	<artifactId>scala-maven-plugin</artifactId>
-	<version>3.1.4</version>
-	<executions>
-	  <!-- Run scala compiler in the process-resources phase, so that dependencies on
-	       scala classes can be resolved later in the (Java) compile phase -->
-	  <execution>
-	    <id>scala-compile-first</id>
-	    <phase>process-resources</phase>
-	    <goals>
-	      <goal>compile</goal>
-	    </goals>
-	  </execution>
-          
-	  <!-- Run scala compiler in the process-test-resources phase, so that dependencies on
-	       scala classes can be resolved later in the (Java) test-compile phase -->
-	  <execution>
-	    <id>scala-test-compile</id>
-	    <phase>process-test-resources</phase>
-	    <goals>
-	      <goal>testCompile</goal>
-	    </goals>
-	  </execution>
-	</executions>
-	<configuration>
-	  <jvmArgs>
-	    <jvmArg>-Xms128m</jvmArg>
-	    <jvmArg>-Xmx512m</jvmArg>
-	  </jvmArgs>
-	  <compilerPlugins combine.children="append">
-	    <compilerPlugin>
-	      <groupId>org.scalamacros</groupId>
-	      <artifactId>paradise_${flink.scala.version}</artifactId>
-	      <version>${scala.macros.version}</version>
-	    </compilerPlugin>
-	  </compilerPlugins>
-	</configuration>
+        <groupId>net.alchim31.maven</groupId>
+	      <artifactId>scala-maven-plugin</artifactId>
+	      <configuration>
+	        <compilerPlugins combine.children="append">
+	          <compilerPlugin>
+	            <groupId>org.scalamacros</groupId>
+	            <artifactId>paradise_${flink.scala.version}</artifactId>
+	            <version>${scala.macros.version}</version>
+	          </compilerPlugin>
+	        </compilerPlugins>
+	      </configuration>
       </plugin>
 
       <!-- Eclipse Integration -->
@@ -325,30 +299,7 @@
       </plugin>
 
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.4</version>
-        <executions>
-          <execution>
-            <id>copy-dependencies</id>
-            <phase>package</phase>
-            <goals>
-              <goal>copy-dependencies</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/../../interpreter/flink</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>false</overWriteSnapshots>
-              <overWriteIfNewer>true</overWriteIfNewer>
-              <includeScope>runtime</includeScope>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.8</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -373,6 +324,7 @@
           </execution>
         </executions>
       </plugin>
+
     </plugins>
   </build>
 </project>
