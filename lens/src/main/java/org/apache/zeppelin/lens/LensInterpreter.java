@@ -128,7 +128,7 @@ public class LensInterpreter extends Interpreter {
       s_logger.info("LensInterpreter created");
     }
     catch (Exception e) {
-      e.printStackTrace();
+      s_logger.error(e.toString(), e);
       s_logger.error("unable to create lens interpreter", e);
     }
   }

@@ -170,7 +170,7 @@ public class RemoteInterpreterServer
     } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
         | InstantiationException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
-      e.printStackTrace();
+      logger.error(e.toString(), e);
       throw new TException(e);
     }
   }

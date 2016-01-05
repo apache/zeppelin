@@ -134,7 +134,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
       try {
         notebookRepo.save(note);
       } catch (IOException e) {
-        e.printStackTrace();
+        LOG.error(e.toString(), e);
       }
     }
   }

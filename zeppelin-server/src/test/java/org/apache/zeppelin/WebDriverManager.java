@@ -178,7 +178,7 @@ public class WebDriverManager {
       String versionString = (String) CommandExecutor.executeCommandLocalHost(firefoxVersionCmd, false, ProcessData.Types_Of_Data.OUTPUT);
       return Integer.valueOf(versionString.replaceAll("Mozilla Firefox", "").trim().substring(0, 2));
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.error("Exception in WebDriverManager while getWebDriver ", e);
       return -1;
     }
   }

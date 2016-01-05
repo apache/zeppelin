@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
  * Collection of Notes.
  */
 public class Notebook {
-  Logger logger = LoggerFactory.getLogger(Notebook.class);
+  static Logger logger = LoggerFactory.getLogger(Notebook.class);
 
   @SuppressWarnings("unused") @Deprecated //TODO(bzz): remove unused
   private SchedulerFactory schedulerFactory;
@@ -237,7 +237,7 @@ public class Notebook {
     try {
       note.unpersist();
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error(e.toString(), e);
     }
   }
 
@@ -420,7 +420,7 @@ public class Notebook {
         try {
           Thread.sleep(1000);
         } catch (InterruptedException e) {
-          e.printStackTrace();
+          logger.error(e.toString(), e);
         }
       }
       
@@ -428,7 +428,7 @@ public class Notebook {
       try {
         releaseResource = (boolean) note.getConfig().get("releaseresource");
       } catch (java.lang.ClassCastException e) {
-        e.printStackTrace();
+        logger.error(e.toString(), e);
       }
       if (releaseResource) {
         for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {

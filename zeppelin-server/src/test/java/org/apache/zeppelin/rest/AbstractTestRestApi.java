@@ -86,7 +86,7 @@ public abstract class AbstractTestRestApi {
       try {
         ZeppelinServer.main(new String[] {""});
       } catch (Exception e) {
-        e.printStackTrace();
+        LOG.error("Exception in WebDriverManager while getWebDriver ", e);
         throw new RuntimeException(e);
       }
     }
@@ -156,7 +156,7 @@ public abstract class AbstractTestRestApi {
     try {
       return InetAddress.getLocalHost().getHostName();
     } catch (UnknownHostException e) {
-      e.printStackTrace();
+      LOG.error("Exception in WebDriverManager while getWebDriver ", e);
       return "localhost";
     }
   }

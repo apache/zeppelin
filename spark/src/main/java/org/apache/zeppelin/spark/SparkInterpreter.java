@@ -82,7 +82,7 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
  *
  */
 public class SparkInterpreter extends Interpreter {
-  Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
+  public static Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
 
   static {
     Interpreter.register(
@@ -186,7 +186,7 @@ public class SparkInterpreter extends Interpreter {
       }
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
-      e.printStackTrace();
+      logger.error(e.toString(), e);
       return null;
     }
     return pl;

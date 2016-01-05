@@ -199,7 +199,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     try {
       FileUtils.copyDirectory(srcDir, destDir);
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error(e.toString(), e);
     }
     assertEquals(0, notebookRepoSync.list(0).size());
     assertEquals(1, notebookRepoSync.list(1).size());
