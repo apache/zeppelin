@@ -85,6 +85,7 @@ public class WebDriverManager {
 
         driver = new FirefoxDriver(ffox, profile);
       } catch (Exception e) {
+        LOG.error("Exception in WebDriverManager while FireFox Driver ", e);
       }
     }
 
@@ -92,6 +93,7 @@ public class WebDriverManager {
       try {
         driver = new ChromeDriver();
       } catch (Exception e) {
+        LOG.error("Exception in WebDriverManager while ChromeDriver ", e);
       }
     }
 
@@ -99,6 +101,7 @@ public class WebDriverManager {
       try {
         driver = new SafariDriver();
       } catch (Exception e) {
+        LOG.error("Exception in WebDriverManager while SafariDriver ", e);
       }
     }
 
@@ -126,6 +129,7 @@ public class WebDriverManager {
         loaded = true;
         break;
       } catch (TimeoutException e) {
+        LOG.info("Exception in WebDriverManager while WebDriverWait ", e);
         driver.navigate().to(url);
       }
     }
@@ -164,7 +168,6 @@ public class WebDriverManager {
 
     } catch (IOException e) {
       LOG.error("Download of firebug version: " + firefoxVersion + ", falied in path " + tempPath);
-      LOG.error(e.toString());
     }
     LOG.info("Download of firebug version: " + firefoxVersion + ", successful");
   }

@@ -565,6 +565,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         try {
           checkType(value);
         } catch (Exception e) {
+          LOG.error("Exception in ZeppelinConfiguration while isType", e);
           return false;
         }
         return true;

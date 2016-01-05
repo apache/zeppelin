@@ -78,6 +78,8 @@ public abstract class Job {
   Date dateFinished;
   Status status;
 
+  static Logger LOGGER = LoggerFactory.getLogger(Job.class);
+
   transient boolean aborted = false;
 
   String errorMessage;
@@ -172,14 +174,14 @@ public abstract class Job {
       dateFinished = new Date();
       progressUpdator.terminate();
     } catch (NullPointerException e) {
-      logger().error("Job failed", e);
+      LOGGER.error("Job failed", e);
       progressUpdator.terminate();
       this.exception = e;
       result = e.getMessage();
       errorMessage = getStack(e);
       dateFinished = new Date();
     } catch (Throwable e) {
-      logger().error("Job failed", e);
+      LOGGER.error("Job failed", e);
       progressUpdator.terminate();
       this.exception = e;
       result = e.getMessage();
@@ -246,10 +248,6 @@ public abstract class Job {
 
   public Date getDateFinished() {
     return dateFinished;
-  }
-
-  private Logger logger() {
-    return LoggerFactory.getLogger(Job.class);
   }
 
   protected void setResult(Object result) {
