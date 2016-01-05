@@ -17,6 +17,9 @@ package org.apache.zeppelin.lens;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -55,6 +58,8 @@ public class LensJLineShellComponent extends JLineShell
 
   private ExecutionStrategy executionStrategy = new LensSimpleExecutionStrategy();
   private SimpleParser parser = new SimpleParser();
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(LensJLineShellComponent.class);
 
   public SimpleParser getSimpleParser() {
     return parser;
@@ -123,7 +128,7 @@ public class LensJLineShellComponent extends JLineShell
     try {
       shellThread.join();
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      LOGGER.error(e.toString(), e);
     }
   }
 

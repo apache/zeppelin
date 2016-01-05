@@ -101,7 +101,6 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
    * this method should be used instead of remove()
    * @param name
    * @param noteId
-   * @param emit
    * @return
    */
   public AngularObject removeAndNotifyRemoteProcess(String name, String noteId) {

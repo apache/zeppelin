@@ -90,6 +90,7 @@ public class MockInterpreterAngular extends Interpreter {
     try {
       Thread.sleep(500); // wait for watcher executed
     } catch (InterruptedException e) {
+      logger.error("Exception in MockInterpreterAngular while interpret Thread.sleep", e);
     }
 
     String msg = registry.getAll(context.getNoteId()).size() + " " + Integer.toString(numWatch.get());

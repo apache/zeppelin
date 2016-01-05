@@ -130,7 +130,7 @@ public class NotebookTest implements JobListenerFactory{
     try {
       FileUtils.copyDirectory(srcDir, destDir);
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error(e.toString(), e);
     }
 
     // doesn't have copied notebook in memory before reloading

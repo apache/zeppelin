@@ -308,6 +308,7 @@ public class NotebookRestApi {
       notebookServer.broadcastNote(note);
       return new JsonResponse(Status.OK, "").build();
     } catch (IndexOutOfBoundsException e) {
+      LOG.error("Exception in NotebookRestApi while moveParagraph ", e);
       return new JsonResponse(Status.BAD_REQUEST, "paragraph's new index is out of bound").build();
     }
   }

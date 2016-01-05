@@ -110,9 +110,11 @@ public class InterpreterRestApi {
       interpreterFactory.setPropertyAndRestart(settingId,
           new InterpreterOption(true), p.getProperties());
     } catch (InterpreterException e) {
+      logger.error("Exception in InterpreterRestApi while updateSetting ", e);
       return new JsonResponse(
           Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
     } catch (IOException e) {
+      logger.error("Exception in InterpreterRestApi while updateSetting ", e);
       return new JsonResponse(
           Status.INTERNAL_SERVER_ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
     }
@@ -144,6 +146,7 @@ public class InterpreterRestApi {
     try {
       interpreterFactory.restart(settingId);
     } catch (InterpreterException e) {
+      logger.error("Exception in InterpreterRestApi while restartSetting ", e);
       return new JsonResponse(
           Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
     }
