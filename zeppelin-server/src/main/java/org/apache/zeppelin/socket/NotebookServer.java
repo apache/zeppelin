@@ -748,15 +748,30 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
+  /**
+   * This callback is for the paragraph that runs on ZeppelinServer
+   * @param noteId
+   * @param paragraphId
+   * @param output output to append
+   */
   @Override
   public void onOutputAppend(String noteId, String paragraphId, String output) {
     Message msg = new Message(OP.PARAGRAPH_APPEND_OUTPUT)
             .put("noteId", noteId)
             .put("paragraphId", paragraphId)
             .put("data", output);
+
+    Paragraph paragraph = notebook().getNote(noteId).getParagraph(paragraphId);
+    updateParagraphResult(paragraph, output, true);
     broadcast(noteId, msg);
   }
 
+  /**
+   * This callback is for the paragraph that runs on ZeppelinServer
+   * @param noteId
+   * @param paragraphId
+   * @param output output to update (replace)
+   */
   @Override
   public void onOutputUpdated(String noteId, String paragraphId, String output) {
     Message msg = new Message(OP.PARAGRAPH_UPDATE_OUTPUT)
@@ -764,7 +779,28 @@ public class NotebookServer extends WebSocketServlet implements
             .put("paragraphId", paragraphId)
             .put("data", output);
 
+    Paragraph paragraph = notebook().getNote(noteId).getParagraph(paragraphId);
+    updateParagraphResult(paragraph, output, false);
     broadcast(noteId, msg);
+  }
+
+  private static void updateParagraphResult(Paragraph paragraph, String output, boolean append) {
+    Object ret = paragraph.getReturn();
+    InterpreterResult.Code code = InterpreterResult.Code.SUCCESS;
+    String message = "";
+    Throwable t = paragraph.getException();
+
+    if (ret instanceof InterpreterResult) {
+      code = ((InterpreterResult) ret).code();
+      message = ((InterpreterResult) ret).message();
+    }
+
+    if (append) {
+      message = message + output;
+    } else {
+      message = output;
+    }
+    paragraph.setReturn(new InterpreterResult(code, message), t);
   }
 
   /**
@@ -811,6 +847,12 @@ public class NotebookServer extends WebSocketServlet implements
       notebookServer.broadcastNote(note);
     }
 
+    /**
+     * This callback is for praragraph that runs on RemoteInterpreterProcess
+     * @param paragraph
+     * @param out
+     * @param output
+     */
     @Override
     public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) {
       Message msg = new Message(OP.PARAGRAPH_APPEND_OUTPUT)
@@ -818,9 +860,16 @@ public class NotebookServer extends WebSocketServlet implements
               .put("paragraphId", paragraph.getId())
               .put("data", output);
 
+      updateParagraphResult(paragraph, output, true);
       notebookServer.broadcast(paragraph.getNote().getId(), msg);
     }
 
+    /**
+     * This callback is for paragraph that runs on RemoteInterpreterProcess
+     * @param paragraph
+     * @param out
+     * @param output
+     */
     @Override
     public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) {
       Message msg = new Message(OP.PARAGRAPH_UPDATE_OUTPUT)
@@ -828,6 +877,7 @@ public class NotebookServer extends WebSocketServlet implements
               .put("paragraphId", paragraph.getId())
               .put("data", output);
 
+      updateParagraphResult(paragraph, output, false);
       notebookServer.broadcast(paragraph.getNote().getId(), msg);
     }
   }

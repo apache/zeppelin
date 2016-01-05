@@ -292,7 +292,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
                   logger().error(e.getMessage(), e);
                   t = e;
                 }
-                self.setReturn(new InterpreterResult(Code.SUCCESS, message), t);
+                setReturn(new InterpreterResult(Code.SUCCESS, message), t);
               }
             }));
     return interpreterContext;

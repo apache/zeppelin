@@ -123,6 +123,7 @@ angular.module('zeppelinWebApp')
   $scope.appendTextOutput = function(msg) {
     var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
     if (textEl.length) {
+      console.log('appendText %o', msg);
       textEl.append(angular.element('<div></div>').text(msg));
     }
   };
