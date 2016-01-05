@@ -147,7 +147,7 @@ class PySparkCompletion:
         for completionItem in list(objectCompletionList):
           completionList.add(completionItem)
     if len(completionList) <= 0:
-      print ""
+      print ("")
     else:
       print json.dumps(filter(lambda x : not re.match("^__.*", x), list(completionList)))
 
