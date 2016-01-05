@@ -43,7 +43,7 @@ module.exports = function(config) {
       'bower_components/angular-ui-ace/ui-ace.js',
       'bower_components/jquery.scrollTo/jquery.scrollTo.js',
       'bower_components/d3/d3.js',
-      'bower_components/nvd3/nv.d3.js',
+      'bower_components/nvd3/build/nv.d3.js',
       'bower_components/jquery-ui/jquery-ui.js',
       'bower_components/angular-dragdrop/src/angular-dragdrop.js',
       'bower_components/perfect-scrollbar/src/perfect-scrollbar.js',
