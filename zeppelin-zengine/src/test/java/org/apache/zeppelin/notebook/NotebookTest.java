@@ -48,7 +48,6 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
-import org.apache.zeppelin.search.LuceneSearch;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -123,42 +122,39 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testGetAllNotes() throws IOException {
-    // get all notes after copy the {notebookId}/note.json into notebookDir
+  public void testReloadAllNotes() throws IOException {
     File srcDir = new File("src/test/resources/2A94M5J1Z");
     File destDir = new File(notebookDir.getAbsolutePath() + "/2A94M5J1Z");
 
+    // copy the notebook
     try {
       FileUtils.copyDirectory(srcDir, destDir);
     } catch (IOException e) {
       e.printStackTrace();
     }
 
-    Note copiedNote = notebookRepo.get("2A94M5J1Z");
-
-    // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be false
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "false");
+    // doesn't have copied notebook in memory before reloading
     List<Note> notes = notebook.getAllNotes();
     assertEquals(notes.size(), 0);
 
-    // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be true
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "true");
+    // load copied notebook on memory when reloadAllNotes() is called
+    Note copiedNote = notebookRepo.get("2A94M5J1Z");
+    notebook.reloadAllNotes();
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 1);
     assertEquals(notes.get(0).id(), copiedNote.id());
     assertEquals(notes.get(0).getName(), copiedNote.getName());
     assertEquals(notes.get(0).getParagraphs(), copiedNote.getParagraphs());
 
-    // get all notes after remove the {notebookId}/note.json from notebookDir
-    // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be false
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "false");
     // delete the notebook
     FileUtils.deleteDirectory(destDir);
+
+    // keep notebook in memory before reloading
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 1);
 
-    // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be true
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "true");
+    // delete notebook from notebook list when reloadAllNotes() is called
+    notebook.reloadAllNotes();
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 0);
   }

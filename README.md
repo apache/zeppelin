@@ -153,6 +153,11 @@ mvn clean package -Pspark-1.5 -Pmapr50 -DskipTests
 mvn clean package -Dignite.version=1.1.0-incubating -DskipTests
 ```
 
+#### Scalding Interpreter
+
+```
+mvn clean package -Pscalding -DskipTests
+```
 
 ### Configure
 If you wish to configure Zeppelin option (like port number), configure the following files:

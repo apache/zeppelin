@@ -42,6 +42,7 @@ public class NotebookRepoSync implements NotebookRepo {
   private static final int maxRepoNum = 2;
   private static final String pushKey = "pushNoteIDs";
   private static final String pullKey = "pullNoteIDs";
+
   private static ZeppelinConfiguration config;
   private static final String defaultStorage = "org.apache.zeppelin.notebook.repo.VFSNotebookRepo";
 
@@ -55,7 +56,6 @@ public class NotebookRepoSync implements NotebookRepo {
   @SuppressWarnings("static-access")
   public NotebookRepoSync(ZeppelinConfiguration conf) {
     config = conf;
-
     String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
     if (allStorageClassNames.isEmpty()) {
       allStorageClassNames = defaultStorage;
@@ -115,9 +115,6 @@ public class NotebookRepoSync implements NotebookRepo {
    */
   @Override
   public List<NoteInfo> list() throws IOException {
-    if (config.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE) && getRepoCount() > 1) {
-      sync(0, 1);
-    }
     return getRepo(0).list();
   }
 
@@ -217,7 +214,7 @@ public class NotebookRepoSync implements NotebookRepo {
     }
   }
 
-  int getRepoCount() {
+  public int getRepoCount() {
     return repos.size();
   }
 

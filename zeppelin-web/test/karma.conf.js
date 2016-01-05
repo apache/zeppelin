@@ -57,6 +57,8 @@ module.exports = function(config) {
       'bower_components/ngtoast/dist/ngToast.js',
       'bower_components/ng-focus-if/focusIf.js',
       'bower_components/bootstrap3-dialog/dist/js/bootstrap-dialog.min.js',
+      'bower_components/floatThead/dist/jquery.floatThead.js',
+      'bower_components/floatThead/dist/jquery.floatThead.min.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'src/app/app.js',
