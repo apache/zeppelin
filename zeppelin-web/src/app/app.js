@@ -42,7 +42,10 @@
                 }
             };
         })
-        .config(function ($routeProvider, ngToastProvider) {
+        .config(function ($httpProvider, $routeProvider, ngToastProvider) {
+            // withCredentials when running locally via grunt
+            $httpProvider.defaults.withCredentials = true;
+
             $routeProvider
                 .when('/', {
                     templateUrl: 'app/home/home.html'
@@ -80,9 +83,10 @@
 
 
     function auth() {
-        var initInjector = angular.injector(['ng']);
-        var $http = initInjector.get('$http');
+        var $http = angular.injector(['ng']).get('$http');
         var baseUrlSrv = angular.injector(['zeppelinWebApp']).get('baseUrlSrv');
+        // withCredentials when running locally via grunt
+        $http.defaults.withCredentials = true;
 
         return $http.get(baseUrlSrv.getRestApiBase()+'/security/ticket').then(function(response) {
             zeppelinWebApp.run(function($rootScope) {
