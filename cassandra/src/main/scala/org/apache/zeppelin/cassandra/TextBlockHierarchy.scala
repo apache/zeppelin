@@ -77,10 +77,16 @@ object TextBlockHierarchy {
   object BatchStatementType extends StatementType
   object DescribeClusterStatementType extends StatementType
   object DescribeAllKeyspacesStatementType extends StatementType
-  object DescribeKeyspaceStatementType extends StatementType
   object DescribeAllTablesStatementType extends StatementType
+  object DescribeAllTypesStatementType extends StatementType
+  object DescribeAllFunctionsStatementType extends StatementType
+  object DescribeAllAggregatesStatementType extends StatementType
+  object DescribeKeyspaceStatementType extends StatementType
   object DescribeTableStatementType extends StatementType
   object DescribeTypeStatementType extends StatementType
+  object DescribeFunctionStatementType extends StatementType
+  object DescribeAggregateStatementType extends StatementType
+  object DescribeMaterializedView extends StatementType
   object HelpStatementType extends StatementType
 
   abstract class QueryStatement(val statementType: StatementType) extends AnyBlock(StatementBlock) {
@@ -113,6 +119,18 @@ object TextBlockHierarchy {
   class DescribeTablesCmd(override val statement: String = "DESCRIBE TABLES;")
     extends QueryStatement(DescribeAllTablesStatementType) with DescribeCommandStatement
 
+  class DescribeTypesCmd(override val statement: String = "DESCRIBE TYPES;")
+    extends QueryStatement(DescribeAllTypesStatementType) with DescribeCommandStatement
+
+  class DescribeFunctionsCmd(override val statement: String = "DESCRIBE FUNCTIONS;") extends QueryStatement(DescribeAllFunctionsStatementType)
+    with DescribeCommandStatement
+
+  class DescribeAggregatesCmd(override val statement: String = "DESCRIBE AGGREGATES;") extends QueryStatement(DescribeAllAggregatesStatementType)
+    with DescribeCommandStatement
+
+  class DescribeMaterializedViewsCmd(override val statement: String = "DESCRIBE MATERIALIZED VIEWS;") extends QueryStatement(DescribeAllAggregatesStatementType)
+    with DescribeCommandStatement
+
   case class DescribeKeyspaceCmd(keyspace: String) extends QueryStatement(DescribeKeyspaceStatementType)
     with DescribeCommandStatement {
     override val statement: String = s"DESCRIBE KEYSPACE $keyspace;"
@@ -126,11 +144,35 @@ object TextBlockHierarchy {
     }
   }
 
-  case class DescribeUDTCmd(keyspace:Option[String],udtName: String) extends QueryStatement(DescribeTypeStatementType)
+  case class DescribeTypeCmd(keyspace:Option[String], udtName: String) extends QueryStatement(DescribeTypeStatementType)
     with DescribeCommandStatement {
     override val statement: String = keyspace match {
       case Some(ks) => s"DESCRIBE TYPE $ks.$udtName;"
       case None => s"DESCRIBE TYPE $udtName;"
+    }
+  }
+
+  case class DescribeFunctionCmd(keyspace:Option[String], function: String) extends QueryStatement(DescribeFunctionStatementType)
+    with DescribeCommandStatement {
+    override val statement: String = keyspace match {
+      case Some(ks) => s"DESCRIBE FUNCTION $ks.$function;"
+      case None => s"DESCRIBE FUNCTION $function;"
+    }
+  }
+
+  case class DescribeAggregateCmd(keyspace:Option[String], aggregate: String) extends QueryStatement(DescribeAggregateStatementType)
+    with DescribeCommandStatement {
+    override val statement: String = keyspace match {
+      case Some(ks) => s"DESCRIBE AGGREGATE $ks.$aggregate;"
+      case None => s"DESCRIBE AGGREGATE $aggregate;"
+    }
+  }
+
+  case class DescribeMaterializedViewCmd(keyspace:Option[String], view: String) extends QueryStatement(DescribeMaterializedView)
+  with DescribeCommandStatement {
+    override val statement: String = keyspace match {
+      case Some(ks) => s"DESCRIBE MATERIALIZED VIEW $ks.$view;"
+      case None => s"DESCRIBE MATERIALIZED VIEW $view;"
     }
   }
 

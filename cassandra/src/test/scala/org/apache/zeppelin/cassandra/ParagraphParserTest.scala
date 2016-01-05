@@ -78,13 +78,19 @@ class ParagraphParserTest extends FlatSpec
     ))
   }
 
-  "Parser" should "parse single-line comment" in {
+  "Parser" should "parse hash single-line comment" in {
     val query :CharSequence="""#This is a comment""".stripMargin
 
     val parsed = parser.parseAll[Comment](parser.singleLineComment, query)
     parsed.get should be(Comment("This is a comment"))
   }
 
+  "Parser" should "parse double slashses single-line comment" in {
+    val query :CharSequence="""//This is another comment""".stripMargin
+
+    val parsed = parser.parseAll[Comment](parser.singleLineComment, query)
+    parsed.get should be(Comment("This is another comment"))
+  }
 
   "Parser" should "parse multi-line comment" in {
     val query:String =
@@ -462,40 +468,6 @@ class ParagraphParserTest extends FlatSpec
     ex.getMessage should be(s"Invalid syntax for DESCRIBE CLUSTER. It should comply to the pattern: ${DESCRIBE_CLUSTER_PATTERN.toString}")
   }
 
-  "Parser" should "parse describe keyspaces" in {
-    val queries ="Describe KeYsPaCeS;"
-
-    val parsed = parser.parseAll(parser.queries, queries)
-
-    parsed.get(0) shouldBe a [DescribeKeyspacesCmd]
-  }
-
-  "Parser" should "fail parsing describe keyspaces" in {
-    val queries ="Describe KeYsPaCeS"
-
-    val ex = intercept[InterpreterException] {
-      parser.parseAll(parser.queries, queries)
-    }
-    ex.getMessage should be(s"Invalid syntax for DESCRIBE KEYSPACES. It should comply to the pattern: ${DESCRIBE_KEYSPACES_PATTERN.toString}")
-  }
-
-  "Parser" should "parse describe tables" in {
-    val queries ="Describe TaBlEs;"
-
-    val parsed = parser.parseAll(parser.queries, queries)
-
-    parsed.get(0) shouldBe a [DescribeTablesCmd]
-  }
-
-  "Parser" should "fail parsing describe tables" in {
-    val queries ="Describe TaBlEs"
-
-    val ex = intercept[InterpreterException] {
-      parser.parseAll(parser.queries, queries)
-    }
-    ex.getMessage should be(s"Invalid syntax for DESCRIBE TABLES. It should comply to the pattern: ${DESCRIBE_TABLES_PATTERN.toString}")
-  }
-
   "Parser" should "parse describe keyspace" in {
     val queries ="Describe KeYsPaCe toto;"
 
@@ -511,6 +483,23 @@ class ParagraphParserTest extends FlatSpec
       parser.parseAll(parser.queries, queries)
     }
     ex.getMessage should be(s"Invalid syntax for DESCRIBE KEYSPACE. It should comply to the pattern: ${DESCRIBE_KEYSPACE_PATTERN.toString}")
+  }
+
+  "Parser" should "parse describe keyspaces" in {
+    val queries ="Describe KeYsPaCeS;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get(0) shouldBe a [DescribeKeyspacesCmd]
+  }
+
+  "Parser" should "fail parsing describe keyspaces" in {
+    val queries ="Describe KeYsPaCeS"
+
+    val ex = intercept[InterpreterException] {
+      parser.parseAll(parser.queries, queries)
+    }
+    ex.getMessage should be(s"Invalid syntax for DESCRIBE KEYSPACES. It should comply to the pattern: ${DESCRIBE_KEYSPACES_PATTERN.toString}")
   }
 
   "Parser" should "parse describe table" in {
@@ -539,12 +528,29 @@ class ParagraphParserTest extends FlatSpec
       s"${DESCRIBE_TABLE_WITH_KEYSPACE_PATTERN.toString} or ${DESCRIBE_TABLE_PATTERN.toString}")
   }
 
+  "Parser" should "parse describe tables" in {
+    val queries ="Describe TaBlEs;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get(0) shouldBe a [DescribeTablesCmd]
+  }
+
+  "Parser" should "fail parsing describe tables" in {
+    val queries ="Describe TaBlEs"
+
+    val ex = intercept[InterpreterException] {
+      parser.parseAll(parser.queries, queries)
+    }
+    ex.getMessage should be(s"Invalid syntax for DESCRIBE TABLES. It should comply to the pattern: ${DESCRIBE_TABLES_PATTERN.toString}")
+  }
+
   "Parser" should "parse describe type" in {
     val queries ="Describe Type toto;"
 
     val parsed = parser.parseAll(parser.queries, queries)
 
-    parsed.get should be(List(DescribeUDTCmd(None,"toto")))
+    parsed.get should be(List(DescribeTypeCmd(None,"toto")))
   }
 
   "Parser" should "parse describe type with keyspace" in {
@@ -552,7 +558,7 @@ class ParagraphParserTest extends FlatSpec
 
     val parsed = parser.parseAll(parser.queries, queries)
 
-    parsed.get should be(List(DescribeUDTCmd(Some("ks"),"toto")))
+    parsed.get should be(List(DescribeTypeCmd(Some("ks"),"toto")))
   }
 
   "Parser" should "fail parsing describe type" in {
@@ -563,6 +569,156 @@ class ParagraphParserTest extends FlatSpec
     }
     ex.getMessage should be(s"Invalid syntax for DESCRIBE TYPE. It should comply to the patterns: " +
       s"${DESCRIBE_TYPE_WITH_KEYSPACE_PATTERN.toString} or ${DESCRIBE_TYPE_PATTERN.toString}")
+  }
+
+  "Parser" should "parse describe types" in {
+    val queries ="Describe types;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get(0) shouldBe a [DescribeTypesCmd]
+  }
+
+  "Parser" should "fail parsing describe types" in {
+    val queries ="Describe types"
+
+    val ex = intercept[InterpreterException] {
+      parser.parseAll(parser.queries, queries)
+    }
+    ex.getMessage should be(s"Invalid syntax for DESCRIBE TYPES. It should comply to the pattern: ${DESCRIBE_TYPES_PATTERN.toString}")
+  }
+
+  "Parser" should "parse describe function" in {
+    val queries ="Describe function toto;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get should be(List(DescribeFunctionCmd(None,"toto")))
+  }
+
+  "Parser" should "parse describe function with keyspace" in {
+    val queries ="Describe function ks.toto;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get should be(List(DescribeFunctionCmd(Some("ks"),"toto")))
+  }
+
+  "Parser" should "fail parsing describe function" in {
+    val queries ="Describe function toto"
+
+    val ex = intercept[InterpreterException] {
+      parser.parseAll(parser.queries, queries)
+    }
+    ex.getMessage should be(s"Invalid syntax for DESCRIBE FUNCTION. It should comply to the patterns: " +
+      s"${DESCRIBE_FUNCTION_WITH_KEYSPACE_PATTERN.toString} or ${DESCRIBE_FUNCTION_PATTERN.toString}")
+  }
+
+  "Parser" should "parse describe functions" in {
+    val queries ="Describe functions;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get(0) shouldBe a [DescribeFunctionsCmd]
+  }
+
+  "Parser" should "fail parsing describe functions" in {
+    val queries ="Describe functions toto"
+
+    val ex = intercept[InterpreterException] {
+      parser.parseAll(parser.queries, queries)
+    }
+    ex.getMessage should be(s"Invalid syntax for DESCRIBE FUNCTIONS. It should comply to the pattern: " +
+      s"${DESCRIBE_FUNCTIONS_PATTERN.toString}")
+  }
+
+
+  "Parser" should "parse describe aggregate" in {
+    val queries ="Describe aggregate toto;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get should be(List(DescribeAggregateCmd(None,"toto")))
+  }
+
+  "Parser" should "parse describe aggregate with keyspace" in {
+    val queries ="Describe aggregate ks.toto;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get should be(List(DescribeAggregateCmd(Some("ks"),"toto")))
+  }
+
+  "Parser" should "fail parsing describe aggregate" in {
+    val queries ="Describe aggregate toto"
+
+    val ex = intercept[InterpreterException] {
+      parser.parseAll(parser.queries, queries)
+    }
+    ex.getMessage should be(s"Invalid syntax for DESCRIBE AGGREGATE. It should comply to the patterns: " +
+      s"${DESCRIBE_AGGREGATE_WITH_KEYSPACE_PATTERN.toString} or ${DESCRIBE_AGGREGATE_PATTERN.toString}")
+  }
+
+  "Parser" should "parse describe aggregates" in {
+    val queries ="Describe aggregates;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get(0) shouldBe a [DescribeAggregatesCmd]
+  }
+
+  "Parser" should "fail parsing describe aggregates" in {
+    val queries ="Describe aggregates toto"
+
+    val ex = intercept[InterpreterException] {
+      parser.parseAll(parser.queries, queries)
+    }
+    ex.getMessage should be(s"Invalid syntax for DESCRIBE AGGREGATES. It should comply to the pattern: " +
+      s"${DESCRIBE_AGGREGATES_PATTERN.toString}")
+  }
+
+  "Parser" should "parse describe materialized view" in {
+    val queries ="Describe materialized view toto;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get should be(List(DescribeMaterializedViewCmd(None,"toto")))
+  }
+
+  "Parser" should "parse describe materialized view with keyspace" in {
+    val queries ="Describe materialized view ks.toto;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get should be(List(DescribeMaterializedViewCmd(Some("ks"),"toto")))
+  }
+
+  "Parser" should "fail parsing describe materialized view" in {
+    val queries ="Describe materialized view toto"
+
+    val ex = intercept[InterpreterException] {
+      parser.parseAll(parser.queries, queries)
+    }
+    ex.getMessage should be(s"Invalid syntax for DESCRIBE MATERIALIZED VIEW. It should comply to the patterns: " +
+      s"${DESCRIBE_MATERIALIZED_VIEW_WITH_KEYSPACE_PATTERN.toString} or ${DESCRIBE_MATERIALIZED_VIEW_PATTERN.toString}")
+  }
+
+  "Parser" should "parse describe materialized views" in {
+    val queries ="Describe materialized views;"
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get(0) shouldBe a [DescribeMaterializedViewsCmd]
+  }
+
+  "Parser" should "fail parsing describe materialized views" in {
+    val queries ="Describe materialized views toto"
+
+    val ex = intercept[InterpreterException] {
+      parser.parseAll(parser.queries, queries)
+    }
+    ex.getMessage should be(s"Invalid syntax for DESCRIBE MATERIALIZED VIEWS. It should comply to the pattern: " +
+      s"${DESCRIBE_MATERIALIZED_VIEWS_PATTERN.toString}")
   }
 
   "Parser" should "parse help" in {
@@ -581,5 +737,100 @@ class ParagraphParserTest extends FlatSpec
     }
     ex.getMessage should be(s"Invalid syntax for HELP. It should comply to the patterns: " +
       s"${HELP_PATTERN.toString}")
+  }
+
+  "Parser" should "parse CREATE FUNCTION" in {
+    val query = "CREATE FUNCTION keyspace.udf xxx AS 'return true;';"
+
+    val parsed = parser.parseAll(parser.queries, query)
+
+    parsed.get(0) should be(SimpleStm(query))
+
+  }
+
+  "Parser" should "parse CREATE OR REPLACE FUNCTION" in {
+    val query = "CREATE or Replace FUNCTION keyspace.udf xxx AS 'return true;';"
+
+    val parsed = parser.parseAll(parser.queries, query)
+
+    parsed.get(0) should be(SimpleStm(query))
+
+  }
+
+  "Parser" should "parse CREATE FUNCTION IF NOT Exists" in {
+    val query = "CREATE FUNCTION IF NOT EXISTS keyspace.udf xxx AS 'return true;';"
+
+    val parsed = parser.parseAll(parser.queries, query)
+
+    parsed.get(0) should be(SimpleStm(query))
+
+  }
+
+  "Parser" should "parse CREATE FUNCTION multiline with simple quote" in {
+    val query =
+      """CREATE FUNCTION IF NOT EXISTS keyspace.udf(input text) xxx
+        | CALLED ON NULL INPUT
+        | RETURN text
+        | LANGUAGE java
+        | AS '
+        |  return input.toLowerCase("abc");
+        | ';""".stripMargin
+
+    val parsed = parser.parseAll(parser.queries, query)
+
+    parsed.get(0) should be(SimpleStm(query))
+
+  }
+
+  "Parser" should "parse CREATE FUNCTION multiline with double dollar" in {
+    val query =
+      """CREATE FUNCTION IF NOT EXISTS keyspace.udf(input text) xxx
+        | CALLED ON NULL INPUT
+        | RETURN text
+        | LANGUAGE java
+        | AS $$
+        |  return input.toLowerCase("abc");
+        | $$;""".stripMargin
+
+    val parsed = parser.parseAll(parser.queries, query)
+
+    parsed.get(0) should be(SimpleStm(query))
+
+  }
+
+  "Parser" should "parse CREATE FUNCTION multiline with SELECT" in {
+
+    val udf =
+      """CREATE FUNCTION IF NOT EXISTS keyspace.udf(input text) xxx
+        | CALLED ON NULL INPUT
+        | RETURN text
+        | LANGUAGE java
+        | AS '
+        |  return input.toLowerCase("abc");
+        | ';""".stripMargin
+
+    val select = "SELECT udf(val) from table WHERe id=1;"
+    val queries =
+      s"""$udf
+        |$select
+      """.stripMargin
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get should be(List(SimpleStm(udf), SimpleStm(select)))
+
+  }
+
+  "Parser" should "parse CREATE Materalized View" in {
+    val query =
+      """CREATE MATERIALIZED VIEW xxx
+        | AS SELECT * FROM myTable
+        | WHERE partition IS NOT NULL
+        | PRIMARY KEY(col, partition);""".stripMargin
+
+    val parsed = parser.parseAll(parser.queries, query)
+
+    parsed.get(0) should be(SimpleStm(query))
+
   }
 }

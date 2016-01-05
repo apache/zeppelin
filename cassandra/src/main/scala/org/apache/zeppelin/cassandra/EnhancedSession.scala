@@ -20,6 +20,7 @@ import com.datastax.driver.core._
 import org.apache.zeppelin.cassandra.TextBlockHierarchy._
 import org.apache.zeppelin.interpreter.InterpreterException
 
+import scala.collection.JavaConverters._
 
 /**
  * Enhance the Java driver session
@@ -32,6 +33,9 @@ class EnhancedSession(val session: Session) {
   val keyspaceDisplay = DisplaySystem.KeyspaceDisplay
   val tableDisplay = DisplaySystem.TableDisplay
   val udtDisplay = DisplaySystem.UDTDisplay
+  val functionDisplay = DisplaySystem.FunctionDisplay
+  val aggregateDisplay = DisplaySystem.AggregateDisplay
+  val materializedViewDisplay = DisplaySystem.MaterializedViewDisplay
   val helpDisplay = DisplaySystem.HelpDisplay
   private val noResultDisplay = DisplaySystem.NoResultDisplay
 
@@ -61,8 +65,12 @@ class EnhancedSession(val session: Session) {
 
   private def execute(describeKeyspace: DescribeKeyspaceCmd): String = {
     val keyspace: String = describeKeyspace.keyspace
-    val metadata: KeyspaceMetadata = session.getCluster.getMetadata.getKeyspace(keyspace)
-    HTML_MAGIC + keyspaceDisplay.formatKeyspaceContent(describeKeyspace.statement, metadata)
+    val metadata: Option[KeyspaceMetadata] = Option(session.getCluster.getMetadata.getKeyspace(keyspace))
+    metadata match {
+      case Some(ksMeta) => HTML_MAGIC + keyspaceDisplay.formatKeyspaceContent(describeKeyspace.statement, ksMeta,
+        session.getCluster.getConfiguration.getCodecRegistry)
+      case None => throw new InterpreterException(s"Cannot find keyspace $keyspace")
+    }
   }
 
   private def execute(describeTable: DescribeTableCmd): String = {
@@ -76,7 +84,7 @@ class EnhancedSession(val session: Session) {
     }
   }
 
-  private def execute(describeUDT: DescribeUDTCmd): String = {
+  private def execute(describeUDT: DescribeTypeCmd): String = {
     val metaData = session.getCluster.getMetadata
     val keyspace: String = describeUDT.keyspace.orElse(Option(session.getLoggedKeyspace)).getOrElse("system")
     val udtName: String = describeUDT.udtName
@@ -87,6 +95,87 @@ class EnhancedSession(val session: Session) {
     }
   }
 
+  private def execute(describeUDTs: DescribeTypesCmd): String = {
+    val metadata: Metadata = session.getCluster.getMetadata
+    HTML_MAGIC + clusterDisplay.formatAllUDTs(describeUDTs.statement, metadata)
+  }
+
+  private def execute(describeFunction: DescribeFunctionCmd): String = {
+    val metaData = session.getCluster.getMetadata
+    val keyspaceName: String = describeFunction.keyspace.orElse(Option(session.getLoggedKeyspace)).getOrElse("system")
+    val functionName: String = describeFunction.function;
+
+    Option(metaData.getKeyspace(keyspaceName)) match {
+      case Some(keyspace) => {
+        val functionMetas: List[FunctionMetadata] = keyspace.getFunctions.asScala.toList
+          .filter(func => func.getSimpleName.toLowerCase == functionName.toLowerCase)
+
+        if(functionMetas.isEmpty) {
+          throw new InterpreterException(s"Cannot find function ${keyspaceName}.$functionName")
+        } else {
+          HTML_MAGIC + functionDisplay.format(describeFunction.statement, functionMetas, true)
+        }
+      }
+      case None => throw new InterpreterException(s"Cannot find function ${keyspaceName}.$functionName")
+    }
+  }
+
+  private def execute(describeFunctions: DescribeFunctionsCmd): String = {
+    val metadata: Metadata = session.getCluster.getMetadata
+    HTML_MAGIC + clusterDisplay.formatAllFunctions(describeFunctions.statement, metadata)
+  }
+
+  private def execute(describeAggregate: DescribeAggregateCmd): String = {
+    val metaData = session.getCluster.getMetadata
+    val keyspaceName: String = describeAggregate.keyspace.orElse(Option(session.getLoggedKeyspace)).getOrElse("system")
+    val aggregateName: String = describeAggregate.aggregate;
+
+    Option(metaData.getKeyspace(keyspaceName)) match {
+      case Some(keyspace) => {
+        val aggMetas: List[AggregateMetadata] = keyspace.getAggregates.asScala.toList
+          .filter(agg => agg.getSimpleName.toLowerCase == aggregateName.toLowerCase)
+
+        if(aggMetas.isEmpty) {
+          throw new InterpreterException(s"Cannot find aggregate ${keyspaceName}.$aggregateName")
+        } else {
+          HTML_MAGIC + aggregateDisplay.format(describeAggregate.statement, aggMetas, true,
+            session
+            .getCluster
+            .getConfiguration
+            .getCodecRegistry)
+        }
+      }
+      case None => throw new InterpreterException(s"Cannot find aggregate ${keyspaceName}.$aggregateName")
+    }
+  }
+
+  private def execute(describeAggregates: DescribeAggregatesCmd): String = {
+    val metadata: Metadata = session.getCluster.getMetadata
+    HTML_MAGIC + clusterDisplay.formatAllAggregates(describeAggregates.statement, metadata)
+  }
+
+  private def execute(describeMV: DescribeMaterializedViewCmd): String = {
+    val metaData = session.getCluster.getMetadata
+    val keyspaceName: String = describeMV.keyspace.orElse(Option(session.getLoggedKeyspace)).getOrElse("system")
+    val viewName: String = describeMV.view
+
+    Option(metaData.getKeyspace(keyspaceName)) match {
+      case Some(keyspace) => {
+        val viewMeta: Option[MaterializedViewMetadata] = Option(keyspace.getMaterializedView(viewName))
+        viewMeta match {
+          case Some(vMeta) => HTML_MAGIC + materializedViewDisplay.format(describeMV.statement, vMeta, true)
+          case None => throw new InterpreterException(s"Cannot find materialized view ${keyspaceName}.$viewName")
+        }
+      }
+      case None => throw new InterpreterException(s"Cannot find materialized view ${keyspaceName}.$viewName")
+    }
+  }
+
+  private def execute(describeMVs: DescribeMaterializedViewsCmd): String = {
+    val metadata: Metadata = session.getCluster.getMetadata
+    HTML_MAGIC + clusterDisplay.formatAllMaterializedViews(describeMVs.statement, metadata)
+  }
+
   private def execute(helpCmd: HelpCmd): String = {
     HTML_MAGIC + helpDisplay.formatHelp()
   }
@@ -95,11 +184,18 @@ class EnhancedSession(val session: Session) {
   def execute(st: Any): Any = {
     st match {
       case x:DescribeClusterCmd => execute(x)
-      case x:DescribeKeyspacesCmd => execute(x)
-      case x:DescribeTablesCmd => execute(x)
       case x:DescribeKeyspaceCmd => execute(x)
+      case x:DescribeKeyspacesCmd => execute(x)
       case x:DescribeTableCmd => execute(x)
-      case x:DescribeUDTCmd => execute(x)
+      case x:DescribeTablesCmd => execute(x)
+      case x:DescribeTypeCmd => execute(x)
+      case x:DescribeTypesCmd => execute(x)
+      case x:DescribeFunctionCmd => execute(x)
+      case x:DescribeFunctionsCmd => execute(x)
+      case x:DescribeAggregateCmd => execute(x)
+      case x:DescribeAggregatesCmd => execute(x)
+      case x:DescribeMaterializedViewCmd => execute(x)
+      case x:DescribeMaterializedViewsCmd => execute(x)
       case x:HelpCmd => execute(x)
       case x:Statement => session.execute(x)
       case _ => throw new InterpreterException(s"Cannot execute statement '$st' of type ${st.getClass}")
