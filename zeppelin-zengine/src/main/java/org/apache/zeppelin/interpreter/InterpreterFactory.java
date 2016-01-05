@@ -119,8 +119,6 @@ public class InterpreterFactory {
             }
           } catch (ClassNotFoundException e) {
             // nothing to do
-            logger.info("Exception in InterpreterFactory while init, nothing to do, " +
-                "ClassNotFoundException:", className);
           }
         }
       }
