@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.zeppelin.postgresql;
+package org.apache.zeppelin.jdbc;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertEquals;
@@ -26,6 +26,7 @@ import java.util.Set;
 
 import jline.console.completer.Completer;
 
+import org.apache.zeppelin.jdbc.SqlCompleter;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;

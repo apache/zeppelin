@@ -27,16 +27,16 @@
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
-  <artifactId>zeppelin-postgresql</artifactId>
+  <artifactId>zeppelin-jdbc</artifactId>
   <packaging>jar</packaging>
   <version>0.6.0-incubating-SNAPSHOT</version>
-  <name>Zeppelin: PostgreSQL interpreter</name>
+  <name>Zeppelin: JDBC interpreter</name>
   <url>http://www.apache.org</url>
 
   <properties>
     <postgresql.version>9.4-1201-jdbc41</postgresql.version>
   </properties>
-
+  
   <dependencies>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
@@ -44,7 +44,13 @@
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
-
+	
+	<dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>${postgresql.version}</version>
+    </dependency>
+    
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -54,13 +60,7 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
     </dependency>
-
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>${postgresql.version}</version>
-    </dependency>
-
+	
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
@@ -126,7 +126,7 @@
               <goal>copy-dependencies</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/../../interpreter/psql</outputDirectory>
+              <outputDirectory>${project.build.directory}/../../interpreter/jdbc</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
@@ -140,7 +140,7 @@
               <goal>copy</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.build.directory}/../../interpreter/psql</outputDirectory>
+              <outputDirectory>${project.build.directory}/../../interpreter/jdbc</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>

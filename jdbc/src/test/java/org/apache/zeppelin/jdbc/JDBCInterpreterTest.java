@@ -12,18 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.zeppelin.postgresql;
+package org.apache.zeppelin.jdbc;
 
-import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.DEFAULT_JDBC_DRIVER_NAME;
-import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.DEFAULT_JDBC_URL;
-import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.DEFAULT_JDBC_USER_NAME;
-import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.DEFAULT_JDBC_USER_PASSWORD;
-import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.DEFAULT_MAX_RESULT;
-import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.POSTGRESQL_SERVER_DRIVER_NAME;
-import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.POSTGRESQL_SERVER_MAX_RESULT;
-import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.POSTGRESQL_SERVER_PASSWORD;
-import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.POSTGRESQL_SERVER_URL;
-import static org.apache.zeppelin.postgresql.PostgreSqlInterpreter.POSTGRESQL_SERVER_USER;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_JDBC_DRIVER_NAME;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_JDBC_URL;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_JDBC_USER_NAME;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_JDBC_USER_PASSWORD;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_MAX_RESULT;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.JDBC_SERVER_DRIVER_NAME;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.JDBC_SERVER_MAX_RESULT;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.JDBC_SERVER_PASSWORD;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.JDBC_SERVER_URL;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.JDBC_SERVER_USER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.spy;
@@ -35,6 +35,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.jdbc.JDBCInterpreter;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,11 +45,11 @@ import com.mockrunner.mock.jdbc.MockConnection;
 import com.mockrunner.mock.jdbc.MockResultSet;
 
 /**
- * PostgreSQL interpreter unit tests
+ * JDBC interpreter unit tests
  */
-public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
+public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
-  private PostgreSqlInterpreter psqlInterpreter = null;
+  private JDBCInterpreter jdbcInterpreter = null;
   private MockResultSet result = null;
 
   @Before
@@ -60,50 +61,50 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
     statementHandler.prepareGlobalResultSet(result);
 
     Properties properties = new Properties();
-    properties.put(POSTGRESQL_SERVER_DRIVER_NAME, DEFAULT_JDBC_DRIVER_NAME);
-    properties.put(POSTGRESQL_SERVER_URL, DEFAULT_JDBC_URL);
-    properties.put(POSTGRESQL_SERVER_USER, DEFAULT_JDBC_USER_NAME);
-    properties.put(POSTGRESQL_SERVER_PASSWORD, DEFAULT_JDBC_USER_PASSWORD);
-    properties.put(POSTGRESQL_SERVER_MAX_RESULT, DEFAULT_MAX_RESULT);
+    properties.put(JDBC_SERVER_DRIVER_NAME, DEFAULT_JDBC_DRIVER_NAME);
+    properties.put(JDBC_SERVER_URL, DEFAULT_JDBC_URL);
+    properties.put(JDBC_SERVER_USER, DEFAULT_JDBC_USER_NAME);
+    properties.put(JDBC_SERVER_PASSWORD, DEFAULT_JDBC_USER_PASSWORD);
+    properties.put(JDBC_SERVER_MAX_RESULT, DEFAULT_MAX_RESULT);
 
-    psqlInterpreter = spy(new PostgreSqlInterpreter(properties));
-    when(psqlInterpreter.getJdbcConnection()).thenReturn(connection);
+    jdbcInterpreter = spy(new JDBCInterpreter(properties));
+    when(jdbcInterpreter.getJdbcConnection()).thenReturn(connection);
   }
 
   @Test
   public void testOpenCommandIndempotency() throws SQLException {
     // Ensure that an attempt to open new connection will clean any remaining connections
-    psqlInterpreter.open();
-    psqlInterpreter.open();
-    psqlInterpreter.open();
+    jdbcInterpreter.open();
+    jdbcInterpreter.open();
+    jdbcInterpreter.open();
 
-    verify(psqlInterpreter, times(3)).open();
-    verify(psqlInterpreter, times(3)).close();
+    verify(jdbcInterpreter, times(3)).open();
+    verify(jdbcInterpreter, times(3)).close();
   }
 
   @Test
   public void testDefaultProperties() throws SQLException {
 
-    PostgreSqlInterpreter psqlInterpreter = new PostgreSqlInterpreter(new Properties());
+    JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(new Properties());
 
     assertEquals(DEFAULT_JDBC_DRIVER_NAME,
-        psqlInterpreter.getProperty(POSTGRESQL_SERVER_DRIVER_NAME));
-    assertEquals(DEFAULT_JDBC_URL, psqlInterpreter.getProperty(POSTGRESQL_SERVER_URL));
-    assertEquals(DEFAULT_JDBC_USER_NAME, psqlInterpreter.getProperty(POSTGRESQL_SERVER_USER));
+        jdbcInterpreter.getProperty(JDBC_SERVER_DRIVER_NAME));
+    assertEquals(DEFAULT_JDBC_URL, jdbcInterpreter.getProperty(JDBC_SERVER_URL));
+    assertEquals(DEFAULT_JDBC_USER_NAME, jdbcInterpreter.getProperty(JDBC_SERVER_USER));
     assertEquals(DEFAULT_JDBC_USER_PASSWORD,
-        psqlInterpreter.getProperty(POSTGRESQL_SERVER_PASSWORD));
-    assertEquals(DEFAULT_MAX_RESULT, psqlInterpreter.getProperty(POSTGRESQL_SERVER_MAX_RESULT));
+        jdbcInterpreter.getProperty(JDBC_SERVER_PASSWORD));
+    assertEquals(DEFAULT_MAX_RESULT, jdbcInterpreter.getProperty(JDBC_SERVER_MAX_RESULT));
   }
 
   @Test
   public void testConnectionClose() throws SQLException {
 
-    PostgreSqlInterpreter psqlInterpreter = spy(new PostgreSqlInterpreter(new Properties()));
+    JDBCInterpreter jdbcInterpreter = spy(new JDBCInterpreter(new Properties()));
 
-    when(psqlInterpreter.getJdbcConnection()).thenReturn(
+    when(jdbcInterpreter.getJdbcConnection()).thenReturn(
         getJDBCMockObjectFactory().getMockConnection());
 
-    psqlInterpreter.close();
+    jdbcInterpreter.close();
 
     verifyAllResultSetsClosed();
     verifyAllStatementsClosed();
@@ -113,30 +114,30 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
   @Test
   public void testStatementCancel() throws SQLException {
 
-    PostgreSqlInterpreter psqlInterpreter = spy(new PostgreSqlInterpreter(new Properties()));
+    JDBCInterpreter jdbcInterpreter = spy(new JDBCInterpreter(new Properties()));
 
-    when(psqlInterpreter.getJdbcConnection()).thenReturn(
+    when(jdbcInterpreter.getJdbcConnection()).thenReturn(
         getJDBCMockObjectFactory().getMockConnection());
 
-    psqlInterpreter.cancel(null);
+    jdbcInterpreter.cancel(null);
 
     verifyAllResultSetsClosed();
     verifyAllStatementsClosed();
-    assertFalse("Cancel operation should not close the connection", psqlInterpreter
+    assertFalse("Cancel operation should not close the connection", jdbcInterpreter
         .getJdbcConnection().isClosed());
   }
 
   @Test
   public void testNullColumnResult() throws SQLException {
 
-    when(psqlInterpreter.getMaxResult()).thenReturn(1000);
+    when(jdbcInterpreter.getMaxResult()).thenReturn(1000);
 
     String sqlQuery = "select * from t";
 
     result.addColumn("col1", new String[] {"val11", null});
     result.addColumn("col2", new String[] {null, "val22"});
 
-    InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
+    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, null);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
@@ -150,14 +151,14 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
   @Test
   public void testSelectQuery() throws SQLException {
 
-    when(psqlInterpreter.getMaxResult()).thenReturn(1000);
+    when(jdbcInterpreter.getMaxResult()).thenReturn(1000);
 
     String sqlQuery = "select * from t";
 
     result.addColumn("col1", new String[] {"val11", "val12"});
     result.addColumn("col2", new String[] {"val21", "val22"});
 
-    InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
+    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, null);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
@@ -171,14 +172,14 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
   @Test
   public void testSelectQueryMaxResult() throws SQLException {
 
-    when(psqlInterpreter.getMaxResult()).thenReturn(1);
+    when(jdbcInterpreter.getMaxResult()).thenReturn(1);
 
     String sqlQuery = "select * from t";
 
     result.addColumn("col1", new String[] {"val11", "val12"});
     result.addColumn("col2", new String[] {"val21", "val22"});
 
-    InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
+    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, null);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
@@ -192,14 +193,14 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
   @Test
   public void testSelectQueryWithSpecialCharacters() throws SQLException {
 
-    when(psqlInterpreter.getMaxResult()).thenReturn(1000);
+    when(jdbcInterpreter.getMaxResult()).thenReturn(1000);
 
     String sqlQuery = "select * from t";
 
     result.addColumn("co\tl1", new String[] {"val11", "va\tl1\n2"});
     result.addColumn("co\nl2", new String[] {"v\nal21", "val\t22"});
 
-    InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
+    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, null);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
@@ -213,13 +214,13 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
   @Test
   public void testExplainQuery() throws SQLException {
 
-    when(psqlInterpreter.getMaxResult()).thenReturn(1000);
+    when(jdbcInterpreter.getMaxResult()).thenReturn(1000);
 
     String sqlQuery = "explain select * from t";
 
     result.addColumn("col1", new String[] {"val11", "val12"});
 
-    InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
+    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, null);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TEXT, interpreterResult.type());
@@ -233,13 +234,13 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
   @Test
   public void testExplainQueryWithSpecialCharachters() throws SQLException {
 
-    when(psqlInterpreter.getMaxResult()).thenReturn(1000);
+    when(jdbcInterpreter.getMaxResult()).thenReturn(1000);
 
     String sqlQuery = "explain select * from t";
 
     result.addColumn("co\tl\n1", new String[] {"va\nl11", "va\tl\n12"});
 
-    InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
+    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, null);
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TEXT, interpreterResult.type());
@@ -252,9 +253,9 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
 
   @Test
   public void testAutoCompletion() throws SQLException {
-    psqlInterpreter.open();
-    assertEquals(1, psqlInterpreter.completion("SEL", 0).size());
-    assertEquals("SELECT ", psqlInterpreter.completion("SEL", 0).iterator().next());
-    assertEquals(0, psqlInterpreter.completion("SEL", 100).size());
+    jdbcInterpreter.open();
+    assertEquals(1, jdbcInterpreter.completion("SEL", 0).size());
+    assertEquals("SELECT ", jdbcInterpreter.completion("SEL", 0).iterator().next());
+    assertEquals(0, jdbcInterpreter.completion("SEL", 100).size());
   }
 }

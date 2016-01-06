@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.zeppelin.postgresql;
+package org.apache.zeppelin.jdbc;
 
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 
@@ -44,20 +44,20 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 
 /**
- * PostgreSQL interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ and
- * GreenplumDB.
+ * JDBC interpreter for Zeppelin. This interpreter can also be used for accessing HAWQ,
+ * GreenplumDB, MariaDB, MySQL, Postgres and Redshit.
  * 
  * <ul>
- * <li>{@code postgresql.url} - JDBC URL to connect to.</li>
- * <li>{@code postgresql.user} - JDBC user name..</li>
- * <li>{@code postgresql.password} - JDBC password..</li>
- * <li>{@code postgresql.driver.name} - JDBC driver name.</li>
- * <li>{@code postgresql.max.result} - Max number of SQL result to display.</li>
+ * <li>{@code jdbc.url} - JDBC URL to connect to.</li>
+ * <li>{@code jdbc.user} - JDBC user name..</li>
+ * <li>{@code jdbc.password} - JDBC password..</li>
+ * <li>{@code jdbc.driver.name} - JDBC driver name.</li>
+ * <li>{@code jdbc.max.result} - Max number of SQL result to display.</li>
  * </ul>
  * 
  * <p>
  * How to use: <br/>
- * {@code %psql.sql} <br/>
+ * {@code %jdbc.sql} <br/>
  * {@code 
  *  SELECT store_id, count(*) 
  *  FROM retail_demo.order_lineitems_pxf 
@@ -67,9 +67,9 @@ import com.google.common.collect.Sets.SetView;
  * 
  * For SQL auto-completion use the (Ctrl+.) shortcut.
  */
-public class PostgreSqlInterpreter extends Interpreter {
+public class JDBCInterpreter extends Interpreter {
 
-  private Logger logger = LoggerFactory.getLogger(PostgreSqlInterpreter.class);
+  private Logger logger = LoggerFactory.getLogger(JDBCInterpreter.class);
 
   private static final char WhITESPACE = ' ';
   private static final char NEWLINE = '\n';
@@ -84,25 +84,25 @@ public class PostgreSqlInterpreter extends Interpreter {
   static final String DEFAULT_JDBC_DRIVER_NAME = "org.postgresql.Driver";
   static final String DEFAULT_MAX_RESULT = "1000";
 
-  static final String POSTGRESQL_SERVER_URL = "postgresql.url";
-  static final String POSTGRESQL_SERVER_USER = "postgresql.user";
-  static final String POSTGRESQL_SERVER_PASSWORD = "postgresql.password";
-  static final String POSTGRESQL_SERVER_DRIVER_NAME = "postgresql.driver.name";
-  static final String POSTGRESQL_SERVER_MAX_RESULT = "postgresql.max.result";
+  static final String JDBC_SERVER_URL = "jdbc.url";
+  static final String JDBC_SERVER_USER = "jdbc.user";
+  static final String JDBC_SERVER_PASSWORD = "jdbc.password";
+  static final String JDBC_SERVER_DRIVER_NAME = "jdbc.driver.name";
+  static final String JDBC_SERVER_MAX_RESULT = "jdbc.max.result";
   static final String EMPTY_COLUMN_VALUE = "";
 
   static {
     Interpreter.register(
         "sql",
-        "psql",
-        PostgreSqlInterpreter.class.getName(),
+        "jdbc",
+        JDBCInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add(POSTGRESQL_SERVER_URL, DEFAULT_JDBC_URL, "The URL for PostgreSQL.")
-            .add(POSTGRESQL_SERVER_USER, DEFAULT_JDBC_USER_NAME, "The PostgreSQL user name")
-            .add(POSTGRESQL_SERVER_PASSWORD, DEFAULT_JDBC_USER_PASSWORD,
-                "The PostgreSQL user password")
-            .add(POSTGRESQL_SERVER_DRIVER_NAME, DEFAULT_JDBC_DRIVER_NAME, "JDBC Driver Name")
-            .add(POSTGRESQL_SERVER_MAX_RESULT, DEFAULT_MAX_RESULT,
+            .add(JDBC_SERVER_URL, DEFAULT_JDBC_URL, "The URL for JDBC.")
+            .add(JDBC_SERVER_USER, DEFAULT_JDBC_USER_NAME, "The JDBC user name")
+            .add(JDBC_SERVER_PASSWORD, DEFAULT_JDBC_USER_PASSWORD,
+                "The JDBC user password")
+            .add(JDBC_SERVER_DRIVER_NAME, DEFAULT_JDBC_DRIVER_NAME, "JDBC Driver Name")
+            .add(JDBC_SERVER_MAX_RESULT, DEFAULT_MAX_RESULT,
                 "Max number of SQL result to display.").build());
   }
 
@@ -122,25 +122,24 @@ public class PostgreSqlInterpreter extends Interpreter {
 
   private static final List<String> NO_COMPLETION = new ArrayList<String>();
 
-  public PostgreSqlInterpreter(Properties property) {
+  public JDBCInterpreter(Properties property) {
     super(property);
   }
 
   @Override
   public void open() {
 
-    logger.info("Open psql connection!");
+    logger.info("Open jdbc connection!");
 
     // Ensure that no previous connections are left open.
     close();
 
     try {
-
-      String driverName = getProperty(POSTGRESQL_SERVER_DRIVER_NAME);
-      String url = getProperty(POSTGRESQL_SERVER_URL);
-      String user = getProperty(POSTGRESQL_SERVER_USER);
-      String password = getProperty(POSTGRESQL_SERVER_PASSWORD);
-      maxResult = Integer.valueOf(getProperty(POSTGRESQL_SERVER_MAX_RESULT));
+      String driverName = getProperty(JDBC_SERVER_DRIVER_NAME);
+      String url = getProperty(JDBC_SERVER_URL);
+      String user = getProperty(JDBC_SERVER_USER);
+      String password = getProperty(JDBC_SERVER_PASSWORD);
+      maxResult = Integer.valueOf(getProperty(JDBC_SERVER_MAX_RESULT));
 
       Class.forName(driverName);
 
@@ -149,7 +148,7 @@ public class PostgreSqlInterpreter extends Interpreter {
       sqlCompleter = createSqlCompleter(jdbcConnection);
 
       exceptionOnConnect = null;
-      logger.info("Successfully created psql connection");
+      logger.info("Successfully created jdbc connection");
 
     } catch (ClassNotFoundException | SQLException e) {
       logger.error("Cannot open connection", e);
@@ -178,7 +177,7 @@ public class PostgreSqlInterpreter extends Interpreter {
   @Override
   public void close() {
 
-    logger.info("Close psql connection!");
+    logger.info("Close jdbc connection!");
 
     try {
       if (getJdbcConnection() != null) {
@@ -316,7 +315,7 @@ public class PostgreSqlInterpreter extends Interpreter {
   @Override
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        PostgreSqlInterpreter.class.getName() + this.hashCode());
+        JDBCInterpreter.class.getName() + this.hashCode());
   }
 
   @Override

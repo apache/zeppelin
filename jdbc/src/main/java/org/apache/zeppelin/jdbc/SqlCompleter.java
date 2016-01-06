@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.zeppelin.postgresql;
+package org.apache.zeppelin.jdbc;
 
 /*
  * This source file is based on code taken from SQLLine 1.0.2 See SQLLine notice in LICENSE
