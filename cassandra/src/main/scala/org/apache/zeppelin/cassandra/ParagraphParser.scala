@@ -23,7 +23,16 @@ import scala.util.matching.Regex
 import scala.util.parsing.combinator._
 import org.apache.zeppelin.cassandra.TextBlockHierarchy._
 
+/**
+  * Parser using Scala combinator parsing
+  *
+  * (?i) means case-insensitive mode
+  * (?s) means DOT ALL mode
+  * (?is) means case-insensitive and DOT ALL mode
+  *
+  */
 object ParagraphParser {
+
   val CONSISTENCY_LEVEL_PATTERN = ConsistencyLevel.values().toList
     .map(_.name()).filter(!_.contains("SERIAL")).mkString("""^\s*@consistency\s*=\s*(""", "|" , """)\s*$""").r
 
@@ -43,7 +52,21 @@ object ParagraphParser {
   val BIND_PATTERN = """^\s*@bind\[([^]]+)\](?:=([^;]+))?""".r
   val BATCH_PATTERN = """^(?i)\s*BEGIN\s+(UNLOGGED|COUNTER)?\s*BATCH""".r
 
-  val UDF_PATTERN = """^(?is)\s*(CREATE(?: OR REPLACE)? FUNCTION(?: IF NOT EXISTS)?.+ AS (?:'|\$\$)[^']+(?:'|\$\$);)""".r
+  /**
+    * Very complicated RegExp
+    * (?: OR REPLACE)? -> optional presence of OR REPLACE
+    * .+?  -> match ANY character in RELUCTANT mode
+    * (?:\s*|\n|\r|\f) -> white space OR line returns (\n, \r, \f)
+    * (?:\s*|\n|\r|\f)AS(?:\s*|\n|\r|\f) -> AS preceded and followed by white space or line return
+    * (?:'|\$\$) -> simple quote (') OR double dollar ($$) as source code separator
+    * (?:'|\$\$).+?(?:'|\$\$)\s*; ->
+    *                                source code separator (?:'|\$\$)
+    *                                followed by ANY character in RELUCTANT mode (.+?)
+    *                                followed by source code separator (?:'|\$\$)
+    *                                followed by optional white-space(s) (\s*)
+    *                                followed by semi-colon (;)
+    */
+  val UDF_PATTERN = """(?is)\s*(CREATE(?: OR REPLACE)? FUNCTION(?: IF NOT EXISTS)?.+?(?:\s+|\n|\r|\f)AS(?:\s+|\n|\r|\f)(?:'|\$\$).+?(?:'|\$\$)\s*;)""".r
 
   val GENERIC_STATEMENT_PREFIX =
     """(?is)\s*(?:INSERT|UPDATE|DELETE|SELECT|CREATE|UPDATE|
@@ -125,9 +148,9 @@ class ParagraphParser extends RegexParsers{
   def fetchSize: Parser[FetchSize] = """\s*@fetchSize.+""".r ^^ {case x => extractFetchSize(x.trim)}
 
   //Statements
-  def udfStatement: Parser[SimpleStm] = UDF_PATTERN ^^{case x => extractUdfStatement(x.trim)}
+  def createFunctionStatement: Parser[SimpleStm] = UDF_PATTERN ^^{case x => extractUdfStatement(x.trim)}
   def genericStatement: Parser[SimpleStm] = s"""$GENERIC_STATEMENT_PREFIX[^;]+;""".r ^^ {case x => extractSimpleStatement(x.trim)}
-  def allStatement: Parser[SimpleStm] = udfStatement | genericStatement
+//  def allStatement: Parser[SimpleStm] = udfStatement | genericStatement
 
   def prepare: Parser[PrepareStm] = """\s*@prepare.+""".r ^^ {case x => extractPreparedStatement(x.trim)}
   def removePrepare: Parser[RemovePrepareStm] = """\s*@remove_prepare.+""".r ^^ {case x => extractRemovePreparedStatement(x.trim)}
@@ -172,7 +195,7 @@ class ParagraphParser extends RegexParsers{
     describeFunction | describeFunctions |
     describeAggregate | describeAggregates |
     describeMaterializedView | describeMaterializedViews |
-    helpCommand | allStatement)
+    helpCommand | createFunctionStatement | genericStatement)
 
   def extractConsistency(text: String): Consistency = {
     text match {

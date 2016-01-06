@@ -821,7 +821,44 @@ class ParagraphParserTest extends FlatSpec
 
   }
 
-  "Parser" should "parse CREATE Materalized View" in {
+  "Parser" should "parse CREATE multiple FUNCTIONS" in {
+
+    val udf1 =
+      """CREATE FUNCTION IF NOT EXISTS keyspace.udf(input text) xxx
+        | CALLED ON NULL INPUT
+        | RETURN text
+        | LANGUAGE java
+        | AS '
+        |  return input.toLowerCase("abc");
+        | ';""".stripMargin
+
+    val select = "SELECT * FROM keyspace.table;"
+
+    val udf2 = """CREATE FUNCTION IF NOT EXISTS keyspace.maxOf(val1 int, val2 int)
+      | CALLED ON NULL INPUT
+      | RETURN text
+      | LANGUAGE java
+      | AS '
+      |  return Math.max(val1,val2);
+      | ';""".stripMargin
+
+    val queries =
+      s"""$udf1
+         |
+         |$select
+         |
+         |$udf2
+      """.stripMargin
+
+    val parsed = parser.parseAll(parser.queries, queries)
+
+    parsed.get.size should be(3)
+
+    parsed.get should be(List(SimpleStm(udf1), SimpleStm(select), SimpleStm(udf2)))
+
+  }
+
+  "Parser" should "parse CREATE Materialized View" in {
     val query =
       """CREATE MATERIALIZED VIEW xxx
         | AS SELECT * FROM myTable
