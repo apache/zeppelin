@@ -16,7 +16,7 @@
 
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv) {
+                                         $timeout, $compile, websocketMsgSrv, ngToast) {
 
   $scope.paragraph = null;
   $scope.originalText = '';
@@ -266,6 +266,11 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.runParagraph = function(data) {
+    if(!data){
+      var paraRef = $scope.paragraph.title ? '"'+$scope.paragraph.title+'"' : '';
+      ngToast.info('Cannot run an empty paragraph ' + paraRef );
+      return;
+    }
     websocketMsgSrv.runParagraph($scope.paragraph.id, $scope.paragraph.title,
                                  data, $scope.paragraph.config, $scope.paragraph.settings.params);
     $scope.originalText = angular.copy(data);

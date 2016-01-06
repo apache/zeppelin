@@ -279,6 +279,9 @@ kbd {
   ngToast Style
 */
 
+.ng-toast {
+  z-index: 10003;
+}
 .ng-toast .alert {
   color: white !important;
   border: none !important;
