@@ -14,16 +14,6 @@
  */
 package org.apache.zeppelin.jdbc;
 
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_JDBC_DRIVER_NAME;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_JDBC_URL;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_JDBC_USER_NAME;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_JDBC_USER_PASSWORD;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_MAX_RESULT;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.JDBC_SERVER_DRIVER_NAME;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.JDBC_SERVER_MAX_RESULT;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.JDBC_SERVER_PASSWORD;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.JDBC_SERVER_URL;
-import static org.apache.zeppelin.jdbc.JDBCInterpreter.JDBC_SERVER_USER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.spy;
@@ -36,7 +26,8 @@ import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.jdbc.JDBCInterpreter;
-import org.junit.Before;
+import org.junit.After;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
@@ -52,7 +43,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   private JDBCInterpreter jdbcInterpreter = null;
   private MockResultSet result = null;
 
-  @Before
+  @BeforeClass
   public void beforeTest() {
     MockConnection connection = getJDBCMockObjectFactory().getMockConnection();
 

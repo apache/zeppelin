@@ -24,7 +24,10 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -70,48 +73,54 @@ import com.google.common.collect.Sets.SetView;
 public class JDBCInterpreter extends Interpreter {
 
   private Logger logger = LoggerFactory.getLogger(JDBCInterpreter.class);
+ 
+  static final String COMMON_KEY = "common";
+  static final String MAX_LINE_KEY = "max_count";
+  static final String MAX_LINE_DEFAULT = "1000";
 
-  private static final char WhITESPACE = ' ';
+  static final String DEFAULT_KEY = "default";
+  static final String DRIVER_KEY = "driver";
+  static final String URL_KEY = "url";
+  static final String USER_KEY = "user";
+  static final String PASSWORD_KEY = "password";
+  static final String DOT = ".";
+  
+  private static final char WHITESPACE = ' ';
   private static final char NEWLINE = '\n';
   private static final char TAB = '\t';
   private static final String TABLE_MAGIC_TAG = "%table ";
   private static final String EXPLAIN_PREDICATE = "EXPLAIN ";
   private static final String UPDATE_COUNT_HEADER = "Update Count";
 
-  static final String DEFAULT_JDBC_URL = "jdbc:postgresql://localhost:5432/";
-  static final String DEFAULT_JDBC_USER_PASSWORD = "";
-  static final String DEFAULT_JDBC_USER_NAME = "gpadmin";
-  static final String DEFAULT_JDBC_DRIVER_NAME = "org.postgresql.Driver";
-  static final String DEFAULT_MAX_RESULT = "1000";
+  static final String COMMON_MAX_LINE = COMMON_KEY + DOT + MAX_LINE_KEY;
 
-  static final String JDBC_SERVER_URL = "jdbc.url";
-  static final String JDBC_SERVER_USER = "jdbc.user";
-  static final String JDBC_SERVER_PASSWORD = "jdbc.password";
-  static final String JDBC_SERVER_DRIVER_NAME = "jdbc.driver.name";
-  static final String JDBC_SERVER_MAX_RESULT = "jdbc.max.result";
+  static final String DEFAULT_DRIVER = DEFAULT_KEY + DOT + DRIVER_KEY;
+  static final String DEFAULT_URL = DEFAULT_KEY + DOT + URL_KEY;
+  static final String DEFAULT_USER = DEFAULT_KEY + DOT + USER_KEY;
+  static final String DEFAULT_PASSWORD = DEFAULT_KEY + DOT + PASSWORD_KEY;
+
   static final String EMPTY_COLUMN_VALUE = "";
+  
+  private final HashMap<String, Properties> propertiesMap;
+  private final Map<String, Statement> paragraphIdStatementMap;
 
+  private final Map<String, ArrayList<Connection>> propertyKeyUnusedConnectionListMap;
+  private final Map<String, Connection> paragraphIdConnectionMap;
+  
   static {
     Interpreter.register(
         "sql",
         "jdbc",
         JDBCInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add(JDBC_SERVER_URL, DEFAULT_JDBC_URL, "The URL for JDBC.")
-            .add(JDBC_SERVER_USER, DEFAULT_JDBC_USER_NAME, "The JDBC user name")
-            .add(JDBC_SERVER_PASSWORD, DEFAULT_JDBC_USER_PASSWORD,
+            .add(DEFAULT_URL, "jdbc:postgresql://localhost:5432/", "The URL for JDBC.")
+            .add(DEFAULT_USER, "gpadmin", "The JDBC user name")
+            .add(DEFAULT_PASSWORD, "",
                 "The JDBC user password")
-            .add(JDBC_SERVER_DRIVER_NAME, DEFAULT_JDBC_DRIVER_NAME, "JDBC Driver Name")
-            .add(JDBC_SERVER_MAX_RESULT, DEFAULT_MAX_RESULT,
+            .add(DEFAULT_DRIVER, "org.postgresql.Driver", "JDBC Driver Name")
+            .add(COMMON_MAX_LINE, MAX_LINE_DEFAULT,
                 "Max number of SQL result to display.").build());
   }
-
-  private Connection jdbcConnection;
-  private Statement currentStatement;
-  private Exception exceptionOnConnect;
-  private int maxResult;
-
-  private SqlCompleter sqlCompleter;
 
   private static final Function<CharSequence, String> sequenceToStringTransformer =
       new Function<CharSequence, String>() {
@@ -124,82 +133,147 @@ public class JDBCInterpreter extends Interpreter {
 
   public JDBCInterpreter(Properties property) {
     super(property);
+    propertiesMap = new HashMap<>();
+    propertyKeyUnusedConnectionListMap = new HashMap<>();
+    paragraphIdStatementMap = new HashMap<>();
+    paragraphIdConnectionMap = new HashMap<>();
+  }
+  
+  public HashMap<String, Properties> getPropertiesMap() {
+    return propertiesMap;
   }
 
   @Override
   public void open() {
-
-    logger.info("Open jdbc connection!");
-
-    // Ensure that no previous connections are left open.
-    close();
-
-    try {
-      String driverName = getProperty(JDBC_SERVER_DRIVER_NAME);
-      String url = getProperty(JDBC_SERVER_URL);
-      String user = getProperty(JDBC_SERVER_USER);
-      String password = getProperty(JDBC_SERVER_PASSWORD);
-      maxResult = Integer.valueOf(getProperty(JDBC_SERVER_MAX_RESULT));
-
-      Class.forName(driverName);
-
-      jdbcConnection = DriverManager.getConnection(url, user, password);
-
-      sqlCompleter = createSqlCompleter(jdbcConnection);
-
-      exceptionOnConnect = null;
-      logger.info("Successfully created jdbc connection");
-
-    } catch (ClassNotFoundException | SQLException e) {
-      logger.error("Cannot open connection", e);
-      exceptionOnConnect = e;
-      close();
-    }
-  }
-
-  private SqlCompleter createSqlCompleter(Connection jdbcConnection) {
-
-    SqlCompleter completer = null;
-    try {
-      Set<String> keywordsCompletions = SqlCompleter.getSqlKeywordsCompletions(jdbcConnection);
-      Set<String> dataModelCompletions =
-          SqlCompleter.getDataModelMetadataCompletions(jdbcConnection);
-      SetView<String> allCompletions = Sets.union(keywordsCompletions, dataModelCompletions);
-      completer = new SqlCompleter(allCompletions, dataModelCompletions);
-
-    } catch (IOException | SQLException e) {
-      logger.error("Cannot create SQL completer", e);
+    for (String propertyKey : property.stringPropertyNames()) {
+      logger.debug("propertyKey: {}", propertyKey);
+      String[] keyValue = propertyKey.split("\\.", 2);
+      if (2 == keyValue.length) {
+        logger.info("key: {}, value: {}", keyValue[0], keyValue[1]);
+        Properties prefixProperties;
+        if (propertiesMap.containsKey(keyValue[0])) {
+          prefixProperties = propertiesMap.get(keyValue[0]);
+        } else {
+          prefixProperties = new Properties();
+          propertiesMap.put(keyValue[0], prefixProperties);
+        }
+        prefixProperties.put(keyValue[1], property.getProperty(propertyKey));
+      }
     }
 
-    return completer;
+    Set<String> removeKeySet = new HashSet<>();
+    for (String key : propertiesMap.keySet()) {
+      if (!COMMON_KEY.equals(key)) {
+        Properties properties = propertiesMap.get(key);
+        if (!properties.containsKey(DRIVER_KEY) || !properties.containsKey(URL_KEY)) {
+          logger.error("{} will be ignored. {}.{} and {}.{} is mandatory.",
+              key, DRIVER_KEY, key, key, URL_KEY);
+          removeKeySet.add(key);
+        }
+      }
+    }
+
+    for (String key : removeKeySet) {
+      propertiesMap.remove(key);
+    }
+
+    logger.debug("propertiesMap: {}", propertiesMap);
+  }
+  
+  public Connection getConnection(String propertyKey)  throws ClassNotFoundException, SQLException {
+    Connection connection = null;
+    if (propertyKeyUnusedConnectionListMap.containsKey(propertyKey)) {
+      ArrayList<Connection> connectionList = propertyKeyUnusedConnectionListMap.get(propertyKey);
+      if (0 != connectionList.size()) {
+        connection = propertyKeyUnusedConnectionListMap.get(propertyKey).remove(0);
+        if (null != connection && connection.isClosed()) {
+          connection.close();
+          connection = null;
+        }
+      }
+    }
+    if (null == connection) {
+      Properties properties = propertiesMap.get(propertyKey);
+      logger.info(properties.getProperty(DRIVER_KEY));
+      Class.forName(properties.getProperty(DRIVER_KEY));
+      String url = properties.getProperty(URL_KEY);
+      String user = properties.getProperty(USER_KEY);
+      String password = properties.getProperty(PASSWORD_KEY);
+      if (null != user && null != password) {
+        connection = DriverManager.getConnection(url, user, password);
+      } else {
+        connection = DriverManager.getConnection(url, properties);
+      }
+    }
+    return connection;
+  }
+  
+  public Statement getStatement(String propertyKey, String paragraphId)
+      throws SQLException, ClassNotFoundException {
+    Connection connection;
+    if (paragraphIdConnectionMap.containsKey(paragraphId)) {
+      // Never enter for now.
+      connection = paragraphIdConnectionMap.get(paragraphId);
+    } else {
+      connection = getConnection(propertyKey);
+    }
+
+    Statement statement = connection.createStatement();
+    if (isStatementClosed(statement)) {
+      connection = getConnection(propertyKey);
+      statement = connection.createStatement();
+    }
+    paragraphIdConnectionMap.put(paragraphId, connection);
+    paragraphIdStatementMap.put(paragraphId, statement);
+
+    return statement;
   }
 
+  private boolean isStatementClosed(Statement statement) {
+    try {
+      return statement.isClosed();
+    } catch (Throwable t) {
+      logger.debug("{} doesn't support isClosed method", statement);
+      return false;
+    }
+  }
+  
   @Override
   public void close() {
 
-    logger.info("Close jdbc connection!");
-
     try {
-      if (getJdbcConnection() != null) {
-        getJdbcConnection().close();
+      for (List<Connection> connectionList : propertyKeyUnusedConnectionListMap.values()) {
+        for (Connection c : connectionList) {
+          c.close();
+        }
       }
+
+      for (Statement statement : paragraphIdStatementMap.values()) {
+        statement.close();
+      }
+      paragraphIdStatementMap.clear();
+
+      for (Connection connection : paragraphIdConnectionMap.values()) {
+        connection.close();
+      }
+      paragraphIdConnectionMap.clear();
+
     } catch (SQLException e) {
-      logger.error("Cannot close connection", e);
-    } finally {
-      exceptionOnConnect = null;
+      logger.error("Error while closing...", e);
     }
   }
 
-  private InterpreterResult executeSql(String sql) {
+  private InterpreterResult executeSql(String propertyKey, String sql,
+      InterpreterContext interpreterContext) {
+    
+    String paragraphId = interpreterContext.getParagraphId();
+
     try {
 
-      if (exceptionOnConnect != null) {
-        return new InterpreterResult(Code.ERROR, exceptionOnConnect.getMessage());
-      }
-
-      currentStatement = getJdbcConnection().createStatement();
-
-      currentStatement.setMaxRows(maxResult);
+      Statement statement = getStatement(propertyKey, paragraphId);
+      logger.info("antes");
+      statement.setMaxRows(getMaxResult());
+      logger.info("paso");
 
       StringBuilder msg = null;
       boolean isTableType = false;
@@ -214,10 +288,10 @@ public class JDBCInterpreter extends Interpreter {
       ResultSet resultSet = null;
       try {
 
-        boolean isResultSetAvailable = currentStatement.execute(sql);
+        boolean isResultSetAvailable = statement.execute(sql);
 
         if (isResultSetAvailable) {
-          resultSet = currentStatement.getResultSet();
+          resultSet = statement.getResultSet();
 
           ResultSetMetaData md = resultSet.getMetaData();
 
@@ -242,24 +316,18 @@ public class JDBCInterpreter extends Interpreter {
           }
         } else {
           // Response contains either an update count or there are no results.
-          int updateCount = currentStatement.getUpdateCount();
+          int updateCount = statement.getUpdateCount();
           msg.append(UPDATE_COUNT_HEADER).append(NEWLINE);
           msg.append(updateCount).append(NEWLINE);
-
-          // In case of update event (e.g. isResultSetAvailable = false) update the completion
-          // meta-data.
-          if (sqlCompleter != null) {
-            sqlCompleter.updateDataModelMetaData(getJdbcConnection());
-          }
         }
       } finally {
         try {
           if (resultSet != null) {
             resultSet.close();
           }
-          currentStatement.close();
+          statement.close();
         } finally {
-          currentStatement = null;
+          statement = null;
         }
       }
 
@@ -268,6 +336,9 @@ public class JDBCInterpreter extends Interpreter {
     } catch (SQLException ex) {
       logger.error("Cannot run " + sql, ex);
       return new InterpreterResult(Code.ERROR, ex.getMessage());
+    } catch (ClassNotFoundException e) {
+      logger.error("Cannot run " + sql, e);
+      return new InterpreterResult(Code.ERROR, e.getMessage());
     }
   }
 
@@ -278,13 +349,25 @@ public class JDBCInterpreter extends Interpreter {
     if (str == null) {
       return EMPTY_COLUMN_VALUE;
     }
-    return (!isTableResponseType) ? str : str.replace(TAB, WhITESPACE).replace(NEWLINE, WhITESPACE);
+    return (!isTableResponseType) ? str : str.replace(TAB, WHITESPACE).replace(NEWLINE, WHITESPACE);
   }
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     logger.info("Run SQL command '{}'", cmd);
-    return executeSql(cmd);
+    String propertyKey = getPropertyKey(cmd);
+
+    if (null != propertyKey) {
+      cmd = cmd.substring(propertyKey.length() + 2);
+    } else {
+      propertyKey = DEFAULT_KEY;
+    }
+
+    cmd = cmd.trim();
+
+    logger.info("PropertyKey: {}, SQL command: '{}'", propertyKey, cmd);
+
+    return executeSql(propertyKey, cmd, contextInterpreter);
   }
 
   @Override
@@ -292,16 +375,28 @@ public class JDBCInterpreter extends Interpreter {
 
     logger.info("Cancel current query statement.");
 
-    if (currentStatement != null) {
-      try {
-        currentStatement.cancel();
-      } catch (SQLException ex) {
-      } finally {
-        currentStatement = null;
-      }
+    String paragraphId = context.getParagraphId();
+    try {
+      paragraphIdStatementMap.get(paragraphId).cancel();
+    } catch (SQLException e) {
+      logger.error("Error while cancelling...", e);
     }
   }
 
+  public String getPropertyKey(String cmd) {
+    int firstLineIndex = cmd.indexOf("\n");
+    if (-1 == firstLineIndex) {
+      firstLineIndex = cmd.length();
+    }
+    int configStartIndex = cmd.indexOf("(");
+    int configLastIndex = cmd.indexOf(")");
+    if (configStartIndex != -1 && configLastIndex != -1
+        && configLastIndex < firstLineIndex && configLastIndex < firstLineIndex) {
+      return cmd.substring(configStartIndex + 1, configLastIndex);
+    }
+    return null;
+  }
+  
   @Override
   public FormType getFormType() {
     return FormType.SIMPLE;
@@ -320,21 +415,12 @@ public class JDBCInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
-
-    List<CharSequence> candidates = new ArrayList<CharSequence>();
-    if (sqlCompleter != null && sqlCompleter.complete(buf, cursor, candidates) >= 0) {
-      return Lists.transform(candidates, sequenceToStringTransformer);
-    } else {
-      return NO_COMPLETION;
-    }
+    return null;
   }
 
   public int getMaxResult() {
-    return maxResult;
-  }
-
-  // Test only method
-  protected Connection getJdbcConnection() {
-    return jdbcConnection;
+    return Integer.valueOf(
+        propertiesMap.get(COMMON_KEY).getProperty(MAX_LINE_KEY, MAX_LINE_DEFAULT));
   }
 }
+

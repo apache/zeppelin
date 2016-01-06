@@ -33,9 +33,6 @@
   <name>Zeppelin: JDBC interpreter</name>
   <url>http://www.apache.org</url>
 
-  <properties>
-    <postgresql.version>9.4-1201-jdbc41</postgresql.version>
-  </properties>
   
   <dependencies>
     <dependency>
@@ -46,12 +43,6 @@
     </dependency>
 	
 	<dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>${postgresql.version}</version>
-    </dependency>
-    
-    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
