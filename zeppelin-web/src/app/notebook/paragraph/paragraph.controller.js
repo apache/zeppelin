@@ -104,6 +104,9 @@ angular.module('zeppelinWebApp')
 
       var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
       if (textEl.length) {
+        // clear all lines before append
+        $scope.clearTextOutput();
+
         try {
           var lines = $scope.paragraph.result.msg.split('\n');
           for (var i=0; i < lines.length; i++) {
@@ -119,6 +122,12 @@ angular.module('zeppelinWebApp')
     $timeout(retryRenderer);
   };
 
+  $scope.clearTextOutput = function() {
+    var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
+    if (textEl.length) {
+      textEl.children().remove();
+    }
+  };
 
   $scope.appendTextOutput = function(msg) {
     var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
