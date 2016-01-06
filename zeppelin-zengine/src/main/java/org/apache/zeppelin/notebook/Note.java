@@ -19,12 +19,11 @@ package org.apache.zeppelin.notebook;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -38,12 +37,22 @@ import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.search.SearchService;
 
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Binded interpreters for a note
  */
 public class Note implements Serializable, JobListener {
+  Logger logger = LoggerFactory.getLogger(Note.class);
   private static final long serialVersionUID = 7920699076577612429L;
+
+  // threadpool for delayed persist of note
+  private static final ScheduledThreadPoolExecutor delayedPersistThreadPool =
+          new ScheduledThreadPoolExecutor(0);
+  static {
+    delayedPersistThreadPool.setRemoveOnCancelPolicy(true);
+  }
 
   final List<Paragraph> paragraphs = new LinkedList<>();
 
@@ -57,6 +66,7 @@ public class Note implements Serializable, JobListener {
   private transient JobListenerFactory jobListenerFactory;
   private transient NotebookRepo repo;
   private transient SearchService index;
+  private transient ScheduledFuture delayedPersist;
 
   /**
    * note configurations.
@@ -391,13 +401,53 @@ public class Note implements Serializable, JobListener {
   }
 
   public void persist() throws IOException {
+    stopDelayedPersistTimer();
     snapshotAngularObjectRegistry();
     index.updateIndexDoc(this);
     repo.save(this);
   }
 
+  /**
+   * Persist this note with maximum delay.
+   * @param maxDelaySec
+   */
+  public void persist(int maxDelaySec) {
+    startDelayedPersistTimer(maxDelaySec);
+  }
+
   public void unpersist() throws IOException {
     repo.remove(id());
+  }
+
+
+  private void startDelayedPersistTimer(int maxDelaySec) {
+    synchronized (this) {
+      if (delayedPersist != null) {
+        return;
+      }
+
+      delayedPersist = delayedPersistThreadPool.schedule(new Runnable() {
+
+        @Override
+        public void run() {
+          try {
+            persist();
+          } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+          }
+        }
+      }, maxDelaySec, TimeUnit.SECONDS);
+    }
+  }
+
+  private void stopDelayedPersistTimer() {
+    synchronized (this) {
+      if (delayedPersist == null) {
+        return;
+      }
+
+      delayedPersist.cancel(false);
+    }
   }
 
   public Map<String, Object> getConfig() {

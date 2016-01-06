@@ -801,6 +801,7 @@ public class NotebookServer extends WebSocketServlet implements
       message = output;
     }
     paragraph.setReturn(new InterpreterResult(code, message), t);
+    paragraph.getNote().persist(10);
   }
 
   /**
