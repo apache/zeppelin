@@ -207,8 +207,7 @@ angular.module('zeppelinWebApp')
       $scope.paragraph.settings = data.paragraph.settings;
 
       // when paragraph finishes, activate blinking tab notification if user is not focusing the the tab.
-      if (($scope.paragraph.status === 'FINISHED' || $scope.paragraph.status === 'ERROR' || $scope.paragraph.status === 'ABORTED') && 
-        ($rootScope.windowFocus === false)) {
+      if (statusChanged && ($rootScope.windowFocus === false)) {
         $rootScope.$emit('hasNewStatus', true);
       }
       

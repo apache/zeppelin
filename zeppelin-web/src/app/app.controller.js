@@ -13,10 +13,10 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('MainCtrl', function($scope, $rootScope, $window) {
+angular.module('zeppelinWebApp').controller('MainCtrl', function($scope, $rootScope, $window, webNotification) {
   $rootScope.compiledScope = $scope.$new(true, $rootScope);
   $scope.looknfeel = 'default';
-  $rootScope.windowFocus = true;
+  $scope.windowFocus = true;
   $rootScope.hasNewStatus = false;
 
   var init = function() {
@@ -51,12 +51,29 @@ angular.module('zeppelinWebApp').controller('MainCtrl', function($scope, $rootSc
   $rootScope.$on('hasNewStatus', function(event, data) {
     if (!event.defaultPrevented && data && data === true && $rootScope.hasNewStatus === false) {
       $rootScope.hasNewStatus = true;
-      pageTitleNotification.On('You have a job finished!!!', 1000);
+
+      // Send desktop notification
+      webNotification.showNotification('Zeppelin Notification', {
+         body: 'You have a job finished!',
+         icon: 'my-icon.ico',
+         onClick: function onNotificationClicked() {
+           console.log('Notification clicked.');
+         },
+         autoClose: 4000 //auto close the notification after 2 seconds (you can manually close it via hide function)
+      }, function onShow(error, hide) {
+         if (error) {
+             window.alert('Unable to show notification: ' + error.message);
+         } else {
+             setTimeout(function hideNotification() {
+                 hide();
+             }, 5000);
+         }
+      });
+
       event.preventDefault();
     }
   });
 
-  // Blinking page title for finished job notification
   $window.onblur = function (){
     $rootScope.windowFocus = false;
   };
@@ -65,24 +82,6 @@ angular.module('zeppelinWebApp').controller('MainCtrl', function($scope, $rootSc
     $rootScope.windowFocus = true;
     if($rootScope.hasNewStatus === true) {
       $rootScope.hasNewStatus = false;
-      pageTitleNotification.Off();
-    }
-  };
-
-  var pageTitleNotification = {
-    vars:{
-      originalTitle: document.title,
-      interval: null
-    },    
-    On: function(notification, intervalSpeed){
-      var _this = this;
-      _this.vars.interval = setInterval(function(){
-        document.title = (_this.vars.originalTitle === document.title) ? notification : _this.vars.originalTitle;
-      }, (intervalSpeed) ? intervalSpeed : 1000);
-    },
-    Off: function(){
-      clearInterval(this.vars.interval);
-      document.title = this.vars.originalTitle;   
     }
   };
 });
