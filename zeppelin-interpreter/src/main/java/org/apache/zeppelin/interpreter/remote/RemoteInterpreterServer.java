@@ -294,24 +294,21 @@ public class RemoteInterpreterServer
         InterpreterContext.set(context);
         InterpreterResult result = interpreter.interpret(script, context);
 
-        // prepend context.out to result for now
-        // later, context.out should be streamed to the front-end
-        String output = null;
+        // data from context.out is prepended to InterpreterResult if both defined
+        String message = "";
 
         byte[] interpreterOutput = context.out.toByteArray(true);
-        if (interpreterOutput != null) {
-          output = new String(interpreterOutput);
+        if (interpreterOutput != null && interpreterOutput.length > 0) {
+          message = new String(interpreterOutput);
         }
 
         if (result.message() != null) {
-          if (output == null || output.length() == 0) {
-            output = result.toString();
-          } else {
-            output += result.message();
-          }
+          message += result.message();
+          return new InterpreterResult(result.code(), message);
+        } else {
+          return new InterpreterResult(result.code(), context.out
+          .getType(), message);
         }
-
-        return new InterpreterResult(result.code(), output);
       } finally {
         InterpreterContext.remove();
       }

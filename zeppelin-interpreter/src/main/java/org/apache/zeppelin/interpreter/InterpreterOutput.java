@@ -38,6 +38,8 @@ public class InterpreterOutput extends OutputStream {
   private final List<Object> outList = new LinkedList<Object>();
   private InterpreterOutputChangeWatcher watcher;
   private final InterpreterOutputListener flushListener;
+  private InterpreterResult.Type type = InterpreterResult.Type.TEXT;
+  private boolean firstWrite = true;
 
   public InterpreterOutput(InterpreterOutputListener flushListener) {
     this.flushListener = flushListener;
@@ -52,8 +54,21 @@ public class InterpreterOutput extends OutputStream {
     watcher.start();
   }
 
+  public InterpreterResult.Type getType() {
+    return type;
+  }
+
+  public void setType(InterpreterResult.Type type) {
+    if (this.type != type) {
+      clear();
+      flushListener.onUpdate(this, new byte[]{});
+      this.type = type;
+    }
+  }
+
   public void clear() {
     synchronized (outList) {
+      type = InterpreterResult.Type.TEXT;
       buffer.reset();
       outList.clear();
       if (watcher != null) {
@@ -61,22 +76,53 @@ public class InterpreterOutput extends OutputStream {
       }
     }
   }
+
   @Override
   public void write(int b) throws IOException {
     synchronized (outList) {
       buffer.write(b);
       if (b == NEW_LINE_CHAR) {
-        if (outList.isEmpty()) {
+        // first time use of this outputstream.
+        if (firstWrite) {
+          // clear the output on gui
           flushListener.onUpdate(this, new byte[]{});
+          firstWrite = false;
         }
 
         buffer.flush();
         byte[] byteArray = buffer.toByteArray();
-        outList.add(byteArray);
-        flushListener.onAppend(this, byteArray);
+
+
+        // check output type directive
+        byteArray = detectTypeFromLine(byteArray);
+
+        if (byteArray != null) {
+          outList.add(byteArray);
+
+          if (type == InterpreterResult.Type.TEXT) {
+            flushListener.onAppend(this, byteArray);
+          }
+        }
         buffer.reset();
       }
     }
+  }
+
+  private byte [] detectTypeFromLine(byte [] byteArray) {
+    // check output type directive
+    String line = new String(byteArray);
+    for (InterpreterResult.Type t : InterpreterResult.Type.values()) {
+      String typeString = '%' + t.name().toLowerCase();
+      if ((typeString + "\n").equals(line)) {
+        setType(t);
+        byteArray = null;
+      } else if (line.startsWith(typeString + " ")) {
+        setType(t);
+        byteArray = line.substring(typeString.length() + 1).getBytes();
+      }
+    }
+
+    return byteArray;
   }
 
   @Override
@@ -204,8 +250,13 @@ public class InterpreterOutput extends OutputStream {
     synchronized (outList) {
       buffer.flush();
       byte[] bytes = buffer.toByteArray();
-      outList.add(bytes);
-      flushListener.onAppend(this, bytes);
+      bytes = detectTypeFromLine(bytes);
+      if (bytes != null) {
+        outList.add(bytes);
+        if (type == InterpreterResult.Type.TEXT) {
+          flushListener.onAppend(this, bytes);
+        }
+      }
       buffer.close();
     }
 

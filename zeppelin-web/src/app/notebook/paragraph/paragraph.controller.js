@@ -117,7 +117,6 @@ angular.module('zeppelinWebApp')
   $scope.clearTextOutput = function() {
     var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
     if (textEl.length) {
-      console.log('clearText');
       textEl.children().remove();
     }
   };
@@ -125,8 +124,6 @@ angular.module('zeppelinWebApp')
   $scope.appendTextOutput = function(msg) {
     var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
     if (textEl.length) {
-      console.log('appendText %o', msg);
-      
       var lines = msg.split('\n');
       for (var i=0; i < lines.length; i++) {
         textEl.append(angular.element('<div></div>').text(lines[i]));
@@ -298,14 +295,12 @@ angular.module('zeppelinWebApp')
 
   $scope.$on('appendParagraphOutput', function(event, data) {
     if ($scope.paragraph.id === data.paragraphId) {
-      console.log('appendParagraphOutput %o', data);
       $scope.appendTextOutput(data.data);
     }
   });
 
   $scope.$on('updateParagraphOutput', function(event, data) {
     if ($scope.paragraph.id === data.paragraphId) {
-      console.log('updateParagraphOutput %o', data);
       $scope.clearTextOutput(data.data);
       $scope.appendTextOutput(data.data);
     }

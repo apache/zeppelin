@@ -27,12 +27,14 @@ import org.junit.Test;
 
 public class InterpreterOutputTest implements InterpreterOutputListener {
   private InterpreterOutput out;
-  int numNewLineDetected;
+  int numAppendEvent;
+  int numUpdateEvent;
 
   @Before
   public void setUp() {
     out = new InterpreterOutput(this);
-    numNewLineDetected = 0;
+    numAppendEvent = 0;
+    numUpdateEvent = 0;
   }
 
   @After
@@ -43,32 +45,54 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
   @Test
   public void testDetectNewline() throws IOException {
     out.write("hello\nworld");
-    assertEquals("hello\n", new String(out.toByteArray()));
-    assertEquals(1, numNewLineDetected);
+    assertEquals("hello\nworld", new String(out.toByteArray()));
+    assertEquals(1, numAppendEvent);
+    assertEquals(1, numUpdateEvent);
 
     out.write("\n");
     assertEquals("hello\nworld\n", new String(out.toByteArray()));
-    assertEquals(2, numNewLineDetected);
+    assertEquals(2, numAppendEvent);
+    assertEquals(1, numUpdateEvent);
   }
 
   @Test
-  public void testFlushInternalBufferOnClose() throws IOException {
-    out.write("hello\nworld");
-    assertEquals("hello\n", new String(out.toByteArray()));
-    assertEquals(1, numNewLineDetected);
+  public void testType() throws IOException {
+    // default output stream type is TEXT
+    out.write("Text\n");
+    assertEquals(InterpreterResult.Type.TEXT, out.getType());
+    assertEquals("Text\n", new String(out.toByteArray()));
+    assertEquals(1, numAppendEvent);
+    assertEquals(1, numUpdateEvent);
 
-    out.close();
-    assertEquals("hello\nworld", new String(out.toByteArray()));
-    assertEquals(2, numNewLineDetected);
+    // change type
+    out.write("%html\n");
+    assertEquals(InterpreterResult.Type.HTML, out.getType());
+    assertEquals("", new String(out.toByteArray()));
+    assertEquals(1, numAppendEvent);
+    assertEquals(2, numUpdateEvent);
+
+    // none TEXT type output stream does not generate append event
+    out.write("<div>html</div>\n");
+    assertEquals(InterpreterResult.Type.HTML, out.getType());
+    assertEquals(1, numAppendEvent);
+    assertEquals(2, numUpdateEvent);
+    assertEquals("<div>html</div>\n", new String(out.toByteArray()));
+
+    // change type to text again
+    out.write("%text hello\n");
+    assertEquals(InterpreterResult.Type.TEXT, out.getType());
+    assertEquals(2, numAppendEvent);
+    assertEquals(3, numUpdateEvent);
+    assertEquals("hello\n", new String(out.toByteArray()));
   }
 
   @Override
   public void onAppend(InterpreterOutput out, byte[] line) {
-    numNewLineDetected++;
+    numAppendEvent++;
   }
 
   @Override
   public void onUpdate(InterpreterOutput out, byte[] output) {
-
+    numUpdateEvent++;
   }
 }

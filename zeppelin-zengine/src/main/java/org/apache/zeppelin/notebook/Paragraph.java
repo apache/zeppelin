@@ -212,17 +212,19 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       InterpreterResult ret = repl.interpret(script, context);
       byte[] interpreterOutput = context.out.toByteArray(true);
 
-      // data from context.out is prepended to ret.message for now.
-      // later context.out should be streamed to the front-end.
-      String message = null;
+      // data from context.out is prepended to InterpreterResult if both defined
+      String message = "";
       if (interpreterOutput != null && interpreterOutput.length > 0) {
         // something printed in InterpreterOutput
         message = new String(interpreterOutput);
 
         if (ret.message() != null) {
           message += ret.message();
+          return new InterpreterResult(ret.code(), message);
+        } else {
+          return new InterpreterResult(ret.code(), context.out
+          .getType(), message);
         }
-        return new InterpreterResult(ret.code(), message);
       }
       if (Code.KEEP_PREVIOUS_RESULT == ret.code()) {
         return getReturn();
