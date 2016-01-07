@@ -67,6 +67,12 @@ if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
   ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
 fi
 
+# Add jdbc connector jar
+ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/jdbc/jars/mysql-connector-java-5.1.35-bin.jar"
+ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/jdbc/jars/postgresql-9.4-1205-jdbc41.jar"
+ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/jdbc/jars/mariadb-java-client-1.2.3.jar"
+ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/jdbc/jars/RedshiftJDBC41-1.1.10.1010.jar"
+
 addJarInDir "${ZEPPELIN_HOME}"
 addJarInDir "${ZEPPELIN_HOME}/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
