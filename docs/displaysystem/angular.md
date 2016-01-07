@@ -32,7 +32,7 @@ Therefore, you can not only update scope variable from your interpreter but also
 #### Print AngularJS view
 
 To use angular display system, your output should starts with "%angular".
-<img src="/assets/themes/zeppelin/img/screenshots/display_angular.png" width=600px />
+<img src="/docs/assets/themes/zeppelin/img/screenshots/display_angular.png" width=600px />
 
 Note that display system is backend independent.
 
@@ -62,7 +62,7 @@ z.angularUnbindGlobal(String name)
 
 In the example, let's bind "world" variable 'name'. Then you can see AngularJs view are updated immediately.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_angular1.png" width=600px />
+<img src="/docs/assets/themes/zeppelin/img/screenshots/display_angular1.png" width=600px />
 
 
 <br />
@@ -91,8 +91,8 @@ z.angularUnwatchGlobal(String name)
 Let's make an button, that increment 'run' variable by 1 when it is clicked.
 z.angularBind("run", 0) will initialize 'run' to zero. And then register watcher of 'run'.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_angular2.png" width=600px />
+<img src="/docs/assets/themes/zeppelin/img/screenshots/display_angular2.png" width=600px />
 
 After clicked button, you'll see both 'run' and numWatched are increased by 1
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_angular3.png" width=600px />
+<img src="/docs/assets/themes/zeppelin/img/screenshots/display_angular3.png" width=600px />

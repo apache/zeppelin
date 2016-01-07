@@ -27,11 +27,11 @@ limitations under the License.
 
 Zeppelin prints output of language backend in text, by default.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_text.png" />
+<img src="/docs/assets/themes/zeppelin/img/screenshots/display_text.png" />
 
 You can explicitly say you're using text display system.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_text1.png" />
+<img src="/docs/assets/themes/zeppelin/img/screenshots/display_text1.png" />
 
 Note that display system is backend independent.
 
@@ -42,4 +42,4 @@ Note that display system is backend independent.
 
 With '%html' directive, Zeppelin treats your output as html
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_html.png" />
+<img src="/docs/assets/themes/zeppelin/img/screenshots/display_html.png" />
