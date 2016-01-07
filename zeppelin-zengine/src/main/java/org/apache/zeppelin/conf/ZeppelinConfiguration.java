@@ -18,20 +18,18 @@
 package org.apache.zeppelin.conf;
 
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.tree.ConfigurationNode;
-import org.apache.zeppelin.notebook.repo.S3NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Zeppelin configuration.
- *
- * @author Leemoonsoo
  *
  */
 public class ZeppelinConfiguration extends XMLConfiguration {
@@ -378,9 +376,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   /**
    * Wrapper class.
-   *
-   * @author Leemoonsoo
-   *
    */
   public static enum ConfVars {
     ZEPPELIN_HOME("zeppelin.home", "../"),
@@ -415,7 +410,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.cassandra.CassandraInterpreter,"
         + "org.apache.zeppelin.geode.GeodeOqlInterpreter,"
         + "org.apache.zeppelin.postgresql.PostgreSqlInterpreter,"
-        + "org.apache.zeppelin.kylin.KylinInterpreter"),
+        + "org.apache.zeppelin.kylin.KylinInterpreter,"
+        + "org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter,"
+        + "org.apache.zeppelin.scalding.ScaldingInterpreter"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
@@ -427,10 +424,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_S3_BUCKET("zeppelin.notebook.s3.bucket", "zeppelin"),
     ZEPPELIN_NOTEBOOK_S3_USER("zeppelin.notebook.s3.user", "user"),
     ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", VFSNotebookRepo.class.getName()),
-    // Notebook list and contents will be always loaded from repository if set true.
-    // If set false, modified notebooks or new notebooks added on file system level
-    // won't be reflected on Zeppelin till user restarts Zeppelin.
-    ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE("zeppelin.notebook.reloadAllNotesFromStorage", false),
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner", "bin/interpreter.sh"),
     // Decide when new note is created, interpreter settings will be binded automatically or not.
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),

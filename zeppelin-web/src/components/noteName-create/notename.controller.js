@@ -34,14 +34,6 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, $ro
     vm.createNote();
   };
 
-  $scope.$on('setNoteContent', function(event, note) {
-    //a hack, to make it run only after notebook creation
-    //it should not run i.e in case of linking to the paragraph
-    if (note && $location.path().indexOf(note.id) < 0) {
-      $location.path('notebook/' + note.id);
-    }
-  });
-
   vm.preVisible = function(clone) {
     var generatedName = vm.generateName();
     $scope.note.notename = 'Note ' + generatedName;

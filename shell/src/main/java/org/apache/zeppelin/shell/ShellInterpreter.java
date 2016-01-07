@@ -38,10 +38,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Shell interpreter for Zeppelin.
- *
- * @author Leemoonsoo
- * @author anthonycorbacho
- *
  */
 public class ShellInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(ShellInterpreter.class);

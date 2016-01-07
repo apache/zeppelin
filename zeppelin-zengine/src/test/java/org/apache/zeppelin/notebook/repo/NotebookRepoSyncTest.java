@@ -19,6 +19,7 @@ package org.apache.zeppelin.notebook.repo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +40,8 @@ import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.search.SearchService;
+import org.apache.zeppelin.search.LuceneSearch;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -86,8 +89,9 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
 
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
     
+    SearchService search = mock(SearchService.class);
     notebookRepoSync = new NotebookRepoSync(conf);
-    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this);
+    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this, search);
   }
 
   @After
@@ -180,41 +184,32 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(p1.getId(), notebookRepoSync.get(1,
         notebookRepoSync.list(1).get(0).getId()).getLastParagraph().getId());
   }
-  
+
   @Test
-  public void testSyncOnList() throws IOException {
-	
-	/* check that both storage repos are empty */
-	assertTrue(notebookRepoSync.getRepoCount() > 1);
-	assertEquals(0, notebookRepoSync.list(0).size());
-	assertEquals(0, notebookRepoSync.list(1).size());
-	    
-	File srcDir = new File("src/test/resources/2A94M5J1Z");
-	File destDir = new File(secNotebookDir + "/2A94M5J1Z");
-	
-	/* copy manually new notebook into secondary storage repo and check repos */
+  public void testSyncOnReloadedList() throws IOException {
+    /* check that both storage repos are empty */
+    assertTrue(notebookRepoSync.getRepoCount() > 1);
+    assertEquals(0, notebookRepoSync.list(0).size());
+    assertEquals(0, notebookRepoSync.list(1).size());
+
+    File srcDir = new File("src/test/resources/2A94M5J1Z");
+    File destDir = new File(secNotebookDir + "/2A94M5J1Z");
+
+    /* copy manually new notebook into secondary storage repo and check repos */
     try {
-        FileUtils.copyDirectory(srcDir, destDir);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+      FileUtils.copyDirectory(srcDir, destDir);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     assertEquals(0, notebookRepoSync.list(0).size());
     assertEquals(1, notebookRepoSync.list(1).size());
-    
-    /* Although new notebook is added to secondary storage it's not displayed 
-     * on list() with ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE set to false
-     */
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "false");
-    assertEquals(0, notebookRepoSync.list().size());
-    
-    /* notebook is synced after ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE variable is set to true */
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "true");
-    assertEquals(1, notebookRepoSync.list().size());
-    
+
+    // After reloading notebooks repos should be synchronized
+    notebookSync.reloadAllNotes();
     assertEquals(1, notebookRepoSync.list(0).size());
-	assertEquals(1, notebookRepoSync.list(1).size());
+    assertEquals(1, notebookRepoSync.list(1).size());
   }
-  
+
   static void delete(File file){
     if(file.isFile()) file.delete();
       else if(file.isDirectory()){
@@ -226,8 +221,8 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
         }
         file.delete();
       }
-    
   }
+
   @Override
   public JobListener getParagraphJobListener(Note note) {
     return new JobListener(){

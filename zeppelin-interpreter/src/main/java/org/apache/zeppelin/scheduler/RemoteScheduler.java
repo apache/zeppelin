@@ -251,6 +251,7 @@ public class RemoteScheduler implements Scheduler {
         return Status.ERROR;
       }
 
+      boolean broken = false;
       try {
         String statusStr = client.getStatus(job.getId());
         if ("Unknown".equals(statusStr)) {
@@ -265,6 +266,7 @@ public class RemoteScheduler implements Scheduler {
         listener.afterStatusChange(job, null, status);
         return status;
       } catch (TException e) {
+        broken = true;
         logger.error("Can't get status information", e);
         lastStatus = Status.ERROR;
         return Status.ERROR;
@@ -273,7 +275,7 @@ public class RemoteScheduler implements Scheduler {
         lastStatus = Status.ERROR;
         return Status.ERROR;
       } finally {
-        interpreterProcess.releaseClient(client);
+        interpreterProcess.releaseClient(client, broken);
       }
     }
   }

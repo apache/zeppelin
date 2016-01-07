@@ -70,6 +70,15 @@ function addEachJarInDir(){
   fi
 }
 
+function addEachJarInDirRecursive(){
+  if [[ -d "${1}" ]]; then
+    for jar in $(find -L "${1}" -type f -name '*jar'); do
+      ZEPPELIN_CLASSPATH="$jar:$ZEPPELIN_CLASSPATH"
+    done
+  fi
+}
+
+
 function addJarInDir(){
   if [[ -d "${1}" ]]; then
     ZEPPELIN_CLASSPATH="${1}/*:${ZEPPELIN_CLASSPATH}"

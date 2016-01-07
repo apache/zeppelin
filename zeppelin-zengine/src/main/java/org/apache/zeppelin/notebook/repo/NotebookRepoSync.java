@@ -19,6 +19,7 @@ package org.apache.zeppelin.notebook.repo;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -41,37 +42,71 @@ public class NotebookRepoSync implements NotebookRepo {
   private static final int maxRepoNum = 2;
   private static final String pushKey = "pushNoteIDs";
   private static final String pullKey = "pullNoteIDs";
+
   private static ZeppelinConfiguration config;
+  private static final String defaultStorage = "org.apache.zeppelin.notebook.repo.VFSNotebookRepo";
 
   private List<NotebookRepo> repos = new ArrayList<NotebookRepo>();
 
   /**
+   * @param noteIndex
    * @param (conf)
    * @throws - Exception
    */
-  public NotebookRepoSync(ZeppelinConfiguration conf) throws Exception {
-
+  @SuppressWarnings("static-access")
+  public NotebookRepoSync(ZeppelinConfiguration conf) {
     config = conf;
-
     String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
     if (allStorageClassNames.isEmpty()) {
-      throw new IOException("Empty ZEPPELIN_NOTEBOOK_STORAGE conf parameter");
+      allStorageClassNames = defaultStorage;
+      LOG.warn("Empty ZEPPELIN_NOTEBOOK_STORAGE conf parameter, using default {}", defaultStorage);
     }
     String[] storageClassNames = allStorageClassNames.split(",");
     if (storageClassNames.length > getMaxRepoNum()) {
-      throw new IOException("Unsupported number of storage classes (" +
-        storageClassNames.length + ") in ZEPPELIN_NOTEBOOK_STORAGE");
+      LOG.warn("Unsupported number {} of storage classes in ZEPPELIN_NOTEBOOK_STORAGE : {}\n" +
+        "first {} will be used", storageClassNames.length, allStorageClassNames, getMaxRepoNum());
     }
 
-    for (int i = 0; i < storageClassNames.length; i++) {
+    for (int i = 0; i < Math.min(storageClassNames.length, getMaxRepoNum()); i++) {
       @SuppressWarnings("static-access")
-      Class<?> notebookStorageClass = getClass().forName(storageClassNames[i].trim());
+      Class<?> notebookStorageClass;
+      try {
+        notebookStorageClass = getClass().forName(storageClassNames[i].trim());
+        Constructor<?> constructor = notebookStorageClass.getConstructor(
+                  ZeppelinConfiguration.class);
+        repos.add((NotebookRepo) constructor.newInstance(conf));
+      } catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
+          InstantiationException | IllegalAccessException | IllegalArgumentException |
+          InvocationTargetException e) {
+        LOG.warn("Failed to initialize {} notebook storage class {}", storageClassNames[i], e);
+      }
+    }
+    // couldn't initialize any storage, use default
+    if (getRepoCount() == 0) {
+      LOG.info("No storages could be initialized, using default {} storage", defaultStorage);
+      initializeDefaultStorage(conf);
+    }
+    if (getRepoCount() > 1) {
+      try {
+        sync(0, 1);
+      } catch (IOException e) {
+        LOG.warn("Failed to sync with secondary storage on start {}", e);
+      }
+    }
+  }
+
+  @SuppressWarnings("static-access")
+  private void initializeDefaultStorage(ZeppelinConfiguration conf) {
+    Class<?> notebookStorageClass;
+    try {
+      notebookStorageClass = getClass().forName(defaultStorage);
       Constructor<?> constructor = notebookStorageClass.getConstructor(
                 ZeppelinConfiguration.class);
       repos.add((NotebookRepo) constructor.newInstance(conf));
-    }
-    if (getRepoCount() > 1) {
-      sync(0, 1);
+    } catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
+        InstantiationException | IllegalAccessException | IllegalArgumentException |
+        InvocationTargetException e) {
+      LOG.warn("Failed to initialize {} notebook storage class {}", defaultStorage, e);
     }
   }
 
@@ -80,9 +115,6 @@ public class NotebookRepoSync implements NotebookRepo {
    */
   @Override
   public List<NoteInfo> list() throws IOException {
-    if (config.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE) && getRepoCount() > 1) {
-      sync(0, 1);
-    }
     return getRepo(0).list();
   }
 
@@ -134,20 +166,18 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
   /**
-   * copy new/updated notes from source to destination storage
+   * Copies new/updated notes from source to destination storage
+   *
    * @throws IOException
    */
   void sync(int sourceRepoIndex, int destRepoIndex) throws IOException {
     LOG.info("Sync started");
-    NotebookRepo sourceRepo = getRepo(sourceRepoIndex);
-    NotebookRepo destRepo = getRepo(destRepoIndex);
-    List <NoteInfo> sourceNotes = sourceRepo.list();
-    List <NoteInfo> destNotes = destRepo.list();
+    NotebookRepo srcRepo = getRepo(sourceRepoIndex);
+    NotebookRepo dstRepo = getRepo(destRepoIndex);
+    List <NoteInfo> srcNotes = srcRepo.list();
+    List <NoteInfo> dstNotes = dstRepo.list();
 
-    Map<String, List<String>> noteIDs = notesCheckDiff(sourceNotes,
-                                                       sourceRepo,
-                                                       destNotes,
-                                                       destRepo);
+    Map<String, List<String>> noteIDs = notesCheckDiff(srcNotes, srcRepo, dstNotes, dstRepo);
     List<String> pushNoteIDs = noteIDs.get(pushKey);
     List<String> pullNoteIDs = noteIDs.get(pullKey);
     if (!pushNoteIDs.isEmpty()) {
@@ -155,7 +185,7 @@ public class NotebookRepoSync implements NotebookRepo {
       for (String id : pushNoteIDs) {
         LOG.info("ID : " + id);
       }
-      pushNotes(pushNoteIDs, sourceRepo, destRepo);
+      pushNotes(pushNoteIDs, srcRepo, dstRepo);
     } else {
       LOG.info("Nothing to push");
     }
@@ -165,7 +195,7 @@ public class NotebookRepoSync implements NotebookRepo {
       for (String id : pullNoteIDs) {
         LOG.info("ID : " + id);
       }
-      pushNotes(pullNoteIDs, destRepo, sourceRepo);
+      pushNotes(pullNoteIDs, dstRepo, srcRepo);
     } else {
       LOG.info("Nothing to pull");
     }
@@ -184,7 +214,7 @@ public class NotebookRepoSync implements NotebookRepo {
     }
   }
 
-  int getRepoCount() {
+  public int getRepoCount() {
     return repos.size();
   }
 
@@ -192,7 +222,7 @@ public class NotebookRepoSync implements NotebookRepo {
     return maxRepoNum;
   }
 
-  private NotebookRepo getRepo(int repoIndex) throws IOException {
+  NotebookRepo getRepo(int repoIndex) throws IOException {
     if (repoIndex < 0 || repoIndex >= getRepoCount()) {
       throw new IOException("Storage repo index is out of range");
     }

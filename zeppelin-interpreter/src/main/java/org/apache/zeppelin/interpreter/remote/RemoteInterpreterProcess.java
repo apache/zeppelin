@@ -140,7 +140,27 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   }
 
   public void releaseClient(Client client) {
-    clientPool.returnObject(client);
+    releaseClient(client, false);
+  }
+
+  public void releaseClient(Client client, boolean broken) {
+    if (broken) {
+      releaseBrokenClient(client);
+    } else {
+      try {
+        clientPool.returnObject(client);
+      } catch (Exception e) {
+        logger.warn("exception occurred during releasing thrift client", e);
+      }
+    }
+  }
+
+  public void releaseBrokenClient(Client client) {
+    try {
+      clientPool.invalidateObject(client);
+    } catch (Exception e) {
+      logger.warn("exception occurred during releasing thrift client", e);
+    }
   }
 
   public int dereference() {
@@ -159,7 +179,8 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
           // safely ignore exception while client.shutdown() may terminates remote process
         } finally {
           if (client != null) {
-            releaseClient(client);
+            // no longer used
+            releaseBrokenClient(client);
           }
         }
 
@@ -250,13 +271,15 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
       logger.error("Can't update angular object", e);
     }
 
+    boolean broken = false;
     try {
       Gson gson = new Gson();
       client.angularObjectUpdate(name, noteId, gson.toJson(o));
     } catch (TException e) {
+      broken = true;
       logger.error("Can't update angular object", e);
     } finally {
-      releaseClient(client);
+      releaseClient(client, broken);
     }
   }
 

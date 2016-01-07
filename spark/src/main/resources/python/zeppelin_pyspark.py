@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-import sys, getopt, traceback
+import sys, getopt, traceback, json, re
 
 from py4j.java_gateway import java_import, JavaGateway, GatewayClient
 from py4j.protocol import Py4JJavaError
@@ -107,6 +107,50 @@ class SparkVersion(object):
   def isImportAllPackageUnderSparkSql(self):
     return self.version >= self.SPARK_1_3_0
 
+class PySparkCompletion:
+  def getGlobalCompletion(self):
+    objectDefList = []
+    try:
+      for completionItem in list(globals().iterkeys()):
+        objectDefList.append(completionItem)
+    except:
+      return None
+    else:
+      return objectDefList
+
+  def getMethodCompletion(self, text_value):
+    objectDefList = []
+    completion_target = text_value
+    try:
+      if len(completion_target) <= 0:
+        return None
+      if text_value[-1] == ".":
+        completion_target = text_value[:-1]
+      exec("%s = %s(%s)" % ("objectDefList", "dir", completion_target))
+    except:
+      return None
+    else:
+      return objectDefList
+
+
+  def getCompletion(self, text_value):
+    completionList = set()
+
+    globalCompletionList = self.getGlobalCompletion()
+    if globalCompletionList != None:
+      for completionItem in list(globalCompletionList):
+        completionList.add(completionItem)
+
+    if text_value != None:
+      objectCompletionList = self.getMethodCompletion(text_value)
+      if objectCompletionList != None:
+        for completionItem in list(objectCompletionList):
+          completionList.add(completionItem)
+    if len(completionList) <= 0:
+      print ""
+    else:
+      print json.dumps(filter(lambda x : not re.match("^__.*", x), list(completionList)))
+
 
 output = Logger()
 sys.stdout = output
@@ -149,6 +193,7 @@ sc = SparkContext(jsc=jsc, gateway=gateway, conf=conf)
 sqlc = SQLContext(sc, intp.getSQLContext())
 sqlContext = sqlc
 
+completion = PySparkCompletion()
 z = PyZeppelinContext(intp.getZeppelinContext())
 
 while True :

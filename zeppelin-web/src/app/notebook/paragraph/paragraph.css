@@ -32,17 +32,16 @@
 */
 
 .paragraph .text {
-  display: block;
-  unicode-bidi: embed;
   display: block !important;
-  margin: 0 0 0 !important;
+  font-family: "Monaco","Menlo","Ubuntu Mono","Consolas","source-code-pro",monospace;
+  font-size: 12px !important;
   line-height: 1.42857143 !important;
+  margin: 0 0 5px !important;
+  padding-top: 2px;
+  unicode-bidi: embed;
+  white-space: pre-wrap;
   word-break: break-all !important;
   word-wrap: break-word !important;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
-  font-size: 12px !important;
-  margin-bottom: 5px !important;
-  padding-top: 2px;
 }
 
 .paragraph table {
@@ -141,7 +140,7 @@
   font-size: 1px;
   color: #AAAAAA;
   height:4px;
-  margin: 0px 0px 3px 0px;
+  margin: 0px 0px 0px 0px;
 }
 
 .paragraph .runControl .progress {
@@ -175,6 +174,10 @@
   font-size: 12px;
   margin-bottom: 4px;
   color: #333333;
+}
+
+.paragraph .control .tooltip {
+  z-index: 10003;
 }
 
 /*
@@ -298,6 +301,7 @@
 */
 
 .tableDisplay {
+  margin-top: 2px;
 }
 
 .tableDisplay div {
