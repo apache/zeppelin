@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * Binded interpreters for a note
  */
 public class Note implements Serializable, JobListener {
-  Logger logger = LoggerFactory.getLogger(Note.class);
+  static Logger logger = LoggerFactory.getLogger(Note.class);
   private static final long serialVersionUID = 7920699076577612429L;
 
   // threadpool for delayed persist of note

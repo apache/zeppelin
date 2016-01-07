@@ -65,6 +65,10 @@ public class InterpreterOutput extends OutputStream {
     synchronized (outList) {
       buffer.write(b);
       if (b == NEW_LINE_CHAR) {
+        if (outList.isEmpty()) {
+          flushListener.onUpdate(this, new byte[]{});
+        }
+
         buffer.flush();
         byte[] byteArray = buffer.toByteArray();
         outList.add(byteArray);

@@ -106,15 +106,7 @@ angular.module('zeppelinWebApp')
       if (textEl.length) {
         // clear all lines before append
         $scope.clearTextOutput();
-
-        try {
-          var lines = $scope.paragraph.result.msg.split('\n');
-          for (var i=0; i < lines.length; i++) {
-            $scope.appendTextOutput(lines[i]);
-          }
-        } catch (err) {
-          console.log('TEXT rendering error %o', err);
-        }
+        $scope.appendTextOutput($scope.paragraph.result.msg);
       } else {
         $timeout(retryRenderer, 10);
       }
@@ -125,6 +117,7 @@ angular.module('zeppelinWebApp')
   $scope.clearTextOutput = function() {
     var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
     if (textEl.length) {
+      console.log('clearText');
       textEl.children().remove();
     }
   };
@@ -133,7 +126,11 @@ angular.module('zeppelinWebApp')
     var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
     if (textEl.length) {
       console.log('appendText %o', msg);
-      textEl.append(angular.element('<div></div>').text(msg));
+      
+      var lines = msg.split('\n');
+      for (var i=0; i < lines.length; i++) {
+        textEl.append(angular.element('<div></div>').text(lines[i]));
+      }
     }
   };
 
@@ -301,6 +298,15 @@ angular.module('zeppelinWebApp')
 
   $scope.$on('appendParagraphOutput', function(event, data) {
     if ($scope.paragraph.id === data.paragraphId) {
+      console.log('appendParagraphOutput %o', data);
+      $scope.appendTextOutput(data.data);
+    }
+  });
+
+  $scope.$on('updateParagraphOutput', function(event, data) {
+    if ($scope.paragraph.id === data.paragraphId) {
+      console.log('updateParagraphOutput %o', data);
+      $scope.clearTextOutput(data.data);
       $scope.appendTextOutput(data.data);
     }
   });
