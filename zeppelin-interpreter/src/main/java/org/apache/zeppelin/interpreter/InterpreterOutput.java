@@ -54,6 +54,7 @@ public class InterpreterOutput extends OutputStream {
 
   public void clear() {
     synchronized (outList) {
+      buffer.reset();
       outList.clear();
       if (watcher != null) {
         watcher.clear();
@@ -173,6 +174,8 @@ public class InterpreterOutput extends OutputStream {
         // can not handle the object
       }
     }
+
+    buffer.writeTo(out);
 
     if (clear) {
       clear();

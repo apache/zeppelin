@@ -675,13 +675,13 @@ public class SparkInterpreter extends Interpreter {
     synchronized (this) {
       z.setGui(context.getGui());
       sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
-      InterpreterResult r = interpretInput(lines);
+      InterpreterResult r = interpretInput(lines, context);
       sc.clearJobGroup();
       return r;
     }
   }
 
-  public InterpreterResult interpretInput(String[] lines) {
+  public InterpreterResult interpretInput(String[] lines, InterpreterContext context) {
     SparkEnv.set(env);
 
     // add print("") to make sure not finishing with comment
@@ -692,8 +692,8 @@ public class SparkInterpreter extends Interpreter {
     }
     linesToRun[lines.length] = "print(\"\")";
 
-    Console.setOut((java.io.PrintStream) binder.get("out"));
-    out.reset();
+    Console.setOut(context.out);
+    context.out.clear();
     Code r = null;
     String incomplete = "";
 
@@ -721,7 +721,7 @@ public class SparkInterpreter extends Interpreter {
 
       if (r == Code.ERROR) {
         sc.clearJobGroup();
-        return new InterpreterResult(r, out.toString());
+        return new InterpreterResult(r, "");
       } else if (r == Code.INCOMPLETE) {
         incomplete += s + "\n";
       } else {
@@ -732,7 +732,7 @@ public class SparkInterpreter extends Interpreter {
     if (r == Code.INCOMPLETE) {
       return new InterpreterResult(r, "Incomplete expression");
     } else {
-      return new InterpreterResult(r, out.toString());
+      return new InterpreterResult(r, "");
     }
   }
 
