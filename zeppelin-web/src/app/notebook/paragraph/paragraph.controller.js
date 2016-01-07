@@ -215,6 +215,7 @@ angular.module('zeppelinWebApp')
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
       var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished);
+
       var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
 
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
@@ -275,6 +276,8 @@ angular.module('zeppelinWebApp')
         $scope.renderAngular();
       } else if (newType === 'TEXT' && resultRefreshed) {
         $scope.renderText();
+      } else if (newType === 'TEXT' && !$scope.paragraph.result) {
+        $scope.clearTextOutput();
       }
 
       if (statusChanged || resultRefreshed) {
