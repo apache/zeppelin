@@ -14,239 +14,112 @@
  */
 package org.apache.zeppelin.jdbc;
 
+import static java.lang.String.format;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_KEY;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_DRIVER;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_PASSWORD;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_USER;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.DEFAULT_URL;
+import static org.apache.zeppelin.jdbc.JDBCInterpreter.COMMON_MAX_LINE;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 
+import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.jdbc.JDBCInterpreter;
-import org.junit.After;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.mockrunner.jdbc.BasicJDBCTestCaseAdapter;
-import com.mockrunner.jdbc.StatementResultSetHandler;
-import com.mockrunner.mock.jdbc.MockConnection;
-import com.mockrunner.mock.jdbc.MockResultSet;
-
 /**
  * JDBC interpreter unit tests
  */
 public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
-  private JDBCInterpreter jdbcInterpreter = null;
-  private MockResultSet result = null;
+  static String jdbcConnection;
 
-  @BeforeClass
-  public void beforeTest() {
-    MockConnection connection = getJDBCMockObjectFactory().getMockConnection();
-
-    StatementResultSetHandler statementHandler = connection.getStatementResultSetHandler();
-    result = statementHandler.createResultSet();
-    statementHandler.prepareGlobalResultSet(result);
-
-    Properties properties = new Properties();
-    properties.put(JDBC_SERVER_DRIVER_NAME, DEFAULT_JDBC_DRIVER_NAME);
-    properties.put(JDBC_SERVER_URL, DEFAULT_JDBC_URL);
-    properties.put(JDBC_SERVER_USER, DEFAULT_JDBC_USER_NAME);
-    properties.put(JDBC_SERVER_PASSWORD, DEFAULT_JDBC_USER_PASSWORD);
-    properties.put(JDBC_SERVER_MAX_RESULT, DEFAULT_MAX_RESULT);
-
-    jdbcInterpreter = spy(new JDBCInterpreter(properties));
-    when(jdbcInterpreter.getJdbcConnection()).thenReturn(connection);
+  private static String getJdbcConnection() throws IOException {
+    if(null == jdbcConnection) {
+      Path tmpDir = Files.createTempDirectory("h2-test-");
+      tmpDir.toFile().deleteOnExit();
+      jdbcConnection = format("jdbc:h2:%s", tmpDir);
+    }
+    return jdbcConnection;
   }
+  
+  @Before
+  public void setUp() throws Exception {
 
-  @Test
-  public void testOpenCommandIndempotency() throws SQLException {
-    // Ensure that an attempt to open new connection will clean any remaining connections
-    jdbcInterpreter.open();
-    jdbcInterpreter.open();
-    jdbcInterpreter.open();
-
-    verify(jdbcInterpreter, times(3)).open();
-    verify(jdbcInterpreter, times(3)).close();
+    Class.forName("org.h2.Driver");
+    Connection connection = DriverManager.getConnection(getJdbcConnection());
+    Statement statement = connection.createStatement();
+    statement.execute(
+        "DROP TABLE IF EXISTS test_table; " +
+        "CREATE TABLE test_table(id varchar(255), name varchar(255));");
+    statement.execute(
+        "insert into test_table(id, name) values ('a', 'a_name'),('b', 'b_name');"
+    );
   }
 
   @Test
   public void testDefaultProperties() throws SQLException {
-
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(new Properties());
-
-    assertEquals(DEFAULT_JDBC_DRIVER_NAME,
-        jdbcInterpreter.getProperty(JDBC_SERVER_DRIVER_NAME));
-    assertEquals(DEFAULT_JDBC_URL, jdbcInterpreter.getProperty(JDBC_SERVER_URL));
-    assertEquals(DEFAULT_JDBC_USER_NAME, jdbcInterpreter.getProperty(JDBC_SERVER_USER));
-    assertEquals(DEFAULT_JDBC_USER_PASSWORD,
-        jdbcInterpreter.getProperty(JDBC_SERVER_PASSWORD));
-    assertEquals(DEFAULT_MAX_RESULT, jdbcInterpreter.getProperty(JDBC_SERVER_MAX_RESULT));
+    
+    assertEquals("org.postgresql.Driver", jdbcInterpreter.getProperty(DEFAULT_DRIVER));
+    assertEquals("jdbc:postgresql://localhost:5432/", jdbcInterpreter.getProperty(DEFAULT_URL));
+    assertEquals("gpadmin", jdbcInterpreter.getProperty(DEFAULT_USER));
+    assertEquals("", jdbcInterpreter.getProperty(DEFAULT_PASSWORD));
+    assertEquals("1000", jdbcInterpreter.getProperty(COMMON_MAX_LINE));
   }
-
+  
   @Test
-  public void testConnectionClose() throws SQLException {
+  public void testSelectQuery() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
 
-    JDBCInterpreter jdbcInterpreter = spy(new JDBCInterpreter(new Properties()));
+    String sqlQuery = "select * from test_table";
 
-    when(jdbcInterpreter.getJdbcConnection()).thenReturn(
-        getJDBCMockObjectFactory().getMockConnection());
-
-    jdbcInterpreter.close();
-
-    verifyAllResultSetsClosed();
-    verifyAllStatementsClosed();
-    verifyConnectionClosed();
-  }
-
-  @Test
-  public void testStatementCancel() throws SQLException {
-
-    JDBCInterpreter jdbcInterpreter = spy(new JDBCInterpreter(new Properties()));
-
-    when(jdbcInterpreter.getJdbcConnection()).thenReturn(
-        getJDBCMockObjectFactory().getMockConnection());
-
-    jdbcInterpreter.cancel(null);
-
-    verifyAllResultSetsClosed();
-    verifyAllStatementsClosed();
-    assertFalse("Cancel operation should not close the connection", jdbcInterpreter
-        .getJdbcConnection().isClosed());
-  }
-
-  @Test
-  public void testNullColumnResult() throws SQLException {
-
-    when(jdbcInterpreter.getMaxResult()).thenReturn(1000);
-
-    String sqlQuery = "select * from t";
-
-    result.addColumn("col1", new String[] {"val11", null});
-    result.addColumn("col2", new String[] {null, "val22"});
-
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, null);
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, new InterpreterContext("", "1", "","", null,null,null,null));
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
-    assertEquals("col1\tcol2\nval11\t\n\tval22\n", interpreterResult.message());
-
-    verifySQLStatementExecuted(sqlQuery);
-    verifyAllResultSetsClosed();
-    verifyAllStatementsClosed();
+    assertEquals("ID\tNAME\na\ta_name\nb\tb_name\n", interpreterResult.message());
   }
 
   @Test
-  public void testSelectQuery() throws SQLException {
+  public void testSelectQueryMaxResult() throws SQLException, IOException {
 
-    when(jdbcInterpreter.getMaxResult()).thenReturn(1000);
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
 
-    String sqlQuery = "select * from t";
+    String sqlQuery = "select * from test_table";
 
-    result.addColumn("col1", new String[] {"val11", "val12"});
-    result.addColumn("col2", new String[] {"val21", "val22"});
-
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, null);
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, new InterpreterContext("", "1", "","", null,null,null,null));
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
-    assertEquals("col1\tcol2\nval11\tval21\nval12\tval22\n", interpreterResult.message());
-
-    verifySQLStatementExecuted(sqlQuery);
-    verifyAllResultSetsClosed();
-    verifyAllStatementsClosed();
-  }
-
-  @Test
-  public void testSelectQueryMaxResult() throws SQLException {
-
-    when(jdbcInterpreter.getMaxResult()).thenReturn(1);
-
-    String sqlQuery = "select * from t";
-
-    result.addColumn("col1", new String[] {"val11", "val12"});
-    result.addColumn("col2", new String[] {"val21", "val22"});
-
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, null);
-
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
-    assertEquals("col1\tcol2\nval11\tval21\n", interpreterResult.message());
-
-    verifySQLStatementExecuted(sqlQuery);
-    verifyAllResultSetsClosed();
-    verifyAllStatementsClosed();
-  }
-
-  @Test
-  public void testSelectQueryWithSpecialCharacters() throws SQLException {
-
-    when(jdbcInterpreter.getMaxResult()).thenReturn(1000);
-
-    String sqlQuery = "select * from t";
-
-    result.addColumn("co\tl1", new String[] {"val11", "va\tl1\n2"});
-    result.addColumn("co\nl2", new String[] {"v\nal21", "val\t22"});
-
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, null);
-
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
-    assertEquals("co l1\tco l2\nval11\tv al21\nva l1 2\tval 22\n", interpreterResult.message());
-
-    verifySQLStatementExecuted(sqlQuery);
-    verifyAllResultSetsClosed();
-    verifyAllStatementsClosed();
-  }
-
-  @Test
-  public void testExplainQuery() throws SQLException {
-
-    when(jdbcInterpreter.getMaxResult()).thenReturn(1000);
-
-    String sqlQuery = "explain select * from t";
-
-    result.addColumn("col1", new String[] {"val11", "val12"});
-
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, null);
-
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TEXT, interpreterResult.type());
-    assertEquals("col1\nval11\nval12\n", interpreterResult.message());
-
-    verifySQLStatementExecuted(sqlQuery);
-    verifyAllResultSetsClosed();
-    verifyAllStatementsClosed();
-  }
-
-  @Test
-  public void testExplainQueryWithSpecialCharachters() throws SQLException {
-
-    when(jdbcInterpreter.getMaxResult()).thenReturn(1000);
-
-    String sqlQuery = "explain select * from t";
-
-    result.addColumn("co\tl\n1", new String[] {"va\nl11", "va\tl\n12"});
-
-    InterpreterResult interpreterResult = jdbcInterpreter.interpret(sqlQuery, null);
-
-    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
-    assertEquals(InterpreterResult.Type.TEXT, interpreterResult.type());
-    assertEquals("co\tl\n1\nva\nl11\nva\tl\n12\n", interpreterResult.message());
-
-    verifySQLStatementExecuted(sqlQuery);
-    verifyAllResultSetsClosed();
-    verifyAllStatementsClosed();
-  }
-
-  @Test
-  public void testAutoCompletion() throws SQLException {
-    jdbcInterpreter.open();
-    assertEquals(1, jdbcInterpreter.completion("SEL", 0).size());
-    assertEquals("SELECT ", jdbcInterpreter.completion("SEL", 0).iterator().next());
-    assertEquals(0, jdbcInterpreter.completion("SEL", 100).size());
+    assertEquals("ID\tNAME\na\ta_name\n", interpreterResult.message());
   }
 }

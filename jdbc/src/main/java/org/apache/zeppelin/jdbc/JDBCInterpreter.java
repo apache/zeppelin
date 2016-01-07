@@ -51,11 +51,11 @@ import com.google.common.collect.Sets.SetView;
  * GreenplumDB, MariaDB, MySQL, Postgres and Redshit.
  * 
  * <ul>
- * <li>{@code jdbc.url} - JDBC URL to connect to.</li>
- * <li>{@code jdbc.user} - JDBC user name..</li>
- * <li>{@code jdbc.password} - JDBC password..</li>
- * <li>{@code jdbc.driver.name} - JDBC driver name.</li>
- * <li>{@code jdbc.max.result} - Max number of SQL result to display.</li>
+ * <li>{@code default.url} - JDBC URL to connect to.</li>
+ * <li>{@code default.user} - JDBC user name..</li>
+ * <li>{@code default.password} - JDBC password..</li>
+ * <li>{@code default.driver.name} - JDBC driver name.</li>
+ * <li>{@code common.max.result} - Max number of SQL result to display.</li>
  * </ul>
  * 
  * <p>
@@ -68,7 +68,6 @@ import com.google.common.collect.Sets.SetView;
  * }
  * </p>
  * 
- * For SQL auto-completion use the (Ctrl+.) shortcut.
  */
 public class JDBCInterpreter extends Interpreter {
 
@@ -121,15 +120,6 @@ public class JDBCInterpreter extends Interpreter {
             .add(COMMON_MAX_LINE, MAX_LINE_DEFAULT,
                 "Max number of SQL result to display.").build());
   }
-
-  private static final Function<CharSequence, String> sequenceToStringTransformer =
-      new Function<CharSequence, String>() {
-        public String apply(CharSequence seq) {
-          return seq.toString();
-        }
-      };
-
-  private static final List<String> NO_COMPLETION = new ArrayList<String>();
 
   public JDBCInterpreter(Properties property) {
     super(property);
@@ -212,7 +202,6 @@ public class JDBCInterpreter extends Interpreter {
       throws SQLException, ClassNotFoundException {
     Connection connection;
     if (paragraphIdConnectionMap.containsKey(paragraphId)) {
-      // Never enter for now.
       connection = paragraphIdConnectionMap.get(paragraphId);
     } else {
       connection = getConnection(propertyKey);
