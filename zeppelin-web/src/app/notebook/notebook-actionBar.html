@@ -21,20 +21,20 @@ limitations under the License.
               class="btn btn-default btn-xs"
               ng-click="runNote()"
               ng-class="{'disabled':isNoteRunning()}"
-              tooltip-placement="bottom" tooltip="Run all paragraphs">
+              tooltip-placement="bottom" tooltip="{{'app.notebook.actionBar.TOOLTIP_RUN' | translate}}">
         <i class="icon-control-play"></i>
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
               ng-click="toggleAllEditor()"
               ng-hide="viewOnly"
-              tooltip-placement="bottom" tooltip="Show/hide the code">
+              tooltip-placement="bottom" tooltip="{{'app.notebook.actionBar.TOOLTIP_CODE_HIDE' | translate}}">
         <i ng-class="editorToggled ?  'fa icon-size-fullscreen' :'fa icon-size-actual'"></i></button>
       <button type="button"
               class="btn btn-default btn-xs"
               ng-click="toggleAllTable()"
               ng-hide="viewOnly"
-              tooltip-placement="bottom" tooltip="Show/hide the output">
+              tooltip-placement="bottom" tooltip="{{'app.notebook.actionBar.TOOLTIP_OUTPUT_HIDE' | translate}}">
         <i ng-class="tableToggled ? 'fa icon-notebook' : 'fa icon-book-open'"></i>
       </button>
       <button type="button"
@@ -42,20 +42,20 @@ limitations under the License.
               ng-click="clearAllParagraphOutput()"
               ng-hide="viewOnly"
               ng-class="{'disabled':isNoteRunning()}"
-              tooltip-placement="bottom" tooltip="Clear output">
+              tooltip-placement="bottom" tooltip="{{'app.notebook.actionBar.TOOLTIP_OUTPUT_CLEAR' | translate}}">
         <i class="fa fa-eraser"></i>
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
               ng-click="removeNote(note.id)"
               ng-hide="viewOnly"
-              tooltip-placement="bottom" tooltip="Remove the notebook">
+              tooltip-placement="bottom" tooltip="{{'app.notebook.actionBar.TOOLTIP_DELETE' | translate}}">
         <i class="icon-trash"></i>
       </button>
       <button type="button"
               class="btn btn-default btn-xs"
               ng-hide="viewOnly"
-              tooltip-placement="bottom" tooltip="Clone the notebook"
+              tooltip-placement="bottom" tooltip="{{'app.notebook.actionBar.TOOLTIP_CLONE' | translate}}"
               data-toggle="modal" data-target="#noteNameModal" data-clone="true"
               >
         <i class="fa fa-copy"></i>
@@ -64,7 +64,7 @@ limitations under the License.
               class="btn btn-default btn-xs"
               ng-hide="viewOnly"
               ng-click="exportNotebook()"
-              tooltip-placement="bottom" tooltip="Export the notebook">
+              tooltip-placement="bottom" tooltip="{{'app.notebook.actionBar.TOOLTIP_EXPORT' | translate}}">
         <i class="fa fa-download"></i>
       </button>
     </span>
@@ -75,7 +75,7 @@ limitations under the License.
              type="button"
              data-toggle="dropdown"
              ng-class="{ 'btn-info' : note.config.cron, 'btn-danger' : note.info.cron, 'btn-default' : !note.config.cron}"
-             tooltip-placement="bottom" tooltip="Run scheduler">
+             tooltip-placement="bottom" tooltip="{{'app.notebook.actionBar.TOOLTIP_SCHEDULER' | translate}}">
           <span class="fa fa-clock-o"></span> {{getCronOptionNameFromValue(note.config.cron)}}
         </div>
         <ul class="dropdown-menu" role="menu" style="width:300px">
@@ -116,12 +116,12 @@ limitations under the License.
       <span style="position:relative; top:3px; margin-right:4px; cursor:pointer"
             data-toggle="modal"
             data-target="#shortcutModal"
-            tooltip-placement="bottom" tooltip="List of shortcut">
+            tooltip-placement="bottom" tooltip="{{'app.notebook.actionBar.TOOLTIP_SHORTCUT' | translate}}">
         <i class="icon-question"></i>
       </span>
       <span style="position:relative; top:2px; margin-right:4px; cursor:pointer;"
             ng-click="toggleSetting()"
-            tooltip-placement="bottom" tooltip="Interpreter binding">
+            tooltip-placement="bottom" tooltip="{{'app.notebook.actionBar.TOOLTIP_SETTINGS' | translate}}">
         <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
       </span>
 

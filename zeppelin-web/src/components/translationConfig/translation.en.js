@@ -19,67 +19,85 @@
 angular.module('zeppelinWebApp')
 .config(function ($translateProvider) {
   $translateProvider.translations('en', {
-    'app.home': {
-      'WELCOME_MSG': 'Welcome to Zeppelin!',
-      'ZEPPELIN_DESC': 'Zeppelin is web-based notebook that enables interactive data analytics.<br/>\
-        You can make beautiful data-driven, interactive, collaborative document with SQL, code and even more!<br/><br/>',
-      'sections': {
-        'community': {
-          'TITLE': 'Community',
-          'DESC': 'Please feel free to help us to improve Zeppelin, <br>\
-            Any contribution are welcome!<br/><br/>',
-          'MAILINGLIST_MENU': 'Mailing list',
-          'ISSUETRACKING_MENU': 'Issues tracking',
-          'GITHUB_MENU': 'Github'
+    'app': {
+      'home': {
+        'WELCOME_MSG': 'Welcome to Zeppelin!',
+        'ZEPPELIN_DESC': 'Zeppelin is web-based notebook that enables interactive data analytics.<br/>\
+          You can make beautiful data-driven, interactive, collaborative document with SQL, code and even more!<br/><br/>',
+        'sections': {
+          'community': {
+            'TITLE': 'Community',
+            'DESC': 'Please feel free to help us to improve Zeppelin, <br>\
+              Any contribution are welcome!<br/><br/>',
+            'MAILINGLIST_MENU': 'Mailing list',
+            'ISSUETRACKING_MENU': 'Issues tracking',
+            'GITHUB_MENU': 'Github'
+          },
+          'help': {
+            'TITLE': 'Help',
+            'DESC': 'Get started with',
+            'ZEPPELINDOC_LINK': 'Zeppelin documentation'
+          },
+          'notebooks': {
+            'TITLE': 'Notebook',
+            'IMPORT_MENU': 'Import note',
+            'CREATE_MENU': 'Create new note'
+          }
+        }
+      },
+      'interpreter': {
+        'card': {
+          'EDIT_BTN': 'edit',
+          'RESTART_BTN': 'restart',
+          'REMOVE_BTN': 'remove',
+          'TABLE_TITLE': 'Properties',
+          'TABLE_NAME_COL': 'name',
+          'TABLE_ACTION_COL': 'action',
+          'TABLE_VALUE_COL': 'value',
+          'EMPTY_PROPERTIES': 'Currently there are no properties set for this interpreter'
         },
-        'help': {
-          'TITLE': 'Help',
-          'DESC': 'Get started with',
-          'ZEPPELINDOC_LINK': 'Zeppelin documentation'
+        'createform': {
+          'TITLE': 'Create new interpreter',
+          'NAME_LABEL': 'Name',
+          'INTERPRETER_LABEL': 'Interpreter',
+          'TABLE_DESC_COL': 'description',
+          'SAVE_BTN': 'Save',
+          'CANCEL_BTN': 'Cancel'
         },
-        'notebooks': {
-          'TITLE': 'Notebook',
-          'IMPORT_MENU': 'Import note',
-          'CREATE_MENU': 'Create new note'
+        'editForm': {
+          'SAVE_BTN': 'Save',
+          'CANCEL_BTN': 'Cancel'
+        },
+        'header': {
+          'TITLE': 'Interpreters',
+          'DESC': 'Manage interpreters settings. You can create create / remove settings.\
+            Note can bind/unbind these interpreter settings.',
+          'CREATE_BTN': 'Create'
+        }
+      },
+      'notebook': {
+        'actionBar': {
+          'TOOLTIP_RUN': 'Run all paragraphs',
+          'TOOLTIP_CODE_HIDE': 'Show/hide the code',
+          'TOOLTIP_OUTPUT_HIDE': 'Show/hide the output',
+          'TOOLTIP_OUTPUT_CLEAR': 'Clear output',
+          'TOOLTIP_DELETE': 'Remove the notebook',
+          'TOOLTIP_CLONE': 'Clone the notebook',
+          'TOOLTIP_EXPORT': 'Export the notebook',
+          'TOOLTIP_SCHEDULER': 'Run scheduler',
+          'TOOLTIP_SHORTCUT': 'List of shortcut',
+          'TOOLTIP_SETTINGS': 'Notebook settings'
         }
       }
     },
-    'app.interpreter': {
-      'card': {
-        'EDIT_BTN': 'edit',
-        'RESTART_BTN': 'restart',
-        'REMOVE_BTN': 'remove',
-        'TABLE_TITLE': 'Properties',
-        'TABLE_NAME_COL': 'name',
-        'TABLE_ACTION_COL': 'action',
-        'TABLE_VALUE_COL': 'value',
-        'EMPTY_PROPERTIES': 'Currently there are no properties set for this interpreter'
-      },
-      'createform': {
-        'TITLE': 'Create new interpreter',
-        'NAME_LABEL': 'Name',
-        'INTERPRETER_LABEL': 'Interpreter',
-        'TABLE_DESC_COL': 'description',
-        'SAVE_BTN': 'Save',
-        'CANCEL_BTN': 'Cancel'
-      },
-      'editForm': {
-        'SAVE_BTN': 'Save',
-        'CANCEL_BTN': 'Cancel'
-      },
-      'header': {
-        'TITLE': 'Interpreters',
-        'DESC': 'Manage interpreters settings. You can create create / remove settings.\
-          Note can bind/unbind these interpreter settings.',
-        'CREATE_BTN': 'Create'
+    'components': {
+      'navbar': {
+        'MENU_NOTEBOOK': 'Notebook',
+        'MENU_INTERPRETER': 'Interpreters',
+        'STATUS_CONNECTED': 'Connected',
+        'STATUS_DISCONNECTED': 'Disconnected',
+        'CREATE_MENU': 'Create new note'
       }
-    },
-    'components.navbar': {
-      'MENU_NOTEBOOK': 'Notebook',
-      'MENU_INTERPRETER': 'Interpreters',
-      'STATUS_CONNECTED': 'Connected',
-      'STATUS_DISCONNECTED': 'Disconnected',
-      'CREATE_MENU': 'Create new note'
     }
   });
 });

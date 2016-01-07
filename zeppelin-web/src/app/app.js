@@ -80,5 +80,5 @@ angular.module('zeppelinWebApp', [
 
     $translateProvider.preferredLanguage('en');
     $translateProvider.fallbackLanguage('en');
-    $translateProvider.useSanitizeValueStrategy('sanitize');
+    $translateProvider.useSanitizeValueStrategy('escapeParameters');
   });
