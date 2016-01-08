@@ -91,7 +91,7 @@ Actually, the answer about this question is in the above picture. Once the REST 
  
 After you downloaded, you can create and configure the interpreter at the Zeppelin **Interpreter tab**. Then, how can you do this ? Please follow these simple steps. It will be really straighforward. 
 
-Oh, you don't need to restart your Zeppelin server. Because it is **Dynamic Interpreter Loading**, you can configure and load it **on runtime** !
+Oh, you don't need to restart your Zeppelin server. Because it is **Dynamic Interpreter Loading**, you can configure and load it **at runtime** !
 
 1. After Zeppelin server up, browse Zeppelin home and click **Interpreter tab**.
 <center><img src="../assets/themes/zeppelin/img/docs-img/interpreter_setting_1.png" height="85%" width="85%"></center>
@@ -110,7 +110,7 @@ Oh, you don't need to restart your Zeppelin server. Because it is **Dynamic Inte
 
 6. At last, you can use your interpreter !
 
-If you want to get the specific information about respective interpreters, please checkout each interpreter documentaion. 
+If you want to get the specific information about respective interpreters, please checkout each interpreter documentation. 
  
  
 
