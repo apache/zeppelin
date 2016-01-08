@@ -85,6 +85,7 @@ public abstract class Job {
   private transient Throwable exception;
   private transient JobListener listener;
   private long progressUpdateIntervalMs;
+  protected Map<String, Object> infos;
 
   public Job(String jobName, JobListener listener, long progressUpdateIntervalMs) {
     this.jobName = jobName;
