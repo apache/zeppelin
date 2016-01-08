@@ -25,10 +25,7 @@ import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.junit.After;
 import org.junit.Before;
@@ -69,7 +66,17 @@ public class SparkSqlInterpreterTest {
     }
     context = new InterpreterContext("note", "id", "title", "text", new HashMap<String, Object>(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
-        new LinkedList<InterpreterContextRunner>(), null);
+        new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(new InterpreterOutputListener() {
+      @Override
+      public void onAppend(InterpreterOutput out, byte[] line) {
+
+      }
+
+      @Override
+      public void onUpdate(InterpreterOutput out, byte[] output) {
+
+      }
+    }));
   }
 
   @After
