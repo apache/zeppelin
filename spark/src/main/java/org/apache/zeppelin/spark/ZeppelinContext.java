@@ -21,6 +21,7 @@ import static scala.collection.JavaConversions.asJavaCollection;
 import static scala.collection.JavaConversions.asJavaIterable;
 import static scala.collection.JavaConversions.collectionAsScalaIterable;
 
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -54,19 +55,17 @@ import scala.collection.Iterable;
  */
 public class ZeppelinContext extends HashMap<String, Object> {
   private SparkDependencyResolver dep;
-  private PrintStream out;
   private InterpreterContext interpreterContext;
   private int maxResult;
 
   public ZeppelinContext(SparkContext sc, SQLContext sql,
       InterpreterContext interpreterContext,
-      SparkDependencyResolver dep, PrintStream printStream,
+      SparkDependencyResolver dep
       int maxResult) {
     this.sc = sc;
     this.sqlContext = sql;
     this.interpreterContext = interpreterContext;
     this.dep = dep;
-    this.out = printStream;
     this.maxResult = maxResult;
   }
 
@@ -273,10 +272,15 @@ public class ZeppelinContext extends HashMap<String, Object> {
       throw new InterpreterException("Can not road DataFrame/SchemaRDD class");
     }
 
-    if (cls.isInstance(o)) {
-      out.print(showDF(sc, interpreterContext, o, maxResult));
-    } else {
-      out.print(o.toString());
+
+    try {
+      if (cls.isInstance(o)) {
+        interpreterContext.out.write(showDF(sc, interpreterContext, o, maxResult));
+      } else {
+        interpreterContext.out.write(o.toString());
+      }
+    } catch (IOException e) {
+      throw new InterpreterException(e);
     }
   }
 
