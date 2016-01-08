@@ -261,7 +261,7 @@ public class JDBCInterpreter extends Interpreter {
 
       Statement statement = getStatement(propertyKey, paragraphId);
       statement.setMaxRows(getMaxResult());
-        
+
       StringBuilder msg = null;
       boolean isTableType = false;
 
