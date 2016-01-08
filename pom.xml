@@ -93,7 +93,6 @@
     <module>shell</module>
     <module>hive</module>
     <module>phoenix</module>
-    <module>geode</module>
     <module>jdbc</module>
     <module>tajo</module>
     <module>flink</module>

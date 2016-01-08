@@ -32,12 +32,11 @@
   <version>0.6.0-incubating-SNAPSHOT</version>
   <name>Zeppelin: JDBC interpreter</name>
   <url>http://www.apache.org</url>
-
+  
   <properties>
-    <hive.hive.version>0.14.0</hive.hive.version>
-    <hive.hadoop.version>2.6.0</hive.hadoop.version>
+    <postgresql.version>9.4-1201-jdbc41</postgresql.version>
   </properties>
-    
+  
   <dependencies>
     <dependency>
       <groupId>org.apache.zeppelin</groupId>
@@ -46,6 +45,12 @@
       <scope>provided</scope>
     </dependency>
 	
+	<dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>${postgresql.version}</version>
+    </dependency>
+    
 	<dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -56,23 +61,11 @@
       <artifactId>slf4j-log4j12</artifactId>
     </dependency>
 	
-    <dependency>
+	<dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>
-	
-	<dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-jdbc</artifactId>
-      <version>${hive.hive.version}</version>
-    </dependency>
-    
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-common</artifactId>
-      <version>${hive.hadoop.version}</version>
-    </dependency>
-    
+
     <dependency>
       <groupId>jline</groupId>
       <artifactId>jline</artifactId>
