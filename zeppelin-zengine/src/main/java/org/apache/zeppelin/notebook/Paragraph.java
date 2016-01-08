@@ -210,26 +210,38 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       InterpreterContext context = getInterpreterContext();
       InterpreterContext.set(context);
       InterpreterResult ret = repl.interpret(script, context);
-      byte[] interpreterOutput = context.out.toByteArray(true);
 
-      // data from context.out is prepended to InterpreterResult if both defined
-      String message = "";
-      if (interpreterOutput != null && interpreterOutput.length > 0) {
-        // something printed in InterpreterOutput
-        message = new String(interpreterOutput);
-
-        if (ret.message() != null) {
-          message += ret.message();
-          return new InterpreterResult(ret.code(), message);
-        } else {
-          return new InterpreterResult(ret.code(), context.out
-          .getType(), message);
-        }
-      }
       if (Code.KEEP_PREVIOUS_RESULT == ret.code()) {
         return getReturn();
       }
-      return ret;
+
+      String message = "";
+
+      context.out.flush();
+      InterpreterResult.Type outputType = context.out.getType();
+      byte[] interpreterOutput = context.out.toByteArray();
+      context.out.clear();
+
+      if (interpreterOutput != null && interpreterOutput.length > 0) {
+        message = new String(interpreterOutput);
+      }
+
+      if (message.isEmpty()) {
+        logger().debug("Return " + ret.type() + ", message=" + ret.message());
+        return ret;
+      } else {
+        String interpreterResultMessage = ret.message();
+        if (interpreterResultMessage != null && !interpreterResultMessage.isEmpty()) {
+          message += interpreterResultMessage;
+          logger().debug("Paragraph1 " + ret.code() + ", type=" + ret.type() +
+                  ", message=" + message);
+          return new InterpreterResult(ret.code(), ret.type(), message);
+        } else {
+          logger().debug("Paragraph2 " + ret.code() + ", type=" + outputType +
+                  ", message=" + message);
+          return new InterpreterResult(ret.code(), outputType, message);
+        }
+      }
     } finally {
       InterpreterContext.remove();
     }
@@ -294,7 +306,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
                   logger().error(e.getMessage(), e);
                   t = e;
                 }
-                setReturn(new InterpreterResult(Code.SUCCESS, message), t);
+                setReturn(new InterpreterResult(Code.SUCCESS, out.getType(), message), t);
               }
             }));
     return interpreterContext;

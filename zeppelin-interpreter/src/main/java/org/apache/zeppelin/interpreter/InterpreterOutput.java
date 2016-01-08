@@ -89,21 +89,7 @@ public class InterpreterOutput extends OutputStream {
           firstWrite = false;
         }
 
-        buffer.flush();
-        byte[] byteArray = buffer.toByteArray();
-
-
-        // check output type directive
-        byteArray = detectTypeFromLine(byteArray);
-
-        if (byteArray != null) {
-          outList.add(byteArray);
-
-          if (type == InterpreterResult.Type.TEXT) {
-            flushListener.onAppend(this, byteArray);
-          }
-        }
-        buffer.reset();
+        flush();
       }
     }
   }
@@ -116,9 +102,11 @@ public class InterpreterOutput extends OutputStream {
       if ((typeString + "\n").equals(line)) {
         setType(t);
         byteArray = null;
+        break;
       } else if (line.startsWith(typeString + " ")) {
         setType(t);
         byteArray = line.substring(typeString.length() + 1).getBytes();
+        break;
       }
     }
 
@@ -191,10 +179,6 @@ public class InterpreterOutput extends OutputStream {
   }
 
   public byte[] toByteArray() throws IOException {
-    return toByteArray(false);
-  }
-
-  public byte[] toByteArray(boolean clear) throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     List<Object> all = new LinkedList<Object>();
 
@@ -220,15 +204,23 @@ public class InterpreterOutput extends OutputStream {
         // can not handle the object
       }
     }
-
-    buffer.writeTo(out);
-
-    if (clear) {
-      clear();
-    }
-
     out.close();
     return out.toByteArray();
+  }
+
+  public void flush() throws IOException {
+    synchronized (outList) {
+      buffer.flush();
+      byte[] bytes = buffer.toByteArray();
+      bytes = detectTypeFromLine(bytes);
+      if (bytes != null) {
+        outList.add(bytes);
+        if (type == InterpreterResult.Type.TEXT) {
+          flushListener.onAppend(this, bytes);
+        }
+      }
+      buffer.reset();
+    }
   }
 
   private void copyStream(InputStream in, OutputStream out) throws IOException {
@@ -247,18 +239,7 @@ public class InterpreterOutput extends OutputStream {
 
   @Override
   public void close() throws IOException {
-    synchronized (outList) {
-      buffer.flush();
-      byte[] bytes = buffer.toByteArray();
-      bytes = detectTypeFromLine(bytes);
-      if (bytes != null) {
-        outList.add(bytes);
-        if (type == InterpreterResult.Type.TEXT) {
-          flushListener.onAppend(this, bytes);
-        }
-      }
-      buffer.close();
-    }
+    flush();
 
     if (watcher != null) {
       watcher.clear();

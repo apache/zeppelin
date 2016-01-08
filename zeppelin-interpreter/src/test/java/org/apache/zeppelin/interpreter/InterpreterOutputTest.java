@@ -45,7 +45,7 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
   @Test
   public void testDetectNewline() throws IOException {
     out.write("hello\nworld");
-    assertEquals("hello\nworld", new String(out.toByteArray()));
+    assertEquals("hello\n", new String(out.toByteArray()));
     assertEquals(1, numAppendEvent);
     assertEquals(1, numUpdateEvent);
 
@@ -53,6 +53,29 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
     assertEquals("hello\nworld\n", new String(out.toByteArray()));
     assertEquals(2, numAppendEvent);
     assertEquals(1, numUpdateEvent);
+  }
+
+  @Test
+  public void testFlush() throws IOException {
+    out.write("hello\nworld");
+    assertEquals("hello\n", new String(out.toByteArray()));
+    assertEquals(1, numAppendEvent);
+    assertEquals(1, numUpdateEvent);
+
+    out.flush();
+    assertEquals("hello\nworld", new String(out.toByteArray()));
+    assertEquals(2, numAppendEvent);
+    assertEquals(1, numUpdateEvent);
+
+    out.clear();
+    out.write("%html div");
+    assertEquals("", new String(out.toByteArray()));
+    assertEquals(InterpreterResult.Type.TEXT, out.getType());
+
+    out.flush();
+    out.write("%html div");
+    assertEquals("div", new String(out.toByteArray()));
+    assertEquals(InterpreterResult.Type.HTML, out.getType());
   }
 
   @Test
@@ -84,6 +107,12 @@ public class InterpreterOutputTest implements InterpreterOutputListener {
     assertEquals(2, numAppendEvent);
     assertEquals(3, numUpdateEvent);
     assertEquals("hello\n", new String(out.toByteArray()));
+  }
+
+  @Test
+  public void testType2() throws IOException {
+    out.write("%html\nHello");
+    assertEquals(InterpreterResult.Type.HTML, out.getType());
   }
 
   @Override

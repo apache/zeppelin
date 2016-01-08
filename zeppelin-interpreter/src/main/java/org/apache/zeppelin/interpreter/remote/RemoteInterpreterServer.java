@@ -297,17 +297,26 @@ public class RemoteInterpreterServer
         // data from context.out is prepended to InterpreterResult if both defined
         String message = "";
 
-        byte[] interpreterOutput = context.out.toByteArray(true);
+        context.out.flush();
+        InterpreterResult.Type outputType = context.out.getType();
+        byte[] interpreterOutput = context.out.toByteArray();
+        context.out.clear();
+
         if (interpreterOutput != null && interpreterOutput.length > 0) {
           message = new String(interpreterOutput);
         }
 
-        if (result.message() != null) {
-          message += result.message();
-          return new InterpreterResult(result.code(), message);
+        String interpreterResultMessage = result.message();
+        if (interpreterResultMessage != null && !interpreterResultMessage.isEmpty()) {
+          message += interpreterResultMessage;
+          logger.info("RemoteInterpreter1 " + result.code() + ", type=" + result.type() +
+                  ", message=" + message);
+          return new InterpreterResult(result.code(), result.type(), message);
         } else {
-          return new InterpreterResult(result.code(), context.out
-          .getType(), message);
+          logger.info("RemoteInterpreter2 " + result.code() + ", type=" + outputType +
+                  ", message=" + message);
+
+          return new InterpreterResult(result.code(), outputType, message);
         }
       } finally {
         InterpreterContext.remove();

@@ -116,6 +116,24 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals("streamstatic", ret.message());
   }
+
+  @Test
+  public void testOutputType() {
+    RemoteInterpreter intp = createMockInterpreter();
+
+    InterpreterResult ret = intp.interpret("SUCCESS:%html hello:", createInterpreterContext());
+    assertEquals(InterpreterResult.Type.HTML, ret.type());
+    assertEquals("hello", ret.message());
+
+    ret = intp.interpret("SUCCESS:%html\nhello:", createInterpreterContext());
+    assertEquals(InterpreterResult.Type.HTML, ret.type());
+    assertEquals("hello", ret.message());
+
+    ret = intp.interpret("SUCCESS:%html hello:%angular world", createInterpreterContext());
+    assertEquals(InterpreterResult.Type.ANGULAR, ret.type());
+    assertEquals("helloworld", ret.message());
+  }
+
   @Override
   public void onOutputAppend(String noteId, String paragraphId, String output) {
 
