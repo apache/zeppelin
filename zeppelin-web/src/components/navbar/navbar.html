@@ -73,8 +73,8 @@ limitations under the License.
         </li>
         <li class="server-status">
           <i class="fa fa-circle" ng-class="{'server-connected':navbar.connected, 'server-disconnected':!navbar.connected}"></i>
-          <span ng-show="navbar.connected">Connected</span>
-          <span ng-show="!navbar.connected">Disconnected</span>
+          <span ng-show="navbar.authenticated">{{ticket.principal}} connected</span>
+          <span ng-show="!navbar.authenticated">Disconnected</span>
         </li>
       </ul>
     </div>
