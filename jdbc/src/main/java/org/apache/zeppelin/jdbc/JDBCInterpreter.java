@@ -260,10 +260,8 @@ public class JDBCInterpreter extends Interpreter {
     try {
 
       Statement statement = getStatement(propertyKey, paragraphId);
-      logger.info("antes");
       statement.setMaxRows(getMaxResult());
-      logger.info("paso");
-
+      
       StringBuilder msg = null;
       boolean isTableType = false;
 
