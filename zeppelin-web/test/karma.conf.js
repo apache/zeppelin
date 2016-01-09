@@ -43,7 +43,7 @@ module.exports = function(config) {
       'bower_components/angular-ui-ace/ui-ace.js',
       'bower_components/jquery.scrollTo/jquery.scrollTo.js',
       'bower_components/d3/d3.js',
-      'bower_components/nvd3/nv.d3.js',
+      'bower_components/nvd3/build/nv.d3.js',
       'bower_components/jquery-ui/jquery-ui.js',
       'bower_components/angular-dragdrop/src/angular-dragdrop.js',
       'bower_components/perfect-scrollbar/src/perfect-scrollbar.js',
@@ -57,6 +57,8 @@ module.exports = function(config) {
       'bower_components/ngtoast/dist/ngToast.js',
       'bower_components/ng-focus-if/focusIf.js',
       'bower_components/bootstrap3-dialog/dist/js/bootstrap-dialog.min.js',
+      'bower_components/floatThead/dist/jquery.floatThead.js',
+      'bower_components/floatThead/dist/jquery.floatThead.min.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'src/app/app.js',

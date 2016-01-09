@@ -131,6 +131,7 @@ public class RemoteInterpreter extends Interpreter {
           throw new InterpreterException(e1);
         }
 
+        boolean broken = false;
         try {
           for (Interpreter intp : this.getInterpreterGroup()) {
             logger.info("Create remote interpreter {}", intp.getClassName());
@@ -138,9 +139,10 @@ public class RemoteInterpreter extends Interpreter {
 
           }
         } catch (TException e) {
+          broken = true;
           throw new InterpreterException(e);
         } finally {
-          interpreterProcess.releaseClient(client);
+          interpreterProcess.releaseClient(client, broken);
         }
       }
     }
@@ -158,14 +160,19 @@ public class RemoteInterpreter extends Interpreter {
   public void close() {
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
     Client client = null;
+
+    boolean broken = false;
     try {
       client = interpreterProcess.getClient();
       client.close(className);
+    } catch (TException e) {
+      broken = true;
+      throw new InterpreterException(e);
     } catch (Exception e1) {
       throw new InterpreterException(e1);
     } finally {
       if (client != null) {
-        interpreterProcess.releaseClient(client);
+        interpreterProcess.releaseClient(client, broken);
       }
       getInterpreterProcess().dereference();
     }
@@ -195,6 +202,7 @@ public class RemoteInterpreter extends Interpreter {
       interpreterContextRunnerPool.addAll(noteId, runners);
     }
 
+    boolean broken = false;
     try {
       GUI settings = context.getGui();
       RemoteInterpreterResult remoteResult = client.interpret(className, st, convert(context));
@@ -215,9 +223,10 @@ public class RemoteInterpreter extends Interpreter {
       InterpreterResult result = convert(remoteResult);
       return result;
     } catch (TException e) {
+      broken = true;
       throw new InterpreterException(e);
     } finally {
-      interpreterProcess.releaseClient(client);
+      interpreterProcess.releaseClient(client, broken);
     }
   }
 
@@ -231,12 +240,14 @@ public class RemoteInterpreter extends Interpreter {
       throw new InterpreterException(e1);
     }
 
+    boolean broken = false;
     try {
       client.cancel(className, convert(context));
     } catch (TException e) {
+      broken = true;
       throw new InterpreterException(e);
     } finally {
-      interpreterProcess.releaseClient(client);
+      interpreterProcess.releaseClient(client, broken);
     }
   }
 
@@ -257,13 +268,15 @@ public class RemoteInterpreter extends Interpreter {
       throw new InterpreterException(e1);
     }
 
+    boolean broken = false;
     try {
       formType = FormType.valueOf(client.getFormType(className));
       return formType;
     } catch (TException e) {
+      broken = true;
       throw new InterpreterException(e);
     } finally {
-      interpreterProcess.releaseClient(client);
+      interpreterProcess.releaseClient(client, broken);
     }
   }
 
@@ -277,12 +290,14 @@ public class RemoteInterpreter extends Interpreter {
       throw new InterpreterException(e1);
     }
 
+    boolean broken = false;
     try {
       return client.getProgress(className, convert(context));
     } catch (TException e) {
+      broken = true;
       throw new InterpreterException(e);
     } finally {
-      interpreterProcess.releaseClient(client);
+      interpreterProcess.releaseClient(client, broken);
     }
   }
 
@@ -297,12 +312,14 @@ public class RemoteInterpreter extends Interpreter {
       throw new InterpreterException(e1);
     }
 
+    boolean broken = false;
     try {
       return client.completion(className, buf, cursor);
     } catch (TException e) {
+      broken = true;
       throw new InterpreterException(e);
     } finally {
-      interpreterProcess.releaseClient(client);
+      interpreterProcess.releaseClient(client, broken);
     }
   }
 

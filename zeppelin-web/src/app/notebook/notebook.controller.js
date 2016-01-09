@@ -107,7 +107,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
   // register mouseevent handler for focus paragraph
   document.addEventListener('click', $scope.focusParagraphOnClick);
 
-
   $scope.keyboardShortcut = function(keyEvent) {
     // handle keyevent
     if (!$scope.viewOnly) {
@@ -279,6 +278,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
   /** Set cron expression for this note **/
   $scope.setCronScheduler = function(cronExpr) {
     $scope.note.config.cron = cronExpr;
+    $scope.setConfig();
+  };
+
+  /** Set release resource for this note **/
+  $scope.setReleaseResource = function(value) {
+    $scope.note.config.releaseresource = value;
     $scope.setConfig();
   };
 

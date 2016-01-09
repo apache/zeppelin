@@ -629,6 +629,13 @@
     </profile>
 
     <profile>
+      <id>scalding</id>
+      <modules>
+        <module>scalding</module>
+      </modules>
+    </profile>
+
+    <profile>
       <id>build-distr</id>
       <activation>
         <activeByDefault>false</activeByDefault>
@@ -688,7 +695,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.4</version>
+            <version>1.6</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -703,15 +710,5 @@
       </build>
     </profile>
   </profiles>
-  <distributionManagement>
-    <site>
-      <id>Website</id>
-      <url>${site_url}</url>
-    </site>
-    <repository>
-      <id>${repoid}</id>
-      <name>${reponame}</name>
-      <url>${repourl}</url>
-    </repository>
-  </distributionManagement>
+
 </project>

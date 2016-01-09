@@ -38,6 +38,7 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
 import org.quartz.CronScheduleBuilder;
@@ -330,10 +331,18 @@ public class Notebook {
    * @return
    * @throws IOException
    */
-  private void reloadAllNotes() throws IOException {
+  public void reloadAllNotes() throws IOException {
     synchronized (notes) {
       notes.clear();
     }
+
+    if (notebookRepo instanceof NotebookRepoSync) {
+      NotebookRepoSync mainRepo = (NotebookRepoSync) notebookRepo;
+      if (mainRepo.getRepoCount() > 1) {
+        mainRepo.sync();
+      }
+    }
+
     List<NoteInfo> noteInfos = notebookRepo.list();
     for (NoteInfo info : noteInfos) {
       loadNoteFromRepo(info.getId());
@@ -366,13 +375,6 @@ public class Notebook {
   }
 
   public List<Note> getAllNotes() {
-    if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE)) {
-      try {
-        reloadAllNotes();
-      } catch (IOException e) {
-        logger.error("Cannot reload notes from storage", e);
-      }
-    }
     synchronized (notes) {
       List<Note> noteList = new ArrayList<Note>(notes.values());
       Collections.sort(noteList, new Comparator<Note>() {
@@ -413,6 +415,26 @@ public class Notebook {
       String noteId = context.getJobDetail().getJobDataMap().getString("noteId");
       Note note = notebook.getNote(noteId);
       note.runAll();
+    
+      while (!note.getLastParagraph().isTerminated()) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+      
+      boolean releaseResource = false;
+      try {
+        releaseResource = (boolean) note.getConfig().get("releaseresource");
+      } catch (java.lang.ClassCastException e) {
+        e.printStackTrace();
+      }
+      if (releaseResource) {
+        for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {
+          notebook.getInterpreterFactory().restart(setting.id());
+        }
+      }      
     }
   }
 
