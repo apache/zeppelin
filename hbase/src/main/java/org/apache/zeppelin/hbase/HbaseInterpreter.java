@@ -92,6 +92,8 @@ public class HbaseInterpreter extends Interpreter {
     scriptingContainer.setOutput(this.writer);
     this.scriptingContainer.setLoadPaths(paths);
     scriptingContainer.setCompatVersion(org.jruby.CompatVersion.RUBY1_9);
+
+    // The following block is used for manual tests only.
     if (Boolean.parseBoolean(getProperty("hbase.irb.load"))) {
       try {
         InputStream in = getClass().getResourceAsStream("/hbase/bin/hirb.rb");
@@ -120,7 +122,7 @@ public class HbaseInterpreter extends Interpreter {
       logger.debug(writer.toString());
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, writer.getBuffer().toString());
     } catch (Throwable t) {
-      logger.error("Can not run " + cmd, t);
+      logger.error("Can not run '" + cmd + "'", t);
       return new InterpreterResult(InterpreterResult.Code.ERROR, t.getMessage());
     }
   }
