@@ -66,7 +66,7 @@ object ParagraphParser {
     *                                followed by optional white-space(s) (\s*)
     *                                followed by semi-colon (;)
     */
-  val UDF_PATTERN = """(?is)\s*(CREATE(?: OR REPLACE)? FUNCTION(?: IF NOT EXISTS)?.+?(?:\s+|\n|\r|\f)AS(?:\s+|\n|\r|\f)(?:'|\$\$).+?(?:'|\$\$)\s*;)""".r
+  val UDF_PATTERN = """(?is)\s*(CREATE(?:\s+OR REPLACE)?\s+FUNCTION(?:\s+IF\s+NOT\s+EXISTS)?.+?(?:\s+|\n|\r|\f)AS(?:\s+|\n|\r|\f)(?:'|\$\$).+?(?:'|\$\$)\s*;)""".r
 
   val GENERIC_STATEMENT_PREFIX =
     """(?is)\s*(?:INSERT|UPDATE|DELETE|SELECT|CREATE|UPDATE|
