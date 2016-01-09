@@ -150,6 +150,7 @@ public class NotebookRestApi {
 
   /**
    * export note REST API
+   * 
    * @param
    * @return note JSON with status.OK
    * @throws IOException
@@ -167,6 +168,7 @@ public class NotebookRestApi {
 
   /**
    * import new note REST API
+   * 
    * @param req - notebook Json
    * @return JSON with new note ID
    * @throws IOException
@@ -195,7 +197,7 @@ public class NotebookRestApi {
     }
     notebookServer.broadcastNote(newNote);
     notebookServer.broadcastNoteList();
-    return new JsonResponse<>(Status.CREATED, "", newNote.getId() ).build();
+    return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }
   
   /**
