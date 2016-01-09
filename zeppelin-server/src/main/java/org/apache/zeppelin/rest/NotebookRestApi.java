@@ -52,7 +52,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
+import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonReader;
+import java.io.StringReader;
 /**
  * Rest api endpoint for the noteBook.
  */
@@ -146,6 +148,56 @@ public class NotebookRestApi {
     return new JsonResponse<>(Status.OK, "", note).build();
   }
 
+  /**
+   * export note REST API
+   * @param
+   * @return note JSON with status.OK
+   * @throws IOException
+   */
+  @GET
+  @Path("export/{id}")
+  public Response exportNoteBook(@PathParam("id") String noteId) {
+    GsonBuilder gsonBuilder = new GsonBuilder();
+    gsonBuilder.setPrettyPrinting();
+    Gson gson = gsonBuilder.create();
+    Note note = notebook.getNote(noteId);
+    String json = gson.toJson(note);
+    return new JsonResponse(Status.OK, "", json).build();
+  }
+
+  /**
+   * import new note REST API
+   * @param req - notebook Json
+   * @return JSON with new note ID
+   * @throws IOException
+   */
+  @PUT
+  @Path("import")
+  public Response importNotebook(String req) {
+    GsonBuilder gsonBuilder = new GsonBuilder();
+    gsonBuilder.setPrettyPrinting();
+    Gson gson = gsonBuilder.create();
+    JsonReader reader = new JsonReader(new StringReader(req));
+    reader.setLenient(true);
+    Note newNote;
+    try {
+      Note oldNote = gson.fromJson(reader, Note.class);
+      newNote = notebook.createNote();
+      newNote.setName(oldNote.getName());
+      List<Paragraph> paragraphs = oldNote.getParagraphs();
+      for (Paragraph p : paragraphs) {
+        newNote.addCloneParagraph(p);
+      }
+
+      newNote.persist();
+    } catch (IOException e) {
+      return new JsonResponse(Status.INTERNAL_SERVER_ERROR).build();
+    }
+    notebookServer.broadcastNote(newNote);
+    notebookServer.broadcastNoteList();
+    return new JsonResponse<>(Status.CREATED, "", newNote.getId() ).build();
+  }
+  
   /**
    * Create new note REST API
    * @param message - JSON with new note name
