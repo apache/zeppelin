@@ -784,7 +784,6 @@ limitations under the License.
     <tr>
       <td>Description</td>
       <td>This ```GET``` method exports a notebook by the given id and gernerates a JSON
-         
       </td>
     </tr>
     <tr>
@@ -799,8 +798,7 @@ limitations under the License.
       <td> Fail code</td>
       <td> 500 </td>
     </tr>
-    
-      <td> sample JSON response </td>
+    <td> sample JSON response </td>
       <td><pre>{
   "paragraphs": [
     {
@@ -838,7 +836,6 @@ limitations under the License.
     <tr>
       <td>Description</td>
       <td>This ```PUT``` method imports a notebook from the notebook JSON
-         
       </td>
     </tr>
     <tr>
@@ -853,8 +850,7 @@ limitations under the License.
       <td> Fail code</td>
       <td> 500 </td>
     </tr>
-    
-      <td> sample JSON input </td>
+    <td> sample JSON input </td>
       <td><pre>{
   "paragraphs": [
     {
