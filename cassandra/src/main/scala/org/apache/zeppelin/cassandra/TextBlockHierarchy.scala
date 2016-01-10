@@ -110,25 +110,25 @@ object TextBlockHierarchy {
     val statement: String
   }
 
-  class DescribeClusterCmd(override val statement: String = "DESCRIBE CLUSTER;")
+  case class DescribeClusterCmd(override val statement: String = "DESCRIBE CLUSTER;")
     extends QueryStatement(DescribeClusterStatementType) with DescribeCommandStatement
 
-  class DescribeKeyspacesCmd(override val statement: String = "DESCRIBE KEYSPACES;")
+  case class DescribeKeyspacesCmd(override val statement: String = "DESCRIBE KEYSPACES;")
     extends QueryStatement(DescribeAllKeyspacesStatementType) with DescribeCommandStatement
 
-  class DescribeTablesCmd(override val statement: String = "DESCRIBE TABLES;")
+  case class DescribeTablesCmd(override val statement: String = "DESCRIBE TABLES;")
     extends QueryStatement(DescribeAllTablesStatementType) with DescribeCommandStatement
 
-  class DescribeTypesCmd(override val statement: String = "DESCRIBE TYPES;")
+  case class DescribeTypesCmd(override val statement: String = "DESCRIBE TYPES;")
     extends QueryStatement(DescribeAllTypesStatementType) with DescribeCommandStatement
 
-  class DescribeFunctionsCmd(override val statement: String = "DESCRIBE FUNCTIONS;") extends QueryStatement(DescribeAllFunctionsStatementType)
+  case class DescribeFunctionsCmd(override val statement: String = "DESCRIBE FUNCTIONS;") extends QueryStatement(DescribeAllFunctionsStatementType)
     with DescribeCommandStatement
 
-  class DescribeAggregatesCmd(override val statement: String = "DESCRIBE AGGREGATES;") extends QueryStatement(DescribeAllAggregatesStatementType)
+  case class DescribeAggregatesCmd(override val statement: String = "DESCRIBE AGGREGATES;") extends QueryStatement(DescribeAllAggregatesStatementType)
     with DescribeCommandStatement
 
-  class DescribeMaterializedViewsCmd(override val statement: String = "DESCRIBE MATERIALIZED VIEWS;") extends QueryStatement(DescribeAllAggregatesStatementType)
+  case class DescribeMaterializedViewsCmd(override val statement: String = "DESCRIBE MATERIALIZED VIEWS;") extends QueryStatement(DescribeAllAggregatesStatementType)
     with DescribeCommandStatement
 
   case class DescribeKeyspaceCmd(keyspace: String) extends QueryStatement(DescribeKeyspaceStatementType)
@@ -176,6 +176,6 @@ object TextBlockHierarchy {
     }
   }
 
-  class HelpCmd extends QueryStatement(HelpStatementType)
+  case class HelpCmd(val statement:String = "HELP;") extends QueryStatement(HelpStatementType)
 
 }
