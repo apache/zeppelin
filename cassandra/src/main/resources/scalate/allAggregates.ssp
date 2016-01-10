@@ -16,14 +16,16 @@
 * limitations under the License.
 */
 --%>
+
 #import(org.apache.zeppelin.cassandra.MetaDataHierarchy._)
 #import(java.util.UUID)
-<%@ val allTables: Map[(UUID,String),List[String]] %>
+<%@ val allAggregates: Map[(UUID, String), List[AggregateSummary]] %>
+
 <div class="container">
 
     <div class="row">
         <div class="panel-group" role="tablist" aria-multiselectable="true">
-            #for (((ksId,ksName), tables) <- allTables)
+            #for (((ksId,ksName), aggregates) <- allAggregates)
             <div class="panel panel-default">
                 <div class="panel-heading" role="tab">
                     <h4 class="panel-title">
@@ -39,12 +41,17 @@
                             <div class="col-md-8 col-offset-md-2 table-responsive table-bordered">
                                 <table class="table">
                                     <thead>
-                                        <tr><th>Tables</th></tr>
+                                        <tr>
+                                            <th>Aggregate</th>
+                                            <th>Return Type</th>
+                                        </tr>
                                     </thead>
                                     <tbody>
-                                        #for (table <- tables)
-
-                                        <tr class="text-primary"><td>${table}</td></tr>
+                                        #for (aggregate <- aggregates)
+                                        <tr class="text-success">
+                                            <td>${aggregate.name + aggregate.arguments.mkString("(", ", ", ")")}</td>
+                                            <td>${aggregate.returnType}</td>
+                                        </tr>
                                         #end
 
                                     </tbody>

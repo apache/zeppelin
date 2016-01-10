@@ -1,0 +1,81 @@
+<%--
+/*
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+--%>
+#import(org.apache.zeppelin.cassandra.MetaDataHierarchy._)
+<%@ val sameNameAggregateDetails: SameNameAggregateDetails %>
+<%@ val withCaption: Boolean%>
+<div class="row">
+    <div class="col-md-2"/>
+    <div class="col-md-8 col-offset-md-2">
+        #for (aggregate <- sameNameAggregateDetails.aggregates)    
+        <div class="panel panel-default table-responsive table-bordered">
+            <table class="table">
+                #if(withCaption)
+                <caption><h4 class="text-success"><i class="glyphicon glyphicon-retweet"/>&nbsp;${aggregate.name}</h4></caption>
+                #end
+                <tbody>
+                    <tr>
+                        <td class="col-md-6"><strong>Keyspace</strong></td>
+                        <td class="col-md-6 text-danger">${aggregate.keyspace}</td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-6"><strong>Arguments</strong></td>
+                        <td class="col-md-6">${aggregate.arguments.toList.mkString(", ")}</td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-6"><strong>State Function</strong></td>                        
+                        <td class="col-md-6">${aggregate.sFunc}</td>
+                    </tr>
+                    <tr>
+                        <td class="col-md-6"><strong>State Type</strong></td>                        
+                        <td class="col-md-6">${aggregate.sType}</td>
+                    </tr>
+                    #if(aggregate.finalFunc.isDefined)                                     
+                    <tr>
+                        <td class="col-md-6"><strong>Final Function</strong></td>                        
+                        <td class="col-md-6">${aggregate.finalFunc.get}</td>
+                    </tr>                       
+                    #end
+                    #if(aggregate.initCond.isDefined)
+                    <tr>
+                        <td class="col-md-6"><strong>Initial State</strong></td>                        
+                        <td class="col-md-6">${aggregate.initCond.get}</td>
+                    </tr>
+                    #end
+                    <tr>
+                        <td class="col-md-6"><strong>Return type</strong></td>
+                        <td class="col-md-6">${aggregate.returnType}</td>
+                    </tr>                                     
+                </tbody>
+            </table>
+            <div class="panel-footer">
+                <a data-toggle="collapse" data-target="#${aggregate.uniqueId}_asCQL">
+                    <strong>As CQL statement</strong>
+                    <span class="caret"></span>
+                </a>
+                <br/><br/>
+                <div class="text-success collapse" id="${aggregate.uniqueId}_asCQL">
+                    <pre class="well">${aggregate.asCQL}</pre>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        #end
+    </div>
+    <div class="col-md-2"></div>
+</div>
