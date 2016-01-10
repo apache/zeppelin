@@ -167,7 +167,6 @@
         </dependency>
     </dependencies>
 
-
     <build>
         <plugins>
             <!-- Plugin to compile Scala code -->

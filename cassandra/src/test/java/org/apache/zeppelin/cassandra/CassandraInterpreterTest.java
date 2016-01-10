@@ -599,6 +599,27 @@ public class CassandraInterpreterTest {
         assertThat(actual.code()).isEqualTo(Code.SUCCESS);
 
     }
+
+    @Test
+    @Ignore
+    //TODO activate test when using Java 8 and C* 3.x
+    public void should_describe_materialized_view() throws Exception {
+        //Given
+        Properties properties = new Properties();
+        properties.setProperty(CASSANDRA_HOSTS, "127.0.0.1");
+        properties.setProperty(CASSANDRA_PORT,  "9042");
+        Interpreter interpreter = new CassandraInterpreter(properties);
+        interpreter.open();
+
+        final String query = "DESCRIBE MATERIALIZED VIEWS;";
+
+        //When
+        final InterpreterResult actual = interpreter.interpret(query, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+    }
+
     @Test
     public void should_describe_table() throws Exception {
         //Given

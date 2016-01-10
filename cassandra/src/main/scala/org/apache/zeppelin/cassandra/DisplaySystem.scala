@@ -76,7 +76,7 @@ object DisplaySystem {
       val indicesAsCQL = indicesDetails.map(_.asCQL).mkString("\n")
 
       engine.layout(TABLE_DETAILS_TEMPLATE,
-        Map[String, Any]("tableDetails" -> TableDetails(tableName, columnsDetails, indicesDetails, meta.exportAsString(), indicesAsCQL), "withCaption" -> withCaption))
+        Map[String, Any]("tableDetails" -> TableDetails(tableName, columnsDetails, indicesDetails, TableMetadataWrapper(meta).exportTableOnlyAsString(), indicesAsCQL), "withCaption" -> withCaption))
     }
   }
 
