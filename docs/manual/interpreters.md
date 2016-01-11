@@ -48,7 +48,7 @@ Every Interpreter is belonged to an **Interpreter Group**. Interpreter Group is 
 By default, every interpreter is belonged to a single group, but the group might contain more interpreters. For example, spark interpreter group is including Spark support, pySpark, 
 SparkSQL and the dependency loader.
 
-Technically, Zeppelin interpreters from the same group are running in the same JVM. For more information about this, please checkout [here](../development/writingzeppelininterpreter.md).
+Technically, Zeppelin interpreters from the same group are running in the same JVM. For more information about this, please checkout [here](../development/writingzeppelininterpreter.html).
 
 Each interpreters is belonged to a single group and registered together. All of their properties are listed in the interpreter setting like below image.
 <img src="/assets/themes/zeppelin/img/screenshots/interpreter_setting_spark.png">
