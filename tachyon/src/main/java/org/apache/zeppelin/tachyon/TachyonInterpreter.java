@@ -45,32 +45,44 @@ public class TachyonInterpreter extends Interpreter {
   
   Logger logger = LoggerFactory.getLogger(TachyonInterpreter.class);
 
-  private TfsShell sh;
-  private TachyonConf conf;
-  
+  private static final String TACHYON_MASTER_HOSTNAME = "tachyon.master.hostname";
+  private static final String TACHYON_MASTER_PORT = "tachyon.master.port";
+
+  private TfsShell tfs;
+
   private int totalCommands = 0;
   private int completedCommands = 0;
 
+  private String tachyonMasterHostname;
+  private String tachyonMasterPort;
+
   public TachyonInterpreter(Properties property) {
     super(property);
+
+    tachyonMasterHostname = property.getProperty(TACHYON_MASTER_HOSTNAME);
+    tachyonMasterPort = property.getProperty(TACHYON_MASTER_PORT);
   }
 
   static {
     Interpreter.register("tachyon", "tachyon",
         TachyonInterpreter.class.getName(),
-        new InterpreterPropertyBuilder().build());
+        new InterpreterPropertyBuilder()
+                .add(TACHYON_MASTER_HOSTNAME, "localhost", "Tachyon master hostname")
+                .add(TACHYON_MASTER_PORT, "19998", "Tachyon master port")
+                .build());
   }
 
   @Override
   public void open() {
-    sh = new TfsShell(new TachyonConf());
-    
+    System.setProperty(TACHYON_MASTER_HOSTNAME, tachyonMasterHostname);
+    System.setProperty(TACHYON_MASTER_PORT, tachyonMasterPort);
+    tfs = new TfsShell(new TachyonConf());
   }
 
   @Override
   public void close() {
     try {
-      sh.close();
+      tfs.close();
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -95,7 +107,7 @@ public class TachyonInterpreter extends Interpreter {
     
     for (String command : commands) {
       String[] args = splitAndRemoveEmpty(command, " ");
-      int commandResuld = sh.run(args);
+      int commandResuld = tfs.run(args);
       System.out.println();
       if (commandResuld != 0) {
         isSuccess = false;
@@ -104,7 +116,16 @@ public class TachyonInterpreter extends Interpreter {
         completedCommands += 1;
       }
     }
-    
+
+    /*System.out.println("-----------------------");
+    System.out.println(conf);
+    System.out.println("-----------------------");
+    System.out.println(conf.get("tachyon.master.hostname"));
+    System.out.println("-----------------------");
+    System.out.println(conf.get("tachyon.master.address"));
+    System.out.println("-----------------------");
+    System.out.println(tfs.toString());*/
+
     System.out.flush();
     System.setOut(old);
     
