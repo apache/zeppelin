@@ -18,6 +18,7 @@
 package org.apache.zeppelin.notebook;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -54,6 +55,9 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonReader;
 /**
  * Collection of Notes.
  */
@@ -149,6 +153,54 @@ public class Notebook {
     notebookIndex.addIndexDoc(note);
     note.persist();
     return note;
+  }
+  
+  /**
+   * Export existing note.
+   * @param noteId - the note ID to clone
+   * @return Note JSON
+   * @throws IOException
+   */
+  public String exportNote(String noteId) throws IOException {
+    GsonBuilder gsonBuilder = new GsonBuilder();
+    gsonBuilder.setPrettyPrinting();
+    Gson gson = gsonBuilder.create();
+    Note note = getNote(noteId);
+    return gson.toJson(note);
+  }
+
+  /**
+   * import JSON as a new note.
+   * @param sourceJSON - the note JSON to import
+   * @param noteName - the name of the new note
+   * @return notebook ID
+   * @throws IOException
+   */
+  public Note importNote(String sourceJson, String noteName) throws IOException {
+    GsonBuilder gsonBuilder = new GsonBuilder();
+    gsonBuilder.setPrettyPrinting();
+    Gson gson = gsonBuilder.create();
+    JsonReader reader = new JsonReader(new StringReader(sourceJson));
+    reader.setLenient(true);
+    Note newNote;
+    try {
+      Note oldNote = gson.fromJson(reader, Note.class);
+      newNote = createNote();
+      if (noteName != null)
+        newNote.setName(noteName);
+      else
+        newNote.setName(oldNote.getName());
+      List<Paragraph> paragraphs = oldNote.getParagraphs();
+      for (Paragraph p : paragraphs) {
+        newNote.addCloneParagraph(p);
+      }
+
+      newNote.persist();
+    } catch (IOException e) {
+      throw new IOException(e);
+    }
+    
+    return newNote;
   }
 
   /**

@@ -157,13 +157,9 @@ public class NotebookRestApi {
    */
   @GET
   @Path("export/{id}")
-  public Response exportNoteBook(@PathParam("id") String noteId) {
-    GsonBuilder gsonBuilder = new GsonBuilder();
-    gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.create();
-    Note note = notebook.getNote(noteId);
-    String json = gson.toJson(note);
-    return new JsonResponse(Status.OK, "", json).build();
+  public Response exportNoteBook(@PathParam("id") String noteId) throws IOException {
+    String exportJson = notebook.exportNote(noteId);
+    return new JsonResponse(Status.OK, "", exportJson).build();
   }
 
   /**
@@ -175,28 +171,8 @@ public class NotebookRestApi {
    */
   @POST
   @Path("import")
-  public Response importNotebook(String req) {
-    GsonBuilder gsonBuilder = new GsonBuilder();
-    gsonBuilder.setPrettyPrinting();
-    Gson gson = gsonBuilder.create();
-    JsonReader reader = new JsonReader(new StringReader(req));
-    reader.setLenient(true);
-    Note newNote;
-    try {
-      Note oldNote = gson.fromJson(reader, Note.class);
-      newNote = notebook.createNote();
-      newNote.setName(oldNote.getName());
-      List<Paragraph> paragraphs = oldNote.getParagraphs();
-      for (Paragraph p : paragraphs) {
-        newNote.addCloneParagraph(p);
-      }
-
-      newNote.persist();
-    } catch (IOException e) {
-      return new JsonResponse(Status.INTERNAL_SERVER_ERROR).build();
-    }
-    notebookServer.broadcastNote(newNote);
-    notebookServer.broadcastNoteList();
+  public Response importNotebook(String req) throws IOException {
+    Note newNote = notebook.importNote(req, null);
     return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
   }
   
