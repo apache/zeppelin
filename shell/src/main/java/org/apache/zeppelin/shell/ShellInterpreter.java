@@ -49,10 +49,7 @@ public class ShellInterpreter extends Interpreter {
   int commandTimeOut = 60000;
 
   static {
-    Interpreter.register(
-        "sh",
-        "sh",
-        ShellInterpreter.class.getName());
+    Interpreter.register("sh", ShellInterpreter.class.getName());
   }
 
   public ShellInterpreter(Properties property) {
