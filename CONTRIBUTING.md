@@ -69,6 +69,7 @@ Here are some things you will need to build and test Zeppelin.
 ### Software Configuration Management (SCM)
 
 Zeppelin uses Git for its SCM system. `http://git.apache.org/incubator-zeppelin.git` you'll need git client installed in your development machine.
+For write access, `https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git`
 
 ### Integrated Development Environment (IDE)
 
@@ -114,7 +115,7 @@ To build the code, install
  * Apache Maven
 
 ## Getting the source code
-First of all, you need the Zeppelin source code. The official location for Zeppelin is [http://git.apache.org/incubator-zeppelin.git](http://git.apache.org/incubator-zeppelin.git)
+First of all, you need the Zeppelin source code. The official location for Zeppelin is [http://git.apache.org/incubator-zeppelin.git](http://git.apache.org/incubator-zeppelin.git).
 
 ### git access
 
@@ -130,6 +131,11 @@ You may also want to develop against a specific release. For example, for branch
 git clone -b branch-0.1 http://git.apache.org/incubator-zeppelin.git zeppelin
 ```
 
+or with write access
+
+```
+git clone https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git
+```
 
 ### Fork repository
 
