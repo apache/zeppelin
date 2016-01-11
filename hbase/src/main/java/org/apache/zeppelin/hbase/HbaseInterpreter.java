@@ -61,8 +61,7 @@ public class HbaseInterpreter extends Interpreter {
             .add("hbase.home", "/usr/lib/hbase/", "Installation dir. of Hbase")
             .add("hbase.ruby.sources", "lib/ruby",
                 "Path to Ruby scripts relative to 'hbase.home'")
-            .add("hbase.irb.load", "true", "Load hirb. hirb loads hbase shell. " +
-                "For unit tests it has to be turned off.")
+            .add("hbase.test.mode", "false", "Disable checks for unit and manual tests")
             .build());
   }
 
@@ -77,7 +76,8 @@ public class HbaseInterpreter extends Interpreter {
     String abs_ruby_src = hbase_home + ruby_src;
 
     File f = new File(abs_ruby_src);
-    if (!f.exists() || !f.isDirectory()) {
+    if (!Boolean.parseBoolean(getProperty("hbase.test.mode")) &&
+        (!f.exists() || !f.isDirectory())) {
       throw new InterpreterException("hbase ruby sources is not correctly defined.");
     }
 
@@ -92,17 +92,6 @@ public class HbaseInterpreter extends Interpreter {
     scriptingContainer.setOutput(this.writer);
     this.scriptingContainer.setLoadPaths(paths);
     scriptingContainer.setCompatVersion(org.jruby.CompatVersion.RUBY1_9);
-
-    // The following block is used for manual tests only.
-    if (Boolean.parseBoolean(getProperty("hbase.irb.load"))) {
-      try {
-        InputStream in = getClass().getResourceAsStream("/hbase/bin/hirb.rb");
-        scriptingContainer.runScriptlet(in, "/hbase/bin/hirb.rb");
-        in.close();
-      } catch (NullPointerException | IOException e) {
-        logger.error("Open failed:", e);
-      }
-    }
   }
 
   @Override

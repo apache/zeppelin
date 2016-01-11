@@ -40,8 +40,8 @@ public class HbaseInterpreterTest {
     Properties properties = new Properties();
     properties.put("hbase.home", "");
     properties.put("hbase.ruby.sources", "");
-    properties.put("hbase.irb.load", "false");
-    logger.info("Resource: " + properties.getProperty("hbase.home"));
+    properties.put("hbase.test.mode", "true");
+
     hbaseInterpreter = new HbaseInterpreter(properties);
     hbaseInterpreter.open();
   }
