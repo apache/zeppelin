@@ -65,7 +65,7 @@ public class ShellInterpreter extends Interpreter {
 
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
-    logger.info("Run shell command '" + cmd + "'");
+    logger.debug("Run shell command '" + cmd + "'");
     CommandLine cmdLine = CommandLine.parse("bash");
     cmdLine.addArgument("-c", false);
     cmdLine.addArgument(cmd, false);
