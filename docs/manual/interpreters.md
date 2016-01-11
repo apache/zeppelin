@@ -23,7 +23,7 @@ limitations under the License.
 ## Interpreters in Zeppelin
 In this section, we will explain about the role of interpreters, interpreters group and interpreter settings in Zeppelin.
 The concept of Zeppelin interpreter allows any language/data-processing-backend to be plugged into Zeppelin.
-Currently, Zeppelin supports many interpreters such as Scala( with Apache Spark ), Python( with Apache Spark ), SparkSQL, Hive, Markdown, Shell and so on.
+Currently, Zeppelin supports many interpreters such as Scala ( with Apache Spark ), Python ( with Apache Spark ), SparkSQL, Hive, Markdown, Shell and so on.
 
 <br/>
 ## What is Zeppelin interpreter?
