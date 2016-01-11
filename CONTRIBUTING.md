@@ -68,7 +68,8 @@ Here are some things you will need to build and test Zeppelin.
 
 ### Software Configuration Management (SCM)
 
-Zeppelin uses Git for its SCM system. Hosted by github.com. `https://github.com/apache/incubator-zeppelin` you'll need git client installed in your development machine.
+Zeppelin uses Git for its SCM system. `http://git.apache.org/incubator-zeppelin.git` you'll need git client installed in your development machine.
+For write access, `https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git`
 
 ### Integrated Development Environment (IDE)
 
@@ -114,26 +115,31 @@ To build the code, install
  * Apache Maven
 
 ## Getting the source code
-First of all, you need the Zeppelin source code. The official location for Zeppelin is [https://github.com/apache/incubator-zeppelin](https://github.com/apache/incubator-zeppelin)
+First of all, you need the Zeppelin source code. The official location for Zeppelin is [http://git.apache.org/incubator-zeppelin.git](http://git.apache.org/incubator-zeppelin.git).
 
 ### git access
 
 Get the source code on your development machine using git.
 
 ```
-git clone git@github.com:apache/incubator-zeppelin.git zeppelin
+git clone http://git.apache.org/incubator-zeppelin.git zeppelin
 ```
 
 You may also want to develop against a specific release. For example, for branch-0.1
 
 ```
-git clone -b branch-0.1 git@github.com:apache/incubator-zeppelin.git zeppelin
+git clone -b branch-0.1 http://git.apache.org/incubator-zeppelin.git zeppelin
 ```
 
+or with write access
+
+```
+git clone https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git
+```
 
 ### Fork repository
 
-If you want not only build Zeppelin but also make change, then you need fork Zeppelin repository and make pull request.
+If you want not only build Zeppelin but also make change, then you need fork Zeppelin github mirror repository (https://github.com/apache/incubator-zeppelin) and make pull request.
 
 
 ## Build
