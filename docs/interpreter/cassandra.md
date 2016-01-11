@@ -449,14 +449,14 @@ Bound values are not mandatory for the `@bind` statement. However if you provide
 * Date values should be enclosed between simple quotes ( ‘ ) and respect the formats:
   1. yyyy-MM-dd HH:MM:ss
   2. yyyy-MM-dd HH:MM:ss.SSS
-* **Null** is parsed as-is.
-* **Boolean** (true|false) is parsed as-is.
+* **null** is parsed as-is.
+* **boolean** (true|false) is parsed as-is.
 * collection values must follow the **[standard CQL syntax]**:
   * list: [‘list_item1’, ’list_item2’, ...]
   * set: {‘set_item1’, ‘set_item2’, …}
   * map: {‘key1’: ‘val1’, ‘key2’: ‘val2’, …}
-* **Tuple** values should be enclosed between parenthesis ( see **[Tuple CQL syntax]** ): (‘text’, 123, true)
-* **Udt** values should be enclosed between brackets ( see **[UDT CQL syntax]** ): {stree_name: ‘Beverly Hills’, number: 104, zip_code: 90020, state: ‘California’, …}
+* **tuple** values should be enclosed between parenthesis ( see **[Tuple CQL syntax]** ): (‘text’, 123, true)
+* **udt** values should be enclosed between brackets ( see **[UDT CQL syntax]** ): {stree_name: ‘Beverly Hills’, number: 104, zip_code: 90020, state: ‘California’, …}
 
 > It is possible to use the @bind statement inside a batch:
 > 
