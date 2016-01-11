@@ -159,13 +159,16 @@ public class Notebook {
    * Export existing note.
    * @param noteId - the note ID to clone
    * @return Note JSON
-   * @throws IOException
+   * @throws IOException, IllegalArgumentException
    */
-  public String exportNote(String noteId) throws IOException {
+  public String exportNote(String noteId) throws IOException, IllegalArgumentException {
     GsonBuilder gsonBuilder = new GsonBuilder();
     gsonBuilder.setPrettyPrinting();
     Gson gson = gsonBuilder.create();
     Note note = getNote(noteId);
+    if (note == null) {
+      throw new IllegalArgumentException(noteId + "not found");
+    }
     return gson.toJson(note);
   }
 
