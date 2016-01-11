@@ -172,7 +172,7 @@ public class ProcessData {
       boolean outputProduced = true;                //Flag to check if previous iteration produced any output
       while (isRunning(this.checked_process) || outputProduced) {   //Continue if process is alive or some output was produced on previous iteration and there may be still some data to read.
         outputProduced = false;
-        ZeppelinITUtils.sleep(100, false);                                  //Some local commands can exit fast, but immediate stream reading will give no output and after iteration, 'while' condition will be false so we will not read out any output while it is still there, just need to wait for some time for it to appear in streams.
+        TestUtils.sleep(100, false);                                  //Some local commands can exit fast, but immediate stream reading will give no output and after iteration, 'while' condition will be false so we will not read out any output while it is still there, just need to wait for some time for it to appear in streams.
 
         StringBuilder tempSB = new StringBuilder();
         while (inReader.ready()) {

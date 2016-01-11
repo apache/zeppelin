@@ -44,7 +44,7 @@ public class WebDriverManager {
 
   private static String downLoadsDir = "";
 
-  static WebDriver getWebDriver() {
+  public static WebDriver getWebDriver() {
     WebDriver driver = null;
 
     if (driver == null) {
