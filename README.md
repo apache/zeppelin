@@ -67,6 +67,7 @@ Set spark major version
 Available profiles are
 
 ```
+-Pspark-1.6
 -Pspark-1.5
 -Pspark-1.4
 -Pspark-1.3
@@ -134,13 +135,13 @@ Here're some examples:
 
 ```
 # basic build
-mvn clean package -Pspark-1.5 -Phadoop-2.4 -Pyarn -Ppyspark
+mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark
 
 # spark-cassandra integration
 mvn clean package -Pcassandra-spark-1.5 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
 
 # with CDH
-mvn clean package -Pspark-1.2 -Dhadoop.version=2.5.0-cdh5.3.0 -Phadoop-2.4 -Pvendor-repo -DskipTests
+mvn clean package -Pspark-1.5 -Dhadoop.version=2.6.0-cdh5.5.0 -Phadoop-2.6 -Pvendor-repo -DskipTests
 
 # with MapR
 mvn clean package -Pspark-1.5 -Pmapr50 -DskipTests
@@ -153,6 +154,11 @@ mvn clean package -Pspark-1.5 -Pmapr50 -DskipTests
 mvn clean package -Dignite.version=1.1.0-incubating -DskipTests
 ```
 
+#### Scalding Interpreter
+
+```
+mvn clean package -Pscalding -DskipTests
+```
 
 ### Configure
 If you wish to configure Zeppelin option (like port number), configure the following files:

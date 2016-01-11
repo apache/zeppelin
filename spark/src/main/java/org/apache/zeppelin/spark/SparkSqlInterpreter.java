@@ -41,9 +41,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Spark SQL interpreter for Zeppelin.
- *
- * @author Leemoonsoo
- *
  */
 public class SparkSqlInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(SparkSqlInterpreter.class);

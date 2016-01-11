@@ -23,6 +23,7 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   vm.connected = websocketMsgSrv.isConnected();
   vm.websocketMsgSrv = websocketMsgSrv;
   vm.arrayOrderingSrv = arrayOrderingSrv;
+  vm.authenticated = $rootScope.ticket.principal !== 'anonymous';
 
   angular.element('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
@@ -50,6 +51,8 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   function loadNotes() {
     websocketMsgSrv.getNotebookList();
   }
+
+  vm.authenticated = $rootScope.ticket.principal !== 'anonymous';
 
   function isActive(noteId) {
     return ($routeParams.noteId === noteId);

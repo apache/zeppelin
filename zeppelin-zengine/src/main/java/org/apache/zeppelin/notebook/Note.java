@@ -49,10 +49,9 @@ import com.google.gson.Gson;
  * Binded interpreters for a note
  */
 public class Note implements Serializable, JobListener {
-  transient Logger logger = LoggerFactory.getLogger(Note.class);
   private static final long serialVersionUID = 7920699076577612429L;
 
-  List<Paragraph> paragraphs = new LinkedList<>();
+  final List<Paragraph> paragraphs = new LinkedList<>();
   private String name = "";
   private String id;
 
@@ -245,12 +244,29 @@ public class Note implements Serializable, JobListener {
    * @param index new index
    */
   public void moveParagraph(String paragraphId, int index) {
+    moveParagraph(paragraphId, index, false);
+  }
+
+  /**
+   * Move paragraph into the new index (order from 0 ~ n-1).
+   *
+   * @param paragraphId
+   * @param index new index
+   * @param throwWhenIndexIsOutOfBound whether throw IndexOutOfBoundException
+   *                                   when index is out of bound
+   */
+  public void moveParagraph(String paragraphId, int index, boolean throwWhenIndexIsOutOfBound) {
     synchronized (paragraphs) {
-      int oldIndex = -1;
+      int oldIndex;
       Paragraph p = null;
 
       if (index < 0 || index >= paragraphs.size()) {
-        return;
+        if (throwWhenIndexIsOutOfBound) {
+          throw new IndexOutOfBoundsException("paragraph size is " + paragraphs.size() +
+              " , index is " + index);
+        } else {
+          return;
+        }
       }
 
       for (int i = 0; i < paragraphs.size(); i++) {
@@ -263,14 +279,8 @@ public class Note implements Serializable, JobListener {
         }
       }
 
-      if (p == null) {
-        return;
-      } else {
-        if (oldIndex < index) {
-          paragraphs.add(index, p);
-        } else {
-          paragraphs.add(index, p);
-        }
+      if (p != null) {
+        paragraphs.add(index, p);
       }
     }
   }
@@ -312,8 +322,15 @@ public class Note implements Serializable, JobListener {
         Map<String, String> info = new HashMap<>();
         info.put("id", p.getId());
         info.put("status", p.getStatus().toString());
-        info.put("started", p.getDateStarted().toString());
-        info.put("finished", p.getDateFinished().toString());
+        if (p.getDateStarted() != null) {
+          info.put("started", p.getDateStarted().toString());
+        }
+        if (p.getDateFinished() != null) {
+          info.put("finished", p.getDateFinished().toString());
+        }
+        if (p.getStatus().isRunning()) {
+          info.put("progress", String.valueOf(p.progress()));
+        }
         paragraphsInfo.add(info);
       }
     }

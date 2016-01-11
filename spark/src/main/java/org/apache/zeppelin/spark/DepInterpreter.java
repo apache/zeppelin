@@ -41,6 +41,8 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.spark.dep.DependencyContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonatype.aether.resolution.ArtifactResolutionException;
 import org.sonatype.aether.resolution.DependencyResolutionException;
 
@@ -80,6 +82,7 @@ public class DepInterpreter extends Interpreter {
   private DependencyContext depc;
   private SparkJLineCompletion completor;
   private SparkILoop interpreter;
+  static final Logger LOGGER = LoggerFactory.getLogger(DepInterpreter.class);
 
   public DepInterpreter(Properties property) {
     super(property);
@@ -195,6 +198,7 @@ public class DepInterpreter extends Interpreter {
       depc.fetch();
     } catch (MalformedURLException | DependencyResolutionException
         | ArtifactResolutionException e) {
+      LOGGER.error("Exception in DepInterpreter while interpret ", e);
       return new InterpreterResult(Code.ERROR, e.toString());
     }
 

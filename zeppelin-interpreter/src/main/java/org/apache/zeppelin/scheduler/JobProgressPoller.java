@@ -22,9 +22,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * TODO(moon) : add description.
- *
- * @author Leemoonsoo
- *
  */
 public class JobProgressPoller extends Thread {
   public static final long DEFAULT_INTERVAL_MSEC = 500;
@@ -60,6 +57,7 @@ public class JobProgressPoller extends Thread {
       try {
         Thread.sleep(intervalMs);
       } catch (InterruptedException e) {
+        logger.error("Exception in JobProgressPoller while run Thread.sleep", e);
       }
     }
   }

@@ -20,12 +20,12 @@ package org.apache.zeppelin.rest.message;
 /**
  * NewParagraphRequest rest api request message
  *
- * It is used for NewNotebookRequest with initial paragraphs
- *
+ * index field will be ignored when it's used to provide initial paragraphs
  */
 public class NewParagraphRequest {
   String title;
   String text;
+  Double index;
 
   public NewParagraphRequest() {
 
@@ -37,5 +37,9 @@ public class NewParagraphRequest {
 
   public String getText() {
     return text;
+  }
+
+  public Double getIndex() {
+    return index;
   }
 }

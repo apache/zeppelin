@@ -110,6 +110,7 @@ With the `search` command, you can send a search query to Elasticsearch. There a
   * This is a shortcut to a query like that: `{ "query": { "query_string": { "query": "__HERE YOUR QUERY__", "analyze_wildcard": true } } }` 
   * See [Elasticsearch query string syntax](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax) for more details about the content of such a query.
 
+
 ```bash
 | %elasticsearch
 | search /index1,index2,.../type1,type2,...  <JSON document containing the query or query_string elements>
@@ -124,6 +125,9 @@ If you want to modify the size of the result set, you can add a line that is set
 ```
 
 
+> A search query can also contain [aggregations](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html). If there is at least one aggregation, the result of the first aggregation is shown, otherwise, you get the search hits.
+
+
 Examples:
 
   * With a JSON query:
@@ -134,6 +138,15 @@ Examples:
 |
 | %elasticsearch
 | search /logs { "query": { "query_string": { "query": "request.method:GET AND status:200" } } }
+|
+| %elasticsearch
+| search /logs { "aggs": {
+|   "content_length_stats": {
+|     "extended_stats": {
+|       "field": "content_length"
+|     }
+|   }
+| } } 
   ```
 
   * With query_string elements:
@@ -159,16 +172,17 @@ Suppose we have a JSON document:
     "url": "/zeppelin/4cd001cd-c517-4fa9-b8e5-a06b8f4056c4",
     "headers": [ "Accept: *.*", "Host: apache.org"]
   },
-  "status": "403"
+  "status": "403",
+  "content_length": 1234
 }
 ```
 
 The data will be flattened like this:
 
 
-date | request.headers[0] | request.headers[1] | request.method | request.url | status
------|--------------------|--------------------|----------------|-------------|-------
-2015-12-08T21:03:13.588Z | Accept: \*.\* | Host: apache.org | GET | /zeppelin/4cd001cd-c517-4fa9-b8e5-a06b8f4056c4 | 403
+content_length | date | request.headers[0] | request.headers[1] | request.method | request.url | status
+---------------|------|--------------------|--------------------|----------------|-------------|-------
+1234 | 2015-12-08T21:03:13.588Z | Accept: \*.\* | Host: apache.org | GET | /zeppelin/4cd001cd-c517-4fa9-b8e5-a06b8f4056c4 | 403
 
 
 Examples:
@@ -184,6 +198,12 @@ Examples:
 
 * With a query string:
 ![Elasticsearch - Search with query string](../assets/themes/zeppelin/img/docs-img/elasticsearch-query-string.png)
+
+* With a query containing a multi-value metric aggregation:
+![Elasticsearch - Search with aggregation (multi-value metric)](../assets/themes/zeppelin/img/docs-img/elasticsearch-agg-multi-value-metric.png)
+
+* With a query containing a multi-bucket aggregation:
+![Elasticsearch - Search with aggregation (multi-bucket)](../assets/themes/zeppelin/img/docs-img/elasticsearch-agg-multi-bucket-pie.png)
 
 
 #### count

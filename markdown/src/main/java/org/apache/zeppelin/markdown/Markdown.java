@@ -29,16 +29,15 @@ import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.markdown4j.Markdown4jProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Markdown interpreter for Zeppelin.
- *
- * @author Leemoonsoo
- * @author anthonycorbacho
- *
  */
 public class Markdown extends Interpreter {
   private Markdown4jProcessor md;
+  static final Logger LOGGER = LoggerFactory.getLogger(Markdown.class);
 
   static {
     Interpreter.register("md", Markdown.class.getName());
@@ -62,6 +61,7 @@ public class Markdown extends Interpreter {
     try {
       html = md.process(st);
     } catch (IOException | java.lang.RuntimeException e) {
+      LOGGER.error("Exception in Markdown while interpret ", e);
       return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
     }
     return new InterpreterResult(Code.SUCCESS, "%html " + html);

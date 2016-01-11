@@ -24,9 +24,6 @@ import org.sonatype.aether.RepositoryEvent;
 
 /**
  * Simple listener that print log.
- *
- * @author anthonycorbacho
- *
  */
 public class RepositoryListener extends AbstractRepositoryListener {
   Logger logger = LoggerFactory.getLogger(RepositoryListener.class);

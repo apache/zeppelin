@@ -376,9 +376,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
 
   /**
    * Wrapper class.
-   *
-   * @author Leemoonsoo
-   *
    */
   public static enum ConfVars {
     ZEPPELIN_HOME("zeppelin.home", "../"),
@@ -415,7 +412,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.geode.GeodeOqlInterpreter,"
         + "org.apache.zeppelin.postgresql.PostgreSqlInterpreter,"
         + "org.apache.zeppelin.kylin.KylinInterpreter,"
-        + "org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter"),
+        + "org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter,"
+        + "org.apache.zeppelin.scalding.ScaldingInterpreter"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
@@ -427,17 +425,14 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     ZEPPELIN_NOTEBOOK_S3_BUCKET("zeppelin.notebook.s3.bucket", "zeppelin"),
     ZEPPELIN_NOTEBOOK_S3_USER("zeppelin.notebook.s3.user", "user"),
     ZEPPELIN_NOTEBOOK_STORAGE("zeppelin.notebook.storage", VFSNotebookRepo.class.getName()),
-    // Notebook list and contents will be always loaded from repository if set true.
-    // If set false, modified notebooks or new notebooks added on file system level
-    // won't be reflected on Zeppelin till user restarts Zeppelin.
-    ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE("zeppelin.notebook.reloadAllNotesFromStorage", false),
     ZEPPELIN_INTERPRETER_REMOTE_RUNNER("zeppelin.interpreter.remoterunner", "bin/interpreter.sh"),
     // Decide when new note is created, interpreter settings will be binded automatically or not.
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),
     ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf"),
     // Allows a way to specify a ',' separated list of allowed origins for rest and websockets
     // i.e. http://localhost:8080
-    ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*");
+    ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
+    ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true);
 
     private String varName;
     @SuppressWarnings("rawtypes")
@@ -572,6 +567,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         try {
           checkType(value);
         } catch (Exception e) {
+          LOG.error("Exception in ZeppelinConfiguration while isType", e);
           return false;
         }
         return true;

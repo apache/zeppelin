@@ -17,13 +17,16 @@
  */
 package org.apache.zeppelin.tajo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.Map;
-import java.io.InputStream;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 
 /**
  * This is borrowed from Apache Commons DBCP2.
@@ -31,6 +34,9 @@ import java.io.UnsupportedEncodingException;
  * A dummy {@link java.sql.ResultSet}, for testing purposes.
  */
 public class TesterResultSet implements ResultSet {
+
+  Logger LOGGER = LoggerFactory.getLogger(TesterResultSet.class);
+
   public TesterResultSet(Statement stmt) {
     _statement = stmt;
   }
@@ -262,6 +268,8 @@ public class TesterResultSet implements ResultSet {
       return columnName.getBytes("UTF-8");
     } catch (UnsupportedEncodingException e) {
       // Impossible. JVMs are required to support UTF-8
+      LOGGER.error("Exception in TesterResultSet while getBytes, Impossible. JVMs are required to" +
+          " support UTF-8", e);
       return null;
     }
   }

@@ -24,6 +24,7 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 
 /**
  * InterpreterGroup is list of interpreters in the same group.
@@ -32,7 +33,10 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 public class InterpreterGroup extends LinkedList<Interpreter>{
   String id;
 
+  Logger LOGGER = Logger.getLogger(InterpreterGroup.class);
+
   AngularObjectRegistry angularObjectRegistry;
+  RemoteInterpreterProcess remoteInterpreterProcess;    // attached remote interpreter process
 
   public InterpreterGroup(String id) {
     this.id = id;
@@ -72,6 +76,14 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
     this.angularObjectRegistry = angularObjectRegistry;
   }
 
+  public RemoteInterpreterProcess getRemoteInterpreterProcess() {
+    return remoteInterpreterProcess;
+  }
+
+  public void setRemoteInterpreterProcess(RemoteInterpreterProcess remoteInterpreterProcess) {
+    this.remoteInterpreterProcess = remoteInterpreterProcess;
+  }
+
   public void close() {
     List<Thread> closeThreads = new LinkedList<Thread>();
 
@@ -90,8 +102,7 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
       try {
         t.join();
       } catch (InterruptedException e) {
-        Logger logger = Logger.getLogger(InterpreterGroup.class);
-        logger.error("Can't close interpreter", e);
+        LOGGER.error("Can't close interpreter", e);
       }
     }
   }
@@ -114,8 +125,14 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
       try {
         t.join();
       } catch (InterruptedException e) {
-        Logger logger = Logger.getLogger(InterpreterGroup.class);
-        logger.error("Can't close interpreter", e);
+        LOGGER.error("Can't close interpreter", e);
+      }
+    }
+
+    // make sure remote interpreter process terminates
+    if (remoteInterpreterProcess != null) {
+      while (remoteInterpreterProcess.referenceCount() > 0) {
+        remoteInterpreterProcess.dereference();
       }
     }
   }
