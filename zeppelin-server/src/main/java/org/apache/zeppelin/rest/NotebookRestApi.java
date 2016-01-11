@@ -173,7 +173,7 @@ public class NotebookRestApi {
    * @return JSON with new note ID
    * @throws IOException
    */
-  @PUT
+  @POST
   @Path("import")
   public Response importNotebook(String req) {
     GsonBuilder gsonBuilder = new GsonBuilder();

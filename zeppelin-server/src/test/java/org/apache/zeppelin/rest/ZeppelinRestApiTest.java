@@ -367,11 +367,11 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     String sourceNoteID = note.getId();
     // get note content as JSON
     String oldJson = getNoteContent(sourceNoteID);
-    // call notebook put
-    PutMethod importPut = httpPut("/notebook/import/", oldJson);
-    assertThat(importPut, isCreated());
+    // call notebook post
+    PostMethod importPost = httpPost("/notebook/import/", oldJson);
+    assertThat(importPost, isCreated());
     resp =
-        gson.fromJson(importPut.getResponseBodyAsString(),
+        gson.fromJson(importPost.getResponseBodyAsString(),
             new TypeToken<Map<String, Object>>() {}.getType());
     String importId = (String) resp.get("body");
 
@@ -383,7 +383,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     // cleanup
     ZeppelinServer.notebook.removeNote(note.getId());
     ZeppelinServer.notebook.removeNote(newNote.getId());
-    importPut.releaseConnection();
+    importPost.releaseConnection();
   }
 
   private String getNoteContent(String id) throws IOException {
