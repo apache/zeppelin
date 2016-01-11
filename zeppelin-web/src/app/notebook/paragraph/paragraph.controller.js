@@ -97,16 +97,15 @@ angular.module('zeppelinWebApp')
 
   $scope.renderText = function() {
     var retryRenderer = function() {
-      if (!$scope.paragraph.result || !$scope.paragraph.result.msg) {
-        // nothing to render
-        return;
-      }
 
       var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
       if (textEl.length) {
-        // clear all lines before append
+        // clear all lines before render
         $scope.clearTextOutput();
-        $scope.appendTextOutput($scope.paragraph.result.msg);
+
+        if ($scope.paragraph.result && $scope.paragraph.result.msg) {
+          $scope.appendTextOutput($scope.paragraph.result.msg);
+        }
       } else {
         $timeout(retryRenderer, 10);
       }
@@ -205,6 +204,7 @@ angular.module('zeppelinWebApp')
          data.paragraph.status !== $scope.paragraph.status ||
          data.paragraph.jobName !== $scope.paragraph.jobName ||
          data.paragraph.title !== $scope.paragraph.title ||
+         !data.paragraph.result !== !$scope.paragraph.result ||
          data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
          !angular.equals(data.paragraph.settings, $scope.paragraph.settings) ||
          !angular.equals(data.paragraph.config, $scope.paragraph.config))
@@ -214,7 +214,7 @@ angular.module('zeppelinWebApp')
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
-      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished);
+      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) || !data.paragraph.result !== !$scope.paragraph.result;
 
       var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
 
@@ -276,8 +276,6 @@ angular.module('zeppelinWebApp')
         $scope.renderAngular();
       } else if (newType === 'TEXT' && resultRefreshed) {
         $scope.renderText();
-      } else if (newType === 'TEXT' && !$scope.paragraph.result) {
-        $scope.clearTextOutput();
       }
 
       if (statusChanged || resultRefreshed) {
