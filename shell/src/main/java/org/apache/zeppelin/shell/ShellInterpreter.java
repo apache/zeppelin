@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 public class ShellInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(ShellInterpreter.class);
   private static final String EXECUTOR_KEY = "executor";
-  int commandTimeOut = 60000;
+  int commandTimeOut = 600000;
 
   static {
     Interpreter.register("sh", ShellInterpreter.class.getName());
