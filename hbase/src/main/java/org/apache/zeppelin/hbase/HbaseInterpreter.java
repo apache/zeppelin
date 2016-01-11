@@ -27,6 +27,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -71,27 +73,28 @@ public class HbaseInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    String hbase_home = getProperty("hbase.home");
-    String ruby_src = getProperty("hbase.ruby.sources");
-    String abs_ruby_src = hbase_home + ruby_src;
-
-    File f = new File(abs_ruby_src);
-    if (!Boolean.parseBoolean(getProperty("hbase.test.mode")) &&
-        (!f.exists() || !f.isDirectory())) {
-      throw new InterpreterException("hbase ruby sources is not correctly defined.");
-    }
-
-    logger.info("Home:" + hbase_home);
-    logger.info("Ruby Src:" + ruby_src);
-
-    Properties props = System.getProperties();
-    props.setProperty("hbase.ruby.sources", abs_ruby_src);
     this.scriptingContainer  = new ScriptingContainer(LocalContextScope.SINGLETON);
-    List<String> paths = new ArrayList<>(Arrays.asList(abs_ruby_src));
     this.writer = new StringWriter();
     scriptingContainer.setOutput(this.writer);
-    this.scriptingContainer.setLoadPaths(paths);
     scriptingContainer.setCompatVersion(org.jruby.CompatVersion.RUBY1_9);
+
+    if (!Boolean.parseBoolean(getProperty("hbase.test.mode"))) {
+      String hbase_home = getProperty("hbase.home");
+      String ruby_src = getProperty("hbase.ruby.sources");
+      Path abs_ruby_src = Paths.get(hbase_home, ruby_src).toAbsolutePath();
+
+      logger.info("Home:" + hbase_home);
+      logger.info("Ruby Src:" + ruby_src);
+
+      File f = abs_ruby_src.toFile();
+      if (!f.exists() || !f.isDirectory()) {
+        throw new InterpreterException("hbase ruby sources is not available at '" + abs_ruby_src
+            + "'");
+      }
+
+      List<String> paths = new ArrayList<>(Arrays.asList(abs_ruby_src.toAbsolutePath().toString()));
+      this.scriptingContainer.setLoadPaths(paths);
+    }
   }
 
   @Override
