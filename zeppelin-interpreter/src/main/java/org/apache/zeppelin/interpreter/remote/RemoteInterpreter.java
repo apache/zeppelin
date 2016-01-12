@@ -56,14 +56,15 @@ public class RemoteInterpreter extends Interpreter {
   FormType formType;
   boolean initialized;
   private Map<String, String> env;
-
   private int connectTimeout;
+  private int maxPoolSize;
 
   public RemoteInterpreter(Properties property,
       String className,
       String interpreterRunner,
       String interpreterPath,
-      int connectTimeout) {
+      int connectTimeout,
+      int maxPoolSize) {
     super(property);
 
     this.className = className;
@@ -72,6 +73,7 @@ public class RemoteInterpreter extends Interpreter {
     this.interpreterPath = interpreterPath;
     env = new HashMap<String, String>();
     this.connectTimeout = connectTimeout;
+    this.maxPoolSize = maxPoolSize;
   }
 
   public RemoteInterpreter(Properties property,
@@ -119,7 +121,7 @@ public class RemoteInterpreter extends Interpreter {
 
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
     int rc = interpreterProcess.reference(getInterpreterGroup());
-
+    interpreterProcess.setMaxPoolSize(this.maxPoolSize);
     synchronized (interpreterProcess) {
       // when first process created
       if (rc == 1) {
@@ -325,7 +327,7 @@ public class RemoteInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    int maxConcurrency = 10;
+    int maxConcurrency = maxPoolSize;
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
     if (interpreterProcess == null) {
       return null;
