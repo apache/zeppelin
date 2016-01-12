@@ -17,27 +17,26 @@ language: java
 
 matrix:
   include:
+    # Test all modules
     - jdk: "oraclejdk7"
-      env: SPARK_VER="1.6.0" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Ppyspark -Pscalding" 
+      env: SPARK_VER="1.6.0" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Ppyspark -Pscalding" BUILD_FLAG="package -Pbuild-distr" TEST_FLAG="verify -Pusing-packaged-distr"
+    # Test only spark modules
     - jdk: "oraclejdk7"
-      env: SPARK_VER="1.5.2" HADOOP_VER="2.3" PROFILE="-Pspark-1.5 -Phadoop-2.3 -Ppyspark -Pscalding"
+      env: SPARK_VER="1.5.2" HADOOP_VER="2.3" PROFILE="-Pspark-1.5 -Phadoop-2.3 -Ppyspark -pl 'zeppelin-interpreter,spark-dependencies,spark'" BUILD_FLAG="package -DskipTests" TEST_FLAG="package"
 
 before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
 
 install:
-  - mvn package -DskipTests ${PROFILE} -B
+  - mvn $BUILD_FLAG $PROFILE -B
 
 before_script:
-  -
+  - ./testing/startSparkCluster.sh $SPARK_VER $HADOOP_VER
+  - echo "export SPARK_HOME=`pwd`/spark-$SPARK_VER-bin-hadoop$HADOOP_VER" > conf/zeppelin-env.sh
 
 script:
-  - mvn package -Pbuild-distr ${PROFILE} -B
-  - ./testing/startSparkCluster.sh ${SPARK_VER} ${HADOOP_VER}
-  - echo "export SPARK_HOME=`pwd`/spark-${SPARK_VER}-bin-hadoop${HADOOP_VER}" > conf/zeppelin-env.sh
-  - mvn verify -Pusing-packaged-distr ${PROFILE} -B
-  - ./testing/stopSparkCluster.sh ${SPARK_VER} ${HADOOP_VER}
+  - mvn $TEST_FLAG $PROFILE -B
 
 after_failure:
   - cat target/rat.txt
@@ -46,7 +45,7 @@ after_failure:
   - cat zeppelin-distribution/target/zeppelin-*-SNAPSHOT/zeppelin-*-SNAPSHOT/logs/zeppelin*.out
 
 after_script:
-  -
+  - ./testing/stopSparkCluster.sh $SPARK_VER $HADOOP_VER
 
 notifications:
   slack:
