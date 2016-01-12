@@ -23,9 +23,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -116,15 +114,6 @@ public class TachyonInterpreter extends Interpreter {
         completedCommands += 1;
       }
     }
-
-    /*System.out.println("-----------------------");
-    System.out.println(conf);
-    System.out.println("-----------------------");
-    System.out.println(conf.get("tachyon.master.hostname"));
-    System.out.println("-----------------------");
-    System.out.println(conf.get("tachyon.master.address"));
-    System.out.println("-----------------------");
-    System.out.println(tfs.toString());*/
 
     System.out.flush();
     System.setOut(old);
