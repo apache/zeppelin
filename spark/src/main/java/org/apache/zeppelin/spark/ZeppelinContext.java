@@ -220,7 +220,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
       paramOptions[i++] = new ParamOption(valueAndDisplayValue._1(), valueAndDisplayValue._2());
     }
 
-    return gui.select(name, "", paramOptions);
+    return gui.select(name, defaultValue, paramOptions);
   }
 
   public void setGui(GUI o) {
