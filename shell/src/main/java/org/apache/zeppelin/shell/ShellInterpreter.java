@@ -89,6 +89,8 @@ public class ShellInterpreter extends Interpreter {
       if (exitValue == 143) {
         code = Code.INCOMPLETE;
         msg = msg + "Paragraph received a SIGTERM";
+        logger.info("The paragraph " + contextInterpreter.getParagraphId()
+            + " stopped executing: " + msg);
       }
       return new InterpreterResult(code, msg);
     } catch (IOException e) {
