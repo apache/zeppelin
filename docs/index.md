@@ -117,7 +117,7 @@ This way, you can easily embed it as an iframe inside of your website.</p>
 <br />
 ### 100% Opensource
 
-Apache Zeppelin (incubating) is Apache2 Licensed software. Please check out the [source repository](https://github.com/apache/incubator-zeppelin) and [How to contribute](./development/howtocontribute.html)
+Apache Zeppelin (incubating) is Apache2 Licensed software. Please check out the [source repository](http://git.apache.org/incubator-zeppelin.git) and [How to contribute](./development/howtocontribute.html)
 
 Zeppelin has a very active development community.
 Join the [Mailing list](./community.html) and report issues on our [Issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN).

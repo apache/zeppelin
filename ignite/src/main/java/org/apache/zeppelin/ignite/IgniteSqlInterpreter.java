@@ -154,6 +154,7 @@ public class IgniteSqlInterpreter extends Interpreter {
         }
       }
     } catch (Exception e) {
+      logger.error("Exception in IgniteSqlInterpreter while InterpreterResult interpret: ", e);
       return IgniteInterpreterUtils.buildErrorResult(e);
     } finally {
       curStmt = null;
@@ -169,6 +170,7 @@ public class IgniteSqlInterpreter extends Interpreter {
         curStmt.cancel();
       } catch (SQLException e) {
         // No-op.
+        logger.info("No-op while cancel in IgniteSqlInterpreter", e);
       } finally {
         curStmt = null;
       }

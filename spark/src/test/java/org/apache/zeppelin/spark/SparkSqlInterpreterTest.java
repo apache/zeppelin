@@ -33,6 +33,8 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SparkSqlInterpreterTest {
 
@@ -40,6 +42,8 @@ public class SparkSqlInterpreterTest {
   private SparkInterpreter repl;
   private InterpreterContext context;
   private InterpreterGroup intpGroup;
+
+  Logger LOGGER = LoggerFactory.getLogger(SparkSqlInterpreterTest.class);
 
   @Before
   public void setUp() throws Exception {
@@ -96,6 +100,7 @@ public class SparkSqlInterpreterTest {
       fail("Exception not catched");
     } catch (Exception e) {
       // okay
+      LOGGER.info("Exception in SparkSqlInterpreterTest while test ", e);
     }
     assertEquals(InterpreterResult.Code.SUCCESS, sql.interpret("select case when name==\"aa\" then name else name end from test", context).code());
   }

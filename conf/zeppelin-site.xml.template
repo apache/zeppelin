@@ -180,5 +180,11 @@
   <description>Allowed sources for REST and WebSocket requests (i.e. http://onehost:8080,http://otherhost.com). If you leave * you are vulnerable to https://issues.apache.org/jira/browse/ZEPPELIN-173</description>
 </property>
 
+<property>
+  <name>zeppelin.anonymous.allowed</name>
+  <value>true</value>
+  <description>Anonymous user allowed by default</description>
+</property>
+
 </configuration>
 

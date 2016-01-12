@@ -128,7 +128,7 @@ public class LensInterpreter extends Interpreter {
       s_logger.info("LensInterpreter created");
     }
     catch (Exception e) {
-      e.printStackTrace();
+      s_logger.error(e.toString(), e);
       s_logger.error("unable to create lens interpreter", e);
     }
   }
@@ -375,6 +375,7 @@ public class LensInterpreter extends Interpreter {
         closeShell(s_paraToQH.get(context.getParagraphId()).getShell());
       } catch (Exception e) {
         // ignore
+        s_logger.info("Exception in LensInterpreter while cancel finally, ignore", e);
       }
       s_paraToQH.remove(context.getParagraphId());
       closeShell(shell);

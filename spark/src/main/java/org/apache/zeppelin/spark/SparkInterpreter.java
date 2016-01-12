@@ -82,7 +82,7 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
  *
  */
 public class SparkInterpreter extends Interpreter {
-  Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
+  public static Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
 
   static {
     Interpreter.register(
@@ -186,7 +186,7 @@ public class SparkInterpreter extends Interpreter {
       }
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
-      e.printStackTrace();
+      logger.error(e.toString(), e);
       return null;
     }
     return pl;
@@ -335,6 +335,10 @@ public class SparkInterpreter extends Interpreter {
       conf.set("spark.submit.pyArchives", Joiner.on(":").join(pythonLibs));
     }
 
+    // Distributes needed libraries to workers.
+    if (getProperty("master").equals("yarn-client")) {
+      conf.set("spark.yarn.isPython", "true");
+    }
 
     SparkContext sparkContext = new SparkContext(conf);
     return sparkContext;

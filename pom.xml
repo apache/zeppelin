@@ -208,6 +208,18 @@
         <version>4.11</version>
         <scope>test</scope>
       </dependency>
+
+      <!-- Apache Shiro -->
+      <dependency>
+        <groupId>org.apache.shiro</groupId>
+        <artifactId>shiro-core</artifactId>
+        <version>1.2.3</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.shiro</groupId>
+        <artifactId>shiro-web</artifactId>
+        <version>1.2.3</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -694,7 +706,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.4</version>
+            <version>1.6</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -709,15 +721,5 @@
       </build>
     </profile>
   </profiles>
-  <distributionManagement>
-    <site>
-      <id>Website</id>
-      <url>${site_url}</url>
-    </site>
-    <repository>
-      <id>${repoid}</id>
-      <name>${reponame}</name>
-      <url>${repourl}</url>
-    </repository>
-  </distributionManagement>
+
 </project>
