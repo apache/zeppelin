@@ -54,7 +54,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
-import org.apache.zeppelin.spark.dep.DependencyContext;
+import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,7 +127,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     URL [] urls = new URL[0];
 
     if (depInterpreter != null) {
-      DependencyContext depc = depInterpreter.getDependencyContext();
+      SparkDependencyContext depc = depInterpreter.getDependencyContext();
       if (depc != null) {
         List<File> files = depc.getFiles();
         List<URL> urlList = new LinkedList<URL>();
