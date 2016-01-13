@@ -50,13 +50,13 @@ public class InterpreterFactory {
   Logger logger = LoggerFactory.getLogger(InterpreterFactory.class);
 
   private Map<String, URLClassLoader> cleanCl = Collections
-      .synchronizedMap(new HashMap<String, URLClassLoader>());
+          .synchronizedMap(new HashMap<String, URLClassLoader>());
 
   private ZeppelinConfiguration conf;
-  String[] interpreterClassList;
+  List<String> interpreterClassList;
 
   private Map<String, InterpreterSetting> interpreterSettings =
-      new HashMap<String, InterpreterSetting>();
+          new HashMap<String, InterpreterSetting>();
 
   private Map<String, List<String>> interpreterBindings = new HashMap<String, List<String>>();
 
@@ -69,30 +69,121 @@ public class InterpreterFactory {
   DependencyResolver depResolver;
 
   public InterpreterFactory(ZeppelinConfiguration conf,
-      AngularObjectRegistryListener angularObjectRegistryListener,
-      DependencyResolver depResolver)
-      throws InterpreterException, IOException {
+                            AngularObjectRegistryListener angularObjectRegistryListener,
+                            DependencyResolver depResolver)
+          throws InterpreterException, IOException {
     this(conf, new InterpreterOption(true), angularObjectRegistryListener, depResolver);
   }
 
-
   public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
-      AngularObjectRegistryListener angularObjectRegistryListener,
-      DependencyResolver depResolver)
-      throws InterpreterException, IOException {
+                            AngularObjectRegistryListener angularObjectRegistryListener,
+                            DependencyResolver depResolver)
+          throws InterpreterException, IOException {
     this.conf = conf;
     this.defaultOption = defaultOption;
     this.angularObjectRegistryListener = angularObjectRegistryListener;
     this.depResolver = depResolver;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
-    interpreterClassList = replsConf.split(",");
-
+    interpreterClassList = new ArrayList<String>();
+    for (String className : replsConf.split(",")) {
+      interpreterClassList.add(className);
+    }
     GsonBuilder builder = new GsonBuilder();
     builder.setPrettyPrinting();
     builder.registerTypeAdapter(Interpreter.class, new InterpreterSerializer());
     gson = builder.create();
 
     init();
+  }
+
+  public boolean loadDynamicInterpreter(String intpGroupName, String intpName, String artifact,
+                                        String intpClassName) {
+    return loadDynamicInterpreter(intpGroupName, intpName, artifact, intpClassName, null, false);
+  }
+
+  public boolean loadDynamicInterpreter(String intpGroupName, String intpName, String artifact,
+                                        String intpClassName, String repositoryUrl,
+                                        boolean isSnapShotRepo) {
+    String[] artifactItem = artifact.split(":");
+    String interpreterDesPath = conf.getString(ConfVars.ZEPPELIN_INTERPRETER_REPO_DIR);
+    interpreterDesPath += "/" + intpGroupName + "/" + intpName + "/";
+
+    String interpreterLoadPath = conf.getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_REPO_DIR);
+    interpreterLoadPath += "/" + intpGroupName + "/" + intpName;
+
+    if (artifactItem.length <= 0) {
+      logger.error("invalid artifact [" + artifact + "]");
+      return false;
+    }
+
+    try {
+      if (repositoryUrl != null) {
+        depResolver.addRepo("dyInterpreterRepo", repositoryUrl, isSnapShotRepo);
+      }
+      logger.info("interpreter- path {}", interpreterLoadPath);
+      depResolver.load(artifact, interpreterDesPath);
+      setDynamicInterpreter(intpClassName, interpreterLoadPath);
+    } catch (Exception e) {
+      logger.error(e.getMessage());
+      return false;
+    }
+    return true;
+  }
+
+  public boolean unloadDynamicInterpreter(String intpGorupName, String intpName) {
+    try {
+      remove(intpName);
+    } catch (Exception e) {
+      logger.error(e.getMessage());
+      return false;
+    }
+    return true;
+  }
+
+  protected void setDynamicInterpreter(String interpreterClassName, String fileDirPath)
+          throws InterpreterException, IOException {
+    logger.info("loadDynamicInterpreter !!");
+
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    interpreterClassList.add(interpreterClassName);
+    // Load classes
+    File interpreterDir = new File(fileDirPath);
+
+    if (interpreterDir != null) {
+      URL[] urls = null;
+      try {
+        urls = recursiveBuildLibList(interpreterDir);
+      } catch (MalformedURLException e1) {
+        logger.error("Can't load jars ", e1);
+      }
+      URLClassLoader ccl = new URLClassLoader(urls, oldcl);
+
+      logger.info("load dynamic interpreter [" + interpreterClassName + "]");
+
+      try {
+        Class.forName(interpreterClassName, true, ccl);
+        Set<String> keys = Interpreter.registeredInterpreters.keySet();
+        for (String intName : keys) {
+          if (interpreterClassName.equals(
+                  Interpreter.registeredInterpreters.get(intName).getClassName())) {
+            Interpreter.registeredInterpreters.get(intName).setPath(fileDirPath);
+            logger.info("Interpreter " + intName + " found. class=" + fileDirPath);
+            cleanCl.put(fileDirPath, ccl);
+          }
+        }
+      } catch (ClassNotFoundException e) {
+        logger.error("Load error {}", e);
+      }
+    }
+
+    for (String settingId : interpreterSettings.keySet()) {
+      InterpreterSetting setting = interpreterSettings.get(settingId);
+      logger.info("Interpreter setting group {} : id={}, name={}",
+              setting.getGroup(), settingId, setting.getName());
+      for (Interpreter interpreter : setting.getInterpreterGroup()) {
+        logger.info("  className = {}", interpreter.getClassName());
+      }
+    }
   }
 
   private void init() throws InterpreterException, IOException {
@@ -117,7 +208,7 @@ public class InterpreterFactory {
             Set<String> keys = Interpreter.registeredInterpreters.keySet();
             for (String intName : keys) {
               if (className.equals(
-                  Interpreter.registeredInterpreters.get(intName).getClassName())) {
+                      Interpreter.registeredInterpreters.get(intName).getClassName())) {
                 Interpreter.registeredInterpreters.get(intName).setPath(path.getAbsolutePath());
                 logger.info("Interpreter " + intName + " found. class=" + className);
                 cleanCl.put(path.getAbsolutePath(), ccl);
@@ -136,7 +227,7 @@ public class InterpreterFactory {
     synchronized (interpreterSettings) {
       if (interpreterSettings.size() == 0) {
         HashMap<String, List<RegisteredInterpreter>> groupClassNameMap =
-            new HashMap<String, List<RegisteredInterpreter>>();
+                new HashMap<String, List<RegisteredInterpreter>>();
 
         for (String k : Interpreter.registeredInterpreters.keySet()) {
           RegisteredInterpreter info = Interpreter.registeredInterpreters.get(k);
@@ -178,7 +269,7 @@ public class InterpreterFactory {
     for (String settingId : interpreterSettings.keySet()) {
       InterpreterSetting setting = interpreterSettings.get(settingId);
       logger.info("Interpreter setting group {} : id={}, name={}",
-          setting.getGroup(), settingId, setting.getName());
+              setting.getGroup(), settingId, setting.getName());
       for (Interpreter interpreter : setting.getInterpreterGroup()) {
         logger.info("  className = {}", interpreter.getClassName());
       }
@@ -222,16 +313,16 @@ public class InterpreterFactory {
 
 
       InterpreterSetting intpSetting = new InterpreterSetting(
-          setting.id(),
-          setting.getName(),
-          setting.getGroup(),
-          setting.getOption());
+              setting.id(),
+              setting.getName(),
+              setting.getGroup(),
+              setting.getOption());
 
       InterpreterGroup interpreterGroup = createInterpreterGroup(
-          setting.id(),
-          setting.getGroup(),
-          setting.getOption(),
-          setting.getProperties());
+              setting.id(),
+              setting.getGroup(),
+              setting.getOption(),
+              setting.getProperties());
       intpSetting.setInterpreterGroup(interpreterGroup);
 
       interpreterSettings.put(k, intpSetting);
@@ -324,17 +415,17 @@ public class InterpreterFactory {
    * @throws IOException
    */
   public InterpreterGroup add(String name, String groupName,
-      InterpreterOption option, Properties properties)
-      throws InterpreterException, IOException {
+                              InterpreterOption option, Properties properties)
+          throws InterpreterException, IOException {
     synchronized (interpreterSettings) {
 
       InterpreterSetting intpSetting = new InterpreterSetting(
-          name,
-          groupName,
-          option);
+              name,
+              groupName,
+              option);
 
       InterpreterGroup interpreterGroup = createInterpreterGroup(
-          intpSetting.id(), groupName, option, properties);
+              intpSetting.id(), groupName, option, properties);
 
       intpSetting.setInterpreterGroup(interpreterGroup);
 
@@ -345,10 +436,10 @@ public class InterpreterFactory {
   }
 
   private InterpreterGroup createInterpreterGroup(String id,
-      String groupName,
-      InterpreterOption option,
-      Properties properties)
-      throws InterpreterException , NullArgumentException {
+                                                  String groupName,
+                                                  InterpreterOption option,
+                                                  Properties properties)
+          throws InterpreterException , NullArgumentException {
 
     //When called from REST API without option we receive NPE
     if (option == null )
@@ -362,14 +453,14 @@ public class InterpreterFactory {
     InterpreterGroup interpreterGroup = new InterpreterGroup(id);
     if (option.isRemote()) {
       angularObjectRegistry = new RemoteAngularObjectRegistry(
-          id,
-          angularObjectRegistryListener,
-          interpreterGroup
+              id,
+              angularObjectRegistryListener,
+              interpreterGroup
       );
     } else {
       angularObjectRegistry = new AngularObjectRegistry(
-          id,
-          angularObjectRegistryListener);
+              id,
+              angularObjectRegistryListener);
     }
 
     interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
@@ -379,19 +470,19 @@ public class InterpreterFactory {
       Set<String> keys = Interpreter.registeredInterpreters.keySet();
       for (String intName : keys) {
         RegisteredInterpreter info = Interpreter.registeredInterpreters
-            .get(intName);
+                .get(intName);
         if (info.getClassName().equals(className)
-            && info.getGroup().equals(groupName)) {
+                && info.getGroup().equals(groupName)) {
           Interpreter intp;
 
           if (option.isRemote()) {
             intp = createRemoteRepl(info.getPath(),
-                info.getClassName(),
-                properties);
+                    info.getClassName(),
+                    properties);
           } else {
             intp = createRepl(info.getPath(),
-                info.getClassName(),
-                properties);
+                    info.getClassName(),
+                    properties);
           }
           interpreterGroup.add(intp);
           intp.setInterpreterGroup(interpreterGroup);
@@ -432,7 +523,7 @@ public class InterpreterFactory {
     synchronized (interpreterSettings) {
       List<InterpreterSetting> orderedSettings = new LinkedList<InterpreterSetting>();
       List<InterpreterSetting> settings = new LinkedList<InterpreterSetting>(
-          interpreterSettings.values());
+              interpreterSettings.values());
       Collections.sort(settings, new Comparator<InterpreterSetting>(){
         @Override
         public int compare(InterpreterSetting o1, InterpreterSetting o2) {
@@ -474,7 +565,7 @@ public class InterpreterFactory {
   }
 
   public void putNoteInterpreterSettingBinding(String noteId,
-      List<String> settingList) throws IOException {
+                                               List<String> settingList) throws IOException {
     synchronized (interpreterSettings) {
       interpreterBindings.put(noteId, settingList);
       saveToFile();
@@ -505,7 +596,7 @@ public class InterpreterFactory {
    * @throws IOException
    */
   public void setPropertyAndRestart(String id, InterpreterOption option,
-      Properties properties) throws IOException {
+                                    Properties properties) throws IOException {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
       if (intpsetting != null) {
@@ -518,13 +609,13 @@ public class InterpreterFactory {
         intpsetting.setOption(option);
 
         InterpreterGroup interpreterGroup = createInterpreterGroup(
-            intpsetting.id(),
-            intpsetting.getGroup(), option, properties);
+                intpsetting.id(),
+                intpsetting.getGroup(), option, properties);
         intpsetting.setInterpreterGroup(interpreterGroup);
         saveToFile();
       } else {
         throw new InterpreterException("Interpreter setting id " + id
-            + " not found");
+                + " not found");
       }
     }
   }
@@ -540,12 +631,12 @@ public class InterpreterFactory {
         intpsetting.getInterpreterGroup().destroy();
 
         InterpreterGroup interpreterGroup = createInterpreterGroup(
-            intpsetting.id(),
-            intpsetting.getGroup(), intpsetting.getOption(), intpsetting.getProperties());
+                intpsetting.id(),
+                intpsetting.getGroup(), intpsetting.getOption(), intpsetting.getProperties());
         intpsetting.setInterpreterGroup(interpreterGroup);
       } else {
         throw new InterpreterException("Interpreter setting id " + id
-            + " not found");
+                + " not found");
       }
     }
   }
@@ -593,8 +684,8 @@ public class InterpreterFactory {
   }
 
   private Interpreter createRepl(String dirName, String className,
-      Properties property)
-      throws InterpreterException {
+                                 Properties property)
+          throws InterpreterException {
     logger.info("Create repl {} from {}", className, dirName);
 
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
@@ -627,11 +718,11 @@ public class InterpreterFactory {
 
       Class<Interpreter> replClass = (Class<Interpreter>) cl.loadClass(className);
       Constructor<Interpreter> constructor =
-          replClass.getConstructor(new Class[] {Properties.class});
+              replClass.getConstructor(new Class[] {Properties.class});
       Interpreter repl = constructor.newInstance(property);
       repl.setClassloaderUrls(ccl.getURLs());
       LazyOpenInterpreter intp = new LazyOpenInterpreter(
-          new ClassloaderInterpreter(repl, cl));
+              new ClassloaderInterpreter(repl, cl));
       return intp;
     } catch (SecurityException e) {
       throw new InterpreterException(e);
@@ -654,12 +745,12 @@ public class InterpreterFactory {
 
 
   private Interpreter createRemoteRepl(String interpreterPath, String className,
-      Properties property) {
+                                       Properties property) {
 
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
     LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(
-        property, className, conf.getInterpreterRemoteRunnerPath(),
-        interpreterPath, connectTimeout));
+            property, className, conf.getInterpreterRemoteRunnerPath(),
+            interpreterPath, connectTimeout));
     return intp;
   }
 
