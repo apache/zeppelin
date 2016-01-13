@@ -60,7 +60,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
 
   public ZeppelinContext(SparkContext sc, SQLContext sql,
       InterpreterContext interpreterContext,
-      SparkDependencyResolver dep
+      SparkDependencyResolver dep,
       int maxResult) {
     this.sc = sc;
     this.sqlContext = sql;
