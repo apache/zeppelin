@@ -72,6 +72,9 @@ public class TachyonInterpreter extends Interpreter {
 
   @Override
   public void open() {
+    logger.info("Starting Tachyon shell to connect to " + tachyonMasterHostname +
+      " on port " + tachyonMasterPort);
+
     System.setProperty(TACHYON_MASTER_HOSTNAME, tachyonMasterHostname);
     System.setProperty(TACHYON_MASTER_PORT, tachyonMasterPort);
     tfs = new TfsShell(new TachyonConf());
@@ -79,10 +82,12 @@ public class TachyonInterpreter extends Interpreter {
 
   @Override
   public void close() {
+    logger.info("Closing Tachyon shell");
+
     try {
       tfs.close();
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error("Cannot close connection", e);
     }
   }
 
