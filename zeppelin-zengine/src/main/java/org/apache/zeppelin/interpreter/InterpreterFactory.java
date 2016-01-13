@@ -71,14 +71,14 @@ public class InterpreterFactory {
   public InterpreterFactory(ZeppelinConfiguration conf,
                             AngularObjectRegistryListener angularObjectRegistryListener,
                             DependencyResolver depResolver)
-          throws InterpreterException, IOException {
+      throws InterpreterException, IOException {
     this(conf, new InterpreterOption(true), angularObjectRegistryListener, depResolver);
   }
 
   public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
                             AngularObjectRegistryListener angularObjectRegistryListener,
                             DependencyResolver depResolver)
-          throws InterpreterException, IOException {
+      throws InterpreterException, IOException {
     this.conf = conf;
     this.defaultOption = defaultOption;
     this.angularObjectRegistryListener = angularObjectRegistryListener;
@@ -141,7 +141,7 @@ public class InterpreterFactory {
   }
 
   protected void setDynamicInterpreter(String interpreterClassName, String fileDirPath)
-          throws InterpreterException, IOException {
+      throws InterpreterException, IOException {
     logger.info("loadDynamicInterpreter !!");
 
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
@@ -416,7 +416,7 @@ public class InterpreterFactory {
    */
   public InterpreterGroup add(String name, String groupName,
                               InterpreterOption option, Properties properties)
-          throws InterpreterException, IOException {
+      throws InterpreterException, IOException {
     synchronized (interpreterSettings) {
 
       InterpreterSetting intpSetting = new InterpreterSetting(
@@ -439,7 +439,7 @@ public class InterpreterFactory {
                                                   String groupName,
                                                   InterpreterOption option,
                                                   Properties properties)
-          throws InterpreterException , NullArgumentException {
+      throws InterpreterException , NullArgumentException {
 
     //When called from REST API without option we receive NPE
     if (option == null )
@@ -685,7 +685,7 @@ public class InterpreterFactory {
 
   private Interpreter createRepl(String dirName, String className,
                                  Properties property)
-          throws InterpreterException {
+      throws InterpreterException {
     logger.info("Create repl {} from {}", className, dirName);
 
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
