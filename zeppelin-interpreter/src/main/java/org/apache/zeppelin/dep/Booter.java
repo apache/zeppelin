@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.spark.dep;
+package org.apache.zeppelin.dep;
 
 import java.io.File;
 
@@ -64,7 +64,7 @@ public class Booter {
   public static RemoteRepository newCentralRepository() {
     return new RemoteRepository("central", "default", "http://repo1.maven.org/maven2/");
   }
-
+  
   public static RemoteRepository newLocalRepository() {
     return new RemoteRepository("local",
         "default", "file://" + System.getProperty("user.home") + "/.m2/repository");
