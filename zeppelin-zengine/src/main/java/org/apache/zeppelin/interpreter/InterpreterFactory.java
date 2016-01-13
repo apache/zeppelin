@@ -23,6 +23,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
@@ -65,19 +66,24 @@ public class InterpreterFactory {
 
   AngularObjectRegistryListener angularObjectRegistryListener;
 
+  DependencyResolver depResolver;
+
   public InterpreterFactory(ZeppelinConfiguration conf,
-      AngularObjectRegistryListener angularObjectRegistryListener)
+      AngularObjectRegistryListener angularObjectRegistryListener,
+      DependencyResolver depResolver)
       throws InterpreterException, IOException {
-    this(conf, new InterpreterOption(true), angularObjectRegistryListener);
+    this(conf, new InterpreterOption(true), angularObjectRegistryListener, depResolver);
   }
 
 
   public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
-      AngularObjectRegistryListener angularObjectRegistryListener)
+      AngularObjectRegistryListener angularObjectRegistryListener,
+      DependencyResolver depResolver)
       throws InterpreterException, IOException {
     this.conf = conf;
     this.defaultOption = defaultOption;
     this.angularObjectRegistryListener = angularObjectRegistryListener;
+    this.depResolver = depResolver;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
     interpreterClassList = replsConf.split(",");
 

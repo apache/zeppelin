@@ -30,6 +30,7 @@ import javax.ws.rs.core.Application;
 import org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
@@ -73,12 +74,14 @@ public class ZeppelinServer extends Application {
   private InterpreterFactory replFactory;
   private NotebookRepo notebookRepo;
   private SearchService notebookIndex;
+  private DependencyResolver depResolver;
 
   public ZeppelinServer() throws Exception {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
 
+    this.depResolver = new DependencyResolver(conf.getString(ConfVars.ZEPPELIN_DEP_LOCALREPO));
     this.schedulerFactory = new SchedulerFactory();
-    this.replFactory = new InterpreterFactory(conf, notebookWsServer);
+    this.replFactory = new InterpreterFactory(conf, notebookWsServer, depResolver);
     this.notebookRepo = new NotebookRepoSync(conf);
     this.notebookIndex = new LuceneSearch();
 
