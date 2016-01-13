@@ -30,11 +30,9 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.repl.SparkIMain;
-import org.apache.zeppelin.dep.Booter;
+import org.apache.zeppelin.dep.AbstractDependencyResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
 import org.sonatype.aether.graph.Dependency;
@@ -57,16 +55,13 @@ import scala.tools.nsc.util.MergedClassPath;
 
 /**
  * Deps resolver.
- * Add new dependencies from mvn repo (at runetime) to Zeppelin.
+ * Add new dependencies from mvn repo (at runtime) to Spark interpreter group.
  */
-public class SparkDependencyResolver {
+public class SparkDependencyResolver extends AbstractDependencyResolver {
   Logger logger = LoggerFactory.getLogger(SparkDependencyResolver.class);
   private Global global;
   private SparkIMain intp;
   private SparkContext sc;
-  private RepositorySystem system = Booter.newRepositorySystem();
-  private List<RemoteRepository> repos = new LinkedList<RemoteRepository>();
-  private RepositorySystemSession session;
 
   private final String[] exclusions = new String[] {"org.scala-lang:scala-library",
                                                     "org.scala-lang:scala-compiler",
@@ -78,36 +73,11 @@ public class SparkDependencyResolver {
 
   public SparkDependencyResolver(SparkIMain intp, SparkContext sc, String localRepoPath,
                             String additionalRemoteRepository) {
+    super(localRepoPath);
     this.intp = intp;
     this.global = intp.global();
     this.sc = sc;
-    session = Booter.newRepositorySystemSession(system, localRepoPath);
-    repos.add(Booter.newCentralRepository()); // add maven central
-    repos.add(Booter.newLocalRepository());
     addRepoFromProperty(additionalRemoteRepository);
-  }
-
-  public void addRepo(String id, String url, boolean snapshot) {
-    synchronized (repos) {
-      delRepo(id);
-      RemoteRepository rr = new RemoteRepository(id, "default", url);
-      rr.setPolicy(snapshot, null);
-      repos.add(rr);
-    }
-  }
-
-  public RemoteRepository delRepo(String id) {
-    synchronized (repos) {
-      Iterator<RemoteRepository> it = repos.iterator();
-      if (it.hasNext()) {
-        RemoteRepository repo = it.next();
-        if (repo.getId().equals(id)) {
-          it.remove();
-          return repo;
-        }
-      }
-    }
-    return null;
   }
 
   private void addRepoFromProperty(String listOfRepo) {
@@ -305,12 +275,12 @@ public class SparkDependencyResolver {
   }
 
   /**
-   *
    * @param dependency
    * @param excludes list of pattern can either be of the form groupId:artifactId
    * @return
    * @throws Exception
    */
+  @Override
   public List<ArtifactResult> getArtifactsWithDep(String dependency,
       Collection<String> excludes) throws Exception {
     Artifact artifact = new DefaultArtifact(inferScalaVersion(dependency));
