@@ -14,24 +14,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.zeppelin.interpreter;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-public class InterpreterContextTest {
+public class InterpreterOutputTest {
+  private InterpreterOutput out;
 
-  @Test
-  public void testThreadLocal() {
-    assertNull(InterpreterContext.get());
 
-    InterpreterContext.set(new InterpreterContext(null, null, null, null, null, null, null, null, null));
-    assertNotNull(InterpreterContext.get());
-
-    InterpreterContext.remove();
-    assertNull(InterpreterContext.get());
+  @Before
+  public void setUp() {
+    out = new InterpreterOutput();
   }
 
+  @After
+  public void tearDown() throws IOException {
+    out.close();
+  }
+
+
+  @Test
+  public void testWrite() throws IOException {
+    out.write(1);
+    assertEquals(1, out.toByteArray()[0]);
+  }
+
+  @Test
+  public void testStringWrite() throws IOException {
+    Writer writer = new OutputStreamWriter(out);
+    writer.write("hello");
+    writer.flush();
+    assertEquals("hello", new String(out.toByteArray()));
+  }
 }

@@ -103,7 +103,7 @@ public class RemoteSchedulerTest {
             new HashMap<String, Object>(),
             new GUI(),
             new AngularObjectRegistry(intpGroup.getId(), null),
-            new LinkedList<InterpreterContextRunner>()));
+            new LinkedList<InterpreterContextRunner>(), null));
         return "1000";
       }
 
@@ -173,7 +173,7 @@ public class RemoteSchedulerTest {
           new HashMap<String, Object>(),
           new GUI(),
           new AngularObjectRegistry(intpGroup.getId(), null),
-          new LinkedList<InterpreterContextRunner>());
+          new LinkedList<InterpreterContextRunner>(), null);
 
       @Override
       public int progress() {
@@ -209,7 +209,7 @@ public class RemoteSchedulerTest {
           new HashMap<String, Object>(),
           new GUI(),
           new AngularObjectRegistry(intpGroup.getId(), null),
-          new LinkedList<InterpreterContextRunner>());
+          new LinkedList<InterpreterContextRunner>(), null);
 
       @Override
       public int progress() {
