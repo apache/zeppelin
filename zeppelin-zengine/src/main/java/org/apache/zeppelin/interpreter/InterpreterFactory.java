@@ -75,7 +75,8 @@ public class InterpreterFactory {
       RemoteInterpreterProcessListener remoteInterpreterProcessListener,
       DependencyResolver depResolver)
       throws InterpreterException, IOException {
-    this(conf, new InterpreterOption(true), angularObjectRegistryListener, remoteInterpreterProcessListener, depResolver);
+    this(conf, new InterpreterOption(true), angularObjectRegistryListener,
+            remoteInterpreterProcessListener, depResolver);
   }
 
 
