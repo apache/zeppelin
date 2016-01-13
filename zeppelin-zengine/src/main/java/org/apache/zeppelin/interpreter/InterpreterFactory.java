@@ -81,7 +81,7 @@ public class InterpreterFactory {
 
   public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
       AngularObjectRegistryListener angularObjectRegistryListener,
-      RemoteInterpreterProcessListener remoteInterpreterProcessListener)
+      RemoteInterpreterProcessListener remoteInterpreterProcessListener,
       DependencyResolver depResolver)
       throws InterpreterException, IOException {
     this.conf = conf;
