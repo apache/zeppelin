@@ -21,13 +21,13 @@ limitations under the License.
 
 ## Dynamic Interpreter Loading using REST API
 
-Zeppelin provides pluggable interpreter architecture which results in a wide and variety of the supported backend system. In this section, we will introduce **Dynamic interpreter loading** using **REST API**. Actually this concept is come up with [Zeppelin Helium Proposal](https://cwiki.apache.org/confluence/display/ZEPPELIN/Helium+proposal).
-Before the start, if you are not clear about the concept of **Zeppelin interpreter**, you can ckeck out [Overview of Zeppelin interpreter](../manual/interpreters.html) first.
+Zeppelin provides pluggable interpreter architecture which results in a wide and variety of the supported backend system. In this section, we will introduce **Dynamic interpreter loading** using **REST API**. This concept actually comes from [Zeppelin Helium Proposal](https://cwiki.apache.org/confluence/display/ZEPPELIN/Helium+proposal).
+Before we start, if you are not familiar with the concept of **Zeppelin interpreter**, you can check out [Overview of Zeppelin interpreter](../manual/interpreters.html) first.
 
 <br/>
 ## Overview 
-In the past, Zeppelin loads interpreter binaries from `/interpreter/[interpreter_name]` directory. And they are configured by `zeppelin.interpreters` property in `conf/zeppelin-site.xml` or `ZEPPELIN_INTERPRETERS` env variables in `conf/zeppelin-env.sh`. They are loaded when Zeppelin server is starting up and stay alive until the server is down.
-However, for using 3rd party interpreter much easier, we change this way to **dynamically** loading interpreters from **Maven Repository** using **REST API**. Hopefully, below picture helps you to understand the process easily. 
+In the past, Zeppelin was loading interpreter binaries from `/interpreter/[interpreter_name]` directory. They were configured by `zeppelin.interpreters` property in `conf/zeppelin-site.xml` or `ZEPPELIN_INTERPRETERS` env variables in `conf/zeppelin-env.sh`. They were loaded on Zeppelin server startup and stayed alive until the server was stopped.
+In order to simplify using 3rd party interpreters, we changed this way to **dynamically** load interpreters from **Maven Repository** using **REST API**. Hopefully, the picture below will help you to understand the process. 
 <center><img src="../assets/themes/zeppelin/img/docs-img/zeppelin_user.png" height="85%" width="85%"></center>
 
 ## Load & Unload Interpreters Using REST API
@@ -40,7 +40,7 @@ You can **load** interpreters located in Maven repository using REST API, like t
 ```
 http://[zeppelin-server]:[zeppelin-port]/api/interpreter/load/[interpreter_group_name]/[interpreter_name]
 ```
-The Restful method will be <code>**POST**</code>. And the parameters you need are like:
+The Restful method will be <code>**POST**</code>. And the parameters you need are:
 
   1.  **Artifact:** Maven artifact ( groupId:artifactId:version ) 
 
@@ -48,7 +48,7 @@ The Restful method will be <code>**POST**</code>. And the parameters you need ar
 
   3. **Repository ( optional ):** Additional maven repository address
 
-For example, if you want to load `markdown` interpreter to your Zeppelin, above parameters and the URL you need may like:
+For example, if you want to load `markdown` interpreter to your Zeppelin, the parameters and URL you need may look like:
 
 ```
 http://127.0.0.1:8080/api/interpreter/load/md/markdown
@@ -89,22 +89,20 @@ If you want to **unload** the interpreters using REST API,
 ```
 http://[zeppelin-server]:[zeppelin-port]/api/interpreter/unload/[interpreter_group_name]/[interpreter_name]
 ```
-In this time, the Restful method will be <code>**DELETE**</code>.
+In this case, the Restful method will be <code>**DELETE**</code>.
 
 <br/>
 ## What is the next step after Loading ?
-
-Maybe, you are curious several things about how you can actually use the interpreter in Zeppelin. 
  
 ### Q1. Where is the location of interpreters you downloaded ?
  	
 Actually, the answer about this question is in the above picture. Once the REST API is called, the `.jar` files of interpreters you get are saved under `ZEPPELIN_HOME/local-repo` first. Then, they will be copied to `ZEPPELIN_HOME/interpreter` directory. So, please checkout your `ZEPPELIN_HOME/interpreter`.
 
 ### Q2. Then, how can I use this interpreter ?
- 
-After loading, you can create and configure the interpreter at the Zeppelin **Interpreter tab**. Then, what is the next ? Please follow these simple steps. It will be really straightforward. 
 
-Oh, you don't need to restart your Zeppelin server. Because it is **Dynamic Interpreter Loading**, you can configure and load it **at runtime** !
+After loading an interpreter, you can use it by creating and configuring it in Zeppelin's **Interpreter tab**.
+
+Oh, you don't need to restart your Zeppelin server. Because it is **Dynamic Loading**, you can configure and load it **at runtime** !
 
 1. After Zeppelin server up, browse Zeppelin home and click **Interpreter tab**.
 <center><img src="../assets/themes/zeppelin/img/docs-img/interpreter_setting_1.png" height="85%" width="85%"></center>
@@ -115,7 +113,7 @@ Oh, you don't need to restart your Zeppelin server. Because it is **Dynamic Inte
 3. Then, you can verify the interpreter list that you loaded.
 <center><img src="../assets/themes/zeppelin/img/docs-img/interpreter_setting_3.png" height="85%" width="85%"></center>
 
-4. After choosing interpreter, you can configure and use it. Don't forget to save it.
+4. After choosing an interpreter, you can configure and use it. Don't forget to save it.
 
 5. Create a new notebook in the **Notebook** section, then you can bind the interpreters from your interpreter list. Just drag and drop !
 <center><img src="../assets/themes/zeppelin/img/docs-img/interpreter_binding_1.png" height="85%" width="85%"></center>
@@ -124,7 +122,3 @@ Oh, you don't need to restart your Zeppelin server. Because it is **Dynamic Inte
 6. At last, you can use your interpreter !
 
 If you want to get the specific information about respective interpreters, please checkout each interpreter documentation. 
- 
- 
-
-
