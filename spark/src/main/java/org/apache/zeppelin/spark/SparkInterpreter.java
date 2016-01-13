@@ -55,8 +55,8 @@ import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.spark.dep.DependencyContext;
-import org.apache.zeppelin.spark.dep.DependencyResolver;
+import org.apache.zeppelin.spark.dep.SparkDependencyContext;
+import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,7 +117,7 @@ public class SparkInterpreter extends Interpreter {
   private SparkContext sc;
   private ByteArrayOutputStream out;
   private SQLContext sqlc;
-  private DependencyResolver dep;
+  private SparkDependencyResolver dep;
   private SparkJLineCompletion completor;
 
   private JobProgressListener sparkListener;
@@ -222,9 +222,9 @@ public class SparkInterpreter extends Interpreter {
     return sqlc;
   }
 
-  public DependencyResolver getDependencyResolver() {
+  public SparkDependencyResolver getDependencyResolver() {
     if (dep == null) {
-      dep = new DependencyResolver(intp,
+      dep = new SparkDependencyResolver(intp,
                                    sc,
                                    getProperty("zeppelin.dep.localrepo"),
                                    getProperty("zeppelin.dep.additionalRemoteRepository"));
@@ -427,7 +427,7 @@ public class SparkInterpreter extends Interpreter {
     // add dependency from DepInterpreter
     DepInterpreter depInterpreter = getDepInterpreter();
     if (depInterpreter != null) {
-      DependencyContext depc = depInterpreter.getDependencyContext();
+      SparkDependencyContext depc = depInterpreter.getDependencyContext();
       if (depc != null) {
         List<File> files = depc.getFiles();
         if (files != null) {
@@ -536,7 +536,7 @@ public class SparkInterpreter extends Interpreter {
 
     // add jar
     if (depInterpreter != null) {
-      DependencyContext depc = depInterpreter.getDependencyContext();
+      SparkDependencyContext depc = depInterpreter.getDependencyContext();
       if (depc != null) {
         List<File> files = depc.getFilesDist();
         if (files != null) {
