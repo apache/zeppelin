@@ -835,7 +835,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method imports a notebook from the notebook JSON
+      <td>This ```POST``` method imports a notebook from the notebook JSON
       </td>
     </tr>
     <tr>
