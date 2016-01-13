@@ -50,7 +50,7 @@ some interpreter specific code...
 ```
 ### Install your interpreter binary
 
-Once you have build your interpreter, you can place your interpreter under directory with all the dependencies.
+Once you have built your interpreter, you can place it under the interpreter directory with all its dependencies.
 
 ```
 [ZEPPELIN_HOME]/interpreter/[INTERPRETER_NAME]/
@@ -60,22 +60,23 @@ Once you have build your interpreter, you can place your interpreter under direc
 
 To configure your interpreter you need to follow these steps:
 
-1. Create conf/zeppelin-site.xml by copying conf/zeppelin-site.xml.template to `conf/zeppelin-site.xml`.
-
-2. Add your interpreter class name to the zeppelin.interpreters property in `conf/zeppelin-site.xml`.
+1. Add your interpreter class name to the zeppelin.interpreters property in `conf/zeppelin-site.xml`.
 
   Property value is comma separated [INTERPRETER\_CLASS\_NAME].
   For example,
   
-  ```
+```
 <property>
   <name>zeppelin.interpreters</name>
   <value>org.apache.zeppelin.spark.SparkInterpreter,org.apache.zeppelin.spark.PySparkInterpreter,org.apache.zeppelin.spark.SparkSqlInterpreter,org.apache.zeppelin.spark.DepInterpreter,org.apache.zeppelin.markdown.Markdown,org.apache.zeppelin.shell.ShellInterpreter,org.apache.zeppelin.hive.HiveInterpreter,com.me.MyNewInterpreter</value>
 </property>
 ```
+
+2. Add your interpreter to the [default configuration](https://github.com/apache/incubator-zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/conf/ZeppelinConfiguration.java#L397) which is used when there is no `zeppelin-site.xml`.
+
 3. Start Zeppelin by running `./bin/zeppelin-daemon.sh start`.
 
-4. In the interpreter page, click the +Create button and configure your interpreter properties.
+4. In the interpreter page, click the `+Create` button and configure your interpreter properties.
 Now you are done and ready to use your interpreter.
 
 Note that the interpreters shipped with zeppelin have a [default configuration](https://github.com/apache/incubator-zeppelin/blob/master/zeppelin-zengine/src/main/java/org/apache/zeppelin/conf/ZeppelinConfiguration.java#L397) which is used when there is no `conf/zeppelin-site.xml`.
