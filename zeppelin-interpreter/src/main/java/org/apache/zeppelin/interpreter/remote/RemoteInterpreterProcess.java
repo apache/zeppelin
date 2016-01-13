@@ -256,7 +256,7 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
 
   public void setMaxPoolSize(int size) {
     if (clientPool != null) {
-      //Size + 2 for progress poller , cancel opeartion 
+      //Size + 2 for progress poller , cancel operation
       clientPool.setMaxTotal(size + 2);
     }
   }

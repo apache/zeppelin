@@ -79,7 +79,9 @@ public class ShellInterpreter extends Interpreter {
     Map<String, Object> info = runningJob.info();
     info.put(EXECUTOR_KEY, executor);
     try {
-      executor.execute(cmdLine);
+      int exitVal = executor.execute(cmdLine);
+      logger.info("Paragraph " + contextInterpreter.getParagraphId()
+          + "return with exit value: " + exitVal);
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, outputStream.toString());
     } catch (ExecuteException e) {
       int exitValue = e.getExitValue();
