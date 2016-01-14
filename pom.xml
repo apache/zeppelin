@@ -162,12 +162,7 @@
         <artifactId>commons-lang</artifactId>
         <version>2.5</version>
       </dependency>
-      
-      <dependency>
-        <groupId>sqlline</groupId>
-        <artifactId>sqlline</artifactId>
-        <version>1.1.9</version>
-      </dependency>
+    
 
       <dependency>
         <groupId>com.google.code.gson</groupId>
