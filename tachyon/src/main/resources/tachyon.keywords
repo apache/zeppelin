@@ -1,1 +1,0 @@
-cat,copyFromLocal,copyToLocal,count,du,fileinfo,free,getUsedBytes,getCapacityBytes,load,loadMetadata,location,ls,lsr,mkdir,mount,mv,pin,report,request,rm,rmr,setTTL,unsetTTL,tail,touch,unmount,unpin
