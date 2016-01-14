@@ -132,7 +132,7 @@
         <artifactId>slf4j-log4j12</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>log4j</groupId>
         <artifactId>log4j</artifactId>
@@ -162,7 +162,7 @@
         <artifactId>commons-lang</artifactId>
         <version>2.5</version>
       </dependency>
-    
+
 
       <dependency>
         <groupId>com.google.code.gson</groupId>
