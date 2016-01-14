@@ -51,8 +51,14 @@ public class TachyonInterpreter extends Interpreter {
   private int totalCommands = 0;
   private int completedCommands = 0;
 
-  private String tachyonMasterHostname;
-  private String tachyonMasterPort;
+  private final String tachyonMasterHostname;
+  private final String tachyonMasterPort;
+
+  private final List<String> keywords = Arrays.asList("cat", "copyFromLocal",
+          "copyToLocal", "count", "du", "fileinfo", "free", "getUsedBytes",
+          "getCapacityBytes", "load", "loadMetadata", "location", "ls", "lsr",
+          "mkdir", "mount", "mv", "pin", "report", "request", "rm", "rmr",
+          "setTTL", "unsetTTL", "tail", "touch", "unmount", "unpin");
 
   public TachyonInterpreter(Properties property) {
     super(property);
@@ -141,6 +147,14 @@ public class TachyonInterpreter extends Interpreter {
     return result.toArray(new String[result.size()]);
   }
 
+  private String[] splitAndRemoveEmpty(String[] sts, String splitSeparator) {
+    ArrayList<String> result = new ArrayList<String>();
+    for (String st : sts) {
+      result.addAll(Arrays.asList(splitAndRemoveEmpty(st, splitSeparator)));
+    }
+    return result.toArray(new String[result.size()]);
+  }
+
   @Override
   public void cancel(InterpreterContext context) { }
 
@@ -156,24 +170,14 @@ public class TachyonInterpreter extends Interpreter {
 
   @Override
   public List<String> completion(String buf, int cursor) {
+    String[] words = splitAndRemoveEmpty(splitAndRemoveEmpty(buf, "\n"), " ");
+    String lastWord = words[ words.length - 1 ];
     ArrayList<String> voices = new ArrayList<String>();
-    try {
-      String[] keywords = getCompletionKeywords();
-      for (String command : keywords) {
-        if (command.startsWith(buf)) {
-          voices.add(command);
-        }
+    for (String command : keywords) {
+      if (command.startsWith(lastWord)) {
+        voices.add(command);
       }
-    } catch (IOException e) {
-      logger.error("Cannot create Tachyon completer", e);
     }
     return voices;
   }
-  
-  private String[] getCompletionKeywords() throws IOException {
-    return new BufferedReader(new InputStreamReader(
-        TachyonInterpreter.class.getResourceAsStream("/tachyon.keywords")))
-            .readLine().split(",");
-  }
-      
 }
