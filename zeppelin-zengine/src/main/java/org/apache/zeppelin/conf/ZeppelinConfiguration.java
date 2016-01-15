@@ -451,7 +451,6 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.lens.LensInterpreter,"
         + "org.apache.zeppelin.cassandra.CassandraInterpreter,"
         + "org.apache.zeppelin.geode.GeodeOqlInterpreter,"
-        + "org.apache.zeppelin.postgresql.PostgreSqlInterpreter,"
         + "org.apache.zeppelin.springxd.SpringXdStreamInterpreter,"
         + "org.apache.zeppelin.springxd.SpringXdJobInterpreter,"
         + "org.apache.zeppelin.kylin.KylinInterpreter,"

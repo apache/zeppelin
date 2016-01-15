@@ -28,7 +28,8 @@ angular.module('zeppelinWebApp')
     'ace/mode/scala': /^%spark/,
     'ace/mode/sql': /^%(\w*\.)?\wql/,
     'ace/mode/markdown': /^%md/,
-    'ace/mode/sh': /^%sh/
+    'ace/mode/sh': /^%sh/,
+    'ace/mode/text' : /^%xd/
   };
 
   // Controller init
