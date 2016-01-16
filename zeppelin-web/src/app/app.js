@@ -66,6 +66,10 @@
                     templateUrl: 'app/interpreter/interpreter.html',
                     controller: 'InterpreterCtrl'
                 })
+                .when('/configuration', {
+                  templateUrl: 'app/configuration/configuration.html',
+                  controller: 'ConfigurationCtrl'
+                })
                 .when('/search/:searchTerm', {
                     templateUrl: 'app/search/result-list.html',
                     controller: 'SearchResultCtrl'
