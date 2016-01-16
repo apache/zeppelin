@@ -143,7 +143,7 @@ public class ElasticsearchInterpreter extends Interpreter {
     logger.info("Run Elasticsearch command '" + cmd + "'");
     
     if (StringUtils.isEmpty(cmd)) {
-      return new InterpreterResult(Code.SUCCESS);
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS);
     }
 
     int currentResultSize = resultSize;
