@@ -44,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 /**
  * Binded interpreters for a note
@@ -166,10 +167,15 @@ public class Note implements Serializable, JobListener {
     Map<String, Object> config = new HashMap<>(srcParagraph.getConfig());
     Map<String, Object> param = new HashMap<>(srcParagraph.settings.getParams());
     Map<String, Input> form = new HashMap<>(srcParagraph.settings.getForms());
-    Gson gson = new Gson();
-    InterpreterResult result = gson.fromJson(
-        gson.toJson(srcParagraph.getReturn()),
-        InterpreterResult.class);
+    InterpreterResult result = null;
+    try {
+      Gson gson = new Gson();
+      result = gson.fromJson(
+          gson.toJson(srcParagraph.getReturn()),
+          InterpreterResult.class);
+    } catch (JsonSyntaxException e) {
+      // no-op
+    }
 
     newParagraph.setConfig(config);
     newParagraph.settings.setParams(param);
