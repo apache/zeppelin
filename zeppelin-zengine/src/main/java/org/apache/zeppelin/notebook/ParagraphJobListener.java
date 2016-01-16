@@ -17,9 +17,13 @@
 
 package org.apache.zeppelin.notebook;
 
+import org.apache.zeppelin.interpreter.InterpreterOutput;
+import org.apache.zeppelin.scheduler.JobListener;
+
 /**
- * TODO(moon): provide description.
+ * Listen paragraph update
  */
-public interface JobListenerFactory {
-  public ParagraphJobListener getParagraphJobListener(Note note);
+public interface ParagraphJobListener extends JobListener {
+  public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output);
+  public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output);
 }

@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.zeppelin.notebook;
+package org.apache.zeppelin.interpreter.remote;
 
 /**
- * TODO(moon): provide description.
+ * Event from remoteInterpreterProcess
  */
-public interface JobListenerFactory {
-  public ParagraphJobListener getParagraphJobListener(Note note);
+public interface RemoteInterpreterProcessListener {
+  public void onOutputAppend(String noteId, String paragraphId, String output);
+  public void onOutputUpdated(String noteId, String paragraphId, String output);
 }

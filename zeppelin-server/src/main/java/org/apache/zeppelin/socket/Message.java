@@ -93,6 +93,8 @@ public class Message {
 
     PARAGRAPH_REMOVE,
     PARAGRAPH_CLEAR_OUTPUT,
+    PARAGRAPH_APPEND_OUTPUT,  // [s-c] append output
+    PARAGRAPH_UPDATE_OUTPUT,  // [s-c] update (replace) output
     PING,
 
     ANGULAR_OBJECT_UPDATE,  // [s-c] add/update angular object
