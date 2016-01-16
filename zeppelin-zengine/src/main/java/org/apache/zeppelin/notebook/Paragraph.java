@@ -227,18 +227,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       }
 
       if (message.isEmpty()) {
-        logger().debug("Return " + ret.type() + ", message=" + ret.message());
         return ret;
       } else {
         String interpreterResultMessage = ret.message();
         if (interpreterResultMessage != null && !interpreterResultMessage.isEmpty()) {
           message += interpreterResultMessage;
-          logger().debug("Paragraph1 " + ret.code() + ", type=" + ret.type() +
-                  ", message=" + message);
           return new InterpreterResult(ret.code(), ret.type(), message);
         } else {
-          logger().debug("Paragraph2 " + ret.code() + ", type=" + outputType +
-                  ", message=" + message);
           return new InterpreterResult(ret.code(), outputType, message);
         }
       }

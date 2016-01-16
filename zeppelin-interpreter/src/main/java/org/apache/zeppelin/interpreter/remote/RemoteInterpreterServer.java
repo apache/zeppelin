@@ -309,13 +309,8 @@ public class RemoteInterpreterServer
         String interpreterResultMessage = result.message();
         if (interpreterResultMessage != null && !interpreterResultMessage.isEmpty()) {
           message += interpreterResultMessage;
-          logger.info("RemoteInterpreter1 " + result.code() + ", type=" + result.type() +
-                  ", message=" + message);
           return new InterpreterResult(result.code(), result.type(), message);
         } else {
-          logger.info("RemoteInterpreter2 " + result.code() + ", type=" + outputType +
-                  ", message=" + message);
-
           return new InterpreterResult(result.code(), outputType, message);
         }
       } finally {
