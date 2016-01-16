@@ -494,56 +494,15 @@ public class NotebookServer extends WebSocketServlet implements
 
   protected Note importNote(NotebookSocket conn, Notebook notebook, Message fromMessage)
       throws IOException {
-
-    Note note = notebook.createNote();
+    Note note = null;
     if (fromMessage != null) {
       String noteName = (String) ((Map) fromMessage.get("notebook")).get("name");
-      if (noteName == null || noteName.isEmpty()) {
-        noteName = "Note " + note.getId();
-      }
-      note.setName(noteName);
-      ArrayList<Map> paragraphs = ((Map<String, ArrayList>) fromMessage.get("notebook"))
-          .get("paragraphs");
-      if (paragraphs.size() > 0) {
-        for (Map paragraph : paragraphs) {
-          try {
-            Paragraph p = note.addParagraph();
-            String text = (String) paragraph.get("text");
-            p.setText(text);
-            p.setTitle((String) paragraph.get("title"));
-            Map<String, Object> params = (Map<String, Object>) ((Map) paragraph
-                .get("settings")).get("params");
-            Map<String, Input> forms = (Map<String, Input>) ((Map) paragraph
-                .get("settings")).get("forms");
-            if (params != null) {
-              p.settings.setParams(params);
-            }
-            if (forms != null) {
-              p.settings.setForms(forms);
-            }
-            Map<String, Object> result = (Map) paragraph.get("result");
-            if (result != null) {
-              InterpreterResult.Code code = InterpreterResult.Code
-                  .valueOf((String) result.get("code"));
-              InterpreterResult.Type type = InterpreterResult.Type
-                  .valueOf((String) result.get("type"));
-              String msg = (String) result.get("msg");
-              p.setReturn(new InterpreterResult(code, type, msg), null);
-            }
-
-            Map<String, Object> config = (Map<String, Object>) paragraph
-                .get("config");
-            p.setConfig(config);
-          } catch (Exception e) {
-            LOG.error("Exception while setting parameter in paragraph", e);
-          }
-        }
-      }
+      String noteJson = gson.toJson(fromMessage.get("notebook"));
+      note = notebook.importNote(noteJson, noteName);
+      note.persist();
+      broadcastNote(note);
+      broadcastNoteList();
     }
-
-    note.persist();
-    broadcastNote(note);
-    broadcastNoteList();
     return note;
   }
 
