@@ -760,9 +760,7 @@ public class NotebookServer extends WebSocketServlet implements
             .put("noteId", noteId)
             .put("paragraphId", paragraphId)
             .put("data", output);
-
     Paragraph paragraph = notebook().getNote(noteId).getParagraph(paragraphId);
-    updateParagraphResult(paragraph, output, true);
     broadcast(noteId, msg);
   }
 
@@ -778,30 +776,8 @@ public class NotebookServer extends WebSocketServlet implements
             .put("noteId", noteId)
             .put("paragraphId", paragraphId)
             .put("data", output);
-
     Paragraph paragraph = notebook().getNote(noteId).getParagraph(paragraphId);
-    updateParagraphResult(paragraph, output, false);
     broadcast(noteId, msg);
-  }
-
-  private static void updateParagraphResult(Paragraph paragraph, String output, boolean append) {
-    Object ret = paragraph.getReturn();
-    InterpreterResult.Code code = InterpreterResult.Code.SUCCESS;
-    String message = "";
-    Throwable t = paragraph.getException();
-
-    if (ret instanceof InterpreterResult) {
-      code = ((InterpreterResult) ret).code();
-      message = ((InterpreterResult) ret).message();
-    }
-
-    if (append) {
-      message = message + output;
-    } else {
-      message = output;
-    }
-    paragraph.setReturn(new InterpreterResult(code, message), t);
-    paragraph.getNote().persist(10);
   }
 
   /**
@@ -861,7 +837,6 @@ public class NotebookServer extends WebSocketServlet implements
               .put("paragraphId", paragraph.getId())
               .put("data", output);
 
-      updateParagraphResult(paragraph, output, true);
       notebookServer.broadcast(paragraph.getNote().getId(), msg);
     }
 
@@ -878,7 +853,6 @@ public class NotebookServer extends WebSocketServlet implements
               .put("paragraphId", paragraph.getId())
               .put("data", output);
 
-      updateParagraphResult(paragraph, output, false);
       notebookServer.broadcast(paragraph.getNote().getId(), msg);
     }
   }
