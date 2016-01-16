@@ -41,7 +41,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method return all key/value pair of configurations on the server. 
+      <td>This ```GET``` method return all key/value pair of configurations on the server.<br/> 
       Note: For security reason, some pairs would not be shown.</td>
     </tr>
     <tr>
@@ -105,7 +105,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method return all prefix matched key/value pair of configurations on the server. 
+      <td>This ```GET``` method return all prefix matched key/value pair of configurations on the server.<br/> 
       Note: For security reason, some pairs would not be shown.</td>
     </tr>
     <tr>
