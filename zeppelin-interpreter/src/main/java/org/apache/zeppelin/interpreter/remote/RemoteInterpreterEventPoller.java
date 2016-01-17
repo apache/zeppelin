@@ -124,6 +124,7 @@ public class RemoteInterpreterEventPoller extends Thread {
         wait(1000);
       }
     } catch (InterruptedException ignored) {
+      logger.info("Error in RemoteInterpreterEventPoller while waitQuietly : ", ignored);
     }
   }
 

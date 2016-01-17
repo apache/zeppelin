@@ -76,7 +76,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
 
     this.schedulerFactory = new SchedulerFactory();
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null);
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
@@ -134,7 +134,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
       try {
         notebookRepo.save(note);
       } catch (IOException e) {
-        e.printStackTrace();
+        LOG.error(e.toString(), e);
       }
     }
   }

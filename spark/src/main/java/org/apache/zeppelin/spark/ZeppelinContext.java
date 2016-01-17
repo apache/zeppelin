@@ -43,7 +43,7 @@ import org.apache.zeppelin.display.Input.ParamOption;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.spark.dep.DependencyResolver;
+import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 
 import scala.Tuple2;
 import scala.Unit;
@@ -53,14 +53,14 @@ import scala.collection.Iterable;
  * Spark context for zeppelin.
  */
 public class ZeppelinContext extends HashMap<String, Object> {
-  private DependencyResolver dep;
+  private SparkDependencyResolver dep;
   private PrintStream out;
   private InterpreterContext interpreterContext;
   private int maxResult;
 
   public ZeppelinContext(SparkContext sc, SQLContext sql,
       InterpreterContext interpreterContext,
-      DependencyResolver dep, PrintStream printStream,
+      SparkDependencyResolver dep, PrintStream printStream,
       int maxResult) {
     this.sc = sc;
     this.sqlContext = sql;
@@ -220,7 +220,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
       paramOptions[i++] = new ParamOption(valueAndDisplayValue._1(), valueAndDisplayValue._2());
     }
 
-    return gui.select(name, "", paramOptions);
+    return gui.select(name, defaultValue, paramOptions);
   }
 
   public void setGui(GUI o) {

@@ -428,9 +428,11 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     // Decide when new note is created, interpreter settings will be binded automatically or not.
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),
     ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf"),
+    ZEPPELIN_DEP_LOCALREPO("zeppelin.dep.localrepo", "local-repo"),
     // Allows a way to specify a ',' separated list of allowed origins for rest and websockets
     // i.e. http://localhost:8080
-    ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*");
+    ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),
+    ZEPPELIN_ANONYMOUS_ALLOWED("zeppelin.anonymous.allowed", true);
 
     private String varName;
     @SuppressWarnings("rawtypes")
@@ -565,6 +567,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         try {
           checkType(value);
         } catch (Exception e) {
+          LOG.error("Exception in ZeppelinConfiguration while isType", e);
           return false;
         }
         return true;

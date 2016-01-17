@@ -103,6 +103,8 @@ public class Message {
 
   public OP op;
   public Map<String, Object> data = new HashMap<String, Object>();
+  public String ticket = "anonymous";
+  public String principal = "anonymous";
 
   public Message(OP op) {
     this.op = op;

@@ -87,7 +87,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null);
     
     SearchService search = mock(SearchService.class);
     notebookRepoSync = new NotebookRepoSync(conf);
@@ -199,7 +199,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     try {
       FileUtils.copyDirectory(srcDir, destDir);
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error(e.toString(), e);
     }
     assertEquals(0, notebookRepoSync.list(0).size());
     assertEquals(1, notebookRepoSync.list(1).size());

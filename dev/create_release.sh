@@ -125,7 +125,7 @@ function make_binary_release() {
     rm -rf ${WORKING_DIR}/zeppelin-${RELEASE_NAME}-bin-${BIN_RELEASE_NAME}
 }
 
-make_binary_release all "-Pspark-1.5 -Phadoop-2.4 -Pyarn -Ppyspark"
+make_binary_release all "-Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark"
 
 # remove non release files and dirs
 rm -rf ${WORKING_DIR}/zeppelin

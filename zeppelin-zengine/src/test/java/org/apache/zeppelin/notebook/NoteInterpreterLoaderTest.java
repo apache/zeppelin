@@ -58,12 +58,13 @@ public class NoteInterpreterLoaderTest {
     MockInterpreter11.register("mock11", "group1", "org.apache.zeppelin.interpreter.mock.MockInterpreter11");
     MockInterpreter2.register("mock2", "group2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null);
   }
 
   @After
   public void tearDown() throws Exception {
     delete(tmpDir);
+    Interpreter.registeredInterpreters.clear();
   }
 
   @Test

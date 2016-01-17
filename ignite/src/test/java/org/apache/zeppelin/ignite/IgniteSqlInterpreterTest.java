@@ -60,7 +60,6 @@ public class IgniteSqlInterpreterTest {
     IgniteConfiguration cfg = new IgniteConfiguration();
     cfg.setDiscoverySpi(discoSpi);
     cfg.setPeerClassLoadingEnabled(true);
-    cfg.setMarshaller(new OptimizedMarshaller());
 
     cfg.setGridName("test");
 

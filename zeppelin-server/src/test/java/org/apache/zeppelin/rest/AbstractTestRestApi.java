@@ -55,7 +55,7 @@ public abstract class AbstractTestRestApi {
 
   static final String restApiUrl = "/api";
   static final String url = getUrlToTest();
-  protected static final boolean wasRunning = checkIfServerIsRuning();
+  protected static final boolean wasRunning = checkIfServerIsRunning();
   static boolean pySpark = false;
 
   private String getUrl(String path) {
@@ -86,7 +86,7 @@ public abstract class AbstractTestRestApi {
       try {
         ZeppelinServer.main(new String[] {""});
       } catch (Exception e) {
-        e.printStackTrace();
+        LOG.error("Exception in WebDriverManager while getWebDriver ", e);
         throw new RuntimeException(e);
       }
     }
@@ -101,7 +101,7 @@ public abstract class AbstractTestRestApi {
       boolean started = false;
       while (System.currentTimeMillis() - s < 1000 * 60 * 3) {  // 3 minutes
         Thread.sleep(2000);
-        started = checkIfServerIsRuning();
+        started = checkIfServerIsRunning();
         if (started == true) {
           break;
         }
@@ -156,7 +156,7 @@ public abstract class AbstractTestRestApi {
     try {
       return InetAddress.getLocalHost().getHostName();
     } catch (UnknownHostException e) {
-      e.printStackTrace();
+      LOG.error("Exception in WebDriverManager while getWebDriver ", e);
       return "localhost";
     }
   }
@@ -218,7 +218,7 @@ public abstract class AbstractTestRestApi {
       boolean started = true;
       while (System.currentTimeMillis() - s < 1000 * 60 * 3) {  // 3 minutes
         Thread.sleep(2000);
-        started = checkIfServerIsRuning();
+        started = checkIfServerIsRunning();
         if (started == false) {
           break;
         }
@@ -231,13 +231,14 @@ public abstract class AbstractTestRestApi {
     }
   }
 
-  protected static boolean checkIfServerIsRuning() {
+  protected static boolean checkIfServerIsRunning() {
     GetMethod request = null;
     boolean isRunning = true;
     try {
       request = httpGet("/");
       isRunning = request.getStatusCode() == 200;
     } catch (IOException e) {
+      LOG.error("Exception in AbstractTestRestApi while checkIfServerIsRunning ", e);
       isRunning = false;
     } finally {
       if (request != null) {
@@ -343,6 +344,7 @@ public abstract class AbstractTestRestApi {
         try {
           new JsonParser().parse(body);
         } catch (JsonParseException e) {
+          LOG.error("Exception in AbstractTestRestApi while matchesSafely ", e);
           isValid = false;
         }
         return isValid;

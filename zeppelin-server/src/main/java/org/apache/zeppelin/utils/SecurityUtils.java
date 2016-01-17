@@ -16,6 +16,7 @@
  */
 package org.apache.zeppelin.utils;
 
+import org.apache.shiro.subject.Subject;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 import java.net.InetAddress;
@@ -43,5 +44,21 @@ public class SecurityUtils {
             currentHost.equals(sourceUriHost) ||
             "localhost".equals(sourceUriHost) ||
             conf.getAllowedOrigins().contains(sourceHost);
+  }
+
+  /**
+   * Return the authenticated user if any otherwise returns "anonymous"
+   * @return shiro principal
+   */
+  public static String getPrincipal() {
+    Subject subject = org.apache.shiro.SecurityUtils.getSubject();
+    String principal;
+    if (subject.isAuthenticated()) {
+      principal = subject.getPrincipal().toString();
+    }
+    else {
+      principal = "anonymous";
+    }
+    return principal;
   }
 }
