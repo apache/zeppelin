@@ -14,11 +14,11 @@ group: manual
 SpringXD supports two processing abstractions: (1) [Streams](http://docs.spring.io/spring-xd/docs/current/reference/html/#streams) for event driven data, and (2) [Jobs](http://docs.spring.io/spring-xd/docs/current/reference/html/#jobs) like MR, PIG, Hive, Cascading, SQL and so on, for batch data types. Spring XD tries to blur the boundaries between the two using a channel abstraction, so that, for example, a stream can trigger a batch job, and a batch job can send events and, in turn, trigger other streams. An expressive DSL is provided for defining streams and jobs: 
 
 ```
-xd:>stream create foo --definition "http | filter --expression=payload='foo' | log
+myStream = http | filter --expression=payload='foo' | log
 ```
 
 Zeppelin provides interpreters for SpringXD `Streams` and `Jobs`: 
-<br/>
+
 <table class="table-configuration">
   <tr>
     <th>Name</th>
