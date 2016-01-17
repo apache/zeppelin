@@ -395,7 +395,6 @@ This interpreter provides 3 commands to handle prepared and bound statements:
 Example:
 
 ```
-
     @prepare[statement_name]=...
 
     @bind[statement_name]=’text’, 1223, ’2015-07-30 12:00:01’, null, true, [‘list_item1’, ’list_item2’]
@@ -419,7 +418,6 @@ there is only one instance of the interpreter for Cassandra
 Example:
 
 ```
-
     @prepare[select]=SELECT * FROM spark_demo.albums LIMIT ?
 
     @prepare[select]=SELECT * FROM spark_demo.artists LIMIT ?
