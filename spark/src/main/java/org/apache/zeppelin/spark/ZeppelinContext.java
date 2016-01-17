@@ -481,7 +481,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
 
 
   /**
-   * Get angular object. Look up local registry first and then global registry
+   * Get angular object. Look up notebook scope first and then global scope
    * @param name variable name
    * @return value
    */
@@ -495,7 +495,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Get angular object. Look up global registry
+   * Get angular object. Look up global scope
    * @param name variable name
    * @return value
    */
@@ -510,7 +510,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Create angular variable in local registry and bind with front end Angular display system.
+   * Create angular variable in notebook scope and bind with front end Angular display system.
    * If variable exists, it'll be overwritten.
    * @param name name of the variable
    * @param o value
@@ -520,7 +520,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Create angular variable in global registry and bind with front end Angular display system.
+   * Create angular variable in global scope and bind with front end Angular display system.
    * If variable exists, it'll be overwritten.
    * @param name name of the variable
    * @param o value
@@ -530,7 +530,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Create angular variable in local registry and bind with front end Angular display system.
+   * Create angular variable in local scope and bind with front end Angular display system.
    * If variable exists, value will be overwritten and watcher will be added.
    * @param name name of variable
    * @param o value
@@ -541,7 +541,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Create angular variable in global registry and bind with front end Angular display system.
+   * Create angular variable in global scope and bind with front end Angular display system.
    * If variable exists, value will be overwritten and watcher will be added.
    * @param name name of variable
    * @param o value
@@ -552,7 +552,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Add watcher into angular variable (local registry)
+   * Add watcher into angular variable (local scope)
    * @param name name of the variable
    * @param watcher watcher
    */
@@ -561,7 +561,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Add watcher into angular variable (global registry)
+   * Add watcher into angular variable (global scope)
    * @param name name of the variable
    * @param watcher watcher
    */
@@ -645,7 +645,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Create angular variable in local registry and bind with front end Angular display system.
+   * Create angular variable in notebook scope and bind with front end Angular display system.
    * If variable exists, it'll be overwritten.
    * @param name name of the variable
    * @param o value
@@ -661,7 +661,8 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Create angular variable in local registry and bind with front end Angular display system.
+   * Create angular variable in notebook scope and bind with front end Angular display
+   * system.
    * If variable exists, value will be overwritten and watcher will be added.
    * @param name name of variable
    * @param o value

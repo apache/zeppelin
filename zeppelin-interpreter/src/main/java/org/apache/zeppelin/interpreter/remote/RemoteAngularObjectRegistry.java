@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 
 /**
- *
+ * Proxy for AngularObjectRegistry that exists in remote interpreter process
  */
 public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
   Logger logger = LoggerFactory.getLogger(RemoteAngularObjectRegistry.class);

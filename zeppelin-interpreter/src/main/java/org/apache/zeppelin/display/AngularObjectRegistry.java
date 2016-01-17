@@ -26,9 +26,10 @@ import java.util.Map;
 /**
  * AngularObjectRegistry keeps all the object that binded to Angular Display System.
  * AngularObjectRegistry is created per interpreter group.
- * It keeps two different set of AngularObjects :
- *  - globalRegistry: Shared to all notebook that uses the same interpreter group
- *  - localRegistry: AngularObject is valid only inside of a single notebook
+ * It provides three different scope of AngularObjects :
+ *  - Paragraphscope : AngularObject is valid in specific paragraph
+ *  - Notebook scope: AngularObject is valid in a single notebook
+ *  - Global scope : Shared to all notebook that uses the same interpreter group
  */
 public class AngularObjectRegistry {
   Map<String, Map<String, AngularObject>> registry = 
@@ -60,10 +61,16 @@ public class AngularObjectRegistry {
 
   /**
    * Add object into registry
-   * @param name
-   * @param o
-   * @param noteId noteId belonging to. null for global object.
-   * @return
+   *
+   * Paragraph scope when noteId and paragraphId both not null
+   * Notebook scope when paragraphId is null
+   * Global scope when noteId and paragraphId both null
+   *
+   * @param name Name of object
+   * @param o Reference to the object
+   * @param noteId noteId belonging to. null for global scope
+   * @param paragraphId paragraphId belongs to. null for notebook scope
+   * @return AngularObject that added
    */
   public AngularObject add(String name, Object o, String noteId, String paragraphId) {
     return add(name, o, noteId, paragraphId, true);
@@ -91,7 +98,21 @@ public class AngularObjectRegistry {
       return registry.get(key);
     }
   }
- 
+
+  /**
+   * Add object into registry
+   *
+   * Paragraph scope when noteId and paragraphId both not null
+   * Notebook scope when paragraphId is null
+   * Global scope when noteId and paragraphId both null
+   *
+   * @param name Name of object
+   * @param o Reference to the object
+   * @param noteId noteId belonging to. null for global scope
+   * @param paragraphId paragraphId belongs to. null for notebook scope
+   * @param emit skip firing onAdd event on false
+   * @return AngularObject that added
+   */
   public AngularObject add(String name, Object o, String noteId, String paragraphId,
                            boolean emit) {
     AngularObject ao = createNewAngularObject(name, o, noteId, paragraphId);
@@ -116,10 +137,27 @@ public class AngularObjectRegistry {
     return angularObjectListener;
   }
 
+  /**
+   * Remove a object from registry
+   *
+   * @param name Name of object to remove
+   * @param noteId noteId belongs to. null for global scope
+   * @param paragraphId paragraphId belongs to. null for notebook scope
+   * @return removed object. null if object is not found in registry
+   */
   public AngularObject remove(String name, String noteId, String paragraphId) {
     return remove(name, noteId, paragraphId, true);
   }
 
+  /**
+   * Remove a object from registry
+   *
+   * @param name Name of object to remove
+   * @param noteId noteId belongs to. null for global scope
+   * @param paragraphId paragraphId belongs to. null for notebook scope
+   * @param emit skip fireing onRemove event on false
+   * @return removed object. null if object is not found in registry
+   */
   public AngularObject remove(String name, String noteId, String paragraphId, boolean emit) {
     synchronized (registry) {
       Map<String, AngularObject> r = getRegistryForKey(noteId, paragraphId);
@@ -131,6 +169,16 @@ public class AngularObjectRegistry {
     }
   }
 
+  /**
+   * Remove all angular object in the scope.
+   *
+   * Remove all paragraph scope angular object when noteId and paragraphId both not null
+   * Remove all notebook scope angular object when paragraphId is null
+   * Remove all global scope angular objects when noteId and paragraphId both null
+   *
+   * @param noteId noteId
+   * @param paragraphId paragraphId
+   */
   public void removeAll(String noteId, String paragraphId) {
     synchronized (registry) {
       List<AngularObject> all = getAll(noteId, paragraphId);
@@ -140,6 +188,13 @@ public class AngularObjectRegistry {
     }
   }
 
+  /**
+   * Get a object from registry
+   * @param name name of object
+   * @param noteId noteId that belongs to
+   * @param paragraphId paragraphId that belongs to
+   * @return angularobject. null when not found
+   */
   public AngularObject get(String name, String noteId, String paragraphId) {
     synchronized (registry) {
       Map<String, AngularObject> r = getRegistryForKey(noteId, paragraphId);
@@ -147,6 +202,12 @@ public class AngularObjectRegistry {
     }
   }
 
+  /**
+   * Get all object in the scope
+   * @param noteId noteId that belongs to
+   * @param paragraphId paragraphId that belongs to
+   * @return all angularobject in the scope
+   */
   public List<AngularObject> getAll(String noteId, String paragraphId) {
     List<AngularObject> all = new LinkedList<AngularObject>();
     synchronized (registry) {
@@ -159,7 +220,10 @@ public class AngularObjectRegistry {
   }
   
   /**
-   * Get all object with global merged
+   * Get all angular object related to specific note.
+   * That includes all global scope objects, notebook scope objects and paragraph scope objects
+   * belongs to the noteId.
+   *
    * @param noteId
    * @return
    */

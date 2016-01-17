@@ -21,7 +21,7 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectListener;
 
 /**
- *
+ * Proxy for AngularObject that exists in remote interpreter process
  */
 public class RemoteAngularObject extends AngularObject {
 
