@@ -6,12 +6,10 @@ group: manual
 ---
 {% include JB/setup %}
 
-
 ## Elasticsearch Interpreter for Apache Zeppelin
 [Elasticsearch](https://www.elastic.co/products/elasticsearch) is a highly scalable open-source full-text search and analytics engine. It allows you to store, search, and analyze big volumes of data quickly and in near real time. It is generally used as the underlying engine/technology that powers applications that have complex search features and requirements.
 
 ## Configuration
-
 <table class="table-configuration">
   <tr>
     <th>Property</th>
@@ -44,7 +42,6 @@ group: manual
   ![Interpreter configuration](../assets/themes/zeppelin/img/docs-img/elasticsearch-config.png)
 </center>
 
-
 > **Note #1 :** You can add more properties to configure the Elasticsearch client.
 
 > **Note #2 :** If you use Shield, you can add a property named `shield.user` with a value containing the name and the password ( format: `username:password` ). For more details about Shield configuration, consult the [Shield reference guide](https://www.elastic.co/guide/en/shield/current/_using_elasticsearch_java_clients_with_shield.html). Do not forget, to copy the shield client jar in the interpreter directory (`ZEPPELIN_HOME/interpreters/elasticsearch`).
@@ -56,8 +53,9 @@ In a notebook, to enable the **Elasticsearch** interpreter, click the **Gear** i
 In a paragraph, use `%elasticsearch` to select the Elasticsearch interpreter and then input all commands. To get the list of available commands, use `help`.
 
 ```bash
-| %elasticsearch
-| help
+%elasticsearch
+help
+
 Elasticsearch interpreter:
 General format: <command> /<indices>/<types>/<id> <option> <JSON>
   - indices: list of indices separated by commas (depends on the command)
@@ -83,8 +81,8 @@ Commands:
 With the `get` command, you can find a document by id. The result is a JSON document.
 
 ```bash
-| %elasticsearch
-| get /index/type/id
+%elasticsearch
+get /index/type/id
 ```
 
 Example:
@@ -100,16 +98,16 @@ With the `search` command, you can send a search query to Elasticsearch. There a
   * See [Elasticsearch query string syntax](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax) for more details about the content of such a query.
 
 ```bash
-| %elasticsearch
-| search /index1,index2,.../type1,type2,...  <JSON document containing the query or query_string elements>
+%elasticsearch
+search /index1,index2,.../type1,type2,...  <JSON document containing the query or query_string elements>
 ```
 
 If you want to modify the size of the result set, you can add a line that is setting the size, before your search command.
 
 ```bash
-| %elasticsearch
-| size 50
-| search /index1,index2,.../type1,type2,...  <JSON document containing the query or query_string elements>
+%elasticsearch
+size 50
+search /index1,index2,.../type1,type2,...  <JSON document containing the query or query_string elements>
 ```
 
 > A search query can also contain [aggregations](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html). If there is at least one aggregation, the result of the first aggregation is shown, otherwise, you get the search hits.
@@ -119,30 +117,30 @@ Examples:
   * With a JSON query:
 
   ```bash
-| %elasticsearch
-| search / { "query": { "match_all": { } } }
-|
-| %elasticsearch
-| search /logs { "query": { "query_string": { "query": "request.method:GET AND status:200" } } }
-|
-| %elasticsearch
-| search /logs { "aggs": {
-|   "content_length_stats": {
-|     "extended_stats": {
-|       "field": "content_length"
-|     }
-|   }
-| } } 
+  %elasticsearch
+  search / { "query": { "match_all": { } } }
+ 
+  %elasticsearch
+  search /logs { "query": { "query_string": { "query": "request.method:GET AND status:200" } } }
+ 
+  %elasticsearch
+  search /logs { "aggs": {
+    "content_length_stats": {
+      "extended_stats": {
+        "field": "content_length"
+      }
+    }
+  } } 
   ```
 
   * With query_string elements:
 
   ```bash
-| %elasticsearch
-| search /logs request.method:GET AND status:200
-|
-| %elasticsearch
-| search /logs (404 AND (POST OR DELETE))
+  %elasticsearch
+  search /logs request.method:GET AND status:200
+ 
+  %elasticsearch
+  search /logs (404 AND (POST OR DELETE))
   ```
 
 > **Important** : a document in Elasticsearch is a JSON document, so it is hierarchical, not flat as a row in a SQL table.
@@ -193,8 +191,8 @@ Examples:
 With the `count` command, you can count documents available in some indices and types. You can also provide a query.
 
 ```bash
-| %elasticsearch
-| count /index1,index2,.../type1,type2,... <JSON document containing the query OR a query string>
+%elasticsearch
+count /index1,index2,.../type1,type2,... <JSON document containing the query OR a query string>
 ```
 
 Examples:
@@ -209,27 +207,26 @@ Examples:
 With the `index` command, you can insert/update a document in Elasticsearch.
 
 ```bash
-| %elasticsearch
-| index /index/type/id <JSON document>
-|
-| %elasticsearch
-| index /index/type <JSON document>
+%elasticsearch
+index /index/type/id <JSON document>
+
+%elasticsearch
+index /index/type <JSON document>
 ```
 
 ### Delete
 With the `delete` command, you can delete a document.
 
 ```bash
-| %elasticsearch
-| delete /index/type/id
+%elasticsearch
+delete /index/type/id
 ```
 
 ### Apply Zeppelin Dynamic Forms
 You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parameterization features.
 
 ```bash
-| %elasticsearch
-| size ${limit=10}
-| search /index/type { "query": { "match_all": { } } }
+%elasticsearch
+size ${limit=10}
+search /index/type { "query": { "match_all": { } } }
 ```
-

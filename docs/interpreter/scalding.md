@@ -6,13 +6,10 @@ group: manual
 ---
 {% include JB/setup %}
 
-
 ## Scalding Interpreter for Apache Zeppelin
-
 [Scalding](https://github.com/twitter/scalding) is an open source Scala library for writing MapReduce jobs.
 
 ### Building the Scalding Interpreter
-
 You have to first build the Scalding interpreter by enable the **scalding** profile as follows:
 
 ```
@@ -20,9 +17,8 @@ mvn clean package -Pscalding -DskipTests
 ```
 
 ### Enabling the Scalding Interpreter
-
 In a notebook, to enable the **Scalding** interpreter, click on the **Gear** icon,select **Scalding**, and hit **Save**.
- 
+
 <center>
 
 ![Interpreter Binding](../assets/themes/zeppelin/img/docs-img/scalding-InterpreterBinding.png)
@@ -32,11 +28,9 @@ In a notebook, to enable the **Scalding** interpreter, click on the **Gear** ico
 </center>
 
 ### Configuring the Interpreter
-
 Zeppelin comes with a pre-configured Scalding interpreter in local mode, so you do not need to install anything.
 
 ### Testing the Interpreter
-
 In example, by using the [Alice in Wonderland](https://gist.github.com/johnynek/a47699caa62f4f38a3e2) tutorial, we will count words (of course!), and plot a graph of the top 10 words in the book.
 
 ```
@@ -78,7 +72,6 @@ If you click on the icon for the pie chart, you should be able to see a chart li
 ![Scalding - Pie - Chart](../assets/themes/zeppelin/img/docs-img/scalding-pie.png)
 
 ### Current Status & Future Work
-
 The current implementation of the Scalding interpreter does not support canceling jobs, or fine-grained progress updates. 
 
 The pre-configured Scalding interpreter only supports Scalding in local mode. Hadoop mode for Scalding is currently unsupported, and will be future work (contributions welcome!).

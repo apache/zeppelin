@@ -6,9 +6,7 @@ group: manual
 ---
 {% include JB/setup %}
 
-
 ## PostgreSQL, HAWQ  Interpreter for Apache Zeppelin
-
 <table class="table-configuration">
   <tr>
     <th>Name</th>
@@ -30,11 +28,9 @@ This interpreter seamlessly supports the following SQL data processing engines:
 * [Apache HAWQ](http://pivotal.io/big-data/pivotal-hawq) - Powerful [Open Source](https://wiki.apache.org/incubator/HAWQProposal) SQL-On-Hadoop engine.
 * [Greenplum](http://pivotal.io/big-data/pivotal-greenplum-database) - MPP database built on open source PostgreSQL.
 
-
 This [Video Tutorial](https://www.youtube.com/watch?v=wqXXQhJ5Uk8) illustrates some of the features provided by the `Postgresql Interpreter`.
 
 ### Create Interpreter
-
 By default Zeppelin creates one `PSQL` instance. You can remove it or create new instances.
 
 Multiple PSQL instances can be created, each configured to the same or different backend databases. But over time a  `Notebook` can have only one PSQL interpreter instance `bound`. That means you _cannot_ connect to different databases in the same `Notebook`. This is a known Zeppelin limitation.
@@ -44,54 +40,50 @@ To create new PSQL instance open the `Interpreter` section and click the `+Creat
 > Note: The `Name` of the instance is used only to distinct the instances while binding them to the `Notebook`. The `Name` is irrelevant inside the `Notebook`. In the `Notebook` you must use `%psql.sql` tag.
 
 ### Bind to Notebook
-
 In the `Notebook` click on the `settings` icon in the top right corner. The select/deselect the interpreters to be bound with the `Notebook`.
 
 ### Configuration
-
 You can modify the configuration of the PSQL from the `Interpreter` section.  The PSQL interpreter expenses the following properties:
 
 <table class="table-configuration">
-   <tr>
-     <th>Property Name</th>
-     <th>Description</th>
-     <th>Default Value</th>
-   </tr>
-   <tr>
-     <td>postgresql.url</td>
-     <td>JDBC URL to connect to </td>
-     <td>jdbc:postgresql://localhost:5432</td>
-   </tr>
-   <tr>
-     <td>postgresql.user</td>
-     <td>JDBC user name</td>
-     <td>gpadmin</td>
-   </tr>
-   <tr>
-     <td>postgresql.password</td>
-     <td>JDBC password</td>
-     <td></td>
-   </tr>
-   <tr>
-     <td>postgresql.driver.name</td>
-     <td>JDBC driver name. In this version the driver name is fixed and should not be changed</td>
-     <td>org.postgresql.Driver</td>
-   </tr>
-   <tr>
-     <td>postgresql.max.result</td>
-     <td>Max number of SQL result to display to prevent the browser overload</td>
-     <td>1000</td>
-   </tr>      
+  <tr>
+    <th>Property Name</th>
+    <th>Description</th>
+    <th>Default Value</th>
+  </tr>
+  <tr>
+    <td>postgresql.url</td>
+    <td>JDBC URL to connect to </td>
+    <td>jdbc:postgresql://localhost:5432</td>
+  </tr>
+  <tr>
+    <td>postgresql.user</td>
+    <td>JDBC user name</td>
+    <td>gpadmin</td>
+  </tr>
+  <tr>
+    <td>postgresql.password</td>
+    <td>JDBC password</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>postgresql.driver.name</td>
+    <td>JDBC driver name. In this version the driver name is fixed and should not be changed</td>
+    <td>org.postgresql.Driver</td>
+  </tr>
+  <tr>
+    <td>postgresql.max.result</td>
+    <td>Max number of SQL result to display to prevent the browser overload</td>
+    <td>1000</td>
+  </tr>
 </table>
 
 ### How to use
-
 ```
 Tip: Use (CTRL + .) for SQL auto-completion.
 ```
 
 #### DDL and SQL commands
-
 Start the paragraphs with the full `%psql.sql` prefix tag! The short notation: `%psql` would still be able run the queries but the syntax highlighting and the auto-completions will be disabled.
 
 You can use the standard CREATE / DROP / INSERT commands to create or modify the data model:
@@ -121,7 +113,6 @@ select * from mytable;
 ```
 
 #### PSQL command line tools
-
 Use the Shell Interpreter (`%sh`) to access the command line [PSQL](http://www.postgresql.org/docs/9.4/static/app-psql.html) interactively:
 
 ```bash
@@ -147,7 +138,6 @@ This will produce output like this:
 ```
 
 #### Apply Zeppelin Dynamic Forms
-
 You can leverage [Zeppelin Dynamic Form](../manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parametrization features
 
 ```sql
@@ -160,7 +150,6 @@ LIMIT ${limit=10};
 ```
 
 #### Example HAWQ PXF/HDFS Tables
-
 Create HAWQ external table that read data from tab-separated-value data in HDFS.
 
 ```sql
@@ -179,5 +168,4 @@ select * from retail_demo.payment_methods_pxf
 ```
 
 ### Auto-completion
-
 The PSQL Interpreter provides a basic auto-completion functionality. On `(Ctrl+.)` it list the most relevant suggestions in a pop-up window. In addition to the SQL keyword the interpreter provides suggestions for the Schema, Table, Column names as well.
