@@ -9,9 +9,8 @@ group: manual
 
 ## Elasticsearch Interpreter for Apache Zeppelin
 
-### 1. Configuration
+### Configuration
 
-<br/>
 <table class="table-configuration">
   <tr>
     <th>Property</th>
@@ -49,18 +48,11 @@ group: manual
 
 > Note #2: if you use Shield, you can add a property named `shield.user` with a value containing the name and the password (format: `username:password`). For more details about Shield configuration, consult the [Shield reference guide](https://www.elastic.co/guide/en/shield/current/_using_elasticsearch_java_clients_with_shield.html). Do not forget, to copy the shield client jar in the interpreter directory (`ZEPPELIN_HOME/interpreters/elasticsearch`).
 
-
-<hr/>
-
-### 2. Enabling the Elasticsearch Interpreter
+### Enabling the Elasticsearch Interpreter
 
 In a notebook, to enable the **Elasticsearch** interpreter, click the **Gear** icon and select **Elasticsearch**.
 
-
-<hr/>
-
-
-### 3. Using the Elasticsearch Interpreter
+### Using the Elasticsearch Interpreter
 
 In a paragraph, use `%elasticsearch` to select the Elasticsearch interpreter and then input all commands. To get the list of available commands, use `help`.
 
@@ -88,7 +80,6 @@ Commands:
 
 > Tip: use (CTRL + .) for completion
 
-
 #### get
 With the `get` command, you can find a document by id. The result is a JSON document.
 
@@ -100,7 +91,6 @@ With the `get` command, you can find a document by id. The result is a JSON docu
 Example:
 ![Elasticsearch - Get](../assets/themes/zeppelin/img/docs-img/elasticsearch-get.png)
 
-
 #### search
 With the `search` command, you can send a search query to Elasticsearch. There are two formats of query:
 
@@ -109,7 +99,6 @@ With the `search` command, you can send a search query to Elasticsearch. There a
 * You can also provide the content of a `query_string`
   * This is a shortcut to a query like that: `{ "query": { "query_string": { "query": "__HERE YOUR QUERY__", "analyze_wildcard": true } } }` 
   * See [Elasticsearch query string syntax](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax) for more details about the content of such a query.
-
 
 ```bash
 | %elasticsearch
@@ -124,9 +113,7 @@ If you want to modify the size of the result set, you can add a line that is set
 | search /index1,index2,.../type1,type2,...  <JSON document containing the query or query_string elements>
 ```
 
-
 > A search query can also contain [aggregations](https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html). If there is at least one aggregation, the result of the first aggregation is shown, otherwise, you get the search hits.
-
 
 Examples:
 
@@ -146,7 +133,7 @@ Examples:
 |       "field": "content_length"
 |     }
 |   }
-| } } 
+| } }
   ```
 
   * With query_string elements:
@@ -179,11 +166,9 @@ Suppose we have a JSON document:
 
 The data will be flattened like this:
 
-
 content_length | date | request.headers[0] | request.headers[1] | request.method | request.url | status
 ---------------|------|--------------------|--------------------|----------------|-------------|-------
 1234 | 2015-12-08T21:03:13.588Z | Accept: \*.\* | Host: apache.org | GET | /zeppelin/4cd001cd-c517-4fa9-b8e5-a06b8f4056c4 | 403
-
 
 Examples:
 
@@ -205,7 +190,6 @@ Examples:
 * With a query containing a multi-bucket aggregation:
 ![Elasticsearch - Search with aggregation (multi-bucket)](../assets/themes/zeppelin/img/docs-img/elasticsearch-agg-multi-bucket-pie.png)
 
-
 #### count
 With the `count` command, you can count documents available in some indices and types. You can also provide a query.
 
@@ -221,7 +205,6 @@ Examples:
 
 * With a query:
 ![Elasticsearch - Count with query](../assets/themes/zeppelin/img/docs-img/elasticsearch-count-with-query.png)
-
 
 #### index
 With the `index` command, you can insert/update a document in Elasticsearch.
@@ -241,8 +224,6 @@ With the `delete` command, you can delete a document.
 | %elasticsearch
 | delete /index/type/id
 ```
-
-
 
 #### Apply Zeppelin Dynamic Forms
 

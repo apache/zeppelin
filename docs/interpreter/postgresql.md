@@ -9,7 +9,6 @@ group: manual
 
 ## PostgreSQL, HAWQ  Interpreter for Apache Zeppelin
 
-<br/>
 <table class="table-configuration">
   <tr>
     <th>Name</th>
@@ -23,7 +22,6 @@ group: manual
   </tr>
 </table>
 
-<br/>
 [<img align="right" src="http://img.youtube.com/vi/wqXXQhJ5Uk8/0.jpg" alt="zeppelin-view" hspace="10" width="250"></img>](https://www.youtube.com/watch?v=wqXXQhJ5Uk8)
 
 This interpreter seamlessly supports the following SQL data processing engines:
@@ -46,13 +44,14 @@ To create new PSQL instance open the `Interpreter` section and click the `+Creat
 > Note: The `Name` of the instance is used only to distinct the instances while binding them to the `Notebook`. The `Name` is irrelevant inside the `Notebook`. In the `Notebook` you must use `%psql.sql` tag.
 
 ### Bind to Notebook
+
 In the `Notebook` click on the `settings` icon in the top right corner. The select/deselect the interpreters to be bound with the `Notebook`.
 
 ### Configuration
+
 You can modify the configuration of the PSQL from the `Interpreter` section.  The PSQL interpreter expenses the following properties:
 
-
- <table class="table-configuration">
+<table class="table-configuration">
    <tr>
      <th>Property Name</th>
      <th>Description</th>
@@ -83,13 +82,14 @@ You can modify the configuration of the PSQL from the `Interpreter` section.  Th
      <td>Max number of SQL result to display to prevent the browser overload</td>
      <td>1000</td>
    </tr>      
- </table>
-
+</table>
 
 ### How to use
+
 ```
 Tip: Use (CTRL + .) for SQL auto-completion.
 ```
+
 #### DDL and SQL commands
 
 Start the paragraphs with the full `%psql.sql` prefix tag! The short notation: `%psql` would still be able run the queries but the syntax highlighting and the auto-completions will be disabled.
@@ -131,6 +131,7 @@ psql -h phd3.localdomain -U gpadmin -p 5432 <<EOF
  \q
 EOF
 ```
+
 This will produce output like this:
 
 ```
@@ -157,6 +158,7 @@ GROUP BY ${group_by=product_id,product_id|product_name|customer_id|store_id}
 ORDER BY count ${order=DESC,DESC|ASC}
 LIMIT ${limit=10};
 ```
+
 #### Example HAWQ PXF/HDFS Tables
 
 Create HAWQ external table that read data from tab-separated-value data in HDFS.
@@ -168,11 +170,14 @@ CREATE EXTERNAL TABLE retail_demo.payment_methods_pxf (
   payment_method_code character varying(20)
 ) LOCATION ('pxf://${NAME_NODE_HOST}:50070/retail_demo/payment_methods.tsv.gz?profile=HdfsTextSimple') FORMAT 'TEXT' (DELIMITER = E'\t');
 ```
+
 And retrieve content
 
 ```sql
 %psql.sql
 select * from retail_demo.payment_methods_pxf
 ```
+
 ### Auto-completion
+
 The PSQL Interpreter provides a basic auto-completion functionality. On `(Ctrl+.)` it list the most relevant suggestions in a pop-up window. In addition to the SQL keyword the interpreter provides suggestions for the Schema, Table, Column names as well.

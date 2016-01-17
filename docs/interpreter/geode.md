@@ -9,7 +9,6 @@ group: manual
 
 ## Geode/Gemfire OQL Interpreter for Apache Zeppelin
 
-<br/>
 <table class="table-configuration">
   <tr>
     <th>Name</th>
@@ -23,7 +22,6 @@ group: manual
   </tr>
 </table>
 
-<br/>
 This interpreter supports the [Geode](http://geode.incubator.apache.org/) [Object Query Language (OQL)](http://geode-docs.cfapps.io/docs/developing/querying_basics/oql_compared_to_sql.html).  With the OQL-based querying language:
 
 [<img align="right" src="http://img.youtube.com/vi/zvzzA9GXu3Q/3.jpg" alt="zeppelin-view" hspace="10" width="200"></img>](https://www.youtube.com/watch?v=zvzzA9GXu3Q)
@@ -48,34 +46,35 @@ To create new Geode instance open the `Interpreter` section and click the `+Crea
 > Note: The `Name` of the instance is used only to distinguish the instances while binding them to the `Notebook`. The `Name` is irrelevant inside the `Notebook`. In the `Notebook` you must use `%geode.oql` tag.
 
 ### Bind to Notebook
+
 In the `Notebook` click on the `settings` icon in the top right corner. The select/deselect the interpreters to be bound with the `Notebook`.
 
 ### Configuration
+
 You can modify the configuration of the Geode from the `Interpreter` section.  The Geode interpreter expresses the following properties:
 
-
- <table class="table-configuration">
-   <tr>
-     <th>Property Name</th>
-     <th>Description</th>
-     <th>Default Value</th>
-   </tr>
-   <tr>
-     <td>geode.locator.host</td>
-     <td>The Geode Locator Host</td>
-     <td>localhost</td>
-   </tr>
-   <tr>
-     <td>geode.locator.port</td>
-     <td>The Geode Locator Port</td>
-     <td>10334</td>
-   </tr>
-   <tr>
-     <td>geode.max.result</td>
-     <td>Max number of OQL result to display to prevent the browser overload</td>
-     <td>1000</td>
-   </tr>
- </table>
+<table class="table-configuration">
+  <tr>
+    <th>Property Name</th>
+    <th>Description</th>
+    <th>Default Value</th>
+  </tr>
+  <tr>
+    <td>geode.locator.host</td>
+    <td>The Geode Locator Host</td>
+    <td>localhost</td>
+  </tr>
+  <tr>
+    <td>geode.locator.port</td>
+    <td>The Geode Locator Port</td>
+    <td>10334</td>
+  </tr>
+  <tr>
+    <td>geode.max.result</td>
+    <td>Max number of OQL result to display to prevent the browser overload</td>
+    <td>1000</td>
+  </tr>
+</table>
 
 ### How to use
 
@@ -106,7 +105,6 @@ EOF
 Above snippet re-creates two regions: `regionEmployee` and `regionCompany`. Note that you have to explicitly specify the locator host and port. The values should match those you have used in the Geode Interpreter configuration. Comprehensive list of [GFSH Commands by Functional Area](http://geode-docs.cfapps.io/docs/tools_modules/gfsh/gfsh_quick_reference.html).
 
 #### Basic OQL  
-
 
 ```sql
 %geode.oql
@@ -144,9 +142,7 @@ Following query will return the EntrySet value as a Blob:
 SELECT e.key, e.value FROM /regionEmployee.entrySet e
 ```
 
-
 > Note: You can have multiple queries in the same paragraph but only the result from the first is displayed. [[1](https://issues.apache.org/jira/browse/ZEPPELIN-178)], [[2](https://issues.apache.org/jira/browse/ZEPPELIN-212)].
-
 
 #### GFSH Commands From The Shell
 

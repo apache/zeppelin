@@ -11,7 +11,6 @@ group: manual
 
 ### Configuration
 
-<br/>
 <table class="table-configuration">
   <tr>
     <th>Property</th>
@@ -71,7 +70,7 @@ group: manual
 </table>
 
 This interpreter provides multiple configuration with ${prefix}. User can set a multiple connection properties by this prefix. It can be used like `%hive(${prefix})`.
- 
+
 ### How to use
 
 Basically, you can use

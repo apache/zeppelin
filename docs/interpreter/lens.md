@@ -6,14 +6,17 @@ group: manual
 ---
 {% include JB/setup %}
 
+
 ## Lens Interpreter for Apache Zeppelin
 
 ### Overview
+
 [Apache Lens](https://lens.apache.org/) provides an Unified Analytics interface. Lens aims to cut the Data Analytics silos by providing a single view of data across multiple tiered data stores and optimal execution environment for the analytical query. It seamlessly integrates Hadoop with traditional data warehouses to appear like one.
 
 ![Apache Lens](../assets/themes/zeppelin/img/docs-img/lens-logo.png)
 
 ### Installing and Running Lens
+
 In order to use Lens interpreters, you may install Apache Lens in some simple steps:
 
   1. Download Lens for latest version from [the ASF](http://www.apache.org/dyn/closer.lua/lens/2.3-beta). Or the older release can be found [in the Archives](http://archive.apache.org/dist/lens/).
@@ -25,9 +28,10 @@ In order to use Lens interpreters, you may install Apache Lens in some simple st
   ```
 
 ### Configuring Lens Interpreter
+
 At the "Interpreters" menu, you can to edit Lens interpreter or create new one. Zeppelin provides these properties for Lens.
 
- <table class="table-configuration">
+<table class="table-configuration">
   <tr>
       <th>Property Name</th>
       <th>value</th>
@@ -73,17 +77,19 @@ At the "Interpreters" menu, you can to edit Lens interpreter or create new one. 
       <td>yyy</td>
       <td>anything else from [Configuring lens server](https://lens.apache.org/admin/config-server.html)</td>
   </tr>
- </table>
+</table>
 
 ![Apache Lens Interpreter Setting](../assets/themes/zeppelin/img/docs-img/lens-interpreter-setting.png)
 
 ### Interpreter Bindging for Zeppelin Notebook
+
 After configuring Lens interpreter, create your own notebook, then you can bind interpreters like below image. 
 ![Zeppelin Notebook Interpreter Biding](../assets/themes/zeppelin/img/docs-img/lens-interpreter-binding.png)
 
 For more interpreter binding information see [here](http://zeppelin.incubator.apache.org/docs/manual/interpreters.html).
 
-### How to use 
+### How to use
+
 You can analyze your data by using [OLAP Cube](http://lens.apache.org/user/olap-cube.html) [QL](http://lens.apache.org/user/cli.html) which is a high level SQL like language to query and describe data sets organized in data cubes. 
 You may experience OLAP Cube like this [Video tutorial](https://cwiki.apache.org/confluence/display/LENS/2015/07/13/20+Minute+video+demo+of+Apache+Lens+through+examples). 
 As you can see in this video, they are using Lens Client Shell(./bin/lens-cli.sh). All of these functions also can be used on Zeppelin by using Lens interpreter.
@@ -163,7 +169,8 @@ As you can see in this video, they are using Lens Client Shell(./bin/lens-cli.sh
 
 These are just examples that provided in advance by Lens. If you want to explore whole tutorials of Lens, see the [tutorial video](https://cwiki.apache.org/confluence/display/LENS/2015/07/13/20+Minute+video+demo+of+Apache+Lens+through+examples).
 
-### Lens UI Service 
+### Lens UI Service
+
 Lens also provides web UI service. Once the server starts up, you can open the service on http://serverhost:19999/index.html and browse. You may also check the structure that you made and use query easily here.
  
  ![Lens UI Servive](../assets/themes/zeppelin/img/docs-img/lens-ui-service.png)
