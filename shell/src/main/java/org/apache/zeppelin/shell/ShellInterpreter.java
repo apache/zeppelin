@@ -90,10 +90,11 @@ public class ShellInterpreter extends Interpreter {
       String msg = errorStream.toString();
       if (exitValue == 143) {
         code = Code.INCOMPLETE;
-        msg = msg + "Paragraph received a SIGTERM";
+        msg = msg + "Paragraph received a SIGTERM.\n";
         logger.info("The paragraph " + contextInterpreter.getParagraphId()
             + " stopped executing: " + msg);
       }
+      msg += "Exitvalue: " + exitValue;
       return new InterpreterResult(code, msg);
     } catch (IOException e) {
       logger.error("Can not run " + cmd, e);
