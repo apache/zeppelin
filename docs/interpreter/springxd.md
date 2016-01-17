@@ -95,9 +95,16 @@ Another example is to fork the above `tweets` stream, extract the tweets's IDs a
 tweetsCount = tap:stream:tweets > json-to-tuple | transform --expression='payload.id_str' | counter --name=tweetCounter
 ```
 
-> Note 1: If a stream paragraph is restarted then all running streams will undeployed and destroyed before they are started gain!
-
-> Note 2: Streams are long running processes. To stop a running stream(s) press the button in the bottom of the paragraph. 
+* `%xd.stream` - identifies the SpringXD Streams interpreter.
+* Use `Ctrl+.` for auto-completion.
+* Streams must have names. Follow the convention: `stream name = stream definition`. Streams without names are ignored.
+* New Run destroys any previous streams created in the same paragraph. The previous streams are destroyed even if their names have been changed or removed.
+* Paragraph `Run` command will `Create` and automatically `Deploy` all streams defined in the Paragraph.
+* If one stream fails to create or to deploy then all streams in the paragraph are destroyed
+* Zeppelin returns after the streams deployment (e.g. Zeppelin goes into Finished state).
+* When streams have successfully been deployed the result contains a `button` that lists the just deployed streams and status `DEPLOYED`
+* To destroy streams in a paragraph press the `Annular Button` in the paragraph result section. The button state will switch from `DEPLOYED` to `DESTROYED`.
+* Streams can refer other streams or jobs in any paragraph and even different notebooks.
 
 #### XD Jobs
 
@@ -120,12 +127,17 @@ Another example illustrates how a Spark Application can be deployed and launched
 
 SparkPiExample  = sparkapp --appJar=<the location of spark-examples-1.2.1 jar> --name=MyApp --master=<spark master url or local> --mainClass=org.apache.spark.examples.SparkPi
 ```
-
-> Note 1: If a paragraph is restarted then all running jobs will first be destroyed and started gain.
- 
-> Note 2: Jobs are long running processes. To stop a running job(s) press the button in the bottom part of the paragraph. All jobs defined in this paragraph will be destroyed.
-
-
+###### Notes about the Job execution model:
+* `%xd.job` - identifies the SpringXD Job interpreter.
+* Use `Ctrl+.` for auto-completion.
+* Jobs must have names. Follow the convention: `job name = job definition`. Streams without names are ignored.
+* New Paragraph Run destroys any previous jobs created in the same paragraph. The previous jobs are destroyed even if their names have been changed or removed.
+* New Paragraph Run will `Create`, automatically `Deploy` and then `Start` all jobs defined in the Paragraph.
+* If a job deployment fail then all jobs in the paragraph are destroyed
+* Zeppelin returns after the jobs have started (e.g. Zeppelin goes into `Finished` state).
+* When job have successfully been deployed the result contains a button that lists the just deployed jobs and status `DEPLOYED`
+* To destroy all jobs in the paragraph, press the `Annular button` in the result section. Button state should switch from `DEPLOYED` to `DESTROYED`.
+* Jobs can refer other streams or jobs in any paragraph and even different notebooks.
 
 #### Apply Zeppelin Dynamic Forms
 
