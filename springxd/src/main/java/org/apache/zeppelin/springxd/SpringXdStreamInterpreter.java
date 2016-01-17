@@ -28,14 +28,14 @@ import org.springframework.xd.rest.domain.StreamDefinitionResource;
  * SpringXD interpreter for Zeppelin.
  * 
  * <ul>
- * <li>{@code springxd.url} - JDBC URL to connect to.</li>
+ * <li>{@code springxd.url} - SpringXD URL to connect to.</li>
  * </ul>
  * 
  * <p>
  * How to use: <br/>
  * {@code %xd.stream} <br/>
  * {@code 
- *  tweets = twittersearch --query=Obama --outputType=application/json | gemfire-json-server 
+ *  tweets = twittersearch --query=Zeppelin --outputType=application/json | gemfire-json-server 
  *    --useLocator=true --host=ambari.localdomain --port=10334 
  *    --regionName=regionTweet --keyExpression=payload.getField('id_str')
  *  tweetsCount = tap:stream:tweets > json-to-tuple | transform --expression='payload.id_str' 
