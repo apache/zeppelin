@@ -17,6 +17,7 @@
 angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, notebookListDataFactory,
                                                              $rootScope, $routeParams, websocketMsgSrv) {
   var vm = this;
+  vm.clone = false;
   vm.notes = notebookListDataFactory;
   vm.websocketMsgSrv = websocketMsgSrv;
   $scope.note = {};
@@ -36,12 +37,12 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, not
   };
 
   vm.preVisible = function(clone) {
-    $scope.note.notename = vm.generateName();
+    $scope.note.notename = vm.newNoteName();
     vm.clone = clone;
     $scope.$apply();
   };
 
-  vm.generateName = function () {
+  vm.newNoteName = function () {
     var newCount = 1;
     angular.forEach(vm.notes.list, function (noteName) {
       noteName = noteName.name;
