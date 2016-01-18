@@ -7,7 +7,7 @@ group: manual
 {% include JB/setup %}
 
 
-## Spark Interpreter
+## Spark Interpreter for Apache Zeppelin
 
 [Apache Spark](http://spark.apache.org) is supported in Zeppelin with 
 Spark Interpreter group, which consisted of 4 interpreters.
@@ -40,18 +40,15 @@ Spark Interpreter group, which consisted of 4 interpreters.
   </tr>
 </table>
 
+<br />
+## Configuration
 
-<br /><br />
-
-### Configuration
-<hr />
-
-Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need following two simple steps.
+Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need to follow below two simple steps.
 
 
-#### 1. export SPARK_HOME
+### 1. Export SPARK_HOME
 
-In **conf/zeppelin-env.sh**, export SPARK_HOME environment variable with your Spark installation path.
+In **conf/zeppelin-env.sh**, export `SPARK_HOME` environment variable with your Spark installation path.
 
 for example
 
@@ -66,9 +63,7 @@ export HADOOP_CONF_DIR=/usr/lib/hadoop
 export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0"
 ```
 
-
-<br />
-#### 2. set master in Interpreter menu.
+### 2. Set master in Interpreter menu
 
 After start Zeppelin, go to **Interpreter** menu and edit **master** property in your Spark interpreter setting. The value may vary depending on your Spark cluster deployment type.
 
@@ -81,30 +76,24 @@ for example,
 
 
 
+That's it. Zeppelin will work with any version of Spark and any deployment type without rebuilding Zeppelin in this way. ( Zeppelin 0.5.5-incubating release works up to Spark 1.5.2 )
+
+> Note that without exporting `SPARK_HOME`, it's running in local mode with included version of Spark. The included version may vary depending on the build profile.
+
 <br />
-That's it. Zeppelin will work with any version of Spark and any deployment type without rebuild Zeppelin in this way. (Zeppelin 0.5.5-incubating release works up to Spark 1.5.1)
-
-Note that without exporting SPARK_HOME, it's running in local mode with included version of Spark. The included version may vary depending on the build profile.
-
-<br /> <br />
-### SparkContext, SQLContext, ZeppelinContext
-<hr />
-
+## SparkContext, SQLContext, ZeppelinContext
 SparkContext, SQLContext, ZeppelinContext are automatically created and exposed as variable names 'sc', 'sqlContext' and 'z', respectively, both in scala and python environments.
 
-Note that scala / python environment shares the same SparkContext, SQLContext, ZeppelinContext instance.
+> Note that scala / python environment shares the same SparkContext, SQLContext, ZeppelinContext instance.
 
-
+<br />
 <a name="dependencyloading"> </a>
-<br />
-<br />
-### Dependency Management
-<hr />
-There are two ways to load external library in spark interpreter. First is using Zeppelin's %dep interpreter and second is loading Spark properties.
+## Dependency Management
+There are two ways to load external library in spark interpreter. First is using Zeppelin's `%dep` interpreter and second is loading Spark properties.
 
-#### 1. Dynamic Dependency Loading via %dep interpreter
+### 1. Dynamic Dependency Loading via %dep interpreter
 
-When your code requires external library, instead of doing download/copy/restart Zeppelin, you can easily do following jobs using %dep interpreter.
+When your code requires external library, instead of doing download/copy/restart Zeppelin, you can easily do following jobs using `%dep` interpreter.
 
  * Load libraries recursively from Maven repository
  * Load libraries from local filesystem
@@ -112,7 +101,7 @@ When your code requires external library, instead of doing download/copy/restart
  * Automatically add libraries to SparkCluster (You can turn off)
 
 Dep interpreter leverages scala environment. So you can write any Scala code here.
-Note that %dep interpreter should be used before %spark, %pyspark, %sql.
+Note that `%dep` interpreter should be used before `%spark`, `%pyspark`, `%sql`.
 
 Here's usages.
 
@@ -150,9 +139,7 @@ z.load("groupId:artifactId:version").exclude("groupId:*")
 z.load("groupId:artifactId:version").local()
 ```
 
-
-<br />
-#### 2. Loading Spark Properties
+### 2. Loading Spark Properties
 Once `SPARK_HOME` is set in `conf/zeppelin-env.sh`, Zeppelin uses `spark-submit` as spark interpreter runner. `spark-submit` supports two ways to load configurations. The first is command line options such as --master and Zeppelin can pass these options to `spark-submit` by exporting `SPARK_SUBMIT_OPTIONS` in conf/zeppelin-env.sh. Second is reading configuration options from `SPARK_HOME/conf/spark-defaults.conf`. Spark properites that user can set to distribute libraries are:
 
 <table class="table-configuration">
@@ -181,9 +168,8 @@ Once `SPARK_HOME` is set in `conf/zeppelin-env.sh`, Zeppelin uses `spark-submit`
     <td>Comma-separated list of files to be placed in the working directory of each executor.</td>
   </tr>
 </table>
-Note that adding jar to pyspark is only availabe via %dep interpreter at the moment
+> Note that adding jar to pyspark is only availabe via `%dep` interpreter at the moment.
 
-<br/>
 Here are few examples:
 
 * SPARK\_SUBMIT\_OPTIONS in conf/zeppelin-env.sh
@@ -197,40 +183,43 @@ Here are few examples:
 		spark.files				/path/mylib1.py,/path/mylib2.egg,/path/mylib3.zip
 
 <br />
-<br />
-### ZeppelinContext
-<hr />
+## ZeppelinContext
 
 Zeppelin automatically injects ZeppelinContext as variable 'z' in your scala/python environment. ZeppelinContext provides some additional functions and utility.
 
-<br />
-#### Object exchange
+### Object Exchange
 
 ZeppelinContext extends map and it's shared between scala, python environment.
 So you can put some object from scala and read it from python, vise versa.
+<div class="codetabs">
+  <div data-lang="scala" markdown="1">
 
-Put object from scala
-
-```scala
+{% highlight scala %}
+// Put object from scala
 %spark
 val myObject = ...
 z.put("objName", myObject)
-```
+{% endhighlight %}
 
-Get object from python
+  </div>
+  <div data-lang="python" markdown="1">
 
-```python
-%python
+{% highlight python %}
+# Get object from python
+%pyspark
 myObject = z.get("objName")
-```
-
-<br />
-#### Form creation
+{% endhighlight %}
+  
+  </div>
+</div>
+### Form Creation
 
 ZeppelinContext provides functions for creating forms. 
 In scala and python environments, you can create forms programmatically.
+<div class="codetabs">
+  <div data-lang="scala" markdown="1">
 
-```scala
+{% highlight scala %}
 %spark
 /* Create text input form */
 z.input("formName")
@@ -245,7 +234,30 @@ z.select("formName", Seq(("option1", "option1DisplayName"),
 /* Create select form with default value*/
 z.select("formName", "option1", Seq(("option1", "option1DisplayName"),
                                     ("option2", "option2DisplayName")))
-```
+{% endhighlight %}
+
+  </div>
+  <div data-lang="python" markdown="1">
+
+{% highlight python %}
+%pyspark
+# Create text input form 
+z.input("formName")
+
+# Create text input form with default value 
+z.input("formName", "defaultValue")
+
+# Create select form 
+z.select("formName", [("option1", "option1DisplayName"),
+                      ("option2", "option2DisplayName")])
+
+# Create select form with default value
+z.select("formName", [("option1", "option1DisplayName"),
+                      ("option2", "option2DisplayName")], "option1")
+{% endhighlight %}
+  
+  </div>
+</div>
 
 In sql environment, you can create form in simple template.
 

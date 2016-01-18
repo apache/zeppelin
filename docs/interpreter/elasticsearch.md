@@ -8,10 +8,11 @@ group: manual
 
 
 ## Elasticsearch Interpreter for Apache Zeppelin
+[Elasticsearch](https://www.elastic.co/products/elasticsearch) is a highly scalable open-source full-text search and analytics engine. It allows you to store, search, and analyze big volumes of data quickly and in near real time. It is generally used as the underlying engine/technology that powers applications that have complex search features and requirements.
 
-### 1. Configuration
+<br />
+## 1. Configuration
 
-<br/>
 <table class="table-configuration">
   <tr>
     <th>Property</th>
@@ -31,7 +32,7 @@ group: manual
   <tr>
     <td>elasticsearch.port</td>
     <td>9300</td>
-    <td>Connection port <b>(important: this is not the HTTP port, but the transport port)</b></td>
+    <td>Connection port <b>( Important: this is not the HTTP port, but the transport port )</b></td>
   </tr>
   <tr>
     <td>elasticsearch.result.size</td>
@@ -45,22 +46,17 @@ group: manual
 </center>
 
 
-> Note #1: you can add more properties to configure the Elasticsearch client.
+> **Note #1 :** You can add more properties to configure the Elasticsearch client.
 
-> Note #2: if you use Shield, you can add a property named `shield.user` with a value containing the name and the password (format: `username:password`). For more details about Shield configuration, consult the [Shield reference guide](https://www.elastic.co/guide/en/shield/current/_using_elasticsearch_java_clients_with_shield.html). Do not forget, to copy the shield client jar in the interpreter directory (`ZEPPELIN_HOME/interpreters/elasticsearch`).
+> **Note #2 :** If you use Shield, you can add a property named `shield.user` with a value containing the name and the password ( format: `username:password` ). For more details about Shield configuration, consult the [Shield reference guide](https://www.elastic.co/guide/en/shield/current/_using_elasticsearch_java_clients_with_shield.html). Do not forget, to copy the shield client jar in the interpreter directory (`ZEPPELIN_HOME/interpreters/elasticsearch`).
 
-
-<hr/>
-
-### 2. Enabling the Elasticsearch Interpreter
+<br />
+## 2. Enabling the Elasticsearch Interpreter
 
 In a notebook, to enable the **Elasticsearch** interpreter, click the **Gear** icon and select **Elasticsearch**.
 
-
-<hr/>
-
-
-### 3. Using the Elasticsearch Interpreter
+<br />
+## 3. Using the Elasticsearch Interpreter
 
 In a paragraph, use `%elasticsearch` to select the Elasticsearch interpreter and then input all commands. To get the list of available commands, use `help`.
 
@@ -82,14 +78,14 @@ Commands:
     . same comments as for the search
   - get /index/type/id
   - delete /index/type/id
-  - index /ndex/type/id <json-formatted document>
+  - index /index/type/id <json-formatted document>
     . the id can be omitted, elasticsearch will generate one
 ```
 
-> Tip: use (CTRL + .) for completion
+> **Tip :** Use ( Ctrl + . ) for autocompletion.
 
 
-#### get
+### Get
 With the `get` command, you can find a document by id. The result is a JSON document.
 
 ```bash
@@ -101,12 +97,12 @@ Example:
 ![Elasticsearch - Get](../assets/themes/zeppelin/img/docs-img/elasticsearch-get.png)
 
 
-#### search
+### Search
 With the `search` command, you can send a search query to Elasticsearch. There are two formats of query:
 
 * You can provide a JSON-formatted query, that is exactly what you provide when you use the REST API of Elasticsearch.  
   * See [Elasticsearch search API reference document](https://www.elastic.co/guide/en/elasticsearch/reference/current/search.html) for more details about the content of the search queries.
-* You can also provide the content of a `query_string`
+* You can also provide the content of a `query_string`.
   * This is a shortcut to a query like that: `{ "query": { "query_string": { "query": "__HERE YOUR QUERY__", "analyze_wildcard": true } } }` 
   * See [Elasticsearch query string syntax](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax) for more details about the content of such a query.
 
@@ -134,7 +130,7 @@ Examples:
 
   ```bash
 | %elasticsearch
-| search / { "query": { "match_all": {} } }
+| search / { "query": { "match_all": { } } }
 |
 | %elasticsearch
 | search /logs { "query": { "query_string": { "query": "request.method:GET AND status:200" } } }
@@ -159,7 +155,7 @@ Examples:
 | search /logs (404 AND (POST OR DELETE))
   ```
 
-> **Important**: a document in Elasticsearch is a JSON document, so it is hierarchical, not flat as a row in a SQL table.
+> **Important** : a document in Elasticsearch is a JSON document, so it is hierarchical, not flat as a row in a SQL table.
 For the Elastic interpreter, the result of a search query is flattened.
 
 Suppose we have a JSON document:
@@ -179,11 +175,9 @@ Suppose we have a JSON document:
 
 The data will be flattened like this:
 
-
 content_length | date | request.headers[0] | request.headers[1] | request.method | request.url | status
 ---------------|------|--------------------|--------------------|----------------|-------------|-------
 1234 | 2015-12-08T21:03:13.588Z | Accept: \*.\* | Host: apache.org | GET | /zeppelin/4cd001cd-c517-4fa9-b8e5-a06b8f4056c4 | 403
-
 
 Examples:
 
@@ -206,7 +200,7 @@ Examples:
 ![Elasticsearch - Search with aggregation (multi-bucket)](../assets/themes/zeppelin/img/docs-img/elasticsearch-agg-multi-bucket-pie.png)
 
 
-#### count
+### Count
 With the `count` command, you can count documents available in some indices and types. You can also provide a query.
 
 ```bash
@@ -223,7 +217,7 @@ Examples:
 ![Elasticsearch - Count with query](../assets/themes/zeppelin/img/docs-img/elasticsearch-count-with-query.png)
 
 
-#### index
+### Index
 With the `index` command, you can insert/update a document in Elasticsearch.
 
 ```bash
@@ -234,7 +228,7 @@ With the `index` command, you can insert/update a document in Elasticsearch.
 | index /index/type <JSON document>
 ```
 
-#### delete
+### Delete
 With the `delete` command, you can delete a document.
 
 ```bash
@@ -243,14 +237,13 @@ With the `delete` command, you can delete a document.
 ```
 
 
+### Apply Zeppelin Dynamic Forms
 
-#### Apply Zeppelin Dynamic Forms
-
-You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parameterization features
+You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parameterization features.
 
 ```bash
 | %elasticsearch
 | size ${limit=10}
-| search /index/type { "query": { "match_all": {} } }
+| search /index/type { "query": { "match_all": { } } }
 ```
 
