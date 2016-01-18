@@ -36,12 +36,16 @@ limitations under the License.
           <thead>
           <tr>
             <th style="width:30%">name</th>
-            <th>value</th>
+            <th style="width:70%">value</th>
           </tr>
           </thead>
           <tr ng-repeat="(key, value) in configurations" >
             <td>{{key}}</td>
-            <td>{{value}}</td>
+            <td>
+              <div class="hiding_overflow">
+                {{value}}
+              </div>
+            </td>
           </tr>
         </table>
       </div>

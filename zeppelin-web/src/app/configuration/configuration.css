@@ -41,6 +41,11 @@
   list-style-type: none;
 }
 
+.configuration table {
+  table-layout: fixed;
+  width: 100%;
+}
+
 .configuration table tr .configurationPropertyKey {
   padding : 5px 5px 5px 5px;
 }
@@ -60,4 +65,10 @@
   margin-top: 1px;
   padding-top: 7px;
   float: left;
+}
+
+.hiding_overflow {
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
 }
