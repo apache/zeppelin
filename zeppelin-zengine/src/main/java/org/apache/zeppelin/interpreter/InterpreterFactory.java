@@ -122,7 +122,7 @@ public class InterpreterFactory {
       if (repositoryUrl != null) {
         depResolver.addRepo("dyInterpreterRepo", repositoryUrl, isSnapShotRepo);
       }
-      logger.info("interpreter- path {}", interpreterLoadPath);
+      logger.info("interpreter path : {}", interpreterLoadPath);
       depResolver.load(artifact, interpreterDesPath);
       setDynamicInterpreter(intpClassName, interpreterLoadPath);
     } catch (Exception e) {
@@ -136,7 +136,7 @@ public class InterpreterFactory {
     try {
       remove(intpName);
     } catch (Exception e) {
-      logger.error(e.getMessage());
+      logger.error("Faild Unload Dynaminc Interpreter", e);
       return false;
     }
     return true;
@@ -144,7 +144,8 @@ public class InterpreterFactory {
 
   protected void setDynamicInterpreter(String interpreterClassName, String fileDirPath)
       throws InterpreterException, IOException {
-    logger.info("load Dynamic Interpreter : ", interpreterClassName);
+    logger.info("load Dynamic Interpreter ClassName : {}", interpreterClassName);
+    logger.info("load Dynamic Interpreter FilePath : {}", interpreterClassName);
 
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     interpreterClassList.add(interpreterClassName);
