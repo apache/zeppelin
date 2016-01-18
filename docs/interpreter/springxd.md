@@ -28,7 +28,7 @@ Zeppelin provides interpreters for SpringXD `Streams` and `Jobs`:
   <tr>
     <td>%xd.stream</td>
     <td>SpringXdStreamInterpreter</td>
-    <td>Provides an environment to create SpringXD Streams - defines the ingestion of event driven data from a `source` to a sink that passes through any number of `processors. </td>
+    <td>Provides an environment to create SpringXD Streams - defines the ingestion of event driven data from a <code>source</code> to a <code>sink</code> that passes through any number of <code>processors</code>. </td>
   </tr>
   <tr>
     <td>%xd.job</td>
@@ -53,7 +53,7 @@ To create new SpringXD instance open the `Interpreter` section and click the `+C
 > Note: The `Name` of the instance is used only to distinct the instances while binding them to the `Notebook`. The `Name` is irrelevant inside the `Notebook`. In the `Notebook` you must use `%xd.stream` or `%xd.job` tag.
 
 ### Bind to Notebook
-In the `Notebook` click on the `settings` icon in the top right corner. The select/deselect the XD interpreter to be bound with the `Notebook`.
+In the `Notebook` click on the `settings` icon in the top right corner. Then select/deselect the XD interpreter to be bound with the `Notebook`.
 
 ### Configuration
 You can modify the configuration of the SpringXD from the `Interpreter` section. The SpringXD interpreter express the following properties:
@@ -81,12 +81,12 @@ Following sections will explain how to create and destroy Streams and Jobs insid
 * Start the paragraphs with the full `%xd.stream` prefix tag to identifie the SpringXD Streams interpreter.
 * Use `Ctrl+.` for auto-completion.
 * In the paragraph define one or more stream definitions - each on a separate line.
-* Every stream definition must have name. Follow the convention: `stream name = stream definition`. Streams without names are ignored. The stream definition follows the Spring XD DSL: [DSL Guide](http://docs.spring.io/spring-xd/docs/current/reference/html/#dsl-guide) 
+* Every stream definition must have name. Follow the convention: `stream name = stream definition`. Streams without names are ignored. The stream definition follows the Spring XD DSL: [DSL Guide](http://docs.spring.io/spring-xd/docs/current/reference/html/#dsl-guide). 
 * Every time a Paragraph is Run it destroys any previous streams created in the paragraph. The previous streams are destroyed even if their names have been changed or removed.
 * Paragraph `Run` command will `Create` and automatically `Deploy` all streams defined in the Paragraph.
-* If one stream fails to create or to deploy then all streams in the paragraph are destroyed
+* If one stream fails to create or to deploy then all streams in the paragraph are destroyed.
 * Zeppelin returns after the streams deployment (e.g. Zeppelin goes into Finished state).
-* When streams have successfully been deployed the result contains a `button` that lists the just deployed streams and status `DEPLOYED`
+* When streams have successfully been deployed the result contains a `button` that lists the just deployed streams and status `DEPLOYED`.
 * To destroy streams in a paragraph press the `Annular Button` in the paragraph result section. The button state will switch from `DEPLOYED` to `DESTROYED`.
 * Streams can refer other streams or jobs in any paragraph and even different notebooks.
 
@@ -115,7 +115,7 @@ tweetsCount = tap:stream:tweets > json-to-tuple | transform --expression='payloa
 * A Paragraph Run will `Create`, automatically `Deploy` and `Start` the jobs defined in the Paragraph.
 * If a job deployment fail then all jobs in the paragraph are destroyed.
 * Zeppelin returns after the jobs have started (e.g. Zeppelin goes into `Finished` state).
-* When job have successfully been deployed the result contains a button that lists the just deployed jobs and status `DEPLOYED`
+* When job have successfully been deployed the result contains a button that lists the just deployed jobs and status `DEPLOYED`.
 * To destroy all jobs in the paragraph, press the `Annular button` in the result section. Button state should switch from `DEPLOYED` to `DESTROYED`.
 * Jobs can refer other streams or jobs in any paragraph and even different notebooks.
 
@@ -147,4 +147,4 @@ tweets = twittersearch --query=${MySearchParameter=DefaultSearchKeyword} --outpu
 
 
 ### Auto-completion
-The SpringXD Interpreter provides a comprehensive auto-completion for `Job` and `Stream` DSL definitions. On `(Ctrl+.)` it list the most relevant suggestions in a pop-up window. Implementation leverages [SpringXD's Completion API](http://docs.spring.io/spring-xd/docs/current/reference/html/#completions) and provides the same expressiveness similar with the SpringXD Shell.
+The SpringXD Interpreter provides a comprehensive auto-completion for `Job` and `Stream` DSL definitions. On `Ctrl+.` it lists the most relevant suggestions in a pop-up window. Implementation leverages [SpringXD's Completion API](http://docs.spring.io/spring-xd/docs/current/reference/html/#completions) and provides completion experience similar to the SpringXD Shell.
