@@ -43,7 +43,6 @@
 
 .configuration table {
   table-layout: fixed;
-  width: 100%;
 }
 
 .configuration table tr .configurationPropertyKey {
@@ -68,7 +67,5 @@
 }
 
 .hiding_overflow {
-  overflow:hidden;
-  white-space:nowrap;
-  text-overflow:ellipsis;
+  overflow:auto;
 }
