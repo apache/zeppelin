@@ -135,7 +135,8 @@ public class RemoteInterpreter extends Interpreter {
         try {
           for (Interpreter intp : this.getInterpreterGroup()) {
             logger.info("Create remote interpreter {}", intp.getClassName());
-            client.createInterpreter(intp.getClassName(), (Map) property);
+            client.createInterpreter(getInterpreterGroup().getId(),
+                    intp.getClassName(), (Map) property);
 
           }
         } catch (TException e) {
@@ -283,6 +284,10 @@ public class RemoteInterpreter extends Interpreter {
   @Override
   public int getProgress(InterpreterContext context) {
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
+    if (interpreterProcess == null || !interpreterProcess.isRunning()) {
+      return 0;
+    }
+
     Client client = null;
     try {
       client = interpreterProcess.getClient();

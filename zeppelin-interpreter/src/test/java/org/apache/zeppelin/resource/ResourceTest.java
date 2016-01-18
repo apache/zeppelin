@@ -14,15 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.resourcepool;
+package org.apache.zeppelin.resource;
+
+import org.junit.Test;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- * Connect resource pools running in remote process
+ * Test for Resource
  */
-public interface ResourcePoolConnector {
-  /**
-   * Get list of resources from all resource pool
-   * @return
-   */
-  public ResourceSet getAllResourcesExcept(String excludePoolId);
+public class ResourceTest {
+  @Test
+  public void testSerializeDeserialize() throws IOException, ClassNotFoundException {
+    ByteBuffer buffer = Resource.serializeObject("hello");
+    assertEquals("hello", Resource.deserializeObject(buffer));
+  }
 }

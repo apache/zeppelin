@@ -14,10 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.resourcepool;
+package org.apache.zeppelin.resource;
 
 /**
- * Event from LocalResourcePool
+ * Interface for ResourcePool
  */
-public interface ResourcePoolListener {
+public interface ResourcePool {
+  /**
+   * Get unique id of the resource pool
+   * @return
+   */
+  public String id();
+
+  /**
+   * Get resource from name
+   * @param name Resource name
+   * @return null if resource not found
+   */
+  public Resource get(String name);
+
+  /**
+   * Get all resources
+   * @return
+   */
+  public ResourceSet getAll();
+
+  /**
+   * Put an object into resource pool
+   * @param name
+   * @param object
+   */
+  public void put(String name, Object object);
+
+  /**
+   * Remove object
+   * @param name Resource name to remove
+   * @return removed Resource. null if resource not found
+   */
+  public Resource remove(String name);
 }

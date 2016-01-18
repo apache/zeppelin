@@ -14,15 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.resourcepool;
+package org.apache.zeppelin.resource;
 
-import java.io.Serializable;
+import java.io.*;
+import java.nio.ByteBuffer;
 
 /**
  * Information and reference to the resource
  */
 public class Resource {
-  private final Object r;
+  private final transient Object r;
   private final boolean serializable;
   private final ResourceId resourceId;
   private final String className;
@@ -90,6 +91,44 @@ public class Resource {
    * @return
    */
   public boolean isLocal() {
-    return r != null;
+    return true;
   }
+
+
+
+  public static ByteBuffer serializeObject(Object o) throws IOException {
+    if (o == null || !(o instanceof Serializable)) {
+      return null;
+    }
+
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    try {
+      ObjectOutputStream oos;
+      oos = new ObjectOutputStream(out);
+      oos.writeObject(o);
+      oos.close();
+      out.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return ByteBuffer.wrap(out.toByteArray());
+  }
+
+  public static Object deserializeObject(ByteBuffer buf)
+      throws IOException, ClassNotFoundException {
+    if (buf == null) {
+      return null;
+    }
+    InputStream ins = ByteBufferInputStream.get(buf);
+    ObjectInputStream oin;
+    Object object = null;
+
+    oin = new ObjectInputStream(ins);
+    object = oin.readObject();
+    oin.close();
+    ins.close();
+
+    return object;
+  }
+
 }

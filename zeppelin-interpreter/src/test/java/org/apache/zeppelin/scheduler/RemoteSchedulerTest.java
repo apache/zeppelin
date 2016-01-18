@@ -35,6 +35,7 @@ import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA;
+import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.junit.After;
 import org.junit.Before;
@@ -103,6 +104,7 @@ public class RemoteSchedulerTest {
             new HashMap<String, Object>(),
             new GUI(),
             new AngularObjectRegistry(intpGroup.getId(), null),
+            new LocalResourcePool("pool1"),
             new LinkedList<InterpreterContextRunner>()));
         return "1000";
       }
@@ -173,6 +175,7 @@ public class RemoteSchedulerTest {
           new HashMap<String, Object>(),
           new GUI(),
           new AngularObjectRegistry(intpGroup.getId(), null),
+          new LocalResourcePool("pool1"),
           new LinkedList<InterpreterContextRunner>());
 
       @Override
@@ -209,6 +212,7 @@ public class RemoteSchedulerTest {
           new HashMap<String, Object>(),
           new GUI(),
           new AngularObjectRegistry(intpGroup.getId(), null),
+          new LocalResourcePool("pool1"),
           new LinkedList<InterpreterContextRunner>());
 
       @Override

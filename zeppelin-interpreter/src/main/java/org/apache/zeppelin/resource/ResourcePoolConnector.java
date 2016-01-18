@@ -14,42 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.resourcepool;
+package org.apache.zeppelin.resource;
 
 /**
- * Interface for ResourcePool
+ * Connect resource pools running in remote process
  */
-public interface ResourcePool {
+public interface ResourcePoolConnector {
   /**
-   * Get unique id of the resource pool
+   * Get list of resources from all resource pool
    * @return
    */
-  public String id();
+  public ResourceSet getAllResourcesExcept(String excludePoolId);
 
   /**
-   * Get resource from name
-   * @param name Resource name
-   * @return null if resource not found
-   */
-  public Resource get(String name);
-
-  /**
-   * Get all resources
+   * Read remote object
    * @return
    */
-  public ResourceSet getAll();
-
-  /**
-   * Put an object into resource pool
-   * @param name
-   * @param object
-   */
-  public void put(String name, Object object);
-
-  /**
-   * Remove object
-   * @param name Resource name to remove
-   * @return removed Resource. null if resource not found
-   */
-  public Resource remove(String name);
+  public Object readResource(ResourceId id);
 }

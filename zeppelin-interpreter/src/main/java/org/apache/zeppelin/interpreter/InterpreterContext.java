@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.resource.ResourcePool;
 
 /**
  * Interpreter context
@@ -49,6 +50,7 @@ public class InterpreterContext {
   private final Map<String, Object> config;
   private GUI gui;
   private AngularObjectRegistry angularObjectRegistry;
+  private ResourcePool resourcePool;
   private List<InterpreterContextRunner> runners;
 
   public InterpreterContext(String noteId,
@@ -58,6 +60,7 @@ public class InterpreterContext {
                             Map<String, Object> config,
                             GUI gui,
                             AngularObjectRegistry angularObjectRegistry,
+                            ResourcePool resourcePool,
                             List<InterpreterContextRunner> runners
                             ) {
     this.noteId = noteId;
@@ -67,6 +70,7 @@ public class InterpreterContext {
     this.config = config;
     this.gui = gui;
     this.angularObjectRegistry = angularObjectRegistry;
+    this.resourcePool = resourcePool;
     this.runners = runners;
   }
 
@@ -97,6 +101,10 @@ public class InterpreterContext {
 
   public AngularObjectRegistry getAngularObjectRegistry() {
     return angularObjectRegistry;
+  }
+
+  public ResourcePool getResourcePool() {
+    return resourcePool;
   }
 
   public List<InterpreterContextRunner> getRunners() {

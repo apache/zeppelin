@@ -37,6 +37,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterB;
+import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.Scheduler;
@@ -113,6 +114,7 @@ public class RemoteInterpreterTest {
             new HashMap<String, Object>(),
             new GUI(),
             new AngularObjectRegistry(intpGroup.getId(), null),
+            new LocalResourcePool("pool1"),
             new LinkedList<InterpreterContextRunner>()));
 
     intpB.open();
@@ -153,6 +155,7 @@ public class RemoteInterpreterTest {
             new HashMap<String, Object>(),
             new GUI(),
             new AngularObjectRegistry(intpGroup.getId(), null),
+            new LocalResourcePool("pool1"),
             new LinkedList<InterpreterContextRunner>()));
 
     assertEquals(Code.ERROR, ret.code());
@@ -199,6 +202,7 @@ public class RemoteInterpreterTest {
             new HashMap<String, Object>(),
             new GUI(),
             new AngularObjectRegistry(intpGroup.getId(), null),
+            new LocalResourcePool("pool1"),
             new LinkedList<InterpreterContextRunner>()));
     assertEquals("500", ret.message());
 
@@ -211,6 +215,7 @@ public class RemoteInterpreterTest {
             new HashMap<String, Object>(),
             new GUI(),
             new AngularObjectRegistry(intpGroup.getId(), null),
+            new LocalResourcePool("pool1"),
             new LinkedList<InterpreterContextRunner>()));
     assertEquals("1000", ret.message());
     long end = System.currentTimeMillis();
@@ -276,6 +281,7 @@ public class RemoteInterpreterTest {
                 new HashMap<String, Object>(),
                 new GUI(),
                 new AngularObjectRegistry(intpGroup.getId(), null),
+                new LocalResourcePool("pool1"),
                 new LinkedList<InterpreterContextRunner>()));
       }
 
@@ -310,6 +316,7 @@ public class RemoteInterpreterTest {
                 new HashMap<String, Object>(),
                 new GUI(),
                 new AngularObjectRegistry(intpGroup.getId(), null),
+                new LocalResourcePool("pool1"),
                 new LinkedList<InterpreterContextRunner>()));
       }
 
@@ -382,6 +389,7 @@ public class RemoteInterpreterTest {
               new HashMap<String, Object>(),
               new GUI(),
               new AngularObjectRegistry(intpGroup.getId(), null),
+              new LocalResourcePool("pool1"),
               new LinkedList<InterpreterContextRunner>()));
 
           synchronized (results) {
@@ -466,6 +474,7 @@ public class RemoteInterpreterTest {
               new HashMap<String, Object>(),
               new GUI(),
               new AngularObjectRegistry(intpGroup.getId(), null),
+              new LocalResourcePool("pool1"),
               new LinkedList<InterpreterContextRunner>()));
 
           synchronized (results) {
@@ -585,6 +594,7 @@ public class RemoteInterpreterTest {
                 new HashMap<String, Object>(),
                 new GUI(),
                 new AngularObjectRegistry(intpGroup.getId(), null),
+                new LocalResourcePool("pool1"),
                 new LinkedList<InterpreterContextRunner>()));
       }
 

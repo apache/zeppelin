@@ -14,10 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.resourcepool;
-
-import java.io.Serializable;
-import java.util.UUID;
+package org.apache.zeppelin.resource;
 
 /**
  * distributed resource pool
@@ -31,31 +28,51 @@ public class DistributedResourcePool extends LocalResourcePool {
     this.connector = connector;
   }
 
+  @Override
+  public Resource get(String name) {
+    return get(name, true);
+  }
+
   /**
    * get resource by name.
    * @param name
+   * @param remote false only return from local resource
    * @return null if resource not found.
    */
-  @Override
-  public Resource get(String name) {
+  public Resource get(String name, boolean remote) {
     // try local first
     Resource resource = super.get(name);
     if (resource != null) {
       return resource;
     }
 
-    ResourceSet resources = connector.getAllResourcesExcept(id()).filterByName(name);
-    if (resources.isEmpty()) {
-      return null;
+    if (remote) {
+      ResourceSet resources = connector.getAllResourcesExcept(id()).filterByName(name);
+      if (resources.isEmpty()) {
+        return null;
+      } else {
+        return resources.get(0);
+      }
     } else {
-      return resources.get(0);
+      return null;
     }
   }
 
   @Override
   public ResourceSet getAll() {
+    return getAll(true);
+  }
+
+  /**
+   * Get all resource from the pool
+   * @param remote false only return local resource
+   * @return
+   */
+  public ResourceSet getAll(boolean remote) {
     ResourceSet all = super.getAll();
-    all.addAll(connector.getAllResourcesExcept(id()));
+    if (remote) {
+      all.addAll(connector.getAllResourcesExcept(id()));
+    }
     return all;
   }
 }

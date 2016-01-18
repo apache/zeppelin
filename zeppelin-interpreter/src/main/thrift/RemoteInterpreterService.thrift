@@ -42,7 +42,9 @@ enum RemoteInterpreterEventType {
   ANGULAR_OBJECT_ADD = 2,
   ANGULAR_OBJECT_UPDATE = 3,
   ANGULAR_OBJECT_REMOVE = 4,
-  RUN_INTERPRETER_CONTEXT_RUNNER = 5
+  RUN_INTERPRETER_CONTEXT_RUNNER = 5,
+  RESOURCE_POOL_GET_ALL = 6,
+  RESOURCE_GET = 7
 }
 
 struct RemoteInterpreterEvent {
@@ -51,7 +53,7 @@ struct RemoteInterpreterEvent {
 }
 
 service RemoteInterpreterService {
-  void createInterpreter(1: string className, 2: map<string, string> properties);
+  void createInterpreter(1: string intpGroupId, 2: string className, 3: map<string, string> properties);
 
   void open(1: string className);
   void close(1: string className);
@@ -68,4 +70,13 @@ service RemoteInterpreterService {
   void angularObjectUpdate(1: string name, 2: string noteId, 3: string object);
   void angularObjectAdd(1: string name, 2: string noteId, 3: string object);
   void angularObjectRemove(1: string name, 2: string noteId);
+
+  // as a response, ZeppelinServer send list of resources to Interpreter process
+  void resourcePoolResponseGetAll(1: list<string> resources);
+  // as a response, ZeppelinServer send serialized value of resource
+  void resourceResponseGet(1: string resourceId, 2: binary object);
+  // get all resources in the interpreter process
+  list<string> resoucePoolGetAll();
+  // get value of resource
+  binary resourceGet(1: string resourceName);
 }
