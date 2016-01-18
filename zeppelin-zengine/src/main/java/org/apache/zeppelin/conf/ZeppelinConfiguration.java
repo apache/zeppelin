@@ -403,6 +403,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.hive.HiveInterpreter,"
         + "org.apache.zeppelin.tachyon.TachyonInterpreter,"
         + "org.apache.zeppelin.phoenix.PhoenixInterpreter,"
+        + "org.apache.zeppelin.postgresql.PostgreSqlInterpreter,"
         + "org.apache.zeppelin.tajo.TajoInterpreter,"
         + "org.apache.zeppelin.flink.FlinkInterpreter,"
         + "org.apache.zeppelin.ignite.IgniteInterpreter,"
