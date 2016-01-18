@@ -34,12 +34,25 @@ In case of the error `ECMDERR Failed to execute "git ls-remote --tags --heads gi
 
 change your git config with `git config --global url."https://".insteadOf git://`
 
-**OR**
+**proxy**
 
 Try to add to the `.bowerrc` file the following content:
 ```
   "proxy" : "http://<host>:<port>",
   "https-proxy" : "http://<host>:<port>"
+  ```
+
+also try to add proxy info to npm install command:
+```
+        <execution>
+            <id>npm install</id>
+            <goals>
+              <goal>npm</goal>
+            </goals>
+            <configuration>
+              <arguments>--proxy=http://<host>:<port> --https-proxy=http://<host>:<port></arguments>
+            </configuration>
+          </execution>
 ```
 
 
