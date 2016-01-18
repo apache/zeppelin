@@ -100,6 +100,7 @@
     <module>kylin</module>
     <module>lens</module>
     <module>cassandra</module>
+    <module>drill</module>
     <module>elasticsearch</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
