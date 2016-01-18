@@ -68,4 +68,6 @@ service RemoteInterpreterService {
   void angularObjectUpdate(1: string name, 2: string noteId, 3: string object);
   void angularObjectAdd(1: string name, 2: string noteId, 3: string object);
   void angularObjectRemove(1: string name, 2: string noteId);
+
+  string ping();
 }

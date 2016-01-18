@@ -24,13 +24,20 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterProcessHeartbeatFailedException;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.TimerTask;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *
@@ -42,6 +49,7 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   private DefaultExecutor executor;
   private ExecuteWatchdog watchdog;
   boolean running = false;
+  boolean active = true;
   private int port = -1;
   private final String interpreterRunner;
   private final String interpreterDir;
@@ -51,6 +59,10 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   private final RemoteInterpreterEventPoller remoteInterpreterEventPoller;
   private final InterpreterContextRunnerPool interpreterContextRunnerPool;
   private int connectTimeout;
+
+  private ScheduledExecutorService heartBeatSenderExecutorService;
+  private ScheduledExecutorService heartBeatCheckerExecutorService;
+  private AtomicLong lastHeartbeatTimestamp = new AtomicLong();
 
   public RemoteInterpreterProcess(String intpRunner,
       String intpDir,
@@ -71,6 +83,30 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
     referenceCount = new AtomicInteger(0);
     this.remoteInterpreterEventPoller = remoteInterpreterEventPoller;
     this.connectTimeout = connectTimeout;
+
+    initHeartbeatExecutorService();
+  }
+
+  private void initHeartbeatExecutorService() {
+    this.heartBeatSenderExecutorService = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
+      @Override
+      public Thread newThread(Runnable r) {
+        Thread thread = new Thread(r);
+        thread.setName("heartbeat-sender-thread");
+        thread.setDaemon(true);
+        return thread;
+      }
+    });
+
+    this.heartBeatCheckerExecutorService = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
+      @Override
+      public Thread newThread(Runnable r) {
+        Thread thread = new Thread(r);
+        thread.setName("heartbeat-checker-thread");
+        thread.setDaemon(true);
+        return thread;
+      }
+    });
   }
 
 
@@ -127,6 +163,8 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
           }
         }
 
+        initializeHeartbeat();
+
         clientPool = new GenericObjectPool<Client>(new ClientFactory("localhost", port));
 
         remoteInterpreterEventPoller.setInterpreterGroup(interpreterGroup);
@@ -138,6 +176,10 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   }
 
   public Client getClient() throws Exception {
+    if (!active) {
+      throw new InterpreterProcessHeartbeatFailedException(
+          "Interpreter fails to respond heartbeat within time");
+    }
     return clientPool.borrowObject();
   }
 
@@ -171,6 +213,8 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
       if (r == 0) {
         logger.info("shutdown interpreter process");
         remoteInterpreterEventPoller.shutdown();
+
+        shutdownHeartbeat();
 
         // first try shutdown
         Client client = null;
@@ -231,7 +275,6 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   public void onProcessComplete(int exitValue) {
     logger.info("Interpreter process exited {}", exitValue);
     running = false;
-
   }
 
   @Override
@@ -294,4 +337,82 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   public InterpreterContextRunnerPool getInterpreterContextRunnerPool() {
     return interpreterContextRunnerPool;
   }
+
+  public boolean isActive() {
+    return active;
+  }
+
+  private void initializeHeartbeat() {
+    updateHeartbeatTimestamp();
+
+    heartBeatSenderExecutorService.scheduleAtFixedRate(
+        new InterpreterHeartbeatSenderTimerTask(), 1, 1, TimeUnit.SECONDS);
+    heartBeatCheckerExecutorService.scheduleAtFixedRate(
+        new InterpreterHeartbeatCheckerTimerTask(), 1, 1, TimeUnit.SECONDS);
+  }
+
+  private void shutdownHeartbeat() {
+    this.heartBeatCheckerExecutorService.shutdownNow();
+    this.heartBeatSenderExecutorService.shutdownNow();
+  }
+
+  private void updateHeartbeatTimestamp() {
+    lastHeartbeatTimestamp.set(System.currentTimeMillis());
+  }
+
+  private long getLastHeartbeat() {
+    return lastHeartbeatTimestamp.get();
+  }
+
+  private void setActive(boolean active) {
+    this.active = active;
+  }
+
+  private class InterpreterHeartbeatSenderTimerTask extends TimerTask {
+    @Override
+    public void run() {
+      // ping
+      Client client = null;
+      try {
+        client = getClient();
+      } catch (Exception e) {
+        logger.error("Can't ping to interpreter process", e);
+      }
+
+      if (client != null) {
+        try {
+          client.ping();
+          // succeed to ping
+          updateHeartbeatTimestamp();
+        } catch (Exception e) {
+          logger.error("Can't ping to interpreter process", e);
+        } finally {
+          releaseClient(client);
+        }
+      }
+    }
+  }
+
+  private class InterpreterHeartbeatCheckerTimerTask extends TimerTask {
+    @Override
+    public void run() {
+      long currentTimestamp = System.currentTimeMillis();
+      long lastHeartbeat = getLastHeartbeat();
+
+      logger.debug("checking heartbeat : last heartbeat {} / current {}",
+          lastHeartbeat, currentTimestamp);
+
+      if (currentTimestamp - lastHeartbeat > connectTimeout) {
+        // fail to respond heartbeat in time
+        logger.error("Interpreter fails to respond heartbeat within time: last heartbeat {} " +
+            " / current {}", lastHeartbeat, currentTimestamp);
+        setActive(false);
+      } else if (!active) {
+        logger.info("Interpreter seems to be back to normal: last heartbeat {} / current {}",
+            lastHeartbeat, currentTimestamp);
+        setActive(true);
+      }
+    }
+  }
+
 }
