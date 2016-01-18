@@ -87,12 +87,12 @@ Let's make a button. When it is clicked, the value of `run` will be increased 1 
 <img src="/assets/themes/zeppelin/img/screenshots/display_angular2.png" width="60%" />
 
 `z.angularBind("run", 0)` will initialize `run` to zero. And then, it will be also applied to `run` in `z.angularWatch()`.
-After clicked button, you'll see both `run` and `numWatched` are increased by 1.
+When the button is clicked, you'll see both `run` and `numWatched` are incremented by 1.
 
 <img src="/assets/themes/zeppelin/img/screenshots/display_angular3.png" width="60%" />
 
-## Let's Simpler and more Intuitive
-In this section, we will introduce simpler and more intuitive way of using **Angular Display System** in Zeppelin. 
+## Let's make it Simpler and more Intuitive
+In this section, we will introduce a simpler and more intuitive way of using **Angular Display System** in Zeppelin. 
 
 ### How can we use it?
 Here are some usages. 
