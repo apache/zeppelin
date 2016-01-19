@@ -40,7 +40,9 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.spark.dep.DependencyContext;
+import org.apache.zeppelin.spark.dep.SparkDependencyContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonatype.aether.resolution.ArtifactResolutionException;
 import org.sonatype.aether.resolution.DependencyResolutionException;
 
@@ -67,7 +69,9 @@ public class DepInterpreter extends Interpreter {
         "spark",
         DepInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add("zeppelin.dep.localrepo", "local-repo", "local repository for dependency loader")
+            .add("zeppelin.dep.localrepo",
+                getSystemDefault("ZEPPELIN_DEP_LOCALREPO", null, "local-repo"),
+                "local repository for dependency loader")
             .add("zeppelin.dep.additionalRemoteRepository",
                 "spark-packages,http://dl.bintray.com/spark-packages/maven,false;",
                 "A list of 'id,remote-repository-URL,is-snapshot;' for each remote repository.")
@@ -77,18 +81,39 @@ public class DepInterpreter extends Interpreter {
 
   private SparkIMain intp;
   private ByteArrayOutputStream out;
-  private DependencyContext depc;
+  private SparkDependencyContext depc;
   private SparkJLineCompletion completor;
   private SparkILoop interpreter;
+  static final Logger LOGGER = LoggerFactory.getLogger(DepInterpreter.class);
 
   public DepInterpreter(Properties property) {
     super(property);
   }
 
-  public DependencyContext getDependencyContext() {
+  public SparkDependencyContext getDependencyContext() {
     return depc;
   }
 
+  public static String getSystemDefault(
+      String envName,
+      String propertyName,
+      String defaultValue) {
+
+    if (envName != null && !envName.isEmpty()) {
+      String envValue = System.getenv().get(envName);
+      if (envValue != null) {
+        return envValue;
+      }
+    }
+
+    if (propertyName != null && !propertyName.isEmpty()) {
+      String propValue = System.getProperty(propertyName);
+      if (propValue != null) {
+        return propValue;
+      }
+    }
+    return defaultValue;
+  }
 
   @Override
   public void close() {
@@ -149,16 +174,16 @@ public class DepInterpreter extends Interpreter {
     intp.setContextClassLoader();
     intp.initializeSynchronous();
 
-    depc = new DependencyContext(getProperty("zeppelin.dep.localrepo"),
+    depc = new SparkDependencyContext(getProperty("zeppelin.dep.localrepo"),
                                  getProperty("zeppelin.dep.additionalRemoteRepository"));
     completor = new SparkJLineCompletion(intp);
-
     intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
     Map<String, Object> binder = (Map<String, Object>) getValue("_binder");
     binder.put("depc", depc);
 
     intp.interpret("@transient val z = "
-        + "_binder.get(\"depc\").asInstanceOf[org.apache.zeppelin.spark.dep.DependencyContext]");
+        + "_binder.get(\"depc\")"
+        + ".asInstanceOf[org.apache.zeppelin.spark.dep.SparkDependencyContext]");
 
   }
 
@@ -195,6 +220,7 @@ public class DepInterpreter extends Interpreter {
       depc.fetch();
     } catch (MalformedURLException | DependencyResolutionException
         | ArtifactResolutionException e) {
+      LOGGER.error("Exception in DepInterpreter while interpret ", e);
       return new InterpreterResult(Code.ERROR, e.toString());
     }
 

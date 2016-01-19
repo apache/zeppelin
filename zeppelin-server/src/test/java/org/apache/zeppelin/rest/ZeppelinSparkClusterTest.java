@@ -60,7 +60,7 @@ public class ZeppelinSparkClusterTest extends AbstractTestRestApi {
       try {
         Thread.sleep(100);
       } catch (InterruptedException e) {
-        e.printStackTrace();
+        LOG.error("Exception in WebDriverManager while getWebDriver ", e);
       }
     }
   }

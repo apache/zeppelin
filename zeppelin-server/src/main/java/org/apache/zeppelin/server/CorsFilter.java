@@ -19,12 +19,12 @@ package org.apache.zeppelin.server;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.utils.SecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.DateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 
@@ -43,6 +43,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class CorsFilter implements Filter {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(CorsFilter.class);
+
   @Override
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
       throws IOException, ServletException {
@@ -54,7 +56,7 @@ public class CorsFilter implements Filter {
         origin = sourceHost;
       }
     } catch (URISyntaxException e) {
-      e.printStackTrace();
+      LOGGER.error("Exception in WebDriverManager while getWebDriver ", e);
     }
 
     if (((HttpServletRequest) request).getMethod().equals("OPTIONS")) {

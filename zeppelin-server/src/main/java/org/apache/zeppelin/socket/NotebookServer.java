@@ -41,6 +41,7 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.socket.Message.OP;
+import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketServlet;
@@ -71,9 +72,9 @@ public class NotebookServer extends WebSocketServlet implements
     try {
       return SecurityUtils.isValidOrigin(origin, ZeppelinConfiguration.create());
     } catch (UnknownHostException e) {
-      e.printStackTrace();
+      LOG.error(e.toString(), e);
     } catch (URISyntaxException e) {
-      e.printStackTrace();
+      LOG.error(e.toString(), e);
     }
     return false;
   }
@@ -96,10 +97,26 @@ public class NotebookServer extends WebSocketServlet implements
     try {
       Message messagereceived = deserializeMessage(msg);
       LOG.debug("RECEIVE << " + messagereceived.op);
+      LOG.debug("RECEIVE PRINCIPAL << " + messagereceived.principal);
+      LOG.debug("RECEIVE TICKET << " + messagereceived.ticket);
+      String ticket = TicketContainer.instance.getTicket(messagereceived.principal);
+      if (ticket != null && !ticket.equals(messagereceived.ticket))
+        throw new Exception("Invalid ticket " + messagereceived.ticket + " != " + ticket);
+
+      ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+      boolean allowAnonymous = conf.
+          getBoolean(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED);
+      if (!allowAnonymous && messagereceived.principal.equals("anonymous")) {
+        throw new Exception("Anonymous access not allowed ");
+      }
+
       /** Lets be elegant here */
       switch (messagereceived.op) {
           case LIST_NOTES:
             broadcastNoteList();
+            break;
+          case RELOAD_NOTES_FROM_REPO:
+            broadcastReloadedNoteList();
             break;
           case GET_HOME_NOTE:
             sendHomeNote(conn, notebook);
@@ -294,13 +311,21 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  public List<Map<String, String>> generateNotebooksInfo (){
+  public List<Map<String, String>> generateNotebooksInfo(boolean needsReload) {
     Notebook notebook = notebook();
 
     ZeppelinConfiguration conf = notebook.getConf();
     String homescreenNotebookId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
     boolean hideHomeScreenNotebookFromList = conf
             .getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
+
+    if (needsReload) {
+      try {
+        notebook.reloadAllNotes();
+      } catch (IOException e) {
+        LOG.error("Fail to reload notes from repository");
+      }
+    }
 
     List<Note> notes = notebook.getAllNotes();
     List<Map<String, String>> notesInfo = new LinkedList<>();
@@ -324,8 +349,12 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public void broadcastNoteList() {
+    List<Map<String, String>> notesInfo = generateNotebooksInfo(false);
+    broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
+  }
 
-    List<Map<String, String>> notesInfo = generateNotebooksInfo();
+  public void broadcastReloadedNoteList() {
+    List<Map<String, String>> notesInfo = generateNotebooksInfo(true);
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
   }
 
@@ -404,7 +433,8 @@ public class NotebookServer extends WebSocketServlet implements
 
     return cronUpdated;
   }
-  private void createNote(WebSocket conn, Notebook notebook, Message message) throws IOException {
+  private void createNote(NotebookSocket conn, Notebook notebook, Message message)
+      throws IOException {
     Note note = notebook.createNote();
     note.addParagraph(); // it's an empty note. so add one paragraph
     if (message != null) {
@@ -417,7 +447,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     note.persist();
     addConnectionToNote(note.id(), (NotebookSocket) conn);
-    broadcastNote(note);
+    conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", note)));
     broadcastNoteList();
   }
 
@@ -461,7 +491,7 @@ public class NotebookServer extends WebSocketServlet implements
     String name = (String) fromMessage.get("name");
     Note newNote = notebook.cloneNote(noteId, name);
     addConnectionToNote(newNote.id(), (NotebookSocket) conn);
-    broadcastNote(newNote);
+    conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", newNote)));
     broadcastNoteList();
   }
 
@@ -766,7 +796,7 @@ public class NotebookServer extends WebSocketServlet implements
         try {
           note.persist();
         } catch (IOException e) {
-          e.printStackTrace();
+          LOG.error(e.toString(), e);
         }
       }
       notebookServer.broadcastNote(note);

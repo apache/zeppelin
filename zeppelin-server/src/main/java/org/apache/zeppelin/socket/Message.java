@@ -86,6 +86,7 @@ public class Message {
                      // @param completions list of string
 
     LIST_NOTES, // [c-s] ask list of note
+    RELOAD_NOTES_FROM_REPO, // [c-s] reload notes from repo
 
     NOTES_INFO, // [s-c] list of note infos
                 // @param notes serialized List<NoteInfo> object
@@ -106,6 +107,8 @@ public class Message {
 
   public OP op;
   public Map<String, Object> data = new HashMap<String, Object>();
+  public String ticket = "anonymous";
+  public String principal = "anonymous";
 
   public Message(OP op) {
     this.op = op;

@@ -219,9 +219,6 @@ public class RemoteInterpreterTest {
 
     intpA.close();
     intpB.close();
-
-    RemoteInterpreterProcess process = intpA.getInterpreterProcess();
-    assertNull(process);
   }
 
   @Test
@@ -337,9 +334,6 @@ public class RemoteInterpreterTest {
 
     intpA.close();
     intpB.close();
-
-    RemoteInterpreterProcess process = intpA.getInterpreterProcess();
-    assertNull(process);
   }
 
   @Test

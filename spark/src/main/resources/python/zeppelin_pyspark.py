@@ -111,7 +111,7 @@ class PySparkCompletion:
   def getGlobalCompletion(self):
     objectDefList = []
     try:
-      for completionItem in list(globals().iterkeys()):
+      for completionItem in list(globals().keys()):
         objectDefList.append(completionItem)
     except:
       return None
@@ -119,18 +119,20 @@ class PySparkCompletion:
       return objectDefList
 
   def getMethodCompletion(self, text_value):
-    objectDefList = []
+    execResult = locals()
+    if text_value == None:
+      return None
     completion_target = text_value
     try:
       if len(completion_target) <= 0:
         return None
       if text_value[-1] == ".":
         completion_target = text_value[:-1]
-      exec("%s = %s(%s)" % ("objectDefList", "dir", completion_target))
+      exec("{} = dir({})".format("objectDefList", completion_target), globals(), execResult)
     except:
       return None
     else:
-      return objectDefList
+      return list(execResult['objectDefList'])
 
 
   def getCompletion(self, text_value):
@@ -147,9 +149,9 @@ class PySparkCompletion:
         for completionItem in list(objectCompletionList):
           completionList.add(completionItem)
     if len(completionList) <= 0:
-      print ""
+      print("")
     else:
-      print json.dumps(filter(lambda x : not re.match("^__.*", x), list(completionList)))
+      print(json.dumps(list(filter(lambda x : not re.match("^__.*", x), list(completionList)))))
 
 
 output = Logger()

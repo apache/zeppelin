@@ -17,30 +17,26 @@
 
 package org.apache.zeppelin.elasticsearch;
 
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
-import static org.junit.Assert.assertEquals;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Properties;
-import java.util.UUID;
-
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Properties;
+import java.util.UUID;
+
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+import static org.junit.Assert.assertEquals;
 
 public class ElasticsearchInterpreterTest {
     
@@ -49,7 +45,7 @@ public class ElasticsearchInterpreterTest {
   private static ElasticsearchInterpreter interpreter;
     
   private static final String[] METHODS = { "GET", "PUT", "DELETE", "POST" };
-  private static final String[] STATUS = { "200", "404", "500", "403" };
+  private static final int[] STATUS = { 200, 404, 500, 403 };
 
   private static final String ELS_CLUSTER_NAME = "zeppelin-elasticsearch-interpreter-test";
   private static final String ELS_HOST = "localhost";
@@ -71,6 +67,14 @@ public class ElasticsearchInterpreterTest {
 
     elsNode = NodeBuilder.nodeBuilder().settings(settings).node();
     elsClient = elsNode.client();
+
+    elsClient.admin().indices().prepareCreate("logs")
+      .addMapping("http", jsonBuilder()
+        .startObject().startObject("http").startObject("properties")
+          .startObject("content_length")
+            .field("type", "integer")
+          .endObject()
+        .endObject().endObject().endObject()).get();
         
     for (int i = 0; i < 50; i++) {
       elsClient.prepareIndex("logs", "http", "" + i)
@@ -84,6 +88,7 @@ public class ElasticsearchInterpreterTest {
               .field("headers", Arrays.asList("Accept: *.*", "Host: apache.org"))
             .endObject()
             .field("status", STATUS[RandomUtils.nextInt(STATUS.length)])
+            .field("content_length", RandomUtils.nextInt(2000))
           )
         .get();
     }
@@ -146,6 +151,31 @@ public class ElasticsearchInterpreterTest {
 
     res = interpreter.interpret("search /logs status:404", null);
     assertEquals(Code.SUCCESS, res.code());   
+  }
+
+  @Test
+  public void testAgg() {
+
+    // Single-value metric
+    InterpreterResult res = interpreter.interpret("search /logs { \"aggs\" : { \"distinct_status_count\" : " +
+            " { \"cardinality\" : { \"field\" : \"status\" } } } }", null);
+    assertEquals(Code.SUCCESS, res.code());
+
+    // Multi-value metric
+    res = interpreter.interpret("search /logs { \"aggs\" : { \"content_length_stats\" : " +
+            " { \"extended_stats\" : { \"field\" : \"content_length\" } } } }", null);
+    assertEquals(Code.SUCCESS, res.code());
+
+    // Single bucket
+    res = interpreter.interpret("search /logs { \"aggs\" : { " +
+            " \"200_OK\" : { \"filter\" : { \"term\": { \"status\": \"200\" } }, " +
+            "   \"aggs\" : { \"avg_length\" : { \"avg\" : { \"field\" : \"content_length\" } } } } } }", null);
+    assertEquals(Code.SUCCESS, res.code());
+
+    // Multi-buckets
+    res = interpreter.interpret("search /logs { \"aggs\" : { \"status_count\" : " +
+            " { \"terms\" : { \"field\" : \"status\" } } } }", null);
+    assertEquals(Code.SUCCESS, res.code());
   }
     
   @Test

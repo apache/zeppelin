@@ -114,6 +114,7 @@ public class RemoteInterpreterServer
       try {
         Thread.sleep(300);
       } catch (InterruptedException e) {
+        logger.info("Exception in RemoteInterpreterServer while shutdown, Thread.sleep", e);
       }
     }
 
@@ -170,7 +171,7 @@ public class RemoteInterpreterServer
     } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
         | InstantiationException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
-      e.printStackTrace();
+      logger.error(e.toString(), e);
       throw new TException(e);
     }
   }
@@ -225,6 +226,7 @@ public class RemoteInterpreterServer
         try {
           jobListener.wait(1000);
         } catch (InterruptedException e) {
+          logger.info("Exception in RemoteInterpreterServer while interpret, jobListener.wait", e);
         }
       }
     }
@@ -455,6 +457,7 @@ public class RemoteInterpreterServer
         try {
           eventQueue.wait(1000);
         } catch (InterruptedException e) {
+          logger.info("Exception in RemoteInterpreterServer while getEvent, eventQueue.wait", e);
         }
       }
 
@@ -468,7 +471,6 @@ public class RemoteInterpreterServer
 
   /**
    * called when object is updated in client (web) side.
-   * @param className
    * @param name
    * @param noteId noteId where the update issues
    * @param object
@@ -499,6 +501,7 @@ public class RemoteInterpreterServer
         return;
       } catch (Exception e) {
         // no luck
+        logger.info("Exception in RemoteInterpreterServer while angularObjectUpdate, no luck", e);
       }
     }
 
@@ -510,6 +513,7 @@ public class RemoteInterpreterServer
           }.getType());
       } catch (Exception e) {
         // no lock
+        logger.info("Exception in RemoteInterpreterServer while angularObjectUpdate, no lock", e);
       }
     }
 
@@ -544,6 +548,7 @@ public class RemoteInterpreterServer
           }.getType());
     } catch (Exception e) {
       // nolock
+      logger.info("Exception in RemoteInterpreterServer while angularObjectAdd, nolock", e);
     }
 
     // try string object type at last

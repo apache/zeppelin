@@ -38,12 +38,15 @@ import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SparkInterpreterTest {
   public static SparkInterpreter repl;
   private InterpreterContext context;
   private File tmpDir;
+  public static Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterTest.class);
 
 
   /**
@@ -177,7 +180,7 @@ public class SparkInterpreterTest {
     for (Object oKey : intpProperty.keySet()) {
       String key = (String) oKey;
       String value = (String) intpProperty.get(key);
-      repl.logger.debug(String.format("[%s]: [%s]", key, value));
+      LOGGER.debug(String.format("[%s]: [%s]", key, value));
       if (key.startsWith("spark.") && value.isEmpty()) {
         assertTrue(String.format("configuration starting from 'spark.' should not be empty. [%s]", key), !sparkConf.contains(key) || !sparkConf.get(key).isEmpty());
       }

@@ -26,7 +26,12 @@ limitations under the License.
 
       <div class="row">
         <div class="col-md-4">
-          <h4>Notebook</h4>
+          <h4>Notebook 
+            <i ng-class="isReloadingNotes ? 'fa fa-refresh fa-spin' : 'fa fa-refresh'"
+              ng-style="!isReloadingNotes && {'cursor': 'pointer'}" style="font-size: 13px;"
+              ng-click="reloadNotebookList();">
+            </i>
+          </h4>
 
           <div>
             <h5><a href="" data-toggle="modal" data-target="#noteImportModal" style="text-decoration: none;">

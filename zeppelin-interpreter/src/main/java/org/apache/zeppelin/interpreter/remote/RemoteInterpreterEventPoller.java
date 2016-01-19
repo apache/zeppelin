@@ -66,15 +66,17 @@ public class RemoteInterpreterEventPoller extends Thread {
       }
 
       RemoteInterpreterEvent event = null;
+      boolean broken = false;
       try {
         event = client.getEvent();
       } catch (TException e) {
+        broken = true;
         logger.error("Can't get RemoteInterpreterEvent", e);
         waitQuietly();
         continue;
+      } finally {
+        interpreterProcess.releaseClient(client, broken);
       }
-
-      interpreterProcess.releaseClient(client);
 
       Gson gson = new Gson();
 
@@ -122,6 +124,7 @@ public class RemoteInterpreterEventPoller extends Thread {
         wait(1000);
       }
     } catch (InterruptedException ignored) {
+      logger.info("Error in RemoteInterpreterEventPoller while waitQuietly : ", ignored);
     }
   }
 

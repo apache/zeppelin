@@ -57,6 +57,7 @@ public class JobProgressPoller extends Thread {
       try {
         Thread.sleep(intervalMs);
       } catch (InterruptedException e) {
+        logger.error("Exception in JobProgressPoller while run Thread.sleep", e);
       }
     }
   }

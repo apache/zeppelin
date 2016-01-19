@@ -14,12 +14,11 @@
 'use strict';
 
 angular.module('zeppelinWebApp').directive('resizable', function() {
+
   var resizableConfig = {
     autoHide: true,
     handles: 'se',
     helper: 'resizable-helper',
-    minHeight: 100,
-    grid: [10000, 10],  // allow only vertical
     stop: function() {
       angular.element(this).css({'width': '100%', 'height': '100%'});
     }
@@ -31,13 +30,37 @@ angular.module('zeppelinWebApp').directive('resizable', function() {
       callback: '&onResize'
     },
     link: function postLink(scope, elem, attrs) {
-      attrs.$observe('allowresize', function(isAllowed) {
-        if (isAllowed === 'true') {
-          elem.resizable(resizableConfig);
+      attrs.$observe('resize', function(resize) {
+        var resetResize = function(elem, resize) {
+          var colStep = window.innerWidth / 12;
+          elem.off('resizestop');
+          var conf = angular.copy(resizableConfig);
+          if (resize.graphType === 'TABLE') {
+            conf.grid = [colStep, 10];
+            conf.minHeight = 100;
+          } else {
+            conf.grid = [colStep, 10000];
+            conf.minHeight = 0;
+          }
+          conf.maxWidth = window.innerWidth;
+
+          elem.resizable(conf);
           elem.on('resizestop', function() {
             if (scope.callback) {
-              scope.callback();
+              var height = elem.height();
+              if (height < 50) {
+                height = 300;
+              }
+              scope.callback({width: Math.ceil(elem.width() / colStep), height: height});
             }
+          });
+        };
+
+        resize = JSON.parse(resize);
+        if (resize.allowresize === 'true') {
+          resetResize(elem, resize);
+          angular.element(window).resize(function() {
+            resetResize(elem, resize);
           });
         }
       });

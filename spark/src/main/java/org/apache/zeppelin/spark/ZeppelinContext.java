@@ -43,7 +43,7 @@ import org.apache.zeppelin.display.Input.ParamOption;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.spark.dep.DependencyResolver;
+import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 
 import scala.Tuple2;
 import scala.Unit;
@@ -53,14 +53,14 @@ import scala.collection.Iterable;
  * Spark context for zeppelin.
  */
 public class ZeppelinContext extends HashMap<String, Object> {
-  private DependencyResolver dep;
+  private SparkDependencyResolver dep;
   private PrintStream out;
   private InterpreterContext interpreterContext;
   private int maxResult;
 
   public ZeppelinContext(SparkContext sc, SQLContext sql,
       InterpreterContext interpreterContext,
-      DependencyResolver dep, PrintStream printStream,
+      SparkDependencyResolver dep, PrintStream printStream,
       int maxResult) {
     this.sc = sc;
     this.sqlContext = sql;
@@ -220,7 +220,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
       paramOptions[i++] = new ParamOption(valueAndDisplayValue._1(), valueAndDisplayValue._2());
     }
 
-    return gui.select(name, "", paramOptions);
+    return gui.select(name, defaultValue, paramOptions);
   }
 
   public void setGui(GUI o) {
@@ -295,30 +295,30 @@ public class ZeppelinContext extends HashMap<String, Object> {
     try {
       take = df.getClass().getMethod("take", int.class);
       rows = (Object[]) take.invoke(df, maxResult + 1);
-
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException | ClassCastException e) {
       sc.clearJobGroup();
       throw new InterpreterException(e);
     }
 
-    String msg = null;
-
+    List<Attribute> columns = null;
     // get field names
-    Method queryExecution;
-    QueryExecution qe;
     try {
-      queryExecution = df.getClass().getMethod("queryExecution");
-      qe = (QueryExecution) queryExecution.invoke(df);
+      // Use reflection because of classname returned by queryExecution changes from
+      // Spark <1.5.2 org.apache.spark.sql.SQLContext$QueryExecution
+      // Spark 1.6.0> org.apache.spark.sql.hive.HiveContext$QueryExecution
+      Object qe = df.getClass().getMethod("queryExecution").invoke(df);
+      Object a = qe.getClass().getMethod("analyzed").invoke(qe);
+      scala.collection.Seq seq = (scala.collection.Seq) a.getClass().getMethod("output").invoke(a);
+
+      columns = (List<Attribute>) scala.collection.JavaConverters.seqAsJavaListConverter(seq)
+                                                                 .asJava();
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
       throw new InterpreterException(e);
     }
 
-    List<Attribute> columns =
-        scala.collection.JavaConverters.asJavaListConverter(
-            qe.analyzed().output()).asJava();
-
+    String msg = null;
     for (Attribute col : columns) {
       if (msg == null) {
         msg = col.name();
