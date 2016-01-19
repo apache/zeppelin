@@ -45,6 +45,7 @@ sudo ln -s /usr/local/apache-maven-3.3.3/bin/mvn /usr/local/bin/mvn
 _Notes:_ 
  - Ensure node is installed by running `node --version`  
  - Ensure maven is running version 3.1.x or higher with `mvn -version`
+ - Configure maven to use more memory than usual by ```export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=1024m"```
 
 ### Build
 If you want to build Zeppelin from the source, please first clone this repository, then:
