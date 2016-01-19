@@ -22,10 +22,10 @@ limitations under the License.
 
 ## Angular Display System in Zeppelin
 
-Angular display system treats output as an view template of [AngularJS](https://angularjs.org/).
-It compiles templates and displays inside of Zeppelin.
+Angular display system treats output as a view template for [AngularJS](https://angularjs.org/).
+It compiles templates and displays them inside of Zeppelin.
 
-Zeppelin provides gateway between your interpreter and your compiled **AngularJS view** templates.
+Zeppelin provides a gateway between your interpreter and your compiled **AngularJS view** templates.
 Therefore, you can not only update scope variables from your interpreter but also watch them in the interpreter, which is JVM process.
 
 ### Print AngularJS view
