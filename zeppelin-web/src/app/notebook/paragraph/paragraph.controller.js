@@ -802,7 +802,7 @@ angular.module('zeppelinWebApp')
         $scope.insertNew('below');
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 79) { // Ctrl + Alt + o
         $scope.toggleOutput();
-      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 83) { // Ctrl + Alt + s
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 82) { // Ctrl + Alt + r
         $scope.toggleEnableDisable();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e
         $scope.toggleEditor();
