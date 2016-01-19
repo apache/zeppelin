@@ -165,7 +165,9 @@ public class RemoteInterpreter extends Interpreter {
     boolean broken = false;
     try {
       client = interpreterProcess.getClient();
-      client.close(className);
+      if (client != null) {
+        client.close(className);
+      }
     } catch (TException e) {
       broken = true;
       throw new InterpreterException(e);

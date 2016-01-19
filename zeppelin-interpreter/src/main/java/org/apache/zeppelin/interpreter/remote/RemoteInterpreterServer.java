@@ -100,8 +100,10 @@ public class RemoteInterpreterServer
 
   @Override
   public void shutdown() throws TException {
-    interpreterGroup.close();
-    interpreterGroup.destroy();
+    if (interpreterGroup != null) {
+      interpreterGroup.close();
+      interpreterGroup.destroy();
+    }
 
     server.stop();
 
@@ -470,7 +472,7 @@ public class RemoteInterpreterServer
     // first try local objects
     AngularObject ao = registry.get(name, noteId);
     if (ao == null) {
-      logger.error("Angular object {} not exists", name);
+      logger.debug("Angular object {} not exists", name);
       return;
     }
 
@@ -487,8 +489,8 @@ public class RemoteInterpreterServer
         ao.set(value, false);
         return;
       } catch (Exception e) {
-        // no luck
-        logger.info("Exception in RemoteInterpreterServer while angularObjectUpdate, no luck", e);
+        // it's not a previous object's type. proceed to treat as a generic type
+        logger.debug(e.getMessage(), e);
       }
     }
 
@@ -499,8 +501,8 @@ public class RemoteInterpreterServer
           new TypeToken<Map<String, Object>>() {
           }.getType());
       } catch (Exception e) {
-        // no lock
-        logger.info("Exception in RemoteInterpreterServer while angularObjectUpdate, no lock", e);
+        // it's not a generic json object, too. okay, proceed to threat as a string type
+        logger.debug(e.getMessage(), e);
       }
     }
 
@@ -534,8 +536,8 @@ public class RemoteInterpreterServer
           new TypeToken<Map<String, Object>>() {
           }.getType());
     } catch (Exception e) {
-      // nolock
-      logger.info("Exception in RemoteInterpreterServer while angularObjectAdd, nolock", e);
+      // it's okay. proceed to treat object as a string
+      logger.debug(e.getMessage(), e);
     }
 
     // try string object type at last

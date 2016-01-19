@@ -138,6 +138,9 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   }
 
   public Client getClient() throws Exception {
+    if (clientPool == null || clientPool.isClosed()) {
+      return null;
+    }
     return clientPool.borrowObject();
   }
 
@@ -180,7 +183,8 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
         } catch (Exception e) {
           // safely ignore exception while client.shutdown() may terminates remote process
           logger.info("Exception in RemoteInterpreterProcess while synchronized dereference, can " +
-              "safely ignore exception while client.shutdown() may terminates remote process", e);
+              "safely ignore exception while client.shutdown() may terminates remote process");
+          logger.debug(e.getMessage(), e);
         } finally {
           if (client != null) {
             // no longer used
