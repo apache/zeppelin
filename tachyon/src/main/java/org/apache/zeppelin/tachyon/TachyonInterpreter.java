@@ -113,15 +113,20 @@ public class TachyonInterpreter extends Interpreter {
     System.setOut(ps);
     
     for (String command : commands) {
+      int commandResuld = 1;
       String[] args = splitAndRemoveEmpty(command, " ");
-      int commandResuld = tfs.run(args);
-      System.out.println();
+      if (args.length > 0 && args[0].equals("help")) {
+        System.out.println(getCommandList());
+      } else {
+        commandResuld = tfs.run(args);
+      }
       if (commandResuld != 0) {
         isSuccess = false;
         break;
       } else {
         completedCommands += 1;
       }
+      System.out.println();
     }
 
     System.out.flush();
@@ -177,5 +182,67 @@ public class TachyonInterpreter extends Interpreter {
       }
     }
     return voices;
+  }
+
+  private String getCommandList() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Commands list:");
+    sb.append("\n\t[help] - List all available commands.");
+    sb.append("\n\t[cat <path>] - Print the content of the file to the console.");
+    sb.append("\n\t[copyFromLocal <src> <remoteDst>] - Copy the specified file specified " +
+            "by \"source path\" to the path specified by \"remote path\". " +
+            "This command will fail if \"remote path\" already exists.");
+    sb.append("\n\t[copyToLocal <src> <localDst>] - Copy the specified file from the path " +
+            "specified by \"remote source\" to a local destination.");
+    sb.append("\n\t[count <path>] - Display the number of folders and files matching " +
+            "the specified prefix in \"path\".");
+    sb.append("\n\t[du <path>] - Display the size of a file or a directory specified " +
+            "by the input path.");
+    sb.append("\n\t[fileinfo <path>] - Print the information of the blocks of a specified file.");
+    sb.append("\n\t[free <file path|folder path>] - Free a file or all files under a " +
+            "directory from Tachyon. If the file/directory is also in under storage, " +
+            "it will still be available there.");
+    sb.append("\n\t[getUsedBytes] - Get number of bytes used in the TachyonFS.");
+    sb.append("\n\t[getCapacityBytes] - Get the capacity of the TachyonFS.");
+    sb.append("\n\t[load <path>] - Load the data of a file or a directory from under " +
+            "storage into Tachyon.");
+    sb.append("\n\t[loadMetadata <path>] - Load the metadata of a file or a directory " +
+            "from under storage into Tachyon.");
+    sb.append("\n\t[location <path>] - Display a list of hosts that have the file data.");
+    sb.append("\n\t[ls <path>] - List all the files and directories directly under the " +
+            "given path with information such as size.");
+    sb.append("\n\t[lsr <path>] - Recursively list all the files and directories under " +
+            "the given path with information such as size.");
+    sb.append("\n\t[mkdir <path>] - Create a directory under the given path, along with " +
+            "any necessary parent directories. This command will fail if the given " +
+            "path already exists.");
+    sb.append("\n\t[mount <tachyonPath> <ufsURI>] - Mount the underlying file system " +
+            "path \"uri\" into the Tachyon namespace as \"path\". The \"path\" is assumed " +
+            "not to exist and is created by the operation. No data or metadata is loaded " +
+            "from under storage into Tachyon. After a path is mounted, operations on objects " +
+            "under the mounted path are mirror to the mounted under storage.");
+    sb.append("\n\t[mv <src> <dst>] - Move a file or directory specified by \"source\" " +
+            "to a new location \"destination\". This command will fail if " +
+            "\"destination\" already exists.");
+    sb.append("\n\t[pin <path>] - Pin the given file to avoid evicting it from memory. " +
+            "If the given path is a directory, it recursively pins all the files contained " +
+            "and any new files created within this directory.");
+    sb.append("\n\t[report <path>] - Report to the master that a file is lost.");
+    sb.append("\n\t[request <tachyonaddress> <dependencyId>] - Request the file for " +
+            "a given dependency ID.");
+    sb.append("\n\t[rm <path>] - Remove a file. This command will fail if the given " +
+            "path is a directory rather than a file.");
+    sb.append("\n\t[rmr <path>] - Remove a file, or a directory with all the files and " +
+            "sub-directories that this directory contains.");
+    sb.append("\n\t[tail <path>] - Print the last 1KB of the specified file to the console.");
+    sb.append("\n\t[touch <path>] - Create a 0-byte file at the specified location.");
+    sb.append("\n\t[unmount <tachyonPath>] - Unmount the underlying file system path " +
+            "mounted in the Tachyon namespace as \"path\". Tachyon objects under \"path\" " +
+            "are removed from Tachyon, but they still exist in the previously " +
+            "mounted under storage.");
+    sb.append("\n\t[unpin <path>] - Unpin the given file to allow Tachyon to evict " +
+            "this file again. If the given path is a directory, it recursively unpins " +
+            "all files contained and any new files created within this directory.");
+    return sb.toString();
   }
 }
