@@ -64,6 +64,34 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
         </dependency>
+
+        <!-- TEST -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.tachyonproject</groupId>
+            <artifactId>tachyon-servers</artifactId>
+            <version>${tachyon.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.tachyonproject</groupId>
+            <artifactId>tachyon-minicluster</artifactId>
+            <version>${tachyon.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.tachyonproject</groupId>
+            <artifactId>tachyon-underfs-local</artifactId>
+            <version>${tachyon.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

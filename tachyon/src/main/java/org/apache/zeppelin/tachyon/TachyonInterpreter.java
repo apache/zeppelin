@@ -41,8 +41,8 @@ public class TachyonInterpreter extends Interpreter {
   
   Logger logger = LoggerFactory.getLogger(TachyonInterpreter.class);
 
-  private static final String TACHYON_MASTER_HOSTNAME = "tachyon.master.hostname";
-  private static final String TACHYON_MASTER_PORT = "tachyon.master.port";
+  protected static final String TACHYON_MASTER_HOSTNAME = "tachyon.master.hostname";
+  protected static final String TACHYON_MASTER_PORT = "tachyon.master.port";
 
   private TfsShell tfs;
 
@@ -52,7 +52,7 @@ public class TachyonInterpreter extends Interpreter {
   private final String tachyonMasterHostname;
   private final String tachyonMasterPort;
 
-  private final List<String> keywords = Arrays.asList("cat", "copyFromLocal",
+  protected final List<String> keywords = Arrays.asList("cat", "copyFromLocal",
           "copyToLocal", "count", "du", "fileinfo", "free", "getUsedBytes",
           "getCapacityBytes", "load", "loadMetadata", "location", "ls", "lsr",
           "mkdir", "mount", "mv", "pin", "report", "request", "rm", "rmr",
@@ -174,7 +174,10 @@ public class TachyonInterpreter extends Interpreter {
   @Override
   public List<String> completion(String buf, int cursor) {
     String[] words = splitAndRemoveEmpty(splitAndRemoveEmpty(buf, "\n"), " ");
-    String lastWord = words[ words.length - 1 ];
+    String lastWord = "";
+    if (words.length > 0) {
+      lastWord = words[ words.length - 1 ];
+    }
     ArrayList<String> voices = new ArrayList<String>();
     for (String command : keywords) {
       if (command.startsWith(lastWord)) {
