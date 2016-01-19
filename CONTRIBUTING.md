@@ -48,7 +48,7 @@ You can also test and review a particular Pull Request. Here are two useful ways
     dev/test_zeppelin_pr.py [# of PR]
     ```
 
-    For example, if you want to test `#513`, then the command will be like:
+    For example, if you want to test `#513`, then the command will be:
 
     ```
     dev/test_zeppelin_pr.py 513
