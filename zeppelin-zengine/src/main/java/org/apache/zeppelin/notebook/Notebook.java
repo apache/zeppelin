@@ -174,7 +174,7 @@ public class Notebook {
 
   /**
    * import JSON as a new note.
-   * @param sourceJSON - the note JSON to import
+   * @param sourceJson - the note JSON to import
    * @param noteName - the name of the new note
    * @return notebook ID
    * @throws IOException
