@@ -71,7 +71,7 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
 
   /* implemented as git add+commit
    * @param pattern is the noteId
-   * @param commitMessage is a part of commit message (checkpoint name)
+   * @param commitMessage is a commit message (checkpoint name)
    * (non-Javadoc)
    * @see org.apache.zeppelin.notebook.repo.VFSNotebookRepo#checkpoint(String, String)
    */
@@ -83,7 +83,7 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
         LOG.debug("Changes found for pattern '{}': {}", pattern, gitDiff);
         DirCache added = git.add().addFilepattern(pattern).call();
         LOG.debug("{} changes are about to be commited", added.getEntryCount());
-        git.commit().setMessage("Updated " + pattern + ": " + commitMessage).call();
+        git.commit().setMessage(commitMessage).call();
       } else {
         LOG.debug("No changes found {}", pattern);
       }
@@ -106,7 +106,7 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
       Iterable<RevCommit> logs = git.log().addPath(noteId).call();
       for (RevCommit log: logs) {
         history.add(new Rev(log.getName(), log.getCommitTime()));
-        LOG.debug(" - ({},{})", log.getName(), log.getCommitTime());
+        LOG.debug(" - ({},{},{})", log.getName(), log.getCommitTime(), log.getFullMessage());
       }
     } catch (GitAPIException e) {
       LOG.error("Failed to get logs for {}", noteId, e);
