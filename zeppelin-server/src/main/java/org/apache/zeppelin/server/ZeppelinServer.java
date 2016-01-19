@@ -82,7 +82,7 @@ public class ZeppelinServer extends Application {
     this.depResolver = new DependencyResolver(conf.getString(ConfVars.ZEPPELIN_DEP_LOCALREPO));
     this.schedulerFactory = new SchedulerFactory();
     this.replFactory = new InterpreterFactory(conf, notebookWsServer, depResolver);
-    this.notebookRepo = new NotebookRepoSync(conf);
+    this.notebookRepo = new NotebookRepoSync(conf, depResolver);
     this.notebookIndex = new LuceneSearch();
 
     notebook = new Notebook(conf, 
