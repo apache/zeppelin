@@ -126,6 +126,22 @@ a.navbar-brand:hover {
   outline: 0;
 }
 
+.note-name-query {
+  color: #000;
+  height: 28px;
+  width: 200px;
+  margin: 5px;
+  font: normal normal normal 14px/1 FontAwesome;
+}
+
+.query-clear {
+  color: #616161;
+  position: absolute;
+  margin-top: -25px;
+  margin-left: 185px;
+  cursor: pointer;
+}
+
 @media (max-width: 767px) {
   .navbar-inverse .navbar-nav .open .dropdown-menu > li > a {
     color: #D3D3D3;
