@@ -426,9 +426,12 @@ public class Notebook {
       
       boolean releaseResource = false;
       try {
-        releaseResource = (boolean) note.getConfig().get("releaseresource");
-      } catch (java.lang.ClassCastException e) {
-        logger.error(e.toString(), e);
+        Map<String, Object> config = note.getConfig();
+        if (config != null && config.containsKey("releaseresource")) {
+          releaseResource = (boolean) note.getConfig().get("releaseresource");
+        }
+      } catch (ClassCastException e) {
+        logger.error(e.getMessage(), e);
       }
       if (releaseResource) {
         for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {
