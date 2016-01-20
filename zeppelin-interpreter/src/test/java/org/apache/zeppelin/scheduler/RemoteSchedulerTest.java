@@ -64,14 +64,14 @@ public class RemoteSchedulerTest {
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
 
     final RemoteInterpreter intpA = new RemoteInterpreter(
-            p,
-            MockInterpreterA.class.getName(),
-            new File("../bin/interpreter.sh").getAbsolutePath(),
-            "fake",
-            env,
-            10 * 1000,
-            null
-        );
+        p,
+        MockInterpreterA.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        "fakeRepo",
+        env,
+        10 * 1000,
+        null);
 
     intpGroup.add(intpA);
     intpA.setInterpreterGroup(intpGroup);
@@ -148,14 +148,14 @@ public class RemoteSchedulerTest {
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
 
     final RemoteInterpreter intpA = new RemoteInterpreter(
-            p,
-            MockInterpreterA.class.getName(),
-            new File("../bin/interpreter.sh").getAbsolutePath(),
-            "fake",
-            env,
-            10 * 1000,
-            null
-        );
+        p,
+        MockInterpreterA.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        "fakeRepo",
+        env,
+        10 * 1000,
+        null);
 
     intpGroup.add(intpA);
     intpA.setInterpreterGroup(intpGroup);

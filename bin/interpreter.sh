@@ -21,10 +21,10 @@ bin=$(cd "${bin}">/dev/null; pwd)
 
 
 function usage() {
-    echo "usage) $0 -p <port> -d <directory to load>"
+    echo "usage) $0 -p <port> -d <interpreter dir to load> -l <local repo dir to load>"
 }
 
-while getopts "hp:d:" o; do
+while getopts "hp:d:l:" o; do
     case ${o} in
         h)
             usage
@@ -35,6 +35,9 @@ while getopts "hp:d:" o; do
             ;;
         p)
             PORT=${OPTARG}
+            ;;
+        l)
+            LOCAL_REPO_DIR=${OPTARG}
             ;;
         esac
 done
@@ -127,6 +130,8 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
     export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
   fi
 fi
+
+addJarInDir "${LOCAL_REPO_DIR}"
 
 CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 

@@ -53,6 +53,7 @@ public class RemoteInterpreter extends Interpreter {
   Gson gson = new Gson();
   private String interpreterRunner;
   private String interpreterPath;
+  private String localRepoPath;
   private String className;
   FormType formType;
   boolean initialized;
@@ -61,32 +62,36 @@ public class RemoteInterpreter extends Interpreter {
   private int connectTimeout;
 
   public RemoteInterpreter(Properties property,
-                           String className,
-                           String interpreterRunner,
-                           String interpreterPath,
-                           int connectTimeout,
-                           RemoteInterpreterProcessListener remoteInterpreterProcessListener) {
+      String className,
+      String interpreterRunner,
+      String interpreterPath,
+      String localRepoPath,
+      int connectTimeout,
+      RemoteInterpreterProcessListener remoteInterpreterProcessListener) {
     super(property);
     this.className = className;
     initialized = false;
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
+    this.localRepoPath = localRepoPath;
     env = new HashMap<String, String>();
     this.connectTimeout = connectTimeout;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
   }
 
   public RemoteInterpreter(Properties property,
-                           String className,
-                           String interpreterRunner,
-                           String interpreterPath,
-                           Map<String, String> env,
-                           int connectTimeout,
-                           RemoteInterpreterProcessListener remoteInterpreterProcessListener) {
+      String className,
+      String interpreterRunner,
+      String interpreterPath,
+      String localRepoPath,
+      Map<String, String> env,
+      int connectTimeout,
+      RemoteInterpreterProcessListener remoteInterpreterProcessListener) {
     super(property);
     this.className = className;
     this.interpreterRunner = interpreterRunner;
     this.interpreterPath = interpreterPath;
+    this.localRepoPath = localRepoPath;
     this.env = env;
     this.connectTimeout = connectTimeout;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
@@ -107,8 +112,8 @@ public class RemoteInterpreter extends Interpreter {
       if (intpGroup.getRemoteInterpreterProcess() == null) {
         // create new remote process
         RemoteInterpreterProcess remoteProcess = new RemoteInterpreterProcess(
-                interpreterRunner, interpreterPath, env, connectTimeout,
-                remoteInterpreterProcessListener);
+            interpreterRunner, interpreterPath, localRepoPath, env, connectTimeout,
+            remoteInterpreterProcessListener);
 
         intpGroup.setRemoteInterpreterProcess(remoteProcess);
       }
@@ -140,6 +145,7 @@ public class RemoteInterpreter extends Interpreter {
         try {
           for (Interpreter intp : this.getInterpreterGroup()) {
             logger.info("Create remote interpreter {}", intp.getClassName());
+            property.put("zeppelin.interpreter.localRepo", localRepoPath);
             client.createInterpreter(intp.getClassName(), (Map) property);
 
           }

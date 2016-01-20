@@ -393,7 +393,8 @@ public class InterpreterFactory {
           if (option.isRemote()) {
             intp = createRemoteRepl(info.getPath(),
                 info.getClassName(),
-                properties);
+                properties,
+                interpreterGroup.id);
           } else {
             intp = createRepl(info.getPath(),
                 info.getClassName(),
@@ -661,12 +662,12 @@ public class InterpreterFactory {
 
 
   private Interpreter createRemoteRepl(String interpreterPath, String className,
-      Properties property) {
-
+      Properties property, String interpreterId) {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
+    String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterId;
     LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(
         property, className, conf.getInterpreterRemoteRunnerPath(),
-        interpreterPath, connectTimeout, remoteInterpreterProcessListener));
+        interpreterPath, localRepoPath, connectTimeout, remoteInterpreterProcessListener));
     return intp;
   }
 
