@@ -657,9 +657,10 @@ public class InterpreterFactory {
       Properties property) {
 
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
+    int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
     LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(
         property, className, conf.getInterpreterRemoteRunnerPath(),
-        interpreterPath, connectTimeout));
+        interpreterPath, connectTimeout, maxPoolSize));
     return intp;
   }
 
