@@ -60,7 +60,7 @@ You can also test and review a particular Pull Request. Here are two useful ways
     hub checkout https://github.com/apache/incubator-zeppelin/pull/[# of PR]
     ```
 
-The above two methods will help you to test and review the Pull Request.
+The above two methods will help you test and review Pull Requests.
 
 ## Source Control Workflow
 Zeppelin follows [Fork & Pull] (https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git:-Fork,-Branching,-Commits,-and-Pull-Request) model.
