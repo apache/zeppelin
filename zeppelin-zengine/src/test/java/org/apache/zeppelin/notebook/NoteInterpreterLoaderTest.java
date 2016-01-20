@@ -64,6 +64,7 @@ public class NoteInterpreterLoaderTest {
   @After
   public void tearDown() throws Exception {
     delete(tmpDir);
+    Interpreter.registeredInterpreters.clear();
   }
 
   @Test
