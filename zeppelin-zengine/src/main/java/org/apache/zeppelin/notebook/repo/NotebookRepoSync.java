@@ -118,49 +118,41 @@ public class NotebookRepoSync implements NotebookRepo {
   }
 
 
-  public void loadDynamicNoteBookStoreage(String className, String artifact) throws Exception {
-    loadDynamicNoteBookStoreage(className, artifact, null, false);
+  public void loadDynamicNoteBookStorage(String className, String artifact) throws Exception {
+    loadDynamicNoteBookStorage(className, artifact, null, false);
   }
-
-  //org.apache.zeppelin.notebook.repo.S3NotebookRepo
-  public void loadDynamicNoteBookStoreage(String className, String artifact, String repositoryUrl,
-                                          boolean isSnapShotRepo) throws Exception {
-
+  
+  public void loadDynamicNoteBookStorage(String className, String artifact, String repositoryUrl,
+      boolean isSnapShotRepo) throws Exception {
+    String destNotebookStorageDir = config.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO);
     if (repositoryUrl != null) {
       depResolver.addRepo("dyNotebookRepo", repositoryUrl, isSnapShotRepo);
     }
-    List<File> files = depResolver.load(artifact);
+    List<File> files = depResolver.load(artifact, destNotebookStorageDir);
 
     URL[] urls = new URL[files.size()];
     for (int index = 0; index < urls.length; index++) {
       urls[index] = files.get(index).toURI().toURL();
     }
-
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
     URLClassLoader classLoaderForNotebookStorage = URLClassLoader.newInstance(urls, oldcl);
 
-
     try {
-      try {
-        Class cls = classLoaderForNotebookStorage.loadClass(className);
-      } catch (Exception e) {
-        LOG.error("exception checking server classloader driver" , e);
-      }
-
       URLClassLoader cl;
       cl = URLClassLoader.newInstance(new URL[] {}, classLoaderForNotebookStorage);
-
       Thread.currentThread().setContextClassLoader(cl);
       Class<NotebookRepo> replClass = (Class<NotebookRepo>) cl.loadClass(className);
       Constructor<NotebookRepo> constructor =
-              replClass.getConstructor(new Class[] {ZeppelinConfiguration.class});
+        replClass.getConstructor(new Class[] {ZeppelinConfiguration.class});
       NotebookRepo repl = constructor.newInstance(config);
       ClassloaderNotebookRepo clNR = new ClassloaderNotebookRepo(repl, cl);
-
       if (this.repos.add(clNR) == false) {
         LOG.error("Loading {} NotebookRepo failed", className);
       }
-    } finally {
+    } catch (Exception e) {
+      LOG.error("loadDynamicNoteBookStorage", e);
+    }
+    finally {
       Thread.currentThread().setContextClassLoader(oldcl);
     }
   }
