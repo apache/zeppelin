@@ -21,8 +21,10 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+
+import org.apache.zeppelin.dep.Booter;
+import org.apache.zeppelin.dep.Dependency;
+import org.apache.zeppelin.dep.Repository;
 
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
@@ -44,7 +46,7 @@ import org.sonatype.aether.util.filter.PatternExclusionsDependencyFilter;
 /**
  *
  */
-public class DependencyContext {
+public class SparkDependencyContext {
   List<Dependency> dependencies = new LinkedList<Dependency>();
   List<Repository> repositories = new LinkedList<Repository>();
 
@@ -56,7 +58,7 @@ public class DependencyContext {
   private RemoteRepository mavenLocal = Booter.newLocalRepository();
   private List<RemoteRepository> additionalRepos = new LinkedList<RemoteRepository>();
 
-  public DependencyContext(String localRepoPath, String additionalRemoteRepository) {
+  public SparkDependencyContext(String localRepoPath, String additionalRemoteRepository) {
     session =  Booter.newRepositorySystemSession(system, localRepoPath);
     addRepoFromProperty(additionalRemoteRepository);
   }
@@ -137,12 +139,12 @@ public class DependencyContext {
   private List<ArtifactResult> fetchArtifactWithDep(Dependency dep)
       throws DependencyResolutionException, ArtifactResolutionException {
     Artifact artifact = new DefaultArtifact(
-        DependencyResolver.inferScalaVersion(dep.getGroupArtifactVersion()));
+        SparkDependencyResolver.inferScalaVersion(dep.getGroupArtifactVersion()));
 
     DependencyFilter classpathFlter = DependencyFilterUtils
         .classpathFilter(JavaScopes.COMPILE);
     PatternExclusionsDependencyFilter exclusionFilter = new PatternExclusionsDependencyFilter(
-        DependencyResolver.inferScalaVersion(dep.getExclusions()));
+        SparkDependencyResolver.inferScalaVersion(dep.getExclusions()));
 
     CollectRequest collectRequest = new CollectRequest();
     collectRequest.setRoot(new org.sonatype.aether.graph.Dependency(artifact,

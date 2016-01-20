@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.spark.dep;
+package org.apache.zeppelin.dep;
 
 import java.util.LinkedList;
 import java.util.List;

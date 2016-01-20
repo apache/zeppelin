@@ -101,6 +101,7 @@ public class ZeppelinIT {
       WebElement element = pollingWait(locator, MAX_BROWSER_TIMEOUT_SEC);
       return txt.equals(element.getText());
     } catch (TimeoutException e) {
+      LOG.error("Exception in ZeppelinIT while waitForText ", e);
       return false;
     }
   }
@@ -255,6 +256,7 @@ public class ZeppelinIT {
 
       System.out.println("testCreateNotebook Test executed");
     } catch (ElementNotVisibleException e) {
+      LOG.error("Exception in ZeppelinIT while testAngularDisplay ", e);
       File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
 
     }
@@ -279,6 +281,7 @@ public class ZeppelinIT {
     try {
       Thread.sleep(500); // wait for notebook list updated
     } catch (InterruptedException e) {
+      LOG.error("Exception in ZeppelinIT while createNewNote Thread.sleep", e);
     }
   }
 }

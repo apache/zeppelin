@@ -211,6 +211,7 @@ public class IgniteInterpreter extends Interpreter {
 
         initEx = null;
       } catch (Exception e) {
+        logger.error("Error in IgniteInterpreter while getIgnite: " , e);
         initEx = e;
       }
     }

@@ -796,8 +796,10 @@ angular.module('zeppelinWebApp')
         $scope.moveUp();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 74) { // Ctrl + Alt + j
         $scope.moveDown();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 65) { // Ctrl + Alt + a
+        $scope.insertNew('above');
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 66) { // Ctrl + Alt + b
-        $scope.insertNew();
+        $scope.insertNew('below');
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 79) { // Ctrl + Alt + o
         $scope.toggleOutput();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e
@@ -960,7 +962,7 @@ angular.module('zeppelinWebApp')
       clearUnknownColsFromGraphOption();
       // set graph height
       var height = $scope.paragraph.config.graph.height;
-      angular.element('#p' + $scope.paragraph.id + '_resize').height(height);
+      angular.element('#p' + $scope.paragraph.id + '_graph').height(height);
 
       if (!type || type === 'table') {
         setTable($scope.paragraph.result, refresh);

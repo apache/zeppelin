@@ -71,7 +71,7 @@ public class NotebookTest implements JobListenerFactory{
     tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
     tmpDir.mkdirs();
     new File(tmpDir, "conf").mkdirs();
-    notebookDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis()+"/notebook");
+    notebookDir = new File(tmpDir + "/notebook");
     notebookDir.mkdirs();
 
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
@@ -85,7 +85,7 @@ public class NotebookTest implements JobListenerFactory{
     MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null);
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
@@ -130,7 +130,7 @@ public class NotebookTest implements JobListenerFactory{
     try {
       FileUtils.copyDirectory(srcDir, destDir);
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error(e.toString(), e);
     }
 
     // doesn't have copied notebook in memory before reloading
@@ -172,7 +172,7 @@ public class NotebookTest implements JobListenerFactory{
     note.persist();
 
     Notebook notebook2 = new Notebook(
-        conf, notebookRepo, schedulerFactory, new InterpreterFactory(conf, null), this, null);
+        conf, notebookRepo, schedulerFactory, new InterpreterFactory(conf, null, null), this, null);
     assertEquals(1, notebook2.getAllNotes().size());
   }
 

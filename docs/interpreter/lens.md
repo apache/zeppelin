@@ -25,7 +25,7 @@ In order to use Lens interpreters, you may install Apache Lens in some simple st
   ```
 
 ### Configuring Lens Interpreter
-At the "Interpreters" menu, you can to edit Lens interpreter or create new one. Zeppelin provides these properties for Lens.
+At the "Interpreters" menu, you can edit Lens interpreter or create new one. Zeppelin provides these properties for Lens.
 
  <table class="table-configuration">
   <tr>
