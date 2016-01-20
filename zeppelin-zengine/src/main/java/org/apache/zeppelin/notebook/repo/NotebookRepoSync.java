@@ -17,9 +17,12 @@
 
 package org.apache.zeppelin.notebook.repo;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -28,6 +31,7 @@ import java.util.Map;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
 import org.apache.zeppelin.notebook.Paragraph;
@@ -44,6 +48,7 @@ public class NotebookRepoSync implements NotebookRepo {
   private static final String pullKey = "pullNoteIDs";
 
   private static ZeppelinConfiguration config;
+  private DependencyResolver depResolver;
   private static final String defaultStorage = "org.apache.zeppelin.notebook.repo.VFSNotebookRepo";
 
   private List<NotebookRepo> repos = new ArrayList<NotebookRepo>();
@@ -54,8 +59,10 @@ public class NotebookRepoSync implements NotebookRepo {
    * @throws - Exception
    */
   @SuppressWarnings("static-access")
-  public NotebookRepoSync(ZeppelinConfiguration conf) {
+  public NotebookRepoSync(ZeppelinConfiguration conf, DependencyResolver depResolver) {
     config = conf;
+    this.depResolver = depResolver;
+
     String allStorageClassNames = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_STORAGE).trim();
     if (allStorageClassNames.isEmpty()) {
       allStorageClassNames = defaultStorage;
@@ -109,6 +116,47 @@ public class NotebookRepoSync implements NotebookRepo {
       LOG.warn("Failed to initialize {} notebook storage class {}", defaultStorage, e);
     }
   }
+
+
+  public void loadDynamicNoteBookStorage(String className, String artifact) throws Exception {
+    loadDynamicNoteBookStorage(className, artifact, null, false);
+  }
+  
+  public void loadDynamicNoteBookStorage(String className, String artifact, String repositoryUrl,
+      boolean isSnapShotRepo) throws Exception {
+    String destNotebookStorageDir = config.getRelativeDir(ConfVars.ZEPPELIN_DEP_LOCALREPO);
+    if (repositoryUrl != null) {
+      depResolver.addRepo("dyNotebookRepo", repositoryUrl, isSnapShotRepo);
+    }
+    List<File> files = depResolver.load(artifact, destNotebookStorageDir);
+
+    URL[] urls = new URL[files.size()];
+    for (int index = 0; index < urls.length; index++) {
+      urls[index] = files.get(index).toURI().toURL();
+    }
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    URLClassLoader classLoaderForNotebookStorage = URLClassLoader.newInstance(urls, oldcl);
+
+    try {
+      URLClassLoader cl;
+      cl = URLClassLoader.newInstance(new URL[] {}, classLoaderForNotebookStorage);
+      Thread.currentThread().setContextClassLoader(cl);
+      Class<NotebookRepo> replClass = (Class<NotebookRepo>) cl.loadClass(className);
+      Constructor<NotebookRepo> constructor =
+        replClass.getConstructor(new Class[] {ZeppelinConfiguration.class});
+      NotebookRepo repl = constructor.newInstance(config);
+      ClassloaderNotebookRepo clNR = new ClassloaderNotebookRepo(repl, cl);
+      if (this.repos.add(clNR) == false) {
+        LOG.error("Loading {} NotebookRepo failed", className);
+      }
+    } catch (Exception e) {
+      LOG.error("loadDynamicNoteBookStorage", e);
+    }
+    finally {
+      Thread.currentThread().setContextClassLoader(oldcl);
+    }
+  }
+
 
   /**
    *  Lists Notebooks from the first repository

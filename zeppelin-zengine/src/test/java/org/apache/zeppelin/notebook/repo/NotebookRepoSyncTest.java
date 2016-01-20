@@ -28,6 +28,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
@@ -90,7 +91,8 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null);
     
     SearchService search = mock(SearchService.class);
-    notebookRepoSync = new NotebookRepoSync(conf);
+    DependencyResolver depResolver = new DependencyResolver(conf.getString(ConfVars.ZEPPELIN_DEP_LOCALREPO));
+    notebookRepoSync = new NotebookRepoSync(conf, depResolver);
     notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this, search);
   }
 
