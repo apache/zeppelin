@@ -36,7 +36,7 @@ import java.util.Properties;
 
 /**
  * Support for Hbase Shell. All the commands documented here
- * https://wiki.apache.org/hadoop/Hbase/Shell is supported.
+ * http://hbase.apache.org/book.html#shell is supported.
  *
  * Requirements:
  * Hbase Shell should be installed on the same machine. To be more specific, the following dir.
