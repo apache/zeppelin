@@ -5,10 +5,9 @@ describe('Controller: NotebookCtrl', function() {
 
   var NotebookCtrl;
   var scope;
-
-  var websocketMsgSrvMock = {
-    getNotebook: function() {}
-  };
+  var rootScope;
+  var websocketMsgSrv;
+  var routeParams;
 
   var baseUrlSrvMock = {
     getRestApiBase: function() {
@@ -19,21 +18,32 @@ describe('Controller: NotebookCtrl', function() {
   var noteMock = {
     id: 1,
     name: 'my notebook',
-    config: {},
+    config: {
+      looknfeel: 'default'
+    },
+    paragraphs: [
+      {id: 'p1', status: 'FINISHED'},
+      {id: 'p2', status: 'FINISHED'},
+      {id: 'p3', status: 'FINISHED'}
+    ]
   };
 
-  beforeEach(inject(function($controller, $rootScope) {
+  beforeEach(inject(function($controller, $rootScope, $injector, $routeParams, _websocketMsgSrv_) {
+    rootScope = $rootScope;
     scope = $rootScope.$new();
+    websocketMsgSrv = _websocketMsgSrv_;
+    routeParams = $routeParams;
     NotebookCtrl = $controller('NotebookCtrl', {
       $scope: scope,
-      websocketMsgSrv: websocketMsgSrvMock,
       baseUrlSrv: baseUrlSrvMock
     });
-  }));
 
-  beforeEach(function() {
     scope.note = noteMock;
-  });
+    spyOn($rootScope, '$broadcast').andCallThrough();
+    websocketMsgSrv.deleteNotebook = jasmine.createSpy('websocketMsgSrv.deleteNotebook').andReturn(true);
+    websocketMsgSrv.cloneNotebook = jasmine.createSpy('websocketMsgSrv.cloneNotebook').andReturn(true);
+    websocketMsgSrv.updateNotebook = jasmine.createSpy('websocketMsgSrv.updateNotebook').andReturn(true);
+  }));
 
   var functions = ['getCronOptionNameFromValue', 'removeNote', 'runNote', 'saveNote', 'toggleAllEditor',
     'showAllEditor', 'hideAllEditor', 'toggleAllTable', 'hideAllTable', 'showAllTable', 'isNoteRunning',
@@ -66,6 +76,7 @@ describe('Controller: NotebookCtrl', function() {
 
   it('should return the correct value for getCronOptionNameFromValue()', function() {
     var none = scope.getCronOptionNameFromValue();
+    var nonExisting = scope.getCronOptionNameFromValue('0 * * * *');
     var oneMin = scope.getCronOptionNameFromValue('0 0/1 * * * ?');
     var fiveMin = scope.getCronOptionNameFromValue('0 0/5 * * * ?');
     var oneHour = scope.getCronOptionNameFromValue('0 0 0/1 * * ?');
@@ -82,6 +93,7 @@ describe('Controller: NotebookCtrl', function() {
     expect(sixHours).toEqual('6h');
     expect(twelveHours).toEqual('12h');
     expect(oneDay).toEqual('1d');
+    expect(nonExisting).toEqual('0 * * * *');
   });
 
   it('should have "isNoteDirty" as null by default', function() {
@@ -101,6 +113,85 @@ describe('Controller: NotebookCtrl', function() {
     expect(scope.saveTimer).toBeTruthy();
     scope.killSaveTimer();
     expect(scope.saveTimer).toEqual(null);
+  });
+
+  it('should set connectedOnce flag to true on setConnectedStatus event', function() {
+    rootScope.$broadcast('setConnectedStatus', false);
+    expect(NotebookCtrl.connectedOnce).toEqual(true);
+  });
+
+  it('should call initNotebook when connectedOnce and param are true in setConnectedStatus event', function() {
+    NotebookCtrl.connectedOnce = true;
+    spyOn(NotebookCtrl, 'initNotebook');
+    rootScope.$broadcast('setConnectedStatus', {});
+    expect(NotebookCtrl.initNotebook).toHaveBeenCalled();
+  });
+
+  it('should removeNote call websocketMsgSrv.deleteNotebook', function() {
+    spyOn(window, 'confirm').andReturn(true);
+    scope.removeNote('NOTEID');
+    expect(websocketMsgSrv.deleteNotebook).toHaveBeenCalled();
+  });
+
+  it('should cloneNote call websocketMsgSrv.cloneNotebook', function() {
+    spyOn(window, 'confirm').andReturn(true);
+    scope.cloneNote('NOTEID');
+    expect(websocketMsgSrv.cloneNotebook).toHaveBeenCalled();
+  });
+
+  it('should toggleAllEditor toggle editorToggled and broadcast with openEditor or closeEditor', function() {
+    scope.toggleAllEditor();
+    expect(rootScope.$broadcast).toHaveBeenCalledWith('closeEditor');
+    scope.toggleAllEditor();
+    expect(rootScope.$broadcast).toHaveBeenCalledWith('openEditor');
+  });
+
+  it('should showAllEditor call broadcast with openEditor', function() {
+    scope.showAllEditor();
+    expect(rootScope.$broadcast).toHaveBeenCalledWith('openEditor');
+  });
+
+  it('should hideAllEditor call broadcast with closeEditor', function() {
+    scope.hideAllEditor();
+    expect(rootScope.$broadcast).toHaveBeenCalledWith('closeEditor');
+  });
+
+  it('should toggleAllTable toggle tableToggled and broadcast with openTable or closeTable', function() {
+    scope.toggleAllTable();
+    expect(rootScope.$broadcast).toHaveBeenCalledWith('closeTable');
+    scope.toggleAllTable();
+    expect(rootScope.$broadcast).toHaveBeenCalledWith('openTable');
+  });
+
+  it('should showAllTable call broadcast with openTable', function() {
+    scope.showAllTable();
+    expect(rootScope.$broadcast).toHaveBeenCalledWith('openTable');
+  });
+
+  it('should hideAllTable call broadcast with closeTable', function() {
+    scope.hideAllTable();
+    expect(rootScope.$broadcast).toHaveBeenCalledWith('closeTable');
+  });
+
+  it('should isNoteRunning return appropriate status', function() {
+    expect(scope.isNoteRunning()).toEqual(false);
+    scope.note.paragraphs[2].status = 'PENDING';
+    expect(scope.isNoteRunning()).toEqual(true);
+    scope.note = null;
+    expect(scope.isNoteRunning()).toEqual(false);
+  });
+
+  it('should set the right value for looknfeel when setLookAndFeel is called', function() {
+    spyOn(scope, 'setLookAndFeel');
+    scope.setLookAndFeel('simple');
+    expect(scope.setLookAndFeel).toHaveBeenCalled();
+  });
+
+  it('should sendNewName call websocketMsgSrv.updateNotebook', function() {
+    scope.sendNewName();
+    expect(scope.showEditor).toEqual(false);
+    scope.note.name = 'new name';
+    expect(websocketMsgSrv.updateNotebook).toHaveBeenCalled();
   });
 
 });

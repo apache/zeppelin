@@ -18,6 +18,7 @@
 angular.module('zeppelinWebApp').controller('NotebookCtrl',
   function($scope, $route, $routeParams, $location, $rootScope, $http,
     websocketMsgSrv, baseUrlSrv, $timeout, SaveAsService) {
+  var that = this;
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -41,14 +42,14 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
   $scope.isNoteDirty = null;
   $scope.saveTimer = null;
 
-  var angularObjectRegistry = {};
-  var connectedOnce = false;
+  that.angularObjectRegistry = {};
+  that.connectedOnce = false;
 
   $scope.$on('setConnectedStatus', function(event, param) {
-    if(connectedOnce && param){
-      initNotebook();
+    if(that.connectedOnce && param){
+      that.initNotebook();
     }
-    connectedOnce = true;
+    that.connectedOnce = true;
   });
 
   $scope.getCronOptionNameFromValue = function(value) {
@@ -65,7 +66,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
   };
 
   /** Init the new controller */
-  var initNotebook = function() {
+  that.initNotebook = function() {
     websocketMsgSrv.getNotebook($routeParams.noteId);
 
     var currentRoute = $route.current;
@@ -88,7 +89,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     }
   };
 
-  initNotebook();
+  that.initNotebook();
 
 
   $scope.focusParagraphOnClick = function(clickEvent) {
@@ -307,7 +308,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     $scope.paragraphUrl = $routeParams.paragraphId;
     $scope.asIframe = $routeParams.asIframe;
     if ($scope.paragraphUrl) {
-      note = cleanParagraphExcept($scope.paragraphUrl, note);
+      note = that.cleanParagraphExcept($scope.paragraphUrl, note);
       $rootScope.$broadcast('setIframe', $scope.asIframe);
     }
 
@@ -331,7 +332,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     $rootScope.$broadcast('setLookAndFeel', $scope.note.config.looknfeel);
   };
 
-  var cleanParagraphExcept = function(paragraphId, note) {
+  that.cleanParagraphExcept = function(paragraphId, note) {
     var noteCopy = {};
     noteCopy.id = note.id;
     noteCopy.name = note.name;
@@ -636,21 +637,21 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
         return;
       }
 
-      if (!angularObjectRegistry[varName]) {
-        angularObjectRegistry[varName] = {
+      if (!that.angularObjectRegistry[varName]) {
+        that.angularObjectRegistry[varName] = {
           interpreterGroupId : data.interpreterGroupId,
         };
       }
 
-      angularObjectRegistry[varName].skipEmit = true;
+      that.angularObjectRegistry[varName].skipEmit = true;
 
-      if (!angularObjectRegistry[varName].clearWatcher) {
-        angularObjectRegistry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
-          if (angularObjectRegistry[varName].skipEmit) {
-            angularObjectRegistry[varName].skipEmit = false;
+      if (!that.angularObjectRegistry[varName].clearWatcher) {
+        that.angularObjectRegistry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
+          if (that.angularObjectRegistry[varName].skipEmit) {
+            that.angularObjectRegistry[varName].skipEmit = false;
             return;
           }
-          websocketMsgSrv.updateAngularObject($routeParams.noteId, varName, newValue, angularObjectRegistry[varName].interpreterGroupId);
+          websocketMsgSrv.updateAngularObject($routeParams.noteId, varName, newValue, that.angularObjectRegistry[varName].interpreterGroupId);
         });
       }
       scope[varName] = data.angularObject.object;
@@ -663,9 +664,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       var varName = data.name;
 
       // clear watcher
-      if (angularObjectRegistry[varName]) {
-        angularObjectRegistry[varName].clearWatcher();
-        angularObjectRegistry[varName] = undefined;
+      if (that.angularObjectRegistry[varName]) {
+        that.angularObjectRegistry[varName].clearWatcher();
+        that.angularObjectRegistry[varName] = undefined;
       }
 
       // remove scope variable

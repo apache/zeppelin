@@ -1,5 +1,10 @@
 'use strict';
 
+/**
+ * Re-define console.log to remove logs while running tests
+ */
+console.log = function() {};
+
 describe('Controller: MainCtrl', function() {
   beforeEach(module('zeppelinWebApp'));
 
