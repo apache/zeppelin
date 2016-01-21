@@ -19,7 +19,7 @@ package org.apache.zeppelin.display
 import java.io.{PrintStream, ByteArrayOutputStream}
 import java.util
 
-import org.apache.zeppelin.interpreter.{InterpreterContextRunner, InterpreterContext, InterpreterGroup}
+import org.apache.zeppelin.interpreter._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{Matchers, BeforeAndAfterEach, BeforeAndAfter, FlatSpec}
 
@@ -35,7 +35,16 @@ class AngularElemTest
     val context = new InterpreterContext("note", "id", "title", "text",
       new util.HashMap[String, Object](), new GUI(), new AngularObjectRegistry(
         intpGroup.getId(), null),
-      new util.LinkedList[InterpreterContextRunner]())
+      new util.LinkedList[InterpreterContextRunner](),
+      new InterpreterOutput(new InterpreterOutputListener() {
+        override def onAppend(out: InterpreterOutput, line: Array[Byte]): Unit = {
+          // nothing to do
+        }
+
+        override def onUpdate(out: InterpreterOutput, output: Array[Byte]): Unit = {
+          // nothing to do
+        }
+      }))
 
     InterpreterContext.set(context)
     super.beforeEach() // To be stackable, must call super.beforeEach

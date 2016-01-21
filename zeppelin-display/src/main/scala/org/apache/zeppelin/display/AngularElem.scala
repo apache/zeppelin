@@ -17,6 +17,8 @@
 
 package org.apache.zeppelin.display
 
+import java.io.PrintStream
+
 import org.apache.zeppelin.interpreter.InterpreterContext
 
 import scala.collection.JavaConversions
@@ -140,7 +142,7 @@ class AngularElem(val interpreterContext: InterpreterContext,
     * Print with %angular prefix
     * @return
     */
-  def display(out: java.io.PrintStream = Console.out): Unit = {
+  def display(out: java.io.PrintStream): Unit = {
     if (AngularElem.angularDirectivePrinted != interpreterContext.hashCode()) {
       AngularElem.angularDirectivePrinted = interpreterContext.hashCode()
       out.print("%angular ")
@@ -153,7 +155,8 @@ class AngularElem(val interpreterContext: InterpreterContext,
     * Print with %angular prefix
     */
   def display(): Unit = {
-    display(Console.out)
+    val out = interpreterContext.out
+    display(new PrintStream(out))
   }
 
   /**

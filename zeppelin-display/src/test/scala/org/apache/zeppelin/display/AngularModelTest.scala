@@ -16,7 +16,7 @@
  */
 package org.apache.zeppelin.display
 
-import org.apache.zeppelin.interpreter.{InterpreterContextRunner, InterpreterContext, InterpreterGroup}
+import org.apache.zeppelin.interpreter._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{Matchers, BeforeAndAfter, BeforeAndAfterEach, FlatSpec}
 
@@ -30,7 +30,16 @@ with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
     val context = new InterpreterContext("note", "id", "title", "text",
       new java.util.HashMap[String, Object](), new GUI(), new AngularObjectRegistry(
         intpGroup.getId(), null),
-      new java.util.LinkedList[InterpreterContextRunner]())
+      new java.util.LinkedList[InterpreterContextRunner](),
+      new InterpreterOutput(new InterpreterOutputListener() {
+        override def onAppend(out: InterpreterOutput, line: Array[Byte]): Unit = {
+          // nothing to do
+        }
+
+        override def onUpdate(out: InterpreterOutput, output: Array[Byte]): Unit = {
+          // nothing to do
+        }
+      }))
 
     InterpreterContext.set(context)
     super.beforeEach() // To be stackable, must call super.beforeEach
