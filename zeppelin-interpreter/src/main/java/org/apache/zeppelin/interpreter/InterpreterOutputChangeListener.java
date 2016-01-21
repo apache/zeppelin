@@ -14,12 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.zeppelin.interpreter;
 
-package org.apache.zeppelin.notebook;
+import java.io.File;
 
 /**
- * TODO(moon): provide description.
+ * InterpreterOutputChangeListener
  */
-public interface JobListenerFactory {
-  public ParagraphJobListener getParagraphJobListener(Note note);
+public interface InterpreterOutputChangeListener {
+  public void fileChanged(File file);
+
 }

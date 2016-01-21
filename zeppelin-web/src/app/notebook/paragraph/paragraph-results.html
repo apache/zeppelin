@@ -23,24 +23,22 @@ limitations under the License.
        ng-bind-html="paragraph.result.comment">
   </div>
 
-  <div id="{{paragraph.id}}_text"
+  <div id="p{{paragraph.id}}_text"
        class="text"
-       ng-if="paragraph.result.type == 'TEXT'"
-       ng-bind="paragraph.result.msg">
-  </div>
+       ng-if="getResultType() == 'TEXT'"></div>
 
   <div id="p{{paragraph.id}}_html"
        class="resultContained"
-       ng-if="paragraph.result.type == 'HTML'">
+       ng-if="getResultType() == 'HTML'">
   </div>
 
   <div id="p{{paragraph.id}}_angular"
        class="resultContained"
-       ng-if="paragraph.result.type == 'ANGULAR'">
+       ng-if="getResultType() == 'ANGULAR'">
   </div>
 
   <img id="{{paragraph.id}}_img"
-       ng-if="paragraph.result.type == 'IMG'"
+       ng-if="getResultType() == 'IMG'"
        ng-src="{{getBase64ImageSrc(paragraph.result.msg)}}">
   </img>
 
