@@ -33,6 +33,8 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 public class InterpreterGroup extends LinkedList<Interpreter>{
   String id;
 
+  Logger LOGGER = Logger.getLogger(InterpreterGroup.class);
+
   AngularObjectRegistry angularObjectRegistry;
   RemoteInterpreterProcess remoteInterpreterProcess;    // attached remote interpreter process
 
@@ -100,8 +102,7 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
       try {
         t.join();
       } catch (InterruptedException e) {
-        Logger logger = Logger.getLogger(InterpreterGroup.class);
-        logger.error("Can't close interpreter", e);
+        LOGGER.error("Can't close interpreter", e);
       }
     }
   }
@@ -124,8 +125,7 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
       try {
         t.join();
       } catch (InterruptedException e) {
-        Logger logger = Logger.getLogger(InterpreterGroup.class);
-        logger.error("Can't close interpreter", e);
+        LOGGER.error("Can't close interpreter", e);
       }
     }
 

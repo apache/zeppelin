@@ -53,10 +53,11 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   private int connectTimeout;
 
   public RemoteInterpreterProcess(String intpRunner,
-      String intpDir,
-      Map<String, String> env,
-      int connectTimeout) {
-    this(intpRunner, intpDir, env, new RemoteInterpreterEventPoller(), connectTimeout);
+                                  String intpDir,
+                                  Map<String, String> env,
+                                  int connectTimeout,
+                                  RemoteInterpreterProcessListener listener) {
+    this(intpRunner, intpDir, env, new RemoteInterpreterEventPoller(listener), connectTimeout);
   }
 
   RemoteInterpreterProcess(String intpRunner,
@@ -121,6 +122,8 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
             try {
               Thread.sleep(500);
             } catch (InterruptedException e) {
+              logger.error("Exception in RemoteInterpreterProcess while synchronized reference " +
+                  "Thread.sleep", e);
             }
           }
         }
@@ -177,6 +180,8 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
           client.shutdown();
         } catch (Exception e) {
           // safely ignore exception while client.shutdown() may terminates remote process
+          logger.info("Exception in RemoteInterpreterProcess while synchronized dereference, can " +
+              "safely ignore exception while client.shutdown() may terminates remote process", e);
         } finally {
           if (client != null) {
             // no longer used
@@ -195,6 +200,8 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
             try {
               Thread.sleep(500);
             } catch (InterruptedException e) {
+              logger.error("Exception in RemoteInterpreterProcess while synchronized dereference " +
+                  "Thread.sleep", e);
             }
           } else {
             break;
@@ -272,6 +279,8 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
       client = getClient();
     } catch (NullPointerException e) {
       // remote process not started
+      logger.info("NullPointerException in RemoteInterpreterProcess while " +
+          "updateRemoteAngularObject getClient, remote process not started", e);
       return;
     } catch (Exception e) {
       logger.error("Can't update angular object", e);
