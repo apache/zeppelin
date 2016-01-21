@@ -30,12 +30,10 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
-import org.apache.zeppelin.notebook.JobListenerFactory;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.*;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
@@ -87,7 +85,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null);
     
     SearchService search = mock(SearchService.class);
     notebookRepoSync = new NotebookRepoSync(conf);
@@ -184,41 +182,32 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     assertEquals(p1.getId(), notebookRepoSync.get(1,
         notebookRepoSync.list(1).get(0).getId()).getLastParagraph().getId());
   }
-  
+
   @Test
-  public void testSyncOnList() throws IOException {
-	
-	/* check that both storage repos are empty */
-	assertTrue(notebookRepoSync.getRepoCount() > 1);
-	assertEquals(0, notebookRepoSync.list(0).size());
-	assertEquals(0, notebookRepoSync.list(1).size());
-	    
-	File srcDir = new File("src/test/resources/2A94M5J1Z");
-	File destDir = new File(secNotebookDir + "/2A94M5J1Z");
-	
-	/* copy manually new notebook into secondary storage repo and check repos */
+  public void testSyncOnReloadedList() throws IOException {
+    /* check that both storage repos are empty */
+    assertTrue(notebookRepoSync.getRepoCount() > 1);
+    assertEquals(0, notebookRepoSync.list(0).size());
+    assertEquals(0, notebookRepoSync.list(1).size());
+
+    File srcDir = new File("src/test/resources/2A94M5J1Z");
+    File destDir = new File(secNotebookDir + "/2A94M5J1Z");
+
+    /* copy manually new notebook into secondary storage repo and check repos */
     try {
-        FileUtils.copyDirectory(srcDir, destDir);
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+      FileUtils.copyDirectory(srcDir, destDir);
+    } catch (IOException e) {
+      LOG.error(e.toString(), e);
+    }
     assertEquals(0, notebookRepoSync.list(0).size());
     assertEquals(1, notebookRepoSync.list(1).size());
-    
-    /* Although new notebook is added to secondary storage it's not displayed 
-     * on list() with ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE set to false
-     */
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "false");
-    assertEquals(0, notebookRepoSync.list().size());
-    
-    /* notebook is synced after ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE variable is set to true */
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "true");
-    assertEquals(1, notebookRepoSync.list().size());
-    
+
+    // After reloading notebooks repos should be synchronized
+    notebookSync.reloadAllNotes();
     assertEquals(1, notebookRepoSync.list(0).size());
-	assertEquals(1, notebookRepoSync.list(1).size());
+    assertEquals(1, notebookRepoSync.list(1).size());
   }
-  
+
   static void delete(File file){
     if(file.isFile()) file.delete();
       else if(file.isDirectory()){
@@ -230,11 +219,19 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
         }
         file.delete();
       }
-    
   }
+
   @Override
-  public JobListener getParagraphJobListener(Note note) {
-    return new JobListener(){
+  public ParagraphJobListener getParagraphJobListener(Note note) {
+    return new ParagraphJobListener(){
+
+      @Override
+      public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) {
+      }
+
+      @Override
+      public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) {
+      }
 
       @Override
       public void onProgressUpdate(Job job, int progress) {

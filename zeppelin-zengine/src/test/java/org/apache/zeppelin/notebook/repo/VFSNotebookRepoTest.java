@@ -30,10 +30,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
-import org.apache.zeppelin.notebook.JobListenerFactory;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.notebook.*;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
@@ -76,7 +73,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
 
     this.schedulerFactory = new SchedulerFactory();
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null);
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
@@ -134,13 +131,13 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
       try {
         notebookRepo.save(note);
       } catch (IOException e) {
-        e.printStackTrace();
+        LOG.error(e.toString(), e);
       }
     }
   }
 
   @Override
-  public JobListener getParagraphJobListener(Note note) {
+  public ParagraphJobListener getParagraphJobListener(Note note) {
     return null;
   }
 }

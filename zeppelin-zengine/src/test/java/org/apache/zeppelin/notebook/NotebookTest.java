@@ -38,6 +38,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
@@ -48,7 +49,6 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.search.SearchService;
-import org.apache.zeppelin.search.LuceneSearch;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -72,7 +72,7 @@ public class NotebookTest implements JobListenerFactory{
     tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
     tmpDir.mkdirs();
     new File(tmpDir, "conf").mkdirs();
-    notebookDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis()+"/notebook");
+    notebookDir = new File(tmpDir + "/notebook");
     notebookDir.mkdirs();
 
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
@@ -86,7 +86,7 @@ public class NotebookTest implements JobListenerFactory{
     MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null);
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
@@ -123,42 +123,39 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testGetAllNotes() throws IOException {
-    // get all notes after copy the {notebookId}/note.json into notebookDir
+  public void testReloadAllNotes() throws IOException {
     File srcDir = new File("src/test/resources/2A94M5J1Z");
     File destDir = new File(notebookDir.getAbsolutePath() + "/2A94M5J1Z");
 
+    // copy the notebook
     try {
       FileUtils.copyDirectory(srcDir, destDir);
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error(e.toString(), e);
     }
 
-    Note copiedNote = notebookRepo.get("2A94M5J1Z");
-
-    // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be false
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "false");
+    // doesn't have copied notebook in memory before reloading
     List<Note> notes = notebook.getAllNotes();
     assertEquals(notes.size(), 0);
 
-    // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be true
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "true");
+    // load copied notebook on memory when reloadAllNotes() is called
+    Note copiedNote = notebookRepo.get("2A94M5J1Z");
+    notebook.reloadAllNotes();
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 1);
     assertEquals(notes.get(0).id(), copiedNote.id());
     assertEquals(notes.get(0).getName(), copiedNote.getName());
     assertEquals(notes.get(0).getParagraphs(), copiedNote.getParagraphs());
 
-    // get all notes after remove the {notebookId}/note.json from notebookDir
-    // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be false
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "false");
     // delete the notebook
     FileUtils.deleteDirectory(destDir);
+
+    // keep notebook in memory before reloading
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 1);
 
-    // when ZEPPELIN_NOTEBOOK_GET_FROM_REPO set to be true
-    System.setProperty(ConfVars.ZEPPELIN_NOTEBOOK_RELOAD_FROM_STORAGE.getVarName(), "true");
+    // delete notebook from notebook list when reloadAllNotes() is called
+    notebook.reloadAllNotes();
     notes = notebook.getAllNotes();
     assertEquals(notes.size(), 0);
   }
@@ -176,7 +173,8 @@ public class NotebookTest implements JobListenerFactory{
     note.persist();
 
     Notebook notebook2 = new Notebook(
-        conf, notebookRepo, schedulerFactory, new InterpreterFactory(conf, null), this, null);
+        conf, notebookRepo, schedulerFactory, new InterpreterFactory(conf, null, null, null), this,
+            null);
     assertEquals(1, notebook2.getAllNotes().size());
   }
 
@@ -415,8 +413,16 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Override
-  public JobListener getParagraphJobListener(Note note) {
-    return new JobListener(){
+  public ParagraphJobListener getParagraphJobListener(Note note) {
+    return new ParagraphJobListener(){
+
+      @Override
+      public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) {
+      }
+
+      @Override
+      public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) {
+      }
 
       @Override
       public void onProgressUpdate(Job job, int progress) {

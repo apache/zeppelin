@@ -25,14 +25,13 @@ import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SparkSqlInterpreterTest {
 
@@ -40,6 +39,8 @@ public class SparkSqlInterpreterTest {
   private SparkInterpreter repl;
   private InterpreterContext context;
   private InterpreterGroup intpGroup;
+
+  Logger LOGGER = LoggerFactory.getLogger(SparkSqlInterpreterTest.class);
 
   @Before
   public void setUp() throws Exception {
@@ -65,7 +66,17 @@ public class SparkSqlInterpreterTest {
     }
     context = new InterpreterContext("note", "id", "title", "text", new HashMap<String, Object>(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
-        new LinkedList<InterpreterContextRunner>());
+        new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(new InterpreterOutputListener() {
+      @Override
+      public void onAppend(InterpreterOutput out, byte[] line) {
+
+      }
+
+      @Override
+      public void onUpdate(InterpreterOutput out, byte[] output) {
+
+      }
+    }));
   }
 
   @After
@@ -96,6 +107,7 @@ public class SparkSqlInterpreterTest {
       fail("Exception not catched");
     } catch (Exception e) {
       // okay
+      LOGGER.info("Exception in SparkSqlInterpreterTest while test ", e);
     }
     assertEquals(InterpreterResult.Code.SUCCESS, sql.interpret("select case when name==\"aa\" then name else name end from test", context).code());
   }

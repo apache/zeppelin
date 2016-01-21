@@ -54,11 +54,13 @@ angular.module('zeppelinWebApp')
       $scope.renderHtml();
     } else if ($scope.getResultType() === 'ANGULAR') {
       $scope.renderAngular();
+    } else if ($scope.getResultType() === 'TEXT') {
+      $scope.renderText();
     }
   };
 
-  $scope.renderHtml = function() {
-    var retryRenderer = function() {
+    $scope.renderHtml = function() {
+      var retryRenderer = function() {
       if (angular.element('#p' + $scope.paragraph.id + '_html').length) {
         try {
           angular.element('#p' + $scope.paragraph.id + '_html').html($scope.paragraph.result.msg);
@@ -92,6 +94,42 @@ angular.module('zeppelinWebApp')
     };
     $timeout(retryRenderer);
   };
+
+  $scope.renderText = function() {
+    var retryRenderer = function() {
+
+      var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
+      if (textEl.length) {
+        // clear all lines before render
+        $scope.clearTextOutput();
+
+        if ($scope.paragraph.result && $scope.paragraph.result.msg) {
+          $scope.appendTextOutput($scope.paragraph.result.msg);
+        }
+      } else {
+        $timeout(retryRenderer, 10);
+      }
+    };
+    $timeout(retryRenderer);
+  };
+
+  $scope.clearTextOutput = function() {
+    var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
+    if (textEl.length) {
+      textEl.children().remove();
+    }
+  };
+
+  $scope.appendTextOutput = function(msg) {
+    var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
+    if (textEl.length) {
+      var lines = msg.split('\n');
+      for (var i=0; i < lines.length; i++) {
+        textEl.append(angular.element('<div></div>').text(lines[i]));
+      }
+    }
+  };
+
 
 
   var initializeDefault = function() {
@@ -156,6 +194,10 @@ angular.module('zeppelinWebApp')
     }
   });
 
+  var isEmpty = function (object) {
+    return !object;
+  };
+
   // TODO: this may have impact on performance when there are many paragraphs in a note.
   $scope.$on('updateParagraph', function(event, data) {
     if (data.paragraph.id === $scope.paragraph.id &&
@@ -166,6 +208,7 @@ angular.module('zeppelinWebApp')
          data.paragraph.status !== $scope.paragraph.status ||
          data.paragraph.jobName !== $scope.paragraph.jobName ||
          data.paragraph.title !== $scope.paragraph.title ||
+         isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
          data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
          !angular.equals(data.paragraph.settings, $scope.paragraph.settings) ||
          !angular.equals(data.paragraph.config, $scope.paragraph.config))
@@ -175,7 +218,8 @@ angular.module('zeppelinWebApp')
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
-      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished);
+      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) || isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result);
+
       var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
 
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
@@ -234,6 +278,8 @@ angular.module('zeppelinWebApp')
         $scope.renderHtml();
       } else if (newType === 'ANGULAR' && resultRefreshed) {
         $scope.renderAngular();
+      } else if (newType === 'TEXT' && resultRefreshed) {
+        $scope.renderText();
       }
 
       if (statusChanged || resultRefreshed) {
@@ -250,6 +296,19 @@ angular.module('zeppelinWebApp')
 
     }
 
+  });
+
+  $scope.$on('appendParagraphOutput', function(event, data) {
+    if ($scope.paragraph.id === data.paragraphId) {
+      $scope.appendTextOutput(data.data);
+    }
+  });
+
+  $scope.$on('updateParagraphOutput', function(event, data) {
+    if ($scope.paragraph.id === data.paragraphId) {
+      $scope.clearTextOutput(data.data);
+      $scope.appendTextOutput(data.data);
+    }
   });
 
   $scope.isRunning = function() {
@@ -796,8 +855,10 @@ angular.module('zeppelinWebApp')
         $scope.moveUp();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 74) { // Ctrl + Alt + j
         $scope.moveDown();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 65) { // Ctrl + Alt + a
+        $scope.insertNew('above');
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 66) { // Ctrl + Alt + b
-        $scope.insertNew();
+        $scope.insertNew('below');
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 79) { // Ctrl + Alt + o
         $scope.toggleOutput();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e
@@ -960,7 +1021,7 @@ angular.module('zeppelinWebApp')
       clearUnknownColsFromGraphOption();
       // set graph height
       var height = $scope.paragraph.config.graph.height;
-      angular.element('#p' + $scope.paragraph.id + '_resize').height(height);
+      angular.element('#p' + $scope.paragraph.id + '_graph').height(height);
 
       if (!type || type === 'table') {
         setTable($scope.paragraph.result, refresh);
@@ -1020,8 +1081,7 @@ angular.module('zeppelinWebApp')
 
     var renderTable = function() {
       var html = '';
-
-      html += '<table class="table table-hover table-condensed" style="top: 0; position: absolute;">';
+      html += '<table class="table table-hover table-condensed">';
       html += '  <thead>';
       html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
       for (var titleIndex in $scope.paragraph.result.columnNames) {
@@ -1029,10 +1089,7 @@ angular.module('zeppelinWebApp')
       }
       html += '    </tr>';
       html += '  </thead>';
-      html += '</table>';
-
-      html += '<table class="table table-hover table-condensed" style="margin-top: 31px;">';
-
+      html += '  <tbody>';
       for (var r in $scope.paragraph.result.msgTable) {
         var row = $scope.paragraph.result.msgTable[r];
         html += '    <tr>';
@@ -1047,19 +1104,38 @@ angular.module('zeppelinWebApp')
         }
         html += '    </tr>';
       }
-
+      html += '  </tbody>';
       html += '</table>';
 
       angular.element('#p' + $scope.paragraph.id + '_table').html(html);
       if ($scope.paragraph.result.msgTable.length > 10000) {
         angular.element('#p' + $scope.paragraph.id + '_table').css('overflow', 'scroll');
+        // set table height
+        var height = $scope.paragraph.config.graph.height;
+        angular.element('#p' + $scope.paragraph.id + '_table').css('height', height);
       } else {
+        var dataTable = angular.element('#p' + $scope.paragraph.id + '_table .table');
+        dataTable.floatThead({
+          scrollContainer: function (dataTable) {
+            return angular.element('#p' + $scope.paragraph.id + '_table');
+          }
+        });
+        angular.element('#p' + $scope.paragraph.id + '_table .table').on('remove', function () {
+          angular.element('#p' + $scope.paragraph.id + '_table .table').floatThead('destroy');
+        });
+
+        angular.element('#p' + $scope.paragraph.id + '_table').css('position', 'relative');
+        angular.element('#p' + $scope.paragraph.id + '_table').css('height', '100%');
+        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar('destroy');
         angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar();
+        angular.element('.ps-scrollbar-y-rail').css('z-index', '1002');
+
+        // set table height
+        var psHeight = $scope.paragraph.config.graph.height;
+        angular.element('#p' + $scope.paragraph.id + '_table').css('height', psHeight);
+        angular.element('#p' + $scope.paragraph.id + '_table').perfectScrollbar('update');
       }
 
-      // set table height
-      var height = $scope.paragraph.config.graph.height;
-      angular.element('#p' + $scope.paragraph.id + '_table').height(height);
     };
 
     var retryRenderer = function() {
@@ -1123,7 +1199,7 @@ angular.module('zeppelinWebApp')
       $scope.chart[type].yAxis.tickFormat(function(d) {return xAxisTickFormat(d, yLabels);});
 
       // configure how the tooltip looks.
-      $scope.chart[type].tooltipContent(function(key, x, y, data) {
+      $scope.chart[type].tooltipContent(function(key, x, y, graph, data) {
         var tooltipContent = '<h3>' + key + '</h3>';
         if ($scope.paragraph.config.graph.scatter.size &&
             $scope.isValidSizeOption($scope.paragraph.config.graph.scatter, $scope.paragraph.result.rows)) {
@@ -1134,9 +1210,8 @@ angular.module('zeppelinWebApp')
       });
 
       $scope.chart[type].showDistX(true)
-        .showDistY(true)
+        .showDistY(true);
       //handle the problem of tooltip not showing when muliple points have same value.
-        .scatter.useVoronoi(false);
     } else {
       var p = pivot(data);
       if (type === 'pieChart') {

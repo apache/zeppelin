@@ -30,17 +30,17 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.notebook.JobListenerFactory;
-import org.apache.zeppelin.notebook.Note;
-import org.apache.zeppelin.notebook.Notebook;
-import org.apache.zeppelin.notebook.Paragraph;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
+import org.apache.zeppelin.notebook.*;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.socket.Message.OP;
+import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.websocket.WebSocket;
 import org.eclipse.jetty.websocket.WebSocketServlet;
@@ -56,7 +56,8 @@ import com.google.gson.Gson;
  *
  */
 public class NotebookServer extends WebSocketServlet implements
-        NotebookSocketListener, JobListenerFactory, AngularObjectRegistryListener {
+        NotebookSocketListener, JobListenerFactory, AngularObjectRegistryListener,
+        RemoteInterpreterProcessListener {
   private static final Logger LOG = LoggerFactory.getLogger(NotebookServer.class);
   Gson gson = new Gson();
   final Map<String, List<NotebookSocket>> noteSocketMap = new HashMap<>();
@@ -71,9 +72,9 @@ public class NotebookServer extends WebSocketServlet implements
     try {
       return SecurityUtils.isValidOrigin(origin, ZeppelinConfiguration.create());
     } catch (UnknownHostException e) {
-      e.printStackTrace();
+      LOG.error(e.toString(), e);
     } catch (URISyntaxException e) {
-      e.printStackTrace();
+      LOG.error(e.toString(), e);
     }
     return false;
   }
@@ -96,10 +97,26 @@ public class NotebookServer extends WebSocketServlet implements
     try {
       Message messagereceived = deserializeMessage(msg);
       LOG.debug("RECEIVE << " + messagereceived.op);
+      LOG.debug("RECEIVE PRINCIPAL << " + messagereceived.principal);
+      LOG.debug("RECEIVE TICKET << " + messagereceived.ticket);
+      String ticket = TicketContainer.instance.getTicket(messagereceived.principal);
+      if (ticket != null && !ticket.equals(messagereceived.ticket))
+        throw new Exception("Invalid ticket " + messagereceived.ticket + " != " + ticket);
+
+      ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+      boolean allowAnonymous = conf.
+          getBoolean(ZeppelinConfiguration.ConfVars.ZEPPELIN_ANONYMOUS_ALLOWED);
+      if (!allowAnonymous && messagereceived.principal.equals("anonymous")) {
+        throw new Exception("Anonymous access not allowed ");
+      }
+
       /** Lets be elegant here */
       switch (messagereceived.op) {
           case LIST_NOTES:
             broadcastNoteList();
+            break;
+          case RELOAD_NOTES_FROM_REPO:
+            broadcastReloadedNoteList();
             break;
           case GET_HOME_NOTE:
             sendHomeNote(conn, notebook);
@@ -291,13 +308,21 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  public List<Map<String, String>> generateNotebooksInfo (){
+  public List<Map<String, String>> generateNotebooksInfo(boolean needsReload) {
     Notebook notebook = notebook();
 
     ZeppelinConfiguration conf = notebook.getConf();
     String homescreenNotebookId = conf.getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
     boolean hideHomeScreenNotebookFromList = conf
             .getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE);
+
+    if (needsReload) {
+      try {
+        notebook.reloadAllNotes();
+      } catch (IOException e) {
+        LOG.error("Fail to reload notes from repository");
+      }
+    }
 
     List<Note> notes = notebook.getAllNotes();
     List<Map<String, String>> notesInfo = new LinkedList<>();
@@ -321,8 +346,12 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   public void broadcastNoteList() {
+    List<Map<String, String>> notesInfo = generateNotebooksInfo(false);
+    broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
+  }
 
-    List<Map<String, String>> notesInfo = generateNotebooksInfo();
+  public void broadcastReloadedNoteList() {
+    List<Map<String, String>> notesInfo = generateNotebooksInfo(true);
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
   }
 
@@ -401,7 +430,8 @@ public class NotebookServer extends WebSocketServlet implements
 
     return cronUpdated;
   }
-  private void createNote(WebSocket conn, Notebook notebook, Message message) throws IOException {
+  private void createNote(NotebookSocket conn, Notebook notebook, Message message)
+      throws IOException {
     Note note = notebook.createNote();
     note.addParagraph(); // it's an empty note. so add one paragraph
     if (message != null) {
@@ -414,7 +444,7 @@ public class NotebookServer extends WebSocketServlet implements
 
     note.persist();
     addConnectionToNote(note.id(), (NotebookSocket) conn);
-    broadcastNote(note);
+    conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", note)));
     broadcastNoteList();
   }
 
@@ -458,7 +488,7 @@ public class NotebookServer extends WebSocketServlet implements
     String name = (String) fromMessage.get("name");
     Note newNote = notebook.cloneNote(noteId, name);
     addConnectionToNote(newNote.id(), (NotebookSocket) conn);
-    broadcastNote(newNote);
+    conn.send(serializeMessage(new Message(OP.NEW_NOTE).put("note", newNote)));
     broadcastNoteList();
   }
 
@@ -719,14 +749,46 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   /**
+   * This callback is for the paragraph that runs on ZeppelinServer
+   * @param noteId
+   * @param paragraphId
+   * @param output output to append
+   */
+  @Override
+  public void onOutputAppend(String noteId, String paragraphId, String output) {
+    Message msg = new Message(OP.PARAGRAPH_APPEND_OUTPUT)
+            .put("noteId", noteId)
+            .put("paragraphId", paragraphId)
+            .put("data", output);
+    Paragraph paragraph = notebook().getNote(noteId).getParagraph(paragraphId);
+    broadcast(noteId, msg);
+  }
+
+  /**
+   * This callback is for the paragraph that runs on ZeppelinServer
+   * @param noteId
+   * @param paragraphId
+   * @param output output to update (replace)
+   */
+  @Override
+  public void onOutputUpdated(String noteId, String paragraphId, String output) {
+    Message msg = new Message(OP.PARAGRAPH_UPDATE_OUTPUT)
+            .put("noteId", noteId)
+            .put("paragraphId", paragraphId)
+            .put("data", output);
+    Paragraph paragraph = notebook().getNote(noteId).getParagraph(paragraphId);
+    broadcast(noteId, msg);
+  }
+
+  /**
    * Need description here.
    *
    */
-  public static class ParagraphJobListener implements JobListener {
+  public static class ParagraphListenerImpl implements ParagraphJobListener {
     private NotebookServer notebookServer;
     private Note note;
 
-    public ParagraphJobListener(NotebookServer notebookServer, Note note) {
+    public ParagraphListenerImpl(NotebookServer notebookServer, Note note) {
       this.notebookServer = notebookServer;
       this.note = note;
     }
@@ -756,16 +818,48 @@ public class NotebookServer extends WebSocketServlet implements
         try {
           note.persist();
         } catch (IOException e) {
-          e.printStackTrace();
+          LOG.error(e.toString(), e);
         }
       }
       notebookServer.broadcastNote(note);
     }
+
+    /**
+     * This callback is for praragraph that runs on RemoteInterpreterProcess
+     * @param paragraph
+     * @param out
+     * @param output
+     */
+    @Override
+    public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) {
+      Message msg = new Message(OP.PARAGRAPH_APPEND_OUTPUT)
+              .put("noteId", paragraph.getNote().getId())
+              .put("paragraphId", paragraph.getId())
+              .put("data", output);
+
+      notebookServer.broadcast(paragraph.getNote().getId(), msg);
+    }
+
+    /**
+     * This callback is for paragraph that runs on RemoteInterpreterProcess
+     * @param paragraph
+     * @param out
+     * @param output
+     */
+    @Override
+    public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) {
+      Message msg = new Message(OP.PARAGRAPH_UPDATE_OUTPUT)
+              .put("noteId", paragraph.getNote().getId())
+              .put("paragraphId", paragraph.getId())
+              .put("data", output);
+
+      notebookServer.broadcast(paragraph.getNote().getId(), msg);
+    }
   }
 
   @Override
-  public JobListener getParagraphJobListener(Note note) {
-    return new ParagraphJobListener(this, note);
+  public ParagraphJobListener getParagraphJobListener(Note note) {
+    return new ParagraphListenerImpl(this, note);
   }
 
   private void sendAllAngularObjects(Note note, NotebookSocket conn) throws IOException {
