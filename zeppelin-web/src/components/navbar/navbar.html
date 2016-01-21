@@ -32,9 +32,7 @@ limitations under the License.
             <li><a href="" data-toggle="modal" data-target="#noteNameModal"><i class="fa fa-plus"></i> Create new note</a></li>
             <li class="divider"></li>
             <div id="notebook-list" class="scrollbar-container">
-              <li><input type="text" class="note-name-query form-control" ng-click="$event.stopPropagation()" placeholder="&#xf002 Filter" ng-model="query.name" />
-                <i ng-show="query.name" ng-click="query.name='';$event.stopPropagation()" class="fa fa-times-circle query-clear"></i>
-              </li>
+              <li class="filter-names" ng-include="'../../components/filterNoteNames/filter-note-names.html'"></li>
               <li ng-repeat="note in navbar.notes.list | filter:query | orderBy:navbar.arrayOrderingSrv.notebookListOrdering track by $index"
                   ng-class="{'active' : navbar.isActive(note.id)}">
                 <a href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}} </a>

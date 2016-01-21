@@ -38,10 +38,8 @@ limitations under the License.
               <i style="font-size: 15px;" class="fa fa-upload"></i> Import note</a></h5>
             <h5><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;">
               <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
-            <ul style="list-style-type: none;">
-              <li><input class="note-name-query form-control" type="text" placeholder="&#xf002 Filter" ng-model="query.name" />
-                <i ng-show="query.name" ng-click="query.name=''" class="fa fa-times-circle query-clear"></i>
-              </li>
+            <ul id="notebook-names">
+              <li class="filter-names" ng-include="'../../components/filterNoteNames/filter-note-names.html'"></li>
               <li ng-repeat="note in home.notes.list | filter:query | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">
                 <i style="font-size: 10px;" class="icon-doc"></i>
                 <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}}</a>
