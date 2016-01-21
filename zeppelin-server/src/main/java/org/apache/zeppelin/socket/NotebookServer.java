@@ -168,6 +168,9 @@ public class NotebookServer extends WebSocketServlet implements
           case ANGULAR_OBJECT_UPDATED:
             angularObjectUpdated(conn, notebook, messagereceived);
             break;
+          case LIST_CONFIGURATIONS:
+            sendAllConfigurations(conn, notebook);
+            break;
           default:
             broadcastNoteList();
             break;
@@ -715,6 +718,22 @@ public class NotebookServer extends WebSocketServlet implements
         p.setStatus(Status.ERROR);
       }
     }
+  }
+
+  private void sendAllConfigurations(NotebookSocket conn, Notebook notebook)
+      throws IOException {
+    ZeppelinConfiguration conf = notebook.getConf();
+
+    Map<String, String> configurations = conf.dumpConfigurations(conf,
+        new ZeppelinConfiguration.ConfigurationKeyPredicate() {
+          @Override
+          public boolean apply(String key) {
+            return !key.contains("password");
+          }
+        });
+
+    conn.send(serializeMessage(new Message(OP.CONFIGURATIONS_INFO)
+        .put("configurations", configurations)));
   }
 
   /**

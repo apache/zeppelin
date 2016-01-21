@@ -100,7 +100,11 @@ public class Message {
     ANGULAR_OBJECT_UPDATE,  // [s-c] add/update angular object
     ANGULAR_OBJECT_REMOVE,  // [s-c] add angular object del
 
-    ANGULAR_OBJECT_UPDATED  // [c-s] angular object value updated
+    ANGULAR_OBJECT_UPDATED,  // [c-s] angular object value updated,
+
+    LIST_CONFIGURATIONS, // [c-s] ask all key/value pairs of configurations
+    CONFIGURATIONS_INFO // [s-c] all key/value pairs of configurations
+                  // @param settings serialized Map<String, String> object
   }
 
   public OP op;

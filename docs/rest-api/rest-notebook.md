@@ -24,7 +24,7 @@ limitations under the License.
  
  All REST APIs are available starting with the following endpoint ```http://[zeppelin-server]:[zeppelin-port]/api```
  
- Note that zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewer
+ Note that zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers
   such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc)
  
  
