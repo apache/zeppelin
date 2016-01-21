@@ -55,14 +55,14 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
 
   private RemoteInterpreter createMockInterpreter() {
     RemoteInterpreter intp = new RemoteInterpreter(
-            new Properties(),
-            MockInterpreterOutputStream.class.getName(),
-            new File("../bin/interpreter.sh").getAbsolutePath(),
-            "fake",
-            env,
-            10 * 1000,
-            this);
-
+        new Properties(),
+        MockInterpreterOutputStream.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        "fakeRepo",
+        env,
+        10 * 1000,
+        this);
 
     intpGroup.add(intp);
     intp.setInterpreterGroup(intpGroup);
