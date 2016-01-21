@@ -402,6 +402,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.shell.ShellInterpreter,"
         + "org.apache.zeppelin.hive.HiveInterpreter,"
         + "org.apache.zeppelin.phoenix.PhoenixInterpreter,"
+        + "org.apache.zeppelin.postgresql.PostgreSqlInterpreter,"
         + "org.apache.zeppelin.tajo.TajoInterpreter,"
         + "org.apache.zeppelin.flink.FlinkInterpreter,"
         + "org.apache.zeppelin.ignite.IgniteInterpreter,"
@@ -409,10 +410,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.lens.LensInterpreter,"
         + "org.apache.zeppelin.cassandra.CassandraInterpreter,"
         + "org.apache.zeppelin.geode.GeodeOqlInterpreter,"
-        + "org.apache.zeppelin.postgresql.PostgreSqlInterpreter,"
         + "org.apache.zeppelin.kylin.KylinInterpreter,"
         + "org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter,"
-        + "org.apache.zeppelin.scalding.ScaldingInterpreter"),
+        + "org.apache.zeppelin.scalding.ScaldingInterpreter,"
+        + "org.apache.zeppelin.jdbc.JDBCInterpreter"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
@@ -428,6 +429,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     // Decide when new note is created, interpreter settings will be binded automatically or not.
     ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING("zeppelin.notebook.autoInterpreterBinding", true),
     ZEPPELIN_CONF_DIR("zeppelin.conf.dir", "conf"),
+    ZEPPELIN_DEP_LOCALREPO("zeppelin.dep.localrepo", "local-repo"),
     // Allows a way to specify a ',' separated list of allowed origins for rest and websockets
     // i.e. http://localhost:8080
     ZEPPELIN_ALLOWED_ORIGINS("zeppelin.server.allowed.origins", "*"),

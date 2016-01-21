@@ -64,12 +64,13 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
     Properties p = new Properties();
 
     intp = new RemoteInterpreter(
-        p,
-        MockInterpreterAngular.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
-        "fake",
-        env,
-        10 * 1000
+            p,
+            MockInterpreterAngular.class.getName(),
+            new File("../bin/interpreter.sh").getAbsolutePath(),
+            "fake",
+            env,
+            10 * 1000,
+            null
         );
 
     intpGroup.add(intp);
@@ -83,7 +84,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
         new HashMap<String, Object>(),
         new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
-        new LinkedList<InterpreterContextRunner>());
+        new LinkedList<InterpreterContextRunner>(), null);
 
     intp.open();
   }

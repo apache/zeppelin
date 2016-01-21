@@ -56,11 +56,13 @@ angular.module('zeppelinWebApp')
       $scope.renderHtml();
     } else if ($scope.getResultType() === 'ANGULAR') {
       $scope.renderAngular();
+    } else if ($scope.getResultType() === 'TEXT') {
+      $scope.renderText();
     }
   };
 
-  $scope.renderHtml = function() {
-    var retryRenderer = function() {
+    $scope.renderHtml = function() {
+      var retryRenderer = function() {
       if (angular.element('#p' + $scope.paragraph.id + '_html').length) {
         try {
           angular.element('#p' + $scope.paragraph.id + '_html').html($scope.paragraph.result.msg);
@@ -94,6 +96,42 @@ angular.module('zeppelinWebApp')
     };
     $timeout(retryRenderer);
   };
+
+  $scope.renderText = function() {
+    var retryRenderer = function() {
+
+      var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
+      if (textEl.length) {
+        // clear all lines before render
+        $scope.clearTextOutput();
+
+        if ($scope.paragraph.result && $scope.paragraph.result.msg) {
+          $scope.appendTextOutput($scope.paragraph.result.msg);
+        }
+      } else {
+        $timeout(retryRenderer, 10);
+      }
+    };
+    $timeout(retryRenderer);
+  };
+
+  $scope.clearTextOutput = function() {
+    var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
+    if (textEl.length) {
+      textEl.children().remove();
+    }
+  };
+
+  $scope.appendTextOutput = function(msg) {
+    var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
+    if (textEl.length) {
+      var lines = msg.split('\n');
+      for (var i=0; i < lines.length; i++) {
+        textEl.append(angular.element('<div></div>').text(lines[i]));
+      }
+    }
+  };
+
 
 
   $scope.$on('angularObjectUpdate', function(event, data) {
@@ -237,6 +275,10 @@ angular.module('zeppelinWebApp')
     }
   });
 
+  var isEmpty = function (object) {
+    return !object;
+  };
+
   // TODO: this may have impact on performance when there are many paragraphs in a note.
   $scope.$on('updateParagraph', function(event, data) {
     if (data.paragraph.id === $scope.paragraph.id &&
@@ -247,6 +289,7 @@ angular.module('zeppelinWebApp')
          data.paragraph.status !== $scope.paragraph.status ||
          data.paragraph.jobName !== $scope.paragraph.jobName ||
          data.paragraph.title !== $scope.paragraph.title ||
+         isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
          data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
          !angular.equals(data.paragraph.settings, $scope.paragraph.settings) ||
          !angular.equals(data.paragraph.config, $scope.paragraph.config))
@@ -256,7 +299,8 @@ angular.module('zeppelinWebApp')
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
-      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished);
+      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) || isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result);
+
       var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
 
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
@@ -315,6 +359,8 @@ angular.module('zeppelinWebApp')
         $scope.renderHtml();
       } else if (newType === 'ANGULAR' && resultRefreshed) {
         $scope.renderAngular();
+      } else if (newType === 'TEXT' && resultRefreshed) {
+        $scope.renderText();
       }
 
       if (statusChanged || resultRefreshed) {
@@ -331,6 +377,19 @@ angular.module('zeppelinWebApp')
 
     }
 
+  });
+
+  $scope.$on('appendParagraphOutput', function(event, data) {
+    if ($scope.paragraph.id === data.paragraphId) {
+      $scope.appendTextOutput(data.data);
+    }
+  });
+
+  $scope.$on('updateParagraphOutput', function(event, data) {
+    if ($scope.paragraph.id === data.paragraphId) {
+      $scope.clearTextOutput(data.data);
+      $scope.appendTextOutput(data.data);
+    }
   });
 
   $scope.isRunning = function() {
@@ -877,8 +936,10 @@ angular.module('zeppelinWebApp')
         $scope.moveUp();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 74) { // Ctrl + Alt + j
         $scope.moveDown();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 65) { // Ctrl + Alt + a
+        $scope.insertNew('above');
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 66) { // Ctrl + Alt + b
-        $scope.insertNew();
+        $scope.insertNew('below');
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 79) { // Ctrl + Alt + o
         $scope.toggleOutput();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e

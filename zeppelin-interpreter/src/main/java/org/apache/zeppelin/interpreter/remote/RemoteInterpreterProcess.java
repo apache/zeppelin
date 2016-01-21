@@ -53,10 +53,11 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   private int connectTimeout;
 
   public RemoteInterpreterProcess(String intpRunner,
-      String intpDir,
-      Map<String, String> env,
-      int connectTimeout) {
-    this(intpRunner, intpDir, env, new RemoteInterpreterEventPoller(), connectTimeout);
+                                  String intpDir,
+                                  Map<String, String> env,
+                                  int connectTimeout,
+                                  RemoteInterpreterProcessListener listener) {
+    this(intpRunner, intpDir, env, new RemoteInterpreterEventPoller(listener), connectTimeout);
   }
 
   RemoteInterpreterProcess(String intpRunner,

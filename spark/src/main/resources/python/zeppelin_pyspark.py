@@ -36,10 +36,7 @@ class Logger(object):
     self.out = ""
 
   def write(self, message):
-    self.out = self.out + message
-
-  def get(self):
-    return self.out
+    intp.appendOutput(message)
 
   def reset(self):
     self.out = ""
@@ -224,7 +221,7 @@ while True :
       sc.setJobGroup(jobGroup, "Zeppelin")
       eval(compiledCode)
 
-    intp.setStatementsFinished(output.get(), False)
+    intp.setStatementsFinished("", False)
   except Py4JJavaError:
     excInnerError = traceback.format_exc() # format_tb() does not return the inner exception
     innerErrorStart = excInnerError.find("Py4JJavaError:")

@@ -141,6 +141,10 @@ public class ElasticsearchInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext interpreterContext) {
     logger.info("Run Elasticsearch command '" + cmd + "'");
+ 
+    if (StringUtils.isEmpty(cmd) || StringUtils.isEmpty(cmd.trim())) {
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS);
+    }
 
     int currentResultSize = resultSize;
 

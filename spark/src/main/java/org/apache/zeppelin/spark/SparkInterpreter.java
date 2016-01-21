@@ -17,9 +17,7 @@
 
 package org.apache.zeppelin.spark;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -41,7 +39,6 @@ import org.apache.spark.repl.SparkJLineCompletion;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
-import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -55,8 +52,8 @@ import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.spark.dep.DependencyContext;
-import org.apache.zeppelin.spark.dep.DependencyResolver;
+import org.apache.zeppelin.spark.dep.SparkDependencyContext;
+import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,9 +112,9 @@ public class SparkInterpreter extends Interpreter {
   private SparkILoop interpreter;
   private SparkIMain intp;
   private SparkContext sc;
-  private ByteArrayOutputStream out;
+  private SparkOutputStream out;
   private SQLContext sqlc;
-  private DependencyResolver dep;
+  private SparkDependencyResolver dep;
   private SparkJLineCompletion completor;
 
   private JobProgressListener sparkListener;
@@ -129,7 +126,7 @@ public class SparkInterpreter extends Interpreter {
 
   public SparkInterpreter(Properties property) {
     super(property);
-    out = new ByteArrayOutputStream();
+    out = new SparkOutputStream();
   }
 
   public SparkInterpreter(Properties property, SparkContext sc) {
@@ -222,9 +219,9 @@ public class SparkInterpreter extends Interpreter {
     return sqlc;
   }
 
-  public DependencyResolver getDependencyResolver() {
+  public SparkDependencyResolver getDependencyResolver() {
     if (dep == null) {
-      dep = new DependencyResolver(intp,
+      dep = new SparkDependencyResolver(intp,
                                    sc,
                                    getProperty("zeppelin.dep.localrepo"),
                                    getProperty("zeppelin.dep.additionalRemoteRepository"));
@@ -427,7 +424,7 @@ public class SparkInterpreter extends Interpreter {
     // add dependency from DepInterpreter
     DepInterpreter depInterpreter = getDepInterpreter();
     if (depInterpreter != null) {
-      DependencyContext depc = depInterpreter.getDependencyContext();
+      SparkDependencyContext depc = depInterpreter.getDependencyContext();
       if (depc != null) {
         List<File> files = depc.getFiles();
         if (files != null) {
@@ -452,10 +449,9 @@ public class SparkInterpreter extends Interpreter {
     b.v_$eq(true);
     settings.scala$tools$nsc$settings$StandardScalaSettings$_setter_$usejavacp_$eq(b);
 
-    PrintStream printStream = new PrintStream(out);
-
     /* spark interpreter */
     this.interpreter = new SparkILoop(null, new PrintWriter(out));
+
     interpreter.settings_$eq(settings);
 
     interpreter.createInterpreter();
@@ -481,7 +477,7 @@ public class SparkInterpreter extends Interpreter {
 
     dep = getDependencyResolver();
 
-    z = new ZeppelinContext(sc, sqlc, null, dep, printStream,
+    z = new ZeppelinContext(sc, sqlc, null, dep,
         Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
     intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
@@ -489,7 +485,6 @@ public class SparkInterpreter extends Interpreter {
     binder.put("sc", sc);
     binder.put("sqlc", sqlc);
     binder.put("z", z);
-    binder.put("out", printStream);
 
     intp.interpret("@transient val z = "
                  + "_binder.get(\"z\").asInstanceOf[org.apache.zeppelin.spark.ZeppelinContext]");
@@ -536,7 +531,7 @@ public class SparkInterpreter extends Interpreter {
 
     // add jar
     if (depInterpreter != null) {
-      DependencyContext depc = depInterpreter.getDependencyContext();
+      SparkDependencyContext depc = depInterpreter.getDependencyContext();
       if (depc != null) {
         List<File> files = depc.getFilesDist();
         if (files != null) {
@@ -675,13 +670,13 @@ public class SparkInterpreter extends Interpreter {
     synchronized (this) {
       z.setGui(context.getGui());
       sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
-      InterpreterResult r = interpretInput(lines);
+      InterpreterResult r = interpretInput(lines, context);
       sc.clearJobGroup();
       return r;
     }
   }
 
-  public InterpreterResult interpretInput(String[] lines) {
+  public InterpreterResult interpretInput(String[] lines, InterpreterContext context) {
     SparkEnv.set(env);
 
     // add print("") to make sure not finishing with comment
@@ -692,8 +687,9 @@ public class SparkInterpreter extends Interpreter {
     }
     linesToRun[lines.length] = "print(\"\")";
 
-    Console.setOut((java.io.PrintStream) binder.get("out"));
-    out.reset();
+    Console.setOut(context.out);
+    out.setInterpreterOutput(context.out);
+    context.out.clear();
     Code r = null;
     String incomplete = "";
 
@@ -713,6 +709,7 @@ public class SparkInterpreter extends Interpreter {
         res = intp.interpret(incomplete + s);
       } catch (Exception e) {
         sc.clearJobGroup();
+        out.setInterpreterOutput(null);
         logger.info("Interpreter exception", e);
         return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
       }
@@ -721,7 +718,8 @@ public class SparkInterpreter extends Interpreter {
 
       if (r == Code.ERROR) {
         sc.clearJobGroup();
-        return new InterpreterResult(r, out.toString());
+        out.setInterpreterOutput(null);
+        return new InterpreterResult(r, "");
       } else if (r == Code.INCOMPLETE) {
         incomplete += s + "\n";
       } else {
@@ -730,9 +728,13 @@ public class SparkInterpreter extends Interpreter {
     }
 
     if (r == Code.INCOMPLETE) {
+      sc.clearJobGroup();
+      out.setInterpreterOutput(null);
       return new InterpreterResult(r, "Incomplete expression");
     } else {
-      return new InterpreterResult(r, out.toString());
+      sc.clearJobGroup();
+      out.setInterpreterOutput(null);
+      return new InterpreterResult(Code.SUCCESS);
     }
   }
 

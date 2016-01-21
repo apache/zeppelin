@@ -1,6 +1,6 @@
 #Zeppelin 
 
-**Documentation:** [User Guide](http://zeppelin.incubator.apache.org/docs/index.html)<br/>
+**Documentation:** [User Guide](http://zeppelin.incubator.apache.org/docs/latest/index.html)<br/>
 **Mailing Lists:** [User and Dev mailing list](http://zeppelin.incubator.apache.org/community.html)<br/>
 **Continuous Integration:** [![Build Status](https://secure.travis-ci.org/apache/incubator-zeppelin.png?branch=master)](https://travis-ci.org/apache/incubator-zeppelin) <br/>
 **Contributing:** [Contribution Guide](https://github.com/apache/incubator-zeppelin/blob/master/CONTRIBUTING.md)<br/>
@@ -45,6 +45,7 @@ sudo ln -s /usr/local/apache-maven-3.3.3/bin/mvn /usr/local/bin/mvn
 _Notes:_ 
  - Ensure node is installed by running `node --version`  
  - Ensure maven is running version 3.1.x or higher with `mvn -version`
+ - Configure maven to use more memory than usual by ```export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=1024m"```
 
 ### Build
 If you want to build Zeppelin from the source, please first clone this repository, then:
