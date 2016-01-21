@@ -167,7 +167,7 @@ public class Notebook {
     Gson gson = gsonBuilder.create();
     Note note = getNote(noteId);
     if (note == null) {
-      throw new IllegalArgumentException(noteId + "not found");
+      throw new IllegalArgumentException(noteId + " not found");
     }
     return gson.toJson(note);
   }
@@ -200,7 +200,8 @@ public class Notebook {
 
       newNote.persist();
     } catch (IOException e) {
-      throw new IOException(e);
+      logger.error(e.toString(), e);
+      throw e;
     }
     
     return newNote;
