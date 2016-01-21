@@ -78,11 +78,11 @@ public class RemoteInterpreterService {
 
     public RemoteInterpreterEvent getEvent() throws org.apache.thrift.TException;
 
-    public void angularObjectUpdate(String name, String noteId, String object) throws org.apache.thrift.TException;
+    public void angularObjectUpdate(String name, String noteId, String paragraphId, String object) throws org.apache.thrift.TException;
 
-    public void angularObjectAdd(String name, String noteId, String object) throws org.apache.thrift.TException;
+    public void angularObjectAdd(String name, String noteId, String paragraphId, String object) throws org.apache.thrift.TException;
 
-    public void angularObjectRemove(String name, String noteId) throws org.apache.thrift.TException;
+    public void angularObjectRemove(String name, String noteId, String paragraphId) throws org.apache.thrift.TException;
 
   }
 
@@ -110,11 +110,11 @@ public class RemoteInterpreterService {
 
     public void getEvent(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void angularObjectUpdate(String name, String noteId, String object, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void angularObjectUpdate(String name, String noteId, String paragraphId, String object, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void angularObjectAdd(String name, String noteId, String object, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void angularObjectAdd(String name, String noteId, String paragraphId, String object, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void angularObjectRemove(String name, String noteId, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void angularObjectRemove(String name, String noteId, String paragraphId, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -381,17 +381,18 @@ public class RemoteInterpreterService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getEvent failed: unknown result");
     }
 
-    public void angularObjectUpdate(String name, String noteId, String object) throws org.apache.thrift.TException
+    public void angularObjectUpdate(String name, String noteId, String paragraphId, String object) throws org.apache.thrift.TException
     {
-      send_angularObjectUpdate(name, noteId, object);
+      send_angularObjectUpdate(name, noteId, paragraphId, object);
       recv_angularObjectUpdate();
     }
 
-    public void send_angularObjectUpdate(String name, String noteId, String object) throws org.apache.thrift.TException
+    public void send_angularObjectUpdate(String name, String noteId, String paragraphId, String object) throws org.apache.thrift.TException
     {
       angularObjectUpdate_args args = new angularObjectUpdate_args();
       args.setName(name);
       args.setNoteId(noteId);
+      args.setParagraphId(paragraphId);
       args.setObject(object);
       sendBase("angularObjectUpdate", args);
     }
@@ -403,17 +404,18 @@ public class RemoteInterpreterService {
       return;
     }
 
-    public void angularObjectAdd(String name, String noteId, String object) throws org.apache.thrift.TException
+    public void angularObjectAdd(String name, String noteId, String paragraphId, String object) throws org.apache.thrift.TException
     {
-      send_angularObjectAdd(name, noteId, object);
+      send_angularObjectAdd(name, noteId, paragraphId, object);
       recv_angularObjectAdd();
     }
 
-    public void send_angularObjectAdd(String name, String noteId, String object) throws org.apache.thrift.TException
+    public void send_angularObjectAdd(String name, String noteId, String paragraphId, String object) throws org.apache.thrift.TException
     {
       angularObjectAdd_args args = new angularObjectAdd_args();
       args.setName(name);
       args.setNoteId(noteId);
+      args.setParagraphId(paragraphId);
       args.setObject(object);
       sendBase("angularObjectAdd", args);
     }
@@ -425,17 +427,18 @@ public class RemoteInterpreterService {
       return;
     }
 
-    public void angularObjectRemove(String name, String noteId) throws org.apache.thrift.TException
+    public void angularObjectRemove(String name, String noteId, String paragraphId) throws org.apache.thrift.TException
     {
-      send_angularObjectRemove(name, noteId);
+      send_angularObjectRemove(name, noteId, paragraphId);
       recv_angularObjectRemove();
     }
 
-    public void send_angularObjectRemove(String name, String noteId) throws org.apache.thrift.TException
+    public void send_angularObjectRemove(String name, String noteId, String paragraphId) throws org.apache.thrift.TException
     {
       angularObjectRemove_args args = new angularObjectRemove_args();
       args.setName(name);
       args.setNoteId(noteId);
+      args.setParagraphId(paragraphId);
       sendBase("angularObjectRemove", args);
     }
 
@@ -831,9 +834,9 @@ public class RemoteInterpreterService {
       }
     }
 
-    public void angularObjectUpdate(String name, String noteId, String object, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void angularObjectUpdate(String name, String noteId, String paragraphId, String object, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      angularObjectUpdate_call method_call = new angularObjectUpdate_call(name, noteId, object, resultHandler, this, ___protocolFactory, ___transport);
+      angularObjectUpdate_call method_call = new angularObjectUpdate_call(name, noteId, paragraphId, object, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
@@ -841,11 +844,13 @@ public class RemoteInterpreterService {
     public static class angularObjectUpdate_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String name;
       private String noteId;
+      private String paragraphId;
       private String object;
-      public angularObjectUpdate_call(String name, String noteId, String object, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public angularObjectUpdate_call(String name, String noteId, String paragraphId, String object, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.name = name;
         this.noteId = noteId;
+        this.paragraphId = paragraphId;
         this.object = object;
       }
 
@@ -854,6 +859,7 @@ public class RemoteInterpreterService {
         angularObjectUpdate_args args = new angularObjectUpdate_args();
         args.setName(name);
         args.setNoteId(noteId);
+        args.setParagraphId(paragraphId);
         args.setObject(object);
         args.write(prot);
         prot.writeMessageEnd();
@@ -869,9 +875,9 @@ public class RemoteInterpreterService {
       }
     }
 
-    public void angularObjectAdd(String name, String noteId, String object, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void angularObjectAdd(String name, String noteId, String paragraphId, String object, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      angularObjectAdd_call method_call = new angularObjectAdd_call(name, noteId, object, resultHandler, this, ___protocolFactory, ___transport);
+      angularObjectAdd_call method_call = new angularObjectAdd_call(name, noteId, paragraphId, object, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
@@ -879,11 +885,13 @@ public class RemoteInterpreterService {
     public static class angularObjectAdd_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String name;
       private String noteId;
+      private String paragraphId;
       private String object;
-      public angularObjectAdd_call(String name, String noteId, String object, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public angularObjectAdd_call(String name, String noteId, String paragraphId, String object, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.name = name;
         this.noteId = noteId;
+        this.paragraphId = paragraphId;
         this.object = object;
       }
 
@@ -892,6 +900,7 @@ public class RemoteInterpreterService {
         angularObjectAdd_args args = new angularObjectAdd_args();
         args.setName(name);
         args.setNoteId(noteId);
+        args.setParagraphId(paragraphId);
         args.setObject(object);
         args.write(prot);
         prot.writeMessageEnd();
@@ -907,9 +916,9 @@ public class RemoteInterpreterService {
       }
     }
 
-    public void angularObjectRemove(String name, String noteId, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void angularObjectRemove(String name, String noteId, String paragraphId, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      angularObjectRemove_call method_call = new angularObjectRemove_call(name, noteId, resultHandler, this, ___protocolFactory, ___transport);
+      angularObjectRemove_call method_call = new angularObjectRemove_call(name, noteId, paragraphId, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
@@ -917,10 +926,12 @@ public class RemoteInterpreterService {
     public static class angularObjectRemove_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String name;
       private String noteId;
-      public angularObjectRemove_call(String name, String noteId, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private String paragraphId;
+      public angularObjectRemove_call(String name, String noteId, String paragraphId, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.name = name;
         this.noteId = noteId;
+        this.paragraphId = paragraphId;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
@@ -928,6 +939,7 @@ public class RemoteInterpreterService {
         angularObjectRemove_args args = new angularObjectRemove_args();
         args.setName(name);
         args.setNoteId(noteId);
+        args.setParagraphId(paragraphId);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -1208,7 +1220,7 @@ public class RemoteInterpreterService {
 
       public angularObjectUpdate_result getResult(I iface, angularObjectUpdate_args args) throws org.apache.thrift.TException {
         angularObjectUpdate_result result = new angularObjectUpdate_result();
-        iface.angularObjectUpdate(args.name, args.noteId, args.object);
+        iface.angularObjectUpdate(args.name, args.noteId, args.paragraphId, args.object);
         return result;
       }
     }
@@ -1228,7 +1240,7 @@ public class RemoteInterpreterService {
 
       public angularObjectAdd_result getResult(I iface, angularObjectAdd_args args) throws org.apache.thrift.TException {
         angularObjectAdd_result result = new angularObjectAdd_result();
-        iface.angularObjectAdd(args.name, args.noteId, args.object);
+        iface.angularObjectAdd(args.name, args.noteId, args.paragraphId, args.object);
         return result;
       }
     }
@@ -1248,7 +1260,7 @@ public class RemoteInterpreterService {
 
       public angularObjectRemove_result getResult(I iface, angularObjectRemove_args args) throws org.apache.thrift.TException {
         angularObjectRemove_result result = new angularObjectRemove_result();
-        iface.angularObjectRemove(args.name, args.noteId);
+        iface.angularObjectRemove(args.name, args.noteId, args.paragraphId);
         return result;
       }
     }
@@ -1886,7 +1898,7 @@ public class RemoteInterpreterService {
       }
 
       public void start(I iface, angularObjectUpdate_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.angularObjectUpdate(args.name, args.noteId, args.object,resultHandler);
+        iface.angularObjectUpdate(args.name, args.noteId, args.paragraphId, args.object,resultHandler);
       }
     }
 
@@ -1936,7 +1948,7 @@ public class RemoteInterpreterService {
       }
 
       public void start(I iface, angularObjectAdd_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.angularObjectAdd(args.name, args.noteId, args.object,resultHandler);
+        iface.angularObjectAdd(args.name, args.noteId, args.paragraphId, args.object,resultHandler);
       }
     }
 
@@ -1986,7 +1998,7 @@ public class RemoteInterpreterService {
       }
 
       public void start(I iface, angularObjectRemove_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.angularObjectRemove(args.name, args.noteId,resultHandler);
+        iface.angularObjectRemove(args.name, args.noteId, args.paragraphId,resultHandler);
       }
     }
 
@@ -10007,7 +10019,8 @@ public class RemoteInterpreterService {
 
     private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
     private static final org.apache.thrift.protocol.TField NOTE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("noteId", org.apache.thrift.protocol.TType.STRING, (short)2);
-    private static final org.apache.thrift.protocol.TField OBJECT_FIELD_DESC = new org.apache.thrift.protocol.TField("object", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField PARAGRAPH_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("paragraphId", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField OBJECT_FIELD_DESC = new org.apache.thrift.protocol.TField("object", org.apache.thrift.protocol.TType.STRING, (short)4);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -10017,13 +10030,15 @@ public class RemoteInterpreterService {
 
     public String name; // required
     public String noteId; // required
+    public String paragraphId; // required
     public String object; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       NAME((short)1, "name"),
       NOTE_ID((short)2, "noteId"),
-      OBJECT((short)3, "object");
+      PARAGRAPH_ID((short)3, "paragraphId"),
+      OBJECT((short)4, "object");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -10042,7 +10057,9 @@ public class RemoteInterpreterService {
             return NAME;
           case 2: // NOTE_ID
             return NOTE_ID;
-          case 3: // OBJECT
+          case 3: // PARAGRAPH_ID
+            return PARAGRAPH_ID;
+          case 4: // OBJECT
             return OBJECT;
           default:
             return null;
@@ -10091,6 +10108,8 @@ public class RemoteInterpreterService {
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.NOTE_ID, new org.apache.thrift.meta_data.FieldMetaData("noteId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.PARAGRAPH_ID, new org.apache.thrift.meta_data.FieldMetaData("paragraphId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.OBJECT, new org.apache.thrift.meta_data.FieldMetaData("object", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -10103,11 +10122,13 @@ public class RemoteInterpreterService {
     public angularObjectUpdate_args(
       String name,
       String noteId,
+      String paragraphId,
       String object)
     {
       this();
       this.name = name;
       this.noteId = noteId;
+      this.paragraphId = paragraphId;
       this.object = object;
     }
 
@@ -10120,6 +10141,9 @@ public class RemoteInterpreterService {
       }
       if (other.isSetNoteId()) {
         this.noteId = other.noteId;
+      }
+      if (other.isSetParagraphId()) {
+        this.paragraphId = other.paragraphId;
       }
       if (other.isSetObject()) {
         this.object = other.object;
@@ -10134,6 +10158,7 @@ public class RemoteInterpreterService {
     public void clear() {
       this.name = null;
       this.noteId = null;
+      this.paragraphId = null;
       this.object = null;
     }
 
@@ -10185,6 +10210,30 @@ public class RemoteInterpreterService {
       }
     }
 
+    public String getParagraphId() {
+      return this.paragraphId;
+    }
+
+    public angularObjectUpdate_args setParagraphId(String paragraphId) {
+      this.paragraphId = paragraphId;
+      return this;
+    }
+
+    public void unsetParagraphId() {
+      this.paragraphId = null;
+    }
+
+    /** Returns true if field paragraphId is set (has been assigned a value) and false otherwise */
+    public boolean isSetParagraphId() {
+      return this.paragraphId != null;
+    }
+
+    public void setParagraphIdIsSet(boolean value) {
+      if (!value) {
+        this.paragraphId = null;
+      }
+    }
+
     public String getObject() {
       return this.object;
     }
@@ -10227,6 +10276,14 @@ public class RemoteInterpreterService {
         }
         break;
 
+      case PARAGRAPH_ID:
+        if (value == null) {
+          unsetParagraphId();
+        } else {
+          setParagraphId((String)value);
+        }
+        break;
+
       case OBJECT:
         if (value == null) {
           unsetObject();
@@ -10246,6 +10303,9 @@ public class RemoteInterpreterService {
       case NOTE_ID:
         return getNoteId();
 
+      case PARAGRAPH_ID:
+        return getParagraphId();
+
       case OBJECT:
         return getObject();
 
@@ -10264,6 +10324,8 @@ public class RemoteInterpreterService {
         return isSetName();
       case NOTE_ID:
         return isSetNoteId();
+      case PARAGRAPH_ID:
+        return isSetParagraphId();
       case OBJECT:
         return isSetObject();
       }
@@ -10301,6 +10363,15 @@ public class RemoteInterpreterService {
           return false;
       }
 
+      boolean this_present_paragraphId = true && this.isSetParagraphId();
+      boolean that_present_paragraphId = true && that.isSetParagraphId();
+      if (this_present_paragraphId || that_present_paragraphId) {
+        if (!(this_present_paragraphId && that_present_paragraphId))
+          return false;
+        if (!this.paragraphId.equals(that.paragraphId))
+          return false;
+      }
+
       boolean this_present_object = true && this.isSetObject();
       boolean that_present_object = true && that.isSetObject();
       if (this_present_object || that_present_object) {
@@ -10326,6 +10397,11 @@ public class RemoteInterpreterService {
       list.add(present_noteId);
       if (present_noteId)
         list.add(noteId);
+
+      boolean present_paragraphId = true && (isSetParagraphId());
+      list.add(present_paragraphId);
+      if (present_paragraphId)
+        list.add(paragraphId);
 
       boolean present_object = true && (isSetObject());
       list.add(present_object);
@@ -10359,6 +10435,16 @@ public class RemoteInterpreterService {
       }
       if (isSetNoteId()) {
         lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, other.noteId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetParagraphId()).compareTo(other.isSetParagraphId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetParagraphId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.paragraphId, other.paragraphId);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -10406,6 +10492,14 @@ public class RemoteInterpreterService {
         sb.append("null");
       } else {
         sb.append(this.noteId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("paragraphId:");
+      if (this.paragraphId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.paragraphId);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -10475,7 +10569,15 @@ public class RemoteInterpreterService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // OBJECT
+            case 3: // PARAGRAPH_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.paragraphId = iprot.readString();
+                struct.setParagraphIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 4: // OBJECT
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.object = iprot.readString();
                 struct.setObjectIsSet(true);
@@ -10508,6 +10610,11 @@ public class RemoteInterpreterService {
           oprot.writeString(struct.noteId);
           oprot.writeFieldEnd();
         }
+        if (struct.paragraphId != null) {
+          oprot.writeFieldBegin(PARAGRAPH_ID_FIELD_DESC);
+          oprot.writeString(struct.paragraphId);
+          oprot.writeFieldEnd();
+        }
         if (struct.object != null) {
           oprot.writeFieldBegin(OBJECT_FIELD_DESC);
           oprot.writeString(struct.object);
@@ -10537,15 +10644,21 @@ public class RemoteInterpreterService {
         if (struct.isSetNoteId()) {
           optionals.set(1);
         }
-        if (struct.isSetObject()) {
+        if (struct.isSetParagraphId()) {
           optionals.set(2);
         }
-        oprot.writeBitSet(optionals, 3);
+        if (struct.isSetObject()) {
+          optionals.set(3);
+        }
+        oprot.writeBitSet(optionals, 4);
         if (struct.isSetName()) {
           oprot.writeString(struct.name);
         }
         if (struct.isSetNoteId()) {
           oprot.writeString(struct.noteId);
+        }
+        if (struct.isSetParagraphId()) {
+          oprot.writeString(struct.paragraphId);
         }
         if (struct.isSetObject()) {
           oprot.writeString(struct.object);
@@ -10555,7 +10668,7 @@ public class RemoteInterpreterService {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, angularObjectUpdate_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(3);
+        BitSet incoming = iprot.readBitSet(4);
         if (incoming.get(0)) {
           struct.name = iprot.readString();
           struct.setNameIsSet(true);
@@ -10565,6 +10678,10 @@ public class RemoteInterpreterService {
           struct.setNoteIdIsSet(true);
         }
         if (incoming.get(2)) {
+          struct.paragraphId = iprot.readString();
+          struct.setParagraphIdIsSet(true);
+        }
+        if (incoming.get(3)) {
           struct.object = iprot.readString();
           struct.setObjectIsSet(true);
         }
@@ -10826,7 +10943,8 @@ public class RemoteInterpreterService {
 
     private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
     private static final org.apache.thrift.protocol.TField NOTE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("noteId", org.apache.thrift.protocol.TType.STRING, (short)2);
-    private static final org.apache.thrift.protocol.TField OBJECT_FIELD_DESC = new org.apache.thrift.protocol.TField("object", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField PARAGRAPH_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("paragraphId", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField OBJECT_FIELD_DESC = new org.apache.thrift.protocol.TField("object", org.apache.thrift.protocol.TType.STRING, (short)4);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -10836,13 +10954,15 @@ public class RemoteInterpreterService {
 
     public String name; // required
     public String noteId; // required
+    public String paragraphId; // required
     public String object; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       NAME((short)1, "name"),
       NOTE_ID((short)2, "noteId"),
-      OBJECT((short)3, "object");
+      PARAGRAPH_ID((short)3, "paragraphId"),
+      OBJECT((short)4, "object");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -10861,7 +10981,9 @@ public class RemoteInterpreterService {
             return NAME;
           case 2: // NOTE_ID
             return NOTE_ID;
-          case 3: // OBJECT
+          case 3: // PARAGRAPH_ID
+            return PARAGRAPH_ID;
+          case 4: // OBJECT
             return OBJECT;
           default:
             return null;
@@ -10910,6 +11032,8 @@ public class RemoteInterpreterService {
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.NOTE_ID, new org.apache.thrift.meta_data.FieldMetaData("noteId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.PARAGRAPH_ID, new org.apache.thrift.meta_data.FieldMetaData("paragraphId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.OBJECT, new org.apache.thrift.meta_data.FieldMetaData("object", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -10922,11 +11046,13 @@ public class RemoteInterpreterService {
     public angularObjectAdd_args(
       String name,
       String noteId,
+      String paragraphId,
       String object)
     {
       this();
       this.name = name;
       this.noteId = noteId;
+      this.paragraphId = paragraphId;
       this.object = object;
     }
 
@@ -10939,6 +11065,9 @@ public class RemoteInterpreterService {
       }
       if (other.isSetNoteId()) {
         this.noteId = other.noteId;
+      }
+      if (other.isSetParagraphId()) {
+        this.paragraphId = other.paragraphId;
       }
       if (other.isSetObject()) {
         this.object = other.object;
@@ -10953,6 +11082,7 @@ public class RemoteInterpreterService {
     public void clear() {
       this.name = null;
       this.noteId = null;
+      this.paragraphId = null;
       this.object = null;
     }
 
@@ -11004,6 +11134,30 @@ public class RemoteInterpreterService {
       }
     }
 
+    public String getParagraphId() {
+      return this.paragraphId;
+    }
+
+    public angularObjectAdd_args setParagraphId(String paragraphId) {
+      this.paragraphId = paragraphId;
+      return this;
+    }
+
+    public void unsetParagraphId() {
+      this.paragraphId = null;
+    }
+
+    /** Returns true if field paragraphId is set (has been assigned a value) and false otherwise */
+    public boolean isSetParagraphId() {
+      return this.paragraphId != null;
+    }
+
+    public void setParagraphIdIsSet(boolean value) {
+      if (!value) {
+        this.paragraphId = null;
+      }
+    }
+
     public String getObject() {
       return this.object;
     }
@@ -11046,6 +11200,14 @@ public class RemoteInterpreterService {
         }
         break;
 
+      case PARAGRAPH_ID:
+        if (value == null) {
+          unsetParagraphId();
+        } else {
+          setParagraphId((String)value);
+        }
+        break;
+
       case OBJECT:
         if (value == null) {
           unsetObject();
@@ -11065,6 +11227,9 @@ public class RemoteInterpreterService {
       case NOTE_ID:
         return getNoteId();
 
+      case PARAGRAPH_ID:
+        return getParagraphId();
+
       case OBJECT:
         return getObject();
 
@@ -11083,6 +11248,8 @@ public class RemoteInterpreterService {
         return isSetName();
       case NOTE_ID:
         return isSetNoteId();
+      case PARAGRAPH_ID:
+        return isSetParagraphId();
       case OBJECT:
         return isSetObject();
       }
@@ -11120,6 +11287,15 @@ public class RemoteInterpreterService {
           return false;
       }
 
+      boolean this_present_paragraphId = true && this.isSetParagraphId();
+      boolean that_present_paragraphId = true && that.isSetParagraphId();
+      if (this_present_paragraphId || that_present_paragraphId) {
+        if (!(this_present_paragraphId && that_present_paragraphId))
+          return false;
+        if (!this.paragraphId.equals(that.paragraphId))
+          return false;
+      }
+
       boolean this_present_object = true && this.isSetObject();
       boolean that_present_object = true && that.isSetObject();
       if (this_present_object || that_present_object) {
@@ -11145,6 +11321,11 @@ public class RemoteInterpreterService {
       list.add(present_noteId);
       if (present_noteId)
         list.add(noteId);
+
+      boolean present_paragraphId = true && (isSetParagraphId());
+      list.add(present_paragraphId);
+      if (present_paragraphId)
+        list.add(paragraphId);
 
       boolean present_object = true && (isSetObject());
       list.add(present_object);
@@ -11178,6 +11359,16 @@ public class RemoteInterpreterService {
       }
       if (isSetNoteId()) {
         lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, other.noteId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetParagraphId()).compareTo(other.isSetParagraphId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetParagraphId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.paragraphId, other.paragraphId);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -11225,6 +11416,14 @@ public class RemoteInterpreterService {
         sb.append("null");
       } else {
         sb.append(this.noteId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("paragraphId:");
+      if (this.paragraphId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.paragraphId);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -11294,7 +11493,15 @@ public class RemoteInterpreterService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // OBJECT
+            case 3: // PARAGRAPH_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.paragraphId = iprot.readString();
+                struct.setParagraphIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 4: // OBJECT
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.object = iprot.readString();
                 struct.setObjectIsSet(true);
@@ -11327,6 +11534,11 @@ public class RemoteInterpreterService {
           oprot.writeString(struct.noteId);
           oprot.writeFieldEnd();
         }
+        if (struct.paragraphId != null) {
+          oprot.writeFieldBegin(PARAGRAPH_ID_FIELD_DESC);
+          oprot.writeString(struct.paragraphId);
+          oprot.writeFieldEnd();
+        }
         if (struct.object != null) {
           oprot.writeFieldBegin(OBJECT_FIELD_DESC);
           oprot.writeString(struct.object);
@@ -11356,15 +11568,21 @@ public class RemoteInterpreterService {
         if (struct.isSetNoteId()) {
           optionals.set(1);
         }
-        if (struct.isSetObject()) {
+        if (struct.isSetParagraphId()) {
           optionals.set(2);
         }
-        oprot.writeBitSet(optionals, 3);
+        if (struct.isSetObject()) {
+          optionals.set(3);
+        }
+        oprot.writeBitSet(optionals, 4);
         if (struct.isSetName()) {
           oprot.writeString(struct.name);
         }
         if (struct.isSetNoteId()) {
           oprot.writeString(struct.noteId);
+        }
+        if (struct.isSetParagraphId()) {
+          oprot.writeString(struct.paragraphId);
         }
         if (struct.isSetObject()) {
           oprot.writeString(struct.object);
@@ -11374,7 +11592,7 @@ public class RemoteInterpreterService {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, angularObjectAdd_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(3);
+        BitSet incoming = iprot.readBitSet(4);
         if (incoming.get(0)) {
           struct.name = iprot.readString();
           struct.setNameIsSet(true);
@@ -11384,6 +11602,10 @@ public class RemoteInterpreterService {
           struct.setNoteIdIsSet(true);
         }
         if (incoming.get(2)) {
+          struct.paragraphId = iprot.readString();
+          struct.setParagraphIdIsSet(true);
+        }
+        if (incoming.get(3)) {
           struct.object = iprot.readString();
           struct.setObjectIsSet(true);
         }
@@ -11645,6 +11867,7 @@ public class RemoteInterpreterService {
 
     private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
     private static final org.apache.thrift.protocol.TField NOTE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("noteId", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField PARAGRAPH_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("paragraphId", org.apache.thrift.protocol.TType.STRING, (short)3);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -11654,11 +11877,13 @@ public class RemoteInterpreterService {
 
     public String name; // required
     public String noteId; // required
+    public String paragraphId; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       NAME((short)1, "name"),
-      NOTE_ID((short)2, "noteId");
+      NOTE_ID((short)2, "noteId"),
+      PARAGRAPH_ID((short)3, "paragraphId");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -11677,6 +11902,8 @@ public class RemoteInterpreterService {
             return NAME;
           case 2: // NOTE_ID
             return NOTE_ID;
+          case 3: // PARAGRAPH_ID
+            return PARAGRAPH_ID;
           default:
             return null;
         }
@@ -11724,6 +11951,8 @@ public class RemoteInterpreterService {
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.NOTE_ID, new org.apache.thrift.meta_data.FieldMetaData("noteId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.PARAGRAPH_ID, new org.apache.thrift.meta_data.FieldMetaData("paragraphId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(angularObjectRemove_args.class, metaDataMap);
     }
@@ -11733,11 +11962,13 @@ public class RemoteInterpreterService {
 
     public angularObjectRemove_args(
       String name,
-      String noteId)
+      String noteId,
+      String paragraphId)
     {
       this();
       this.name = name;
       this.noteId = noteId;
+      this.paragraphId = paragraphId;
     }
 
     /**
@@ -11750,6 +11981,9 @@ public class RemoteInterpreterService {
       if (other.isSetNoteId()) {
         this.noteId = other.noteId;
       }
+      if (other.isSetParagraphId()) {
+        this.paragraphId = other.paragraphId;
+      }
     }
 
     public angularObjectRemove_args deepCopy() {
@@ -11760,6 +11994,7 @@ public class RemoteInterpreterService {
     public void clear() {
       this.name = null;
       this.noteId = null;
+      this.paragraphId = null;
     }
 
     public String getName() {
@@ -11810,6 +12045,30 @@ public class RemoteInterpreterService {
       }
     }
 
+    public String getParagraphId() {
+      return this.paragraphId;
+    }
+
+    public angularObjectRemove_args setParagraphId(String paragraphId) {
+      this.paragraphId = paragraphId;
+      return this;
+    }
+
+    public void unsetParagraphId() {
+      this.paragraphId = null;
+    }
+
+    /** Returns true if field paragraphId is set (has been assigned a value) and false otherwise */
+    public boolean isSetParagraphId() {
+      return this.paragraphId != null;
+    }
+
+    public void setParagraphIdIsSet(boolean value) {
+      if (!value) {
+        this.paragraphId = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case NAME:
@@ -11828,6 +12087,14 @@ public class RemoteInterpreterService {
         }
         break;
 
+      case PARAGRAPH_ID:
+        if (value == null) {
+          unsetParagraphId();
+        } else {
+          setParagraphId((String)value);
+        }
+        break;
+
       }
     }
 
@@ -11838,6 +12105,9 @@ public class RemoteInterpreterService {
 
       case NOTE_ID:
         return getNoteId();
+
+      case PARAGRAPH_ID:
+        return getParagraphId();
 
       }
       throw new IllegalStateException();
@@ -11854,6 +12124,8 @@ public class RemoteInterpreterService {
         return isSetName();
       case NOTE_ID:
         return isSetNoteId();
+      case PARAGRAPH_ID:
+        return isSetParagraphId();
       }
       throw new IllegalStateException();
     }
@@ -11889,6 +12161,15 @@ public class RemoteInterpreterService {
           return false;
       }
 
+      boolean this_present_paragraphId = true && this.isSetParagraphId();
+      boolean that_present_paragraphId = true && that.isSetParagraphId();
+      if (this_present_paragraphId || that_present_paragraphId) {
+        if (!(this_present_paragraphId && that_present_paragraphId))
+          return false;
+        if (!this.paragraphId.equals(that.paragraphId))
+          return false;
+      }
+
       return true;
     }
 
@@ -11905,6 +12186,11 @@ public class RemoteInterpreterService {
       list.add(present_noteId);
       if (present_noteId)
         list.add(noteId);
+
+      boolean present_paragraphId = true && (isSetParagraphId());
+      list.add(present_paragraphId);
+      if (present_paragraphId)
+        list.add(paragraphId);
 
       return list.hashCode();
     }
@@ -11933,6 +12219,16 @@ public class RemoteInterpreterService {
       }
       if (isSetNoteId()) {
         lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, other.noteId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetParagraphId()).compareTo(other.isSetParagraphId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetParagraphId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.paragraphId, other.paragraphId);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -11970,6 +12266,14 @@ public class RemoteInterpreterService {
         sb.append("null");
       } else {
         sb.append(this.noteId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("paragraphId:");
+      if (this.paragraphId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.paragraphId);
       }
       first = false;
       sb.append(")");
@@ -12031,6 +12335,14 @@ public class RemoteInterpreterService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
+            case 3: // PARAGRAPH_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.paragraphId = iprot.readString();
+                struct.setParagraphIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
             default:
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
           }
@@ -12054,6 +12366,11 @@ public class RemoteInterpreterService {
         if (struct.noteId != null) {
           oprot.writeFieldBegin(NOTE_ID_FIELD_DESC);
           oprot.writeString(struct.noteId);
+          oprot.writeFieldEnd();
+        }
+        if (struct.paragraphId != null) {
+          oprot.writeFieldBegin(PARAGRAPH_ID_FIELD_DESC);
+          oprot.writeString(struct.paragraphId);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -12080,19 +12397,25 @@ public class RemoteInterpreterService {
         if (struct.isSetNoteId()) {
           optionals.set(1);
         }
-        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetParagraphId()) {
+          optionals.set(2);
+        }
+        oprot.writeBitSet(optionals, 3);
         if (struct.isSetName()) {
           oprot.writeString(struct.name);
         }
         if (struct.isSetNoteId()) {
           oprot.writeString(struct.noteId);
         }
+        if (struct.isSetParagraphId()) {
+          oprot.writeString(struct.paragraphId);
+        }
       }
 
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, angularObjectRemove_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(2);
+        BitSet incoming = iprot.readBitSet(3);
         if (incoming.get(0)) {
           struct.name = iprot.readString();
           struct.setNameIsSet(true);
@@ -12100,6 +12423,10 @@ public class RemoteInterpreterService {
         if (incoming.get(1)) {
           struct.noteId = iprot.readString();
           struct.setNoteIdIsSet(true);
+        }
+        if (incoming.get(2)) {
+          struct.paragraphId = iprot.readString();
+          struct.setParagraphIdIsSet(true);
         }
       }
     }

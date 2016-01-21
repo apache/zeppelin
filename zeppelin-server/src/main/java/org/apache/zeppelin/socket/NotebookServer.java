@@ -561,6 +561,7 @@ public class NotebookServer extends WebSocketServlet implements
   private void angularObjectUpdated(NotebookSocket conn, Notebook notebook,
       Message fromMessage) {
     String noteId = (String) fromMessage.get("noteId");
+    String paragraphId = (String) fromMessage.get("paragraphId");
     String interpreterGroupId = (String) fromMessage.get("interpreterGroupId");
     String varName = (String) fromMessage.get("name");
     Object varValue = fromMessage.get("value");
@@ -579,19 +580,26 @@ public class NotebookServer extends WebSocketServlet implements
           AngularObjectRegistry angularObjectRegistry = setting
               .getInterpreterGroup().getAngularObjectRegistry();
           // first trying to get local registry
-          ao = angularObjectRegistry.get(varName, noteId);
+          ao = angularObjectRegistry.get(varName, noteId, paragraphId);
           if (ao == null) {
-            // then try global registry
-            ao = angularObjectRegistry.get(varName, null);
+            // then try notebook scope registry
+            ao = angularObjectRegistry.get(varName, noteId, null);
             if (ao == null) {
-              LOG.warn("Object {} is not binded", varName);
+              // then try global scope registry
+              ao = angularObjectRegistry.get(varName, null, null);
+              if (ao == null) {
+                LOG.warn("Object {} is not binded", varName);
+              } else {
+                // path from client -> server
+                ao.set(varValue, false);
+                global = true;
+              }
             } else {
               // path from client -> server
               ao.set(varValue, false);
-              global = true;
+              global = false;
             }
           } else {
-            // path from client -> server
             ao.set(varValue, false);
             global = false;
           }
@@ -616,7 +624,8 @@ public class NotebookServer extends WebSocketServlet implements
                 n.id(),
                 new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", ao)
                     .put("interpreterGroupId", interpreterGroupId)
-                    .put("noteId", n.id()),
+                    .put("noteId", n.id())
+                    .put("paragraphId", ao.getParagraphId()),
                 conn);
           }
         }
@@ -626,7 +635,8 @@ public class NotebookServer extends WebSocketServlet implements
           note.id(),
           new Message(OP.ANGULAR_OBJECT_UPDATE).put("angularObject", ao)
               .put("interpreterGroupId", interpreterGroupId)
-              .put("noteId", note.id()),
+              .put("noteId", note.id())
+              .put("paragraphId", ao.getParagraphId()),
           conn);
     }
   }
@@ -837,7 +847,9 @@ public class NotebookServer extends WebSocketServlet implements
             .put("angularObject", object)
             .put("interpreterGroupId",
                 intpSetting.getInterpreterGroup().getId())
-            .put("noteId", note.id())));
+            .put("noteId", note.id())
+            .put("paragraphId", object.getParagraphId())
+        ));
       }
     }
   }
@@ -871,14 +883,15 @@ public class NotebookServer extends WebSocketServlet implements
               new Message(OP.ANGULAR_OBJECT_UPDATE)
                   .put("angularObject", object)
                   .put("interpreterGroupId", interpreterGroupId)
-                  .put("noteId", note.id()));
+                  .put("noteId", note.id())
+                  .put("paragraphId", object.getParagraphId()));
         }
       }
     }
   }
 
   @Override
-  public void onRemove(String interpreterGroupId, String name, String noteId) {
+  public void onRemove(String interpreterGroupId, String name, String noteId, String paragraphId) {
     Notebook notebook = notebook();
     List<Note> notes = notebook.getAllNotes();
     for (Note note : notes) {
@@ -892,7 +905,7 @@ public class NotebookServer extends WebSocketServlet implements
           broadcast(
               note.id(),
               new Message(OP.ANGULAR_OBJECT_REMOVE).put("name", name).put(
-                      "noteId", noteId));
+                      "noteId", noteId).put("paragraphId", paragraphId));
         }
       }
     }

@@ -17,10 +17,12 @@
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
                                          $timeout, $compile, websocketMsgSrv) {
-
+  var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.paragraph = null;
   $scope.originalText = '';
   $scope.editor = null;
+  var paragraphScope = $rootScope.$new(true, $rootScope);
+  var angularObjectRegistry = {};
 
   var editorModes = {
     'ace/mode/scala': /^%spark/,
@@ -84,7 +86,7 @@ angular.module('zeppelinWebApp')
         try {
           angular.element('#p'+$scope.paragraph.id+'_angular').html($scope.paragraph.result.msg);
 
-          $compile(angular.element('#p'+$scope.paragraph.id+'_angular').contents())($rootScope.compiledScope);
+          $compile(angular.element('#p'+$scope.paragraph.id+'_angular').contents())(paragraphScope);
         } catch(err) {
           console.log('ANGULAR rendering error %o', err);
         }
@@ -131,6 +133,85 @@ angular.module('zeppelinWebApp')
   };
 
 
+
+  $scope.$on('angularObjectUpdate', function(event, data) {
+    var noteId = $route.current.pathParams.noteId;
+    if (!data.noteId || (data.noteId === noteId && (!data.paragraphId || data.paragraphId === $scope.paragraph.id))) {
+      var scope = paragraphScope;
+      var varName = data.angularObject.name;
+
+      if (angular.equals(data.angularObject.object, scope[varName])) {
+        // return when update has no change
+        return;
+      }
+
+      if (!angularObjectRegistry[varName]) {
+        angularObjectRegistry[varName] = {
+          interpreterGroupId : data.interpreterGroupId,
+          noteId : data.noteId,
+          paragraphId : data.paragraphId
+        };
+      } else {
+        angularObjectRegistry[varName].noteId = angularObjectRegistry[varName].noteId || data.noteId;
+        angularObjectRegistry[varName].paragraphId = angularObjectRegistry[varName].paragraphId || data.paragraphId;
+      }
+
+      angularObjectRegistry[varName].skipEmit = true;
+
+      if (!angularObjectRegistry[varName].clearWatcher) {
+        angularObjectRegistry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
+          console.log('angular object (paragraph) updated %o %o', varName, angularObjectRegistry[varName]);
+          if (angularObjectRegistry[varName].skipEmit) {
+            angularObjectRegistry[varName].skipEmit = false;
+            return;
+          }
+          websocketMsgSrv.updateAngularObject(
+            angularObjectRegistry[varName].noteId,
+            angularObjectRegistry[varName].paragraphId,
+            varName,
+            newValue,
+            angularObjectRegistry[varName].interpreterGroupId);
+        });
+      }
+      console.log('angular object (paragraph) created %o', varName);
+      scope[varName] = data.angularObject.object;
+
+      // create proxy for AngularFunction
+      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
+        scope[funcName] = function() {
+          scope[varName] = arguments;
+          console.log('angular function (paragraph) invoked %o', arguments);
+        };
+
+        console.log('angular function (paragraph) created %o', scope[funcName]);
+      }
+    }
+  });
+
+
+  $scope.$on('angularObjectRemove', function(event, data) {
+    var noteId = $route.current.pathParams.noteId;
+    if (!data.noteId || (data.noteId === noteId && (!data.paragraphId || data.paragraphId === $scope.paragraph.id))) {
+      var scope = paragraphScope;
+      var varName = data.name;
+
+      // clear watcher
+      if (angularObjectRegistry[varName]) {
+        angularObjectRegistry[varName].clearWatcher();
+        angularObjectRegistry[varName] = undefined;
+      }
+
+      // remove scope variable
+      scope[varName] = undefined;
+
+      // remove proxy for AngularFunction
+      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
+        scope[funcName] = undefined;
+      }
+    }
+  });
 
   var initializeDefault = function() {
     var config = $scope.paragraph.config;
