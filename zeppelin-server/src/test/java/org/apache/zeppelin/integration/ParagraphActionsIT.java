@@ -32,8 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
-public class ParagraphActions extends AbstractZeppelinIT {
-  private static final Logger LOG = LoggerFactory.getLogger(ParagraphActions.class);
+public class ParagraphActionsIT extends AbstractZeppelinIT {
+  private static final Logger LOG = LoggerFactory.getLogger(ParagraphActionsIT.class);
 
 
   @Rule

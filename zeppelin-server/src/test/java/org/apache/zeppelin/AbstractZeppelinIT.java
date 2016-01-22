@@ -96,8 +96,6 @@ abstract public class AbstractZeppelinIT {
     });
   }
 
-  ;
-
   protected boolean endToEndTestEnabled() {
     return null != System.getenv("CI");
   }
