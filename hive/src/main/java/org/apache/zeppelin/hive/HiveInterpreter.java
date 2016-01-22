@@ -334,15 +334,16 @@ public class HiveInterpreter extends Interpreter {
   }
 
   public String getPropertyKey(String cmd) {
-    int firstLineIndex = cmd.indexOf("\n");
-    if (-1 == firstLineIndex) {
-      firstLineIndex = cmd.length();
-    }
-    int configStartIndex = cmd.indexOf("(");
-    int configLastIndex = cmd.indexOf(")");
-    if (configStartIndex != -1 && configLastIndex != -1
-        && configLastIndex < firstLineIndex && configLastIndex < firstLineIndex) {
-      return cmd.substring(configStartIndex + 1, configLastIndex);
+    boolean firstLineIndex = cmd.startsWith("(");
+
+    if (firstLineIndex) {
+      int configStartIndex = cmd.indexOf("(");
+      int configLastIndex = cmd.indexOf(")");
+      if (configStartIndex != -1 && configLastIndex != -1) {
+        return cmd.substring(configStartIndex + 1, configLastIndex);
+      } else {
+        return null;
+      }
     }
     return null;
   }
