@@ -68,6 +68,19 @@ public class HiveInterpreterTest {
   }
 
   @Test
+  public void testForParsePropertyKey() throws IOException {
+    HiveInterpreter t = new HiveInterpreter(new Properties());
+    
+    // if return null is that propertyKey is the default
+    assertEquals(t.getPropertyKey("select max(cant) from test_table where id >= 2452640"),
+        null);
+    
+    // when you use a %hive(production), production is the propertyKey as form part of the cmd string
+    assertEquals(t.getPropertyKey("(production)\n select max(cant) from test_table where id >= 2452640"),
+        "production");
+  }
+  
+  @Test
   public void readTest() throws IOException {
     Properties properties = new Properties();
     properties.setProperty("common.max_count", "1000");
