@@ -285,7 +285,10 @@ public class RemoteInterpreterServer
 
     @Override
     public Map<String, Object> info() {
-      return null;
+      if (infos == null) {
+        infos = new HashMap<>();
+      }
+      return infos;
     }
 
     @Override

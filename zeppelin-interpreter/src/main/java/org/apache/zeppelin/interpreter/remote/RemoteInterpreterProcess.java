@@ -261,6 +261,12 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
     }
   }
 
+  public void setMaxPoolSize(int size) {
+    if (clientPool != null) {
+      //Size + 2 for progress poller , cancel operation
+      clientPool.setMaxTotal(size + 2);
+    }
+  }
   /**
    * Called when angular object is updated in client side to propagate
    * change to the remote process
