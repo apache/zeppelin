@@ -14,25 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.display
+package org.apache.zeppelin.display.angular
 
-import java.io.{PrintStream, ByteArrayOutputStream}
+import java.io.{ByteArrayOutputStream, PrintStream}
 import java.util
 
+import org.apache.zeppelin.display.{AngularObject, AngularObjectRegistry, GUI}
 import org.apache.zeppelin.interpreter._
 import org.scalatest.concurrent.Eventually
-import org.scalatest.{Matchers, BeforeAndAfterEach, BeforeAndAfter, FlatSpec}
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach, FlatSpec, Matchers}
 
 /**
   * Test
   */
-class AngularElemTest
+trait AbstractAngularElemTest
   extends FlatSpec with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
-  import AngularElem._
 
   override def beforeEach() {
     val intpGroup = new InterpreterGroup()
-    val context = new InterpreterContext("note", "id", "title", "text",
+    val context = new InterpreterContext("note", "paragraph", "title", "text",
       new util.HashMap[String, Object](), new GUI(), new AngularObjectRegistry(
         intpGroup.getId(), null),
       new util.LinkedList[InterpreterContextRunner](),
@@ -50,15 +50,19 @@ class AngularElemTest
     super.beforeEach() // To be stackable, must call super.beforeEach
   }
 
+  def angularElem(elem: scala.xml.Elem): AbstractAngularElem;
+  def angularModel(name: String): AbstractAngularModel;
+
+
   "AngularElem" should "provide onclick method" in {
-    registry.getAll("note").size() should be(0)
+    registrySize should be(0)
 
     var a = 0
-    val elem = <div></div>.onClick(() => {
+    val elem = angularElem(<div></div>).onClick(() => {
       a = a + 1
     })
-
-    registry.getAll("note").size() should be(1)
+    elem.angularObjects.get("ng-click") should not be(null)
+    registrySize should be(1)
 
     // click create thread for callback function to run. So it'll may not immediately invoked
     // after click. therefore eventually should be
@@ -74,47 +78,50 @@ class AngularElemTest
 
     // disassociate
     elem.disassociate()
-    registry.getAll("note").size() should be(0)
+    registrySize should be(0)
   }
 
   "AngularElem" should "print angular display directive only once in a paragraph" in {
     val out = new ByteArrayOutputStream()
     val printOut = new PrintStream(out)
 
-    <div></div>.display(printOut)
-    out.toString should be("%angular <div></div>")
+    angularElem(<div></div>).display(printOut)
+    out.toString should be("<div></div>")
 
     out.reset
-    <div></div>.display(printOut)
+    angularElem(<div></div>).display(printOut)
     out.toString should be("<div></div>")
   }
 
   "AngularElem" should "bind angularObject to ng-model directive " in {
-    <div></div>.model("name", "value").toString should be("<div ng-model=\"name\"></div>")
-    <div></div>.model("name", "value").model() should be("value")
-    <div></div>.model() should be(None)
+    angularElem(<div></div>)
+      .model("name", "value").toString should be("<div ng-model=\"name\"></div>")
+    angularElem(<div></div>).model("name", "value").model() should be("value")
+    angularElem(<div></div>).model() should be(None)
   }
 
   "AngularElem" should "able to disassociate AngularObjects" in {
-    val elem1 = <div></div>.model("name1", "value1")
-    val elem2 = <div></div>.model("name2", "value2")
-    val elem3 = <div></div>.model("name3", "value3")
+    val elem1 = angularElem(<div></div>).model("name1", "value1")
+    val elem2 = angularElem(<div></div>).model("name2", "value2")
+    val elem3 = angularElem(<div></div>).model("name3", "value3")
 
     registrySize should be(3)
 
     elem1.disassociate()
     registrySize should be(2)
 
-    AngularElem.disassociate()
+    elem2.disassociate()
+    elem3.disassociate()
     registrySize should be(0)
   }
 
   "AngularElem" should "allow access to InterpreterContext inside of callback function" in {
-    AngularModel("name", "value")
+    angularModel("name").value("value")
+
     var modelValue = ""
 
-    val elem = <div></div>.onClick(() =>
-      modelValue = AngularModel("name")().toString
+    val elem = angularElem(<div></div>).onClick(() =>
+      modelValue = angularModel("name")().toString
     )
 
     click(elem)
@@ -128,20 +135,20 @@ class AngularElemTest
   }
 
   def registrySize = {
-    registry.getAll(noteId).size
+    registry.getAllWithGlobal("note").size()
   }
 
   def noteId = {
     InterpreterContext.get().getNoteId
   }
 
-  def click(elem: AngularElem) = {
+  def click(elem: org.apache.zeppelin.display.angular.AbstractAngularElem) = {
     fireEvent("ng-click", elem)
   }
 
   // simulate click
-  def fireEvent(eventName: String, elem: AngularElem) = {
-    val angularObject:AngularObject[Any] = elem.angularObjects(eventName);
+  def fireEvent(eventName: String, elem: org.apache.zeppelin.display.angular.AbstractAngularElem) = {
+    val angularObject: AngularObject[Any] = elem.angularObjects(eventName);
     angularObject.set("event");
   }
 }

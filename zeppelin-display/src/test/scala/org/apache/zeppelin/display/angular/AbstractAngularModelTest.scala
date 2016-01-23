@@ -14,16 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.display
+package org.apache.zeppelin.display.angular
 
+import org.apache.zeppelin.display.{AngularObjectRegistry, GUI}
 import org.apache.zeppelin.interpreter._
 import org.scalatest.concurrent.Eventually
-import org.scalatest.{Matchers, BeforeAndAfter, BeforeAndAfterEach, FlatSpec}
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach, FlatSpec, Matchers}
 
 /**
-  * Test for AngularModel
+  * Abstract Test for AngularModel
   */
-class AngularModelTest extends FlatSpec
+trait AbstractAngularModelTest extends FlatSpec
 with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
   override def beforeEach() {
     val intpGroup = new InterpreterGroup()
@@ -45,24 +46,27 @@ with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
     super.beforeEach() // To be stackable, must call super.beforeEach
   }
 
+  def angularModel(name: String): AbstractAngularModel
+  def angularModel(name: String, value: Any): AbstractAngularModel
+
   "AngularModel" should "able to create AngularObject" in {
     val registry = InterpreterContext.get().getAngularObjectRegistry
     registrySize should be(0)
 
-    AngularModel("model1")() should be(None)
+    angularModel("model1")() should be(None)
     registrySize should be(0)
 
-    AngularModel("model1", "value1")() should be("value1")
+    angularModel("model1", "value1")() should be("value1")
     registrySize should be(1)
 
-    AngularModel("model1")() should be("value1")
+    angularModel("model1")() should be("value1")
     registrySize should be(1)
   }
 
   "AngularModel" should "able to update AngularObject" in {
     val registry = InterpreterContext.get().getAngularObjectRegistry
 
-    val model1 = AngularModel("model1", "value1")
+    val model1 = angularModel("model1", "value1")
     model1() should be("value1")
     registrySize should be(1)
 
@@ -70,15 +74,15 @@ with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
     model1() should be("newValue1")
     registrySize should be(1)
 
-    AngularModel("model1", "value2")() should be("value2")
+    angularModel("model1", "value2")() should be("value2")
     registrySize should be(1)
   }
 
   "AngularModel" should "able to remove AngularObject" in {
-    AngularModel("model1", "value1")
+    angularModel("model1", "value1")
     registrySize should be(1)
 
-    AngularModel("model1").remove()
+    angularModel("model1").remove()
     registrySize should be(0)
   }
 
@@ -88,6 +92,6 @@ with BeforeAndAfter with BeforeAndAfterEach with Eventually with Matchers {
   }
 
   def registrySize() = {
-    registry().getAll(InterpreterContext.get().getNoteId).size
+    registry().getAllWithGlobal(InterpreterContext.get().getNoteId).size
   }
 }

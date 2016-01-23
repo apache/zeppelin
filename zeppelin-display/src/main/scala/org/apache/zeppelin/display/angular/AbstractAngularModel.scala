@@ -14,23 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.display
+package org.apache.zeppelin.display.angular
 
+import org.apache.zeppelin.display.AngularObject
 import org.apache.zeppelin.interpreter.InterpreterContext
 
 /**
-  * Represents ng-model
+  * Represents ng-model with angular object
   */
-class AngularModel(name: String) {
-  val registry = InterpreterContext.get.getAngularObjectRegistry
-  val noteId = InterpreterContext.get.getNoteId
+abstract class AbstractAngularModel(name: String) {
+  val context = InterpreterContext.get
+  val registry = context.getAngularObjectRegistry
 
+
+  /**
+    * Create AngularModel with initial Value
+    * @param name name of model
+    * @param newValue value
+    */
   def this(name: String, newValue: Any) = {
     this(name)
-
     value(newValue)
   }
 
+  protected def getAngularObject(): AngularObject[Any]
+  protected def addAngularObject(value: Any): AngularObject[Any]
 
   /**
     * Get value of the model
@@ -45,7 +53,7 @@ class AngularModel(name: String) {
     * @return
     */
   def value(): Any = {
-    val angularObject = registry.get(name, noteId)
+    val angularObject = getAngularObject()
     if (angularObject == null) {
       None
     } else {
@@ -58,45 +66,30 @@ class AngularModel(name: String) {
     value(newValue)
   }
 
-  def :=(newValue: Any) = {
-    new AngularModel(name, newValue)
-  }
 
   /**
     * Set value of the model
     * @param newValue
     */
   def value(newValue: Any): Unit = {
-    var angularObject = registry.get(name, noteId)
+    var angularObject = getAngularObject()
     if (angularObject == null) {
       // create new object
-      angularObject = registry.add(name, newValue, noteId)
+      angularObject = addAngularObject(newValue)
     } else {
-      angularObject.asInstanceOf[AngularObject[Any]].set(newValue)
+      angularObject.set(newValue)
     }
     angularObject.get()
   }
 
   def remove(): Any = {
-    val angularObject = registry.get(name, noteId)
-    registry.remove(name, noteId)
+    val angularObject = getAngularObject()
 
     if (angularObject == null) {
       None
     } else {
+      registry.remove(name, angularObject.getNoteId(), angularObject.getParagraphId())
       angularObject.get
     }
   }
-}
-
-
-object AngularModel {
-  def apply(name: String): AngularModel = {
-    new AngularModel(name)
-  }
-
-  def apply(name: String, newValue: Any): AngularModel = {
-    new AngularModel(name, newValue)
-  }
-
 }

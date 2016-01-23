@@ -14,26 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.zeppelin.display
+package org.apache.zeppelin.display.angular
 
 import java.io.PrintStream
 
-import org.apache.zeppelin.interpreter.InterpreterContext
+import org.apache.zeppelin.display.{AngularObjectWatcher, AngularObject}
+import org.apache.zeppelin.interpreter.{InterpreterResult, InterpreterContext}
 
-import scala.collection.JavaConversions
 import scala.xml._
 
-class AngularElem(val interpreterContext: InterpreterContext,
-                  val modelName: String,
-                  val angularObjects: Map[String, AngularObject[Any]],
-                  prefix: String,
-                  label: String,
-                  attributes1: MetaData,
-                  scope: NamespaceBinding,
-                  minimizeEmpty: Boolean,
-                  child: Node*)
+/**
+  * Element that binded to Angular object
+  */
+abstract class AbstractAngularElem(val interpreterContext: InterpreterContext,
+                                   val modelName: String,
+                                   val angularObjects: Map[String, AngularObject[Any]],
+                                   prefix: String,
+                                   label: String,
+                                   attributes1: MetaData,
+                                   scope: NamespaceBinding,
+                                   minimizeEmpty: Boolean,
+                                   child: Node*)
   extends Elem(prefix, label, attributes1, scope, minimizeEmpty, child:_*) {
+
   val uniqueId = java.util.UUID.randomUUID.toString.replaceAll("-", "_")
 
   /**
@@ -41,7 +44,7 @@ class AngularElem(val interpreterContext: InterpreterContext,
     * @param callback
     * @return
     */
-  def onClick(callback: () => Unit): AngularElem = {
+  def onClick(callback: () => Unit): AbstractAngularElem = {
     onEvent("ng-click", callback)
   }
 
@@ -50,7 +53,7 @@ class AngularElem(val interpreterContext: InterpreterContext,
     * @param callback
     * @return
     */
-  def onChange(callback: () => Unit): AngularElem = {
+  def onChange(callback: () => Unit): AbstractAngularElem = {
     onEvent("ng-change", callback)
   }
 
@@ -60,7 +63,7 @@ class AngularElem(val interpreterContext: InterpreterContext,
     * @param value initialValue
     * @return
     */
-  def model(name: String, value: Any): AngularElem = {
+  def model(name: String, value: Any): AbstractAngularElem = {
     val registry = interpreterContext.getAngularObjectRegistry
 
     // create AngularFunction in current paragraph
@@ -68,18 +71,18 @@ class AngularElem(val interpreterContext: InterpreterContext,
       Text(s"${name}"),
       Null)
 
-    val angularObject = registry.add(name, value, interpreterContext.getNoteId)
+    val angularObject = addAngularObject(name, value)
       .asInstanceOf[AngularObject[Any]]
 
-    new AngularElem(
+    newElem(
       interpreterContext,
       name,
       angularObjects + (name -> angularObject),
-      elem.prefix, elem.label, elem.attributes, elem.scope, elem.minimizeEmpty, elem.child:_*)
+      elem)
   }
 
 
-  def model(name: String): AngularElem = {
+  def model(name: String): AbstractAngularElem = {
     val registry = interpreterContext.getAngularObjectRegistry
 
     // create AngularFunction in current paragraph
@@ -87,11 +90,11 @@ class AngularElem(val interpreterContext: InterpreterContext,
       Text(s"${name}"),
       Null)
 
-    new AngularElem(
+    newElem(
       interpreterContext,
       name,
       angularObjects,
-      elem.prefix, elem.label, elem.attributes, elem.scope, elem.minimizeEmpty, elem.child:_*)
+      elem)
   }
 
   /**
@@ -111,7 +114,7 @@ class AngularElem(val interpreterContext: InterpreterContext,
     * @param eventName angular directive like ng-click, ng-change, etc.
     * @return
     */
-  def onEvent(eventName: String, callback: () => Unit): AngularElem = {
+  def onEvent(eventName: String, callback: () => Unit): AbstractAngularElem = {
     val registry = interpreterContext.getAngularObjectRegistry
 
     // create AngularFunction in current paragraph
@@ -120,8 +123,7 @@ class AngularElem(val interpreterContext: InterpreterContext,
       Text(s"${functionName}=$$event.timeStamp"),
       Null)
 
-    val angularObject = registry.add(functionName, "", interpreterContext.getNoteId)
-      .asInstanceOf[AngularObject[Any]]
+    val angularObject = addAngularObject(functionName, "")
 
     angularObject.addWatcher(new AngularObjectWatcher(interpreterContext) {
       override def watch(oldObject: scala.Any, newObject: scala.Any, context: InterpreterContext)
@@ -131,33 +133,19 @@ class AngularElem(val interpreterContext: InterpreterContext,
       }
     })
 
-    new AngularElem(
+    newElem(
       interpreterContext,
       modelName,
       angularObjects + (eventName -> angularObject),
-      elem.prefix, elem.label, elem.attributes, elem.scope, elem.minimizeEmpty, elem.child:_*)
+      elem)
   }
 
-  /**
-    * Print with %angular prefix
-    * @return
-    */
-  def display(out: java.io.PrintStream): Unit = {
-    if (AngularElem.angularDirectivePrinted != interpreterContext.hashCode()) {
-      AngularElem.angularDirectivePrinted = interpreterContext.hashCode()
-      out.print("%angular ")
-    }
-    out.print(this.toString)
-    out.flush()
-  }
+  protected def addAngularObject(name: String, value: Any): AngularObject[Any]
 
-  /**
-    * Print with %angular prefix
-    */
-  def display(): Unit = {
-    val out = interpreterContext.out
-    display(new PrintStream(out))
-  }
+  protected def newElem(interpreterContext: InterpreterContext,
+                        name: String,
+                        angularObjects: Map[String, AngularObject[Any]],
+                        elem: scala.xml.Elem): AbstractAngularElem
 
   /**
     * disassociate this element and it's child from front-end
@@ -172,34 +160,33 @@ class AngularElem(val interpreterContext: InterpreterContext,
     * @param node
     */
   private def remove(node: Node): Unit = {
-    if (node.isInstanceOf[AngularElem]) {
-      node.asInstanceOf[AngularElem].angularObjects.values.foreach{ ao =>
-        interpreterContext.getAngularObjectRegistry.remove(ao.getName, ao.getNoteId)
+    if (node.isInstanceOf[AbstractAngularElem]) {
+      node.asInstanceOf[AbstractAngularElem].angularObjects.values.foreach{ ao =>
+        interpreterContext.getAngularObjectRegistry.remove(ao.getName, ao.getNoteId, ao
+          .getParagraphId)
       }
     }
 
     node.child.foreach(remove _)
   }
-}
-
-object AngularElem {
-  implicit def Elem2AngularDisplayElem(elem: Elem) : AngularElem = {
-    new AngularElem(InterpreterContext.get(), null,
-      Map[String, AngularObject[Any]](),
-      elem.prefix, elem.label, elem.attributes, elem.scope, elem.minimizeEmpty, elem.child:_*);
-  }
-
-  private var angularDirectivePrinted: Int = 0
 
   /**
-    * Disassociate (remove) all angular object in this notebook
+    * Print into provided print stream
+    * @return
     */
-  def disassociate() = {
-    val ic = InterpreterContext.get
-    val registry = ic.getAngularObjectRegistry
+  def display(out: java.io.PrintStream): Unit = {
+    out.print(this.toString)
+    out.flush()
+  }
 
-    JavaConversions.asScalaBuffer(registry.getAll(ic.getNoteId)).foreach(ao =>
-      registry.remove(ao.getName, ao.getNoteId)
-    )
+  /**
+    * Print into InterpreterOutput
+    */
+  def display(): Unit = {
+    val out = interpreterContext.out
+    out.setType(InterpreterResult.Type.ANGULAR)
+    out.write(this.toString())
+    out.flush()
   }
 }
+
