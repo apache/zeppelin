@@ -160,7 +160,7 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     BootstrapDialog.confirm({
       closable: true,
       title: '',
-      message: 'Commit notebook to local Git repository?',
+      message: 'Commit notebook to current repository?',
       callback: function(result) {
         if (result) {
           websocketMsgSrv.checkpointNotebook($routeParams.noteId, commitMessage);

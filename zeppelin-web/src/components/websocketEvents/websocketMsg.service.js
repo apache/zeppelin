@@ -127,12 +127,12 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
-    checkpointNotebook: function(noteId, gitCommitMessage) {
+    checkpointNotebook: function(noteId, commitMessage) {
       websocketEvents.sendNewEvent({
         op: 'CHECKPOINT_NOTEBOOK',
         data: {
           noteId: noteId,
-          gitCommitMessage: gitCommitMessage
+          commitMessage: commitMessage
         }
       });
     },
