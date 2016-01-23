@@ -320,18 +320,59 @@ public class NotebookTest implements JobListenerFactory{
         .getInterpreterSettings().get(0).getInterpreterGroup()
         .getAngularObjectRegistry();
 
-    // add local scope object
-    registry.add("o1", "object1", note.id(), null);
+    Paragraph p1 = note.addParagraph();
+
+    // add paragraph scope object
+    registry.add("o1", "object1", note.id(), p1.getId());
+
+    // add notebook scope object
+    registry.add("o2", "object2", note.id(), null);
+
     // add global scope object
-    registry.add("o2", "object2", null, null);
+    registry.add("o3", "object3", null, null);
 
     // remove notebook
     notebook.removeNote(note.id());
 
-    // local object should be removed
+    // notebook scope or paragraph scope object should be removed
     assertNull(registry.get("o1", note.id(), null));
+    assertNull(registry.get("o2", note.id(), p1.getId()));
+
     // global object sould be remained
-    assertNotNull(registry.get("o2", null, null));
+    assertNotNull(registry.get("o3", null, null));
+  }
+
+  @Test
+  public void testAngularObjectRemovalOnParagraphRemove() throws InterruptedException,
+      IOException {
+    // create a note and a paragraph
+    Note note = notebook.createNote();
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
+    AngularObjectRegistry registry = note.getNoteReplLoader()
+        .getInterpreterSettings().get(0).getInterpreterGroup()
+        .getAngularObjectRegistry();
+
+    Paragraph p1 = note.addParagraph();
+
+    // add paragraph scope object
+    registry.add("o1", "object1", note.id(), p1.getId());
+
+    // add notebook scope object
+    registry.add("o2", "object2", note.id(), null);
+
+    // add global scope object
+    registry.add("o3", "object3", null, null);
+
+    // remove notebook
+    note.removeParagraph(p1.getId());
+
+    // paragraph scope should be removed
+    assertNull(registry.get("o1", note.id(), null));
+
+    // notebook scope and global object sould be remained
+    assertNotNull(registry.get("o2", note.id(), null));
+    assertNotNull(registry.get("o3", null, null));
   }
 
   @Test
