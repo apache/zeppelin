@@ -284,8 +284,18 @@ public class Notebook {
     for (InterpreterSetting settings : replFactory.get()) {
       AngularObjectRegistry registry = settings.getInterpreterGroup().getAngularObjectRegistry();
       if (registry instanceof RemoteAngularObjectRegistry) {
+        // remove paragraph scope object
+        for (Paragraph p : note.getParagraphs()) {
+          ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, p.getId());
+        }
+        // remove notebook scope object
         ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, null);
       } else {
+        // remove paragraph scope object
+        for (Paragraph p : note.getParagraphs()) {
+          registry.removeAll(id, p.getId());
+        }
+        // remove notebook scope object
         registry.removeAll(id, null);
       }
     }
