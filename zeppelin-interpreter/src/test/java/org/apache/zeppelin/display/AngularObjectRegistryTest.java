@@ -18,6 +18,8 @@
 package org.apache.zeppelin.display;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -45,32 +47,68 @@ public class AngularObjectRegistryTest {
           }
 
           @Override
-          public void onRemove(String interpreterGroupId, String name, String noteId) {
+          public void onRemove(String interpreterGroupId, String name, String noteId, String paragraphId) {
             onRemove.incrementAndGet();
           }
     });
 
-    registry.add("name1", "value1", "note1");
-    assertEquals(1, registry.getAll("note1").size());
+    registry.add("name1", "value1", "note1", null);
+    assertEquals(1, registry.getAll("note1", null).size());
     assertEquals(1, onAdd.get());
     assertEquals(0, onUpdate.get());
 
-    registry.get("name1", "note1").set("newValue");
+    registry.get("name1", "note1", null).set("newValue");
     assertEquals(1, onUpdate.get());
 
-    registry.remove("name1", "note1");
-    assertEquals(0, registry.getAll("note1").size());
+    registry.remove("name1", "note1", null);
+    assertEquals(0, registry.getAll("note1", null).size());
     assertEquals(1, onRemove.get());
 
-    assertEquals(null, registry.get("name1", "note1"));
+    assertEquals(null, registry.get("name1", "note1", null));
     
     // namespace
-    registry.add("name1", "value11", "note2");
-    assertEquals("value11", registry.get("name1", "note2").get());
-    assertEquals(null, registry.get("name1", "note1"));
+    registry.add("name1", "value11", "note2", null);
+    assertEquals("value11", registry.get("name1", "note2", null).get());
+    assertEquals(null, registry.get("name1", "note1", null));
     
     // null namespace
-    registry.add("name1", "global1", null);
-    assertEquals("global1", registry.get("name1", null).get());
+    registry.add("name1", "global1", null, null);
+    assertEquals("global1", registry.get("name1", null, null).get());
   }
+
+  @Test
+  public void testGetDependOnScope() {
+    AngularObjectRegistry registry = new AngularObjectRegistry("intpId", null);
+    AngularObject ao1 = registry.add("name1", "o1", "noteId1", "paragraphId1");
+    AngularObject ao2 = registry.add("name2", "o2", "noteId1", "paragraphId1");
+    AngularObject ao3 = registry.add("name2", "o3", "noteId1", "paragraphId2");
+    AngularObject ao4 = registry.add("name3", "o4", "noteId1", null);
+    AngularObject ao5 = registry.add("name4", "o5", null, null);
+
+
+    assertNull(registry.get("name3", "noteId1", "paragraphId1"));
+    assertNull(registry.get("name1", "noteId2", null));
+    assertEquals("o1", registry.get("name1", "noteId1", "paragraphId1").get());
+    assertEquals("o2", registry.get("name2", "noteId1", "paragraphId1").get());
+    assertEquals("o3", registry.get("name2", "noteId1", "paragraphId2").get());
+    assertEquals("o4", registry.get("name3", "noteId1", null).get());
+    assertEquals("o5", registry.get("name4", null, null).get());
+  }
+
+  @Test
+  public void testGetAllDependOnScope() {
+    AngularObjectRegistry registry = new AngularObjectRegistry("intpId", null);
+    AngularObject ao1 = registry.add("name1", "o", "noteId1", "paragraphId1");
+    AngularObject ao2 = registry.add("name2", "o", "noteId1", "paragraphId1");
+    AngularObject ao3 = registry.add("name2", "o", "noteId1", "paragraphId2");
+    AngularObject ao4 = registry.add("name3", "o", "noteId1", null);
+    AngularObject ao5 = registry.add("name4", "o", null, null);
+
+    assertEquals(2, registry.getAll("noteId1", "paragraphId1").size());
+    assertEquals(1, registry.getAll("noteId1", "paragraphId2").size());
+    assertEquals(1, registry.getAll("noteId1", null).size());
+    assertEquals(1, registry.getAll(null, null).size());
+    assertEquals(5, registry.getAllWithGlobal("noteId1").size());
+  }
+
 }

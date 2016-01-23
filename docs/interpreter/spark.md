@@ -8,7 +8,6 @@ group: manual
 
 
 ## Spark Interpreter for Apache Zeppelin
-
 [Apache Spark](http://spark.apache.org) is supported in Zeppelin with 
 Spark Interpreter group, which consisted of 4 interpreters.
 
@@ -40,14 +39,10 @@ Spark Interpreter group, which consisted of 4 interpreters.
   </tr>
 </table>
 
-<br />
 ## Configuration
-
 Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need to follow below two simple steps.
 
-
 ### 1. Export SPARK_HOME
-
 In **conf/zeppelin-env.sh**, export `SPARK_HOME` environment variable with your Spark installation path.
 
 for example
@@ -64,7 +59,6 @@ export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0"
 ```
 
 ### 2. Set master in Interpreter menu
-
 After start Zeppelin, go to **Interpreter** menu and edit **master** property in your Spark interpreter setting. The value may vary depending on your Spark cluster deployment type.
 
 for example,
@@ -74,25 +68,21 @@ for example,
  * **yarn-client** in Yarn client mode
  * **mesos://host:5050** in Mesos cluster
 
-
-
 That's it. Zeppelin will work with any version of Spark and any deployment type without rebuilding Zeppelin in this way. ( Zeppelin 0.5.5-incubating release works up to Spark 1.5.2 )
 
 > Note that without exporting `SPARK_HOME`, it's running in local mode with included version of Spark. The included version may vary depending on the build profile.
 
-<br />
 ## SparkContext, SQLContext, ZeppelinContext
 SparkContext, SQLContext, ZeppelinContext are automatically created and exposed as variable names 'sc', 'sqlContext' and 'z', respectively, both in scala and python environments.
 
 > Note that scala / python environment shares the same SparkContext, SQLContext, ZeppelinContext instance.
 
-<br />
 <a name="dependencyloading"> </a>
+
 ## Dependency Management
 There are two ways to load external library in spark interpreter. First is using Zeppelin's `%dep` interpreter and second is loading Spark properties.
 
 ### 1. Dynamic Dependency Loading via %dep interpreter
-
 When your code requires external library, instead of doing download/copy/restart Zeppelin, you can easily do following jobs using `%dep` interpreter.
 
  * Load libraries recursively from Maven repository
@@ -182,15 +172,13 @@ Here are few examples:
 		spark.jars.packages		com.databricks:spark-csv_2.10:1.2.0
 		spark.files				/path/mylib1.py,/path/mylib2.egg,/path/mylib3.zip
 
-<br />
 ## ZeppelinContext
-
 Zeppelin automatically injects ZeppelinContext as variable 'z' in your scala/python environment. ZeppelinContext provides some additional functions and utility.
 
 ### Object Exchange
-
 ZeppelinContext extends map and it's shared between scala, python environment.
 So you can put some object from scala and read it from python, vise versa.
+
 <div class="codetabs">
   <div data-lang="scala" markdown="1">
 
@@ -212,6 +200,7 @@ myObject = z.get("objName")
   
   </div>
 </div>
+
 ### Form Creation
 
 ZeppelinContext provides functions for creating forms. 
