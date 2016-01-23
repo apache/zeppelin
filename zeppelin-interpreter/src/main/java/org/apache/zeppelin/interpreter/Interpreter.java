@@ -127,10 +127,6 @@ public abstract class Interpreter {
     }
   }
 
-
-
-
-
   public static Logger logger = LoggerFactory.getLogger(Interpreter.class);
   private InterpreterGroup interpreterGroup;
   private URL [] classloaderUrls;

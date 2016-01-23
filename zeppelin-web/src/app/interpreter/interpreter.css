@@ -34,6 +34,13 @@
   font-size: 12px;
 }
 
+.interpreter input {
+  width: 100%;
+  display: block;
+  height: 23px;
+  border: 1px solid #CCCCCC;
+}
+
 .interpreter .interpreter-title {
   font-size: 20px;
   font-weight: bold;

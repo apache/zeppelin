@@ -165,7 +165,7 @@ public class SparkDependencyContext {
       collectRequest.addRepository(repo);
     }
     for (Repository repo : repositories) {
-      RemoteRepository rr = new RemoteRepository(repo.getName(), "default", repo.getUrl());
+      RemoteRepository rr = new RemoteRepository(repo.getId(), "default", repo.getUrl());
       rr.setPolicy(repo.isSnapshot(), null);
       Authentication auth = repo.getAuthentication();
       if (auth != null) {

@@ -55,6 +55,7 @@ import org.junit.Test;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonatype.aether.RepositoryException;
 
 public class NotebookTest implements JobListenerFactory{
   private static final Logger logger = LoggerFactory.getLogger(NotebookTest.class);
@@ -161,7 +162,7 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testPersist() throws IOException, SchedulerException{
+  public void testPersist() throws IOException, SchedulerException, RepositoryException {
     Note note = notebook.createNote();
 
     // run with default repl

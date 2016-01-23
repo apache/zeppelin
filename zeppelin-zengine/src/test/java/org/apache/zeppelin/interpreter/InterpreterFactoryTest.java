@@ -24,17 +24,20 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.sonatype.aether.RepositoryException;
 
 public class InterpreterFactoryTest {
 
@@ -98,14 +101,14 @@ public class InterpreterFactoryTest {
   }
 
   @Test
-  public void testFactoryDefaultList() throws IOException {
+  public void testFactoryDefaultList() throws IOException, RepositoryException {
     // get default list from default setting
     List<String> all = factory.getDefaultInterpreterSettingList();
     assertEquals(2, all.size());
     assertEquals(factory.get(all.get(0)).getInterpreterGroup().getFirst().getClassName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
 
     // add setting
-    factory.add("a mock", "mock2", new InterpreterOption(false), new Properties());
+    factory.add("a mock", "mock2", new LinkedList<Dependency>(), new InterpreterOption(false), new Properties());
     all = factory.getDefaultInterpreterSettingList();
     assertEquals(2, all.size());
     assertEquals("mock1", factory.get(all.get(0)).getName());
@@ -113,16 +116,16 @@ public class InterpreterFactoryTest {
   }
 
   @Test
-  public void testExceptions() throws IOException {
+  public void testExceptions() throws InterpreterException, IOException, RepositoryException {
     List<String> all = factory.getDefaultInterpreterSettingList();
     // add setting with null option & properties expected nullArgumentException.class
     try {
-      factory.add("a mock", "mock2", null, new Properties());
+      factory.add("a mock", "mock2", new LinkedList<Dependency>(), null, new Properties());
     } catch(NullArgumentException e) {
       assertEquals("Test null option" , e.getMessage(),new NullArgumentException("option").getMessage());
     }
     try {
-      factory.add("a mock" , "mock2" , new InterpreterOption(false),null);
+      factory.add("a mock", "mock2", new LinkedList<Dependency>(), new InterpreterOption(false), null);
     } catch (NullArgumentException e){
       assertEquals("Test null properties" , e.getMessage(),new NullArgumentException("properties").getMessage());
     }
@@ -130,14 +133,14 @@ public class InterpreterFactoryTest {
 
 
   @Test
-  public void testSaveLoad() throws InterpreterException, IOException {
+  public void testSaveLoad() throws IOException, RepositoryException {
     // interpreter settings
     assertEquals(2, factory.get().size());
 
     // check if file saved
     assertTrue(new File(conf.getInterpreterSettingPath()).exists());
 
-    factory.add("newsetting", "mock1", new InterpreterOption(false), new Properties());
+    factory.add("newsetting", "mock1", new LinkedList<Dependency>(), new InterpreterOption(false), new Properties());
     assertEquals(3, factory.get().size());
 
     InterpreterFactory factory2 = new InterpreterFactory(conf, null, null, null);

@@ -109,18 +109,74 @@ limitations under the License.
             </td>
           </tr>
         </table>
-        <form editable-form name="valueform" onaftersave="updateInterpreterSetting(setting.id)" ng-show="valueform.$visible">
-          <button type="submit" class="btn btn-primary"
-                  ng-disabled="valueform.$waiting">
-            Save
-          </button>
-          <button type="button" class="btn btn-default"
-                  ng-disabled="valueform.$waiting"
-                  ng-click="valueform.$cancel(); resetInterpreterSetting(setting.id)">
-            Cancel
-          </button>
-        </form>
       </div>
+
+      <div class="col-md-12" ng-show="!_.isEmpty(setting.dependencies) || valueform.$visible">
+        <h5>Dependencies</h5>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th style="width:40%">artifact</th>
+              <th>exclude</th>
+              <th ng-if="valueform.$visible">action</th>
+            </tr>
+          </thead>
+          <tr ng-repeat="dep in setting.dependencies">
+            <td>
+              <span editable-text="dep.groupArtifactVersion" e-placeholder="groupId:artifactId:version or local file path"
+                    e-form="valueform" e-msd-elastic e-style="width:100%">
+                {{dep.groupArtifactVersion | breakFilter}}
+              </span>
+            </td>
+            <td>
+              <textarea ng-if="valueform.$visible" ng-model="dep.exclusions"
+                        placeholder="(Optional) comma separated groupId:artifactId list"
+                        form="valueform"
+                        e-msd-elastic
+                        ng-list="">
+              </textarea>
+              <div ng-if="!valueform.$visible">{{dep.exclusions.join()}}</div>
+            </td>
+            <td ng-if="valueform.$visible">
+              <div class="btn btn-default btn-sm fa fa-remove"
+                   ng-click="removeInterpreterDependency(dep.groupArtifactVersion, setting.id)">
+              </div>
+            </td>
+          </tr>
+          <tr ng-if="valueform.$visible">
+            <td>
+              <input ng-model="setting.depArtifact"
+                     placeholder="groupId:artifactId:version or local file path"
+                     style="width: 100%">
+              </input>
+            </td>
+            <td>
+              <textarea ng-model="setting.depExclude"
+                        placeholder="(Optional) comma separated groupId:artifactId list"
+                        msd-elastic
+                        ng-list="">
+              </textarea>
+            </td>
+            <td>
+              <div class="btn btn-default btn-sm fa fa-plus"
+                   ng-click="addNewInterpreterDependency(setting.id)">
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <form editable-form name="valueform"
+            onaftersave="updateInterpreterSetting(valueform, setting.id)"
+            ng-show="valueform.$visible">
+        <button type="submit" class="btn btn-primary">
+          Save
+        </button>
+        <button type="button" class="btn btn-default"
+                ng-disabled="valueform.$waiting"
+                ng-click="valueform.$cancel(); resetInterpreterSetting(setting.id)">
+          Cancel
+        </button>
+      </form>
     </div>
   </div>
 </div>

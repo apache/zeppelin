@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.repository.RemoteRepository;
 import org.sonatype.aether.resolution.ArtifactResult;
 
@@ -47,6 +48,16 @@ public abstract class AbstractDependencyResolver {
       delRepo(id);
       RemoteRepository rr = new RemoteRepository(id, "default", url);
       rr.setPolicy(snapshot, null);
+      repos.add(rr);
+    }
+  }
+
+  public void addRepo(String id, String url, boolean snapshot, Authentication auth) {
+    synchronized (repos) {
+      delRepo(id);
+      RemoteRepository rr = new RemoteRepository(id, "default", url);
+      rr.setPolicy(snapshot, null);
+      rr.setAuthentication(auth);
       repos.add(rr);
     }
   }

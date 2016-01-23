@@ -23,13 +23,13 @@ import org.sonatype.aether.repository.Authentication;
  */
 public class Repository {
   private boolean snapshot = false;
-  private String name;
+  private String id;
   private String url;
   private String username = null;
   private String password = null;
 
-  public Repository(String name){
-    this.name = name;
+  public Repository(String id){
+    this.id = id;
   }
 
   public Repository url(String url) {
@@ -46,8 +46,8 @@ public class Repository {
     return snapshot;
   }
 
-  public String getName() {
-    return name;
+  public String getId() {
+    return id;
   }
 
   public String getUrl() {

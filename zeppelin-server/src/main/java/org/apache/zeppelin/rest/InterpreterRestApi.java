@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import org.sonatype.aether.RepositoryException;
 
 /**
  * Interpreter Rest API
@@ -85,17 +86,40 @@ public class InterpreterRestApi {
    */
   @POST
   @Path("setting")
-  public Response newSettings(String message) throws InterpreterException, IOException {
-    NewInterpreterSettingRequest request = gson.fromJson(message,
-        NewInterpreterSettingRequest.class);
-    Properties p = new Properties();
-    p.putAll(request.getProperties());
-    // Option is deprecated from API, always use remote = true
-    InterpreterGroup interpreterGroup = interpreterFactory.add(request.getName(),
-        request.getGroup(), new InterpreterOption(true), p);
-    InterpreterSetting setting = interpreterFactory.get(interpreterGroup.getId());
-    logger.info("new setting created with " + setting.id());
-    return new JsonResponse(Status.CREATED, "", setting ).build();
+  public Response newSettings(String message) {
+    try {
+      NewInterpreterSettingRequest request = gson.fromJson(message,
+          NewInterpreterSettingRequest.class);
+      Properties p = new Properties();
+      p.putAll(request.getProperties());
+      // Option is deprecated from API, always use remote = true
+      InterpreterGroup interpreterGroup = interpreterFactory.add(request.getName(),
+          request.getGroup(),
+          request.getDependencies(),
+          new InterpreterOption(true),
+          p);
+      InterpreterSetting setting = interpreterFactory.get(interpreterGroup.getId());
+      logger.info("new setting created with " + setting.id());
+      return new JsonResponse(Status.CREATED, "", setting).build();
+    } catch (InterpreterException e) {
+      logger.error("Exception in InterpreterRestApi while creating ", e);
+      return new JsonResponse(
+          Status.NOT_FOUND,
+          e.getMessage(),
+          ExceptionUtils.getStackTrace(e)).build();
+    } catch (IOException e) {
+      logger.error("Exception in InterpreterRestApi while creating ", e);
+      return new JsonResponse(
+          Status.INTERNAL_SERVER_ERROR,
+          e.getMessage(),
+          ExceptionUtils.getStackTrace(e)).build();
+    } catch (RepositoryException e) {
+      logger.error("Exception in InterpreterRestApi while creating ", e);
+      return new JsonResponse(
+          Status.INTERNAL_SERVER_ERROR,
+          e.getMessage(),
+          ExceptionUtils.getStackTrace(e)).build();
+    }
   }
 
   @PUT
@@ -104,16 +128,22 @@ public class InterpreterRestApi {
     logger.info("Update interpreterSetting {}", settingId);
 
     try {
-      UpdateInterpreterSettingRequest p = gson.fromJson(message,
+      UpdateInterpreterSettingRequest request = gson.fromJson(message,
           UpdateInterpreterSettingRequest.class);
       // Option is deprecated from API, always use remote = true
       interpreterFactory.setPropertyAndRestart(settingId,
-          new InterpreterOption(true), p.getProperties());
+          new InterpreterOption(true),
+          request.getProperties(),
+          request.getDependencies());
     } catch (InterpreterException e) {
       logger.error("Exception in InterpreterRestApi while updateSetting ", e);
       return new JsonResponse(
           Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
     } catch (IOException e) {
+      logger.error("Exception in InterpreterRestApi while updateSetting ", e);
+      return new JsonResponse(
+          Status.INTERNAL_SERVER_ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
+    } catch (RepositoryException e) {
       logger.error("Exception in InterpreterRestApi while updateSetting ", e);
       return new JsonResponse(
           Status.INTERNAL_SERVER_ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
