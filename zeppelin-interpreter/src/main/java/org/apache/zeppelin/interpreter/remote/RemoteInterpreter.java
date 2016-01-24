@@ -91,6 +91,7 @@ public class RemoteInterpreter extends Interpreter {
     this.interpreterPath = interpreterPath;
     this.env = env;
     this.connectTimeout = connectTimeout;
+    this.maxPoolSize = 10;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
   }
 

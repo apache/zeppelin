@@ -263,6 +263,7 @@ public class RemoteInterpreterServer
     private Interpreter interpreter;
     private String script;
     private InterpreterContext context;
+    private Map<String, Object> infos;
 
     public InterpretJob(
         String jobId,
