@@ -67,6 +67,10 @@ body {
   margin-right: 5px;
 }
 
+.paragraphId {
+  display: none;
+}
+
 .paragraph:hover .paragraphFooter {
   visibility: visible;
 }

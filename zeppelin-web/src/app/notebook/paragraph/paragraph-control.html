@@ -72,6 +72,12 @@ limitations under the License.
            ng-show="!paragraph.config.lineNumbers"><span class="fa fa-list-ol"></span> Show line numbers</a>
       </li>
       <li>
+        <a ng-click="hideParagraphId()"
+           ng-show="paragraph.config.paragraphId"><span class="fa fa-paragraph"></span> Hide paragraph id</a>
+        <a ng-click="showParagraphId()"
+           ng-show="!paragraph.config.paragraphId"><span class="fa fa-paragraph"></span> Show paragraph id</a>
+      </li>
+      <li>
         <a ng-click="toggleEnableDisable()"><span class="icon-control-play"></span>
           {{paragraph.config.enabled ? "Disable" : "Enable"}} run</a>
       </li>

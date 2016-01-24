@@ -620,7 +620,23 @@ angular.module('zeppelinWebApp')
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
-  $scope.columnWidthClass = function(n) {
+  $scope.showParagraphId = function() {
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
+    newConfig.paragraphId = true;
+
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+  };
+
+  $scope.hideParagraphId = function() {
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
+    newConfig.paragraphId = false;
+
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+  };
+
+    $scope.columnWidthClass = function(n) {
     if ($scope.asIframe) {
       return 'col-md-12';
     } else {
