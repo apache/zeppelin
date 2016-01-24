@@ -742,8 +742,8 @@ public class NotebookServer extends WebSocketServlet implements
   private void checkpointNotebook(NotebookSocket conn, Notebook notebook,
       Message fromMessage) throws IOException {
     String noteId = (String) fromMessage.get("noteId");
-    String gitCommitMessage = (String) fromMessage.get("gitCommitMessage");
-    notebook.checkpointNote(noteId, gitCommitMessage);
+    String commitMessage = (String) fromMessage.get("commitMessage");
+    notebook.checkpointNote(noteId, commitMessage);
   }
 
   /**
