@@ -46,7 +46,7 @@
                 <tbody>
             </table>
             <div class="panel-footer">
-                <a data-toggle="collapse" data-target="#${ksDetails.uniqueId}_asCQL">
+                <a data-toggle="collapse" data-target="#${ksDetails.uniqueId}_asCQL" class="text-danger">
                     <strong>As CQL statement</strong>
                     <span class="caret"></span>
                 </a>

@@ -18,11 +18,13 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.thrift.TException;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOutputListener;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
@@ -37,19 +39,22 @@ import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Processes message from RemoteInterpreter process
  */
 public class RemoteInterpreterEventPoller extends Thread {
   private static final Logger logger = LoggerFactory.getLogger(RemoteInterpreterEventPoller.class);
+  private final RemoteInterpreterProcessListener listener;
 
   private volatile boolean shutdown;
 
   private RemoteInterpreterProcess interpreterProcess;
   private InterpreterGroup interpreterGroup;
 
-  public RemoteInterpreterEventPoller() {
+  public RemoteInterpreterEventPoller(RemoteInterpreterProcessListener listener) {
+    this.listener = listener;
     shutdown = false;
   }
 
@@ -97,12 +102,12 @@ public class RemoteInterpreterEventPoller extends Thread {
         } else if (event.getType() == RemoteInterpreterEventType.ANGULAR_OBJECT_ADD) {
           AngularObject angularObject = gson.fromJson(event.getData(), AngularObject.class);
           angularObjectRegistry.add(angularObject.getName(),
-              angularObject.get(), angularObject.getNoteId());
+              angularObject.get(), angularObject.getNoteId(), angularObject.getParagraphId());
         } else if (event.getType() == RemoteInterpreterEventType.ANGULAR_OBJECT_UPDATE) {
           AngularObject angularObject = gson.fromJson(event.getData(),
               AngularObject.class);
           AngularObject localAngularObject = angularObjectRegistry.get(
-              angularObject.getName(), angularObject.getNoteId());
+              angularObject.getName(), angularObject.getNoteId(), angularObject.getParagraphId());
           if (localAngularObject instanceof RemoteAngularObject) {
             // to avoid ping-pong loop
             ((RemoteAngularObject) localAngularObject).set(
@@ -112,7 +117,8 @@ public class RemoteInterpreterEventPoller extends Thread {
           }
         } else if (event.getType() == RemoteInterpreterEventType.ANGULAR_OBJECT_REMOVE) {
           AngularObject angularObject = gson.fromJson(event.getData(), AngularObject.class);
-          angularObjectRegistry.remove(angularObject.getName(), angularObject.getNoteId());
+          angularObjectRegistry.remove(angularObject.getName(), angularObject.getNoteId(),
+                  angularObject.getParagraphId());
         } else if (event.getType() == RemoteInterpreterEventType.RUN_INTERPRETER_CONTEXT_RUNNER) {
           InterpreterContextRunner runnerFromRemote = gson.fromJson(
               event.getData(), RemoteInterpreterContextRunner.class);
@@ -130,6 +136,24 @@ public class RemoteInterpreterEventPoller extends Thread {
           logger.debug("RESOURCE_GET {} {}", resourceId.getResourcePoolId(), resourceId.getName());
           Object o = getResource(resourceId);
           sendResourceResponseGet(resourceId, o);
+        } else if (event.getType() == RemoteInterpreterEventType.OUTPUT_APPEND) {
+          // on output append
+          Map<String, String> outputAppend = gson.fromJson(
+                  event.getData(), new TypeToken<Map<String, String>>() {}.getType());
+          String noteId = outputAppend.get("noteId");
+          String paragraphId = outputAppend.get("paragraphId");
+          String outputToAppend = outputAppend.get("data");
+
+          listener.onOutputAppend(noteId, paragraphId, outputToAppend);
+        } else if (event.getType() == RemoteInterpreterEventType.OUTPUT_UPDATE) {
+          // on output update
+          Map<String, String> outputAppend = gson.fromJson(
+                  event.getData(), new TypeToken<Map<String, String>>() {}.getType());
+          String noteId = outputAppend.get("noteId");
+          String paragraphId = outputAppend.get("paragraphId");
+          String outputToUpdate = outputAppend.get("data");
+
+          listener.onOutputUpdated(noteId, paragraphId, outputToUpdate);
         }
         logger.debug("Event from remoteproceess {}", event.getType());
       } catch (Exception e) {

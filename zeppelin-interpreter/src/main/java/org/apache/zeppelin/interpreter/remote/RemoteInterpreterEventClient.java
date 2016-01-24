@@ -78,10 +78,11 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
   /**
    * notify angularObject removal
    */
-  public void angularObjectRemove(String name, String noteId) {
+  public void angularObjectRemove(String name, String noteId, String paragraphId) {
     Map<String, String> removeObject = new HashMap<String, String>();
     removeObject.put("name", name);
     removeObject.put("noteId", noteId);
+    removeObject.put("paragraphId", paragraphId);
 
     sendEvent(new RemoteInterpreterEvent(
         RemoteInterpreterEventType.ANGULAR_OBJECT_REMOVE, gson.toJson(removeObject)));
@@ -212,6 +213,28 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
         return event;
       }
     }
+  }
+
+  public void onInterpreterOutputAppend(String noteId, String paragraphId, String output) {
+    Map<String, String> appendOutput = new HashMap<String, String>();
+    appendOutput.put("noteId", noteId);
+    appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("data", output);
+
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.OUTPUT_APPEND,
+        gson.toJson(appendOutput)));
+  }
+
+  public void onInterpreterOutputUpdate(String noteId, String paragraphId, String output) {
+    Map<String, String> appendOutput = new HashMap<String, String>();
+    appendOutput.put("noteId", noteId);
+    appendOutput.put("paragraphId", paragraphId);
+    appendOutput.put("data", output);
+
+    sendEvent(new RemoteInterpreterEvent(
+        RemoteInterpreterEventType.OUTPUT_UPDATE,
+        gson.toJson(appendOutput)));
   }
 
 

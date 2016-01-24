@@ -37,15 +37,8 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.ClassloaderInterpreter;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
@@ -313,7 +306,26 @@ public class RemoteInterpreterServer
       try {
         InterpreterContext.set(context);
         InterpreterResult result = interpreter.interpret(script, context);
-        return result;
+
+        // data from context.out is prepended to InterpreterResult if both defined
+        String message = "";
+
+        context.out.flush();
+        InterpreterResult.Type outputType = context.out.getType();
+        byte[] interpreterOutput = context.out.toByteArray();
+        context.out.clear();
+
+        if (interpreterOutput != null && interpreterOutput.length > 0) {
+          message = new String(interpreterOutput);
+        }
+
+        String interpreterResultMessage = result.message();
+        if (interpreterResultMessage != null && !interpreterResultMessage.isEmpty()) {
+          message += interpreterResultMessage;
+          return new InterpreterResult(result.code(), result.type(), message);
+        } else {
+          return new InterpreterResult(result.code(), outputType, message);
+        }
       } finally {
         InterpreterContext.remove();
       }
@@ -364,7 +376,8 @@ public class RemoteInterpreterServer
   private InterpreterContext convert(RemoteInterpreterContext ric) {
     List<InterpreterContextRunner> contextRunners = new LinkedList<InterpreterContextRunner>();
     List<InterpreterContextRunner> runners = gson.fromJson(ric.getRunners(),
-        new TypeToken<List<RemoteInterpreterContextRunner>>(){}.getType());
+            new TypeToken<List<RemoteInterpreterContextRunner>>() {
+        }.getType());
 
     for (InterpreterContextRunner r : runners) {
       contextRunners.add(new ParagraphRunner(this, r.getNoteId(), r.getParagraphId()));
@@ -380,7 +393,22 @@ public class RemoteInterpreterServer
         gson.fromJson(ric.getGui(), GUI.class),
         interpreterGroup.getAngularObjectRegistry(),
         interpreterGroup.getResourcePool(),
-        contextRunners);
+        contextRunners, createInterpreterOutput(ric.getNoteId(), ric.getParagraphId()));
+  }
+
+
+  private InterpreterOutput createInterpreterOutput(final String noteId, final String paragraphId) {
+    return new InterpreterOutput(new InterpreterOutputListener() {
+      @Override
+      public void onAppend(InterpreterOutput out, byte[] line) {
+        eventClient.onInterpreterOutputAppend(noteId, paragraphId, new String(line));
+      }
+
+      @Override
+      public void onUpdate(InterpreterOutput out, byte[] output) {
+        eventClient.onInterpreterOutputUpdate(noteId, paragraphId, new String(output));
+      }
+    });
   }
 
 
@@ -443,8 +471,8 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public void onRemove(String interpreterGroupId, String name, String noteId) {
-    eventClient.angularObjectRemove(name, noteId);
+  public void onRemove(String interpreterGroupId, String name, String noteId, String paragraphId) {
+    eventClient.angularObjectRemove(name, noteId, paragraphId);
   }
 
 
@@ -462,15 +490,16 @@ public class RemoteInterpreterServer
    * called when object is updated in client (web) side.
    * @param name
    * @param noteId noteId where the update issues
+   * @param paragraphId paragraphId where the update issues
    * @param object
    * @throws TException
    */
   @Override
-  public void angularObjectUpdate(String name, String noteId, String object)
+  public void angularObjectUpdate(String name, String noteId, String paragraphId, String object)
       throws TException {
     AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
     // first try local objects
-    AngularObject ao = registry.get(name, noteId);
+    AngularObject ao = registry.get(name, noteId, paragraphId);
     if (ao == null) {
       logger.debug("Angular object {} not exists", name);
       return;
@@ -519,13 +548,13 @@ public class RemoteInterpreterServer
    * Dont't need to emit event to zeppelin server
    */
   @Override
-  public void angularObjectAdd(String name, String noteId, String object)
+  public void angularObjectAdd(String name, String noteId, String paragraphId, String object)
       throws TException {
     AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
     // first try local objects
-    AngularObject ao = registry.get(name, noteId);
+    AngularObject ao = registry.get(name, noteId, paragraphId);
     if (ao != null) {
-      angularObjectUpdate(name, noteId, object);
+      angularObjectUpdate(name, noteId, paragraphId, object);
       return;
     }
 
@@ -545,13 +574,14 @@ public class RemoteInterpreterServer
       value = gson.fromJson(object, String.class);
     }
 
-    registry.add(name, value, noteId, false);
+    registry.add(name, value, noteId, paragraphId, false);
   }
 
   @Override
-  public void angularObjectRemove(String name, String noteId) throws TException {
+  public void angularObjectRemove(String name, String noteId, String paragraphId) throws
+          TException {
     AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
-    registry.remove(name, noteId, false);
+    registry.remove(name, noteId, paragraphId, false);
   }
 
   @Override

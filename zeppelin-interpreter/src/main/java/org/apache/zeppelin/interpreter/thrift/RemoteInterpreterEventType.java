@@ -35,7 +35,9 @@ public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
   ANGULAR_OBJECT_REMOVE(4),
   RUN_INTERPRETER_CONTEXT_RUNNER(5),
   RESOURCE_POOL_GET_ALL(6),
-  RESOURCE_GET(7);
+  RESOURCE_GET(7),
+  OUTPUT_APPEND(8),
+  OUTPUT_UPDATE(9);
 
   private final int value;
 
@@ -70,6 +72,10 @@ public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
         return RESOURCE_POOL_GET_ALL;
       case 7:
         return RESOURCE_GET;
+      case 8:
+        return OUTPUT_APPEND;
+      case 9:
+        return OUTPUT_UPDATE;
       default:
         return null;
     }
