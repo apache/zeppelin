@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.thrift.transport.TTransportException;
+import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -37,12 +38,18 @@ import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterB;
+import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class RemoteInterpreterTest {
 
@@ -584,5 +591,29 @@ public class RemoteInterpreterTest {
     intpB.open();
 
     assertEquals(intpA.getScheduler(), intpB.getScheduler());
+  }
+  
+  @Test
+  public void should_push_local_angular_repo_to_remote() throws Exception {
+      //Given
+    final Client client = Mockito.mock(Client.class);
+    final RemoteInterpreter intr = new RemoteInterpreter(new Properties(),
+      MockInterpreterA.class.getName(), "runner", "path", env, 10 * 1000, null);
+    final AngularObjectRegistry registry = new AngularObjectRegistry("spark", null);
+    registry.add("name", "DuyHai DOAN", "nodeId", "paragraphId");
+    final InterpreterGroup interpreterGroup = new InterpreterGroup("groupId");
+    interpreterGroup.setAngularObjectRegistry(registry);
+    intr.setInterpreterGroup(interpreterGroup);
+
+    final java.lang.reflect.Type registryType = new TypeToken<Map<String,
+            Map<String, AngularObject>>>() {}.getType();
+    final Gson gson = new Gson();
+    final String expected = gson.toJson(registry.getRegistry(), registryType);
+
+    //When
+    intr.pushAngularObjectRegistryToRemote(client);
+
+    //Then
+    Mockito.verify(client).angularRegistryPush(expected);
   }
 }
