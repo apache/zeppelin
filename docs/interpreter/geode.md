@@ -33,6 +33,13 @@ This interpreter supports the [Geode](http://geode.incubator.apache.org/) [Objec
 
 This [Video Tutorial](https://www.youtube.com/watch?v=zvzzA9GXu3Q) illustrates some of the features provided by the `Geode Interpreter`.
 
+### Build Zeppelin with Geode Interpreter
+
+> Note: Due to [ZEPPELIN-375](https://issues.apache.org/jira/browse/ZEPPELIN-375) and [GEODE-479](https://issues.apache.org/jira/browse/GEODE-479) the Geode interpreter is disabled by default! To enable it you have to (re)compile the Zeppelin binaries with `Java 1.8` and activated `geode` profile like this:
+```
+mvn clean package -Pgeode -Pbuild-distr -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8
+```
+
 ### Create Interpreter
 By default Zeppelin creates one `Geode/OQL` instance. You can remove it or create more instances.
 
