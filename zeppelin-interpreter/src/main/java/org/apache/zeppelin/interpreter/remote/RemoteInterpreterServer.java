@@ -440,6 +440,10 @@ public class RemoteInterpreterServer
   @Override
   public String getStatus(String jobId)
       throws TException {
+    if (interpreterGroup == null) {
+      return "Unknown";
+    }
+
     synchronized (interpreterGroup) {
       for (Interpreter intp : interpreterGroup) {
         for (Job job : intp.getScheduler().getJobsRunning()) {
