@@ -100,7 +100,7 @@
     <profile>
       <id>geode</id>
       <activation>
-        <activeByDefault>false</activeByDefault>
+        <jdk>[1.8,1.9]</jdk>
       </activation>
       <dependencies>
         <dependency>
