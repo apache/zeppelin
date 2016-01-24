@@ -99,10 +99,18 @@ Here are some usages.
 
 #### Import 
 
+#####  - In notebook scope
 ```scala
-import org.apache.zeppelin.display._
+import org.apache.zeppelin.display.angular.notebookscope._
 import AngularElem._
 ```
+
+#####  - In paragraph scope
+```scala
+import org.apache.zeppelin.display.angular.paragraphscope._
+import AngularElem._
+```
+
 
 #### Display Element
 ```scala
