@@ -24,7 +24,7 @@ limitations under the License.
  
  All REST APIs are available starting with the following endpoint ```http://[zeppelin-server]:[zeppelin-port]/api```
  
- Note that zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewer
+ Note that zeppelin REST APIs receive or return JSON objects, it is recommended for you to install some JSON viewers
   such as [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc)
  
  
@@ -33,7 +33,7 @@ limitations under the License.
  <br />
 ### Notebook REST API list
   
-  Notebooks REST API supports the following operations: List, Create, Get, Delete, Clone, Run as detailed in the following table 
+  Notebooks REST API supports the following operations: List, Create, Get, Delete, Clone, Run, Export, Import as detailed in the following table 
   
   <table class="table-configuration">
     <col width="200">
@@ -773,3 +773,112 @@ limitations under the License.
     </tr>
   </table>
   
+
+  
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <th>Export notebook</th>
+      <th></th>
+    </tr>
+    <tr>
+      <td>Description</td>
+      <td>This ```GET``` method exports a notebook by the given id and gernerates a JSON
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/export/[notebookId]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>201</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <td> sample JSON response </td>
+      <td><pre>{
+  "paragraphs": [
+    {
+      "text": "%md This is my new paragraph in my new note",
+      "dateUpdated": "Jan 8, 2016 4:49:38 PM",
+      "config": {
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1452300578795_1196072540",
+      "id": "20160108-164938_1685162144",
+      "dateCreated": "Jan 8, 2016 4:49:38 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "source note for export",
+  "id": "2B82H3RR1",
+  "angularObjects": {},
+  "config": {},
+  "info": {}
+}</pre></td>
+    </tr>
+  </table>
+  
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <th>Export notebook</th>
+      <th></th>
+    </tr>
+    <tr>
+      <td>Description</td>
+      <td>This ```POST``` method imports a notebook from the notebook JSON input
+      </td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/notebook/import```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>201</td>
+    </tr>
+    <tr>
+      <td> Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <td> sample JSON input </td>
+      <td><pre>{
+  "paragraphs": [
+    {
+      "text": "%md This is my new paragraph in my new note",
+      "dateUpdated": "Jan 8, 2016 4:49:38 PM",
+      "config": {
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1452300578795_1196072540",
+      "id": "20160108-164938_1685162144",
+      "dateCreated": "Jan 8, 2016 4:49:38 PM",
+      "status": "READY",
+      "progressUpdateIntervalMs": 500
+    }
+  ],
+  "name": "source note for export",
+  "id": "2B82H3RR1",
+  "angularObjects": {},
+  "config": {},
+  "info": {}
+}</pre></td>
+<tr>
+      <td> sample JSON response </td>
+      <td><pre>"status": "CREATED","message": "","body": "2AZPHY918"}</pre></td>
+    </tr>
+    </tr>
+  </table>

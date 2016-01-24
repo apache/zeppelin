@@ -26,7 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * AngularObject provides binding between back-end (interpreter) and front-end
+ * User provided object will automatically synchronized with front-end side.
+ * i.e. update from back-end will be sent to front-end, update from front-end will sent-to backend
  *
  * @param <T>
  */
@@ -39,27 +41,70 @@ public class AngularObject<T> {
     = new LinkedList<AngularObjectWatcher>();
   
   private String noteId;   // noteId belonging to. null for global scope 
+  private String paragraphId; // paragraphId belongs to. null for notebook scope
 
-  protected AngularObject(String name, T o, String noteId,
+  /**
+   * To create new AngularObject, use AngularObjectRegistry.add()
+   *
+   * @param name name of object
+   * @param o reference to user provided object to sent to front-end
+   * @param noteId noteId belongs to. can be null
+   * @param paragraphId paragraphId belongs to. can be null
+   * @param listener event listener
+   */
+  protected AngularObject(String name, T o, String noteId, String paragraphId,
       AngularObjectListener listener) {
     this.name = name;
     this.noteId = noteId;
+    this.paragraphId = paragraphId;
     this.listener = listener;
     object = o;
   }
 
+  /**
+   * Get name of this object
+   * @return name
+   */
   public String getName() {
     return name;
   }
-  
+
+  /**
+   * Set noteId
+   * @param noteId noteId belongs to. can be null
+   */
   public void setNoteId(String noteId) {
     this.noteId = noteId;
   }
-  
+
+  /**
+   * Get noteId
+   * @return noteId
+   */
   public String getNoteId() {
     return noteId;
   }
-  
+
+  /**
+   * get ParagraphId
+   * @return paragraphId
+   */
+  public String getParagraphId() {
+    return paragraphId;
+  }
+
+  /**
+   * Set paragraphId
+   * @param paragraphId paragraphId. can be null
+   */
+  public void setParagraphId(String paragraphId) {
+    this.paragraphId = paragraphId;
+  }
+
+  /**
+   * Check if it is global scope object
+   * @return true it is global scope
+   */
   public boolean isGlobal() {
     return noteId == null;
   }
@@ -70,26 +115,47 @@ public class AngularObject<T> {
       AngularObject ao = (AngularObject) o;
       if (noteId == null && ao.noteId == null ||
           (noteId != null && ao.noteId != null && noteId.equals(ao.noteId))) {
-        return name.equals(ao.name);
+        if (paragraphId == null && ao.paragraphId == null ||
+          (paragraphId != null && ao.paragraphId != null && paragraphId.equals(ao.paragraphId))) {
+          return name.equals(ao.name);
+        }
       }
     }
     return false;
   }
 
+  /**
+   * Get value
+   * @return
+   */
   public Object get() {
     return object;
   }
 
+  /**
+   * fire updated() event for listener
+   * Note that it does not invoke watcher.watch()
+   */
   public void emit(){
     if (listener != null) {
       listener.updated(this);
     }
   }
-  
+
+  /**
+   * Set value
+   * @param o reference to new user provided object
+   */
   public void set(T o) {
     set(o, true);
   }
 
+  /**
+   * Set value
+   * @param o reference to new user provided object
+   * @param emit false on skip firing event for listener. note that it does not skip invoke
+   *             watcher.watch() in any case
+   */
   public void set(T o, boolean emit) {
     final T before = object;
     final T after = o;
@@ -119,26 +185,47 @@ public class AngularObject<T> {
     }
   }
 
+  /**
+   * Set event listener for this object
+   * @param listener
+   */
   public void setListener(AngularObjectListener listener) {
     this.listener = listener;
   }
 
+  /**
+   * Get event listener of this object
+   * @return event listener
+   */
   public AngularObjectListener getListener() {
     return listener;
   }
 
+  /**
+   * Add a watcher for this object.
+   * Multiple watcher can be registered.
+   *
+   * @param watcher watcher to add
+   */
   public void addWatcher(AngularObjectWatcher watcher) {
     synchronized (watchers) {
       watchers.add(watcher);
     }
   }
 
+  /**
+   * Remove a watcher from this object
+   * @param watcher watcher to remove
+   */
   public void removeWatcher(AngularObjectWatcher watcher) {
     synchronized (watchers) {
       watchers.remove(watcher);
     }
   }
 
+  /**
+   * Remove all watchers from this object
+   */
   public void clearAllWatchers() {
     synchronized (watchers) {
       watchers.clear();

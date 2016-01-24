@@ -73,8 +73,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   private GatewayServer gatewayServer;
   private DefaultExecutor executor;
   private int port;
-  private ByteArrayOutputStream outputStream;
-  private ByteArrayOutputStream errStream;
+  private SparkOutputStream outputStream;
   private BufferedWriter ins;
   private PipedInputStream in;
   private ByteArrayOutputStream input;
@@ -173,7 +172,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     cmd.addArgument(Integer.toString(port), false);
     cmd.addArgument(Integer.toString(getSparkInterpreter().getSparkVersion().toNumber()), false);
     executor = new DefaultExecutor();
-    outputStream = new ByteArrayOutputStream();
+    outputStream = new SparkOutputStream();
     PipedOutputStream ps = new PipedOutputStream();
     in = null;
     try {
@@ -274,7 +273,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       statementError = error;
       statementFinishedNotifier.notify();
     }
-
   }
 
   boolean pythonScriptInitialized = false;
@@ -285,6 +283,10 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       pythonScriptInitialized = true;
       pythonScriptInitializeNotifier.notifyAll();
     }
+  }
+
+  public void appendOutput(String message) throws IOException {
+    outputStream.getInterpreterOutput().write(message);
   }
 
   @Override
@@ -300,7 +302,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
           + outputStream.toString());
     }
 
-    outputStream.reset();
+    outputStream.setInterpreterOutput(context.out);
 
     synchronized (pythonScriptInitializeNotifier) {
       long startTime = System.currentTimeMillis();
@@ -314,15 +316,24 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       }
     }
 
+    String errorMessage = "";
+    try {
+      context.out.flush();
+      errorMessage = new String(context.out.toByteArray());
+    } catch (IOException e) {
+      throw new InterpreterException(e);
+    }
+
+
     if (pythonscriptRunning == false) {
       // python script failed to initialize and terminated
       return new InterpreterResult(Code.ERROR, "failed to start pyspark"
-          + outputStream.toString());
+          + errorMessage);
     }
     if (pythonScriptInitialized == false) {
       // timeout. didn't get initialized message
       return new InterpreterResult(Code.ERROR, "pyspark is not responding "
-          + outputStream.toString());
+          + errorMessage);
     }
 
     if (!sparkInterpreter.getSparkVersion().isPysparkSupported()) {
@@ -352,7 +363,14 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     if (statementError) {
       return new InterpreterResult(Code.ERROR, statementOutput);
     } else {
-      return new InterpreterResult(Code.SUCCESS, statementOutput);
+
+      try {
+        context.out.flush();
+      } catch (IOException e) {
+        throw new InterpreterException(e);
+      }
+
+      return new InterpreterResult(Code.SUCCESS);
     }
   }
 
@@ -388,8 +406,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
             && pythonscriptRunning == false) {
       return new LinkedList<String>();
     }
-
-    outputStream.reset();
 
     pythonInterpretRequest = new PythonInterpretRequest(completionCommand, "");
     statementOutput = null;

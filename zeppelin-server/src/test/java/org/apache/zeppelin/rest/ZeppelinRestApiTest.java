@@ -319,6 +319,87 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   }
 
 
+  @Test
+  public void testExportNotebook() throws IOException {
+    LOG.info("testExportNotebook");
+    Note note = ZeppelinServer.notebook.createNote();
+    assertNotNull("can't create new note", note);
+    note.setName("source note for export");
+    Paragraph paragraph = note.addParagraph();
+    Map config = paragraph.getConfig();
+    config.put("enabled", true);
+    paragraph.setConfig(config);
+    paragraph.setText("%md This is my new paragraph in my new note");
+    note.persist();
+    String sourceNoteID = note.getId();
+    // Call export Notebook REST API
+    GetMethod get = httpGet("/notebook/export/" + sourceNoteID);
+    LOG.info("testNotebookExport \n" + get.getResponseBodyAsString());
+    assertThat("test notebook export method:", get, isAllowed());
+
+    Map<String, Object> resp =
+        gson.fromJson(get.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
+
+    String exportJSON = (String) resp.get("body");
+    assertNotNull("Can not find new notejson", exportJSON);
+    LOG.info("export JSON:=" + exportJSON);
+    ZeppelinServer.notebook.removeNote(sourceNoteID);
+    get.releaseConnection();
+
+  }
+
+  @Test
+  public void testImportNotebook() throws IOException {
+    Map<String, Object> resp;
+    String noteName = "source note for import";
+    LOG.info("testImortNotebook");
+    // create test notebook
+    Note note = ZeppelinServer.notebook.createNote();
+    assertNotNull("can't create new note", note);
+    note.setName(noteName);
+    Paragraph paragraph = note.addParagraph();
+    Map config = paragraph.getConfig();
+    config.put("enabled", true);
+    paragraph.setConfig(config);
+    paragraph.setText("%md This is my new paragraph in my new note");
+    note.persist();
+    String sourceNoteID = note.getId();
+    // get note content as JSON
+    String oldJson = getNoteContent(sourceNoteID);
+    // call notebook post
+    PostMethod importPost = httpPost("/notebook/import/", oldJson);
+    assertThat(importPost, isCreated());
+    resp =
+        gson.fromJson(importPost.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
+    String importId = (String) resp.get("body");
+
+    assertNotNull("Did not get back a notebook id in body", importId);
+    Note newNote = ZeppelinServer.notebook.getNote(importId);
+    assertEquals("Compare note names", noteName, newNote.getName());
+    assertEquals("Compare paragraphs count", note.getParagraphs().size(), newNote.getParagraphs()
+        .size());
+    // cleanup
+    ZeppelinServer.notebook.removeNote(note.getId());
+    ZeppelinServer.notebook.removeNote(newNote.getId());
+    importPost.releaseConnection();
+  }
+
+  private String getNoteContent(String id) throws IOException {
+    GetMethod get = httpGet("/notebook/export/" + id);
+    assertThat(get, isAllowed());
+    get.addRequestHeader("Origin", "http://localhost");
+    Map<String, Object> resp =
+        gson.fromJson(get.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
+    assertEquals(200, get.getStatusCode());
+    String body = resp.get("body").toString();
+    // System.out.println("Body is " + body);
+    get.releaseConnection();
+    return body;
+  }
+
   private void testDeleteNotebook(String notebookId) throws IOException {
 
     DeleteMethod delete = httpDelete(("/notebook/" + notebookId));
