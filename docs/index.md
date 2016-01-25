@@ -111,7 +111,7 @@ This way, you can easily embed it as an iframe inside of your website.</p>
   <img class="img-responsive center-block" src="/assets/themes/zeppelin/img/screenshots/publish.png" />
 </div>
 
-Learn more about this feature, please checkout [here](./manual/publish.html).
+If you want to learn more about this feature, please checkout [here](./manual/publish.html).
 
 <br />
 ### 100% Opensource
