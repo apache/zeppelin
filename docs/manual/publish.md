@@ -1,0 +1,47 @@
+---
+layout: page
+title: "Publish your Paragraph"
+description: ""
+group: manual
+---
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+{% include JB/setup %}
+
+## How can you publish your paragraph ?
+Zeppelin provides a feature for publishing your notebook paragraph results. Using this feature, you can show Zeppelin notebook paragraph results in your own website. 
+It's very straightforward. Just use `<iframe>` tag in your page.
+
+### Copy a Paragraph Link
+A first step to publish your paragraph result is **Copy a Paragraph Link**.
+
+  * After running a paragraph in your Zeppelin notebook, click a gear button located on the right side. Then, click **Link this Paragraph** tab like below image.
+<center><img src="../assets/themes/zeppelin/img/docs-img/link-the-paragraph.png" height="100%" width="100%"></center>
+  
+  * Just copy the provided link. After then, change the host name to your ip address. 
+<center><img src="../assets/themes/zeppelin/img/docs-img/copy-the-link.png" height="100%" width="100%"></center>
+
+### Embed the Paragraph to Your Own Web Site
+For publishing the copied paragraph, you may use `<iframe>` tag in your web site page.
+For example,
+
+```
+<iframe src="http://<your-ip-address>:<your-zeppelin-port>/#/notebook/2B3QSZTKR/paragraph/...?asIframe" height="" width="" ></iframe>
+```
+
+Finally, you can see your beautiful visualization results in your web site. 
+<center><img src="../assets/themes/zeppelin/img/docs-img/your-website.png" height="90%" width="90%"></center>
+
+> **Note**: If your paragraph is not embeded properly, please confirm whether your ip address is valid or not.
+
