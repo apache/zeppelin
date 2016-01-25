@@ -26,6 +26,7 @@ import org.sonatype.aether.RepositorySystem;
 import org.sonatype.aether.RepositorySystemSession;
 import org.sonatype.aether.repository.Authentication;
 import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.repository.RepositoryPolicy;
 import org.sonatype.aether.resolution.ArtifactResult;
 
 /**
@@ -42,12 +43,19 @@ public abstract class AbstractDependencyResolver {
     repos.add(Booter.newCentralRepository()); // add maven central
     repos.add(Booter.newLocalRepository());
   }
+
+  public List<RemoteRepository> getRepos() {
+    return this.repos;
+  }
   
   public void addRepo(String id, String url, boolean snapshot) {
     synchronized (repos) {
       delRepo(id);
       RemoteRepository rr = new RemoteRepository(id, "default", url);
-      rr.setPolicy(snapshot, null);
+      rr.setPolicy(true, new RepositoryPolicy(
+          snapshot,
+          RepositoryPolicy.UPDATE_POLICY_DAILY,
+          RepositoryPolicy.CHECKSUM_POLICY_WARN));
       repos.add(rr);
     }
   }
@@ -56,7 +64,10 @@ public abstract class AbstractDependencyResolver {
     synchronized (repos) {
       delRepo(id);
       RemoteRepository rr = new RemoteRepository(id, "default", url);
-      rr.setPolicy(snapshot, null);
+      rr.setPolicy(true, new RepositoryPolicy(
+          snapshot,
+          RepositoryPolicy.UPDATE_POLICY_DAILY,
+          RepositoryPolicy.CHECKSUM_POLICY_WARN));
       rr.setAuthentication(auth);
       repos.add(rr);
     }
@@ -65,7 +76,7 @@ public abstract class AbstractDependencyResolver {
   public RemoteRepository delRepo(String id) {
     synchronized (repos) {
       Iterator<RemoteRepository> it = repos.iterator();
-      if (it.hasNext()) {
+      while (it.hasNext()) {
         RemoteRepository repo = it.next();
         if (repo.getId().equals(id)) {
           it.remove();

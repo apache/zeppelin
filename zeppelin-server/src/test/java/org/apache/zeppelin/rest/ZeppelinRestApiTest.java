@@ -102,8 +102,9 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   @Test
   public void testSettingsCRUD() throws IOException {
     // Call Create Setting REST API
-    String jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"},\"" +
-        "interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]}";
+    String jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"}," +
+        "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
+        "\"dependencies\":[]}";
     PostMethod post = httpPost("/interpreter/setting/", jsonRequest);
     LOG.info("testSettingCRUD create response\n" + post.getResponseBodyAsString());
     assertThat("test create method:", post, isCreated());
@@ -116,8 +117,9 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     post.releaseConnection();
 
     // Call Update Setting REST API
-    jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"Otherpropvalue\"},\"" +
-        "interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]}";
+    jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"Otherpropvalue\"}," +
+        "\"interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]," +
+        "\"dependencies\":[]}";
     PutMethod put = httpPut("/interpreter/setting/" + newSettingId, jsonRequest);
     LOG.info("testSettingCRUD update response\n" + put.getResponseBodyAsString());
     assertThat("test update method:", put, isAllowed());

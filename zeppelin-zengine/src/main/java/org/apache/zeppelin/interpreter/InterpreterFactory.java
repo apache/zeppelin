@@ -38,6 +38,8 @@ import org.apache.zeppelin.scheduler.Job.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.RepositoryException;
+import org.sonatype.aether.repository.Authentication;
+import org.sonatype.aether.repository.RemoteRepository;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -64,6 +66,7 @@ public class InterpreterFactory {
       new HashMap<String, InterpreterSetting>();
 
   private Map<String, List<String>> interpreterBindings = new HashMap<String, List<String>>();
+  private List<RemoteRepository> interpreterRepositories;
 
   private Gson gson;
 
@@ -93,6 +96,7 @@ public class InterpreterFactory {
     this.defaultOption = defaultOption;
     this.angularObjectRegistryListener = angularObjectRegistryListener;
     this.depResolver = depResolver;
+    this.interpreterRepositories = depResolver.getRepos();
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
     interpreterClassList = replsConf.split(",");
@@ -194,7 +198,7 @@ public class InterpreterFactory {
       logger.info("Interpreter setting group {} : id={}, name={}",
           setting.getGroup(), settingId, setting.getName());
       for (Interpreter interpreter : setting.getInterpreterGroup()) {
-        logger.info("  className = {}", interpreter.getClassName());
+        logger.info(" className = {}", interpreter.getClassName());
       }
     }
   }
@@ -251,6 +255,14 @@ public class InterpreterFactory {
     }
 
     this.interpreterBindings = info.interpreterBindings;
+
+    if (info.interpreterRepositories != null) {
+      for (RemoteRepository repo : info.interpreterRepositories) {
+        if (!depResolver.getRepos().contains(repo)) {
+          this.interpreterRepositories.add(repo);
+        }
+      }
+    }
   }
 
   private void loadInterpreterDependencies(InterpreterSetting intSetting)
@@ -286,6 +298,7 @@ public class InterpreterFactory {
       InterpreterInfoSaving info = new InterpreterInfoSaving();
       info.interpreterBindings = interpreterBindings;
       info.interpreterSettings = interpreterSettings;
+      info.interpreterRepositories = interpreterRepositories;
 
       jsonString = gson.toJson(info);
     }
@@ -735,5 +748,20 @@ public class InterpreterFactory {
     } else {
       return new URL[] {path.toURI().toURL()};
     }
+  }
+
+  public List<RemoteRepository> getRepositories() {
+    return this.interpreterRepositories;
+  }
+
+  public void addRepository(String id, String url, boolean snapshot, Authentication auth)
+      throws IOException {
+    depResolver.addRepo(id, url, snapshot, auth);
+    saveToFile();
+  }
+
+  public void removeRepository(String id) throws IOException {
+    depResolver.delRepo(id);
+    saveToFile();
   }
 }

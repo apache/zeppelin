@@ -88,6 +88,11 @@
   float: left;
 }
 
-.empty-properties-message {
+.gray40-message {
   color: #666;
+}
+
+.blackOpc:hover {
+  color: #000;
+  opacity: .5;
 }

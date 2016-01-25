@@ -35,6 +35,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
@@ -67,6 +68,7 @@ public class NotebookTest implements JobListenerFactory{
   private Notebook notebook;
   private NotebookRepo notebookRepo;
   private InterpreterFactory factory;
+  private DependencyResolver depResolver;
 
   @Before
   public void setUp() throws Exception {
@@ -87,7 +89,8 @@ public class NotebookTest implements JobListenerFactory{
     MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null);
+    depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, depResolver);
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
@@ -174,8 +177,8 @@ public class NotebookTest implements JobListenerFactory{
     note.persist();
 
     Notebook notebook2 = new Notebook(
-        conf, notebookRepo, schedulerFactory, new InterpreterFactory(conf, null, null, null), this,
-            null);
+        conf, notebookRepo, schedulerFactory,
+        new InterpreterFactory(conf, null, null, null, depResolver), this, null);
     assertEquals(1, notebook2.getAllNotes().size());
   }
 

@@ -20,6 +20,7 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
   $scope.interpreterSettings = [];
   $scope.availableInterpreters = {};
   $scope.showAddNewSetting = false;
+  $scope.showRepositoryInfo = false;
   $scope._ = _;
 
   var getInterpreterSettings = function() {
@@ -320,10 +321,74 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
     }
   };
 
+  $scope.resetNewRepositorySetting = function() {
+    $scope.newRepoSetting = {
+      id: undefined,
+      url: undefined,
+      snapshot: false,
+      username: undefined,
+      password: undefined
+    };
+  };
+
+  var getRepositories = function() {
+    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/repository').
+      success(function(data, status, headers, config) {
+        $scope.repositories = data.body;
+      }).
+      error(function(data, status, headers, config) {
+        console.log('Error %o %o', status, data.message);
+      });
+  };
+
+  $scope.addNewRepository = function() {
+    var request = angular.copy($scope.newRepoSetting);
+
+    $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/repository', request).
+      success(function(data, status, headers, config) {
+        getRepositories();
+        $scope.resetNewRepositorySetting();
+        angular.element('#repoModal').modal('hide');
+      }).
+      error(function(data, status, headers, config) {
+        console.log('Error %o %o', headers, config);
+      });
+  };
+
+  $scope.removeRepository = function(repoId) {
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: 'Do you want to delete this repository?',
+      callback: function(result) {
+        if (result) {
+          $http.delete(baseUrlSrv.getRestApiBase()+'/interpreter/repository/' + repoId).
+            success(function(data, status, headers, config) {
+              var index = _.findIndex($scope.repositories, { 'id': repoId });
+              $scope.repositories.splice(index, 1);
+            }).
+            error(function(data, status, headers, config) {
+              console.log('Error %o %o', status, data.message);
+            });
+        }
+      }
+    });
+  };
+
+  $scope.isDefaultRepository = function(repoId) {
+    if (repoId === 'central' || repoId === 'local') {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   var init = function() {
     $scope.resetNewInterpreterSetting();
+    $scope.resetNewRepositorySetting();
     getInterpreterSettings();
     getAvailableInterpreters();
+    getRepositories();
   };
 
   init();
