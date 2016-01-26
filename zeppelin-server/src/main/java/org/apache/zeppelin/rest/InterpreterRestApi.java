@@ -109,13 +109,7 @@ public class InterpreterRestApi {
           Status.NOT_FOUND,
           e.getMessage(),
           ExceptionUtils.getStackTrace(e)).build();
-    } catch (IOException e) {
-      logger.error("Exception in InterpreterRestApi while creating ", e);
-      return new JsonResponse(
-          Status.INTERNAL_SERVER_ERROR,
-          e.getMessage(),
-          ExceptionUtils.getStackTrace(e)).build();
-    } catch (RepositoryException e) {
+    } catch (IOException | RepositoryException e) {
       logger.error("Exception in InterpreterRestApi while creating ", e);
       return new JsonResponse(
           Status.INTERNAL_SERVER_ERROR,
@@ -141,11 +135,7 @@ public class InterpreterRestApi {
       logger.error("Exception in InterpreterRestApi while updateSetting ", e);
       return new JsonResponse(
           Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
-    } catch (IOException e) {
-      logger.error("Exception in InterpreterRestApi while updateSetting ", e);
-      return new JsonResponse(
-          Status.INTERNAL_SERVER_ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
-    } catch (RepositoryException e) {
+    } catch (IOException | RepositoryException e) {
       logger.error("Exception in InterpreterRestApi while updateSetting ", e);
       return new JsonResponse(
           Status.INTERNAL_SERVER_ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
