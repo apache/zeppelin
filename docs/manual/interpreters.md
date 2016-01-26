@@ -38,8 +38,7 @@ Zeppelin interpreter setting is the configuration of a given interpreter on Zepp
 
 ## What is Zeppelin Interpreter Group?
 Every Interpreter is belonged to an **Interpreter Group**. Interpreter Group is a unit of start/stop interpreter.
-By default, every interpreter is belonged to a single group, but the group might contain more interpreters. For example, spark interpreter group is including Spark support, pySpark,
-SparkSQL and the dependency loader.
+By default, every interpreter is belonged to a single group, but the group might contain more interpreters. For example, Spark interpreter group is including Spark support, pySpark, SparkSQL and the dependency loader.
 
 Technically, Zeppelin interpreters from the same group are running in the same JVM. For more information about this, please checkout [here](../development/writingzeppelininterpreter.html).
 
