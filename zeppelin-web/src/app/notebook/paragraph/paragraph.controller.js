@@ -67,6 +67,26 @@ angular.module('zeppelinWebApp')
     }
   };
 
+  paragraphScope.removeFromServer = function(varName, removeParams) {
+    var defaultParams = {interpreters: [], paragraphs: [], scope: 'paragraph'};
+    var params = jQuery.extend(defaultParams, angular.copy(removeParams));
+
+    if (params.interpreter) {
+      params.interpreters.push(params.interpreter);
+      delete params.interpreter;
+    }
+
+    if (params.paragraph) {
+      params.paragraphs.push(params.paragraph);
+      delete params.paragraph;
+    }
+
+    // Only push to server if there is at least 1 interpreter
+    if (params.interpreters.length > 0) {
+      websocketMsgSrv.clientRemoveAngularObject($routeParams.noteId, varName, params);
+    }
+  };
+
   var angularObjectRegistry = {};
 
   var editorModes = {

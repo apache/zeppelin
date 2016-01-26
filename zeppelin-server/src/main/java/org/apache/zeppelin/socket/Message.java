@@ -102,6 +102,7 @@ public class Message {
 
     ANGULAR_OBJECT_UPDATED,  // [c-s] angular object value updated,
     ANGULAR_OBJECT_CLIENT_UPDATE,   // [c-s] angular object pushed from client
+    ANGULAR_OBJECT_CLIENT_REMOVE,   // [c-s] angular object removed from client
 
     LIST_CONFIGURATIONS, // [c-s] ask all key/value pairs of configurations
     CONFIGURATIONS_INFO // [s-c] all key/value pairs of configurations

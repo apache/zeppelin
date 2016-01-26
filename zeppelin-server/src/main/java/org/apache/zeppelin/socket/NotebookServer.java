@@ -179,6 +179,9 @@ public class NotebookServer extends WebSocketServlet implements
           case ANGULAR_OBJECT_UPDATED:
             angularObjectUpdated(conn, notebook, messagereceived);
             break;
+          case ANGULAR_OBJECT_CLIENT_REMOVE:
+            angularObjectClientDelete(conn, notebook, messagereceived);
+            break;
           case ANGULAR_OBJECT_CLIENT_UPDATE:
             angularObjectClientUpdate(conn, notebook, messagereceived);
             break;
@@ -804,7 +807,9 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  private List<String> findMatchingParagraphs(List<String> targetParagraphs, Note note, String interpreterName) {
+  private List<String> findMatchingParagraphs(List<String> targetParagraphs, Note note,
+    String interpreterName) {
+
     final List<String> matchedParagraph = new ArrayList<>();
     for (String paragraph : targetParagraphs) {
       final String replName = note.getParagraph(paragraph).getRequiredReplName();

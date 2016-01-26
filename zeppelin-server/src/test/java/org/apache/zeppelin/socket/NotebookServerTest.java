@@ -543,15 +543,13 @@ public class NotebookServerTest extends AbstractTestRestApi {
     when(note.getNoteReplLoader().getInterpreterSettings())
             .thenReturn(asList(mdSetting, sparkSetting));
 
+    when(note.getParagraph("paragraph1").getRequiredReplName()).thenReturn("md");
+    when(note.getParagraph("paragraph2").getRequiredReplName()).thenReturn("spark");
+
     final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraph1");
     final AngularObject ao2 = AngularObjectBuilder.build(varName, value, "noteId", "paragraph2");
 
     when(mdRegistry.removeAndNotifyRemoteProcess(varName, "noteId", "paragraph1"))
-            .thenReturn(ao1);
-    when(mdRegistry.removeAndNotifyRemoteProcess(varName, "noteId", "paragraph2"))
-            .thenReturn(ao2);
-
-    when(sparkRegistry.removeAndNotifyRemoteProcess(varName, "noteId", "paragraph1"))
             .thenReturn(ao1);
     when(sparkRegistry.removeAndNotifyRemoteProcess(varName, "noteId", "paragraph2"))
             .thenReturn(ao2);
@@ -562,18 +560,6 @@ public class NotebookServerTest extends AbstractTestRestApi {
     final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
             .put("angularObject", ao1)
             .put("interpreterGroupId", "mdGroup")
-            .put("noteId", "noteId")
-            .put("paragraphId", "paragraph1"));
-
-    final String mdMsg2 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
-            .put("angularObject", ao2)
-            .put("interpreterGroupId", "mdGroup")
-            .put("noteId", "noteId")
-            .put("paragraphId", "paragraph2"));
-
-    final String sparkMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
-            .put("angularObject", ao1)
-            .put("interpreterGroupId", "sparkGroup")
             .put("noteId", "noteId")
             .put("paragraphId", "paragraph1"));
 
@@ -593,8 +579,6 @@ public class NotebookServerTest extends AbstractTestRestApi {
     verify(sparkRegistry, never()).removeAndNotifyRemoteProcess(varName, "noteId", null);
 
     verify(otherConn).send(mdMsg1);
-    verify(otherConn).send(mdMsg2);
-    verify(otherConn).send(sparkMsg1);
     verify(otherConn).send(sparkMsg2);
   }
 
@@ -678,13 +662,13 @@ public class NotebookServerTest extends AbstractTestRestApi {
     when(note.getNoteReplLoader().getInterpreterSettings())
             .thenReturn(asList(mdSetting, sparkSetting));
 
+    when(note.getParagraph("paragraph1").getRequiredReplName()).thenReturn("md");
+    when(note.getParagraph("paragraph2").getRequiredReplName()).thenReturn("spark");
+
     final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraph1");
     final AngularObject ao2 = AngularObjectBuilder.build(varName, value, "noteId", "paragraph2");
 
     when(mdRegistry.remove(varName, "noteId", "paragraph1")).thenReturn(ao1);
-    when(mdRegistry.remove(varName, "noteId", "paragraph2")).thenReturn(ao2);
-
-    when(sparkRegistry.remove(varName, "noteId", "paragraph1")).thenReturn(ao1);
     when(sparkRegistry.remove(varName, "noteId", "paragraph2")).thenReturn(ao2);
 
     NotebookSocket conn = mock(NotebookSocket.class);
@@ -693,18 +677,6 @@ public class NotebookServerTest extends AbstractTestRestApi {
     final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
             .put("angularObject", ao1)
             .put("interpreterGroupId", "mdGroup")
-            .put("noteId", "noteId")
-            .put("paragraphId", "paragraph1"));
-
-    final String mdMsg2 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
-            .put("angularObject", ao2)
-            .put("interpreterGroupId", "mdGroup")
-            .put("noteId", "noteId")
-            .put("paragraphId", "paragraph2"));
-
-    final String sparkMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
-            .put("angularObject", ao1)
-            .put("interpreterGroupId", "sparkGroup")
             .put("noteId", "noteId")
             .put("paragraphId", "paragraph1"));
 
@@ -721,8 +693,6 @@ public class NotebookServerTest extends AbstractTestRestApi {
 
     // Then
     verify(otherConn).send(mdMsg1);
-    verify(otherConn).send(mdMsg2);
-    verify(otherConn).send(sparkMsg1);
     verify(otherConn).send(sparkMsg2);
   }
 

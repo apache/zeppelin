@@ -84,6 +84,18 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
+    clientRemoveAngularObject: function(noteId, name, params) {
+      websocketEvents.sendNewEvent({
+        op: 'ANGULAR_OBJECT_CLIENT_REMOVE',
+        data: {
+          noteId: noteId,
+          name: name,
+          interpreters: params.interpreters,
+          paragraphs: params.paragraphs
+        }
+      });
+    },
+
     cancelParagraphRun: function(paragraphId) {
       websocketEvents.sendNewEvent({op: 'CANCEL_PARAGRAPH', data: {id: paragraphId}});
     },
