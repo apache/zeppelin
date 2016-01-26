@@ -7,11 +7,9 @@ group: manual
 {% include JB/setup %}
 
 ## Tachyon Interpreter for Apache Zeppelin
-
 [Tachyon](http://tachyon-project.org/) is a memory-centric distributed storage system enabling reliable data sharing at memory-speed across cluster frameworks.
 
-## 1. Configuration
-
+## Configuration
 <table class="table-configuration">
   <tr>
     <th>Name</th>
@@ -30,25 +28,22 @@ group: manual
   </tr>
 </table>
 
-## 2. Enabling Tachyon Interpreter
-
+## Enabling Tachyon Interpreter
 In a notebook, to enable the **Tachyon** interpreter, click on the **Gear** icon and select **Tachyon**.
 
-## 3. Using the Tachyon Interpreter
-
+## Using the Tachyon Interpreter
 In a paragraph, use `%tachyon` to select the **Tachyon** interpreter and then input all commands.
- 
- ```bash
- | %tachyon
- | help
- ```
- 
+
+```bash
+| %tachyon
+| help
+```
+
 > **Tip :** Use ( Ctrl + . ) for autocompletion.
 
-## 4. Interpreter Commands
-
+## Interpreter Commands
 The **Tachyon** interpreter accepts the following commands.
- 
+
 <center>
   <table class="table-configuration">
     <tr>
@@ -86,7 +81,7 @@ The **Tachyon** interpreter accepts the following commands.
     <tr>
       <td>free</td>
       <td>free "path"</td>
-      <td>Free a file or all files under a directory from Tachyon. If the file/directory is also 
+      <td>Free a file or all files under a directory from Tachyon. If the file/directory is also
       in under storage, it will still be available there.</td>
     </tr>
     <tr>
@@ -187,8 +182,8 @@ The **Tachyon** interpreter accepts the following commands.
     <tr>
       <td>unmount</td>
       <td>unmount "path"</td>
-      <td>Unmount the underlying file system path mounted in the Tachyon namespace as "path". Tachyon 
-      objects under "path" are removed from Tachyon, but they still exist in the previously mounted 
+      <td>Unmount the underlying file system path mounted in the Tachyon namespace as "path". Tachyon
+      objects under "path" are removed from Tachyon, but they still exist in the previously mounted
       under storage.</td>
     </tr>
     <tr>
@@ -201,6 +196,5 @@ The **Tachyon** interpreter accepts the following commands.
   </table>
 </center>
 
-## 5. How to test it's working
-
+## How to test it's working
 Be sure to have configured correctly the Tachyon interpreter, then open a new paragraph and type one of the above commands.
