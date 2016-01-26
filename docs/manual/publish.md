@@ -29,7 +29,7 @@ A first step to publish your paragraph result is **Copy a Paragraph Link**.
   * After running a paragraph in your Zeppelin notebook, click a gear button located on the right side. Then, click **Link this Paragraph** tab like below image.
 <center><img src="../assets/themes/zeppelin/img/docs-img/link-the-paragraph.png" height="100%" width="100%"></center>
   
-  * Just copy the provided link. After then, change the host name to your ip address. 
+  * Just copy the provided link. 
 <center><img src="../assets/themes/zeppelin/img/docs-img/copy-the-link.png" height="100%" width="100%"></center>
 
 ### Embed the Paragraph to Your Own Web Site
@@ -37,11 +37,11 @@ For publishing the copied paragraph, you may use `<iframe>` tag in your web site
 For example,
 
 ```
-<iframe src="http://<your-ip-address>:<your-zeppelin-port>/#/notebook/2B3QSZTKR/paragraph/...?asIframe" height="" width="" ></iframe>
+<iframe src="http://< ip-address >:< port >/#/notebook/2B3QSZTKR/paragraph/...?asIframe" height="" width="" ></iframe>
 ```
 
 Finally, you can see your beautiful visualization results in your web site. 
 <center><img src="../assets/themes/zeppelin/img/docs-img/your-website.png" height="90%" width="90%"></center>
 
-> **Note**: If your paragraph is not embeded properly, please confirm whether your ip address is valid or not.
+> **Note**: If your paragraph is not embeded properly, please confirm whether the ip address is valid or not.
 
