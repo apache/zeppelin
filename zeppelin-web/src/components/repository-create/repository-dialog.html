@@ -35,7 +35,8 @@ limitations under the License.
             <div class="form-group">
               <label class="control-label col-sm-2" for="repoUrl">URL</label>
               <div class="col-sm-10">
-                <input type="url" class="form-control" id="repoUrl" ng-model="newRepoSetting.url"
+                <input type="text" pattern="(http|https|file)://.*" title="Please enter URL starts with http://, https:// or file://"
+                       class="form-control" id="repoUrl" ng-model="newRepoSetting.url"
                        placeholder="Repository url" required>
               </div>
             </div>
