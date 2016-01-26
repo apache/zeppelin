@@ -26,7 +26,7 @@ It's very straightforward. Just use `<iframe>` tag in your page.
 ### Copy a Paragraph Link
 A first step to publish your paragraph result is **Copy a Paragraph Link**.
 
-  * After running a paragraph in your Zeppelin notebook, click a gear button located on the right side. Then, click **Link this Paragraph** tab like below image.
+  * After running a paragraph in your Zeppelin notebook, click a gear button located on the right side. Then, click **Link this Paragraph** menu like below image.
 <center><img src="../assets/themes/zeppelin/img/docs-img/link-the-paragraph.png" height="100%" width="100%"></center>
   
   * Just copy the provided link. 
