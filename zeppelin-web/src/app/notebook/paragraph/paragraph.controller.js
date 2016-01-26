@@ -22,6 +22,24 @@ angular.module('zeppelinWebApp')
   $scope.originalText = '';
   $scope.editor = null;
   var paragraphScope = $rootScope.$new(true, $rootScope);
+
+  paragraphScope.runParagraph = function(paragraphId) {
+    if (paragraphId) {
+      var paragraphDiv = angular
+          .element('#' + paragraphId + '_paragraphColumn_main[ng-controller="ParagraphCtrl"]');
+      if (paragraphDiv) {
+        var paragraph = paragraphDiv.scope().paragraph;
+        websocketMsgSrv.runParagraph(paragraph.id, paragraph.title, paragraph.text,
+            paragraph.config, paragraph.settings.params);
+      }
+    }
+  };
+
+  paragraphScope.runParagraphs = function(paragraphsId) {
+    var paragraphs = paragraphsId || [];
+    paragraphs.forEach(paragraphScope.runParagraph);
+  };
+
   var angularObjectRegistry = {};
 
   var editorModes = {
