@@ -19,6 +19,7 @@ package org.apache.zeppelin.display;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.zeppelin.scheduler.ExecutorFactory;
@@ -35,25 +36,33 @@ import org.slf4j.LoggerFactory;
 public class AngularObject<T> {
   private String name;
   private T object;
-  
+
   private transient AngularObjectListener listener;
-  private transient List<AngularObjectWatcher> watchers
-    = new LinkedList<AngularObjectWatcher>();
-  
+  private transient List<AngularObjectWatcher> watchers = new LinkedList<AngularObjectWatcher>();
+
   private String noteId;   // noteId belonging to. null for global scope 
   private String paragraphId; // paragraphId belongs to. null for notebook scope
 
   /**
+   * Public constructor, neccessary for the deserialization when using Thrift angularRegistryPush()
+   * Without public constructor, GSON library will instantiate the AngularObject using
+   * serialization so the <strong>watchers</strong> list won't be initialized and will throw
+   * NullPointerException the first time it is accessed
+   */
+  public AngularObject() {
+  }
+
+  /**
    * To create new AngularObject, use AngularObjectRegistry.add()
    *
-   * @param name name of object
-   * @param o reference to user provided object to sent to front-end
-   * @param noteId noteId belongs to. can be null
+   * @param name        name of object
+   * @param o           reference to user provided object to sent to front-end
+   * @param noteId      noteId belongs to. can be null
    * @param paragraphId paragraphId belongs to. can be null
-   * @param listener event listener
+   * @param listener    event listener
    */
   protected AngularObject(String name, T o, String noteId, String paragraphId,
-      AngularObjectListener listener) {
+                          AngularObjectListener listener) {
     this.name = name;
     this.noteId = noteId;
     this.paragraphId = paragraphId;
@@ -63,6 +72,7 @@ public class AngularObject<T> {
 
   /**
    * Get name of this object
+   *
    * @return name
    */
   public String getName() {
@@ -71,6 +81,7 @@ public class AngularObject<T> {
 
   /**
    * Set noteId
+   *
    * @param noteId noteId belongs to. can be null
    */
   public void setNoteId(String noteId) {
@@ -79,6 +90,7 @@ public class AngularObject<T> {
 
   /**
    * Get noteId
+   *
    * @return noteId
    */
   public String getNoteId() {
@@ -87,6 +99,7 @@ public class AngularObject<T> {
 
   /**
    * get ParagraphId
+   *
    * @return paragraphId
    */
   public String getParagraphId() {
@@ -95,6 +108,7 @@ public class AngularObject<T> {
 
   /**
    * Set paragraphId
+   *
    * @param paragraphId paragraphId. can be null
    */
   public void setParagraphId(String paragraphId) {
@@ -103,6 +117,7 @@ public class AngularObject<T> {
 
   /**
    * Check if it is global scope object
+   *
    * @return true it is global scope
    */
   public boolean isGlobal() {
@@ -110,22 +125,23 @@ public class AngularObject<T> {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(name, noteId, paragraphId);
+  }
+
+  @Override
   public boolean equals(Object o) {
-    if (o instanceof AngularObject) {
-      AngularObject ao = (AngularObject) o;
-      if (noteId == null && ao.noteId == null ||
-          (noteId != null && ao.noteId != null && noteId.equals(ao.noteId))) {
-        if (paragraphId == null && ao.paragraphId == null ||
-          (paragraphId != null && ao.paragraphId != null && paragraphId.equals(ao.paragraphId))) {
-          return name.equals(ao.name);
-        }
-      }
-    }
-    return false;
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    AngularObject<?> that = (AngularObject<?>) o;
+    return Objects.equals(name, that.name) &&
+            Objects.equals(noteId, that.noteId) &&
+            Objects.equals(paragraphId, that.paragraphId);
   }
 
   /**
    * Get value
+   *
    * @return
    */
   public Object get() {
@@ -136,7 +152,7 @@ public class AngularObject<T> {
    * fire updated() event for listener
    * Note that it does not invoke watcher.watch()
    */
-  public void emit(){
+  public void emit() {
     if (listener != null) {
       listener.updated(this);
     }
@@ -144,6 +160,7 @@ public class AngularObject<T> {
 
   /**
    * Set value
+   *
    * @param o reference to new user provided object
    */
   public void set(T o) {
@@ -152,7 +169,8 @@ public class AngularObject<T> {
 
   /**
    * Set value
-   * @param o reference to new user provided object
+   *
+   * @param o    reference to new user provided object
    * @param emit false on skip firing event for listener. note that it does not skip invoke
    *             watcher.watch() in any case
    */
@@ -187,6 +205,7 @@ public class AngularObject<T> {
 
   /**
    * Set event listener for this object
+   *
    * @param listener
    */
   public void setListener(AngularObjectListener listener) {
@@ -195,6 +214,7 @@ public class AngularObject<T> {
 
   /**
    * Get event listener of this object
+   *
    * @return event listener
    */
   public AngularObjectListener getListener() {
@@ -215,6 +235,7 @@ public class AngularObject<T> {
 
   /**
    * Remove a watcher from this object
+   *
    * @param watcher watcher to remove
    */
   public void removeWatcher(AngularObjectWatcher watcher) {
