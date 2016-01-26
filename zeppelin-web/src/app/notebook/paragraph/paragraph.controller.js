@@ -40,6 +40,33 @@ angular.module('zeppelinWebApp')
     paragraphs.forEach(paragraphScope.runParagraph);
   };
 
+  paragraphScope.pushToServer = function(varName, value, pushParams) {
+    var defaultParams = {interpreters: [], paragraphs: [], scope: 'paragraph',
+      runParagraphs: true};
+    var params = jQuery.extend(defaultParams, angular.copy(pushParams));
+
+    if (params.interpreter) {
+      params.interpreters.push(params.interpreter);
+      delete params.interpreter;
+    }
+
+    if (params.paragraph) {
+      params.paragraphs.push(params.paragraph);
+      delete params.paragraph;
+    }
+
+    // Only push to server if there is at least 1 interpreter
+    if (params.interpreters.length > 0) {
+      websocketMsgSrv.clientUpdateAngularObject($routeParams.noteId, varName, value, params);
+
+      // Only run target paragraphs if there are at least 1 interpreter updated
+      // and runParagraphs set to true
+      if (params.paragraphs.length > 0 && params.runParagraphs) {
+        params.paragraphs.forEach(paragraphScope.runParagraph);
+      }
+    }
+  };
+
   var angularObjectRegistry = {};
 
   var editorModes = {

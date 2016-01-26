@@ -253,4 +253,14 @@ public class AngularObject<T> {
     }
   }
 
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("AngularObject{");
+    sb.append("noteId='").append(noteId).append('\'');
+    sb.append(", paragraphId='").append(paragraphId).append('\'');
+    sb.append(", object=").append(object);
+    sb.append(", name='").append(name).append('\'');
+    sb.append('}');
+    return sb.toString();
+  }
 }

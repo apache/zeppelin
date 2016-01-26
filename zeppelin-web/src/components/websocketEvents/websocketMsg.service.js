@@ -70,6 +70,20 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
+    clientUpdateAngularObject: function(noteId, name, value, params) {
+      websocketEvents.sendNewEvent({
+        op: 'ANGULAR_OBJECT_CLIENT_UPDATE',
+        data: {
+          noteId: noteId,
+          name: name,
+          value: value,
+          interpreters: params.interpreters,
+          paragraphs: params.paragraphs,
+          scope: params.scope
+        }
+      });
+    },
+
     cancelParagraphRun: function(paragraphId) {
       websocketEvents.sendNewEvent({op: 'CANCEL_PARAGRAPH', data: {id: paragraphId}});
     },

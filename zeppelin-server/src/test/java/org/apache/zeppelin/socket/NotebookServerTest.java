@@ -20,8 +20,13 @@
 package org.apache.zeppelin.socket;
 
 import com.google.gson.Gson;
+
+import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.AngularObjectBuilder;
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
@@ -37,6 +42,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -151,6 +157,619 @@ public class NotebookServerTest extends AbstractTestRestApi {
     assertEquals("Test Zeppelin notebook import", notebook.getNote(note.getId()).getName());
     assertEquals("Test paragraphs import", notebook.getNote(note.getId()).getParagraphs().get(0).getText());
     notebook.removeNote(note.getId());
+  }
+  
+  @Test
+  public void should_push_angular_object_to_remote_for_paragraphs() throws Exception {
+    //Given
+    final String varName = "name";
+    final String value = "DuyHai DOAN";
+    final Message messageReceived = new Message(OP.ANGULAR_OBJECT_CLIENT_UPDATE)
+            .put("noteId", "noteId")
+            .put("name", varName)
+            .put("value", value)
+            .put("interpreters", asList("md", "spark"))
+            .put("paragraphs", asList("paragraph1", "paragraph2"))
+            .put("scope", "paragraph");
+
+    final NotebookServer server = new NotebookServer();
+    final Notebook notebook = mock(Notebook.class);
+    final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
+    when(notebook.getNote("noteId")).thenReturn(note);
+
+    final RemoteAngularObjectRegistry mdRegistry = mock(RemoteAngularObjectRegistry.class);
+    final RemoteAngularObjectRegistry sparkRegistry = mock(RemoteAngularObjectRegistry.class);
+    final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
+    mdGroup.setAngularObjectRegistry(mdRegistry);
+    final InterpreterGroup sparkGroup = new InterpreterGroup("sparkGroup");
+    sparkGroup.setAngularObjectRegistry(sparkRegistry);
+    final InterpreterSetting mdSetting = new InterpreterSetting("id1", "md", "md", null);
+    final InterpreterSetting sparkSetting = new InterpreterSetting("id2", "spark", "spark", null);
+    mdSetting.setInterpreterGroup(mdGroup);
+    sparkSetting.setInterpreterGroup(sparkGroup);
+
+    when(note.getNoteReplLoader().getInterpreterSettings())
+      .thenReturn(asList(mdSetting, sparkSetting));
+
+    when(note.getParagraph("paragraph1").getRequiredReplName()).thenReturn("md");
+    when(note.getParagraph("paragraph2").getRequiredReplName()).thenReturn("spark");
+
+    final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraph1");
+    final AngularObject ao2 = AngularObjectBuilder.build(varName, value, "noteId", "paragraph2");
+
+    when(mdRegistry.addAndNotifyRemoteProcess(varName, value, "noteId", "paragraph1"))
+            .thenReturn(ao1);
+
+    when(sparkRegistry.addAndNotifyRemoteProcess(varName, value, "noteId", "paragraph2"))
+            .thenReturn(ao2);
+
+    NotebookSocket conn = mock(NotebookSocket.class);
+    NotebookSocket otherConn = mock(NotebookSocket.class);
+
+    final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
+            .put("angularObject", ao1)
+            .put("interpreterGroupId", "mdGroup")
+            .put("noteId", "noteId")
+            .put("paragraphId", "paragraph1"));
+
+    final String sparkMsg2 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
+            .put("angularObject", ao2)
+            .put("interpreterGroupId", "sparkGroup")
+            .put("noteId", "noteId")
+            .put("paragraphId", "paragraph2"));
+
+    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+
+    // When
+    server.angularObjectClientUpdate(conn, notebook, messageReceived);
+
+    // Then
+    verify(mdRegistry, never()).addAndNotifyRemoteProcess(varName, value, "noteId", null);
+    verify(sparkRegistry, never()).addAndNotifyRemoteProcess(varName, value, "noteId", null);
+
+    verify(otherConn).send(mdMsg1);
+    verify(otherConn).send(sparkMsg2);
+  }
+
+  @Test
+  public void should_push_angular_object_to_remote_for_paragraph_and_note() throws Exception {
+    //Given
+    final String varName = "name";
+    final String value = "DuyHai DOAN";
+    final Message messageReceived = new Message(OP.ANGULAR_OBJECT_CLIENT_UPDATE)
+            .put("noteId", "noteId")
+            .put("name", varName)
+            .put("value", value)
+            .put("interpreters", asList("md"))
+            .put("paragraphs", asList("paragraph1", "paragraph2"))
+            .put("scope", "note");
+
+    final NotebookServer server = new NotebookServer();
+    final Notebook notebook = mock(Notebook.class);
+    final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
+    when(notebook.getNote("noteId")).thenReturn(note);
+
+    final RemoteAngularObjectRegistry mdRegistry = mock(RemoteAngularObjectRegistry.class);
+    final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
+    mdGroup.setAngularObjectRegistry(mdRegistry);
+    final InterpreterSetting mdSetting = new InterpreterSetting("id1", "md", "md", null);
+    mdSetting.setInterpreterGroup(mdGroup);
+
+    when(note.getNoteReplLoader().getInterpreterSettings())
+            .thenReturn(asList(mdSetting));
+
+    when(note.getParagraph("paragraph1").getRequiredReplName()).thenReturn("md");
+
+    final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraph1");
+    final AngularObject ao2 = AngularObjectBuilder.build(varName, value, "noteId", null);
+
+    when(mdRegistry.addAndNotifyRemoteProcess(varName, value, "noteId", "paragraph1"))
+            .thenReturn(ao1);
+    when(mdRegistry.addAndNotifyRemoteProcess(varName, value, "noteId", null))
+            .thenReturn(ao2);
+
+    NotebookSocket conn = mock(NotebookSocket.class);
+    NotebookSocket otherConn = mock(NotebookSocket.class);
+
+    final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
+            .put("angularObject", ao1)
+            .put("interpreterGroupId", "mdGroup")
+            .put("noteId", "noteId")
+            .put("paragraphId", "paragraph1"));
+
+    final String mdMsg2 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
+            .put("angularObject", ao2)
+            .put("interpreterGroupId", "mdGroup")
+            .put("noteId", "noteId"));
+
+    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+
+    // When
+    server.angularObjectClientUpdate(conn, notebook, messageReceived);
+
+    // Then
+    verify(otherConn).send(mdMsg1);
+    verify(otherConn).send(mdMsg2);
+  }
+
+  @Test
+  public void should_push_angular_object_to_remote_for_note_only() throws Exception {
+    //Given
+    final String varName = "name";
+    final String value = "DuyHai DOAN";
+    final Message messageReceived = new Message(OP.ANGULAR_OBJECT_CLIENT_UPDATE)
+            .put("noteId", "noteId")
+            .put("name", varName)
+            .put("value", value)
+            .put("interpreters", asList("md"))
+            .put("scope", "paragraph");
+
+    final NotebookServer server = new NotebookServer();
+    final Notebook notebook = mock(Notebook.class);
+    final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
+    when(notebook.getNote("noteId")).thenReturn(note);
+
+    final RemoteAngularObjectRegistry mdRegistry = mock(RemoteAngularObjectRegistry.class);
+    final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
+    mdGroup.setAngularObjectRegistry(mdRegistry);
+    final InterpreterSetting mdSetting = new InterpreterSetting("id1", "md", "md", null);
+    mdSetting.setInterpreterGroup(mdGroup);
+
+    when(note.getNoteReplLoader().getInterpreterSettings())
+            .thenReturn(asList(mdSetting));
+
+    final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", null);
+
+    when(mdRegistry.addAndNotifyRemoteProcess(varName, value, "noteId", null))
+            .thenReturn(ao1);
+
+    NotebookSocket conn = mock(NotebookSocket.class);
+    NotebookSocket otherConn = mock(NotebookSocket.class);
+
+    final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
+            .put("angularObject", ao1)
+            .put("interpreterGroupId", "mdGroup")
+            .put("noteId", "noteId"));
+
+    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+
+    // When
+    server.angularObjectClientUpdate(conn, notebook, messageReceived);
+
+    // Then
+    verify(otherConn).send(mdMsg1);
+  }
+
+  @Test
+  public void should_push_angular_object_to_local_for_paragraphs() throws Exception {
+    //Given
+    final String varName = "name";
+    final String value = "DuyHai DOAN";
+    final Message messageReceived = new Message(OP.ANGULAR_OBJECT_CLIENT_UPDATE)
+            .put("noteId", "noteId")
+            .put("name", varName)
+            .put("value", value)
+            .put("interpreters", asList("md", "spark"))
+            .put("paragraphs", asList("paragraph1", "paragraph2"))
+            .put("scope", "paragraph");
+
+    final NotebookServer server = new NotebookServer();
+    final Notebook notebook = mock(Notebook.class);
+    final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
+    when(notebook.getNote("noteId")).thenReturn(note);
+
+    final AngularObjectRegistry mdRegistry = mock(AngularObjectRegistry.class);
+    final AngularObjectRegistry sparkRegistry = mock(AngularObjectRegistry.class);
+    final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
+    mdGroup.setAngularObjectRegistry(mdRegistry);
+    final InterpreterGroup sparkGroup = new InterpreterGroup("sparkGroup");
+    sparkGroup.setAngularObjectRegistry(sparkRegistry);
+    final InterpreterSetting mdSetting = new InterpreterSetting("id1", "md", "md", null);
+    final InterpreterSetting sparkSetting = new InterpreterSetting("id2", "spark", "spark", null);
+    mdSetting.setInterpreterGroup(mdGroup);
+    sparkSetting.setInterpreterGroup(sparkGroup);
+
+    when(note.getNoteReplLoader().getInterpreterSettings())
+            .thenReturn(asList(mdSetting, sparkSetting));
+
+    when(note.getParagraph("paragraph1").getRequiredReplName()).thenReturn("md");
+    when(note.getParagraph("paragraph2").getRequiredReplName()).thenReturn("spark");
+
+    final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraph1");
+    final AngularObject ao2 = AngularObjectBuilder.build(varName, value, "noteId", "paragraph2");
+
+    when(mdRegistry.add(varName, value, "noteId", "paragraph1")).thenReturn(ao1);
+    when(sparkRegistry.add(varName, value, "noteId", "paragraph2")).thenReturn(ao2);
+
+    NotebookSocket conn = mock(NotebookSocket.class);
+    NotebookSocket otherConn = mock(NotebookSocket.class);
+
+    final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
+            .put("angularObject", ao1)
+            .put("interpreterGroupId", "mdGroup")
+            .put("noteId", "noteId")
+            .put("paragraphId", "paragraph1"));
+
+    final String sparkMsg2 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
+            .put("angularObject", ao2)
+            .put("interpreterGroupId", "sparkGroup")
+            .put("noteId", "noteId")
+            .put("paragraphId", "paragraph2"));
+
+    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+
+    // When
+    server.angularObjectClientUpdate(conn, notebook, messageReceived);
+
+    // Then
+    verify(otherConn).send(mdMsg1);
+    verify(otherConn).send(sparkMsg2);
+  }
+
+  @Test
+  public void should_push_angular_object_to_local_for_paragraphs_and_note() throws Exception {
+    //Given
+    final String varName = "name";
+    final String value = "DuyHai DOAN";
+    final Message messageReceived = new Message(OP.ANGULAR_OBJECT_CLIENT_UPDATE)
+            .put("noteId", "noteId")
+            .put("name", varName)
+            .put("value", value)
+            .put("interpreters", asList("md"))
+            .put("paragraphs", asList("paragraph1", "paragraph2"))
+            .put("scope", "note");
+
+    final NotebookServer server = new NotebookServer();
+    final Notebook notebook = mock(Notebook.class);
+    final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
+    when(notebook.getNote("noteId")).thenReturn(note);
+
+    final AngularObjectRegistry mdRegistry = mock(AngularObjectRegistry.class);
+    final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
+    mdGroup.setAngularObjectRegistry(mdRegistry);
+    final InterpreterSetting mdSetting = new InterpreterSetting("id1", "md", "md", null);
+    mdSetting.setInterpreterGroup(mdGroup);
+
+    when(note.getNoteReplLoader().getInterpreterSettings())
+            .thenReturn(asList(mdSetting));
+
+    when(note.getParagraph("paragraph1").getRequiredReplName()).thenReturn("md");
+
+    final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraph1");
+    final AngularObject ao2 = AngularObjectBuilder.build(varName, value, "noteId", null);
+
+    when(mdRegistry.add(varName, value, "noteId", "paragraph1")).thenReturn(ao1);
+    when(mdRegistry.add(varName, value, "noteId", null)).thenReturn(ao2);
+
+    NotebookSocket conn = mock(NotebookSocket.class);
+    NotebookSocket otherConn = mock(NotebookSocket.class);
+
+    final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
+            .put("angularObject", ao1)
+            .put("interpreterGroupId", "mdGroup")
+            .put("noteId", "noteId")
+            .put("paragraphId", "paragraph1"));
+
+    final String mdMsg2 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
+            .put("angularObject", ao2)
+            .put("interpreterGroupId", "mdGroup")
+            .put("noteId", "noteId"));
+
+    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+
+    // When
+    server.angularObjectClientUpdate(conn, notebook, messageReceived);
+
+    // Then
+    verify(otherConn).send(mdMsg1);
+    verify(otherConn).send(mdMsg2);
+  }
+
+  @Test
+  public void should_push_angular_object_to_local_for_note_only() throws Exception {
+    //Given
+    final String varName = "name";
+    final String value = "DuyHai DOAN";
+    final Message messageReceived = new Message(OP.ANGULAR_OBJECT_CLIENT_UPDATE)
+            .put("noteId", "noteId")
+            .put("name", varName)
+            .put("value", value)
+            .put("interpreters", asList("md"))
+            .put("scope", "paragraph");
+
+    final NotebookServer server = new NotebookServer();
+    final Notebook notebook = mock(Notebook.class);
+    final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
+    when(notebook.getNote("noteId")).thenReturn(note);
+
+    final AngularObjectRegistry mdRegistry = mock(AngularObjectRegistry.class);
+    final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
+    mdGroup.setAngularObjectRegistry(mdRegistry);
+    final InterpreterSetting mdSetting = new InterpreterSetting("id1", "md", "md", null);
+    mdSetting.setInterpreterGroup(mdGroup);
+
+    when(note.getNoteReplLoader().getInterpreterSettings())
+            .thenReturn(asList(mdSetting));
+
+    final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", null);
+
+    when(mdRegistry.add(varName, value, "noteId", null)).thenReturn(ao1);
+
+    NotebookSocket conn = mock(NotebookSocket.class);
+    NotebookSocket otherConn = mock(NotebookSocket.class);
+
+    final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_UPDATE)
+            .put("angularObject", ao1)
+            .put("interpreterGroupId", "mdGroup")
+            .put("noteId", "noteId"));
+
+    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+
+    // When
+    server.angularObjectClientUpdate(conn, notebook, messageReceived);
+
+    // Then
+    verify(otherConn).send(mdMsg1);
+  }
+
+  @Test
+  public void should_delete_angular_object_from_remote_for_paragraphs() throws Exception {
+    //Given
+    final String varName = "name";
+    final String value = "val";
+    final Message messageReceived = new Message(OP.ANGULAR_OBJECT_CLIENT_REMOVE)
+            .put("noteId", "noteId")
+            .put("name", varName)
+            .put("interpreters", asList("md", "spark"))
+            .put("paragraphs", asList("paragraph1", "paragraph2"))
+            .put("scope", "paragraph");
+
+    final NotebookServer server = new NotebookServer();
+    final Notebook notebook = mock(Notebook.class);
+    final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
+    when(notebook.getNote("noteId")).thenReturn(note);
+
+    final RemoteAngularObjectRegistry mdRegistry = mock(RemoteAngularObjectRegistry.class);
+    final RemoteAngularObjectRegistry sparkRegistry = mock(RemoteAngularObjectRegistry.class);
+    final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
+    mdGroup.setAngularObjectRegistry(mdRegistry);
+    final InterpreterGroup sparkGroup = new InterpreterGroup("sparkGroup");
+    sparkGroup.setAngularObjectRegistry(sparkRegistry);
+    final InterpreterSetting mdSetting = new InterpreterSetting("id1", "md", "md", null);
+    final InterpreterSetting sparkSetting = new InterpreterSetting("id2", "spark", "spark", null);
+    mdSetting.setInterpreterGroup(mdGroup);
+    sparkSetting.setInterpreterGroup(sparkGroup);
+
+    when(note.getNoteReplLoader().getInterpreterSettings())
+            .thenReturn(asList(mdSetting, sparkSetting));
+
+    final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraph1");
+    final AngularObject ao2 = AngularObjectBuilder.build(varName, value, "noteId", "paragraph2");
+
+    when(mdRegistry.removeAndNotifyRemoteProcess(varName, "noteId", "paragraph1"))
+            .thenReturn(ao1);
+    when(mdRegistry.removeAndNotifyRemoteProcess(varName, "noteId", "paragraph2"))
+            .thenReturn(ao2);
+
+    when(sparkRegistry.removeAndNotifyRemoteProcess(varName, "noteId", "paragraph1"))
+            .thenReturn(ao1);
+    when(sparkRegistry.removeAndNotifyRemoteProcess(varName, "noteId", "paragraph2"))
+            .thenReturn(ao2);
+
+    NotebookSocket conn = mock(NotebookSocket.class);
+    NotebookSocket otherConn = mock(NotebookSocket.class);
+
+    final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
+            .put("angularObject", ao1)
+            .put("interpreterGroupId", "mdGroup")
+            .put("noteId", "noteId")
+            .put("paragraphId", "paragraph1"));
+
+    final String mdMsg2 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
+            .put("angularObject", ao2)
+            .put("interpreterGroupId", "mdGroup")
+            .put("noteId", "noteId")
+            .put("paragraphId", "paragraph2"));
+
+    final String sparkMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
+            .put("angularObject", ao1)
+            .put("interpreterGroupId", "sparkGroup")
+            .put("noteId", "noteId")
+            .put("paragraphId", "paragraph1"));
+
+    final String sparkMsg2 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
+            .put("angularObject", ao2)
+            .put("interpreterGroupId", "sparkGroup")
+            .put("noteId", "noteId")
+            .put("paragraphId", "paragraph2"));
+
+    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+
+    // When
+    server.angularObjectClientDelete(conn, notebook, messageReceived);
+
+    // Then
+    verify(mdRegistry, never()).removeAndNotifyRemoteProcess(varName, "noteId", null);
+    verify(sparkRegistry, never()).removeAndNotifyRemoteProcess(varName, "noteId", null);
+
+    verify(otherConn).send(mdMsg1);
+    verify(otherConn).send(mdMsg2);
+    verify(otherConn).send(sparkMsg1);
+    verify(otherConn).send(sparkMsg2);
+  }
+
+  @Test
+  public void should_delete_angular_object_from_remote_for_notes() throws Exception {
+    //Given
+    final String varName = "name";
+    final String value = "val";
+    final Message messageReceived = new Message(OP.ANGULAR_OBJECT_CLIENT_REMOVE)
+            .put("noteId", "noteId")
+            .put("name", varName)
+            .put("interpreters", asList("md"))
+            .put("scope", "paragraph");
+
+    final NotebookServer server = new NotebookServer();
+    final Notebook notebook = mock(Notebook.class);
+    final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
+    when(notebook.getNote("noteId")).thenReturn(note);
+
+    final RemoteAngularObjectRegistry mdRegistry = mock(RemoteAngularObjectRegistry.class);
+    final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
+    mdGroup.setAngularObjectRegistry(mdRegistry);
+    final InterpreterSetting mdSetting = new InterpreterSetting("id1", "md", "md", null);
+    mdSetting.setInterpreterGroup(mdGroup);
+
+    when(note.getNoteReplLoader().getInterpreterSettings())
+            .thenReturn(asList(mdSetting));
+
+    final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", null);
+
+    when(mdRegistry.removeAndNotifyRemoteProcess(varName, "noteId", null))
+            .thenReturn(ao1);
+
+    NotebookSocket conn = mock(NotebookSocket.class);
+    NotebookSocket otherConn = mock(NotebookSocket.class);
+
+    final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
+            .put("angularObject", ao1)
+            .put("interpreterGroupId", "mdGroup")
+            .put("noteId", "noteId"));
+
+    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+
+    // When
+    server.angularObjectClientDelete(conn, notebook, messageReceived);
+
+    // Then
+    verify(mdRegistry).removeAndNotifyRemoteProcess(varName, "noteId", null);
+
+    verify(otherConn).send(mdMsg1);
+  }
+
+  @Test
+  public void should_delete_angular_object_from_local_for_paragraphs() throws Exception {
+    //Given
+    final String varName = "name";
+    final String value = "val";
+    final Message messageReceived = new Message(OP.ANGULAR_OBJECT_CLIENT_REMOVE)
+            .put("noteId", "noteId")
+            .put("name", varName)
+            .put("interpreters", asList("md", "spark"))
+            .put("paragraphs", asList("paragraph1", "paragraph2"))
+            .put("scope", "paragraph");
+
+    final NotebookServer server = new NotebookServer();
+    final Notebook notebook = mock(Notebook.class);
+    final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
+    when(notebook.getNote("noteId")).thenReturn(note);
+
+    final AngularObjectRegistry mdRegistry = mock(AngularObjectRegistry.class);
+    final AngularObjectRegistry sparkRegistry = mock(AngularObjectRegistry.class);
+    final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
+    mdGroup.setAngularObjectRegistry(mdRegistry);
+    final InterpreterGroup sparkGroup = new InterpreterGroup("sparkGroup");
+    sparkGroup.setAngularObjectRegistry(sparkRegistry);
+    final InterpreterSetting mdSetting = new InterpreterSetting("id1", "md", "md", null);
+    final InterpreterSetting sparkSetting = new InterpreterSetting("id2", "spark", "spark", null);
+    mdSetting.setInterpreterGroup(mdGroup);
+    sparkSetting.setInterpreterGroup(sparkGroup);
+
+    when(note.getNoteReplLoader().getInterpreterSettings())
+            .thenReturn(asList(mdSetting, sparkSetting));
+
+    final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", "paragraph1");
+    final AngularObject ao2 = AngularObjectBuilder.build(varName, value, "noteId", "paragraph2");
+
+    when(mdRegistry.remove(varName, "noteId", "paragraph1")).thenReturn(ao1);
+    when(mdRegistry.remove(varName, "noteId", "paragraph2")).thenReturn(ao2);
+
+    when(sparkRegistry.remove(varName, "noteId", "paragraph1")).thenReturn(ao1);
+    when(sparkRegistry.remove(varName, "noteId", "paragraph2")).thenReturn(ao2);
+
+    NotebookSocket conn = mock(NotebookSocket.class);
+    NotebookSocket otherConn = mock(NotebookSocket.class);
+
+    final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
+            .put("angularObject", ao1)
+            .put("interpreterGroupId", "mdGroup")
+            .put("noteId", "noteId")
+            .put("paragraphId", "paragraph1"));
+
+    final String mdMsg2 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
+            .put("angularObject", ao2)
+            .put("interpreterGroupId", "mdGroup")
+            .put("noteId", "noteId")
+            .put("paragraphId", "paragraph2"));
+
+    final String sparkMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
+            .put("angularObject", ao1)
+            .put("interpreterGroupId", "sparkGroup")
+            .put("noteId", "noteId")
+            .put("paragraphId", "paragraph1"));
+
+    final String sparkMsg2 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
+            .put("angularObject", ao2)
+            .put("interpreterGroupId", "sparkGroup")
+            .put("noteId", "noteId")
+            .put("paragraphId", "paragraph2"));
+
+    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+
+    // When
+    server.angularObjectClientDelete(conn, notebook, messageReceived);
+
+    // Then
+    verify(otherConn).send(mdMsg1);
+    verify(otherConn).send(mdMsg2);
+    verify(otherConn).send(sparkMsg1);
+    verify(otherConn).send(sparkMsg2);
+  }
+
+  @Test
+  public void should_delete_angular_object_from_local_for_notes() throws Exception {
+    //Given
+    final String varName = "name";
+    final String value = "val";
+    final Message messageReceived = new Message(OP.ANGULAR_OBJECT_CLIENT_REMOVE)
+            .put("noteId", "noteId")
+            .put("name", varName)
+            .put("interpreters", asList("md"))
+            .put("scope", "paragraph");
+
+    final NotebookServer server = new NotebookServer();
+    final Notebook notebook = mock(Notebook.class);
+    final Note note = mock(Note.class, RETURNS_DEEP_STUBS);
+    when(notebook.getNote("noteId")).thenReturn(note);
+
+    final AngularObjectRegistry mdRegistry = mock(AngularObjectRegistry.class);
+    final InterpreterGroup mdGroup = new InterpreterGroup("mdGroup");
+    mdGroup.setAngularObjectRegistry(mdRegistry);
+    final InterpreterSetting mdSetting = new InterpreterSetting("id1", "md", "md", null);
+    mdSetting.setInterpreterGroup(mdGroup);
+
+    when(note.getNoteReplLoader().getInterpreterSettings())
+            .thenReturn(asList(mdSetting));
+
+    final AngularObject ao1 = AngularObjectBuilder.build(varName, value, "noteId", null);
+
+    when(mdRegistry.remove(varName, "noteId", null)).thenReturn(ao1);
+
+    NotebookSocket conn = mock(NotebookSocket.class);
+    NotebookSocket otherConn = mock(NotebookSocket.class);
+
+    final String mdMsg1 =  server.serializeMessage(new Message(OP.ANGULAR_OBJECT_REMOVE)
+            .put("angularObject", ao1)
+            .put("interpreterGroupId", "mdGroup")
+            .put("noteId", "noteId"));
+
+    server.noteSocketMap.put("noteId", asList(conn, otherConn));
+
+    // When
+    server.angularObjectClientDelete(conn, notebook, messageReceived);
+
+    // Then
+    verify(otherConn).send(mdMsg1);
   }
 
   private NotebookSocket createWebSocket() {
