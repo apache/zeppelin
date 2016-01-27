@@ -29,6 +29,7 @@ import com.datastax.driver.core._
 import com.datastax.driver.core.exceptions.DriverException
 import com.datastax.driver.core.policies.{LoggingRetryPolicy, FallthroughRetryPolicy, DowngradingConsistencyRetryPolicy, Policies}
 import org.apache.zeppelin.cassandra.TextBlockHierarchy._
+import org.apache.zeppelin.display.AngularObjectRegistry
 import org.apache.zeppelin.display.Input.ParamOption
 import org.apache.zeppelin.interpreter.InterpreterResult.Code
 import org.apache.zeppelin.interpreter.{InterpreterException, InterpreterResult, InterpreterContext}
@@ -41,7 +42,8 @@ import scala.collection.mutable.ArrayBuffer
 
 /**
  * Value object to store runtime query parameters
- * @param consistency consistency level
+  *
+  * @param consistency consistency level
  * @param serialConsistency serial consistency level
  * @param timestamp timestamp
  * @param retryPolicy retry policy
@@ -305,19 +307,38 @@ class InterpreterLogic(val session: Session)  {
 
   def maybeExtractVariables(statement: String, context: InterpreterContext): String = {
 
+    def findInAngularRepository(variable: String): Option[AnyRef] = {
+      val registry = context.getAngularObjectRegistry
+      val noteId = context.getNoteId
+      val paragraphId = context.getParagraphId
+      val paragraphScoped: Option[AnyRef] = Option(registry.get(variable, noteId, paragraphId)).map[AnyRef](_.get())
+
+      paragraphScoped
+    }
+
     def extractVariableAndDefaultValue(statement: String, exp: String):String = {
       exp match {
-        case MULTIPLE_CHOICES_VARIABLE_DEFINITION_PATTERN(variable,choices) => {
+        case MULTIPLE_CHOICES_VARIABLE_DEFINITION_PATTERN(variable, choices) => {
           val escapedExp: String = exp.replaceAll( """\{""", """\\{""").replaceAll( """\}""", """\\}""").replaceAll("""\|""","""\\|""")
-          val listChoices:List[String] = choices.trim.split(CHOICES_SEPARATOR).toList
-          val paramOptions= listChoices.map(choice => new ParamOption(choice, choice))
-          val selected = context.getGui.select(variable, listChoices.head, paramOptions.toArray)
-          statement.replaceAll(escapedExp,selected.toString)
+          findInAngularRepository(variable) match {
+            case Some(value) => statement.replaceAll(escapedExp,value.toString)
+            case None => {
+              val listChoices:List[String] = choices.trim.split(CHOICES_SEPARATOR).toList
+              val paramOptions= listChoices.map(choice => new ParamOption(choice, choice))
+              val selected = context.getGui.select(variable, listChoices.head, paramOptions.toArray)
+              statement.replaceAll(escapedExp,selected.toString)
+            }
+          }
         }
         case SIMPLE_VARIABLE_DEFINITION_PATTERN(variable,defaultVal) => {
           val escapedExp: String = exp.replaceAll( """\{""", """\\{""").replaceAll( """\}""", """\\}""")
-          val value = context.getGui.input(variable,defaultVal)
-          statement.replaceAll(escapedExp,value.toString)
+          findInAngularRepository(variable) match {
+            case Some(value) => statement.replaceAll(escapedExp,value.toString)
+            case None => {
+              val value = context.getGui.input(variable,defaultVal)
+              statement.replaceAll(escapedExp,value.toString)
+            }
+          }
         }
         case _ => throw new ParsingException(s"Invalid bound variable definition for '$exp' in '$statement'. It should be of form 'variable=defaultValue' or 'variable=value1|value2|...|valueN'")
       }
