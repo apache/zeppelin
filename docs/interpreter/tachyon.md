@@ -198,3 +198,18 @@ The **Tachyon** interpreter accepts the following commands.
 
 ## How to test it's working
 Be sure to have configured correctly the Tachyon interpreter, then open a new paragraph and type one of the above commands.
+
+Below a simple example to show how to interact with Tachyon interpreter.
+Following steps are performed:
+* using sh interpreter a new text file is created on local machine
+* using Tachyon interpreter:
+  * is listed the content of the tfs (Tachyon File System) root
+  * the file previously created is copied to tfs
+  * is listed again the content of the tfs root to check the existence of the new copied file
+  * is showed the content of the copied file (using the tail command)
+  * the file previously copied to tfs is copied to local machine
+*  using sh interpreter it's checked the existence of the new file copied from Tachyon and its content is showed
+
+<center>
+  ![Tachyon Interpreter Example](../assets/themes/zeppelin/img/docs-img/tachyon-example.png)
+</center> 
