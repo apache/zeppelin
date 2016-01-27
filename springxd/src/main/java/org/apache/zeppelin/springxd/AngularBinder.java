@@ -33,18 +33,18 @@ public class AngularBinder {
 
   @SuppressWarnings("unchecked")
   public static void bind(InterpreterContext context, String name, Object value, String noteId,
-      AngularObjectWatcher watcher) {
+      String paragraphId, AngularObjectWatcher watcher) {
 
     AngularObjectRegistry registry = context.getAngularObjectRegistry();
 
-    if (registry.get(name, noteId) == null) {
-      registry.add(name, value, noteId);
+    if (registry.get(name, noteId, paragraphId) == null) {
+      registry.add(name, value, noteId, paragraphId);
     } else {
-      registry.get(name, noteId).set(value);
+      registry.get(name, noteId, paragraphId).set(value);
     }
 
-    if (registry.get(name, noteId) != null) {
-      registry.get(name, noteId).addWatcher(watcher);
+    if (registry.get(name, noteId, paragraphId) != null) {
+      registry.get(name, noteId, paragraphId).addWatcher(watcher);
     }
   }
 }

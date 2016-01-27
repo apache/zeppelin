@@ -36,6 +36,7 @@ public class AngularBinderTest {
     String name = "name";
     Object value = "value";
     String noteId = "noteId";
+    String paragraphId = "paragraphId";
 
     InterpreterContext mockContext = mock(InterpreterContext.class);
     AngularObjectWatcher mockWatcher = mock(AngularObjectWatcher.class);
@@ -44,12 +45,12 @@ public class AngularBinderTest {
     AngularObject mockAngularObject = mock(AngularObject.class);
 
     when(mockContext.getAngularObjectRegistry()).thenReturn(mockRegistry);
-    when(mockRegistry.get(eq(name), eq(noteId))).thenReturn(mockAngularObject);
+    when(mockRegistry.get(eq(name), eq(noteId), eq(paragraphId))).thenReturn(mockAngularObject);
 
 
-    AngularBinder.bind(mockContext, name, value, noteId, mockWatcher);
+    AngularBinder.bind(mockContext, name, value, noteId, paragraphId, mockWatcher);
 
-    verify(mockRegistry, times(4)).get(eq(name), eq(noteId));
+    verify(mockRegistry, times(4)).get(eq(name), eq(noteId), eq(paragraphId));
     verify(mockAngularObject).addWatcher(eq(mockWatcher));
   }
 }

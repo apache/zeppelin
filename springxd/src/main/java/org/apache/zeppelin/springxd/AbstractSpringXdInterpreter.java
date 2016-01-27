@@ -152,7 +152,7 @@ public abstract class AbstractSpringXdInterpreter extends Interpreter {
     String xdResourceStatusId = "rxdResourceStatus_" + ctx.getParagraphId().replace("-", "_");
 
     AngularBinder.bind(ctx, xdResourceStatusId, ResourceStatus.DEPLOYED.name(), ctx.getNoteId(),
-        new DestroyEventWatcher(ctx));
+        ctx.getParagraphId(), new DestroyEventWatcher(ctx));
 
     List<String> deployedResources =
         xdResourcesManager.getDeployedResourceBy(ctx.getNoteId(), ctx.getParagraphId());
