@@ -29,8 +29,6 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -81,14 +79,12 @@ public class SparkCassandraSqlInterpreter extends Interpreter {
 
         SparkInterpreter interperter = getSparkInterpreter();
 
-        Map<String, Object> binder = (Map<String, Object>) interperter.getValue("_binder");
-        binder.put("myfield", myfield);
-
-        logger.error("Binding myfield.");
-        String input[] = {"@transient val myfield = "
-                + "_binder.get(\"myfield\").asInstanceOf[java.util.Date]"};
-
-        interperter.interpretInput(input);
+        //
+        // TODO: is there a way to wire a Cassandra SQL context into the Spark interpreter
+        // this will allow us to not hae to hack up SparkInterpreter
+        //
+        // interperter.interpretInput(input);
+        //
         logger.error("Done binding myfield.");
     }
 

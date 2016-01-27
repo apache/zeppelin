@@ -54,6 +54,8 @@ import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.spark.dep.SparkDependencyContext;
 import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
+import org.apache.spark.sql.cassandra.CassandraSQLContext;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,6 +118,7 @@ public class SparkInterpreter extends Interpreter {
   private SQLContext sqlc;
   private SparkDependencyResolver dep;
   private SparkJLineCompletion completor;
+  private CassandraSQLContext csqlc;
 
   private JobProgressListener sparkListener;
 
@@ -217,6 +220,14 @@ public class SparkInterpreter extends Interpreter {
     }
 
     return sqlc;
+  }
+
+  public CassandraSQLContext getCassandraSQLContext() {
+    if (csqlc == null){
+      csqlc = new CassandraSQLContext(sc);
+    }
+
+    return csqlc;
   }
 
   public SparkDependencyResolver getDependencyResolver() {
@@ -475,6 +486,8 @@ public class SparkInterpreter extends Interpreter {
 
     sqlc = getSQLContext();
 
+    csqlc = getCassandraSQLContext();
+
     dep = getDependencyResolver();
 
     z = new ZeppelinContext(sc, sqlc, null, dep,
@@ -494,6 +507,8 @@ public class SparkInterpreter extends Interpreter {
                  + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
     intp.interpret("@transient val sqlContext = "
                  + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
+    intp.interpret("@transient val csqlc = "
+            + "_binder.get(\"csqlc\").asInstanceOf[org.apache.spark.sql.cassandra.CassandraSQLContext]");
     intp.interpret("import org.apache.spark.SparkContext._");
 
     if (sparkVersion.oldSqlContextImplicits()) {
