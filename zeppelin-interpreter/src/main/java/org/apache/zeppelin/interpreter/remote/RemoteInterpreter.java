@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import org.apache.thrift.TException;
 import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -371,13 +372,15 @@ public class RemoteInterpreter extends Interpreter {
    * @throws TException
      */
   void pushAngularObjectRegistryToRemote(Client client) throws TException {
-    final Map<String, Map<String, AngularObject>> registry = this.getInterpreterGroup()
-            .getAngularObjectRegistry().getRegistry();
+    final AngularObjectRegistry angularObjectRegistry = this.getInterpreterGroup()
+      .getAngularObjectRegistry();
 
-    if (registry != null) {
+    if (angularObjectRegistry != null && angularObjectRegistry.getRegistry() != null) {
+      final Map<String, Map<String, AngularObject>> registry = angularObjectRegistry
+        .getRegistry();
+
       logger.info("Push local angular object registry from ZeppelinServer to" +
-                      " remote interpreter group {}",
-              this.getInterpreterGroup().getId());
+        " remote interpreter group {}", this.getInterpreterGroup().getId());
 
       final java.lang.reflect.Type registryType = new TypeToken<Map<String,
               Map<String, AngularObject>>>() {}.getType();
