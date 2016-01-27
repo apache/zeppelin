@@ -770,7 +770,7 @@ Below are the configuration parameters and their default value.
 
 ## Change Log
 
-**2.0** _(Zeppelin 0.5.7-incubating)_ : 
+**2.0** _(Zeppelin {{ ZEPPELIN_VERSION }})_ : 
 * Update help menu and add changelog
 * Add Support for **User Defined Functions**, **User Defined Aggregates** and **Materialized Views**
 * Upgrade Java driver version to **3.0.0-rc1**
@@ -782,7 +782,6 @@ Below are the configuration parameters and their default value.
 
  If you encounter a bug for this interpreter, please create a **[JIRA]** ticket and ping me on Twitter
  at **[@doanduyhai]**
-
 
 [Cassandra Java Driver]: https://github.com/datastax/java-driver
 [standard CQL syntax]: http://docs.datastax.com/en/cql/3.1/cql/cql_using/use_collections_c.html
