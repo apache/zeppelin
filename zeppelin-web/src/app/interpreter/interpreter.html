@@ -207,19 +207,19 @@ limitations under the License.
             </td>
           </tr>
         </table>
+        <form editable-form name="valueform"
+              onaftersave="updateInterpreterSetting(valueform, setting.id)"
+              ng-show="valueform.$visible">
+          <button type="submit" class="btn btn-primary">
+            Save
+          </button>
+          <button type="button" class="btn btn-default"
+                  ng-disabled="valueform.$waiting"
+                  ng-click="valueform.$cancel(); resetInterpreterSetting(setting.id)">
+            Cancel
+          </button>
+        </form>
       </div>
-      <form editable-form name="valueform"
-            onaftersave="updateInterpreterSetting(valueform, setting.id)"
-            ng-show="valueform.$visible">
-        <button type="submit" class="btn btn-primary">
-          Save
-        </button>
-        <button type="button" class="btn btn-default"
-                ng-disabled="valueform.$waiting"
-                ng-click="valueform.$cancel(); resetInterpreterSetting(setting.id)">
-          Cancel
-        </button>
-      </form>
     </div>
   </div>
 </div>
