@@ -18,7 +18,7 @@ group: manual
   </tr>
   <tr>
     <td>tachyon.master.hostname</td>
-    <td>localhostr</td>
+    <td>localhost</td>
     <td>Tachyon master hostname</td>
   </tr>
   <tr>
@@ -35,8 +35,8 @@ In a notebook, to enable the **Tachyon** interpreter, click on the **Gear** icon
 In a paragraph, use `%tachyon` to select the **Tachyon** interpreter and then input all commands.
 
 ```bash
-| %tachyon
-| help
+%tachyon
+help
 ```
 
 > **Tip :** Use ( Ctrl + . ) for autocompletion.
