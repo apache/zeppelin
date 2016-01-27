@@ -48,7 +48,6 @@ import scala.Console;
 /**
  *
  */
-@Deprecated
 public class SparkDependencyContext {
   List<Dependency> dependencies = new LinkedList<Dependency>();
   List<Repository> repositories = new LinkedList<Repository>();
