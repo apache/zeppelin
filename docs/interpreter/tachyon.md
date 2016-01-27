@@ -201,6 +201,7 @@ Be sure to have configured correctly the Tachyon interpreter, then open a new pa
 
 Below a simple example to show how to interact with Tachyon interpreter.
 Following steps are performed:
+
 * using sh interpreter a new text file is created on local machine
 * using Tachyon interpreter:
   * is listed the content of the tfs (Tachyon File System) root
