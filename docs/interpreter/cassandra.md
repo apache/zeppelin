@@ -6,10 +6,8 @@ group: manual
 ---
 {% include JB/setup %}
 
-<hr/>
-## 1. Cassandra CQL Interpreter for Apache Zeppelin
+## Cassandra CQL Interpreter for Apache Zeppelin
 
-<br/>
 <table class="table-configuration">
   <tr>
     <th>Name</th>
@@ -23,35 +21,29 @@ group: manual
   </tr>
 </table>
 
-<hr/>
-
-## 2. Enabling Cassandra Interpreter
-
- In a notebook, to enable the **Cassandra** interpreter, click on the **Gear** icon and select **Cassandra**
+## Enabling Cassandra Interpreter
+ 
+In a notebook, to enable the **Cassandra** interpreter, click on the **Gear** icon and select **Cassandra**
  
  <center>
  ![Interpreter Binding](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterBinding.png)
 
  ![Interpreter Selection](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterSelection.png)
  </center>
-
-<hr/>
  
-## 3. Using the Cassandra Interpreter
-
- In a paragraph, use **_%cassandra_** to select the **Cassandra** interpreter and then input all commands.
+## Using the Cassandra Interpreter
  
- To access the interactive help, type **HELP;**
+In a paragraph, use **_%cassandra_** to select the **Cassandra** interpreter and then input all commands.
+ 
+To access the interactive help, type **HELP;**
  
  <center>
-  ![Interactive Help](../assets/themes/zeppelin/img/docs-img/cassandra-InteractiveHelp.png)
+   ![Interactive Help](../assets/themes/zeppelin/img/docs-img/cassandra-InteractiveHelp.png)
  </center>
 
-<hr/>
-
-## 4. Interpreter Commands
-
- The **Cassandra** interpreter accepts the following commands
+## Interpreter Commands
+ 
+The **Cassandra** interpreter accepts the following commands
  
 <center>
   <table class="table-configuration">
@@ -88,15 +80,14 @@ group: manual
   </table>  
 </center>
 
-<hr/>
-## 5. CQL statements
- 
+## CQL statements
+
 This interpreter is compatible with any CQL statement supported by Cassandra. Ex: 
 
 ```sql
 
-    INSERT INTO users(login,name) VALUES('jdoe','John DOE');
-    SELECT * FROM users WHERE login='jdoe';
+INSERT INTO users(login,name) VALUES('jdoe','John DOE');
+SELECT * FROM users WHERE login='jdoe';
 ```                                
 
 Each statement should be separated by a semi-colon ( **;** ) except the special commands below:
@@ -110,42 +101,40 @@ Each statement should be separated by a semi-colon ( **;** ) except the special 
 7. @retryPolicy
 8. @fetchSize
  
-Multi-line statements as well as multiple statements on the same line are also supported as long as they are 
-separated by a semi-colon. Ex: 
+Multi-line statements as well as multiple statements on the same line are also supported as long as they are separated by a semi-colon. Ex: 
 
 ```sql
 
-    USE spark_demo;
+USE spark_demo;
 
-    SELECT * FROM albums_by_country LIMIT 1; SELECT * FROM countries LIMIT 1;
+SELECT * FROM albums_by_country LIMIT 1; SELECT * FROM countries LIMIT 1;
 
-    SELECT *
-    FROM artists
-    WHERE login='jlennon';
+SELECT *
+FROM artists
+WHERE login='jlennon';
 ```
 
 Batch statements are supported and can span multiple lines, as well as DDL(CREATE/ALTER/DROP) statements: 
 
 ```sql
 
-    BEGIN BATCH
-        INSERT INTO users(login,name) VALUES('jdoe','John DOE');
-        INSERT INTO users_preferences(login,account_type) VALUES('jdoe','BASIC');
-    APPLY BATCH;
+BEGIN BATCH
+    INSERT INTO users(login,name) VALUES('jdoe','John DOE');
+    INSERT INTO users_preferences(login,account_type) VALUES('jdoe','BASIC');
+APPLY BATCH;
 
-    CREATE TABLE IF NOT EXISTS test(
-        key int PRIMARY KEY,
-        value text
-    );
+CREATE TABLE IF NOT EXISTS test(
+    key int PRIMARY KEY,
+    value text
+);
 ```
 
-CQL statements are <strong>case-insensitive</strong> (except for column names and values). 
-This means that the following statements are equivalent and valid: 
+CQL statements are <strong>case-insensitive</strong> (except for column names and values). This means that the following statements are equivalent and valid: 
 
 ```sql
 
-    INSERT INTO users(login,name) VALUES('jdoe','John DOE');
-    Insert into users(login,name) vAlues('hsue','Helen SUE');
+INSERT INTO users(login,name) VALUES('jdoe','John DOE');
+Insert into users(login,name) vAlues('hsue','Helen SUE');
 ```
 
 The complete list of all CQL statements and versions can be found below:
@@ -185,40 +174,36 @@ The complete list of all CQL statements and versions can be found below:
  </table>
 </center>
 
-<hr/>
-
 ## 6. Comments in statements
 
 It is possible to add comments between statements. Single line comments start with the **hash sign** (#) or **double slashes** (//). Multi-line comments are enclosed between /** and **/. Ex: 
 
 ```sql
 
-    #Single line comment style 1
-    INSERT INTO users(login,name) VALUES('jdoe','John DOE');
+#Single line comment style 1
+INSERT INTO users(login,name) VALUES('jdoe','John DOE');
 
-    //Single line comment style 2
-    
-    /**
-     Multi line
-     comments
-     **/
-    Insert into users(login,name) vAlues('hsue','Helen SUE');
+//Single line comment style 2
+
+/**
+ Multi line
+ comments
+ **/
+Insert into users(login,name) vAlues('hsue','Helen SUE');
 ```
 
-<hr/>
-
-## 7. Syntax Validation
+## Syntax Validation
 
 The interpreters is shipped with a built-in syntax validator. This validator only checks for basic syntax errors. 
+
 All CQL-related syntax validation is delegated directly to **Cassandra** 
 
 Most of the time, syntax errors are due to **missing semi-colons** between statements or **typo errors**.
-
-<hr/>
                                     
-## 8. Schema commands
+## Schema commands
 
 To make schema discovery easier and more interactive, the following commands are supported:
+
 <center>                                 
  <table class="table-configuration">
    <tr>
@@ -300,20 +285,18 @@ To make schema discovery easier and more interactive, the following commands are
 The schema objects (cluster, keyspace, table, type, function and aggregate) are displayed in a tabular format. 
 There is a drop-down menu on the top left corner to expand objects details. On the top right menu is shown the Icon legend.
 
-<br/>
 <center>
   ![Describe Schema](../assets/themes/zeppelin/img/docs-img/cassandra-DescribeSchema.png)
 </center>
 
-<hr/>
-
-## 9. Runtime Parameters
+## Runtime Parameters
 
 Sometimes you want to be able to pass runtime query parameters to your statements. 
+
 Those parameters are not part of the CQL specs and are specific to the interpreter. 
+
 Below is the list of all parameters: 
 
-<br/>
 <center>                                 
  <table class="table-configuration">
    <tr>
@@ -352,9 +335,8 @@ Below is the list of all parameters:
  </table>
 </center>
 
- Some parameters only accept restricted values: 
+Some parameters only accept restricted values: 
 
-<br/>
 <center>                                 
  <table class="table-configuration">
    <tr>
@@ -390,26 +372,26 @@ Some examples:
 
 ```sql
 
-    CREATE TABLE IF NOT EXISTS spark_demo.ts(
-        key int PRIMARY KEY,
-        value text
-    );
-    TRUNCATE spark_demo.ts;
+CREATE TABLE IF NOT EXISTS spark_demo.ts(
+    key int PRIMARY KEY,
+    value text
+);
+TRUNCATE spark_demo.ts;
 
-    # Timestamp in the past
-    @timestamp=10
+# Timestamp in the past
+@timestamp=10
 
-    # Force timestamp directly in the first insert
-    INSERT INTO spark_demo.ts(key,value) VALUES(1,'first insert') USING TIMESTAMP 100;
+# Force timestamp directly in the first insert
+INSERT INTO spark_demo.ts(key,value) VALUES(1,'first insert') USING TIMESTAMP 100;
 
-    # Select some data to make the clock turn
-    SELECT * FROM spark_demo.albums LIMIT 100;
+# Select some data to make the clock turn
+SELECT * FROM spark_demo.albums LIMIT 100;
 
-    # Now insert using the timestamp parameter set at the beginning(10)
-    INSERT INTO spark_demo.ts(key,value) VALUES(1,'second insert');
+# Now insert using the timestamp parameter set at the beginning(10)
+INSERT INTO spark_demo.ts(key,value) VALUES(1,'second insert');
 
-    # Check for the result. You should see 'first insert'
-    SELECT value FROM spark_demo.ts WHERE key=1;
+# Check for the result. You should see 'first insert'
+SELECT value FROM spark_demo.ts WHERE key=1;
 ```
                                 
 Some remarks about query parameters:
@@ -419,11 +401,10 @@ Some remarks about query parameters:
 > 3. each query parameter applies to **all CQL statements** in the same paragraph, unless you override the option using plain CQL text (like forcing timestamp with the USING clause)
 > 4. the order of each query parameter with regard to CQL statement does not matter
 
-<hr/>
-
-## 10. Support for Prepared Statements
+## Support for Prepared Statements
 
 For performance reason, it is better to prepare statements before-hand and reuse them later by providing bound values. 
+
 This interpreter provides 3 commands to handle prepared and bound statements: 
 
 1. **@prepare**
@@ -433,19 +414,17 @@ This interpreter provides 3 commands to handle prepared and bound statements:
 Example: 
 
 ```
+@prepare[statement_name]=...
 
-    @prepare[statement_name]=...
+@bind[statement_name]=’text’, 1223, ’2015-07-30 12:00:01’, null, true, [‘list_item1’, ’list_item2’]
 
-    @bind[statement_name]=’text’, 1223, ’2015-07-30 12:00:01’, null, true, [‘list_item1’, ’list_item2’]
+@bind[statement_name_with_no_bound_value]
 
-    @bind[statement_name_with_no_bound_value]
-
-    @remove_prepare[statement_name]
+@remove_prepare[statement_name]
 ```
 
-<br/>
-#### a. @prepare
-<br/>
+#### @prepare
+
 You can use the syntax _"@prepare[statement_name]=SELECT ..."_ to create a prepared statement. 
 The _statement_name_ is **mandatory** because the interpreter prepares the given statement with the Java driver and 
 saves the generated prepared statement in an **internal hash map**, using the provided _statement_name_ as search key.
@@ -458,25 +437,22 @@ there is only one instance of the interpreter for Cassandra
 Example: 
 
 ```
+@prepare[select]=SELECT * FROM spark_demo.albums LIMIT ?
 
-    @prepare[select]=SELECT * FROM spark_demo.albums LIMIT ?
-
-    @prepare[select]=SELECT * FROM spark_demo.artists LIMIT ?
+@prepare[select]=SELECT * FROM spark_demo.artists LIMIT ?
 ```                                
 
-For the above example, the prepared statement is _SELECT * FROM spark_demo.albums LIMIT ?_. 
+For the above example, the prepared statement is _SELECT * FROM spark_demo.albums LIMIT ?_.
 _SELECT * FROM spark_demo.artists LIMIT ?_ is ignored because an entry already exists in the prepared statements map with the key select. 
 
 In the context of **Zeppelin**, a notebook can be scheduled to be executed at regular interval, 
 thus it is necessary to **avoid re-preparing many time the same statement (considered an anti-pattern)**.
-<br/>
-<br/>
-#### b. @bind
-<br/>
+
+#### @bind
 Once the statement is prepared (possibly in a separated notebook/paragraph). You can bind values to it: 
 
 ```
-    @bind[select_first]=10
+@bind[select_first]=10
 ```                                
 
 Bound values are not mandatory for the **@bind** statement. However if you provide bound values, they need to comply to some syntax:
@@ -497,23 +473,19 @@ Bound values are not mandatory for the **@bind** statement. However if you provi
 > It is possible to use the @bind statement inside a batch:
 > 
 > ```sql
->  
->     BEGIN BATCH
->         @bind[insert_user]='jdoe','John DOE'
->         UPDATE users SET age = 27 WHERE login='hsue';
->     APPLY BATCH;
+>BEGIN BATCH
+>    @bind[insert_user]='jdoe','John DOE'
+>    UPDATE users SET age = 27 WHERE login='hsue';
+>APPLY BATCH;
 > ```
 
-<br/>
-#### c. @remove_prepare
-<br/>
+#### @remove_prepare
+
 To avoid for a prepared statement to stay forever in the prepared statement map, you can use the 
 **@remove_prepare[statement_name]** syntax to remove it. 
 Removing a non-existing prepared statement yields no error.
 
-<hr/>
-
-## 11. Using Dynamic Forms
+## Using Dynamic Forms
 
 Instead of hard-coding your CQL queries, it is possible to use the mustache syntax ( **\{\{ \}\}** ) to inject simple value or multiple choices forms. 
 
@@ -548,9 +520,7 @@ It is also possible to use dynamic forms for **prepared statements**:
   
 {% endraw %}
 
-<hr/>
-
-## 12. Shared states
+## Shared states
 
 It is possible to execute many paragraphs in parallel. However, at the back-end side, we’re still using synchronous queries. 
 _Asynchronous execution_ is only possible when it is possible to return a `Future` value in the `InterpreterResult`. 
@@ -567,24 +537,17 @@ Until **Zeppelin** offers a real multi-users separation, there is a work-around 
 _create different **Cassandra** interpreter instances_
 
 For this, first go to the **Interpreter** menu and click on the **Create** button
-<br/>
-<br/>
 <center>
   ![Create Interpreter](../assets/themes/zeppelin/img/docs-img/cassandra-NewInterpreterInstance.png)
 </center>
  
 In the interpreter creation form, put **cass-instance2** as **Name** and select the **cassandra** 
 in the interpreter drop-down list  
-<br/>
-<br/>
 <center>
   ![Interpreter Name](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterName.png)
 </center>                         
 
  Click on **Save** to create the new interpreter instance. Now you should be able to see it in the interpreter list.
-  
-<br/>
-<br/>
 <center>
   ![Interpreter In List](../assets/themes/zeppelin/img/docs-img/cassandra-NewInterpreterInList.png)
 </center>                         
@@ -593,22 +556,17 @@ Go back to your notebook and click on the **Gear** icon to configure interpreter
 You should be able to see and select the **cass-instance2** interpreter instance in the available
 interpreter list instead of the standard **cassandra** instance.
 
-<br/>
-<br/>
 <center>
   ![Interpreter Instance Selection](../assets/themes/zeppelin/img/docs-img/cassandra-InterpreterInstanceSelection.png)
 </center> 
 
-<hr/>
-
-## 13. Interpreter Configuration
+## Interpreter Configuration
 
 To configure the **Cassandra** interpreter, go to the **Interpreter** menu and scroll down to change the parameters.
 The **Cassandra** interpreter is using the official **[Cassandra Java Driver]** and most of the parameters are used
 to configure the Java driver
 
 Below are the configuration parameters and their default value.
-
 
  <table class="table-configuration">
    <tr>
@@ -810,9 +768,7 @@ Below are the configuration parameters and their default value.
    </tr>
  </table>
 
-<hr/>
-
-## 14. Change Log
+## Change Log
 
 **2.0** _(Zeppelin 0.5.7-incubating)_ : 
 * Update help menu and add changelog
