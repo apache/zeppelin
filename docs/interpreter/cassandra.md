@@ -814,12 +814,12 @@ Below are the configuration parameters and their default value.
 
 ## 14. Change Log
 
-**2.0** : 
+**2.0** _(Zeppelin 0.5.7-incubating)_ : 
 * Update help menu and add changelog
 * Add Support for **User Defined Functions**, **User Defined Aggregates** and **Materialized Views**
 * Upgrade Java driver version to **3.0.0-rc1**
 
-**1.0** : 
+**1.0** _(Zeppelin 0.5.5-incubating)_ : 
 * Initial version
 
 ## 15. Bugs & Contacts
