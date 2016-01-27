@@ -944,4 +944,15 @@ class ParagraphParserTest extends FlatSpec
       case parser.Success(List(SimpleStm(query)), _) =>
     }
   }
+
+  "Parser" should "parse ALTER KEYSPACE" in {
+    val query = "ALTER KEYSPACE toto WITH replication = " +
+      "{'class': 'SimpleStrategy', 'replication_factor': 1};"
+
+    val parsed = parser.parseAll(parser.queries, query)
+
+    parsed should matchPattern {
+      case parser.Success(List(SimpleStm(query)), _) =>
+    }
+  }
 }

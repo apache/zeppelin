@@ -69,7 +69,7 @@ object ParagraphParser {
   val UDF_PATTERN = """(?is)\s*(CREATE(?:\s+OR REPLACE)?\s+FUNCTION(?:\s+IF\s+NOT\s+EXISTS)?.+?(?:\s+|\n|\r|\f)AS(?:\s+|\n|\r|\f)(?:'|\$\$).+?(?:'|\$\$)\s*;)""".r
 
   val GENERIC_STATEMENT_PREFIX =
-    """(?is)\s*(?:INSERT|UPDATE|DELETE|SELECT|CREATE|UPDATE|
+    """(?is)\s*(?:INSERT|UPDATE|DELETE|SELECT|CREATE|ALTER|
       |DROP|GRANT|REVOKE|TRUNCATE|LIST|USE)\s+""".r
 
   val VALID_IDENTIFIER = "[a-z][a-z0-9_]*"
