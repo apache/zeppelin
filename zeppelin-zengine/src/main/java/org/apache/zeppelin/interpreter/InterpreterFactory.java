@@ -54,7 +54,7 @@ public class InterpreterFactory {
       .synchronizedMap(new HashMap<String, URLClassLoader>());
 
   private ZeppelinConfiguration conf;
-  String[] interpreterClassList;
+  List<String> interpreterClassList;
 
   private Map<String, InterpreterSetting> interpreterSettings =
       new HashMap<String, InterpreterSetting>();
@@ -91,7 +91,10 @@ public class InterpreterFactory {
     this.depResolver = depResolver;
     this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
-    interpreterClassList = replsConf.split(",");
+    interpreterClassList = new ArrayList<String>();
+    for (String className : replsConf.split(",")) {
+      interpreterClassList.add(className);
+    }
 
     GsonBuilder builder = new GsonBuilder();
     builder.setPrettyPrinting();
@@ -99,6 +102,95 @@ public class InterpreterFactory {
     gson = builder.create();
 
     init();
+  }
+
+  public boolean loadDynamicInterpreter(String intpGroupName, String intpName, String artifact,
+      String intpClassName) {
+    return loadDynamicInterpreter(intpGroupName, intpName, artifact, intpClassName, null, false);
+  }
+
+  public boolean loadDynamicInterpreter(String intpGroupName, String intpName, String artifact,
+      String intpClassName, String repositoryUrl, boolean isSnapShotRepo) {
+    String[] artifactItem = artifact.split(":");
+    String zepInterpreterRepoDir = conf.getString(ConfVars.ZEPPELIN_INTERPRETER_REPO_DIR);
+    String zepInterpreterRepoFullPath = conf.getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_REPO_DIR);
+    String interpreterDesPath = String.format("%s/%s/%s/", zepInterpreterRepoDir,
+      intpGroupName, intpName);
+    String interpreterLoadPath = String.format("%s/%s/%s", zepInterpreterRepoFullPath,
+      intpGroupName, intpName);
+
+    if (artifactItem.length <= 0) {
+      logger.error("Failed load dynamic interpreter - invalid artifact : {}", artifact);
+      return false;
+    }
+
+    try {
+      if (repositoryUrl != null) {
+        depResolver.addRepo("dyInterpreterRepo", repositoryUrl, isSnapShotRepo);
+      }
+      logger.info("interpreter path : {}", interpreterLoadPath);
+      depResolver.load(artifact, interpreterDesPath);
+      setDynamicInterpreter(intpClassName, interpreterLoadPath);
+    } catch (Exception e) {
+      logger.error("Failed load dynamic interpreter : ", e);
+      return false;
+    }
+    return true;
+  }
+
+  public boolean unloadDynamicInterpreter(String intpGorupName, String intpName) {
+    try {
+      remove(intpName);
+    } catch (Exception e) {
+      logger.error("Faild Unload Dynaminc Interpreter", e);
+      return false;
+    }
+    return true;
+  }
+
+  protected void setDynamicInterpreter(String interpreterClassName, String fileDirPath)
+      throws InterpreterException, IOException {
+    logger.info("load Dynamic Interpreter ClassName : {}", interpreterClassName);
+    logger.info("load Dynamic Interpreter FilePath : {}", interpreterClassName);
+
+    ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
+    interpreterClassList.add(interpreterClassName);
+    // Load classes
+    File interpreterDir = new File(fileDirPath);
+
+    if (interpreterDir != null) {
+      URL[] urls = null;
+      try {
+        urls = recursiveBuildLibList(interpreterDir);
+      } catch (MalformedURLException e1) {
+        logger.error("Can't load jars ", e1);
+      }
+      URLClassLoader ccl = new URLClassLoader(urls, oldcl);
+
+      try {
+        Class.forName(interpreterClassName, true, ccl);
+        Set<String> keys = Interpreter.registeredInterpreters.keySet();
+        for (String intName : keys) {
+          if (interpreterClassName.equals(
+                  Interpreter.registeredInterpreters.get(intName).getClassName())) {
+            Interpreter.registeredInterpreters.get(intName).setPath(fileDirPath);
+            logger.info("Interpreter {} found. class={}", intName, fileDirPath);
+            cleanCl.put(fileDirPath, ccl);
+          }
+        }
+      } catch (ClassNotFoundException e) {
+        logger.error("Load error : ", e);
+      }
+    }
+
+    for (String settingId : interpreterSettings.keySet()) {
+      InterpreterSetting setting = interpreterSettings.get(settingId);
+      logger.info("Interpreter setting group {} : id={}, name={}",
+              setting.getGroup(), settingId, setting.getName());
+      for (Interpreter interpreter : setting.getInterpreterGroup()) {
+        logger.info("  className = {}", interpreter.getClassName());
+      }
+    }
   }
 
   private void init() throws InterpreterException, IOException {
