@@ -54,6 +54,10 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
       $rootScope.$broadcast('setNoteMenu', data.notes);
     } else if (op === 'PARAGRAPH') {
       $rootScope.$broadcast('updateParagraph', data);
+    } else if (op === 'PARAGRAPH_APPEND_OUTPUT') {
+      $rootScope.$broadcast('appendParagraphOutput', data);
+    } else if (op === 'PARAGRAPH_UPDATE_OUTPUT') {
+      $rootScope.$broadcast('updateParagraphOutput', data);      
     } else if (op === 'PROGRESS') {
       $rootScope.$broadcast('updateProgress', data);
     } else if (op === 'COMPLETION_LIST') {

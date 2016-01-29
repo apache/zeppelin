@@ -27,7 +27,9 @@
 <%@ val preparedStatementsId: UUID = UUIDs.random() %>
 <%@ val dynamicFormsId: UUID = UUIDs.random() %>
 <%@ val configurationId: UUID = UUIDs.random() %>
-<%@ val miscId: UUID = UUIDs.random() %>
+<%@ val sharedStatesId: UUID = UUIDs.random() %>
+<%@ val changelogId: UUID = UUIDs.random() %>
+<%@ val contactsId: UUID = UUIDs.random() %>
 
 <br/>
 <br/>
@@ -70,10 +72,20 @@
                         </a>
                     </li>                    
                     <li>
-                        <a role="button" data-toggle="collapse" data-target="#${miscId}">
-                            <span class="text-info"><i class="glyphicon glyphicon-bookmark"/>&nbsp;&nbsp;Misc</span>
+                        <a role="button" data-toggle="collapse" data-target="#${sharedStatesId}">
+                            <span class="text-info"><i class="glyphicon glyphicon-bookmark"/>&nbsp;&nbsp;Shared States</span>
                         </a>
                     </li>                    
+                    <li>
+                        <a role="button" data-toggle="collapse" data-target="#${changelogId}">
+                            <span class="text-info"><i class="glyphicon glyphicon-bookmark"/>&nbsp;&nbsp;Change Log</span>
+                        </a>
+                    </li>                     
+                    <li>
+                        <a role="button" data-toggle="collapse" data-target="#${contactsId}">
+                            <span class="text-info"><i class="glyphicon glyphicon-bookmark"/>&nbsp;&nbsp;Contacts &amp; Bugs</span>
+                        </a>
+                    </li>                      
                 </ul>
             </a>
         </li>
@@ -91,12 +103,12 @@
             <ul class="dropdown-menu">
                 <li>
                     <a role="button">
-                        <span class="text-info">Version <strong>1.0</strong></span>
+                        <span class="text-info">Version <strong>2.0</strong></span>
                     </a>
                 </li>
                 <li>
                     <a role="button">
-                        <span class="text-info">Java Driver Version <strong>2.1.7.1</strong></span>
+                        <span class="text-info">Java Driver Version <strong>3.0.0-rc1</strong></span>
                     </a>
                 </li>
                 <li>
@@ -237,7 +249,7 @@
                     <h3>II Comments</h3>
                     <p>
                         It is possible to add comments between statements. Single line comments start with the
-                        <strong>hash</strong> sign (#). Multi-line comments are enclosed between
+                        <strong>hash</strong> sign (#) or <strong>double slashes</strong> (//). Multi-line comments are enclosed between
                         <strong>&sol;&ast;&ast;</strong> and <strong>&ast;&ast;&sol;</strong>. Ex:
 
                         <br/>
@@ -246,8 +258,11 @@
                             <div class="col-md-8 col-md-offset-2">
                                 <pre>
 
-    #First comment
+    #Single line comment style 1
     INSERT INTO users(login,name) VALUES('jdoe','John DOE');
+
+    //Single line comment style 2
+
 
     /**
      Multi line
@@ -314,6 +329,22 @@
                                     <td>List all existing keyspaces in the cluster and for each, all the tables name</td>
                                 </tr>
                                 <tr>
+                                    <td><strong>DESCRIBE TYPES;</strong></td>
+                                    <td>List all existing keyspaces in the cluster and for each, all the types name</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>DESCRIBE FUNCTIONS;</strong></td>
+                                    <td>List all existing keyspaces in the cluster and for each, all the functions name and arguments</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>DESCRIBE AGGREGATES;</strong></td>
+                                    <td>List all existing keyspaces in the cluster and for each, all the aggregates name and arguments</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>DESCRIBE MATERIALIZED VIEWS;</strong></td>
+                                    <td>List all existing keyspaces in the cluster and for each, all the materialized view name</td>
+                                </tr>
+                                <tr>
                                     <td><strong>DESCRIBE KEYSPACE &lt;keyspace name&gt;;</strong></td>
                                     <td>Describe the given keyspace configuration and all its table details (name, columns, ...)</td>
                                 </tr>
@@ -333,6 +364,30 @@
                                         the default <em>system</em> keyspace is used. If no type is found, an error message is raised
                                     </td>
                                 </tr>
+                                <tr>
+                                    <td><strong>DESCRIBE FUNCTION <em>(&lt;keyspace name&gt;).</em>&lt;function name&gt;;</strong></td>
+                                    <td>
+                                        Describe the given function. If the keyspace is not provided, the current
+                                        <strong>logged in</strong> keyspace is used. If there is no logged in keyspace,
+                                        the default <em>system</em> keyspace is used. If no function is found, an error message is raised
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>DESCRIBE AGGREGATE <em>(&lt;keyspace name&gt;).</em>&lt;aggregate name&gt;;</strong></td>
+                                    <td>
+                                        Describe the given aggregate. If the keyspace is not provided, the current
+                                        <strong>logged in</strong> keyspace is used. If there is no logged in keyspace,
+                                        the default <em>system</em> keyspace is used. If no aggregate is found, an error message is raised
+                                    </td>
+                                </tr>        
+                                <tr>
+                                    <td><strong>DESCRIBE MATERIALIZED VIEW <em>(&lt;keyspace name&gt;).</em>&lt;view name&gt;;</strong></td>
+                                    <td>
+                                        Describe the given materialized view. If the keyspace is not provided, the current
+                                        <strong>logged in</strong> keyspace is used. If there is no logged in keyspace,
+                                        the default <em>system</em> keyspace is used. If no materialized view is found, an error message is raised
+                                    </td>
+                                </tr>                                                                                          
                             </tbody>
                         </table>
                         <br/>
@@ -342,9 +397,7 @@
                     </p>
                     <h3>II Schema Display</h3>
                     <p>
-                        The schema objects (cluster, keyspace, table &amp; type) are displayed in a tabular format.
-                        There is a <strong>drop-down</strong> menu on the top left corner to expand objects details.
-                        On the top right menu is shown the Icon legend.
+                        The schema objects (cluster, keyspace, table, type, view, function &amp; aggregate) are displayed in a tabular format. There is a <strong>drop-down</strong> menu on the top left corner to expand objects details. On the top right menu is shown the Icon legend.
 
                     </p>
                   </div>
@@ -886,16 +939,68 @@
     <div class="panel panel-default">
         <div class="panel-heading" role="tab">
             <h4 class="panel-title">
-                <a role="button" data-toggle="collapse" data-target="#${miscId}" aria-expanded="false">
-                    <span class="text-info"><strong>Miscellaneous</strong></span>
+                <a role="button" data-toggle="collapse" data-target="#${sharedStatesId}" aria-expanded="false">
+                    <span class="text-info"><strong>Shared states</strong></span>
                 </a>
             </h4>
         </div>
-        <div id="${miscId}" class="panel-collapse collapse" role="tabpanel">
+        <div id="${sharedStatesId}" class="panel-collapse collapse" role="tabpanel">
             <div class="panel-body">
-               <h3>Execution parallelism</h3>
-               It is possible to execute many paragraphs in parallel. However, at the back-end side, we’re still using <strong>synchronous</strong> queries. Asynchronous execution is only possible when it is possible to return a Future value in the <strong>InterpreterResult</strong>. It may be an interesting proposal for the Zeppelin project.
+               It is possible to execute many paragraphs in parallel. However, at the back-end side, we’re still using synchronous queries. <em>Asynchronous execution</em> is only possible when it is possible to return a <strong>Future</strong> value in the <strong>InterpreterResult</strong>. It may be an interesting proposal for the <strong>Zeppelin</strong> project.
+               <br/> 
+               Another caveat is that the same <strong>com.datastax.driver.core.Session</strong> object is used for <strong>all</strong> notebooks and paragraphs. Consequently, if you use the <em>USE keyspace name;</em> statement to log into a keyspace, it will change the keyspace for <strong>all current users</strong> of the Cassandra interpreter because we only create 1 <strong>com.datastax.driver.core.Session</strong> object per instance of <strong>Cassandra</strong> interpreter.
+               <br/> 
+               The same remark does apply to the <strong>prepared statement hash map</strong>, it is shared by <strong>all users</strong> using the same instance of <strong>Cassandra</strong> interpreter.
+               <br/>
+               Until <strong>Zeppelin</strong> offers a real multi-users separation, there is a work-around to segregate user environment and states: <em>create different Cassandra interpreter instances</em>
+               <br/> 
+               <ol>
+                    <li>First go to the <strong>Interpreter</strong> menu and click on the <strong>Create</strong> button</li>
+                    <li>In the interpreter creation form, put <strong>cass-instance2</strong> as <strong>Name</strong> and select the <strong>cassandra</strong> in the interpreter drop-down list</li>
+                    <li>Click on <strong>Save</strong> to create the new interpreter instance. Now you should be able to see it in the interpreter list</li>
+                    <li>Go back to your notebook and click on the <strong>Gear</strong> icon to configure interpreter bindings. You should be able to see and select the <strong>cass-instance2</strong> interpreter instance in the available interpreter list instead of the standard <strong>cassandra</strong> instance</li>
+               </ol>
             </div>
         </div>
+    </div>
+        
+    <div class="panel panel-default">
+        <div class="panel-heading" role="tab">
+            <h4 class="panel-title">
+                <a role="button" data-toggle="collapse" data-target="#${changelogId}" aria-expanded="false">
+                    <span class="text-info"><strong>Change Log</strong></span>
+                </a>
+            </h4>
+        </div>        
+        <div id="${changelogId}" class="panel-collapse collapse" role="tabpanel">
+            <div class="panel-body">
+                <strong>2.0</strong>&nbsp;: 
+                <br/>
+                <ul>
+                    <li>Update help menu and add changelog</li>
+                    <li>Add Support for User Defined Functions, User Defined Aggregates and Materialized Views</li>
+                    <li>Upgrade Java driver version to <strong>3.0.0-rc1</strong></li>
+                </ul>
+                <strong>1.0</strong>&nbsp;: 
+                <br/>
+                <ul>
+                    <li>Initial version</li>
+                </ul>                
+            </div>
+        </div>    
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading" role="tab">
+            <h4 class="panel-title">
+                <a role="button" data-toggle="collapse" data-target="#${contactsId}" aria-expanded="false">
+                    <span class="text-info"><strong>Contact &amp; Bugs</strong></span>
+                </a>
+            </h4>
+        </div>        
+        <div id="${contactsId}" class="panel-collapse collapse" role="tabpanel">
+            <div class="panel-body">
+                If you encounter a bug for this interpreter, please create a <a href="https://issues.apache.org/jira/browse/ZEPPELIN-382?jql=project%20%3D%20ZEPPELIN" target="_blank"><strong>JIRA</strong></a> ticket and ping me on Twitter at <a href="https://twitter.com/doanduyhai" target="_blank"><strong>@doanduyhai</strong></a>
+            </div>
+        </div>            
     </div>    
 </div>

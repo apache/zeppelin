@@ -6,12 +6,10 @@ group: manual
 ---
 {% include JB/setup %}
 
-
 ## Hive Interpreter for Apache Zeppelin
 The [Apache Hive](https://hive.apache.org/) ™ data warehouse software facilitates querying and managing large datasets residing in distributed storage. Hive provides a mechanism to project structure onto this data and query the data using a SQL-like language called HiveQL. At the same time this language also allows traditional map/reduce programmers to plug in their custom mappers and reducers when it is inconvenient or inefficient to express this logic in HiveQL.
 
-
-## 1. Configuration
+### Configuration
 <table class="table-configuration">
   <tr>
     <th>Property</th>
@@ -71,9 +69,8 @@ The [Apache Hive](https://hive.apache.org/) ™ data warehouse software facilita
 </table>
 
 This interpreter provides multiple configuration with `${prefix}`. User can set a multiple connection properties by this prefix. It can be used like `%hive(${prefix})`.
- 
-## 2. How to use
 
+## How to use
 Basically, you can use
 
 ```sql
@@ -92,7 +89,6 @@ select * from my_table;
 You can also run multiple queries up to 10 by default. Changing these settings is not implemented yet.
 
 ### Apply Zeppelin Dynamic Forms
-
 You can leverage [Zeppelin Dynamic Form]({{BASE_PATH}}/manual/dynamicform.html) inside your queries. You can use both the `text input` and `select form` parameterization features.
 
 ```sql

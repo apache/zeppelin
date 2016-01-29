@@ -24,7 +24,6 @@
     <div class="row">
         <div class="panel-group" role="tablist" aria-multiselectable="true">
             #for (((ksId,ksName), tables) <- allTables)
-
             <div class="panel panel-default">
                 <div class="panel-heading" role="tab">
                     <h4 class="panel-title">
@@ -38,8 +37,6 @@
                         <div class="row">
                             <div class="col-md-2"/>
                             <div class="col-md-8 col-offset-md-2 table-responsive table-bordered">
-                                #if (tables.nonEmpty)
-
                                 <table class="table">
                                     <thead>
                                         <tr><th>Tables</th></tr>
@@ -52,10 +49,6 @@
 
                                     </tbody>
                                 </table>
-                                #else
-                                <span><h4>No Table</h4></span>
-
-                                #end
                             </div>
                             <div class="col-md-2"/>
                         </div>
@@ -63,7 +56,6 @@
                 </div>
             </div>
             #end
-
         </div>
     </div>
 </div>

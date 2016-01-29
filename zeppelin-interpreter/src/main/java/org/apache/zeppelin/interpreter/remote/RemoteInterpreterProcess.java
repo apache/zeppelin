@@ -53,10 +53,11 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   private int connectTimeout;
 
   public RemoteInterpreterProcess(String intpRunner,
-      String intpDir,
-      Map<String, String> env,
-      int connectTimeout) {
-    this(intpRunner, intpDir, env, new RemoteInterpreterEventPoller(), connectTimeout);
+                                  String intpDir,
+                                  Map<String, String> env,
+                                  int connectTimeout,
+                                  RemoteInterpreterProcessListener listener) {
+    this(intpRunner, intpDir, env, new RemoteInterpreterEventPoller(listener), connectTimeout);
   }
 
   RemoteInterpreterProcess(String intpRunner,
@@ -260,13 +261,19 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
     }
   }
 
+  public void setMaxPoolSize(int size) {
+    if (clientPool != null) {
+      //Size + 2 for progress poller , cancel operation
+      clientPool.setMaxTotal(size + 2);
+    }
+  }
   /**
    * Called when angular object is updated in client side to propagate
    * change to the remote process
    * @param name
    * @param o
    */
-  public void updateRemoteAngularObject(String name, String noteId, Object o) {
+  public void updateRemoteAngularObject(String name, String noteId, String paragraphId, Object o) {
     Client client = null;
     try {
       client = getClient();
@@ -282,7 +289,7 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
     boolean broken = false;
     try {
       Gson gson = new Gson();
-      client.angularObjectUpdate(name, noteId, gson.toJson(o));
+      client.angularObjectUpdate(name, noteId, paragraphId, gson.toJson(o));
     } catch (TException e) {
       broken = true;
       logger.error("Can't update angular object", e);

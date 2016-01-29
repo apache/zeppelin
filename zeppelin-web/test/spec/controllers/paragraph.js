@@ -13,6 +13,8 @@ describe('Controller: ParagraphCtrl', function() {
 
   beforeEach(inject(function($controller, $rootScope) {
     scope = $rootScope.$new();
+    $rootScope.notebookScope = $rootScope.$new(true, $rootScope);
+
     ParagraphCtrl = $controller('ParagraphCtrl', {
       $scope: scope,
       websocketMsgSrv: websocketMsgSrvMock,
