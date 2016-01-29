@@ -123,7 +123,7 @@ abstract public class AbstractZeppelinIT {
   }
 
   protected void deleteTestNotebook(final WebDriver driver) {
-    driver.findElement(By.xpath("//*[@id='main']/div//h3/span[1]/button[@tooltip='Remove the notebook']"))
+    driver.findElement(By.xpath("//*[@id='main']/div//h3/span/button[@tooltip='Remove the notebook']"))
         .sendKeys(Keys.ENTER);
     sleep(1000, true);
     driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
