@@ -14,24 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.zeppelin.interpreter;
-
-import static org.junit.Assert.*;
+package org.apache.zeppelin.resource;
 
 import org.junit.Test;
 
-public class InterpreterContextTest {
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
+import static org.junit.Assert.assertEquals;
+
+/**
+ * Test for Resource
+ */
+public class ResourceTest {
   @Test
-  public void testThreadLocal() {
-    assertNull(InterpreterContext.get());
-
-    InterpreterContext.set(new InterpreterContext(null, null, null, null, null, null, null, null, null, null));
-    assertNotNull(InterpreterContext.get());
-
-    InterpreterContext.remove();
-    assertNull(InterpreterContext.get());
+  public void testSerializeDeserialize() throws IOException, ClassNotFoundException {
+    ByteBuffer buffer = Resource.serializeObject("hello");
+    assertEquals("hello", Resource.deserializeObject(buffer));
   }
-
 }

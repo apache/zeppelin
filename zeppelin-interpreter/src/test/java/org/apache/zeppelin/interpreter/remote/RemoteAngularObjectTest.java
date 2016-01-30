@@ -34,6 +34,8 @@ import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterAngular;
+import org.apache.zeppelin.resource.LocalResourcePool;
+import org.apache.zeppelin.resource.ResourcePool;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -84,6 +86,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
         new HashMap<String, Object>(),
         new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
+        new LocalResourcePool("pool1"),
         new LinkedList<InterpreterContextRunner>(), null);
 
     intp.open();
@@ -92,7 +95,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
   @After
   public void tearDown() throws Exception {
     intp.close();
-    intpGroup.clone();
+    intpGroup.close();
     intpGroup.destroy();
   }
 

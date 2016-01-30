@@ -14,24 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.zeppelin.interpreter;
-
-import static org.junit.Assert.*;
+package org.apache.zeppelin.resource;
 
 import org.junit.Test;
 
-public class InterpreterContextTest {
+import static org.junit.Assert.*;
+
+/**
+ * Unittest for LocalResourcePool
+ */
+public class LocalResourcePoolTest {
 
   @Test
-  public void testThreadLocal() {
-    assertNull(InterpreterContext.get());
+  public void testGetPutResourcePool() {
 
-    InterpreterContext.set(new InterpreterContext(null, null, null, null, null, null, null, null, null, null));
-    assertNotNull(InterpreterContext.get());
+    LocalResourcePool pool = new LocalResourcePool("pool1");
+    assertEquals("pool1", pool.id());
 
-    InterpreterContext.remove();
-    assertNull(InterpreterContext.get());
+    assertNull(pool.get("notExists"));
+    pool.put("item1", "value1");
+    Resource resource = pool.get("item1");
+    assertNotNull(resource);
+    assertEquals(pool.id(), resource.getResourceId().getResourcePoolId());
+    assertEquals("value1", resource.get());
+    assertTrue(resource.isLocal());
+    assertTrue(resource.isSerializable());
+
+    assertEquals(1, pool.getAll().size());
+
+    assertNotNull(pool.remove("item1"));
+    assertNull(pool.remove("item1"));
   }
-
 }
