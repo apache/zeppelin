@@ -21,10 +21,10 @@ package org.apache.zeppelin.resource;
  */
 public interface ResourcePoolConnector {
   /**
-   * Get list of resources from all resource pool
+   * Get list of resources from all other resource pools in remote processes
    * @return
    */
-  public ResourceSet getAllResourcesExcept(String excludePoolId);
+  public ResourceSet getAllResources();
 
   /**
    * Read remote object

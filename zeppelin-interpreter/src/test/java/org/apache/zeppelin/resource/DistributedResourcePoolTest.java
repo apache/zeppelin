@@ -152,7 +152,7 @@ public class DistributedResourcePoolTest {
 
     DistributedResourcePool pool1 = new DistributedResourcePool("pool1", new ResourcePoolConnector() {
       @Override
-      public ResourceSet getAllResourcesExcept(String excludePoolId) {
+      public ResourceSet getAllResources() {
         ResourceSet set = pool2.getAll();
         set.addAll(pool3.getAll());
 

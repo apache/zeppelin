@@ -91,15 +91,12 @@ public class RemoteInterpreterEventClient implements ResourcePoolConnector {
 
   /**
    * Get all resources except for specific resourcePool
-   * @param excludePoolId resource pool for exclusion.
    * @return
    */
   @Override
-  public ResourceSet getAllResourcesExcept(String excludePoolId) {
+  public ResourceSet getAllResources() {
     // request
-    sendEvent(new RemoteInterpreterEvent(
-        RemoteInterpreterEventType.RESOURCE_POOL_GET_ALL,
-        excludePoolId));
+    sendEvent(new RemoteInterpreterEvent(RemoteInterpreterEventType.RESOURCE_POOL_GET_ALL, null));
 
     synchronized (getAllResourceResponse) {
       while (getAllResourceResponse.isEmpty()) {

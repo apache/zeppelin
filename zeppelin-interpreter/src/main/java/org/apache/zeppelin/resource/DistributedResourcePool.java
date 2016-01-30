@@ -47,7 +47,7 @@ public class DistributedResourcePool extends LocalResourcePool {
     }
 
     if (remote) {
-      ResourceSet resources = connector.getAllResourcesExcept(id()).filterByName(name);
+      ResourceSet resources = connector.getAllResources().filterByName(name);
       if (resources.isEmpty()) {
         return null;
       } else {
@@ -71,7 +71,7 @@ public class DistributedResourcePool extends LocalResourcePool {
   public ResourceSet getAll(boolean remote) {
     ResourceSet all = super.getAll();
     if (remote) {
-      all.addAll(connector.getAllResourcesExcept(id()));
+      all.addAll(connector.getAllResources());
     }
     return all;
   }

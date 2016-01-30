@@ -126,9 +126,7 @@ public class RemoteInterpreterEventPoller extends Thread {
           interpreterProcess.getInterpreterContextRunnerPool().run(
               runnerFromRemote.getNoteId(), runnerFromRemote.getParagraphId());
         } else if (event.getType() == RemoteInterpreterEventType.RESOURCE_POOL_GET_ALL) {
-          String excludePoolId = event.getData();
-          logger.debug("RESOURCE_POOL_GET_ALL {}", excludePoolId);
-          ResourceSet resourceSet = getAllResourcePoolExcept(excludePoolId);
+          ResourceSet resourceSet = getAllResourcePoolExcept();
           sendResourcePoolResponseGetAll(resourceSet);
         } else if (event.getType() == RemoteInterpreterEventType.RESOURCE_GET) {
           String resourceIdString = event.getData();
@@ -183,10 +181,10 @@ public class RemoteInterpreterEventPoller extends Thread {
     }
   }
 
-  private ResourceSet getAllResourcePoolExcept(String exclude) {
+  private ResourceSet getAllResourcePoolExcept() {
     ResourceSet resourceSet = new ResourceSet();
     for (InterpreterGroup intpGroup : InterpreterGroup.getAll()) {
-      if (intpGroup.getId().equals(exclude)) {
+      if (intpGroup.getId().equals(interpreterGroup.getId())) {
         continue;
       }
 
