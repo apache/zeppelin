@@ -23,8 +23,8 @@ import java.util.*;
  */
 public class LocalResourcePool implements ResourcePool {
   private final String resourcePoolId;
-  private final Map<ResourceId, Resource> resources
-      = Collections.synchronizedMap(new HashMap<ResourceId, Resource>());
+  private final Map<ResourceId, Resource> resources = Collections.synchronizedMap(
+      new HashMap<ResourceId, Resource>());
 
   /**
    * @param id unique id
