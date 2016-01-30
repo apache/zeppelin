@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -38,7 +39,7 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
   ResourcePool resourcePool;
 
   private static final Map<String, InterpreterGroup> allInterpreterGroups =
-          Collections.synchronizedMap(new HashMap<String, InterpreterGroup>());
+      new ConcurrentHashMap<String, InterpreterGroup>();
 
   public static InterpreterGroup get(String id) {
     return allInterpreterGroups.get(id);
