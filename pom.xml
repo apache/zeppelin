@@ -95,6 +95,7 @@
     <module>phoenix</module>
     <module>postgresql</module>
     <module>jdbc</module>
+    <module>springxd</module>
     <module>tajo</module>
     <module>flink</module>
     <module>ignite</module>
