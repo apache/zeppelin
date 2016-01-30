@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
@@ -48,6 +49,7 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
   private Notebook notebook;
   private NotebookRepo notebookRepo;
   private InterpreterFactory factory;
+  private DependencyResolver depResolver;
 
   private File mainZepDir;
   private File mainNotebookDir;
@@ -73,7 +75,8 @@ public class VFSNotebookRepoTest implements JobListenerFactory {
     MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
 
     this.schedulerFactory = new SchedulerFactory();
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, null);
+    depResolver = new DependencyResolver(mainZepDir.getAbsolutePath() + "/local-repo");
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, depResolver);
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);

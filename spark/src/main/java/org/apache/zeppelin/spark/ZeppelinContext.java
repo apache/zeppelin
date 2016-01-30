@@ -33,7 +33,6 @@ import java.util.List;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.SQLContext.QueryExecution;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
 import org.apache.spark.sql.hive.HiveContext;
 import org.apache.zeppelin.display.AngularObject;
@@ -73,127 +72,6 @@ public class ZeppelinContext extends HashMap<String, Object> {
   public SQLContext sqlContext;
   public HiveContext hiveContext;
   private GUI gui;
-
-  /**
-   * Load dependency for interpreter and runtime (driver).
-   * And distribute them to spark cluster (sc.add())
-   *
-   * @param artifact "group:artifact:version" or file path like "/somepath/your.jar"
-   * @return
-   * @throws Exception
-   */
-  public Iterable<String> load(String artifact) throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, true));
-  }
-
-  /**
-   * Load dependency and it's transitive dependencies for interpreter and runtime (driver).
-   * And distribute them to spark cluster (sc.add())
-   *
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
-   * @return
-   * @throws Exception
-   */
-  public Iterable<String> load(String artifact, scala.collection.Iterable<String> excludes)
-      throws Exception {
-    return collectionAsScalaIterable(
-        dep.load(artifact,
-        asJavaCollection(excludes),
-        true));
-  }
-
-  /**
-   * Load dependency and it's transitive dependencies for interpreter and runtime (driver).
-   * And distribute them to spark cluster (sc.add())
-   *
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
-   * @return
-   * @throws Exception
-   */
-  public Iterable<String> load(String artifact, Collection<String> excludes) throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, excludes, true));
-  }
-
-  /**
-   * Load dependency for interpreter and runtime, and then add to sparkContext.
-   * But not adding them to spark cluster
-   *
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @return
-   * @throws Exception
-   */
-  public Iterable<String> loadLocal(String artifact) throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, false));
-  }
-
-
-  /**
-   * Load dependency and it's transitive dependencies and then add to sparkContext.
-   * But not adding them to spark cluster
-   *
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
-   * @return
-   * @throws Exception
-   */
-  public Iterable<String> loadLocal(String artifact,
-      scala.collection.Iterable<String> excludes) throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact,
-        asJavaCollection(excludes), false));
-  }
-
-  /**
-   * Load dependency and it's transitive dependencies and then add to sparkContext.
-   * But not adding them to spark cluster
-   *
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
-   * @return
-   * @throws Exception
-   */
-  public Iterable<String> loadLocal(String artifact, Collection<String> excludes)
-      throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, excludes, false));
-  }
-
-
-  /**
-   * Add maven repository
-   *
-   * @param id id of repository ex) oss, local, snapshot
-   * @param url url of repository. supported protocol : file, http, https
-   */
-  public void addRepo(String id, String url) {
-    addRepo(id, url, false);
-  }
-
-  /**
-   * Add maven repository
-   *
-   * @param id id of repository
-   * @param url url of repository. supported protocol : file, http, https
-   * @param snapshot true if it is snapshot repository
-   */
-  public void addRepo(String id, String url, boolean snapshot) {
-    dep.addRepo(id, url, snapshot);
-  }
-
-  /**
-   * Remove maven repository by id
-   * @param id id of repository
-   */
-  public void removeRepo(String id){
-    dep.delRepo(id);
-  }
-
-  /**
-   * Load dependency only interpreter.
-   *
-   * @param name
-   * @return
-   */
 
   public Object input(String name) {
     return input(name, "");

@@ -17,27 +17,30 @@
 
 package org.apache.zeppelin.rest.message;
 
+import java.util.List;
 import java.util.Properties;
 
-import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.dep.Dependency;
 
 /**
- *
+ * UpdateInterpreterSetting rest api request message
  */
 public class UpdateInterpreterSettingRequest {
-
   // option was deprecated
   Properties properties;
+  List<Dependency> dependencies;
 
-  public UpdateInterpreterSettingRequest(InterpreterOption option,
-      Properties properties) {
-    super();
+  public UpdateInterpreterSettingRequest(Properties properties,
+      List<Dependency> dependencies) {
     this.properties = properties;
+    this.dependencies = dependencies;
   }
 
   public Properties getProperties() {
     return properties;
   }
 
-
+  public List<Dependency> getDependencies() {
+    return dependencies;
+  }
 }

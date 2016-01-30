@@ -18,6 +18,7 @@
 package org.apache.zeppelin.dep;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -28,6 +29,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonatype.aether.RepositoryException;
 import org.sonatype.aether.artifact.Artifact;
 import org.sonatype.aether.collection.CollectRequest;
 import org.sonatype.aether.graph.Dependency;
@@ -56,16 +58,18 @@ public class DependencyResolver extends AbstractDependencyResolver {
     super(localRepoPath);
   }
 
-  public List<File> load(String artifact) throws Exception {
+  public List<File> load(String artifact)
+      throws RepositoryException, IOException {
     return load(artifact, new LinkedList<String>());
   }
   
-  public List<File> load(String artifact, String destPath) throws Exception {
+  public List<File> load(String artifact, String destPath)
+      throws RepositoryException, IOException {
     return load(artifact, new LinkedList<String>(), destPath);
   }
 
   public synchronized List<File> load(String artifact, Collection<String> excludes)
-      throws Exception {
+      throws RepositoryException, IOException {
     if (StringUtils.isBlank(artifact)) {
       // Should throw here
       throw new RuntimeException("Invalid artifact to load");
@@ -83,7 +87,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
   }
   
   public List<File> load(String artifact, Collection<String> excludes, String destPath)
-      throws Exception {
+      throws RepositoryException, IOException {
     List<File> libs = load(artifact, excludes);
     
     // find home dir
@@ -105,7 +109,8 @@ public class DependencyResolver extends AbstractDependencyResolver {
     return libs;
   }
 
-  private List<File> loadFromMvn(String artifact, Collection<String> excludes) throws Exception {
+  private List<File> loadFromMvn(String artifact, Collection<String> excludes)
+      throws RepositoryException {
     Collection<String> allExclusions = new LinkedList<String>();
     allExclusions.addAll(excludes);
     allExclusions.addAll(Arrays.asList(exclusions));
@@ -142,7 +147,7 @@ public class DependencyResolver extends AbstractDependencyResolver {
    */
   @Override
   public List<ArtifactResult> getArtifactsWithDep(String dependency,
-      Collection<String> excludes) throws Exception {
+      Collection<String> excludes) throws RepositoryException {
     Artifact artifact = new DefaultArtifact(dependency);
     DependencyFilter classpathFilter = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
     PatternExclusionsDependencyFilter exclusionFilter =
