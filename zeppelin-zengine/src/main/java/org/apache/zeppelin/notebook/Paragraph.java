@@ -23,6 +23,7 @@ import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.slf4j.Logger;
@@ -256,10 +257,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   private InterpreterContext getInterpreterContext() {
     AngularObjectRegistry registry = null;
+    ResourcePool resourcePool = null;
 
     if (!getNoteReplLoader().getInterpreterSettings().isEmpty()) {
       InterpreterSetting intpGroup = getNoteReplLoader().getInterpreterSettings().get(0);
       registry = intpGroup.getInterpreterGroup().getAngularObjectRegistry();
+      resourcePool = intpGroup.getInterpreterGroup().getResourcePool();
     }
 
     List<InterpreterContextRunner> runners = new LinkedList<InterpreterContextRunner>();
@@ -276,6 +279,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
             this.getConfig(),
             this.settings,
             registry,
+            resourcePool,
             runners,
             new InterpreterOutput(new InterpreterOutputListener() {
               @Override

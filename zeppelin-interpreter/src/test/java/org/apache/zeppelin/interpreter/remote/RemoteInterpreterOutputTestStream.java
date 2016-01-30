@@ -71,14 +71,15 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
 
   private InterpreterContext createInterpreterContext() {
     return new InterpreterContext(
-            "noteId",
-            "id",
-            "title",
-            "text",
-            new HashMap<String, Object>(),
-            new GUI(),
-            new AngularObjectRegistry(intpGroup.getId(), null),
-            new LinkedList<InterpreterContextRunner>(), null);
+        "noteId",
+        "id",
+        "title",
+        "text",
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        null,
+        new LinkedList<InterpreterContextRunner>(), null);
   }
 
   @Test

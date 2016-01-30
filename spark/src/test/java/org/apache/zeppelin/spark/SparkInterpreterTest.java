@@ -79,6 +79,7 @@ public class SparkInterpreterTest {
             new HashMap<String, Object>(),
             new GUI(),
             new AngularObjectRegistry(intpGroup.getId(), null),
+            null,
             new LinkedList<InterpreterContextRunner>(),
             new InterpreterOutput(new InterpreterOutputListener() {
               @Override

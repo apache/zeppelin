@@ -14,24 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.zeppelin.resource;
 
-package org.apache.zeppelin.interpreter;
+/**
+ * Identifying resource
+ */
+public class ResourceId {
+  private final String resourcePoolId;
+  private final String name;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-
-public class InterpreterContextTest {
-
-  @Test
-  public void testThreadLocal() {
-    assertNull(InterpreterContext.get());
-
-    InterpreterContext.set(new InterpreterContext(null, null, null, null, null, null, null, null, null, null));
-    assertNotNull(InterpreterContext.get());
-
-    InterpreterContext.remove();
-    assertNull(InterpreterContext.get());
+  ResourceId(String resourcePoolId, String name) {
+    this.resourcePoolId = resourcePoolId;
+    this.name = name;
   }
 
+  public String getResourcePoolId() {
+    return resourcePoolId;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  @Override
+  public int hashCode() {
+    return (resourcePoolId + name).hashCode();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o instanceof ResourceId) {
+      ResourceId r = (ResourceId) o;
+      return (r.name.equals(name) && r.resourcePoolId.equals(resourcePoolId));
+    } else {
+      return false;
+    }
+  }
 }

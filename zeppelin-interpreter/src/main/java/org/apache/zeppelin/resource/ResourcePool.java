@@ -14,24 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.zeppelin.resource;
 
-package org.apache.zeppelin.interpreter;
+/**
+ * Interface for ResourcePool
+ */
+public interface ResourcePool {
+  /**
+   * Get unique id of the resource pool
+   * @return
+   */
+  public String id();
 
-import static org.junit.Assert.*;
+  /**
+   * Get resource from name
+   * @param name Resource name
+   * @return null if resource not found
+   */
+  public Resource get(String name);
 
-import org.junit.Test;
+  /**
+   * Get all resources
+   * @return
+   */
+  public ResourceSet getAll();
 
-public class InterpreterContextTest {
+  /**
+   * Put an object into resource pool
+   * @param name
+   * @param object
+   */
+  public void put(String name, Object object);
 
-  @Test
-  public void testThreadLocal() {
-    assertNull(InterpreterContext.get());
-
-    InterpreterContext.set(new InterpreterContext(null, null, null, null, null, null, null, null, null, null));
-    assertNotNull(InterpreterContext.get());
-
-    InterpreterContext.remove();
-    assertNull(InterpreterContext.get());
-  }
-
+  /**
+   * Remove object
+   * @param name Resource name to remove
+   * @return removed Resource. null if resource not found
+   */
+  public Resource remove(String name);
 }

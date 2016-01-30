@@ -14,24 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.zeppelin.resource;
 
-package org.apache.zeppelin.interpreter;
+/**
+ * Connect resource pools running in remote process
+ */
+public interface ResourcePoolConnector {
+  /**
+   * Get list of resources from all other resource pools in remote processes
+   * @return
+   */
+  public ResourceSet getAllResources();
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-
-public class InterpreterContextTest {
-
-  @Test
-  public void testThreadLocal() {
-    assertNull(InterpreterContext.get());
-
-    InterpreterContext.set(new InterpreterContext(null, null, null, null, null, null, null, null, null, null));
-    assertNotNull(InterpreterContext.get());
-
-    InterpreterContext.remove();
-    assertNull(InterpreterContext.get());
-  }
-
+  /**
+   * Read remote object
+   * @return
+   */
+  public Object readResource(ResourceId id);
 }
