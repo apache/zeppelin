@@ -94,6 +94,10 @@ The following components are provided under Apache License.
     (Apache 2.0) Shiro Core (org.apache.shiro:shiro-core:1.2.3 - https://shiro.apache.org)
     (Apache 2.0) Shiro Web (org.apache.shiro:shiro-web:1.2.3 - https://shiro.apache.org)
     (Apache 2.0) SnakeYAML (org.yaml:snakeyaml:1.15 - http://www.snakeyaml.org)
+    (Apache 2.0) Tachyon Shell (org.tachyonproject:tachyon-shell:0.8.2 - http://tachyon-project.org)
+    (Apache 2.0) Tachyon Servers (org.tachyonproject:tachyon-servers:0.8.2 - http://tachyon-project.org)
+    (Apache 2.0) Tachyon Minicluster (org.tachyonproject:tachyon-minicluster:0.8.2 - http://tachyon-project.org)
+    (Apache 2.0) Tachyon Underfs Local (org.tachyonproject:tachyon-underfs-local:0.8.2 - http://tachyon-project.org)
 
 
 
