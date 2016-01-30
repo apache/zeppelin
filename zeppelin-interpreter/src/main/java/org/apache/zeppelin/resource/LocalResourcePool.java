@@ -23,7 +23,8 @@ import java.util.*;
  */
 public class LocalResourcePool implements ResourcePool {
   private final String resourcePoolId;
-  private final Map<ResourceId, Resource> resources = new HashMap<ResourceId, Resource>();
+  private final Map<ResourceId, Resource> resources
+      = Collections.synchronizedMap(new HashMap<ResourceId, Resource>());
 
   /**
    * @param id unique id
@@ -47,17 +48,13 @@ public class LocalResourcePool implements ResourcePool {
    */
   @Override
   public Resource get(String name) {
-    synchronized (resources) {
-      ResourceId resourceId = new ResourceId(resourcePoolId, name);
-      return resources.get(resourceId);
-    }
+    ResourceId resourceId = new ResourceId(resourcePoolId, name);
+    return resources.get(resourceId);
   }
 
   @Override
   public ResourceSet getAll() {
-    synchronized (resources) {
-      return new ResourceSet(resources.values());
-    }
+    return new ResourceSet(resources.values());
   }
 
   /**
@@ -67,18 +64,14 @@ public class LocalResourcePool implements ResourcePool {
    */
   @Override
   public void put(String name, Object object) {
-    synchronized (resources) {
-      ResourceId resourceId = new ResourceId(resourcePoolId, name);
+    ResourceId resourceId = new ResourceId(resourcePoolId, name);
 
-      Resource resource = new Resource(resourceId, object);
-      resources.put(resourceId, resource);
-    }
+    Resource resource = new Resource(resourceId, object);
+    resources.put(resourceId, resource);
   }
 
   @Override
   public Resource remove(String name) {
-    synchronized (resources) {
-      return resources.remove(new ResourceId(resourcePoolId, name));
-    }
+    return resources.remove(new ResourceId(resourcePoolId, name));
   }
 }
