@@ -65,9 +65,7 @@ public class Resource {
    * @return null when this is remote resource and not serializable.
    */
   public Object get() {
-    if (isLocal()) {
-      return r;
-    } else if (isSerializable()){
+    if (isLocal() || isSerializable()){
       return r;
     } else {
       return null;
