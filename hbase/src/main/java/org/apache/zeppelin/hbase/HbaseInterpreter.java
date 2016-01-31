@@ -78,7 +78,6 @@ public class HbaseInterpreter extends Interpreter {
     this.scriptingContainer  = new ScriptingContainer(LocalContextScope.SINGLETON);
     this.writer = new StringWriter();
     scriptingContainer.setOutput(this.writer);
-    scriptingContainer.setCompatVersion(org.jruby.CompatVersion.RUBY1_9);
 
     if (!Boolean.parseBoolean(getProperty("hbase.test.mode"))) {
       String hbase_home = getProperty("hbase.home");
@@ -93,9 +92,6 @@ public class HbaseInterpreter extends Interpreter {
         throw new InterpreterException("hbase ruby sources is not available at '" + abs_ruby_src
             + "'");
       }
-
-      List<String> paths = new ArrayList<>(Arrays.asList(abs_ruby_src.toAbsolutePath().toString()));
-      this.scriptingContainer.setLoadPaths(paths);
 
       logger.info("Absolute Ruby Source:" + abs_ruby_src.toString());
       // hirb.rb:41 requires the following system property to be set.
