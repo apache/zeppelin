@@ -454,7 +454,8 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.kylin.KylinInterpreter,"
         + "org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter,"
         + "org.apache.zeppelin.scalding.ScaldingInterpreter,"
-        + "org.apache.zeppelin.jdbc.JDBCInterpreter"),
+        + "org.apache.zeppelin.jdbc.JDBCInterpreter,"
+        + "org.apache.zeppelin.jdbc.HbaseInterpreter"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),
     ZEPPELIN_INTERPRETER_MAX_POOL_SIZE("zeppelin.interpreter.max.poolsize", 10),
