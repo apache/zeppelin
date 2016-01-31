@@ -35,15 +35,8 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.ClassloaderInterpreter;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.LazyOpenInterpreter;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
@@ -270,6 +263,7 @@ public class RemoteInterpreterServer
     private Interpreter interpreter;
     private String script;
     private InterpreterContext context;
+    private Map<String, Object> infos;
 
     public InterpretJob(
         String jobId,
@@ -292,7 +286,10 @@ public class RemoteInterpreterServer
 
     @Override
     public Map<String, Object> info() {
-      return null;
+      if (infos == null) {
+        infos = new HashMap<>();
+      }
+      return infos;
     }
 
     @Override
@@ -300,7 +297,26 @@ public class RemoteInterpreterServer
       try {
         InterpreterContext.set(context);
         InterpreterResult result = interpreter.interpret(script, context);
-        return result;
+
+        // data from context.out is prepended to InterpreterResult if both defined
+        String message = "";
+
+        context.out.flush();
+        InterpreterResult.Type outputType = context.out.getType();
+        byte[] interpreterOutput = context.out.toByteArray();
+        context.out.clear();
+
+        if (interpreterOutput != null && interpreterOutput.length > 0) {
+          message = new String(interpreterOutput);
+        }
+
+        String interpreterResultMessage = result.message();
+        if (interpreterResultMessage != null && !interpreterResultMessage.isEmpty()) {
+          message += interpreterResultMessage;
+          return new InterpreterResult(result.code(), result.type(), message);
+        } else {
+          return new InterpreterResult(result.code(), outputType, message);
+        }
       } finally {
         InterpreterContext.remove();
       }
@@ -351,7 +367,8 @@ public class RemoteInterpreterServer
   private InterpreterContext convert(RemoteInterpreterContext ric) {
     List<InterpreterContextRunner> contextRunners = new LinkedList<InterpreterContextRunner>();
     List<InterpreterContextRunner> runners = gson.fromJson(ric.getRunners(),
-        new TypeToken<List<RemoteInterpreterContextRunner>>(){}.getType());
+            new TypeToken<List<RemoteInterpreterContextRunner>>() {
+        }.getType());
 
     for (InterpreterContextRunner r : runners) {
       contextRunners.add(new ParagraphRunner(this, r.getNoteId(), r.getParagraphId()));
@@ -366,7 +383,40 @@ public class RemoteInterpreterServer
             new TypeToken<Map<String, Object>>() {}.getType()),
         gson.fromJson(ric.getGui(), GUI.class),
         interpreterGroup.getAngularObjectRegistry(),
-        contextRunners);
+        contextRunners, createInterpreterOutput(ric.getNoteId(), ric.getParagraphId()));
+  }
+
+
+  private InterpreterOutput createInterpreterOutput(final String noteId, final String paragraphId) {
+    return new InterpreterOutput(new InterpreterOutputListener() {
+      @Override
+      public void onAppend(InterpreterOutput out, byte[] line) {
+        Map<String, String> appendOutput = new HashMap<String, String>();
+        appendOutput.put("noteId", noteId);
+        appendOutput.put("paragraphId", paragraphId);
+        appendOutput.put("data", new String(line));
+
+        Gson gson = new Gson();
+
+        sendEvent(new RemoteInterpreterEvent(
+                RemoteInterpreterEventType.OUTPUT_APPEND,
+                gson.toJson(appendOutput)));
+      }
+
+      @Override
+      public void onUpdate(InterpreterOutput out, byte[] output) {
+        Map<String, String> appendOutput = new HashMap<String, String>();
+        appendOutput.put("noteId", noteId);
+        appendOutput.put("paragraphId", paragraphId);
+        appendOutput.put("data", new String(output));
+
+        Gson gson = new Gson();
+
+        sendEvent(new RemoteInterpreterEvent(
+                RemoteInterpreterEventType.OUTPUT_UPDATE,
+                gson.toJson(appendOutput)));
+      }
+    });
   }
 
 
@@ -434,7 +484,7 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public void onRemove(String interpreterGroupId, String name, String noteId) {
+  public void onRemove(String interpreterGroupId, String name, String noteId, String paragraphId) {
     Map<String, String> removeObject = new HashMap<String, String>();
     removeObject.put("name", name);
     removeObject.put("noteId", noteId);
@@ -473,15 +523,16 @@ public class RemoteInterpreterServer
    * called when object is updated in client (web) side.
    * @param name
    * @param noteId noteId where the update issues
+   * @param paragraphId paragraphId where the update issues
    * @param object
    * @throws TException
    */
   @Override
-  public void angularObjectUpdate(String name, String noteId, String object)
+  public void angularObjectUpdate(String name, String noteId, String paragraphId, String object)
       throws TException {
     AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
     // first try local objects
-    AngularObject ao = registry.get(name, noteId);
+    AngularObject ao = registry.get(name, noteId, paragraphId);
     if (ao == null) {
       logger.error("Angular object {} not exists", name);
       return;
@@ -530,13 +581,13 @@ public class RemoteInterpreterServer
    * Dont't need to emit event to zeppelin server
    */
   @Override
-  public void angularObjectAdd(String name, String noteId, String object)
+  public void angularObjectAdd(String name, String noteId, String paragraphId, String object)
       throws TException {
     AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
     // first try local objects
-    AngularObject ao = registry.get(name, noteId);
+    AngularObject ao = registry.get(name, noteId, paragraphId);
     if (ao != null) {
-      angularObjectUpdate(name, noteId, object);
+      angularObjectUpdate(name, noteId, paragraphId, object);
       return;
     }
 
@@ -556,12 +607,13 @@ public class RemoteInterpreterServer
       value = gson.fromJson(object, String.class);
     }
 
-    registry.add(name, value, noteId, false);
+    registry.add(name, value, noteId, paragraphId, false);
   }
 
   @Override
-  public void angularObjectRemove(String name, String noteId) throws TException {
+  public void angularObjectRemove(String name, String noteId, String paragraphId) throws
+          TException {
     AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
-    registry.remove(name, noteId, false);
+    registry.remove(name, noteId, paragraphId, false);
   }
 }

@@ -28,10 +28,10 @@ import scala.util.parsing.json.JSONObject
  */
 object MetaDataHierarchy {
   object OrderConverter {
-    def convert(clusteringOrder: TableMetadata.Order): ClusteringOrder = {
+    def convert(clusteringOrder: com.datastax.driver.core.ClusteringOrder): ClusteringOrder = {
       clusteringOrder match {
-        case TableMetadata.Order.ASC => ASC
-        case TableMetadata.Order.DESC => DESC
+        case com.datastax.driver.core.ClusteringOrder.ASC => ASC
+        case com.datastax.driver.core.ClusteringOrder.DESC => DESC
       }
     }
   }
@@ -46,9 +46,8 @@ object MetaDataHierarchy {
   case class ClusteringColumn(order: ClusteringOrder) extends ColumnType
   object StaticColumn extends ColumnType
   object NormalColumn extends ColumnType
-  case class IndexDetails(name: String, info: String)
-  case class ColumnDetails(name: String, columnType: ColumnType, dataType: DataType, index: Option[IndexDetails])
-
+  case class IndexDetails(name: String, target: String, asCQL: String)
+  case class ColumnDetails(name: String, columnType: ColumnType, dataType: DataType)
 
   case class ClusterDetails(name: String, partitioner: String)
   case class ClusterContent(clusterName: String, clusterDetails: String, keyspaces: List[(UUID, String, String)])
@@ -58,10 +57,26 @@ object MetaDataHierarchy {
       JSONObject(replication).toString().replaceAll(""""""","'")
     }
   }
-  case class KeyspaceContent(keyspaceName: String, keyspaceDetails: String, tables: List[(UUID,String, String)], udts: List[(UUID, String, String)])
-  case class TableDetails(tableName: String, columns: List[ColumnDetails], asCQL: String, uniqueId: UUID = UUIDs.timeBased())
+  case class KeyspaceContent(keyspaceName: String, keyspaceDetails: String,
+                             tables: List[(UUID,String, String)],
+                             views: List[(UUID,String, String)],
+                             udts: List[(UUID, String, String)],
+                             functions: List[(UUID, String, String)],
+                             aggregates: List[(UUID, String, String)])
+  case class TableDetails(tableName: String, columns: List[ColumnDetails], indices: List[IndexDetails], asCQL: String, indicesAsCQL: String, uniqueId: UUID = UUIDs.timeBased())
   case class UDTDetails(typeName: String, columns: List[ColumnDetails], asCQL: String, uniqueId: UUID = UUIDs.timeBased())
 
+  case class SameNameFunctionDetails(functions: List[FunctionDetails])
+  case class FunctionDetails(keyspace:String, name: String, arguments: List[String], calledOnNullInput: Boolean, returnType: String,
+    language:String, body: String, asCQL: String, uniqueId: UUID = UUIDs.timeBased())
+  case class FunctionSummary(keyspace:String, name: String, arguments: List[String], returnType: String)
 
+  case class AggregateDetails(keyspace:String, name: String, arguments: List[String], sFunc: String, sType: String,
+    finalFunc: Option[String], initCond: Option[String], returnType: String,
+    asCQL: String, uniqueId: UUID = UUIDs.timeBased())
+  case class AggregateSummary(keyspace:String, name: String, arguments: List[String], returnType: String)
+  case class SameNameAggregateDetails(aggregates: List[AggregateDetails])
 
+  case class MaterializedViewDetails(name: String, columns: List[ColumnDetails], asCQL: String, baseTable: String, uniqueId: UUID = UUIDs.timeBased())
+  case class MaterializedViewSummary(name: String, baseTable: String)
 }
