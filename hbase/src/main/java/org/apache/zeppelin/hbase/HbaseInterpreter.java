@@ -97,10 +97,11 @@ public class HbaseInterpreter extends Interpreter {
       List<String> paths = new ArrayList<>(Arrays.asList(abs_ruby_src.toAbsolutePath().toString()));
       this.scriptingContainer.setLoadPaths(paths);
 
+      logger.info("Absolute Ruby Source:" + abs_ruby_src.toString());
       // hirb.rb:41 requires the following system property to be set.
       Properties sysProps = System.getProperties();
       sysProps.setProperty("hbase.ruby.sources", abs_ruby_src.toString());
-      
+
       Path abs_hirb_path = Paths.get(hbase_home, "bin/hirb.rb");
       try {
         FileInputStream fis = new FileInputStream(abs_hirb_path.toFile());
