@@ -42,7 +42,9 @@ enum RemoteInterpreterEventType {
   ANGULAR_OBJECT_ADD = 2,
   ANGULAR_OBJECT_UPDATE = 3,
   ANGULAR_OBJECT_REMOVE = 4,
-  RUN_INTERPRETER_CONTEXT_RUNNER = 5
+  RUN_INTERPRETER_CONTEXT_RUNNER = 5,
+  OUTPUT_APPEND = 6,
+  OUTPUT_UPDATE = 7
 }
 
 struct RemoteInterpreterEvent {
@@ -65,7 +67,8 @@ service RemoteInterpreterService {
   string getStatus(1:string jobId);
 
   RemoteInterpreterEvent getEvent();
-  void angularObjectUpdate(1: string name, 2: string noteId, 3: string object);
-  void angularObjectAdd(1: string name, 2: string noteId, 3: string object);
-  void angularObjectRemove(1: string name, 2: string noteId);
+  void angularObjectUpdate(1: string name, 2: string noteId, 3: string paragraphId, 4: string
+  object);
+  void angularObjectAdd(1: string name, 2: string noteId, 3: string paragraphId, 4: string object);
+  void angularObjectRemove(1: string name, 2: string noteId, 3: string paragraphId);
 }

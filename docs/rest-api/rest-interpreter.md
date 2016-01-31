@@ -22,28 +22,28 @@ limitations under the License.
 ## Zeppelin REST API
  Zeppelin provides several REST API's for interaction and remote activation of zeppelin functionality.
  
- All REST API are available starting with the following endpoint ```http://[zeppelin-server]:[zeppelin-port]/api```
+ All REST API are available starting with the following endpoint `http://[zeppelin-server]:[zeppelin-port]/api`.
+ Note that zeppein REST API receive or return JSON objects, it it recommended you install some JSON viewers such as 
+ [JSON View](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
  
- Note that zeppein REST API receive or return JSON objects, it it recommended you install some JSON view such as 
- [JSONView](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc)
- 
- 
- If you work with zeppelin and find a need for an additional REST API please [file an issue or send us mail](../../community.html) 
+ If you work with zeppelin and find a need for an additional REST API, please [file an issue or send us mail](http://zeppelin.incubator.apache.org/community.html). 
 
  <br />
-### Interpreter REST API list
+## Interpreter REST API List
   
-  The role of registered interpreters, settings and interpreters group is described [here](../manual/interpreters.html)
+  The role of registered interpreters, settings and interpreters group are described in [here](../manual/interpreters.html).
   
+### 1. List of Registered Interpreters & Interpreter Settings
+
   <table class="table-configuration">
     <col width="200">
     <tr>
-      <th>List registered interpreters</th>
+      <th>List of registered interpreters</th>
       <th></th>
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method return all the registered interpreters available on the server.</td>
+      <td>This ```GET``` method returns all the registered interpreters available on the server.</td>
     </tr>
     <tr>
       <td>URL</td>
@@ -54,12 +54,11 @@ limitations under the License.
       <td>200</td>
     </tr>
     <tr>
-      <td> Fail code</td>
+      <td>Fail code</td>
       <td> 500 </td>
     </tr>
     <tr>
-      <td> sample JSON response
-      </td>
+      <td>Sample JSON response</td>
       <td>
         <pre>
 {
@@ -113,12 +112,12 @@ limitations under the License.
   <table class="table-configuration">
     <col width="200">
     <tr>
-      <th>List interpreters settings</th>
+      <th>List of interpreters settings</th>
       <th></th>
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```GET``` method return all the interpreters settings registered on the server.</td>
+      <td>This ```GET``` method returns all the interpreters settings registered on the server.</td>
     </tr>
     <tr>
       <td>URL</td>
@@ -129,12 +128,11 @@ limitations under the License.
       <td>200</td>
     </tr>
     <tr>
-      <td> Fail code</td>
+      <td>Fail code</td>
       <td> 500 </td>
     </tr>
     <tr>
-      <td> sample JSON response
-      </td>
+      <td>Sample JSON response</td>
       <td>
         <pre>
 {
@@ -182,7 +180,8 @@ limitations under the License.
   </table>
 
 <br/>
-   
+### 2. Create an Interpreter Setting  
+
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -202,12 +201,11 @@ limitations under the License.
       <td>201</td>
     </tr>
     <tr>
-      <td> Fail code</td>
+      <td>Fail code</td>
       <td> 500 </td>
     </tr>
     <tr>
-      <td> sample JSON input
-      </td>
+      <td>Sample JSON input</td>
       <td>
         <pre>
 {
@@ -227,8 +225,7 @@ limitations under the License.
       </td>
     </tr>
     <tr>
-      <td> sample JSON response
-      </td>
+      <td>Sample JSON response</td>
       <td>
         <pre>
 {
@@ -256,7 +253,8 @@ limitations under the License.
   
   
 <br/>
-   
+
+### 3. Update an Interpreter Setting
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -276,12 +274,11 @@ limitations under the License.
       <td>200</td>
     </tr>
     <tr>
-      <td> Fail code</td>
+      <td>Fail code</td>
       <td> 500 </td>
     </tr>
     <tr>
-      <td> sample JSON input
-      </td>
+      <td>Sample JSON input</td>
       <td>
         <pre>
 {
@@ -301,8 +298,7 @@ limitations under the License.
       </td>
     </tr>
     <tr>
-      <td> sample JSON response
-      </td>
+      <td>Sample JSON response</td>
       <td>
         <pre>
 {
@@ -330,7 +326,8 @@ limitations under the License.
 
   
 <br/>
-   
+### 4. Delete an Interpreter Setting
+
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -354,17 +351,17 @@ limitations under the License.
       <td> 500 </td>
     </tr>
     <tr>
-      <td> sample JSON response
-      </td>
+      <td>Sample JSON response</td>
       <td>
-        <pre>{"status":"OK"}</pre>
+        <code>{"status":"OK"}</code>
       </td>
     </tr>
   </table>
 
   
 <br/>
-   
+### 5. Restart an Interpreter 
+
   <table class="table-configuration">
     <col width="200">
     <tr>
@@ -373,7 +370,7 @@ limitations under the License.
     </tr>
     <tr>
       <td>Description</td>
-      <td>This ```PUT``` method restart the given interpreter id.</td>
+      <td>This ```PUT``` method restarts the given interpreter id.</td>
     </tr>
     <tr>
       <td>URL</td>
@@ -384,14 +381,13 @@ limitations under the License.
       <td>200</td>
     </tr>
     <tr>
-      <td> Fail code</td>
+      <td>Fail code</td>
       <td> 500 </td>
     </tr>
     <tr>
-      <td> sample JSON response
-      </td>
+      <td>Sample JSON response</td>
       <td>
-        <pre>{"status":"OK"}</pre>
+        <code>{"status":"OK"}</code>
       </td>
     </tr>
   </table>

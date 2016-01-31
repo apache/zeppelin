@@ -6,7 +6,6 @@ group: manual
 ---
 {% include JB/setup %}
 
-
 ## Scalding Interpreter for Apache Zeppelin
 [Scalding](https://github.com/twitter/scalding) is an open source Scala library for writing MapReduce jobs.
 
@@ -18,20 +17,20 @@ mvn clean package -Pscalding -DskipTests
 ```
 
 ### Enabling the Scalding Interpreter
-
 In a notebook, to enable the **Scalding** interpreter, click on the **Gear** icon,select **Scalding**, and hit **Save**.
- 
- <center>
- ![Interpreter Binding](../assets/themes/zeppelin/img/docs-img/scalding-InterpreterBinding.png)
 
- ![Interpreter Selection](../assets/themes/zeppelin/img/docs-img/scalding-InterpreterSelection.png)
- </center>
+<center>
+
+![Interpreter Binding](../assets/themes/zeppelin/img/docs-img/scalding-InterpreterBinding.png)
+
+![Interpreter Selection](../assets/themes/zeppelin/img/docs-img/scalding-InterpreterSelection.png)
+
+</center>
 
 ### Configuring the Interpreter
 Zeppelin comes with a pre-configured Scalding interpreter in local mode, so you do not need to install anything.
 
 ### Testing the Interpreter
-
 In example, by using the [Alice in Wonderland](https://gist.github.com/johnynek/a47699caa62f4f38a3e2) tutorial, we will count words (of course!), and plot a graph of the top 10 words in the book.
 
 ```

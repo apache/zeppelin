@@ -42,15 +42,6 @@
                     <tr class="info">
                         <td class="col-md-4">
                             <i class="glyphicon glyphicon-fullscreen" title="Partition Key"/>
-                            #match (column.index)
-                            #case (Some(index))
-
-                            &nbsp;<i class="glyphicon glyphicon-info-sign" title="Indexed Column"/>
-                            <em>${index.name}</em> <strong>${index.info}</strong>
-                            #case (None)
-                            <span></span>
-                            #end
-
                         </td>
                         <td class="col-md-4">${column.name}</td>
                         <td class="col-md-4">${column.dataType}</td>
@@ -59,15 +50,6 @@
                     <tr class="warning">
                         <td class="col-md-4">
                             <i class="glyphicon glyphicon-pushpin" title="Static Column"/>
-                            #match (column.index)
-                            #case (Some(index))
-
-                            &nbsp;<i class="glyphicon glyphicon-info-sign" title="Indexed Column"/>
-                            <em>${index.name}</em> <strong>${index.info}</strong>
-                            #case (None)
-                            <span></span>
-                            #end
-
                         </td>
                         <td class="col-md-4">${column.name}</td>
                         <td class="col-md-4">${column.dataType}</td>
@@ -78,15 +60,6 @@
                             <i class="glyphicon glyphicon-sort" title="Clustering Column"/>
                             &nbsp;
                             <i class="glyphicon glyphicon-sort-by-attributes" title="Sort ASC"/>
-                            #match (column.index)
-                            #case (Some(index))
-
-                            &nbsp;<i class="glyphicon glyphicon-info-sign" title="Indexed Column"/>
-                            <em>${index.name}</em> <strong>${index.info}</strong>
-                            #case (None)
-                            <span></span>
-                            #end
-
                         </td>
                         <td class="col-md-4">${column.name}</td>
                         <td class="col-md-4">${column.dataType}</td>
@@ -97,32 +70,13 @@
                             <i class="glyphicon glyphicon-sort" title="Clustering Column"/>
                             &nbsp;
                             <i class="glyphicon glyphicon-sort-by-attributes-alt" title="Sort DESC"/>
-                            #match (column.index)
-                            #case (Some(index))
-
-                            &nbsp;<i class="glyphicon glyphicon-info-sign" title="Indexed Column"/>
-                            <em>${index.name}</em> <strong>${index.info}</strong>
-                            #case (None)
-                            <span></span>
-                            #end
-
                         </td>
                         <td class="col-md-4">${column.name}</td>
                         <td class="col-md-4">${column.dataType}</td>
                     </tr>
                         #otherwise
                     <tr>
-                        <td class="col-md-4">
-                            #match (column.index)
-                            #case (Some(index))
-
-                            <i class="glyphicon glyphicon-info-sign" title="Indexed Column"/>
-                            <em>${index.name}</em> <strong>${index.info}</strong>
-                            #case (None)
-                            <span></span>
-                            #end
-
-                        </td>
+                        <td class="col-md-4"></td>
                         <td class="col-md-4">${column.name}</td>
                         <td class="col-md-4">${column.dataType}</td>
                     </tr>
@@ -132,7 +86,7 @@
                 </tbody>
             </table>
             <div class="panel-footer">
-                <a data-toggle="collapse" data-target="#${tableDetails.uniqueId}_asCQL">
+                <a data-toggle="collapse" data-target="#${tableDetails.uniqueId}_asCQL" class="text-primary">
                     <strong>As CQL statement</strong>
                     <span class="caret"></span>
                 </a>
@@ -142,6 +96,39 @@
                 </div>
             </div>
         </div>
+        #if(tableDetails.indices.size > 0)
+        <hr/>           
+        <div class="panel panel-default table-responsive table-bordered">
+            <table class="table">
+                <caption><h4 class="text-danger"><i class="glyphicon glyphicon-info-sign"/>&nbsp;${tableDetails.tableName}'s indices</h4>
+                </caption>
+                <thead>
+                    <tr>
+                        <th class="col-md-6">Name</th>
+                        <th class="col-md-6">Target</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    #for (index <- tableDetails.indices)
+                    <tr>
+                        <td class="col-md-6">${index.name}</td>
+                        <td class="col-md-6">${index.target}</td>
+                    </tr>
+                    #end
+                </tbody>    
+            </table>        
+            <div class="panel-footer">
+                <a data-toggle="collapse" data-target="#${tableDetails.uniqueId}_indices_asCQL" class="text-danger">
+                    <strong>As CQL statement</strong>
+                    <span class="caret"></span>
+                </a>
+                <br/><br/>
+                <div class="collapse" id="${tableDetails.uniqueId}_indices_asCQL">
+                    <pre class="well">${tableDetails.indicesAsCQL}</pre>
+                </div>
+            </div>
+        </div>
+        #end
     </div>
     <div class="col-md-2"></div>
 </div>

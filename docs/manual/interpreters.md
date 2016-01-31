@@ -19,46 +19,40 @@ limitations under the License.
 -->
 {% include JB/setup %}
 
+## Interpreters in Zeppelin
+In this section, we will explain about the role of interpreters, interpreters group and interpreter settings in Zeppelin.
+The concept of Zeppelin interpreter allows any language/data-processing-backend to be plugged into Zeppelin.
+Currently, Zeppelin supports many interpreters such as Scala ( with Apache Spark ), Python ( with Apache Spark ), SparkSQL, Hive, Markdown, Shell and so on.
 
-## Interpreters in zeppelin
+## What is Zeppelin interpreter?
+Zeppelin Interpreter is a plug-in which enables Zeppelin users to use a specific language/data-processing-backend. For example, to use scala code in Zeppelin, you need `%spark` interpreter.
 
-This section explain the role of Interpreters, interpreters group and interpreters settings in Zeppelin.
-Zeppelin interpreter concept allows any language/data-processing-backend to be plugged into Zeppelin.
-Currently Zeppelin supports many interpreters such as Scala(with Apache Spark), Python(with Apache Spark), SparkSQL, Hive, Markdown and Shell.
-
-### What is zeppelin interpreter?
-
-Zeppelin Interpreter is the plug-in which enable zeppelin user to use a specific language/data-processing-backend. For example to use scala code in Zeppelin, you need ```spark``` interpreter.
-
-When you click on the ```+Create``` button in the interpreter page the interpreter drop-down list box will present all the available interpreters on your server.
+When you click the ```+Create``` button in the interpreter page, the interpreter drop-down list box will show all the available interpreters on your server.
 
 <img src="/assets/themes/zeppelin/img/screenshots/interpreter_create.png">
 
-### What is zeppelin interpreter setting?
-
-Zeppelin interpreter setting is the configuration of a given interpreter on zeppelin server. For example, the properties requried for hive  JDBC interpreter to connect to the Hive server.
+## What is Zeppelin Interpreter Setting?
+Zeppelin interpreter setting is the configuration of a given interpreter on Zeppelin server. For example, the properties are required for hive JDBC interpreter to connect to the Hive server.
 
 <img src="/assets/themes/zeppelin/img/screenshots/interpreter_setting.png">
-### What is zeppelin interpreter group?
 
-Every Interpreter belongs to an InterpreterGroup. InterpreterGroup is a unit of start/stop interpreter.
-By default, every interpreter belong to a single group but the group might contain more interpreters. For example, spark interpreter group include spark support, pySpark, 
+## What is Zeppelin Interpreter Group?
+Every Interpreter is belonged to an **Interpreter Group**. Interpreter Group is a unit of start/stop interpreter.
+By default, every interpreter is belonged to a single group, but the group might contain more interpreters. For example, spark interpreter group is including Spark support, pySpark, 
 SparkSQL and the dependency loader.
 
-Technically, Zeppelin interpreters from the same group are running in the same JVM.
+Technically, Zeppelin interpreters from the same group are running in the same JVM. For more information about this, please checkout [here](../development/writingzeppelininterpreter.html).
 
-Interpreters belong to a single group a registered together and all of their properties are listed in the interpreter setting.
+Each interpreters is belonged to a single group and registered together. All of their properties are listed in the interpreter setting like below image.
 <img src="/assets/themes/zeppelin/img/screenshots/interpreter_setting_spark.png">
 
-### Programming langages for interpreter
+## Programming Languages for Interpreter
+If the interpreter uses a specific programming language ( like Scala, Python, SQL ), it is generally recommended to add a syntax highlighting supported for that to the notebook paragraph editor.  
+  
+To check out the list of languages supported, see the `mode-*.js` files under `zeppelin-web/bower_components/ace-builds/src-noconflict` or from [github.com/ajaxorg/ace-builds](https://github.com/ajaxorg/ace-builds/tree/master/src-noconflict).  
+  
+If you want to add a new set of syntax highlighting,  
 
-If the interpreter uses a specific programming language (like Scala, Python, SQL), it is generally a good idea to add syntax highlighting support for that to the notebook paragraph editor.  
-  
-To check out the list of languages supported, see the mode-*.js files under zeppelin-web/bower_components/ace-builds/src-noconflict or from github https://github.com/ajaxorg/ace-builds/tree/master/src-noconflict  
-  
-To add a new set of syntax highlighting,  
-1. add the mode-*.js file to zeppelin-web/bower.json (when built, zeppelin-web/src/index.html will be changed automatically)  
-2. add to the list of `editorMode` in zeppelin-web/src/app/notebook/paragraph/paragraph.controller.js - it follows the pattern 'ace/mode/x' where x is the name  
-3. add to the code that checks for `%` prefix and calls `session.setMode(editorMode.x)` in `setParagraphMode` in zeppelin-web/src/app/notebook/paragraph/paragraph.controller.js  
-  
-
+1. Add the `mode-*.js` file to `zeppelin-web/bower.json` ( when built, `zeppelin-web/src/index.html` will be changed automatically. ).  
+2. Add to the list of `editorMode` in `zeppelin-web/src/app/notebook/paragraph/paragraph.controller.js` - it follows the pattern 'ace/mode/x' where x is the name.  
+3. Add to the code that checks for `%` prefix and calls `session.setMode(editorMode.x)` in `setParagraphMode` located in `zeppelin-web/src/app/notebook/paragraph/paragraph.controller.js`.  

@@ -78,7 +78,7 @@ public class NotebookRepoSync implements NotebookRepo {
       } catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
           InstantiationException | IllegalAccessException | IllegalArgumentException |
           InvocationTargetException e) {
-        LOG.warn("Failed to initialize {} notebook storage class {}", storageClassNames[i], e);
+        LOG.warn("Failed to initialize {} notebook storage class", storageClassNames[i], e);
       }
     }
     // couldn't initialize any storage, use default
