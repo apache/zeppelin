@@ -97,7 +97,7 @@ public class HbaseInterpreter extends Interpreter {
       List<String> paths = new ArrayList<>(Arrays.asList(abs_ruby_src.toAbsolutePath().toString()));
       this.scriptingContainer.setLoadPaths(paths);
 
-      Path abs_hirb_path = Paths.get(hbase_home, ruby_src, "irb/hirb.rb");
+      Path abs_hirb_path = Paths.get(hbase_home, "bin/hirb.rb");
       try {
         FileInputStream fis = new FileInputStream(abs_hirb_path.toFile());
         this.scriptingContainer.runScriptlet(fis, "hirb.rb");
