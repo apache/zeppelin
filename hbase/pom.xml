@@ -36,7 +36,7 @@
     <hbase.hbase.version>1.0.0</hbase.hbase.version>
     <hbase.hadoop.version>2.6.0</hbase.hadoop.version>
     <jruby.version>1.6.8</jruby.version>
-    <protobuf.version>2.4.1</protobuf.version>
+    <protobuf.version>2.5.0</protobuf.version>
   </properties>
 
   <dependencies>
@@ -53,15 +53,6 @@
       <version>1.1</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -87,11 +78,6 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-yarn-api</artifactId>
-      <version>${hbase.hadoop.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-mapreduce-client-core</artifactId>
       <version>${hbase.hadoop.version}</version>
     </dependency>
     <dependency>
