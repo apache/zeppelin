@@ -93,6 +93,7 @@
     <module>angular</module>
     <module>shell</module>
     <module>hive</module>
+    <module>hbase</module>
     <module>phoenix</module>
     <module>postgresql</module>
     <module>jdbc</module>
