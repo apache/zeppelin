@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.thrift.TException;
+import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -41,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 
 /**
  *
@@ -148,8 +151,10 @@ public class RemoteInterpreter extends Interpreter {
             logger.info("Create remote interpreter {}", intp.getClassName());
             property.put("zeppelin.interpreter.localRepo", localRepoPath);
             client.createInterpreter(intp.getClassName(), (Map) property);
-
           }
+
+          pushAngularObjectRegistryToRemote(client);
+
         } catch (TException e) {
           broken = true;
           throw new InterpreterException(e);
@@ -160,8 +165,6 @@ public class RemoteInterpreter extends Interpreter {
     }
     initialized = true;
   }
-
-
 
   @Override
   public void open() {
@@ -368,5 +371,31 @@ public class RemoteInterpreter extends Interpreter {
         InterpreterResult.Code.valueOf(result.getCode()),
         Type.valueOf(result.getType()),
         result.getMsg());
+  }
+
+  /**
+   * Push local angular object registry to
+   * remote interpreter. This method should be
+   * call ONLY inside the init() method
+   * @param client
+   * @throws TException
+     */
+  void pushAngularObjectRegistryToRemote(Client client) throws TException {
+    final AngularObjectRegistry angularObjectRegistry = this.getInterpreterGroup()
+      .getAngularObjectRegistry();
+
+    if (angularObjectRegistry != null && angularObjectRegistry.getRegistry() != null) {
+      final Map<String, Map<String, AngularObject>> registry = angularObjectRegistry
+        .getRegistry();
+
+      logger.info("Push local angular object registry from ZeppelinServer to" +
+        " remote interpreter group {}", this.getInterpreterGroup().getId());
+
+      final java.lang.reflect.Type registryType = new TypeToken<Map<String,
+              Map<String, AngularObject>>>() {}.getType();
+
+      Gson gson = new Gson();
+      client.angularRegistryPush(gson.toJson(registry, registryType));
+    }
   }
 }

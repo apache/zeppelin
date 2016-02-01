@@ -15,6 +15,12 @@ limitations under the License.
 <div id="{{paragraph.id}}_container"
      ng-class="{'paragraph': !asIframe, 'paragraphAsIframe': asIframe}">
 
+  <div class="row" ng-if="!asIframe">
+    <div ng-show="paragraph.config.paragraphId" class="paragraphId pull-left">
+      <strong>Paragraph ID</strong>: {{paragraph.id}}
+    </div>
+  </div>
+
   <div ng-show="paragraph.config.title"
        id="{{paragraph.id}}_title"
        class="title">
@@ -64,9 +70,11 @@ limitations under the License.
   <div ng-include src="'app/notebook/paragraph/paragraph-control.html'"></div>
 
   <div ng-if="!asIframe" class="paragraphFooter">
-    <div ng-show="!paragraph.config.tableHide && !viewOnly"
-         id="{{paragraph.id}}_executionTime"
-         class="executionTime" ng-bind-html="getExecutionTime()">
+    <div ng-show="!paragraph.config.tableHide && !viewOnly">
+      <div id="{{paragraph.id}}_executionTime"
+           class="executionTime"
+           ng-bind-html="getExecutionTime()"></div>
     </div>
+
   </div>
 </div>

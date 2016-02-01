@@ -1,13 +1,12 @@
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,7 +34,8 @@ public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
   ANGULAR_OBJECT_REMOVE(4),
   RUN_INTERPRETER_CONTEXT_RUNNER(5),
   OUTPUT_APPEND(6),
-  OUTPUT_UPDATE(7);
+  OUTPUT_UPDATE(7),
+  ANGULAR_REGISTRY_PUSH(8);
 
   private final int value;
 
@@ -70,6 +70,8 @@ public enum RemoteInterpreterEventType implements org.apache.thrift.TEnum {
         return OUTPUT_APPEND;
       case 7:
         return OUTPUT_UPDATE;
+      case 8:
+        return ANGULAR_REGISTRY_PUSH;
       default:
         return null;
     }

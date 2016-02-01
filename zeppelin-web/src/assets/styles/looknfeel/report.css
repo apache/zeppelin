@@ -65,6 +65,7 @@ body {
 }
 
 .executionTime,
+.paragraphId,
 .nv-controlsWrap,
 .lastEmptyParagraph {
   display: none;

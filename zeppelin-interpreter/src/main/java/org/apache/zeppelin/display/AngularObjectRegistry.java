@@ -243,6 +243,22 @@ public class AngularObjectRegistry {
     return all;
   }
 
+  /**
+   * Return the complete registry to be pushed to remote interpreter process
+   * @return registry map
+   */
+  public Map<String, Map<String, AngularObject>> getRegistry() {
+    return this.registry;
+  }
+
+  /**
+   * Set the complete registry send from ZeppelinServer to remote interpreter
+   * @param registry
+     */
+  public void setRegistry(Map<String, Map<String, AngularObject>> registry) {
+    this.registry = registry;
+  }
+
   public String getInterpreterGroupId() {
     return interpreterId;
   }

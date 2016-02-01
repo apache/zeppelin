@@ -616,4 +616,16 @@ public class RemoteInterpreterServer
     AngularObjectRegistry registry = interpreterGroup.getAngularObjectRegistry();
     registry.remove(name, noteId, paragraphId, false);
   }
+
+  @Override
+  public void angularRegistryPush(String registryAsString) throws TException {
+    try {
+      Map<String, Map<String, AngularObject>> deserializedRegistry = gson
+        .fromJson(registryAsString,
+          new TypeToken<Map<String, Map<String, AngularObject>>>() { }.getType());
+      interpreterGroup.getAngularObjectRegistry().setRegistry(deserializedRegistry);
+    } catch (Exception e) {
+      logger.info("Exception in RemoteInterpreterServer while angularRegistryPush, nolock", e);
+    }
+  }
 }

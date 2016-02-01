@@ -22,6 +22,71 @@ angular.module('zeppelinWebApp')
   $scope.originalText = '';
   $scope.editor = null;
   var paragraphScope = $rootScope.$new(true, $rootScope);
+
+  paragraphScope.runParagraph = function(paragraphId) {
+    if (paragraphId) {
+      var paragraphDiv = angular
+          .element('#' + paragraphId + '_paragraphColumn_main[ng-controller="ParagraphCtrl"]');
+      if (paragraphDiv) {
+        var paragraph = paragraphDiv.scope().paragraph;
+        websocketMsgSrv.runParagraph(paragraph.id, paragraph.title, paragraph.text,
+            paragraph.config, paragraph.settings.params);
+      }
+    }
+  };
+
+  paragraphScope.runParagraphs = function(paragraphsId) {
+    var paragraphs = paragraphsId || [];
+    paragraphs.forEach(paragraphScope.runParagraph);
+  };
+
+  paragraphScope.pushToServer = function(varName, value, pushParams) {
+    var defaultParams = {interpreters: [], paragraphs: [], scope: 'paragraph',
+      runParagraphs: true};
+    var params = jQuery.extend(defaultParams, angular.copy(pushParams));
+
+    if (params.interpreter) {
+      params.interpreters.push(params.interpreter);
+      delete params.interpreter;
+    }
+
+    if (params.paragraph) {
+      params.paragraphs.push(params.paragraph);
+      delete params.paragraph;
+    }
+
+    // Only push to server if there is at least 1 interpreter
+    if (params.interpreters.length > 0) {
+      websocketMsgSrv.clientUpdateAngularObject($routeParams.noteId, varName, value, params);
+
+      // Only run target paragraphs if there are at least 1 interpreter updated
+      // and runParagraphs set to true
+      if (params.paragraphs.length > 0 && params.runParagraphs) {
+        params.paragraphs.forEach(paragraphScope.runParagraph);
+      }
+    }
+  };
+
+  paragraphScope.removeFromServer = function(varName, removeParams) {
+    var defaultParams = {interpreters: [], paragraphs: [], scope: 'paragraph'};
+    var params = jQuery.extend(defaultParams, angular.copy(removeParams));
+
+    if (params.interpreter) {
+      params.interpreters.push(params.interpreter);
+      delete params.interpreter;
+    }
+
+    if (params.paragraph) {
+      params.paragraphs.push(params.paragraph);
+      delete params.paragraph;
+    }
+
+    // Only push to server if there is at least 1 interpreter
+    if (params.interpreters.length > 0) {
+      websocketMsgSrv.clientRemoveAngularObject($routeParams.noteId, varName, params);
+    }
+  };
+
   var angularObjectRegistry = {};
 
   var editorModes = {
@@ -555,7 +620,23 @@ angular.module('zeppelinWebApp')
     commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
   };
 
-  $scope.columnWidthClass = function(n) {
+  $scope.showParagraphId = function() {
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
+    newConfig.paragraphId = true;
+
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+  };
+
+  $scope.hideParagraphId = function() {
+    var newParams = angular.copy($scope.paragraph.settings.params);
+    var newConfig = angular.copy($scope.paragraph.config);
+    newConfig.paragraphId = false;
+
+    commitParagraph($scope.paragraph.title, $scope.paragraph.text, newConfig, newParams);
+  };
+
+    $scope.columnWidthClass = function(n) {
     if ($scope.asIframe) {
       return 'col-md-12';
     } else {
