@@ -358,8 +358,32 @@ public class NotebookServer extends WebSocketServlet implements
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
   }
 
+  void readPermissionEror(NotebookSocket conn, String principal, Note note)  throws IOException {
+    LOG.info("Cannot read. Connection readers {}. Allowed readers {}",
+            principal, note.getReaders());
+    conn.send(serializeMessage(new Message(OP.AUTH_INFO).put("info",
+            "Insufficient privileges to read note.\n" +
+                    "Allowed readers: " + note.getReaders().toString() + "\n" +
+                    "User belongs to: " + principal)));
+  }
+
+  void writePermissionError(NotebookSocket conn, String principal, Note note)  throws IOException {
+    LOG.info("Cannot write. Connection writers {}. Allowed writers {}",
+            principal, note.getWriters());
+    conn.send(serializeMessage(new Message(OP.AUTH_INFO).put("info",
+            "Insufficient privileges to write note.\n" +
+                    "Allowed writers: " + note.getWriters().toString() + "\n" +
+                    "User belongs to: " + principal)));
+  }
+
   private void sendNote(NotebookSocket conn, Notebook notebook,
       Message fromMessage) throws IOException {
+
+    LOG.info("New operation from {} : {} : {} : {} : {}", conn.getRequest().getRemoteAddr(),
+            conn.getRequest().getRemotePort(),
+            fromMessage.principal, fromMessage.op, fromMessage.get("id")
+    );
+
     String noteId = (String) fromMessage.get("id");
     if (noteId == null) {
       return;
@@ -367,6 +391,14 @@ public class NotebookServer extends WebSocketServlet implements
 
     Note note = notebook.getNote(noteId);
     if (note != null) {
+      HashSet<String> usersAndGroups = new HashSet<String>();
+      usersAndGroups.add(fromMessage.principal);
+      // TODO(prasadwagle) add groups to usersAndGroups
+      if (!note.isReader(usersAndGroups)) {
+        readPermissionEror(conn, fromMessage.principal, note);
+        broadcastNoteList();
+        return;
+      }
       addConnectionToNote(note.id(), conn);
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
       sendAllAngularObjects(note, conn);
@@ -476,6 +508,15 @@ public class NotebookServer extends WebSocketServlet implements
     Map<String, Object> config = (Map<String, Object>) fromMessage
         .get("config");
     final Note note = notebook.getNote(getOpenNoteId(conn));
+
+    HashSet<String> usersAndGroups = new HashSet<String>();
+    usersAndGroups.add(fromMessage.principal);
+    // TODO(prasadwagle) add groups to usersAndGroups
+    if (!note.isWriter(usersAndGroups)) {
+      writePermissionError(conn, fromMessage.principal, note);
+      return;
+    }
+
     Paragraph p = note.getParagraph(paragraphId);
     p.settings.setParams(params);
     p.setConfig(config);
@@ -517,6 +558,15 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     final Note note = notebook.getNote(getOpenNoteId(conn));
+
+    HashSet<String> usersAndGroups = new HashSet<String>();
+    usersAndGroups.add(fromMessage.principal);
+    // TODO(prasadwagle) add groups to usersAndGroups
+    if (!note.isWriter(usersAndGroups)) {
+      writePermissionError(conn, fromMessage.principal, note);
+      return;
+    }
+
     /** We dont want to remove the last paragraph */
     if (!note.isLastParagraph(paragraphId)) {
       note.removeParagraph(paragraphId);
@@ -533,6 +583,15 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     final Note note = notebook.getNote(getOpenNoteId(conn));
+
+    HashSet<String> usersAndGroups = new HashSet<String>();
+    usersAndGroups.add(fromMessage.principal);
+    // TODO(prasadwagle) add groups to usersAndGroups
+    if (!note.isWriter(usersAndGroups)) {
+      writePermissionError(conn, fromMessage.principal, note);
+      return;
+    }
+
     note.clearParagraphOutput(paragraphId);
     broadcastNote(note);
   }
@@ -654,6 +713,15 @@ public class NotebookServer extends WebSocketServlet implements
     final int newIndex = (int) Double.parseDouble(fromMessage.get("index")
         .toString());
     final Note note = notebook.getNote(getOpenNoteId(conn));
+
+    HashSet<String> usersAndGroups = new HashSet<String>();
+    usersAndGroups.add(fromMessage.principal);
+    // TODO(prasadwagle) add groups to usersAndGroups
+    if (!note.isWriter(usersAndGroups)) {
+      writePermissionError(conn, fromMessage.principal, note);
+      return;
+    }
+
     note.moveParagraph(paragraphId, newIndex);
     note.persist();
     broadcastNote(note);
@@ -664,6 +732,15 @@ public class NotebookServer extends WebSocketServlet implements
     final int index = (int) Double.parseDouble(fromMessage.get("index")
             .toString());
     final Note note = notebook.getNote(getOpenNoteId(conn));
+
+    HashSet<String> usersAndGroups = new HashSet<String>();
+    usersAndGroups.add(fromMessage.principal);
+    // TODO(prasadwagle) add groups to usersAndGroups
+    if (!note.isWriter(usersAndGroups)) {
+      writePermissionError(conn, fromMessage.principal, note);
+      return;
+    }
+
     note.insertParagraph(index);
     note.persist();
     broadcastNote(note);
@@ -677,6 +754,15 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     final Note note = notebook.getNote(getOpenNoteId(conn));
+
+    HashSet<String> usersAndGroups = new HashSet<String>();
+    usersAndGroups.add(fromMessage.principal);
+    // TODO(prasadwagle) add groups to usersAndGroups
+    if (!note.isWriter(usersAndGroups)) {
+      writePermissionError(conn, fromMessage.principal, note);
+      return;
+    }
+
     Paragraph p = note.getParagraph(paragraphId);
     p.abort();
   }
@@ -689,6 +775,15 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     final Note note = notebook.getNote(getOpenNoteId(conn));
+
+    HashSet<String> usersAndGroups = new HashSet<String>();
+    usersAndGroups.add(fromMessage.principal);
+    // TODO(prasadwagle) add groups to usersAndGroups
+    if (!note.isWriter(usersAndGroups)) {
+      writePermissionError(conn, fromMessage.principal, note);
+      return;
+    }
+
     Paragraph p = note.getParagraph(paragraphId);
     String text = (String) fromMessage.get("paragraph");
     p.setText(text);

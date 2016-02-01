@@ -58,6 +58,9 @@ public class Note implements Serializable, JobListener {
 
   private String name = "";
   private String id;
+  private HashSet<String> owners = new HashSet<String>();
+  private HashSet<String> readers = new HashSet<String>();
+  private HashSet<String> writers = new HashSet<String>();
 
   @SuppressWarnings("rawtypes")
   Map<String, List<AngularObject>> angularObjects = new HashMap<>();
@@ -112,6 +115,51 @@ public class Note implements Serializable, JobListener {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public HashSet<String> getOwners() {
+    return (new HashSet<String>(owners));
+  }
+
+  public void setOwners(HashSet<String> owners) {
+    this.owners = new HashSet<String>(owners);
+  }
+
+  public HashSet<String> getReaders() {
+    return (new HashSet<String>(readers));
+  }
+
+  public void setReaders(HashSet<String> readers) {
+    this.readers = new HashSet<String>(readers);
+  }
+
+  public HashSet<String> getWriters() {
+    return (new HashSet<String>(writers));
+  }
+
+  public void setWriters(HashSet<String> writers) {
+    this.writers = new HashSet<String>(writers);
+  }
+
+  public boolean isOwner(HashSet<String> entities) {
+    return isMember(entities, this.owners);
+  }
+
+  public boolean isWriter(HashSet<String> entities) {
+    return isMember(entities, this.writers) || isMember(entities, this.owners);
+  }
+
+  public boolean isReader(HashSet<String> entities) {
+    return isMember(entities, this.readers) ||
+            isMember(entities, this.owners) ||
+            isMember(entities, this.writers);
+  }
+
+  // return true if b is empty or if (a intersection b) is non-empty
+  private boolean isMember(HashSet<String> a, HashSet<String> b) {
+    Set<String> intersection = new HashSet<String>(b);
+    intersection.retainAll(a);
+    return (b.isEmpty() || (intersection.size() > 0));
   }
 
   public NoteInterpreterLoader getNoteReplLoader() {

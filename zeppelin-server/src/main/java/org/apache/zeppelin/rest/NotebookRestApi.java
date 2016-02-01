@@ -18,6 +18,8 @@
 package org.apache.zeppelin.rest;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +75,48 @@ public class NotebookRestApi {
     this.notebook = notebook;
     this.notebookServer = notebookServer;
     this.notebookIndex = search;
+  }
+
+  /**
+   * list note owners
+   */
+  @GET
+  @Path("{noteId}/permissions")
+  public Response getNotePermissions(@PathParam("noteId") String noteId) {
+    Note note = notebook.getNote(noteId);
+    HashMap<String, HashSet> permissionsMap = new HashMap<String, HashSet>();
+    permissionsMap.put("owners", note.getOwners());
+    permissionsMap.put("readers", note.getReaders());
+    permissionsMap.put("writers", note.getWriters());
+    return new JsonResponse<>(Status.OK, "", permissionsMap).build();
+  }
+
+  /**
+   * Set note owners
+   */
+  @PUT
+  @Path("{noteId}/permissions")
+  public Response putNotePermissions(@PathParam("noteId") String noteId, String req)
+      throws IOException {
+    HashMap<String, HashSet> permMap = gson.fromJson(req,
+            new TypeToken<HashMap<String, HashSet>>(){}.getType());
+    Note note = notebook.getNote(noteId);
+    LOG.debug("Set permissions {} {} {}", permMap.get("owners"),
+            permMap.get("readers"),
+            permMap.get("writers"));
+    // TODO(prasadwagle) Authenticate and check authorization
+//    if (!note.isOwner(userAndGroups())) {
+//      return new JsonResponse<>(Status.FORBIDDEN, ownerPermissionError(userAndGroups,
+//              note)).build();
+//    }
+    note.setOwners(permMap.get("owners"));
+    note.setReaders(permMap.get("readers"));
+    note.setWriters(permMap.get("writers"));
+    LOG.debug("After set permissions {} {} {}", note.getOwners(), note.getReaders(),
+            note.getWriters());
+    note.persist();
+    notebookServer.broadcastNote(note);
+    return new JsonResponse<>(Status.OK).build();
   }
 
   /**
