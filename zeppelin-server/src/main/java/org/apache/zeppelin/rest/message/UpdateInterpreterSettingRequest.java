@@ -21,19 +21,21 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.zeppelin.dep.Dependency;
+import org.apache.zeppelin.interpreter.InterpreterOption;
 
 /**
  * UpdateInterpreterSetting rest api request message
  */
 public class UpdateInterpreterSettingRequest {
-  // option was deprecated
   Properties properties;
   List<Dependency> dependencies;
+  InterpreterOption option;
 
   public UpdateInterpreterSettingRequest(Properties properties,
-      List<Dependency> dependencies) {
+      List<Dependency> dependencies, InterpreterOption option) {
     this.properties = properties;
     this.dependencies = dependencies;
+    this.option = option;
   }
 
   public Properties getProperties() {
@@ -42,5 +44,9 @@ public class UpdateInterpreterSettingRequest {
 
   public List<Dependency> getDependencies() {
     return dependencies;
+  }
+
+  public InterpreterOption getOption() {
+    return option;
   }
 }
