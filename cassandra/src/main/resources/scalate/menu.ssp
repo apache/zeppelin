@@ -54,6 +54,23 @@
                         <i class="glyphicon glyphicon-th-list text-primary" />&nbsp;&nbsp;Table
                     </a>
                 </li>
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-eye-open text-primary" />&nbsp;&nbsp;Materialized View
+                    </a>
+                </li>
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-random text-success" />&nbsp;&nbsp;Function
+                    </a>
+                </li>
+                <li>
+                    <a role="button">
+                        <i class="glyphicon glyphicon-retweet text-success" />&nbsp;&nbsp;Aggregate
+                    </a>
+                </li>
+                <li role="separator" class="divider text-muted"></li>
+                <li class="dropdown-header"><span class="text-primary">Table icons</span></li>
                 <li class="bg-info">
                     <a role="button">
                         <i class="glyphicon glyphicon-fullscreen" />&nbsp;&nbsp;Partition Key
@@ -77,11 +94,6 @@
                 <li class="bg-success">
                     <a role="button">
                         <i class="glyphicon glyphicon-sort-by-attributes-alt" />&nbsp;&nbsp;Clustering Order DESC
-                    </a>
-                </li>
-                <li>
-                    <a role="button">
-                        <i class="glyphicon glyphicon-info-sign" />&nbsp;&nbsp;Indexed Column
                     </a>
                 </li>
             </ul>

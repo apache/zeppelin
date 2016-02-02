@@ -34,7 +34,7 @@ if [ ! -d "${SPARK_HOME}" ]; then
     echo "${SPARK_VERSION}" | grep "^1.[12].[0-9]" > /dev/null
     if [ $? -eq 0 ]; then
         # spark 1.1.x and spark 1.2.x can be downloaded from archive
-        wget http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
+        wget -q http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
     else
         # spark 1.3.x and later can be downloaded from mirror
         # get download address from mirror
@@ -42,7 +42,7 @@ if [ ! -d "${SPARK_HOME}" ]; then
 
         PREFFERED=$(echo "${MIRROR_INFO}" | grep preferred | sed 's/[^"]*.preferred.: .\([^"]*\).*/\1/g')
         PATHINFO=$(echo "${MIRROR_INFO}" | grep path_info | sed 's/[^"]*.path_info.: .\([^"]*\).*/\1/g')
-        wget "${PREFFERED}${PATHINFO}"
+        wget -q "${PREFFERED}${PATHINFO}"
     fi
     tar zxf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
 fi

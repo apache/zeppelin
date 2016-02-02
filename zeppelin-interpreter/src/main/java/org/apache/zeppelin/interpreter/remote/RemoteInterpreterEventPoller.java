@@ -94,12 +94,12 @@ public class RemoteInterpreterEventPoller extends Thread {
         } else if (event.getType() == RemoteInterpreterEventType.ANGULAR_OBJECT_ADD) {
           AngularObject angularObject = gson.fromJson(event.getData(), AngularObject.class);
           angularObjectRegistry.add(angularObject.getName(),
-              angularObject.get(), angularObject.getNoteId());
+              angularObject.get(), angularObject.getNoteId(), angularObject.getParagraphId());
         } else if (event.getType() == RemoteInterpreterEventType.ANGULAR_OBJECT_UPDATE) {
           AngularObject angularObject = gson.fromJson(event.getData(),
               AngularObject.class);
           AngularObject localAngularObject = angularObjectRegistry.get(
-              angularObject.getName(), angularObject.getNoteId());
+              angularObject.getName(), angularObject.getNoteId(), angularObject.getParagraphId());
           if (localAngularObject instanceof RemoteAngularObject) {
             // to avoid ping-pong loop
             ((RemoteAngularObject) localAngularObject).set(
@@ -109,7 +109,8 @@ public class RemoteInterpreterEventPoller extends Thread {
           }
         } else if (event.getType() == RemoteInterpreterEventType.ANGULAR_OBJECT_REMOVE) {
           AngularObject angularObject = gson.fromJson(event.getData(), AngularObject.class);
-          angularObjectRegistry.remove(angularObject.getName(), angularObject.getNoteId());
+          angularObjectRegistry.remove(angularObject.getName(), angularObject.getNoteId(),
+                  angularObject.getParagraphId());
         } else if (event.getType() == RemoteInterpreterEventType.RUN_INTERPRETER_CONTEXT_RUNNER) {
           InterpreterContextRunner runnerFromRemote = gson.fromJson(
               event.getData(), RemoteInterpreterContextRunner.class);

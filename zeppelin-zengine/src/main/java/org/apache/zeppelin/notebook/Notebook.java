@@ -284,9 +284,9 @@ public class Notebook {
     for (InterpreterSetting settings : replFactory.get()) {
       AngularObjectRegistry registry = settings.getInterpreterGroup().getAngularObjectRegistry();
       if (registry instanceof RemoteAngularObjectRegistry) {
-        ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id);
+        ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, null);
       } else {
-        registry.removeAll(id);
+        registry.removeAll(id, null);
       }
     }
 
@@ -360,12 +360,13 @@ public class Notebook {
         if (intpGroup.getId().equals(snapshot.getIntpGroupId())) {
           AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
           String noteId = snapshot.getAngularObject().getNoteId();
+          String paragraphId = snapshot.getAngularObject().getParagraphId();
           // at this point, remote interpreter process is not created.
           // so does not make sense add it to the remote.
           //
           // therefore instead of addAndNotifyRemoteProcess(), need to use add()
           // that results add angularObject only in ZeppelinServer side not remoteProcessSide
-          registry.add(name, snapshot.getAngularObject().get(), noteId);
+          registry.add(name, snapshot.getAngularObject().get(), noteId, paragraphId);
         }
       }
     }

@@ -35,8 +35,19 @@
                 #end
             #end
 
-            #if(ksContent.udts.nonEmpty)
+            #if(ksContent.views.nonEmpty)
+                <li role="separator" class="divider text-muted"></li>
+                <li class="dropdown-header"><span class="text-primary">Materialized Views</span></li>
+                #for((id,name,_) <- ksContent.views)
+                    <li>
+                    <a role="button" data-toggle="collapse" data-target="#${id}">
+                    <span class="text-primary"><i class="glyphicon glyphicon-eye-open"/>&nbsp;${name}</span>
+                    </a>
+                    </li>
+                #end
+            #end
 
+            #if(ksContent.udts.nonEmpty)
             <li role="separator" class="divider text-muted"></li>
             <li class="dropdown-header"><span class="text-warning">User Defined Types</span></li>
                 #for((id,name,_) <- ksContent.udts)
@@ -45,6 +56,30 @@
                     <span class="text-warning"><i class="glyphicon glyphicon-copyright-mark"/>&nbsp;${name}</span>
                 </a>
             </li>
+                #end
+            #end
+
+            #if(ksContent.functions.nonEmpty)
+                <li role="separator" class="divider text-muted"></li>
+                <li class="dropdown-header"><span class="text-success">Functions</span></li>
+                #for((id,name,_) <- ksContent.functions)
+                    <li>
+                    <a role="button" data-toggle="collapse" data-target="#${id}">
+                    <span class="text-success"><i class="glyphicon glyphicon-random"/>&nbsp;${name}</span>
+                    </a>
+                    </li>
+                #end
+            #end
+
+            #if(ksContent.aggregates.nonEmpty)
+                <li role="separator" class="divider text-muted"></li>
+                <li class="dropdown-header"><span class="text-success">Aggregates</span></li>
+                #for((id,name,_) <- ksContent.aggregates)
+                    <li>
+                    <a role="button" data-toggle="collapse" data-target="#${id}">
+                    <span class="text-success"><i class="glyphicon glyphicon-retweet"/>&nbsp;${name}</span>
+                    </a>
+                    </li>
                 #end
             #end
         </ul>

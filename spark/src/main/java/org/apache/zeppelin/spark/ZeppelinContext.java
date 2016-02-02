@@ -427,7 +427,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
 
   /**
    * Run paragraphs
-   * @param paragraphIdOrIdxs list of paragraph id or idx
+   * @param paragraphIdOrIdx list of paragraph id or idx
    */
   public void run(List<Object> paragraphIdOrIdx, InterpreterContext context) {
     for (Object idOrIdx : paragraphIdOrIdx) {
@@ -475,17 +475,17 @@ public class ZeppelinContext extends HashMap<String, Object> {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
     String noteId = interpreterContext.getNoteId();
     // try get local object
-    AngularObject ao = registry.get(name, interpreterContext.getNoteId());
+    AngularObject ao = registry.get(name, interpreterContext.getNoteId(), null);
     if (ao == null) {
       // then global object
-      ao = registry.get(name, null);
+      ao = registry.get(name, null, null);
     }
     return ao;
   }
 
 
   /**
-   * Get angular object. Look up local registry first and then global registry
+   * Get angular object. Look up notebook scope first and then global scope
    * @param name variable name
    * @return value
    */
@@ -499,13 +499,13 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Get angular object. Look up global registry
+   * Get angular object. Look up global scope
    * @param name variable name
    * @return value
    */
   public Object angularGlobal(String name) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    AngularObject ao = registry.get(name, null);
+    AngularObject ao = registry.get(name, null, null);
     if (ao == null) {
       return null;
     } else {
@@ -514,7 +514,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Create angular variable in local registry and bind with front end Angular display system.
+   * Create angular variable in notebook scope and bind with front end Angular display system.
    * If variable exists, it'll be overwritten.
    * @param name name of the variable
    * @param o value
@@ -524,7 +524,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Create angular variable in global registry and bind with front end Angular display system.
+   * Create angular variable in global scope and bind with front end Angular display system.
    * If variable exists, it'll be overwritten.
    * @param name name of the variable
    * @param o value
@@ -534,7 +534,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Create angular variable in local registry and bind with front end Angular display system.
+   * Create angular variable in local scope and bind with front end Angular display system.
    * If variable exists, value will be overwritten and watcher will be added.
    * @param name name of variable
    * @param o value
@@ -545,7 +545,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Create angular variable in global registry and bind with front end Angular display system.
+   * Create angular variable in global scope and bind with front end Angular display system.
    * If variable exists, value will be overwritten and watcher will be added.
    * @param name name of variable
    * @param o value
@@ -556,7 +556,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Add watcher into angular variable (local registry)
+   * Add watcher into angular variable (local scope)
    * @param name name of the variable
    * @param watcher watcher
    */
@@ -565,7 +565,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Add watcher into angular variable (global registry)
+   * Add watcher into angular variable (global scope)
    * @param name name of the variable
    * @param watcher watcher
    */
@@ -649,7 +649,7 @@ public class ZeppelinContext extends HashMap<String, Object> {
   }
 
   /**
-   * Create angular variable in local registry and bind with front end Angular display system.
+   * Create angular variable in notebook scope and bind with front end Angular display system.
    * If variable exists, it'll be overwritten.
    * @param name name of the variable
    * @param o value
@@ -657,15 +657,16 @@ public class ZeppelinContext extends HashMap<String, Object> {
   private void angularBind(String name, Object o, String noteId) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
 
-    if (registry.get(name, noteId) == null) {
-      registry.add(name, o, noteId);
+    if (registry.get(name, noteId, null) == null) {
+      registry.add(name, o, noteId, null);
     } else {
-      registry.get(name, noteId).set(o);
+      registry.get(name, noteId, null).set(o);
     }
   }
 
   /**
-   * Create angular variable in local registry and bind with front end Angular display system.
+   * Create angular variable in notebook scope and bind with front end Angular display
+   * system.
    * If variable exists, value will be overwritten and watcher will be added.
    * @param name name of variable
    * @param o value
@@ -674,10 +675,10 @@ public class ZeppelinContext extends HashMap<String, Object> {
   private void angularBind(String name, Object o, String noteId, AngularObjectWatcher watcher) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
 
-    if (registry.get(name, noteId) == null) {
-      registry.add(name, o, noteId);
+    if (registry.get(name, noteId, null) == null) {
+      registry.add(name, o, noteId, null);
     } else {
-      registry.get(name, noteId).set(o);
+      registry.get(name, noteId, null).set(o);
     }
     angularWatch(name, watcher);
   }
@@ -690,8 +691,8 @@ public class ZeppelinContext extends HashMap<String, Object> {
   private void angularWatch(String name, String noteId, AngularObjectWatcher watcher) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
 
-    if (registry.get(name, noteId) != null) {
-      registry.get(name, noteId).addWatcher(watcher);
+    if (registry.get(name, noteId, null) != null) {
+      registry.get(name, noteId, null).addWatcher(watcher);
     }
   }
 
@@ -729,8 +730,8 @@ public class ZeppelinContext extends HashMap<String, Object> {
    */
   private void angularUnwatch(String name, String noteId, AngularObjectWatcher watcher) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    if (registry.get(name, noteId) != null) {
-      registry.get(name, noteId).removeWatcher(watcher);
+    if (registry.get(name, noteId, null) != null) {
+      registry.get(name, noteId, null).removeWatcher(watcher);
     }
   }
 
@@ -740,8 +741,8 @@ public class ZeppelinContext extends HashMap<String, Object> {
    */
   private void angularUnwatch(String name, String noteId) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    if (registry.get(name, noteId) != null) {
-      registry.get(name, noteId).clearAllWatchers();
+    if (registry.get(name, noteId, null) != null) {
+      registry.get(name, noteId, null).clearAllWatchers();
     }
   }
 
@@ -751,6 +752,6 @@ public class ZeppelinContext extends HashMap<String, Object> {
    */
   private void angularUnbind(String name, String noteId) {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
-    registry.remove(name, noteId);
+    registry.remove(name, noteId, null);
   }
 }
