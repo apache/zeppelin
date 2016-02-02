@@ -146,7 +146,7 @@ You can configure Zeppelin with both environment variables in `conf/zeppelin-env
     <td>ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE</td>
     <td>zeppelin.notebook.homescreen.hide</td>
     <td>false</td>
-    <td>This value can be "true" when to hide the notebook id set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Zeppelin homescreen. For the further information, please read [Customize your Zeppelin homepage](../manual/notebookashomepage.html).</td>
+    <td>This value can be "true" when to hide the notebook id set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Zeppelin homescreen. <br />For the further information, please read <a href="../manual/notebookashomepage.html">Customize your Zeppelin homepage</a>.</td>
   </tr>
   <tr>
     <td>ZEPPELIN_WAR_TEMPDIR</td>
