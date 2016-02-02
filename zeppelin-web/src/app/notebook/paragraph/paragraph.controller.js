@@ -1238,8 +1238,6 @@ angular.module('zeppelinWebApp')
 
   };
 
-  var integerFormatter = d3.format(',.1d');
-
   var customAbbrevFormatter = function(x) {
     var s = d3.format('.3s')(x);
     switch (s[s.length - 1]) {
@@ -1260,7 +1258,7 @@ angular.module('zeppelinWebApp')
     if(d >= Math.pow(10,6)){
       return customAbbrevFormatter(d);
     }
-    return integerFormatter(d);
+    return d;
   };
 
   var setD3Chart = function(type, data, refresh) {
