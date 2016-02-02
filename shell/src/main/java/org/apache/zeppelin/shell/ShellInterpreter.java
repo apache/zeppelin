@@ -72,7 +72,7 @@ public class ShellInterpreter extends Interpreter {
     DefaultExecutor executor = new DefaultExecutor();
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
-    executor.setStreamHandler(new PumpStreamHandler(outputStream, errorStream));
+    executor.setStreamHandler(new PumpStreamHandler(contextInterpreter.out, errorStream));
     executor.setWatchdog(new ExecuteWatchdog(commandTimeOut));
 
     Job runningJob = getRunningJob(contextInterpreter.getParagraphId());
@@ -82,7 +82,7 @@ public class ShellInterpreter extends Interpreter {
       int exitVal = executor.execute(cmdLine);
       logger.info("Paragraph " + contextInterpreter.getParagraphId()
           + "return with exit value: " + exitVal);
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, outputStream.toString());
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS, null);
     } catch (ExecuteException e) {
       int exitValue = e.getExitValue();
       logger.error("Can not run " + cmd, e);
@@ -94,7 +94,7 @@ public class ShellInterpreter extends Interpreter {
         logger.info("The paragraph " + contextInterpreter.getParagraphId()
             + " stopped executing: " + msg);
       }
-      msg += "Exitvalue: " + exitValue;
+      msg += "ExitValue: " + exitValue;
       return new InterpreterResult(code, msg);
     } catch (IOException e) {
       logger.error("Can not run " + cmd, e);
