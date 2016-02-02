@@ -497,6 +497,7 @@ public class SparkInterpreter extends Interpreter {
     binder = (Map<String, Object>) getValue("_binder");
     binder.put("sc", sc);
     binder.put("sqlc", sqlc);
+    binder.put("csqlc", csqlc);
     binder.put("z", z);
 
     intp.interpret("@transient val z = "
