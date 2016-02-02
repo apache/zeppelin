@@ -35,7 +35,7 @@
   <url>http://zeppelin.incubator.apache.org</url>
 
   <properties>
-    <spark.version>1.4.1</spark.version>
+    <spark.version>1.5.1</spark.version>
     <scala.version>2.10.4</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
   </properties>
