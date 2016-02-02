@@ -30,9 +30,9 @@ In this documentation, we will guide you how you can install Zeppelin from **Bin
 
 If you want to install Zeppelin with latest binary package, please visit [this page](http://zeppelin.incubator.apache.org/download.html).
 
-### Build from  Zeppelin Source
+### Build from Zeppelin Source
 
-You can also build Zeppelin from the source. Please check instructions of `README.md` in [Zeppelin github](https://github.com/apache/incubator-zeppelin/blob/master/README.md). 
+You can also build Zeppelin from the source. Please check instructions in `README.md` in [Zeppelin github](https://github.com/apache/incubator-zeppelin/blob/master/README.md). 
 
 
 ## Zeppelin Configuration
@@ -146,7 +146,7 @@ You can configure Zeppelin with both environment variables in `conf/zeppelin-env
     <td>ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE</td>
     <td>zeppelin.notebook.homescreen.hide</td>
     <td>false</td>
-    <td>This value can be "true" when you want to hide notebooks from Zeppelin homescreen.</td>
+    <td>This value can be "true" when to hide the notebook id set by <code>ZEPPELIN_NOTEBOOK_HOMESCREEN</code> on the Zeppelin homescreen. For the further information, please read [Customize your Zeppelin homepage](../manual/notebookashomepage.html).</td>
   </tr>
   <tr>
     <td>ZEPPELIN_WAR_TEMPDIR</td>
@@ -158,7 +158,7 @@ You can configure Zeppelin with both environment variables in `conf/zeppelin-env
     <td>ZEPPELIN_NOTEBOOK_DIR</td>
     <td>zeppelin.notebook.dir</td>
     <td>notebook</td>
-    <td>A directory path of Zeppelin notebook files</td>
+    <td>The root directory where Zeppelin notebook directories are saved</td>
   </tr>
   <tr>
     <td>ZEPPELIN_NOTEBOOK_S3_BUCKET</td>
@@ -185,7 +185,7 @@ You can configure Zeppelin with both environment variables in `conf/zeppelin-env
     <td>org.apache.zeppelin.spark.SparkInterpreter,<br />org.apache.zeppelin.spark.PySparkInterpreter,<br />org.apache.zeppelin.spark.SparkSqlInterpreter,<br />org.apache.zeppelin.spark.DepInterpreter,<br />org.apache.zeppelin.markdown.Markdown,<br />org.apache.zeppelin.shell.ShellInterpreter,<br />org.apache.zeppelin.hive.HiveInterpreter<br />
     ...
     </td>
-    <td>Comma separated interpreter configurations [Class] <br /> The first interpreter will be a default value.</td>
+    <td>Comma separated interpreter configurations [Class] <br /> The first interpreter will be a default value. <br /> It means only the first interpreter in this list can be available without <code>%interpreter_name</code> annotation in Zeppelin notebook paragraph. </td>
   </tr>
   <tr>
     <td>ZEPPELIN_INTERPRETER_DIR</td>
@@ -211,5 +211,3 @@ After successful start, visit [http://localhost:8080](http://localhost:8080) wit
 ```
 bin/zeppelin-daemon.sh stop
 ```
-
-
