@@ -18,10 +18,7 @@ package org.apache.zeppelin.resource;
 
 import com.google.gson.Gson;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterResourcePool;
@@ -60,6 +57,7 @@ public class DistributedResourcePoolTest {
 
     intp1 = new RemoteInterpreter(
         p,
+        "note",
         MockInterpreterResourcePool.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
@@ -70,11 +68,13 @@ public class DistributedResourcePoolTest {
     );
 
     intpGroup1 = new InterpreterGroup("intpGroup1");
-    intpGroup1.add(intp1);
+    intpGroup1.put("note", new LinkedList<Interpreter>());
+    intpGroup1.get("note").add(intp1);
     intp1.setInterpreterGroup(intpGroup1);
 
     intp2 = new RemoteInterpreter(
         p,
+        "note",
         MockInterpreterResourcePool.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
@@ -85,7 +85,8 @@ public class DistributedResourcePoolTest {
     );
 
     intpGroup2 = new InterpreterGroup("intpGroup2");
-    intpGroup2.add(intp2);
+    intpGroup2.put("note", new LinkedList<Interpreter>());
+    intpGroup2.get("note").add(intp2);
     intp2.setInterpreterGroup(intpGroup2);
 
     context = new InterpreterContext(
