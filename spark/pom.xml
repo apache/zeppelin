@@ -191,19 +191,6 @@
       <version>1.3</version>
     </dependency>
 
-
-    <dependency>
-      <groupId>com.datastax.spark</groupId>
-      <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
-      <version>1.5.0-RC1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.joda</groupId>
-          <artifactId>joda-convert</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
@@ -237,7 +224,6 @@
       <version>1.9</version>
       <scope>provided</scope>
     </dependency>
-
 
     <!--TEST-->
     <dependency>
