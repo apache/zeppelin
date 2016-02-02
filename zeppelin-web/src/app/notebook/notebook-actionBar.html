@@ -45,13 +45,7 @@ limitations under the License.
               tooltip-placement="bottom" tooltip="Clear output">
         <i class="fa fa-eraser"></i>
       </button>
-      <button type="button"
-              class="btn btn-default btn-xs"
-              ng-click="removeNote(note.id)"
-              ng-hide="viewOnly"
-              tooltip-placement="bottom" tooltip="Remove the notebook">
-        <i class="icon-trash"></i>
-      </button>
+
       <button type="button"
               class="btn btn-default btn-xs"
               ng-hide="viewOnly"
@@ -93,6 +87,17 @@ limitations under the License.
                 tooltip-placement="bottom" tooltip="Version control">
           <i class="fa fa-file-code-o"></i>
         </button>
+    </span>
+
+<!-- put the delete action by itself for your protection -->
+    <span class="labelBtn" style="vertical-align:middle; display:inline-block;">
+      <button type="button"
+              class="btn btn-default btn-xs"
+              ng-click="removeNote(note.id)"
+              ng-hide="viewOnly"
+              tooltip-placement="bottom" tooltip="Remove the notebook">
+        <i class="icon-trash"></i>
+      </button>
     </span>
 
     <span ng-hide="viewOnly">

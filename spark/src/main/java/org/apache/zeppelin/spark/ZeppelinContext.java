@@ -26,14 +26,12 @@ import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.SQLContext.QueryExecution;
 import org.apache.spark.sql.catalyst.expressions.Attribute;
 import org.apache.spark.sql.hive.HiveContext;
 import org.apache.zeppelin.display.AngularObject;
@@ -45,15 +43,19 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
+import org.apache.zeppelin.resource.Resource;
+import org.apache.zeppelin.resource.ResourcePool;
+import org.apache.zeppelin.resource.ResourceSet;
 
 import scala.Tuple2;
 import scala.Unit;
 import scala.collection.Iterable;
+import scala.collection.JavaConversions;
 
 /**
  * Spark context for zeppelin.
  */
-public class ZeppelinContext extends HashMap<String, Object> {
+public class ZeppelinContext {
   private SparkDependencyResolver dep;
   private InterpreterContext interpreterContext;
   private int maxResult;
@@ -73,127 +75,6 @@ public class ZeppelinContext extends HashMap<String, Object> {
   public SQLContext sqlContext;
   public HiveContext hiveContext;
   private GUI gui;
-
-  /**
-   * Load dependency for interpreter and runtime (driver).
-   * And distribute them to spark cluster (sc.add())
-   *
-   * @param artifact "group:artifact:version" or file path like "/somepath/your.jar"
-   * @return
-   * @throws Exception
-   */
-  public Iterable<String> load(String artifact) throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, true));
-  }
-
-  /**
-   * Load dependency and it's transitive dependencies for interpreter and runtime (driver).
-   * And distribute them to spark cluster (sc.add())
-   *
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
-   * @return
-   * @throws Exception
-   */
-  public Iterable<String> load(String artifact, scala.collection.Iterable<String> excludes)
-      throws Exception {
-    return collectionAsScalaIterable(
-        dep.load(artifact,
-        asJavaCollection(excludes),
-        true));
-  }
-
-  /**
-   * Load dependency and it's transitive dependencies for interpreter and runtime (driver).
-   * And distribute them to spark cluster (sc.add())
-   *
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
-   * @return
-   * @throws Exception
-   */
-  public Iterable<String> load(String artifact, Collection<String> excludes) throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, excludes, true));
-  }
-
-  /**
-   * Load dependency for interpreter and runtime, and then add to sparkContext.
-   * But not adding them to spark cluster
-   *
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @return
-   * @throws Exception
-   */
-  public Iterable<String> loadLocal(String artifact) throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, false));
-  }
-
-
-  /**
-   * Load dependency and it's transitive dependencies and then add to sparkContext.
-   * But not adding them to spark cluster
-   *
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
-   * @return
-   * @throws Exception
-   */
-  public Iterable<String> loadLocal(String artifact,
-      scala.collection.Iterable<String> excludes) throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact,
-        asJavaCollection(excludes), false));
-  }
-
-  /**
-   * Load dependency and it's transitive dependencies and then add to sparkContext.
-   * But not adding them to spark cluster
-   *
-   * @param artifact "groupId:artifactId:version" or file path like "/somepath/your.jar"
-   * @param excludes exclusion list of transitive dependency. list of "groupId:artifactId" string.
-   * @return
-   * @throws Exception
-   */
-  public Iterable<String> loadLocal(String artifact, Collection<String> excludes)
-      throws Exception {
-    return collectionAsScalaIterable(dep.load(artifact, excludes, false));
-  }
-
-
-  /**
-   * Add maven repository
-   *
-   * @param id id of repository ex) oss, local, snapshot
-   * @param url url of repository. supported protocol : file, http, https
-   */
-  public void addRepo(String id, String url) {
-    addRepo(id, url, false);
-  }
-
-  /**
-   * Add maven repository
-   *
-   * @param id id of repository
-   * @param url url of repository. supported protocol : file, http, https
-   * @param snapshot true if it is snapshot repository
-   */
-  public void addRepo(String id, String url, boolean snapshot) {
-    dep.addRepo(id, url, snapshot);
-  }
-
-  /**
-   * Remove maven repository by id
-   * @param id id of repository
-   */
-  public void removeRepo(String id){
-    dep.delRepo(id);
-  }
-
-  /**
-   * Load dependency only interpreter.
-   *
-   * @param name
-   * @return
-   */
 
   public Object input(String name) {
     return input(name, "");
@@ -754,4 +635,60 @@ public class ZeppelinContext extends HashMap<String, Object> {
     AngularObjectRegistry registry = interpreterContext.getAngularObjectRegistry();
     registry.remove(name, noteId, null);
   }
+
+
+  /**
+   * Add object into resource pool
+   * @param name
+   * @param value
+   */
+  public void put(String name, Object value) {
+    ResourcePool resourcePool = interpreterContext.getResourcePool();
+    resourcePool.put(name, value);
+  }
+
+  /**
+   * Get object from resource pool
+   * Search local process first and then the other processes
+   * @param name
+   * @return null if resource not found
+   */
+  public Object get(String name) {
+    ResourcePool resourcePool = interpreterContext.getResourcePool();
+    Resource resource = resourcePool.get(name);
+    if (resource != null) {
+      return resource.get();
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Remove object from resourcePool
+   * @param name
+   */
+  public void remove(String name) {
+    ResourcePool resourcePool = interpreterContext.getResourcePool();
+    resourcePool.remove(name);
+  }
+
+  /**
+   * Check if resource pool has the object
+   * @param name
+   * @return
+   */
+  public boolean containsKey(String name) {
+    ResourcePool resourcePool = interpreterContext.getResourcePool();
+    Resource resource = resourcePool.get(name);
+    return resource != null;
+  }
+
+  /**
+   * Get all resources
+   */
+  public ResourceSet getAll() {
+    ResourcePool resourcePool = interpreterContext.getResourcePool();
+    return resourcePool.getAll();
+  }
+
 }

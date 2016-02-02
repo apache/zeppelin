@@ -276,31 +276,6 @@ kbd {
 }
 
 /*
-  ngToast Style
-*/
-
-.ng-toast .alert {
-  color: white !important;
-  border: none !important;
-}
-
-.ng-toast .alert-danger {
-  background: #A94442 !important;
-}
-
-.ng-toast .alert-warning {
-  background: #CE9532 !important;
-}
-
-.ng-toast .alert-info {
-  background: #589EC1 !important;
-}
-
-.ng-toast .alert-success {
-  background: #428443 !important;
-}
-
-/*
 temporary fix for bootstrap issue (https://github.com/twbs/bootstrap/issues/5865)
 This part should be removed when new version of bootstrap handles this issue.
 */
