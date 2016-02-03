@@ -20,6 +20,7 @@ package org.apache.zeppelin.integration;
 
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
+import org.apache.zeppelin.ZeppelinITUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -56,6 +57,42 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     driver.quit();
   }
 
+
+
+  @Test
+  public void testRemoveButton() throws InterruptedException {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+
+      waitForParagraph(1, "READY");
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
+      waitForParagraph(2, "READY");
+      Integer nosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      collector.checkThat("The number of new paragraph and old paragraph",
+              (nosOfParas == 2),
+              CoreMatchers.equalTo(true));
+
+
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='removeParagraph()']")).click();
+      sleep(1000, true);
+      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
+              "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+      nosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      collector.checkThat("The number of new paragraph and old paragraph",
+              (nosOfParas == 1),
+              CoreMatchers.equalTo(true));
+      ZeppelinITUtils.sleep(1000, false);
+      deleteTestNotebook(driver);
+
+    } catch (ElementNotVisibleException e) {
+      File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+    }
+  }
   @Test
   public void testDisableParagraphRunButton() throws InterruptedException {
     if (!endToEndTestEnabled()) {
