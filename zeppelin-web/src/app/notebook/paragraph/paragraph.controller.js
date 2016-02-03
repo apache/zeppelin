@@ -1258,7 +1258,7 @@ angular.module('zeppelinWebApp')
     if(d >= Math.pow(10,6)){
       return customAbbrevFormatter(d);
     }
-    return d;
+    return d3.round(d, 3);
   };
 
   var setD3Chart = function(type, data, refresh) {
