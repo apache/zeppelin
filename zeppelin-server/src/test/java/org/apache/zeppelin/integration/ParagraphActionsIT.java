@@ -20,6 +20,7 @@ package org.apache.zeppelin.integration;
 
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
+import org.apache.zeppelin.ZeppelinITUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -55,7 +56,38 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
     driver.quit();
   }
+  @Test
+  public void testClearOutputButton() throws InterruptedException {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
 
+      waitForParagraph(1, "READY");
+      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
+      paragraph1Editor.sendKeys("println" + Keys.chord(Keys.SHIFT, "9") + "\""
+              + "abcd\")");
+      collector.checkThat("The title value contains",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'text ng-scope')]")).getText(),
+              CoreMatchers.equalTo(""));
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@ng-click='runParagraph(getEditorValue())']")).click();
+      collector.checkThat("The title value contains",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'text ng-scope')]")).getText(),
+              CoreMatchers.equalTo("abcd"));
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='clearParagraphOutput()']")).click();
+      collector.checkThat("The title value contains",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'text ng-scope')]")).getText(),
+              CoreMatchers.equalTo(""));
+      ZeppelinITUtils.sleep(1000, false);
+      deleteTestNotebook(driver);
+
+    } catch (ElementNotVisibleException e) {
+      File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+    }
+
+  }
   @Test
   public void testDisableParagraphRunButton() throws InterruptedException {
     if (!endToEndTestEnabled()) {
