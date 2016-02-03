@@ -19,8 +19,6 @@ package org.apache.zeppelin;
 
 
 import com.google.common.base.Function;
-import org.junit.After;
-import org.junit.Before;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
@@ -129,6 +127,23 @@ abstract public class AbstractZeppelinIT {
     driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
         "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
     sleep(100, true);
+  }
+
+  public enum HelperKeys {
+    OPENING_PARENTHESIS(Keys.chord(Keys.SHIFT, "9")),
+    EXCLAMATION(Keys.chord(Keys.SHIFT, "1")),
+    PERCENTAGE(Keys.chord(Keys.SHIFT, "5"));
+
+    private final String key;
+
+    private HelperKeys(String key) {
+      this.key = key;
+    }
+
+    public String toString() {
+      return String.valueOf(this.key);
+    }
+
   }
 
 }

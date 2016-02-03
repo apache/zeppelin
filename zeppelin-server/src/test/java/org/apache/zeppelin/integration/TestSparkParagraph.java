@@ -67,40 +67,56 @@ public class TestSparkParagraph extends AbstractZeppelinIT {
 
       WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
 
-      paragraph1Editor.sendKeys("import org.apache.commons.io.IOUtils"
-          + Keys.ENTER +
 
-          "import java.net.URL" + Keys.ENTER +
+      /*
+      equivalent of
+      import org.apache.commons.io.IOUtils
+      import java.net.URL
+      import java.nio.charset.Charset
+      val bankText = sc.parallelize(IOUtils.toString(new URL("https://s3.amazonaws.com/apache-zeppelin/tutorial/bank/bank.csv"),Charset.forName("utf8")).split("\n"))
+      case class Bank(age: Integer, job: String, marital: String, education: String, balance: Integer)
 
-          "import java.nio.charset.Charset" + Keys.ENTER +
+      val bank = bankText.map(s => s.split(";")).filter(s => s(0) != "\"age\"").map(s => Bank(s(0).toInt,s(1).replaceAll("\"", ""),s(2).replaceAll("\"", ""),s(3).replaceAll("\"", ""),s(5).replaceAll("\"", "").toInt)).toDF()
+      bank.registerTempTable("bank")
+       */
+      paragraph1Editor.sendKeys("import org.apache.commons.io.IOUtils" +
+          Keys.ENTER +
 
-          "val bankText = sc.parallelize" + Keys.chord(Keys.SHIFT, "9") +
-          "IOUtils.toString" + Keys.chord(Keys.SHIFT, "9") + "new URL" + Keys.chord(Keys.SHIFT, "9")
+          "import java.net.URL" +
+          Keys.ENTER +
+
+          "import java.nio.charset.Charset" +
+          Keys.ENTER +
+
+          "val bankText = sc.parallelize" + HelperKeys.OPENING_PARENTHESIS +
+          "IOUtils.toString" + HelperKeys.OPENING_PARENTHESIS + "new URL" + HelperKeys.OPENING_PARENTHESIS
           + "\"https://s3.amazonaws.com/apache" + Keys.SUBTRACT + "zeppelin/tutorial/bank/bank." +
-          "csv\"),Charset.forName" + Keys.chord(Keys.SHIFT, "9") + "\"utf8\"))" +
-          ".split" + Keys.chord(Keys.SHIFT, "9") + "\"\\n\"))" + Keys.ENTER +
+          "csv\"),Charset.forName" + HelperKeys.OPENING_PARENTHESIS + "\"utf8\"))" +
+          ".split" + HelperKeys.OPENING_PARENTHESIS + "\"\\n\"))" +
+          Keys.ENTER +
 
-          "case class Bank" + Keys.chord(Keys.SHIFT, "9") +
+          "case class Bank" + HelperKeys.OPENING_PARENTHESIS +
           "age: Integer, job: String, marital: String, education: String, balance: Integer)" +
           Keys.ENTER +
           Keys.ENTER +
 
-          "val bank = bankText.map" + Keys.chord(Keys.SHIFT, "9") + "s => s.split" +
-          Keys.chord(Keys.SHIFT, "9") + "\";\")).filter" + Keys.chord(Keys.SHIFT, "9") +
-          "s => s" + Keys.chord(Keys.SHIFT, "9") + "0) " + Keys.chord(Keys.SHIFT, "1") +
-          "= \"\\\"age\\\"\").map" + Keys.chord(Keys.SHIFT, "9") +
-          "s => Bank" + Keys.chord(Keys.SHIFT, "9") + "s" + Keys.chord(Keys.SHIFT, "9") +
-          "0).toInt,s" + Keys.chord(Keys.SHIFT, "9") + "1).replaceAll" +
-          Keys.chord(Keys.SHIFT, "9") + "\"\\\"\", \"\")," +
-          "s" + Keys.chord(Keys.SHIFT, "9") + "2).replaceAll" +
-          Keys.chord(Keys.SHIFT, "9") + "\"\\\"\", \"\")," +
-          "s" + Keys.chord(Keys.SHIFT, "9") + "3).replaceAll" +
-          Keys.chord(Keys.SHIFT, "9") + "\"\\\"\", \"\")," +
-          "s" + Keys.chord(Keys.SHIFT, "9") + "5).replaceAll" +
-          Keys.chord(Keys.SHIFT, "9") + "\"\\\"\", \"\").toInt" + ")" +
-          ").toDF" + Keys.chord(Keys.SHIFT, "9") + ")" + Keys.ENTER +
+          "val bank = bankText.map" + HelperKeys.OPENING_PARENTHESIS + "s => s.split" +
+          HelperKeys.OPENING_PARENTHESIS + "\";\")).filter" + HelperKeys.OPENING_PARENTHESIS +
+          "s => s" + HelperKeys.OPENING_PARENTHESIS + "0) " + HelperKeys.EXCLAMATION +
+          "= \"\\\"age\\\"\").map" + HelperKeys.OPENING_PARENTHESIS +
+          "s => Bank" + HelperKeys.OPENING_PARENTHESIS + "s" + HelperKeys.OPENING_PARENTHESIS +
+          "0).toInt,s" + HelperKeys.OPENING_PARENTHESIS + "1).replaceAll" +
+          HelperKeys.OPENING_PARENTHESIS + "\"\\\"\", \"\")," +
+          "s" + HelperKeys.OPENING_PARENTHESIS + "2).replaceAll" +
+          HelperKeys.OPENING_PARENTHESIS + "\"\\\"\", \"\")," +
+          "s" + HelperKeys.OPENING_PARENTHESIS + "3).replaceAll" +
+          HelperKeys.OPENING_PARENTHESIS + "\"\\\"\", \"\")," +
+          "s" + HelperKeys.OPENING_PARENTHESIS + "5).replaceAll" +
+          HelperKeys.OPENING_PARENTHESIS + "\"\\\"\", \"\").toInt" + ")" +
+          ").toDF" + HelperKeys.OPENING_PARENTHESIS + ")" +
+          Keys.ENTER +
 
-          "bank.registerTempTable" + Keys.chord(Keys.SHIFT, "9") + "\"bank\")"
+          "bank.registerTempTable" + HelperKeys.OPENING_PARENTHESIS + "\"bank\")"
       );
       paragraph1Editor.sendKeys("" + Keys.END + Keys.BACK_SPACE + Keys.BACK_SPACE +
           Keys.BACK_SPACE + Keys.BACK_SPACE + Keys.BACK_SPACE + Keys.BACK_SPACE +
@@ -146,10 +162,10 @@ public class TestSparkParagraph extends AbstractZeppelinIT {
 
       WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
 
-      paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, "5") + "pyspark" + Keys.ENTER +
-          "for x in range" + Keys.chord(Keys.SHIFT, "9") + "0, 3):" + Keys.ENTER +
-          "    print \"test loop " + Keys.chord(Keys.SHIFT, "5") + "d\" " +
-          Keys.chord(Keys.SHIFT, "5") + " " + Keys.chord(Keys.SHIFT, "9") + "x)" + Keys.ENTER);
+      paragraph1Editor.sendKeys(HelperKeys.PERCENTAGE + "pyspark" + Keys.ENTER +
+          "for x in range" + HelperKeys.OPENING_PARENTHESIS + "0, 3):" + Keys.ENTER +
+          "    print \"test loop " + HelperKeys.PERCENTAGE + "d\" " +
+          HelperKeys.PERCENTAGE + " " + HelperKeys.OPENING_PARENTHESIS + "x)" + Keys.ENTER);
 
       paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
 
@@ -189,7 +205,7 @@ public class TestSparkParagraph extends AbstractZeppelinIT {
 
       WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
 
-      paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, "5") + "sql" + Keys.ENTER +
+      paragraph1Editor.sendKeys(HelperKeys.PERCENTAGE + "sql" + Keys.ENTER +
           "select * from bank limit 1");
 
       paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
