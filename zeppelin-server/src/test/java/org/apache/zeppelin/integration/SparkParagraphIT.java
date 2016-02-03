@@ -30,10 +30,9 @@ import org.openqa.selenium.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+public class SparkParagraphIT extends AbstractZeppelinIT {
+  private static final Logger LOG = LoggerFactory.getLogger(SparkParagraphIT.class);
 
-public class TestSparkParagraph extends AbstractZeppelinIT {
-
-  private static final Logger LOG = LoggerFactory.getLogger(TestSparkParagraph.class);
 
   @Rule
   public ErrorCollector collector = new ErrorCollector();
@@ -131,6 +130,7 @@ public class TestSparkParagraph extends AbstractZeppelinIT {
         collector.checkThat("Paragraph result resulted in error ::",
             "ERROR", CoreMatchers.equalTo("FINISHED")
         );
+        LOG.error("Paragraph got ERROR");
       }
 
       WebElement paragraph1Result = driver.findElement(By.xpath(
@@ -176,6 +176,7 @@ public class TestSparkParagraph extends AbstractZeppelinIT {
         collector.checkThat("Paragraph result resulted in error ::",
             "ERROR", CoreMatchers.equalTo("FINISHED")
         );
+        LOG.error("Paragraph got ERROR");
       }
 
       WebElement paragraph1Result = driver.findElement(By.xpath(
@@ -217,6 +218,7 @@ public class TestSparkParagraph extends AbstractZeppelinIT {
         collector.checkThat("Paragraph result resulted in error ::",
             "ERROR", CoreMatchers.equalTo("FINISHED")
         );
+        LOG.error("Paragraph got ERROR");
       }
 
       WebElement paragraph1Result = driver.findElement(By.xpath(
