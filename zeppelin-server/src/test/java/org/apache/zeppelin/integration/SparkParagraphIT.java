@@ -65,6 +65,15 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       waitForParagraph(1, "READY");
 
       WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
+      paragraph1Editor.sendKeys("sc.version");
+      paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+
+      waitForParagraph(1, "FINISHED");
+      WebElement paragraph1Result = driver.findElement(By.xpath(
+          getParagraphXPath(1) + "//div[@class=\"tableDisplay\"]"));
+      Float sparkVersion = Float.parseFloat(paragraph1Result.getText().split("= ")[1].substring(0,3));
+
+      WebElement paragraph2Editor = driver.findElement(By.xpath(getParagraphXPath(2) + "//textarea"));
 
 
       /*
@@ -78,7 +87,7 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       val bank = bankText.map(s => s.split(";")).filter(s => s(0) != "\"age\"").map(s => Bank(s(0).toInt,s(1).replaceAll("\"", ""),s(2).replaceAll("\"", ""),s(3).replaceAll("\"", ""),s(5).replaceAll("\"", "").toInt)).toDF()
       bank.registerTempTable("bank")
        */
-      paragraph1Editor.sendKeys("import org.apache.commons.io.IOUtils" +
+      paragraph2Editor.sendKeys("import org.apache.commons.io.IOUtils" +
           Keys.ENTER +
 
           "import java.net.URL" +
@@ -112,32 +121,32 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
           HelperKeys.OPENING_PARENTHESIS + "\"\\\"\", \"\")," +
           "s" + HelperKeys.OPENING_PARENTHESIS + "5).replaceAll" +
           HelperKeys.OPENING_PARENTHESIS + "\"\\\"\", \"\").toInt" + ")" +
-          ").toDF" + HelperKeys.OPENING_PARENTHESIS + ")" +
+          ")" + (sparkVersion < 1.3f ? "" : ".toDF" + HelperKeys.OPENING_PARENTHESIS + ")") +
           Keys.ENTER +
 
           "bank.registerTempTable" + HelperKeys.OPENING_PARENTHESIS + "\"bank\")"
       );
-      paragraph1Editor.sendKeys("" + Keys.END + Keys.BACK_SPACE + Keys.BACK_SPACE +
+      paragraph2Editor.sendKeys("" + Keys.END + Keys.BACK_SPACE + Keys.BACK_SPACE +
           Keys.BACK_SPACE + Keys.BACK_SPACE + Keys.BACK_SPACE + Keys.BACK_SPACE +
           Keys.BACK_SPACE + Keys.BACK_SPACE + Keys.BACK_SPACE + Keys.BACK_SPACE + Keys.BACK_SPACE);
 
-      paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      paragraph2Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
 
       try {
-        waitForParagraph(1, "FINISHED");
+        waitForParagraph(2, "FINISHED");
       } catch (TimeoutException e) {
-        waitForParagraph(1, "ERROR");
+        waitForParagraph(2, "ERROR");
         collector.checkThat("Paragraph result resulted in error ::",
             "ERROR", CoreMatchers.equalTo("FINISHED")
         );
         LOG.error("Paragraph got ERROR");
       }
 
-      WebElement paragraph1Result = driver.findElement(By.xpath(
-          getParagraphXPath(1) + "//div[@class=\"tableDisplay\"]"));
+      WebElement paragraph2Result = driver.findElement(By.xpath(
+          getParagraphXPath(2) + "//div[@class=\"tableDisplay\"]"));
 
       collector.checkThat("Paragraph result is ::",
-          paragraph1Result.getText().toString(), CoreMatchers.containsString(
+          paragraph2Result.getText().toString(), CoreMatchers.containsString(
               "import org.apache.commons.io.IOUtils"
           )
       );
