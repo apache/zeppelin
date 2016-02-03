@@ -24,7 +24,7 @@ limitations under the License.
 ## Zeppelin Installation
 Welcome to your first trial to explore Zeppelin ! 
 
-In this documentation, we will guide you how you can install Zeppelin from **Binary Package** or build from **Source** by yourself. Plus, you can get a specific infomation about Zeppelin configurations at the below **Zeppelin Configuration** section.
+In this documentation, we will explain how you can install Zeppelin from **Binary Package** or build from **Source** by yourself. Plus, you can see all of Zeppelin's configurations in the **Zeppelin Configuration** section below.
 
 ### Install with Binary Package
 
@@ -37,7 +37,7 @@ You can also build Zeppelin from the source. Please check instructions in `READM
 
 ## Zeppelin Configuration
 
-You can configure Zeppelin with both environment variables in `conf/zeppelin-env.sh` and java properties in `conf/zeppelin-site.xml`. If both are defined, then the environment variable will be used priorly.
+You can configure Zeppelin with both **environment variables** in `conf/zeppelin-env.sh` and **java properties** in `conf/zeppelin-site.xml`. If both are defined, then the environment variable will be used priorly.
 
 <table class="table-configuration">
   <tr>
