@@ -126,14 +126,7 @@ public class TestSparkParagraph extends AbstractZeppelinIT {
           )
       );
 
-      driver.findElement(By.xpath(
-          "//*[@id='main']/div//h3/span[1]/button[@tooltip='Remove the notebook']")
-      ).sendKeys(Keys.ENTER);
-      sleep(1000, true);
-      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
-          "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
-      sleep(100, true);
-
+      deleteTestNotebook(driver);
 
     } catch (ElementNotVisibleException e) {
       ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
@@ -176,13 +169,7 @@ public class TestSparkParagraph extends AbstractZeppelinIT {
           paragraph1Result.getText().toString(), CoreMatchers.equalTo("test loop 0\ntest loop 1\ntest loop 2")
       );
 
-      driver.findElement(By.xpath("//*[@id='main']/div//h3/span[1]/button[@tooltip='Remove the notebook']"))
-          .sendKeys(Keys.ENTER);
-      sleep(1000, true);
-      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
-          "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
-      sleep(100, true);
-
+      deleteTestNotebook(driver);
 
     } catch (ElementNotVisibleException e) {
       ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
@@ -224,12 +211,8 @@ public class TestSparkParagraph extends AbstractZeppelinIT {
               "30 unemployed married primary 1,787")
       );
 
-      driver.findElement(By.xpath("//*[@id='main']/div//h3/span[1]/button[@tooltip='Remove the notebook']"))
-          .sendKeys(Keys.ENTER);
-      sleep(1000, true);
-      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
-          "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
-      sleep(100, true);
+      deleteTestNotebook(driver);
+
     } catch (ElementNotVisibleException e) {
       ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
 
