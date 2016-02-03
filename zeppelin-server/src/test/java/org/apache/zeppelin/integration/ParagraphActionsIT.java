@@ -20,6 +20,7 @@ package org.apache.zeppelin.integration;
 
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
+import org.apache.zeppelin.ZeppelinITUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -54,6 +55,33 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
 
     driver.quit();
+  }
+  @Test
+  public void testCreateNewButton() throws InterruptedException {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+
+      waitForParagraph(1, "READY");
+      Integer nosOfParas =    driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
+      waitForParagraph(2, "READY");
+      Integer newNosOfParas =  driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      collector.checkThat("The number of new paragraph and old paragraph",
+              (nosOfParas+1==newNosOfParas),
+              CoreMatchers.equalTo(true));
+
+      ZeppelinITUtils.sleep(1000,false);
+      deleteTestNotebook(driver);
+
+    } catch (ElementNotVisibleException e) {
+      File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+    }
+
+
   }
 
   @Test
