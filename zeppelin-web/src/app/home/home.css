@@ -139,6 +139,7 @@ a.navbar-brand:hover {
 }
 
 .note-name-query {
+  padding: 6px;
   color: #000;
   height: 28px;
   width: 200px;
