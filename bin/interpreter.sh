@@ -59,6 +59,7 @@ fi
 
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
 addJarInDir "${INTERPRETER_DIR}"
+addJarInDir "${INTERPRETER_DIR}/dep"
 
 HOSTNAME=$(hostname)
 ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
@@ -79,7 +80,7 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
     export SPARK_SUBMIT="${SPARK_HOME}/bin/spark-submit"
     SPARK_APP_JAR="$(ls ${ZEPPELIN_HOME}/interpreter/spark/zeppelin-spark*.jar)"
     # This will evantually passes SPARK_APP_JAR to classpath of SparkIMain
-    ZEPPELIN_CLASSPATH=${SPARK_APP_JAR}
+    ZEPPELIN_CLASSPATH+=${SPARK_APP_JAR}
 
     pattern="$SPARK_HOME/python/lib/py4j-*-src.zip"
     py4j=($pattern)
@@ -96,8 +97,6 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
       addJarInDir "${HADOOP_HOME}"
       addJarInDir "${HADOOP_HOME}/lib"
     fi
-
-    addJarInDir "${INTERPRETER_DIR}/dep"
 
     pattern="${ZEPPELIN_HOME}/interpreter/spark/pyspark/py4j-*-src.zip"
     py4j=($pattern)
