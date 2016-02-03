@@ -130,7 +130,7 @@ abstract public class AbstractZeppelinIT {
   }
 
   public enum HelperKeys {
-    OPENING_PARENTHESIS(Keys.chord(Keys.SHIFT, "9")),
+    OPEN_PARENTHESIS(Keys.chord(Keys.SHIFT, "9")),
     EXCLAMATION(Keys.chord(Keys.SHIFT, "1")),
     PERCENTAGE(Keys.chord(Keys.SHIFT, "5"));
 

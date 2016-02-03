@@ -30,6 +30,9 @@ import org.openqa.selenium.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.apache.zeppelin.AbstractZeppelinIT.HelperKeys.*;
+import static org.openqa.selenium.Keys.*;
+
 public class SparkParagraphIT extends AbstractZeppelinIT {
   private static final Logger LOG = LoggerFactory.getLogger(SparkParagraphIT.class);
 
@@ -66,12 +69,12 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
 
       WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
       paragraph1Editor.sendKeys("sc.version");
-      paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      paragraph1Editor.sendKeys(chord(SHIFT, ENTER));
 
       waitForParagraph(1, "FINISHED");
       WebElement paragraph1Result = driver.findElement(By.xpath(
           getParagraphXPath(1) + "//div[@class=\"tableDisplay\"]"));
-      Float sparkVersion = Float.parseFloat(paragraph1Result.getText().split("= ")[1].substring(0,3));
+      Float sparkVersion = Float.parseFloat(paragraph1Result.getText().split("= ")[1].substring(0, 3));
 
       WebElement paragraph2Editor = driver.findElement(By.xpath(getParagraphXPath(2) + "//textarea"));
 
@@ -88,49 +91,49 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       bank.registerTempTable("bank")
        */
       paragraph2Editor.sendKeys("import org.apache.commons.io.IOUtils" +
-          Keys.ENTER +
+          ENTER +
 
           "import java.net.URL" +
-          Keys.ENTER +
+          ENTER +
 
           "import java.nio.charset.Charset" +
-          Keys.ENTER +
+          ENTER +
 
-          "val bankText = sc.parallelize" + HelperKeys.OPENING_PARENTHESIS +
-          "IOUtils.toString" + HelperKeys.OPENING_PARENTHESIS + "new URL" + HelperKeys.OPENING_PARENTHESIS
-          + "\"https://s3.amazonaws.com/apache" + Keys.SUBTRACT + "zeppelin/tutorial/bank/bank." +
-          "csv\"),Charset.forName" + HelperKeys.OPENING_PARENTHESIS + "\"utf8\"))" +
-          ".split" + HelperKeys.OPENING_PARENTHESIS + "\"\\n\"))" +
-          Keys.ENTER +
+          "val bankText = sc.parallelize" + OPEN_PARENTHESIS +
+          "IOUtils.toString" + OPEN_PARENTHESIS + "new URL" + OPEN_PARENTHESIS
+          + "\"https://s3.amazonaws.com/apache" + SUBTRACT + "zeppelin/tutorial/bank/bank." +
+          "csv\"),Charset.forName" + OPEN_PARENTHESIS + "\"utf8\"))" +
+          ".split" + OPEN_PARENTHESIS + "\"\\n\"))" +
+          ENTER +
 
-          "case class Bank" + HelperKeys.OPENING_PARENTHESIS +
+          "case class Bank" + OPEN_PARENTHESIS +
           "age: Integer, job: String, marital: String, education: String, balance: Integer)" +
-          Keys.ENTER +
-          Keys.ENTER +
+          ENTER +
+          ENTER +
 
-          "val bank = bankText.map" + HelperKeys.OPENING_PARENTHESIS + "s => s.split" +
-          HelperKeys.OPENING_PARENTHESIS + "\";\")).filter" + HelperKeys.OPENING_PARENTHESIS +
-          "s => s" + HelperKeys.OPENING_PARENTHESIS + "0) " + HelperKeys.EXCLAMATION +
-          "= \"\\\"age\\\"\").map" + HelperKeys.OPENING_PARENTHESIS +
-          "s => Bank" + HelperKeys.OPENING_PARENTHESIS + "s" + HelperKeys.OPENING_PARENTHESIS +
-          "0).toInt,s" + HelperKeys.OPENING_PARENTHESIS + "1).replaceAll" +
-          HelperKeys.OPENING_PARENTHESIS + "\"\\\"\", \"\")," +
-          "s" + HelperKeys.OPENING_PARENTHESIS + "2).replaceAll" +
-          HelperKeys.OPENING_PARENTHESIS + "\"\\\"\", \"\")," +
-          "s" + HelperKeys.OPENING_PARENTHESIS + "3).replaceAll" +
-          HelperKeys.OPENING_PARENTHESIS + "\"\\\"\", \"\")," +
-          "s" + HelperKeys.OPENING_PARENTHESIS + "5).replaceAll" +
-          HelperKeys.OPENING_PARENTHESIS + "\"\\\"\", \"\").toInt" + ")" +
-          ")" + (sparkVersion < 1.3f ? "" : ".toDF" + HelperKeys.OPENING_PARENTHESIS + ")") +
-          Keys.ENTER +
+          "val bank = bankText.map" + OPEN_PARENTHESIS + "s => s.split" +
+          OPEN_PARENTHESIS + "\";\")).filter" + OPEN_PARENTHESIS +
+          "s => s" + OPEN_PARENTHESIS + "0) " + EXCLAMATION +
+          "= \"\\\"age\\\"\").map" + OPEN_PARENTHESIS +
+          "s => Bank" + OPEN_PARENTHESIS + "s" + OPEN_PARENTHESIS +
+          "0).toInt,s" + OPEN_PARENTHESIS + "1).replaceAll" +
+          OPEN_PARENTHESIS + "\"\\\"\", \"\")," +
+          "s" + OPEN_PARENTHESIS + "2).replaceAll" +
+          OPEN_PARENTHESIS + "\"\\\"\", \"\")," +
+          "s" + OPEN_PARENTHESIS + "3).replaceAll" +
+          OPEN_PARENTHESIS + "\"\\\"\", \"\")," +
+          "s" + OPEN_PARENTHESIS + "5).replaceAll" +
+          OPEN_PARENTHESIS + "\"\\\"\", \"\").toInt" + ")" +
+          ")" + (sparkVersion < 1.3f ? "" : ".toDF" + OPEN_PARENTHESIS + ")") +
+          ENTER +
 
-          "bank.registerTempTable" + HelperKeys.OPENING_PARENTHESIS + "\"bank\")"
+          "bank.registerTempTable" + OPEN_PARENTHESIS + "\"bank\")"
       );
-      paragraph2Editor.sendKeys("" + Keys.END + Keys.BACK_SPACE + Keys.BACK_SPACE +
-          Keys.BACK_SPACE + Keys.BACK_SPACE + Keys.BACK_SPACE + Keys.BACK_SPACE +
-          Keys.BACK_SPACE + Keys.BACK_SPACE + Keys.BACK_SPACE + Keys.BACK_SPACE + Keys.BACK_SPACE);
+      paragraph2Editor.sendKeys("" + END + BACK_SPACE + BACK_SPACE +
+          BACK_SPACE + BACK_SPACE + BACK_SPACE + BACK_SPACE +
+          BACK_SPACE + BACK_SPACE + BACK_SPACE + BACK_SPACE + BACK_SPACE);
 
-      paragraph2Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      paragraph2Editor.sendKeys(chord(SHIFT, ENTER));
 
       try {
         waitForParagraph(2, "FINISHED");
@@ -171,29 +174,37 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
 
       WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
 
-      paragraph1Editor.sendKeys(HelperKeys.PERCENTAGE + "pyspark" + Keys.ENTER +
-          "for x in range" + HelperKeys.OPENING_PARENTHESIS + "0, 3):" + Keys.ENTER +
-          "    print \"test loop " + HelperKeys.PERCENTAGE + "d\" " +
-          HelperKeys.PERCENTAGE + " " + HelperKeys.OPENING_PARENTHESIS + "x)" + Keys.ENTER);
+      paragraph1Editor.sendKeys(PERCENTAGE + "pyspark" + ENTER +
+          "for x in range" + OPEN_PARENTHESIS + "0, 3):" + ENTER +
+          "    print \"test loop " + PERCENTAGE + "d\" " +
+          PERCENTAGE + " " + OPEN_PARENTHESIS + "x)" + ENTER);
 
-      paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      paragraph1Editor.sendKeys(chord(SHIFT, ENTER));
 
       try {
         waitForParagraph(1, "FINISHED");
       } catch (TimeoutException e) {
         waitForParagraph(1, "ERROR");
-        collector.checkThat("Paragraph result resulted in error ::",
-            "ERROR", CoreMatchers.equalTo("FINISHED")
-        );
-        LOG.error("Paragraph got ERROR");
+        WebElement paragraph1Result = driver.findElement(By.xpath(
+            getParagraphXPath(1) + "//div[@class=\"tableDisplay\"]"));
+        if (paragraph1Result.getText().toString().contains("pyspark 1.1.1 is not supported")) {
+          LOG.info("pyspark is not supported in spark version 1.1.x, nothing to worry.");
+        } else {
+          collector.checkThat("Paragraph result resulted in error ::",
+              "ERROR", CoreMatchers.equalTo("FINISHED")
+          );
+          LOG.error("Paragraph got ERROR");
+        }
       }
 
       WebElement paragraph1Result = driver.findElement(By.xpath(
           getParagraphXPath(1) + "//div[@class=\"tableDisplay\"]"));
 
-      collector.checkThat("Paragraph result is ::",
-          paragraph1Result.getText().toString(), CoreMatchers.equalTo("test loop 0\ntest loop 1\ntest loop 2")
-      );
+      if (!paragraph1Result.getText().toString().contains("pyspark 1.1.1 is not supported")) {
+        collector.checkThat("Paragraph result is ::",
+            paragraph1Result.getText().toString(), CoreMatchers.equalTo("test loop 0\ntest loop 1\ntest loop 2")
+        );
+      }
 
       deleteTestNotebook(driver);
 
@@ -215,10 +226,10 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
 
       WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
 
-      paragraph1Editor.sendKeys(HelperKeys.PERCENTAGE + "sql" + Keys.ENTER +
+      paragraph1Editor.sendKeys(PERCENTAGE + "sql" + ENTER +
           "select * from bank limit 1");
 
-      paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      paragraph1Editor.sendKeys(chord(SHIFT, ENTER));
 
       try {
         waitForParagraph(1, "FINISHED");
