@@ -20,6 +20,7 @@ package org.apache.zeppelin.integration;
 
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
+import org.apache.zeppelin.ZeppelinITUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -54,6 +55,57 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
 
     driver.quit();
+  }
+
+  @Test
+  public void testTitleButton() throws InterruptedException {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+
+      waitForParagraph(1, "READY");
+
+      collector.checkThat("The title value contains",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
+              CoreMatchers.equalTo(""));
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      collector.checkThat("The title value contains",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//a[contains(@ng-click, 'showTitle()')]")).getText(),
+              CoreMatchers.equalTo("Show title"));
+
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='showTitle()']")).click();
+      collector.checkThat("The title value contains",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
+              CoreMatchers.equalTo("Untitled"));
+
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      collector.checkThat("The title value contains",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//a[contains(@ng-click, 'hideTitle()')]")).getText(),
+              CoreMatchers.equalTo("Hide title"));
+
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='hideTitle()']")).click();
+      collector.checkThat("The title value contains",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
+              CoreMatchers.equalTo(""));
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='showTitle()']")).click();
+
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'title')]")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//input")).sendKeys("NEW TITLE" + Keys.ENTER);
+      ZeppelinITUtils.sleep(1000,false);
+      driver.navigate().refresh();
+      collector.checkThat("The title value contains",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
+              CoreMatchers.equalTo("NEW TITLE"));
+      ZeppelinITUtils.sleep(1000,false);
+      deleteTestNotebook(driver);
+
+    } catch (ElementNotVisibleException e) {
+      File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+    }
+
   }
 
   @Test
