@@ -111,9 +111,9 @@ public class SparkInterpreter extends Interpreter {
   private ZeppelinContext z;
   private SparkILoop interpreter;
   private SparkIMain intp;
-  private SparkContext sc;
+  private static SparkContext sc;
   private SparkOutputStream out;
-  private SQLContext sqlc;
+  private static SQLContext sqlc;
   private SparkDependencyResolver dep;
   private SparkJLineCompletion completor;
 
@@ -230,20 +230,15 @@ public class SparkInterpreter extends Interpreter {
   }
 
   private DepInterpreter getDepInterpreter() {
-    InterpreterGroup intpGroup = getInterpreterGroup();
-    if (intpGroup == null) return null;
-    synchronized (intpGroup) {
-      for (Interpreter intp : intpGroup) {
-        if (intp.getClassName().equals(DepInterpreter.class.getName())) {
-          Interpreter p = intp;
-          while (p instanceof WrappedInterpreter) {
-            p = ((WrappedInterpreter) p).getInnerInterpreter();
-          }
-          return (DepInterpreter) p;
-        }
-      }
+    Interpreter p = getInterpreterInTheSameSessionByClassName(DepInterpreter.class.getName());
+    if (p == null) {
+      return null;
     }
-    return null;
+
+    while (p instanceof WrappedInterpreter) {
+      p = ((WrappedInterpreter) p).getInnerInterpreter();
+    }
+    return (DepInterpreter) p;
   }
 
   public SparkContext createSparkContext() {

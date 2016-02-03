@@ -152,6 +152,9 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   }
 
   private void close(Collection<Interpreter> intpToClose) {
+    if (intpToClose == null) {
+      return;
+    }
     List<Thread> closeThreads = new LinkedList<Thread>();
 
     for (final Interpreter intp : intpToClose) {
@@ -205,6 +208,10 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   }
 
   private void destroy(Collection<Interpreter> intpToDestroy) {
+    if (intpToDestroy == null) {
+      return;
+    }
+
     List<Thread> destroyThreads = new LinkedList<Thread>();
 
     for (final Interpreter intp : intpToDestroy) {

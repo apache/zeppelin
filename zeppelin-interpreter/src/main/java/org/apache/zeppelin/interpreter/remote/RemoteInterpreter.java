@@ -21,12 +21,7 @@ import java.util.*;
 
 import org.apache.thrift.TException;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
@@ -132,6 +127,10 @@ public class RemoteInterpreter extends Interpreter {
 
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
 
+    interpreterProcess.reference(getInterpreterGroup());
+    interpreterProcess.setMaxPoolSize(
+        Math.max(this.maxPoolSize, interpreterProcess.getMaxPoolSize()));
+
     synchronized (interpreterProcess) {
       Client client = null;
       try {
@@ -160,18 +159,17 @@ public class RemoteInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
-
     InterpreterGroup interpreterGroup = getInterpreterGroup();
-    int rc = interpreterProcess.reference(getInterpreterGroup());
-    interpreterProcess.setMaxPoolSize(
-        Math.max(this.maxPoolSize, interpreterProcess.getMaxPoolSize()));
 
     synchronized (interpreterGroup) {
       // initialize all interpreters in this interpreter group
       List<Interpreter> interpreters = interpreterGroup.get(noteId);
       for (Interpreter intp : interpreters) {
-        ((RemoteInterpreter) intp).init();
+        Interpreter p = intp;
+        while (p instanceof WrappedInterpreter) {
+          p = ((WrappedInterpreter) p).getInnerInterpreter();
+        }
+        ((RemoteInterpreter) p).init();
       }
     }
   }

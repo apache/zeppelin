@@ -34,27 +34,59 @@ public class InterpreterSetting {
   private String group;
   private String description;
   private Properties properties;
-  private InterpreterGroup interpreterGroup;
+
+  // use 'interpreterGroup' as a field name to keep backward compativility of
+  // conf/interpreter.json file format
+  private List<InterpreterInfo> interpreterGroup;
+  private transient InterpreterGroup interpreterGroupRef;
   private List<Dependency> dependencies;
   private InterpreterOption option;
 
   public InterpreterSetting(String id,
       String name,
       String group,
+      List<InterpreterInfo> interpreterInfos,
+      Properties properties,
       List<Dependency> dependencies,
       InterpreterOption option) {
     this.id = id;
     this.name = name;
     this.group = group;
+    this.interpreterGroup = interpreterInfos;
+    this.properties = properties;
     this.dependencies = dependencies;
     this.option = option;
   }
 
   public InterpreterSetting(String name,
       String group,
+      List<InterpreterInfo> interpreterInfos,
+      Properties properties,
       List<Dependency> dependencies,
       InterpreterOption option) {
-    this(generateId(), name, group, dependencies, option);
+    this(generateId(), name, group, interpreterInfos, properties, dependencies, option);
+  }
+
+  /**
+   * Information of interpreters in this interpreter setting.
+   * this will be serialized for conf/interpreter.json and REST api response.
+   */
+  public static class InterpreterInfo {
+    private final String name;
+    private final String className;
+
+    public InterpreterInfo(String className, String name) {
+      this.className = className;
+      this.name = name;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public String getClassName() {
+      return className;
+    }
   }
 
   public String id() {
@@ -86,12 +118,11 @@ public class InterpreterSetting {
   }
 
   public InterpreterGroup getInterpreterGroup() {
-    return interpreterGroup;
+    return interpreterGroupRef;
   }
 
   public void setInterpreterGroup(InterpreterGroup interpreterGroup) {
-    this.interpreterGroup = interpreterGroup;
-    this.properties = interpreterGroup.getProperty();
+    this.interpreterGroupRef = interpreterGroup;
   }
 
   public Properties getProperties() {
@@ -119,5 +150,9 @@ public class InterpreterSetting {
 
   public void setOption(InterpreterOption option) {
     this.option = option;
+  }
+
+  public List<InterpreterInfo> getInterpreterInfos() {
+    return interpreterGroup;
   }
 }

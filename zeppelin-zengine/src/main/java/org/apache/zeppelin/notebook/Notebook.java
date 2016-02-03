@@ -278,6 +278,7 @@ public class Notebook {
     synchronized (notes) {
       note = notes.remove(id);
     }
+    replFactory.removeNoteInterpreterSettingBinding(id);
     notebookIndex.deleteIndexDocs(note);
 
     // remove from all interpreter instance's angular object registry
@@ -376,7 +377,7 @@ public class Notebook {
           //
           // therefore instead of addAndNotifyRemoteProcess(), need to use add()
           // that results add angularObject only in ZeppelinServer side not remoteProcessSide
-          registry.add(name, snapshot.getAngularObject().get(), noteId, paragraphId);
+          //registry.add(name, snapshot.getAngularObject().get(), noteId, paragraphId);
         }
       }
     }

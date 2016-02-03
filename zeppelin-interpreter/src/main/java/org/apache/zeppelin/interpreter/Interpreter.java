@@ -193,6 +193,33 @@ public abstract class Interpreter {
     this.classloaderUrls = classloaderUrls;
   }
 
+  public Interpreter getInterpreterInTheSameSessionByClassName(String className) {
+    synchronized (interpreterGroup) {
+      for (List<Interpreter> interpreters : interpreterGroup.values()) {
+        boolean belongsToSameNoteGroup = false;
+        Interpreter interpreterFound = null;
+        for (Interpreter intp : interpreters) {
+          if (intp.getClassName().equals(className)) {
+            interpreterFound = intp;
+          }
+
+          Interpreter p = intp;
+          while (p instanceof WrappedInterpreter) {
+            p = ((WrappedInterpreter) p).getInnerInterpreter();
+          }
+          if (this == p) {
+            belongsToSameNoteGroup = true;
+          }
+        }
+
+        if (belongsToSameNoteGroup) {
+          return interpreterFound;
+        }
+      }
+    }
+    return null;
+  }
+
 
   /**
    * Type of interpreter.
