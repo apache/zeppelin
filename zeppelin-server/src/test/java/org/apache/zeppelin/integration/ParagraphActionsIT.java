@@ -65,14 +65,17 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       createNewNote();
 
       waitForParagraph(1, "READY");
-      Integer nosOfParas =    driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      Integer oldNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      collector.checkThat("Before CreateNew the number of  paragraph ",
+              oldNosOfParas,
+              CoreMatchers.equalTo(1));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
       waitForParagraph(2, "READY");
       Integer newNosOfParas =  driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
-      collector.checkThat("The number of new paragraph and old paragraph",
-              (nosOfParas+1==newNosOfParas),
-              CoreMatchers.equalTo(true));
+      collector.checkThat("After CreateNew the number of  paragraph",
+              oldNosOfParas+1,
+              CoreMatchers.equalTo(newNosOfParas));
 
       ZeppelinITUtils.sleep(1000,false);
       deleteTestNotebook(driver);
