@@ -72,7 +72,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'text ng-scope')]")).getText(),
               CoreMatchers.equalTo(""));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@ng-click='runParagraph(getEditorValue())']")).click();
-      collector.checkThat("The Output field contains contains",
+      collector.checkThat("The Output field contains contains ",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'text ng-scope')]")).getText(),
               CoreMatchers.equalTo("abcd"));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
