@@ -41,7 +41,7 @@ When create a interpreter by default use PostgreSQL with the next properties:
     <td>`********`</td>
   </tr>
   <tr>
-    <td>default.driver.name</td>
+    <td>default.url</td>
     <td>jdbc:postgresql://localhost:5432/</td>
   </tr>
   <tr>
@@ -81,7 +81,7 @@ For create the interpreter you need to specify connection parameters as shown in
     <td>`********`</td>
   </tr>
   <tr>
-    <td>{prefix}.driver.name</td>
+    <td>{prefix}.url</td>
     <td>jdbc url</td>
   </tr>
   <tr>
@@ -169,7 +169,7 @@ You can modify the interpreter configuration in the `Interpreter` section. The m
      <td>JDBC password</td>
    </tr>
    <tr>
-     <td>{prefix}.driver.name</td>
+     <td>{prefix}.driver</td>
      <td>JDBC driver name.</td>
    </tr>
    <tr>
