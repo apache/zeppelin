@@ -34,7 +34,7 @@ limitations under the License.
 
 ## Configure
 
-Configuration can be done by both environment variable(conf/zeppelin-env.sh) and java properties(conf/zeppelin-site.xml). If both defined, environment vaiable is used.
+Configuration can be done by both environment variable(conf/zeppelin-env.sh) and java properties(conf/zeppelin-site.xml). If both defined, environment variable is used.
 
 
 <table class="table-configuration">
