@@ -46,6 +46,8 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       return;
     }
     driver = WebDriverManager.getWebDriver();
+    createNewNote();
+    waitForParagraph(1, "READY");
   }
 
   @After
@@ -53,7 +55,7 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
     if (!endToEndTestEnabled()) {
       return;
     }
-
+    deleteTestNotebook(driver);
     driver.quit();
   }
 
@@ -63,13 +65,9 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       return;
     }
     try {
-      createNewNote();
-
-      waitForParagraph(1, "READY");
-
       WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
       paragraph1Editor.sendKeys("sc.version");
-      paragraph1Editor.sendKeys(chord(SHIFT, ENTER));
+      paragraph1Editor.sendKeys(SHIFT_ENTER);
 
       waitForParagraph(1, "FINISHED");
       WebElement paragraph1Result = driver.findElement(By.xpath(
@@ -133,7 +131,7 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
           BACK_SPACE + BACK_SPACE + BACK_SPACE + BACK_SPACE +
           BACK_SPACE + BACK_SPACE + BACK_SPACE + BACK_SPACE + BACK_SPACE);
 
-      paragraph2Editor.sendKeys(chord(SHIFT, ENTER));
+      paragraph2Editor.sendKeys(SHIFT_ENTER);
 
       try {
         waitForParagraph(2, "FINISHED");
@@ -154,11 +152,8 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
           )
       );
 
-      deleteTestNotebook(driver);
-
-    } catch (ElementNotVisibleException e) {
-      ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-
+    } catch (Exception e) {
+      handleException(e);
     }
   }
 
@@ -168,10 +163,6 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       return;
     }
     try {
-      createNewNote();
-
-      waitForParagraph(1, "READY");
-
       WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
 
       paragraph1Editor.sendKeys(PERCENTAGE + "pyspark" + ENTER +
@@ -179,7 +170,7 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
           "    print \"test loop " + PERCENTAGE + "d\" " +
           PERCENTAGE + " " + OPEN_PARENTHESIS + "x)" + ENTER);
 
-      paragraph1Editor.sendKeys(chord(SHIFT, ENTER));
+      paragraph1Editor.sendKeys(SHIFT_ENTER);
 
       try {
         waitForParagraph(1, "FINISHED");
@@ -206,11 +197,8 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
         );
       }
 
-      deleteTestNotebook(driver);
-
-    } catch (ElementNotVisibleException e) {
-      ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-
+    } catch (Exception e) {
+      handleException(e);
     }
   }
 
@@ -220,16 +208,12 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       return;
     }
     try {
-      createNewNote();
-
-      waitForParagraph(1, "READY");
-
       WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
 
       paragraph1Editor.sendKeys(PERCENTAGE + "sql" + ENTER +
           "select * from bank limit 1");
 
-      paragraph1Editor.sendKeys(chord(SHIFT, ENTER));
+      paragraph1Editor.sendKeys(SHIFT_ENTER);
 
       try {
         waitForParagraph(1, "FINISHED");
@@ -248,12 +232,13 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
           paragraph1Result.getText().toString(), CoreMatchers.equalTo("age job marital education balance\n" +
               "30 unemployed married primary 1,787")
       );
-
-      deleteTestNotebook(driver);
-
-    } catch (ElementNotVisibleException e) {
-      ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-
+    } catch (Exception e) {
+      handleException(e);
     }
+  }
+
+  private void handleException(Exception e) {
+    ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+    LOG.error("Exception in testing SparkParagraph", e);
   }
 }
