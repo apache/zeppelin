@@ -770,7 +770,7 @@ Below are the configuration parameters and their default value.
 
 ## Change Log
 
-**2.0** _(Zeppelin {{ ZEPPELIN_VERSION }})_ : 
+**2.0** _(Zeppelin {{ site.ZEPPELIN_VERSION }})_ : 
 * Update help menu and add changelog
 * Add Support for **User Defined Functions**, **User Defined Aggregates** and **Materialized Views**
 * Upgrade Java driver version to **3.0.0-rc1**
