@@ -73,19 +73,19 @@ For create the interpreter you need to specify connection parameters as shown in
     <td>1000</td>
   </tr>
   <tr>
-    <td>{prefix}.driver</td>
+    <td>default.driver</td>
     <td>driver name</td>
   </tr>
   <tr>
-    <td>{prefix}.password</td>
+    <td>default.password</td>
     <td>`********`</td>
   </tr>
   <tr>
-    <td>{prefix}.url</td>
+    <td>default.url</td>
     <td>jdbc url</td>
   </tr>
   <tr>
-    <td>{prefix}.user</td>
+    <td>default.user</td>
     <td>user name</td>
   </tr>      
 </table>
