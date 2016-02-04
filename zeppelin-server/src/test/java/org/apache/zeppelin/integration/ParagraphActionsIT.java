@@ -67,26 +67,26 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       waitForParagraph(1, "READY");
 
-      collector.checkThat("The title value contains",
+      collector.checkThat("Before Show Title : The title field contains",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
               CoreMatchers.equalTo(""));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
-      collector.checkThat("The title value contains",
+      collector.checkThat("Before Show Title : The title option in option panel of paragraph is labeled as  ",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//a[contains(@ng-click, 'showTitle()')]")).getText(),
               CoreMatchers.equalTo("Show title"));
 
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='showTitle()']")).click();
-      collector.checkThat("The title value contains",
+      collector.checkThat("After Show Title : The title field contains",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
               CoreMatchers.equalTo("Untitled"));
 
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
-      collector.checkThat("The title value contains",
+      collector.checkThat("After Show Title : The title option in option panel of paragraph is labeled as",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//a[contains(@ng-click, 'hideTitle()')]")).getText(),
               CoreMatchers.equalTo("Hide title"));
 
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='hideTitle()']")).click();
-      collector.checkThat("The title value contains",
+      collector.checkThat("After Hide Title : The title field contains",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
               CoreMatchers.equalTo(""));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
@@ -94,12 +94,14 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'title')]")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//input")).sendKeys("NEW TITLE" + Keys.ENTER);
-      ZeppelinITUtils.sleep(1000,false);
-      driver.navigate().refresh();
-      collector.checkThat("The title value contains",
+      collector.checkThat("After Editing the Title : The title field contains ",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
               CoreMatchers.equalTo("NEW TITLE"));
       ZeppelinITUtils.sleep(1000,false);
+      driver.navigate().refresh();
+      collector.checkThat("After Page Refresh : The title field contains ",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
+              CoreMatchers.equalTo("NEW TITLE"));
       deleteTestNotebook(driver);
 
     } catch (ElementNotVisibleException e) {
