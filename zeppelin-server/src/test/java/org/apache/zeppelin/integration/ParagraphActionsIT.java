@@ -69,7 +69,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'ace_gutter-layer')]")).getText(),
               CoreMatchers.equalTo(""));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
-      collector.checkThat("The title value contains",
+      collector.checkThat("The Line Number contains",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//a[contains(@ng-click, 'showLineNumbers()')]")).getText(),
               CoreMatchers.equalTo("Show line numbers"));
       ZeppelinITUtils.sleep(1000, false);
@@ -79,7 +79,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'ace_gutter-layer')]")).getText(),
               CoreMatchers.equalTo("1"));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
-      collector.checkThat("The title value contains",
+      collector.checkThat("The Line number contains",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//a[contains(@ng-click, 'hideLineNumbers()')]")).getText(),
               CoreMatchers.equalTo("Hide line numbers"));
       ZeppelinITUtils.sleep(1000, false);
