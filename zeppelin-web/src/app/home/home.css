@@ -128,6 +128,11 @@ a.navbar-brand:hover {
 
 #notebook-list > .filter-names {
   margin: 5px;
+  padding: 0px 10px;
+}
+
+#notebook-list .note-name-query {
+  width: 100%;
 }
 
 #notebook-names {
@@ -144,14 +149,6 @@ a.navbar-brand:hover {
   height: 28px;
   width: 200px;
   font: normal normal normal 14px/1 FontAwesome;
-}
-
-.query-clear {
-  color: #616161;
-  position: absolute;
-  margin-top: -20px;
-  margin-left: 180px;
-  cursor: pointer;
 }
 
 @media (max-width: 767px) {
