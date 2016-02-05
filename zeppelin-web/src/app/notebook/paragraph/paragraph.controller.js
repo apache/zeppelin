@@ -2075,4 +2075,16 @@ angular.module('zeppelinWebApp')
     var redirectToUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId + '/paragraph/' + $scope.paragraph.id+'?asIframe';
     $window.open(redirectToUrl);
   };
+
+  $scope.goToTSVExportParagraph = function () {
+    var noteId = $route.current.pathParams.noteId;
+    var redirectToUrl = location.protocol + '//' + location.host + location.pathname + 'api/export/job/runThenExportTSV/' + noteId + '/paragraph/' + $scope.paragraph.id + '-export.tsv';
+    $window.open(redirectToUrl);
+  };
+
+  $scope.goToTableauWDCExportParagraph = function () {
+    var noteId = $route.current.pathParams.noteId;
+    var redirectToUrl = location.protocol + '//' + location.host + location.pathname + 'api/export/job/runThenExportWDC/' + noteId + '/paragraph/' + $scope.paragraph.id;
+    $window.open(redirectToUrl);
+  };
 });

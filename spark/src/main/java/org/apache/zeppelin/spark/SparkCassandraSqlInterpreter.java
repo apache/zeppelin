@@ -261,9 +261,16 @@ public class SparkCassandraSqlInterpreter extends Interpreter {
             }
         }
 
+        int maxQueryResults = maxResult;
+        if (context.getConfig().containsKey("OVERRIDE_MAX_RESULTS")){
+            maxQueryResults = Integer.parseInt((String)context.getConfig().get("OVERRIDE_MAX_RESULTS"));
+            logger.info("Increasing max results returned to:" + maxQueryResults);
+        }
+
         String msg = "";
         if (rddResult != null) {
-            msg = ZeppelinContext.showDF(sc, context, rddResult, maxResult);
+            msg = ZeppelinContext.showDF(sc, context, rddResult, maxQueryResults);
+            logger.info("Finished constructing result.");
         }
         sc.clearJobGroup();
         return new InterpreterResult(Code.SUCCESS, msg);
