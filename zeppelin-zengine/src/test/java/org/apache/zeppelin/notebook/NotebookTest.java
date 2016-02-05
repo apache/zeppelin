@@ -27,10 +27,12 @@ import static org.mockito.Mockito.mock;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
@@ -359,6 +361,31 @@ public class NotebookTest implements JobListenerFactory{
     // local and global scope object should be removed
     assertNull(registry.get("o1", note.id(), null));
     assertNull(registry.get("o2", null, null));
+    notebook.removeNote(note.id());
+  }
+
+  @Test
+  public void testPermissions() throws IOException {
+    // create a note and a paragraph
+    Note note = notebook.createNote();
+    // empty owners, readers and writers means note is public
+    assertEquals(note.isOwner(new HashSet<String>(Arrays.asList("user2"))), true);
+    assertEquals(note.isReader(new HashSet<String>(Arrays.asList("user2"))), true);
+    assertEquals(note.isWriter(new HashSet<String>(Arrays.asList("user2"))), true);
+
+    note.setOwners(new HashSet<String>(Arrays.asList("user1")));
+    note.setReaders(new HashSet<String>(Arrays.asList("user1", "user2")));
+    note.setWriters(new HashSet<String>(Arrays.asList("user1")));
+
+    assertEquals(note.isOwner(new HashSet<String>(Arrays.asList("user2"))), false);
+    assertEquals(note.isOwner(new HashSet<String>(Arrays.asList("user1"))), true);
+
+    assertEquals(note.isReader(new HashSet<String>(Arrays.asList("user3"))), false);
+    assertEquals(note.isReader(new HashSet<String>(Arrays.asList("user2"))), true);
+
+    assertEquals(note.isWriter(new HashSet<String>(Arrays.asList("user2"))), false);
+    assertEquals(note.isWriter(new HashSet<String>(Arrays.asList("user1"))), true);
+
     notebook.removeNote(note.id());
   }
 
