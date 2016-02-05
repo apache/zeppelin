@@ -48,6 +48,7 @@ import org.apache.zeppelin.rest.message.RunParagraphWithParametersRequest;
 import org.apache.zeppelin.search.SearchService;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.socket.NotebookServer;
+import org.apache.zeppelin.utils.SecurityUtils;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,6 +92,14 @@ public class NotebookRestApi {
     return new JsonResponse<>(Status.OK, "", permissionsMap).build();
   }
 
+  String ownerPermissionError(HashSet<String> usersAndGroups, Note note)  throws IOException {
+    LOG.info("Cannot change permissions. Connection owners {}. Allowed owners {}",
+            usersAndGroups, note.getOwners());
+    return "Insufficient privileges to change permissions.\n\n" +
+            "Allowed owners: " + note.getOwners().toString() + "\n\n" +
+            "User belongs to: " + usersAndGroups.toString();
+  }
+
   /**
    * Set note owners
    */
@@ -101,14 +110,21 @@ public class NotebookRestApi {
     HashMap<String, HashSet> permMap = gson.fromJson(req,
             new TypeToken<HashMap<String, HashSet>>(){}.getType());
     Note note = notebook.getNote(noteId);
-    LOG.debug("Set permissions {} {} {}", permMap.get("owners"),
+    String principal = SecurityUtils.getPrincipal();
+    LOG.info("Set permissions {} {} {} {} {}",
+            noteId,
+            principal,
+            permMap.get("owners"),
             permMap.get("readers"),
-            permMap.get("writers"));
-    // TODO(prasadwagle) Authenticate and check authorization
-//    if (!note.isOwner(userAndGroups())) {
-//      return new JsonResponse<>(Status.FORBIDDEN, ownerPermissionError(userAndGroups,
-//              note)).build();
-//    }
+            permMap.get("writers")
+    );
+    HashSet<String> usersAndGroups = new HashSet<String>();
+    usersAndGroups.add(principal);
+    // TODO(prasadwagle) add groups to usersAndGroups
+    if (!note.isOwner(usersAndGroups)) {
+      return new JsonResponse<>(Status.FORBIDDEN, ownerPermissionError(usersAndGroups,
+              note)).build();
+    }
     note.setOwners(permMap.get("owners"));
     note.setReaders(permMap.get("readers"));
     note.setWriters(permMap.get("writers"));
