@@ -268,7 +268,7 @@ To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.
 <hr />
 Logical setup with Zeppelin, Kerberos Distribution Center (KDC), and Spark on YARN:
 
-<img src=".../assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
+<img src="../assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
 
 <b>Configuration Setup</b>
 
