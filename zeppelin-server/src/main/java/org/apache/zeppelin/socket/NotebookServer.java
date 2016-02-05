@@ -362,8 +362,8 @@ public class NotebookServer extends WebSocketServlet implements
     LOG.info("Cannot read. Connection readers {}. Allowed readers {}",
             principal, note.getReaders());
     conn.send(serializeMessage(new Message(OP.AUTH_INFO).put("info",
-            "Insufficient privileges to read note.\n" +
-                    "Allowed readers: " + note.getReaders().toString() + "\n" +
+            "Insufficient privileges to read note.\n\n" +
+                    "Allowed readers: " + note.getReaders().toString() + "\n\n" +
                     "User belongs to: " + principal)));
   }
 
@@ -371,8 +371,8 @@ public class NotebookServer extends WebSocketServlet implements
     LOG.info("Cannot write. Connection writers {}. Allowed writers {}",
             principal, note.getWriters());
     conn.send(serializeMessage(new Message(OP.AUTH_INFO).put("info",
-            "Insufficient privileges to write note.\n" +
-                    "Allowed writers: " + note.getWriters().toString() + "\n" +
+            "Insufficient privileges to write note.\n\n" +
+                    "Allowed writers: " + note.getWriters().toString() + "\n\n" +
                     "User belongs to: " + principal)));
   }
 
