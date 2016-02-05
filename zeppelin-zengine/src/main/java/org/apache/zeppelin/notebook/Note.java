@@ -388,7 +388,7 @@ public class Note implements Serializable, JobListener {
       throw new InterpreterException("Interpreter " + p.getRequiredReplName() + " not found");
     }
     if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
-      p.getConfig().put("OVERRIDE_MAX_RESULTS", "100000");
+      p.getConfig().put("OVERRIDE_MAX_RESULTS", "200000");
       logger.info("Config after adding OVERRIDE_MAX_RESULTS: ", p.getConfig());
       p.run();
       p.getConfig().remove("OVERRIDE_MAX_RESULTS");
