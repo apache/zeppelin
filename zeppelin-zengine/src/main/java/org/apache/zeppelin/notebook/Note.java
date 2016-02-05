@@ -375,6 +375,30 @@ public class Note implements Serializable, JobListener {
     }
   }
 
+  /**
+   * Run a single paragraph and block for the results
+   *
+   * @param paragraphId
+   */
+  public InterpreterResult runSynchronously(String paragraphId) {
+    Paragraph p = getParagraph(paragraphId);
+//    p.setNoteReplLoader(replLoader);
+//    p.setListener(jobListenerFactory.getParagraphJobListener(this));
+    Interpreter intp = replLoader.get(p.getRequiredReplName());
+    if (intp == null) {
+      throw new InterpreterException("Interpreter " + p.getRequiredReplName() + " not found");
+    }
+    if (p.getConfig().get("enabled") == null || (Boolean) p.getConfig().get("enabled")) {
+      p.getConfig().put("OVERRIDE_MAX_RESULTS", "100000");
+      logger.info("Config after adding OVERRIDE_MAX_RESULTS: ", p.getConfig());
+      p.run();
+      p.getConfig().remove("OVERRIDE_MAX_RESULTS");
+      return p.getResult();
+    } else {
+      return null;
+    }
+  }
+
   public List<String> completion(String paragraphId, String buffer, int cursor) {
     Paragraph p = getParagraph(paragraphId);
     p.setNoteReplLoader(replLoader);
