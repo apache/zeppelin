@@ -23,6 +23,7 @@ import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.file.*;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.NoteInfo;
@@ -50,7 +51,7 @@ public class AzureNotebookRepo implements NotebookRepo {
   public AzureNotebookRepo(ZeppelinConfiguration conf)
       throws URISyntaxException, InvalidKeyException, StorageException {
     this.conf = conf;
-    user = conf.getUser();
+    user = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEOOK_AZURE_USER);
     shareName = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEOOK_AZURE_SHARE);
 
     CloudStorageAccount account = CloudStorageAccount.parse(
@@ -59,7 +60,9 @@ public class AzureNotebookRepo implements NotebookRepo {
     CloudFileShare share = client.getShareReference(shareName);
     share.createIfNotExists();
 
-    CloudFileDirectory userDir = share.getRootDirectoryReference().getDirectoryReference(user);
+    CloudFileDirectory userDir = StringUtils.isBlank(user) ?
+        share.getRootDirectoryReference() :
+        share.getRootDirectoryReference().getDirectoryReference(user);
     userDir.createIfNotExists();
 
     rootDir = userDir.getDirectoryReference("notebook");

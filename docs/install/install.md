@@ -173,6 +173,24 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>A user name of S3 bucket<br />i.e. <code>bucket/user/notebook/2A94M5J1Z/note.json</code></td>
   </tr>
   <tr>
+    <td>ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</td>
+    <td>zeppelin.notebook.azure.connectionString</td>
+    <td></td>
+    <td>The Azure storage account connection string<br />i.e. <code>DefaultEndpointsProtocol=https;AccountName=&lt;accountName&gt;;AccountKey=&lt;accountKey&gt;</code></td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_AZURE_SHARE</td>
+    <td>zeppelin.notebook.azure.share</td>
+    <td>zeppelin</td>
+    <td>Share where the Zeppelin notebook files will be saved</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_AZURE_USER</td>
+    <td>zeppelin.notebook.azure.user</td>
+    <td>user</td>
+    <td>A user name of Azure file share<br />i.e. <code>share/user/notebook/2A94M5J1Z/note.json</code></td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_NOTEBOOK_STORAGE</td>
     <td>zeppelin.notebook.storage</td>
     <td>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</td>
