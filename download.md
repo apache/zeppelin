@@ -23,7 +23,7 @@ limitations under the License.
 
 The latest release of Apache Zeppelin (incubating) is **0.5.6-incubating**.
 
-  - 0.5.6-incubating released on Jan 22, 2015 ([release notes](./releases/zeppelin-release-0.5.6-incubating.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=incubator-zeppelin.git;a=tag;h=refs/tags/v0.5.6))
+  - 0.5.6-incubating released on Jan 22, 2016 ([release notes](./releases/zeppelin-release-0.5.6-incubating.html)) ([git tag](https://git-wip-us.apache.org/repos/asf?p=incubator-zeppelin.git;a=tag;h=refs/tags/v0.5.6))
 
     * Source:
     <a style="cursor:pointer" onclick="ga('send', 'event', 'download', 'zeppelin-src', '0.5.6-incubating'); window.location.href='http://www.apache.org/dyn/closer.cgi/incubator/zeppelin/0.5.6-incubating/zeppelin-0.5.6-incubating.tgz'">zeppelin-0.5.6-incubating.tgz</a>
@@ -88,13 +88,13 @@ For developers, to get latest *0.6.0-incubating-SNAPSHOT* check [README](https:/
     ([pgp](https://www.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.3.1_hadoop-2.3.tgz.asc),
      [md5](https://www.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.3.1_hadoop-2.3.tgz.md5),
      [sha](https://www.apache.org/dist/incubator/zeppelin/0.5.0-incubating/zeppelin-0.5.0-incubating-bin-spark-1.3.1_hadoop-2.3.tgz.sha))
-    
-    
 
 
 
 
-<!-- 
+
+
+<!--
 -------------
 ### Old release
 
