@@ -119,10 +119,10 @@ public class RemoteInterpreterTest {
     assertEquals(0, process.getNumIdleClient());
     assertEquals(0, process.referenceCount());
 
-    intpA.open();
+    intpA.open(); // initializa all interpreters in the same group
     assertTrue(process.isRunning());
     assertEquals(1, process.getNumIdleClient());
-    assertEquals(1, process.referenceCount());
+    assertEquals(2, process.referenceCount());
 
     intpA.interpret("1",
         new InterpreterContext(

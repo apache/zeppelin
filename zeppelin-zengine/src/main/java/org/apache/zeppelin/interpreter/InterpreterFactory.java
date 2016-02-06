@@ -442,6 +442,9 @@ public class InterpreterFactory {
 
   public void removeInterpretersForNote(InterpreterSetting interpreterSetting,
                                         String noteId) {
+    if (!interpreterSetting.getOption().isPerNoteSession()) {
+      return;
+    }
     InterpreterGroup interpreterGroup = interpreterSetting.getInterpreterGroup();
     interpreterGroup.close(noteId);
     interpreterGroup.destroy(noteId);
