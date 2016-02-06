@@ -203,16 +203,18 @@ public class ZeppelinContext {
       throw new InterpreterException(e);
     }
 
-    String msg = null;
+    StringBuilder msg = null;
     for (Attribute col : columns) {
       if (msg == null) {
-        msg = col.name();
+        msg = new StringBuilder();
+        msg.append("%table ");
+        msg.append(col.name());
       } else {
-        msg += "\t" + col.name();
+        msg.append("\t" + col.name());
       }
     }
 
-    msg += "\n";
+    msg.append("\n");
 
     // ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType,
     // FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType,
@@ -226,15 +228,15 @@ public class ZeppelinContext {
 
         for (int i = 0; i < columns.size(); i++) {
           if (!(Boolean) isNullAt.invoke(row, i)) {
-            msg += apply.invoke(row, i).toString();
+            msg.append(apply.invoke(row, i).toString());
           } else {
-            msg += "null";
+            msg.append("null");
           }
           if (i != columns.size() - 1) {
-            msg += "\t";
+            msg.append("\t");
           }
         }
-        msg += "\n";
+        msg.append("\n");
       }
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
@@ -242,10 +244,10 @@ public class ZeppelinContext {
     }
 
     if (rows.length > maxResult) {
-      msg += "\n<font color=red>Results are limited by " + maxResult + ".</font>";
+      msg.append("\n<font color=red>Results are limited by " + maxResult + ".</font>");
     }
     sc.clearJobGroup();
-    return "%table " + msg;
+    return msg.toString();
   }
 
   /**
