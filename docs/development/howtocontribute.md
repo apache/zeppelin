@@ -16,7 +16,7 @@ Here are some tools you will need to build and test Zeppelin.
 
 #### Software Configuration Management ( SCM )
 
-Zeppelin uses Git for it's SCM system. You'll need git client installed in your development machine. 
+Since Zeppelin uses Git for it's SCM system, you need git client installed in your development machine. 
 
 #### Integrated Development Environment ( IDE )
 
