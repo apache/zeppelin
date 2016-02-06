@@ -1238,7 +1238,7 @@ angular.module('zeppelinWebApp')
 
   };
 
-  var groupedThousandsWith3DigitsFormater = function(x){
+  var groupedThousandsWith3DigitsFormatter = function(x){
     return d3.format(',')(d3.round(x, 3));
   };
 
@@ -1262,7 +1262,7 @@ angular.module('zeppelinWebApp')
     if(d >= Math.pow(10,6)){
       return customAbbrevFormatter(d);
     }
-    return groupedThousandsWith3DigitsFormater(d);
+    return groupedThousandsWith3DigitsFormatter(d);
   };
 
   var setD3Chart = function(type, data, refresh) {
