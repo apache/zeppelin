@@ -92,12 +92,13 @@ public class NotebookRestApi {
     return new JsonResponse<>(Status.OK, "", permissionsMap).build();
   }
 
-  String ownerPermissionError(HashSet<String> usersAndGroups, Note note)  throws IOException {
+  String ownerPermissionError(HashSet<String> current,
+                              HashSet<String> allowed) throws IOException {
     LOG.info("Cannot change permissions. Connection owners {}. Allowed owners {}",
-            usersAndGroups, note.getOwners());
+            current.toString(), allowed.toString());
     return "Insufficient privileges to change permissions.\n\n" +
-            "Allowed owners: " + note.getOwners().toString() + "\n\n" +
-            "User belongs to: " + usersAndGroups.toString();
+            "Allowed owners: " + allowed.toString() + "\n\n" +
+            "User belongs to: " + current.toString();
   }
 
   /**
@@ -111,6 +112,7 @@ public class NotebookRestApi {
             new TypeToken<HashMap<String, HashSet>>(){}.getType());
     Note note = notebook.getNote(noteId);
     String principal = SecurityUtils.getPrincipal();
+    HashSet<String> roles = SecurityUtils.getRoles();
     LOG.info("Set permissions {} {} {} {} {}",
             noteId,
             principal,
@@ -118,12 +120,13 @@ public class NotebookRestApi {
             permMap.get("readers"),
             permMap.get("writers")
     );
-    HashSet<String> usersAndGroups = new HashSet<String>();
-    usersAndGroups.add(principal);
-    // TODO(prasadwagle) add groups to usersAndGroups
-    if (!note.isOwner(usersAndGroups)) {
-      return new JsonResponse<>(Status.FORBIDDEN, ownerPermissionError(usersAndGroups,
-              note)).build();
+
+    HashSet<String> userAndRoles = new HashSet<String>();
+    userAndRoles.add(principal);
+    userAndRoles.addAll(roles);
+    if (!note.isOwner(userAndRoles)) {
+      return new JsonResponse<>(Status.FORBIDDEN, ownerPermissionError(userAndRoles,
+              note.getOwners())).build();
     }
     note.setOwners(permMap.get("owners"));
     note.setReaders(permMap.get("readers"));

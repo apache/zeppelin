@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.gson.reflect.TypeToken;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
@@ -99,6 +100,7 @@ public class NotebookServer extends WebSocketServlet implements
       LOG.debug("RECEIVE << " + messagereceived.op);
       LOG.debug("RECEIVE PRINCIPAL << " + messagereceived.principal);
       LOG.debug("RECEIVE TICKET << " + messagereceived.ticket);
+      LOG.debug("RECEIVE ROLES << " + messagereceived.roles);
       String ticket = TicketContainer.instance.getTicket(messagereceived.principal);
       if (ticket != null && !ticket.equals(messagereceived.ticket))
         throw new Exception("Invalid ticket " + messagereceived.ticket + " != " + ticket);
@@ -110,6 +112,12 @@ public class NotebookServer extends WebSocketServlet implements
         throw new Exception("Anonymous access not allowed ");
       }
 
+      HashSet<String> userAndRoles = new HashSet<String>();
+      userAndRoles.add(messagereceived.principal);
+      HashSet<String> roles = gson.fromJson(messagereceived.roles,
+              new TypeToken<HashSet<String>>(){}.getType());
+      userAndRoles.addAll(roles);
+
       /** Lets be elegant here */
       switch (messagereceived.op) {
           case LIST_NOTES:
@@ -119,57 +127,57 @@ public class NotebookServer extends WebSocketServlet implements
             broadcastReloadedNoteList();
             break;
           case GET_HOME_NOTE:
-            sendHomeNote(conn, notebook);
+            sendHomeNote(conn, userAndRoles, notebook);
             break;
           case GET_NOTE:
-            sendNote(conn, notebook, messagereceived);
+            sendNote(conn, userAndRoles, notebook, messagereceived);
             break;
           case NEW_NOTE:
-            createNote(conn, notebook, messagereceived);
+            createNote(conn, userAndRoles, notebook, messagereceived);
             break;
           case DEL_NOTE:
-            removeNote(conn, notebook, messagereceived);
+            removeNote(conn, userAndRoles, notebook, messagereceived);
             break;
           case CLONE_NOTE:
-            cloneNote(conn, notebook, messagereceived);
+            cloneNote(conn, userAndRoles, notebook, messagereceived);
             break;
           case IMPORT_NOTE:
-            importNote(conn, notebook, messagereceived);
+            importNote(conn, userAndRoles, notebook, messagereceived);
             break;
           case COMMIT_PARAGRAPH:
-            updateParagraph(conn, notebook, messagereceived);
+            updateParagraph(conn, userAndRoles, notebook, messagereceived);
             break;
           case RUN_PARAGRAPH:
-            runParagraph(conn, notebook, messagereceived);
+            runParagraph(conn, userAndRoles, notebook, messagereceived);
             break;
           case CANCEL_PARAGRAPH:
-            cancelParagraph(conn, notebook, messagereceived);
+            cancelParagraph(conn, userAndRoles, notebook, messagereceived);
             break;
           case MOVE_PARAGRAPH:
-            moveParagraph(conn, notebook, messagereceived);
+            moveParagraph(conn, userAndRoles, notebook, messagereceived);
             break;
           case INSERT_PARAGRAPH:
-            insertParagraph(conn, notebook, messagereceived);
+            insertParagraph(conn, userAndRoles, notebook, messagereceived);
             break;
           case PARAGRAPH_REMOVE:
-            removeParagraph(conn, notebook, messagereceived);
+            removeParagraph(conn, userAndRoles, notebook, messagereceived);
             break;
           case PARAGRAPH_CLEAR_OUTPUT:
-            clearParagraphOutput(conn, notebook, messagereceived);
+            clearParagraphOutput(conn, userAndRoles, notebook, messagereceived);
             break;
           case NOTE_UPDATE:
-            updateNote(conn, notebook, messagereceived);
+            updateNote(conn, userAndRoles, notebook, messagereceived);
             break;
           case COMPLETION:
-            completion(conn, notebook, messagereceived);
+            completion(conn, userAndRoles, notebook, messagereceived);
             break;
           case PING:
             break; //do nothing
           case ANGULAR_OBJECT_UPDATED:
-            angularObjectUpdated(conn, notebook, messagereceived);
+            angularObjectUpdated(conn, userAndRoles, notebook, messagereceived);
             break;
           case LIST_CONFIGURATIONS:
-            sendAllConfigurations(conn, notebook);
+            sendAllConfigurations(conn, userAndRoles, notebook);
             break;
           default:
             broadcastNoteList();
@@ -358,25 +366,17 @@ public class NotebookServer extends WebSocketServlet implements
     broadcastAll(new Message(OP.NOTES_INFO).put("notes", notesInfo));
   }
 
-  void readPermissionEror(NotebookSocket conn, String principal, Note note)  throws IOException {
-    LOG.info("Cannot read. Connection readers {}. Allowed readers {}",
-            principal, note.getReaders());
+  void permissionError(NotebookSocket conn, String op, HashSet<String> current,
+                      HashSet<String> allowed) throws IOException {
+    LOG.info("Cannot {}. Connection readers {}. Allowed readers {}",
+            op, current, allowed);
     conn.send(serializeMessage(new Message(OP.AUTH_INFO).put("info",
-            "Insufficient privileges to read note.\n\n" +
-                    "Allowed readers: " + note.getReaders().toString() + "\n\n" +
-                    "User belongs to: " + principal)));
+            "Insufficient privileges to " + op + " note.\n\n" +
+                    "Allowed users or roles: " + allowed.toString() + "\n\n" +
+                    "User belongs to: " + current.toString())));
   }
 
-  void writePermissionError(NotebookSocket conn, String principal, Note note)  throws IOException {
-    LOG.info("Cannot write. Connection writers {}. Allowed writers {}",
-            principal, note.getWriters());
-    conn.send(serializeMessage(new Message(OP.AUTH_INFO).put("info",
-            "Insufficient privileges to write note.\n\n" +
-                    "Allowed writers: " + note.getWriters().toString() + "\n\n" +
-                    "User belongs to: " + principal)));
-  }
-
-  private void sendNote(NotebookSocket conn, Notebook notebook,
+  private void sendNote(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws IOException {
 
     LOG.info("New operation from {} : {} : {} : {} : {}", conn.getRequest().getRemoteAddr(),
@@ -391,11 +391,8 @@ public class NotebookServer extends WebSocketServlet implements
 
     Note note = notebook.getNote(noteId);
     if (note != null) {
-      HashSet<String> usersAndGroups = new HashSet<String>();
-      usersAndGroups.add(fromMessage.principal);
-      // TODO(prasadwagle) add groups to usersAndGroups
-      if (!note.isReader(usersAndGroups)) {
-        readPermissionEror(conn, fromMessage.principal, note);
+      if (!note.isReader(userAndRoles)) {
+        permissionError(conn, "read", userAndRoles, note.getReaders());
         broadcastNoteList();
         return;
       }
@@ -405,7 +402,8 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  private void sendHomeNote(NotebookSocket conn, Notebook notebook) throws IOException {
+  private void sendHomeNote(NotebookSocket conn, HashSet<String> userAndRoles,
+                            Notebook notebook) throws IOException {
     String noteId = notebook.getConf().getString(ConfVars.ZEPPELIN_NOTEBOOK_HOMESCREEN);
 
     Note note = null;
@@ -414,6 +412,11 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     if (note != null) {
+      if (!note.isReader(userAndRoles)) {
+        permissionError(conn, "read", userAndRoles, note.getReaders());
+        broadcastNoteList();
+        return;
+      }
       addConnectionToNote(note.id(), conn);
       conn.send(serializeMessage(new Message(OP.NOTE).put("note", note)));
       sendAllAngularObjects(note, conn);
@@ -423,7 +426,8 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  private void updateNote(WebSocket conn, Notebook notebook, Message fromMessage)
+  private void updateNote(WebSocket conn, HashSet<String> userAndRoles,
+                          Notebook notebook, Message fromMessage)
       throws SchedulerException, IOException {
     String noteId = (String) fromMessage.get("id");
     String name = (String) fromMessage.get("name");
@@ -465,7 +469,8 @@ public class NotebookServer extends WebSocketServlet implements
 
     return cronUpdated;
   }
-  private void createNote(NotebookSocket conn, Notebook notebook, Message message)
+  private void createNote(NotebookSocket conn, HashSet<String> userAndRoles,
+                          Notebook notebook, Message message)
       throws IOException {
     Note note = notebook.createNote();
     note.addParagraph(); // it's an empty note. so add one paragraph
@@ -483,7 +488,8 @@ public class NotebookServer extends WebSocketServlet implements
     broadcastNoteList();
   }
 
-  private void removeNote(WebSocket conn, Notebook notebook, Message fromMessage)
+  private void removeNote(NotebookSocket conn, HashSet<String> userAndRoles,
+                          Notebook notebook, Message fromMessage)
       throws IOException {
     String noteId = (String) fromMessage.get("id");
     if (noteId == null) {
@@ -491,13 +497,19 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     Note note = notebook.getNote(noteId);
+
+    if (!note.isOwner(userAndRoles)) {
+      permissionError(conn, "remove", userAndRoles, note.getOwners());
+      return;
+    }
+
     notebook.removeNote(noteId);
     removeNote(noteId);
     broadcastNoteList();
   }
 
-  private void updateParagraph(NotebookSocket conn, Notebook notebook,
-      Message fromMessage) throws IOException {
+  private void updateParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
+                               Notebook notebook, Message fromMessage) throws IOException {
     String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
       return;
@@ -509,11 +521,8 @@ public class NotebookServer extends WebSocketServlet implements
         .get("config");
     final Note note = notebook.getNote(getOpenNoteId(conn));
 
-    HashSet<String> usersAndGroups = new HashSet<String>();
-    usersAndGroups.add(fromMessage.principal);
-    // TODO(prasadwagle) add groups to usersAndGroups
-    if (!note.isWriter(usersAndGroups)) {
-      writePermissionError(conn, fromMessage.principal, note);
+    if (!note.isWriter(userAndRoles)) {
+      permissionError(conn, "write", userAndRoles, note.getWriters());
       return;
     }
 
@@ -526,7 +535,8 @@ public class NotebookServer extends WebSocketServlet implements
     broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
   }
 
-  private void cloneNote(NotebookSocket conn, Notebook notebook, Message fromMessage)
+  private void cloneNote(NotebookSocket conn, HashSet<String> userAndRoles,
+                         Notebook notebook, Message fromMessage)
       throws IOException, CloneNotSupportedException {
     String noteId = getOpenNoteId(conn);
     String name = (String) fromMessage.get("name");
@@ -536,7 +546,8 @@ public class NotebookServer extends WebSocketServlet implements
     broadcastNoteList();
   }
 
-  protected Note importNote(NotebookSocket conn, Notebook notebook, Message fromMessage)
+  protected Note importNote(NotebookSocket conn, HashSet<String> userAndRoles,
+                            Notebook notebook, Message fromMessage)
       throws IOException {
     Note note = null;
     if (fromMessage != null) {
@@ -550,8 +561,8 @@ public class NotebookServer extends WebSocketServlet implements
     return note;
   }
 
-  private void removeParagraph(NotebookSocket conn, Notebook notebook,
-      Message fromMessage) throws IOException {
+  private void removeParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
+                               Notebook notebook, Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
       return;
@@ -559,11 +570,8 @@ public class NotebookServer extends WebSocketServlet implements
 
     final Note note = notebook.getNote(getOpenNoteId(conn));
 
-    HashSet<String> usersAndGroups = new HashSet<String>();
-    usersAndGroups.add(fromMessage.principal);
-    // TODO(prasadwagle) add groups to usersAndGroups
-    if (!note.isWriter(usersAndGroups)) {
-      writePermissionError(conn, fromMessage.principal, note);
+    if (!note.isWriter(userAndRoles)) {
+      permissionError(conn, "write", userAndRoles, note.getWriters());
       return;
     }
 
@@ -575,8 +583,8 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  private void clearParagraphOutput(NotebookSocket conn, Notebook notebook,
-      Message fromMessage) throws IOException {
+  private void clearParagraphOutput(NotebookSocket conn, HashSet<String> userAndRoles,
+                                    Notebook notebook, Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
       return;
@@ -584,11 +592,8 @@ public class NotebookServer extends WebSocketServlet implements
 
     final Note note = notebook.getNote(getOpenNoteId(conn));
 
-    HashSet<String> usersAndGroups = new HashSet<String>();
-    usersAndGroups.add(fromMessage.principal);
-    // TODO(prasadwagle) add groups to usersAndGroups
-    if (!note.isWriter(usersAndGroups)) {
-      writePermissionError(conn, fromMessage.principal, note);
+    if (!note.isWriter(userAndRoles)) {
+      permissionError(conn, "write", userAndRoles, note.getWriters());
       return;
     }
 
@@ -596,7 +601,7 @@ public class NotebookServer extends WebSocketServlet implements
     broadcastNote(note);
   }
 
-  private void completion(NotebookSocket conn, Notebook notebook,
+  private void completion(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws IOException {
     String paragraphId = (String) fromMessage.get("id");
     String buffer = (String) fromMessage.get("buf");
@@ -620,8 +625,8 @@ public class NotebookServer extends WebSocketServlet implements
    * @param notebook the notebook.
    * @param fromMessage the message.
    */
-  private void angularObjectUpdated(NotebookSocket conn, Notebook notebook,
-      Message fromMessage) {
+  private void angularObjectUpdated(NotebookSocket conn, HashSet<String> userAndRoles,
+                                    Notebook notebook, Message fromMessage) {
     String noteId = (String) fromMessage.get("noteId");
     String paragraphId = (String) fromMessage.get("paragraphId");
     String interpreterGroupId = (String) fromMessage.get("interpreterGroupId");
@@ -703,7 +708,7 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  private void moveParagraph(NotebookSocket conn, Notebook notebook,
+  private void moveParagraph(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
@@ -714,11 +719,8 @@ public class NotebookServer extends WebSocketServlet implements
         .toString());
     final Note note = notebook.getNote(getOpenNoteId(conn));
 
-    HashSet<String> usersAndGroups = new HashSet<String>();
-    usersAndGroups.add(fromMessage.principal);
-    // TODO(prasadwagle) add groups to usersAndGroups
-    if (!note.isWriter(usersAndGroups)) {
-      writePermissionError(conn, fromMessage.principal, note);
+    if (!note.isWriter(userAndRoles)) {
+      permissionError(conn, "write", userAndRoles, note.getWriters());
       return;
     }
 
@@ -727,17 +729,14 @@ public class NotebookServer extends WebSocketServlet implements
     broadcastNote(note);
   }
 
-  private void insertParagraph(NotebookSocket conn, Notebook notebook,
-      Message fromMessage) throws IOException {
+  private void insertParagraph(NotebookSocket conn, HashSet<String> userAndRoles,
+                               Notebook notebook, Message fromMessage) throws IOException {
     final int index = (int) Double.parseDouble(fromMessage.get("index")
             .toString());
     final Note note = notebook.getNote(getOpenNoteId(conn));
 
-    HashSet<String> usersAndGroups = new HashSet<String>();
-    usersAndGroups.add(fromMessage.principal);
-    // TODO(prasadwagle) add groups to usersAndGroups
-    if (!note.isWriter(usersAndGroups)) {
-      writePermissionError(conn, fromMessage.principal, note);
+    if (!note.isWriter(userAndRoles)) {
+      permissionError(conn, "write", userAndRoles, note.getWriters());
       return;
     }
 
@@ -746,7 +745,7 @@ public class NotebookServer extends WebSocketServlet implements
     broadcastNote(note);
   }
 
-  private void cancelParagraph(NotebookSocket conn, Notebook notebook,
+  private void cancelParagraph(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
@@ -755,11 +754,8 @@ public class NotebookServer extends WebSocketServlet implements
 
     final Note note = notebook.getNote(getOpenNoteId(conn));
 
-    HashSet<String> usersAndGroups = new HashSet<String>();
-    usersAndGroups.add(fromMessage.principal);
-    // TODO(prasadwagle) add groups to usersAndGroups
-    if (!note.isWriter(usersAndGroups)) {
-      writePermissionError(conn, fromMessage.principal, note);
+    if (!note.isWriter(userAndRoles)) {
+      permissionError(conn, "write", userAndRoles, note.getWriters());
       return;
     }
 
@@ -767,7 +763,7 @@ public class NotebookServer extends WebSocketServlet implements
     p.abort();
   }
 
-  private void runParagraph(NotebookSocket conn, Notebook notebook,
+  private void runParagraph(NotebookSocket conn, HashSet<String> userAndRoles, Notebook notebook,
       Message fromMessage) throws IOException {
     final String paragraphId = (String) fromMessage.get("id");
     if (paragraphId == null) {
@@ -776,11 +772,8 @@ public class NotebookServer extends WebSocketServlet implements
 
     final Note note = notebook.getNote(getOpenNoteId(conn));
 
-    HashSet<String> usersAndGroups = new HashSet<String>();
-    usersAndGroups.add(fromMessage.principal);
-    // TODO(prasadwagle) add groups to usersAndGroups
-    if (!note.isWriter(usersAndGroups)) {
-      writePermissionError(conn, fromMessage.principal, note);
+    if (!note.isWriter(userAndRoles)) {
+      permissionError(conn, "write", userAndRoles, note.getWriters());
       return;
     }
 
@@ -815,8 +808,8 @@ public class NotebookServer extends WebSocketServlet implements
     }
   }
 
-  private void sendAllConfigurations(NotebookSocket conn, Notebook notebook)
-      throws IOException {
+  private void sendAllConfigurations(NotebookSocket conn, HashSet<String> userAndRoles,
+                                     Notebook notebook) throws IOException {
     ZeppelinConfiguration conf = notebook.getConf();
 
     Map<String, String> configurations = conf.dumpConfigurations(conf,
