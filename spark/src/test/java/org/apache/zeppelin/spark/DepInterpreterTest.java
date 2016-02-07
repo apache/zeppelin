@@ -26,10 +26,7 @@ import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.junit.After;
 import org.junit.Before;
@@ -54,8 +51,9 @@ public class DepInterpreterTest {
     dep.open();
 
     InterpreterGroup intpGroup = new InterpreterGroup();
-    intpGroup.add(new SparkInterpreter(p));
-    intpGroup.add(dep);
+    intpGroup.put("note", new LinkedList<Interpreter>());
+    intpGroup.get("note").add(new SparkInterpreter(p));
+    intpGroup.get("note").add(dep);
     dep.setInterpreterGroup(intpGroup);
 
     context = new InterpreterContext("note", "id", "title", "text", new HashMap<String, Object>(), new GUI(),

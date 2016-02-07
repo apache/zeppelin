@@ -57,14 +57,16 @@ public class SparkSqlInterpreterTest {
         repl = SparkInterpreterTest.repl;
       }
 
-    sql = new SparkSqlInterpreter(p);
+      sql = new SparkSqlInterpreter(p);
 
-    intpGroup = new InterpreterGroup();
-      intpGroup.add(repl);
-      intpGroup.add(sql);
+      intpGroup = new InterpreterGroup();
+      intpGroup.put("note", new LinkedList<Interpreter>());
+      intpGroup.get("note").add(repl);
+      intpGroup.get("note").add(sql);
       sql.setInterpreterGroup(intpGroup);
       sql.open();
     }
+
     context = new InterpreterContext("note", "id", "title", "text", new HashMap<String, Object>(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
         null,

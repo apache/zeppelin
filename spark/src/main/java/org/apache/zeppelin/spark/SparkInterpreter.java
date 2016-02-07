@@ -18,6 +18,7 @@
 package org.apache.zeppelin.spark;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -28,6 +29,7 @@ import java.util.*;
 
 import com.google.common.base.Joiner;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.spark.HttpServer;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -461,7 +463,10 @@ public class SparkInterpreter extends Interpreter {
     b.v_$eq(true);
     settings.scala$tools$nsc$settings$StandardScalaSettings$_setter_$usejavacp_$eq(b);
 
-    /* spark interpreter */
+    System.setProperty("scala.repl.name.line", "line" + this.hashCode() + "$");
+    
+
+    /* create scala repl */
     this.interpreter = new SparkILoop(null, new PrintWriter(out));
 
     interpreter.settings_$eq(settings);
