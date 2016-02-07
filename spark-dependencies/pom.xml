@@ -36,6 +36,7 @@
 
 
   <properties>
+    <rscala.version>1.0.6</rscala.version>
     <spark.version>1.4.1</spark.version>
     <scala.version>2.10.4</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
@@ -784,7 +785,7 @@
                     <copy todir="../interpreter/spark/pyspark"
                           file="${project.build.directory}/spark-dist/spark-${spark.version}/python/lib/py4j-${py4j.version}-src.zip"/>
                     <copy todir="../interpreter/spark/r"
-                          file="../spark/lib/rscala_2.10-1.0.6.jar"/>
+                          file="../spark/lib/rscala_2.10-${rscala.version}.jar"/>
                     <zip destfile="${project.build.directory}/../../interpreter/spark/pyspark/pyspark.zip"
                          basedir="${project.build.directory}/spark-dist/spark-${spark.version}/python"
                          includes="pyspark/*.py,pyspark/**/*.py"/>
