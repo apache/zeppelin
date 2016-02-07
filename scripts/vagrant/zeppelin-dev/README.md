@@ -45,7 +45,7 @@ curl -fsSL https://raw.githubusercontent.com/NFLabs/z-manager/master/zeppelin-in
 
 ### Building Zeppelin
 
-You can now `git clone http://git.apache.org/incubator.git` into a directory on your host machine, or directly in your virtual machine.
+You can now `git clone git://git.apache.org/incubator-zeppelin.git` into a directory on your host machine, or directly in your virtual machine.
 
 Cloning zeppelin into the `/scripts/vagrant/zeppelin-dev` directory from the host, will allow the directory to be shared between your host and the guest machine.
 

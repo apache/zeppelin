@@ -138,11 +138,11 @@ Zeppelin can work with multiple versions Spark. A complete list [is available he
 
 ## Build
 
-Checkout source code from [http://git.apache.org/incubator.git](http://git.apache.org/incubator.git).
+Checkout source code from [git://git.apache.org/incubator-zeppelin.git](git://git.apache.org/incubator-zeppelin.git).
 
 ```bash
 cd /home/zeppelin/
-git clone http://git.apache.org/incubator.git
+git clone git://git.apache.org/incubator-zeppelin.git
 ```
 Zeppelin package is available at `/home/zeppelin/incubator-zeppelin` after the checkout completes.
 

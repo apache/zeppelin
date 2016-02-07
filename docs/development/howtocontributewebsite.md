@@ -17,12 +17,12 @@ Any contribution to Zeppelin (Source code, Documents, Image, Website) means you 
 #### Getting the source code
 Website is hosted in 'master' branch under `/docs/` dir.
 
-First of all, you need the website source code. The official location of mirror for Zeppelin is [http://git.apache.org/incubator.git](http://git.apache.org/incubator.git).
+First of all, you need the website source code. The official location of mirror for Zeppelin is [http://git.apache.org/incubator-zeppelin.git](http://git.apache.org/incubator-zeppelin.git).
 
 Get the source code on your development machine using git.
 
 ```
-git clone http://git.apache.org/incubator.git
+git clone git://git.apache.org/incubator-zeppelin.git
 cd docs
 ```
 
