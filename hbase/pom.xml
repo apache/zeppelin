@@ -107,6 +107,18 @@
     </dependency>
   </dependencies>
 
+  <profiles>
+    <profile>
+      <id>vendor-repo</id>
+      <repositories>
+        <repository>
+          <id>cloudera</id>
+          <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+
   <build>
     <plugins>
       <plugin>
