@@ -41,10 +41,10 @@ import org.slf4j.LoggerFactory;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SparkInterpreterTest {
   public static SparkInterpreter repl;
+  public static InterpreterGroup intpGroup;
   private InterpreterContext context;
   private File tmpDir;
   public static Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterTest.class);
-
 
   /**
    * Get spark version number as a numerical value.
@@ -69,29 +69,29 @@ public class SparkInterpreterTest {
 
     if (repl == null) {
       Properties p = new Properties();
-
+      intpGroup = new InterpreterGroup();
       repl = new SparkInterpreter(p);
+      repl.setInterpreterGroup(intpGroup);
       repl.open();
     }
 
-    InterpreterGroup intpGroup = new InterpreterGroup();
     context = new InterpreterContext("note", "id", "title", "text",
-            new HashMap<String, Object>(),
-            new GUI(),
-            new AngularObjectRegistry(intpGroup.getId(), null),
-            null,
-            new LinkedList<InterpreterContextRunner>(),
-            new InterpreterOutput(new InterpreterOutputListener() {
-              @Override
-              public void onAppend(InterpreterOutput out, byte[] line) {
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        null,
+        new LinkedList<InterpreterContextRunner>(),
+        new InterpreterOutput(new InterpreterOutputListener() {
+          @Override
+          public void onAppend(InterpreterOutput out, byte[] line) {
 
-              }
+          }
 
-              @Override
-              public void onUpdate(InterpreterOutput out, byte[] output) {
+          @Override
+          public void onUpdate(InterpreterOutput out, byte[] output) {
 
-              }
-            }));
+          }
+        }));
   }
 
   @After

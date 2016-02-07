@@ -51,10 +51,14 @@ public class SparkSqlInterpreterTest {
 
       if (SparkInterpreterTest.repl == null) {
         repl = new SparkInterpreter(p);
+        intpGroup = new InterpreterGroup();
+        repl.setInterpreterGroup(intpGroup);
         repl.open();
         SparkInterpreterTest.repl = repl;
+        SparkInterpreterTest.intpGroup = intpGroup;
       } else {
         repl = SparkInterpreterTest.repl;
+        intpGroup = SparkInterpreterTest.intpGroup;
       }
 
       sql = new SparkSqlInterpreter(p);
