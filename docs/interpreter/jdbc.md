@@ -178,7 +178,7 @@ You can modify the interpreter configuration in the `Interpreter` section. The m
    </tr>      
  </table>
 
-To develop this functionality use this [method](http://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html#getConnection(java.lang.String,%20java.util.Properties)). For example if a connection needs a schema parameter, it would have to add the property as follows:
+To develop this functionality use this [method](http://docs.oracle.com/javase/7/docs/api/java/sql/DriverManager.html#getConnection%28java.lang.String,%20java.util.Properties%29). For example if a connection needs a schema parameter, it would have to add the property as follows:
 
 <table class="table-configuration">
   <tr>
