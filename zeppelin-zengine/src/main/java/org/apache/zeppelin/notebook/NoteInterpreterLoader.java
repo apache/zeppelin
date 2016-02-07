@@ -75,7 +75,7 @@ public class NoteInterpreterLoader {
   }
 
   private String getInterpreterGroupKey(InterpreterSetting setting) {
-    if (setting.getOption().isPerNoteSession()) {
+    if (!setting.getOption().isPerNoteSession()) {
       return SHARED_SESSION;
     } else {
       return noteId;

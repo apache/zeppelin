@@ -101,10 +101,12 @@ public class NoteInterpreterLoaderTest {
     NoteInterpreterLoader loaderA = new NoteInterpreterLoader(factory);
     loaderA.setNoteId("noteA");
     loaderA.setInterpreters(factory.getDefaultInterpreterSettingList());
+    loaderA.getInterpreterSettings().get(0).getOption().setPerNoteSession(true);
 
     NoteInterpreterLoader loaderB = new NoteInterpreterLoader(factory);
     loaderB.setNoteId("noteB");
     loaderB.setInterpreters(factory.getDefaultInterpreterSettingList());
+    loaderB.getInterpreterSettings().get(0).getOption().setPerNoteSession(true);
 
     // interpreters are not created before accessing it
     assertNull(loaderA.getInterpreterSettings().get(0).getInterpreterGroup().get("noteA"));
