@@ -50,7 +50,7 @@ When create a interpreter by default use PostgreSQL with the next properties:
   </tr>      
 </table>
 
-Is not necessary add jar driver to the classpath for PostgreSQL or similar.
+It is not necessary to add driver jar to the classpath for PostgreSQL as it is included in Zeppelin.
 
 #### Simple connection
 
