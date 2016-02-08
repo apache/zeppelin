@@ -237,7 +237,7 @@
       <artifactId>rscala</artifactId>
       <version>${rscala.version}</version>
       <scope>system</scope>
-      <systemPath>${user.dir}/spark/lib/rscala/inst/java/rscala_${scala.binary.version}-${rscala.version}.jar</systemPath>
+      <systemPath>${project.basedir}/lib/rscala/inst/java/rscala_${scala.binary.version}-${rscala.version}.jar</systemPath>
     </dependency>
 
     <!--TEST-->
@@ -313,7 +313,8 @@
             <exclude>**/derby.log</exclude>
             <exclude>**/metastore_db/</exclude>
             <exclude>**/README.md</exclude>
-            <exclude>dependency-reduced-pom.xml</exclude>
+            <exclude>**/dependency-reduced-pom.xml</exclude>
+            <exclude>**/lib/rscala/**</exclude>
           </excludes>
         </configuration>
       </plugin>
