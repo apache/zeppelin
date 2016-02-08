@@ -84,6 +84,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
         "id",
         "title",
         "text",
+        null,
         new HashMap<String, Object>(),
         new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),

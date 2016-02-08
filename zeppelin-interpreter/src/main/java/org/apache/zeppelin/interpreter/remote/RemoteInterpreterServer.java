@@ -392,6 +392,7 @@ public class RemoteInterpreterServer
         ric.getParagraphId(),
         ric.getParagraphTitle(),
         ric.getParagraphText(),
+        ric.getUser(),
         (Map<String, Object>) gson.fromJson(ric.getConfig(),
             new TypeToken<Map<String, Object>>() {}.getType()),
         gson.fromJson(ric.getGui(), GUI.class),

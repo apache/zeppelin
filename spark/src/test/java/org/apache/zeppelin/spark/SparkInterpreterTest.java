@@ -76,22 +76,23 @@ public class SparkInterpreterTest {
 
     InterpreterGroup intpGroup = new InterpreterGroup();
     context = new InterpreterContext("note", "id", "title", "text",
-            new HashMap<String, Object>(),
-            new GUI(),
-            new AngularObjectRegistry(intpGroup.getId(), null),
-            null,
-            new LinkedList<InterpreterContextRunner>(),
-            new InterpreterOutput(new InterpreterOutputListener() {
-              @Override
-              public void onAppend(InterpreterOutput out, byte[] line) {
+        null,
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        null,
+        new LinkedList<InterpreterContextRunner>(),
+        new InterpreterOutput(new InterpreterOutputListener() {
+          @Override
+          public void onAppend(InterpreterOutput out, byte[] line) {
 
-              }
+          }
 
-              @Override
-              public void onUpdate(InterpreterOutput out, byte[] output) {
+          @Override
+          public void onUpdate(InterpreterOutput out, byte[] output) {
 
-              }
-            }));
+          }
+        }));
   }
 
   @After

@@ -93,6 +93,7 @@ public class DistributedResourcePoolTest {
         "id",
         "title",
         "text",
+        null,
         new HashMap<String, Object>(),
         new GUI(),
         null,

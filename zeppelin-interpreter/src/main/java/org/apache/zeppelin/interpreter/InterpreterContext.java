@@ -48,6 +48,7 @@ public class InterpreterContext {
   private final String paragraphTitle;
   private final String paragraphId;
   private final String paragraphText;
+  private final String user;
   private final Map<String, Object> config;
   private GUI gui;
   private AngularObjectRegistry angularObjectRegistry;
@@ -58,6 +59,7 @@ public class InterpreterContext {
                             String paragraphId,
                             String paragraphTitle,
                             String paragraphText,
+                            String user,
                             Map<String, Object> config,
                             GUI gui,
                             AngularObjectRegistry angularObjectRegistry,
@@ -69,6 +71,7 @@ public class InterpreterContext {
     this.paragraphId = paragraphId;
     this.paragraphTitle = paragraphTitle;
     this.paragraphText = paragraphText;
+    this.user = user;
     this.config = config;
     this.gui = gui;
     this.angularObjectRegistry = angularObjectRegistry;
@@ -92,6 +95,10 @@ public class InterpreterContext {
 
   public String getParagraphTitle() {
     return paragraphTitle;
+  }
+
+  public String getUser() {
+    return user;
   }
 
   public Map<String, Object> getConfig() {
