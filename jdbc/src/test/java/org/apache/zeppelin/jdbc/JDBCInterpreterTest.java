@@ -127,7 +127,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     String sqlQuery = "select * from test_table WHERE ID = 'c'";
 
-    InterpreterResult interpreterResult = t.interpret(sqlQuery, new InterpreterContext("", "1", "","", null,null,null,null,null));
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, new InterpreterContext("", "1", "","", null,null,null,null,null,null));
 
     assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
