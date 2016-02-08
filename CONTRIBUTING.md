@@ -147,7 +147,7 @@ Get the source code on your development machine using git.
 git clone git://git.apache.org/incubator-zeppelin.git zeppelin
 ```
 
-You may also want to develop against a specific release. For example, for branch-0.5.6
+You may also want to develop against a specific branch. For example, for branch-0.5.6
 
 ```
 git clone -b branch-0.5.6 git://git.apache.org/incubator-zeppelin.git zeppelin
