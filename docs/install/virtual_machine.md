@@ -22,11 +22,11 @@ limitations under the License.
 
 ## Vagrant Virtual Machine for Apache Zeppelin
   
-The Apache Zeppelin distribution includes a scripts directory
+Apache Zeppelin distribution includes a scripts directory
 
  `scripts/vagrant/zeppelin-dev`
  
-This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin.  It can also be used to run an existing Zeppelin build if you don't plan to build from source.  For pyspark users, this script also includes several helpful [Python Libraries](#pythonextras)
+This script creates a virtual machine that launches a repeatable, known set of core dependencies required for developing Zeppelin.  It can also be used to run an existing Zeppelin build if you don't plan to build from source.  For pyspark users, this script also includes several helpful [Python Libraries](#pythonextras).
  
 ####Installing the required components to launch a virtual machine.
 
@@ -34,19 +34,22 @@ This script requires three applications, [Ansible](http://docs.ansible.com/ansib
 
 ### Create a Zeppelin Ready VM in 4 Steps (5 on Windows)
 
-*If you are running Windows and don't yet have python installed, install Python 2.7.x*  [Python Windows Installer](https://www.python.org/downloads/release/python-2710/)
+If you are running Windows and don't yet have python installed, [install Python 2.7.x](https://www.python.org/downloads/release/python-2710/) first.
 
 1. Download and Install Vagrant:  [Vagrant Downloads](http://www.vagrantup.com/downloads)
-2. Install Ansible:  [Ansible Python pip install](http://docs.ansible.com/ansible/intro_installation.html#latest-releases-via-pip)  
-`sudo easy_install pip` then   
-`sudo pip install ansible`  
-`ansible --version` should now report version 1.9.2 or higher
+2. Install Ansible:  [Ansible Python pip install](http://docs.ansible.com/ansible/intro_installation.html#latest-releases-via-pip)
+    
+    ```
+    sudo easy_install pip
+    sudo pip install ansible
+    ansible --version 
+    ```
+    After then, please check whether it reports **ansible version 1.9.2 or higher**.
+
 3. Install Virtual Box: [Virtual Box Downloads](https://www.virtualbox.org/ "Virtual Box")
 4. Type `vagrant up`  from within the `/scripts/vagrant/zeppelin-dev` directory
 
-Thats it!
-
-You can now run `vagrant ssh` and this will place you into the guest machines terminal prompt.
+Thats it ! You can now run `vagrant ssh` and this will place you into the guest machines terminal prompt.
 
 If you don't wish to build Zeppelin from scratch, run the z-manager installer script while running in the guest VM:
 
@@ -55,18 +58,17 @@ curl -fsSL https://raw.githubusercontent.com/NFLabs/z-manager/master/zeppelin-in
 ```
 
 
-
 ### Building Zeppelin
 
-You can now `git clone https://github.com/apache/incubator-zeppelin.git` into a directory on your host machine, or directly in your virtual machine.
+You can now `git clone git://git.apache.org/incubator-zeppelin.git` into a directory on your host machine, or directly in your virtual machine.
 
-Cloning zeppelin into the `/scripts/vagrant/zeppelin-dev` directory from the host, will allow the directory to be shared between your host and the guest machine.
+Cloning Zeppelin into the `/scripts/vagrant/zeppelin-dev` directory from the host, will allow the directory to be shared between your host and the guest machine.
 
-Cloning the project again may seem counter intuitive, since this script likley originated from the project repository.  Consider copying just the vagrant/zeppelin-dev script from the zeppelin project as a stand alone directory, then once again clone the specific branch you wish to build.
+Cloning the project again may seem counter intuitive, since this script likley originated from the project repository.  Consider copying just the vagrant/zeppelin-dev script from the Zeppelin project as a stand alone directory, then once again clone the specific branch you wish to build.
 
 Synced folders enable Vagrant to sync a folder on the host machine to the guest machine, allowing you to continue working on your project's files on your host machine, but use the resources in the guest machine to compile or run your project. _[(1) Synced Folder Description from Vagrant Up](https://docs.vagrantup.com/v2/synced-folders/index.html)_
 
-By default, Vagrant will share your project directory (the directory with the Vagrantfile) to `/vagrant`.  Which means you should be able to build within the guest machine after you   
+By default, Vagrant will share your project directory (the directory with the Vagrantfile) to `/vagrant`.  Which means you should be able to build within the guest machine after you 
 `cd /vagrant/incubator-zeppelin`
 
 
@@ -74,7 +76,7 @@ By default, Vagrant will share your project directory (the directory with the Va
 
 Running the following commands in the guest machine should display these expected versions:
 
-`node --version` should report *v0.12.7*  
+`node --version` should report *v0.12.7*
 `mvn --version` should report *Apache Maven 3.3.3* and *Java version: 1.7.0_85*
 
 
@@ -117,15 +119,15 @@ Comment out the `forward_port` line, and uncomment the `private_network` line in
 config.vm.network "private_network", ip: "192.168.51.52"
 ```
 
-`vagrant halt` followed by `vagrant up` will restart the guest machine bound to the IP address of `192.168.51.52`.  
-This approach usually is typically required if running other virtual machines that discover each other directly by IP address, such as Spark Masters and Slaves as well as Cassandra Nodes, Elasticsearch Nodes, and other Spark data sources.  You may wish to launch nodes in virtual machines with IP Addresses in a subnet that works for your local network, such as: 192.168.51.53, 192.168.51.54, 192.168.51.53, etc..
+`vagrant halt` followed by `vagrant up` will restart the guest machine bound to the IP address of `192.168.51.52`.
+This approach usually is typically required if running other virtual machines that discover each other directly by IP address, such as Spark Masters and Slaves as well as Cassandra Nodes, Elasticsearch Nodes, and other Spark data sources.  You may wish to launch nodes in virtual machines with IP addresses in a subnet that works for your local network, such as: 192.168.51.53, 192.168.51.54, 192.168.51.53, etc..
 
 
 ### [Python Extras](id:pythonextras)
 
-With zeppelin running, Numpy, SciPy, Pandas and Matplotlib will be available.  Create a pyspark notebook, and try
+With Zeppelin running, **Numpy**, **SciPy**, **Pandas** and **Matplotlib** will be available.  Create a pyspark notebook, and try the below code.
 
-```
+```python
 %pyspark
 
 import numpy
@@ -139,9 +141,9 @@ print "pandas " + pandas.__version__
 print "matplotlib " + matplotlib.__version__
 ```
 
-To Test plotting using matplotlib into a rendered %html SVG image, try
+To Test plotting using Matplotlib into a rendered `%html` SVG image, try
 
-```
+```python
 %pyspark
 
 import matplotlib
