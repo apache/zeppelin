@@ -20,6 +20,7 @@ package org.apache.zeppelin.integration;
 
 import org.apache.zeppelin.AbstractZeppelinIT;
 import org.apache.zeppelin.WebDriverManager;
+import org.apache.zeppelin.ZeppelinITUtils;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -54,6 +55,66 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
 
     driver.quit();
+  }
+
+  @Test
+  public void testMoveUpAndDown() throws InterruptedException {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+
+      waitForParagraph(1, "READY");
+      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
+      paragraph1Editor.sendKeys("1");
+
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
+
+
+      waitForParagraph(2, "READY");
+      WebElement paragraph2Editor = driver.findElement(By.xpath(getParagraphXPath(2) + "//textarea"));
+      paragraph2Editor.sendKeys("2");
+
+
+      collector.checkThat("The paragraph1 value contains",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo("1"));
+      collector.checkThat("The paragraph1 value contains",
+              driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo("2"));
+
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='moveDown()']")).click();
+
+      ZeppelinITUtils.sleep(1000,false);
+
+      collector.checkThat("The paragraph1 value contains",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo("2"));
+      collector.checkThat("The paragraph1 value contains",
+              driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo("1"));
+
+      driver.findElement(By.xpath(getParagraphXPath(2) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(2) + "//ul/li/a[@ng-click='moveUp()']")).click();
+
+      ZeppelinITUtils.sleep(1000,false);
+
+      collector.checkThat("The paragraph1 value contains",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo("1"));
+      collector.checkThat("The paragraph1 value contains",
+              driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo("2"));
+      ZeppelinITUtils.sleep(1000,false);
+      deleteTestNotebook(driver);
+
+    } catch (ElementNotVisibleException e) {
+      File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+    }
+
   }
 
   @Test

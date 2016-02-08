@@ -17,20 +17,17 @@
 
 package org.apache.zeppelin;
 
-import com.google.common.base.Function;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.*;
-import org.openqa.selenium.support.ui.FluentWait;
-import org.openqa.selenium.support.ui.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test Zeppelin with web browser.
@@ -188,7 +185,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       waitForText("BindingTest_1_",
           By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
-      driver.findElement(By.xpath("//*[@id='main']/div//h3/span[1]/button[@tooltip='Remove the notebook']"))
+      driver.findElement(By.xpath("//*[@id='main']/div//h3/span/button[@tooltip='Remove the notebook']"))
           .sendKeys(Keys.ENTER);
       sleep(1000, true);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
@@ -201,5 +198,50 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
 
     }
+  }
+
+  @Test
+  public void testSparkInterpreterDependencyLoading() {
+    // navigate to interpreter page
+    WebElement interpreterLink = driver.findElement(By.linkText("Interpreter"));
+    interpreterLink.click();
+
+    // add new dependency to spark interpreter
+    WebElement sparkEditBtn = pollingWait(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]"),
+        MAX_BROWSER_TIMEOUT_SEC);
+    sparkEditBtn.click();
+    WebElement depArtifact = driver.findElement(By.xpath("//input[@ng-model='setting.depArtifact']"));
+    String artifact = "org.apache.commons:commons-csv:1.1";
+    depArtifact.sendKeys(artifact);
+    driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
+    driver.switchTo().alert().accept();
+
+    driver.navigate().back();
+    createNewNote();
+
+    // wait for first paragraph's " READY " status text
+    waitForParagraph(1, "READY");
+
+    WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
+
+    paragraph1Editor.sendKeys("import org.apache.commons.csv.CSVFormat");
+    paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+    waitForParagraph(1, "FINISHED");
+
+    // check expected text
+    assertTrue(waitForText("import org.apache.commons.csv.CSVFormat",
+        By.xpath(getParagraphXPath(1) + "//div[starts-with(@id, 'p') and contains(@id, 'text')]/div")));
+
+    // reset dependency
+    interpreterLink.click();
+    sparkEditBtn = pollingWait(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]"),
+        MAX_BROWSER_TIMEOUT_SEC);
+    sparkEditBtn.click();
+    WebElement testDepRemoveBtn = driver.findElement(By.xpath("//tr[descendant::text()[contains(.,'" +
+        artifact + "')]]/td[3]/div"));
+    sleep(5000, true);
+    testDepRemoveBtn.click();
+    driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
+    driver.switchTo().alert().accept();
   }
 }

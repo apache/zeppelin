@@ -346,6 +346,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER);
   }
 
+  public String getInterpreterLocalRepoPath() {
+    return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_LOCALREPO);
+  }
+
   public String getRelativeDir(ConfVars c) {
     return getRelativeDir(getString(c));
   }
@@ -441,6 +445,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.angular.AngularInterpreter,"
         + "org.apache.zeppelin.shell.ShellInterpreter,"
         + "org.apache.zeppelin.hive.HiveInterpreter,"
+        + "org.apache.zeppelin.tachyon.TachyonInterpreter,"
         + "org.apache.zeppelin.phoenix.PhoenixInterpreter,"
         + "org.apache.zeppelin.postgresql.PostgreSqlInterpreter,"
         + "org.apache.zeppelin.tajo.TajoInterpreter,"
@@ -453,9 +458,12 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.kylin.KylinInterpreter,"
         + "org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter,"
         + "org.apache.zeppelin.scalding.ScaldingInterpreter,"
-        + "org.apache.zeppelin.jdbc.JDBCInterpreter"),
+        + "org.apache.zeppelin.jdbc.JDBCInterpreter,"
+        + "org.apache.zeppelin.hbase.HbaseInterpreter"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
+    ZEPPELIN_INTERPRETER_LOCALREPO("zeppelin.interpreter.localRepo", "local-repo"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),
+    ZEPPELIN_INTERPRETER_MAX_POOL_SIZE("zeppelin.interpreter.max.poolsize", 10),
     ZEPPELIN_ENCODING("zeppelin.encoding", "UTF-8"),
     ZEPPELIN_NOTEBOOK_DIR("zeppelin.notebook.dir", "notebook"),
     // use specified notebook (id) as homescreen

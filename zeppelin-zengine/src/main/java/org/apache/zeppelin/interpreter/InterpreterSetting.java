@@ -17,9 +17,12 @@
 
 package org.apache.zeppelin.interpreter;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 
 /**
@@ -32,21 +35,26 @@ public class InterpreterSetting {
   private String description;
   private Properties properties;
   private InterpreterGroup interpreterGroup;
+  private List<Dependency> dependencies;
   private InterpreterOption option;
 
-  public InterpreterSetting(String id, String name,
+  public InterpreterSetting(String id,
+      String name,
       String group,
+      List<Dependency> dependencies,
       InterpreterOption option) {
     this.id = id;
     this.name = name;
     this.group = group;
+    this.dependencies = dependencies;
     this.option = option;
   }
 
   public InterpreterSetting(String name,
       String group,
+      List<Dependency> dependencies,
       InterpreterOption option) {
-    this(generateId(), name, group, option);
+    this(generateId(), name, group, dependencies, option);
   }
 
   public String id() {
@@ -88,6 +96,17 @@ public class InterpreterSetting {
 
   public Properties getProperties() {
     return properties;
+  }
+
+  public List<Dependency> getDependencies() {
+    if (dependencies == null) {
+      return new LinkedList<Dependency>();
+    }
+    return dependencies;
+  }
+
+  public void setDependencies(List<Dependency> dependencies) {
+    this.dependencies = dependencies;
   }
 
   public InterpreterOption getOption() {

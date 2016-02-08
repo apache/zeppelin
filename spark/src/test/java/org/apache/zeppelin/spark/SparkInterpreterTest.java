@@ -79,6 +79,7 @@ public class SparkInterpreterTest {
             new HashMap<String, Object>(),
             new GUI(),
             new AngularObjectRegistry(intpGroup.getId(), null),
+            null,
             new LinkedList<InterpreterContextRunner>(),
             new InterpreterOutput(new InterpreterOutputListener() {
               @Override
@@ -170,16 +171,6 @@ public class SparkInterpreterTest {
     InterpreterResult result = repl.interpret("def category(min: Int) = {"
         + "    if (0 <= value) \"error\"" + "}", context);
     assertEquals(Code.ERROR, result.code());
-  }
-
-  @Test
-  public void testZContextDependencyLoading() {
-    // try to import library does not exist on classpath. it'll fail
-    assertEquals(InterpreterResult.Code.ERROR, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
-
-    // load library from maven repository and try to import again
-    repl.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
   }
 
   @Test

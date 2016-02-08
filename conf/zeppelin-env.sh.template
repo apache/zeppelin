@@ -29,10 +29,11 @@
 # export ZEPPELIN_NOTEBOOK_DIR   		# Where notebook saved
 # export ZEPPELIN_NOTEBOOK_HOMESCREEN		# Id of notebook to be displayed in homescreen. ex) 2A94M5J1Z
 # export ZEPPELIN_NOTEBOOK_HOMESCREEN_HIDE	# hide homescreen notebook from list when this value set to "true". default "false"
-# export ZEPPELIN_NOTEBOOK_S3_BUCKET    # Bucket where notebook saved
-# export ZEPPELIN_NOTEBOOK_S3_USER      # User in bucket where notebook saved. For example bucket/user/notebook/2A94M5J1Z/note.json
+# export ZEPPELIN_NOTEBOOK_S3_BUCKET            # Bucket where notebook saved
+# export ZEPPELIN_NOTEBOOK_S3_USER              # User in bucket where notebook saved. For example bucket/user/notebook/2A94M5J1Z/note.json
 # export ZEPPELIN_IDENT_STRING   		# A string representing this instance of zeppelin. $USER by default.
 # export ZEPPELIN_NICENESS       		# The scheduling priority for daemons. Defaults to 0.
+# export ZEPPELIN_INTERPRETER_LOCALREPO         # Local repository for interpreter's additional dependency loading
 
 
 #### Spark interpreter configuration ####
@@ -42,6 +43,7 @@
 ##
 # export SPARK_HOME                             # (required) When it is defined, load it instead of Zeppelin embedded Spark libraries
 # export SPARK_SUBMIT_OPTIONS                   # (optional) extra options to pass to spark submit. eg) "--driver-memory 512M --executor-memory 1G".
+# export SPARK_APP_NAME                         # (optional) The name of spark application.
 
 ## Use embedded spark binaries ##
 ## without SPARK_HOME defined, Zeppelin still able to run spark interpreter process using embedded spark binaries.
