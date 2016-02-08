@@ -33,6 +33,7 @@ import java.io.BufferedWriter;
  */
 public class SparkRInterpreter extends Interpreter {
   private static final Logger logger = LoggerFactory.getLogger(SparkRInterpreter.class);
+  protected static final String KINIT_CMD = ".zres <- knit2html(text=.zcmd)";
 
   static {
     Interpreter.register(
@@ -55,17 +56,21 @@ public class SparkRInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    ZeppelinR.open(getProperty("spark.master"), getProperty("spark.home"), getSparkInterpreter());
+    zeppelinR().open(getProperty("spark.master"), getProperty("spark.home"), getSparkInterpreter());
   }
 
   @Override
   public InterpreterResult interpret(String lines, InterpreterContext contextInterpreter) {
 
+    if (contextInterpreter == null) {
+      throw new NullPointerException("Please use a non null contextInterpreter");
+    }
+
     try {
 
-      ZeppelinR.set(".zcmd", "\n```{r comment=NA, echo=FALSE}\n" + lines + "\n```");
-      ZeppelinR.eval(".zres <- knit2html(text=.zcmd)");
-      String html = ZeppelinR.getS0(".zres");
+      zeppelinR().set(".zcmd", "\n```{r comment=NA, echo=FALSE}\n" + lines + "\n```");
+      zeppelinR().eval(KINIT_CMD);
+      String html = zeppelinR().getS0(".zres");
 
       // Only keep the bare results.
       String htmlOut = html.substring(html.indexOf("<body>") + 7, html.indexOf("</body>") - 1)
@@ -75,6 +80,7 @@ public class SparkRInterpreter extends Interpreter {
               .replaceAll("<pre>", "<p class='text'>").replaceAll("</pre>", "</p>");
 
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, "%html\n" + htmlOut);
+
     } catch (Exception e) {
       logger.error("Exception while connecting to R", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
@@ -84,7 +90,7 @@ public class SparkRInterpreter extends Interpreter {
 
   @Override
   public void close() {
-    ZeppelinR.close();
+    zeppelinR().close();
   }
 
   @Override
@@ -125,6 +131,53 @@ public class SparkRInterpreter extends Interpreter {
       }
     }
     return null;
+  }
+
+  protected static ZeppelinRFactory zeppelinR() {
+    return ZeppelinRFactory.instance();
+  }
+
+  /**
+   * Java Factory to support tests with Mockito
+   * (mockito can not mock the zeppelinR final scala class).
+   */
+  protected static class ZeppelinRFactory {
+    private static ZeppelinRFactory instance;
+    private static ZeppelinR zeppelinR;
+
+    private ZeppelinRFactory() {
+      // Singleton
+    }
+
+    protected static synchronized ZeppelinRFactory instance() {
+      if (instance == null) instance = new ZeppelinRFactory();
+      return instance;
+    }
+
+    protected void open(String master, String sparkHome, SparkInterpreter sparkInterpreter) {
+      zeppelinR.open(master, sparkHome, sparkInterpreter);
+    }
+
+    protected Object eval(String command) {
+      return zeppelinR.eval(command);
+    }
+
+    protected void set(String key, Object value) {
+      zeppelinR.set(key, value);
+    }
+
+    protected Object get(String key) {
+      return zeppelinR.get(key);
+    }
+
+    protected String getS0(String key) {
+      return zeppelinR.getS0(key);
+    }
+
+    protected void close() {
+      zeppelinR.close();
+    }
+
   }
 
 }
