@@ -17,7 +17,7 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.maven-v4_0_0.xsd">
 
   <!-- Licensed to the Apache Software Foundation (ASF) under one or more
     contributor license agreements. See the NOTICE file distributed with this
@@ -111,6 +111,7 @@
   </modules>
 
   <properties>
+    <rscala.version>1.0.6</rscala.version>
     <slf4j.version>1.7.10</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
     <libthrift.version>0.9.2</libthrift.version>
@@ -229,6 +230,25 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>com.googlecode.maven-download-plugin</groupId>
+        <artifactId>download-maven-plugin</artifactId>
+        <version>1.2.1</version>
+        <executions>
+          <execution>
+            <id>download-rscala-lib</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <configuration>
+              <url>https://cran.r-project.org/src/contrib/Archive/rscala/rscala_${rscala.version}.tar.gz</url>
+              <unpack>true</unpack>
+              <outputDirectory>${user.dir}/spark/lib</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>

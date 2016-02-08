@@ -35,12 +35,12 @@
   <url>http://zeppelin.incubator.apache.org</url>
 
   <properties>
-    <rscala.version>1.0.6</rscala.version>
+    <mockito.version>1.10.19</mockito.version>
+    <powermock.version>1.6.4</powermock.version>
     <spark.version>1.4.1</spark.version>
     <scala.version>2.10.4</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
   </properties>
-
 
   <dependencies>
     <dependency>
@@ -237,7 +237,7 @@
       <artifactId>rscala</artifactId>
       <version>${rscala.version}</version>
       <scope>system</scope>
-      <systemPath>${basedir}/lib/rscala_2.10-${rscala.version}.jar</systemPath>
+      <systemPath>${user.dir}/spark/lib/rscala/inst/java/rscala_${scala.binary.version}-${rscala.version}.jar</systemPath>
     </dependency>
 
     <!--TEST-->
@@ -272,6 +272,25 @@
       <groupId>org.datanucleus</groupId>
       <artifactId>datanucleus-rdbms</artifactId>
       <version>3.2.9</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-api-mockito</artifactId>
+      <version>${powermock.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-module-junit4</artifactId>
+      <version>${powermock.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -412,4 +431,122 @@
 
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>spark-1.1</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/SparkRInterpreter.java</exclude>
+              </excludes>
+              <testExcludes>
+                <testExclude>**/SparkRInterpreterTest.java</testExclude>
+              </testExcludes>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.scala-tools</groupId>
+            <artifactId>maven-scala-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/ZeppelinR.scala</exclude>
+                <exclude>**/SparkRBackend.scala</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/SparkRInterpreterTest.java</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>spark-1.2</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/SparkRInterpreter.java</exclude>
+              </excludes>
+              <testExcludes>
+                <testExclude>**/SparkRInterpreterTest.java</testExclude>
+              </testExcludes>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.scala-tools</groupId>
+            <artifactId>maven-scala-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/ZeppelinR.scala</exclude>
+                <exclude>**/SparkRBackend.scala</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/SparkRInterpreterTest.java</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>spark-1.3</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/SparkRInterpreter.java</exclude>
+              </excludes>
+              <testExcludes>
+                <testExclude>**/SparkRInterpreterTest.java</testExclude>
+              </testExcludes>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.scala-tools</groupId>
+            <artifactId>maven-scala-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/ZeppelinR.scala</exclude>
+                <exclude>**/SparkRBackend.scala</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <excludes>
+                <exclude>**/SparkRInterpreterTest.java</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
 </project>
