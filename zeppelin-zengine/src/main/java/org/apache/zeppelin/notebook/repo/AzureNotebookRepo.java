@@ -86,10 +86,12 @@ public class AzureNotebookRepo implements NotebookRepo {
               infos.add(info);
             }
           }
-        } catch (URISyntaxException e) {
-          LOG.error("Error enumerating notebooks", e);
-        } catch (StorageException e) {
-          LOG.error("Error enumerating notebooks", e);
+        } catch (StorageException | URISyntaxException e) {
+          String msg = "Error enumerating notebooks from Azure storage";
+
+          LOG.error(msg, e);
+
+          throw new IOException(msg, e);
         }
       }
     }
@@ -105,12 +107,12 @@ public class AzureNotebookRepo implements NotebookRepo {
       CloudFile file = dir.getFileReference("note.json");
 
       ins = file.openRead();
-    } catch (URISyntaxException e) {
-      LOG.error("Error reading file", e);
-      return null;
-    } catch (StorageException e) {
-      LOG.error("Error reading file", e);
-      return null;
+    } catch (URISyntaxException | StorageException e) {
+      String msg = String.format("Error reading notebook %s from Azure storage", noteId);
+
+      LOG.error(msg, e);
+
+      throw new IOException(msg, e);
     }
 
     String json = IOUtils.toString(ins,
@@ -158,10 +160,12 @@ public class AzureNotebookRepo implements NotebookRepo {
 
       CloudFile cloudFile = dir.getFileReference("note.json");
       cloudFile.uploadFromByteArray(buffer, 0, buffer.length);
-    } catch (URISyntaxException e) {
-      LOG.error("Error saving file", e);
-    } catch (StorageException e) {
-      LOG.error("Error saving file", e);
+    } catch (URISyntaxException | StorageException e) {
+      String msg = String.format("Error saving notebook %s to Azure storage", note.getId());
+
+      LOG.error(msg, e);
+
+      throw new IOException(msg, e);
     }
   }
 
@@ -188,10 +192,12 @@ public class AzureNotebookRepo implements NotebookRepo {
       CloudFileDirectory dir = rootDir.getDirectoryReference(noteId);
 
       delete(dir);
-    } catch (URISyntaxException e) {
-      LOG.error("Error deleting file", e);
-    } catch (StorageException e) {
-      LOG.error("Error deleting file", e);
+    } catch (URISyntaxException | StorageException e) {
+      String msg = String.format("Error deleting notebook %s from Azure storage", noteId);
+
+      LOG.error(msg, e);
+
+      throw new IOException(msg, e);
     }
   }
 

@@ -188,7 +188,7 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>ZEPPELIN_NOTEBOOK_AZURE_USER</td>
     <td>zeppelin.notebook.azure.user</td>
     <td>user</td>
-    <td>A user name of Azure file share<br />i.e. <code>share/user/notebook/2A94M5J1Z/note.json</code></td>
+    <td>An optional user name of Azure file share<br />i.e. <code>share/user/notebook/2A94M5J1Z/note.json</code></td>
   </tr>
   <tr>
     <td>ZEPPELIN_NOTEBOOK_STORAGE</td>
