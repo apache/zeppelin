@@ -28,6 +28,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Action;
+import org.openqa.selenium.interactions.Actions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,21 +65,29 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
     try {
       createNewNote();
-
+      Actions action = new Actions(driver);
       waitForParagraph(1, "READY");
       Integer oldNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
-      collector.checkThat("Before CreateNew the number of  paragraph ",
+      collector.checkThat("Before Insert New : the number of  paragraph ",
               oldNosOfParas,
               CoreMatchers.equalTo(1));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
       waitForParagraph(2, "READY");
-      Integer newNosOfParas =  driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
-      collector.checkThat("After CreateNew the number of  paragraph",
-              oldNosOfParas+1,
+      Integer newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      collector.checkThat("After Insert New (using Insert New button) :  number of  paragraph",
+              oldNosOfParas + 1,
               CoreMatchers.equalTo(newNosOfParas));
 
-      ZeppelinITUtils.sleep(1000,false);
+      WebElement newPara = driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'new-paragraph')][1]"));
+      action.moveToElement(newPara).click().build().perform();
+
+      waitForParagraph(3, "READY");
+      newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      collector.checkThat("After Insert New (using '+' button) :  number of  paragraph",
+              oldNosOfParas + 2,
+              CoreMatchers.equalTo(newNosOfParas));
+      ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (ElementNotVisibleException e) {
