@@ -420,7 +420,7 @@ table.table-striped {
 
 
 .scroll-paragraph-down:hover:before {
-  content: "Scroll to End of Log";
+  content: "Scroll to End of Output";
   padding: .3em;
   cursor: pointer;
   background-color: #777;
