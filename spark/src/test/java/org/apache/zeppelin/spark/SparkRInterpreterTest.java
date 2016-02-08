@@ -62,7 +62,7 @@ public class SparkRInterpreterTest {
   public static void beforeClass() {
     initInterpreters();
   }
-
+/*
   @AfterClass
   public static void afterClass() {
     // Nothing to do here...
@@ -77,7 +77,7 @@ public class SparkRInterpreterTest {
   public void after() {
     // Nothing to do here...
   }
-
+*/
   @Test
   public void testSuccess() throws Exception {
     InterpreterResult ret = sparkRInterpreter.interpret("print(1)", context);
@@ -102,13 +102,13 @@ public class SparkRInterpreterTest {
   public void testNullCommand() throws Exception {
     assertNotNull(sparkInterpreter.getInterpreterGroup());
   }
-*/
+
   @Test
   public void testInterpreterGroup() throws Exception {
     InterpreterResult ret = sparkRInterpreter.interpret(null, context);
     assertEquals(InterpreterResult.Code.ERROR, ret.code());
   }
-
+*/
   private static void initInterpreters() {
 
     Properties p = new Properties();
