@@ -129,7 +129,7 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
 
     export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
   fi
-  CLASSPATH+=":${ZEPPELIN_CLASSPATH}":"${ZEPPELIN_HOME}/interpreter/spark/r/rscala_2.10-1.0.6.jar"
+  CLASSPATH+=":${ZEPPELIN_CLASSPATH}":"${ZEPPELIN_HOME}/interpreter/spark/R/rscala_2.10-1.0.6.jar"
 fi
 
 addJarInDir "${LOCAL_INTERPRETER_REPO}"
