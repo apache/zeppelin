@@ -691,6 +691,8 @@ public class NotebookServer extends WebSocketServlet implements
     p.setTitle((String) fromMessage.get("title"));
     if (!fromMessage.principal.equals("anonymous")) {
       p.setUser(fromMessage.principal);
+    } else {
+      p.setUser(null);
     }
 
     Map<String, Object> params = (Map<String, Object>) fromMessage
