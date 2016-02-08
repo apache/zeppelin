@@ -38,7 +38,7 @@ When create a interpreter by default use PostgreSQL with the next properties:
   </tr>
   <tr>
     <td>default.password</td>
-    <td>`********`</td>
+    <td>********</td>
   </tr>
   <tr>
     <td>default.url</td>
@@ -50,11 +50,11 @@ When create a interpreter by default use PostgreSQL with the next properties:
   </tr>      
 </table>
 
-Is not necessary add jar driver to the classpath for PostgreSQL.
+Is not necessary add jar driver to the classpath for PostgreSQL or similar.
 
 #### Simple connection
 
-Before creating the interpreter it is necessary to add to the Zeppelin classpath the path of the JDBC you want to use, to do it you must edit the file `zeppelin-daemon.sh` as shown in the table:
+Before creating the interpreter it is necessary to add to the Zeppelin classpath the path of the JDBC you want to use, to do it you must edit the file `zeppelin-daemon.sh` as shown:
 
 ```
 # Add jdbc connector jar
@@ -78,7 +78,7 @@ For create the interpreter you need to specify connection parameters as shown in
   </tr>
   <tr>
     <td>default.password</td>
-    <td>`********`</td>
+    <td>********</td>
   </tr>
   <tr>
     <td>default.url</td>
@@ -116,7 +116,7 @@ You can add all the jars you need to make multiple connections into the same int
   </tr>
   <tr>
     <td>default.password</td>
-    <td>`********`</td>
+    <td>********</td>
   </tr>
   <tr>
     <td>default.url</td>
@@ -132,7 +132,7 @@ You can add all the jars you need to make multiple connections into the same int
   </tr>
   <tr>
     <td>redshift.password</td>
-    <td>`********`</td>
+    <td>********</td>
   </tr>
   <tr>
     <td>redshift.url</td>
