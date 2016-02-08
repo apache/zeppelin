@@ -2,7 +2,7 @@
   "paragraphs": [
     {
       "text": "%md # R",
-      "dateUpdated": "Dec 28, 2015 12:23:19 PM",
+      "dateUpdated": "Feb 8, 2016 6:18:20 PM",
       "config": {
         "colWidth": 4.0,
         "graph": {
@@ -14,7 +14,9 @@
           "groups": [],
           "scatter": {}
         },
-        "editorMode": "ace/mode/markdown"
+        "editorMode": "ace/mode/markdown",
+        "enabled": true,
+        "editorHide": true
       },
       "settings": {
         "params": {},
@@ -35,7 +37,7 @@
     },
     {
       "text": "%r\nfoo \u003c- TRUE\nprint(foo)\nbare \u003c- c(1,2.5, 4)\nprint(bare)\ndouble \u003c- 15.0\nprint(double)",
-      "dateUpdated": "Dec 28, 2015 12:42:04 PM",
+      "dateUpdated": "Feb 8, 2016 6:15:36 PM",
       "config": {
         "colWidth": 4.0,
         "graph": {
@@ -47,7 +49,8 @@
           "groups": [],
           "scatter": {}
         },
-        "editorMode": "ace/mode/scala"
+        "editorMode": "ace/mode/scala",
+        "enabled": true
       },
       "settings": {
         "params": {},
@@ -61,8 +64,8 @@
         "msg": "\u003cp class\u003d\u0027text\u0027\u003e[1] TRUE\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e[1] 1.0 2.5 4.0\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e[1] 15\u003cbr\u003e\u003c/p\u003e\u003cbr\u003e"
       },
       "dateCreated": "Apr 24, 2015 3:42:26 PM",
-      "dateStarted": "Dec 28, 2015 12:42:04 PM",
-      "dateFinished": "Dec 28, 2015 12:42:25 PM",
+      "dateStarted": "Feb 8, 2016 6:15:36 PM",
+      "dateFinished": "Feb 8, 2016 6:15:59 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
@@ -101,7 +104,7 @@
     },
     {
       "text": "%md # Scala -\u003e R",
-      "dateUpdated": "Dec 28, 2015 12:24:00 PM",
+      "dateUpdated": "Feb 8, 2016 6:18:18 PM",
       "config": {
         "colWidth": 4.0,
         "graph": {
@@ -113,7 +116,9 @@
           "groups": [],
           "scatter": {}
         },
-        "editorMode": "ace/mode/markdown"
+        "editorMode": "ace/mode/markdown",
+        "enabled": true,
+        "editorHide": true
       },
       "settings": {
         "params": {},
@@ -266,7 +271,7 @@
     },
     {
       "text": "%md # R -\u003e Scala",
-      "dateUpdated": "Dec 28, 2015 12:24:50 PM",
+      "dateUpdated": "Feb 8, 2016 6:18:15 PM",
       "config": {
         "colWidth": 4.0,
         "graph": {
@@ -278,7 +283,9 @@
           "groups": [],
           "scatter": {}
         },
-        "editorMode": "ace/mode/markdown"
+        "editorMode": "ace/mode/markdown",
+        "enabled": true,
+        "editorHide": true
       },
       "settings": {
         "params": {},
@@ -364,74 +371,8 @@
       "progressUpdateIntervalMs": 500
     },
     {
-      "text": "%r \nlocalDF \u003c- data.frame(name\u003dc(\"John\", \"Smith\", \"Sarah\"), age\u003dc(19, 23, 18))\ndf \u003c- createDataFrame(sqlContext, localDF)\nprintSchema(df)\nregisterTempTable(df, \"df\")\nSparkR::head(df)",
-      "dateUpdated": "Dec 28, 2015 12:24:56 PM",
-      "config": {
-        "colWidth": 6.0,
-        "graph": {
-          "mode": "table",
-          "height": 300.0,
-          "optionOpen": false,
-          "keys": [],
-          "values": [],
-          "groups": [],
-          "scatter": {}
-        },
-        "editorMode": "ace/mode/scala"
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "jobName": "paragraph_1451299943247_-1445699273",
-      "id": "20151228-115223_736768965",
-      "result": {
-        "code": "SUCCESS",
-        "type": "HTML",
-        "msg": "\u003cp class\u003d\u0027text\u0027\u003eroot\u003cbr\u003e |-- name: string (nullable \u003d true)\u003cbr\u003e |-- age: double (nullable \u003d true)\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e   name age\u003cbr\u003e1  John  19\u003cbr\u003e2 Smith  23\u003cbr\u003e3 Sarah  18\u003cbr\u003e\u003c/p\u003e\u003cbr\u003e"
-      },
-      "dateCreated": "Dec 28, 2015 11:52:23 AM",
-      "dateStarted": "Dec 28, 2015 12:24:56 PM",
-      "dateFinished": "Dec 28, 2015 12:24:57 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "text": "%sql select * from df",
-      "dateUpdated": "Dec 28, 2015 12:25:00 PM",
-      "config": {
-        "colWidth": 6.0,
-        "graph": {
-          "mode": "table",
-          "height": 300.0,
-          "optionOpen": false,
-          "keys": [],
-          "values": [],
-          "groups": [],
-          "scatter": {}
-        },
-        "editorMode": "ace/mode/sql"
-      },
-      "settings": {
-        "params": {},
-        "forms": {}
-      },
-      "jobName": "paragraph_1451299952159_-764293646",
-      "id": "20151228-115232_1220817599",
-      "result": {
-        "code": "SUCCESS",
-        "type": "TABLE",
-        "msg": "name\tage\nJohn\t19.0\nSmith\t23.0\nSarah\t18.0\n"
-      },
-      "dateCreated": "Dec 28, 2015 11:52:32 AM",
-      "dateStarted": "Dec 28, 2015 12:25:00 PM",
-      "dateFinished": "Dec 28, 2015 12:25:00 PM",
-      "status": "FINISHED",
-      "progressUpdateIntervalMs": 500
-    },
-    {
-      "text": "%md # Plot",
-      "dateUpdated": "Dec 28, 2015 12:25:12 PM",
+      "text": "%md # Interactive Visualization",
+      "dateUpdated": "Feb 8, 2016 6:17:43 PM",
       "config": {
         "colWidth": 12.0,
         "graph": {
@@ -443,7 +384,135 @@
           "groups": [],
           "scatter": {}
         },
-        "editorMode": "ace/mode/markdown"
+        "enabled": true,
+        "editorMode": "ace/mode/markdown",
+        "editorHide": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1454951816542_-126693565",
+      "id": "20160208-181656_596321886",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003ch1\u003eInteractive Visualization\u003c/h1\u003e\n"
+      },
+      "dateCreated": "Feb 8, 2016 6:16:56 PM",
+      "dateStarted": "Feb 8, 2016 6:17:36 PM",
+      "dateFinished": "Feb 8, 2016 6:17:36 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%r \nlocalDF \u003c- data.frame(name\u003dc(\"John\", \"Smith\", \"Sarah\"), age\u003dc(19, 53, 18))\ndf \u003c- createDataFrame(sqlContext, localDF)\nprintSchema(df)\nregisterTempTable(df, \"df\")\nSparkR::head(df)",
+      "dateUpdated": "Feb 8, 2016 6:17:57 PM",
+      "config": {
+        "colWidth": 6.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/scala",
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1451299943247_-1445699273",
+      "id": "20151228-115223_736768965",
+      "result": {
+        "code": "SUCCESS",
+        "type": "HTML",
+        "msg": "\u003cp class\u003d\u0027text\u0027\u003eroot\u003cbr\u003e |-- name: string (nullable \u003d true)\u003cbr\u003e |-- age: double (nullable \u003d true)\u003cbr\u003e\u003c/p\u003e\u003cp class\u003d\u0027text\u0027\u003e   name age\u003cbr\u003e1  John  19\u003cbr\u003e2 Smith  53\u003cbr\u003e3 Sarah  18\u003cbr\u003e\u003c/p\u003e\u003cbr\u003e"
+      },
+      "dateCreated": "Dec 28, 2015 11:52:23 AM",
+      "dateStarted": "Feb 8, 2016 6:17:57 PM",
+      "dateFinished": "Feb 8, 2016 6:17:57 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%sql select * from df",
+      "dateUpdated": "Feb 8, 2016 6:18:12 PM",
+      "config": {
+        "colWidth": 6.0,
+        "graph": {
+          "mode": "multiBarChart",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [
+            {
+              "name": "name",
+              "index": 0.0,
+              "aggr": "sum"
+            }
+          ],
+          "values": [
+            {
+              "name": "age",
+              "index": 1.0,
+              "aggr": "sum"
+            }
+          ],
+          "groups": [],
+          "scatter": {
+            "xAxis": {
+              "name": "name",
+              "index": 0.0,
+              "aggr": "sum"
+            },
+            "yAxis": {
+              "name": "age",
+              "index": 1.0,
+              "aggr": "sum"
+            }
+          }
+        },
+        "editorMode": "ace/mode/sql",
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "jobName": "paragraph_1451299952159_-764293646",
+      "id": "20151228-115232_1220817599",
+      "result": {
+        "code": "SUCCESS",
+        "type": "TABLE",
+        "msg": "name\tage\nJohn\t19.0\nSmith\t53.0\nSarah\t18.0\n"
+      },
+      "dateCreated": "Dec 28, 2015 11:52:32 AM",
+      "dateStarted": "Feb 8, 2016 6:17:59 PM",
+      "dateFinished": "Feb 8, 2016 6:17:59 PM",
+      "status": "FINISHED",
+      "progressUpdateIntervalMs": 500
+    },
+    {
+      "text": "%md # ggplot2 Visualization",
+      "dateUpdated": "Feb 8, 2016 6:17:41 PM",
+      "config": {
+        "colWidth": 12.0,
+        "graph": {
+          "mode": "table",
+          "height": 300.0,
+          "optionOpen": false,
+          "keys": [],
+          "values": [],
+          "groups": [],
+          "scatter": {}
+        },
+        "editorMode": "ace/mode/markdown",
+        "enabled": true,
+        "editorHide": true
       },
       "settings": {
         "params": {},
@@ -454,11 +523,11 @@
       "result": {
         "code": "SUCCESS",
         "type": "HTML",
-        "msg": "\u003ch1\u003ePlot\u003c/h1\u003e\n"
+        "msg": "\u003ch1\u003eggplot2 Visualization\u003c/h1\u003e\n"
       },
       "dateCreated": "Nov 19, 2015 3:39:52 PM",
-      "dateStarted": "Dec 28, 2015 12:25:12 PM",
-      "dateFinished": "Dec 28, 2015 12:25:12 PM",
+      "dateStarted": "Feb 8, 2016 6:17:39 PM",
+      "dateFinished": "Feb 8, 2016 6:17:39 PM",
       "status": "FINISHED",
       "progressUpdateIntervalMs": 500
     },
