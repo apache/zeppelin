@@ -411,3 +411,19 @@ table.table-striped {
   border-top: 1px solid #ddd;
   margin-top: 20px;
 }
+
+.scroll-paragraph-down {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+}
+
+
+.scroll-paragraph-down:hover:before {
+  content: "Scroll to End of Log";
+  padding: .3em;
+  cursor: pointer;
+  background-color: #777;
+  border-radius: 2px;
+  color: #f1f1f1;
+}

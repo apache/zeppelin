@@ -25,9 +25,9 @@ limitations under the License.
 
   <div id="{{paragraph.id}}_text"
        ng-if="getResultType() == 'TEXT'">
-    <div class="fa fa-hand-o-down"></div>
+    <div class="fa fa-level-down scroll-paragraph-down" ng-show="showScrollDownIcon()" ng-click="scrollParagraphDown()" ></div>
     <div id="p{{paragraph.id}}_text"
-         ng-style="{'max-height': '{{paragraph.config.graph.height}}px', 'overflow': 'auto'}"
+         style="max-height: {{paragraph.config.graph.height}}px; overflow: auto"
          class="text"></div>
   </div>
 
