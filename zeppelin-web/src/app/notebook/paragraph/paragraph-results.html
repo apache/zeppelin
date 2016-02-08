@@ -23,9 +23,13 @@ limitations under the License.
        ng-bind-html="paragraph.result.comment">
   </div>
 
-  <div id="p{{paragraph.id}}_text"
-       class="text"
-       ng-if="getResultType() == 'TEXT'"></div>
+  <div id="{{paragraph.id}}_text"
+       ng-if="getResultType() == 'TEXT'">
+    <div class="fa fa-hand-o-down"></div>
+    <div id="p{{paragraph.id}}_text"
+         ng-style="{'max-height': '{{paragraph.config.graph.height}}px', 'overflow': 'auto'}"
+         class="text"></div>
+  </div>
 
   <div id="p{{paragraph.id}}_html"
        class="resultContained"
