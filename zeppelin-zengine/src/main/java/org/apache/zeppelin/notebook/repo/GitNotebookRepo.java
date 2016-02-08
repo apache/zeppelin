@@ -25,6 +25,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.notebook.Note;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
@@ -61,7 +62,6 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
       localRepo.create();
     }
     git = new Git(localRepo);
-    checkpoint(".", "initialization commit");
   }
 
   @Override
@@ -108,6 +108,9 @@ public class GitNotebookRepo extends VFSNotebookRepo implements NotebookRepoVers
         history.add(new Rev(log.getName(), log.getCommitTime()));
         LOG.debug(" - ({},{},{})", log.getName(), log.getCommitTime(), log.getFullMessage());
       }
+    } catch (NoHeadException e) {
+      //when no initial commit exists
+      LOG.warn("No Head found for {}, {}", noteId, e.getMessage());
     } catch (GitAPIException e) {
       LOG.error("Failed to get logs for {}", noteId, e);
     }
