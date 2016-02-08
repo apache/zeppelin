@@ -36,7 +36,6 @@
 
 
   <properties>
-    <rscala.version>1.0.6</rscala.version>
     <spark.version>1.4.1</spark.version>
     <scala.version>2.10.4</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
@@ -793,8 +792,6 @@
                     <delete dir="../interpreter/spark/pyspark"/>
                     <copy todir="../interpreter/spark/pyspark"
                           file="${project.build.directory}/spark-dist/spark-${spark.version}/python/lib/py4j-${py4j.version}-src.zip"/>
-                    <copy todir="../interpreter/spark/r"
-                          file="../spark/lib/rscala_2.10-${rscala.version}.jar"/>
                     <zip destfile="${project.build.directory}/../../interpreter/spark/pyspark/pyspark.zip"
                          basedir="${project.build.directory}/spark-dist/spark-${spark.version}/python"
                          includes="pyspark/*.py,pyspark/**/*.py"/>
@@ -936,6 +933,28 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+          <execution>
+            <id>copy-rscala</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <copy todir="${user.dir}/interpreter/spark/R"
+                      file="${user.dir}/spark/lib/rscala/inst/java/rscala_${scala.binary.version}-${rscala.version}.jar"/>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 </project>
