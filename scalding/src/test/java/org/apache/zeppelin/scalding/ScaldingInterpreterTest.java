@@ -62,7 +62,7 @@ public class ScaldingInterpreterTest {
     }
 
     InterpreterGroup intpGroup = new InterpreterGroup();
-    context = new InterpreterContext("note", "id", "title", "text",
+    context = new InterpreterContext("note", "id", "title", "text", null,
         new HashMap<String, Object>(), new GUI(), new AngularObjectRegistry(
             intpGroup.getId(), null), null,
         new LinkedList<InterpreterContextRunner>(), null);
