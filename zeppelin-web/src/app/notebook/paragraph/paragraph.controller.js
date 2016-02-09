@@ -2084,7 +2084,7 @@ angular.module('zeppelinWebApp')
 
   $scope.goToTableauWDCExportParagraph = function () {
     var noteId = $route.current.pathParams.noteId;
-    var redirectToUrl = location.protocol + '//' + location.host + location.pathname + 'api/export/job/runThenExportWDC/' + noteId + '/paragraph/' + $scope.paragraph.id;
+    var redirectToUrl = location.protocol + '//' + location.host + location.pathname + 'api/export/job/runThenExportWDC/' + noteId + '/paragraph/' + $scope.paragraph.id + '-export.html';
     $window.open(redirectToUrl);
   };
 });
