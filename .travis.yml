@@ -41,6 +41,10 @@ matrix:
     - jdk: "oraclejdk7"
       env: SPARK_VER="1.1.1" HADOOP_VER="2.3" PROFILE="-Pspark-1.1 -Phadoop-2.3 -Ppyspark" BUILD_FLAG="package -DskipTests" TEST_FLAG="verify"
 
+    # Test selenium
+    - jdk: "oraclejdk7"
+      env:  TEST_SELENIUM="true" SPARK_VER="1.6.0" HADOOP_VER="2.3" PROFILE="-Pspark-1.6 -Phadoop-2.3 -Ppyspark -Pscalding" BUILD_FLAG="package -Pbuild-distr" TEST_FLAG="verify -Pusing-packaged-distr"
+
 before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"

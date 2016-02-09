@@ -35,7 +35,7 @@ import static org.junit.Assert.assertTrue;
  * To test, ZeppelinServer should be running on port 8080
  * On OSX, you'll need firefox 42.0 installed, then you can run with
  *
- * PATH=~/Applications/Firefox.app/Contents/MacOS/:$PATH CI="" \
+ * PATH=~/Applications/Firefox.app/Contents/MacOS/:$PATH TEST_SELENIUM="" \
  *    mvn -Dtest=org.apache.zeppelin.ZeppelinIT -Denforcer.skip=true \
  *    test -pl zeppelin-server
  *
@@ -62,7 +62,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
   }
 
   @Test
-  public void testAngularDisplay() throws InterruptedException{
+  public void testAngularDisplay() throws InterruptedException {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -78,16 +78,16 @@ public class ZeppelinIT extends AbstractZeppelinIT {
        */
       WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
       paragraph1Editor.sendKeys("println" + Keys.chord(Keys.SHIFT, "9") + "\""
-                  + Keys.chord(Keys.SHIFT, "5")
-                  + "angular <div id='angularTestButton' "
-                  + "ng" + Keys.chord(Keys.SUBTRACT) + "click='myVar=myVar+1'>"
-                  + "BindingTest_{{myVar}}_</div>\")");
+          + Keys.chord(Keys.SHIFT, "5")
+          + "angular <div id='angularTestButton' "
+          + "ng" + Keys.chord(Keys.SUBTRACT) + "click='myVar=myVar+1'>"
+          + "BindingTest_{{myVar}}_</div>\")");
       paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
       waitForParagraph(1, "FINISHED");
 
       // check expected text
       waitForText("BindingTest__", By.xpath(
-              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
       /*
        * Bind variable
@@ -101,7 +101,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       // check expected text
       waitForText("BindingTest_1_", By.xpath(
-              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
 
       /*
@@ -111,23 +111,23 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       WebElement paragraph3Editor = driver.findElement(By.xpath(getParagraphXPath(3) + "//textarea"));
       paragraph3Editor.sendKeys(
           "print" + Keys.chord(Keys.SHIFT, "9") + "\"myVar=\"" + Keys.chord(Keys.ADD)
-          + "z.angular" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\"))");
+              + "z.angular" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\"))");
       paragraph3Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
       waitForParagraph(3, "FINISHED");
 
       // check expected text
       waitForText("myVar=1", By.xpath(
-              getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]"));
+          getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]"));
 
       /*
        * Click element
        */
       driver.findElement(By.xpath(
-              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
 
       // check expected text
       waitForText("BindingTest_2_", By.xpath(
-              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
       /*
        * Register watcher
@@ -138,9 +138,9 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       WebElement paragraph4Editor = driver.findElement(By.xpath(getParagraphXPath(4) + "//textarea"));
       paragraph4Editor.sendKeys(
           "z.angularWatch" + Keys.chord(Keys.SHIFT, "9") + "\"myVar\", "
-          + Keys.chord(Keys.SHIFT, "9")
-          + "before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext)"
-          + Keys.EQUALS + ">{ z.run" +Keys.chord(Keys.SHIFT, "9") + "2, context)}");
+              + Keys.chord(Keys.SHIFT, "9")
+              + "before:Object, after:Object, context:org.apache.zeppelin.interpreter.InterpreterContext)"
+              + Keys.EQUALS + ">{ z.run" + Keys.chord(Keys.SHIFT, "9") + "2, context)}");
       paragraph4Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
       waitForParagraph(4, "FINISHED");
 
@@ -149,16 +149,16 @@ public class ZeppelinIT extends AbstractZeppelinIT {
        * Click element, again and see watcher works
        */
       driver.findElement(By.xpath(
-              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
 
       // check expected text
       waitForText("BindingTest_3_", By.xpath(
-              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
       waitForParagraph(3, "FINISHED");
 
       // check expected text by watcher
       waitForText("myVar=3", By.xpath(
-              getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]"));
+          getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]"));
 
       /*
        * Unbind
@@ -195,53 +195,66 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       System.out.println("testCreateNotebook Test executed");
     } catch (ElementNotVisibleException e) {
       LOG.error("Exception in ZeppelinIT while testAngularDisplay ", e);
-      File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+      File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
 
     }
   }
 
   @Test
   public void testSparkInterpreterDependencyLoading() {
-    // navigate to interpreter page
-    WebElement interpreterLink = driver.findElement(By.linkText("Interpreter"));
-    interpreterLink.click();
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      // navigate to interpreter page
+      WebElement interpreterLink = driver.findElement(By.linkText("Interpreter"));
+      interpreterLink.click();
 
-    // add new dependency to spark interpreter
-    WebElement sparkEditBtn = pollingWait(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]"),
-        MAX_BROWSER_TIMEOUT_SEC);
-    sparkEditBtn.click();
-    WebElement depArtifact = driver.findElement(By.xpath("//input[@ng-model='setting.depArtifact']"));
-    String artifact = "org.apache.commons:commons-csv:1.1";
-    depArtifact.sendKeys(artifact);
-    driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
-    driver.switchTo().alert().accept();
+      // add new dependency to spark interpreter
+      WebElement sparkEditBtn = pollingWait(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]"),
+          MAX_BROWSER_TIMEOUT_SEC);
+      sparkEditBtn.click();
+      WebElement depArtifact = driver.findElement(By.xpath("//input[@ng-model='setting.depArtifact']"));
+      String artifact = "org.apache.commons:commons-csv:1.1";
+      depArtifact.sendKeys(artifact);
+      driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
+      driver.switchTo().alert().accept();
 
-    driver.navigate().back();
-    createNewNote();
+      driver.navigate().back();
+      createNewNote();
 
-    // wait for first paragraph's " READY " status text
-    waitForParagraph(1, "READY");
+      // wait for first paragraph's " READY " status text
+      waitForParagraph(1, "READY");
 
-    WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
+      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
 
-    paragraph1Editor.sendKeys("import org.apache.commons.csv.CSVFormat");
-    paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
-    waitForParagraph(1, "FINISHED");
+      paragraph1Editor.sendKeys("import org.apache.commons.csv.CSVFormat");
+      paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      waitForParagraph(1, "FINISHED");
 
-    // check expected text
-    assertTrue(waitForText("import org.apache.commons.csv.CSVFormat",
-        By.xpath(getParagraphXPath(1) + "//div[starts-with(@id, 'p') and contains(@id, 'text')]/div")));
+      // check expected text
+      assertTrue(waitForText("import org.apache.commons.csv.CSVFormat",
+          By.xpath(getParagraphXPath(1) + "//div[starts-with(@id, 'p') and contains(@id, 'text')]/div")));
 
-    // reset dependency
-    interpreterLink.click();
-    sparkEditBtn = pollingWait(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]"),
-        MAX_BROWSER_TIMEOUT_SEC);
-    sparkEditBtn.click();
-    WebElement testDepRemoveBtn = driver.findElement(By.xpath("//tr[descendant::text()[contains(.,'" +
-        artifact + "')]]/td[3]/div"));
-    sleep(5000, true);
-    testDepRemoveBtn.click();
-    driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
-    driver.switchTo().alert().accept();
+      deleteTestNotebook(driver);
+      sleep(1000, true);
+
+      // reset dependency
+      interpreterLink.click();
+      sparkEditBtn = pollingWait(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]"),
+          MAX_BROWSER_TIMEOUT_SEC);
+      sparkEditBtn.click();
+      WebElement testDepRemoveBtn = driver.findElement(By.xpath("//tr[descendant::text()[contains(.,'" +
+          artifact + "')]]/td[3]/div"));
+      sleep(5000, true);
+      testDepRemoveBtn.click();
+      driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
+      driver.switchTo().alert().accept();
+
+    } catch (ElementNotVisibleException e) {
+      LOG.error("Exception in ZeppelinIT while testAngularDisplay ", e);
+      File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+
+    }
   }
 }
