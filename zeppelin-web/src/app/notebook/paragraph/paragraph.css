@@ -420,10 +420,25 @@ table.table-striped {
 
 
 .scroll-paragraph-down:hover:before {
-  content: "Scroll to End of Output";
+  content: "Follow Output";
   padding: .3em;
   cursor: pointer;
   background-color: #777;
   border-radius: 2px;
   color: #f1f1f1;
+}
+
+.scroll-paragraph-up {
+  bottom: 5px;
+  cursor: pointer;
+  position: absolute;
+  right: 15px;
+}
+
+.scroll-paragraph-up:hover:before {
+  background-color: #777;
+  border-radius: 2px;
+  content: "Scroll Top";
+  color: #f1f1f1;
+  padding: 0.3em;
 }
