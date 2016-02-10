@@ -22,6 +22,21 @@ import org.ddahl.rscala.callback._
 
 object ZeppelinR {
 
+  val css =
+    """
+      |<style type="text/css">
+      |* {
+      |  font-family: Monaco,Menlo,"Ubuntu Mono",Consolas,source-code-pro,monospace !important;
+      |  font-size:	12px !important;
+      |  color:	rgb(33,​ 33,​ 33) !important;
+      |  line-height: 17.15px !important;
+      |}
+      |pre {
+      |  white-space: pre-wrap !important;
+      |}
+      |</script>
+    """.stripMargin
+
   private val R = RClient()
 
   def open(master: String = "local[*]", sparkHome: String = "/opt/spark", sparkInterpreter: SparkInterpreter): Unit = {
