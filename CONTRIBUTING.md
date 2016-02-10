@@ -7,6 +7,8 @@ Contributing to Zeppelin (Source code, Documents, Image, Website) means you agre
 2. If not, create a ticket describing the change you're proposing in the [Jira issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN)
 3. Contribute your patch via Pull Request.
 
+Before you start, please read the [Code of Conduct](http://www.apache.org/foundation/policies/conduct.html) carefully, familiarise yourself with it and refer to it whenever you need it.
+
 ## Creating a Pull Request
 In order to make the review process easier, please follow this template when making a Pull Request:
 
