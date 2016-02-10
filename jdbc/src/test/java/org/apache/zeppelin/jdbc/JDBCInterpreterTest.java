@@ -69,6 +69,20 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     );
   }
 
+
+  @Test
+  public void testForParsePropertyKey() throws IOException {
+    JDBCInterpreter t = new JDBCInterpreter(new Properties());
+    
+    // if return null is that propertyKey is the default
+    assertEquals(t.getPropertyKey("select max(cant) from test_table where id >= 2452640"),
+        null);
+    
+    // when you use a %jdbc(redshift), redshift is the propertyKey as form part of the cmd string
+    assertEquals(t.getPropertyKey("(redshift)\n select max(cant) from test_table where id >= 2452640"),
+        "redshift");
+  }
+  
   @Test
   public void testDefaultProperties() throws SQLException {
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(new Properties());
