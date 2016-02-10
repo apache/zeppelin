@@ -22,14 +22,14 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.6.0-incubating-SNAPSHOT</version>
+    <version>0.5.7-incubating-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-server</artifactId>
   <packaging>jar</packaging>
-  <version>0.6.0-incubating-SNAPSHOT</version>
+  <version>0.5.7-incubating-SNAPSHOT</version>
   <name>Zeppelin: Server</name>
   <url>http://www.nflabs.com</url>
 
@@ -347,7 +347,7 @@
         <artifactId>scalatest-maven-plugin</artifactId>
         <version>1.0</version>
         <configuration>
-          <stderr/>
+          <stderr />
           <systemProperties>
             <spark.testing>1</spark.testing>
           </systemProperties>

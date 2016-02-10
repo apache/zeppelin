@@ -15,21 +15,19 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>zeppelin</artifactId>
         <groupId>org.apache.zeppelin</groupId>
-        <version>0.6.0-incubating-SNAPSHOT</version>
+        <version>0.5.7-incubating-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
     <groupId>org.apache.zeppelin</groupId>
     <artifactId>zeppelin-cassandra</artifactId>
     <packaging>jar</packaging>
-    <version>0.6.0-incubating-SNAPSHOT</version>
+    <version>0.5.7-incubating-SNAPSHOT</version>
     <name>Zeppelin: Cassandra</name>
     <description>Zeppelin cassandra support</description>
     <url>http://zeppelin.incubator.apache.org</url>
