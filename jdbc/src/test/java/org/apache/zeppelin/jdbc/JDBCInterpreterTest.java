@@ -74,13 +74,29 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   public void testForParsePropertyKey() throws IOException {
     JDBCInterpreter t = new JDBCInterpreter(new Properties());
     
-    // if return null is that propertyKey is the default
-    assertEquals(t.getPropertyKey("select max(cant) from test_table where id >= 2452640"),
+    // if return null is that prefix not found
+    assertEquals(t.getPropertyKey("(fake) select max(cant) from test_table where id >= 2452640"),
         null);
     
-    // when you use a %jdbc(redshift), redshift is the propertyKey as form part of the cmd string
-    assertEquals(t.getPropertyKey("(redshift)\n select max(cant) from test_table where id >= 2452640"),
-        "redshift");
+    assertEquals(t.getPropertyKey("() select max(cant) from test_table where id >= 2452640"),
+        null);
+    
+    assertEquals(t.getPropertyKey("(\nfake) select max(cant) from test_table where id >= 2452640"),
+        null);
+    
+    assertEquals(t.getPropertyKey(")fake( select max(cant) from test_table where id >= 2452640"),
+        null);
+        
+    // when you use a %jdbc(prefix1), prefix1 is the propertyKey as form part of the cmd string
+    assertEquals(t.getPropertyKey("(prefix1)\n select max(cant) from test_table where id >= 2452640"),
+        "prefix1");
+    
+    assertEquals(t.getPropertyKey("(prefix2) select max(cant) from test_table where id >= 2452640"),
+            "prefix2");
+    
+    // when you use a %jdbc, prefix is the default
+    assertEquals(t.getPropertyKey("select max(cant) from test_table where id >= 2452640"),
+            "default");
   }
   
   @Test
