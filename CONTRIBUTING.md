@@ -9,6 +9,8 @@ Contributing to Zeppelin (Source code, Documents, Image, Website) means you agre
 
 Before you start, please read the [Code of Conduct](http://www.apache.org/foundation/policies/conduct.html) carefully, familiarise yourself with it and refer to it whenever you need it.
 
+For those of who are not familiar with Apache project, understanding how [How it works](http://www.apache.org/foundation/how-it-works.html) would be quite helpful.
+
 ## Creating a Pull Request
 In order to make the review process easier, please follow this template when making a Pull Request:
 
