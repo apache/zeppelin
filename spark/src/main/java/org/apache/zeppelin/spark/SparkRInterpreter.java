@@ -17,23 +17,30 @@
 
 package org.apache.zeppelin.spark;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.io.BufferedWriter;
 
 /**
  * R and SparkR interpreter.
  */
 public class SparkRInterpreter extends Interpreter {
   private static final Logger logger = LoggerFactory.getLogger(SparkRInterpreter.class);
-  protected static final String KINIT_CMD = ".zres <- knit2html(text=.zcmd)";
+
+  private static String renderOptions;
 
   static {
     Interpreter.register(
@@ -41,13 +48,31 @@ public class SparkRInterpreter extends Interpreter {
       "spark",
       SparkRInterpreter.class.getName(),
       new InterpreterPropertyBuilder()
-        .add("spark.master",
-                SparkInterpreter.getSystemDefault("MASTER", "spark.master", "local[*]"),
-                "Spark master uri. ex) spark://masterhost:7077")
-        .add("spark.home",
-                SparkInterpreter.getSystemDefault("SPARK_HOME", "spark.home", "/opt/spark"),
-                "Spark distribution location")
-        .build());
+              .add("spark.master",
+                      SparkInterpreter.getSystemDefault("MASTER", "spark.master", "local[*]"),
+                      "Spark master uri. ex) spark://masterhost:7077")
+              .add("spark.home",
+                      SparkInterpreter.getSystemDefault("SPARK_HOME", "spark.home", "/opt/spark"),
+                      "Spark distribution location")
+              .add("zeppelin.R.result.width",
+                      SparkInterpreter.getSystemDefault("ZEPPELIN_R_PARAGRAPH_WIDTH",
+                              "zeppelin.R.result.width", "100%"),
+                      "")
+              .add("zeppelin.R.result.height",
+                      SparkInterpreter.getSystemDefault("ZEPPELIN_R_PARAGRAPH_HEIGHT",
+                              "zeppelin.R.result.height", "100%"),
+                      "")
+              .add("zeppelin.R.image.width",
+                      SparkInterpreter.getSystemDefault("ZEPPELIN_R_IMAGE_WIDTH",
+                              "zeppelin.R.image.width", "100%"),
+                      "")
+              .add("zeppelin.R.render.options",
+                      SparkInterpreter.getSystemDefault("ZEPPELIN_R_RENDER_OPTIONS",
+                              "zeppelin.R.render.options",
+                              "out.format = 'html', comment = NA, "
+                                      + "echo = FALSE, results = 'asis', message = F, warning = F"),
+                      "")
+              .build());
   }
 
   public SparkRInterpreter(Properties property) {
@@ -56,36 +81,107 @@ public class SparkRInterpreter extends Interpreter {
 
   @Override
   public void open() {
-    zeppelinR().open(getProperty("spark.master"), getProperty("spark.home"), getSparkInterpreter());
+    zeppelinR().open(getProperty("spark.master"),
+            "/opt/spark", getSparkInterpreter());
+    renderOptions = getProperty("zeppelin.R.render.options");
   }
 
   @Override
   public InterpreterResult interpret(String lines, InterpreterContext contextInterpreter) {
 
-    if (contextInterpreter == null) {
-      throw new NullPointerException("Please use a non null contextInterpreter");
+    String imageWidth = getProperty("zeppelin.R.image.width");
+    String resultWidth = getProperty("zeppelin.R.result.width");
+    String resultHeight = getProperty("zeppelin.R.result.height");
+
+    String widthScript =
+            "this.style.width = this.contentWindow.document.body.scrollWidth + 'px';";
+    String heightScript =
+            "this.style.height = this.contentWindow.document.body.scrollHeight + 'px';";
+
+    String[] sl = lines.split("\n");
+    if (sl[0].contains("{") && sl[0].contains("}")) {
+      String jsonConfig = sl[0].substring(sl[0].indexOf("{"), sl[0].indexOf("}") + 1);
+      ObjectMapper m = new ObjectMapper();
+      try {
+        JsonNode rootNode = m.readTree(jsonConfig);
+        JsonNode resultWidthNode = rootNode.path("resultWidth");
+        if (!resultWidthNode.isMissingNode()) {
+          resultWidth = resultWidthNode.textValue();
+          widthScript = "";
+        }
+        JsonNode resultHeightNode = rootNode.path("resultHeight");
+        if (!resultHeightNode.isMissingNode()) {
+          resultHeight = resultHeightNode.textValue();
+          heightScript = "";
+        }
+        JsonNode imageWidthNode = rootNode.path("imageWidth");
+        if (!imageWidthNode.isMissingNode()) imageWidth = imageWidthNode.textValue();
+      }
+      catch (Exception e) {
+        logger.warn("Can not parse json config: " + jsonConfig, e);
+      }
+      finally {
+        lines = lines.replace(jsonConfig, "");
+      }
     }
 
     try {
 
-      zeppelinR().set(".zcmd", "\n```{r comment=NA, echo=FALSE}\n" + lines + "\n```");
-      zeppelinR().eval(KINIT_CMD);
-      String html = zeppelinR().getS0(".zres");
+      zeppelinR().set(".zcmd", "\n```{r " + renderOptions + "}\n" + lines + "\n```");
+      zeppelinR().eval(".zres <- knit2html(text=.zcmd)");
+      String htmlOut = zeppelinR().getS0(".zres");
 
-      // Only keep the bare results.
-      String htmlOut = html.substring(html.indexOf("<body>") + 7, html.indexOf("</body>") - 1)
-              .replaceAll("<code>", "").replaceAll("</code>", "")
-              .replaceAll("\n\n", "")
-              .replaceAll("\n", "<br>")
-              .replaceAll("<pre>", "<p class='text'>").replaceAll("</pre>", "</p>");
+      String scaledHtml = format(htmlOut, imageWidth);
 
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, "%html\n" + htmlOut);
+      String html = "%html"
+        + " "
+        + "<iframe style=\"overflow:hidden;\" src=\"data:text/html;base64,"
+        + Base64.encodeBase64String(
+          scaledHtml
+            .replaceAll("src=\"//", "src=\"http://")
+            .replaceAll("href=\"//", "href=\"http://")
+            .getBytes("UTF-8"))
+        + "\""
+        + " "
+        + "frameborder=\"0\""
+        + " "
+        + "onload=\""
+        + heightScript
+        + widthScript
+        + "\""
+        + " "
+        + "width=\"" + resultWidth + "\""
+        + " "
+        + "height=\"" + resultHeight + "\""
+        + " "
+        + "/>";
+
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS, html);
 
     } catch (Exception e) {
       logger.error("Exception while connecting to R", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
+    } finally {
+      try {
+      } catch (Exception e) {
+        // Do nothing...
+      }
     }
 
+  }
+
+  private String format(String html, String imageWidth) {
+    Document d = Jsoup.parse(html);
+    if ((d.getElementsByTag("p").size() == 1) && (d.getElementsByTag("img").size() == 0)) {
+      html = html.replaceAll("<p>", "<pre>").replaceAll("</p>", "</pre>");
+    }
+    Document document = Jsoup.parse(html);
+    document.getElementsByTag("head").append(ZeppelinR.css());
+    Elements images = document.getElementsByTag("img");
+    for (Element image : images) {
+      image.attr("width", imageWidth);
+    }
+    return document.toString();
   }
 
   @Override
@@ -144,7 +240,6 @@ public class SparkRInterpreter extends Interpreter {
   protected static class ZeppelinRFactory {
     private static ZeppelinRFactory instance;
     private static ZeppelinR zeppelinR;
-
     private ZeppelinRFactory() {
       // Singleton
     }
@@ -153,31 +248,24 @@ public class SparkRInterpreter extends Interpreter {
       if (instance == null) instance = new ZeppelinRFactory();
       return instance;
     }
-
     protected void open(String master, String sparkHome, SparkInterpreter sparkInterpreter) {
       zeppelinR.open(master, sparkHome, sparkInterpreter);
     }
-
     protected Object eval(String command) {
       return zeppelinR.eval(command);
     }
-
     protected void set(String key, Object value) {
       zeppelinR.set(key, value);
     }
-
     protected Object get(String key) {
       return zeppelinR.get(key);
     }
-
     protected String getS0(String key) {
       return zeppelinR.getS0(key);
     }
-
     protected void close() {
       zeppelinR.close();
     }
-
   }
 
 }

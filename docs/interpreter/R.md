@@ -10,12 +10,23 @@ group: manual
 
 [R](https://www.r-project.org) iR is a free software environment for statistical computing and graphics.
 
-To run R code and visualize plots in Apache Zeppelin, you will need:
+To run R code and visualize plots in Apache Zeppelin, you will need R on your master node (or your dev laptop).
 
-+ devtools with `install.packages("devtools", repos = "http://cran.us.r-project.org")`
-+ knitr with `install.packages("knitr", repos = "http://cran.us.r-project.org")`
-+ ggplot2 with `install.packages("ggplot2", repos = "http://cran.us.r-project.org")`
-+ rscala: We need version 1.0.6 of Rscala, so the commands will be [1]
++ For Centos: yum install R R-devel
++ For Ubuntu: apt-get install r-base r-cran-rserve
+    
+Validate your installation with a simple R command:
+
+```
+R -e print(1+1)
+```
+
+Then install the required R libraries;
+
++ devtools with `R -e "install.packages('devtools', repos = 'http://cran.us.r-project.org')"`
++ knitr with `R -e "install.packages('knitr', repos = 'http://cran.us.r-project.org')"`
++ ggplot2 with `R -e "install.packages('ggplot2', repos = 'http://cran.us.r-project.org')"`
++ rscala: You need version 1.0.6 of RScala, so the commands will be [1]
 
 ```
 [1]
@@ -23,13 +34,7 @@ curl https://cran.r-project.org/src/contrib/Archive/rscala/rscala_1.0.6.tar.gz -
 R CMD INSTALL /tmp/rscala_1.0.6.tar.gz
 ```
 
-Validate your installation with a simple R command:
-
-```
-print(1+1)
-```
-
-We recommend you to also install the following libraries:
+We recommend you to also install the following optional R libraries to enjoy data analytics:
 
 + glmnet
 + pROC
