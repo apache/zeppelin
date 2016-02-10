@@ -22,13 +22,14 @@ limitations under the License.
     <hr />
     <div>
       <p>
-        Enter comma separated users and groups in the fields. Empty set means anyone can do the operation.
+        Enter comma separated users and groups in the fields. <br />
+        Empty field (*) implies anyone can do the operation.
       </p>
-      <div class="notePermissions"
+      <div class="permissionsForm"
            data-ng-model="permissions">
-        <p>Owners : <input ng-list ng-model="permissions.owners"> Owners can change permissions, read and write the note. </p>
-        <p>Readers : <input ng-list ng-model="permissions.readers"> Readers can only read the note.</p>
-        <p>Writers : <input ng-list ng-model="permissions.writers"> Writers can read and write the note.</p>
+        <p>Owners : <input ng-list ng-model="permissions.owners" placeholder="*"> Owners can change permissions, read and write the note. </p>
+        <p>Readers : <input ng-list ng-model="permissions.readers" placeholder="*"> Readers can only read the note.</p>
+        <p>Writers : <input ng-list ng-model="permissions.writers" placeholder="*"> Writers can read and write the note.</p>
       </div>
     </div>
     <br />
