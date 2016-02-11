@@ -53,7 +53,7 @@ object Tableau {
     <html>
       <meta http-equiv="Cache-Control" content="no-store" />
       <head>
-        <title>Stock Quote Connector-Tutorial</title>
+        <title>Zeppelin Tableau WDC Export</title>
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" type="text/javascript"></script>
         <script src="https://online.tableau.com/javascripts/api/tableauwdc-1.1.0.js" type="text/javascript"></script>
         <script type="text/javascript">

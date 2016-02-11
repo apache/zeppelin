@@ -26,6 +26,7 @@ import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.spark.utils.CsqlParserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,49 +117,6 @@ public class SparkCassandraSqlInterpreter extends Interpreter {
         return Boolean.parseBoolean(getProperty("zeppelin.spark.concurrentSQL"));
     }
 
-    Pattern extractInterval =
-            Pattern.compile(".*(interval\\(')([\\d]{4}-[\\d]{2}-[\\d]{2})([^\\d]+)([\\d]{4}-[\\d]{2}-[\\d]{2}).*", Pattern.CASE_INSENSITIVE | Pattern.DOTALL); //CHECKSTYLE:OFF
-
-    SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd");
-
-    /**
-     * Give a query like:
-     *   select foo from bar where day in interval('2016-01-01', '2016-01-03')
-     * Expand the result to:
-     *   select foo from bar where day in ('123', '124', '124')
-     * @return
-     */
-    protected String expandAndReplaceInterval(String query) {
-        Matcher matcher = extractInterval.matcher(query);
-
-        if (matcher.matches()) {
-            try {
-                Date start = dateParser.parse(matcher.group(2));
-                Date end = dateParser.parse(matcher.group(4));
-
-                if (end.before(start)) throw new RuntimeException("Start can't be after end!");
-                if (end.equals(start)) throw new RuntimeException("End is exclusive and should not equal start!"); //CHECKSTYLE:OFF LineLength
-
-                List<Long> dates = new ArrayList<Long>();
-
-                int intervalStart = query.indexOf("interval");
-                int intervalEnd = query.indexOf(")", intervalStart);
-
-                while (start.before(end)){
-                    dates.add( TimeUnit.MILLISECONDS.toDays(start.getTime()));
-                    start = new Date(start.getTime() + TimeUnit.DAYS.toMillis(1));
-                }
-                String newInClause = "(" + StringUtils.join(dates, ", ") + ")";
-
-                return query.substring(0, intervalStart) + newInClause + query.substring(intervalEnd + 1);
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        return query;
-    }
-
     Pattern extractIntoTableNamePattern =
             Pattern.compile("(.*)(into)([ ]+)([a-zA-Z_]+).*", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
@@ -245,7 +203,7 @@ public class SparkCassandraSqlInterpreter extends Interpreter {
                 if (sparkResults.code() != Code.SUCCESS) return sparkResults;
 
             } else { // Assume this is SQL
-                String intervalExpanded = expandAndReplaceInterval(snippet);
+                String intervalExpanded = CsqlParserUtils.parseAndExpandInterval(snippet);
                 logger.info("Expanded sql: " + intervalExpanded);
 
                 String cleanedSql = removeSqlInto(intervalExpanded);
