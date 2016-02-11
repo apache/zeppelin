@@ -17,6 +17,7 @@
 
 package org.apache.zeppelin.spark;
 
+import org.apache.zeppelin.spark.utils.CsqlParserUtils;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,12 +38,12 @@ public class SparkCassandraSqlInterpreterTest {
     @Test
     public void intervalExpansion() {
         String expandedQuery1 =
-                sql.expandAndReplaceInterval("select foo from bar where day in interval('2016-01-01', '2016-01-03') and foo = 'bar'"); //CHECKSTYLE:OFF LineLength
+                CsqlParserUtils.parseAndExpandInterval("select foo from bar where day in interval('2016-01-01', '2016-01-03') and foo = 'bar'"); //CHECKSTYLE:OFF LineLength
         assertEquals(expandedQuery1, "select foo from bar where day in (16801, 16802) and foo = 'bar'");
 
         //CHECKSTYLE:OFF LineLength
         String expandedQuery2 =
-                sql.expandAndReplaceInterval("select foo from bar where day in interval('2016-01-01', '2016-01-02') and foo = 'bar'"); //CHECKSTYLE:OFF LineLength
+                CsqlParserUtils.parseAndExpandInterval("select foo from bar where day in interval('2016-01-01', '2016-01-02') and foo = 'bar'"); //CHECKSTYLE:OFF LineLength
         assertEquals(expandedQuery2, "select foo from bar where day in (16801) and foo = 'bar'");
     }
 }
