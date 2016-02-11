@@ -51,8 +51,8 @@ public class AzureNotebookRepo implements NotebookRepo {
   public AzureNotebookRepo(ZeppelinConfiguration conf)
       throws URISyntaxException, InvalidKeyException, StorageException {
     this.conf = conf;
-    user = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEOOK_AZURE_USER);
-    shareName = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEOOK_AZURE_SHARE);
+    user = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_USER);
+    shareName = conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_SHARE);
 
     CloudStorageAccount account = CloudStorageAccount.parse(
         conf.getString(ZeppelinConfiguration.ConfVars.ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING));
