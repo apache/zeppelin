@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.openqa.selenium.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.reflect.internal.Trees;
 
 import java.io.File;
 
@@ -62,7 +63,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
   }
 
   @Test
-  public void testAngularDisplay() throws InterruptedException{
+  public void testAngularDisplay() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -196,12 +197,12 @@ public class ZeppelinIT extends AbstractZeppelinIT {
     } catch (Exception e) {
       LOG.error("Exception in ZeppelinIT while testAngularDisplay ", e);
       File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
-
+      throw new Exception("Error while executing testAngularDisplay", e);
     }
   }
 
   @Test
-  public void testSparkInterpreterDependencyLoading() {
+  public void testSparkInterpreterDependencyLoading() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -254,7 +255,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
     } catch (Exception e) {
       LOG.error("Exception in ZeppelinIT while testSparkInterpreterDependencyLoading ", e);
       File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-
+      throw new Exception("Error while executing testSparkInterpreterDependencyLoading", e);
     }
   }
 }
