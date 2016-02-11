@@ -27,14 +27,15 @@ limitations under the License.
        ng-if="getResultType() == 'TEXT'">
     <div class="fa fa-level-down scroll-paragraph-down"
          ng-show="showScrollDownIcon()"
-         ng-click="scrollParagraphDown()" ></div>
+         ng-click="scrollParagraphDown()"
+         tooltip="Follow Output"></div>
     <div id="p{{paragraph.id}}_text"
          style="max-height: {{paragraph.config.graph.height}}px; overflow: auto"
-         ng-scroll="someFunction()"
          class="text"></div>
     <div class="fa fa-chevron-up scroll-paragraph-up"
          ng-show="showScrollUpIcon()"
-         ng-click="scrollParagraphUp()"></div>
+         ng-click="scrollParagraphUp()"
+         tooltip="Scroll Top"></div>
   </div>
 
   <div id="p{{paragraph.id}}_html"
