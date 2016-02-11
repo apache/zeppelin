@@ -111,7 +111,8 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       ZeppelinITUtils.sleep(1000,false);
       deleteTestNotebook(driver);
 
-    } catch (ElementNotVisibleException e) {
+    } catch (Exception e) {
+      LOG.error("Exception in ParagraphActionsIT while testMoveUpAndDown ", e);
       File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
     }
 
@@ -149,7 +150,8 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       deleteTestNotebook(driver);
 
-    } catch (ElementNotVisibleException e) {
+    } catch (Exception e) {
+      LOG.error("Exception in ParagraphActionsIT while testDisableParagraphRunButton ", e);
       File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
     }
 

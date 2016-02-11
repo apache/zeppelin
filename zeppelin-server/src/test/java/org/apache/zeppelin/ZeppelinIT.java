@@ -193,7 +193,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       sleep(100, true);
 
       System.out.println("testCreateNotebook Test executed");
-    } catch (ElementNotVisibleException e) {
+    } catch (Exception e) {
       LOG.error("Exception in ZeppelinIT while testAngularDisplay ", e);
       File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
 
@@ -251,8 +251,8 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       testDepRemoveBtn.click();
       driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
       driver.switchTo().alert().accept();
-    } catch (ElementNotVisibleException e) {
-      LOG.error("Exception in ZeppelinIT while testAngularDisplay ", e);
+    } catch (Exception e) {
+      LOG.error("Exception in ZeppelinIT while testSparkInterpreterDependencyLoading ", e);
       File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
 
     }
