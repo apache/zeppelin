@@ -90,7 +90,7 @@ public class SparkRInterpreter extends Interpreter {
       try {
         JsonNode rootNode = m.readTree(jsonConfig);
         JsonNode imageWidthNode = rootNode.path("imageWidth");
-        if (! imageWidthNode.isMissingNode()) imageWidth = imageWidthNode.textValue();
+        if (!imageWidthNode.isMissingNode()) imageWidth = imageWidthNode.textValue();
       }
       catch (Exception e) {
         logger.warn("Can not parse json config: " + jsonConfig, e);
@@ -137,9 +137,8 @@ public class SparkRInterpreter extends Interpreter {
     Elements paragraphs = body.getElementsByTag("p");
 
     if ((paragraphs.size() == 1)
-            && (images.size() == 0)
-            && (scripts.size() == 0)
-            ) {
+       && (images.size() == 0)
+       && (scripts.size() == 0)) {
 
       // We are here with a pure text output, let's keep format intact...
 
