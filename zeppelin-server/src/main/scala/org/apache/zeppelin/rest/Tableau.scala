@@ -1,5 +1,7 @@
 package org.apache.zeppelin.rest
 
+import org.apache.commons.lang3.StringEscapeUtils
+
 object Tableau {
   /**
    * Turns TSV data into a
@@ -40,9 +42,9 @@ object Tableau {
   private def makeDataTableJavascript(dataTable: Array[String], header: Array[String]): String = {
     dataTable.map { row =>
       val json =
-      row.split("\t").zipWithIndex.map { case (column, columnIndex) =>
+      row.split("\t").zipWithIndex.map { case (columnValue, columnIndex) =>
         val headerName = header(columnIndex)
-        s"'$headerName': '$column'"
+        s"'$headerName': '${StringEscapeUtils.escapeEcmaScript(columnValue)}'"
       }.mkString(",")
 
       s"dtr.push({$json});"
