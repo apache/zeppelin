@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * R and SparkR interpreter.
+ * R and SparkR interpreter with visualization support.
  */
 public class SparkRInterpreter extends Interpreter {
   private static final Logger logger = LoggerFactory.getLogger(SparkRInterpreter.class);
@@ -54,14 +54,6 @@ public class SparkRInterpreter extends Interpreter {
               .add("spark.home",
                       SparkInterpreter.getSystemDefault("SPARK_HOME", "spark.home", "/opt/spark"),
                       "Spark distribution location")
-              .add("zeppelin.R.result.width",
-                      SparkInterpreter.getSystemDefault("ZEPPELIN_R_PARAGRAPH_WIDTH",
-                              "zeppelin.R.result.width", "100%"),
-                      "")
-              .add("zeppelin.R.result.height",
-                      SparkInterpreter.getSystemDefault("ZEPPELIN_R_PARAGRAPH_HEIGHT",
-                              "zeppelin.R.result.height", "100%"),
-                      "")
               .add("zeppelin.R.image.width",
                       SparkInterpreter.getSystemDefault("ZEPPELIN_R_IMAGE_WIDTH",
                               "zeppelin.R.image.width", "100%"),
@@ -90,13 +82,6 @@ public class SparkRInterpreter extends Interpreter {
   public InterpreterResult interpret(String lines, InterpreterContext contextInterpreter) {
 
     String imageWidth = getProperty("zeppelin.R.image.width");
-    String resultWidth = getProperty("zeppelin.R.result.width");
-    String resultHeight = getProperty("zeppelin.R.result.height");
-
-    String widthScript =
-            "this.style.width = this.contentWindow.document.body.scrollWidth + 'px';";
-    String heightScript =
-            "this.style.height = this.contentWindow.document.body.scrollHeight + 'px';";
 
     String[] sl = lines.split("\n");
     if (sl[0].contains("{") && sl[0].contains("}")) {
@@ -104,18 +89,8 @@ public class SparkRInterpreter extends Interpreter {
       ObjectMapper m = new ObjectMapper();
       try {
         JsonNode rootNode = m.readTree(jsonConfig);
-        JsonNode resultWidthNode = rootNode.path("resultWidth");
-        if (!resultWidthNode.isMissingNode()) {
-          resultWidth = resultWidthNode.textValue();
-          widthScript = "";
-        }
-        JsonNode resultHeightNode = rootNode.path("resultHeight");
-        if (!resultHeightNode.isMissingNode()) {
-          resultHeight = resultHeightNode.textValue();
-          heightScript = "";
-        }
         JsonNode imageWidthNode = rootNode.path("imageWidth");
-        if (!imageWidthNode.isMissingNode()) imageWidth = imageWidthNode.textValue();
+        if (! imageWidthNode.isMissingNode()) imageWidth = imageWidthNode.textValue();
       }
       catch (Exception e) {
         logger.warn("Can not parse json config: " + jsonConfig, e);
@@ -129,34 +104,14 @@ public class SparkRInterpreter extends Interpreter {
 
       zeppelinR().set(".zcmd", "\n```{r " + renderOptions + "}\n" + lines + "\n```");
       zeppelinR().eval(".zres <- knit2html(text=.zcmd)");
-      String htmlOut = zeppelinR().getS0(".zres");
+      String html = zeppelinR().getS0(".zres");
 
-      String scaledHtml = format(htmlOut, imageWidth);
+      html = format(html, imageWidth);
 
-      String html = "%html"
-        + " "
-        + "<iframe style=\"overflow:hidden;\" src=\"data:text/html;base64,"
-        + Base64.encodeBase64String(
-          scaledHtml
-            .replaceAll("src=\"//", "src=\"http://")
-            .replaceAll("href=\"//", "href=\"http://")
-            .getBytes("UTF-8"))
-        + "\""
-        + " "
-        + "frameborder=\"0\""
-        + " "
-        + "onload=\""
-        + heightScript
-        + widthScript
-        + "\""
-        + " "
-        + "width=\"" + resultWidth + "\""
-        + " "
-        + "height=\"" + resultHeight + "\""
-        + " "
-        + "/>";
-
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, html);
+      return new InterpreterResult(
+              InterpreterResult.Code.SUCCESS,
+              InterpreterResult.Type.HTML,
+              html);
 
     } catch (Exception e) {
       logger.error("Exception while connecting to R", e);
@@ -167,21 +122,45 @@ public class SparkRInterpreter extends Interpreter {
         // Do nothing...
       }
     }
-
   }
 
+  /*
+   * Ensure we return proper HTML to be displayed in the Zeppelin UI.
+   */
   private String format(String html, String imageWidth) {
-    Document d = Jsoup.parse(html);
-    if ((d.getElementsByTag("p").size() == 1) && (d.getElementsByTag("img").size() == 0)) {
-      html = html.replaceAll("<p>", "<pre>").replaceAll("</p>", "</pre>");
-    }
+
     Document document = Jsoup.parse(html);
-    document.getElementsByTag("head").append(ZeppelinR.css());
-    Elements images = document.getElementsByTag("img");
+
+    Element body = document.getElementsByTag("body").get(0);
+    Elements images = body.getElementsByTag("img");
+    Elements scripts = body.getElementsByTag("script");
+    Elements paragraphs = body.getElementsByTag("p");
+
+    if ((paragraphs.size() == 1)
+            && (images.size() == 0)
+            && (scripts.size() == 0)
+            ) {
+
+      // We are here with a pure text output, let's keep format intact...
+
+      return html.substring(
+              html.indexOf("<body>") + 6,
+              html.indexOf("</body>")
+      )
+              .replace("<p>", "<pre style='background-color: white; border: 0px;'>")
+              .replace("</p>", "</pre>");
+
+    }
+
+    // OK, we have more than text...
+
     for (Element image : images) {
       image.attr("width", imageWidth);
     }
-    return document.toString();
+
+    return body.html()
+            .replaceAll("src=\"//", "src=\"http://")
+            .replaceAll("href=\"//", "href=\"http://");
   }
 
   @Override
@@ -234,8 +213,9 @@ public class SparkRInterpreter extends Interpreter {
   }
 
   /**
-   * Java Factory to support tests with Mockito
-   * (mockito can not mock the zeppelinR final scala class).
+   * Java Factory to support tests with Mockito.
+   *
+   * (Mockito can not mock the zeppelinR final scala object class).
    */
   protected static class ZeppelinRFactory {
     private static ZeppelinRFactory instance;
