@@ -46,7 +46,7 @@ public class SparkRInterpreterTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkRInterpreterTest.class);
 
   private static final String MOCK_RSCALA_RESULT = "<body>         Mock R Result   </body>";
-  private static final String MOCK_R_INTERPRETER_RESULT = MOCK_RSCALA_RESULT.substring(MOCK_RSCALA_RESULT.indexOf("<body>") + 7, MOCK_RSCALA_RESULT.indexOf("</body>") - 1)
+  private static final String MOCK_R_INTERPRETER_RESULT = "Mock R Result"
           .replaceAll("<code>", "").replaceAll("</code>", "")
           .replaceAll("\n\n", "")
           .replaceAll("\n", "<br>")
