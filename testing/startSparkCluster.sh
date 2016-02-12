@@ -40,26 +40,6 @@ fi
 
 set -xe
 
-FWDIR=$(dirname "${BASH_SOURCE-$0}")
-ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
-export SPARK_HOME=${ZEPPELIN_HOME}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
-echo "SPARK_HOME is ${SPARK_HOME}"
-if [ ! -d "${SPARK_HOME}" ]; then
-    if [ "${SPARK_VER_RANGE}" == "<=1.2" ]; then
-        # spark 1.1.x and spark 1.2.x can be downloaded from archive
-        wget -q http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
-    else
-        # spark 1.3.x and later can be downloaded from mirror
-        # get download address from mirror
-        MIRROR_INFO=$(curl -s "http://www.apache.org/dyn/closer.cgi/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz?asjson=1")
-
-        PREFFERED=$(echo "${MIRROR_INFO}" | grep preferred | sed 's/[^"]*.preferred.: .\([^"]*\).*/\1/g')
-        PATHINFO=$(echo "${MIRROR_INFO}" | grep path_info | sed 's/[^"]*.path_info.: .\([^"]*\).*/\1/g')
-        wget -q "${PREFFERED}${PATHINFO}"
-    fi
-    tar zxf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
-fi
-
 # create PID dir. test case detect pid file so they can select active spark home dir for test
 mkdir -p ${SPARK_HOME}/run
 export SPARK_PID_DIR=${SPARK_HOME}/run
