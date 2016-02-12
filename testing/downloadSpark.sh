@@ -48,7 +48,7 @@ if [ ! -d "${SPARK_HOME}" ]; then
     if [ "${SPARK_VER_RANGE}" == "<=1.2" ]; then
         # spark 1.1.x and spark 1.2.x can be downloaded from archive
         STARTTIME=`date +%s`
-        timeout -s KILL 590 wget -q http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
+        timeout -s KILL 300 wget -q http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
         ENDTIME=`date +%s`
         DOWNLOADTIME=$((ENDTIME-STARTTIME))
     else
@@ -60,7 +60,7 @@ if [ ! -d "${SPARK_HOME}" ]; then
         PATHINFO=$(echo "${MIRROR_INFO}" | grep path_info | sed 's/[^"]*.path_info.: .\([^"]*\).*/\1/g')
 
         STARTTIME=`date +%s`
-        timeout -s KILL 590 wget -q "${PREFFERED}${PATHINFO}"
+        timeout -s KILL 300 wget -q "${PREFFERED}${PATHINFO}"
         ENDTIME=`date +%s`
         DOWNLOADTIME=$((ENDTIME-STARTTIME))
     fi
