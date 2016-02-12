@@ -197,7 +197,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
     } catch (Exception e) {
       LOG.error("Exception in ZeppelinIT while testAngularDisplay ", e);
       File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
-      throw new Exception(e);
+      throw e;
     }
   }
 
@@ -255,7 +255,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
     } catch (Exception e) {
       LOG.error("Exception in ZeppelinIT while testSparkInterpreterDependencyLoading ", e);
       File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-      throw new Exception(e);
+      throw e;
     }
   }
 }
