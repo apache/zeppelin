@@ -58,7 +58,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
   }
 
   @Test
-  public void testMoveUpAndDown() throws InterruptedException {
+  public void testMoveUpAndDown() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -111,14 +111,16 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       ZeppelinITUtils.sleep(1000,false);
       deleteTestNotebook(driver);
 
-    } catch (ElementNotVisibleException e) {
+    } catch (Exception e) {
+      LOG.error("Exception in ParagraphActionsIT while testMoveUpAndDown ", e);
       File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+      throw e;
     }
 
   }
 
   @Test
-  public void testDisableParagraphRunButton() throws InterruptedException {
+  public void testDisableParagraphRunButton() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -149,8 +151,10 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       deleteTestNotebook(driver);
 
-    } catch (ElementNotVisibleException e) {
+    } catch (Exception e) {
+      LOG.error("Exception in ParagraphActionsIT while testDisableParagraphRunButton ", e);
       File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+      throw e;
     }
 
   }
