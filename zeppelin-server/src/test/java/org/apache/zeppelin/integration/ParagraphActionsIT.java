@@ -114,7 +114,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     } catch (Exception e) {
       LOG.error("Exception in ParagraphActionsIT while testMoveUpAndDown ", e);
       File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-      throw new Exception("Error while executing testMoveUpAndDown", e);
+      throw new Exception(e);
     }
 
   }
@@ -154,7 +154,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     } catch (Exception e) {
       LOG.error("Exception in ParagraphActionsIT while testDisableParagraphRunButton ", e);
       File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-      throw new Exception("Error while executing testDisableParagraphRunButton", e);
+      throw new Exception(e);
     }
 
   }
