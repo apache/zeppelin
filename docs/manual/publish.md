@@ -23,6 +23,8 @@ limitations under the License.
 Zeppelin provides a feature for publishing your notebook paragraph results. Using this feature, you can show Zeppelin notebook paragraph results in your own website. 
 It's very straightforward. Just use `<iframe>` tag in your page.
 
+> **Warning**: Please use this feature with caution and in a trusted environment only, as Zeppelin entire Webapp could be accessible for whoever visits your website.
+
 ### Copy a Paragraph Link
 A first step to publish your paragraph result is **Copy a Paragraph Link**.
 
@@ -32,15 +34,15 @@ A first step to publish your paragraph result is **Copy a Paragraph Link**.
   * Just copy the provided link. 
 <center><img src="../assets/themes/zeppelin/img/docs-img/copy-the-link.png" height="100%" width="100%"></center>
 
-### Embed the Paragraph to Your Own Web Site
-For publishing the copied paragraph, you may use `<iframe>` tag in your web site page.
+### Embed the Paragraph to Your Website
+For publishing the copied paragraph, you may use `<iframe>` tag in your website page.
 For example,
 
 ```
 <iframe src="http://< ip-address >:< port >/#/notebook/2B3QSZTKR/paragraph/...?asIframe" height="" width="" ></iframe>
 ```
 
-Finally, you can see your beautiful visualization results in your web site. 
+Finally, you can show off your beautiful visualization results in your website. 
 <center><img src="../assets/themes/zeppelin/img/docs-img/your-website.png" height="90%" width="90%"></center>
 
-> **Note**: To embed the paragraph in a website, Zeppelin needs to be reachable for that Website. 
+> **Note**: To embed the paragraph in a website, Zeppelin needs to be reachable by that website. 
