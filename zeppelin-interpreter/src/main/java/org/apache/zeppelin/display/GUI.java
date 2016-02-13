@@ -78,7 +78,7 @@ public class GUI implements Serializable {
       ParamOption[] options) {
     Collection<Object> value = (Collection<Object>) params.get(id);
     if (value == null) {
-      return defaultChecked;
+      value = defaultChecked;
     }
     forms.put(id, new Input(id, defaultChecked, "checkbox", options));
     return value;

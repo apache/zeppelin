@@ -21,14 +21,14 @@ limitations under the License.
     <div>
 
       <input class="form-control input-sm"
-             ng-if="!paragraph.settings.forms[formulaire.name].options"
+             ng-if="paragraph.settings.forms[formulaire.name].type == 'input'"
              ng-enter="runParagraph(getEditorValue())"
              ng-model="paragraph.settings.params[formulaire.name]"
              ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
              name="{{formulaire.name}}" />
 
       <select class="form-control input-sm"
-             ng-if="!paragraph.settings.forms[formulaire.name].type == 'checkbox' && paragraph.settings.forms[formulaire.name].options"
+             ng-if="paragraph.settings.forms[formulaire.name].type == 'select'"
              ng-change="runParagraph(getEditorValue())"
              ng-model="paragraph.settings.params[formulaire.name]"
              ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
@@ -41,7 +41,8 @@ limitations under the License.
           <input type="checkbox"
                  class="form-control input-sm"
                  ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
-                 ng-click="paragraph.settings.params[formulaire.name] = [option.value]"/>{{option.value}}
+                 ng-checked="paragraph.settings.params[formulaire.name].indexOf(option.value) > -1"
+                 ng-click="toggleCheckbox(formulaire, option)"/>{{option.value}}
         </label>
         <button ng-click="runParagraph(getEditorValue())">Submit</button>
       </div>
