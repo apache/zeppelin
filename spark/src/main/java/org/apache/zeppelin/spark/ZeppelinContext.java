@@ -17,7 +17,9 @@
 
 package org.apache.zeppelin.spark;
 
+import static scala.collection.JavaConversions.asJavaCollection;
 import static scala.collection.JavaConversions.asJavaIterable;
+import static scala.collection.JavaConversions.asScalaIterable;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -84,6 +86,27 @@ public class ZeppelinContext {
 
   public Object select(String name, Object defaultValue,
       scala.collection.Iterable<Tuple2<Object, String>> options) {
+    return gui.select(name, defaultValue, tuplesToParamOptions(options));
+  }
+
+  public scala.collection.Iterable<Object> checkbox(String name,
+      scala.collection.Iterable<Tuple2<Object, String>> options) {
+    List<Object> allChecked = new LinkedList<Object>();
+    for (Tuple2<Object, String> option : asJavaIterable(options)) {
+      allChecked.add(option._1());
+    }
+    return checkbox(name, asScalaIterable(allChecked), options);
+  }
+
+  public scala.collection.Iterable<Object> checkbox(String name,
+      scala.collection.Iterable<Object> defaultChecked,
+      scala.collection.Iterable<Tuple2<Object, String>> options) {
+    return asScalaIterable(gui.checkbox(name, asJavaCollection(defaultChecked),
+            tuplesToParamOptions(options)));
+  }
+
+  private ParamOption[] tuplesToParamOptions(
+      scala.collection.Iterable<Tuple2<Object, String>> options) {
     int n = options.size();
     ParamOption[] paramOptions = new ParamOption[n];
     Iterator<Tuple2<Object, String>> it = asJavaIterable(options).iterator();
@@ -94,7 +117,7 @@ public class ZeppelinContext {
       paramOptions[i++] = new ParamOption(valueAndDisplayValue._1(), valueAndDisplayValue._2());
     }
 
-    return gui.select(name, defaultValue, paramOptions);
+    return paramOptions;
   }
 
   public void setGui(GUI o) {

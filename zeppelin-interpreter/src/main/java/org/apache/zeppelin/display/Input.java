@@ -68,19 +68,20 @@ public class Input implements Serializable {
   ParamOption[] options;
   boolean hidden;
 
-  public Input(String name, Object defaultValue) {
+  public Input(String name, Object defaultValue, String type) {
     this.name = name;
     this.displayName = name;
     this.defaultValue = defaultValue;
+    this.type = type;
   }
 
-  public Input(String name, Object defaultValue, ParamOption[] options) {
+  public Input(String name, Object defaultValue, String type, ParamOption[] options) {
     this.name = name;
     this.displayName = name;
     this.defaultValue = defaultValue;
+    this.type = type;
     this.options = options;
   }
-
 
   public Input(String name, String displayName, String type, Object defaultValue,
       ParamOption[] options, boolean hidden) {
