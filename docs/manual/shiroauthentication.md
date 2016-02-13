@@ -28,6 +28,14 @@ When you connect to Apache Zeppelin, you will be asked to enter your credentials
 You can setup **Zeppelin notebook authentication** in some simple steps.
 
 ####1. Secure the HTTP channel
+To secure the HTTP channel, you have to change both **anon** and **authcBasic** settings in `conf/shiro.ini`. In here, **anon** means "the access is anonymous" and **authcBasic** means "basic auth security". 
+
+The default status of them is
+
+```
+/** = anon
+#/** = authcBasic
+```
 Deactivate the line "/** = anon" and activate the line "/** = authcBasic" in `conf/shiro.ini` file. 
 
 ```
