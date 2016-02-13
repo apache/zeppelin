@@ -22,13 +22,13 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.5.7-incubating-SNAPSHOT</version>
+    <version>0.5.5-incubating</version>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-postgresql</artifactId>
   <packaging>jar</packaging>
-  <version>0.5.7-incubating-SNAPSHOT</version>
+  <version>0.5.5-incubating</version>
   <name>Zeppelin: PostgreSQL interpreter</name>
   <url>http://www.apache.org</url>
 

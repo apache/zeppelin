@@ -22,7 +22,7 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.5.7-incubating-SNAPSHOT</version>
+    <version>0.5.5-incubating</version>
     <relativePath>..</relativePath>
   </parent>
 

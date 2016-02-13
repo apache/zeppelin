@@ -23,14 +23,14 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.5.7-incubating-SNAPSHOT</version>
+    <version>0.5.5-incubating</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-zengine</artifactId>
   <packaging>jar</packaging>
-  <version>0.5.7-incubating-SNAPSHOT</version>
+  <version>0.5.5-incubating</version>
   <name>Zeppelin: Zengine</name>
   <description>Zeppelin Zengine</description>
   <url>http://zeppelin.incubator.apache.org</url>
@@ -51,13 +51,13 @@
       <artifactId>zeppelin-interpreter</artifactId>
       <version>${project.version}</version>
     </dependency>
-
+	
 	<dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-s3</artifactId>
       <version>1.10.1</version>
 	</dependency>
-
+    
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
@@ -124,30 +124,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-core</artifactId>
-      <version>5.3.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-analyzers-common</artifactId>
-      <version>5.3.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-queryparser</artifactId>
-      <version>5.3.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-highlighter</artifactId>
-      <version>5.3.1</version>
-    </dependency>
-
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
@@ -176,30 +152,10 @@
     </dependency>
 
     <dependency>
-      <groupId>org.eclipse.jgit</groupId>
-      <artifactId>org.eclipse.jgit</artifactId>
-      <version>4.1.1.201511131810-r</version>
-    </dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
       <version>1.9.0</version>
       <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.truth</groupId>
-      <artifactId>truth</artifactId>
-      <version>0.27</version>
-      <scope>test</scope>
-    </dependency>
-
+    </dependency>    
   </dependencies>
 </project>

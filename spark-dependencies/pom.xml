@@ -22,18 +22,18 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.5.7-incubating-SNAPSHOT</version>
+    <version>0.5.5-incubating</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-spark-dependencies</artifactId>
   <packaging>jar</packaging>
-  <version>0.5.7-incubating-SNAPSHOT</version>
+  <version>0.5.5-incubating</version>
   <name>Zeppelin: Spark dependencies</name>
   <description>Zeppelin spark support</description>
   <url>http://zeppelin.incubator.apache.org</url>
-
+  
 
   <properties>
     <spark.version>1.4.1</spark.version>
@@ -130,117 +130,117 @@
           </exclusion>
         </exclusions>
       </dependency>
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-yarn-api</artifactId>
-        <version>${yarn.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>asm</groupId>
-            <artifactId>asm</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.jboss.netty</groupId>
-            <artifactId>netty</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-yarn-common</artifactId>
-        <version>${yarn.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>asm</groupId>
-            <artifactId>asm</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.jboss.netty</groupId>
-            <artifactId>netty</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-yarn-server-web-proxy</artifactId>
-        <version>${yarn.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>asm</groupId>
-            <artifactId>asm</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.jboss.netty</groupId>
-            <artifactId>netty</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-yarn-client</artifactId>
-        <version>${yarn.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>asm</groupId>
-            <artifactId>asm</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.jboss.netty</groupId>
-            <artifactId>netty</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-        </exclusions>
+      <dependency>		
+        <groupId>org.apache.hadoop</groupId>		
+        <artifactId>hadoop-yarn-api</artifactId>		
+        <version>${yarn.version}</version>		
+        <exclusions>		
+          <exclusion>		
+            <groupId>asm</groupId>		
+            <artifactId>asm</artifactId>		
+          </exclusion>		
+          <exclusion>		
+            <groupId>org.ow2.asm</groupId>		
+            <artifactId>asm</artifactId>		
+          </exclusion>		
+          <exclusion>		
+            <groupId>org.jboss.netty</groupId>		
+            <artifactId>netty</artifactId>		
+          </exclusion>		
+          <exclusion>		
+            <groupId>commons-logging</groupId>		
+            <artifactId>commons-logging</artifactId>		
+          </exclusion>		
+        </exclusions>		
+      </dependency>		
+		
+      <dependency>		
+        <groupId>org.apache.hadoop</groupId>		
+        <artifactId>hadoop-yarn-common</artifactId>		
+        <version>${yarn.version}</version>		
+        <exclusions>		
+          <exclusion>		
+            <groupId>asm</groupId>		
+            <artifactId>asm</artifactId>		
+          </exclusion>		
+          <exclusion>		
+            <groupId>org.ow2.asm</groupId>		
+            <artifactId>asm</artifactId>		
+          </exclusion>		
+          <exclusion>		
+            <groupId>org.jboss.netty</groupId>		
+            <artifactId>netty</artifactId>		
+          </exclusion>		
+          <exclusion>		
+            <groupId>javax.servlet</groupId>		
+            <artifactId>servlet-api</artifactId>		
+          </exclusion>		
+          <exclusion>		
+            <groupId>commons-logging</groupId>		
+            <artifactId>commons-logging</artifactId>		
+          </exclusion>		
+        </exclusions>		
+      </dependency>		
+		
+      <dependency>		
+        <groupId>org.apache.hadoop</groupId>		
+        <artifactId>hadoop-yarn-server-web-proxy</artifactId>		
+        <version>${yarn.version}</version>		
+        <exclusions>		
+          <exclusion>		
+            <groupId>asm</groupId>		
+            <artifactId>asm</artifactId>		
+          </exclusion>		
+          <exclusion>		
+            <groupId>org.ow2.asm</groupId>		
+            <artifactId>asm</artifactId>		
+          </exclusion>		
+          <exclusion>		
+            <groupId>org.jboss.netty</groupId>		
+            <artifactId>netty</artifactId>		
+          </exclusion>		
+          <exclusion>		
+            <groupId>javax.servlet</groupId>		
+            <artifactId>servlet-api</artifactId>		
+          </exclusion>		
+          <exclusion>		
+            <groupId>commons-logging</groupId>		
+            <artifactId>commons-logging</artifactId>		
+          </exclusion>		
+        </exclusions>		
+      </dependency>		
+		
+      <dependency>		
+        <groupId>org.apache.hadoop</groupId>		
+        <artifactId>hadoop-yarn-client</artifactId>		
+        <version>${yarn.version}</version>		
+        <exclusions>		
+          <exclusion>		
+            <groupId>asm</groupId>		
+            <artifactId>asm</artifactId>		
+          </exclusion>		
+          <exclusion>		
+            <groupId>org.ow2.asm</groupId>		
+            <artifactId>asm</artifactId>		
+          </exclusion>		
+          <exclusion>		
+            <groupId>org.jboss.netty</groupId>		
+            <artifactId>netty</artifactId>		
+          </exclusion>		
+          <exclusion>		
+            <groupId>javax.servlet</groupId>		
+            <artifactId>servlet-api</artifactId>		
+          </exclusion>		
+          <exclusion>		
+            <groupId>commons-logging</groupId>		
+            <artifactId>commons-logging</artifactId>		
+          </exclusion>		
+        </exclusions>		
       </dependency>
     </dependencies>
   </dependencyManagement>
-
-  <dependencies>
+  
+  <dependencies>  
     <!-- Spark -->
     <dependency>
       <groupId>org.apache.spark</groupId>
@@ -435,7 +435,9 @@
         <dependency>
           <groupId>com.datastax.spark</groupId>
           <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
-          <version>1.3.1</version>
+          <!--You need to build your own version of Spark Cassandra connector 1.3.0-SNAPSHOT
+              because it is not yet released-->
+          <version>1.3.0-SNAPSHOT</version>
           <exclusions>
             <exclusion>
               <groupId>org.joda</groupId>
@@ -457,41 +459,7 @@
     </profile>
 
     <profile>
-      <id>cassandra-spark-1.4</id>
-      <properties>
-        <spark.version>1.4.1</spark.version>
-      </properties>
-
-      <dependencies>
-        <dependency>
-          <groupId>com.datastax.spark</groupId>
-          <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
-          <version>1.4.0</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.joda</groupId>
-              <artifactId>joda-convert</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-      </dependencies>
-    </profile>
-
-    <profile>
       <id>spark-1.5</id>
-      <properties>
-        <spark.version>1.5.2</spark.version>
-        <akka.group>com.typesafe.akka</akka.group>
-        <akka.version>2.3.11</akka.version>
-        <protobuf.version>2.5.0</protobuf.version>
-      </properties>
-
-      <dependencies>
-      </dependencies>
-    </profile>
-
-    <profile>
-      <id>cassandra-spark-1.5</id>
       <properties>
         <spark.version>1.5.1</spark.version>
         <akka.group>com.typesafe.akka</akka.group>
@@ -500,34 +468,9 @@
       </properties>
 
       <dependencies>
-        <dependency>
-          <groupId>com.datastax.spark</groupId>
-          <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
-          <version>1.5.0-M2</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.joda</groupId>
-              <artifactId>joda-convert</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
       </dependencies>
     </profile>
-
-    <profile>
-      <id>spark-1.6</id>
-      <properties>
-        <spark.version>1.6.0</spark.version>
-        <py4j.version>0.9</py4j.version>
-        <akka.group>com.typesafe.akka</akka.group>
-        <akka.version>2.3.11</akka.version>
-        <protobuf.version>2.5.0</protobuf.version>
-      </properties>
-
-      <dependencies>
-      </dependencies>
-    </profile>
-
+    
     <profile>
       <id>hadoop-0.23</id>
       <!-- SPARK-1121: Adds an explicit dependency on Avro to work around a
@@ -602,62 +545,16 @@
         <yarn.version>2.3.0-mapr-4.0.0-FCS</yarn.version>
         <jets3t.version>0.7.1</jets3t.version>
       </properties>
-      <repositories>
-         <repository>
-           <id>mapr-releases</id>
-           <url>http://repository.mapr.com/maven/</url>
-           <snapshots><enabled>false</enabled></snapshots>
-           <releases><enabled>true</enabled></releases>
-         </repository>
-      </repositories>
     </profile>
 
     <profile>
-      <id>mapr40</id>
+      <id>mapr4</id>
       <activation>
         <activeByDefault>false</activeByDefault>
       </activation>
       <properties>
-        <hadoop.version>2.4.1-mapr-1503</hadoop.version>
-        <yarn.version>2.4.1-mapr-1503</yarn.version>
-        <jets3t.version>0.9.3</jets3t.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.curator</groupId>
-          <artifactId>curator-recipes</artifactId>
-          <version>2.4.0</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.apache.zookeeper</groupId>
-              <artifactId>zookeeper</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.zookeeper</groupId>
-          <artifactId>zookeeper</artifactId>
-          <version>3.4.5-mapr-1503</version>
-        </dependency>
-      </dependencies>
-      <repositories>
-         <repository>
-           <id>mapr-releases</id>
-           <url>http://repository.mapr.com/maven/</url>
-           <snapshots><enabled>false</enabled></snapshots>
-           <releases><enabled>true</enabled></releases>
-         </repository>
-      </repositories>
-    </profile>
-
-    <profile>
-      <id>mapr41</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <properties>
-        <hadoop.version>2.5.1-mapr-1503</hadoop.version>
-        <yarn.version>2.5.1-mapr-1503</yarn.version>
+        <hadoop.version>2.3.0-mapr-4.0.0-FCS</hadoop.version>
+        <yarn.version>2.3.0-mapr-4.0.0-FCS</yarn.version>
         <jets3t.version>0.7.1</jets3t.version>
       </properties>
       <dependencies>
@@ -675,55 +572,9 @@
         <dependency>
           <groupId>org.apache.zookeeper</groupId>
           <artifactId>zookeeper</artifactId>
-          <version>3.4.5-mapr-1503</version>
+          <version>3.4.5-mapr-1406</version>
         </dependency>
       </dependencies>
-      <repositories>
-         <repository>
-           <id>mapr-releases</id>
-           <url>http://repository.mapr.com/maven/</url>
-           <snapshots><enabled>false</enabled></snapshots>
-           <releases><enabled>true</enabled></releases>
-         </repository>
-      </repositories>
-    </profile>
-
-    <profile>
-      <id>mapr50</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <properties>
-        <hadoop.version>2.7.0-mapr-1506</hadoop.version>
-        <yarn.version>2.7.0-mapr-1506</yarn.version>
-        <jets3t.version>0.9.3</jets3t.version>
-      </properties>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.curator</groupId>
-          <artifactId>curator-recipes</artifactId>
-          <version>2.4.0</version>
-          <exclusions>
-            <exclusion>
-              <groupId>org.apache.zookeeper</groupId>
-              <artifactId>zookeeper</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.zookeeper</groupId>
-          <artifactId>zookeeper</artifactId>
-          <version>3.4.5-mapr-1503</version>
-        </dependency>
-      </dependencies>
-      <repositories>
-         <repository>
-           <id>mapr-releases</id>
-           <url>http://repository.mapr.com/maven/</url>
-           <snapshots><enabled>false</enabled></snapshots>
-           <releases><enabled>true</enabled></releases>
-         </repository>
-      </repositories>
     </profile>
 
     <profile>
@@ -745,6 +596,10 @@
 
     <profile>
       <id>pyspark</id>
+      <properties>
+        <spark.download.url>http://archive.apache.org/dist/spark/spark-${spark.version}/spark-${spark.version}.tgz
+        </spark.download.url>
+      </properties>
       <build>
         <plugins>
           <plugin>

@@ -22,20 +22,20 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.5.7-incubating-SNAPSHOT</version>
+    <version>0.5.5-incubating</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-flink</artifactId>
   <packaging>jar</packaging>
-  <version>0.5.7-incubating-SNAPSHOT</version>
+  <version>0.5.5-incubating</version>
   <name>Zeppelin: Flink</name>
   <description>Zeppelin flink support</description>
   <url>http://zeppelin.incubator.apache.org</url>
 
   <properties>
-    <flink.version>0.10.0</flink.version>
+    <flink.version>0.9.0</flink.version>
     <flink.akka.version>2.3.7</flink.akka.version>
     <flink.scala.binary.version>2.10</flink.scala.binary.version>
     <flink.scala.version>2.10.4</flink.scala.version>

@@ -22,80 +22,26 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.5.7-incubating-SNAPSHOT</version>
+    <version>0.5.5-incubating</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-spark</artifactId>
   <packaging>jar</packaging>
-  <version>0.5.7-incubating-SNAPSHOT</version>
+  <version>0.5.5-incubating</version>
   <name>Zeppelin: Spark</name>
   <description>Zeppelin spark support</description>
   <url>http://zeppelin.incubator.apache.org</url>
-
+  
   <properties>
     <spark.version>1.4.1</spark.version>
     <scala.version>2.10.4</scala.version>
     <scala.binary.version>2.10</scala.binary.version>
+
     <hadoop.version>2.3.0</hadoop.version>
     <py4j.version>0.8.2.1</py4j.version>
   </properties>
-
-  <profiles>
-    <profile>
-      <id>vendor-repo</id>
-      <repositories>
-        <repository>
-          <id>cloudera</id>
-          <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
-        </repository>
-      </repositories>
-    </profile>
-
-    <profile>
-      <id>spark-1.1</id>
-      <properties>
-        <spark.version>1.1.1</spark.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>spark-1.2</id>
-      <properties>
-        <spark.version>1.2.1</spark.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>spark-1.3</id>
-      <properties>
-        <spark.version>1.3.1</spark.version>
-      </properties>
-    </profile>
-
-   <profile>
-      <id>spark-1.4</id>
-      <properties>
-        <spark.version>1.4.1</spark.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>spark-1.5</id>
-      <properties>
-        <spark.version>1.5.2</spark.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>spark-1.6</id>
-      <properties>
-        <spark.version>1.6.0</spark.version>
-        <py4j.version>0.9</py4j.version>
-      </properties>
-    </profile>
-  </profiles>
 
   <dependencies>
     <dependency>
@@ -126,7 +72,7 @@
       <artifactId>guava</artifactId>
       <version>14.0.1</version>
     </dependency>
-
+    
     <!-- Aether :: maven dependency resolution -->
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -244,7 +190,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-exec</artifactId>
-      <version>1.3</version>
+      <version>1.1</version>
     </dependency>
 
     <!-- to compile and test code.
@@ -348,6 +294,18 @@
     </dependency>
   </dependencies>
 
+  <profiles>
+    <profile>
+      <id>vendor-repo</id>
+      <repositories>
+        <repository>
+          <id>cloudera</id>
+          <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+
   <build>
     <plugins>
       <plugin>
@@ -367,6 +325,15 @@
             <exclude>**/README.md</exclude>
             <exclude>dependency-reduced-pom.xml</exclude>
           </excludes>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>2.7</version>
+        <configuration>
+          <skip>true</skip>
         </configuration>
       </plugin>
 
@@ -439,7 +406,7 @@
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
-              <includeScope>runtime</includeScope>
+              <includeScope>runtime</includeScope>              
               <artifactItems>
                 <artifactItem>
                   <groupId>${project.groupId}</groupId>

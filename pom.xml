@@ -34,7 +34,7 @@
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin</artifactId>
   <packaging>pom</packaging>
-  <version>0.5.7-incubating-SNAPSHOT</version>
+  <version>0.5.5-incubating</version>
   <name>Zeppelin</name>
   <description>Zeppelin project</description>
   <url>http://zeppelin.incubator.apache.org/</url>
@@ -57,7 +57,7 @@
     <url>https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</url>
     <connection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</connection>
     <developerConnection>scm:git:https://git-wip-us.apache.org/repos/asf/incubator-zeppelin.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>v0.5.5</tag>
   </scm>
 
   <developers>
@@ -100,7 +100,6 @@
     <module>kylin</module>
     <module>lens</module>
     <module>cassandra</module>
-    <module>elasticsearch</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
@@ -426,7 +425,6 @@
           <configuration>
             <excludes>
               <exclude>**/*.keywords</exclude>
-              <exclude>reports/**</exclude>
               <exclude>**/.idea/</exclude>
               <exclude>**/*.iml</exclude>
               <exclude>.git/</exclude>
@@ -452,7 +450,6 @@
               <exclude>**/notebook/**</exclude>
               <exclude>_tools/site/css/*</exclude>
               <exclude>**/README.md</exclude>
-              <exclude>DEPENDENCIES</exclude>
               <exclude>DEPLOY.md</exclude>
               <exclude>CONTRIBUTING.md</exclude>
               <exclude>STYLE.md</exclude>
@@ -483,10 +480,10 @@
               <exclude>docs/Rakefile</exclude>
               <exclude>docs/rss.xml</exclude>
               <exclude>docs/sitemap.txt</exclude>
-
+              
               <!-- bundled from jekyll -->
               <exclude>docs/assets/themes/zeppelin/css/syntax.css</exclude>
-
+              
               <!-- docs (website) build target dir -->
               <exclude>docs/_site/**</exclude>
               <exclude>docs/Gemfile.lock</exclude>
@@ -628,13 +625,6 @@
     </profile>
 
     <profile>
-      <id>scalding</id>
-      <modules>
-        <module>scalding</module>
-      </modules>
-    </profile>
-
-    <profile>
       <id>build-distr</id>
       <activation>
         <activeByDefault>false</activeByDefault>
@@ -694,7 +684,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.6</version>
+            <version>1.4</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -709,5 +699,4 @@
       </build>
     </profile>
   </profiles>
-
 </project>
