@@ -132,12 +132,11 @@ public class SparkRInterpreter extends Interpreter {
     Document document = Jsoup.parse(html);
 
     Element body = document.getElementsByTag("body").get(0);
+
     Elements images = body.getElementsByTag("img");
     Elements scripts = body.getElementsByTag("script");
-    Elements paragraphs = body.getElementsByTag("p");
 
-    if ((paragraphs.size() == 1)
-       && (images.size() == 0)
+    if ((images.size() == 0)
        && (scripts.size() == 0)) {
 
       // We are here with a pure text output, let's keep format intact...
