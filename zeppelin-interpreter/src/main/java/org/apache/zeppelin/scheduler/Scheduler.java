@@ -20,10 +20,7 @@ package org.apache.zeppelin.scheduler;
 import java.util.Collection;
 
 /**
- * TODO(moon) : add description.
- *
- * @author Leemoonsoo
- *
+ * Interface for scheduler
  */
 public interface Scheduler extends Runnable {
   public String getName();
@@ -33,6 +30,8 @@ public interface Scheduler extends Runnable {
   public Collection<Job> getJobsRunning();
 
   public void submit(Job job);
+
+  public Job removeFromWaitingQueue(String jobId);
 
   public void stop();
 }

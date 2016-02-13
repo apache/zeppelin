@@ -56,7 +56,7 @@ public class RemoteInterpreterEventPoller extends Thread {
   public void run() {
     Client client = null;
 
-    while (!shutdown) {
+    while (!shutdown && interpreterProcess.isRunning()) {
       try {
         client = interpreterProcess.getClient();
       } catch (Exception e1) {
@@ -66,15 +66,17 @@ public class RemoteInterpreterEventPoller extends Thread {
       }
 
       RemoteInterpreterEvent event = null;
+      boolean broken = false;
       try {
         event = client.getEvent();
       } catch (TException e) {
+        broken = true;
         logger.error("Can't get RemoteInterpreterEvent", e);
         waitQuietly();
         continue;
+      } finally {
+        interpreterProcess.releaseClient(client, broken);
       }
-
-      interpreterProcess.releaseClient(client);
 
       Gson gson = new Gson();
 

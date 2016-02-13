@@ -32,9 +32,6 @@ import org.sonatype.aether.transfer.TransferResource;
 
 /**
  * Simple listener that show deps downloading progress.
- *
- * @author anthonycorbacho
- *
  */
 public class TransferListener extends AbstractTransferListener {
   Logger logger = LoggerFactory.getLogger(TransferListener.class);

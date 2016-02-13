@@ -30,9 +30,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * TODO(moon) : add description.
- *
- * @author Leemoonsoo
- *
  */
 public class SchedulerFactory implements SchedulerListener {
   private final Logger logger = LoggerFactory.getLogger(SchedulerFactory.class);

@@ -32,10 +32,6 @@ import org.markdown4j.Markdown4jProcessor;
 
 /**
  * Markdown interpreter for Zeppelin.
- *
- * @author Leemoonsoo
- * @author anthonycorbacho
- *
  */
 public class Markdown extends Interpreter {
   private Markdown4jProcessor md;

@@ -21,9 +21,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Response wrapper.
- *
- * @author anthonycorbacho
- *
  */
 @XmlRootElement
 public class NotebookResponse {

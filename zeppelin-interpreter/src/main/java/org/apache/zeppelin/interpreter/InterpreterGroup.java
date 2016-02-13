@@ -24,6 +24,7 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 
 /**
  * InterpreterGroup is list of interpreters in the same group.
@@ -33,6 +34,7 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
   String id;
 
   AngularObjectRegistry angularObjectRegistry;
+  RemoteInterpreterProcess remoteInterpreterProcess;    // attached remote interpreter process
 
   public InterpreterGroup(String id) {
     this.id = id;
@@ -70,6 +72,14 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
 
   public void setAngularObjectRegistry(AngularObjectRegistry angularObjectRegistry) {
     this.angularObjectRegistry = angularObjectRegistry;
+  }
+
+  public RemoteInterpreterProcess getRemoteInterpreterProcess() {
+    return remoteInterpreterProcess;
+  }
+
+  public void setRemoteInterpreterProcess(RemoteInterpreterProcess remoteInterpreterProcess) {
+    this.remoteInterpreterProcess = remoteInterpreterProcess;
   }
 
   public void close() {
@@ -116,6 +126,13 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
       } catch (InterruptedException e) {
         Logger logger = Logger.getLogger(InterpreterGroup.class);
         logger.error("Can't close interpreter", e);
+      }
+    }
+
+    // make sure remote interpreter process terminates
+    if (remoteInterpreterProcess != null) {
+      while (remoteInterpreterProcess.referenceCount() > 0) {
+        remoteInterpreterProcess.dereference();
       }
     }
   }

@@ -18,19 +18,16 @@
 
 package org.apache.zeppelin.tajo;
 
-import com.google.gson.JsonParseException;
 import org.apache.tajo.jdbc.TajoDriver;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Constructor;
 import java.util.Properties;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * Tajo interpreter unit tests
@@ -45,20 +42,19 @@ public class TajoInterpreterTest {
   }
 
   @Test
-  public void test() {
+  public void testTajoInterpreter() throws Exception {
     TajoInterpreter t = new TesterTajoInterpreter(new Properties());
     t.open();
 
-    Class clazz;
-    try {
-      clazz = Class.forName(t.TAJO_DRIVER_NAME);
-    } catch (ClassNotFoundException e) {
-      e.printStackTrace();
-      throw new JsonParseException(e);
-    }
-
     // check tajo jdbc driver
+    Class clazz = Class.forName(t.TAJO_DRIVER_NAME);
     assertNotNull(clazz);
+
+    Constructor cons = clazz.getConstructor(new Class[]{});
+
+    TajoDriver driver = (TajoDriver) cons.newInstance();
+    assertTrue(driver.acceptsURL("jdbc:tajo:"));
+    assertFalse(driver.acceptsURL("jdbc:taju:"));
 
     // simple select test
     InterpreterResult result = t.interpret("select * from t", null);
@@ -67,6 +63,9 @@ public class TajoInterpreterTest {
     // explain test
     result = t.interpret("explain select * from t", null);
     assertEquals(result.type(), InterpreterResult.Type.TEXT);
+
     t.close();
   }
+
+
 }

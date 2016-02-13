@@ -28,16 +28,10 @@ import java.util.regex.Pattern;
 
 /**
  * Input type.
- *
- * @author Leemoonsoo
- *
  */
 public class Input implements Serializable {
   /**
    * Parameters option.
-   *
-   * @author Leemoonsoo
-   *
    */
   public static class ParamOption {
     Object value;

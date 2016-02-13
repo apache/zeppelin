@@ -15,7 +15,7 @@ limitations under the License.
   <div class="header">
     <div class="row">
       <div class="col-md-12">
-        <h3 class="new_h3" style="float:left">
+        <h3 class="new_h3">
           Interpreters
         </h3>
         <span class="btn btn-default fa fa-plus"
@@ -41,12 +41,13 @@ limitations under the License.
       <div class="col-md-12">
         <h3 class="interpreter-title">{{setting.name}}
           <small>
-            <span ng-repeat="interpreter in setting.interpreterGroup"
+            <span style="display:inline-block" ng-repeat="interpreter in setting.interpreterGroup"
                   title="{{interpreter.class}}">
-              <span ng-show="$parent.$first && $first">%{{setting.name}} (default)</span>
-              <span ng-show="$parent.$first && !$first">, %{{interpreter.name}}</span>
-              <span ng-show="!$parent.$first && $first">%{{setting.name}}</span>
-              <span ng-show="!$parent.$first && !$first">, %{{setting.name}}.{{interpreter.name}}</span>
+              <span ng-show="!$first">, </span>
+              %<span ng-show="!$parent.$first || $first">{{setting.group}}</span
+              ><span ng-show="(!$parent.$first || $first) && !$first">.</span
+              ><span ng-show="!$first">{{interpreter.name}}</span>
+              <span ng-show="$parent.$first && $first">(default)</span>
             </span>
           </small>
         </h3>
@@ -64,17 +65,21 @@ limitations under the License.
         </span>
       </div>
     </div>
-    <br />
     <div class="row interpreter">
-      <div class="col-md-12">
-        <b>Properties</b>
+      <div ng-show="_.isEmpty(setting.properties) || valueform.$hidden" class="col-md-12 empty-properties-message">
+        <em>Currently there are no properties set for this interpreter</em>
+      </div>
+      <div class="col-md-12" ng-show="!_.isEmpty(setting.properties) || valueform.$visible">
+        <h5>Properties</h5>
         <table class="table table-striped">
-          <tr>
-            <th style="width:30%">name</th>
-            <th>value</th>
-            <th ng-if="valueform.$visible">action</th>
-          </tr>
-          <tr ng-repeat="(key, value) in setting.properties">
+          <thead>
+            <tr>
+              <th style="width:30%">name</th>
+              <th>value</th>
+              <th ng-if="valueform.$visible">action</th>
+            </tr>
+          </thead>
+          <tr ng-repeat="(key, value) in setting.properties" >
             <td>{{key}}</td>
             <td>
               <span editable-textarea="setting.properties[key]" e-form="valueform" e-msd-elastic>

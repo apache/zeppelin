@@ -29,9 +29,6 @@ import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 
 /**
  * Get maven repository instance.
- *
- * @author anthonycorbacho
- *
  */
 public class RepositorySystemFactory {
   public static RepositorySystem newRepositorySystem() {

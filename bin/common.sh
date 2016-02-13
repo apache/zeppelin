@@ -70,13 +70,20 @@ function addEachJarInDir(){
   fi
 }
 
+function addEachJarInDirRecursive(){
+  if [[ -d "${1}" ]]; then
+    for jar in $(find -L "${1}" -type f -name '*jar'); do
+      ZEPPELIN_CLASSPATH="$jar:$ZEPPELIN_CLASSPATH"
+    done
+  fi
+}
+
+
 function addJarInDir(){
   if [[ -d "${1}" ]]; then
     ZEPPELIN_CLASSPATH="${1}/*:${ZEPPELIN_CLASSPATH}"
   fi
 }
-
-export ZEPPELIN_CLASSPATH
 
 # Text encoding for 
 # read/write job into files,
@@ -86,7 +93,7 @@ if [[ -z "${ZEPPELIN_ENCODING}" ]]; then
 fi
 
 if [[ -z "$ZEPPELIN_MEM" ]]; then
-  export ZEPPELIN_MEM="-Xmx1024m -XX:MaxPermSize=512m"
+  export ZEPPELIN_MEM="-Xms1024m -Xmx1024m -XX:MaxPermSize=512m"
 fi
 
 JAVA_OPTS+=" ${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"
@@ -101,7 +108,7 @@ if [[ -z "${ZEPPELIN_INTP_MEM}" ]]; then
   export ZEPPELIN_INTP_MEM="${ZEPPELIN_MEM}"
 fi
 
-JAVA_INTP_OPTS+=" ${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_INTP_MEM}"
+JAVA_INTP_OPTS+=" ${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING}"
 export JAVA_INTP_OPTS
 
 

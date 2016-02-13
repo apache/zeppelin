@@ -1,0 +1,90 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<div id="{{paragraph.id}}_control" class="control" ng-show="!asIframe">
+
+  <span>
+    {{paragraph.status}}
+  </span>
+
+  <span ng-if="paragraph.status=='RUNNING'">
+    {{getProgress()}}%
+  </span>
+
+  <!-- Run / Cancel button -->
+  <span class="icon-control-play" style="cursor:pointer;color:#3071A9" tooltip-placement="top" tooltip="Run this paragraph (Shift+Enter)"
+        ng-click="runParagraph(getEditorValue())"
+        ng-show="paragraph.status!='RUNNING' && paragraph.status!='PENDING' && paragraph.config.enabled"></span>
+  <span class="icon-control-pause" style="cursor:pointer;color:#CD5C5C" tooltip-placement="top" tooltip="Cancel"
+        ng-click="cancelParagraph()"
+        ng-show="paragraph.status=='RUNNING' || paragraph.status=='PENDING'"></span>
+  <span class="{{paragraph.config.editorHide ? 'icon-size-fullscreen' : 'icon-size-actual'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.editorHide ? 'Show' : 'Hide') + ' editor'}}"
+        ng-click="toggleEditor()"></span>
+  <span class="{{paragraph.config.tableHide ? 'icon-notebook' : 'icon-book-open'}}" style="cursor:pointer;" tooltip-placement="top" tooltip="{{(paragraph.config.tableHide ? 'Show' : 'Hide') + ' output'}}"
+        ng-click="toggleOutput()"></span>
+  <span class="dropdown navbar-right">
+    <span class="icon-settings" style="cursor:pointer"
+          data-toggle="dropdown"
+          type="button">
+    </span>
+    <ul class="dropdown-menu" role="menu" style="width:200px;z-index:1002">
+      <li>
+        <a ng-click="$event.stopPropagation()" class="dropdown"><span class="fa fa-arrows-h"></span> Width
+          <form style="display:inline; margin-left:5px;">
+            <select ng-model="paragraph.config.colWidth"
+                    class="selectpicker"
+                    ng-change="changeColWidth()"
+                    ng-options="col for col in colWidthOption"></select>
+          </form>
+        </a>
+      </li>
+      <li>
+        <a ng-click="moveUp()"><span class="icon-arrow-up"></span> Move Up</a>
+      </li>
+      <li>
+        <a ng-click="moveDown()"><span class="icon-arrow-down"></span> Move Down</a>
+      </li>
+      <li>
+        <a ng-click="insertNew()"><span class="icon-plus"></span> Insert New</a>
+      </li>
+      <li>
+        <!-- paragraph handler -->
+        <a ng-click="hideTitle()"
+           ng-show="paragraph.config.title"><span class="fa fa-font"></span> Hide title</a>
+        <a ng-click="showTitle()"
+           ng-show="!paragraph.config.title"><span class="fa fa-font"></span> Show title</a>
+      </li>
+      <li>
+        <a ng-click="hideLineNumbers()"
+           ng-show="paragraph.config.lineNumbers"><span class="fa fa-list-ol"></span> Hide line numbers</a>
+        <a ng-click="showLineNumbers()"
+           ng-show="!paragraph.config.lineNumbers"><span class="fa fa-list-ol"></span> Show line numbers</a>
+      </li>
+      <li>
+        <a ng-click="toggleEnableDisable()"><span class="icon-control-play"></span>
+          {{paragraph.config.enabled ? "Disable" : "Enable"}} run</a>
+      </li>
+      <li>
+        <a ng-click="goToSingleParagraph()"><span class="icon-share-alt"></span> Link this paragraph</a>
+      </li>
+      <li>
+        <a ng-click="clearParagraphOutput()"><span class="fa fa-eraser"></span> Clear output</a>
+      </li>
+      <li>
+        <!-- remove paragraph -->
+        <a ng-click="removeParagraph()"><span class="fa fa-times"></span> Remove</a>
+      </li>
+    </ul>
+  </span>
+</div>

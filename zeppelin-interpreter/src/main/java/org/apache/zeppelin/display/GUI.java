@@ -26,9 +26,6 @@ import org.apache.zeppelin.display.Input.ParamOption;
 
 /**
  * Settings of a form.
- *
- * @author Leemoonsoo
- *
  */
 public class GUI implements Serializable {
 

@@ -22,9 +22,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * TODO(moon) : add description.
- *
- * @author Leemoonsoo
- *
  */
 public class JobProgressPoller extends Thread {
   public static final long DEFAULT_INTERVAL_MSEC = 500;

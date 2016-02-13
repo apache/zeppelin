@@ -20,8 +20,6 @@ package org.apache.zeppelin.flink;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -31,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.scala.FlinkILoop;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.runtime.minicluster.LocalFlinkMiniCluster;
@@ -46,7 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import scala.Console;
 import scala.None;
-import scala.Option;
 import scala.Some;
 import scala.runtime.AbstractFunction0;
 import scala.tools.nsc.Settings;
@@ -137,7 +133,7 @@ public class FlinkInterpreter extends Interpreter {
 
   private int getPort() {
     if (localMode()) {
-      return localFlinkCluster.getJobManagerRPCPort();
+      return localFlinkCluster.getLeaderRPCPort();
     } else {
       return Integer.parseInt(getProperty("port"));
     }
@@ -332,7 +328,12 @@ public class FlinkInterpreter extends Interpreter {
 
   private void startFlinkMiniCluster() {
     localFlinkCluster = new LocalFlinkMiniCluster(flinkConf, false);
-    localFlinkCluster.waitForTaskManagersToBeRegistered();
+
+    try {
+      localFlinkCluster.start(true);
+    } catch (Exception e){
+      throw new RuntimeException("Could not start Flink mini cluster.", e);
+    }
   }
 
   private void stopFlinkMiniCluster() {

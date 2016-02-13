@@ -51,9 +51,6 @@ import scala.collection.Iterable;
 
 /**
  * Spark context for zeppelin.
- *
- * @author Leemoonsoo
- *
  */
 public class ZeppelinContext extends HashMap<String, Object> {
   private DependencyResolver dep;
@@ -298,30 +295,30 @@ public class ZeppelinContext extends HashMap<String, Object> {
     try {
       take = df.getClass().getMethod("take", int.class);
       rows = (Object[]) take.invoke(df, maxResult + 1);
-
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException | ClassCastException e) {
       sc.clearJobGroup();
       throw new InterpreterException(e);
     }
 
-    String msg = null;
-
+    List<Attribute> columns = null;
     // get field names
-    Method queryExecution;
-    QueryExecution qe;
     try {
-      queryExecution = df.getClass().getMethod("queryExecution");
-      qe = (QueryExecution) queryExecution.invoke(df);
+      // Use reflection because of classname returned by queryExecution changes from
+      // Spark <1.5.2 org.apache.spark.sql.SQLContext$QueryExecution
+      // Spark 1.6.0> org.apache.spark.sql.hive.HiveContext$QueryExecution
+      Object qe = df.getClass().getMethod("queryExecution").invoke(df);
+      Object a = qe.getClass().getMethod("analyzed").invoke(qe);
+      scala.collection.Seq seq = (scala.collection.Seq) a.getClass().getMethod("output").invoke(a);
+
+      columns = (List<Attribute>) scala.collection.JavaConverters.seqAsJavaListConverter(seq)
+                                                                 .asJava();
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
       throw new InterpreterException(e);
     }
 
-    List<Attribute> columns =
-        scala.collection.JavaConverters.asJavaListConverter(
-            qe.analyzed().output()).asJava();
-
+    String msg = null;
     for (Attribute col : columns) {
       if (msg == null) {
         msg = col.name();

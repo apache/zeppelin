@@ -18,6 +18,7 @@
 package org.apache.zeppelin.scheduler;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -32,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * RemoteScheduler runs in ZeppelinServer and proxies Scheduler running on RemoteInterpreter
  */
 public class RemoteScheduler implements Scheduler {
   Logger logger = LoggerFactory.getLogger(RemoteScheduler.class);
@@ -105,6 +106,21 @@ public class RemoteScheduler implements Scheduler {
       }
     }
     return ret;
+  }
+
+  @Override
+  public Job removeFromWaitingQueue(String jobId) {
+    synchronized (queue) {
+      Iterator<Job> it = queue.iterator();
+      while (it.hasNext()) {
+        Job job = it.next();
+        if (job.getId().equals(jobId)) {
+          it.remove();
+          return job;
+        }
+      }
+    }
+    return null;
   }
 
   @Override
@@ -235,6 +251,7 @@ public class RemoteScheduler implements Scheduler {
         return Status.ERROR;
       }
 
+      boolean broken = false;
       try {
         String statusStr = client.getStatus(job.getId());
         if ("Unknown".equals(statusStr)) {
@@ -249,6 +266,7 @@ public class RemoteScheduler implements Scheduler {
         listener.afterStatusChange(job, null, status);
         return status;
       } catch (TException e) {
+        broken = true;
         logger.error("Can't get status information", e);
         lastStatus = Status.ERROR;
         return Status.ERROR;
@@ -257,7 +275,7 @@ public class RemoteScheduler implements Scheduler {
         lastStatus = Status.ERROR;
         return Status.ERROR;
       } finally {
-        interpreterProcess.releaseClient(client);
+        interpreterProcess.releaseClient(client, broken);
       }
     }
   }

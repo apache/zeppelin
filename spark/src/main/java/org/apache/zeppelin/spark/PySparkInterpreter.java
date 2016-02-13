@@ -58,6 +58,11 @@ import org.apache.zeppelin.spark.dep.DependencyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
+
 import py4j.GatewayServer;
 
 /**
@@ -82,9 +87,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
         "spark",
         PySparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-          .add("spark.home",
-               SparkInterpreter.getSystemDefault("SPARK_HOME", "spark.home", ""),
-               "Spark home path. Should be provided for pyspark")
           .add("zeppelin.pyspark.python",
                SparkInterpreter.getSystemDefault("PYSPARK_PYTHON", null, "python"),
                "Python command to run pyspark with").build());
@@ -95,16 +97,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     scriptPath = System.getProperty("java.io.tmpdir") + "/zeppelin_pyspark.py";
   }
-
-  private String getSparkHome() {
-    String sparkHome = getProperty("spark.home");
-    if (sparkHome == null) {
-      throw new InterpreterException("spark.home is undefined");
-    } else {
-      return sparkHome;
-    }
-  }
-
 
   private void createPythonScript() {
     ClassLoader classLoader = getClass().getClassLoader();
@@ -297,6 +289,12 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
   @Override
   public InterpreterResult interpret(String st, InterpreterContext context) {
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    if (sparkInterpreter.getSparkVersion().isUnsupportedVersion()) {
+      return new InterpreterResult(Code.ERROR, "Spark "
+          + sparkInterpreter.getSparkVersion().toString() + " is not supported");
+    }
+
     if (!pythonscriptRunning) {
       return new InterpreterResult(Code.ERROR, "python process not running"
           + outputStream.toString());
@@ -327,7 +325,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
           + outputStream.toString());
     }
 
-    SparkInterpreter sparkInterpreter = getSparkInterpreter();
     if (!sparkInterpreter.getSparkVersion().isPysparkSupported()) {
       return new InterpreterResult(Code.ERROR, "pyspark "
           + sparkInterpreter.getSparkContext().version() + " is not supported");
@@ -376,11 +373,95 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     return sparkInterpreter.getProgress(context);
   }
 
+
   @Override
   public List<String> completion(String buf, int cursor) {
-    // not supported
-    return new LinkedList<String>();
+    if (buf.length() < cursor) {
+      cursor = buf.length();
+    }
+    String completionString = getCompletionTargetString(buf, cursor);
+    String completionCommand = "completion.getCompletion('" + completionString + "')";
+
+    //start code for completion
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    if (sparkInterpreter.getSparkVersion().isUnsupportedVersion() == false
+            && pythonscriptRunning == false) {
+      return new LinkedList<String>();
+    }
+
+    outputStream.reset();
+
+    pythonInterpretRequest = new PythonInterpretRequest(completionCommand, "");
+    statementOutput = null;
+
+    synchronized (statementSetNotifier) {
+      statementSetNotifier.notify();
+    }
+
+    synchronized (statementFinishedNotifier) {
+      while (statementOutput == null) {
+        try {
+          statementFinishedNotifier.wait(1000);
+        } catch (InterruptedException e) {
+          // not working
+          logger.info("wait drop");
+          return new LinkedList<String>();
+        }
+      }
+    }
+
+    if (statementError) {
+      return new LinkedList<String>();
+    }
+    InterpreterResult completionResult = new InterpreterResult(Code.SUCCESS, statementOutput);
+    //end code for completion
+
+    Gson gson = new Gson();
+
+    return gson.fromJson(completionResult.message(), LinkedList.class);
   }
+
+  private String getCompletionTargetString(String text, int cursor) {
+    String[] completionSeqCharaters = {" ", "\n", "\t"};
+    int completionEndPosition = cursor;
+    int completionStartPosition = cursor;
+    int indexOfReverseSeqPostion = cursor;
+
+    String resultCompletionText = "";
+    String completionScriptText = "";
+    try {
+      completionScriptText = text.substring(0, cursor);
+    }
+    catch (Exception e) {
+      logger.error(e.toString());
+      return null;
+    }
+    completionEndPosition = completionScriptText.length();
+
+    String tempReverseCompletionText = new StringBuilder(completionScriptText).reverse().toString();
+
+    for (String seqCharacter : completionSeqCharaters) {
+      indexOfReverseSeqPostion = tempReverseCompletionText.indexOf(seqCharacter);
+
+      if (indexOfReverseSeqPostion < completionStartPosition && indexOfReverseSeqPostion > 0) {
+        completionStartPosition = indexOfReverseSeqPostion;
+      }
+
+    }
+
+    if (completionStartPosition == completionEndPosition) {
+      completionStartPosition = 0;
+    }
+    else
+    {
+      completionStartPosition = completionEndPosition - completionStartPosition;
+    }
+    resultCompletionText = completionScriptText.substring(
+            completionStartPosition , completionEndPosition);
+
+    return resultCompletionText;
+  }
+
 
   private SparkInterpreter getSparkInterpreter() {
     InterpreterGroup intpGroup = getInterpreterGroup();

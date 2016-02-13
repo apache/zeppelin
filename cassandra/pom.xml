@@ -20,14 +20,22 @@
     <parent>
         <artifactId>zeppelin</artifactId>
         <groupId>org.apache.zeppelin</groupId>
+<<<<<<< HEAD
         <version>0.5.5-incubating</version>
+=======
+        <version>0.5.7-incubating-SNAPSHOT</version>
+>>>>>>> d5f4c185b841cc9d183b6a7ce7256477b19ecd2b
         <relativePath>..</relativePath>
     </parent>
 
     <groupId>org.apache.zeppelin</groupId>
     <artifactId>zeppelin-cassandra</artifactId>
     <packaging>jar</packaging>
+<<<<<<< HEAD
     <version>0.5.5-incubating</version>
+=======
+    <version>0.5.7-incubating-SNAPSHOT</version>
+>>>>>>> d5f4c185b841cc9d183b6a7ce7256477b19ecd2b
     <name>Zeppelin: Cassandra</name>
     <description>Zeppelin cassandra support</description>
     <url>http://zeppelin.incubator.apache.org</url>
@@ -38,7 +46,7 @@
         <lz4.version>1.2.0</lz4.version>
         <scala.version>2.11.7</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
-        <commons-lang.version>3.3.2</commons-lang.version>
+        <commons-lang.version>3.4</commons-lang.version>
         <scalate.version>1.7.1</scalate.version>
 
         <!--TEST-->

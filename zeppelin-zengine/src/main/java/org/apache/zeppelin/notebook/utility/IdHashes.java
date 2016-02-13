@@ -23,9 +23,6 @@ import java.util.List;
 
 /**
  * Generate Tiny ID.
- *
- * @author anthonycorbacho
- *
  */
 public class IdHashes {
   public static final char[] DICTIONARY = new char[] {'1', '2', '3', '4', '5', '6', '7', '8', '9',

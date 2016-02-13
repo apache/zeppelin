@@ -23,9 +23,6 @@ import java.util.List;
 
 /**
  * TODO(moon) : add description.
- *
- * @author Leemoonsoo
- *
  */
 public class Util {
 

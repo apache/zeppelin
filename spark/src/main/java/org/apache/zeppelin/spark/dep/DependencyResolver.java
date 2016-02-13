@@ -57,9 +57,6 @@ import scala.tools.nsc.util.MergedClassPath;
 /**
  * Deps resolver.
  * Add new dependencies from mvn repo (at runetime) to Zeppelin.
- *
- * @author anthonycorbacho
- *
  */
 public class DependencyResolver {
   Logger logger = LoggerFactory.getLogger(DependencyResolver.class);

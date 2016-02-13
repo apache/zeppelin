@@ -31,8 +31,6 @@ import com.google.gson.GsonBuilder;
 /**
  * Json response builder.
  *
- * @author Leemoonsoo
- *
  * @param <T>
  */
 public class JsonResponse<T> {
