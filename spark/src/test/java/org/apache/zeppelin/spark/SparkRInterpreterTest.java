@@ -45,12 +45,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 public class SparkRInterpreterTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkRInterpreterTest.class);
 
-  private static final String MOCK_RSCALA_RESULT = "<body>         Mock R Result   </body>";
-  private static final String MOCK_R_INTERPRETER_RESULT = "Mock R Result"
-          .replaceAll("<code>", "").replaceAll("</code>", "")
-          .replaceAll("\n\n", "")
-          .replaceAll("\n", "<br>")
-          .replaceAll("<pre>", "<p class='text'>").replaceAll("</pre>", "</p>");
+  private static final String MOCK_RSCALA_RESULT = "<body><p>         Mock R Result   </p></body>";
+  private static final String MOCK_R_INTERPRETER_RESULT = "<pre style='background-color: white; border: 0px;'>         Mock R Result   </pre>";
 
   private static InterpreterContext context;
   private static InterpreterGroup intpGroup;
@@ -62,53 +58,15 @@ public class SparkRInterpreterTest {
   public static void beforeClass() {
     initInterpreters();
   }
-/*
-  @AfterClass
-  public static void afterClass() {
-    // Nothing to do here...
-  }
 
-  @Before
-  public void before() {
-    // Nothing to do here...
-  }
-
-  @After
-  public void after() {
-    // Nothing to do here...
-  }
-*/
   @Test
   public void testSuccess() throws Exception {
-    InterpreterResult ret = sparkRInterpreter.interpret("print(1)", context);
+    InterpreterResult ret = sparkRInterpreter.interpret(MOCK_RSCALA_RESULT, context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(MOCK_R_INTERPRETER_RESULT, ret.message());
     assertEquals(InterpreterResult.Type.HTML, ret.type());
   }
-  // Commenting to leave a single test and see Travis reaction.
-  // (mvn test -Dtest=SparkRInterpreterTest works fine on local dev env.
-/*
-  @Test
-  public void testNullContext() throws Exception {
-    try {
-      sparkRInterpreter.interpret("print(1)", null);
-      fail("NullPointerException not catched");
-    } catch (NullPointerException e) {
-      LOGGER.info("Exception in SparkSqlInterpreterTest while test ", e);
-    }
-  }
 
-  @Test
-  public void testNullCommand() throws Exception {
-    assertNotNull(sparkInterpreter.getInterpreterGroup());
-  }
-
-  @Test
-  public void testInterpreterGroup() throws Exception {
-    InterpreterResult ret = sparkRInterpreter.interpret(null, context);
-    assertEquals(InterpreterResult.Code.ERROR, ret.code());
-  }
-*/
   private static void initInterpreters() {
 
     Properties p = new Properties();
