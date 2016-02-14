@@ -70,7 +70,8 @@ export SPARK_MASTER_WEBUI_PORT=7072
 export SPARK_WORKER_WEBUI_PORT=8082
 ${SPARK_HOME}/sbin/start-master.sh
 
-if [ "${SPARK_VER_RANGE}" == "<=1.3" ]; then   # spark 1.3 or prior
+if [ "${SPARK_VER_RANGE}" == "<=1.3" ]||[ "${SPARK_VER_RANGE}" == "<=1.2" ]; then
+    # spark 1.3 or prior
     ${SPARK_HOME}/sbin/start-slave.sh 1 `hostname`:${SPARK_MASTER_PORT}
 else
     ${SPARK_HOME}/sbin/start-slave.sh spark://`hostname`:7071
