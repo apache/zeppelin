@@ -16,7 +16,7 @@
 
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv, ngToast) {
+                                         $timeout, $compile, websocketMsgSrv, ngToast, SaveAsService) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
   $scope.paragraph = null;
@@ -2143,4 +2143,21 @@ angular.module('zeppelinWebApp')
     $scope.keepScrollDown = false;
   };
 
+  $scope.exportToTSV = function () {
+    var data = $scope.paragraph.result;
+    var tsv = '';
+    for (var titleIndex in $scope.paragraph.result.columnNames) {
+      tsv += $scope.paragraph.result.columnNames[titleIndex].name + '\t';
+    }
+    tsv = tsv.substring(0, tsv.length - 1) + '\n';
+    for (var r in $scope.paragraph.result.msgTable) {
+      var row = $scope.paragraph.result.msgTable[r];
+      var tsvRow = '';
+      for (var index in row) {
+        tsvRow += row[index].value + '\t';
+      }
+      tsv += tsvRow.substring(0, tsvRow.length - 1) + '\n';
+    }
+    SaveAsService.SaveAs(tsv, 'data', 'tsv');
+  };
 });
