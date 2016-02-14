@@ -101,8 +101,14 @@ public class ZeppelinContext {
   public scala.collection.Iterable<Object> checkbox(String name,
       scala.collection.Iterable<Object> defaultChecked,
       scala.collection.Iterable<Tuple2<Object, String>> options) {
+    return checkbox(name, defaultChecked, options, false);
+  }
+
+  public scala.collection.Iterable<Object> checkbox(String name,
+      scala.collection.Iterable<Object> defaultChecked,
+      scala.collection.Iterable<Tuple2<Object, String>> options, boolean hidden) {
     return asScalaIterable(gui.checkbox(name, asJavaCollection(defaultChecked),
-            tuplesToParamOptions(options)));
+      tuplesToParamOptions(options), hidden));
   }
 
   private ParamOption[] tuplesToParamOptions(
