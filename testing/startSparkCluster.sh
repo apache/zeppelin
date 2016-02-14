@@ -17,14 +17,13 @@
 #
 
 
-if [ $# -ne 2 ]; then
-    echo "usage) $0 [spark version] [hadoop version]"
-    echo "   eg) $0 1.3.1 2.6"
+if [ $# -ne 1 ]; then
+    echo "usage) $0 [spark version]"
+    echo "   eg) $0 1.3.1"
     exit 1
 fi
 
 SPARK_VERSION="${1}"
-HADOOP_VERSION="${2}"
 
 echo ${SPARK_VERSION} | grep "^1.[123].[0-9]" > /dev/null
 if [ $? -eq 0 ]; then
