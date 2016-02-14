@@ -2187,19 +2187,19 @@ angular.module('zeppelinWebApp')
   };
 
   $scope.exportToTSV = function () {
-    var data = $scope.paragraph.result
+    var data = $scope.paragraph.result;
     var tsv = '';
     for (var titleIndex in $scope.paragraph.result.columnNames) {
       tsv += $scope.paragraph.result.columnNames[titleIndex].name + '\t';
     }
-    tsv = tsv.substring(0, tsv.length - 1) + '\n'
+    tsv = tsv.substring(0, tsv.length - 1) + '\n';
     for (var r in $scope.paragraph.result.msgTable) {
       var row = $scope.paragraph.result.msgTable[r];
-      var tsvRow = ''
+      var tsvRow = '';
       for (var index in row) {
         tsvRow += row[index].value + '\t';
       }
-      tsv += tsvRow.substring(0, tsvRow.length - 1) + '\n'
+      tsv += tsvRow.substring(0, tsvRow.length - 1) + '\n';
     }
     SaveAsService.SaveAs(tsv, 'data', 'tsv');
   };
