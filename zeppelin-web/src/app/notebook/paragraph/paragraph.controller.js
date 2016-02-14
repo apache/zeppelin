@@ -618,12 +618,20 @@ angular.module('zeppelinWebApp')
     $scope.paragraph.settings.params[formulaire.name] = value;
   };
 
-  $scope.toggleCheckbox = function toggleCheckbox(formulaire, option) {
+  $scope.toggleCheckbox = function(formulaire, option) {
     var idx = $scope.paragraph.settings.params[formulaire.name].indexOf(option.value);
     if (idx > -1) {
       $scope.paragraph.settings.params[formulaire.name].splice(idx, 1);
     } else {
       $scope.paragraph.settings.params[formulaire.name].push(option.value);
+    }
+  };
+
+  $scope.toggleCheckboxOption = function(formulaire) {
+    if (formulaire.hidden) {
+      formulaire.hidden = false;
+    } else {
+      formulaire.hidden = true;
     }
   };
 
