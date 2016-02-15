@@ -21,6 +21,7 @@ import java.io.Serializable;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -80,12 +81,27 @@ public class GUI implements Serializable {
 
   public Collection<Object> checkbox(String id, Collection<Object> defaultChecked,
                                      ParamOption[] options) {
-    Collection<Object> value = (Collection<Object>) params.get(id);
-    if (value == null) {
-      value = defaultChecked;
+    Collection<Object> checked = (Collection<Object>) params.get(id);
+    if (checked == null) {
+      checked = defaultChecked;
     }
     forms.put(id, new Input(id, defaultChecked, "checkbox", options));
-    return value;
+    Collection<Object> filtered = new LinkedList<Object>();
+    for (Object o : checked) {
+      if (isValidOption(o, options)) {
+        filtered.add(o);
+      }
+    }
+    return filtered;
+  }
+
+  private boolean isValidOption(Object o, ParamOption[] options) {
+    for (ParamOption option : options) {
+      if (o.equals(option.getValue())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public void clear() {
