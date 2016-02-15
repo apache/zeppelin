@@ -263,27 +263,25 @@ select * from ${table=defaultTableName} where text like '%${search}%'
 
 To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.html).
 
-<br />
-### Setting up Zeppelin with Kerberos
-<hr />
+## Setting up Zeppelin with Kerberos
 Logical setup with Zeppelin, Kerberos Distribution Center (KDC), and Spark on YARN:
 
 <img src="../assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
 
-<b>Configuration Setup</b>
+####Configuration Setup
 
 1. On the server that Zeppelin is installed, install Kerberos client modules and configuration, krb5.conf.
 This is to make the server communicate with KDC.
 
-2. Set SPARK_HOME in [ZEPPELIN_HOME]/conf/zeppelin-env.sh to use spark-submit
-(Additionally, you might have to set “export HADOOP_CONF_DIR=/etc/hadoop/conf”)
+2. Set SPARK\_HOME in [ZEPPELIN\_HOME]/conf/zeppelin-env.sh to use spark-submit
+( Additionally, you might have to set “export HADOOP\_CONF\_DIR=/etc/hadoop/conf” )
 
 3. Add the two properties below to spark configuration ([SPARK_HOME]/conf/spark-defaults.conf):
 
-        spark.yarn.principal<br>
+        spark.yarn.principal
         spark.yarn.keytab
 
-        (If you do not have access to the above spark-defaults.conf file, optionally, you may add the lines to the Spark Interpreter through the Interpreter tab in the Zeppelin UI.
+  > **NOTE:** If you do not have access to the above spark-defaults.conf file, optionally, you may add the lines to the Spark Interpreter through the Interpreter tab in the Zeppelin UI.
 
 4. That's it. Play with Zeppelin
 
