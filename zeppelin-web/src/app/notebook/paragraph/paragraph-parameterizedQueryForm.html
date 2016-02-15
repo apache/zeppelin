@@ -17,24 +17,18 @@ limitations under the License.
   <div class="form-group col-sm-6 col-md-6 col-lg-4"
        ng-repeat="formulaire in paragraph.settings.forms"
        ng-Init="loadForm(formulaire, paragraph.settings.params)">
-    <label class="control-label input-sm" ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">
-      <div ng-if="paragraph.settings.forms[formulaire.name].type != 'checkbox'">{{formulaire.name}}</div>
-      <a ng-if="paragraph.settings.forms[formulaire.name].type == 'checkbox'"
-         ng-click="toggleCheckboxOption(formulaire)"> {{formulaire.name}}
-         <span ng-class="formulaire.hidden ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>
-      </a>
-    </label>
+    <label class="control-label input-sm" ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">{{formulaire.name}}</label>
     <div>
 
       <input class="form-control input-sm"
-             ng-if="paragraph.settings.forms[formulaire.name].type == 'input'"
+             ng-if="!paragraph.settings.forms[formulaire.name].options"
              ng-enter="runParagraph(getEditorValue())"
              ng-model="paragraph.settings.params[formulaire.name]"
              ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
              name="{{formulaire.name}}" />
 
       <select class="form-control input-sm"
-             ng-if="paragraph.settings.forms[formulaire.name].type == 'select'"
+             ng-if="paragraph.settings.forms[formulaire.name].options && paragraph.settings.forms[formulaire.name].type != 'checkbox'"
              ng-change="runParagraph(getEditorValue())"
              ng-model="paragraph.settings.params[formulaire.name]"
              ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
@@ -42,7 +36,7 @@ limitations under the License.
              ng-options="option.value as (option.displayName||option.value) for option in paragraph.settings.forms[formulaire.name].options">
       </select>
 
-      <div ng-if="paragraph.settings.forms[formulaire.name].type == 'checkbox' && !formulaire.hidden">
+      <div ng-if="paragraph.settings.forms[formulaire.name].type == 'checkbox'">
         <label ng-repeat="option in paragraph.settings.forms[formulaire.name].options"
                class="checkbox-group input-sm">
           <input type="checkbox"

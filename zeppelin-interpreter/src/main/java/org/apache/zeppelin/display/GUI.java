@@ -18,7 +18,11 @@
 package org.apache.zeppelin.display;
 
 import java.io.Serializable;
-import java.util.*;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.zeppelin.display.Input.ParamOption;
 
@@ -75,12 +79,12 @@ public class GUI implements Serializable {
   }
 
   public Collection<Object> checkbox(String id, Collection<Object> defaultChecked,
-      ParamOption[] options, boolean hidden) {
+                                     ParamOption[] options) {
     Collection<Object> value = (Collection<Object>) params.get(id);
     if (value == null) {
       value = defaultChecked;
     }
-    forms.put(id, new Input(id, id, "checkbox", defaultChecked, options, hidden));
+    forms.put(id, new Input(id, defaultChecked, "checkbox", options));
     return value;
   }
 

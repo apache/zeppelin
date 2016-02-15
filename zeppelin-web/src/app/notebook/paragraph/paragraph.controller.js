@@ -627,14 +627,6 @@ angular.module('zeppelinWebApp')
     }
   };
 
-  $scope.toggleCheckboxOption = function(formulaire) {
-    if (formulaire.hidden) {
-      formulaire.hidden = false;
-    } else {
-      formulaire.hidden = true;
-    }
-  };
-
   $scope.aceChanged = function() {
     $scope.dirtyText = $scope.editor.getSession().getValue();
     $scope.startSaveTimer();
