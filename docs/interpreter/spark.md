@@ -276,13 +276,13 @@ This is to make the server communicate with KDC.
 2. Set SPARK\_HOME in [ZEPPELIN\_HOME]/conf/zeppelin-env.sh to use spark-submit
 ( Additionally, you might have to set “export HADOOP\_CONF\_DIR=/etc/hadoop/conf” )
 
-3. Add the two properties below to spark configuration ([SPARK_HOME]/conf/spark-defaults.conf):
+3. Add the two properties below to spark configuration ( [SPARK_HOME]/conf/spark-defaults.conf ):
 
         spark.yarn.principal
         spark.yarn.keytab
 
   > **NOTE:** If you do not have access to the above spark-defaults.conf file, optionally, you may add the lines to the Spark Interpreter through the Interpreter tab in the Zeppelin UI.
 
-4. That's it. Play with Zeppelin
+4. That's it. Play with Zeppelin !
 
 
