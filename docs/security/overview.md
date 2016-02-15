@@ -23,7 +23,6 @@ limitations under the License.
 
 There are three aspects to Zeppelin security:
 
-* Authentication: is the user who they say they are? [More](overview.html)
+* Authentication: is the user who they say they are? [More](authentication.html)
 * Notebook authorization: does the user have permissions to read or write to a note? [More](notebook_authorization.html)
-* Interpreter authorization: does the user have permissions to perform interpreter operations e.g. access data source objects? [More](interpreter_authorization.html)
-
+* Interpreter and data source authorization: does the user have permissions to perform interpreter operations or access data source objects? [More](interpreter_authorization.html)
