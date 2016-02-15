@@ -10,6 +10,7 @@
 
 # conf file
 conf/zeppelin-env.sh
+conf/zeppelin-env.cmd
 conf/zeppelin-site.xml
 conf/keystore
 conf/truststore
