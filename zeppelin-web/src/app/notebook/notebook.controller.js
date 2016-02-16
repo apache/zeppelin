@@ -154,6 +154,21 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     });
   };
 
+  // checkpoint/commit notebook
+  $scope.checkpointNotebook = function(commitMessage) {
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: 'Commit notebook to current repository?',
+      callback: function(result) {
+        if (result) {
+          websocketMsgSrv.checkpointNotebook($routeParams.noteId, commitMessage);
+        }
+      }
+    });
+    document.getElementById('note.checkpoint.message').value='';
+  };
+
   $scope.runNote = function() {
     BootstrapDialog.confirm({
       closable: true,

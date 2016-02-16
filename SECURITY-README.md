@@ -33,11 +33,8 @@ The scope of this PR is to require credentials to access Zeppelin. To achieve th
 Apache Shiro sits as a servlet filter between the browser and the exposed services and handles the required authentication without any programming required. (See Apache Shiro for more info).
 ## Websocket security
 Securing the HTTP endpoints is not enough, since Zeppelin also communicates with the browser through websockets. To secure this channel, we take the following approach:
-1. The browser on startup requests a ticket through HTTP
-2. The Apache Shiro Servlet filter handles the user auth
-3. Once the user is authenticated, a ticket is assigned to this user and the ticket is returned to the browser
+  1. The browser on startup requests a ticket through HTTP
+  2. The Apache Shiro Servlet filter handles the user auth
+  3. Once the user is authenticated, a ticket is assigned to this user and the ticket is returned to the browser
 
 All websockets communications require the username and ticket  to be submitted by the browser. Upon receiving a websocket message, the server checks that the ticket received is the one assigned to the username through the HTTP request (step 3 above).
-
-
- 

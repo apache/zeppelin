@@ -128,6 +128,16 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       });
     },
 
+    checkpointNotebook: function(noteId, commitMessage) {
+      websocketEvents.sendNewEvent({
+        op: 'CHECKPOINT_NOTEBOOK',
+        data: {
+          noteId: noteId,
+          commitMessage: commitMessage
+        }
+      });
+    },
+
     isConnected: function(){
       return websocketEvents.isConnected();
     }
