@@ -30,10 +30,7 @@ import java.util.Properties;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterB;
@@ -121,7 +118,7 @@ public class RemoteInterpreterTest {
             "id",
             "title",
             "text",
-            null,
+            new AuthenticationInfo(),
             new HashMap<String, Object>(),
             new GUI(),
             new AngularObjectRegistry(intpGroup.getId(), null),
@@ -156,7 +153,7 @@ public class RemoteInterpreterTest {
             "id",
             "title",
             "text",
-            null,
+            new AuthenticationInfo(),
             new HashMap<String, Object>(),
             new GUI(),
             new AngularObjectRegistry(intpGroup.getId(), null),
@@ -206,7 +203,7 @@ public class RemoteInterpreterTest {
             "id",
             "title",
             "text",
-            null,
+            new AuthenticationInfo(),
             new HashMap<String, Object>(),
             new GUI(),
             new AngularObjectRegistry(intpGroup.getId(), null),
@@ -220,7 +217,7 @@ public class RemoteInterpreterTest {
             "id",
             "title",
             "text",
-            null,
+            new AuthenticationInfo(),
             new HashMap<String, Object>(),
             new GUI(),
             new AngularObjectRegistry(intpGroup.getId(), null),
@@ -273,7 +270,7 @@ public class RemoteInterpreterTest {
                 "jobA",
                 "title",
                 "text",
-                null,
+                new AuthenticationInfo(),
                 new HashMap<String, Object>(),
                 new GUI(),
                 new AngularObjectRegistry(intpGroup.getId(), null),
@@ -309,7 +306,7 @@ public class RemoteInterpreterTest {
                 "jobB",
                 "title",
                 "text",
-                null,
+                new AuthenticationInfo(),
                 new HashMap<String, Object>(),
                 new GUI(),
                 new AngularObjectRegistry(intpGroup.getId(), null),
@@ -376,7 +373,7 @@ public class RemoteInterpreterTest {
               jobId,
               "title",
               "text",
-              null,
+              new AuthenticationInfo(),
               new HashMap<String, Object>(),
               new GUI(),
               new AngularObjectRegistry(intpGroup.getId(), null),
@@ -455,7 +452,7 @@ public class RemoteInterpreterTest {
               jobId,
               "title",
               "text",
-              null,
+              new AuthenticationInfo(),
               new HashMap<String, Object>(),
               new GUI(),
               new AngularObjectRegistry(intpGroup.getId(), null),
@@ -555,7 +552,7 @@ public class RemoteInterpreterTest {
                 "jobA",
                 "title",
                 "text",
-                null,
+                new AuthenticationInfo(),
                 new HashMap<String, Object>(),
                 new GUI(),
                 new AngularObjectRegistry(intpGroup.getId(), null),

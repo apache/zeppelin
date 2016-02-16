@@ -75,7 +75,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
         "id",
         "title",
         "text",
-        null,
+        new AuthenticationInfo(),
         new HashMap<String, Object>(),
         new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),

@@ -18,10 +18,7 @@ package org.apache.zeppelin.resource;
 
 import com.google.gson.Gson;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterEventPoller;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterResourcePool;
@@ -93,7 +90,7 @@ public class DistributedResourcePoolTest {
         "id",
         "title",
         "text",
-        null,
+        new AuthenticationInfo(),
         new HashMap<String, Object>(),
         new GUI(),
         null,
