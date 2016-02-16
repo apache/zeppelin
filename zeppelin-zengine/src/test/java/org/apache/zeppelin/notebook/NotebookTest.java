@@ -486,7 +486,7 @@ public class NotebookTest implements JobListenerFactory{
     while (p1.getStatus() != Status.FINISHED) Thread.yield();
     while (p2.getStatus() != Status.FINISHED) Thread.yield();
 
-    assertEquals(p1.getResult(), p2.getResult());
+    assertEquals(p1.getResult().message(), p2.getResult().message());
 
 
     // restart interpreter with per note session enabled
@@ -502,7 +502,7 @@ public class NotebookTest implements JobListenerFactory{
     while (p1.getStatus() != Status.FINISHED) Thread.yield();
     while (p2.getStatus() != Status.FINISHED) Thread.yield();
 
-    assertNotEquals(p1.getResult(), p2.getResult());
+    assertNotEquals(p1.getResult().message(), p2.getResult().message());
 
     notebook.removeNote(note1.getId());
     notebook.removeNote(note2.getId());
