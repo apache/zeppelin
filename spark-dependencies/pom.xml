@@ -22,14 +22,14 @@
   <parent>
     <artifactId>zeppelin</artifactId>
     <groupId>org.apache.zeppelin</groupId>
-    <version>0.6.0-incubating-SNAPSHOT</version>
+    <version>0.5.6-incubating</version>
     <relativePath>..</relativePath>
   </parent>
 
   <groupId>org.apache.zeppelin</groupId>
   <artifactId>zeppelin-spark-dependencies</artifactId>
   <packaging>jar</packaging>
-  <version>0.6.0-incubating-SNAPSHOT</version>
+  <version>0.5.6-incubating</version>
   <name>Zeppelin: Spark dependencies</name>
   <description>Zeppelin spark support</description>
   <url>http://zeppelin.incubator.apache.org</url>
@@ -43,7 +43,7 @@
     <hadoop.version>2.3.0</hadoop.version>
     <yarn.version>${hadoop.version}</yarn.version>
     <avro.version>1.7.7</avro.version>
-    <avro.mapred.classifier></avro.mapred.classifier>
+    <avro.mapred.classifier />
     <jets3t.version>0.7.1</jets3t.version>
     <protobuf.version>2.4.1</protobuf.version>
 
@@ -780,12 +780,9 @@
                 </goals>
                 <configuration>
                   <target>
-                    <delete dir="../interpreter/spark/pyspark"/>
-                    <copy todir="../interpreter/spark/pyspark"
-                        file="${project.build.directory}/spark-dist/spark-${spark.version}/python/lib/py4j-${py4j.version}-src.zip"/>
-                    <zip destfile="${project.build.directory}/../../interpreter/spark/pyspark/pyspark.zip"
-                         basedir="${project.build.directory}/spark-dist/spark-${spark.version}/python"
-                         includes="pyspark/*.py,pyspark/**/*.py"/>
+                    <delete dir="../interpreter/spark/pyspark" />
+                    <copy todir="../interpreter/spark/pyspark" file="${project.build.directory}/spark-dist/spark-${spark.version}/python/lib/py4j-${py4j.version}-src.zip" />
+                    <zip destfile="${project.build.directory}/../../interpreter/spark/pyspark/pyspark.zip" basedir="${project.build.directory}/spark-dist/spark-${spark.version}/python" includes="pyspark/*.py,pyspark/**/*.py" />
                   </target>
                 </configuration>
               </execution>
@@ -866,7 +863,7 @@
             </filter>
           </filters>
           <transformers>
-            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
             <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
               <resource>reference.conf</resource>
             </transformer>
