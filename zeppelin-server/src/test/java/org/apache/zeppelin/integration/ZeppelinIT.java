@@ -119,7 +119,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       // check expected text
       waitForText("myVar=1", By.xpath(
-              getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]"));
+              getParagraphXPath(3) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
 
       /*
        * Click element
@@ -160,7 +160,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       // check expected text by watcher
       waitForText("myVar=3", By.xpath(
-              getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]"));
+              getParagraphXPath(3) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
 
       /*
        * Unbind
