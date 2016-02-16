@@ -25,10 +25,7 @@ import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.zeppelin.display.AngularObject;
-import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.AngularObjectRegistryListener;
-import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.display.*;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterAngular;
 import org.apache.zeppelin.resource.LocalResourcePool;

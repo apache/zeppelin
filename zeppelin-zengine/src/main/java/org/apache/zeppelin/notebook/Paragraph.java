@@ -18,6 +18,7 @@
 package org.apache.zeppelin.notebook;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.display.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;

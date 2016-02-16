@@ -16,7 +16,7 @@
  */
 
 
-package org.apache.zeppelin.interpreter;
+package org.apache.zeppelin.display;
 
 /***
  *

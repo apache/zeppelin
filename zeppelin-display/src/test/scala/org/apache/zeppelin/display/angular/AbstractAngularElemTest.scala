@@ -19,7 +19,7 @@ package org.apache.zeppelin.display.angular
 import java.io.{ByteArrayOutputStream, PrintStream}
 import java.util
 
-import org.apache.zeppelin.display.{AngularObject, AngularObjectRegistry, GUI}
+import org.apache.zeppelin.display.{AuthenticationInfo, AngularObject, AngularObjectRegistry, GUI}
 import org.apache.zeppelin.interpreter._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach, FlatSpec, Matchers}
