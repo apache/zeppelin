@@ -26,7 +26,7 @@ limitations under the License.
 
       <div class="row">
         <div class="col-md-4">
-          <h4>Notebook 
+          <h4>Notebook
             <i ng-class="isReloadingNotes ? 'fa fa-refresh fa-spin' : 'fa fa-refresh'"
               ng-style="!isReloadingNotes && {'cursor': 'pointer'}" style="font-size: 13px;"
               ng-click="reloadNotebookList();">
@@ -38,8 +38,9 @@ limitations under the License.
               <i style="font-size: 15px;" class="fa fa-upload"></i> Import note</a></h5>
             <h5><a href="" data-toggle="modal" data-target="#noteNameModal" style="text-decoration: none;">
               <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
-            <ul style="list-style-type: none;">
-              <li ng-repeat="note in home.notes.list | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">
+            <ul id="notebook-names">
+              <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
+              <li ng-repeat="note in home.notes.list | filter:query | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">
                 <i style="font-size: 10px;" class="icon-doc"></i>
                 <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}}</a>
               </li>

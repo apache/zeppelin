@@ -59,9 +59,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
 
 import py4j.GatewayServer;
 
@@ -124,12 +121,12 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     // load libraries from Dependency Interpreter
     URL [] urls = new URL[0];
+    List<URL> urlList = new LinkedList<URL>();
 
     if (depInterpreter != null) {
       SparkDependencyContext depc = depInterpreter.getDependencyContext();
       if (depc != null) {
         List<File> files = depc.getFiles();
-        List<URL> urlList = new LinkedList<URL>();
         if (files != null) {
           for (File f : files) {
             try {
@@ -138,11 +135,28 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
               logger.error("Error", e);
             }
           }
-
-          urls = urlList.toArray(urls);
         }
       }
     }
+
+    String localRepo = getProperty("zeppelin.interpreter.localRepo");
+    if (localRepo != null) {
+      File localRepoDir = new File(localRepo);
+      if (localRepoDir.exists()) {
+        File[] files = localRepoDir.listFiles();
+        if (files != null) {
+          for (File f : files) {
+            try {
+              urlList.add(f.toURI().toURL());
+            } catch (MalformedURLException e) {
+              logger.error("Error", e);
+            }
+          }
+        }
+      }
+    }
+
+    urls = urlList.toArray(urls);
 
     ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
     try {

@@ -284,8 +284,18 @@ public class Notebook {
     for (InterpreterSetting settings : replFactory.get()) {
       AngularObjectRegistry registry = settings.getInterpreterGroup().getAngularObjectRegistry();
       if (registry instanceof RemoteAngularObjectRegistry) {
+        // remove paragraph scope object
+        for (Paragraph p : note.getParagraphs()) {
+          ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, p.getId());
+        }
+        // remove notebook scope object
         ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, null);
       } else {
+        // remove paragraph scope object
+        for (Paragraph p : note.getParagraphs()) {
+          registry.removeAll(id, p.getId());
+        }
+        // remove notebook scope object
         registry.removeAll(id, null);
       }
     }
@@ -295,6 +305,10 @@ public class Notebook {
     } catch (IOException e) {
       logger.error(e.toString(), e);
     }
+  }
+
+  public void checkpointNote(String noteId, String checkpointMessage) throws IOException {
+    notebookRepo.checkpoint(noteId, checkpointMessage);
   }
 
   @SuppressWarnings("rawtypes")
@@ -483,9 +497,12 @@ public class Notebook {
       
       boolean releaseResource = false;
       try {
-        releaseResource = (boolean) note.getConfig().get("releaseresource");
-      } catch (java.lang.ClassCastException e) {
-        logger.error(e.toString(), e);
+        Map<String, Object> config = note.getConfig();
+        if (config != null && config.containsKey("releaseresource")) {
+          releaseResource = (boolean) note.getConfig().get("releaseresource");
+        }
+      } catch (ClassCastException e) {
+        logger.error(e.getMessage(), e);
       }
       if (releaseResource) {
         for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {

@@ -226,15 +226,4 @@
     </plugins>
   </build>
 
-  <profiles>
-    <profile>
-      <id>vendor-repo</id>
-      <repositories>
-        <repository>
-          <id>cloudera</id>
-          <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
-        </repository>
-      </repositories>
-    </profile>
-  </profiles>
 </project>
