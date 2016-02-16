@@ -74,18 +74,14 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
   public void testForParsePropertyKey() throws IOException {
     JDBCInterpreter t = new JDBCInterpreter(new Properties());
     
-    // if return null is that prefix not found
     assertEquals(t.getPropertyKey("(fake) select max(cant) from test_table where id >= 2452640"),
-        null);
+        "fake");
     
     assertEquals(t.getPropertyKey("() select max(cant) from test_table where id >= 2452640"),
-        null);
-    
-    assertEquals(t.getPropertyKey("(\nfake) select max(cant) from test_table where id >= 2452640"),
-        null);
+        "");
     
     assertEquals(t.getPropertyKey(")fake( select max(cant) from test_table where id >= 2452640"),
-        null);
+        "default");
         
     // when you use a %jdbc(prefix1), prefix1 is the propertyKey as form part of the cmd string
     assertEquals(t.getPropertyKey("(prefix1)\n select max(cant) from test_table where id >= 2452640"),
@@ -97,6 +93,27 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     // when you use a %jdbc, prefix is the default
     assertEquals(t.getPropertyKey("select max(cant) from test_table where id >= 2452640"),
             "default");
+  }
+  
+  @Test
+  public void testForMapPrefix() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String sqlQuery = "(fake) select * from test_table";
+
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, new InterpreterContext("", "1", "","", null,null,null,null,null,null));
+
+    // if prefix not found return ERROR and Prefix not found.
+    assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
+    assertEquals("Prefix not found.", interpreterResult.message());
   }
   
   @Test
