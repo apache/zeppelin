@@ -18,7 +18,7 @@ echo '# Post vagrant up instructions.'
 echo '# From your host machine,'
 echo '# git clone the incubator-zeppelin branch into this directory'
 echo
-echo 'git clone https://github.com/apache/incubator-zeppelin.git'
+echo 'git clone git://git.apache.org/incubator-zeppelin.git'
 echo
 echo '# Cloning the project again may seem counter intuitive, since this script'
 echo '# originated from the project repository.  Consider copying just the vagrant/zeppelin-dev'

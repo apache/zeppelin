@@ -168,6 +168,9 @@ public class NotebookServer extends WebSocketServlet implements
           case LIST_CONFIGURATIONS:
             sendAllConfigurations(conn, notebook);
             break;
+          case CHECKPOINT_NOTEBOOK:
+            checkpointNotebook(conn, notebook, messagereceived);
+            break;
           default:
             broadcastNoteList();
             break;
@@ -740,6 +743,13 @@ public class NotebookServer extends WebSocketServlet implements
 
     conn.send(serializeMessage(new Message(OP.CONFIGURATIONS_INFO)
         .put("configurations", configurations)));
+  }
+
+  private void checkpointNotebook(NotebookSocket conn, Notebook notebook,
+      Message fromMessage) throws IOException {
+    String noteId = (String) fromMessage.get("noteId");
+    String commitMessage = (String) fromMessage.get("commitMessage");
+    notebook.checkpointNote(noteId, commitMessage);
   }
 
   /**

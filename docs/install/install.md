@@ -76,6 +76,12 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>*</td>
     <td>Enables a way to specify a ',' separated list of allowed origins for rest and websockets. <br /> i.e. http://localhost:8080 </td>
   </tr>
+    <tr>
+    <td>N/A</td>
+    <td>zeppelin.anonymous.allowed</td>
+    <td>true</td>
+    <td>Anonymous user is allowed by default.</td>
+  </tr>
   <tr>
     <td>ZEPPELIN_SERVER_CONTEXT_PATH</td>
     <td>zeppelin.server.context.path</td>
