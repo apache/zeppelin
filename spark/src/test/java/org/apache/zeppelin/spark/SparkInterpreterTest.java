@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Properties;
 
+import org.apache.spark.HttpServer;
+import org.apache.spark.SecurityManager;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.zeppelin.display.AngularObjectRegistry;
@@ -70,8 +72,10 @@ public class SparkInterpreterTest {
     if (repl == null) {
       Properties p = new Properties();
       intpGroup = new InterpreterGroup();
+      intpGroup.put("note", new LinkedList<Interpreter>());
       repl = new SparkInterpreter(p);
       repl.setInterpreterGroup(intpGroup);
+      intpGroup.get("note").add(repl);
       repl.open();
     }
 
@@ -185,5 +189,22 @@ public class SparkInterpreterTest {
         assertTrue(String.format("configuration starting from 'spark.' should not be empty. [%s]", key), !sparkConf.contains(key) || !sparkConf.get(key).isEmpty());
       }
     }
+  }
+
+  @Test
+  public void shareSingleSparkContext() throws InterruptedException {
+    // create another SparkInterpreter
+    Properties p = new Properties();
+    SparkInterpreter repl2 = new SparkInterpreter(p);
+    repl2.setInterpreterGroup(intpGroup);
+    intpGroup.get("note").add(repl2);
+    repl2.open();
+
+    assertEquals(Code.SUCCESS,
+        repl.interpret("print(sc.parallelize(1 to 10).count())", context).code());
+    assertEquals(Code.SUCCESS,
+        repl2.interpret("print(sc.parallelize(1 to 10).count())", context).code());
+
+    repl2.close();
   }
 }
