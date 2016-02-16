@@ -23,6 +23,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.interpreter.AuthenticationInfo;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -690,9 +691,12 @@ public class NotebookServer extends WebSocketServlet implements
     p.setText(text);
     p.setTitle((String) fromMessage.get("title"));
     if (!fromMessage.principal.equals("anonymous")) {
-      p.setUser(fromMessage.principal);
+      AuthenticationInfo authenticationInfo = new AuthenticationInfo(fromMessage.principal,
+          fromMessage.ticket);
+      p.setAuthenticationInfo(authenticationInfo);
+
     } else {
-      p.setUser(null);
+      p.setAuthenticationInfo(new AuthenticationInfo());
     }
 
     Map<String, Object> params = (Map<String, Object>) fromMessage

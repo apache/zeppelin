@@ -66,6 +66,7 @@ public class ShellInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     logger.debug("Run shell command '" + cmd + "'");
+    logger.error("user info found as :::" + contextInterpreter.getAuthenticationInfo().getUser());
     CommandLine cmdLine = CommandLine.parse("bash");
     cmdLine.addArgument("-c", false);
     cmdLine.addArgument(cmd, false);
