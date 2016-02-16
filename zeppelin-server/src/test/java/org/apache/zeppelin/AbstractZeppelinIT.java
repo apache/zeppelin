@@ -18,7 +18,9 @@
 package org.apache.zeppelin;
 
 
+import com.amazonaws.util.Base64;
 import com.google.common.base.Function;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.openqa.selenium.*;
@@ -29,6 +31,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -129,6 +132,13 @@ abstract public class AbstractZeppelinIT {
     driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
         "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
     sleep(100, true);
+  }
+
+  protected void handleError(String message, Exception exception) throws Exception {
+    LOG.error(message, exception);
+    File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+    LOG.debug("life info::"+ Base64.encode(FileUtils.readFileToByteArray(scrFile)));
+    throw exception;
   }
 
 }
