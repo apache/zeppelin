@@ -30,6 +30,8 @@ import org.openqa.selenium.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+
 import static org.apache.zeppelin.AbstractZeppelinIT.HelperKeys.*;
 import static org.openqa.selenium.Keys.*;
 
@@ -60,7 +62,7 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
   }
 
   @Test
-  public void testSpark() throws InterruptedException {
+  public void testSpark() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -153,12 +155,12 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       );
 
     } catch (Exception e) {
-      handleException(e);
+      handleException("Exception in SparkParagraphIT while testSpark", e);
     }
   }
 
   @Test
-  public void testPySpark() throws InterruptedException {
+  public void testPySpark() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -198,12 +200,12 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
       }
 
     } catch (Exception e) {
-      handleException(e);
+      handleException("Exception in SparkParagraphIT while testPySpark", e);
     }
   }
 
   @Test
-  public void testSqlSpark() throws InterruptedException {
+  public void testSqlSpark() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -233,12 +235,7 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
               "30 unemployed married primary 1,787")
       );
     } catch (Exception e) {
-      handleException(e);
+      handleException("Exception in SparkParagraphIT while testSqlSpark", e);
     }
-  }
-
-  private void handleException(Exception e) {
-    ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-    LOG.error("Exception in testing SparkParagraph", e);
   }
 }

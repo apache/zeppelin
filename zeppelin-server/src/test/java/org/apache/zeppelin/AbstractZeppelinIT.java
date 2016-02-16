@@ -27,6 +27,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -164,6 +165,12 @@ abstract public class AbstractZeppelinIT {
       return String.valueOf(this.keyCode);
     }
 
+  }
+
+  protected void handleException(String message, Exception e) throws Exception {
+    LOG.error(message, e);
+    File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+    throw e;
   }
 
 }
