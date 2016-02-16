@@ -15,8 +15,10 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin;
+package org.apache.zeppelin.integration;
 
+import org.apache.zeppelin.AbstractZeppelinIT;
+import org.apache.zeppelin.WebDriverManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,8 +37,8 @@ import static org.junit.Assert.assertTrue;
  * To test, ZeppelinServer should be running on port 8080
  * On OSX, you'll need firefox 42.0 installed, then you can run with
  *
- * PATH=~/Applications/Firefox.app/Contents/MacOS/:$PATH CI="" \
- *    mvn -Dtest=org.apache.zeppelin.ZeppelinIT -Denforcer.skip=true \
+ * PATH=~/Applications/Firefox.app/Contents/MacOS/:$PATH TEST_SELENIUM="" \
+ *    mvn -Dtest=org.apache.zeppelin.integration.ZeppelinIT -Denforcer.skip=true \
  *    test -pl zeppelin-server
  *
  */
@@ -62,7 +64,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
   }
 
   @Test
-  public void testAngularDisplay() throws InterruptedException{
+  public void testAngularDisplay() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -193,15 +195,15 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       sleep(100, true);
 
       System.out.println("testCreateNotebook Test executed");
-    } catch (ElementNotVisibleException e) {
+    } catch (Exception e) {
       LOG.error("Exception in ZeppelinIT while testAngularDisplay ", e);
       File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
-
+      throw e;
     }
   }
 
   @Test
-  public void testSparkInterpreterDependencyLoading() {
+  public void testSparkInterpreterDependencyLoading() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -236,6 +238,10 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       assertTrue(waitForText("import org.apache.commons.csv.CSVFormat",
           By.xpath(getParagraphXPath(1) + "//div[starts-with(@id, 'p') and contains(@id, 'text')]/div")));
 
+      //delete created notebook for cleanup.
+      deleteTestNotebook(driver);
+      sleep(1000, true);
+
       // reset dependency
       interpreterLink.click();
       sparkEditBtn = pollingWait(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]"),
@@ -247,10 +253,10 @@ public class ZeppelinIT extends AbstractZeppelinIT {
       testDepRemoveBtn.click();
       driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
       driver.switchTo().alert().accept();
-    } catch (ElementNotVisibleException e) {
-      LOG.error("Exception in ZeppelinIT while testAngularDisplay ", e);
+    } catch (Exception e) {
+      LOG.error("Exception in ZeppelinIT while testSparkInterpreterDependencyLoading ", e);
       File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-
+      throw e;
     }
   }
 }
