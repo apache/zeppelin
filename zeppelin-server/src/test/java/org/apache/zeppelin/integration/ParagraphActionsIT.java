@@ -88,7 +88,9 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       deleteTestNotebook(driver);
 
     } catch (ElementNotVisibleException e) {
-      File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+       LOG.error("Exception in ParagraphActionsIT while testShowAndHideLineNumbers ", e);
+       File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+       throw e;
     }
 
 
