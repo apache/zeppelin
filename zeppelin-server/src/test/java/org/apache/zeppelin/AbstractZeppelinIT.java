@@ -97,7 +97,7 @@ abstract public class AbstractZeppelinIT {
   }
 
   protected boolean endToEndTestEnabled() {
-    return null != System.getenv("CI");
+    return null != System.getenv("TEST_SELENIUM");
   }
 
   protected void createNewNote() {
