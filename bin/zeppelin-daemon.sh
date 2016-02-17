@@ -21,7 +21,7 @@
 # description: Start and stop daemon script for.
 #
 
-USAGE="Usage: zeppelin-daemon.sh [--config <conf-dir>] {start|stop|restart|reload|status}"
+USAGE="Usage: zeppelin-daemon.sh [--config <conf-dir>] {start|stop|upstart|restart|reload|status}"
 
 if [[ "$1" == "--config" ]]; then
   shift
@@ -159,6 +159,16 @@ function check_if_process_is_alive() {
   fi
 }
 
+function upstart() {
+
+  # upstart() allows zeppelin to be run and managed as a service
+  # for example, this could be called from an upstart script in /etc/init
+  # where the service manager starts and stops the process
+  initialize_default_directories
+
+  $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:$CLASSPATH $ZEPPELIN_MAIN >> "${ZEPPELIN_OUTFILE}"
+}
+
 function start() {
   local pid
 
@@ -240,6 +250,9 @@ case "${1}" in
     ;;
   stop)
     stop
+    ;;
+  upstart)
+    upstart
     ;;
   reload)
     stop
