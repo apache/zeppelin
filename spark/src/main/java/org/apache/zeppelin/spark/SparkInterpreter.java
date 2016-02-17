@@ -17,9 +17,7 @@
 
 package org.apache.zeppelin.spark;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -41,7 +39,6 @@ import org.apache.spark.repl.SparkJLineCompletion;
 import org.apache.spark.scheduler.ActiveJob;
 import org.apache.spark.scheduler.DAGScheduler;
 import org.apache.spark.scheduler.Pool;
-import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.ui.jobs.JobProgressListener;
 import org.apache.zeppelin.interpreter.Interpreter;
@@ -55,8 +52,8 @@ import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.apache.zeppelin.interpreter.WrappedInterpreter;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
-import org.apache.zeppelin.spark.dep.DependencyContext;
-import org.apache.zeppelin.spark.dep.DependencyResolver;
+import org.apache.zeppelin.spark.dep.SparkDependencyContext;
+import org.apache.zeppelin.spark.dep.SparkDependencyResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +79,7 @@ import scala.tools.nsc.settings.MutableSettings.PathSetting;
  *
  */
 public class SparkInterpreter extends Interpreter {
-  Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
+  public static Logger logger = LoggerFactory.getLogger(SparkInterpreter.class);
 
   static {
     Interpreter.register(
@@ -90,7 +87,9 @@ public class SparkInterpreter extends Interpreter {
         "spark",
         SparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add("spark.app.name", "Zeppelin", "The name of spark application.")
+            .add("spark.app.name",
+                getSystemDefault("SPARK_APP_NAME", "spark.app.name", "Zeppelin"),
+                "The name of spark application.")
             .add("master",
                 getSystemDefault("MASTER", "spark.master", "local[*]"),
                 "Spark master uri. ex) spark://masterhost:7077")
@@ -115,9 +114,9 @@ public class SparkInterpreter extends Interpreter {
   private SparkILoop interpreter;
   private SparkIMain intp;
   private SparkContext sc;
-  private ByteArrayOutputStream out;
+  private SparkOutputStream out;
   private SQLContext sqlc;
-  private DependencyResolver dep;
+  private SparkDependencyResolver dep;
   private SparkJLineCompletion completor;
 
   private JobProgressListener sparkListener;
@@ -129,7 +128,7 @@ public class SparkInterpreter extends Interpreter {
 
   public SparkInterpreter(Properties property) {
     super(property);
-    out = new ByteArrayOutputStream();
+    out = new SparkOutputStream();
   }
 
   public SparkInterpreter(Properties property, SparkContext sc) {
@@ -186,7 +185,7 @@ public class SparkInterpreter extends Interpreter {
       }
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
-      e.printStackTrace();
+      logger.error(e.toString(), e);
       return null;
     }
     return pl;
@@ -222,9 +221,9 @@ public class SparkInterpreter extends Interpreter {
     return sqlc;
   }
 
-  public DependencyResolver getDependencyResolver() {
+  public SparkDependencyResolver getDependencyResolver() {
     if (dep == null) {
-      dep = new DependencyResolver(intp,
+      dep = new SparkDependencyResolver(intp,
                                    sc,
                                    getProperty("zeppelin.dep.localrepo"),
                                    getProperty("zeppelin.dep.additionalRemoteRepository"));
@@ -317,7 +316,8 @@ public class SparkInterpreter extends Interpreter {
           "python" + File.separator + "lib");
     }
 
-    String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.8.2.1-src.zip"};
+    //Only one of py4j-0.9-src.zip and py4j-0.8.2.1-src.zip should exist
+    String[] pythonLibs = new String[]{"pyspark.zip", "py4j-0.9-src.zip", "py4j-0.8.2.1-src.zip"};
     ArrayList<String> pythonLibUris = new ArrayList<>();
     for (String lib : pythonLibs) {
       File libFile = new File(pysparkPath, lib);
@@ -334,6 +334,10 @@ public class SparkInterpreter extends Interpreter {
       conf.set("spark.submit.pyArchives", Joiner.on(":").join(pythonLibs));
     }
 
+    // Distributes needed libraries to workers.
+    if (getProperty("master").equals("yarn-client")) {
+      conf.set("spark.yarn.isPython", "true");
+    }
 
     SparkContext sparkContext = new SparkContext(conf);
     return sparkContext;
@@ -422,9 +426,26 @@ public class SparkInterpreter extends Interpreter {
     // add dependency from DepInterpreter
     DepInterpreter depInterpreter = getDepInterpreter();
     if (depInterpreter != null) {
-      DependencyContext depc = depInterpreter.getDependencyContext();
+      SparkDependencyContext depc = depInterpreter.getDependencyContext();
       if (depc != null) {
         List<File> files = depc.getFiles();
+        if (files != null) {
+          for (File f : files) {
+            if (classpath.length() > 0) {
+              classpath += File.pathSeparator;
+            }
+            classpath += f.getAbsolutePath();
+          }
+        }
+      }
+    }
+
+    // add dependency from local repo
+    String localRepo = getProperty("zeppelin.interpreter.localRepo");
+    if (localRepo != null) {
+      File localRepoDir = new File(localRepo);
+      if (localRepoDir.exists()) {
+        File[] files = localRepoDir.listFiles();
         if (files != null) {
           for (File f : files) {
             if (classpath.length() > 0) {
@@ -447,10 +468,9 @@ public class SparkInterpreter extends Interpreter {
     b.v_$eq(true);
     settings.scala$tools$nsc$settings$StandardScalaSettings$_setter_$usejavacp_$eq(b);
 
-    PrintStream printStream = new PrintStream(out);
-
     /* spark interpreter */
     this.interpreter = new SparkILoop(null, new PrintWriter(out));
+
     interpreter.settings_$eq(settings);
 
     interpreter.createInterpreter();
@@ -476,7 +496,7 @@ public class SparkInterpreter extends Interpreter {
 
     dep = getDependencyResolver();
 
-    z = new ZeppelinContext(sc, sqlc, null, dep, printStream,
+    z = new ZeppelinContext(sc, sqlc, null, dep,
         Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
     intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
@@ -484,7 +504,6 @@ public class SparkInterpreter extends Interpreter {
     binder.put("sc", sc);
     binder.put("sqlc", sqlc);
     binder.put("z", z);
-    binder.put("out", printStream);
 
     intp.interpret("@transient val z = "
                  + "_binder.get(\"z\").asInstanceOf[org.apache.zeppelin.spark.ZeppelinContext]");
@@ -529,11 +548,30 @@ public class SparkInterpreter extends Interpreter {
       throw new InterpreterException(e);
     }
 
-    // add jar
+    // add jar from DepInterpreter
     if (depInterpreter != null) {
-      DependencyContext depc = depInterpreter.getDependencyContext();
+      SparkDependencyContext depc = depInterpreter.getDependencyContext();
       if (depc != null) {
         List<File> files = depc.getFilesDist();
+        if (files != null) {
+          for (File f : files) {
+            if (f.getName().toLowerCase().endsWith(".jar")) {
+              sc.addJar(f.getAbsolutePath());
+              logger.info("sc.addJar(" + f.getAbsolutePath() + ")");
+            } else {
+              sc.addFile(f.getAbsolutePath());
+              logger.info("sc.addFile(" + f.getAbsolutePath() + ")");
+            }
+          }
+        }
+      }
+    }
+
+    // add jar from local repo
+    if (localRepo != null) {
+      File localRepoDir = new File(localRepo);
+      if (localRepoDir.exists()) {
+        File[] files = localRepoDir.listFiles();
         if (files != null) {
           for (File f : files) {
             if (f.getName().toLowerCase().endsWith(".jar")) {
@@ -670,13 +708,13 @@ public class SparkInterpreter extends Interpreter {
     synchronized (this) {
       z.setGui(context.getGui());
       sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
-      InterpreterResult r = interpretInput(lines);
+      InterpreterResult r = interpretInput(lines, context);
       sc.clearJobGroup();
       return r;
     }
   }
 
-  public InterpreterResult interpretInput(String[] lines) {
+  public InterpreterResult interpretInput(String[] lines, InterpreterContext context) {
     SparkEnv.set(env);
 
     // add print("") to make sure not finishing with comment
@@ -687,8 +725,9 @@ public class SparkInterpreter extends Interpreter {
     }
     linesToRun[lines.length] = "print(\"\")";
 
-    Console.setOut((java.io.PrintStream) binder.get("out"));
-    out.reset();
+    Console.setOut(context.out);
+    out.setInterpreterOutput(context.out);
+    context.out.clear();
     Code r = null;
     String incomplete = "";
 
@@ -708,6 +747,7 @@ public class SparkInterpreter extends Interpreter {
         res = intp.interpret(incomplete + s);
       } catch (Exception e) {
         sc.clearJobGroup();
+        out.setInterpreterOutput(null);
         logger.info("Interpreter exception", e);
         return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
       }
@@ -716,7 +756,8 @@ public class SparkInterpreter extends Interpreter {
 
       if (r == Code.ERROR) {
         sc.clearJobGroup();
-        return new InterpreterResult(r, out.toString());
+        out.setInterpreterOutput(null);
+        return new InterpreterResult(r, "");
       } else if (r == Code.INCOMPLETE) {
         incomplete += s + "\n";
       } else {
@@ -725,9 +766,13 @@ public class SparkInterpreter extends Interpreter {
     }
 
     if (r == Code.INCOMPLETE) {
+      sc.clearJobGroup();
+      out.setInterpreterOutput(null);
       return new InterpreterResult(r, "Incomplete expression");
     } else {
-      return new InterpreterResult(r, out.toString());
+      sc.clearJobGroup();
+      out.setInterpreterOutput(null);
+      return new InterpreterResult(Code.SUCCESS);
     }
   }
 

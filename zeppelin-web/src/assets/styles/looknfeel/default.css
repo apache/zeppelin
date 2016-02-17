@@ -27,3 +27,8 @@ body {
 .nv-controlsWrap {
   display: block;
 }
+
+.paragraph-col .focused {
+  box-shadow: 0px 2px 7px rgba(0, 0, 0, 0.3);
+  border-color: white;
+}

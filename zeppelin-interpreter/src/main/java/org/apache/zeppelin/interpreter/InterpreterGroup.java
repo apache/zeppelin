@@ -17,14 +17,13 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
+import org.apache.zeppelin.resource.ResourcePool;
 
 /**
  * InterpreterGroup is list of interpreters in the same group.
@@ -33,15 +32,31 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 public class InterpreterGroup extends LinkedList<Interpreter>{
   String id;
 
+  Logger LOGGER = Logger.getLogger(InterpreterGroup.class);
+
   AngularObjectRegistry angularObjectRegistry;
   RemoteInterpreterProcess remoteInterpreterProcess;    // attached remote interpreter process
+  ResourcePool resourcePool;
+
+  private static final Map<String, InterpreterGroup> allInterpreterGroups =
+      new ConcurrentHashMap<String, InterpreterGroup>();
+
+  public static InterpreterGroup get(String id) {
+    return allInterpreterGroups.get(id);
+  }
+
+  public static Collection<InterpreterGroup> getAll() {
+    return new LinkedList(allInterpreterGroups.values());
+  }
 
   public InterpreterGroup(String id) {
     this.id = id;
+    allInterpreterGroups.put(id, this);
   }
 
   public InterpreterGroup() {
     getId();
+    allInterpreterGroups.put(id, this);
   }
 
   private static String generateId() {
@@ -100,8 +115,7 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
       try {
         t.join();
       } catch (InterruptedException e) {
-        Logger logger = Logger.getLogger(InterpreterGroup.class);
-        logger.error("Can't close interpreter", e);
+        LOGGER.error("Can't close interpreter", e);
       }
     }
   }
@@ -124,8 +138,7 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
       try {
         t.join();
       } catch (InterruptedException e) {
-        Logger logger = Logger.getLogger(InterpreterGroup.class);
-        logger.error("Can't close interpreter", e);
+        LOGGER.error("Can't close interpreter", e);
       }
     }
 
@@ -135,5 +148,15 @@ public class InterpreterGroup extends LinkedList<Interpreter>{
         remoteInterpreterProcess.dereference();
       }
     }
+
+    allInterpreterGroups.remove(id);
+  }
+
+  public void setResourcePool(ResourcePool resourcePool) {
+    this.resourcePool = resourcePool;
+  }
+
+  public ResourcePool getResourcePool() {
+    return resourcePool;
   }
 }

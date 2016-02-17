@@ -19,10 +19,7 @@
  */
 package org.apache.zeppelin.socket;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-
+import com.google.gson.Gson;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
@@ -34,14 +31,13 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.google.gson.Gson;
-
-import java.net.UnknownHostException;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 
@@ -49,8 +45,6 @@ import static org.mockito.Mockito.*;
  * BASIC Zeppelin rest api tests
  */
 public class NotebookServerTest extends AbstractTestRestApi {
-
-
   private static Notebook notebook;
   private static NotebookServer notebookServer;
   private static Gson gson;
@@ -101,7 +95,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     }
 
     // add angularObject
-    interpreterGroup.getAngularObjectRegistry().add("object1", "value1", note1.getId());
+    interpreterGroup.getAngularObjectRegistry().add("object1", "value1", note1.getId(), null);
 
     // create two sockets and open it
     NotebookSocket sock1 = createWebSocket();
@@ -149,6 +143,8 @@ public class NotebookServerTest extends AbstractTestRestApi {
       note = notebookServer.importNote(null, notebook, messageReceived);
     } catch (NullPointerException e) {
       //broadcastNoteList(); failed nothing to worry.
+      LOG.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +
+          "worry ", e);
     }
 
     assertNotEquals(null, notebook.getNote(note.getId()));

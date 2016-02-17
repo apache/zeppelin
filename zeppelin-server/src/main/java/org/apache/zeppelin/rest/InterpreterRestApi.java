@@ -33,6 +33,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.dep.Repository;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
@@ -42,6 +43,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import org.sonatype.aether.RepositoryException;
+import org.sonatype.aether.repository.RemoteRepository;
 
 /**
  * Interpreter Rest API
@@ -85,17 +88,34 @@ public class InterpreterRestApi {
    */
   @POST
   @Path("setting")
-  public Response newSettings(String message) throws InterpreterException, IOException {
-    NewInterpreterSettingRequest request = gson.fromJson(message,
-        NewInterpreterSettingRequest.class);
-    Properties p = new Properties();
-    p.putAll(request.getProperties());
-    // Option is deprecated from API, always use remote = true
-    InterpreterGroup interpreterGroup = interpreterFactory.add(request.getName(),
-        request.getGroup(), new InterpreterOption(true), p);
-    InterpreterSetting setting = interpreterFactory.get(interpreterGroup.getId());
-    logger.info("new setting created with " + setting.id());
-    return new JsonResponse(Status.CREATED, "", setting ).build();
+  public Response newSettings(String message) {
+    try {
+      NewInterpreterSettingRequest request = gson.fromJson(message,
+          NewInterpreterSettingRequest.class);
+      Properties p = new Properties();
+      p.putAll(request.getProperties());
+      // Option is deprecated from API, always use remote = true
+      InterpreterGroup interpreterGroup = interpreterFactory.add(request.getName(),
+          request.getGroup(),
+          request.getDependencies(),
+          new InterpreterOption(true),
+          p);
+      InterpreterSetting setting = interpreterFactory.get(interpreterGroup.getId());
+      logger.info("new setting created with {}", setting.id());
+      return new JsonResponse(Status.CREATED, "", setting).build();
+    } catch (InterpreterException e) {
+      logger.error("Exception in InterpreterRestApi while creating ", e);
+      return new JsonResponse(
+          Status.NOT_FOUND,
+          e.getMessage(),
+          ExceptionUtils.getStackTrace(e)).build();
+    } catch (IOException | RepositoryException e) {
+      logger.error("Exception in InterpreterRestApi while creating ", e);
+      return new JsonResponse(
+          Status.INTERNAL_SERVER_ERROR,
+          e.getMessage(),
+          ExceptionUtils.getStackTrace(e)).build();
+    }
   }
 
   @PUT
@@ -104,15 +124,19 @@ public class InterpreterRestApi {
     logger.info("Update interpreterSetting {}", settingId);
 
     try {
-      UpdateInterpreterSettingRequest p = gson.fromJson(message,
+      UpdateInterpreterSettingRequest request = gson.fromJson(message,
           UpdateInterpreterSettingRequest.class);
       // Option is deprecated from API, always use remote = true
       interpreterFactory.setPropertyAndRestart(settingId,
-          new InterpreterOption(true), p.getProperties());
+          new InterpreterOption(true),
+          request.getProperties(),
+          request.getDependencies());
     } catch (InterpreterException e) {
+      logger.error("Exception in InterpreterRestApi while updateSetting ", e);
       return new JsonResponse(
           Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
-    } catch (IOException e) {
+    } catch (IOException | RepositoryException e) {
+      logger.error("Exception in InterpreterRestApi while updateSetting ", e);
       return new JsonResponse(
           Status.INTERNAL_SERVER_ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
     }
@@ -144,6 +168,7 @@ public class InterpreterRestApi {
     try {
       interpreterFactory.restart(settingId);
     } catch (InterpreterException e) {
+      logger.error("Exception in InterpreterRestApi while restartSetting ", e);
       return new JsonResponse(
           Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
     }
@@ -161,5 +186,60 @@ public class InterpreterRestApi {
   public Response listInterpreter(String message) {
     Map<String, RegisteredInterpreter> m = Interpreter.registeredInterpreters;
     return new JsonResponse(Status.OK, "", m).build();
+  }
+
+  /**
+   * List of dependency resolving repositories
+   * @return
+   */
+  @GET
+  @Path("repository")
+  public Response listRepositories() {
+    List<RemoteRepository> interpreterRepositories = null;
+    interpreterRepositories = interpreterFactory.getRepositories();
+    return new JsonResponse(Status.OK, "", interpreterRepositories).build();
+  }
+
+  /**
+   * Add new repository
+   * @param message
+   * @return
+   */
+  @POST
+  @Path("repository")
+  public Response addRepository(String message) {
+    try {
+      Repository request = gson.fromJson(message, Repository.class);
+      interpreterFactory.addRepository(
+          request.getId(),
+          request.getUrl(),
+          request.isSnapshot(),
+          request.getAuthentication());
+      logger.info("New repository {} added", request.getId());
+    } catch (Exception e) {
+      logger.error("Exception in InterpreterRestApi while adding repository ", e);
+      return new JsonResponse(
+          Status.INTERNAL_SERVER_ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
+    }
+    return new JsonResponse(Status.CREATED).build();
+  }
+
+  /**
+   * Delete repository
+   * @param repoId
+   * @return
+   */
+  @DELETE
+  @Path("repository/{repoId}")
+  public Response removeRepository(@PathParam("repoId") String repoId) {
+    logger.info("Remove repository {}", repoId);
+    try {
+      interpreterFactory.removeRepository(repoId);
+    } catch (Exception e) {
+      logger.error("Exception in InterpreterRestApi while removing repository ", e);
+      return new JsonResponse(
+          Status.INTERNAL_SERVER_ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
+    }
+    return new JsonResponse(Status.OK).build();
   }
 }

@@ -202,7 +202,6 @@
   font-weight: bold;
   font-family: 'Roboto', sans-serif;
   font-size: 17px !important;
-  text-transform: capitalize;
 }
 
 .paragraph .title input {
@@ -215,7 +214,6 @@
   border-radius: 0;
   -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
-  text-transform: capitalize;
   font-family: 'Roboto', sans-serif;
   font-size: 17px !important;
   font-weight: bold;
@@ -412,4 +410,18 @@
 table.table-striped {
   border-top: 1px solid #ddd;
   margin-top: 20px;
+}
+
+.scroll-paragraph-down {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+}
+
+
+.scroll-paragraph-up {
+  bottom: 5px;
+  cursor: pointer;
+  position: absolute;
+  right: 15px;
 }

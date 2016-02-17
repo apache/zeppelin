@@ -37,7 +37,6 @@ limitations under the License.
  <div class="col-md-7"><img class="img-responsive" style="border: 1px solid #ecf0f1;" height="auto" src="/assets/themes/zeppelin/img/notebook.png" /></div>
 </div>
 
-
 <br />
 ### Multiple language backend
 
@@ -86,7 +85,6 @@ With simple drag and drop Zeppelin aggeregates the values and display them in pi
 </div>
 Learn more about Zeppelin's Display system. ( [text](./displaysystem/display.html), [html](./displaysystem/display.html#html), [table](./displaysystem/table.html), [angular](./displaysystem/angular.html) )
 
-
 <br />
 ### Dynamic forms
 
@@ -95,7 +93,6 @@ Zeppelin can dynamically create some input forms into your notebook.
 <img class="img-responsive" src="/assets/themes/zeppelin/img/screenshots/form_input.png" />
 
 Learn more about [Dynamic Forms](./manual/dynamicform.html).
-
 
 <br />
 ### Collaboration
@@ -114,10 +111,12 @@ This way, you can easily embed it as an iframe inside of your website.</p>
   <img class="img-responsive center-block" src="/assets/themes/zeppelin/img/screenshots/publish.png" />
 </div>
 
+If you want to learn more about this feature, please visit [this page](./manual/publish.html).
+
 <br />
 ### 100% Opensource
 
-Apache Zeppelin (incubating) is Apache2 Licensed software. Please check out the [source repository](https://github.com/apache/incubator-zeppelin) and [How to contribute](./development/howtocontribute.html)
+Apache Zeppelin (incubating) is Apache2 Licensed software. Please check out the [source repository](http://git.apache.org/incubator-zeppelin.git) and [How to contribute](./development/howtocontribute.html)
 
 Zeppelin has a very active development community.
 Join the [Mailing list](./community.html) and report issues on our [Issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN).
@@ -125,4 +124,3 @@ Join the [Mailing list](./community.html) and report issues on our [Issue tracke
 <br />
 ### Undergoing Incubation
 Apache Zeppelin is an effort undergoing [incubation](https://incubator.apache.org/index.html) at The Apache Software Foundation (ASF), sponsored by the Incubator. Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications, and decision making process have stabilized in a manner consistent with other successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
- 

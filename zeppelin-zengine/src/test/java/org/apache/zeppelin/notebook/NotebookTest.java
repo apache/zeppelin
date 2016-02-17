@@ -35,9 +35,11 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
+import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
@@ -54,6 +56,7 @@ import org.junit.Test;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonatype.aether.RepositoryException;
 
 public class NotebookTest implements JobListenerFactory{
   private static final Logger logger = LoggerFactory.getLogger(NotebookTest.class);
@@ -65,13 +68,14 @@ public class NotebookTest implements JobListenerFactory{
   private Notebook notebook;
   private NotebookRepo notebookRepo;
   private InterpreterFactory factory;
+  private DependencyResolver depResolver;
 
   @Before
   public void setUp() throws Exception {
     tmpDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis());
     tmpDir.mkdirs();
     new File(tmpDir, "conf").mkdirs();
-    notebookDir = new File(System.getProperty("java.io.tmpdir")+"/ZeppelinLTest_"+System.currentTimeMillis()+"/notebook");
+    notebookDir = new File(tmpDir + "/notebook");
     notebookDir.mkdirs();
 
     System.setProperty(ConfVars.ZEPPELIN_HOME.getVarName(), tmpDir.getAbsolutePath());
@@ -85,7 +89,8 @@ public class NotebookTest implements JobListenerFactory{
     MockInterpreter1.register("mock1", "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
     MockInterpreter2.register("mock2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null);
+    depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, depResolver);
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
@@ -130,7 +135,7 @@ public class NotebookTest implements JobListenerFactory{
     try {
       FileUtils.copyDirectory(srcDir, destDir);
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error(e.toString(), e);
     }
 
     // doesn't have copied notebook in memory before reloading
@@ -160,7 +165,7 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
-  public void testPersist() throws IOException, SchedulerException{
+  public void testPersist() throws IOException, SchedulerException, RepositoryException {
     Note note = notebook.createNote();
 
     // run with default repl
@@ -172,7 +177,8 @@ public class NotebookTest implements JobListenerFactory{
     note.persist();
 
     Notebook notebook2 = new Notebook(
-        conf, notebookRepo, schedulerFactory, new InterpreterFactory(conf, null), this, null);
+        conf, notebookRepo, schedulerFactory,
+        new InterpreterFactory(conf, null, null, null, depResolver), this, null);
     assertEquals(1, notebook2.getAllNotes().size());
   }
 
@@ -318,18 +324,59 @@ public class NotebookTest implements JobListenerFactory{
         .getInterpreterSettings().get(0).getInterpreterGroup()
         .getAngularObjectRegistry();
 
-    // add local scope object
-    registry.add("o1", "object1", note.id());
+    Paragraph p1 = note.addParagraph();
+
+    // add paragraph scope object
+    registry.add("o1", "object1", note.id(), p1.getId());
+
+    // add notebook scope object
+    registry.add("o2", "object2", note.id(), null);
+
     // add global scope object
-    registry.add("o2", "object2", null);
+    registry.add("o3", "object3", null, null);
 
     // remove notebook
     notebook.removeNote(note.id());
 
-    // local object should be removed
-    assertNull(registry.get("o1", note.id()));
+    // notebook scope or paragraph scope object should be removed
+    assertNull(registry.get("o1", note.id(), null));
+    assertNull(registry.get("o2", note.id(), p1.getId()));
+
     // global object sould be remained
-    assertNotNull(registry.get("o2", null));
+    assertNotNull(registry.get("o3", null, null));
+  }
+
+  @Test
+  public void testAngularObjectRemovalOnParagraphRemove() throws InterruptedException,
+      IOException {
+    // create a note and a paragraph
+    Note note = notebook.createNote();
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
+    AngularObjectRegistry registry = note.getNoteReplLoader()
+        .getInterpreterSettings().get(0).getInterpreterGroup()
+        .getAngularObjectRegistry();
+
+    Paragraph p1 = note.addParagraph();
+
+    // add paragraph scope object
+    registry.add("o1", "object1", note.id(), p1.getId());
+
+    // add notebook scope object
+    registry.add("o2", "object2", note.id(), null);
+
+    // add global scope object
+    registry.add("o3", "object3", null, null);
+
+    // remove notebook
+    note.removeParagraph(p1.getId());
+
+    // paragraph scope should be removed
+    assertNull(registry.get("o1", note.id(), null));
+
+    // notebook scope and global object sould be remained
+    assertNotNull(registry.get("o2", note.id(), null));
+    assertNotNull(registry.get("o3", null, null));
   }
 
   @Test
@@ -344,9 +391,9 @@ public class NotebookTest implements JobListenerFactory{
         .getAngularObjectRegistry();
 
     // add local scope object
-    registry.add("o1", "object1", note.id());
+    registry.add("o1", "object1", note.id(), null);
     // add global scope object
-    registry.add("o2", "object2", null);
+    registry.add("o2", "object2", null, null);
 
     // restart interpreter
     factory.restart(note.getNoteReplLoader().getInterpreterSettings().get(0).id());
@@ -355,8 +402,8 @@ public class NotebookTest implements JobListenerFactory{
     .getAngularObjectRegistry();
 
     // local and global scope object should be removed
-    assertNull(registry.get("o1", note.id()));
-    assertNull(registry.get("o2", null));
+    assertNull(registry.get("o1", note.id(), null));
+    assertNull(registry.get("o2", null, null));
     notebook.removeNote(note.id());
   }
 
@@ -411,8 +458,16 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Override
-  public JobListener getParagraphJobListener(Note note) {
-    return new JobListener(){
+  public ParagraphJobListener getParagraphJobListener(Note note) {
+    return new ParagraphJobListener(){
+
+      @Override
+      public void onOutputAppend(Paragraph paragraph, InterpreterOutput out, String output) {
+      }
+
+      @Override
+      public void onOutputUpdate(Paragraph paragraph, InterpreterOutput out, String output) {
+      }
 
       @Override
       public void onProgressUpdate(Job job, int progress) {

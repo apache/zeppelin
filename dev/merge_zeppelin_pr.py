@@ -39,7 +39,7 @@ except ImportError:
 
 # Location of your Zeppelin git development area
 ZEPPELIN_HOME = os.environ.get("ZEPPELIN_HOME", os.getcwd())
-# Remote name which points to the Gihub site
+# Remote name which points to the Github site
 PR_REMOTE_NAME = os.environ.get("PR_REMOTE_NAME", "apache-github")
 # Remote name which points to Apache git
 PUSH_REMOTE_NAME = os.environ.get("PUSH_REMOTE_NAME", "apache")
@@ -352,5 +352,5 @@ if JIRA_IMPORTED:
         print "JIRA_USERNAME and JIRA_PASSWORD not set"
         print "Exiting without trying to close the associated JIRA."
 else:
-    print "Could not find jira-python library. Run 'sudo pip install jira-python' to install."
+    print "Could not find jira library. Run 'sudo pip install jira' to install."
     print "Exiting without trying to close the associated JIRA."

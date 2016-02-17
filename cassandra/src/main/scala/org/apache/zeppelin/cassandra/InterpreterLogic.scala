@@ -100,7 +100,7 @@ class InterpreterLogic(val session: Session)  {
     logger.info(s"Executing CQL statements : \n\n$stringStatements\n")
 
     try {
-      val protocolVersion = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersionEnum
+      val protocolVersion = session.getCluster.getConfiguration.getProtocolOptions.getProtocolVersion
 
       val queries:List[AnyBlock] = parseInput(stringStatements)
 
@@ -137,12 +137,12 @@ class InterpreterLogic(val session: Session)  {
           case x:BatchStm => {
             val builtStatements: List[Statement] = x.statements.map {
               case st:SimpleStm => generateSimpleStatement(st, queryOptions, context)
-              case st:BoundStm => generateBoundStatement(st, queryOptions, context)
+              case st:BoundStm => generateBoundStatement(session, st, queryOptions, context)
               case _ => throw new InterpreterException(s"Unknown statement type")
             }
             generateBatchStatement(x.batchType, queryOptions, builtStatements)
           }
-          case x:BoundStm => generateBoundStatement(x, queryOptions, context)
+          case x:BoundStm => generateBoundStatement(session, x, queryOptions, context)
           case x:DescribeCommandStatement => x
           case x:HelpCmd => x
           case x => throw new InterpreterException(s"Unknown statement type : ${x}")
@@ -208,7 +208,7 @@ class InterpreterLogic(val session: Session)  {
         row => {
           val data = columnsDefinitions.map {
             case (name, dataType) => {
-              if (row.isNull(name)) null else dataType.deserialize(row.getBytesUnsafe(name), protocolVersion)
+              if (row.isNull(name)) null else row.getObject(name)
             }
           }
           output.append(data.mkString("\t")).append("\n")
@@ -283,12 +283,12 @@ class InterpreterLogic(val session: Session)  {
     statement
   }
 
-  def generateBoundStatement(st: BoundStm, options: CassandraQueryOptions,context: InterpreterContext): BoundStatement = {
+  def generateBoundStatement(session: Session, st: BoundStm, options: CassandraQueryOptions,context: InterpreterContext): BoundStatement = {
     logger.debug(s"Generating bound statement with name : '${st.name}' and bound values : ${st.values}")
     preparedStatements.get(st.name) match {
       case Some(ps) => {
         val boundValues = maybeExtractVariables(st.values, context)
-        createBoundStatement(st.name, ps, boundValues)
+        createBoundStatement(session.getCluster.getConfiguration.getCodecRegistry, st.name, ps, boundValues)
       }
       case None => throw new InterpreterException(s"The statement '${st.name}' can not be bound to values. " +
           s"Are you sure you did prepare it with @prepare[${st.name}] ?")
@@ -342,7 +342,7 @@ class InterpreterLogic(val session: Session)  {
     options.fetchSize.foreach(statement.setFetchSize(_))
   }
 
-  private def createBoundStatement(name: String, ps: PreparedStatement, rawBoundValues: String): BoundStatement = {
+  private def createBoundStatement(codecRegistry: CodecRegistry, name: String, ps: PreparedStatement, rawBoundValues: String): BoundStatement = {
     val dataTypes = ps.getVariables.toList
       .map(cfDef => cfDef.getType)
 
@@ -357,6 +357,7 @@ class InterpreterLogic(val session: Session)  {
           if(value.trim == "null") {
             null
           } else {
+            val codec: TypeCodec[AnyRef] = codecRegistry.codecFor[AnyRef](dataType)
             dataType.getName match {
             case (ASCII | TEXT | VARCHAR) => value.trim.replaceAll("(?<!')'","")
             case (INT | VARINT) => value.trim.toInt
@@ -369,11 +370,11 @@ class InterpreterLogic(val session: Session)  {
             case INET => InetAddress.getByName(value.trim)
             case TIMESTAMP => parseDate(value.trim)
             case (UUID | TIMEUUID) => java.util.UUID.fromString(value.trim)
-            case LIST => dataType.parse(boundValuesParser.parse(boundValuesParser.list, value).get)
-            case SET => dataType.parse(boundValuesParser.parse(boundValuesParser.set, value).get)
-            case MAP => dataType.parse(boundValuesParser.parse(boundValuesParser.map, value).get)
-            case UDT => dataType.parse(boundValuesParser.parse(boundValuesParser.udt, value).get)
-            case TUPLE => dataType.parse(boundValuesParser.parse(boundValuesParser.tuple, value).get)
+            case LIST => codec.parse(boundValuesParser.parse(boundValuesParser.list, value).get)
+            case SET => codec.parse(boundValuesParser.parse(boundValuesParser.set, value).get)
+            case MAP => codec.parse(boundValuesParser.parse(boundValuesParser.map, value).get)
+            case UDT => codec.parse(boundValuesParser.parse(boundValuesParser.udt, value).get)
+            case TUPLE => codec.parse(boundValuesParser.parse(boundValuesParser.tuple, value).get)
             case _ => throw new InterpreterException(s"Cannot parse data of type : ${dataType.toString}")
           }
         }

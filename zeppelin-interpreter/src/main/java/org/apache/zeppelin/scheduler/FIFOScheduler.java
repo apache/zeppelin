@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.zeppelin.scheduler.Job.Status;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * FIFOScheduler runs submitted job sequentially
@@ -35,6 +37,8 @@ public class FIFOScheduler implements Scheduler {
   boolean terminate = false;
   Job runningJob = null;
   private String name;
+
+  static Logger LOGGER = LoggerFactory.getLogger(FIFOScheduler.class);
 
   public FIFOScheduler(String name, ExecutorService executor, SchedulerListener listener) {
     this.name = name;
@@ -107,6 +111,7 @@ public class FIFOScheduler implements Scheduler {
             try {
               queue.wait(500);
             } catch (InterruptedException e) {
+              LOGGER.error("Exception in FIFOScheduler while run queue.wait", e);
             }
             continue;
           }

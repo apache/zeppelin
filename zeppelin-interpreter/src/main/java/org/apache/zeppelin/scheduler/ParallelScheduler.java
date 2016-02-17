@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.zeppelin.scheduler.Job.Status;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Parallel scheduler runs submitted job concurrently.
@@ -36,6 +38,8 @@ public class ParallelScheduler implements Scheduler {
   boolean terminate = false;
   private String name;
   private int maxConcurrency;
+
+  static Logger LOGGER = LoggerFactory.getLogger(ParallelScheduler.class);
 
   public ParallelScheduler(String name, ExecutorService executor, SchedulerListener listener,
       int maxConcurrency) {
@@ -107,6 +111,7 @@ public class ParallelScheduler implements Scheduler {
           try {
             queue.wait(500);
           } catch (InterruptedException e) {
+            LOGGER.error("Exception in MockInterpreterAngular while interpret queue.wait", e);
           }
           continue;
         }

@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.resource.ResourcePool;
 
 /**
  * Interpreter context
@@ -29,6 +30,7 @@ import org.apache.zeppelin.display.GUI;
 public class InterpreterContext {
   private static final ThreadLocal<InterpreterContext> threadIC =
       new ThreadLocal<InterpreterContext>();
+  public final InterpreterOutput out;
 
   public static InterpreterContext get() {
     return threadIC.get();
@@ -49,6 +51,7 @@ public class InterpreterContext {
   private final Map<String, Object> config;
   private GUI gui;
   private AngularObjectRegistry angularObjectRegistry;
+  private ResourcePool resourcePool;
   private List<InterpreterContextRunner> runners;
 
   public InterpreterContext(String noteId,
@@ -58,7 +61,9 @@ public class InterpreterContext {
                             Map<String, Object> config,
                             GUI gui,
                             AngularObjectRegistry angularObjectRegistry,
-                            List<InterpreterContextRunner> runners
+                            ResourcePool resourcePool,
+                            List<InterpreterContextRunner> runners,
+                            InterpreterOutput out
                             ) {
     this.noteId = noteId;
     this.paragraphId = paragraphId;
@@ -67,7 +72,9 @@ public class InterpreterContext {
     this.config = config;
     this.gui = gui;
     this.angularObjectRegistry = angularObjectRegistry;
+    this.resourcePool = resourcePool;
     this.runners = runners;
+    this.out = out;
   }
 
 
@@ -97,6 +104,10 @@ public class InterpreterContext {
 
   public AngularObjectRegistry getAngularObjectRegistry() {
     return angularObjectRegistry;
+  }
+
+  public ResourcePool getResourcePool() {
+    return resourcePool;
   }
 
   public List<InterpreterContextRunner> getRunners() {

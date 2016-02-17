@@ -72,124 +72,6 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     httpGetRoot.releaseConnection();
   }
 
-
-  @Test
-  public void getAvailableInterpreters() throws IOException {
-    // when
-    GetMethod get = httpGet("/interpreter");
-
-    // then
-    assertThat(get, isAllowed());
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
-    Map<String, Object> body = (Map<String, Object>) resp.get("body");
-    assertEquals(ZeppelinServer.notebook.getInterpreterFactory().getRegisteredInterpreterList().size(), body.size());
-    get.releaseConnection();
-  }
-
-  @Test
-  public void getSettings() throws IOException {
-    // when
-    GetMethod get = httpGet("/interpreter/setting");
-
-    // then
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
-    assertThat(get, isAllowed());
-    get.releaseConnection();
-  }
-
-  @Test
-  public void testSettingsCRUD() throws IOException {
-    // Call Create Setting REST API
-    String jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"propvalue\"},\"" +
-        "interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]}";
-    PostMethod post = httpPost("/interpreter/setting/", jsonRequest);
-    LOG.info("testSettingCRUD create response\n" + post.getResponseBodyAsString());
-    assertThat("test create method:", post, isCreated());
-
-    Map<String, Object> resp = gson.fromJson(post.getResponseBodyAsString(), new TypeToken<Map<String, Object>>() {
-    }.getType());
-    Map<String, Object> body = (Map<String, Object>) resp.get("body");
-    //extract id from body string {id=2AWMQDNX7, name=md2, group=md,
-    String newSettingId =  body.toString().split(",")[0].split("=")[1];
-    post.releaseConnection();
-
-    // Call Update Setting REST API
-    jsonRequest = "{\"name\":\"md2\",\"group\":\"md\",\"properties\":{\"propname\":\"Otherpropvalue\"},\"" +
-        "interpreterGroup\":[{\"class\":\"org.apache.zeppelin.markdown.Markdown\",\"name\":\"md\"}]}";
-    PutMethod put = httpPut("/interpreter/setting/" + newSettingId, jsonRequest);
-    LOG.info("testSettingCRUD update response\n" + put.getResponseBodyAsString());
-    assertThat("test update method:", put, isAllowed());
-    put.releaseConnection();
-
-    // Call Delete Setting REST API
-    DeleteMethod delete = httpDelete("/interpreter/setting/" + newSettingId);
-    LOG.info("testSettingCRUD delete response\n" + delete.getResponseBodyAsString());
-    assertThat("Test delete method:", delete, isAllowed());
-    delete.releaseConnection();
-  }
-  @Test
-  public void testInterpreterAutoBinding() throws IOException {
-    // create note
-    Note note = ZeppelinServer.notebook.createNote();
-
-    // check interpreter is binded
-    GetMethod get = httpGet("/notebook/interpreter/bind/"+note.id());
-    assertThat(get, isAllowed());
-    get.addRequestHeader("Origin", "http://localhost");
-    Map<String, Object> resp = gson.fromJson(get.getResponseBodyAsString(), new TypeToken<Map<String, Object>>(){}.getType());
-    List<Map<String, String>> body = (List<Map<String, String>>) resp.get("body");
-    assertTrue(0 < body.size());
-
-    get.releaseConnection();
-    //cleanup
-    ZeppelinServer.notebook.removeNote(note.getId());
-  }
-
-  @Test
-  public void testInterpreterRestart() throws IOException, InterruptedException {
-    // create new note
-    Note note = ZeppelinServer.notebook.createNote();
-    note.addParagraph();
-    Paragraph p = note.getLastParagraph();
-    Map config = p.getConfig();
-    config.put("enabled", true);
-
-    // run markdown paragraph
-    p.setConfig(config);
-    p.setText("%md markdown");
-    note.run(p.getId());
-    while (p.getStatus() != Status.FINISHED) {
-      Thread.sleep(100);
-    }
-    assertEquals("<p>markdown</p>\n", p.getResult().message());
-
-    
-    // restart interpreter
-    for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {
-      if (setting.getName().equals("md")) {
-        // Call Restart Interpreter REST API
-        PutMethod put = httpPut("/interpreter/setting/restart/" + setting.id(), "");
-        assertThat("test interpreter restart:", put, isAllowed());
-        put.releaseConnection();
-        break;
-      }
-    }
-
-    // run markdown paragraph, again
-    p = note.addParagraph();
-    p.setConfig(config);
-    p.setText("%md markdown restarted");
-    note.run(p.getId());
-    while (p.getStatus() != Status.FINISHED) {
-      Thread.sleep(100);
-    }
-    assertEquals("<p>markdown restarted</p>\n", p.getResult().message());
-    //cleanup
-    ZeppelinServer.notebook.removeNote(note.getId());
-  }
-
   @Test
   public void testGetNotebookInfo() throws IOException {
     LOG.info("testGetNotebookInfo");
@@ -303,7 +185,7 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
   }
 
   @Test
-  public void  testDeleteNote() throws IOException {
+  public void testDeleteNote() throws IOException {
     LOG.info("testDeleteNote");
     //Create note and get ID
     Note note = ZeppelinServer.notebook.createNote();
@@ -318,6 +200,87 @@ public class ZeppelinRestApiTest extends AbstractTestRestApi {
     testDeleteNotebook("bad_ID");
   }
 
+
+  @Test
+  public void testExportNotebook() throws IOException {
+    LOG.info("testExportNotebook");
+    Note note = ZeppelinServer.notebook.createNote();
+    assertNotNull("can't create new note", note);
+    note.setName("source note for export");
+    Paragraph paragraph = note.addParagraph();
+    Map config = paragraph.getConfig();
+    config.put("enabled", true);
+    paragraph.setConfig(config);
+    paragraph.setText("%md This is my new paragraph in my new note");
+    note.persist();
+    String sourceNoteID = note.getId();
+    // Call export Notebook REST API
+    GetMethod get = httpGet("/notebook/export/" + sourceNoteID);
+    LOG.info("testNotebookExport \n" + get.getResponseBodyAsString());
+    assertThat("test notebook export method:", get, isAllowed());
+
+    Map<String, Object> resp =
+        gson.fromJson(get.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
+
+    String exportJSON = (String) resp.get("body");
+    assertNotNull("Can not find new notejson", exportJSON);
+    LOG.info("export JSON:=" + exportJSON);
+    ZeppelinServer.notebook.removeNote(sourceNoteID);
+    get.releaseConnection();
+
+  }
+
+  @Test
+  public void testImportNotebook() throws IOException {
+    Map<String, Object> resp;
+    String noteName = "source note for import";
+    LOG.info("testImortNotebook");
+    // create test notebook
+    Note note = ZeppelinServer.notebook.createNote();
+    assertNotNull("can't create new note", note);
+    note.setName(noteName);
+    Paragraph paragraph = note.addParagraph();
+    Map config = paragraph.getConfig();
+    config.put("enabled", true);
+    paragraph.setConfig(config);
+    paragraph.setText("%md This is my new paragraph in my new note");
+    note.persist();
+    String sourceNoteID = note.getId();
+    // get note content as JSON
+    String oldJson = getNoteContent(sourceNoteID);
+    // call notebook post
+    PostMethod importPost = httpPost("/notebook/import/", oldJson);
+    assertThat(importPost, isCreated());
+    resp =
+        gson.fromJson(importPost.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
+    String importId = (String) resp.get("body");
+
+    assertNotNull("Did not get back a notebook id in body", importId);
+    Note newNote = ZeppelinServer.notebook.getNote(importId);
+    assertEquals("Compare note names", noteName, newNote.getName());
+    assertEquals("Compare paragraphs count", note.getParagraphs().size(), newNote.getParagraphs()
+        .size());
+    // cleanup
+    ZeppelinServer.notebook.removeNote(note.getId());
+    ZeppelinServer.notebook.removeNote(newNote.getId());
+    importPost.releaseConnection();
+  }
+
+  private String getNoteContent(String id) throws IOException {
+    GetMethod get = httpGet("/notebook/export/" + id);
+    assertThat(get, isAllowed());
+    get.addRequestHeader("Origin", "http://localhost");
+    Map<String, Object> resp =
+        gson.fromJson(get.getResponseBodyAsString(),
+            new TypeToken<Map<String, Object>>() {}.getType());
+    assertEquals(200, get.getStatusCode());
+    String body = resp.get("body").toString();
+    // System.out.println("Body is " + body);
+    get.releaseConnection();
+    return body;
+  }
 
   private void testDeleteNotebook(String notebookId) throws IOException {
 

@@ -52,7 +52,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
+import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonReader;
+import java.io.StringReader;
 /**
  * Rest api endpoint for the noteBook.
  */
@@ -146,6 +148,34 @@ public class NotebookRestApi {
     return new JsonResponse<>(Status.OK, "", note).build();
   }
 
+  /**
+   * export note REST API
+   * 
+   * @param
+   * @return note JSON with status.OK
+   * @throws IOException
+   */
+  @GET
+  @Path("export/{id}")
+  public Response exportNoteBook(@PathParam("id") String noteId) throws IOException {
+    String exportJson = notebook.exportNote(noteId);
+    return new JsonResponse(Status.OK, "", exportJson).build();
+  }
+
+  /**
+   * import new note REST API
+   * 
+   * @param req - notebook Json
+   * @return JSON with new note ID
+   * @throws IOException
+   */
+  @POST
+  @Path("import")
+  public Response importNotebook(String req) throws IOException {
+    Note newNote = notebook.importNote(req, null);
+    return new JsonResponse<>(Status.CREATED, "", newNote.getId()).build();
+  }
+  
   /**
    * Create new note REST API
    * @param message - JSON with new note name
@@ -308,6 +338,7 @@ public class NotebookRestApi {
       notebookServer.broadcastNote(note);
       return new JsonResponse(Status.OK, "").build();
     } catch (IndexOutOfBoundsException e) {
+      LOG.error("Exception in NotebookRestApi while moveParagraph ", e);
       return new JsonResponse(Status.BAD_REQUEST, "paragraph's new index is out of bound").build();
     }
   }

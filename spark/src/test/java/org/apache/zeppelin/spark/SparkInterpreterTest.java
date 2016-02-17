@@ -28,22 +28,22 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SparkInterpreterTest {
   public static SparkInterpreter repl;
   private InterpreterContext context;
   private File tmpDir;
+  public static Logger LOGGER = LoggerFactory.getLogger(SparkInterpreterTest.class);
 
 
   /**
@@ -76,9 +76,22 @@ public class SparkInterpreterTest {
 
     InterpreterGroup intpGroup = new InterpreterGroup();
     context = new InterpreterContext("note", "id", "title", "text",
-        new HashMap<String, Object>(), new GUI(), new AngularObjectRegistry(
-            intpGroup.getId(), null),
-        new LinkedList<InterpreterContextRunner>());
+            new HashMap<String, Object>(),
+            new GUI(),
+            new AngularObjectRegistry(intpGroup.getId(), null),
+            null,
+            new LinkedList<InterpreterContextRunner>(),
+            new InterpreterOutput(new InterpreterOutputListener() {
+              @Override
+              public void onAppend(InterpreterOutput out, byte[] line) {
+
+              }
+
+              @Override
+              public void onUpdate(InterpreterOutput out, byte[] output) {
+
+              }
+            }));
   }
 
   @After
@@ -161,23 +174,13 @@ public class SparkInterpreterTest {
   }
 
   @Test
-  public void testZContextDependencyLoading() {
-    // try to import library does not exist on classpath. it'll fail
-    assertEquals(InterpreterResult.Code.ERROR, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
-
-    // load library from maven repository and try to import again
-    repl.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
-  }
-
-  @Test
   public void emptyConfigurationVariablesOnlyForNonSparkProperties() {
     Properties intpProperty = repl.getProperty();
     SparkConf sparkConf = repl.getSparkContext().getConf();
     for (Object oKey : intpProperty.keySet()) {
       String key = (String) oKey;
       String value = (String) intpProperty.get(key);
-      repl.logger.debug(String.format("[%s]: [%s]", key, value));
+      LOGGER.debug(String.format("[%s]: [%s]", key, value));
       if (key.startsWith("spark.") && value.isEmpty()) {
         assertTrue(String.format("configuration starting from 'spark.' should not be empty. [%s]", key), !sparkConf.contains(key) || !sparkConf.get(key).isEmpty());
       }

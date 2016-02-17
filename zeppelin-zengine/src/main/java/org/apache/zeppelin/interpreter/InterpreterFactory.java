@@ -17,45 +17,37 @@
 
 package org.apache.zeppelin.interpreter;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.NullArgumentException;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.dep.Dependency;
+import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonatype.aether.RepositoryException;
+import org.sonatype.aether.repository.Authentication;
+import org.sonatype.aether.repository.RemoteRepository;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.*;
 
 /**
  * Manage interpreters.
@@ -74,26 +66,38 @@ public class InterpreterFactory {
       new HashMap<String, InterpreterSetting>();
 
   private Map<String, List<String>> interpreterBindings = new HashMap<String, List<String>>();
+  private List<RemoteRepository> interpreterRepositories;
 
   private Gson gson;
 
   private InterpreterOption defaultOption;
 
   AngularObjectRegistryListener angularObjectRegistryListener;
+  private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
+
+  private DependencyResolver depResolver;
 
   public InterpreterFactory(ZeppelinConfiguration conf,
-      AngularObjectRegistryListener angularObjectRegistryListener)
-      throws InterpreterException, IOException {
-    this(conf, new InterpreterOption(true), angularObjectRegistryListener);
+      AngularObjectRegistryListener angularObjectRegistryListener,
+      RemoteInterpreterProcessListener remoteInterpreterProcessListener,
+      DependencyResolver depResolver)
+      throws InterpreterException, IOException, RepositoryException {
+    this(conf, new InterpreterOption(true), angularObjectRegistryListener,
+            remoteInterpreterProcessListener, depResolver);
   }
 
 
   public InterpreterFactory(ZeppelinConfiguration conf, InterpreterOption defaultOption,
-      AngularObjectRegistryListener angularObjectRegistryListener)
-      throws InterpreterException, IOException {
+      AngularObjectRegistryListener angularObjectRegistryListener,
+      RemoteInterpreterProcessListener remoteInterpreterProcessListener,
+      DependencyResolver depResolver)
+      throws InterpreterException, IOException, RepositoryException {
     this.conf = conf;
     this.defaultOption = defaultOption;
     this.angularObjectRegistryListener = angularObjectRegistryListener;
+    this.depResolver = depResolver;
+    this.interpreterRepositories = depResolver.getRepos();
+    this.remoteInterpreterProcessListener = remoteInterpreterProcessListener;
     String replsConf = conf.getString(ConfVars.ZEPPELIN_INTERPRETERS);
     interpreterClassList = replsConf.split(",");
 
@@ -105,7 +109,7 @@ public class InterpreterFactory {
     init();
   }
 
-  private void init() throws InterpreterException, IOException {
+  private void init() throws InterpreterException, IOException, RepositoryException {
     ClassLoader oldcl = Thread.currentThread().getContextClassLoader();
 
     // Load classes
@@ -176,7 +180,11 @@ public class InterpreterFactory {
 
             if (found) {
               // add all interpreters in group
-              add(groupName, groupName, defaultOption, p);
+              add(groupName,
+                  groupName,
+                  new LinkedList<Dependency>(),
+                  defaultOption,
+                  p);
               groupClassNameMap.remove(groupName);
               break;
             }
@@ -190,7 +198,7 @@ public class InterpreterFactory {
       logger.info("Interpreter setting group {} : id={}, name={}",
           setting.getGroup(), settingId, setting.getName());
       for (Interpreter interpreter : setting.getInterpreterGroup()) {
-        logger.info("  className = {}", interpreter.getClassName());
+        logger.info(" className = {}", interpreter.getClassName());
       }
     }
   }
@@ -229,12 +237,11 @@ public class InterpreterFactory {
       // previously created setting should turn this feature on here.
       setting.getOption().setRemote(true);
 
-
-
       InterpreterSetting intpSetting = new InterpreterSetting(
           setting.id(),
           setting.getName(),
           setting.getGroup(),
+          setting.getDependencies(),
           setting.getOption());
 
       InterpreterGroup interpreterGroup = createInterpreterGroup(
@@ -248,8 +255,41 @@ public class InterpreterFactory {
     }
 
     this.interpreterBindings = info.interpreterBindings;
+
+    if (info.interpreterRepositories != null) {
+      for (RemoteRepository repo : info.interpreterRepositories) {
+        if (!depResolver.getRepos().contains(repo)) {
+          this.interpreterRepositories.add(repo);
+        }
+      }
+    }
   }
 
+  private void loadInterpreterDependencies(InterpreterSetting intSetting)
+      throws IOException, RepositoryException {
+    // dependencies to prevent library conflict
+    File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" + intSetting.id());
+    if (localRepoDir.exists()) {
+      FileUtils.cleanDirectory(localRepoDir);
+    }
+
+    // load dependencies
+    List<Dependency> deps = intSetting.getDependencies();
+    if (deps != null) {
+      for (Dependency d: deps) {
+        if (d.getExclusions() != null) {
+          depResolver.load(
+              d.getGroupArtifactVersion(),
+              d.getExclusions(),
+              conf.getString(ConfVars.ZEPPELIN_DEP_LOCALREPO) + "/" + intSetting.id());
+        } else {
+          depResolver.load(
+              d.getGroupArtifactVersion(),
+              conf.getString(ConfVars.ZEPPELIN_DEP_LOCALREPO) + "/" + intSetting.id());
+        }
+      }
+    }
+  }
 
   private void saveToFile() throws IOException {
     String jsonString;
@@ -258,6 +298,7 @@ public class InterpreterFactory {
       InterpreterInfoSaving info = new InterpreterInfoSaving();
       info.interpreterBindings = interpreterBindings;
       info.interpreterSettings = interpreterSettings;
+      info.interpreterRepositories = interpreterRepositories;
 
       jsonString = gson.toJson(info);
     }
@@ -334,14 +375,20 @@ public class InterpreterFactory {
    * @throws IOException
    */
   public InterpreterGroup add(String name, String groupName,
+      List<Dependency> dependencies,
       InterpreterOption option, Properties properties)
-      throws InterpreterException, IOException {
+      throws InterpreterException, IOException, RepositoryException {
     synchronized (interpreterSettings) {
 
       InterpreterSetting intpSetting = new InterpreterSetting(
           name,
           groupName,
+          dependencies,
           option);
+
+      if (dependencies.size() > 0) {
+        loadInterpreterDependencies(intpSetting);
+      }
 
       InterpreterGroup interpreterGroup = createInterpreterGroup(
           intpSetting.id(), groupName, option, properties);
@@ -358,13 +405,13 @@ public class InterpreterFactory {
       String groupName,
       InterpreterOption option,
       Properties properties)
-      throws InterpreterException , NullArgumentException {
+      throws InterpreterException, NullArgumentException {
 
     //When called from REST API without option we receive NPE
-    if (option == null )
+    if (option == null)
       throw new NullArgumentException("option");
     //When called from REST API without option we receive NPE
-    if (properties == null )
+    if (properties == null)
       throw new NullArgumentException("properties");
 
     AngularObjectRegistry angularObjectRegistry;
@@ -397,7 +444,8 @@ public class InterpreterFactory {
           if (option.isRemote()) {
             intp = createRemoteRepl(info.getPath(),
                 info.getClassName(),
-                properties);
+                properties,
+                interpreterGroup.id);
           } else {
             intp = createRepl(info.getPath(),
                 info.getClassName(),
@@ -432,6 +480,9 @@ public class InterpreterFactory {
         saveToFile();
       }
     }
+
+    File localRepoDir = new File(conf.getInterpreterLocalRepoPath() + "/" + id);
+    FileUtils.deleteDirectory(localRepoDir);
   }
 
   /**
@@ -510,12 +561,15 @@ public class InterpreterFactory {
 
   /**
    * Change interpreter property and restart
-   * @param name
+   * @param id
+   * @param option
    * @param properties
    * @throws IOException
    */
-  public void setPropertyAndRestart(String id, InterpreterOption option,
-      Properties properties) throws IOException {
+  public void setPropertyAndRestart(String id,
+      InterpreterOption option,
+      Properties properties,
+      List<Dependency> dependencies) throws IOException, RepositoryException {
     synchronized (interpreterSettings) {
       InterpreterSetting intpsetting = interpreterSettings.get(id);
       if (intpsetting != null) {
@@ -526,11 +580,14 @@ public class InterpreterFactory {
         intpsetting.getInterpreterGroup().destroy();
 
         intpsetting.setOption(option);
+        intpsetting.setDependencies(dependencies);
 
         InterpreterGroup interpreterGroup = createInterpreterGroup(
             intpsetting.id(),
             intpsetting.getGroup(), option, properties);
         intpsetting.setInterpreterGroup(interpreterGroup);
+
+        loadInterpreterDependencies(intpsetting);
         saveToFile();
       } else {
         throw new InterpreterException("Interpreter setting id " + id
@@ -664,12 +721,14 @@ public class InterpreterFactory {
 
 
   private Interpreter createRemoteRepl(String interpreterPath, String className,
-      Properties property) {
-
+      Properties property, String interpreterId) {
     int connectTimeout = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT);
+    String localRepoPath = conf.getInterpreterLocalRepoPath() + "/" + interpreterId;
+    int maxPoolSize = conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_MAX_POOL_SIZE);
     LazyOpenInterpreter intp = new LazyOpenInterpreter(new RemoteInterpreter(
         property, className, conf.getInterpreterRemoteRunnerPath(),
-        interpreterPath, connectTimeout));
+        interpreterPath, localRepoPath, connectTimeout,
+        maxPoolSize, remoteInterpreterProcessListener));
     return intp;
   }
 
@@ -691,5 +750,20 @@ public class InterpreterFactory {
     } else {
       return new URL[] {path.toURI().toURL()};
     }
+  }
+
+  public List<RemoteRepository> getRepositories() {
+    return this.interpreterRepositories;
+  }
+
+  public void addRepository(String id, String url, boolean snapshot, Authentication auth)
+      throws IOException {
+    depResolver.addRepo(id, url, snapshot, auth);
+    saveToFile();
+  }
+
+  public void removeRepository(String id) throws IOException {
+    depResolver.delRepo(id);
+    saveToFile();
   }
 }

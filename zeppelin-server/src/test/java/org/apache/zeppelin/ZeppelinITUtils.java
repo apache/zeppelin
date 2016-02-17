@@ -33,7 +33,7 @@ public class ZeppelinITUtils {
     try {
       Thread.sleep(millis);
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      LOG.error("Exception in WebDriverManager while getWebDriver ", e);
     }
     if (logOutput) {
       LOG.info("Finished.");

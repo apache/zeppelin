@@ -15,65 +15,101 @@
  * limitations under the License.
  */
 'use strict';
+(function() {
+    var zeppelinWebApp = angular.module('zeppelinWebApp', [
+            'ngAnimate',
+            'ngCookies',
+            'ngRoute',
+            'ngSanitize',
+            'angular-websocket',
+            'ui.ace',
+            'ui.bootstrap',
+            'ui.sortable',
+            'ngTouch',
+            'ngDragDrop',
+            'angular.filter',
+            'monospaced.elastic',
+            'puElasticInput',
+            'xeditable',
+            'ngToast',
+            'focus-if',
+            'ngResource'
+        ])
+        .filter('breakFilter', function() {
+            return function (text) {
+                if (!!text) {
+                    return text.replace(/\n/g, '<br />');
+                }
+            };
+        })
+        .config(function ($httpProvider, $routeProvider, ngToastProvider) {
+            // withCredentials when running locally via grunt
+            $httpProvider.defaults.withCredentials = true;
 
-angular.module('zeppelinWebApp', [
-    'ngAnimate',
-    'ngCookies',
-    'ngRoute',
-    'ngSanitize',
-    'angular-websocket',
-    'ui.ace',
-    'ui.bootstrap',
-    'ui.sortable',
-    'ngTouch',
-    'ngDragDrop',
-    'angular.filter',
-    'monospaced.elastic',
-    'puElasticInput',
-    'xeditable',
-    'ngToast',
-    'focus-if',
-    'ngResource'
-  ])
-  .filter('breakFilter', function() {
-    return function (text) {
-      if (!!text) {
-        return text.replace(/\n/g, '<br />');
-      }
-    };
-  })
-  .config(function ($routeProvider, ngToastProvider) {
-    $routeProvider
-      .when('/', {
-        templateUrl: 'app/home/home.html'
-      })
-      .when('/notebook/:noteId', {
-        templateUrl: 'app/notebook/notebook.html',
-        controller: 'NotebookCtrl'
-      })
-      .when('/notebook/:noteId/paragraph?=:paragraphId', {
-        templateUrl: 'app/notebook/notebook.html',
-        controller: 'NotebookCtrl'
-      })
-      .when('/notebook/:noteId/paragraph/:paragraphId?', {
-        templateUrl: 'app/notebook/notebook.html',
-        controller: 'NotebookCtrl'
-      })
-      .when('/interpreter', {
-        templateUrl: 'app/interpreter/interpreter.html',
-        controller: 'InterpreterCtrl'
-      })
-      .when('/search/:searchTerm', {
-        templateUrl: 'app/search/result-list.html',
-        controller: 'SearchResultCtrl'
-      })
-      .otherwise({
-        redirectTo: '/'
-      });
+            $routeProvider
+                .when('/', {
+                    templateUrl: 'app/home/home.html'
+                })
+                .when('/notebook/:noteId', {
+                    templateUrl: 'app/notebook/notebook.html',
+                    controller: 'NotebookCtrl'
+                })
+                .when('/notebook/:noteId/paragraph?=:paragraphId', {
+                    templateUrl: 'app/notebook/notebook.html',
+                    controller: 'NotebookCtrl'
+                })
+                .when('/notebook/:noteId/paragraph/:paragraphId?', {
+                    templateUrl: 'app/notebook/notebook.html',
+                    controller: 'NotebookCtrl'
+                })
+                .when('/interpreter', {
+                    templateUrl: 'app/interpreter/interpreter.html',
+                    controller: 'InterpreterCtrl'
+                })
+                .when('/configuration', {
+                  templateUrl: 'app/configuration/configuration.html',
+                  controller: 'ConfigurationCtrl'
+                })
+                .when('/search/:searchTerm', {
+                    templateUrl: 'app/search/result-list.html',
+                    controller: 'SearchResultCtrl'
+                })
+                .otherwise({
+                    redirectTo: '/'
+                });
 
-    ngToastProvider.configure({
-      dismissButton: true,
-      dismissOnClick: false,
-      timeout: 6000
+            ngToastProvider.configure({
+                dismissButton: true,
+                dismissOnClick: false,
+                timeout: 6000,
+                verticalPosition: 'bottom'
+            });
+        });
+
+
+    function auth() {
+        var $http = angular.injector(['ng']).get('$http');
+        var baseUrlSrv = angular.injector(['zeppelinWebApp']).get('baseUrlSrv');
+        // withCredentials when running locally via grunt
+        $http.defaults.withCredentials = true;
+
+        return $http.get(baseUrlSrv.getRestApiBase()+'/security/ticket').then(function(response) {
+            zeppelinWebApp.run(function($rootScope) {
+                $rootScope.ticket = angular.fromJson(response.data).body;
+            });
+        }, function(errorResponse) {
+            // Handle error case
+        });
+    }
+
+    function bootstrapApplication() {
+        angular.bootstrap(document, ['zeppelinWebApp']);
+    }
+
+
+    angular.element(document).ready(function() {
+        auth().then(bootstrapApplication);
     });
-  });
+
+}());
+

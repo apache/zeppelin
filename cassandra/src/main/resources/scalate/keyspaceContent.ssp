@@ -57,6 +57,36 @@
     </div>
     #end
 
+    #if (ksContent.views.nonEmpty)
+    <!-- Materialized Views -->
+    <table width="100%">
+        <td><hr /></td>
+        <td style="width:1px; padding: 0 10px; white-space: nowrap;"><strong class="text-primary">Materialized Views</strong></td>
+        <td><hr /></td>
+    </table>
+    <div class="row">
+        <div class="panel-group" role="tablist" aria-multiselectable="true">
+            #for((id,name,viewHTML) <- ksContent.views)
+
+                <div class="panel panel-default">
+                <div class="panel-heading" role="tab">
+                <h4 class="panel-title">
+                    <a role="button" data-toggle="collapse" data-target="#${id}" aria-expanded="false">
+                        <span class="text-primary"><i class="glyphicon glyphicon-eye-open"/>&nbsp;${name}</span>
+                        </a>
+                    </h4>
+                </div>
+                <div id="${id}" class="panel-collapse collapse" role="tabpanel">
+                    <div class="panel-body">
+                        ${unescape(viewHTML)}
+                    </div>
+                </div>
+                </div>
+            #end
+        </div>
+    </div>
+    #end
+
     #if (ksContent.udts.nonEmpty)
     <!-- UDTs -->
     <table width="100%">
@@ -84,6 +114,66 @@
             </div>
             #end
 
+        </div>
+    </div>
+    #end
+
+    #if (ksContent.functions.nonEmpty)
+    <!-- Functions -->
+    <table width="100%">
+        <td><hr /></td>
+        <td style="width:1px; padding: 0 10px; white-space: nowrap;"><strong class="text-success">Functions</strong></td>
+        <td><hr /></td>
+    </table>
+    <div class="row">
+        <div class="panel-group" role="tablist" aria-multiselectable="true">
+            #for((id,name,functionHTML) <- ksContent.functions)
+
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab">
+                    <h4 class="panel-title">
+                        <a role="button" data-toggle="collapse" data-target="#${id}" aria-expanded="false">
+                            <span class="text-success"><i class="glyphicon glyphicon-random"/>&nbsp;${name}</span>
+                        </a>
+                    </h4>
+                </div>
+                <div id="${id}" class="panel-collapse collapse" role="tabpanel">
+                    <div class="panel-body">
+                        ${unescape(functionHTML)}
+                    </div>
+                </div>
+            </div>
+            #end
+        </div>
+    </div>
+    #end
+
+    #if (ksContent.aggregates.nonEmpty)
+    <!-- Aggregates -->
+    <table width="100%">
+        <td><hr /></td>
+        <td style="width:1px; padding: 0 10px; white-space: nowrap;"><strong class="text-success">Aggregates</strong></td>
+        <td><hr /></td>
+    </table>
+    <div class="row">
+        <div class="panel-group" role="tablist" aria-multiselectable="true">
+            #for((id,name,aggregateHTML) <- ksContent.aggregates)
+
+            <div class="panel panel-default">
+                <div class="panel-heading" role="tab">
+                    <h4 class="panel-title">
+                        <a role="button" data-toggle="collapse" data-target="#${id}" aria-expanded="false">
+                            <span class="text-success"><i class="glyphicon glyphicon-retweet"/>&nbsp;${name}</span>
+                        </a>
+                    </h4>
+                </div>
+                <div id="${id}" class="panel-collapse collapse" role="tabpanel">
+                    <div class="panel-body">
+                        ${unescape(aggregateHTML)}
+                    </div>
+                </div>
+            </div>
+            #end
         </div>
     </div>
     #end

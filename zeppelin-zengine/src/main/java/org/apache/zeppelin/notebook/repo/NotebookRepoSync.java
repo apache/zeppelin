@@ -78,7 +78,7 @@ public class NotebookRepoSync implements NotebookRepo {
       } catch (ClassNotFoundException | NoSuchMethodException | SecurityException |
           InstantiationException | IllegalAccessException | IllegalArgumentException |
           InvocationTargetException e) {
-        LOG.warn("Failed to initialize {} notebook storage class {}", storageClassNames[i], e);
+        LOG.warn("Failed to initialize {} notebook storage class", storageClassNames[i], e);
       }
     }
     // couldn't initialize any storage, use default
@@ -224,7 +224,8 @@ public class NotebookRepoSync implements NotebookRepo {
 
   NotebookRepo getRepo(int repoIndex) throws IOException {
     if (repoIndex < 0 || repoIndex >= getRepoCount()) {
-      throw new IOException("Storage repo index is out of range");
+      throw new IOException("Requested storage index " + repoIndex
+          + " isn't initialized," + " repository count is " + getRepoCount());
     }
     return repos.get(repoIndex);
   }
@@ -351,4 +352,27 @@ public class NotebookRepoSync implements NotebookRepo {
     }
   }
 
+  //checkpoint to all available storages
+  @Override
+  public void checkpoint(String noteId, String checkPointName) throws IOException {
+    int repoCount = getRepoCount();
+    int errorCount = 0;
+    String errorMessage = "";
+    for (int i = 0; i < Math.min(repoCount, getMaxRepoNum()); i++) {
+      try {
+        getRepo(i).checkpoint(noteId, checkPointName);
+      } catch (IOException e) {
+        LOG.warn("Couldn't checkpoint in {} storage with index {} for note {}", 
+          getRepo(i).getClass().toString(), i, noteId);
+        errorMessage += "Error on storage class " + getRepo(i).getClass().toString() + 
+          " with index " + i + " : " + e.getMessage() + "\n";
+        errorCount++;
+      }
+    }
+    // throw exception if failed to commit for all initialized repos
+    if (errorCount == Math.min(repoCount, getMaxRepoNum())) {
+      throw new IOException(errorMessage);
+    }
+
+  }
 }

@@ -126,6 +126,31 @@ a.navbar-brand:hover {
   outline: 0;
 }
 
+#notebook-list > .filter-names {
+  margin: 5px;
+  padding: 0px 10px;
+}
+
+#notebook-list .note-name-query {
+  width: 100%;
+}
+
+#notebook-names {
+  list-style: none;
+}
+
+#notebook-names > .filter-names {
+  margin: 5px 0;
+}
+
+.note-name-query {
+  padding: 6px;
+  color: #000;
+  height: 28px;
+  width: 200px;
+  font: normal normal normal 14px/1 FontAwesome;
+}
+
 @media (max-width: 767px) {
   .navbar-inverse .navbar-nav .open .dropdown-menu > li > a {
     color: #D3D3D3;
@@ -184,7 +209,7 @@ a.navbar-brand:hover {
 
 .server-status {
   font-size: 12px;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 .server-connected {
@@ -273,31 +298,6 @@ kbd {
   color: #000;
   border: 1px solid #cfcfcf;
   border-radius: 2px;
-}
-
-/*
-  ngToast Style
-*/
-
-.ng-toast .alert {
-  color: white !important;
-  border: none !important;
-}
-
-.ng-toast .alert-danger {
-  background: #A94442 !important;
-}
-
-.ng-toast .alert-warning {
-  background: #CE9532 !important;
-}
-
-.ng-toast .alert-info {
-  background: #589EC1 !important;
-}
-
-.ng-toast .alert-success {
-  background: #428443 !important;
 }
 
 /*

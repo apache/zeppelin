@@ -37,6 +37,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Apache Cassandra (http://cassandra.apache.org/)
     (Apache 2.0) Apache CXF (http://cxf.apache.org/)
     (Apache 2.0) Apache Hive (http://hive.apache.org/)
+    (Apache 2.0) Apache HBase (http://hbase.apache.org/)
     (Apache 2.0) Apache Ignite (http://ignite.apache.org/)
     (Apache 2.0) Apache Kylin (http://kylin.apache.org/)
     (Apache 2.0) Apache Lens (http://lens.apache.org/)
@@ -91,7 +92,14 @@ The following components are provided under Apache License.
     (Apache 2.0) Lucene Suggest (org.apache.lucene:lucene-suggest:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-suggest)
     (Apache 2.0) Elasticsearch: Core (org.elasticsearch:elasticsearch:2.1.0 - http://nexus.sonatype.org/oss-repository-hosting.html/parent/elasticsearch)
     (Apache 2.0) Joda convert (org.joda:joda-convert:1.2 - http://joda-convert.sourceforge.net)
+    (Apache 2.0) Shiro Core (org.apache.shiro:shiro-core:1.2.3 - https://shiro.apache.org)
+    (Apache 2.0) Shiro Web (org.apache.shiro:shiro-web:1.2.3 - https://shiro.apache.org)
     (Apache 2.0) SnakeYAML (org.yaml:snakeyaml:1.15 - http://www.snakeyaml.org)
+    (Apache 2.0) Protocol Buffers (com.google.protobuf:protobuf-java:2.4.1 - https://github.com/google/protobuf/releases)
+    (Apache 2.0) Tachyon Shell (org.tachyonproject:tachyon-shell:0.8.2 - http://tachyon-project.org)
+    (Apache 2.0) Tachyon Servers (org.tachyonproject:tachyon-servers:0.8.2 - http://tachyon-project.org)
+    (Apache 2.0) Tachyon Minicluster (org.tachyonproject:tachyon-minicluster:0.8.2 - http://tachyon-project.org)
+    (Apache 2.0) Tachyon Underfs Local (org.tachyonproject:tachyon-underfs-local:0.8.2 - http://tachyon-project.org)
 
 
 
@@ -148,6 +156,8 @@ The text of each license is also included at licenses/LICENSE-[project]-[version
     (BSD Style) dom4j v1.6.1 (http://www.dom4j.org) - https://github.com/dom4j/dom4j/blob/dom4j_1_6_1/LICENSE.txt
     (BSD Style) JSch v0.1.53 (http://www.jcraft.com) - http://www.jcraft.com/jsch/LICENSE.txt
     (BSD 3 Clause) highlightjs v8.4.0 (https://highlightjs.org/) - https://github.com/isagalaev/highlight.js/blob/8.4/LICENSE
+    (BSD 3 Clause) hamcrest v1.3 (http://hamcrest.org/JavaHamcrest/) - http://opensource.org/licenses/BSD-3-Clause
+    (BSD Style) JLine v2.12.1 (https://github.com/jline/jline2) - https://github.com/jline/jline2/blob/master/LICENSE.txt
 
 
 
@@ -188,6 +198,7 @@ The following components are provided under the EPL License.
 
     (EPL 1.0) Aether (org.sonatype.aether - http://www.eclipse.org/aether/)
     (EPL 1.0) JDT Annotations For Enhanced Null Analysis (org.eclipse.jdt:org.eclipse.jdt.annotation:1.1.0 - https://repo.eclipse.org/content/repositories/eclipse-releases/org/eclipse/jdt/org.eclipse.jdt.annotation)
+    (EPL 1.0) JRuby (org.jruby.jruby-complete:v1.6.8 - http://www.jruby.org/)
 
 
 ========================================================================
