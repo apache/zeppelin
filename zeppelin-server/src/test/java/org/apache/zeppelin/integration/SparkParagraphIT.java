@@ -26,11 +26,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
-import org.openqa.selenium.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
 
 import static org.apache.zeppelin.AbstractZeppelinIT.HelperKeys.*;
 import static org.openqa.selenium.Keys.*;
@@ -139,16 +139,15 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
         waitForParagraph(2, "FINISHED");
       } catch (TimeoutException e) {
         waitForParagraph(2, "ERROR");
-        collector.checkThat("Paragraph result resulted in error ::",
+        collector.checkThat("2nd Paragraph from SparkParagraphIT of testSpark status:",
             "ERROR", CoreMatchers.equalTo("FINISHED")
         );
-        LOG.error("Paragraph got ERROR");
       }
 
       WebElement paragraph2Result = driver.findElement(By.xpath(
           getParagraphXPath(2) + "//div[@class=\"tableDisplay\"]"));
 
-      collector.checkThat("Paragraph result is ::",
+      collector.checkThat("2nd Paragraph from SparkParagraphIT of testSpark result: ",
           paragraph2Result.getText().toString(), CoreMatchers.containsString(
               "import org.apache.commons.io.IOUtils"
           )
@@ -178,26 +177,16 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
         waitForParagraph(1, "FINISHED");
       } catch (TimeoutException e) {
         waitForParagraph(1, "ERROR");
-        WebElement paragraph1Result = driver.findElement(By.xpath(
-            getParagraphXPath(1) + "//div[@class=\"tableDisplay\"]"));
-        if (paragraph1Result.getText().toString().contains("pyspark 1.1.1 is not supported")) {
-          LOG.info("pyspark is not supported in spark version 1.1.x, nothing to worry.");
-        } else {
-          collector.checkThat("Paragraph result resulted in error ::",
-              "ERROR", CoreMatchers.equalTo("FINISHED")
-          );
-          LOG.error("Paragraph got ERROR");
-        }
+        collector.checkThat("Paragraph from SparkParagraphIT of testPySpark status: ",
+            "ERROR", CoreMatchers.equalTo("FINISHED")
+        );
       }
 
       WebElement paragraph1Result = driver.findElement(By.xpath(
           getParagraphXPath(1) + "//div[@class=\"tableDisplay\"]"));
-
-      if (!paragraph1Result.getText().toString().contains("pyspark 1.1.1 is not supported")) {
-        collector.checkThat("Paragraph result is ::",
-            paragraph1Result.getText().toString(), CoreMatchers.equalTo("test loop 0\ntest loop 1\ntest loop 2")
-        );
-      }
+      collector.checkThat("Paragraph from SparkParagraphIT of testPySpark result: ",
+          paragraph1Result.getText().toString(), CoreMatchers.equalTo("test loop 0\ntest loop 1\ntest loop 2")
+      );
 
     } catch (Exception e) {
       handleException("Exception in SparkParagraphIT while testPySpark", e);
@@ -221,16 +210,14 @@ public class SparkParagraphIT extends AbstractZeppelinIT {
         waitForParagraph(1, "FINISHED");
       } catch (TimeoutException e) {
         waitForParagraph(1, "ERROR");
-        collector.checkThat("Paragraph result resulted in error ::",
+        collector.checkThat("Paragraph from SparkParagraphIT of testSqlSpark status: ",
             "ERROR", CoreMatchers.equalTo("FINISHED")
         );
-        LOG.error("Paragraph got ERROR");
       }
 
       WebElement paragraph1Result = driver.findElement(By.xpath(
           getParagraphXPath(1) + "//div[@class=\"tableDisplay\"]"));
-
-      collector.checkThat("Paragraph result is ::",
+      collector.checkThat("Paragraph from SparkParagraphIT of testSqlSpark result: ",
           paragraph1Result.getText().toString(), CoreMatchers.equalTo("age job marital education balance\n" +
               "30 unemployed married primary 1,787")
       );
