@@ -68,7 +68,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
       paragraph1Editor.sendKeys("println" + Keys.chord(Keys.SHIFT, "9") + "\""
               + "abcd\")");
-      collector.checkThat("Befor Run Output field contains ",
+      collector.checkThat("Before Run Output field contains ",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'text ng-scope')]")).getText(),
               CoreMatchers.equalTo(""));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@ng-click='runParagraph(getEditorValue())']")).click();
