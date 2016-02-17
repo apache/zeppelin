@@ -92,6 +92,7 @@
     <module>markdown</module>
     <module>angular</module>
     <module>shell</module>
+    <module>livy</module>
     <module>hive</module>
     <module>hbase</module>
     <module>phoenix</module>
