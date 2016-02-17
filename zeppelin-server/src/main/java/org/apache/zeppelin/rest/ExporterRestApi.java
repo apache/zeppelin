@@ -46,18 +46,18 @@ public class ExporterRestApi {
   }
 
   /**
-   * Run paragraph job and return the results
+   * Run paragraph job and return the results as a CSV file
    *
    * @return Text with status code
    * @throws IOException, IllegalArgumentException
    */
   @GET
   @Produces("text/tab-separated-values")
-  @Path("job/runThenExportTSV/{notebookId}/paragraph/{paragraphId}-export.tsv")
+  @Path("job/runThenExportCSV/{notebookId}/paragraph/{paragraphId}-export.csv")
   public Response runThenExportTSV(@PathParam("notebookId") String notebookId,
                                    @PathParam("paragraphId") String paragraphId) throws
           IOException, IllegalArgumentException {
-    LOG.info("running TSV export of {} {}", notebookId, paragraphId);
+    LOG.info("running CSV export of {} {}", notebookId, paragraphId);
 
     Note note = notebook.getNote(notebookId);
     if (note == null) {
@@ -74,7 +74,7 @@ public class ExporterRestApi {
     LOG.info("Length of result returned by query: {}",
             result.message() == null ? "null result" : result.message().length());
 
-    return Response.ok(result.message()).build();
+    return Response.ok(TsvToCSV.toCSV(result.message())).build();
   }
 
   /**

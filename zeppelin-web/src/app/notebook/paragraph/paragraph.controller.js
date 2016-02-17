@@ -2076,9 +2076,9 @@ angular.module('zeppelinWebApp')
     $window.open(redirectToUrl);
   };
 
-  $scope.goToTSVExportParagraph = function () {
+  $scope.goToCSVExportParagraph = function () {
     var noteId = $route.current.pathParams.noteId;
-    var redirectToUrl = location.protocol + '//' + location.host + location.pathname + 'api/export/job/runThenExportTSV/' + noteId + '/paragraph/' + $scope.paragraph.id + '-export.tsv';
+    var redirectToUrl = location.protocol + '//' + location.host + location.pathname + 'api/export/job/runThenExportCSV/' + noteId + '/paragraph/' + $scope.paragraph.id + '-export.csv';
     $window.open(redirectToUrl);
   };
 
