@@ -169,6 +169,9 @@ public class HiveInterpreter extends Interpreter {
 
   public Connection getConnection(String propertyKey) throws ClassNotFoundException, SQLException {
     Connection connection = null;
+    if (propertyKey == null || propertiesMap.get(propertyKey) == null) {
+      return null;
+    }
     if (propertyKeyUnusedConnectionListMap.containsKey(propertyKey)) {
       ArrayList<Connection> connectionList = propertyKeyUnusedConnectionListMap.get(propertyKey);
       if (0 != connectionList.size()) {
@@ -203,6 +206,10 @@ public class HiveInterpreter extends Interpreter {
     } else {
       connection = getConnection(propertyKey);
     }
+    
+    if (connection == null) {
+      return null;
+    }
 
     Statement statement = connection.createStatement();
     if (isStatementClosed(statement)) {
@@ -231,6 +238,10 @@ public class HiveInterpreter extends Interpreter {
     try {
 
       Statement statement = getStatement(propertyKey, paragraphId);
+
+      if (statement == null) {
+        return new InterpreterResult(Code.ERROR, "Prefix not found.");
+      }
 
       statement.setMaxRows(getMaxResult());
 
@@ -344,8 +355,9 @@ public class HiveInterpreter extends Interpreter {
       } else {
         return null;
       }
+    } else {
+      return DEFAULT_KEY;
     }
-    return null;
   }
 
   @Override
