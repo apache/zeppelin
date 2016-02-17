@@ -87,7 +87,7 @@ public class HiveInterpreterTest {
     assertEquals(t.getPropertyKey("(prefix2) select max(cant) from test_table where id >= 2452640"),
             "prefix2");
     
-    // when you use a %jdbc, prefix is the default
+    // when you use a %hive, prefix is the default
     assertEquals(t.getPropertyKey("select max(cant) from test_table where id >= 2452640"),
             "default");
   }

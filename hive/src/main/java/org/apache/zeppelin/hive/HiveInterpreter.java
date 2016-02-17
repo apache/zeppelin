@@ -326,10 +326,8 @@ public class HiveInterpreter extends Interpreter {
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     String propertyKey = getPropertyKey(cmd);
 
-    if (null != propertyKey) {
+    if (null != propertyKey && !propertyKey.equals(DEFAULT_KEY)) {
       cmd = cmd.substring(propertyKey.length() + 2);
-    } else {
-      propertyKey = DEFAULT_KEY;
     }
 
     cmd = cmd.trim();
