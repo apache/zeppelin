@@ -57,8 +57,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     driver.quit();
   }
 
-
-
   @Test
   public void testRemoveButton() throws InterruptedException {
     if (!endToEndTestEnabled()) {
@@ -93,6 +91,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
         throw e;
     }
   }
+  
   @Test
   public void testMoveUpAndDown() throws Exception {
     if (!endToEndTestEnabled()) {
