@@ -217,3 +217,11 @@ After successful start, visit [http://localhost:8080](http://localhost:8080) wit
 ```
 bin/zeppelin-daemon.sh stop
 ```
+
+#### Start Zeppelin with a service manager such as upstart
+
+```
+bin/zeppelin-daemon.sh upstart
+```
+
+
