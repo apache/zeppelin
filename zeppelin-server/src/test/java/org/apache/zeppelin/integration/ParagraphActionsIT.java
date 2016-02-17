@@ -166,7 +166,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
               CoreMatchers.equalTo("NEW TITLE"));
       deleteTestNotebook(driver);
 
-    } catch (ElementNotVisibleException e) {
+    } catch (Exception e) {
       LOG.error("Exception in ParagraphActionsIT while testTitleButton ", e);
       File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
       throw e;
