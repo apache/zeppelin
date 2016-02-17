@@ -31,7 +31,7 @@ See https://help.github.com/articles/using-jekyll-with-pages#installing-jekyll
 ## Bumping up version in a new release
 
    * `ZEPPELIN_VERSION` and `BASE_PATH` property in _config.yml
-   * `ZEPPELIN <small>([VERSION])</small>` in _includes/themes/zeppelin/_navigation.html
+   * `Zeppelin <small>([VERSION])</small>` in _includes/themes/zeppelin/_navigation.html
 should be updated
 
 
@@ -46,5 +46,5 @@ should be updated
     ```
     svn co https://svn.apache.org/repos/asf/incubator/zeppelin asf-zeppelin
     ```
- 3. copy `zeppelin/docs/_site` to `asf-zeppelin/site/docs/[VERSION]``
+ 3. copy `zeppelin/docs/_site` to `asf-zeppelin/site/docs/[VERSION]`
  4. ```svn commit```
