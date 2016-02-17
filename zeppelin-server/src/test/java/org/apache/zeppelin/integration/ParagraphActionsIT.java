@@ -58,7 +58,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
   }
 
   @Test
-  public void testTitleButton() throws InterruptedException {
+  public void testMoveUpAndDown() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -66,52 +66,61 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       createNewNote();
 
       waitForParagraph(1, "READY");
-
-      collector.checkThat("Before Show Title : The title field contains",
-              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
-              CoreMatchers.equalTo(""));
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
-      collector.checkThat("Before Show Title : The title option in option panel of paragraph is labeled as  ",
-              driver.findElement(By.xpath(getParagraphXPath(1) + "//a[contains(@ng-click, 'showTitle()')]")).getText(),
-              CoreMatchers.equalTo("Show title"));
-
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='showTitle()']")).click();
-      collector.checkThat("After Show Title : The title field contains",
-              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
-              CoreMatchers.equalTo("Untitled"));
+      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
+      paragraph1Editor.sendKeys("1");
 
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
-      collector.checkThat("After Show Title : The title option in option panel of paragraph is labeled as",
-              driver.findElement(By.xpath(getParagraphXPath(1) + "//a[contains(@ng-click, 'hideTitle()')]")).getText(),
-              CoreMatchers.equalTo("Hide title"));
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
 
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='hideTitle()']")).click();
-      collector.checkThat("After Hide Title : The title field contains",
-              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
-              CoreMatchers.equalTo(""));
+
+      waitForParagraph(2, "READY");
+      WebElement paragraph2Editor = driver.findElement(By.xpath(getParagraphXPath(2) + "//textarea"));
+      paragraph2Editor.sendKeys("2");
+
+
+      collector.checkThat("The paragraph1 value contains",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo("1"));
+      collector.checkThat("The paragraph1 value contains",
+              driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo("2"));
+
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='showTitle()']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='moveDown()']")).click();
 
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'title')]")).click();
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//input")).sendKeys("NEW TITLE" + Keys.ENTER);
-      collector.checkThat("After Editing the Title : The title field contains ",
-              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
-              CoreMatchers.equalTo("NEW TITLE"));
       ZeppelinITUtils.sleep(1000,false);
-      driver.navigate().refresh();
-      collector.checkThat("After Page Refresh : The title field contains ",
-              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
-              CoreMatchers.equalTo("NEW TITLE"));
+
+      collector.checkThat("The paragraph1 value contains",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo("2"));
+      collector.checkThat("The paragraph1 value contains",
+              driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo("1"));
+
+      driver.findElement(By.xpath(getParagraphXPath(2) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(2) + "//ul/li/a[@ng-click='moveUp()']")).click();
+
+      ZeppelinITUtils.sleep(1000,false);
+
+      collector.checkThat("The paragraph1 value contains",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo("1"));
+      collector.checkThat("The paragraph1 value contains",
+              driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo("2"));
+      ZeppelinITUtils.sleep(1000,false);
       deleteTestNotebook(driver);
 
-    } catch (ElementNotVisibleException e) {
+    } catch (Exception e) {
+      LOG.error("Exception in ParagraphActionsIT while testMoveUpAndDown ", e);
       File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+      throw e;
     }
 
   }
 
   @Test
-  public void testDisableParagraphRunButton() throws InterruptedException {
+  public void testDisableParagraphRunButton() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -142,8 +151,10 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       deleteTestNotebook(driver);
 
-    } catch (ElementNotVisibleException e) {
+    } catch (Exception e) {
+      LOG.error("Exception in ParagraphActionsIT while testDisableParagraphRunButton ", e);
       File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+      throw e;
     }
 
   }

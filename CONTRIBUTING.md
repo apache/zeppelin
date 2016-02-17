@@ -7,6 +7,10 @@ Contributing to Zeppelin (Source code, Documents, Image, Website) means you agre
 2. If not, create a ticket describing the change you're proposing in the [Jira issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN)
 3. Contribute your patch via Pull Request.
 
+Before you start, please read the [Code of Conduct](http://www.apache.org/foundation/policies/conduct.html) carefully, familiarize yourself with it and refer to it whenever you need it.
+
+For those of you who are not familiar with Apache project, understanding [How it works](http://www.apache.org/foundation/how-it-works.html) would be quite helpful.
+
 ## Creating a Pull Request
 In order to make the review process easier, please follow this template when making a Pull Request:
 
@@ -144,13 +148,13 @@ First of all, you need the Zeppelin source code. The official location for Zeppe
 Get the source code on your development machine using git.
 
 ```
-git clone http://git.apache.org/incubator-zeppelin.git zeppelin
+git clone git://git.apache.org/incubator-zeppelin.git zeppelin
 ```
 
-You may also want to develop against a specific release. For example, for branch-0.1
+You may also want to develop against a specific branch. For example, for branch-0.5.6
 
 ```
-git clone -b branch-0.1 http://git.apache.org/incubator-zeppelin.git zeppelin
+git clone -b branch-0.5.6 git://git.apache.org/incubator-zeppelin.git zeppelin
 ```
 
 or with write access
