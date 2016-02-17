@@ -303,7 +303,6 @@
               <excludes>org/apache/zeppelin/interpreter/thrift/*</excludes>
             </configuration>
           </execution>
-
         </executions>
       </plugin>
 
@@ -460,6 +459,7 @@
               <exclude>.github/*</exclude>
               <exclude>.gitignore</exclude>
               <exclude>.repository/</exclude>
+  	      <exclude>.Rhistory</exclude>
               <exclude>**/*.diff</exclude>
               <exclude>**/*.patch</exclude>
               <exclude>**/*.avsc</exclude>
@@ -520,6 +520,9 @@
               <!-- docs (website) build target dir -->
               <exclude>docs/_site/**</exclude>
               <exclude>docs/Gemfile.lock</exclude>
+
+	      <!-- compiled R packages (binaries) -->
+	      <exclude>R/lib/**</exclude>
             </excludes>
           </configuration>
 
@@ -671,6 +674,13 @@
       <id>geode</id>
       <modules>
         <module>geode</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>r</id>
+      <modules>
+        <module>r</module>
       </modules>
     </profile>
 

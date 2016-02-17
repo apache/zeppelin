@@ -472,7 +472,9 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.elasticsearch.ElasticsearchInterpreter,"
         + "org.apache.zeppelin.scalding.ScaldingInterpreter,"
         + "org.apache.zeppelin.jdbc.JDBCInterpreter,"
-        + "org.apache.zeppelin.hbase.HbaseInterpreter"),
+        + "org.apache.zeppelin.hbase.HbaseInterpreter,"
+        + "org.apache.zeppelin.rinterpreter.RRepl,"
+        + "org.apache.zeppelin.rinterpreter.KnitR"),
     ZEPPELIN_INTERPRETER_DIR("zeppelin.interpreter.dir", "interpreter"),
     ZEPPELIN_INTERPRETER_LOCALREPO("zeppelin.interpreter.localRepo", "local-repo"),
     ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT("zeppelin.interpreter.connect.timeout", 30000),

@@ -72,13 +72,16 @@ public class SparkVersion {
     return olderThan(MIN_SUPPORTED_VERSION) || newerThanEquals(UNSUPPORTED_FUTURE_VERSION);
   }
 
-
   public static SparkVersion fromVersionString(String versionString) {
     return new SparkVersion(versionString);
   }
 
   public boolean isPysparkSupported() {
     return this.newerThanEquals(SPARK_1_2_0);
+  }
+
+  public boolean isSparkRSupported() {
+    return this.newerThanEquals(SPARK_1_4_0);
   }
 
   public boolean hasDataFrame() {
