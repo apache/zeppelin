@@ -23,11 +23,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
@@ -214,8 +210,20 @@ public class RemoteInterpreterServer
 
   @Override
   public void close(String noteId, String className) throws TException {
-    Interpreter intp = getInterpreter(noteId, className);
-    intp.close();
+    synchronized (interpreterGroup) {
+      List<Interpreter> interpreters = interpreterGroup.get(noteId);
+      if (interpreters != null) {
+        Iterator<Interpreter> it = interpreters.iterator();
+        while (it.hasNext()) {
+          Interpreter inp = it.next();
+          if (inp.getClassName().equals(className)) {
+            inp.close();
+            it.remove();
+            break;
+          }
+        }
+      }
+    }
   }
 
 

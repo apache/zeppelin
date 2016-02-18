@@ -450,7 +450,11 @@ public class InterpreterFactory {
     interpreterGroup.destroy(noteId);
     synchronized (interpreterGroup) {
       interpreterGroup.remove(noteId);
+      interpreterGroup.notifyAll(); // notify createInterpreterForNote()
     }
+    logger.info("Interpreter instance {} for note {} is removed",
+        interpreterSetting.getName(),
+        noteId);
   }
 
   public void createInterpretersForNote(
@@ -460,6 +464,19 @@ public class InterpreterFactory {
     String groupName = interpreterSetting.getGroup();
     InterpreterOption option = interpreterSetting.getOption();
     Properties properties = interpreterSetting.getProperties();
+
+    // if interpreters are already there, wait until they're being removed
+    synchronized (interpreterGroup) {
+      while (interpreterGroup.containsKey(noteId)) {
+        try {
+          interpreterGroup.wait(1000);
+        } catch (InterruptedException e) {
+          logger.debug(e.getMessage(), e);
+        }
+      }
+    }
+
+    logger.info("Create interpreter instance {} for note {}", interpreterSetting.getName(), noteId);
 
     for (String className : interpreterClassList) {
       Set<String> keys = Interpreter.registeredInterpreters.keySet();
@@ -489,7 +506,7 @@ public class InterpreterFactory {
             }
             interpreters.add(intp);
           }
-
+          logger.info("Interpreter " + intp.getClassName() + " " + intp.hashCode() + " created");
           intp.setInterpreterGroup(interpreterGroup);
           break;
         }

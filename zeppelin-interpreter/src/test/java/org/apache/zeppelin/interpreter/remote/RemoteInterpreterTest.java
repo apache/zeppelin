@@ -652,7 +652,6 @@ public class RemoteInterpreterTest {
     intpBsessionB.open();
 
     assertEquals(intpAsessionB.getScheduler(), intpBsessionB.getScheduler());
-    assertEquals(intpAsessionA.getScheduler(), intpAsessionB.getScheduler());
-    assertEquals(intpBsessionA.getScheduler(), intpBsessionB.getScheduler());
+    assertNotEquals(intpAsessionA.getScheduler(), intpAsessionB.getScheduler());
   }
 }

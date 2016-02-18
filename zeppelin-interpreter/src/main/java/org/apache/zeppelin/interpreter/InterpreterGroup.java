@@ -25,6 +25,8 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
 import org.apache.zeppelin.resource.ResourcePool;
+import org.apache.zeppelin.scheduler.Scheduler;
+import org.apache.zeppelin.scheduler.SchedulerFactory;
 
 /**
  * InterpreterGroup is list of interpreters in the same interpreter group.
@@ -160,7 +162,12 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
     for (final Interpreter intp : intpToClose) {
       Thread t = new Thread() {
         public void run() {
+          Scheduler scheduler = intp.getScheduler();
           intp.close();
+
+          if (scheduler != null) {
+            SchedulerFactory.singleton().removeScheduler(scheduler.getName());
+          }
         }
       };
 

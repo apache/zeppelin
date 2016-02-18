@@ -35,7 +35,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 /**
- *
+ * Proxy for Interpreter instance that runs on separate process
  */
 public class RemoteInterpreter extends Interpreter {
   private final RemoteInterpreterProcessListener remoteInterpreterProcessListener;
@@ -51,6 +51,7 @@ public class RemoteInterpreter extends Interpreter {
   private Map<String, String> env;
   private int connectTimeout;
   private int maxPoolSize;
+  private static String schedulerName;
 
   public RemoteInterpreter(Properties property,
       String noteId,
@@ -178,11 +179,7 @@ public class RemoteInterpreter extends Interpreter {
   public void close() {
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
 
-    SchedulerFactory.singleton()
-        .removeScheduler("remoteinterpreter_" + interpreterProcess.hashCode());
-
     Client client = null;
-
     boolean broken = false;
     try {
       client = interpreterProcess.getClient();
@@ -360,7 +357,7 @@ public class RemoteInterpreter extends Interpreter {
       return null;
     } else {
       return SchedulerFactory.singleton().createOrGetRemoteScheduler(
-          "remoteinterpreter_" + interpreterProcess.hashCode(),
+          RemoteInterpreter.class.getName() + noteId + interpreterProcess.hashCode(),
           noteId,
           interpreterProcess,
           maxConcurrency);

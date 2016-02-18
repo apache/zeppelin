@@ -244,7 +244,8 @@ public class Notebook {
     Note note = getNote(id);
     if (note != null) {
       note.getNoteReplLoader().setInterpreters(interpreterSettingIds);
-      replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
+      // comment out while note.getNoteReplLoader().setInterpreters(...) do the same
+      // replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
     }
   }
 
