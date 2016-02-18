@@ -309,6 +309,10 @@ public class Notebook {
     }
   }
 
+  public void checkpointNote(String noteId, String checkpointMessage) throws IOException {
+    notebookRepo.checkpoint(noteId, checkpointMessage);
+  }
+
   @SuppressWarnings("rawtypes")
   private Note loadNoteFromRepo(String id) {
     Note note = null;

@@ -17,15 +17,11 @@
 
 package org.apache.zeppelin.spark;
 
-import static scala.collection.JavaConversions.asJavaCollection;
 import static scala.collection.JavaConversions.asJavaIterable;
-import static scala.collection.JavaConversions.collectionAsScalaIterable;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,8 +45,6 @@ import org.apache.zeppelin.resource.ResourceSet;
 
 import scala.Tuple2;
 import scala.Unit;
-import scala.collection.Iterable;
-import scala.collection.JavaConversions;
 
 /**
  * Spark context for zeppelin.
@@ -203,16 +197,14 @@ public class ZeppelinContext {
       throw new InterpreterException(e);
     }
 
-    String msg = null;
+    StringBuilder msg = new StringBuilder();
+    msg.append("%table ");
     for (Attribute col : columns) {
-      if (msg == null) {
-        msg = col.name();
-      } else {
-        msg += "\t" + col.name();
-      }
+      msg.append(col.name() + "\t");
     }
-
-    msg += "\n";
+    String trim = msg.toString().trim();
+    msg = new StringBuilder(trim);
+    msg.append("\n");
 
     // ArrayType, BinaryType, BooleanType, ByteType, DecimalType, DoubleType, DynamicType,
     // FloatType, FractionalType, IntegerType, IntegralType, LongType, MapType, NativeType,
@@ -226,15 +218,15 @@ public class ZeppelinContext {
 
         for (int i = 0; i < columns.size(); i++) {
           if (!(Boolean) isNullAt.invoke(row, i)) {
-            msg += apply.invoke(row, i).toString();
+            msg.append(apply.invoke(row, i).toString());
           } else {
-            msg += "null";
+            msg.append("null");
           }
           if (i != columns.size() - 1) {
-            msg += "\t";
+            msg.append("\t");
           }
         }
-        msg += "\n";
+        msg.append("\n");
       }
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
@@ -242,10 +234,10 @@ public class ZeppelinContext {
     }
 
     if (rows.length > maxResult) {
-      msg += "\n<font color=red>Results are limited by " + maxResult + ".</font>";
+      msg.append("\n<font color=red>Results are limited by " + maxResult + ".</font>");
     }
     sc.clearJobGroup();
-    return "%table " + msg;
+    return msg.toString();
   }
 
   /**
