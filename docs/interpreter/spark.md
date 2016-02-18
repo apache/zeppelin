@@ -262,3 +262,10 @@ select * from ${table=defaultTableName} where text like '%${search}%'
 ```
 
 To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.html).
+
+
+### Per note session
+
+In 'Per note session' mode, SparkInterpreter creates scala compiler per each notebook. However it still shares the single SparkContext.
+
+
