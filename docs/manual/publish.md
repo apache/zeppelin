@@ -42,7 +42,25 @@ For example,
 <iframe src="http://< ip-address >:< port >/#/notebook/2B3QSZTKR/paragraph/...?asIframe" height="" width="" ></iframe>
 ```
 
+Don't forget to also add below lines in your page for loading the Twitter Bootstrap themes and CSS used for Zeppelin notebook style, or your paragraph will be shown ugly.
+
+```
+<head>
+     ....
+    <link rel="stylesheet" href="zeppelin-web/bower_components/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="zeppelin-web/fonts/font-awesome.min.css">
+    ....
+</head>
+```
+
 Finally, you can show off your beautiful visualization results in your website. 
 <center><img src="../assets/themes/zeppelin/img/docs-img/your-website.png" height="90%" width="90%"></center>
 
 > **Note**: To embed the paragraph in a website, Zeppelin needs to be reachable by that website. 
+
+## Troubleshooting
+Regarding to this feature, a bug was reported by [ZEPPELIN-413](https://issues.apache.org/jira/browse/ZEPPELIN-413) before. 
+It says, when you click **Link this paragraph** menu, it always redirects to notebook page. 
+So after then, this issue was fixed by [Pull Request #464](https://github.com/apache/incubator-zeppelin/pull/464) and the stable feature was included to **0.5.6-incubating release**.
+
+If you have been troubled with this issue, please check your **Zeppelin release version**.
