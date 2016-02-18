@@ -15,15 +15,16 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin;
+package org.apache.zeppelin.integration;
 
+import org.apache.zeppelin.AbstractZeppelinIT;
+import org.apache.zeppelin.WebDriverManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.reflect.internal.Trees;
 
 import java.io.File;
 
@@ -36,8 +37,8 @@ import static org.junit.Assert.assertTrue;
  * To test, ZeppelinServer should be running on port 8080
  * On OSX, you'll need firefox 42.0 installed, then you can run with
  *
- * PATH=~/Applications/Firefox.app/Contents/MacOS/:$PATH CI="" \
- *    mvn -Dtest=org.apache.zeppelin.ZeppelinIT -Denforcer.skip=true \
+ * PATH=~/Applications/Firefox.app/Contents/MacOS/:$PATH TEST_SELENIUM="" \
+ *    mvn -Dtest=org.apache.zeppelin.integration.ZeppelinIT -Denforcer.skip=true \
  *    test -pl zeppelin-server
  *
  */

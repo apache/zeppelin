@@ -28,6 +28,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Action;
+import org.openqa.selenium.interactions.Actions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +57,84 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
 
     driver.quit();
+  }
+  @Test
+  public void testCreateNewButton() throws InterruptedException {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+      Actions action = new Actions(driver);
+      waitForParagraph(1, "READY");
+      Integer oldNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      collector.checkThat("Before Insert New : the number of  paragraph ",
+              oldNosOfParas,
+              CoreMatchers.equalTo(1));
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
+      waitForParagraph(2, "READY");
+      Integer newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      collector.checkThat("After Insert New (using Insert New button) :  number of  paragraph",
+              oldNosOfParas + 1,
+              CoreMatchers.equalTo(newNosOfParas));
+
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='removeParagraph()']")).click();
+      ZeppelinITUtils.sleep(1000, false);
+      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
+              "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+      ZeppelinITUtils.sleep(1000, false);
+
+      WebElement oldParagraphEditor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
+      oldParagraphEditor.sendKeys(" original paragraph ");
+
+      WebElement newPara = driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'new-paragraph')][1]"));
+      action.moveToElement(newPara).click().build().perform();
+      ZeppelinITUtils.sleep(1000, false);
+      waitForParagraph(1, "READY");
+
+      collector.checkThat("Paragraph is created above",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo(""));
+      WebElement aboveParagraphEditor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
+      aboveParagraphEditor.sendKeys(" this is above ");
+
+      newPara = driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class,'new-paragraph')][2]"));
+      action.moveToElement(newPara).click().build().perform();
+
+      waitForParagraph(3, "READY");
+
+      collector.checkThat("Paragraph is created below",
+              driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo(""));
+      WebElement belowParagraphEditor = driver.findElement(By.xpath(getParagraphXPath(3) + "//textarea"));
+      belowParagraphEditor.sendKeys(" this is below ");
+
+      collector.checkThat("The output field of paragraph1 contains",
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo(" this is above "));
+      collector.checkThat("The output field paragraph2 contains",
+              driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo(" original paragraph "));
+      collector.checkThat("The output field paragraph3 contains",
+              driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
+              CoreMatchers.equalTo(" this is below "));
+      collector.checkThat("The current number of paragraphs after creating  paragraph above and below",
+              driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size(),
+              CoreMatchers.equalTo(3));
+
+      ZeppelinITUtils.sleep(1000, false);
+      deleteTestNotebook(driver);
+
+    } catch (ElementNotVisibleException e) {
+            LOG.error("Exception in ParagraphActionsIT while testCreateNewButton ", e);
+            File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            throw e;
+
+    }
+
+
   }
 
   @Test
