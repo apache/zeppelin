@@ -45,6 +45,7 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   private int port = -1;
   private final String interpreterRunner;
   private final String interpreterDir;
+  private final String localRepoDir;
 
   private GenericObjectPool<Client> clientPool;
   private Map<String, String> env;
@@ -53,20 +54,28 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   private int connectTimeout;
 
   public RemoteInterpreterProcess(String intpRunner,
-                                  String intpDir,
-                                  Map<String, String> env,
-                                  int connectTimeout,
-                                  RemoteInterpreterProcessListener listener) {
-    this(intpRunner, intpDir, env, new RemoteInterpreterEventPoller(listener), connectTimeout);
+      String intpDir,
+      String localRepoDir,
+      Map<String, String> env,
+      int connectTimeout,
+      RemoteInterpreterProcessListener listener) {
+    this(intpRunner,
+        intpDir,
+        localRepoDir,
+        env,
+        new RemoteInterpreterEventPoller(listener),
+        connectTimeout);
   }
 
   RemoteInterpreterProcess(String intpRunner,
       String intpDir,
+      String localRepoDir,
       Map<String, String> env,
       RemoteInterpreterEventPoller remoteInterpreterEventPoller,
       int connectTimeout) {
     this.interpreterRunner = intpRunner;
     this.interpreterDir = intpDir;
+    this.localRepoDir = localRepoDir;
     this.env = env;
     this.interpreterContextRunnerPool = new InterpreterContextRunnerPool();
     referenceCount = new AtomicInteger(0);
@@ -89,12 +98,13 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
           throw new InterpreterException(e1);
         }
 
-
         CommandLine cmdLine = CommandLine.parse(interpreterRunner);
         cmdLine.addArgument("-d", false);
         cmdLine.addArgument(interpreterDir, false);
         cmdLine.addArgument("-p", false);
         cmdLine.addArgument(Integer.toString(port), false);
+        cmdLine.addArgument("-l", false);
+        cmdLine.addArgument(localRepoDir, false);
 
         executor = new DefaultExecutor();
 
@@ -139,6 +149,9 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
   }
 
   public Client getClient() throws Exception {
+    if (clientPool == null || clientPool.isClosed()) {
+      return null;
+    }
     return clientPool.borrowObject();
   }
 
@@ -181,7 +194,8 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
         } catch (Exception e) {
           // safely ignore exception while client.shutdown() may terminates remote process
           logger.info("Exception in RemoteInterpreterProcess while synchronized dereference, can " +
-              "safely ignore exception while client.shutdown() may terminates remote process", e);
+              "safely ignore exception while client.shutdown() may terminates remote process");
+          logger.debug(e.getMessage(), e);
         } finally {
           if (client != null) {
             // no longer used
@@ -261,6 +275,12 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
     }
   }
 
+  public void setMaxPoolSize(int size) {
+    if (clientPool != null) {
+      //Size + 2 for progress poller , cancel operation
+      clientPool.setMaxTotal(size + 2);
+    }
+  }
   /**
    * Called when angular object is updated in client side to propagate
    * change to the remote process
@@ -287,8 +307,13 @@ public class RemoteInterpreterProcess implements ExecuteResultHandler {
     } catch (TException e) {
       broken = true;
       logger.error("Can't update angular object", e);
+    } catch (NullPointerException e) {
+      logger.error("Remote interpreter process not started", e);
+      return;
     } finally {
-      releaseClient(client, broken);
+      if (client != null) {
+        releaseClient(client, broken);
+      }
     }
   }
 

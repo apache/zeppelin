@@ -80,9 +80,58 @@ SparkContext, SQLContext, ZeppelinContext are automatically created and exposed 
 <a name="dependencyloading"> </a>
 
 ## Dependency Management
-There are two ways to load external library in spark interpreter. First is using Zeppelin's `%dep` interpreter and second is loading Spark properties.
+There are two ways to load external library in spark interpreter. First is using Interpreter setting menu and second is loading Spark properties.
 
-### 1. Dynamic Dependency Loading via %dep interpreter
+### 1. Setting Dependencies via Interpreter Setting
+Please see [Dependency Management](../manual/dependencymanagement.html) for the details.
+
+### 2. Loading Spark Properties
+Once `SPARK_HOME` is set in `conf/zeppelin-env.sh`, Zeppelin uses `spark-submit` as spark interpreter runner. `spark-submit` supports two ways to load configurations. The first is command line options such as --master and Zeppelin can pass these options to `spark-submit` by exporting `SPARK_SUBMIT_OPTIONS` in conf/zeppelin-env.sh. Second is reading configuration options from `SPARK_HOME/conf/spark-defaults.conf`. Spark properites that user can set to distribute libraries are:
+
+<table class="table-configuration">
+  <tr>
+    <th>spark-defaults.conf</th>
+    <th>SPARK_SUBMIT_OPTIONS</th>
+    <th>Applicable Interpreter</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>spark.jars</td>
+    <td>--jars</td>
+    <td>%spark</td>
+    <td>Comma-separated list of local jars to include on the driver and executor classpaths.</td>
+  </tr>
+  <tr>
+    <td>spark.jars.packages</td>
+    <td>--packages</td>
+    <td>%spark</td>
+    <td>Comma-separated list of maven coordinates of jars to include on the driver and executor classpaths. Will search the local maven repo, then maven central and any additional remote repositories given by --repositories. The format for the coordinates should be groupId:artifactId:version.</td>
+  </tr>
+  <tr>
+    <td>spark.files</td>
+    <td>--files</td>
+    <td>%pyspark</td>
+    <td>Comma-separated list of files to be placed in the working directory of each executor.</td>
+  </tr>
+</table>
+> Note that adding jar to pyspark is only availabe via `%dep` interpreter at the moment.
+
+Here are few examples:
+
+* SPARK\_SUBMIT\_OPTIONS in conf/zeppelin-env.sh
+
+		export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0 --jars /path/mylib1.jar,/path/mylib2.jar --files /path/mylib1.py,/path/mylib2.zip,/path/mylib3.egg"
+
+* SPARK_HOME/conf/spark-defaults.conf
+
+		spark.jars				/path/mylib1.jar,/path/mylib2.jar
+		spark.jars.packages		com.databricks:spark-csv_2.10:1.2.0
+		spark.files				/path/mylib1.py,/path/mylib2.egg,/path/mylib3.zip
+
+### 3. Dynamic Dependency Loading via %dep interpreter
+> Note: `%dep` interpreter is deprecated since v0.6.0-incubating.
+`%dep` interpreter load libraries to `%spark` and `%pyspark` but not to  `%spark.sql` interpreter so we recommend you to use first option instead.
+
 When your code requires external library, instead of doing download/copy/restart Zeppelin, you can easily do following jobs using `%dep` interpreter.
 
  * Load libraries recursively from Maven repository
@@ -128,49 +177,6 @@ z.load("groupId:artifactId:version").exclude("groupId:*")
 // local() skips adding artifact to spark clusters (skipping sc.addJar())
 z.load("groupId:artifactId:version").local()
 ```
-
-### 2. Loading Spark Properties
-Once `SPARK_HOME` is set in `conf/zeppelin-env.sh`, Zeppelin uses `spark-submit` as spark interpreter runner. `spark-submit` supports two ways to load configurations. The first is command line options such as --master and Zeppelin can pass these options to `spark-submit` by exporting `SPARK_SUBMIT_OPTIONS` in conf/zeppelin-env.sh. Second is reading configuration options from `SPARK_HOME/conf/spark-defaults.conf`. Spark properites that user can set to distribute libraries are:
-
-<table class="table-configuration">
-  <tr>
-    <th>spark-defaults.conf</th>
-    <th>SPARK_SUBMIT_OPTIONS</th>
-    <th>Applicable Interpreter</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td>spark.jars</td>
-    <td>--jars</td>
-    <td>%spark</td>
-    <td>Comma-separated list of local jars to include on the driver and executor classpaths.</td>
-  </tr>
-  <tr>
-    <td>spark.jars.packages</td>
-    <td>--packages</td>
-    <td>%spark</td>
-    <td>Comma-separated list of maven coordinates of jars to include on the driver and executor classpaths. Will search the local maven repo, then maven central and any additional remote repositories given by --repositories. The format for the coordinates should be groupId:artifactId:version.</td>
-  </tr>
-  <tr>
-    <td>spark.files</td>
-    <td>--files</td>
-    <td>%pyspark</td>
-    <td>Comma-separated list of files to be placed in the working directory of each executor.</td>
-  </tr>
-</table>
-> Note that adding jar to pyspark is only availabe via `%dep` interpreter at the moment.
-
-Here are few examples:
-
-* SPARK\_SUBMIT\_OPTIONS in conf/zeppelin-env.sh
-
-		export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0 --jars /path/mylib1.jar,/path/mylib2.jar --files /path/mylib1.py,/path/mylib2.zip,/path/mylib3.egg"
-
-* SPARK_HOME/conf/spark-defaults.conf
-
-		spark.jars				/path/mylib1.jar,/path/mylib2.jar
-		spark.jars.packages		com.databricks:spark-csv_2.10:1.2.0
-		spark.files				/path/mylib1.py,/path/mylib2.egg,/path/mylib3.zip
 
 ## ZeppelinContext
 Zeppelin automatically injects ZeppelinContext as variable 'z' in your scala/python environment. ZeppelinContext provides some additional functions and utility.
@@ -256,3 +262,27 @@ select * from ${table=defaultTableName} where text like '%${search}%'
 ```
 
 To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.html).
+
+## Setting up Zeppelin with Kerberos
+Logical setup with Zeppelin, Kerberos Distribution Center (KDC), and Spark on YARN:
+
+<img src="../assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
+
+####Configuration Setup
+
+1. On the server that Zeppelin is installed, install Kerberos client modules and configuration, krb5.conf.
+This is to make the server communicate with KDC.
+
+2. Set SPARK\_HOME in [ZEPPELIN\_HOME]/conf/zeppelin-env.sh to use spark-submit
+( Additionally, you might have to set “export HADOOP\_CONF\_DIR=/etc/hadoop/conf” )
+
+3. Add the two properties below to spark configuration ( [SPARK_HOME]/conf/spark-defaults.conf ):
+
+        spark.yarn.principal
+        spark.yarn.keytab
+
+  > **NOTE:** If you do not have access to the above spark-defaults.conf file, optionally, you may add the lines to the Spark Interpreter through the Interpreter tab in the Zeppelin UI.
+
+4. That's it. Play with Zeppelin !
+
+

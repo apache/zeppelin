@@ -20,32 +20,28 @@ limitations under the License.
 {% include JB/setup %}
 
 
-### Angular (Beta)
+## Angular Display System in Zeppelin
 
-Angular display system treats output as an view template of [AngularJS](https://angularjs.org/).
-It compiles templates and display inside of Zeppelin.
+Angular display system treats output as a view template for [AngularJS](https://angularjs.org/).
+It compiles templates and displays them inside of Zeppelin.
 
-Zeppelin provides gateway between your interpreter and your compiled AngularJS view teamplates.
-Therefore, you can not only update scope variable from your interpreter but also watch your scope variable in the interpreter, which is JVM process.
+Zeppelin provides a gateway between your interpreter and your compiled **AngularJS view** templates.
+Therefore, you can not only update scope variables from your interpreter but also watch them in the interpreter, which is JVM process.
 
-<br />
-#### Print AngularJS view
+### Print AngularJS view
 
-To use angular display system, your output should starts with "%angular".
-<img src="/assets/themes/zeppelin/img/screenshots/display_angular.png" width=600px />
+To use angular display system, you should start with `%angular`.
+<img src="/assets/themes/zeppelin/img/screenshots/display_angular.png" width="60%" />
 
-Note that display system is backend independent.
-
-Because of variable 'name' is not defined, 'Hello \{\{name\}\}' display 'Hello '.
+Since `name` is not defined, `Hello {{name}}` will display `Hello`.
+> **Please Note:** Display system is backend independent.
 
 <br />
-#### Bind/Unbind variable
+### Bind / Unbind Variables
 
-Through ZeppelinContext, you can bind/unbind variable to AngularJS view.
+Through **ZeppelinContext**, you can bind / unbind variables to **AngularJS view**. Currently, it only works in **Spark Interpreter ( scala )**.
 
-Currently it only works in Spark Interpreter (scala).
-
-```
+```scala
 // bind my 'object' as angular scope variable 'name' in current notebook.
 z.angularBind(String name, Object object)
 
@@ -60,19 +56,17 @@ z.angularUnbindGlobal(String name)
 
 ```
 
-In the example, let's bind "world" variable 'name'. Then you can see AngularJs view are updated immediately.
+Using the above example, let's bind `world` variable to `name`. Then you can see **AngularJs view** is immediately updated.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_angular1.png" width=600px />
+<img src="/assets/themes/zeppelin/img/screenshots/display_angular1.png" width="60%" />
 
 
 <br />
-#### Watch/Unwatch variable
+### Watch / Unwatch Variables
 
-Through ZeppelinContext, you can watch/unwatch variable in AngularJs view.
+Through **ZeppelinContext**, you can watch / unwatch variables in **AngularJs view**. Currently, it only works in **Spark Interpreter ( scala )**.
 
-Currently it only works in Spark Interpreter (scala).
-
-```
+```scala
 // register for angular scope variable 'name' (notebook)
 z.angularWatch(String name, (before, after) => { ... })
 
@@ -88,11 +82,138 @@ z.angularUnwatchGlobal(String name)
 
 ```
 
-Let's make an button, that increment 'run' variable by 1 when it is clicked.
-z.angularBind("run", 0) will initialize 'run' to zero. And then register watcher of 'run'.
+Let's make a button. When it is clicked, the value of `run` will be increased 1 by 1.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_angular2.png" width=600px />
+<img src="/assets/themes/zeppelin/img/screenshots/display_angular2.png" width="60%" />
 
-After clicked button, you'll see both 'run' and numWatched are increased by 1
+`z.angularBind("run", 0)` will initialize `run` to zero. And then, it will be also applied to `run` in `z.angularWatch()`.
+When the button is clicked, you'll see both `run` and `numWatched` are incremented by 1.
 
-<img src="/assets/themes/zeppelin/img/screenshots/display_angular3.png" width=600px />
+<img src="/assets/themes/zeppelin/img/screenshots/display_angular3.png" width="60%" />
+
+## Let's make it Simpler and more Intuitive
+In this section, we will introduce a simpler and more intuitive way of using **Angular Display System** in Zeppelin. 
+
+### How can we use it?
+Here are some usages. 
+
+#### Import 
+
+#####  - In notebook scope
+```scala
+import org.apache.zeppelin.display.angular.notebookscope._
+import AngularElem._
+```
+
+#####  - In paragraph scope
+```scala
+import org.apache.zeppelin.display.angular.paragraphscope._
+import AngularElem._
+```
+
+
+#### Display Element
+```scala
+// automatically convert to string and print with %angular display system directive in front.
+<div><div>.display
+```
+#### Event Handler
+```scala
+// on click
+<div></div>.onClick(() => {
+   my callback routine
+}).display
+
+// on change
+<div></div>.onChange(() => {
+  my callback routine
+}).display
+
+// arbitrary event
+<div></div>.onEvent("ng-click", () => {
+  my callback routine
+}).display
+```
+
+#### Bind Model
+```scala
+// bind model
+<div></div>.model("myModel").display
+
+// bind model with initial value
+<div></div>.model("myModel", initialValue).display 
+```
+
+#### Interact with Model
+```scala 
+// read model
+AngularModel("myModel")()
+
+// update model
+AngularModel("myModel", "newValue")
+```
+
+<br/>
+### Example: Basic Usage
+Using the above basic usages, you can apply them like below examples. 
+
+#### Display Elements
+
+```scala
+<div style="color:blue">
+  <h4>Hello Angular Display System</h4>
+</div>.display
+```
+
+#### OnClick Event
+```scala
+<div class="btn btn-success">
+  Click me
+</div>.onClick{() =>
+  // callback for button click
+}.display
+```
+
+#### Bind Model
+
+{% raw %}
+```scala
+  <div>{{{{myModel}}}}</div>.model("myModel", "Initial Value").display
+```
+{% endraw %}
+
+#### Interact With Model
+```scala
+// read the value
+AngularModel("myModel")()
+
+// update the value
+AngularModel("myModel", "New value")
+```
+
+<img src="../assets/themes/zeppelin/img/docs-img/basic-usage-angular.png" width="70%">
+
+### Example: String Converter
+Using below example, you can convert the lowercase string to uppercase.
+ 
+{% raw %}
+```scala
+// clear previously created angular object.
+AngularElem.disassociate
+
+val button = <div class="btn btn-success btn-sm">Convert</div>.onClick{() =>
+  val inputString = AngularModel("input")().toString
+  AngularModel("title", inputString.toUpperCase)
+}
+
+<div>
+  { <h4> {{{{title}}}}</h4>.model("title", "Please type text to convert uppercase") }
+   Your text { <input type="text"></input>.model("input", "") }
+  {button}
+</div>.display
+```
+{% endraw %}
+
+<img src="../assets/themes/zeppelin/img/docs-img/string-converter-angular.gif" width="70%">
+
+ 

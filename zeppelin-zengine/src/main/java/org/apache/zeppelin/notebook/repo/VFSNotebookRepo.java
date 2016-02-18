@@ -244,4 +244,10 @@ public class VFSNotebookRepo implements NotebookRepo {
     //no-op    
   }
 
+  @Override
+  public void checkpoint(String noteId, String checkPointName) throws IOException {
+    // no-op
+    logger.info("Checkpoint feature isn't suported in {}", this.getClass().toString());
+  }
+
 }

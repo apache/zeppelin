@@ -47,7 +47,8 @@ public class RemoteInterpreterUtils {
       discover.close();
       return true;
     } catch (IOException e) {
-      LOGGER.info("Exception in RemoteInterpreterUtils while checkIfRemoteEndpointAccessible", e);
+      // end point is not accessible
+      LOGGER.debug(e.getMessage(), e);
       return false;
     }
   }
