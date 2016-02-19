@@ -45,6 +45,7 @@ zeppelin-web/bower_components
 **/data/
 **/build/
 **/testing/
+!/testing/
 
 # OS generated files #
 ######################
