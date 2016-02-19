@@ -76,6 +76,12 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>*</td>
     <td>Enables a way to specify a ',' separated list of allowed origins for rest and websockets. <br /> i.e. http://localhost:8080 </td>
   </tr>
+    <tr>
+    <td>N/A</td>
+    <td>zeppelin.anonymous.allowed</td>
+    <td>true</td>
+    <td>Anonymous user is allowed by default.</td>
+  </tr>
   <tr>
     <td>ZEPPELIN_SERVER_CONTEXT_PATH</td>
     <td>zeppelin.server.context.path</td>
@@ -171,6 +177,24 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>zeppelin.notebook.s3.user</td>
     <td>user</td>
     <td>A user name of S3 bucket<br />i.e. <code>bucket/user/notebook/2A94M5J1Z/note.json</code></td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</td>
+    <td>zeppelin.notebook.azure.connectionString</td>
+    <td></td>
+    <td>The Azure storage account connection string<br />i.e. <code>DefaultEndpointsProtocol=https;AccountName=&lt;accountName&gt;;AccountKey=&lt;accountKey&gt;</code></td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_AZURE_SHARE</td>
+    <td>zeppelin.notebook.azure.share</td>
+    <td>zeppelin</td>
+    <td>Share where the Zeppelin notebook files will be saved</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_AZURE_USER</td>
+    <td>zeppelin.notebook.azure.user</td>
+    <td>user</td>
+    <td>An optional user name of Azure file share<br />i.e. <code>share/user/notebook/2A94M5J1Z/note.json</code></td>
   </tr>
   <tr>
     <td>ZEPPELIN_NOTEBOOK_STORAGE</td>
