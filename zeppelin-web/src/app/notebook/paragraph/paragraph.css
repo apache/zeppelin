@@ -67,6 +67,15 @@
   margin-bottom: 5px !important;
 }
 
+.angular-leaflet-map {
+  height: 300px;
+  width: 100%;
+}
+
+.graphContainer .mapChart {
+  overflow: hidden;
+}
+
 .resizable-helper {
   border: 3px solid #DDDDDD;
 }
