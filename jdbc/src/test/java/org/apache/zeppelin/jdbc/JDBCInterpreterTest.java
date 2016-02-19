@@ -109,7 +109,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
 
     String sqlQuery = "(fake) select * from test_table";
 
-    InterpreterResult interpreterResult = t.interpret(sqlQuery, new InterpreterContext("", "1", "","", null,null,null,null,null,null));
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, new InterpreterContext("", "1", "", "", null, null, null, null, null, null, null));
 
     // if prefix not found return ERROR and Prefix not found.
     assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
