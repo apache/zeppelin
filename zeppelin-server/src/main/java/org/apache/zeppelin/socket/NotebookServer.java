@@ -737,7 +737,11 @@ public class NotebookServer extends WebSocketServlet implements
         new ZeppelinConfiguration.ConfigurationKeyPredicate() {
           @Override
           public boolean apply(String key) {
-            return !key.contains("password");
+            return !key.contains("password") &&
+                !key.equals(ZeppelinConfiguration
+                    .ConfVars
+                    .ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING
+                    .getVarName());
           }
         });
 
