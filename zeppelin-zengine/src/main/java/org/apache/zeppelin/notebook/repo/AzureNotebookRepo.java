@@ -208,6 +208,6 @@ public class AzureNotebookRepo implements NotebookRepo {
   @Override
   public void checkpoint(String noteId, String checkPointName) throws IOException {
     // no-op
-    LOG.info("Checkpoint feature isn't suported in {}", this.getClass().toString());
+    LOG.info("Checkpoint feature isn't supported in {}", this.getClass().toString());
   }
 }
