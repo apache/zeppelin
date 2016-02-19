@@ -31,11 +31,13 @@ This will launch a Zeppelin WebApplication on port **9000** that will update on 
 #### Troubleshooting
 
 **git error**
+
 In case of the error `ECMDERR Failed to execute "git ls-remote --tags --heads git://xxxxx", exit code of #128`
 
 change your git config with `git config --global url."https://".insteadOf git://`
 
 **proxy issues**
+
 Try to add to the `.bowerrc` file the following content:
 ```
   "proxy" : "http://<host>:<port>",
