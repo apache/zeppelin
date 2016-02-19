@@ -16,7 +16,7 @@
  */
 
 
-package org.apache.zeppelin.display;
+package org.apache.zeppelin.user;
 
 /***
  *
