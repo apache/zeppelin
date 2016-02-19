@@ -31,15 +31,11 @@ limitations under the License.
         </div>
         <div class="modal-footer">
           <button type="button" id="createNoteButton"
-            class="btn btn-default"
-            ng-show="!notenamectrl.clone"
-            data-dismiss="modal" ng-click="notenamectrl.createNote()">Create
-            Note</button>
-            <button type="button" id="createNoteButton"
-            class="btn btn-default"
-            ng-show="notenamectrl.clone"
-            data-dismiss="modal" ng-click="notenamectrl.createNote()">Clone
-            Note</button>
+                  class="btn btn-default"
+                  data-dismiss="modal" ng-click="notenamectrl.createNote()">
+            <span ng-show="!notenamectrl.clone">Create Note</span>
+            <span ng-show="notenamectrl.clone">Clone Note</span>
+          </button>
         </div>
       </div>
     </div>
