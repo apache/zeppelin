@@ -16,6 +16,8 @@ This interpreter lets you create a JDBC connection to any data source, by now it
 * MariaDB
 * Redshift
 * Hive
+* Apache Drill
+  * Details on using [Drill JDBC Driver](https://drill.apache.org/docs/using-the-jdbc-driver)
 
 If someone else used another database please report how it works to improve functionality.
 
