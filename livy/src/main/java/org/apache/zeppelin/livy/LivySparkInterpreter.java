@@ -17,97 +17,83 @@
 
 package org.apache.zeppelin.livy;
 
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.exec.Executor;
-import org.apache.commons.exec.PumpStreamHandler;
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.scheduler.Job;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Livy Spark interpreter for Zeppelin.
  */
 public class LivySparkInterpreter extends Interpreter {
 
+  static String DEFAULT_URL = "http://localhost:8998";
+  Logger LOGGER = LoggerFactory.getLogger(LivyPySparkInterpreter.class);
+
   static {
     Interpreter.register(
-        "livy",
-        "spark",
-        LivyHelper.class.getName(),
+        "lspark",
+        "lspark",
+        LivySparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
+            .add("zeppelin.livy.url", DEFAULT_URL, "The URL for Livy Server.")
             .build()
     );
   }
 
   private Map<String, Integer> userSessionMap;
   private LivyHelper livyHelper;
-  private static final String EXECUTOR_KEY = "executor";
-  Logger LOGGER = LoggerFactory.getLogger(LivySparkInterpreter.class);
 
   public LivySparkInterpreter(Properties property) {
     super(property);
+    userSessionMap = new HashMap<>();
+    livyHelper = new LivyHelper(property);
   }
+
 
   @Override
   public void open() {
-    userSessionMap = new HashMap<>();
-    livyHelper = new LivyHelper();
   }
 
   @Override
   public void close() {
   }
 
-
   @Override
-  public InterpreterResult interpret(String line, InterpreterContext context) {
-    if (context.getAuthenticationInfo().getUser() == null) {
+  public InterpreterResult interpret(String line, InterpreterContext interpreterContext) {
+    try {
+      if (userSessionMap.get(interpreterContext.getAuthenticationInfo().getUser()) == null) {
+        try {
+          userSessionMap.put(
+              interpreterContext.getAuthenticationInfo().getUser(),
+              livyHelper.createSession(
+                  interpreterContext.getAuthenticationInfo().getUser(),
+                  "spark")
+          );
+        } catch (Exception e) {
+          return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
+        }
+      }
+      if (line == null || line.trim().length() == 0) {
+        return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
+      }
 
+      return livyHelper.interpretInput(line, interpreterContext, userSessionMap);
+    } catch (Exception e) {
+      LOGGER.error("Exception in LivySparkInterpreter while interpret ", e);
+      return new InterpreterResult(InterpreterResult.Code.ERROR,
+          InterpreterUtils.getMostRelevantMessage(e));
     }
-    if (userSessionMap.get(context.getAuthenticationInfo().getUser()) == null) {
-      userSessionMap.put(
-          context.getAuthenticationInfo().getUser(),
-          livyHelper.createSession(context.getAuthenticationInfo().getUser(), "spark"));
-    }
-    if (line == null || line.trim().length() == 0) {
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS);
-    }
-
-    DefaultExecutor executor = new DefaultExecutor();
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
-    executor.setStreamHandler(new PumpStreamHandler(context.out, errorStream));
-    executor.setWatchdog(new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT));
-
-    Job runningJob = getRunningJob(context.getParagraphId());
-    Map<String, Object> info = runningJob.info();
-    info.put(EXECUTOR_KEY, executor);
-
-    return livyHelper.interpret(line.split("\n"), context, userSessionMap);
   }
 
   @Override
   public void cancel(InterpreterContext context) {
-    Job runningJob = getRunningJob(context.getParagraphId());
-    if (runningJob != null) {
-      Map<String, Object> info = runningJob.info();
-      Object object = info.get(EXECUTOR_KEY);
-      if (object != null) {
-        Executor executor = (Executor) object;
-        ExecuteWatchdog watchdog = executor.getWatchdog();
-        watchdog.destroyProcess();
-      }
-    }
   }
 
   @Override
@@ -123,22 +109,12 @@ public class LivySparkInterpreter extends Interpreter {
   @Override
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetParallelScheduler(
-        LivyHelper.class.getName() + this.hashCode(), 10);
-  }
-
-  private Job getRunningJob(String paragraphId) {
-    Job foundJob = null;
-    Collection<Job> jobsRunning = getScheduler().getJobsRunning();
-    for (Job job : jobsRunning) {
-      if (job.getId().equals(paragraphId)) {
-        foundJob = job;
-      }
-    }
-    return foundJob;
+        LivySparkInterpreter.class.getName() + this.hashCode(), 7);
   }
 
   @Override
   public List<String> completion(String buf, int cursor) {
     return null;
   }
+
 }

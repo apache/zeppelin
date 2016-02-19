@@ -32,15 +32,15 @@ import java.util.Properties;
 /**
  * Livy PySpark interpreter for Zeppelin.
  */
-public class LivyPySparkInterpreter extends Interpreter {
+public class LivySparkRInterpreter extends Interpreter {
 
-  Logger LOGGER = LoggerFactory.getLogger(LivyPySparkInterpreter.class);
+  Logger LOGGER = LoggerFactory.getLogger(LivySparkRInterpreter.class);
 
   static {
     Interpreter.register(
-        "pyspark",
+        "r",
         "lspark",
-        LivyPySparkInterpreter.class.getName(),
+        LivySparkRInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .build()
     );
@@ -49,7 +49,7 @@ public class LivyPySparkInterpreter extends Interpreter {
   private Map<String, Integer> userSessionMap;
   private LivyHelper livyHelper;
 
-  public LivyPySparkInterpreter(Properties property) {
+  public LivySparkRInterpreter(Properties property) {
     super(property);
     userSessionMap = new HashMap<>();
     livyHelper = new LivyHelper(property);
@@ -72,7 +72,7 @@ public class LivyPySparkInterpreter extends Interpreter {
               interpreterContext.getAuthenticationInfo().getUser(),
               livyHelper.createSession(
                   interpreterContext.getAuthenticationInfo().getUser(),
-                  "pyspark")
+                  "sparkr")
           );
         } catch (Exception e) {
           return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
@@ -85,7 +85,7 @@ public class LivyPySparkInterpreter extends Interpreter {
 
       return livyHelper.interpretInput(line, interpreterContext, userSessionMap);
     } catch (Exception e) {
-      LOGGER.error("Exception in LivyPySparkInterpreter while interpret ", e);
+      LOGGER.error("Exception in LivySparkRInterpreter while interpret ", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
           InterpreterUtils.getMostRelevantMessage(e));
     }

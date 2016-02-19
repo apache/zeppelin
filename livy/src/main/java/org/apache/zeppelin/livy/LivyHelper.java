@@ -18,98 +18,164 @@
 package org.apache.zeppelin.livy;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.Map;
+import java.util.Properties;
 
-import static org.apache.zeppelin.livy.RequestHelper.executeHTTP;
 
-/**
- * Livy interpreter for Zeppelin.
+/***
+ * Livy helper class
  */
 public class LivyHelper {
   Logger LOGGER = LoggerFactory.getLogger(LivyHelper.class);
+  Gson gson = new GsonBuilder().setPrettyPrinting().create();
+  Properties property;
 
+  LivyHelper(Properties property) {
+    this.property = property;
+  }
 
-  Gson gson = new Gson();
-
-  protected Integer createSession(String user, String kind) {
+  protected Integer createSession(String user, String kind) throws Exception {
     try {
-      String json = executeHTTP(System.getProperty("zeppelin.livy.url") + "/sessions",
+      String json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions",
           "POST",
           "{\"kind\": \"" + kind + "\", \"proxyUser\": \"" + user + "\"}"
       );
-      Map jsonMap = (Map<String, Object>) gson.fromJson(json,
-          new TypeToken<Map<String, Object>>() {
+      Map jsonMap = (Map<Object, Object>) gson.fromJson(json,
+          new TypeToken<Map<Object, Object>>() {
           }.getType());
       return ((Double) jsonMap.get("id")).intValue();
     } catch (Exception e) {
       LOGGER.error("Error getting session for user", e);
-    }
-    return 0;
-  }
-
-  public InterpreterResult interpret(String[] lines, InterpreterContext context,
-                                     Map<String, Integer> userSessionMap) {
-    synchronized (this) {
-      InterpreterResult res = interpretInput(lines, context, userSessionMap);
-      return res;
+      throw e;
     }
   }
 
-  public InterpreterResult interpretInput(String[] lines, InterpreterContext context,
-                                          Map<String, Integer> userSessionMap) {
-    String[] linesToRun = new String[lines.length + 1];
-    for (int i = 0; i < lines.length; i++) {
-      linesToRun[i] = lines[i];
-    }
-    linesToRun[lines.length] = "print(\"\")";
+  public InterpreterResult interpretInput(String lines,
+                                          final InterpreterContext context,
+                                          final Map<String, Integer> userSessionMap) {
+    try {
+//      LOGGER.error("line i got::" + lines);
+      lines = lines.replaceAll("\\n", "\\\\n").replaceAll("\"", "\\\\\"");
+//      LOGGER.error("line i made::" + lines);
+      Map jsonMap = executeCommand(lines, context, userSessionMap);
+      Integer id = ((Double) jsonMap.get("id")).intValue();
 
-    String incomplete = "";
-    Code r = null;
+      InterpreterResult res = getResultFromMap(jsonMap);
+      if (res != null) {
+        return res;
+      }
 
-    for (int l = 0; l < linesToRun.length; l++) {
-      String s = linesToRun[l];
-      // check if next line starts with "." (but not ".." or "./") it is treated as an invocation
-      if (l + 1 < linesToRun.length) {
-        String nextLine = linesToRun[l + 1].trim();
-        if (nextLine.startsWith(".") && !nextLine.startsWith("..") && !nextLine.startsWith("./")) {
-          incomplete += s + "\n";
-          continue;
+      while (true) {
+        Thread.sleep(5);
+        jsonMap = getStatusById(context, userSessionMap, id);
+        InterpreterResult interpreterResult = getResultFromMap(jsonMap);
+        if (interpreterResult != null) {
+          return interpreterResult;
         }
       }
 
-      try {
-        return new InterpreterResult(InterpreterResult.Code.SUCCESS,
-            executeCommand(incomplete + s, context, userSessionMap));
-      } catch (Exception e) {
-        return new InterpreterResult(Code.ERROR, e.getMessage());
-      }
-
-    }
-    if (r == Code.INCOMPLETE) {
-      return new InterpreterResult(r, "Incomplete expression");
-    } else {
-      return new InterpreterResult(Code.SUCCESS);
+    } catch (Exception e) {
+      LOGGER.error("error in interpretInput", e);
+      return new InterpreterResult(Code.ERROR, e.getMessage());
     }
   }
 
-  private String executeCommand(String lines, InterpreterContext context,
-                                Map<String, Integer> userSessionMap) throws Exception {
-    String json = executeHTTP(System.getProperty("zeppelin.livy.url") + "/sessions/"
+  private InterpreterResult getResultFromMap(Map jsonMap) {
+    if (jsonMap.get("state").equals("available")) {
+      if (((Map) jsonMap.get("output")).get("status").equals("error")) {
+        return new InterpreterResult(Code.ERROR,
+            gson.toJson(((Map) jsonMap.get("output")).get("traceback")));
+      }
+      if (((Map) jsonMap.get("output")).get("status").equals("ok")) {
+        return new InterpreterResult(Code.SUCCESS,
+            (String) ((Map) ((Map) jsonMap.get("output")).get("data")).get("text/plain"));
+      }
+    }
+    return null;
+  }
+
+  private Map executeCommand(String lines, InterpreterContext context,
+                             Map<String, Integer> userSessionMap) throws Exception {
+    String json = executeHTTP(property.get("zeppelin.livy.url") + "/sessions/"
             + userSessionMap.get(context.getAuthenticationInfo().getUser())
             + "/statements",
         "POST",
         "{\"code\": \"" + lines + "\" }");
-    Map jsonMap = (Map<String, Object>) gson.fromJson(json,
-        new TypeToken<Map<String, Object>>() {
-        }.getType());
+    try {
+      LOGGER.error(json);
+      Map jsonMap = gson.fromJson(json,
+          new TypeToken<Map>() {
+          }.getType());
+      return jsonMap;
+    } catch (Exception e) {
+      throw e;
+    }
+  }
 
+  private Map getStatusById(InterpreterContext context,
+                            Map<String, Integer> userSessionMap, Integer id) throws Exception {
+    String json = executeHTTP(property.getProperty("zeppelin.livy.url") + "/sessions/"
+            + userSessionMap.get(context.getAuthenticationInfo().getUser())
+            + "/statements/" + id,
+        "GET", null);
+    try {
+      Map jsonMap = gson.fromJson(json,
+          new TypeToken<Map>() {
+          }.getType());
+      return jsonMap;
+    } catch (Exception e) {
+      throw e;
+    }
+  }
+
+  public String executeHTTP(String targetURL, String method, String jsonData)
+      throws Exception {
+
+    HttpClient client = HttpClientBuilder.create().build();
+
+    HttpResponse response;
+    LOGGER.error(jsonData);
+    if (method.equals("POST")) {
+      HttpPost request = new HttpPost(targetURL);
+      request.addHeader("Content-Type", "application/json");
+      StringEntity se = new StringEntity(jsonData);
+      request.setEntity(se);
+      response = client.execute(request);
+    } else {
+      HttpGet request = new HttpGet(targetURL);
+      request.addHeader("Content-Type", "application/json");
+      response = client.execute(request);
+    }
+
+
+    if (response.getStatusLine().getStatusCode() == 200
+        || response.getStatusLine().getStatusCode() == 201) {
+      BufferedReader rd = new BufferedReader(
+          new InputStreamReader(response.getEntity().getContent()));
+
+      StringBuffer result = new StringBuffer();
+      String line = "";
+      while ((line = rd.readLine()) != null) {
+        result.append(line);
+      }
+      return result.toString();
+    }
     return null;
   }
 
