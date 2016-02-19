@@ -17,13 +17,14 @@
 #
 
 
-if [ $# -ne 1 ]; then
-    echo "usage) $0 [spark version]"
-    echo "   eg) $0 1.3.1"
+if [ $# -ne 2 ]; then
+    echo "usage) $0 [spark version] [hadoop version]"
+    echo "   eg) $0 1.3.1 2.6"
     exit 1
 fi
 
 SPARK_VERSION="${1}"
+HADOOP_VERSION="${2}"
 
 echo ${SPARK_VERSION} | grep "^1.[123].[0-9]" > /dev/null
 if [ $? -eq 0 ]; then
@@ -37,7 +38,13 @@ else
   SPARK_VER_RANGE=">1.3"
 fi
 
+
 set -xe
+
+FWDIR=$(dirname "${BASH_SOURCE-$0}")
+ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
+export SPARK_HOME=${ZEPPELIN_HOME}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
+echo "SPARK_HOME is ${SPARK_HOME}"
 
 # create PID dir. test case detect pid file so they can select active spark home dir for test
 mkdir -p ${SPARK_HOME}/run
