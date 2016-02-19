@@ -60,7 +60,7 @@ if [ ! -d "${SPARK_HOME}" ]; then
         PATHINFO=$(echo "${MIRROR_INFO}" | grep path_info | sed 's/[^"]*.path_info.: .\([^"]*\).*/\1/g')
 
         STARTTIME=`date +%s`
-        timeout -s KILL 300 wget -q "${PREFFERED}${PATHINFO}"
+        timeout -s KILL 590 wget -q "${PREFFERED}${PATHINFO}"
         ENDTIME=`date +%s`
         DOWNLOADTIME=$((ENDTIME-STARTTIME))
     fi
