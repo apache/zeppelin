@@ -86,7 +86,7 @@ public class LivyHelper {
       }
 
       while (true) {
-        Thread.sleep(5);
+        Thread.sleep(1000);
         jsonMap = getStatusById(context, userSessionMap, id);
         InterpreterResult interpreterResult = getResultFromMap(jsonMap);
         if (interpreterResult != null) {

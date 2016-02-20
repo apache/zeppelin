@@ -23,45 +23,39 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-/**
- * Livy Spark interpreter for Zeppelin.
- */
-public class LivySparkInterpreter extends Interpreter {
 
-  static String DEFAULT_URL = "http://localhost:8998";
-  Logger LOGGER = LoggerFactory.getLogger(LivyPySparkInterpreter.class);
+/**
+ * Livy PySpark interpreter for Zeppelin.
+ */
+public class LivySparkSQLInterpreter extends Interpreter {
+
+  Logger LOGGER = LoggerFactory.getLogger(LivySparkSQLInterpreter.class);
+  static String DEFAULT_MAX_RESULT = "1000";
 
   static {
     Interpreter.register(
+        "sql",
         "lspark",
-        "lspark",
-        LivySparkInterpreter.class.getName(),
+        LivySparkSQLInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add("zeppelin.livy.url", DEFAULT_URL, "The URL for Livy Server.")
+            .add("livy.spark.maxResult",
+                DEFAULT_MAX_RESULT,
+                "Max number of SparkSQL result to display.")
             .build()
     );
   }
 
-  private static Map<String, Integer> userSessionMap;
+  private Map<String, Integer> userSessionMap;
   private LivyHelper livyHelper;
 
-  public LivySparkInterpreter(Properties property) {
+  public LivySparkSQLInterpreter(Properties property) {
     super(property);
-    userSessionMap = new HashMap<>();
     livyHelper = new LivyHelper(property);
-  }
-
-  protected static Map<String, Integer> getUserSessionMap() {
-    return userSessionMap;
-  }
-
-  public void setUserSessionMap(Map<String, Integer> userSessionMap) {
-    this.userSessionMap = userSessionMap;
+    userSessionMap = LivySparkInterpreter.getUserSessionMap();
   }
 
   @Override
@@ -87,13 +81,57 @@ public class LivySparkInterpreter extends Interpreter {
           return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
         }
       }
+
       if (line == null || line.trim().length() == 0) {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
       }
 
-      return livyHelper.interpretInput(line, interpreterContext, userSessionMap);
+      InterpreterResult res = livyHelper.interpretInput("sqlContext.sql(\"" + line + "\").show("
+              + property.get("livy.spark.maxResult") + ")",
+          interpreterContext, userSessionMap);
+
+      if (res.code() == InterpreterResult.Code.SUCCESS) {
+        StringBuilder resMsg = new StringBuilder();
+        resMsg.append("%table ");
+        LOGGER.error("=====================");
+        LOGGER.error("=====================");
+        LOGGER.error("=====================");
+        LOGGER.error(res.message());
+        LOGGER.error("=====================");
+        LOGGER.error("=====================");
+        LOGGER.error("=====================");
+        String[] rows = res.message().split("\n");
+
+        String[] headers = rows[1].split("\\|");
+        for (int head = 1; head < headers.length; head++) {
+          resMsg.append(headers[head].trim()).append("\t");
+        }
+        resMsg.append("\n");
+        if (rows[3].indexOf("+") == 0) {
+
+        } else {
+          for (int cols = 3; cols < rows.length - 1; cols++) {
+            String[] col = rows[cols].split("\\|");
+            for (int data = 1; data < col.length; data++) {
+              resMsg.append(col[data].trim()).append("\t");
+            }
+            resMsg.append("\n");
+          }
+        }
+        if (rows[rows.length - 1].indexOf("only") == 0) {
+          resMsg.append("<font color=red>" + rows[rows.length - 1] + ".</font>");
+        }
+
+        return new InterpreterResult(InterpreterResult.Code.SUCCESS,
+            resMsg.toString()
+        );
+      } else {
+        return res;
+      }
+
+
     } catch (Exception e) {
-      LOGGER.error("Exception in LivySparkInterpreter while interpret ", e);
+      LOGGER.error("Exception in LivySparkSQLInterpreter while interpret ", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
           InterpreterUtils.getMostRelevantMessage(e));
     }
