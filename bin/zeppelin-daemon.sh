@@ -91,11 +91,6 @@ function initialize_default_directories() {
     echo "Pid dir doesn't exist, create ${ZEPPELIN_PID_DIR}"
     $(mkdir -p "${ZEPPELIN_PID_DIR}")
   fi
-
-  if [[ ! -d "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
-    echo "Notebook dir doesn't exist, create ${ZEPPELIN_NOTEBOOK_DIR}"
-    $(mkdir -p "${ZEPPELIN_NOTEBOOK_DIR}")
-  fi
 }
 
 function wait_for_zeppelin_to_die() {
