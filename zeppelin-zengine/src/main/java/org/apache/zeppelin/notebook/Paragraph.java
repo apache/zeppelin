@@ -91,6 +91,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     return note;
   }
 
+  public boolean isEnabled() {
+    Boolean enabled = (Boolean) config.get("enabled");
+    return enabled == null || enabled.booleanValue();
+  }
+
   public String getRequiredReplName() {
     return getRequiredReplName(text);
   }
