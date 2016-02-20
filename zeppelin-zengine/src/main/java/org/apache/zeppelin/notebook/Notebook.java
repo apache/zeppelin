@@ -382,7 +382,7 @@ public class Notebook {
           //
           // therefore instead of addAndNotifyRemoteProcess(), need to use add()
           // that results add angularObject only in ZeppelinServer side not remoteProcessSide
-          //registry.add(name, snapshot.getAngularObject().get(), noteId, paragraphId);
+          registry.add(name, snapshot.getAngularObject().get(), noteId, paragraphId);
         }
       }
     }
