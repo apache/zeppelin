@@ -36,10 +36,6 @@ if [[ -z "${ZEPPELIN_LOG_DIR}" ]]; then
   export ZEPPELIN_LOG_DIR="${ZEPPELIN_HOME}/logs"
 fi
 
-if [[ -z "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
-  export ZEPPELIN_NOTEBOOK_DIR="${ZEPPELIN_HOME}/notebook"
-fi
-
 if [[ -z "$ZEPPELIN_PID_DIR" ]]; then
   export ZEPPELIN_PID_DIR="${ZEPPELIN_HOME}/run"
 fi
