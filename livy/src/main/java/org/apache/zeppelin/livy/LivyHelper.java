@@ -66,14 +66,18 @@ public class LivyHelper {
     }
   }
 
-  public InterpreterResult interpretInput(String lines,
+  public InterpreterResult interpretInput(String stringLines,
                                           final InterpreterContext context,
                                           final Map<String, Integer> userSessionMap) {
     try {
-//      LOGGER.error("line i got::" + lines);
-      lines = lines.replaceAll("\\n", "\\\\n").replaceAll("\"", "\\\\\"");
-//      LOGGER.error("line i made::" + lines);
-      Map jsonMap = executeCommand(lines, context, userSessionMap);
+
+      stringLines = stringLines
+          .replaceAll("\\\\n", "\\\\\\\\n")
+          .replaceAll("\\n", "\\\\n")
+          .replaceAll("\\\\\"", "\\\\\\\\\"")
+          .replaceAll("\"", "\\\\\"");
+
+      Map jsonMap = executeCommand(stringLines, context, userSessionMap);
       Integer id = ((Double) jsonMap.get("id")).intValue();
 
       InterpreterResult res = getResultFromMap(jsonMap);
@@ -99,8 +103,17 @@ public class LivyHelper {
   private InterpreterResult getResultFromMap(Map jsonMap) {
     if (jsonMap.get("state").equals("available")) {
       if (((Map) jsonMap.get("output")).get("status").equals("error")) {
-        return new InterpreterResult(Code.ERROR,
-            gson.toJson(((Map) jsonMap.get("output")).get("traceback")));
+        StringBuilder errorMessage = new StringBuilder((String) ((Map) jsonMap
+            .get("output")).get("evalue"));
+        String traceback = gson.toJson(((Map) jsonMap.get("output")).get("traceback"));
+        if (!traceback.equals("[]")) {
+          errorMessage
+              .append("\n")
+              .append("traceback: \n")
+              .append(traceback);
+        }
+
+        return new InterpreterResult(Code.ERROR, errorMessage.toString());
       }
       if (((Map) jsonMap.get("output")).get("status").equals("ok")) {
         return new InterpreterResult(Code.SUCCESS,
