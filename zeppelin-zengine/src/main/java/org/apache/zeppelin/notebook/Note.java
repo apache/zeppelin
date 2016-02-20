@@ -349,6 +349,9 @@ public class Note implements Serializable, JobListener {
   public void runAll() {
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
+        if (!p.isEnabled()) {
+          continue;
+        }
         p.setNoteReplLoader(replLoader);
         p.setListener(jobListenerFactory.getParagraphJobListener(this));
         Interpreter intp = replLoader.get(p.getRequiredReplName());
