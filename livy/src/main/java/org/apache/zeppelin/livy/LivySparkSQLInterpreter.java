@@ -93,13 +93,6 @@ public class LivySparkSQLInterpreter extends Interpreter {
       if (res.code() == InterpreterResult.Code.SUCCESS) {
         StringBuilder resMsg = new StringBuilder();
         resMsg.append("%table ");
-        LOGGER.error("=====================");
-        LOGGER.error("=====================");
-        LOGGER.error("=====================");
-        LOGGER.error(res.message());
-        LOGGER.error("=====================");
-        LOGGER.error("=====================");
-        LOGGER.error("=====================");
         String[] rows = res.message().split("\n");
 
         String[] headers = rows[1].split("\\|");
