@@ -180,7 +180,7 @@ public class SparkSqlInterpreter extends Interpreter {
       if (intp != null) {
         return intp.getScheduler();
       } else {
-        throw new InterpreterException("Can't find SparkInterpreter");
+        return null;
       }
     }
   }

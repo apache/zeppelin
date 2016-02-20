@@ -137,6 +137,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
    * Close all interpreter instances in this group
    */
   public void close() {
+    LOGGER.info("Close interpreter group " + getId());
     List<Interpreter> intpToClose = new LinkedList<Interpreter>();
     for (List<Interpreter> intpGroupForNote : this.values()) {
       intpToClose.addAll(intpGroupForNote);
@@ -149,6 +150,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
    * @param noteId
    */
   public void close(String noteId) {
+    LOGGER.info("Close interpreter group " + getId() + " for note " + noteId);
     List<Interpreter> intpForNote = this.get(noteId);
     close(intpForNote);
   }
@@ -189,6 +191,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
    * @param noteId
    */
   public void destroy(String noteId) {
+    LOGGER.info("Destroy interpreter group " + getId() + " for note " + noteId);
     List<Interpreter> intpForNote = this.get(noteId);
     destroy(intpForNote);
   }
@@ -198,6 +201,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
    * Destroy all interpreter instances in this group
    */
   public void destroy() {
+    LOGGER.info("Destroy interpreter group " + getId());
     List<Interpreter> intpToDestroy = new LinkedList<Interpreter>();
     for (List<Interpreter> intpGroupForNote : this.values()) {
       intpToDestroy.addAll(intpGroupForNote);

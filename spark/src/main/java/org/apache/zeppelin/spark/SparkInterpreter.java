@@ -931,6 +931,8 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public void close() {
+    logger.info("Close interpreter");
+
     if (numReferenceOfSparkContext.decrementAndGet() == 0) {
       sc.stop();
       sc = null;

@@ -313,7 +313,11 @@ public class DepInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return getSparkInterpreter().getScheduler();
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    if (sparkInterpreter != null) {
+      return getSparkInterpreter().getScheduler();
+    } else {
+      return null;
+    }
   }
-
 }
