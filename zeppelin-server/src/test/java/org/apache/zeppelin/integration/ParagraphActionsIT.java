@@ -36,28 +36,28 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 
 public class ParagraphActionsIT extends AbstractZeppelinIT {
-  private static final Logger LOG = LoggerFactory.getLogger(ParagraphActionsIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ParagraphActionsIT.class);
 
 
-  @Rule
-  public ErrorCollector collector = new ErrorCollector();
+    @Rule
+    public ErrorCollector collector = new ErrorCollector();
 
-  @Before
-  public void startUp() {
-    if (!endToEndTestEnabled()) {
-      return;
-    }
-    driver = WebDriverManager.getWebDriver();
-  }
-
-  @After
-  public void tearDown() {
-    if (!endToEndTestEnabled()) {
-      return;
+    @Before
+    public void startUp() {
+        if (!endToEndTestEnabled()) {
+            return;
+        }
+        driver = WebDriverManager.getWebDriver();
     }
 
-    driver.quit();
-  }
+    @After
+    public void tearDown() {
+        if (!endToEndTestEnabled()) {
+            return;
+        }
+
+        driver.quit();
+    }
 
     @Test
     public void testShowAndHideLineNumbers() throws Exception {
@@ -76,7 +76,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
                     driver.findElement(By.xpath(getParagraphXPath(1) + "//a[contains(@ng-click, 'showLineNumbers()')]")).getText(),
                     CoreMatchers.equalTo("Show line numbers"));
             driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='showLineNumbers()']")).click();
-            collector.checkThat("After \"Show line number\" the Line Number is Enabled " ,
+            collector.checkThat("After \"Show line number\" the Line Number is Enabled ",
                     driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'ace_gutter-layer')]")).isDisplayed(),
                     CoreMatchers.equalTo(true));
             driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
@@ -92,16 +92,50 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
         } catch (Exception e) {
 
-                  LOG.error("Exception in ParagraphActionsIT while testShowAndHideLineNumbers ", e);
-                  File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-                  throw e;
+            LOG.error("Exception in ParagraphActionsIT while testShowAndHideLineNumbers ", e);
+            File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            throw e;
         }
 
 
     }
 
-
     @Test
+    public void testRemoveButton() throws InterruptedException {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+
+      waitForParagraph(1, "READY");
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
+      waitForParagraph(2, "READY");
+      Integer oldNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      collector.checkThat("Before Remove : Number of paragraphs are ",
+              oldNosOfParas,
+              CoreMatchers.equalTo(2));
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='removeParagraph()']")).click();
+      sleep(1000, true);
+      driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
+              "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+      Integer newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
+      collector.checkThat("After Remove : Number of paragraphs are",
+              oldNosOfParas-1,
+              CoreMatchers.equalTo(newNosOfParas));
+      ZeppelinITUtils.sleep(1000, false);
+      deleteTestNotebook(driver);
+
+    } catch (Exception e) {
+        LOG.error("Exception in ParagraphActionsIT while testRemoveButton ", e);
+        File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+        throw e;
+    }
+  }
+  
+  @Test
   public void testMoveUpAndDown() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
