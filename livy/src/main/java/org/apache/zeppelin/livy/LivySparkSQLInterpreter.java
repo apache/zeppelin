@@ -77,6 +77,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
                   interpreterContext.getAuthenticationInfo().getUser(),
                   "spark")
           );
+          livyHelper.initializeSpark(interpreterContext, userSessionMap);
         } catch (Exception e) {
           return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
         }
