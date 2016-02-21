@@ -138,7 +138,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
   }
 
   @Test
-  public void testWidth() throws InterruptedException {
+  public void testWidth() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
