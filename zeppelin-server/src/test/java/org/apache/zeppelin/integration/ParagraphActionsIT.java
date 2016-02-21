@@ -69,16 +69,17 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       paragraph1Editor.sendKeys("println" + Keys.chord(Keys.SHIFT, "9") + "\""
               + "abcd\")");
       collector.checkThat("Before Run Output field contains ",
-              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'text ng-scope')]")).getText(),
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-if,'getResultType()')]")).getText(),
               CoreMatchers.equalTo(""));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@ng-click='runParagraph(getEditorValue())']")).click();
+      waitForParagraph(1, "FINISHED");
       collector.checkThat("After Run Output field contains  ",
-              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'text ng-scope')]")).getText(),
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-if,'getResultType()')]")).getText(),
               CoreMatchers.equalTo("abcd"));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='clearParagraphOutput()']")).click();
       collector.checkThat("After Clear  Output field contains ",
-              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class,'text ng-scope')]")).getText(),
+              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@ng-if,'getResultType()')]")).getText(),
               CoreMatchers.equalTo(""));
       ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
