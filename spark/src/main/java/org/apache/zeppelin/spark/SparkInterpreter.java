@@ -326,7 +326,10 @@ public class SparkInterpreter extends Interpreter {
       }
     }
     pythonLibUris.trimToSize();
-    if (pythonLibs.length == pythonLibUris.size()) {
+
+    // Distribute two libraries(pyspark.zip and py4j-*.zip) to workers
+    // when spark version is less than or equal to 1.4.1
+    if (pythonLibUris.size() == 2) {
       conf.set("spark.yarn.dist.files", Joiner.on(",").join(pythonLibUris));
       if (!useSparkSubmit()) {
         conf.set("spark.files", conf.get("spark.yarn.dist.files"));
@@ -334,7 +337,8 @@ public class SparkInterpreter extends Interpreter {
       conf.set("spark.submit.pyArchives", Joiner.on(":").join(pythonLibs));
     }
 
-    // Distributes needed libraries to workers.
+    // Distributes needed libraries to workers
+    // when spark version is greater than or equal to 1.5.0
     if (getProperty("master").equals("yarn-client")) {
       conf.set("spark.yarn.isPython", "true");
     }
