@@ -71,8 +71,8 @@ public class DependencyResolver extends AbstractDependencyResolver {
   public synchronized List<File> load(String artifact, Collection<String> excludes)
       throws RepositoryException, IOException {
     if (StringUtils.isBlank(artifact)) {
-      // Should throw here
-      throw new RuntimeException("Invalid artifact to load");
+      // Skip dependency loading if artifact is empty
+      return new LinkedList<File>();
     }
 
     // <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>
@@ -88,22 +88,26 @@ public class DependencyResolver extends AbstractDependencyResolver {
   
   public List<File> load(String artifact, Collection<String> excludes, String destPath)
       throws RepositoryException, IOException {
-    List<File> libs = load(artifact, excludes);
-    
-    // find home dir
-    String home = System.getenv("ZEPPELIN_HOME");
-    if (home == null) {
-      home = System.getProperty("zeppelin.home");
-    }
-    if (home == null) {
-      home = "..";
-    }
-    
-    for (File srcFile: libs) {
-      File destFile = new File(home + "/" + destPath, srcFile.getName());
-      if (!destFile.exists() || !FileUtils.contentEquals(srcFile, destFile)) {
-        FileUtils.copyFile(srcFile, destFile);
-        logger.info("copy {} to {}", srcFile.getAbsolutePath(), destPath);
+    List<File> libs = new LinkedList<File>();
+
+    if (StringUtils.isNotBlank(artifact)) {
+      libs = load(artifact, excludes);
+
+      // find home dir
+      String home = System.getenv("ZEPPELIN_HOME");
+      if (home == null) {
+        home = System.getProperty("zeppelin.home");
+      }
+      if (home == null) {
+        home = "..";
+      }
+
+      for (File srcFile : libs) {
+        File destFile = new File(home + "/" + destPath, srcFile.getName());
+        if (!destFile.exists() || !FileUtils.contentEquals(srcFile, destFile)) {
+          FileUtils.copyFile(srcFile, destFile);
+          logger.info("copy {} to {}", srcFile.getAbsolutePath(), destPath);
+        }
       }
     }
     return libs;

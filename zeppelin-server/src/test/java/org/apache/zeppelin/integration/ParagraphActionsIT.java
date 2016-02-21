@@ -143,7 +143,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       return;
     }
     try {
-
       createNewNote();
 
       waitForParagraph(1, "READY");

@@ -305,7 +305,15 @@ public class JDBCInterpreter extends Interpreter {
           int displayRowCount = 0;
           while (resultSet.next() && displayRowCount < getMaxResult()) {
             for (int i = 1; i < md.getColumnCount() + 1; i++) {
-              msg.append(replaceReservedChars(isTableType, resultSet.getString(i)));
+              Object resultObject;
+              String resultValue;
+              resultObject = resultSet.getObject(i);
+              if (resultObject == null) {
+                resultValue = "null";
+              } else {
+                resultValue = resultSet.getString(i);
+              }
+              msg.append(replaceReservedChars(isTableType, resultValue));
               if (i != md.getColumnCount()) {
                 msg.append(TAB);
               }
