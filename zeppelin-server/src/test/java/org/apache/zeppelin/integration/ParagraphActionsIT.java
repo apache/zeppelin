@@ -120,7 +120,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
   }
 
   @Test
-  public void testTitleButton() throws InterruptedException {
+  public void testTitleButton() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -128,7 +128,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       createNewNote();
 
       waitForParagraph(1, "READY");
-
+      ZeppelinITUtils.sleep(1000,false);
       collector.checkThat("Before Show Title : The title field contains",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
               CoreMatchers.equalTo(""));
@@ -159,11 +159,12 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       collector.checkThat("After Editing the Title : The title field contains ",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
               CoreMatchers.equalTo("NEW TITLE"));
-      ZeppelinITUtils.sleep(1000,false);
       driver.navigate().refresh();
+      ZeppelinITUtils.sleep(1000,false);
       collector.checkThat("After Page Refresh : The title field contains ",
               driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'binding')]")).getText(),
               CoreMatchers.equalTo("NEW TITLE"));
+      ZeppelinITUtils.sleep(1000,false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
