@@ -50,7 +50,7 @@ Its assumed in the rest of the document that zeppelin user is indeed created and
  * Spark
  * Internet connection is required. 
 
-It's assumed that the node has CentOS 6.x installed on it. Although any version of Linux distribution should work fine. The working directory of all prerequisite packages is /home/zeppelin/prerequisites, although any location could be used.
+It's assumed that the node has CentOS 6.x installed on it. Although any version of Linux distribution should work fine.
 
 #### Hadoop client
 Zeppelin can work with multiple versions & distributions of Hadoop. A complete list is available [here](https://github.com/apache/incubator-zeppelin#build). This document assumes Hadoop 2.7.x client libraries including configuration files are installed on Zeppelin node. It also assumes /etc/hadoop/conf contains various Hadoop configuration files. The location of Hadoop configuration files may vary, hence use appropriate location.
