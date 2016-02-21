@@ -58,8 +58,9 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
     driver.quit();
   }
+
     @Test
-    public void testShowAndHideLineNumbers() throws InterruptedException {
+    public void testShowAndHideLineNumbers() throws Exception {
         if (!endToEndTestEnabled()) {
             return;
         }
