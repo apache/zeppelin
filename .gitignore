@@ -13,6 +13,8 @@ spark/derby.log
 spark/metastore_db
 spark-1.*-bin-hadoop*
 
+lens/lens-cli-hist.log
+
 # conf file
 conf/zeppelin-env.sh
 conf/zeppelin-site.xml
