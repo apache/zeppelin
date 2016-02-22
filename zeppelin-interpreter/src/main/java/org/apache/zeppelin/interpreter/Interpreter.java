@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * If you want to implement new Zeppelin interpreter, extend this class
  *
  * Please see,
- * http://zeppelin.incubator.apache.org/docs/development/writingzeppelininterpreter.html
+ * https://zeppelin.incubator.apache.org/docs/latest/development/writingzeppelininterpreter.html
  *
  * open(), close(), interpreter() is three the most important method you need to implement.
  * cancel(), getProgress(), completion() is good to have
