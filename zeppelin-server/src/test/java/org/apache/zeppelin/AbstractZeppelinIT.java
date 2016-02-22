@@ -19,8 +19,6 @@ package org.apache.zeppelin;
 
 
 import com.google.common.base.Function;
-import org.junit.After;
-import org.junit.Before;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
@@ -29,9 +27,13 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static org.openqa.selenium.Keys.ENTER;
+import static org.openqa.selenium.Keys.SHIFT;
 
 abstract public class AbstractZeppelinIT {
   protected WebDriver driver;
@@ -129,6 +131,46 @@ abstract public class AbstractZeppelinIT {
     driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
         "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
     sleep(100, true);
+  }
+
+  public enum HelperKeys implements CharSequence {
+    OPEN_PARENTHESIS(Keys.chord(Keys.SHIFT, "9")),
+    EXCLAMATION(Keys.chord(Keys.SHIFT, "1")),
+    PERCENTAGE(Keys.chord(Keys.SHIFT, "5")),
+    SHIFT_ENTER(Keys.chord(SHIFT, ENTER));
+
+    private final CharSequence keyCode;
+
+    HelperKeys(CharSequence keyCode) {
+      this.keyCode = keyCode;
+    }
+
+    public char charAt(int index) {
+      return index == 0 ? keyCode.charAt(index) : '\ue000';
+    }
+
+    public int length() {
+      return 1;
+    }
+
+    public CharSequence subSequence(int start, int end) {
+      if (start == 0 && end == 1) {
+        return String.valueOf(this.keyCode);
+      } else {
+        throw new IndexOutOfBoundsException();
+      }
+    }
+
+    public String toString() {
+      return String.valueOf(this.keyCode);
+    }
+
+  }
+
+  protected void handleException(String message, Exception e) throws Exception {
+    LOG.error(message, e);
+    File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+    throw e;
   }
 
 }
