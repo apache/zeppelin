@@ -128,7 +128,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
-       handleError("Exception in ParagraphActionsIT while testCreateNewButton ", e);
+       handleException("Exception in ParagraphActionsIT while testCreateNewButton ", e);
     }
 
 
@@ -163,7 +163,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
-      handleError("Exception in ParagraphActionsIT while testMoveUpAndDown ", e);
+      handleException("Exception in ParagraphActionsIT while testMoveUpAndDown ", e);
     }
   }
   
@@ -222,7 +222,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
-      handleError("Exception in ParagraphActionsIT while testMoveUpAndDown ", e);
+      handleException("Exception in ParagraphActionsIT while testMoveUpAndDown ", e);
     }
 
   }
@@ -260,7 +260,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
-      handleError("Exception in ParagraphActionsIT while testDisableParagraphRunButton ", e);
+      handleException("Exception in ParagraphActionsIT while testDisableParagraphRunButton ", e);
     }
 
   }
