@@ -57,9 +57,10 @@ public class ShellInterpreter extends Interpreter {
             "sh",
             ShellInterpreter.class.getName(),
             new InterpreterPropertyBuilder()
-              .add(SHELL_COMMAND_TIMEOUT
-                , DEFAULT_COMMAND_TIMEOUT
-                , "Shell command time out in millisecs. Default = 600000")
+              .add(
+                SHELL_COMMAND_TIMEOUT,
+                DEFAULT_COMMAND_TIMEOUT,
+                "Shell command time out in millisecs. Default = 600000")
               .build()
     );
   }
