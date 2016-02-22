@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
@@ -103,6 +104,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
             "jobId",
             "title",
             "text",
+            new AuthenticationInfo(),
             new HashMap<String, Object>(),
             new GUI(),
             new AngularObjectRegistry(intpGroup.getId(), null),
@@ -175,6 +177,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
           "jobId1",
           "title",
           "text",
+          new AuthenticationInfo(),
           new HashMap<String, Object>(),
           new GUI(),
           new AngularObjectRegistry(intpGroup.getId(), null),
@@ -212,6 +215,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
           "jobId2",
           "title",
           "text",
+          new AuthenticationInfo(),
           new HashMap<String, Object>(),
           new GUI(),
           new AngularObjectRegistry(intpGroup.getId(), null),
