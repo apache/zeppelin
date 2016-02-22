@@ -179,6 +179,24 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>A user name of S3 bucket<br />i.e. <code>bucket/user/notebook/2A94M5J1Z/note.json</code></td>
   </tr>
   <tr>
+    <td>ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</td>
+    <td>zeppelin.notebook.azure.connectionString</td>
+    <td></td>
+    <td>The Azure storage account connection string<br />i.e. <code>DefaultEndpointsProtocol=https;AccountName=&lt;accountName&gt;;AccountKey=&lt;accountKey&gt;</code></td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_AZURE_SHARE</td>
+    <td>zeppelin.notebook.azure.share</td>
+    <td>zeppelin</td>
+    <td>Share where the Zeppelin notebook files will be saved</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_AZURE_USER</td>
+    <td>zeppelin.notebook.azure.user</td>
+    <td>user</td>
+    <td>An optional user name of Azure file share<br />i.e. <code>share/user/notebook/2A94M5J1Z/note.json</code></td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_NOTEBOOK_STORAGE</td>
     <td>zeppelin.notebook.storage</td>
     <td>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</td>
@@ -217,3 +235,39 @@ After successful start, visit [http://localhost:8080](http://localhost:8080) wit
 ```
 bin/zeppelin-daemon.sh stop
 ```
+
+#### Start Zeppelin with a service manager such as upstart
+
+Zeppelin can auto start as a service with an init script, such as services managed by upstart.
+
+The following is an example upstart script to be saved as `/etc/init/zeppelin.conf` 
+This example has been tested with Ubuntu Linux.
+This also allows the service to be managed with commands such as 
+
+`sudo service zeppelin start`  
+`sudo service zeppelin stop`  
+`sudo service zeppelin restart`
+
+Other service managers could use a similar approach with the `upstart` argument passed to the zeppelin-daemon.sh script:  `bin/zeppelin-daemon.sh upstart`
+
+##### zeppelin.conf
+
+```
+description "zeppelin"
+
+start on (local-filesystems and net-device-up IFACE!=lo)
+stop on shutdown
+
+# Respawn the process on unexpected termination
+respawn
+
+# respawn the job up to 7 times within a 5 second period.
+# If the job exceeds these values, it will be stopped and marked as failed.
+respawn limit 7 5
+
+# zeppelin was installed in /usr/share/zeppelin in this example
+chdir /usr/share/zeppelin
+exec bin/zeppelin-daemon.sh upstart
+```
+
+

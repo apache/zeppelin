@@ -26,10 +26,7 @@ import static org.apache.zeppelin.jdbc.JDBCInterpreter.COMMON_MAX_LINE;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Properties;
 
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -64,11 +61,59 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     statement.execute(
         "DROP TABLE IF EXISTS test_table; " +
         "CREATE TABLE test_table(id varchar(255), name varchar(255));");
-    statement.execute(
-        "insert into test_table(id, name) values ('a', 'a_name'),('b', 'b_name');"
-    );
+
+    PreparedStatement insertStatement = connection.prepareStatement("insert into test_table(id, name) values ('a', 'a_name'),('b', 'b_name'),('c', ?);");
+    insertStatement.setString(1, null);
+    insertStatement.execute();
   }
 
+
+  @Test
+  public void testForParsePropertyKey() throws IOException {
+    JDBCInterpreter t = new JDBCInterpreter(new Properties());
+    
+    assertEquals(t.getPropertyKey("(fake) select max(cant) from test_table where id >= 2452640"),
+        "fake");
+    
+    assertEquals(t.getPropertyKey("() select max(cant) from test_table where id >= 2452640"),
+        "");
+    
+    assertEquals(t.getPropertyKey(")fake( select max(cant) from test_table where id >= 2452640"),
+        "default");
+        
+    // when you use a %jdbc(prefix1), prefix1 is the propertyKey as form part of the cmd string
+    assertEquals(t.getPropertyKey("(prefix1)\n select max(cant) from test_table where id >= 2452640"),
+        "prefix1");
+    
+    assertEquals(t.getPropertyKey("(prefix2) select max(cant) from test_table where id >= 2452640"),
+            "prefix2");
+    
+    // when you use a %jdbc, prefix is the default
+    assertEquals(t.getPropertyKey("select max(cant) from test_table where id >= 2452640"),
+            "default");
+  }
+  
+  @Test
+  public void testForMapPrefix() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String sqlQuery = "(fake) select * from test_table";
+
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, new InterpreterContext("", "1", "","", null,null,null,null,null,null));
+
+    // if prefix not found return ERROR and Prefix not found.
+    assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
+    assertEquals("Prefix not found.", interpreterResult.message());
+  }
+  
   @Test
   public void testDefaultProperties() throws SQLException {
     JDBCInterpreter jdbcInterpreter = new JDBCInterpreter(new Properties());
@@ -92,7 +137,7 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     JDBCInterpreter t = new JDBCInterpreter(properties);
     t.open();
 
-    String sqlQuery = "select * from test_table";
+    String sqlQuery = "select * from test_table WHERE ID in ('a', 'b')";
 
     InterpreterResult interpreterResult = t.interpret(sqlQuery, new InterpreterContext("", "1", "","", null,null,null,null,null,null));
 
@@ -100,6 +145,28 @@ public class JDBCInterpreterTest extends BasicJDBCTestCaseAdapter {
     assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
     assertEquals("ID\tNAME\na\ta_name\nb\tb_name\n", interpreterResult.message());
   }
+
+  @Test
+  public void testSelectQueryWithNull() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    JDBCInterpreter t = new JDBCInterpreter(properties);
+    t.open();
+
+    String sqlQuery = "select * from test_table WHERE ID = 'c'";
+
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, new InterpreterContext("", "1", "","", null,null,null,null,null,null));
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
+    assertEquals("ID\tNAME\nc\tnull\n", interpreterResult.message());
+  }
+
 
   @Test
   public void testSelectQueryMaxResult() throws SQLException, IOException {

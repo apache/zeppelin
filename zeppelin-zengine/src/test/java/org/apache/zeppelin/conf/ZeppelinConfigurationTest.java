@@ -17,7 +17,11 @@
 package org.apache.zeppelin.conf;
 
 import junit.framework.Assert;
+
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+
+import org.junit.Before;
 import org.junit.Test;
 
 import java.net.MalformedURLException;
@@ -28,6 +32,11 @@ import java.util.List;
  * Created by joelz on 8/19/15.
  */
 public class ZeppelinConfigurationTest {
+    @Before
+    public void clearSystemVariables() {
+        System.clearProperty(ConfVars.ZEPPELIN_NOTEBOOK_DIR.getVarName());
+    }
+
     @Test
     public void getAllowedOrigins2Test() throws MalformedURLException, ConfigurationException {
 
@@ -69,5 +78,13 @@ public class ZeppelinConfigurationTest {
         ZeppelinConfiguration conf  = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
         Boolean isIt = conf.isWindowsPath("~/test/file.xml");
         Assert.assertFalse(isIt);
+    }
+
+    @Test
+    public void getNotebookDirTest() throws ConfigurationException {
+
+        ZeppelinConfiguration conf  = new ZeppelinConfiguration(this.getClass().getResource("/zeppelin-site.xml"));
+        String notebookLocation = conf.getNotebookDir();
+        Assert.assertEquals("notebook", notebookLocation);
     }
 }

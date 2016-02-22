@@ -100,6 +100,7 @@ The following components are provided under Apache License.
     (Apache 2.0) Tachyon Servers (org.tachyonproject:tachyon-servers:0.8.2 - http://tachyon-project.org)
     (Apache 2.0) Tachyon Minicluster (org.tachyonproject:tachyon-minicluster:0.8.2 - http://tachyon-project.org)
     (Apache 2.0) Tachyon Underfs Local (org.tachyonproject:tachyon-underfs-local:0.8.2 - http://tachyon-project.org)
+    (Apache 2.0) Microsoft Azure Storage Library for Java (com.microsoft.azure:azure-storage:4.0.0 - https://github.com/Azure/azure-storage-java)
 
 
 
