@@ -29,11 +29,13 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.interpreter.InterpreterUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Properties;
 
@@ -83,37 +85,69 @@ public class LivyHelper {
   }
 
   protected void initializeSpark(final InterpreterContext context,
-                                 final Map<String, Integer> userSessionMap) {
-    interpretInput("val sqlContext= new org.apache.spark.sql.SQLContext(sc)\n" +
+                                 final Map<String, Integer> userSessionMap) throws Exception {
+    interpret("val sqlContext= new org.apache.spark.sql.SQLContext(sc)\n" +
         "import sqlContext.implicits._", context, userSessionMap);
   }
 
   public InterpreterResult interpretInput(String stringLines,
                                           final InterpreterContext context,
-                                          final Map<String, Integer> userSessionMap) {
+                                          final Map<String, Integer> userSessionMap,
+                                          LivyOutputStream out) {
     try {
+      String[] lines = stringLines.split("\n");
+      String[] linesToRun = new String[lines.length + 1];
+      for (int i = 0; i < lines.length; i++) {
+        linesToRun[i] = lines[i];
+      }
+      linesToRun[lines.length] = "print(\"\")";
 
-      stringLines = stringLines
-          .replaceAll("\\\\n", "\\\\\\\\n")
-          .replaceAll("\\n", "\\\\n")
-          .replaceAll("\\\\\"", "\\\\\\\\\"")
-          .replaceAll("\"", "\\\\\"");
+      out.setInterpreterOutput(context.out);
+      context.out.clear();
+      Code r = null;
+      String incomplete = "";
 
-      Map jsonMap = executeCommand(stringLines, context, userSessionMap);
-      Integer id = ((Double) jsonMap.get("id")).intValue();
+      for (int l = 0; l < linesToRun.length; l++) {
+        String s = linesToRun[l];
+        // check if next line starts with "." (but not ".." or "./") it is treated as an invocation
+        //for spark
+        if (l + 1 < linesToRun.length) {
+          String nextLine = linesToRun[l + 1].trim();
+          if (nextLine.startsWith(".")
+              && !nextLine.startsWith("..")
+              && !nextLine.startsWith("./")) {
+            incomplete += s + "\n";
+            continue;
+          }
+        }
 
-      InterpreterResult res = getResultFromMap(jsonMap);
-      if (res != null) {
-        return res;
+        InterpreterResult res;
+        try {
+          res = interpret(incomplete + s, context, userSessionMap);
+        } catch (Exception e) {
+          LOGGER.info("Interpreter exception", e);
+          return new InterpreterResult(Code.ERROR, InterpreterUtils.getMostRelevantMessage(e));
+        }
+
+        r = getResultCode(res);
+
+        if (r == Code.ERROR) {
+          out.setInterpreterOutput(null);
+          return new InterpreterResult(r, "");
+        } else if (r == Code.INCOMPLETE) {
+          incomplete += s + "\n";
+        } else {
+          out.write((res.message() + "\n").getBytes(Charset.forName("UTF-8")));
+          incomplete = "";
+        }
       }
 
-      while (true) {
-        Thread.sleep(1000);
-        jsonMap = getStatusById(context, userSessionMap, id);
-        InterpreterResult interpreterResult = getResultFromMap(jsonMap);
-        if (interpreterResult != null) {
-          return interpreterResult;
-        }
+      if (r == Code.INCOMPLETE) {
+        out.setInterpreterOutput(null);
+        return new InterpreterResult(r, "Incomplete expression");
+      } else {
+        out.setInterpreterOutput(null);
+        return new InterpreterResult(Code.SUCCESS);
       }
 
     } catch (Exception e) {
@@ -122,11 +156,58 @@ public class LivyHelper {
     }
   }
 
+  private Code getResultCode(InterpreterResult r) {
+    if (r.code().equals(Code.SUCCESS)) {
+      return Code.SUCCESS;
+    } else if (r.code().equals(Code.INCOMPLETE)) {
+      return Code.INCOMPLETE;
+    } else {
+      return Code.ERROR;
+    }
+  }
+
+  protected InterpreterResult interpret(String stringLines,
+                                        final InterpreterContext context,
+                                        final Map<String, Integer> userSessionMap)
+      throws Exception {
+    stringLines = stringLines
+        .replaceAll("\\\\n", "\\\\\\\\n")
+        .replaceAll("\\n", "\\\\n")
+        .replaceAll("\\\\\"", "\\\\\\\\\"")
+        .replaceAll("\"", "\\\\\"");
+
+    if (stringLines.trim().equals("")) {
+      return new InterpreterResult(Code.SUCCESS, "");
+    }
+    LOGGER.error("stringLines==" + stringLines);
+    Map jsonMap = executeCommand(stringLines, context, userSessionMap);
+    Integer id = ((Double) jsonMap.get("id")).intValue();
+    LOGGER.error("jsonMap==" + jsonMap);
+    InterpreterResult res = getResultFromMap(jsonMap);
+    if (res != null) {
+      return res;
+    }
+
+    while (true) {
+      Thread.sleep(1000);
+      jsonMap = getStatusById(context, userSessionMap, id);
+      LOGGER.error("jsonMap==" + jsonMap);
+      InterpreterResult interpreterResult = getResultFromMap(jsonMap);
+      if (interpreterResult != null) {
+        return interpreterResult;
+      }
+    }
+  }
+
   private InterpreterResult getResultFromMap(Map jsonMap) {
     if (jsonMap.get("state").equals("available")) {
       if (((Map) jsonMap.get("output")).get("status").equals("error")) {
         StringBuilder errorMessage = new StringBuilder((String) ((Map) jsonMap
             .get("output")).get("evalue"));
+        if (errorMessage.toString().equals("incomplete statement")
+            || errorMessage.toString().contains("EOF")) {
+          return new InterpreterResult(Code.INCOMPLETE, "");
+        }
         String traceback = gson.toJson(((Map) jsonMap.get("output")).get("traceback"));
         if (!traceback.equals("[]")) {
           errorMessage

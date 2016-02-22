@@ -35,6 +35,7 @@ public class LivySparkInterpreter extends Interpreter {
 
   static String DEFAULT_URL = "http://localhost:8998";
   Logger LOGGER = LoggerFactory.getLogger(LivyPySparkInterpreter.class);
+  private LivyOutputStream out;
 
   static {
     Interpreter.register(
@@ -54,6 +55,7 @@ public class LivySparkInterpreter extends Interpreter {
     super(property);
     userSessionMap = new HashMap<>();
     livyHelper = new LivyHelper(property);
+    out = new LivyOutputStream();
   }
 
   protected static Map<String, Integer> getUserSessionMap() {
@@ -92,7 +94,7 @@ public class LivySparkInterpreter extends Interpreter {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
       }
 
-      return livyHelper.interpretInput(line, interpreterContext, userSessionMap);
+      return livyHelper.interpretInput(line, interpreterContext, userSessionMap, out);
     } catch (Exception e) {
       LOGGER.error("Exception in LivySparkInterpreter while interpret ", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
@@ -116,8 +118,8 @@ public class LivySparkInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetParallelScheduler(
-        LivySparkInterpreter.class.getName() + this.hashCode(), 7);
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
+        LivySparkInterpreter.class.getName() + this.hashCode());
   }
 
   @Override

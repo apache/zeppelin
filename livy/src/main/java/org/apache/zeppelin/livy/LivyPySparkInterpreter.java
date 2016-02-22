@@ -83,7 +83,7 @@ public class LivyPySparkInterpreter extends Interpreter {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
       }
 
-      return livyHelper.interpretInput(line, interpreterContext, userSessionMap);
+      return livyHelper.interpret(line, interpreterContext, userSessionMap);
     } catch (Exception e) {
       LOGGER.error("Exception in LivyPySparkInterpreter while interpret ", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
@@ -107,8 +107,8 @@ public class LivyPySparkInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetParallelScheduler(
-        LivySparkInterpreter.class.getName() + this.hashCode(), 7);
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
+        LivyPySparkInterpreter.class.getName() + this.hashCode());
   }
 
   @Override

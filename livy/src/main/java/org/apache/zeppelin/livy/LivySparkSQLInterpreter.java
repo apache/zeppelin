@@ -87,7 +87,7 @@ public class LivySparkSQLInterpreter extends Interpreter {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
       }
 
-      InterpreterResult res = livyHelper.interpretInput("sqlContext.sql(\"" + line + "\").show("
+      InterpreterResult res = livyHelper.interpret("sqlContext.sql(\"" + line + "\").show("
               + property.get("livy.spark.maxResult") + ")",
           interpreterContext, userSessionMap);
 
@@ -147,8 +147,8 @@ public class LivySparkSQLInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetParallelScheduler(
-        LivySparkInterpreter.class.getName() + this.hashCode(), 7);
+    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
+        LivySparkInterpreter.class.getName() + this.hashCode());
   }
 
   @Override
