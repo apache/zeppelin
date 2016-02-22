@@ -60,7 +60,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
   }
 
   @Test
-  public void testClearOutputButton() throws InterruptedException {
+  public void testClearOutputButton() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -87,10 +87,8 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
-    } catch (ElementNotVisibleException e) {
-        LOG.error("Exception in ParagraphActionsIT while testClearOutputButton ", e);
-        File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-        throw e;
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testClearOutputButton ",e);
     }
 
   }
