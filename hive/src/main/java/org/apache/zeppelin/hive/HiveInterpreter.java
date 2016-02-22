@@ -169,6 +169,9 @@ public class HiveInterpreter extends Interpreter {
 
   public Connection getConnection(String propertyKey) throws ClassNotFoundException, SQLException {
     Connection connection = null;
+    if (propertyKey == null || propertiesMap.get(propertyKey) == null) {
+      return null;
+    }
     if (propertyKeyUnusedConnectionListMap.containsKey(propertyKey)) {
       ArrayList<Connection> connectionList = propertyKeyUnusedConnectionListMap.get(propertyKey);
       if (0 != connectionList.size()) {
@@ -203,6 +206,10 @@ public class HiveInterpreter extends Interpreter {
     } else {
       connection = getConnection(propertyKey);
     }
+    
+    if (connection == null) {
+      return null;
+    }
 
     Statement statement = connection.createStatement();
     if (isStatementClosed(statement)) {
@@ -231,6 +238,10 @@ public class HiveInterpreter extends Interpreter {
     try {
 
       Statement statement = getStatement(propertyKey, paragraphId);
+
+      if (statement == null) {
+        return new InterpreterResult(Code.ERROR, "Prefix not found.");
+      }
 
       statement.setMaxRows(getMaxResult());
 
@@ -315,10 +326,8 @@ public class HiveInterpreter extends Interpreter {
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     String propertyKey = getPropertyKey(cmd);
 
-    if (null != propertyKey) {
+    if (null != propertyKey && !propertyKey.equals(DEFAULT_KEY)) {
       cmd = cmd.substring(propertyKey.length() + 2);
-    } else {
-      propertyKey = DEFAULT_KEY;
     }
 
     cmd = cmd.trim();
@@ -334,17 +343,19 @@ public class HiveInterpreter extends Interpreter {
   }
 
   public String getPropertyKey(String cmd) {
-    int firstLineIndex = cmd.indexOf("\n");
-    if (-1 == firstLineIndex) {
-      firstLineIndex = cmd.length();
+    boolean firstLineIndex = cmd.startsWith("(");
+
+    if (firstLineIndex) {
+      int configStartIndex = cmd.indexOf("(");
+      int configLastIndex = cmd.indexOf(")");
+      if (configStartIndex != -1 && configLastIndex != -1) {
+        return cmd.substring(configStartIndex + 1, configLastIndex);
+      } else {
+        return null;
+      }
+    } else {
+      return DEFAULT_KEY;
     }
-    int configStartIndex = cmd.indexOf("(");
-    int configLastIndex = cmd.indexOf(")");
-    if (configStartIndex != -1 && configLastIndex != -1
-        && configLastIndex < firstLineIndex && configLastIndex < firstLineIndex) {
-      return cmd.substring(configStartIndex + 1, configLastIndex);
-    }
-    return null;
   }
 
   @Override
