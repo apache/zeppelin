@@ -676,7 +676,7 @@ public class RemoteInterpreterTest {
   public void should_push_local_angular_repo_to_remote() throws Exception {
     //Given
     final Client client = Mockito.mock(Client.class);
-    final RemoteInterpreter intr = new RemoteInterpreter(new Properties(),
+    final RemoteInterpreter intr = new RemoteInterpreter(new Properties(), "noteId",
             MockInterpreterA.class.getName(), "runner", "path","localRepo", env, 10 * 1000, null);
     final AngularObjectRegistry registry = new AngularObjectRegistry("spark", null);
     registry.add("name", "DuyHai DOAN", "nodeId", "paragraphId");

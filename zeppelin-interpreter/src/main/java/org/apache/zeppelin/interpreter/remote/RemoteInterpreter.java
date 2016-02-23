@@ -130,10 +130,11 @@ public class RemoteInterpreter extends Interpreter {
 
     RemoteInterpreterProcess interpreterProcess = getInterpreterProcess();
 
-    interpreterProcess.reference(getInterpreterGroup());
+    final InterpreterGroup interpreterGroup = getInterpreterGroup();
+    interpreterProcess.reference(interpreterGroup);
     interpreterProcess.setMaxPoolSize(
         Math.max(this.maxPoolSize, interpreterProcess.getMaxPoolSize()));
-    String groupId = getInterpreterGroup().getId();
+    String groupId = interpreterGroup.getId();
 
     synchronized (interpreterProcess) {
       Client client = null;
@@ -143,22 +144,24 @@ public class RemoteInterpreter extends Interpreter {
         throw new InterpreterException(e1);
       }
 
-        boolean broken = false;
-        try {
-          logger.info("Create remote interpreter {}", getClassName());
-          property.put("zeppelin.interpreter.localRepo", localRepoPath);
-          client.createInterpreter(groupId, noteId,
-            getClassName(), (Map) property);
+      boolean broken = false;
+      try {
+        logger.info("Create remote interpreter {}", getClassName());
+        property.put("zeppelin.interpreter.localRepo", localRepoPath);
+        client.createInterpreter(groupId, noteId,
+          getClassName(), (Map) property);
 
-          // Push angular object loaded from JSON file to remote interpreter
+        // Push angular object loaded from JSON file to remote interpreter
+        if (!interpreterGroup.isAngularRegistryPushed()) {
           pushAngularObjectRegistryToRemote(client);
-
-        } catch (TException e) {
-          broken = true;
-          throw new InterpreterException(e);
-        } finally {
-          interpreterProcess.releaseClient(client, broken);
+          interpreterGroup.setAngularRegistryPushed(true);
         }
+
+      } catch (TException e) {
+        broken = true;
+        throw new InterpreterException(e);
+      } finally {
+        interpreterProcess.releaseClient(client, broken);
       }
     }
     initialized = true;

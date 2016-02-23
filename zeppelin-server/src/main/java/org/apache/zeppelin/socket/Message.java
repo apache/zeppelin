@@ -103,6 +103,8 @@ public class Message {
     
     ANGULAR_OBJECT_UPDATED,  // [c-s] angular object value updated,
 
+    ANGULAR_OBJECT_CLIENT_BIND,  // [c-s] angular object updated from AngularJS z object
+
     LIST_CONFIGURATIONS, // [c-s] ask all key/value pairs of configurations
     CONFIGURATIONS_INFO, // [s-c] all key/value pairs of configurations
                   // @param settings serialized Map<String, String> object
@@ -130,5 +132,18 @@ public class Message {
 
   public Object get(String k) {
     return data.get(k);
+  }
+
+  public <T> T getType(String key) {
+    return (T) data.get(key);
+  }
+
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("Message{");
+    sb.append("data=").append(data);
+    sb.append(", op=").append(op);
+    sb.append('}');
+    return sb.toString();
   }
 }
