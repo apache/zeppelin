@@ -104,7 +104,7 @@ minor version can be adjusted by `-Dhadoop.version=x.x.x`
 ##### -Pyarn (optional)
 
 enable YARN support for local mode
-
+> YARN for local mode is not supported for Spark v1.5.0 or higher. Set SPARK_HOME instead.
 
 ##### -Ppyspark (optional)
 

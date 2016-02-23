@@ -22,9 +22,9 @@ limitations under the License.
 
 
 ## Zeppelin Installation
-Welcome to your first trial to explore Zeppelin ! 
+Welcome to your first trial to explore Zeppelin!
 
-In this documentation, we will explain how you can install Zeppelin from **Binary Package** or build from **Source** by yourself. Plus, you can see all of Zeppelin's configurations in the **Zeppelin Configuration** section below.
+In this documentation, we will explain how you can install Zeppelin from **Binary Package** or build from **Source** by yourself. Plus, you can see all of Zeppelin's configurations in the [Zeppelin Configuration](install.html#zeppelin-configuration) section below.
 
 ### Install with Binary Package
 
@@ -32,9 +32,17 @@ If you want to install Zeppelin with latest binary package, please visit [this p
 
 ### Build from Zeppelin Source
 
-You can also build Zeppelin from the source. Please check instructions in `README.md` in [Zeppelin github](https://github.com/apache/incubator-zeppelin/blob/master/README.md). 
+You can also build Zeppelin from the source.
 
+#### Prerequisites for build
+ * Java 1.7
+ * Git
+ * Maven(3.1.x or higher)
+ * Node.js Package Manager
 
+If you don't have requirements prepared, please check instructions in [README.md](https://github.com/apache/incubator-zeppelin/blob/master/README.md) for the details.
+
+<a name="zeppelin-configuration"> </a>
 ## Zeppelin Configuration
 
 You can configure Zeppelin with both **environment variables** in `conf/zeppelin-env.sh` and **java properties** in `conf/zeppelin-site.xml`. If both are defined, then the **environment variables** will be used priorly.
