@@ -46,7 +46,7 @@ public class SparkRInterpreterTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkRInterpreterTest.class);
 
   private static final String MOCK_RSCALA_RESULT = "<body><p>         Mock R Result   </p></body>";
-  private static final String MOCK_R_INTERPRETER_RESULT = "<pre style='background-color: white; border: 0px;'>         Mock R Result   </pre>";
+  private static final String MOCK_R_INTERPRETER_RESULT = "Mock R Result";
 
   private static InterpreterContext context;
   private static InterpreterGroup intpGroup;
@@ -64,7 +64,7 @@ public class SparkRInterpreterTest {
     InterpreterResult ret = sparkRInterpreter.interpret(MOCK_RSCALA_RESULT, context);
     assertEquals(InterpreterResult.Code.SUCCESS, ret.code());
     assertEquals(MOCK_R_INTERPRETER_RESULT, ret.message());
-    assertEquals(InterpreterResult.Type.HTML, ret.type());
+    assertEquals(InterpreterResult.Type.TEXT, ret.type());
   }
 
   private static void initInterpreters() {

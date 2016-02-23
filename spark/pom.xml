@@ -35,6 +35,7 @@
   <url>http://zeppelin.incubator.apache.org</url>
 
   <properties>
+    <jsoup.version>1.8.2</jsoup.version>
     <mockito.version>1.10.19</mockito.version>
     <powermock.version>1.6.4</powermock.version>
     <spark.version>1.4.1</spark.version>
@@ -235,7 +236,7 @@
     <dependency>
       <groupId>org.jsoup</groupId>
       <artifactId>jsoup</artifactId>
-      <version>1.8.2</version>
+      <version>${jsoup.version}</version>
     </dependency>
 
     <dependency>

@@ -83,6 +83,9 @@ object ZeppelinR {
          |z.get <- function(name) {
          |  SparkR:::callJMethod(.zeppelinContext, "get", name)
          |}
+         |z.input <- function(name, value) {
+         |  SparkR:::callJMethod(.zeppelinContext, "input", name, value)
+         |}
          |""".stripMargin
     )
 
