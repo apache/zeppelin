@@ -17,9 +17,10 @@
 
 package org.apache.zeppelin.spark;
 
+import static org.apache.zeppelin.spark.ZeppelinRDisplay.render;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
@@ -106,12 +107,14 @@ public class SparkRInterpreter extends Interpreter {
       zeppelinR().eval(".zres <- knit2html(text=.zcmd)");
       String html = zeppelinR().getS0(".zres");
 
-      html = format(html, imageWidth);
+      RDisplay rDisplay = render(html, imageWidth);
 
       return new InterpreterResult(
-              InterpreterResult.Code.SUCCESS,
-              InterpreterResult.Type.HTML,
-              html);
+              rDisplay.code(),
+              rDisplay.type(),
+              rDisplay.content()
+      );
+
 
     } catch (Exception e) {
       logger.error("Exception while connecting to R", e);
@@ -122,43 +125,6 @@ public class SparkRInterpreter extends Interpreter {
         // Do nothing...
       }
     }
-  }
-
-  /*
-   * Ensure we return proper HTML to be displayed in the Zeppelin UI.
-   */
-  private String format(String html, String imageWidth) {
-
-    Document document = Jsoup.parse(html);
-
-    Element body = document.getElementsByTag("body").get(0);
-
-    Elements images = body.getElementsByTag("img");
-    Elements scripts = body.getElementsByTag("script");
-
-    if ((images.size() == 0)
-       && (scripts.size() == 0)) {
-
-      // We are here with a pure text output, let's keep format intact...
-
-      return html.substring(
-              html.indexOf("<body>") + 6,
-              html.indexOf("</body>")
-      )
-              .replace("<p>", "<pre style='background-color: white; border: 0px;'>")
-              .replace("</p>", "</pre>");
-
-    }
-
-    // OK, we have more than text...
-
-    for (Element image : images) {
-      image.attr("width", imageWidth);
-    }
-
-    return body.html()
-            .replaceAll("src=\"//", "src=\"http://")
-            .replaceAll("href=\"//", "href=\"http://");
   }
 
   @Override
