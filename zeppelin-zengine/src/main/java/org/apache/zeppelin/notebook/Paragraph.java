@@ -18,7 +18,7 @@
 package org.apache.zeppelin.notebook;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.AuthenticationInfo;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
@@ -99,6 +99,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public Note getNote() {
     return note;
+  }
+
+  public boolean isEnabled() {
+    Boolean enabled = (Boolean) config.get("enabled");
+    return enabled == null || enabled.booleanValue();
   }
 
   public String getRequiredReplName() {

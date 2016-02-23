@@ -29,7 +29,7 @@ import org.apache.zeppelin.display.*;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterAngular;
 import org.apache.zeppelin.resource.LocalResourcePool;
-import org.apache.zeppelin.resource.ResourcePool;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

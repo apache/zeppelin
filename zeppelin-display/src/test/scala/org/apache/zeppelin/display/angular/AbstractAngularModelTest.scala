@@ -16,8 +16,9 @@
  */
 package org.apache.zeppelin.display.angular
 
-import org.apache.zeppelin.display.{AuthenticationInfo, AngularObjectRegistry, GUI}
+import org.apache.zeppelin.display.{AngularObjectRegistry, GUI}
 import org.apache.zeppelin.interpreter._
+import org.apache.zeppelin.user.AuthenticationInfo
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach, FlatSpec, Matchers}
 

@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.AuthenticationInfo;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.resource.ResourcePool;
 
