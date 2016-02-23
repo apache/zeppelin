@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
@@ -76,22 +77,23 @@ public class SparkInterpreterTest {
 
     InterpreterGroup intpGroup = new InterpreterGroup();
     context = new InterpreterContext("note", "id", "title", "text",
-            new HashMap<String, Object>(),
-            new GUI(),
-            new AngularObjectRegistry(intpGroup.getId(), null),
-            null,
-            new LinkedList<InterpreterContextRunner>(),
-            new InterpreterOutput(new InterpreterOutputListener() {
-              @Override
-              public void onAppend(InterpreterOutput out, byte[] line) {
+        new AuthenticationInfo(),
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        null,
+        new LinkedList<InterpreterContextRunner>(),
+        new InterpreterOutput(new InterpreterOutputListener() {
+          @Override
+          public void onAppend(InterpreterOutput out, byte[] line) {
 
-              }
+          }
 
-              @Override
-              public void onUpdate(InterpreterOutput out, byte[] output) {
+          @Override
+          public void onUpdate(InterpreterOutput out, byte[] output) {
 
-              }
-            }));
+          }
+        }));
   }
 
   @After

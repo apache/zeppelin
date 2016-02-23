@@ -243,3 +243,39 @@ After successful start, visit [http://localhost:8080](http://localhost:8080) wit
 ```
 bin/zeppelin-daemon.sh stop
 ```
+
+#### Start Zeppelin with a service manager such as upstart
+
+Zeppelin can auto start as a service with an init script, such as services managed by upstart.
+
+The following is an example upstart script to be saved as `/etc/init/zeppelin.conf` 
+This example has been tested with Ubuntu Linux.
+This also allows the service to be managed with commands such as 
+
+`sudo service zeppelin start`  
+`sudo service zeppelin stop`  
+`sudo service zeppelin restart`
+
+Other service managers could use a similar approach with the `upstart` argument passed to the zeppelin-daemon.sh script:  `bin/zeppelin-daemon.sh upstart`
+
+##### zeppelin.conf
+
+```
+description "zeppelin"
+
+start on (local-filesystems and net-device-up IFACE!=lo)
+stop on shutdown
+
+# Respawn the process on unexpected termination
+respawn
+
+# respawn the job up to 7 times within a 5 second period.
+# If the job exceeds these values, it will be stopped and marked as failed.
+respawn limit 7 5
+
+# zeppelin was installed in /usr/share/zeppelin in this example
+chdir /usr/share/zeppelin
+exec bin/zeppelin-daemon.sh upstart
+```
+
+

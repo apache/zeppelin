@@ -75,7 +75,13 @@ public class VFSNotebookRepo implements NotebookRepo {
     } else {
       this.filesystemRoot = filesystemRoot;
     }
+
     fsManager = VFS.getManager();
+    FileObject file = fsManager.resolveFile(filesystemRoot.getPath());
+    if (!file.exists()) {
+      logger.info("Notebook dir doesn't exist, create.");
+      file.createFolder();
+    }
   }
 
   private String getPath(String path) {

@@ -330,7 +330,12 @@ public class SparkInterpreter extends Interpreter {
     // Distribute two libraries(pyspark.zip and py4j-*.zip) to workers
     // when spark version is less than or equal to 1.4.1
     if (pythonLibUris.size() == 2) {
-      conf.set("spark.yarn.dist.files", Joiner.on(",").join(pythonLibUris));
+      try {
+        String confValue = conf.get("spark.yarn.dist.files");
+        conf.set("spark.yarn.dist.files", confValue + "," + Joiner.on(",").join(pythonLibUris));
+      } catch (NoSuchElementException e) {
+        conf.set("spark.yarn.dist.files", Joiner.on(",").join(pythonLibUris));
+      }
       if (!useSparkSubmit()) {
         conf.set("spark.files", conf.get("spark.yarn.dist.files"));
       }
