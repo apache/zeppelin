@@ -171,9 +171,13 @@ public class LivyHelper {
                                         final Map<String, Integer> userSessionMap)
       throws Exception {
     stringLines = stringLines
+        //for "\n" present in string
         .replaceAll("\\\\n", "\\\\\\\\n")
+        //for new line present in string
         .replaceAll("\\n", "\\\\n")
+        // for \" present in string
         .replaceAll("\\\\\"", "\\\\\\\\\"")
+        // for " present in string
         .replaceAll("\"", "\\\\\"");
 
     if (stringLines.trim().equals("")) {

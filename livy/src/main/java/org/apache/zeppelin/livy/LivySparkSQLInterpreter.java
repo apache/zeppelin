@@ -87,8 +87,11 @@ public class LivySparkSQLInterpreter extends Interpreter {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
       }
 
-      InterpreterResult res = livyHelper.interpret("sqlContext.sql(\"" + line + "\").show("
-              + property.get("livy.spark.maxResult") + ")",
+      InterpreterResult res = livyHelper.interpret("sqlContext.sql(\"" +
+              line.replaceAll("\"", "\\\\\"")
+                  .replaceAll("\\n", " ")
+              + "\").show(" +
+              property.get("livy.spark.maxResult") + ")",
           interpreterContext, userSessionMap);
 
       if (res.code() == InterpreterResult.Code.SUCCESS) {
