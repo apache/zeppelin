@@ -21,6 +21,7 @@ import java.util
 
 import org.apache.zeppelin.display.{AngularObject, AngularObjectRegistry, GUI}
 import org.apache.zeppelin.interpreter._
+import org.apache.zeppelin.user.AuthenticationInfo
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterEach, FlatSpec, Matchers}
 
@@ -33,8 +34,8 @@ trait AbstractAngularElemTest
   override def beforeEach() {
     val intpGroup = new InterpreterGroup()
     val context = new InterpreterContext("note", "paragraph", "title", "text",
-      new util.HashMap[String, Object](), new GUI(), new AngularObjectRegistry(
-        intpGroup.getId(), null),
+      new AuthenticationInfo(), new util.HashMap[String, Object](), new GUI(),
+      new AngularObjectRegistry(intpGroup.getId(), null),
       null,
       new util.LinkedList[InterpreterContextRunner](),
       new InterpreterOutput(new InterpreterOutputListener() {

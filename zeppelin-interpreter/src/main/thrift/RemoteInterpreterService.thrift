@@ -24,9 +24,10 @@ struct RemoteInterpreterContext {
   2: string paragraphId,
   3: string paragraphTitle,
   4: string paragraphText,
-  5: string config,   // json serialized config
-  6: string gui,      // json serialized gui
-  7: string runners   // json serialized runner
+  5: string authenticationInfo,
+  6: string config,   // json serialized config
+  7: string gui,      // json serialized gui
+  8: string runners   // json serialized runner
 }
 
 struct RemoteInterpreterResult {
