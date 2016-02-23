@@ -25,11 +25,9 @@ import java.util.LinkedList;
 import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.junit.After;
 import org.junit.Before;
@@ -58,7 +56,8 @@ public class DepInterpreterTest {
     intpGroup.add(dep);
     dep.setInterpreterGroup(intpGroup);
 
-    context = new InterpreterContext("note", "id", "title", "text", new HashMap<String, Object>(), new GUI(),
+    context = new InterpreterContext("note", "id", "title", "text", new AuthenticationInfo(),
+        new HashMap<String, Object>(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
         null,
         new LinkedList<InterpreterContextRunner>(), null);
