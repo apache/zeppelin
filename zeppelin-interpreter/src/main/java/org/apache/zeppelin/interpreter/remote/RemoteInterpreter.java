@@ -20,6 +20,8 @@ package org.apache.zeppelin.interpreter.remote;
 import java.util.*;
 
 import org.apache.thrift.TException;
+import org.apache.zeppelin.display.AngularObject;
+import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
@@ -141,17 +143,22 @@ public class RemoteInterpreter extends Interpreter {
         throw new InterpreterException(e1);
       }
 
-      boolean broken = false;
-      try {
-        logger.info("Create remote interpreter {}", getClassName());
-        property.put("zeppelin.interpreter.localRepo", localRepoPath);
-        client.createInterpreter(groupId, noteId,
+        boolean broken = false;
+        try {
+          logger.info("Create remote interpreter {}", getClassName());
+          property.put("zeppelin.interpreter.localRepo", localRepoPath);
+          client.createInterpreter(groupId, noteId,
             getClassName(), (Map) property);
-      } catch (TException e) {
-        broken = true;
-        throw new InterpreterException(e);
-      } finally {
-        interpreterProcess.releaseClient(client, broken);
+
+          // Push angular object loaded from JSON file to remote interpreter
+          pushAngularObjectRegistryToRemote(client);
+
+        } catch (TException e) {
+          broken = true;
+          throw new InterpreterException(e);
+        } finally {
+          interpreterProcess.releaseClient(client, broken);
+        }
       }
     }
     initialized = true;
@@ -386,5 +393,31 @@ public class RemoteInterpreter extends Interpreter {
         InterpreterResult.Code.valueOf(result.getCode()),
         Type.valueOf(result.getType()),
         result.getMsg());
+  }
+
+  /**
+   * Push local angular object registry to
+   * remote interpreter. This method should be
+   * call ONLY inside the init() method
+   * @param client
+   * @throws TException
+   */
+  void pushAngularObjectRegistryToRemote(Client client) throws TException {
+    final AngularObjectRegistry angularObjectRegistry = this.getInterpreterGroup()
+            .getAngularObjectRegistry();
+
+    if (angularObjectRegistry != null && angularObjectRegistry.getRegistry() != null) {
+      final Map<String, Map<String, AngularObject>> registry = angularObjectRegistry
+              .getRegistry();
+
+      logger.info("Push local angular object registry from ZeppelinServer to" +
+              " remote interpreter group {}", this.getInterpreterGroup().getId());
+
+      final java.lang.reflect.Type registryType = new TypeToken<Map<String,
+              Map<String, AngularObject>>>() {}.getType();
+
+      Gson gson = new Gson();
+      client.angularRegistryPush(gson.toJson(registry, registryType));
+    }
   }
 }
