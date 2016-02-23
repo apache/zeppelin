@@ -30,7 +30,7 @@ Interpreters in the same InterpreterGroup can reference each other. For example,
 InterpreterSetting is configuration of a given InterpreterGroup and a unit of start/stop interpreter.
 All Interpreters in the same InterpreterSetting are launched in a single, separate JVM process. The Interpreter communicates with Zeppelin engine via thrift.
 
-In 'per note session' mode, new Interpreter instance will be created per notebook. But it still runs on the same JVM while they're in the same InterpreterSettings.
+In 'Separate Interpreter for each note' mode, new Interpreter instance will be created per notebook. But it still runs on the same JVM while they're in the same InterpreterSettings.
 
 
 ### Make your own Interpreter
