@@ -491,7 +491,7 @@
         <dependency>
           <groupId>com.datastax.spark</groupId>
           <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
-          <version>1.5.0-RC1</version>
+          <version>1.5.0</version>
           <exclusions>
             <exclusion>
               <groupId>org.joda</groupId>
