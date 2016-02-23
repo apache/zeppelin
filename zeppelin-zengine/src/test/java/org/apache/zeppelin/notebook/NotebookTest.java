@@ -197,20 +197,38 @@ public class NotebookTest implements JobListenerFactory{
   public void testRunAll() throws IOException {
     Note note = notebook.createNote();
     note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+
+    // p1
     Paragraph p1 = note.addParagraph();
-    Map config = p1.getConfig();
-    config.put("enabled", true);
-    p1.setConfig(config);
+    Map config1 = p1.getConfig();
+    config1.put("enabled", true);
+    p1.setConfig(config1);
     p1.setText("p1");
+
+    // p2
     Paragraph p2 = note.addParagraph();
-    Map config1 = p2.getConfig();
-    p2.setConfig(config1);
+    Map config2 = p2.getConfig();
+    config2.put("enabled", false);
+    p2.setConfig(config2);
     p2.setText("p2");
-    assertEquals(null, p2.getResult());
+
+    // p3
+    Paragraph p3 = note.addParagraph();
+    p3.setText("p3");
+
+    // when
     note.runAll();
 
-    while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
-    assertEquals("repl1: p2", p2.getResult().message());
+    // wait for finish
+    while(p3.isTerminated()==false) {
+      Thread.yield();
+    }
+
+    assertEquals("repl1: p1", p1.getResult().message());
+    assertNull(p2.getResult());
+    assertEquals("repl1: p3", p3.getResult().message());
+
+    notebook.removeNote(note.getId());
   }
 
   @Test

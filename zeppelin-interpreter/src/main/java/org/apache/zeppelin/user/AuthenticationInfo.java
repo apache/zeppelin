@@ -15,23 +15,41 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin.interpreter;
 
-import static org.junit.Assert.*;
+package org.apache.zeppelin.user;
 
-import org.junit.Test;
+/***
+ *
+ */
+public class AuthenticationInfo {
+  String user;
+  String ticket;
 
-public class InterpreterContextTest {
+  public AuthenticationInfo() {}
 
-  @Test
-  public void testThreadLocal() {
-    assertNull(InterpreterContext.get());
-
-    InterpreterContext.set(new InterpreterContext(null, null, null, null, null, null, null, null, null, null, null));
-    assertNotNull(InterpreterContext.get());
-
-    InterpreterContext.remove();
-    assertNull(InterpreterContext.get());
+  /***
+   *
+   * @param user
+   * @param ticket
+   */
+  public AuthenticationInfo(String user, String ticket) {
+    this.user = user;
+    this.ticket = ticket;
   }
 
+  public String getUser() {
+    return user;
+  }
+
+  public void setUser(String user) {
+    this.user = user;
+  }
+
+  public String getTicket() {
+    return ticket;
+  }
+
+  public void setTicket(String ticket) {
+    this.ticket = ticket;
+  }
 }

@@ -17,6 +17,7 @@
 package org.apache.zeppelin.resource;
 
 import com.google.gson.Gson;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
@@ -94,6 +95,7 @@ public class DistributedResourcePoolTest {
         "id",
         "title",
         "text",
+        new AuthenticationInfo(),
         new HashMap<String, Object>(),
         new GUI(),
         null,

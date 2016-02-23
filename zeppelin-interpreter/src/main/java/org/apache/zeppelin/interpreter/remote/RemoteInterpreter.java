@@ -374,6 +374,7 @@ public class RemoteInterpreter extends Interpreter {
         ic.getParagraphId(),
         ic.getParagraphTitle(),
         ic.getParagraphText(),
+        gson.toJson(ic.getAuthenticationInfo()),
         gson.toJson(ic.getConfig()),
         gson.toJson(ic.getGui()),
         gson.toJson(ic.getRunners()));

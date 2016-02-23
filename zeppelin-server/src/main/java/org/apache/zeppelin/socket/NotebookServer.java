@@ -16,19 +16,14 @@
  */
 package org.apache.zeppelin.socket;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import javax.servlet.http.HttpServletRequest;
-
+import com.google.common.base.Strings;
+import com.google.gson.Gson;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -46,8 +41,12 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Strings;
-import com.google.gson.Gson;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Zeppelin websocket service.
@@ -694,6 +693,15 @@ public class NotebookServer extends WebSocketServlet implements
     String text = (String) fromMessage.get("paragraph");
     p.setText(text);
     p.setTitle((String) fromMessage.get("title"));
+    if (!fromMessage.principal.equals("anonymous")) {
+      AuthenticationInfo authenticationInfo = new AuthenticationInfo(fromMessage.principal,
+          fromMessage.ticket);
+      p.setAuthenticationInfo(authenticationInfo);
+
+    } else {
+      p.setAuthenticationInfo(new AuthenticationInfo());
+    }
+
     Map<String, Object> params = (Map<String, Object>) fromMessage
        .get("params");
     p.settings.setParams(params);
@@ -729,7 +737,11 @@ public class NotebookServer extends WebSocketServlet implements
         new ZeppelinConfiguration.ConfigurationKeyPredicate() {
           @Override
           public boolean apply(String key) {
-            return !key.contains("password");
+            return !key.contains("password") &&
+                !key.equals(ZeppelinConfiguration
+                    .ConfVars
+                    .ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING
+                    .getVarName());
           }
         });
 

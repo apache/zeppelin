@@ -61,7 +61,7 @@ public class InterpreterFactoryTest {
     conf = new ZeppelinConfiguration();
     depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
     factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, depResolver);
-    context = new InterpreterContext("note", "id", "title", "text", null, null, null, null, null, null);
+    context = new InterpreterContext("note", "id", "title", "text", null, null, null, null, null, null, null);
 
   }
 

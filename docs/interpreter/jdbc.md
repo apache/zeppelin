@@ -16,6 +16,8 @@ This interpreter lets you create a JDBC connection to any data source, by now it
 * MariaDB
 * Redshift
 * Hive
+* Apache Drill
+  * Details on using [Drill JDBC Driver](https://drill.apache.org/docs/using-the-jdbc-driver)
 
 If someone else used another database please report how it works to improve functionality.
 
@@ -54,14 +56,15 @@ It is not necessary to add driver jar to the classpath for PostgreSQL as it is i
 
 #### Simple connection
 
-Before creating the interpreter it is necessary to add to the Zeppelin classpath the path of the JDBC you want to use, to do it you must edit the file `zeppelin-daemon.sh` as shown:
+Prior to creating the interpreter it is necessary to add maven coordinate or path of the JDBC driver to the Zeppelin classpath. To do this you must edit dependencies artifact(ex. `mysql:mysql-connector-java:5.1.38`) in interpreter menu as shown:
 
-```
-# Add jdbc connector jar
-ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/jdbc/jars/mysql-connector-java-5.1.6.jar"
-```
+<div class="row">
+  <div class="col-md-11">
+    <img src="../assets/themes/zeppelin/img/docs-img/jdbc-simple-connection-setting.png" />
+  </div>
+</div>
 
-For create the interpreter you need to specify connection parameters as shown in the table.
+To create the interpreter you need to specify connection parameters as shown in the table.
 
 <table class="table-configuration">
   <tr>
@@ -92,14 +95,15 @@ For create the interpreter you need to specify connection parameters as shown in
 
 #### Multiple connections
 
-This JDBC interpreter also allows connections to multiple data sources. For every connection is necessary a prefix for reference in the paragraph this way `%jdbc(prefix)`. Before creating the interpreter it is necessary to add to the Zeppelin classpath all paths to access to each driver's jar file you want to use, to do it you must edit the file `zeppelin-daemon.sh` as following:
+JDBC interpreter also allows connections to multiple data sources. It is necessary to set a prefix for each connection to reference it in the paragraph in the form of `%jdbc(prefix)`. Before you create the interpreter it is necessary to add each driver's maven coordinates or JDBC driver's jar file path to the Zeppelin classpath. To do this you must edit the dependencies of JDBC interpreter in interpreter menu as following:
 
-```
-# Add jdbc connector jar
-ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/jdbc/jars/RedshiftJDBC41-1.1.10.1010.jar"
-ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/jdbc/jars/mysql-connector-java-5.1.6.jar"
-```
-You can add all the jars you need to make multiple connections into the same interpreter. To create the interpreter you must specify the parameters, for example  we will create two connections to PostgreSQL and Redshift, the respective prefixes are `default` and `redshift`:
+<div class="row">
+  <div class="col-md-11">
+    <img src="../assets/themes/zeppelin/img/docs-img/jdbc-multi-connection-setting.png" />
+  </div>
+</div>
+
+You can add all the jars you need to make multiple connections into the same JDBC interpreter. To create the interpreter you must specify the parameters. For example we will create two connections to MySQL and Redshift, the respective prefixes are `default` and `redshift`:
 
 <table class="table-configuration">
   <tr>
@@ -112,7 +116,7 @@ You can add all the jars you need to make multiple connections into the same int
   </tr>
   <tr>
     <td>default.driver</td>
-    <td>org.postgresql.Driver</td>
+    <td>com.mysql.jdbc.Driver</td>
   </tr>
   <tr>
     <td>default.password</td>
@@ -120,11 +124,11 @@ You can add all the jars you need to make multiple connections into the same int
   </tr>
   <tr>
     <td>default.url</td>
-    <td>jdbc:postgresql://localhost:5432/</td>
+    <td>jdbc:mysql://localhost:3306/</td>
   </tr>
   <tr>
     <td>default.user</td>
-    <td>gpadmin</td>
+    <td>mysql-user</td>
   </tr>
   <tr>
     <td>redshift.driver</td>
