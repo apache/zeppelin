@@ -108,7 +108,7 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
         for (Interpreter intp : intpGroup) {
           p.putAll(intp.getProperty());
         }
-        // it's okay to break here while vevery List<Interpreters> will have the same property set
+        // it's okay to break here while every List<Interpreters> will have the same property set
         break;
       }
     }

@@ -35,7 +35,7 @@ public class InterpreterSetting {
   private String description;
   private Properties properties;
 
-  // use 'interpreterGroup' as a field name to keep backward compativility of
+  // use 'interpreterGroup' as a field name to keep backward compatibility of
   // conf/interpreter.json file format
   private List<InterpreterInfo> interpreterGroup;
   private transient InterpreterGroup interpreterGroupRef;
