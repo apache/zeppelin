@@ -58,7 +58,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     driver.quit();
   }
   @Test
-  public void testCreateNewButton() throws InterruptedException {
+  public void testCreateNewButton() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -125,19 +125,16 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
       ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
-
-    } catch (ElementNotVisibleException e) {
-      LOG.error("Exception in ParagraphActionsIT while testCreateNewButton ", e);
-      File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-      throw e;
-
+      
+    } catch (Exception e) {
+       handleException("Exception in ParagraphActionsIT while testCreateNewButton ", e);
     }
 
 
   }
 
   @Test
-  public void testRemoveButton() throws InterruptedException {
+  public void testRemoveButton() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -165,9 +162,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
-      LOG.error("Exception in ParagraphActionsIT while testRemoveButton ", e);
-      File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-      throw e;
+      handleException("Exception in ParagraphActionsIT while testMoveUpAndDown ", e);
     }
   }
 
