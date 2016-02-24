@@ -278,24 +278,28 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       createNewNote();
 
       waitForParagraph(1, "READY");
+      String xpathToLineNumberField=getParagraphXPath(1) + "//div[contains(@class, 'ace_gutter-layer')]";
+      String xpathToShowLineNumberButton=getParagraphXPath(1) + "//ul/li/a[@ng-click='showLineNumbers()']";
+      String xpathToHideLineNumberButton=getParagraphXPath(1) + "//ul/li/a[@ng-click='hideLineNumbers()']";
+
       collector.checkThat("Before \"Show line number\" the Line Number is Enabled ",
-          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'ace_gutter-layer')]")).isDisplayed(),
+          driver.findElement(By.xpath(xpathToLineNumberField)).isDisplayed(),
           CoreMatchers.equalTo(false));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       collector.checkThat("Before \"Show line number\" The option panel in paragraph has button labeled ",
-          driver.findElement(By.xpath(getParagraphXPath(1) + "//a[contains(@ng-click, 'showLineNumbers()')]")).getText(),
+          driver.findElement(By.xpath(xpathToShowLineNumberButton)).getText(),
           CoreMatchers.equalTo("Show line numbers"));
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='showLineNumbers()']")).click();
+      driver.findElement(By.xpath(xpathToShowLineNumberButton)).click();
       collector.checkThat("After \"Show line number\" the Line Number is Enabled ",
-          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'ace_gutter-layer')]")).isDisplayed(),
+          driver.findElement(By.xpath(xpathToLineNumberField)).isDisplayed(),
           CoreMatchers.equalTo(true));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       collector.checkThat("After \"Show line number\" The option panel in paragraph has button labeled ",
-          driver.findElement(By.xpath(getParagraphXPath(1) + "//a[contains(@ng-click, 'hideLineNumbers()')]")).getText(),
+          driver.findElement(By.xpath(xpathToHideLineNumberButton)).getText(),
           CoreMatchers.equalTo("Hide line numbers"));
-      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='hideLineNumbers()']")).click();
+      driver.findElement(By.xpath(xpathToHideLineNumberButton)).click();
       collector.checkThat("After \"Hide line number\" the Line Number is Enabled",
-          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'ace_gutter-layer')]")).isDisplayed(),
+          driver.findElement(By.xpath(xpathToLineNumberField)).isDisplayed(),
           CoreMatchers.equalTo(false));
       ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
