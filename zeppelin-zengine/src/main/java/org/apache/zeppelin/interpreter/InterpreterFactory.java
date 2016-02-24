@@ -472,7 +472,7 @@ public class InterpreterFactory {
       // in ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT msec. However, if termination of the process and
       // removal from interpreter group take too long, throw an error.
       long interpreterRemovalWaitTimeout =
-          Math.max(10*1000, conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT) * 2);
+          Math.max(10 * 1000, conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT) * 2);
       while (interpreterGroup.containsKey(noteId)) {
         if (System.currentTimeMillis() - interpreterRemovalWaitStart >
             interpreterRemovalWaitTimeout) {
