@@ -488,8 +488,6 @@ public class SparkInterpreter extends Interpreter {
     intp.setContextClassLoader();
     intp.initializeSynchronous();
 
-    numReferenceOfSparkContext.incrementAndGet();
-
     synchronized (sharedInterpreterLock) {
       if (classOutputDir == null) {
         classOutputDir = settings.outputDirs().getSingleOutput().get();
@@ -614,6 +612,8 @@ public class SparkInterpreter extends Interpreter {
         }
       }
     }
+
+    numReferenceOfSparkContext.incrementAndGet();
   }
 
   private List<File> currentClassPath() {
