@@ -27,6 +27,7 @@ import static org.powermock.api.mockito.PowerMockito.*;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -87,18 +88,21 @@ public class SparkRInterpreterTest {
     sparkRInterpreter.setInterpreterGroup(intpGroup);
     sparkRInterpreter.open();
 
-    context = new InterpreterContext("note", "id", "title", "text", new HashMap<String, Object>(), new GUI(),
-            new AngularObjectRegistry(intpGroup.getId(), null),
-            null,
-            new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(new InterpreterOutputListener() {
-      @Override
-      public void onAppend(InterpreterOutput out, byte[] line) {
-      }
-      @Override
-      public void onUpdate(InterpreterOutput out, byte[] output) {
-      }
-    }));
-
-  }
+    context = new InterpreterContext("note", "id", "title", "text",
+      new AuthenticationInfo(),
+      new HashMap<String, Object>(), new GUI(),
+      new AngularObjectRegistry(intpGroup.getId(), null),
+      null,
+      new LinkedList<InterpreterContextRunner>(),
+      new InterpreterOutput(new InterpreterOutputListener() {
+        @Override
+        public void onAppend(InterpreterOutput out, byte[] line) {
+        }
+        @Override
+        public void onUpdate(InterpreterOutput out, byte[] output) {
+        }
+      })
+    );
+   }
 
 }
