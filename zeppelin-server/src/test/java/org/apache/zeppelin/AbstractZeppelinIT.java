@@ -19,6 +19,8 @@ package org.apache.zeppelin;
 
 
 import com.google.common.base.Function;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
@@ -170,6 +172,7 @@ abstract public class AbstractZeppelinIT {
   protected void handleException(String message, Exception e) throws Exception {
     LOG.error(message, e);
     File scrFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+    LOG.error("ScreenShot::\ndata:image/png;base64," + new String(Base64.encodeBase64(FileUtils.readFileToByteArray(scrFile))));
     throw e;
   }
 

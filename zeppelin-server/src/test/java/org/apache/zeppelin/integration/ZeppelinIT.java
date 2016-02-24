@@ -121,7 +121,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       // check expected text
       waitForText("myVar=1", By.xpath(
-              getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]"));
+              getParagraphXPath(3) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
 
       /*
        * Click element
@@ -162,7 +162,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       // check expected text by watcher
       waitForText("myVar=3", By.xpath(
-              getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]"));
+              getParagraphXPath(3) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
 
       /*
        * Unbind
@@ -196,7 +196,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
       sleep(100, true);
 
-      System.out.println("testCreateNotebook Test executed");
+      LOG.info("testCreateNotebook Test executed");
     } catch (Exception e) {
       handleException("Exception in ZeppelinIT while testAngularDisplay ", e);
     }

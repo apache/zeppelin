@@ -52,6 +52,8 @@ class AbstractFunctionalSuite extends FunSuite with WebBrowser with BeforeAndAft
 
   override def afterAll() = {
     "../bin/zeppelin-daemon.sh stop" !
+
+    webDriver.close()
   }
 
   def getDriver(): WebDriver = {
