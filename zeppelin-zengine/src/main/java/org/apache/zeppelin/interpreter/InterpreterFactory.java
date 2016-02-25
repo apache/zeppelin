@@ -467,15 +467,15 @@ public class InterpreterFactory {
 
     // if interpreters are already there, wait until they're being removed
     synchronized (interpreterGroup) {
-      long interpreterRemovalWaitStart = System.currentTimeMillis();
+      long interpreterRemovalWaitStart = System.nanoTime();
       // interpreter process supposed to be terminated by RemoteInterpreterProcess.dereference()
       // in ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT msec. However, if termination of the process and
       // removal from interpreter group take too long, throw an error.
+      long minTimeout = 10 * 1000 * 1000000; // 10 sec
       long interpreterRemovalWaitTimeout =
-          Math.max(10 * 1000, conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT) * 2);
+          Math.max(minTimeout, conf.getInt(ConfVars.ZEPPELIN_INTERPRETER_CONNECT_TIMEOUT) * 2);
       while (interpreterGroup.containsKey(noteId)) {
-        if (System.currentTimeMillis() - interpreterRemovalWaitStart >
-            interpreterRemovalWaitTimeout) {
+        if (System.nanoTime() - interpreterRemovalWaitStart > interpreterRemovalWaitTimeout) {
           throw new InterpreterException("Can not create interpreter");
         }
         try {
