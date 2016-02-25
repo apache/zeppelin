@@ -21,8 +21,13 @@ angular.module('zeppelinWebApp')
   $scope.paragraph = null;
   $scope.originalText = '';
   $scope.editor = null;
+
   var paragraphScope = $rootScope.$new(true, $rootScope);
+  // to keep backward compatibility
+  $scope.compiledScope = paragraphScope;
+
   var angularObjectRegistry = {};
+
 
   var editorModes = {
     'ace/mode/scala': /^%spark/,

@@ -28,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.Select;
 import org.slf4j.Logger;
@@ -127,8 +128,8 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
-    }  catch (Exception e) {
-       handleException("Exception in ParagraphActionsIT while testCreateNewButton ", e);
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testCreateNewButton ", e);
     }
 
   }
@@ -164,7 +165,6 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     } catch (Exception e) {
       handleException("Exception in ParagraphActionsIT while testMoveUpAndDown ", e);
     }
-
   }
 
   @Test
@@ -256,10 +256,46 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
           getParagraphStatus(1), CoreMatchers.equalTo("READY")
       );
 
+
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
       handleException("Exception in ParagraphActionsIT while testDisableParagraphRunButton ", e);
+    }
+
+  }
+
+  @Test
+  public void testClearOutputButton() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+
+      waitForParagraph(1, "READY");
+      String xpathToOutputField=getParagraphXPath(1) + "//div[contains(@ng-if,'getResultType()')]";
+      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
+      paragraph1Editor.sendKeys("println" + Keys.chord(Keys.SHIFT, "9") + "\""
+          + "abcd\")");
+      collector.checkThat("Before Run Output field contains ",
+          driver.findElement(By.xpath(xpathToOutputField)).getText(),
+          CoreMatchers.equalTo(""));
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@ng-click='runParagraph(getEditorValue())']")).click();
+      waitForParagraph(1, "FINISHED");
+      collector.checkThat("After Run Output field contains  ",
+          driver.findElement(By.xpath(xpathToOutputField)).getText(),
+          CoreMatchers.equalTo("abcd"));
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='clearParagraphOutput()']")).click();
+      collector.checkThat("After Clear  Output field contains ",
+          driver.findElement(By.xpath(xpathToOutputField)).getText(),
+          CoreMatchers.equalTo(""));
+      ZeppelinITUtils.sleep(1000, false);
+      deleteTestNotebook(driver);
+
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testClearOutputButton ",e);
     }
 
   }
@@ -285,12 +321,10 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
             driver.findElement(By.xpath("//div[contains(@class,'col-md-" + newWidth + "')]")).isDisplayed(),
             CoreMatchers.equalTo(true));
       }
-
-      ZeppelinITUtils.sleep(1000, false);
-      deleteTestNotebook(driver);
-
     } catch (Exception e) {
-      handleException("Exception in ParagraphActionsIT while testWidth ", e);
+        handleException("Exception in ParagraphActionsIT while testWidth ", e);
     }
+
   }
+
 }
