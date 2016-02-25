@@ -43,19 +43,19 @@
       <dependency>
         <groupId>org.scala-lang</groupId>
         <artifactId>scala-library</artifactId>
-        <version>2.10.4</version>
+        <version>${scala.version}</version>
       </dependency>
 
       <dependency>
         <groupId>org.scala-lang</groupId>
         <artifactId>scala-compiler</artifactId>
-        <version>2.10.4</version>
+        <version>${scala.version}</version>
       </dependency>
 
       <dependency>
         <groupId>org.scala-lang</groupId>
         <artifactId>scalap</artifactId>
-        <version>2.10.4</version>
+        <version>${scala.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -258,8 +258,8 @@
 
     <dependency>
       <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_2.10</artifactId>
-      <version>2.1.1</version>
+      <artifactId>scalatest_${scala.binary.version}</artifactId>
+      <version>2.2.4</version>
       <scope>test</scope>
     </dependency>
 
@@ -393,6 +393,23 @@
   </build>
 
   <profiles>
+    <profile>
+      <id>scala-2.11</id>
+      <activation>
+        <property><name>scala-2.11</name></property>
+      </activation>
+
+      <dependencyManagement>
+        <dependencies>
+          <dependency>
+            <groupId>org.scala-lang.modules</groupId>
+            <artifactId>scala-xml_${scala.binary.version}</artifactId>
+            <version>1.0.2</version>
+          </dependency>
+        </dependencies>
+      </dependencyManagement>
+    </profile>
+    
     <profile>
       <id>using-source-tree</id>
       <activation>

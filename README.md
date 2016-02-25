@@ -294,6 +294,14 @@ And browse [localhost:8080](localhost:8080) in your browser.
 
 For configuration details check __`./conf`__ subdirectory.
 
+### Building for Scala 2.11
+
+To produce a Zeppelin package compiled with Scala 2.11, use the -Dscala-2.11 property:
+
+```
+mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark -Dscala-2.11 -DskipTests clean install
+```
+
 ### Package
 To package the final distribution including the compressed archive, run:
 

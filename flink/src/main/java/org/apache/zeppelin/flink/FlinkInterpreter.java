@@ -17,6 +17,7 @@
  */
 package org.apache.zeppelin.flink;
 
+import java.lang.reflect.InvocationTargetException;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -24,10 +25,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import org.apache.flink.api.scala.FlinkILoop;
 import org.apache.flink.configuration.Configuration;
@@ -45,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import scala.Console;
 import scala.None;
 import scala.Some;
+import scala.collection.immutable.Nil;
 import scala.runtime.AbstractFunction0;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.IMain;
@@ -103,7 +102,40 @@ public class FlinkInterpreter extends Interpreter {
     
     imain.interpret("import org.apache.flink.api.scala._");
     imain.interpret("import org.apache.flink.api.common.functions._");
-    imain.bindValue("env", env);
+
+    String scalaVersion = scalaVersion(imain);
+    // scala 2.10 use imain.bindValue("env" env)
+    // scala 2.11 use imain.put("env", env);
+    String bindMethod = "bindValue";
+    if (scalaVersion.equals("2.11")) {
+      bindMethod = "put";
+    }
+
+    java.lang.reflect.Method method;
+    try {
+      method = imain.getClass().getMethod(bindMethod, String.class, Object.class);
+      if (method != null) {
+        method.invoke(imain, "env", env);
+      }
+    } catch (Exception e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Error binding environment variable: " + e.getMessage(), e);
+      }
+    }
+  }
+
+  private String scalaVersion(IMain imain) {
+    String version = "2.10";
+
+    try {
+      if (imain.getClass().getMethod("put", String.class, Object.class) != null) {
+        version = "2.11";
+      }
+    } catch (Exception e) {
+      // ignore
+    }
+
+    return version;
   }
 
   private boolean localMode() {
