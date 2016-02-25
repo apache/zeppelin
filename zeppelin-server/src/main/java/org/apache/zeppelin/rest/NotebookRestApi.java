@@ -165,7 +165,7 @@ public class NotebookRestApi {
           setting.id(),
           setting.getName(),
           setting.getGroup(),
-          setting.getInterpreterGroup(),
+          setting.getInterpreterInfos(),
           true)
       );
     }
@@ -185,7 +185,7 @@ public class NotebookRestApi {
             setting.id(),
             setting.getName(),
             setting.getGroup(),
-            setting.getInterpreterGroup(),
+            setting.getInterpreterInfos(),
             false)
         );
       }

@@ -263,6 +263,11 @@ select * from ${table=defaultTableName} where text like '%${search}%'
 
 To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.html).
 
+
+### Separate Interpreter for each note
+
+In 'Separate Interpreter for each note' mode, SparkInterpreter creates scala compiler per each notebook. However it still shares the single SparkContext.
+
 ## Setting up Zeppelin with Kerberos
 Logical setup with Zeppelin, Kerberos Distribution Center (KDC), and Spark on YARN:
 

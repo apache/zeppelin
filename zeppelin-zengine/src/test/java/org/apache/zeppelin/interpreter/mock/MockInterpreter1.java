@@ -45,7 +45,13 @@ public class MockInterpreter1 extends Interpreter{
 
 	@Override
 	public InterpreterResult interpret(String st, InterpreterContext context) {
-		return new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: "+st);
+
+		if ("getId".equals(st)) {
+			// get unique id of this interpreter instance
+			return new InterpreterResult(InterpreterResult.Code.SUCCESS, "" + this.hashCode());
+		} else {
+			return new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: " + st);
+		}
 	}
 
 	@Override

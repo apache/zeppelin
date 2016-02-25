@@ -31,6 +31,7 @@ import java.util.Properties;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -68,6 +69,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
 
     final RemoteInterpreter intpA = new RemoteInterpreter(
         p,
+        "note",
         MockInterpreterA.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
@@ -76,12 +78,13 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         10 * 1000,
         this);
 
-    intpGroup.add(intpA);
+    intpGroup.put("note", new LinkedList<Interpreter>());
+    intpGroup.get("note").add(intpA);
     intpA.setInterpreterGroup(intpGroup);
 
     intpA.open();
 
-    Scheduler scheduler = schedulerSvc.createOrGetRemoteScheduler("test",
+    Scheduler scheduler = schedulerSvc.createOrGetRemoteScheduler("test", "note",
         intpA.getInterpreterProcess(),
         10);
 
@@ -154,6 +157,7 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
 
     final RemoteInterpreter intpA = new RemoteInterpreter(
         p,
+        "note",
         MockInterpreterA.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
@@ -162,12 +166,13 @@ public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
         10 * 1000,
         this);
 
-    intpGroup.add(intpA);
+    intpGroup.put("note", new LinkedList<Interpreter>());
+    intpGroup.get("note").add(intpA);
     intpA.setInterpreterGroup(intpGroup);
 
     intpA.open();
 
-    Scheduler scheduler = schedulerSvc.createOrGetRemoteScheduler("test",
+    Scheduler scheduler = schedulerSvc.createOrGetRemoteScheduler("test", "note",
         intpA.getInterpreterProcess(),
         10);
 
