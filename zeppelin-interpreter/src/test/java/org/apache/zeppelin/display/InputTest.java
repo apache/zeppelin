@@ -17,7 +17,6 @@
 
 package org.apache.zeppelin.display;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
