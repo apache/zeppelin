@@ -232,11 +232,6 @@
       <plugin>
         <groupId>org.apache.rat</groupId>
         <artifactId>apache-rat-plugin</artifactId>
-        <configuration>
-          <excludes>
-            <exclude>.github/*</exclude>
-          </excludes>
-        </configuration>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -451,6 +446,7 @@
               <exclude>**/.idea/</exclude>
               <exclude>**/*.iml</exclude>
               <exclude>.git/</exclude>
+              <exclude>.github/*</exclude>
               <exclude>.gitignore</exclude>
               <exclude>.repository/</exclude>
               <exclude>**/*.diff</exclude>
