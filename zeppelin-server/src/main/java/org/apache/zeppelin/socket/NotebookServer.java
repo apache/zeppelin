@@ -114,9 +114,13 @@ public class NotebookServer extends WebSocketServlet implements
 
       HashSet<String> userAndRoles = new HashSet<String>();
       userAndRoles.add(messagereceived.principal);
-      HashSet<String> roles = gson.fromJson(messagereceived.roles,
-              new TypeToken<HashSet<String>>(){}.getType());
-      userAndRoles.addAll(roles);
+      if (!messagereceived.roles.equals("")) {
+        HashSet<String> roles = gson.fromJson(messagereceived.roles,
+                new TypeToken<HashSet<String>>(){}.getType());
+        if (roles != null) {
+          userAndRoles.addAll(roles);
+        }
+      }
 
       /** Lets be elegant here */
       switch (messagereceived.op) {
