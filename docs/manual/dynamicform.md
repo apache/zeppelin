@@ -151,9 +151,8 @@ print("Hello "+z.select("day", [("1","mon"),
 
 {% highlight scala %}
 %spark
-println("Hello "+z.checkbox("fruit", Seq(("apple","Apple"),
-                                    ("banana","Banana"),
-                                    ("orange","Orange"))).mkString(" and "))
+val options = Seq(("apple","Apple"), ("banana","Banana"), ("orange","Orange"))
+println("Hello "+z.checkbox("fruit", options).mkString(" and "))
 {% endhighlight %}
 
     </div>
@@ -161,9 +160,8 @@ println("Hello "+z.checkbox("fruit", Seq(("apple","Apple"),
 
 {% highlight python %}
 %pyspark
-print("Hello "+ " and ".join(z.checkbox("fruit", [("apple","Apple"),
-                                ("banana","Banana"),
-                                ("orange","Orange")])))
+options = [("apple","Apple"), ("banana","Banana"), ("orange","Orange")]
+print("Hello "+ " and ".join(z.checkbox("fruit", options, ["apple"])))
 {% endhighlight %}
 
     </div>
