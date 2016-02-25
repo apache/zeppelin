@@ -347,7 +347,7 @@ public class SparkInterpreter extends Interpreter {
 
     // Distributes needed libraries to workers.
     if (getProperty("master").equals("yarn-client")) {
-      conf.set("spark.yarn.isPython", "true");
+      conf.set("spark.yarn.isPython", "false");
     }
 
     SparkContext sparkContext = new SparkContext(conf);
