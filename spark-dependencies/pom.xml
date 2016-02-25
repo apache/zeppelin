@@ -480,7 +480,32 @@
     <profile>
       <id>cassandra-spark-1.5</id>
       <properties>
-        <spark.version>1.5.2</spark.version>
+        <spark.version>1.5.1</spark.version>
+        <akka.group>com.typesafe.akka</akka.group>
+        <akka.version>2.3.11</akka.version>
+        <protobuf.version>2.5.0</protobuf.version>
+        <guava.version>16.0.1</guava.version>
+      </properties>
+
+      <dependencies>
+        <dependency>
+          <groupId>com.datastax.spark</groupId>
+          <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
+          <version>1.5.0</version>
+          <exclusions>
+            <exclusion>
+              <groupId>org.joda</groupId>
+              <artifactId>joda-convert</artifactId>
+            </exclusion>
+          </exclusions>
+        </dependency>
+      </dependencies>
+    </profile>
+
+    <profile>
+      <id>cassandra-spark-1.6</id>
+      <properties>
+        <spark.version>1.6.0</spark.version>
         <akka.group>com.typesafe.akka</akka.group>
         <akka.version>2.3.11</akka.version>
         <protobuf.version>2.5.0</protobuf.version>
