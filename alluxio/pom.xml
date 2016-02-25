@@ -27,14 +27,14 @@
     </parent>
 
     <groupId>org.apache.zeppelin</groupId>
-    <artifactId>zeppelin-tachyon</artifactId>
+    <artifactId>zeppelin-alluxio</artifactId>
     <packaging>jar</packaging>
     <version>0.6.0-incubating-SNAPSHOT</version>
-    <name>Zeppelin: Tachyon interpreter</name>
+    <name>Zeppelin: Alluxio interpreter</name>
     <url>http://www.apache.org</url>
 
     <properties>
-    		<tachyon.version>0.8.2</tachyon.version>
+    		<alluxio.version>1.0.0</alluxio.version>
     </properties>
     <dependencies>
         <dependency>
@@ -50,9 +50,9 @@
         </dependency>
 
         <dependency>
-              <groupId>org.tachyonproject</groupId>
-              <artifactId>tachyon-shell</artifactId>
-              <version>${tachyon.version}</version>
+              <groupId>org.alluxio</groupId>
+              <artifactId>alluxio-shell</artifactId>
+              <version>${alluxio.version}</version>
         </dependency>
 
         <dependency>
@@ -73,23 +73,23 @@
         </dependency>
 
         <dependency>
-            <groupId>org.tachyonproject</groupId>
-            <artifactId>tachyon-servers</artifactId>
-            <version>${tachyon.version}</version>
+            <groupId>org.alluxio</groupId>
+            <artifactId>alluxio-core-server</artifactId>
+            <version>${alluxio.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.tachyonproject</groupId>
-            <artifactId>tachyon-minicluster</artifactId>
-            <version>${tachyon.version}</version>
+            <groupId>org.alluxio</groupId>
+            <artifactId>alluxio-minicluster</artifactId>
+            <version>${alluxio.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
-            <groupId>org.tachyonproject</groupId>
-            <artifactId>tachyon-underfs-local</artifactId>
-            <version>${tachyon.version}</version>
+            <groupId>org.alluxio</groupId>
+            <artifactId>alluxio-underfs-local</artifactId>
+            <version>${alluxio.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -127,7 +127,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/../../interpreter/tachyon</outputDirectory>
+                            <outputDirectory>${project.build.directory}/../../interpreter/alluxio</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
@@ -141,7 +141,7 @@
                             <goal>copy</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/../../interpreter/tachyon</outputDirectory>
+                            <outputDirectory>${project.build.directory}/../../interpreter/alluxio</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
