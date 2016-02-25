@@ -10,7 +10,7 @@ New? Check out the [contributing guide](https://github.com/apache/incubator-zepp
 * [ ] - Task
 
 ### What is the Jira issue?
-Link to Jira here - put [ZEPPELIN-*Jira number*] in PR title
+[Open Jira](https://issues.apache.org/jira/browse/ZEPPELIN/) and put link here - add [ZEPPELIN-*Jira number*] in PR title.
 
 ### How should this be tested?
 Outline the steps to test the PR here.
