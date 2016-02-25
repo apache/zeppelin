@@ -29,6 +29,7 @@ import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.scheduler.Job;
@@ -396,6 +397,9 @@ public class Note implements Serializable, JobListener {
   public void runAll() {
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
+        if (!p.isEnabled()) {
+          continue;
+        }
         p.setNoteReplLoader(replLoader);
         p.setListener(jobListenerFactory.getParagraphJobListener(this));
         Interpreter intp = replLoader.get(p.getRequiredReplName());
@@ -461,7 +465,13 @@ public class Note implements Serializable, JobListener {
     for (InterpreterSetting setting : settings) {
       InterpreterGroup intpGroup = setting.getInterpreterGroup();
       AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
-      registry.removeAll(id, paragraphId);
+
+      if (registry instanceof RemoteAngularObjectRegistry) {
+        // remove paragraph scope object
+        ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, paragraphId);
+      } else {
+        registry.removeAll(id, paragraphId);
+      }
     }
   }
 

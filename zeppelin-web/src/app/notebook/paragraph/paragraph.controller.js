@@ -21,8 +21,13 @@ angular.module('zeppelinWebApp')
   $scope.paragraph = null;
   $scope.originalText = '';
   $scope.editor = null;
+
   var paragraphScope = $rootScope.$new(true, $rootScope);
+  // to keep backward compatibility
+  $scope.compiledScope = paragraphScope;
+
   var angularObjectRegistry = {};
+
 
   var editorModes = {
     'ace/mode/scala': /^%spark/,
@@ -108,6 +113,11 @@ angular.module('zeppelinWebApp')
         if ($scope.paragraph.result && $scope.paragraph.result.msg) {
           $scope.appendTextOutput($scope.paragraph.result.msg);
         }
+
+        angular.element('#p' + $scope.paragraph.id + '_text').bind("mousewheel", function(e) {
+          $scope.keepScrollDown = false;
+        });
+
       } else {
         $timeout(retryRenderer, 10);
       }
@@ -129,6 +139,10 @@ angular.module('zeppelinWebApp')
       for (var i=0; i < lines.length; i++) {
         textEl.append(angular.element('<div></div>').text(lines[i]));
       }
+    }
+    if ($scope.keepScrollDown) {
+      var doc = angular.element('#p' + $scope.paragraph.id + '_text');
+      doc[0].scrollTop = doc[0].scrollHeight;
     }
   };
 
@@ -1238,7 +1252,9 @@ angular.module('zeppelinWebApp')
 
   };
 
-  var integerFormatter = d3.format(',.1d');
+  var groupedThousandsWith3DigitsFormatter = function(x){
+    return d3.format(',')(d3.round(x, 3));
+  };
 
   var customAbbrevFormatter = function(x) {
     var s = d3.format('.3s')(x);
@@ -1260,7 +1276,7 @@ angular.module('zeppelinWebApp')
     if(d >= Math.pow(10,6)){
       return customAbbrevFormatter(d);
     }
-    return integerFormatter(d);
+    return groupedThousandsWith3DigitsFormatter(d);
   };
 
   var setD3Chart = function(type, data, refresh) {
@@ -2075,4 +2091,33 @@ angular.module('zeppelinWebApp')
     var redirectToUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId + '/paragraph/' + $scope.paragraph.id+'?asIframe';
     $window.open(redirectToUrl);
   };
+
+  $scope.showScrollDownIcon = function(){
+    var doc = angular.element('#p' + $scope.paragraph.id + '_text');
+    if(doc[0]){
+      return doc[0].scrollHeight > doc.innerHeight();
+    }
+    return false;
+  };
+
+  $scope.scrollParagraphDown = function() {
+    var doc = angular.element('#p' + $scope.paragraph.id + '_text');
+    doc.animate({scrollTop: doc[0].scrollHeight}, 500);
+    $scope.keepScrollDown = true;
+  };
+
+  $scope.showScrollUpIcon = function(){
+    if(angular.element('#p' + $scope.paragraph.id + '_text')[0]){
+      return angular.element('#p' + $scope.paragraph.id + '_text')[0].scrollTop != 0;
+    }
+    return false;
+
+  };
+
+  $scope.scrollParagraphUp = function() {
+    var doc = angular.element('#p' + $scope.paragraph.id + '_text');
+    doc.animate({scrollTop: 0}, 500);
+    $scope.keepScrollDown = false;
+  };
+
 });

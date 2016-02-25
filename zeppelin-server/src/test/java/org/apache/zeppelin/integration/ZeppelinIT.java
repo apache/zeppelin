@@ -15,22 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin;
+package org.apache.zeppelin.integration;
 
-import com.google.common.base.Function;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.AbstractZeppelinIT;
+import org.apache.zeppelin.WebDriverManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.*;
-import org.openqa.selenium.support.ui.FluentWait;
-import org.openqa.selenium.support.ui.Wait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test Zeppelin with web browser.
@@ -38,8 +39,8 @@ import static org.junit.Assert.assertEquals;
  * To test, ZeppelinServer should be running on port 8080
  * On OSX, you'll need firefox 42.0 installed, then you can run with
  *
- * PATH=~/Applications/Firefox.app/Contents/MacOS/:$PATH CI="" \
- *    mvn -Dtest=org.apache.zeppelin.ZeppelinIT -Denforcer.skip=true \
+ * PATH=~/Applications/Firefox.app/Contents/MacOS/:$PATH TEST_SELENIUM="" \
+ *    mvn -Dtest=org.apache.zeppelin.integration.ZeppelinIT -Denforcer.skip=true \
  *    test -pl zeppelin-server
  *
  */
@@ -65,7 +66,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
   }
 
   @Test
-  public void testAngularDisplay() throws InterruptedException{
+  public void testAngularDisplay() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -120,7 +121,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       // check expected text
       waitForText("myVar=1", By.xpath(
-              getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]"));
+              getParagraphXPath(3) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
 
       /*
        * Click element
@@ -161,7 +162,7 @@ public class ZeppelinIT extends AbstractZeppelinIT {
 
       // check expected text by watcher
       waitForText("myVar=3", By.xpath(
-              getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]"));
+              getParagraphXPath(3) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
 
       /*
        * Unbind
@@ -195,11 +196,65 @@ public class ZeppelinIT extends AbstractZeppelinIT {
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
       sleep(100, true);
 
-      System.out.println("testCreateNotebook Test executed");
-    } catch (ElementNotVisibleException e) {
-      LOG.error("Exception in ZeppelinIT while testAngularDisplay ", e);
-      File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+      LOG.info("testCreateNotebook Test executed");
+    } catch (Exception e) {
+      handleException("Exception in ZeppelinIT while testAngularDisplay ", e);
+    }
+  }
 
+  @Test
+  public void testSparkInterpreterDependencyLoading() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      // navigate to interpreter page
+      WebElement interpreterLink = driver.findElement(By.linkText("Interpreter"));
+      interpreterLink.click();
+
+      // add new dependency to spark interpreter
+      WebElement sparkEditBtn = pollingWait(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]"),
+          MAX_BROWSER_TIMEOUT_SEC);
+      sparkEditBtn.click();
+      WebElement depArtifact = driver.findElement(By.xpath("//input[@ng-model='setting.depArtifact']"));
+      String artifact = "org.apache.commons:commons-csv:1.1";
+      depArtifact.sendKeys(artifact);
+      driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
+      driver.switchTo().alert().accept();
+
+      driver.navigate().back();
+      createNewNote();
+
+      // wait for first paragraph's " READY " status text
+      waitForParagraph(1, "READY");
+
+      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
+
+      paragraph1Editor.sendKeys("import org.apache.commons.csv.CSVFormat");
+      paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      waitForParagraph(1, "FINISHED");
+
+      // check expected text
+      assertTrue(waitForText("import org.apache.commons.csv.CSVFormat",
+          By.xpath(getParagraphXPath(1) + "//div[starts-with(@id, 'p') and contains(@id, 'text')]/div")));
+
+      //delete created notebook for cleanup.
+      deleteTestNotebook(driver);
+      sleep(1000, true);
+
+      // reset dependency
+      interpreterLink.click();
+      sparkEditBtn = pollingWait(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]"),
+          MAX_BROWSER_TIMEOUT_SEC);
+      sparkEditBtn.click();
+      WebElement testDepRemoveBtn = driver.findElement(By.xpath("//tr[descendant::text()[contains(.,'" +
+          artifact + "')]]/td[3]/div"));
+      sleep(5000, true);
+      testDepRemoveBtn.click();
+      driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
+      driver.switchTo().alert().accept();
+    } catch (Exception e) {
+      handleException("Exception in ZeppelinIT while testSparkInterpreterDependencyLoading ", e);
     }
   }
 }

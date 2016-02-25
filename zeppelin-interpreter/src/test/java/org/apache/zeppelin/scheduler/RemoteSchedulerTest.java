@@ -29,18 +29,21 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreter;
+import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterA;
+import org.apache.zeppelin.resource.LocalResourcePool;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class RemoteSchedulerTest {
+public class RemoteSchedulerTest implements RemoteInterpreterProcessListener {
 
   private SchedulerFactory schedulerSvc;
   private static final int TICK_WAIT = 100;
@@ -64,14 +67,14 @@ public class RemoteSchedulerTest {
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
 
     final RemoteInterpreter intpA = new RemoteInterpreter(
-            p,
-            MockInterpreterA.class.getName(),
-            new File("../bin/interpreter.sh").getAbsolutePath(),
-            "fake",
-            env,
-            10 * 1000,
-            null
-        );
+        p,
+        MockInterpreterA.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        "fakeRepo",
+        env,
+        10 * 1000,
+        this);
 
     intpGroup.add(intpA);
     intpA.setInterpreterGroup(intpGroup);
@@ -101,9 +104,11 @@ public class RemoteSchedulerTest {
             "jobId",
             "title",
             "text",
+            new AuthenticationInfo(),
             new HashMap<String, Object>(),
             new GUI(),
             new AngularObjectRegistry(intpGroup.getId(), null),
+            new LocalResourcePool("pool1"),
             new LinkedList<InterpreterContextRunner>(), null));
         return "1000";
       }
@@ -148,14 +153,14 @@ public class RemoteSchedulerTest {
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
 
     final RemoteInterpreter intpA = new RemoteInterpreter(
-            p,
-            MockInterpreterA.class.getName(),
-            new File("../bin/interpreter.sh").getAbsolutePath(),
-            "fake",
-            env,
-            10 * 1000,
-            null
-        );
+        p,
+        MockInterpreterA.class.getName(),
+        new File("../bin/interpreter.sh").getAbsolutePath(),
+        "fake",
+        "fakeRepo",
+        env,
+        10 * 1000,
+        this);
 
     intpGroup.add(intpA);
     intpA.setInterpreterGroup(intpGroup);
@@ -172,9 +177,11 @@ public class RemoteSchedulerTest {
           "jobId1",
           "title",
           "text",
+          new AuthenticationInfo(),
           new HashMap<String, Object>(),
           new GUI(),
           new AngularObjectRegistry(intpGroup.getId(), null),
+          new LocalResourcePool("pool1"),
           new LinkedList<InterpreterContextRunner>(), null);
 
       @Override
@@ -208,9 +215,11 @@ public class RemoteSchedulerTest {
           "jobId2",
           "title",
           "text",
+          new AuthenticationInfo(),
           new HashMap<String, Object>(),
           new GUI(),
           new AngularObjectRegistry(intpGroup.getId(), null),
+          new LocalResourcePool("pool1"),
           new LinkedList<InterpreterContextRunner>(), null);
 
       @Override
@@ -270,4 +279,13 @@ public class RemoteSchedulerTest {
     schedulerSvc.removeScheduler("test");
   }
 
+  @Override
+  public void onOutputAppend(String noteId, String paragraphId, String output) {
+
+  }
+
+  @Override
+  public void onOutputUpdated(String noteId, String paragraphId, String output) {
+
+  }
 }

@@ -24,13 +24,16 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.common.base.Strings;
+import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.AngularObjectRegistryListener;
-import org.apache.zeppelin.display.Input;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.interpreter.InterpreterOutput;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -38,7 +41,6 @@ import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcessListener;
 import org.apache.zeppelin.notebook.*;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
-import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.socket.Message.OP;
 import org.apache.zeppelin.ticket.TicketContainer;
@@ -49,8 +51,12 @@ import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Strings;
-import com.google.gson.Gson;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Zeppelin websocket service.
@@ -182,6 +188,9 @@ public class NotebookServer extends WebSocketServlet implements
             break;
           case LIST_CONFIGURATIONS:
             sendAllConfigurations(conn, userAndRoles, notebook);
+            break;
+          case CHECKPOINT_NOTEBOOK:
+            checkpointNotebook(conn, notebook, messagereceived);
             break;
           default:
             broadcastNoteList();
@@ -785,6 +794,15 @@ public class NotebookServer extends WebSocketServlet implements
     String text = (String) fromMessage.get("paragraph");
     p.setText(text);
     p.setTitle((String) fromMessage.get("title"));
+    if (!fromMessage.principal.equals("anonymous")) {
+      AuthenticationInfo authenticationInfo = new AuthenticationInfo(fromMessage.principal,
+          fromMessage.ticket);
+      p.setAuthenticationInfo(authenticationInfo);
+
+    } else {
+      p.setAuthenticationInfo(new AuthenticationInfo());
+    }
+
     Map<String, Object> params = (Map<String, Object>) fromMessage
        .get("params");
     p.settings.setParams(params);
@@ -820,12 +838,23 @@ public class NotebookServer extends WebSocketServlet implements
         new ZeppelinConfiguration.ConfigurationKeyPredicate() {
           @Override
           public boolean apply(String key) {
-            return !key.contains("password");
+            return !key.contains("password") &&
+                !key.equals(ZeppelinConfiguration
+                    .ConfVars
+                    .ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING
+                    .getVarName());
           }
         });
 
     conn.send(serializeMessage(new Message(OP.CONFIGURATIONS_INFO)
         .put("configurations", configurations)));
+  }
+
+  private void checkpointNotebook(NotebookSocket conn, Notebook notebook,
+      Message fromMessage) throws IOException {
+    String noteId = (String) fromMessage.get("noteId");
+    String commitMessage = (String) fromMessage.get("commitMessage");
+    notebook.checkpointNote(noteId, commitMessage);
   }
 
   /**

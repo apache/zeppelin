@@ -340,16 +340,6 @@
 
   <profiles>
     <profile>
-      <id>vendor-repo</id>
-      <repositories>
-        <repository>
-          <id>cloudera</id>
-          <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
-        </repository>
-      </repositories>
-    </profile>
-
-    <profile>
       <id>spark-1.1</id>
       <dependencies>
 
@@ -494,13 +484,14 @@
         <akka.group>com.typesafe.akka</akka.group>
         <akka.version>2.3.11</akka.version>
         <protobuf.version>2.5.0</protobuf.version>
+        <guava.version>16.0.1</guava.version>
       </properties>
 
       <dependencies>
         <dependency>
           <groupId>com.datastax.spark</groupId>
           <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
-          <version>1.5.0-M2</version>
+          <version>1.5.0</version>
           <exclusions>
             <exclusion>
               <groupId>org.joda</groupId>

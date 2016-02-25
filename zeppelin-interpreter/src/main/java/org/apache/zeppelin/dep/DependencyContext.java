@@ -127,7 +127,7 @@ public class DependencyContext {
     collectRequest.addRepository(mavenCentral);
     collectRequest.addRepository(mavenLocal);
     for (Repository repo : repositories) {
-      RemoteRepository rr = new RemoteRepository(repo.getName(), "default", repo.getUrl());
+      RemoteRepository rr = new RemoteRepository(repo.getId(), "default", repo.getUrl());
       rr.setPolicy(repo.isSnapshot(), null);
       collectRequest.addRepository(rr);
     }

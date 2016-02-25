@@ -18,11 +18,13 @@
 package org.apache.zeppelin.notebook;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.slf4j.Logger;
@@ -44,6 +46,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   String title;
   String text;
+  AuthenticationInfo authenticationInfo;
   Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
@@ -54,6 +57,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.replLoader = replLoader;
     title = null;
     text = null;
+    authenticationInfo = null;
     dateUpdated = null;
     settings = new GUI();
     config = new HashMap<String, Object>();
@@ -73,6 +77,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.dateUpdated = new Date();
   }
 
+  public AuthenticationInfo getAuthenticationInfo() {
+    return authenticationInfo;
+  }
+
+  public void setAuthenticationInfo(AuthenticationInfo authenticationInfo) {
+    this.authenticationInfo = authenticationInfo;
+  }
 
   public String getTitle() {
     return title;
@@ -88,6 +99,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public Note getNote() {
     return note;
+  }
+
+  public boolean isEnabled() {
+    Boolean enabled = (Boolean) config.get("enabled");
+    return enabled == null || enabled.booleanValue();
   }
 
   public String getRequiredReplName() {
@@ -256,10 +272,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   private InterpreterContext getInterpreterContext() {
     AngularObjectRegistry registry = null;
+    ResourcePool resourcePool = null;
 
     if (!getNoteReplLoader().getInterpreterSettings().isEmpty()) {
       InterpreterSetting intpGroup = getNoteReplLoader().getInterpreterSettings().get(0);
       registry = intpGroup.getInterpreterGroup().getAngularObjectRegistry();
+      resourcePool = intpGroup.getInterpreterGroup().getResourcePool();
     }
 
     List<InterpreterContextRunner> runners = new LinkedList<InterpreterContextRunner>();
@@ -273,9 +291,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
             getId(),
             this.getTitle(),
             this.getText(),
+            this.getAuthenticationInfo(),
             this.getConfig(),
             this.settings,
             registry,
+            resourcePool,
             runners,
             new InterpreterOutput(new InterpreterOutputListener() {
               @Override

@@ -87,7 +87,9 @@ public class SparkInterpreter extends Interpreter {
         "spark",
         SparkInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add("spark.app.name", "Zeppelin", "The name of spark application.")
+            .add("spark.app.name",
+                getSystemDefault("SPARK_APP_NAME", "spark.app.name", "Zeppelin"),
+                "The name of spark application.")
             .add("master",
                 getSystemDefault("MASTER", "spark.master", "local[*]"),
                 "Spark master uri. ex) spark://masterhost:7077")
@@ -324,15 +326,24 @@ public class SparkInterpreter extends Interpreter {
       }
     }
     pythonLibUris.trimToSize();
-    if (pythonLibs.length == pythonLibUris.size()) {
-      conf.set("spark.yarn.dist.files", Joiner.on(",").join(pythonLibUris));
+
+    // Distribute two libraries(pyspark.zip and py4j-*.zip) to workers
+    // when spark version is less than or equal to 1.4.1
+    if (pythonLibUris.size() == 2) {
+      try {
+        String confValue = conf.get("spark.yarn.dist.files");
+        conf.set("spark.yarn.dist.files", confValue + "," + Joiner.on(",").join(pythonLibUris));
+      } catch (NoSuchElementException e) {
+        conf.set("spark.yarn.dist.files", Joiner.on(",").join(pythonLibUris));
+      }
       if (!useSparkSubmit()) {
         conf.set("spark.files", conf.get("spark.yarn.dist.files"));
       }
       conf.set("spark.submit.pyArchives", Joiner.on(":").join(pythonLibs));
     }
 
-    // Distributes needed libraries to workers.
+    // Distributes needed libraries to workers
+    // when spark version is greater than or equal to 1.5.0
     if (getProperty("master").equals("yarn-client")) {
       conf.set("spark.yarn.isPython", "true");
     }
@@ -438,6 +449,23 @@ public class SparkInterpreter extends Interpreter {
       }
     }
 
+    // add dependency from local repo
+    String localRepo = getProperty("zeppelin.interpreter.localRepo");
+    if (localRepo != null) {
+      File localRepoDir = new File(localRepo);
+      if (localRepoDir.exists()) {
+        File[] files = localRepoDir.listFiles();
+        if (files != null) {
+          for (File f : files) {
+            if (classpath.length() > 0) {
+              classpath += File.pathSeparator;
+            }
+            classpath += f.getAbsolutePath();
+          }
+        }
+      }
+    }
+
     pathSettings.v_$eq(classpath);
     settings.scala$tools$nsc$settings$ScalaSettings$_setter_$classpath_$eq(pathSettings);
 
@@ -529,11 +557,30 @@ public class SparkInterpreter extends Interpreter {
       throw new InterpreterException(e);
     }
 
-    // add jar
+    // add jar from DepInterpreter
     if (depInterpreter != null) {
       SparkDependencyContext depc = depInterpreter.getDependencyContext();
       if (depc != null) {
         List<File> files = depc.getFilesDist();
+        if (files != null) {
+          for (File f : files) {
+            if (f.getName().toLowerCase().endsWith(".jar")) {
+              sc.addJar(f.getAbsolutePath());
+              logger.info("sc.addJar(" + f.getAbsolutePath() + ")");
+            } else {
+              sc.addFile(f.getAbsolutePath());
+              logger.info("sc.addFile(" + f.getAbsolutePath() + ")");
+            }
+          }
+        }
+      }
+    }
+
+    // add jar from local repo
+    if (localRepo != null) {
+      File localRepoDir = new File(localRepo);
+      if (localRepoDir.exists()) {
+        File[] files = localRepoDir.listFiles();
         if (files != null) {
           for (File f : files) {
             if (f.getName().toLowerCase().endsWith(".jar")) {

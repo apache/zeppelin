@@ -27,6 +27,7 @@ import java.util.Properties;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
@@ -76,21 +77,23 @@ public class SparkInterpreterTest {
 
     InterpreterGroup intpGroup = new InterpreterGroup();
     context = new InterpreterContext("note", "id", "title", "text",
-            new HashMap<String, Object>(),
-            new GUI(),
-            new AngularObjectRegistry(intpGroup.getId(), null),
-            new LinkedList<InterpreterContextRunner>(),
-            new InterpreterOutput(new InterpreterOutputListener() {
-              @Override
-              public void onAppend(InterpreterOutput out, byte[] line) {
+        new AuthenticationInfo(),
+        new HashMap<String, Object>(),
+        new GUI(),
+        new AngularObjectRegistry(intpGroup.getId(), null),
+        null,
+        new LinkedList<InterpreterContextRunner>(),
+        new InterpreterOutput(new InterpreterOutputListener() {
+          @Override
+          public void onAppend(InterpreterOutput out, byte[] line) {
 
-              }
+          }
 
-              @Override
-              public void onUpdate(InterpreterOutput out, byte[] output) {
+          @Override
+          public void onUpdate(InterpreterOutput out, byte[] output) {
 
-              }
-            }));
+          }
+        }));
   }
 
   @After
@@ -170,16 +173,6 @@ public class SparkInterpreterTest {
     InterpreterResult result = repl.interpret("def category(min: Int) = {"
         + "    if (0 <= value) \"error\"" + "}", context);
     assertEquals(Code.ERROR, result.code());
-  }
-
-  @Test
-  public void testZContextDependencyLoading() {
-    // try to import library does not exist on classpath. it'll fail
-    assertEquals(InterpreterResult.Code.ERROR, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
-
-    // load library from maven repository and try to import again
-    repl.interpret("z.load(\"org.apache.commons:commons-csv:1.1\")", context);
-    assertEquals(InterpreterResult.Code.SUCCESS, repl.interpret("import org.apache.commons.csv.CSVFormat", context).code());
   }
 
   @Test
