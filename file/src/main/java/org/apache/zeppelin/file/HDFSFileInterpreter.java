@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.Properties;
 import com.google.gson.Gson;
 import org.apache.zeppelin.interpreter.Interpreter;
+import org.apache.zeppelin.interpreter.InterpreterException;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 
 /**
@@ -153,19 +154,19 @@ public class HDFSFileInterpreter extends FileInterpreter {
   }
 
   private String listPermission(OneFileStatus fs){
-    String s = "";
-    s += fs.type.equalsIgnoreCase("Directory") ? 'd' : '-';
+    StringBuilder sb = new StringBuilder();
+    sb.append(fs.type.equalsIgnoreCase("Directory") ? 'd' : '-');
     int p = Integer.parseInt(fs.permission, 16);
-    s += ((p & 0x400) == 0) ? '-' : 'r';
-    s += ((p & 0x200) == 0) ? '-' : 'w';
-    s += ((p & 0x100) == 0) ? '-' : 'x';
-    s += ((p & 0x40)  == 0) ? '-' : 'r';
-    s += ((p & 0x20)  == 0) ? '-' : 'w';
-    s += ((p & 0x10)  == 0) ? '-' : 'x';
-    s += ((p & 0x4)   == 0) ? '-' : 'r';
-    s += ((p & 0x2)   == 0) ? '-' : 'w';
-    s += ((p & 0x1)   == 0) ? '-' : 'x';
-    return s;
+    sb.append(((p & 0x400) == 0) ? '-' : 'r');
+    sb.append(((p & 0x200) == 0) ? '-' : 'w');
+    sb.append(((p & 0x100) == 0) ? '-' : 'x');
+    sb.append(((p & 0x40)  == 0) ? '-' : 'r');
+    sb.append(((p & 0x20)  == 0) ? '-' : 'w');
+    sb.append(((p & 0x10)  == 0) ? '-' : 'x');
+    sb.append(((p & 0x4)   == 0) ? '-' : 'r');
+    sb.append(((p & 0x2)   == 0) ? '-' : 'w');
+    sb.append(((p & 0x1)   == 0) ? '-' : 'x');
+    return sb.toString();
   }
   private String listDate(OneFileStatus fs) {
     return new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(fs.modificationTime));
@@ -204,6 +205,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
       }
     } catch (Exception e) {
       logger.error("listall: listDir " + path, e);
+      throw new InterpreterException(e);
     }
     return all;
   }
@@ -219,6 +221,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
         return sfs.FileStatus.type.equals("DIRECTORY");
     } catch (Exception e) {
       logger.error("IsDirectory: " + path, e);
+      throw new InterpreterException(e);
     }
     return ret;
   }
