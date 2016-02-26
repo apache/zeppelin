@@ -140,7 +140,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     Message messageReceived = notebookServer.deserializeMessage(msg);
     Note note = null;
     try {
-      note = notebookServer.importNote(null, notebook, messageReceived);
+      note = notebookServer.importNote(null, null, notebook, messageReceived);
     } catch (NullPointerException e) {
       //broadcastNoteList(); failed nothing to worry.
       LOG.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +
