@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -287,12 +288,6 @@ public class Input implements Serializable {
 
     }
 
-    System.out.println("input: " + varName);
-    System.out.println("displayName: " + displayName);
-    System.out.println("type: " + type);
-    System.out.println("arg:" + arg);
-    System.out.println("defautValue:" + defaultValue);
-
     return new Input(varName, displayName, type, arg, defaultValue, paramOptions, hidden);
   }
 
@@ -320,24 +315,33 @@ public class Input implements Serializable {
 
     Matcher match = VAR_PTN.matcher(replaced);
     while (match.find()) {
-      Input param = getInputForm(match);
+      Input input = getInputForm(match);
       Object value;
-      if (params.containsKey(param.name)) {
-        value = params.get(param.name);
+      if (params.containsKey(input.name)) {
+        value = params.get(input.name);
       } else {
-        value = param.defaultValue;
+        value = input.defaultValue;
       }
 
       String expanded;
       if (value instanceof Object[] || value instanceof Collection) {  // multi-selection
-        String delimiter = param.argument;
+        String delimiter = input.argument;
         if (delimiter == null) {
           delimiter = DEFAULT_DELIMITER;
         }
-        if (value instanceof Object[])
-          expanded = StringUtils.join((Object[]) value, delimiter);
-        else
-          expanded = StringUtils.join((Collection) value, delimiter);
+        Collection<Object> checked = value instanceof Collection ? (Collection<Object>) value
+                : Arrays.asList((Object[]) value);
+        List<Object> validChecked = new LinkedList<Object>();
+        for (Object o : checked) {  // filter out obsolete checked values
+          for (ParamOption option : input.getOptions()) {
+            if (option.getValue().equals(o)) {
+              validChecked.add(o);
+              break;
+            }
+          }
+        }
+        params.put(input.name, validChecked);
+        expanded = StringUtils.join(validChecked, delimiter);
       } else {  // single-selection
         expanded = value.toString();
       }

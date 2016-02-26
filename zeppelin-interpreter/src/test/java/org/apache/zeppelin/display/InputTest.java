@@ -116,5 +116,13 @@ public class InputTest {
 		replaced = Input.getSimpleQuery(params, script);
 		assertEquals("INPUT=some_inputSELECTED=s_op2\nCHECKED=c_op1,c_op3\n" +
 				"NEW_CHECKED=nc_a and nc_c", replaced);
+
+		// test form substitution with obsoleted values
+		script = "INPUT=${input_form=}SELECTED=${select_form(Selection Form)=,s_op1|s_op2|s_op3}\n" +
+				"CHECKED=${checkbox:checkbox_form=c_op1|c_op2,c_op1|c_op2|c_op3_new}\n" +
+				"NEW_CHECKED=${checkbox( and ):new_check=nc_a|nc_c,nc_a|nc_b|nc_c}";
+		replaced = Input.getSimpleQuery(params, script);
+		assertEquals("INPUT=some_inputSELECTED=s_op2\nCHECKED=c_op1\n" +
+				"NEW_CHECKED=nc_a and nc_c", replaced);
 	}
 }
