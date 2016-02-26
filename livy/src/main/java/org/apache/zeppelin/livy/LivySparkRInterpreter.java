@@ -28,42 +28,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-/**
- * Livy Spark interpreter for Zeppelin.
- */
-public class LivySparkInterpreter extends Interpreter {
 
-  static String DEFAULT_URL = "http://localhost:8998";
-  Logger LOGGER = LoggerFactory.getLogger(LivySparkInterpreter.class);
-  private LivyOutputStream out;
+/**
+ * Livy PySpark interpreter for Zeppelin.
+ */
+public class LivySparkRInterpreter extends Interpreter {
+
+  Logger LOGGER = LoggerFactory.getLogger(LivySparkRInterpreter.class);
 
   static {
     Interpreter.register(
+        "r",
         "lspark",
-        "lspark",
-        LivySparkInterpreter.class.getName(),
+        LivySparkRInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
-            .add("zeppelin.livy.url", DEFAULT_URL, "The URL for Livy Server.")
             .build()
     );
   }
 
-  private static Map<String, Integer> userSessionMap;
+  private Map<String, Integer> userSessionMap;
   private LivyHelper livyHelper;
 
-  public LivySparkInterpreter(Properties property) {
+  public LivySparkRInterpreter(Properties property) {
     super(property);
     userSessionMap = new HashMap<>();
     livyHelper = new LivyHelper(property);
-    out = new LivyOutputStream();
-  }
-
-  protected static Map<String, Integer> getUserSessionMap() {
-    return userSessionMap;
-  }
-
-  public void setUserSessionMap(Map<String, Integer> userSessionMap) {
-    this.userSessionMap = userSessionMap;
   }
 
   @Override
@@ -83,20 +72,20 @@ public class LivySparkInterpreter extends Interpreter {
               interpreterContext.getAuthenticationInfo().getUser(),
               livyHelper.createSession(
                   interpreterContext.getAuthenticationInfo().getUser(),
-                  "spark")
+                  "sparkr")
           );
-          livyHelper.initializeSpark(interpreterContext, userSessionMap);
         } catch (Exception e) {
           return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
         }
       }
+
       if (line == null || line.trim().length() == 0) {
         return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
       }
 
-      return livyHelper.interpretInput(line, interpreterContext, userSessionMap, out);
+      return livyHelper.interpret(line, interpreterContext, userSessionMap);
     } catch (Exception e) {
-      LOGGER.error("Exception in LivySparkInterpreter while interpret ", e);
+      LOGGER.error("Exception in LivySparkRInterpreter while interpret ", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR,
           InterpreterUtils.getMostRelevantMessage(e));
     }
@@ -119,7 +108,7 @@ public class LivySparkInterpreter extends Interpreter {
   @Override
   public Scheduler getScheduler() {
     return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        LivySparkInterpreter.class.getName() + this.hashCode());
+        LivySparkRInterpreter.class.getName() + this.hashCode());
   }
 
   @Override
