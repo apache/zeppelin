@@ -138,6 +138,10 @@ public class SparkSqlInterpreter extends Interpreter {
       rdd = sqlMethod.invoke(sqlc, st);
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
         | IllegalArgumentException | InvocationTargetException e) {
+      if (e instanceof InvocationTargetException) {
+        return new InterpreterResult(Code.ERROR,
+                ((InvocationTargetException) e).getTargetException().getMessage());
+      }
       throw new InterpreterException(e);
     }
 
