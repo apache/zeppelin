@@ -129,7 +129,7 @@ public abstract class FileInterpreter extends Interpreter {
         String results = listAll(newPath);
         return new InterpreterResult(Code.SUCCESS, Type.TEXT, results);
       } catch (Exception e) {
-        logger.error(e);
+        logger.error(e.getStackTrace().toString());
         return new InterpreterResult(Code.ERROR, Type.TEXT, e.getMessage());
       }
 
