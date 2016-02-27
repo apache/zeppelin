@@ -173,17 +173,29 @@ public class HDFSFileInterpreter extends FileInterpreter {
   }
   private String ListOne(String path, OneFileStatus fs) {
     if (args.flags.contains(new Character('l'))) {
-      String s = "";
-      s += listPermission(fs) + "\t ";
-      s += ((fs.replication == 0) ? "-" : fs.replication) + "\t ";
-      s += fs.owner + "\t ";
-      s += fs.group + "\t ";
-      s += fs.length + "\t ";
-      s += listDate(fs) + " GMT\t ";
-      s += (path.length() == 1) ? path + fs.pathSuffix : path + '/' + fs.pathSuffix;
-      return s;
+      StringBuilder sb = new StringBuilder();
+      sb.append(listPermission(fs) + "\t");
+      sb.append(((fs.replication == 0) ? "-" : fs.replication) + "\t ");
+      sb.append(fs.owner + "\t");
+      sb.append(fs.group + "\t");
+      if (args.flags.contains(new Character('h'))){ //human readable
+        sb.append(humanReadableByteCount(fs.length) + "\t\t");
+      } else {
+        sb.append(fs.length + "\t");
+      }
+      sb.append(listDate(fs) + "GMT\t");
+      sb.append((path.length() == 1) ? path + fs.pathSuffix : path + '/' + fs.pathSuffix);
+      return sb.toString();
     }
     return fs.pathSuffix;
+  }
+
+  private String humanReadableByteCount(long bytes) {
+    int unit = 1024;
+    if (bytes < unit) return bytes + " B";
+    int exp = (int) (Math.log(bytes) / Math.log(unit));
+    String pre = "KMGTPE".charAt(exp - 1) + "";
+    return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
   }
 
   public String listAll(String path) {
@@ -205,7 +217,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
       }
     } catch (Exception e) {
       logger.error("listall: listDir " + path, e);
-      throw new InterpreterException(e);
+      throw new InterpreterException("Could not find file or directory:\t" + path);
     }
     return all;
   }
@@ -221,7 +233,8 @@ public class HDFSFileInterpreter extends FileInterpreter {
         return sfs.FileStatus.type.equals("DIRECTORY");
     } catch (Exception e) {
       logger.error("IsDirectory: " + path, e);
-      throw new InterpreterException(e);
+      return false;
+//      throw new InterpreterException(path + " is not a directory.");
     }
     return ret;
   }

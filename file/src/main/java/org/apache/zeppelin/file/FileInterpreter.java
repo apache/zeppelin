@@ -117,7 +117,7 @@ public abstract class FileInterpreter extends Interpreter {
 
       String newPath = !args.args.isEmpty() ? getNewPath(args.args.get(0)) : currentDir;
       if (!isDirectory(newPath))
-        return new InterpreterResult(Code.ERROR, Type.TEXT, "Invalid Directory");
+        return new InterpreterResult(Code.ERROR, Type.TEXT, newPath + ": No such directory");
 
       currentDir = newPath;
       return new InterpreterResult(Code.SUCCESS, Type.TEXT, "OK");
@@ -126,7 +126,8 @@ public abstract class FileInterpreter extends Interpreter {
 
       String newPath = !args.args.isEmpty() ? getNewPath(args.args.get(0)) : currentDir;
       if (!isDirectory(newPath))
-        return new InterpreterResult(Code.ERROR, Type.TEXT, "Invalid List Directory");
+        return new InterpreterResult(Code.ERROR, Type.TEXT,
+                newPath + ": No such file or directory");
 
       String results = listAll(newPath);
       return new InterpreterResult(Code.SUCCESS, Type.TEXT, results);
