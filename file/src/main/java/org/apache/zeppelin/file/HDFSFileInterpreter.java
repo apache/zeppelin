@@ -280,7 +280,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
 
 
     // last word will contain the path we're working with.
-    String lastToken= buf.substring(buf.lastIndexOf(" ") + 1);
+    String lastToken = buf.substring(buf.lastIndexOf(" ") + 1);
     if (lastToken.startsWith("-")) { //flag not path
       return null;
     }
