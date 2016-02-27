@@ -91,7 +91,7 @@ public abstract class FileInterpreter extends Interpreter {
 
   // Combine paths, takes care of arguments such as ..
 
-  private String getNewPath(String argument){
+  protected String getNewPath(String argument){
     Path arg = Paths.get(argument);
     Path ret = arg.isAbsolute() ? arg : Paths.get(currentDir, argument);
     return ret.normalize().toString();
@@ -125,12 +125,12 @@ public abstract class FileInterpreter extends Interpreter {
     } else if (args.command.equals("ls")) {
 
       String newPath = !args.args.isEmpty() ? getNewPath(args.args.get(0)) : currentDir;
-      if (!isDirectory(newPath))
-        return new InterpreterResult(Code.ERROR, Type.TEXT,
-                newPath + ": No such file or directory");
-
-      String results = listAll(newPath);
-      return new InterpreterResult(Code.SUCCESS, Type.TEXT, results);
+      try {
+        String results = listAll(newPath);
+        return new InterpreterResult(Code.SUCCESS, Type.TEXT, results);
+      } catch (Exception e) {
+        return new InterpreterResult(Code.ERROR, Type.TEXT, e.getMessage());
+      }
 
     } else if (args.command.equals("pwd")) {
 
