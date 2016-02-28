@@ -136,12 +136,10 @@ public class SparkSqlInterpreter extends Interpreter {
       // Therefore need to use reflection to keep binary compatibility for all spark versions.
       Method sqlMethod = sqlc.getClass().getMethod("sql", String.class);
       rdd = sqlMethod.invoke(sqlc, st);
+    } catch (InvocationTargetException ite) {
+      return new InterpreterResult(Code.ERROR, ite.getTargetException().getMessage());
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
-      if (e instanceof InvocationTargetException) {
-        return new InterpreterResult(Code.ERROR,
-                ((InvocationTargetException) e).getTargetException().getMessage());
-      }
+        | IllegalArgumentException e) {
       throw new InterpreterException(e);
     }
 
