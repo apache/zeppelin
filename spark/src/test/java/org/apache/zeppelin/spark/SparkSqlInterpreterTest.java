@@ -104,13 +104,10 @@ public class SparkSqlInterpreterTest {
     assertEquals(Type.TABLE, ret.type());
     assertEquals("name\tage\nmoon\t33\npark\t34\n", ret.message());
 
-    try {
-      sql.interpret("select wrong syntax", context);
-      fail("Exception not catched");
-    } catch (Exception e) {
-      // okay
-      LOGGER.info("Exception in SparkSqlInterpreterTest while test ", e);
-    }
+    ret = sql.interpret("select wrong syntax", context);
+    assertEquals(InterpreterResult.Code.ERROR, ret.code());
+    assertTrue(ret.message().length() > 0);
+
     assertEquals(InterpreterResult.Code.SUCCESS, sql.interpret("select case when name==\"aa\" then name else name end from test", context).code());
   }
 
