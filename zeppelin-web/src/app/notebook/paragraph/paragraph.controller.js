@@ -16,8 +16,7 @@
 
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv, $http, baseUrlSrv,
-                                        baseInterpreterService) {
+                                         $timeout, $compile, websocketMsgSrv) {
 
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.paragraph = null;
@@ -2112,38 +2111,6 @@ angular.module('zeppelinWebApp')
       }
     }
     return false;
-  };
-
-  $scope.restartInterpreterSetting = function() {
-    BootstrapDialog.confirm({
-      title: '',
-      message: 'Do you want to restart this interpreter?',
-      callback: function(result) {
-        if (result) {
-          $scope.paragraph.interpreterRestarting = true;
-
-          var settingId = Object.keys($scope.note.angularObjects)[0];
-          if ($scope.paragraph.text.split('\n')[0][0] !== '%') {
-            baseInterpreterService.restartInterpreterSetting(settingId).then(function() {
-              $scope.paragraph.interpreterRestarted = true;
-            });
-          } else {
-            var language = $scope.paragraph.text.split('\n')[0].split(' ')[0].split('.')[0].split('%')[1];
-            baseInterpreterService.getInterpreterSettings().then(function(settings) {
-              for (var settingIndex in settings) {
-                if (settings[settingIndex].name === language) {
-                  settingId = settings[settingIndex].id;
-                  break;
-                }
-              }
-              baseInterpreterService.restartInterpreterSetting(settingId).then(function(interpreterSettings) {
-                $scope.paragraph.interpreterRestarted = true;
-              });
-            });
-          }
-        }
-      }
-    });
   };
 
   $scope.showScrollDownIcon = function() {
