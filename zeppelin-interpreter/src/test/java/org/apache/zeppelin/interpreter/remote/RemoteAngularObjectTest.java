@@ -25,17 +25,11 @@ import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.zeppelin.display.AngularObject;
-import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.display.AngularObjectRegistryListener;
-import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.display.*;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterAngular;
 import org.apache.zeppelin.resource.LocalResourcePool;
-import org.apache.zeppelin.resource.ResourcePool;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,6 +61,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
 
     intp = new RemoteInterpreter(
         p,
+        "note",
         MockInterpreterAngular.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
@@ -76,7 +71,8 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
         null
     );
 
-    intpGroup.add(intp);
+    intpGroup.put("note", new LinkedList<Interpreter>());
+    intpGroup.get("note").add(intp);
     intp.setInterpreterGroup(intpGroup);
 
     context = new InterpreterContext(
@@ -84,6 +80,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
         "id",
         "title",
         "text",
+        new AuthenticationInfo(),
         new HashMap<String, Object>(),
         new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),

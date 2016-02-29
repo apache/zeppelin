@@ -63,7 +63,17 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
         $scope.addNewInterpreterDependency(settingId);
       }
 
+      // add missing field of option
+      if (!setting.option) {
+        setting.option = {};
+      }      
+      if (setting.option.remote === undefined) {
+        // remote always true for now
+        setting.option.remote = true;
+      }
+
       var request = {
+        option: angular.copy(setting.option),
         properties: angular.copy(setting.properties),
         dependencies: angular.copy(setting.dependencies)
       };
@@ -203,7 +213,11 @@ angular.module('zeppelinWebApp').controller('InterpreterCtrl', function($scope, 
       name: undefined,
       group: undefined,
       properties: {},
-      dependencies: []
+      dependencies: [],
+      option: {
+        remote: true,
+        perNoteSession: false
+      }
     };
     emptyNewProperty($scope.newInterpreterSetting);
   };

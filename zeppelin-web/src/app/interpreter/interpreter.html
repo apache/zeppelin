@@ -109,6 +109,19 @@ limitations under the License.
       </div>
     </div>
     <div class="row interpreter">
+      <div class="col-md-12">
+        <h5>Option</h5>
+        <div class="checkbox">
+          <label>
+            <input type="checkbox"
+                   style="top:-5px"
+                   ng-disabled="!valueform.$visible"
+                   ng-model="setting.option.perNoteSession">
+            Separate Interpreter for each note</input>
+          </label>
+        </div>
+      </div>
+      
       <div ng-show="_.isEmpty(setting.properties) && _.isEmpty(setting.dependencies) || valueform.$hidden" class="col-md-12 gray40-message">
         <em>Currently there are no properties and dependencies set for this interpreter</em>
       </div>

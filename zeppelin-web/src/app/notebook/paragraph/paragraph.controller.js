@@ -23,8 +23,13 @@ angular.module('zeppelinWebApp')
   $scope.paragraph = null;
   $scope.originalText = '';
   $scope.editor = null;
+
   var paragraphScope = $rootScope.$new(true, $rootScope);
+  // to keep backward compatibility
+  $scope.compiledScope = paragraphScope;
+
   var angularObjectRegistry = {};
+
 
   var editorModes = {
     'ace/mode/scala': /^%spark/,
@@ -628,11 +633,16 @@ angular.module('zeppelinWebApp')
       value = params[formulaire.name];
     }
 
-    if (value === '') {
-      value = formulaire.options[0].value;
-    }
-
     $scope.paragraph.settings.params[formulaire.name] = value;
+  };
+
+  $scope.toggleCheckbox = function(formulaire, option) {
+    var idx = $scope.paragraph.settings.params[formulaire.name].indexOf(option.value);
+    if (idx > -1) {
+      $scope.paragraph.settings.params[formulaire.name].splice(idx, 1);
+    } else {
+      $scope.paragraph.settings.params[formulaire.name].push(option.value);
+    }
   };
 
   $scope.aceChanged = function() {

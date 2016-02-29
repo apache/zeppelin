@@ -24,9 +24,10 @@ struct RemoteInterpreterContext {
   2: string paragraphId,
   3: string paragraphTitle,
   4: string paragraphText,
-  5: string config,   // json serialized config
-  6: string gui,      // json serialized gui
-  7: string runners   // json serialized runner
+  5: string authenticationInfo,
+  6: string config,   // json serialized config
+  7: string gui,      // json serialized gui
+  8: string runners   // json serialized runner
 }
 
 struct RemoteInterpreterResult {
@@ -55,18 +56,18 @@ struct RemoteInterpreterEvent {
 }
 
 service RemoteInterpreterService {
-  void createInterpreter(1: string intpGroupId, 2: string className, 3: map<string, string> properties);
+  void createInterpreter(1: string intpGroupId, 2: string noteId, 3: string className, 4: map<string, string> properties);
 
-  void open(1: string className);
-  void close(1: string className);
-  RemoteInterpreterResult interpret(1: string className, 2: string st, 3: RemoteInterpreterContext interpreterContext);
-  void cancel(1: string className, 2: RemoteInterpreterContext interpreterContext);
-  i32 getProgress(1: string className, 2: RemoteInterpreterContext interpreterContext);
-  string getFormType(1: string className);
-  list<string> completion(1: string className, 2: string buf, 3: i32 cursor);
+  void open(1: string noteId, 2: string className);
+  void close(1: string noteId, 2: string className);
+  RemoteInterpreterResult interpret(1: string noteId, 2: string className, 3: string st, 4: RemoteInterpreterContext interpreterContext);
+  void cancel(1: string noteId, 2: string className, 3: RemoteInterpreterContext interpreterContext);
+  i32 getProgress(1: string noteId, 2: string className, 3: RemoteInterpreterContext interpreterContext);
+  string getFormType(1: string noteId, 2: string className);
+  list<string> completion(1: string noteId, 2: string className, 3: string buf, 4: i32 cursor);
   void shutdown();
 
-  string getStatus(1:string jobId);
+  string getStatus(1: string noteId, 2:string jobId);
 
   RemoteInterpreterEvent getEvent();
 

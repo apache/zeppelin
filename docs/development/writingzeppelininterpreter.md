@@ -22,12 +22,16 @@ limitations under the License.
 ### What is Zeppelin Interpreter
 
 Zeppelin Interpreter is a language backend. For example to use scala code in Zeppelin, you need scala interpreter.
-Every Interpreter belongs to an InterpreterGroup. InterpreterGroup is a unit of start/stop interpreter.
+Every Interpreter belongs to an InterpreterGroup. 
 Interpreters in the same InterpreterGroup can reference each other. For example, SparkSqlInterpreter can reference SparkInterpreter to get SparkContext from it while they're in the same group.
 
 <img class="img-responsive" style="width:50%; border: 1px solid #ecf0f1;" height="auto" src="/assets/themes/zeppelin/img/interpreter.png" />
 
-All Interpreters in the same interpreter group are launched in a single, separate JVM process. The Interpreter communicates with Zeppelin engine via thrift.
+InterpreterSetting is configuration of a given InterpreterGroup and a unit of start/stop interpreter.
+All Interpreters in the same InterpreterSetting are launched in a single, separate JVM process. The Interpreter communicates with Zeppelin engine via thrift.
+
+In 'Separate Interpreter for each note' mode, new Interpreter instance will be created per notebook. But it still runs on the same JVM while they're in the same InterpreterSettings.
+
 
 ### Make your own Interpreter
 

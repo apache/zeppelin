@@ -29,28 +29,30 @@ import com.google.gson.JsonSerializer;
 
 
 /**
- * Interpreter class serializer for gson
+ * InterpreterInfo class serializer for gson
  *
  */
-public class InterpreterSerializer implements JsonSerializer<Interpreter>,
-  JsonDeserializer<Interpreter> {
+public class InterpreterInfoSerializer
+    implements JsonSerializer<InterpreterSetting.InterpreterInfo>,
+    JsonDeserializer<InterpreterSetting.InterpreterInfo> {
 
   @Override
-  public JsonElement serialize(Interpreter interpreter, Type type,
+  public JsonElement serialize(InterpreterSetting.InterpreterInfo interpreterInfo, Type type,
       JsonSerializationContext context) {
     JsonObject json = new JsonObject();
-    json.addProperty("class", interpreter.getClassName());
-    json.addProperty(
-        "name",
-        Interpreter.findRegisteredInterpreterByClassName(
-            interpreter.getClassName()).getName());
+    json.addProperty("class", interpreterInfo.getClassName());
+    json.addProperty("name", interpreterInfo.getName());
     return json;
   }
 
   @Override
-  public Interpreter deserialize(JsonElement json, Type typeOfT,
+  public InterpreterSetting.InterpreterInfo deserialize(JsonElement json, Type typeOfT,
       JsonDeserializationContext context) throws JsonParseException {
-    return null;
+    JsonObject jsonObject = json.getAsJsonObject();
+    String className = jsonObject.get("class").getAsString();
+    String name = jsonObject.get("name").getAsString();
+
+    return new InterpreterSetting.InterpreterInfo(className, name);
   }
 
 }

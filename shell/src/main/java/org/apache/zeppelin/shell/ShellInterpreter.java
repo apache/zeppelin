@@ -32,6 +32,7 @@ import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.scheduler.Job;
@@ -46,10 +47,22 @@ import org.slf4j.LoggerFactory;
 public class ShellInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(ShellInterpreter.class);
   private static final String EXECUTOR_KEY = "executor";
-  int commandTimeOut = 600000;
+  public static final String SHELL_COMMAND_TIMEOUT = "shell.command.timeout.millisecs";
+  public static final String DEFAULT_COMMAND_TIMEOUT = "600000";
+  int commandTimeOut;
 
   static {
-    Interpreter.register("sh", ShellInterpreter.class.getName());
+    Interpreter.register(
+            "sh",
+            "sh",
+            ShellInterpreter.class.getName(),
+            new InterpreterPropertyBuilder()
+              .add(
+                SHELL_COMMAND_TIMEOUT,
+                DEFAULT_COMMAND_TIMEOUT,
+                "Shell command time out in millisecs. Default = 600000")
+              .build()
+    );
   }
 
   public ShellInterpreter(Properties property) {
@@ -57,7 +70,11 @@ public class ShellInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() {}
+  public void open() {
+    logger.info("Command timeout is set as:", SHELL_COMMAND_TIMEOUT);
+
+    commandTimeOut = Integer.valueOf(getProperty(SHELL_COMMAND_TIMEOUT));
+  }
 
   @Override
   public void close() {}
