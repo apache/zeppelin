@@ -143,7 +143,6 @@ public class AlluxioInterpreterTest {
             "Copied " + testFile.getAbsolutePath() + " to /testFile\n\n",
             output.message());
 
-    FileInStream tFile = fs.openFile(new AlluxioURI("/testFile"));
     long fileLength = fs.getStatus(new AlluxioURI("/testFile")).getLength();
     Assert.assertEquals(SIZE_BYTES, fileLength);
 
