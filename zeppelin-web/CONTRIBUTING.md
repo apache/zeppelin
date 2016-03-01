@@ -60,7 +60,7 @@ The `src` folder is organized as such:
  │   |    └──  component1.controller.js
  │   └──  component2/
  ├──  fonts/
- |    ├──  *.{eot,svg,ttf,woff,otf}
+ |    ├──  *.{eot,svg,ttf,woff,woff2,otf}
  │    └──  *.css
  ├──  favico.ico
  ├──  index.html
