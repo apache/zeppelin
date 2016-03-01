@@ -49,17 +49,3 @@
   with_items:
       - htmltools
       - base64enc
-
-# requirements for Plotly include libcurl and libssl
-- name: Install libcurl
-  apt: pkg={{ item }} state=present
-  with_items:
-      - libcurl4-openssl-dev
-      - libssl-dev
-
-- name: Install other helpful R packages
-  shell: /usr/bin/Rscript --slave --no-save --no-restore-history -e "if (! ('{{item}}' %in% installed.packages()[,'Package'])) install.packages(pkgs=c('{{item}}'), repos=c('{{r_packages_repos}}'))"
-  with_items:
-      - ggplot2
-      - plotly
-
