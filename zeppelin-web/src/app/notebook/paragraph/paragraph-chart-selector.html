@@ -42,10 +42,16 @@ limitations under the License.
   </button>
   <button type="button" class="btn btn-default btn-sm"
           ng-class="{'active': isGraphMode('mapChart')}"
-          ng-click="setGraphMode('mapChart', true)"><i class="fa fa-globe"></i>
+          ng-click="setGraphMode('mapChart', true)"
+					tooltip-placement="bottom" tooltip="Marker map"><i class="fa fa-map-marker"></i>
+  </button>
+  <button type="button" class="btn btn-default btn-sm"
+          ng-class="{'active': isGraphMode('heatmapChart')}"
+          ng-click="setGraphMode('heatmapChart', true)"
+					tooltip-placement="bottom" tooltip="Heatmap"><i class="fa fa-fire"></i>
   </button>
 </div>
-<span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && getGraphMode()!='mapChart' && !asIframe && !viewOnly"
+<span ng-if="getResultType()=='TABLE' && getGraphMode()!='table' && getGraphMode()!='mapChart' && getGraphMode()!='heatmapChart' && !asIframe && !viewOnly"
       style="margin-left:10px; cursor:pointer; display: inline-block; vertical-align:top; position: relative; line-height:30px;">
   <a class="btnText" ng-click="toggleGraphOption()">
     settings <span ng-class="paragraph.config.graph.optionOpen ? 'fa fa-caret-up' : 'fa fa-caret-down'"></span>

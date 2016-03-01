@@ -16,7 +16,7 @@
 
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
-                                         $timeout, $compile, websocketMsgSrv, leafletBoundsHelpers) {
+                                        $timeout, $compile, websocketMsgSrv, leafletBoundsHelpers) {
   var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.parentNote = null;
   $scope.paragraph = null;
@@ -1158,10 +1158,6 @@ angular.module('zeppelinWebApp')
       result.rows = rows;
     }
   };
-  
-  $scope.defaults= {
-    scrollWheelZoom: false
-  };
 
   $scope.setGraphMode = function(type, emit, refresh) {
     if (emit) {
@@ -1176,6 +1172,8 @@ angular.module('zeppelinWebApp')
         setTable($scope.paragraph.result, refresh);
       } else if (type === 'mapChart') {
         setMapChart(type, $scope.paragraph.result, refresh);
+      } else if (type === 'heatmapChart') {
+        setHeatmapChart(type, $scope.paragraph.result, refresh);
       } else {
         setD3Chart(type, $scope.paragraph.result, refresh);
       }
@@ -1366,11 +1364,77 @@ angular.module('zeppelinWebApp')
     $scope.bounds = bounds;
 
 
-    // set map chart height
+    //set map chart height
     var height = $scope.paragraph.config.graph.height;
     $('#p'+$scope.paragraph.id+'_mapChart').height(height);
 
     $scope.center = {};
+  };
+
+  var setHeatmapChart = function(type, data, refresh) {    
+    var layers = {},
+        latlngs = [],
+        // set starting bounding box to opposite extremes
+        bound_sw = [90, 180],
+        bound_ne = [-90, -180];
+
+    if (!$scope.chart[type]) {
+      for (var i = 0; i < data.rows.length; i++) {
+        var row = data.rows[i];
+        var lat = row[2];
+        var lng = row[3];
+        latlngs.push([lat, lng]);
+        bound_sw = [Math.min(bound_sw[0], lat), Math.min(bound_sw[1], lng)];
+        bound_ne = [Math.max(bound_ne[0], lat), Math.max(bound_ne[1], lng)];
+      }
+
+      layers = {
+        baselayers: {
+          osm: {
+            name: 'OpenStreetMap',
+            url: 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            type: 'xyz',
+            layerParams: {
+              noWrap: false
+            }
+          }
+        },
+        overlays: {
+          heat: {
+            name: 'Heatmap',
+            type: 'heat',
+            data: latlngs,
+            // TODO don't hardcode options
+            layerOptions: {
+              minOpacity: 0.45,
+              radius: 25,
+              blur: 15,
+              gradient: {0.4: 'blue', 0.65: 'lime', 1: 'red'}
+            },
+            visible: true
+          }
+        }
+      };
+      
+    }
+
+    $scope.defaults = {
+      scrollWheelZoom: true
+    };    
+    
+    $scope.layers = $.extend({}, layers);
+
+    $scope.bounds = leafletBoundsHelpers.createBoundsFromArray(
+                      [bound_ne, bound_sw]
+                    );
+    
+    // set map chart height
+    var height = $scope.paragraph.config.graph.height;
+    $('#p'+$scope.paragraph.id+'_heatmapChart').height(height);
+
+    if (refresh) {
+      $scope.layers.overlays.heat.doRefresh = true;
+    }
   };
 
   var setD3Chart = function(type, data, refresh) {

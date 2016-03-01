@@ -72,10 +72,6 @@
   width: 100%;
 }
 
-.graphContainer .mapChart {
-  overflow: hidden;
-}
-
 .resizable-helper {
   border: 3px solid #DDDDDD;
 }

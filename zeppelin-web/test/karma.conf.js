@@ -61,6 +61,7 @@ module.exports = function(config) {
       'bower_components/floatThead/dist/jquery.floatThead.min.js',
       'bower_components/leaflet/dist/leaflet-src.js',
       'bower_components/angular-leaflet-directive/dist/angular-leaflet-directive.js',
+      'bower_components/leaflet.heat/dist/leaflet-heat.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'src/app/app.js',
