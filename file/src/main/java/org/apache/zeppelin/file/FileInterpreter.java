@@ -129,7 +129,7 @@ public abstract class FileInterpreter extends Interpreter {
         String results = listAll(newPath);
         return new InterpreterResult(Code.SUCCESS, Type.TEXT, results);
       } catch (Exception e) {
-        logger.error(e.getStackTrace().toString());
+        logger.error("Error listing files in path " + newPath, e);
         return new InterpreterResult(Code.ERROR, Type.TEXT, e.getMessage());
       }
 
