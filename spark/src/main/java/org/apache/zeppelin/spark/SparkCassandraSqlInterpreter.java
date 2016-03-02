@@ -17,33 +17,27 @@
 
 package org.apache.zeppelin.spark;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.spark.sql.cassandra.*;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.cassandra.CassandraSQLContext;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.scheduler.Scheduler;
-import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.apache.zeppelin.spark.utils.CsqlParserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Spark Cassandra SQL interpreter for Zeppelin.
  */
-public class SparkCassandraSqlInterpreter extends Interpreter {
+public class SparkCassandraSqlInterpreter extends SparkSqlInterpreter {
     Logger logger = LoggerFactory.getLogger(SparkCassandraSqlInterpreter.class);
-    AtomicInteger num = new AtomicInteger(0);
 
     static {
         Interpreter.register(
@@ -62,59 +56,8 @@ public class SparkCassandraSqlInterpreter extends Interpreter {
                         .build());
     }
 
-    private String getJobGroup(InterpreterContext context){
-        return "zeppelin-" + context.getParagraphId();
-    }
-
-    private int maxResult;
-
     public SparkCassandraSqlInterpreter(Properties property) {
         super(property);
-    }
-
-    private java.util.Date myfield = new java.util.Date();
-
-    @Override
-    public void open() {
-        this.maxResult = Integer.parseInt(getProperty("zeppelin.spark.maxResult"));
-
-        SparkInterpreter interperter = getSparkInterpreter();
-
-        //
-        // TODO: is there a way to wire a Cassandra SQL context into the Spark interpreter
-        // this will allow us to not hae to hack up SparkInterpreter
-        //
-        // interperter.interpretInput(input);
-        //
-        logger.error("Done binding myfield.");
-    }
-
-    private SparkInterpreter getSparkInterpreter() {
-        InterpreterGroup intpGroup = getInterpreterGroup();
-        LazyOpenInterpreter lazy = null;
-        SparkInterpreter spark = null;
-        synchronized (intpGroup) {
-            for (Interpreter intp : getInterpreterGroup()){
-                if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
-                    Interpreter p = intp;
-                    while (p instanceof WrappedInterpreter) {
-                        if (p instanceof LazyOpenInterpreter) {
-                            lazy = (LazyOpenInterpreter) p;
-                        }
-                        p = ((WrappedInterpreter) p).getInnerInterpreter();
-                    }
-                    spark = (SparkInterpreter) p;
-                }
-            }
-        }
-        if (lazy != null) {
-            lazy.open();
-        }
-        return spark;
-    }
-
-    public boolean concurrentSQL() {
-        return Boolean.parseBoolean(getProperty("zeppelin.spark.concurrentSQL"));
     }
 
     Pattern extractIntoTableNamePattern =
@@ -161,25 +104,34 @@ public class SparkCassandraSqlInterpreter extends Interpreter {
      * like register a UDF but looking for any use of a Cassandra SQL context.
      */
     private Boolean contextSparkSqlContext(String snippet) {
-        return snippet.contains("csqlc.");
+        return snippet.contains("sqlc");
+    }
+
+    /**
+     * Initialize the interpreter. Load all necessary tables here
+     */
+    @Override
+    public void open() {
+        super.open();
+        String source = "org.apache.spark.sql.cassandra";
+        SQLContext sqlc = getSparkInterpreter().getSQLContext();
+
+        // Register our Cassandra tables as external tables in the spark sql hive context
+        Map<String, String> eventlogOpt = new HashMap<>();
+        eventlogOpt.put("keyspace", "analytics");
+        eventlogOpt.put("table", "eventlog");
+        Map<String, String> experimentOpt = new HashMap<>();
+        experimentOpt.put("keyspace", "analytics");
+        experimentOpt.put("table", "experiment_assignments");
+        sqlc.createExternalTable("eventlog", source, eventlogOpt);
+        sqlc.createExternalTable("experiment_assignments", source, experimentOpt);
     }
 
     @Override
-    public void close() {}
-
-    @Override
     public InterpreterResult interpret(String st, InterpreterContext context) {
-
-        CassandraSQLContext sqlc = null;
-
-//    if (sparkInterpreter.getSparkVersion().isUnsupportedVersion()) {
-//      return new InterpreterResult(Code.ERROR, "Spark "
-//          + sparkInterpreter.getSparkVersion().toString() + " is not supported");
-//    }
-
-        sqlc = getSparkInterpreter().getCassandraSQLContext();
-
+        SQLContext sqlc = getSparkInterpreter().getSQLContext();
         SparkContext sc = sqlc.sparkContext();
+
         if (concurrentSQL()) {
             sc.setLocalProperty("spark.scheduler.pool", "fair");
         } else {
@@ -187,7 +139,6 @@ public class SparkCassandraSqlInterpreter extends Interpreter {
         }
 
         sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
-
 
         DataFrame rddResult = null;
         for (String snippet : st.split(";")) {
@@ -219,7 +170,7 @@ public class SparkCassandraSqlInterpreter extends Interpreter {
             }
         }
 
-        int maxQueryResults = maxResult;
+        int maxQueryResults = super.maxResult;
         if (context.getConfig().containsKey("OVERRIDE_MAX_RESULTS")){
             maxQueryResults = Integer.parseInt((String)context.getConfig().get("OVERRIDE_MAX_RESULTS"));
             logger.info("Increasing max results returned to:" + maxQueryResults);
@@ -230,57 +181,8 @@ public class SparkCassandraSqlInterpreter extends Interpreter {
             msg = ZeppelinContext.showDF(sc, context, rddResult, maxQueryResults);
             logger.info("Finished constructing result.");
         }
+
         sc.clearJobGroup();
         return new InterpreterResult(Code.SUCCESS, msg);
-    }
-
-    @Override
-    public void cancel(InterpreterContext context) {
-        SQLContext sqlc = getSparkInterpreter().getSQLContext();
-        SparkContext sc = sqlc.sparkContext();
-
-        sc.cancelJobGroup(getJobGroup(context));
-    }
-
-    @Override
-    public FormType getFormType() {
-        return FormType.SIMPLE;
-    }
-
-
-    @Override
-    public int getProgress(InterpreterContext context) {
-        SparkInterpreter sparkInterpreter = getSparkInterpreter();
-        return sparkInterpreter.getProgress(context);
-    }
-
-    @Override
-    public Scheduler getScheduler() {
-        if (concurrentSQL()) {
-            int maxConcurrency = 10;
-            return SchedulerFactory.singleton().createOrGetParallelScheduler(
-                    SparkCassandraSqlInterpreter.class.getName() + this.hashCode(), maxConcurrency);
-        } else {
-            // getSparkInterpreter() calls open() inside.
-            // That means if SparkInterpreter is not opened, it'll wait until SparkInterpreter open.
-            // In this moment UI displays 'READY' or 'FINISHED' instead of 'PENDING' or 'RUNNING'.
-            // It's because of scheduler is not created yet, and scheduler is created by this function.
-            // Therefore, we can still use getSparkInterpreter() here, but it's better and safe
-            // to getSparkInterpreter without opening it.
-            for (Interpreter intp : getInterpreterGroup()) {
-                if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
-                    Interpreter p = intp;
-                    return p.getScheduler();
-                } else {
-                    continue;
-                }
-            }
-            throw new InterpreterException("Can't find SparkInterpreter");
-        }
-    }
-
-    @Override
-    public List<String> completion(String buf, int cursor) {
-        return null;
     }
 }
