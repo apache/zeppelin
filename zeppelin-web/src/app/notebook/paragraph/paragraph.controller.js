@@ -973,6 +973,12 @@ angular.module('zeppelinWebApp')
         } else {
           $scope.showLineNumbers();
         }
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 189) { // Ctrl + Shift + -
+        $scope.paragraph.config.colWidth = Math.max(1, $scope.paragraph.config.colWidth - 1);
+        $scope.changeColWidth();
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 187) { // Ctrl + Shift + =
+        $scope.paragraph.config.colWidth = Math.min(12, $scope.paragraph.config.colWidth + 1);
+        $scope.changeColWidth();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && ((keyCode >= 48 && keyCode <=57) || keyCode === 189 || keyCode === 187)) { // Ctrl + Alt + [1~9,0,-,=]
         var colWidth = 12;
         if (keyCode === 48) {
