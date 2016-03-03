@@ -58,6 +58,8 @@ export HADOOP_CONF_DIR=/usr/lib/hadoop
 export SPARK_SUBMIT_OPTIONS="--packages com.databricks:spark-csv_2.10:1.2.0"
 ```
 
+For Windows, ensure you have `winutils.exe` in `%HADOOP_HOME%\bin`. For more details please see [Problems running Hadoop on Windows](https://wiki.apache.org/hadoop/WindowsProblems)
+
 ### 2. Set master in Interpreter menu
 After start Zeppelin, go to **Interpreter** menu and edit **master** property in your Spark interpreter setting. The value may vary depending on your Spark cluster deployment type.
 

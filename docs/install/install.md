@@ -37,7 +37,7 @@ You can also build Zeppelin from the source. Please check instructions in `READM
 
 ## Zeppelin Configuration
 
-You can configure Zeppelin with both **environment variables** in `conf/zeppelin-env.sh` and **java properties** in `conf/zeppelin-site.xml`. If both are defined, then the **environment variables** will be used priorly.
+You can configure Zeppelin with both **environment variables** in `conf/zeppelin-env.sh` (`conf\zeppelin-env.cmd` for Windows) and **Java properties** in `conf/zeppelin-site.xml`. If both are defined, then the **environment variables** will take priority.
 
 <table class="table-configuration">
   <tr>
@@ -210,4 +210,10 @@ After successful start, visit [http://localhost:8080](http://localhost:8080) wit
 
 ```
 bin/zeppelin-daemon.sh stop
+```
+
+#### Running on Windows
+
+```
+bin\zeppelin.cmd
 ```
