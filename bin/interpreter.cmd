@@ -96,9 +96,9 @@ if /I "%INTERPRETER_ID%"=="spark" (
         set PYSPARKPATH=%ZEPPELIN_HOME%\interpreter\spark\pyspark\pyspark.zip;!py4j!
         
         if "%PYTHONPATH%"=="" (
-            set PYTHONPATH=%PYSPARKPATH%
+            set PYTHONPATH=!PYSPARKPATH!
         ) else (
-            set PYTHONPATH=%PYTHONPATH%;%PYSPARKPATH%
+            set PYTHONPATH=%PYTHONPATH%;!PYSPARKPATH!
         )
         
         set PYSPARKPATH=
