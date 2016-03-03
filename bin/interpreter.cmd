@@ -68,13 +68,17 @@ if /I "%INTERPRETER_ID%"=="spark" (
         for %%d in ("%ZEPPELIN_HOME%\interpreter\spark\zeppelin-spark*.jar") do (
             set SPARK_APP_JAR=%%d
         )
-        set ZEPPELIN_CLASSPATH=%SPARK_APP_JAR%
+        set ZEPPELIN_CLASSPATH=!SPARK_APP_JAR!
         
         for %%d in ("%SPARK_HOME%\python\lib\py4j-*-src.zip") do (
             set py4j=%%d
         )
         
-        set PYTHONPATH=%py4j%;%SPARK_HOME%\python;%PYTHONPATH%
+        if "%PYTHONPATH%"=="" (
+            set PYTHONPATH=!py4j!;%SPARK_HOME%\python
+        ) else (
+            set PYTHONPATH=!py4j!;%SPARK_HOME%\python;%PYTHONPATH%
+        )
     ) else (
         if not "%HADOOP_HOME%"=="" if exist "%HADOOP_HOME%\bin\hadoop.cmd" (
             for /f "tokens=*" %%d in ('"%HADOOP_HOME%\bin\hadoop.cmd" classpath') do (
@@ -89,7 +93,7 @@ if /I "%INTERPRETER_ID%"=="spark" (
             set py4j=%%d
         )
         
-        set PYSPARKPATH=%ZEPPELIN_HOME%\interpreter\spark\pyspark\pyspark.zip;%py4j%
+        set PYSPARKPATH=%ZEPPELIN_HOME%\interpreter\spark\pyspark\pyspark.zip;!py4j!
         
         if "%PYTHONPATH%"=="" (
             set PYTHONPATH=%PYSPARKPATH%
