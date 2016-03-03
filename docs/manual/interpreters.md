@@ -32,9 +32,15 @@ When you click the ```+Create``` button in the interpreter page, the interpreter
 <img src="/assets/themes/zeppelin/img/screenshots/interpreter_create.png">
 
 ## What is Zeppelin Interpreter Setting?
-Zeppelin interpreter setting is the configuration of a given interpreter on Zeppelin server. For example, the properties are required for hive JDBC interpreter to connect to the Hive server.
+Zeppelin interpreter setting is the configuration of a given interpreter on Zeppelin server. For example, the properties are required for hive JDBC interpreter to connect to the Hive server. 
 
 <img src="/assets/themes/zeppelin/img/screenshots/interpreter_setting.png">
+
+Each notebook can be binded to multiple Interpreter Settings using setting icon on upper right corner of the notebook.
+
+<img src="/assets/themes/zeppelin/img/screenshots/interpreter_binding.png" width="800px">
+
+
 
 ## What is Zeppelin Interpreter Group?
 Every Interpreter is belonged to an **Interpreter Group**. Interpreter Group is a unit of start/stop interpreter.
@@ -44,3 +50,12 @@ Technically, Zeppelin interpreters from the same group are running in the same J
 
 Each interpreters is belonged to a single group and registered together. All of their properties are listed in the interpreter setting like below image.
 <img src="/assets/themes/zeppelin/img/screenshots/interpreter_setting_spark.png">
+
+
+## Interpreter binding mode
+
+Each Interpreter Setting can choose one of two different interpreter binding mode.
+Shared mode (default) and 'Separate Interpreter for each note' mode. In shared mode, every notebook binded to the Interpreter Setting will share the single Interpreter instance. In 'Separate Interpreter for each note' mode, each notebook will create new Interpreter instance. Therefore each notebook will have fresh new Interpreter environment.
+
+<img src="/assets/themes/zeppelin/img/screenshots/interpreter_persession.png" width="400px">
+

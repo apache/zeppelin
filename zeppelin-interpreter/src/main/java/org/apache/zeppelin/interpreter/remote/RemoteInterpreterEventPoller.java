@@ -244,7 +244,8 @@ public class RemoteInterpreterEventPoller extends Thread {
   }
 
   private Object getResource(ResourceId resourceId) {
-    InterpreterGroup intpGroup = InterpreterGroup.get(resourceId.getResourcePoolId());
+    InterpreterGroup intpGroup = InterpreterGroup.getByInterpreterGroupId(
+        resourceId.getResourcePoolId());
     if (intpGroup == null) {
       return null;
     }

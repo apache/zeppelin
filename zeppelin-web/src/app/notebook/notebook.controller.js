@@ -154,6 +154,21 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     });
   };
 
+  // checkpoint/commit notebook
+  $scope.checkpointNotebook = function(commitMessage) {
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: 'Commit notebook to current repository?',
+      callback: function(result) {
+        if (result) {
+          websocketMsgSrv.checkpointNotebook($routeParams.noteId, commitMessage);
+        }
+      }
+    });
+    document.getElementById('note.checkpoint.message').value='';
+  };
+
   $scope.runNote = function() {
     BootstrapDialog.confirm({
       closable: true,
@@ -617,6 +632,69 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     }
   };
 
+  var getPermissions = function(callback) {
+    $http.get(baseUrlSrv.getRestApiBase()+ '/notebook/' +$scope.note.id + '/permissions').
+    success(function(data, status, headers, config) {
+      $scope.permissions = data.body;
+      $scope.permissionsOrig = angular.copy($scope.permissions); // to check dirty
+      if (callback) {
+        callback();
+      }
+    }).
+    error(function(data, status, headers, config) {
+      if (status !== 0) {
+        console.log('Error %o %o', status, data.message);
+      }
+    });
+  };
+
+  $scope.openPermissions = function() {
+    $scope.showPermissions = true;
+    getPermissions();
+  };
+
+
+  $scope.closePermissions = function() {
+    if (isPermissionsDirty()) {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: '',
+        message: 'Changes will be discarded.',
+        callback: function(result) {
+          if (result) {
+            $scope.$apply(function() {
+              $scope.showPermissions = false;
+            });
+          }
+        }
+      });
+    } else {
+      $scope.showPermissions = false;
+    }
+  };
+
+  $scope.savePermissions = function() {
+    $http.put(baseUrlSrv.getRestApiBase() + '/notebook/' +$scope.note.id + '/permissions',
+      $scope.permissions, {withCredentials: true}).
+    success(function(data, status, headers, config) {
+      console.log('Note permissions %o saved', $scope.permissions);
+      $scope.showPermissions = false;
+    }).
+    error(function(data, status, headers, config) {
+      console.log('Error %o %o', status, data.message);
+      alert(data.message);
+    });
+  };
+
+  $scope.togglePermissions = function() {
+    if ($scope.showPermissions) {
+      $scope.closePermissions();
+    } else {
+      $scope.openPermissions();
+    }
+  };
+
+
   var isSettingDirty = function() {
     if (angular.equals($scope.interpreterBindings, $scope.interpreterBindingsOrig)) {
       return false;
@@ -624,4 +702,13 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
       return true;
     }
   };
+
+  var isPermissionsDirty = function() {
+    if (angular.equals($scope.permissions, $scope.permissionsOrig)) {
+      return false;
+    } else {
+      return true;
+    }
+  };
+
 });

@@ -18,6 +18,7 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.mock.MockInterpreterOutputStream;
@@ -43,6 +44,8 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
   @Before
   public void setUp() throws Exception {
     intpGroup = new InterpreterGroup();
+    intpGroup.put("note", new LinkedList<Interpreter>());
+
     env = new HashMap<String, String>();
     env.put("ZEPPELIN_CLASSPATH", new File("./target/test-classes").getAbsolutePath());
   }
@@ -56,6 +59,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
   private RemoteInterpreter createMockInterpreter() {
     RemoteInterpreter intp = new RemoteInterpreter(
         new Properties(),
+        "note",
         MockInterpreterOutputStream.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
@@ -64,7 +68,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
         10 * 1000,
         this);
 
-    intpGroup.add(intp);
+    intpGroup.get("note").add(intp);
     intp.setInterpreterGroup(intpGroup);
     return intp;
   }
@@ -75,6 +79,7 @@ public class RemoteInterpreterOutputTestStream implements RemoteInterpreterProce
         "id",
         "title",
         "text",
+        new AuthenticationInfo(),
         new HashMap<String, Object>(),
         new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),

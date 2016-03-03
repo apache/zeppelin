@@ -23,9 +23,20 @@ limitations under the License.
        ng-bind-html="paragraph.result.comment">
   </div>
 
-  <div id="p{{paragraph.id}}_text"
-       class="text"
-       ng-if="getResultType() == 'TEXT'"></div>
+  <div id="{{paragraph.id}}_text"
+       ng-if="getResultType() == 'TEXT'">
+    <div class="fa fa-level-down scroll-paragraph-down"
+         ng-show="showScrollDownIcon()"
+         ng-click="scrollParagraphDown()"
+         tooltip="Follow Output"></div>
+    <div id="p{{paragraph.id}}_text"
+         style="max-height: {{paragraph.config.graph.height}}px; overflow: auto"
+         class="text"></div>
+    <div class="fa fa-chevron-up scroll-paragraph-up"
+         ng-show="showScrollUpIcon()"
+         ng-click="scrollParagraphUp()"
+         tooltip="Scroll Top"></div>
+  </div>
 
   <div id="p{{paragraph.id}}_html"
        class="resultContained"

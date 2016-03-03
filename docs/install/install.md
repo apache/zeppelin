@@ -22,9 +22,9 @@ limitations under the License.
 
 
 ## Zeppelin Installation
-Welcome to your first trial to explore Zeppelin ! 
+Welcome to your first trial to explore Zeppelin!
 
-In this documentation, we will explain how you can install Zeppelin from **Binary Package** or build from **Source** by yourself. Plus, you can see all of Zeppelin's configurations in the **Zeppelin Configuration** section below.
+In this documentation, we will explain how you can install Zeppelin from **Binary Package** or build from **Source** by yourself. Plus, you can see all of Zeppelin's configurations in the [Zeppelin Configuration](install.html#zeppelin-configuration) section below.
 
 ### Install with Binary Package
 
@@ -32,9 +32,17 @@ If you want to install Zeppelin with latest binary package, please visit [this p
 
 ### Build from Zeppelin Source
 
-You can also build Zeppelin from the source. Please check instructions in `README.md` in [Zeppelin github](https://github.com/apache/incubator-zeppelin/blob/master/README.md). 
+You can also build Zeppelin from the source.
 
+#### Prerequisites for build
+ * Java 1.7
+ * Git
+ * Maven(3.1.x or higher)
+ * Node.js Package Manager
 
+If you don't have requirements prepared, please check instructions in [README.md](https://github.com/apache/incubator-zeppelin/blob/master/README.md) for the details.
+
+<a name="zeppelin-configuration"> </a>
 ## Zeppelin Configuration
 
 You can configure Zeppelin with both **environment variables** in `conf/zeppelin-env.sh` (`conf\zeppelin-env.cmd` for Windows) and **Java properties** in `conf/zeppelin-site.xml`. If both are defined, then the **environment variables** will take priority.
@@ -75,6 +83,12 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>zeppelin.server.allowed.origins</td>
     <td>*</td>
     <td>Enables a way to specify a ',' separated list of allowed origins for rest and websockets. <br /> i.e. http://localhost:8080 </td>
+  </tr>
+    <tr>
+    <td>N/A</td>
+    <td>zeppelin.anonymous.allowed</td>
+    <td>true</td>
+    <td>Anonymous user is allowed by default.</td>
   </tr>
   <tr>
     <td>ZEPPELIN_SERVER_CONTEXT_PATH</td>
@@ -173,6 +187,24 @@ You can configure Zeppelin with both **environment variables** in `conf/zeppelin
     <td>A user name of S3 bucket<br />i.e. <code>bucket/user/notebook/2A94M5J1Z/note.json</code></td>
   </tr>
   <tr>
+    <td>ZEPPELIN_NOTEBOOK_AZURE_CONNECTION_STRING</td>
+    <td>zeppelin.notebook.azure.connectionString</td>
+    <td></td>
+    <td>The Azure storage account connection string<br />i.e. <code>DefaultEndpointsProtocol=https;AccountName=&lt;accountName&gt;;AccountKey=&lt;accountKey&gt;</code></td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_AZURE_SHARE</td>
+    <td>zeppelin.notebook.azure.share</td>
+    <td>zeppelin</td>
+    <td>Share where the Zeppelin notebook files will be saved</td>
+  </tr>
+  <tr>
+    <td>ZEPPELIN_NOTEBOOK_AZURE_USER</td>
+    <td>zeppelin.notebook.azure.user</td>
+    <td>user</td>
+    <td>An optional user name of Azure file share<br />i.e. <code>share/user/notebook/2A94M5J1Z/note.json</code></td>
+  </tr>
+  <tr>
     <td>ZEPPELIN_NOTEBOOK_STORAGE</td>
     <td>zeppelin.notebook.storage</td>
     <td>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</td>
@@ -212,8 +244,43 @@ After successful start, visit [http://localhost:8080](http://localhost:8080) wit
 bin/zeppelin-daemon.sh stop
 ```
 
+#### Start Zeppelin with a service manager such as upstart
+
+Zeppelin can auto start as a service with an init script, such as services managed by upstart.
+
+The following is an example upstart script to be saved as `/etc/init/zeppelin.conf` 
+This example has been tested with Ubuntu Linux.
+This also allows the service to be managed with commands such as 
+
+`sudo service zeppelin start`  
+`sudo service zeppelin stop`  
+`sudo service zeppelin restart`
+
+Other service managers could use a similar approach with the `upstart` argument passed to the zeppelin-daemon.sh script:  `bin/zeppelin-daemon.sh upstart`
+
+##### zeppelin.conf
+
+```
+description "zeppelin"
+
+start on (local-filesystems and net-device-up IFACE!=lo)
+stop on shutdown
+
+# Respawn the process on unexpected termination
+respawn
+
+# respawn the job up to 7 times within a 5 second period.
+# If the job exceeds these values, it will be stopped and marked as failed.
+respawn limit 7 5
+
+# zeppelin was installed in /usr/share/zeppelin in this example
+chdir /usr/share/zeppelin
+exec bin/zeppelin-daemon.sh upstart
+```
+
 #### Running on Windows
 
 ```
 bin\zeppelin.cmd
 ```
+

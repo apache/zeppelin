@@ -61,6 +61,32 @@ limitations under the License.
               tooltip-placement="bottom" tooltip="Export the notebook">
         <i class="fa fa-download"></i>
       </button>
+        <ul class="dropdown-menu" role="menu" style="width:250px">
+          <li>
+            <div class="cron-preset-container">
+              <div>
+                <input type="text"
+                       dropdown-input
+                       placeholder="commit message"
+                       id="note.checkpoint.message"
+                       ng-model="note.checkpoint.message"/>
+                <button type="button"
+                  class="btn btn-default btn-xs"
+                  ng-hide="viewOnly"
+                  ng-click="checkpointNotebook(note.checkpoint.message)"
+                  tooltip-placement="bottom" tooltip="Commit the notebook">Commit
+                </button>
+              </div>
+            </div>
+          </li>
+        </ul>
+        <button type="button"
+                class="btn btn-default btn-xs dropdown-toggle"
+                ng-hide="viewOnly"
+                data-toggle="dropdown"
+                tooltip-placement="bottom" tooltip="Version control">
+          <i class="fa fa-file-code-o"></i>
+        </button>
     </span>
 
 <!-- put the delete action by itself for your protection -->
@@ -128,6 +154,11 @@ limitations under the License.
             ng-click="toggleSetting()"
             tooltip-placement="bottom" tooltip="Interpreter binding">
         <i class="fa fa-cog" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
+      </span>
+      <span style="position:relative; top:2px; margin-right:4px; cursor:pointer;"
+            ng-click="togglePermissions()"
+            tooltip-placement="bottom" tooltip="Note permissions">
+        <i class="fa fa-lock" ng-style="{color: showSetting ? '#3071A9' : 'black' }"></i>
       </span>
 
       <span class="btn-group">

@@ -79,6 +79,11 @@ public class VFSNotebookRepo implements NotebookRepo {
     }
 
     fsManager = VFS.getManager();
+    FileObject file = fsManager.resolveFile(filesystemRoot.getPath());
+    if (!file.exists()) {
+      logger.info("Notebook dir doesn't exist, create.");
+      file.createFolder();
+    }
   }
 
   private String getPath(String path) {
@@ -245,6 +250,12 @@ public class VFSNotebookRepo implements NotebookRepo {
   @Override
   public void close() {
     //no-op    
+  }
+
+  @Override
+  public void checkpoint(String noteId, String checkPointName) throws IOException {
+    // no-op
+    logger.info("Checkpoint feature isn't supported in {}", this.getClass().toString());
   }
 
 }

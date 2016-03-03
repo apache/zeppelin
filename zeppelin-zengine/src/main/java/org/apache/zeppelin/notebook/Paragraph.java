@@ -18,6 +18,7 @@
 package org.apache.zeppelin.notebook;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
@@ -26,6 +27,7 @@ import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
+import org.apache.zeppelin.scheduler.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +47,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   String title;
   String text;
+  AuthenticationInfo authenticationInfo;
   Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
@@ -55,6 +58,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.replLoader = replLoader;
     title = null;
     text = null;
+    authenticationInfo = null;
     dateUpdated = null;
     settings = new GUI();
     config = new HashMap<String, Object>();
@@ -74,6 +78,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.dateUpdated = new Date();
   }
 
+  public AuthenticationInfo getAuthenticationInfo() {
+    return authenticationInfo;
+  }
+
+  public void setAuthenticationInfo(AuthenticationInfo authenticationInfo) {
+    this.authenticationInfo = authenticationInfo;
+  }
 
   public String getTitle() {
     return title;
@@ -89,6 +100,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public Note getNote() {
     return note;
+  }
+
+  public boolean isEnabled() {
+    Boolean enabled = (Boolean) config.get("enabled");
+    return enabled == null || enabled.booleanValue();
   }
 
   public String getRequiredReplName() {
@@ -246,7 +262,17 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   @Override
   protected boolean jobAbort() {
     Interpreter repl = getRepl(getRequiredReplName());
-    Job job = repl.getScheduler().removeFromWaitingQueue(getId());
+    if (repl == null) {
+      // when interpreters are already destroyed
+      return true;
+    }
+
+    Scheduler scheduler = repl.getScheduler();
+    if (scheduler == null) {
+      return true;
+    }
+
+    Job job = scheduler.removeFromWaitingQueue(getId());
     if (job != null) {
       job.setStatus(Status.ABORT);
     } else {
@@ -276,6 +302,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
             getId(),
             this.getTitle(),
             this.getText(),
+            this.getAuthenticationInfo(),
             this.getConfig(),
             this.settings,
             registry,
