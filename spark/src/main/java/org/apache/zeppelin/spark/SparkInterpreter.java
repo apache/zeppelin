@@ -481,18 +481,18 @@ public class SparkInterpreter extends Interpreter {
 
     System.setProperty("scala.repl.name.line", "line" + this.hashCode() + "$");
 
-    /* create scala repl */
-    this.interpreter = new SparkILoop(null, new PrintWriter(out));
-
-    interpreter.settings_$eq(settings);
-
-    interpreter.createInterpreter();
-
-    intp = interpreter.intp();
-    intp.setContextClassLoader();
-    intp.initializeSynchronous();
-
     synchronized (sharedInterpreterLock) {
+      /* create scala repl */
+      this.interpreter = new SparkILoop(null, new PrintWriter(out));
+
+      interpreter.settings_$eq(settings);
+
+      interpreter.createInterpreter();
+
+      intp = interpreter.intp();
+      intp.setContextClassLoader();
+      intp.initializeSynchronous();
+
       if (classOutputDir == null) {
         classOutputDir = settings.outputDirs().getSingleOutput().get();
       } else {
@@ -523,35 +523,35 @@ public class SparkInterpreter extends Interpreter {
       sparkVersion = SparkVersion.fromVersionString(sc.version());
 
       sqlc = getSQLContext();
-    }
 
-    dep = getDependencyResolver();
+      dep = getDependencyResolver();
 
-    z = new ZeppelinContext(sc, sqlc, null, dep,
-        Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
+      z = new ZeppelinContext(sc, sqlc, null, dep,
+              Integer.parseInt(getProperty("zeppelin.spark.maxResult")));
 
-    intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
-    binder = (Map<String, Object>) getValue("_binder");
-    binder.put("sc", sc);
-    binder.put("sqlc", sqlc);
-    binder.put("z", z);
+      intp.interpret("@transient var _binder = new java.util.HashMap[String, Object]()");
+      binder = (Map<String, Object>) getValue("_binder");
+      binder.put("sc", sc);
+      binder.put("sqlc", sqlc);
+      binder.put("z", z);
 
-    intp.interpret("@transient val z = "
-                 + "_binder.get(\"z\").asInstanceOf[org.apache.zeppelin.spark.ZeppelinContext]");
-    intp.interpret("@transient val sc = "
-                 + "_binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
-    intp.interpret("@transient val sqlc = "
-                 + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
-    intp.interpret("@transient val sqlContext = "
-                 + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
-    intp.interpret("import org.apache.spark.SparkContext._");
+      intp.interpret("@transient val z = "
+              + "_binder.get(\"z\").asInstanceOf[org.apache.zeppelin.spark.ZeppelinContext]");
+      intp.interpret("@transient val sc = "
+              + "_binder.get(\"sc\").asInstanceOf[org.apache.spark.SparkContext]");
+      intp.interpret("@transient val sqlc = "
+              + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
+      intp.interpret("@transient val sqlContext = "
+              + "_binder.get(\"sqlc\").asInstanceOf[org.apache.spark.sql.SQLContext]");
+      intp.interpret("import org.apache.spark.SparkContext._");
 
-    if (sparkVersion.oldSqlContextImplicits()) {
-      intp.interpret("import sqlContext._");
-    } else {
-      intp.interpret("import sqlContext.implicits._");
-      intp.interpret("import sqlContext.sql");
-      intp.interpret("import org.apache.spark.sql.functions._");
+      if (sparkVersion.oldSqlContextImplicits()) {
+        intp.interpret("import sqlContext._");
+      } else {
+        intp.interpret("import sqlContext.implicits._");
+        intp.interpret("import sqlContext.sql");
+        intp.interpret("import org.apache.spark.sql.functions._");
+      }
     }
 
     /* Temporary disabling DisplayUtils. see https://issues.apache.org/jira/browse/ZEPPELIN-127
