@@ -104,7 +104,7 @@
     <module>lens</module>
     <module>cassandra</module>
     <module>elasticsearch</module>
-    <module>tachyon</module>
+    <module>alluxio</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
@@ -446,6 +446,7 @@
               <exclude>**/.idea/</exclude>
               <exclude>**/*.iml</exclude>
               <exclude>.git/</exclude>
+              <exclude>.github/*</exclude>
               <exclude>.gitignore</exclude>
               <exclude>.repository/</exclude>
               <exclude>**/*.diff</exclude>

@@ -17,6 +17,7 @@ In order to make the review process easier, please follow this template when mak
 ```
 ### What is this PR for?
 A few sentences describing the overall goals of the pull request's commits.
+First time? Check out the contributing guide - https://github.com/apache/incubator-zeppelin/blob/master/CONTRIBUTING.md
 
 ### What type of PR is it?
 [Bug Fix | Improvement | Feature | Documentation | Hot Fix | Refactoring]
@@ -24,7 +25,9 @@ A few sentences describing the overall goals of the pull request's commits.
 ### Todos
 * [ ] - Task
 
-### Is there a relevant Jira issue?
+### What is the Jira issue?
+* Open an issue on Jira https://issues.apache.org/jira/browse/ZEPPELIN/
+* Put link here, and add [ZEPPELIN-*Jira number*] in PR title, eg. [ZEPPELIN-533]
 
 ### How should this be tested?
 Outline the steps to test the PR here.
@@ -35,12 +38,6 @@ Outline the steps to test the PR here.
 * Does the licenses files need update?
 * Is there breaking changes for older versions?
 * Does this needs documentation?
-```
-
-You can also use this small bookmarklet tool to fill your Pull Request fields automatically:
-
-```
-javascript:(function() {var e = document.getElementById('pull_request_body');if (e) {e.value += '### What is this PR for?\nA few sentences describing the overall goals of the pull request\'s commits.\n\n### What type of PR is it?\n[Bug Fix | Improvement | Feature | Documentation | Hot Fix | Refactoring]\n\n### Todos\n* [ ] - Task\n\n### Is there a relevant Jira issue?\n\n### How should this be tested?\nOutline the steps to test the PR here.\n\n### Screenshots (if appropriate)\n\n### Questions:\n* Does the licenses files need update?\n* Is there breaking changes for older versions?\n* Does this needs documentation?';}})();
 ```
 
 ## Testing a Pull Request
