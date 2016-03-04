@@ -35,10 +35,8 @@ sudo apt-get install git
 sudo apt-get install openjdk-7-jdk
 sudo apt-get install npm
 sudo apt-get install libfontconfig
-sudo npm -g install grunt-cli
-sudo npm -g install bower
 
-# Optional: If you're limited to what ports you can access externally
+# Optional: If you're limited to what ports you can access externally, use this (portions of the maven build use git):
 # git config --global url."https://".insteadOf git://
 
 # install maven
