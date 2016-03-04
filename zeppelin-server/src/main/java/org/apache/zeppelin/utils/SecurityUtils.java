@@ -23,6 +23,8 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * Tools for securing Zeppelin
@@ -52,6 +54,7 @@ public class SecurityUtils {
    */
   public static String getPrincipal() {
     Subject subject = org.apache.shiro.SecurityUtils.getSubject();
+
     String principal;
     if (subject.isAuthenticated()) {
       principal = subject.getPrincipal().toString();
@@ -61,4 +64,24 @@ public class SecurityUtils {
     }
     return principal;
   }
+
+  /**
+   * Return the roles associated with the authenticated user if any otherwise returns empty set
+   * TODO(prasadwagle) Find correct way to get user roles (see SHIRO-492)
+   * @return shiro roles
+   */
+  public static HashSet<String> getRoles() {
+    Subject subject = org.apache.shiro.SecurityUtils.getSubject();
+    HashSet<String> roles = new HashSet<>();
+
+    if (subject.isAuthenticated()) {
+      for (String role : Arrays.asList("role1", "role2", "role3")) {
+        if (subject.hasRole(role)) {
+          roles.add(role);
+        }
+      }
+    }
+    return roles;
+  }
+
 }

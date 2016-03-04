@@ -58,6 +58,7 @@ public class DistributedResourcePoolTest {
 
     intp1 = new RemoteInterpreter(
         p,
+        "note",
         MockInterpreterResourcePool.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
@@ -68,11 +69,13 @@ public class DistributedResourcePoolTest {
     );
 
     intpGroup1 = new InterpreterGroup("intpGroup1");
-    intpGroup1.add(intp1);
+    intpGroup1.put("note", new LinkedList<Interpreter>());
+    intpGroup1.get("note").add(intp1);
     intp1.setInterpreterGroup(intpGroup1);
 
     intp2 = new RemoteInterpreter(
         p,
+        "note",
         MockInterpreterResourcePool.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
@@ -83,7 +86,8 @@ public class DistributedResourcePoolTest {
     );
 
     intpGroup2 = new InterpreterGroup("intpGroup2");
-    intpGroup2.add(intp2);
+    intpGroup2.put("note", new LinkedList<Interpreter>());
+    intpGroup2.get("note").add(intp2);
     intp2.setInterpreterGroup(intpGroup2);
 
     context = new InterpreterContext(

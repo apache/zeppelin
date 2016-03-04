@@ -234,6 +234,15 @@
   padding-left: 0;
 }
 
+.paragraphForm.form-horizontal .form-group .checkbox-item {
+  padding-left: 0;
+  padding-right: 10px;
+}
+
+.paragraphForm.form-horizontal .form-group .checkbox-item input {
+  margin-right: 2px;
+}
+
 /*
   Ace Text Editor CSS
 */

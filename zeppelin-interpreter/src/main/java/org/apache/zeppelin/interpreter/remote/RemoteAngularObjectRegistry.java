@@ -47,19 +47,7 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
   }
 
   private RemoteInterpreterProcess getRemoteInterpreterProcess() {
-    if (interpreterGroup.size() == 0) {
-      throw new RuntimeException("Can't get remoteInterpreterProcess");
-    }
-    Interpreter p = interpreterGroup.get(0);
-    while (p instanceof WrappedInterpreter) {
-      p = ((WrappedInterpreter) p).getInnerInterpreter();
-    }
-
-    if (p instanceof RemoteInterpreter) {
-      return ((RemoteInterpreter) p).getInterpreterProcess();
-    } else {
-      throw new RuntimeException("Can't get remoteInterpreterProcess");
-    }
+    return interpreterGroup.getRemoteInterpreterProcess();
   }
 
   /**
@@ -141,12 +129,7 @@ public class RemoteAngularObjectRegistry extends AngularObjectRegistry {
   @Override
   protected AngularObject createNewAngularObject(String name, Object o, String noteId, String
           paragraphId) {
-    RemoteInterpreterProcess remoteInterpreterProcess = getRemoteInterpreterProcess();
-    if (remoteInterpreterProcess == null) {
-      throw new RuntimeException("Remote Interpreter process not found");
-    }
-    return new RemoteAngularObject(name, o, noteId, paragraphId, getInterpreterGroupId(),
-        getAngularObjectListener(),
-        getRemoteInterpreterProcess());
+    return new RemoteAngularObject(name, o, noteId, paragraphId, interpreterGroup,
+        getAngularObjectListener());
   }
 }

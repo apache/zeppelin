@@ -56,25 +56,25 @@ public class RemoteInterpreterService {
 
   public interface Iface {
 
-    public void createInterpreter(String intpGroupId, String className, Map<String,String> properties) throws org.apache.thrift.TException;
+    public void createInterpreter(String intpGroupId, String noteId, String className, Map<String,String> properties) throws org.apache.thrift.TException;
 
-    public void open(String className) throws org.apache.thrift.TException;
+    public void open(String noteId, String className) throws org.apache.thrift.TException;
 
-    public void close(String className) throws org.apache.thrift.TException;
+    public void close(String noteId, String className) throws org.apache.thrift.TException;
 
-    public RemoteInterpreterResult interpret(String className, String st, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException;
+    public RemoteInterpreterResult interpret(String noteId, String className, String st, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException;
 
-    public void cancel(String className, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException;
+    public void cancel(String noteId, String className, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException;
 
-    public int getProgress(String className, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException;
+    public int getProgress(String noteId, String className, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException;
 
-    public String getFormType(String className) throws org.apache.thrift.TException;
+    public String getFormType(String noteId, String className) throws org.apache.thrift.TException;
 
-    public List<String> completion(String className, String buf, int cursor) throws org.apache.thrift.TException;
+    public List<String> completion(String noteId, String className, String buf, int cursor) throws org.apache.thrift.TException;
 
     public void shutdown() throws org.apache.thrift.TException;
 
-    public String getStatus(String jobId) throws org.apache.thrift.TException;
+    public String getStatus(String noteId, String jobId) throws org.apache.thrift.TException;
 
     public RemoteInterpreterEvent getEvent() throws org.apache.thrift.TException;
 
@@ -96,25 +96,25 @@ public class RemoteInterpreterService {
 
   public interface AsyncIface {
 
-    public void createInterpreter(String intpGroupId, String className, Map<String,String> properties, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void createInterpreter(String intpGroupId, String noteId, String className, Map<String,String> properties, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void open(String className, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void open(String noteId, String className, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void close(String className, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void close(String noteId, String className, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void interpret(String className, String st, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void interpret(String noteId, String className, String st, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void cancel(String className, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void cancel(String noteId, String className, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void getProgress(String className, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void getProgress(String noteId, String className, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void getFormType(String className, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void getFormType(String noteId, String className, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void completion(String className, String buf, int cursor, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void completion(String noteId, String className, String buf, int cursor, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void shutdown(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
-    public void getStatus(String jobId, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+    public void getStatus(String noteId, String jobId, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void getEvent(org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
@@ -154,16 +154,17 @@ public class RemoteInterpreterService {
       super(iprot, oprot);
     }
 
-    public void createInterpreter(String intpGroupId, String className, Map<String,String> properties) throws org.apache.thrift.TException
+    public void createInterpreter(String intpGroupId, String noteId, String className, Map<String,String> properties) throws org.apache.thrift.TException
     {
-      send_createInterpreter(intpGroupId, className, properties);
+      send_createInterpreter(intpGroupId, noteId, className, properties);
       recv_createInterpreter();
     }
 
-    public void send_createInterpreter(String intpGroupId, String className, Map<String,String> properties) throws org.apache.thrift.TException
+    public void send_createInterpreter(String intpGroupId, String noteId, String className, Map<String,String> properties) throws org.apache.thrift.TException
     {
       createInterpreter_args args = new createInterpreter_args();
       args.setIntpGroupId(intpGroupId);
+      args.setNoteId(noteId);
       args.setClassName(className);
       args.setProperties(properties);
       sendBase("createInterpreter", args);
@@ -176,15 +177,16 @@ public class RemoteInterpreterService {
       return;
     }
 
-    public void open(String className) throws org.apache.thrift.TException
+    public void open(String noteId, String className) throws org.apache.thrift.TException
     {
-      send_open(className);
+      send_open(noteId, className);
       recv_open();
     }
 
-    public void send_open(String className) throws org.apache.thrift.TException
+    public void send_open(String noteId, String className) throws org.apache.thrift.TException
     {
       open_args args = new open_args();
+      args.setNoteId(noteId);
       args.setClassName(className);
       sendBase("open", args);
     }
@@ -196,15 +198,16 @@ public class RemoteInterpreterService {
       return;
     }
 
-    public void close(String className) throws org.apache.thrift.TException
+    public void close(String noteId, String className) throws org.apache.thrift.TException
     {
-      send_close(className);
+      send_close(noteId, className);
       recv_close();
     }
 
-    public void send_close(String className) throws org.apache.thrift.TException
+    public void send_close(String noteId, String className) throws org.apache.thrift.TException
     {
       close_args args = new close_args();
+      args.setNoteId(noteId);
       args.setClassName(className);
       sendBase("close", args);
     }
@@ -216,15 +219,16 @@ public class RemoteInterpreterService {
       return;
     }
 
-    public RemoteInterpreterResult interpret(String className, String st, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException
+    public RemoteInterpreterResult interpret(String noteId, String className, String st, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException
     {
-      send_interpret(className, st, interpreterContext);
+      send_interpret(noteId, className, st, interpreterContext);
       return recv_interpret();
     }
 
-    public void send_interpret(String className, String st, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException
+    public void send_interpret(String noteId, String className, String st, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException
     {
       interpret_args args = new interpret_args();
+      args.setNoteId(noteId);
       args.setClassName(className);
       args.setSt(st);
       args.setInterpreterContext(interpreterContext);
@@ -241,15 +245,16 @@ public class RemoteInterpreterService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "interpret failed: unknown result");
     }
 
-    public void cancel(String className, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException
+    public void cancel(String noteId, String className, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException
     {
-      send_cancel(className, interpreterContext);
+      send_cancel(noteId, className, interpreterContext);
       recv_cancel();
     }
 
-    public void send_cancel(String className, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException
+    public void send_cancel(String noteId, String className, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException
     {
       cancel_args args = new cancel_args();
+      args.setNoteId(noteId);
       args.setClassName(className);
       args.setInterpreterContext(interpreterContext);
       sendBase("cancel", args);
@@ -262,15 +267,16 @@ public class RemoteInterpreterService {
       return;
     }
 
-    public int getProgress(String className, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException
+    public int getProgress(String noteId, String className, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException
     {
-      send_getProgress(className, interpreterContext);
+      send_getProgress(noteId, className, interpreterContext);
       return recv_getProgress();
     }
 
-    public void send_getProgress(String className, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException
+    public void send_getProgress(String noteId, String className, RemoteInterpreterContext interpreterContext) throws org.apache.thrift.TException
     {
       getProgress_args args = new getProgress_args();
+      args.setNoteId(noteId);
       args.setClassName(className);
       args.setInterpreterContext(interpreterContext);
       sendBase("getProgress", args);
@@ -286,15 +292,16 @@ public class RemoteInterpreterService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getProgress failed: unknown result");
     }
 
-    public String getFormType(String className) throws org.apache.thrift.TException
+    public String getFormType(String noteId, String className) throws org.apache.thrift.TException
     {
-      send_getFormType(className);
+      send_getFormType(noteId, className);
       return recv_getFormType();
     }
 
-    public void send_getFormType(String className) throws org.apache.thrift.TException
+    public void send_getFormType(String noteId, String className) throws org.apache.thrift.TException
     {
       getFormType_args args = new getFormType_args();
+      args.setNoteId(noteId);
       args.setClassName(className);
       sendBase("getFormType", args);
     }
@@ -309,15 +316,16 @@ public class RemoteInterpreterService {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getFormType failed: unknown result");
     }
 
-    public List<String> completion(String className, String buf, int cursor) throws org.apache.thrift.TException
+    public List<String> completion(String noteId, String className, String buf, int cursor) throws org.apache.thrift.TException
     {
-      send_completion(className, buf, cursor);
+      send_completion(noteId, className, buf, cursor);
       return recv_completion();
     }
 
-    public void send_completion(String className, String buf, int cursor) throws org.apache.thrift.TException
+    public void send_completion(String noteId, String className, String buf, int cursor) throws org.apache.thrift.TException
     {
       completion_args args = new completion_args();
+      args.setNoteId(noteId);
       args.setClassName(className);
       args.setBuf(buf);
       args.setCursor(cursor);
@@ -353,15 +361,16 @@ public class RemoteInterpreterService {
       return;
     }
 
-    public String getStatus(String jobId) throws org.apache.thrift.TException
+    public String getStatus(String noteId, String jobId) throws org.apache.thrift.TException
     {
-      send_getStatus(jobId);
+      send_getStatus(noteId, jobId);
       return recv_getStatus();
     }
 
-    public void send_getStatus(String jobId) throws org.apache.thrift.TException
+    public void send_getStatus(String noteId, String jobId) throws org.apache.thrift.TException
     {
       getStatus_args args = new getStatus_args();
+      args.setNoteId(noteId);
       args.setJobId(jobId);
       sendBase("getStatus", args);
     }
@@ -570,20 +579,22 @@ public class RemoteInterpreterService {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void createInterpreter(String intpGroupId, String className, Map<String,String> properties, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void createInterpreter(String intpGroupId, String noteId, String className, Map<String,String> properties, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      createInterpreter_call method_call = new createInterpreter_call(intpGroupId, className, properties, resultHandler, this, ___protocolFactory, ___transport);
+      createInterpreter_call method_call = new createInterpreter_call(intpGroupId, noteId, className, properties, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class createInterpreter_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String intpGroupId;
+      private String noteId;
       private String className;
       private Map<String,String> properties;
-      public createInterpreter_call(String intpGroupId, String className, Map<String,String> properties, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public createInterpreter_call(String intpGroupId, String noteId, String className, Map<String,String> properties, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.intpGroupId = intpGroupId;
+        this.noteId = noteId;
         this.className = className;
         this.properties = properties;
       }
@@ -592,6 +603,7 @@ public class RemoteInterpreterService {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("createInterpreter", org.apache.thrift.protocol.TMessageType.CALL, 0));
         createInterpreter_args args = new createInterpreter_args();
         args.setIntpGroupId(intpGroupId);
+        args.setNoteId(noteId);
         args.setClassName(className);
         args.setProperties(properties);
         args.write(prot);
@@ -608,23 +620,26 @@ public class RemoteInterpreterService {
       }
     }
 
-    public void open(String className, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void open(String noteId, String className, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      open_call method_call = new open_call(className, resultHandler, this, ___protocolFactory, ___transport);
+      open_call method_call = new open_call(noteId, className, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class open_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String noteId;
       private String className;
-      public open_call(String className, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public open_call(String noteId, String className, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
+        this.noteId = noteId;
         this.className = className;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("open", org.apache.thrift.protocol.TMessageType.CALL, 0));
         open_args args = new open_args();
+        args.setNoteId(noteId);
         args.setClassName(className);
         args.write(prot);
         prot.writeMessageEnd();
@@ -640,23 +655,26 @@ public class RemoteInterpreterService {
       }
     }
 
-    public void close(String className, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void close(String noteId, String className, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      close_call method_call = new close_call(className, resultHandler, this, ___protocolFactory, ___transport);
+      close_call method_call = new close_call(noteId, className, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class close_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String noteId;
       private String className;
-      public close_call(String className, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public close_call(String noteId, String className, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
+        this.noteId = noteId;
         this.className = className;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("close", org.apache.thrift.protocol.TMessageType.CALL, 0));
         close_args args = new close_args();
+        args.setNoteId(noteId);
         args.setClassName(className);
         args.write(prot);
         prot.writeMessageEnd();
@@ -672,19 +690,21 @@ public class RemoteInterpreterService {
       }
     }
 
-    public void interpret(String className, String st, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void interpret(String noteId, String className, String st, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      interpret_call method_call = new interpret_call(className, st, interpreterContext, resultHandler, this, ___protocolFactory, ___transport);
+      interpret_call method_call = new interpret_call(noteId, className, st, interpreterContext, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class interpret_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String noteId;
       private String className;
       private String st;
       private RemoteInterpreterContext interpreterContext;
-      public interpret_call(String className, String st, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public interpret_call(String noteId, String className, String st, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
+        this.noteId = noteId;
         this.className = className;
         this.st = st;
         this.interpreterContext = interpreterContext;
@@ -693,6 +713,7 @@ public class RemoteInterpreterService {
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("interpret", org.apache.thrift.protocol.TMessageType.CALL, 0));
         interpret_args args = new interpret_args();
+        args.setNoteId(noteId);
         args.setClassName(className);
         args.setSt(st);
         args.setInterpreterContext(interpreterContext);
@@ -710,18 +731,20 @@ public class RemoteInterpreterService {
       }
     }
 
-    public void cancel(String className, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void cancel(String noteId, String className, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      cancel_call method_call = new cancel_call(className, interpreterContext, resultHandler, this, ___protocolFactory, ___transport);
+      cancel_call method_call = new cancel_call(noteId, className, interpreterContext, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class cancel_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String noteId;
       private String className;
       private RemoteInterpreterContext interpreterContext;
-      public cancel_call(String className, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public cancel_call(String noteId, String className, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
+        this.noteId = noteId;
         this.className = className;
         this.interpreterContext = interpreterContext;
       }
@@ -729,6 +752,7 @@ public class RemoteInterpreterService {
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("cancel", org.apache.thrift.protocol.TMessageType.CALL, 0));
         cancel_args args = new cancel_args();
+        args.setNoteId(noteId);
         args.setClassName(className);
         args.setInterpreterContext(interpreterContext);
         args.write(prot);
@@ -745,18 +769,20 @@ public class RemoteInterpreterService {
       }
     }
 
-    public void getProgress(String className, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void getProgress(String noteId, String className, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      getProgress_call method_call = new getProgress_call(className, interpreterContext, resultHandler, this, ___protocolFactory, ___transport);
+      getProgress_call method_call = new getProgress_call(noteId, className, interpreterContext, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class getProgress_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String noteId;
       private String className;
       private RemoteInterpreterContext interpreterContext;
-      public getProgress_call(String className, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public getProgress_call(String noteId, String className, RemoteInterpreterContext interpreterContext, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
+        this.noteId = noteId;
         this.className = className;
         this.interpreterContext = interpreterContext;
       }
@@ -764,6 +790,7 @@ public class RemoteInterpreterService {
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getProgress", org.apache.thrift.protocol.TMessageType.CALL, 0));
         getProgress_args args = new getProgress_args();
+        args.setNoteId(noteId);
         args.setClassName(className);
         args.setInterpreterContext(interpreterContext);
         args.write(prot);
@@ -780,23 +807,26 @@ public class RemoteInterpreterService {
       }
     }
 
-    public void getFormType(String className, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void getFormType(String noteId, String className, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      getFormType_call method_call = new getFormType_call(className, resultHandler, this, ___protocolFactory, ___transport);
+      getFormType_call method_call = new getFormType_call(noteId, className, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class getFormType_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String noteId;
       private String className;
-      public getFormType_call(String className, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public getFormType_call(String noteId, String className, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
+        this.noteId = noteId;
         this.className = className;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getFormType", org.apache.thrift.protocol.TMessageType.CALL, 0));
         getFormType_args args = new getFormType_args();
+        args.setNoteId(noteId);
         args.setClassName(className);
         args.write(prot);
         prot.writeMessageEnd();
@@ -812,19 +842,21 @@ public class RemoteInterpreterService {
       }
     }
 
-    public void completion(String className, String buf, int cursor, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void completion(String noteId, String className, String buf, int cursor, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      completion_call method_call = new completion_call(className, buf, cursor, resultHandler, this, ___protocolFactory, ___transport);
+      completion_call method_call = new completion_call(noteId, className, buf, cursor, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class completion_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String noteId;
       private String className;
       private String buf;
       private int cursor;
-      public completion_call(String className, String buf, int cursor, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public completion_call(String noteId, String className, String buf, int cursor, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
+        this.noteId = noteId;
         this.className = className;
         this.buf = buf;
         this.cursor = cursor;
@@ -833,6 +865,7 @@ public class RemoteInterpreterService {
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("completion", org.apache.thrift.protocol.TMessageType.CALL, 0));
         completion_args args = new completion_args();
+        args.setNoteId(noteId);
         args.setClassName(className);
         args.setBuf(buf);
         args.setCursor(cursor);
@@ -879,23 +912,26 @@ public class RemoteInterpreterService {
       }
     }
 
-    public void getStatus(String jobId, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+    public void getStatus(String noteId, String jobId, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      getStatus_call method_call = new getStatus_call(jobId, resultHandler, this, ___protocolFactory, ___transport);
+      getStatus_call method_call = new getStatus_call(noteId, jobId, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class getStatus_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String noteId;
       private String jobId;
-      public getStatus_call(String jobId, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public getStatus_call(String noteId, String jobId, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
+        this.noteId = noteId;
         this.jobId = jobId;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getStatus", org.apache.thrift.protocol.TMessageType.CALL, 0));
         getStatus_args args = new getStatus_args();
+        args.setNoteId(noteId);
         args.setJobId(jobId);
         args.write(prot);
         prot.writeMessageEnd();
@@ -1237,7 +1273,7 @@ public class RemoteInterpreterService {
 
       public createInterpreter_result getResult(I iface, createInterpreter_args args) throws org.apache.thrift.TException {
         createInterpreter_result result = new createInterpreter_result();
-        iface.createInterpreter(args.intpGroupId, args.className, args.properties);
+        iface.createInterpreter(args.intpGroupId, args.noteId, args.className, args.properties);
         return result;
       }
     }
@@ -1257,7 +1293,7 @@ public class RemoteInterpreterService {
 
       public open_result getResult(I iface, open_args args) throws org.apache.thrift.TException {
         open_result result = new open_result();
-        iface.open(args.className);
+        iface.open(args.noteId, args.className);
         return result;
       }
     }
@@ -1277,7 +1313,7 @@ public class RemoteInterpreterService {
 
       public close_result getResult(I iface, close_args args) throws org.apache.thrift.TException {
         close_result result = new close_result();
-        iface.close(args.className);
+        iface.close(args.noteId, args.className);
         return result;
       }
     }
@@ -1297,7 +1333,7 @@ public class RemoteInterpreterService {
 
       public interpret_result getResult(I iface, interpret_args args) throws org.apache.thrift.TException {
         interpret_result result = new interpret_result();
-        result.success = iface.interpret(args.className, args.st, args.interpreterContext);
+        result.success = iface.interpret(args.noteId, args.className, args.st, args.interpreterContext);
         return result;
       }
     }
@@ -1317,7 +1353,7 @@ public class RemoteInterpreterService {
 
       public cancel_result getResult(I iface, cancel_args args) throws org.apache.thrift.TException {
         cancel_result result = new cancel_result();
-        iface.cancel(args.className, args.interpreterContext);
+        iface.cancel(args.noteId, args.className, args.interpreterContext);
         return result;
       }
     }
@@ -1337,7 +1373,7 @@ public class RemoteInterpreterService {
 
       public getProgress_result getResult(I iface, getProgress_args args) throws org.apache.thrift.TException {
         getProgress_result result = new getProgress_result();
-        result.success = iface.getProgress(args.className, args.interpreterContext);
+        result.success = iface.getProgress(args.noteId, args.className, args.interpreterContext);
         result.setSuccessIsSet(true);
         return result;
       }
@@ -1358,7 +1394,7 @@ public class RemoteInterpreterService {
 
       public getFormType_result getResult(I iface, getFormType_args args) throws org.apache.thrift.TException {
         getFormType_result result = new getFormType_result();
-        result.success = iface.getFormType(args.className);
+        result.success = iface.getFormType(args.noteId, args.className);
         return result;
       }
     }
@@ -1378,7 +1414,7 @@ public class RemoteInterpreterService {
 
       public completion_result getResult(I iface, completion_args args) throws org.apache.thrift.TException {
         completion_result result = new completion_result();
-        result.success = iface.completion(args.className, args.buf, args.cursor);
+        result.success = iface.completion(args.noteId, args.className, args.buf, args.cursor);
         return result;
       }
     }
@@ -1418,7 +1454,7 @@ public class RemoteInterpreterService {
 
       public getStatus_result getResult(I iface, getStatus_args args) throws org.apache.thrift.TException {
         getStatus_result result = new getStatus_result();
-        result.success = iface.getStatus(args.jobId);
+        result.success = iface.getStatus(args.noteId, args.jobId);
         return result;
       }
     }
@@ -1663,7 +1699,7 @@ public class RemoteInterpreterService {
       }
 
       public void start(I iface, createInterpreter_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.createInterpreter(args.intpGroupId, args.className, args.properties,resultHandler);
+        iface.createInterpreter(args.intpGroupId, args.noteId, args.className, args.properties,resultHandler);
       }
     }
 
@@ -1713,7 +1749,7 @@ public class RemoteInterpreterService {
       }
 
       public void start(I iface, open_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.open(args.className,resultHandler);
+        iface.open(args.noteId, args.className,resultHandler);
       }
     }
 
@@ -1763,7 +1799,7 @@ public class RemoteInterpreterService {
       }
 
       public void start(I iface, close_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.close(args.className,resultHandler);
+        iface.close(args.noteId, args.className,resultHandler);
       }
     }
 
@@ -1814,7 +1850,7 @@ public class RemoteInterpreterService {
       }
 
       public void start(I iface, interpret_args args, org.apache.thrift.async.AsyncMethodCallback<RemoteInterpreterResult> resultHandler) throws TException {
-        iface.interpret(args.className, args.st, args.interpreterContext,resultHandler);
+        iface.interpret(args.noteId, args.className, args.st, args.interpreterContext,resultHandler);
       }
     }
 
@@ -1864,7 +1900,7 @@ public class RemoteInterpreterService {
       }
 
       public void start(I iface, cancel_args args, org.apache.thrift.async.AsyncMethodCallback<Void> resultHandler) throws TException {
-        iface.cancel(args.className, args.interpreterContext,resultHandler);
+        iface.cancel(args.noteId, args.className, args.interpreterContext,resultHandler);
       }
     }
 
@@ -1916,7 +1952,7 @@ public class RemoteInterpreterService {
       }
 
       public void start(I iface, getProgress_args args, org.apache.thrift.async.AsyncMethodCallback<Integer> resultHandler) throws TException {
-        iface.getProgress(args.className, args.interpreterContext,resultHandler);
+        iface.getProgress(args.noteId, args.className, args.interpreterContext,resultHandler);
       }
     }
 
@@ -1967,7 +2003,7 @@ public class RemoteInterpreterService {
       }
 
       public void start(I iface, getFormType_args args, org.apache.thrift.async.AsyncMethodCallback<String> resultHandler) throws TException {
-        iface.getFormType(args.className,resultHandler);
+        iface.getFormType(args.noteId, args.className,resultHandler);
       }
     }
 
@@ -2018,7 +2054,7 @@ public class RemoteInterpreterService {
       }
 
       public void start(I iface, completion_args args, org.apache.thrift.async.AsyncMethodCallback<List<String>> resultHandler) throws TException {
-        iface.completion(args.className, args.buf, args.cursor,resultHandler);
+        iface.completion(args.noteId, args.className, args.buf, args.cursor,resultHandler);
       }
     }
 
@@ -2119,7 +2155,7 @@ public class RemoteInterpreterService {
       }
 
       public void start(I iface, getStatus_args args, org.apache.thrift.async.AsyncMethodCallback<String> resultHandler) throws TException {
-        iface.getStatus(args.jobId,resultHandler);
+        iface.getStatus(args.noteId, args.jobId,resultHandler);
       }
     }
 
@@ -2532,8 +2568,9 @@ public class RemoteInterpreterService {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("createInterpreter_args");
 
     private static final org.apache.thrift.protocol.TField INTP_GROUP_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("intpGroupId", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)2);
-    private static final org.apache.thrift.protocol.TField PROPERTIES_FIELD_DESC = new org.apache.thrift.protocol.TField("properties", org.apache.thrift.protocol.TType.MAP, (short)3);
+    private static final org.apache.thrift.protocol.TField NOTE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("noteId", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField PROPERTIES_FIELD_DESC = new org.apache.thrift.protocol.TField("properties", org.apache.thrift.protocol.TType.MAP, (short)4);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -2542,14 +2579,16 @@ public class RemoteInterpreterService {
     }
 
     public String intpGroupId; // required
+    public String noteId; // required
     public String className; // required
     public Map<String,String> properties; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       INTP_GROUP_ID((short)1, "intpGroupId"),
-      CLASS_NAME((short)2, "className"),
-      PROPERTIES((short)3, "properties");
+      NOTE_ID((short)2, "noteId"),
+      CLASS_NAME((short)3, "className"),
+      PROPERTIES((short)4, "properties");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -2566,9 +2605,11 @@ public class RemoteInterpreterService {
         switch(fieldId) {
           case 1: // INTP_GROUP_ID
             return INTP_GROUP_ID;
-          case 2: // CLASS_NAME
+          case 2: // NOTE_ID
+            return NOTE_ID;
+          case 3: // CLASS_NAME
             return CLASS_NAME;
-          case 3: // PROPERTIES
+          case 4: // PROPERTIES
             return PROPERTIES;
           default:
             return null;
@@ -2615,6 +2656,8 @@ public class RemoteInterpreterService {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.INTP_GROUP_ID, new org.apache.thrift.meta_data.FieldMetaData("intpGroupId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.NOTE_ID, new org.apache.thrift.meta_data.FieldMetaData("noteId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.CLASS_NAME, new org.apache.thrift.meta_data.FieldMetaData("className", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.PROPERTIES, new org.apache.thrift.meta_data.FieldMetaData("properties", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -2630,11 +2673,13 @@ public class RemoteInterpreterService {
 
     public createInterpreter_args(
       String intpGroupId,
+      String noteId,
       String className,
       Map<String,String> properties)
     {
       this();
       this.intpGroupId = intpGroupId;
+      this.noteId = noteId;
       this.className = className;
       this.properties = properties;
     }
@@ -2645,6 +2690,9 @@ public class RemoteInterpreterService {
     public createInterpreter_args(createInterpreter_args other) {
       if (other.isSetIntpGroupId()) {
         this.intpGroupId = other.intpGroupId;
+      }
+      if (other.isSetNoteId()) {
+        this.noteId = other.noteId;
       }
       if (other.isSetClassName()) {
         this.className = other.className;
@@ -2662,6 +2710,7 @@ public class RemoteInterpreterService {
     @Override
     public void clear() {
       this.intpGroupId = null;
+      this.noteId = null;
       this.className = null;
       this.properties = null;
     }
@@ -2687,6 +2736,30 @@ public class RemoteInterpreterService {
     public void setIntpGroupIdIsSet(boolean value) {
       if (!value) {
         this.intpGroupId = null;
+      }
+    }
+
+    public String getNoteId() {
+      return this.noteId;
+    }
+
+    public createInterpreter_args setNoteId(String noteId) {
+      this.noteId = noteId;
+      return this;
+    }
+
+    public void unsetNoteId() {
+      this.noteId = null;
+    }
+
+    /** Returns true if field noteId is set (has been assigned a value) and false otherwise */
+    public boolean isSetNoteId() {
+      return this.noteId != null;
+    }
+
+    public void setNoteIdIsSet(boolean value) {
+      if (!value) {
+        this.noteId = null;
       }
     }
 
@@ -2759,6 +2832,14 @@ public class RemoteInterpreterService {
         }
         break;
 
+      case NOTE_ID:
+        if (value == null) {
+          unsetNoteId();
+        } else {
+          setNoteId((String)value);
+        }
+        break;
+
       case CLASS_NAME:
         if (value == null) {
           unsetClassName();
@@ -2783,6 +2864,9 @@ public class RemoteInterpreterService {
       case INTP_GROUP_ID:
         return getIntpGroupId();
 
+      case NOTE_ID:
+        return getNoteId();
+
       case CLASS_NAME:
         return getClassName();
 
@@ -2802,6 +2886,8 @@ public class RemoteInterpreterService {
       switch (field) {
       case INTP_GROUP_ID:
         return isSetIntpGroupId();
+      case NOTE_ID:
+        return isSetNoteId();
       case CLASS_NAME:
         return isSetClassName();
       case PROPERTIES:
@@ -2829,6 +2915,15 @@ public class RemoteInterpreterService {
         if (!(this_present_intpGroupId && that_present_intpGroupId))
           return false;
         if (!this.intpGroupId.equals(that.intpGroupId))
+          return false;
+      }
+
+      boolean this_present_noteId = true && this.isSetNoteId();
+      boolean that_present_noteId = true && that.isSetNoteId();
+      if (this_present_noteId || that_present_noteId) {
+        if (!(this_present_noteId && that_present_noteId))
+          return false;
+        if (!this.noteId.equals(that.noteId))
           return false;
       }
 
@@ -2862,6 +2957,11 @@ public class RemoteInterpreterService {
       if (present_intpGroupId)
         list.add(intpGroupId);
 
+      boolean present_noteId = true && (isSetNoteId());
+      list.add(present_noteId);
+      if (present_noteId)
+        list.add(noteId);
+
       boolean present_className = true && (isSetClassName());
       list.add(present_className);
       if (present_className)
@@ -2889,6 +2989,16 @@ public class RemoteInterpreterService {
       }
       if (isSetIntpGroupId()) {
         lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.intpGroupId, other.intpGroupId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetNoteId()).compareTo(other.isSetNoteId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNoteId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, other.noteId);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -2938,6 +3048,14 @@ public class RemoteInterpreterService {
         sb.append("null");
       } else {
         sb.append(this.intpGroupId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("noteId:");
+      if (this.noteId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.noteId);
       }
       first = false;
       if (!first) sb.append(", ");
@@ -3007,7 +3125,15 @@ public class RemoteInterpreterService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // CLASS_NAME
+            case 2: // NOTE_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.noteId = iprot.readString();
+                struct.setNoteIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 3: // CLASS_NAME
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.className = iprot.readString();
                 struct.setClassNameIsSet(true);
@@ -3015,7 +3141,7 @@ public class RemoteInterpreterService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // PROPERTIES
+            case 4: // PROPERTIES
               if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
                 {
                   org.apache.thrift.protocol.TMap _map0 = iprot.readMapBegin();
@@ -3053,6 +3179,11 @@ public class RemoteInterpreterService {
         if (struct.intpGroupId != null) {
           oprot.writeFieldBegin(INTP_GROUP_ID_FIELD_DESC);
           oprot.writeString(struct.intpGroupId);
+          oprot.writeFieldEnd();
+        }
+        if (struct.noteId != null) {
+          oprot.writeFieldBegin(NOTE_ID_FIELD_DESC);
+          oprot.writeString(struct.noteId);
           oprot.writeFieldEnd();
         }
         if (struct.className != null) {
@@ -3094,15 +3225,21 @@ public class RemoteInterpreterService {
         if (struct.isSetIntpGroupId()) {
           optionals.set(0);
         }
-        if (struct.isSetClassName()) {
+        if (struct.isSetNoteId()) {
           optionals.set(1);
         }
-        if (struct.isSetProperties()) {
+        if (struct.isSetClassName()) {
           optionals.set(2);
         }
-        oprot.writeBitSet(optionals, 3);
+        if (struct.isSetProperties()) {
+          optionals.set(3);
+        }
+        oprot.writeBitSet(optionals, 4);
         if (struct.isSetIntpGroupId()) {
           oprot.writeString(struct.intpGroupId);
+        }
+        if (struct.isSetNoteId()) {
+          oprot.writeString(struct.noteId);
         }
         if (struct.isSetClassName()) {
           oprot.writeString(struct.className);
@@ -3122,16 +3259,20 @@ public class RemoteInterpreterService {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, createInterpreter_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(3);
+        BitSet incoming = iprot.readBitSet(4);
         if (incoming.get(0)) {
           struct.intpGroupId = iprot.readString();
           struct.setIntpGroupIdIsSet(true);
         }
         if (incoming.get(1)) {
+          struct.noteId = iprot.readString();
+          struct.setNoteIdIsSet(true);
+        }
+        if (incoming.get(2)) {
           struct.className = iprot.readString();
           struct.setClassNameIsSet(true);
         }
-        if (incoming.get(2)) {
+        if (incoming.get(3)) {
           {
             org.apache.thrift.protocol.TMap _map6 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
             struct.properties = new HashMap<String,String>(2*_map6.size);
@@ -3402,7 +3543,8 @@ public class RemoteInterpreterService {
   public static class open_args implements org.apache.thrift.TBase<open_args, open_args._Fields>, java.io.Serializable, Cloneable, Comparable<open_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("open_args");
 
-    private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField NOTE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("noteId", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -3410,11 +3552,13 @@ public class RemoteInterpreterService {
       schemes.put(TupleScheme.class, new open_argsTupleSchemeFactory());
     }
 
+    public String noteId; // required
     public String className; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      CLASS_NAME((short)1, "className");
+      NOTE_ID((short)1, "noteId"),
+      CLASS_NAME((short)2, "className");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -3429,7 +3573,9 @@ public class RemoteInterpreterService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // CLASS_NAME
+          case 1: // NOTE_ID
+            return NOTE_ID;
+          case 2: // CLASS_NAME
             return CLASS_NAME;
           default:
             return null;
@@ -3474,6 +3620,8 @@ public class RemoteInterpreterService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.NOTE_ID, new org.apache.thrift.meta_data.FieldMetaData("noteId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.CLASS_NAME, new org.apache.thrift.meta_data.FieldMetaData("className", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -3484,9 +3632,11 @@ public class RemoteInterpreterService {
     }
 
     public open_args(
+      String noteId,
       String className)
     {
       this();
+      this.noteId = noteId;
       this.className = className;
     }
 
@@ -3494,6 +3644,9 @@ public class RemoteInterpreterService {
      * Performs a deep copy on <i>other</i>.
      */
     public open_args(open_args other) {
+      if (other.isSetNoteId()) {
+        this.noteId = other.noteId;
+      }
       if (other.isSetClassName()) {
         this.className = other.className;
       }
@@ -3505,7 +3658,32 @@ public class RemoteInterpreterService {
 
     @Override
     public void clear() {
+      this.noteId = null;
       this.className = null;
+    }
+
+    public String getNoteId() {
+      return this.noteId;
+    }
+
+    public open_args setNoteId(String noteId) {
+      this.noteId = noteId;
+      return this;
+    }
+
+    public void unsetNoteId() {
+      this.noteId = null;
+    }
+
+    /** Returns true if field noteId is set (has been assigned a value) and false otherwise */
+    public boolean isSetNoteId() {
+      return this.noteId != null;
+    }
+
+    public void setNoteIdIsSet(boolean value) {
+      if (!value) {
+        this.noteId = null;
+      }
     }
 
     public String getClassName() {
@@ -3534,6 +3712,14 @@ public class RemoteInterpreterService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case NOTE_ID:
+        if (value == null) {
+          unsetNoteId();
+        } else {
+          setNoteId((String)value);
+        }
+        break;
+
       case CLASS_NAME:
         if (value == null) {
           unsetClassName();
@@ -3547,6 +3733,9 @@ public class RemoteInterpreterService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case NOTE_ID:
+        return getNoteId();
+
       case CLASS_NAME:
         return getClassName();
 
@@ -3561,6 +3750,8 @@ public class RemoteInterpreterService {
       }
 
       switch (field) {
+      case NOTE_ID:
+        return isSetNoteId();
       case CLASS_NAME:
         return isSetClassName();
       }
@@ -3580,6 +3771,15 @@ public class RemoteInterpreterService {
       if (that == null)
         return false;
 
+      boolean this_present_noteId = true && this.isSetNoteId();
+      boolean that_present_noteId = true && that.isSetNoteId();
+      if (this_present_noteId || that_present_noteId) {
+        if (!(this_present_noteId && that_present_noteId))
+          return false;
+        if (!this.noteId.equals(that.noteId))
+          return false;
+      }
+
       boolean this_present_className = true && this.isSetClassName();
       boolean that_present_className = true && that.isSetClassName();
       if (this_present_className || that_present_className) {
@@ -3595,6 +3795,11 @@ public class RemoteInterpreterService {
     @Override
     public int hashCode() {
       List<Object> list = new ArrayList<Object>();
+
+      boolean present_noteId = true && (isSetNoteId());
+      list.add(present_noteId);
+      if (present_noteId)
+        list.add(noteId);
 
       boolean present_className = true && (isSetClassName());
       list.add(present_className);
@@ -3612,6 +3817,16 @@ public class RemoteInterpreterService {
 
       int lastComparison = 0;
 
+      lastComparison = Boolean.valueOf(isSetNoteId()).compareTo(other.isSetNoteId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNoteId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, other.noteId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetClassName()).compareTo(other.isSetClassName());
       if (lastComparison != 0) {
         return lastComparison;
@@ -3642,6 +3857,14 @@ public class RemoteInterpreterService {
       StringBuilder sb = new StringBuilder("open_args(");
       boolean first = true;
 
+      sb.append("noteId:");
+      if (this.noteId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.noteId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
       sb.append("className:");
       if (this.className == null) {
         sb.append("null");
@@ -3692,7 +3915,15 @@ public class RemoteInterpreterService {
             break;
           }
           switch (schemeField.id) {
-            case 1: // CLASS_NAME
+            case 1: // NOTE_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.noteId = iprot.readString();
+                struct.setNoteIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // CLASS_NAME
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.className = iprot.readString();
                 struct.setClassNameIsSet(true);
@@ -3715,6 +3946,11 @@ public class RemoteInterpreterService {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.noteId != null) {
+          oprot.writeFieldBegin(NOTE_ID_FIELD_DESC);
+          oprot.writeString(struct.noteId);
+          oprot.writeFieldEnd();
+        }
         if (struct.className != null) {
           oprot.writeFieldBegin(CLASS_NAME_FIELD_DESC);
           oprot.writeString(struct.className);
@@ -3738,10 +3974,16 @@ public class RemoteInterpreterService {
       public void write(org.apache.thrift.protocol.TProtocol prot, open_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetClassName()) {
+        if (struct.isSetNoteId()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetClassName()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetNoteId()) {
+          oprot.writeString(struct.noteId);
+        }
         if (struct.isSetClassName()) {
           oprot.writeString(struct.className);
         }
@@ -3750,8 +3992,12 @@ public class RemoteInterpreterService {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, open_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
+          struct.noteId = iprot.readString();
+          struct.setNoteIdIsSet(true);
+        }
+        if (incoming.get(1)) {
           struct.className = iprot.readString();
           struct.setClassNameIsSet(true);
         }
@@ -4011,7 +4257,8 @@ public class RemoteInterpreterService {
   public static class close_args implements org.apache.thrift.TBase<close_args, close_args._Fields>, java.io.Serializable, Cloneable, Comparable<close_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("close_args");
 
-    private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField NOTE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("noteId", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -4019,11 +4266,13 @@ public class RemoteInterpreterService {
       schemes.put(TupleScheme.class, new close_argsTupleSchemeFactory());
     }
 
+    public String noteId; // required
     public String className; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      CLASS_NAME((short)1, "className");
+      NOTE_ID((short)1, "noteId"),
+      CLASS_NAME((short)2, "className");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -4038,7 +4287,9 @@ public class RemoteInterpreterService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // CLASS_NAME
+          case 1: // NOTE_ID
+            return NOTE_ID;
+          case 2: // CLASS_NAME
             return CLASS_NAME;
           default:
             return null;
@@ -4083,6 +4334,8 @@ public class RemoteInterpreterService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.NOTE_ID, new org.apache.thrift.meta_data.FieldMetaData("noteId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.CLASS_NAME, new org.apache.thrift.meta_data.FieldMetaData("className", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -4093,9 +4346,11 @@ public class RemoteInterpreterService {
     }
 
     public close_args(
+      String noteId,
       String className)
     {
       this();
+      this.noteId = noteId;
       this.className = className;
     }
 
@@ -4103,6 +4358,9 @@ public class RemoteInterpreterService {
      * Performs a deep copy on <i>other</i>.
      */
     public close_args(close_args other) {
+      if (other.isSetNoteId()) {
+        this.noteId = other.noteId;
+      }
       if (other.isSetClassName()) {
         this.className = other.className;
       }
@@ -4114,7 +4372,32 @@ public class RemoteInterpreterService {
 
     @Override
     public void clear() {
+      this.noteId = null;
       this.className = null;
+    }
+
+    public String getNoteId() {
+      return this.noteId;
+    }
+
+    public close_args setNoteId(String noteId) {
+      this.noteId = noteId;
+      return this;
+    }
+
+    public void unsetNoteId() {
+      this.noteId = null;
+    }
+
+    /** Returns true if field noteId is set (has been assigned a value) and false otherwise */
+    public boolean isSetNoteId() {
+      return this.noteId != null;
+    }
+
+    public void setNoteIdIsSet(boolean value) {
+      if (!value) {
+        this.noteId = null;
+      }
     }
 
     public String getClassName() {
@@ -4143,6 +4426,14 @@ public class RemoteInterpreterService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case NOTE_ID:
+        if (value == null) {
+          unsetNoteId();
+        } else {
+          setNoteId((String)value);
+        }
+        break;
+
       case CLASS_NAME:
         if (value == null) {
           unsetClassName();
@@ -4156,6 +4447,9 @@ public class RemoteInterpreterService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case NOTE_ID:
+        return getNoteId();
+
       case CLASS_NAME:
         return getClassName();
 
@@ -4170,6 +4464,8 @@ public class RemoteInterpreterService {
       }
 
       switch (field) {
+      case NOTE_ID:
+        return isSetNoteId();
       case CLASS_NAME:
         return isSetClassName();
       }
@@ -4189,6 +4485,15 @@ public class RemoteInterpreterService {
       if (that == null)
         return false;
 
+      boolean this_present_noteId = true && this.isSetNoteId();
+      boolean that_present_noteId = true && that.isSetNoteId();
+      if (this_present_noteId || that_present_noteId) {
+        if (!(this_present_noteId && that_present_noteId))
+          return false;
+        if (!this.noteId.equals(that.noteId))
+          return false;
+      }
+
       boolean this_present_className = true && this.isSetClassName();
       boolean that_present_className = true && that.isSetClassName();
       if (this_present_className || that_present_className) {
@@ -4204,6 +4509,11 @@ public class RemoteInterpreterService {
     @Override
     public int hashCode() {
       List<Object> list = new ArrayList<Object>();
+
+      boolean present_noteId = true && (isSetNoteId());
+      list.add(present_noteId);
+      if (present_noteId)
+        list.add(noteId);
 
       boolean present_className = true && (isSetClassName());
       list.add(present_className);
@@ -4221,6 +4531,16 @@ public class RemoteInterpreterService {
 
       int lastComparison = 0;
 
+      lastComparison = Boolean.valueOf(isSetNoteId()).compareTo(other.isSetNoteId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNoteId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, other.noteId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetClassName()).compareTo(other.isSetClassName());
       if (lastComparison != 0) {
         return lastComparison;
@@ -4251,6 +4571,14 @@ public class RemoteInterpreterService {
       StringBuilder sb = new StringBuilder("close_args(");
       boolean first = true;
 
+      sb.append("noteId:");
+      if (this.noteId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.noteId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
       sb.append("className:");
       if (this.className == null) {
         sb.append("null");
@@ -4301,7 +4629,15 @@ public class RemoteInterpreterService {
             break;
           }
           switch (schemeField.id) {
-            case 1: // CLASS_NAME
+            case 1: // NOTE_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.noteId = iprot.readString();
+                struct.setNoteIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // CLASS_NAME
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.className = iprot.readString();
                 struct.setClassNameIsSet(true);
@@ -4324,6 +4660,11 @@ public class RemoteInterpreterService {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.noteId != null) {
+          oprot.writeFieldBegin(NOTE_ID_FIELD_DESC);
+          oprot.writeString(struct.noteId);
+          oprot.writeFieldEnd();
+        }
         if (struct.className != null) {
           oprot.writeFieldBegin(CLASS_NAME_FIELD_DESC);
           oprot.writeString(struct.className);
@@ -4347,10 +4688,16 @@ public class RemoteInterpreterService {
       public void write(org.apache.thrift.protocol.TProtocol prot, close_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetClassName()) {
+        if (struct.isSetNoteId()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetClassName()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetNoteId()) {
+          oprot.writeString(struct.noteId);
+        }
         if (struct.isSetClassName()) {
           oprot.writeString(struct.className);
         }
@@ -4359,8 +4706,12 @@ public class RemoteInterpreterService {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, close_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
+          struct.noteId = iprot.readString();
+          struct.setNoteIdIsSet(true);
+        }
+        if (incoming.get(1)) {
           struct.className = iprot.readString();
           struct.setClassNameIsSet(true);
         }
@@ -4620,9 +4971,10 @@ public class RemoteInterpreterService {
   public static class interpret_args implements org.apache.thrift.TBase<interpret_args, interpret_args._Fields>, java.io.Serializable, Cloneable, Comparable<interpret_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("interpret_args");
 
-    private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField ST_FIELD_DESC = new org.apache.thrift.protocol.TField("st", org.apache.thrift.protocol.TType.STRING, (short)2);
-    private static final org.apache.thrift.protocol.TField INTERPRETER_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("interpreterContext", org.apache.thrift.protocol.TType.STRUCT, (short)3);
+    private static final org.apache.thrift.protocol.TField NOTE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("noteId", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField ST_FIELD_DESC = new org.apache.thrift.protocol.TField("st", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField INTERPRETER_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("interpreterContext", org.apache.thrift.protocol.TType.STRUCT, (short)4);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -4630,15 +4982,17 @@ public class RemoteInterpreterService {
       schemes.put(TupleScheme.class, new interpret_argsTupleSchemeFactory());
     }
 
+    public String noteId; // required
     public String className; // required
     public String st; // required
     public RemoteInterpreterContext interpreterContext; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      CLASS_NAME((short)1, "className"),
-      ST((short)2, "st"),
-      INTERPRETER_CONTEXT((short)3, "interpreterContext");
+      NOTE_ID((short)1, "noteId"),
+      CLASS_NAME((short)2, "className"),
+      ST((short)3, "st"),
+      INTERPRETER_CONTEXT((short)4, "interpreterContext");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -4653,11 +5007,13 @@ public class RemoteInterpreterService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // CLASS_NAME
+          case 1: // NOTE_ID
+            return NOTE_ID;
+          case 2: // CLASS_NAME
             return CLASS_NAME;
-          case 2: // ST
+          case 3: // ST
             return ST;
-          case 3: // INTERPRETER_CONTEXT
+          case 4: // INTERPRETER_CONTEXT
             return INTERPRETER_CONTEXT;
           default:
             return null;
@@ -4702,6 +5058,8 @@ public class RemoteInterpreterService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.NOTE_ID, new org.apache.thrift.meta_data.FieldMetaData("noteId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.CLASS_NAME, new org.apache.thrift.meta_data.FieldMetaData("className", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.ST, new org.apache.thrift.meta_data.FieldMetaData("st", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -4716,11 +5074,13 @@ public class RemoteInterpreterService {
     }
 
     public interpret_args(
+      String noteId,
       String className,
       String st,
       RemoteInterpreterContext interpreterContext)
     {
       this();
+      this.noteId = noteId;
       this.className = className;
       this.st = st;
       this.interpreterContext = interpreterContext;
@@ -4730,6 +5090,9 @@ public class RemoteInterpreterService {
      * Performs a deep copy on <i>other</i>.
      */
     public interpret_args(interpret_args other) {
+      if (other.isSetNoteId()) {
+        this.noteId = other.noteId;
+      }
       if (other.isSetClassName()) {
         this.className = other.className;
       }
@@ -4747,9 +5110,34 @@ public class RemoteInterpreterService {
 
     @Override
     public void clear() {
+      this.noteId = null;
       this.className = null;
       this.st = null;
       this.interpreterContext = null;
+    }
+
+    public String getNoteId() {
+      return this.noteId;
+    }
+
+    public interpret_args setNoteId(String noteId) {
+      this.noteId = noteId;
+      return this;
+    }
+
+    public void unsetNoteId() {
+      this.noteId = null;
+    }
+
+    /** Returns true if field noteId is set (has been assigned a value) and false otherwise */
+    public boolean isSetNoteId() {
+      return this.noteId != null;
+    }
+
+    public void setNoteIdIsSet(boolean value) {
+      if (!value) {
+        this.noteId = null;
+      }
     }
 
     public String getClassName() {
@@ -4826,6 +5214,14 @@ public class RemoteInterpreterService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case NOTE_ID:
+        if (value == null) {
+          unsetNoteId();
+        } else {
+          setNoteId((String)value);
+        }
+        break;
+
       case CLASS_NAME:
         if (value == null) {
           unsetClassName();
@@ -4855,6 +5251,9 @@ public class RemoteInterpreterService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case NOTE_ID:
+        return getNoteId();
+
       case CLASS_NAME:
         return getClassName();
 
@@ -4875,6 +5274,8 @@ public class RemoteInterpreterService {
       }
 
       switch (field) {
+      case NOTE_ID:
+        return isSetNoteId();
       case CLASS_NAME:
         return isSetClassName();
       case ST:
@@ -4897,6 +5298,15 @@ public class RemoteInterpreterService {
     public boolean equals(interpret_args that) {
       if (that == null)
         return false;
+
+      boolean this_present_noteId = true && this.isSetNoteId();
+      boolean that_present_noteId = true && that.isSetNoteId();
+      if (this_present_noteId || that_present_noteId) {
+        if (!(this_present_noteId && that_present_noteId))
+          return false;
+        if (!this.noteId.equals(that.noteId))
+          return false;
+      }
 
       boolean this_present_className = true && this.isSetClassName();
       boolean that_present_className = true && that.isSetClassName();
@@ -4932,6 +5342,11 @@ public class RemoteInterpreterService {
     public int hashCode() {
       List<Object> list = new ArrayList<Object>();
 
+      boolean present_noteId = true && (isSetNoteId());
+      list.add(present_noteId);
+      if (present_noteId)
+        list.add(noteId);
+
       boolean present_className = true && (isSetClassName());
       list.add(present_className);
       if (present_className)
@@ -4958,6 +5373,16 @@ public class RemoteInterpreterService {
 
       int lastComparison = 0;
 
+      lastComparison = Boolean.valueOf(isSetNoteId()).compareTo(other.isSetNoteId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNoteId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, other.noteId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetClassName()).compareTo(other.isSetClassName());
       if (lastComparison != 0) {
         return lastComparison;
@@ -5008,6 +5433,14 @@ public class RemoteInterpreterService {
       StringBuilder sb = new StringBuilder("interpret_args(");
       boolean first = true;
 
+      sb.append("noteId:");
+      if (this.noteId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.noteId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
       sb.append("className:");
       if (this.className == null) {
         sb.append("null");
@@ -5077,7 +5510,15 @@ public class RemoteInterpreterService {
             break;
           }
           switch (schemeField.id) {
-            case 1: // CLASS_NAME
+            case 1: // NOTE_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.noteId = iprot.readString();
+                struct.setNoteIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // CLASS_NAME
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.className = iprot.readString();
                 struct.setClassNameIsSet(true);
@@ -5085,7 +5526,7 @@ public class RemoteInterpreterService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // ST
+            case 3: // ST
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.st = iprot.readString();
                 struct.setStIsSet(true);
@@ -5093,7 +5534,7 @@ public class RemoteInterpreterService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // INTERPRETER_CONTEXT
+            case 4: // INTERPRETER_CONTEXT
               if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
                 struct.interpreterContext = new RemoteInterpreterContext();
                 struct.interpreterContext.read(iprot);
@@ -5117,6 +5558,11 @@ public class RemoteInterpreterService {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.noteId != null) {
+          oprot.writeFieldBegin(NOTE_ID_FIELD_DESC);
+          oprot.writeString(struct.noteId);
+          oprot.writeFieldEnd();
+        }
         if (struct.className != null) {
           oprot.writeFieldBegin(CLASS_NAME_FIELD_DESC);
           oprot.writeString(struct.className);
@@ -5150,16 +5596,22 @@ public class RemoteInterpreterService {
       public void write(org.apache.thrift.protocol.TProtocol prot, interpret_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetClassName()) {
+        if (struct.isSetNoteId()) {
           optionals.set(0);
         }
-        if (struct.isSetSt()) {
+        if (struct.isSetClassName()) {
           optionals.set(1);
         }
-        if (struct.isSetInterpreterContext()) {
+        if (struct.isSetSt()) {
           optionals.set(2);
         }
-        oprot.writeBitSet(optionals, 3);
+        if (struct.isSetInterpreterContext()) {
+          optionals.set(3);
+        }
+        oprot.writeBitSet(optionals, 4);
+        if (struct.isSetNoteId()) {
+          oprot.writeString(struct.noteId);
+        }
         if (struct.isSetClassName()) {
           oprot.writeString(struct.className);
         }
@@ -5174,16 +5626,20 @@ public class RemoteInterpreterService {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, interpret_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(3);
+        BitSet incoming = iprot.readBitSet(4);
         if (incoming.get(0)) {
+          struct.noteId = iprot.readString();
+          struct.setNoteIdIsSet(true);
+        }
+        if (incoming.get(1)) {
           struct.className = iprot.readString();
           struct.setClassNameIsSet(true);
         }
-        if (incoming.get(1)) {
+        if (incoming.get(2)) {
           struct.st = iprot.readString();
           struct.setStIsSet(true);
         }
-        if (incoming.get(2)) {
+        if (incoming.get(3)) {
           struct.interpreterContext = new RemoteInterpreterContext();
           struct.interpreterContext.read(iprot);
           struct.setInterpreterContextIsSet(true);
@@ -5562,8 +6018,9 @@ public class RemoteInterpreterService {
   public static class cancel_args implements org.apache.thrift.TBase<cancel_args, cancel_args._Fields>, java.io.Serializable, Cloneable, Comparable<cancel_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("cancel_args");
 
-    private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField INTERPRETER_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("interpreterContext", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+    private static final org.apache.thrift.protocol.TField NOTE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("noteId", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField INTERPRETER_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("interpreterContext", org.apache.thrift.protocol.TType.STRUCT, (short)3);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -5571,13 +6028,15 @@ public class RemoteInterpreterService {
       schemes.put(TupleScheme.class, new cancel_argsTupleSchemeFactory());
     }
 
+    public String noteId; // required
     public String className; // required
     public RemoteInterpreterContext interpreterContext; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      CLASS_NAME((short)1, "className"),
-      INTERPRETER_CONTEXT((short)2, "interpreterContext");
+      NOTE_ID((short)1, "noteId"),
+      CLASS_NAME((short)2, "className"),
+      INTERPRETER_CONTEXT((short)3, "interpreterContext");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -5592,9 +6051,11 @@ public class RemoteInterpreterService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // CLASS_NAME
+          case 1: // NOTE_ID
+            return NOTE_ID;
+          case 2: // CLASS_NAME
             return CLASS_NAME;
-          case 2: // INTERPRETER_CONTEXT
+          case 3: // INTERPRETER_CONTEXT
             return INTERPRETER_CONTEXT;
           default:
             return null;
@@ -5639,6 +6100,8 @@ public class RemoteInterpreterService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.NOTE_ID, new org.apache.thrift.meta_data.FieldMetaData("noteId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.CLASS_NAME, new org.apache.thrift.meta_data.FieldMetaData("className", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.INTERPRETER_CONTEXT, new org.apache.thrift.meta_data.FieldMetaData("interpreterContext", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -5651,10 +6114,12 @@ public class RemoteInterpreterService {
     }
 
     public cancel_args(
+      String noteId,
       String className,
       RemoteInterpreterContext interpreterContext)
     {
       this();
+      this.noteId = noteId;
       this.className = className;
       this.interpreterContext = interpreterContext;
     }
@@ -5663,6 +6128,9 @@ public class RemoteInterpreterService {
      * Performs a deep copy on <i>other</i>.
      */
     public cancel_args(cancel_args other) {
+      if (other.isSetNoteId()) {
+        this.noteId = other.noteId;
+      }
       if (other.isSetClassName()) {
         this.className = other.className;
       }
@@ -5677,8 +6145,33 @@ public class RemoteInterpreterService {
 
     @Override
     public void clear() {
+      this.noteId = null;
       this.className = null;
       this.interpreterContext = null;
+    }
+
+    public String getNoteId() {
+      return this.noteId;
+    }
+
+    public cancel_args setNoteId(String noteId) {
+      this.noteId = noteId;
+      return this;
+    }
+
+    public void unsetNoteId() {
+      this.noteId = null;
+    }
+
+    /** Returns true if field noteId is set (has been assigned a value) and false otherwise */
+    public boolean isSetNoteId() {
+      return this.noteId != null;
+    }
+
+    public void setNoteIdIsSet(boolean value) {
+      if (!value) {
+        this.noteId = null;
+      }
     }
 
     public String getClassName() {
@@ -5731,6 +6224,14 @@ public class RemoteInterpreterService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case NOTE_ID:
+        if (value == null) {
+          unsetNoteId();
+        } else {
+          setNoteId((String)value);
+        }
+        break;
+
       case CLASS_NAME:
         if (value == null) {
           unsetClassName();
@@ -5752,6 +6253,9 @@ public class RemoteInterpreterService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case NOTE_ID:
+        return getNoteId();
+
       case CLASS_NAME:
         return getClassName();
 
@@ -5769,6 +6273,8 @@ public class RemoteInterpreterService {
       }
 
       switch (field) {
+      case NOTE_ID:
+        return isSetNoteId();
       case CLASS_NAME:
         return isSetClassName();
       case INTERPRETER_CONTEXT:
@@ -5789,6 +6295,15 @@ public class RemoteInterpreterService {
     public boolean equals(cancel_args that) {
       if (that == null)
         return false;
+
+      boolean this_present_noteId = true && this.isSetNoteId();
+      boolean that_present_noteId = true && that.isSetNoteId();
+      if (this_present_noteId || that_present_noteId) {
+        if (!(this_present_noteId && that_present_noteId))
+          return false;
+        if (!this.noteId.equals(that.noteId))
+          return false;
+      }
 
       boolean this_present_className = true && this.isSetClassName();
       boolean that_present_className = true && that.isSetClassName();
@@ -5815,6 +6330,11 @@ public class RemoteInterpreterService {
     public int hashCode() {
       List<Object> list = new ArrayList<Object>();
 
+      boolean present_noteId = true && (isSetNoteId());
+      list.add(present_noteId);
+      if (present_noteId)
+        list.add(noteId);
+
       boolean present_className = true && (isSetClassName());
       list.add(present_className);
       if (present_className)
@@ -5836,6 +6356,16 @@ public class RemoteInterpreterService {
 
       int lastComparison = 0;
 
+      lastComparison = Boolean.valueOf(isSetNoteId()).compareTo(other.isSetNoteId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNoteId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, other.noteId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetClassName()).compareTo(other.isSetClassName());
       if (lastComparison != 0) {
         return lastComparison;
@@ -5876,6 +6406,14 @@ public class RemoteInterpreterService {
       StringBuilder sb = new StringBuilder("cancel_args(");
       boolean first = true;
 
+      sb.append("noteId:");
+      if (this.noteId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.noteId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
       sb.append("className:");
       if (this.className == null) {
         sb.append("null");
@@ -5937,7 +6475,15 @@ public class RemoteInterpreterService {
             break;
           }
           switch (schemeField.id) {
-            case 1: // CLASS_NAME
+            case 1: // NOTE_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.noteId = iprot.readString();
+                struct.setNoteIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // CLASS_NAME
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.className = iprot.readString();
                 struct.setClassNameIsSet(true);
@@ -5945,7 +6491,7 @@ public class RemoteInterpreterService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // INTERPRETER_CONTEXT
+            case 3: // INTERPRETER_CONTEXT
               if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
                 struct.interpreterContext = new RemoteInterpreterContext();
                 struct.interpreterContext.read(iprot);
@@ -5969,6 +6515,11 @@ public class RemoteInterpreterService {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.noteId != null) {
+          oprot.writeFieldBegin(NOTE_ID_FIELD_DESC);
+          oprot.writeString(struct.noteId);
+          oprot.writeFieldEnd();
+        }
         if (struct.className != null) {
           oprot.writeFieldBegin(CLASS_NAME_FIELD_DESC);
           oprot.writeString(struct.className);
@@ -5997,13 +6548,19 @@ public class RemoteInterpreterService {
       public void write(org.apache.thrift.protocol.TProtocol prot, cancel_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetClassName()) {
+        if (struct.isSetNoteId()) {
           optionals.set(0);
         }
-        if (struct.isSetInterpreterContext()) {
+        if (struct.isSetClassName()) {
           optionals.set(1);
         }
-        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetInterpreterContext()) {
+          optionals.set(2);
+        }
+        oprot.writeBitSet(optionals, 3);
+        if (struct.isSetNoteId()) {
+          oprot.writeString(struct.noteId);
+        }
         if (struct.isSetClassName()) {
           oprot.writeString(struct.className);
         }
@@ -6015,12 +6572,16 @@ public class RemoteInterpreterService {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, cancel_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(2);
+        BitSet incoming = iprot.readBitSet(3);
         if (incoming.get(0)) {
+          struct.noteId = iprot.readString();
+          struct.setNoteIdIsSet(true);
+        }
+        if (incoming.get(1)) {
           struct.className = iprot.readString();
           struct.setClassNameIsSet(true);
         }
-        if (incoming.get(1)) {
+        if (incoming.get(2)) {
           struct.interpreterContext = new RemoteInterpreterContext();
           struct.interpreterContext.read(iprot);
           struct.setInterpreterContextIsSet(true);
@@ -6281,8 +6842,9 @@ public class RemoteInterpreterService {
   public static class getProgress_args implements org.apache.thrift.TBase<getProgress_args, getProgress_args._Fields>, java.io.Serializable, Cloneable, Comparable<getProgress_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getProgress_args");
 
-    private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField INTERPRETER_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("interpreterContext", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+    private static final org.apache.thrift.protocol.TField NOTE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("noteId", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField INTERPRETER_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("interpreterContext", org.apache.thrift.protocol.TType.STRUCT, (short)3);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -6290,13 +6852,15 @@ public class RemoteInterpreterService {
       schemes.put(TupleScheme.class, new getProgress_argsTupleSchemeFactory());
     }
 
+    public String noteId; // required
     public String className; // required
     public RemoteInterpreterContext interpreterContext; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      CLASS_NAME((short)1, "className"),
-      INTERPRETER_CONTEXT((short)2, "interpreterContext");
+      NOTE_ID((short)1, "noteId"),
+      CLASS_NAME((short)2, "className"),
+      INTERPRETER_CONTEXT((short)3, "interpreterContext");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -6311,9 +6875,11 @@ public class RemoteInterpreterService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // CLASS_NAME
+          case 1: // NOTE_ID
+            return NOTE_ID;
+          case 2: // CLASS_NAME
             return CLASS_NAME;
-          case 2: // INTERPRETER_CONTEXT
+          case 3: // INTERPRETER_CONTEXT
             return INTERPRETER_CONTEXT;
           default:
             return null;
@@ -6358,6 +6924,8 @@ public class RemoteInterpreterService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.NOTE_ID, new org.apache.thrift.meta_data.FieldMetaData("noteId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.CLASS_NAME, new org.apache.thrift.meta_data.FieldMetaData("className", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.INTERPRETER_CONTEXT, new org.apache.thrift.meta_data.FieldMetaData("interpreterContext", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -6370,10 +6938,12 @@ public class RemoteInterpreterService {
     }
 
     public getProgress_args(
+      String noteId,
       String className,
       RemoteInterpreterContext interpreterContext)
     {
       this();
+      this.noteId = noteId;
       this.className = className;
       this.interpreterContext = interpreterContext;
     }
@@ -6382,6 +6952,9 @@ public class RemoteInterpreterService {
      * Performs a deep copy on <i>other</i>.
      */
     public getProgress_args(getProgress_args other) {
+      if (other.isSetNoteId()) {
+        this.noteId = other.noteId;
+      }
       if (other.isSetClassName()) {
         this.className = other.className;
       }
@@ -6396,8 +6969,33 @@ public class RemoteInterpreterService {
 
     @Override
     public void clear() {
+      this.noteId = null;
       this.className = null;
       this.interpreterContext = null;
+    }
+
+    public String getNoteId() {
+      return this.noteId;
+    }
+
+    public getProgress_args setNoteId(String noteId) {
+      this.noteId = noteId;
+      return this;
+    }
+
+    public void unsetNoteId() {
+      this.noteId = null;
+    }
+
+    /** Returns true if field noteId is set (has been assigned a value) and false otherwise */
+    public boolean isSetNoteId() {
+      return this.noteId != null;
+    }
+
+    public void setNoteIdIsSet(boolean value) {
+      if (!value) {
+        this.noteId = null;
+      }
     }
 
     public String getClassName() {
@@ -6450,6 +7048,14 @@ public class RemoteInterpreterService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case NOTE_ID:
+        if (value == null) {
+          unsetNoteId();
+        } else {
+          setNoteId((String)value);
+        }
+        break;
+
       case CLASS_NAME:
         if (value == null) {
           unsetClassName();
@@ -6471,6 +7077,9 @@ public class RemoteInterpreterService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case NOTE_ID:
+        return getNoteId();
+
       case CLASS_NAME:
         return getClassName();
 
@@ -6488,6 +7097,8 @@ public class RemoteInterpreterService {
       }
 
       switch (field) {
+      case NOTE_ID:
+        return isSetNoteId();
       case CLASS_NAME:
         return isSetClassName();
       case INTERPRETER_CONTEXT:
@@ -6508,6 +7119,15 @@ public class RemoteInterpreterService {
     public boolean equals(getProgress_args that) {
       if (that == null)
         return false;
+
+      boolean this_present_noteId = true && this.isSetNoteId();
+      boolean that_present_noteId = true && that.isSetNoteId();
+      if (this_present_noteId || that_present_noteId) {
+        if (!(this_present_noteId && that_present_noteId))
+          return false;
+        if (!this.noteId.equals(that.noteId))
+          return false;
+      }
 
       boolean this_present_className = true && this.isSetClassName();
       boolean that_present_className = true && that.isSetClassName();
@@ -6534,6 +7154,11 @@ public class RemoteInterpreterService {
     public int hashCode() {
       List<Object> list = new ArrayList<Object>();
 
+      boolean present_noteId = true && (isSetNoteId());
+      list.add(present_noteId);
+      if (present_noteId)
+        list.add(noteId);
+
       boolean present_className = true && (isSetClassName());
       list.add(present_className);
       if (present_className)
@@ -6555,6 +7180,16 @@ public class RemoteInterpreterService {
 
       int lastComparison = 0;
 
+      lastComparison = Boolean.valueOf(isSetNoteId()).compareTo(other.isSetNoteId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNoteId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, other.noteId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetClassName()).compareTo(other.isSetClassName());
       if (lastComparison != 0) {
         return lastComparison;
@@ -6595,6 +7230,14 @@ public class RemoteInterpreterService {
       StringBuilder sb = new StringBuilder("getProgress_args(");
       boolean first = true;
 
+      sb.append("noteId:");
+      if (this.noteId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.noteId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
       sb.append("className:");
       if (this.className == null) {
         sb.append("null");
@@ -6656,7 +7299,15 @@ public class RemoteInterpreterService {
             break;
           }
           switch (schemeField.id) {
-            case 1: // CLASS_NAME
+            case 1: // NOTE_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.noteId = iprot.readString();
+                struct.setNoteIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // CLASS_NAME
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.className = iprot.readString();
                 struct.setClassNameIsSet(true);
@@ -6664,7 +7315,7 @@ public class RemoteInterpreterService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // INTERPRETER_CONTEXT
+            case 3: // INTERPRETER_CONTEXT
               if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
                 struct.interpreterContext = new RemoteInterpreterContext();
                 struct.interpreterContext.read(iprot);
@@ -6688,6 +7339,11 @@ public class RemoteInterpreterService {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.noteId != null) {
+          oprot.writeFieldBegin(NOTE_ID_FIELD_DESC);
+          oprot.writeString(struct.noteId);
+          oprot.writeFieldEnd();
+        }
         if (struct.className != null) {
           oprot.writeFieldBegin(CLASS_NAME_FIELD_DESC);
           oprot.writeString(struct.className);
@@ -6716,13 +7372,19 @@ public class RemoteInterpreterService {
       public void write(org.apache.thrift.protocol.TProtocol prot, getProgress_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetClassName()) {
+        if (struct.isSetNoteId()) {
           optionals.set(0);
         }
-        if (struct.isSetInterpreterContext()) {
+        if (struct.isSetClassName()) {
           optionals.set(1);
         }
-        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetInterpreterContext()) {
+          optionals.set(2);
+        }
+        oprot.writeBitSet(optionals, 3);
+        if (struct.isSetNoteId()) {
+          oprot.writeString(struct.noteId);
+        }
         if (struct.isSetClassName()) {
           oprot.writeString(struct.className);
         }
@@ -6734,12 +7396,16 @@ public class RemoteInterpreterService {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, getProgress_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(2);
+        BitSet incoming = iprot.readBitSet(3);
         if (incoming.get(0)) {
+          struct.noteId = iprot.readString();
+          struct.setNoteIdIsSet(true);
+        }
+        if (incoming.get(1)) {
           struct.className = iprot.readString();
           struct.setClassNameIsSet(true);
         }
-        if (incoming.get(1)) {
+        if (incoming.get(2)) {
           struct.interpreterContext = new RemoteInterpreterContext();
           struct.interpreterContext.read(iprot);
           struct.setInterpreterContextIsSet(true);
@@ -7113,7 +7779,8 @@ public class RemoteInterpreterService {
   public static class getFormType_args implements org.apache.thrift.TBase<getFormType_args, getFormType_args._Fields>, java.io.Serializable, Cloneable, Comparable<getFormType_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getFormType_args");
 
-    private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField NOTE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("noteId", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -7121,11 +7788,13 @@ public class RemoteInterpreterService {
       schemes.put(TupleScheme.class, new getFormType_argsTupleSchemeFactory());
     }
 
+    public String noteId; // required
     public String className; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      CLASS_NAME((short)1, "className");
+      NOTE_ID((short)1, "noteId"),
+      CLASS_NAME((short)2, "className");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -7140,7 +7809,9 @@ public class RemoteInterpreterService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // CLASS_NAME
+          case 1: // NOTE_ID
+            return NOTE_ID;
+          case 2: // CLASS_NAME
             return CLASS_NAME;
           default:
             return null;
@@ -7185,6 +7856,8 @@ public class RemoteInterpreterService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.NOTE_ID, new org.apache.thrift.meta_data.FieldMetaData("noteId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.CLASS_NAME, new org.apache.thrift.meta_data.FieldMetaData("className", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -7195,9 +7868,11 @@ public class RemoteInterpreterService {
     }
 
     public getFormType_args(
+      String noteId,
       String className)
     {
       this();
+      this.noteId = noteId;
       this.className = className;
     }
 
@@ -7205,6 +7880,9 @@ public class RemoteInterpreterService {
      * Performs a deep copy on <i>other</i>.
      */
     public getFormType_args(getFormType_args other) {
+      if (other.isSetNoteId()) {
+        this.noteId = other.noteId;
+      }
       if (other.isSetClassName()) {
         this.className = other.className;
       }
@@ -7216,7 +7894,32 @@ public class RemoteInterpreterService {
 
     @Override
     public void clear() {
+      this.noteId = null;
       this.className = null;
+    }
+
+    public String getNoteId() {
+      return this.noteId;
+    }
+
+    public getFormType_args setNoteId(String noteId) {
+      this.noteId = noteId;
+      return this;
+    }
+
+    public void unsetNoteId() {
+      this.noteId = null;
+    }
+
+    /** Returns true if field noteId is set (has been assigned a value) and false otherwise */
+    public boolean isSetNoteId() {
+      return this.noteId != null;
+    }
+
+    public void setNoteIdIsSet(boolean value) {
+      if (!value) {
+        this.noteId = null;
+      }
     }
 
     public String getClassName() {
@@ -7245,6 +7948,14 @@ public class RemoteInterpreterService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case NOTE_ID:
+        if (value == null) {
+          unsetNoteId();
+        } else {
+          setNoteId((String)value);
+        }
+        break;
+
       case CLASS_NAME:
         if (value == null) {
           unsetClassName();
@@ -7258,6 +7969,9 @@ public class RemoteInterpreterService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case NOTE_ID:
+        return getNoteId();
+
       case CLASS_NAME:
         return getClassName();
 
@@ -7272,6 +7986,8 @@ public class RemoteInterpreterService {
       }
 
       switch (field) {
+      case NOTE_ID:
+        return isSetNoteId();
       case CLASS_NAME:
         return isSetClassName();
       }
@@ -7291,6 +8007,15 @@ public class RemoteInterpreterService {
       if (that == null)
         return false;
 
+      boolean this_present_noteId = true && this.isSetNoteId();
+      boolean that_present_noteId = true && that.isSetNoteId();
+      if (this_present_noteId || that_present_noteId) {
+        if (!(this_present_noteId && that_present_noteId))
+          return false;
+        if (!this.noteId.equals(that.noteId))
+          return false;
+      }
+
       boolean this_present_className = true && this.isSetClassName();
       boolean that_present_className = true && that.isSetClassName();
       if (this_present_className || that_present_className) {
@@ -7306,6 +8031,11 @@ public class RemoteInterpreterService {
     @Override
     public int hashCode() {
       List<Object> list = new ArrayList<Object>();
+
+      boolean present_noteId = true && (isSetNoteId());
+      list.add(present_noteId);
+      if (present_noteId)
+        list.add(noteId);
 
       boolean present_className = true && (isSetClassName());
       list.add(present_className);
@@ -7323,6 +8053,16 @@ public class RemoteInterpreterService {
 
       int lastComparison = 0;
 
+      lastComparison = Boolean.valueOf(isSetNoteId()).compareTo(other.isSetNoteId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNoteId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, other.noteId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetClassName()).compareTo(other.isSetClassName());
       if (lastComparison != 0) {
         return lastComparison;
@@ -7353,6 +8093,14 @@ public class RemoteInterpreterService {
       StringBuilder sb = new StringBuilder("getFormType_args(");
       boolean first = true;
 
+      sb.append("noteId:");
+      if (this.noteId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.noteId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
       sb.append("className:");
       if (this.className == null) {
         sb.append("null");
@@ -7403,7 +8151,15 @@ public class RemoteInterpreterService {
             break;
           }
           switch (schemeField.id) {
-            case 1: // CLASS_NAME
+            case 1: // NOTE_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.noteId = iprot.readString();
+                struct.setNoteIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // CLASS_NAME
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.className = iprot.readString();
                 struct.setClassNameIsSet(true);
@@ -7426,6 +8182,11 @@ public class RemoteInterpreterService {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.noteId != null) {
+          oprot.writeFieldBegin(NOTE_ID_FIELD_DESC);
+          oprot.writeString(struct.noteId);
+          oprot.writeFieldEnd();
+        }
         if (struct.className != null) {
           oprot.writeFieldBegin(CLASS_NAME_FIELD_DESC);
           oprot.writeString(struct.className);
@@ -7449,10 +8210,16 @@ public class RemoteInterpreterService {
       public void write(org.apache.thrift.protocol.TProtocol prot, getFormType_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetClassName()) {
+        if (struct.isSetNoteId()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetClassName()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetNoteId()) {
+          oprot.writeString(struct.noteId);
+        }
         if (struct.isSetClassName()) {
           oprot.writeString(struct.className);
         }
@@ -7461,8 +8228,12 @@ public class RemoteInterpreterService {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, getFormType_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
+          struct.noteId = iprot.readString();
+          struct.setNoteIdIsSet(true);
+        }
+        if (incoming.get(1)) {
           struct.className = iprot.readString();
           struct.setClassNameIsSet(true);
         }
@@ -7835,9 +8606,10 @@ public class RemoteInterpreterService {
   public static class completion_args implements org.apache.thrift.TBase<completion_args, completion_args._Fields>, java.io.Serializable, Cloneable, Comparable<completion_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("completion_args");
 
-    private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField BUF_FIELD_DESC = new org.apache.thrift.protocol.TField("buf", org.apache.thrift.protocol.TType.STRING, (short)2);
-    private static final org.apache.thrift.protocol.TField CURSOR_FIELD_DESC = new org.apache.thrift.protocol.TField("cursor", org.apache.thrift.protocol.TType.I32, (short)3);
+    private static final org.apache.thrift.protocol.TField NOTE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("noteId", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("className", org.apache.thrift.protocol.TType.STRING, (short)2);
+    private static final org.apache.thrift.protocol.TField BUF_FIELD_DESC = new org.apache.thrift.protocol.TField("buf", org.apache.thrift.protocol.TType.STRING, (short)3);
+    private static final org.apache.thrift.protocol.TField CURSOR_FIELD_DESC = new org.apache.thrift.protocol.TField("cursor", org.apache.thrift.protocol.TType.I32, (short)4);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -7845,15 +8617,17 @@ public class RemoteInterpreterService {
       schemes.put(TupleScheme.class, new completion_argsTupleSchemeFactory());
     }
 
+    public String noteId; // required
     public String className; // required
     public String buf; // required
     public int cursor; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      CLASS_NAME((short)1, "className"),
-      BUF((short)2, "buf"),
-      CURSOR((short)3, "cursor");
+      NOTE_ID((short)1, "noteId"),
+      CLASS_NAME((short)2, "className"),
+      BUF((short)3, "buf"),
+      CURSOR((short)4, "cursor");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -7868,11 +8642,13 @@ public class RemoteInterpreterService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // CLASS_NAME
+          case 1: // NOTE_ID
+            return NOTE_ID;
+          case 2: // CLASS_NAME
             return CLASS_NAME;
-          case 2: // BUF
+          case 3: // BUF
             return BUF;
-          case 3: // CURSOR
+          case 4: // CURSOR
             return CURSOR;
           default:
             return null;
@@ -7919,6 +8695,8 @@ public class RemoteInterpreterService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.NOTE_ID, new org.apache.thrift.meta_data.FieldMetaData("noteId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.CLASS_NAME, new org.apache.thrift.meta_data.FieldMetaData("className", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.BUF, new org.apache.thrift.meta_data.FieldMetaData("buf", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -7933,11 +8711,13 @@ public class RemoteInterpreterService {
     }
 
     public completion_args(
+      String noteId,
       String className,
       String buf,
       int cursor)
     {
       this();
+      this.noteId = noteId;
       this.className = className;
       this.buf = buf;
       this.cursor = cursor;
@@ -7949,6 +8729,9 @@ public class RemoteInterpreterService {
      */
     public completion_args(completion_args other) {
       __isset_bitfield = other.__isset_bitfield;
+      if (other.isSetNoteId()) {
+        this.noteId = other.noteId;
+      }
       if (other.isSetClassName()) {
         this.className = other.className;
       }
@@ -7964,10 +8747,35 @@ public class RemoteInterpreterService {
 
     @Override
     public void clear() {
+      this.noteId = null;
       this.className = null;
       this.buf = null;
       setCursorIsSet(false);
       this.cursor = 0;
+    }
+
+    public String getNoteId() {
+      return this.noteId;
+    }
+
+    public completion_args setNoteId(String noteId) {
+      this.noteId = noteId;
+      return this;
+    }
+
+    public void unsetNoteId() {
+      this.noteId = null;
+    }
+
+    /** Returns true if field noteId is set (has been assigned a value) and false otherwise */
+    public boolean isSetNoteId() {
+      return this.noteId != null;
+    }
+
+    public void setNoteIdIsSet(boolean value) {
+      if (!value) {
+        this.noteId = null;
+      }
     }
 
     public String getClassName() {
@@ -8043,6 +8851,14 @@ public class RemoteInterpreterService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case NOTE_ID:
+        if (value == null) {
+          unsetNoteId();
+        } else {
+          setNoteId((String)value);
+        }
+        break;
+
       case CLASS_NAME:
         if (value == null) {
           unsetClassName();
@@ -8072,6 +8888,9 @@ public class RemoteInterpreterService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case NOTE_ID:
+        return getNoteId();
+
       case CLASS_NAME:
         return getClassName();
 
@@ -8092,6 +8911,8 @@ public class RemoteInterpreterService {
       }
 
       switch (field) {
+      case NOTE_ID:
+        return isSetNoteId();
       case CLASS_NAME:
         return isSetClassName();
       case BUF:
@@ -8114,6 +8935,15 @@ public class RemoteInterpreterService {
     public boolean equals(completion_args that) {
       if (that == null)
         return false;
+
+      boolean this_present_noteId = true && this.isSetNoteId();
+      boolean that_present_noteId = true && that.isSetNoteId();
+      if (this_present_noteId || that_present_noteId) {
+        if (!(this_present_noteId && that_present_noteId))
+          return false;
+        if (!this.noteId.equals(that.noteId))
+          return false;
+      }
 
       boolean this_present_className = true && this.isSetClassName();
       boolean that_present_className = true && that.isSetClassName();
@@ -8149,6 +8979,11 @@ public class RemoteInterpreterService {
     public int hashCode() {
       List<Object> list = new ArrayList<Object>();
 
+      boolean present_noteId = true && (isSetNoteId());
+      list.add(present_noteId);
+      if (present_noteId)
+        list.add(noteId);
+
       boolean present_className = true && (isSetClassName());
       list.add(present_className);
       if (present_className)
@@ -8175,6 +9010,16 @@ public class RemoteInterpreterService {
 
       int lastComparison = 0;
 
+      lastComparison = Boolean.valueOf(isSetNoteId()).compareTo(other.isSetNoteId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNoteId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, other.noteId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetClassName()).compareTo(other.isSetClassName());
       if (lastComparison != 0) {
         return lastComparison;
@@ -8225,6 +9070,14 @@ public class RemoteInterpreterService {
       StringBuilder sb = new StringBuilder("completion_args(");
       boolean first = true;
 
+      sb.append("noteId:");
+      if (this.noteId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.noteId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
       sb.append("className:");
       if (this.className == null) {
         sb.append("null");
@@ -8289,7 +9142,15 @@ public class RemoteInterpreterService {
             break;
           }
           switch (schemeField.id) {
-            case 1: // CLASS_NAME
+            case 1: // NOTE_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.noteId = iprot.readString();
+                struct.setNoteIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // CLASS_NAME
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.className = iprot.readString();
                 struct.setClassNameIsSet(true);
@@ -8297,7 +9158,7 @@ public class RemoteInterpreterService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 2: // BUF
+            case 3: // BUF
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.buf = iprot.readString();
                 struct.setBufIsSet(true);
@@ -8305,7 +9166,7 @@ public class RemoteInterpreterService {
                 org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // CURSOR
+            case 4: // CURSOR
               if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
                 struct.cursor = iprot.readI32();
                 struct.setCursorIsSet(true);
@@ -8328,6 +9189,11 @@ public class RemoteInterpreterService {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.noteId != null) {
+          oprot.writeFieldBegin(NOTE_ID_FIELD_DESC);
+          oprot.writeString(struct.noteId);
+          oprot.writeFieldEnd();
+        }
         if (struct.className != null) {
           oprot.writeFieldBegin(CLASS_NAME_FIELD_DESC);
           oprot.writeString(struct.className);
@@ -8359,16 +9225,22 @@ public class RemoteInterpreterService {
       public void write(org.apache.thrift.protocol.TProtocol prot, completion_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetClassName()) {
+        if (struct.isSetNoteId()) {
           optionals.set(0);
         }
-        if (struct.isSetBuf()) {
+        if (struct.isSetClassName()) {
           optionals.set(1);
         }
-        if (struct.isSetCursor()) {
+        if (struct.isSetBuf()) {
           optionals.set(2);
         }
-        oprot.writeBitSet(optionals, 3);
+        if (struct.isSetCursor()) {
+          optionals.set(3);
+        }
+        oprot.writeBitSet(optionals, 4);
+        if (struct.isSetNoteId()) {
+          oprot.writeString(struct.noteId);
+        }
         if (struct.isSetClassName()) {
           oprot.writeString(struct.className);
         }
@@ -8383,16 +9255,20 @@ public class RemoteInterpreterService {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, completion_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(3);
+        BitSet incoming = iprot.readBitSet(4);
         if (incoming.get(0)) {
+          struct.noteId = iprot.readString();
+          struct.setNoteIdIsSet(true);
+        }
+        if (incoming.get(1)) {
           struct.className = iprot.readString();
           struct.setClassNameIsSet(true);
         }
-        if (incoming.get(1)) {
+        if (incoming.get(2)) {
           struct.buf = iprot.readString();
           struct.setBufIsSet(true);
         }
-        if (incoming.get(2)) {
+        if (incoming.get(3)) {
           struct.cursor = iprot.readI32();
           struct.setCursorIsSet(true);
         }
@@ -9310,7 +10186,8 @@ public class RemoteInterpreterService {
   public static class getStatus_args implements org.apache.thrift.TBase<getStatus_args, getStatus_args._Fields>, java.io.Serializable, Cloneable, Comparable<getStatus_args>   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getStatus_args");
 
-    private static final org.apache.thrift.protocol.TField JOB_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("jobId", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField NOTE_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("noteId", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField JOB_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("jobId", org.apache.thrift.protocol.TType.STRING, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -9318,11 +10195,13 @@ public class RemoteInterpreterService {
       schemes.put(TupleScheme.class, new getStatus_argsTupleSchemeFactory());
     }
 
+    public String noteId; // required
     public String jobId; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      JOB_ID((short)1, "jobId");
+      NOTE_ID((short)1, "noteId"),
+      JOB_ID((short)2, "jobId");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -9337,7 +10216,9 @@ public class RemoteInterpreterService {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // JOB_ID
+          case 1: // NOTE_ID
+            return NOTE_ID;
+          case 2: // JOB_ID
             return JOB_ID;
           default:
             return null;
@@ -9382,6 +10263,8 @@ public class RemoteInterpreterService {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.NOTE_ID, new org.apache.thrift.meta_data.FieldMetaData("noteId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.JOB_ID, new org.apache.thrift.meta_data.FieldMetaData("jobId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -9392,9 +10275,11 @@ public class RemoteInterpreterService {
     }
 
     public getStatus_args(
+      String noteId,
       String jobId)
     {
       this();
+      this.noteId = noteId;
       this.jobId = jobId;
     }
 
@@ -9402,6 +10287,9 @@ public class RemoteInterpreterService {
      * Performs a deep copy on <i>other</i>.
      */
     public getStatus_args(getStatus_args other) {
+      if (other.isSetNoteId()) {
+        this.noteId = other.noteId;
+      }
       if (other.isSetJobId()) {
         this.jobId = other.jobId;
       }
@@ -9413,7 +10301,32 @@ public class RemoteInterpreterService {
 
     @Override
     public void clear() {
+      this.noteId = null;
       this.jobId = null;
+    }
+
+    public String getNoteId() {
+      return this.noteId;
+    }
+
+    public getStatus_args setNoteId(String noteId) {
+      this.noteId = noteId;
+      return this;
+    }
+
+    public void unsetNoteId() {
+      this.noteId = null;
+    }
+
+    /** Returns true if field noteId is set (has been assigned a value) and false otherwise */
+    public boolean isSetNoteId() {
+      return this.noteId != null;
+    }
+
+    public void setNoteIdIsSet(boolean value) {
+      if (!value) {
+        this.noteId = null;
+      }
     }
 
     public String getJobId() {
@@ -9442,6 +10355,14 @@ public class RemoteInterpreterService {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case NOTE_ID:
+        if (value == null) {
+          unsetNoteId();
+        } else {
+          setNoteId((String)value);
+        }
+        break;
+
       case JOB_ID:
         if (value == null) {
           unsetJobId();
@@ -9455,6 +10376,9 @@ public class RemoteInterpreterService {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case NOTE_ID:
+        return getNoteId();
+
       case JOB_ID:
         return getJobId();
 
@@ -9469,6 +10393,8 @@ public class RemoteInterpreterService {
       }
 
       switch (field) {
+      case NOTE_ID:
+        return isSetNoteId();
       case JOB_ID:
         return isSetJobId();
       }
@@ -9488,6 +10414,15 @@ public class RemoteInterpreterService {
       if (that == null)
         return false;
 
+      boolean this_present_noteId = true && this.isSetNoteId();
+      boolean that_present_noteId = true && that.isSetNoteId();
+      if (this_present_noteId || that_present_noteId) {
+        if (!(this_present_noteId && that_present_noteId))
+          return false;
+        if (!this.noteId.equals(that.noteId))
+          return false;
+      }
+
       boolean this_present_jobId = true && this.isSetJobId();
       boolean that_present_jobId = true && that.isSetJobId();
       if (this_present_jobId || that_present_jobId) {
@@ -9503,6 +10438,11 @@ public class RemoteInterpreterService {
     @Override
     public int hashCode() {
       List<Object> list = new ArrayList<Object>();
+
+      boolean present_noteId = true && (isSetNoteId());
+      list.add(present_noteId);
+      if (present_noteId)
+        list.add(noteId);
 
       boolean present_jobId = true && (isSetJobId());
       list.add(present_jobId);
@@ -9520,6 +10460,16 @@ public class RemoteInterpreterService {
 
       int lastComparison = 0;
 
+      lastComparison = Boolean.valueOf(isSetNoteId()).compareTo(other.isSetNoteId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNoteId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.noteId, other.noteId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetJobId()).compareTo(other.isSetJobId());
       if (lastComparison != 0) {
         return lastComparison;
@@ -9550,6 +10500,14 @@ public class RemoteInterpreterService {
       StringBuilder sb = new StringBuilder("getStatus_args(");
       boolean first = true;
 
+      sb.append("noteId:");
+      if (this.noteId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.noteId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
       sb.append("jobId:");
       if (this.jobId == null) {
         sb.append("null");
@@ -9600,7 +10558,15 @@ public class RemoteInterpreterService {
             break;
           }
           switch (schemeField.id) {
-            case 1: // JOB_ID
+            case 1: // NOTE_ID
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.noteId = iprot.readString();
+                struct.setNoteIdIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // JOB_ID
               if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
                 struct.jobId = iprot.readString();
                 struct.setJobIdIsSet(true);
@@ -9623,6 +10589,11 @@ public class RemoteInterpreterService {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.noteId != null) {
+          oprot.writeFieldBegin(NOTE_ID_FIELD_DESC);
+          oprot.writeString(struct.noteId);
+          oprot.writeFieldEnd();
+        }
         if (struct.jobId != null) {
           oprot.writeFieldBegin(JOB_ID_FIELD_DESC);
           oprot.writeString(struct.jobId);
@@ -9646,10 +10617,16 @@ public class RemoteInterpreterService {
       public void write(org.apache.thrift.protocol.TProtocol prot, getStatus_args struct) throws org.apache.thrift.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetJobId()) {
+        if (struct.isSetNoteId()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetJobId()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetNoteId()) {
+          oprot.writeString(struct.noteId);
+        }
         if (struct.isSetJobId()) {
           oprot.writeString(struct.jobId);
         }
@@ -9658,8 +10635,12 @@ public class RemoteInterpreterService {
       @Override
       public void read(org.apache.thrift.protocol.TProtocol prot, getStatus_args struct) throws org.apache.thrift.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
+          struct.noteId = iprot.readString();
+          struct.setNoteIdIsSet(true);
+        }
+        if (incoming.get(1)) {
           struct.jobId = iprot.readString();
           struct.setJobIdIsSet(true);
         }

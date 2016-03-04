@@ -61,6 +61,7 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
 
     intp = new RemoteInterpreter(
         p,
+        "note",
         MockInterpreterAngular.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
@@ -70,7 +71,8 @@ public class RemoteAngularObjectTest implements AngularObjectRegistryListener {
         null
     );
 
-    intpGroup.add(intp);
+    intpGroup.put("note", new LinkedList<Interpreter>());
+    intpGroup.get("note").add(intp);
     intp.setInterpreterGroup(intpGroup);
 
     context = new InterpreterContext(
