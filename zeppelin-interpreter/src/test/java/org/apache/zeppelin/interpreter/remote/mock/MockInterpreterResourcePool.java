@@ -29,6 +29,7 @@ import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
 
 public class MockInterpreterResourcePool extends Interpreter {
@@ -61,9 +62,18 @@ public class MockInterpreterResourcePool extends Interpreter {
   public InterpreterResult interpret(String st, InterpreterContext context) {
     String[] stmt = st.split(" ");
     String cmd = stmt[0];
+    String noteId = null;
+    String paragraphId = null;
     String name = null;
     if (stmt.length >= 2) {
-      name = stmt[1];
+      String[] npn = stmt[1].split(":");
+      if (npn.length == 3) {
+        noteId = npn[0];
+        paragraphId = npn[1];
+        name = npn[2];
+      } else {
+        name = stmt[1];
+      }
     }
     String value = null;
     if (stmt.length == 3) {
@@ -73,11 +83,16 @@ public class MockInterpreterResourcePool extends Interpreter {
     ResourcePool resourcePool = context.getResourcePool();
     Object ret = null;
     if (cmd.equals("put")) {
-      resourcePool.put(name, value);
+      resourcePool.put(noteId, paragraphId, name, value);
     } else if (cmd.equalsIgnoreCase("get")) {
-      ret = resourcePool.get(name).get();
+      Resource resource = resourcePool.get(noteId, paragraphId, name);
+      if (resource != null) {
+        ret = resourcePool.get(noteId, paragraphId, name).get();
+      } else {
+        ret = "";
+      }
     } else if (cmd.equals("remove")) {
-      ret = resourcePool.remove(name);
+      ret = resourcePool.remove(noteId, paragraphId, name);
     } else if (cmd.equals("getAll")) {
       ret = resourcePool.getAll();
     }

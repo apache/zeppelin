@@ -78,7 +78,9 @@ service RemoteInterpreterService {
   // get all resources in the interpreter process
   list<string> resoucePoolGetAll();
   // get value of resource
-  binary resourceGet(1: string resourceName);
+  binary resourceGet(1: string noteId, 2: string paragraphId, 3: string resourceName);
+  // remove resource
+  bool resourceRemove(1: string noteId, 2: string paragraphId, 3:string resourceName);
 
   void angularObjectUpdate(1: string name, 2: string noteId, 3: string paragraphId, 4: string
   object);
