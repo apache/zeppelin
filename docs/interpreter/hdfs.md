@@ -5,8 +5,6 @@ description: ""
 group: manual
 ---
 {% include JB/setup %}
-.add(HDFS_USER, "hdfs", "The WebHDFS user")
-            .add(HDFS_MAXLENGTH, "1000", "Maximum number of lines of results fetched").build());
 
 ## HDFS File Interpreter for Apache Zeppelin
 
