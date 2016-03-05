@@ -343,12 +343,22 @@ public class RemoteInterpreterServer
         }
 
         String interpreterResultMessage = result.message();
+
+        InterpreterResult combinedResult;
         if (interpreterResultMessage != null && !interpreterResultMessage.isEmpty()) {
           message += interpreterResultMessage;
-          return new InterpreterResult(result.code(), result.type(), message);
+          combinedResult = new InterpreterResult(result.code(), result.type(), message);
         } else {
-          return new InterpreterResult(result.code(), outputType, message);
+          combinedResult = new InterpreterResult(result.code(), outputType, message);
         }
+
+        // put result into resource pool
+        context.getResourcePool().put(
+            context.getNoteId(),
+            context.getParagraphId(),
+            WellKnownResourceName.ParagraphResult.toString(),
+            combinedResult);
+        return combinedResult;
       } finally {
         InterpreterContext.remove();
       }
