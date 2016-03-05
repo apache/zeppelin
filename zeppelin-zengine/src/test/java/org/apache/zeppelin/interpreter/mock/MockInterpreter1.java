@@ -53,7 +53,11 @@ public class MockInterpreter1 extends Interpreter{
 		} else {
 			result = new InterpreterResult(InterpreterResult.Code.SUCCESS, "repl1: " + st);
 		}
-		context.getResourcePool().put(context.getNoteId(), context.getParagraphId(), "result", result);
+
+		if (context.getResourcePool() != null) {
+			context.getResourcePool().put(context.getNoteId(), context.getParagraphId(), "result", result);
+		}
+
 		return result;
 	}
 
