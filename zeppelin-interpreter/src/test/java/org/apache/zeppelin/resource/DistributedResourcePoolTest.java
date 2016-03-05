@@ -201,4 +201,42 @@ public class DistributedResourcePoolTest {
     assertEquals("value1", pool1.getAll().get(0).get());
     assertEquals("value2", pool1.getAll().get(1).get());
   }
+
+  @Test
+  public void testResourcePoolUtils() {
+    Gson gson = new Gson();
+    InterpreterResult ret;
+
+    // when create some resources
+    intp1.interpret("put note1:paragraph1:key1 value1", context);
+    intp1.interpret("put note1:paragraph2:key1 value2", context);
+    intp2.interpret("put note2:paragraph1:key1 value1", context);
+    intp2.interpret("put note2:paragraph2:key2 value2", context);
+
+    // then get all resources
+    assertEquals(4, ResourcePoolUtils.getAllResources().size());
+
+    // when remove all resources from note1
+    ResourcePoolUtils.removeResourcesBelongsToNote("note1");
+
+    // then resources should be removed
+    assertEquals(2, ResourcePoolUtils.getAllResources().size());
+    assertEquals("", gson.fromJson(
+        intp1.interpret("get note1:paragraph1:key1", context).message(),
+        String.class));
+    assertEquals("", gson.fromJson(
+        intp1.interpret("get note1:paragraph2:key1", context).message(),
+        String.class));
+
+
+    // when remove all resources from note2:paragraph1
+    ResourcePoolUtils.removeResourcesBelongsToParagraph("note2", "paragraph1");
+
+    // then only 1 left
+    assertEquals(1, ResourcePoolUtils.getAllResources().size());
+    assertEquals("value2", gson.fromJson(
+        intp1.interpret("get note2:paragraph2:key2", context).message(),
+        String.class));
+
+  }
 }

@@ -260,7 +260,10 @@ public class RemoteInterpreterEventPoller extends Thread {
       boolean broken = false;
       try {
         client = remoteInterpreterProcess.getClient();
-        ByteBuffer res = client.resourceGet(resourceId.getName());
+        ByteBuffer res = client.resourceGet(
+            resourceId.getNoteId(),
+            resourceId.getParagraphId(),
+            resourceId.getName());
         Object o = Resource.deserializeObject(res);
         return o;
       } catch (Exception e) {

@@ -32,6 +32,7 @@ import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.utility.IdHashes;
+import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
@@ -256,6 +257,8 @@ public class Note implements Serializable, JobListener {
    * @return a paragraph that was deleted, or <code>null</code> otherwise
    */
   public Paragraph removeParagraph(String paragraphId) {
+    removeAllAngularObjectInParagraph(paragraphId);
+    ResourcePoolUtils.removeResourcesBelongsToParagraph(id(), paragraphId);
     synchronized (paragraphs) {
       Iterator<Paragraph> i = paragraphs.iterator();
       while (i.hasNext()) {
@@ -268,7 +271,7 @@ public class Note implements Serializable, JobListener {
       }
     }
 
-    removeAllAngularObjectInParagraph(paragraphId);
+
     return null;
   }
 

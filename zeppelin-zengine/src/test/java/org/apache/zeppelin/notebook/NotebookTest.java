@@ -38,6 +38,8 @@ import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.VFSNotebookRepo;
+import org.apache.zeppelin.resource.LocalResourcePool;
+import org.apache.zeppelin.resource.ResourcePoolUtils;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
@@ -322,6 +324,33 @@ public class NotebookTest implements JobListenerFactory{
     assertNotEquals(cp.getId(), p.getId());
     assertEquals(cp.text, p.text);
     assertEquals(cp.getResult().message(), p.getResult().message());
+  }
+
+  @Test
+  public void testResourceRemovealOnParagraphNoteRemove() throws IOException {
+    Note note = notebook.createNote();
+    note.getNoteReplLoader().setInterpreters(factory.getDefaultInterpreterSettingList());
+    for (InterpreterGroup intpGroup : InterpreterGroup.getAll()) {
+      intpGroup.setResourcePool(new LocalResourcePool(intpGroup.getId()));
+    }
+    Paragraph p1 = note.addParagraph();
+    p1.setText("hello");
+    Paragraph p2 = note.addParagraph();
+    p2.setText("%mock2 world");
+
+    note.runAll();
+    while(p1.isTerminated()==false || p1.getResult()==null) Thread.yield();
+    while(p2.isTerminated()==false || p2.getResult()==null) Thread.yield();
+
+    assertEquals(2, ResourcePoolUtils.getAllResources().size());
+
+    // remove a paragraph
+    note.removeParagraph(p1.getId());
+    assertEquals(1, ResourcePoolUtils.getAllResources().size());
+
+    // remove note
+    notebook.removeNote(note.id());
+    assertEquals(0, ResourcePoolUtils.getAllResources().size());
   }
 
   @Test

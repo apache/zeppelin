@@ -72,4 +72,34 @@ public class ResourceSet extends LinkedList<Resource> {
     }
     return result;
   }
+
+  public ResourceSet filterByNoteId(String noteId) {
+    ResourceSet result = new ResourceSet();
+    for (Resource r : this) {
+      if (equals(r.getResourceId().getNoteId(), noteId)) {
+        result.add(r);
+      }
+    }
+    return result;
+  }
+
+  public ResourceSet filterByParagraphId(String paragraphId) {
+    ResourceSet result = new ResourceSet();
+    for (Resource r : this) {
+      if (equals(r.getResourceId().getParagraphId(), paragraphId)) {
+        result.add(r);
+      }
+    }
+    return result;
+  }
+
+  private boolean equals(String a, String b) {
+    if (a == null && b == null) {
+      return true;
+    } else if (a != null && b != null) {
+      return a.equals(b);
+    } else {
+      return false;
+    }
+  }
 }
