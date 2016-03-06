@@ -199,6 +199,56 @@ Yarn
     # ./conf/zeppelin-env.sh
     export SPARK_HOME=/path/to/spark_dir
 
+Yarn Cluster
+
+- Install Livy server in the cluster master node from : https://github.com/cloudera/hue/tree/master/apps/spark/java
+- Start Livy server in  **yarn mode**, refer to Livy documentation. 
+- You need to white list spark configuration in Livy in order to be able to send custom spark configuration. Copy the file `spark-user-configurable-options.template` in the conf dir of Livy to  `spark-user-configurable-options.conf`
+- Zeppelin note  conf:
+
+    ```
+    livy.server.host to cluster-master-node-ip:8998
+    spark.driver.cores
+    spark.driver.memory
+    spark.executor.instances
+    spark.executor.cores
+    spark.dynamicAllocation.enabled
+    spark.dynamicAllocation.cachedExecutorIdleTimeout
+    spark.dynamicAllocation.minExecutors
+    spark.dynamicAllocation.initialExecutors
+    spark.dynamicAllocation.maxExecutors
+    ```
+    
+- examples
+    - spark
+    
+        ```
+        %livy.spark
+      	object HelloWorld {
+    	    def main(args: Array[String]) {
+    	      println("Hello, world!")
+    	    }
+    	}
+    	HelloWorld.main(null)
+       ```
+       
+	- pyspark
+    
+    	```
+    	%livy.pyspark
+    	def welcome(name):
+    	    print 'Hello', name
+    	welcome('Livy')
+	    ``` 
+	    
+    - sparkR
+    
+    	``` 
+    	%livy.sparkr
+    	msg <- "Hello sparkR"
+    	print(msg)
+    	```
+    	
 ### Run
     ./bin/zeppelin-daemon.sh start
 
