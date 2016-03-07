@@ -12,6 +12,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+<script type="text/ng-template" id="notebook_folder_renderer.html">
+  <div ng-if="node.children === undefined">
+    <i style="font-size: 10px;" class="icon-doc"></i>
+    <a style="text-decoration: none;" href="#/notebook/{{node.id}}">{{node.name || 'Note ' + node.id}}</a>
+  </div>
+  <div ng-if="node.children !== undefined">
+    <i style="font-size: 10px;" ng-class="node.hidden ? 'icon-folder' : 'icon-folder-alt'"></i>
+    <a style="text-decoration: none;" ng-click="toggleFolderNode(node)">{{node.name}}</a>
+    <div ng-if="!node.hidden">
+      <ul style="list-style-type: none; padding-left:15px;">
+        <li ng-repeat="node in node.children" ng-include="'notebook_folder_renderer.html'" />
+      </ul>
+    </div>
+  </div>
+</script>
+
 <div ng-controller="HomeCtrl as home">
   <div ng-show="home.staticHome" class="box width-full home">
     <div class="zeppelin">
@@ -40,10 +56,15 @@ limitations under the License.
               <i style="font-size: 15px;" class="icon-notebook"></i> Create new note</a></h5>
             <ul id="notebook-names">
               <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in home.notes.list | filter:query | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">
-                <i style="font-size: 10px;" class="icon-doc"></i>
-                <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}}</a>
-              </li>
+              <div ng-if="!query || query === ''">
+                <li ng-repeat="node in home.notes.list" ng-include="'notebook_folder_renderer.html'" />
+              </div>
+              <div ng-if="query && query !== ''">
+                <li ng-repeat="note in home.notes.flatList | filter:query | orderBy:home.arrayOrderingSrv.notebookListOrdering track by $index">
+                  <i style="font-size: 10px;" class="icon-doc"></i>
+                  <a style="text-decoration: none;" href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}}</a>
+                </li>
+              </div>
             </ul>
           </div>
         </div>

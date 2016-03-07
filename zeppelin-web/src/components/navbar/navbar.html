@@ -10,7 +10,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
--->
+  -->
+<script type="text/ng-template" id="notebook_list_renderer.html">
+  <a ng-if="note.id" href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}} </a>
+  <li ng-if="!note.id"
+      class="dropdown-submenu">
+    <a tabindex="-1" href="#">{{note.name}}</a>
+    <ul class="dropdown-menu">
+      <li ng-repeat="note in note.children track by $index" ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'notebook_list_renderer.html'">
+    </ul>
+  </li>
+</script>
+
 <div class="navbar navbar-inverse navbar-fixed-top" style="display: none;" role="navigation" ng-class="{'displayNavBar': !asIframe}">
   <div class="container">
     <div class="navbar-header">
@@ -32,10 +43,7 @@ limitations under the License.
             <li><a href="" data-toggle="modal" data-target="#noteNameModal"><i class="fa fa-plus"></i> Create new note</a></li>
             <li class="divider"></li>
             <div id="notebook-list" class="scrollbar-container">
-              <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
-              <li ng-repeat="note in navbar.notes.list | filter:query | orderBy:navbar.arrayOrderingSrv.notebookListOrdering track by $index"
-                  ng-class="{'active' : navbar.isActive(note.id)}">
-                <a href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}} </a>
+              <li ng-repeat="note in navbar.notes.list track by $index" ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'notebook_list_renderer.html'">
               </li>
             </div>
           </ul>
