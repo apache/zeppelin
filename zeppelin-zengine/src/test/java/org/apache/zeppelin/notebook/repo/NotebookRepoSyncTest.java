@@ -95,7 +95,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     
     search = mock(SearchService.class);
     notebookRepoSync = new NotebookRepoSync(conf);
-    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this, search);
+    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this, search, null);
   }
 
   @After
@@ -220,7 +220,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     ZeppelinConfiguration vConf = ZeppelinConfiguration.create();
 
     NotebookRepoSync vRepoSync = new NotebookRepoSync(vConf);
-    Notebook vNotebookSync = new Notebook(vConf, vRepoSync, schedulerFactory, factory, this, search);
+    Notebook vNotebookSync = new Notebook(vConf, vRepoSync, schedulerFactory, factory, this, search, null);
 
     // one git versioned storage initialized
     assertThat(vRepoSync.getRepoCount()).isEqualTo(1);

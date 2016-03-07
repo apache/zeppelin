@@ -87,7 +87,8 @@ public class NotebookTest implements JobListenerFactory{
 
     SearchService search = mock(SearchService.class);
     notebookRepo = new VFSNotebookRepo(conf);
-    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search);
+    NotebookAuthorization notebookAuthorization = new NotebookAuthorization(conf);
+    notebook = new Notebook(conf, notebookRepo, schedulerFactory, factory, this, search, notebookAuthorization);
   }
 
   @After
@@ -171,7 +172,7 @@ public class NotebookTest implements JobListenerFactory{
 
     Notebook notebook2 = new Notebook(
         conf, notebookRepo, schedulerFactory,
-        new InterpreterFactory(conf, null, null, null, depResolver), this, null);
+        new InterpreterFactory(conf, null, null, null, depResolver), this, null, null);
     assertEquals(1, notebook2.getAllNotes().size());
   }
 
@@ -422,23 +423,36 @@ public class NotebookTest implements JobListenerFactory{
   public void testPermissions() throws IOException {
     // create a note and a paragraph
     Note note = notebook.createNote();
+    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
     // empty owners, readers and writers means note is public
-    assertEquals(note.isOwner(new HashSet<String>(Arrays.asList("user2"))), true);
-    assertEquals(note.isReader(new HashSet<String>(Arrays.asList("user2"))), true);
-    assertEquals(note.isWriter(new HashSet<String>(Arrays.asList("user2"))), true);
+    assertEquals(notebookAuthorization.isOwner(note.id(),
+            new HashSet<String>(Arrays.asList("user2"))), true);
+    assertEquals(notebookAuthorization.isReader(note.id(),
+            new HashSet<String>(Arrays.asList("user2"))), true);
+    assertEquals(notebookAuthorization.isWriter(note.id(),
+            new HashSet<String>(Arrays.asList("user2"))), true);
 
-    note.setOwners(new HashSet<String>(Arrays.asList("user1")));
-    note.setReaders(new HashSet<String>(Arrays.asList("user1", "user2")));
-    note.setWriters(new HashSet<String>(Arrays.asList("user1")));
+    notebookAuthorization.setOwners(note.id(),
+            new HashSet<String>(Arrays.asList("user1")));
+    notebookAuthorization.setReaders(note.id(),
+            new HashSet<String>(Arrays.asList("user1", "user2")));
+    notebookAuthorization.setWriters(note.id(),
+            new HashSet<String>(Arrays.asList("user1")));
 
-    assertEquals(note.isOwner(new HashSet<String>(Arrays.asList("user2"))), false);
-    assertEquals(note.isOwner(new HashSet<String>(Arrays.asList("user1"))), true);
+    assertEquals(notebookAuthorization.isOwner(note.id(),
+            new HashSet<String>(Arrays.asList("user2"))), false);
+    assertEquals(notebookAuthorization.isOwner(note.id(),
+            new HashSet<String>(Arrays.asList("user1"))), true);
 
-    assertEquals(note.isReader(new HashSet<String>(Arrays.asList("user3"))), false);
-    assertEquals(note.isReader(new HashSet<String>(Arrays.asList("user2"))), true);
+    assertEquals(notebookAuthorization.isReader(note.id(),
+            new HashSet<String>(Arrays.asList("user3"))), false);
+    assertEquals(notebookAuthorization.isReader(note.id(),
+            new HashSet<String>(Arrays.asList("user2"))), true);
 
-    assertEquals(note.isWriter(new HashSet<String>(Arrays.asList("user2"))), false);
-    assertEquals(note.isWriter(new HashSet<String>(Arrays.asList("user1"))), true);
+    assertEquals(notebookAuthorization.isWriter(note.id(),
+            new HashSet<String>(Arrays.asList("user2"))), false);
+    assertEquals(notebookAuthorization.isWriter(note.id(),
+            new HashSet<String>(Arrays.asList("user1"))), true);
 
     notebook.removeNote(note.id());
   }
