@@ -51,4 +51,9 @@ limitations under the License.
        id="p{{paragraph.id}}_scatterChart">
     <svg></svg>
   </div>
+
+  <div ng-if="getGraphMode()=='mapChart'"
+       id="p{{paragraph.id}}_mapChart">
+    <leaflet bounds="bounds" center="center" markers="markers"></leaflet>
+  </div>
 </div>
