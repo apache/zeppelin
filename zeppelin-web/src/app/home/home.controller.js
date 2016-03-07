@@ -71,4 +71,9 @@ angular.module('zeppelinWebApp').controller('HomeCtrl', function($scope, noteboo
     websocketMsgSrv.reloadAllNotesFromRepo();
     $scope.isReloadingNotes = true;
   };
+
+  $scope.toggleFolderNode = function(node) {
+    node.hidden = node.hidden ? false : true;
+  };
+
 });
