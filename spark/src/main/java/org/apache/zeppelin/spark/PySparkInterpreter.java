@@ -494,23 +494,18 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
 
   private SparkInterpreter getSparkInterpreter() {
-    InterpreterGroup intpGroup = getInterpreterGroup();
     LazyOpenInterpreter lazy = null;
     SparkInterpreter spark = null;
-    synchronized (intpGroup) {
-      for (Interpreter intp : getInterpreterGroup()){
-        if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
-          Interpreter p = intp;
-          while (p instanceof WrappedInterpreter) {
-            if (p instanceof LazyOpenInterpreter) {
-              lazy = (LazyOpenInterpreter) p;
-            }
-            p = ((WrappedInterpreter) p).getInnerInterpreter();
-          }
-          spark = (SparkInterpreter) p;
-        }
+    Interpreter p = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class.getName());
+
+    while (p instanceof WrappedInterpreter) {
+      if (p instanceof LazyOpenInterpreter) {
+        lazy = (LazyOpenInterpreter) p;
       }
+      p = ((WrappedInterpreter) p).getInnerInterpreter();
     }
+    spark = (SparkInterpreter) p;
+
     if (lazy != null) {
       lazy.open();
     }
@@ -554,20 +549,15 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   }
 
   private DepInterpreter getDepInterpreter() {
-    InterpreterGroup intpGroup = getInterpreterGroup();
-    if (intpGroup == null) return null;
-    synchronized (intpGroup) {
-      for (Interpreter intp : intpGroup) {
-        if (intp.getClassName().equals(DepInterpreter.class.getName())) {
-          Interpreter p = intp;
-          while (p instanceof WrappedInterpreter) {
-            p = ((WrappedInterpreter) p).getInnerInterpreter();
-          }
-          return (DepInterpreter) p;
-        }
-      }
+    Interpreter p = getInterpreterInTheSameSessionByClassName(DepInterpreter.class.getName());
+    if (p == null) {
+      return null;
     }
-    return null;
+
+    while (p instanceof WrappedInterpreter) {
+      p = ((WrappedInterpreter) p).getInnerInterpreter();
+    }
+    return (DepInterpreter) p;
   }
 
 

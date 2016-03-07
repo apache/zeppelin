@@ -54,6 +54,16 @@ Also you can separate option's display name and value, using _${formName=default
 
 <img src="/assets/themes/zeppelin/img/screenshots/form_select_displayname.png" />
 
+#### Checkbox form
+
+For multi-selection, you can create a checkbox form using _${checkbox:formName=defaultValue1|defaultValue2...,option1|option2...}_. The variable will be substituted by a comma-separated string based on the selected items. For example:
+
+<img src="/assets/themes/zeppelin/img/screenshots/form_checkbox.png">
+
+Besides, you can specify the delimiter using _${checkbox(delimiter):formName=...}_:
+
+<img src="/assets/themes/zeppelin/img/screenshots/form_checkbox_delimiter.png">
+
 ### Creates Programmatically
 
 Some language backend uses programmatic way to create form. For example [ZeppelinContext](../interpreter/spark.html#zeppelincontext) provides form creation API
@@ -134,3 +144,26 @@ print("Hello "+z.select("day", [("1","mon"),
     </div>
 </div>
 <img src="/assets/themes/zeppelin/img/screenshots/form_select_prog.png" />
+
+#### Checkbox form
+<div class="codetabs">
+    <div data-lang="scala" markdown="1">
+
+{% highlight scala %}
+%spark
+val options = Seq(("apple","Apple"), ("banana","Banana"), ("orange","Orange"))
+println("Hello "+z.checkbox("fruit", options).mkString(" and "))
+{% endhighlight %}
+
+    </div>
+    <div data-lang="python" markdown="1">
+
+{% highlight python %}
+%pyspark
+options = [("apple","Apple"), ("banana","Banana"), ("orange","Orange")]
+print("Hello "+ " and ".join(z.checkbox("fruit", options, ["apple"])))
+{% endhighlight %}
+
+    </div>
+</div>
+<img src="/assets/themes/zeppelin/img/screenshots/form_checkbox_prog.png" />

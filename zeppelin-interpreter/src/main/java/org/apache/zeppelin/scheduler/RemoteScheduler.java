@@ -45,14 +45,16 @@ public class RemoteScheduler implements Scheduler {
   boolean terminate = false;
   private String name;
   private int maxConcurrency;
+  private final String noteId;
   private RemoteInterpreterProcess interpreterProcess;
 
-  public RemoteScheduler(String name, ExecutorService executor,
+  public RemoteScheduler(String name, ExecutorService executor, String noteId,
       RemoteInterpreterProcess interpreterProcess, SchedulerListener listener,
       int maxConcurrency) {
     this.name = name;
     this.executor = executor;
     this.listener = listener;
+    this.noteId = noteId;
     this.interpreterProcess = interpreterProcess;
     this.maxConcurrency = maxConcurrency;
   }
@@ -257,7 +259,7 @@ public class RemoteScheduler implements Scheduler {
 
       boolean broken = false;
       try {
-        String statusStr = client.getStatus(job.getId());
+        String statusStr = client.getStatus(noteId, job.getId());
         if ("Unknown".equals(statusStr)) {
           // not found this job in the remote schedulers.
           // maybe not submitted, maybe already finished

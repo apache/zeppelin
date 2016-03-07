@@ -86,6 +86,7 @@ public class SchedulerFactory implements SchedulerListener {
 
   public Scheduler createOrGetRemoteScheduler(
       String name,
+      String noteId,
       RemoteInterpreterProcess interpreterProcess,
       int maxConcurrency) {
 
@@ -94,6 +95,7 @@ public class SchedulerFactory implements SchedulerListener {
         Scheduler s = new RemoteScheduler(
             name,
             executor,
+            noteId,
             interpreterProcess,
             this,
             maxConcurrency);

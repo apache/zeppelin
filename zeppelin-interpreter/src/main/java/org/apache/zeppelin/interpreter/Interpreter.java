@@ -121,10 +121,6 @@ public abstract class Interpreter {
    * Called when interpreter is no longer used.
    */
   public void destroy() {
-    Scheduler scheduler = getScheduler();
-    if (scheduler != null) {
-      scheduler.stop();
-    }
   }
 
   public static Logger logger = LoggerFactory.getLogger(Interpreter.class);
@@ -191,6 +187,33 @@ public abstract class Interpreter {
 
   public void setClassloaderUrls(URL[] classloaderUrls) {
     this.classloaderUrls = classloaderUrls;
+  }
+
+  public Interpreter getInterpreterInTheSameSessionByClassName(String className) {
+    synchronized (interpreterGroup) {
+      for (List<Interpreter> interpreters : interpreterGroup.values()) {
+        boolean belongsToSameNoteGroup = false;
+        Interpreter interpreterFound = null;
+        for (Interpreter intp : interpreters) {
+          if (intp.getClassName().equals(className)) {
+            interpreterFound = intp;
+          }
+
+          Interpreter p = intp;
+          while (p instanceof WrappedInterpreter) {
+            p = ((WrappedInterpreter) p).getInnerInterpreter();
+          }
+          if (this == p) {
+            belongsToSameNoteGroup = true;
+          }
+        }
+
+        if (belongsToSameNoteGroup) {
+          return interpreterFound;
+        }
+      }
+    }
+    return null;
   }
 
 

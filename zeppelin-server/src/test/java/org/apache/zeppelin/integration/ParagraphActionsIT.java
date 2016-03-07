@@ -30,6 +30,7 @@ import org.junit.rules.ErrorCollector;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -298,4 +299,32 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
 
   }
+
+  @Test
+  public void testWidth() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+      waitForParagraph(1, "READY");
+
+      collector.checkThat("Default Width is 12 ",
+          driver.findElement(By.xpath("//div[contains(@class,'col-md-12')]")).isDisplayed(),
+          CoreMatchers.equalTo(true));
+      for (Integer newWidth = 1; newWidth <= 11; newWidth++) {
+        driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+        String visibleText = newWidth.toString();
+        new Select(driver.findElement(By.xpath(getParagraphXPath(1)
+            + "//ul/li/a/form/select[(@ng-change='changeColWidth()')]"))).selectByVisibleText(visibleText);
+        collector.checkThat("New Width is : " + newWidth,
+            driver.findElement(By.xpath("//div[contains(@class,'col-md-" + newWidth + "')]")).isDisplayed(),
+            CoreMatchers.equalTo(true));
+      }
+    } catch (Exception e) {
+        handleException("Exception in ParagraphActionsIT while testWidth ", e);
+    }
+
+  }
+
 }

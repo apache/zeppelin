@@ -449,7 +449,7 @@ public class ZeppelinConfiguration extends XMLConfiguration {
         + "org.apache.zeppelin.livy.LivyPySparkInterpreter,"
         + "org.apache.zeppelin.livy.LivySparkRInterpreter,"
         + "org.apache.zeppelin.hive.HiveInterpreter,"
-        + "org.apache.zeppelin.tachyon.TachyonInterpreter,"
+        + "org.apache.zeppelin.alluxio.AlluxioInterpreter,"
         + "org.apache.zeppelin.phoenix.PhoenixInterpreter,"
         + "org.apache.zeppelin.postgresql.PostgreSqlInterpreter,"
         + "org.apache.zeppelin.tajo.TajoInterpreter,"

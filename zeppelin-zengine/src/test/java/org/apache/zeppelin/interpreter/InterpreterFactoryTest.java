@@ -22,8 +22,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -87,9 +86,12 @@ public class InterpreterFactoryTest {
   @Test
   public void testBasic() {
     List<String> all = factory.getDefaultInterpreterSettingList();
+    InterpreterSetting setting = factory.get(all.get(0));
+    InterpreterGroup interpreterGroup = setting.getInterpreterGroup();
+    factory.createInterpretersForNote(setting, "session");
 
     // get interpreter
-    Interpreter repl1 = factory.get(all.get(0)).getInterpreterGroup().getFirst();
+    Interpreter repl1 = interpreterGroup.get("session").get(0);
     assertFalse(((LazyOpenInterpreter) repl1).isOpen());
     repl1.interpret("repl1", context);
     assertTrue(((LazyOpenInterpreter) repl1).isOpen());
@@ -99,23 +101,14 @@ public class InterpreterFactoryTest {
 
     // restart interpreter
     factory.restart(all.get(0));
-    repl1 = factory.get(all.get(0)).getInterpreterGroup().getFirst();
-    assertFalse(((LazyOpenInterpreter) repl1).isOpen());
+    assertNull(setting.getInterpreterGroup().get("session"));
   }
 
   @Test
   public void testFactoryDefaultList() throws IOException, RepositoryException {
-    // get default list from default setting
+    // get default settings
     List<String> all = factory.getDefaultInterpreterSettingList();
     assertEquals(2, all.size());
-    assertEquals(factory.get(all.get(0)).getInterpreterGroup().getFirst().getClassName(), "org.apache.zeppelin.interpreter.mock.MockInterpreter1");
-
-    // add setting
-    factory.add("a mock", "mock2", new LinkedList<Dependency>(), new InterpreterOption(false), new Properties());
-    all = factory.getDefaultInterpreterSettingList();
-    assertEquals(2, all.size());
-    assertEquals("mock1", factory.get(all.get(0)).getName());
-    assertEquals("a mock", factory.get(all.get(1)).getName());
   }
 
   @Test
