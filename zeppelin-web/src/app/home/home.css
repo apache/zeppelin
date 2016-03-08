@@ -180,7 +180,13 @@ a.navbar-brand:hover {
   border-radius:0 6px 6px 6px;
 }
 .dropdown-submenu:hover > .dropdown-menu {
-    display:block;
+  display:block;
+}
+/* overwrite the style of the first element of dropdown-menu */
+.dropdown-submenu:hover > .dropdown-menu > li:first-child > a:hover {
+  color: #262626;
+  text-decoration: none;
+  background: #f5f5f5;
 }
 .dropdown-submenu > a:after {
   display:block;
