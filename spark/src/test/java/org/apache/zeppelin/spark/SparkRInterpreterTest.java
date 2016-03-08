@@ -31,6 +31,7 @@ import org.apache.zeppelin.user.AuthenticationInfo;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +44,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(SparkRInterpreter.ZeppelinRFactory.class)
+@PowerMockIgnore({"org.apache.spark.*", "org.apache.hadoop.*", "akka.*", "org.w3c.*", "javax.xml.*", "org.xml.*", "scala.*", "org.apache.cxf.*"})
 public class SparkRInterpreterTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkRInterpreterTest.class);
 
@@ -74,7 +76,6 @@ public class SparkRInterpreterTest {
 
     sparkInterpreter = new SparkInterpreter(p);
     intpGroup = new InterpreterGroup();
-    intpGroup.add(sparkInterpreter);
 
     zeppelinRFactory = mock(SparkRInterpreter.ZeppelinRFactory.class);
     doNothing().when(zeppelinRFactory).open(Mockito.anyString(), Mockito.anyString(), any(SparkInterpreter.class));
@@ -83,7 +84,6 @@ public class SparkRInterpreterTest {
     mockStatic(SparkRInterpreter.ZeppelinRFactory.class);
     when(SparkRInterpreter.ZeppelinRFactory.instance()).thenReturn(zeppelinRFactory);
 
-    intpGroup.add(sparkRInterpreter);
     sparkRInterpreter = new SparkRInterpreter(p);
     sparkRInterpreter.setInterpreterGroup(intpGroup);
     sparkRInterpreter.open();
