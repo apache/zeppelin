@@ -63,8 +63,13 @@ public class RemoteInterpreterTest {
   }
 
   private RemoteInterpreter createMockInterpreterA(Properties p) {
+    return createMockInterpreterA(p, "note");
+  }
+
+  private RemoteInterpreter createMockInterpreterA(Properties p, String noteId) {
     return new RemoteInterpreter(
             p,
+            noteId,
             MockInterpreterA.class.getName(),
             new File("../bin/interpreter.sh").getAbsolutePath(),
             "fake",
@@ -75,8 +80,13 @@ public class RemoteInterpreterTest {
   }
 
   private RemoteInterpreter createMockInterpreterB(Properties p) {
+    return createMockInterpreterB(p, "note");
+  }
+
+  private RemoteInterpreter createMockInterpreterB(Properties p, String noteId) {
     return new RemoteInterpreter(
             p,
+            noteId,
             MockInterpreterB.class.getName(),
             new File("../bin/interpreter.sh").getAbsolutePath(),
             "fake",
@@ -89,15 +99,17 @@ public class RemoteInterpreterTest {
   @Test
   public void testRemoteInterperterCall() throws TTransportException, IOException {
     Properties p = new Properties();
+    intpGroup.put("note", new LinkedList<Interpreter>());
 
     RemoteInterpreter intpA = createMockInterpreterA(p);
 
-    intpGroup.add(intpA);
+    intpGroup.get("note").add(intpA);
+
     intpA.setInterpreterGroup(intpGroup);
 
     RemoteInterpreter intpB = createMockInterpreterB(p);
 
-    intpGroup.add(intpB);
+    intpGroup.get("note").add(intpB);
     intpB.setInterpreterGroup(intpGroup);
 
 
@@ -108,10 +120,10 @@ public class RemoteInterpreterTest {
     assertEquals(0, process.getNumIdleClient());
     assertEquals(0, process.referenceCount());
 
-    intpA.open();
+    intpA.open(); // initializa all interpreters in the same group
     assertTrue(process.isRunning());
     assertEquals(1, process.getNumIdleClient());
-    assertEquals(1, process.referenceCount());
+    assertEquals(2, process.referenceCount());
 
     intpA.interpret("1",
         new InterpreterContext(
@@ -144,7 +156,8 @@ public class RemoteInterpreterTest {
 
     RemoteInterpreter intpA = createMockInterpreterA(p);
 
-    intpGroup.add(intpA);
+    intpGroup.put("note", new LinkedList<Interpreter>());
+    intpGroup.get("note").add(intpA);
     intpA.setInterpreterGroup(intpGroup);
 
     intpA.open();
@@ -167,9 +180,11 @@ public class RemoteInterpreterTest {
   @Test
   public void testRemoteSchedulerSharing() throws TTransportException, IOException {
     Properties p = new Properties();
+    intpGroup.put("note", new LinkedList<Interpreter>());
 
     RemoteInterpreter intpA = new RemoteInterpreter(
         p,
+        "note",
         MockInterpreterA.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
@@ -178,11 +193,13 @@ public class RemoteInterpreterTest {
         10 * 1000,
         null);
 
-    intpGroup.add(intpA);
+
+    intpGroup.get("note").add(intpA);
     intpA.setInterpreterGroup(intpGroup);
 
     RemoteInterpreter intpB = new RemoteInterpreter(
         p,
+        "note",
         MockInterpreterB.class.getName(),
         new File("../bin/interpreter.sh").getAbsolutePath(),
         "fake",
@@ -191,7 +208,7 @@ public class RemoteInterpreterTest {
         10 * 1000,
         null);
 
-    intpGroup.add(intpB);
+    intpGroup.get("note").add(intpB);
     intpB.setInterpreterGroup(intpGroup);
 
     intpA.open();
@@ -236,15 +253,16 @@ public class RemoteInterpreterTest {
   @Test
   public void testRemoteSchedulerSharingSubmit() throws TTransportException, IOException, InterruptedException {
     Properties p = new Properties();
+    intpGroup.put("note", new LinkedList<Interpreter>());
 
     final RemoteInterpreter intpA = createMockInterpreterA(p);
 
-    intpGroup.add(intpA);
+    intpGroup.get("note").add(intpA);
     intpA.setInterpreterGroup(intpGroup);
 
     final RemoteInterpreter intpB = createMockInterpreterB(p);
 
-    intpGroup.add(intpB);
+    intpGroup.get("note").add(intpB);
     intpB.setInterpreterGroup(intpGroup);
 
     intpA.open();
@@ -322,13 +340,11 @@ public class RemoteInterpreterTest {
 
     };
     intpB.getScheduler().submit(jobB);
-
     // wait until both job finished
     while (jobA.getStatus() != Status.FINISHED ||
            jobB.getStatus() != Status.FINISHED) {
       Thread.sleep(100);
     }
-
     long end = System.currentTimeMillis();
     assertTrue(end - start >= 1000);
 
@@ -341,10 +357,11 @@ public class RemoteInterpreterTest {
   @Test
   public void testRunOrderPreserved() throws InterruptedException {
     Properties p = new Properties();
+    intpGroup.put("note", new LinkedList<Interpreter>());
 
     final RemoteInterpreter intpA = createMockInterpreterA(p);
 
-    intpGroup.add(intpA);
+    intpGroup.get("note").add(intpA);
     intpA.setInterpreterGroup(intpGroup);
 
     intpA.open();
@@ -417,10 +434,11 @@ public class RemoteInterpreterTest {
   public void testRunParallel() throws InterruptedException {
     Properties p = new Properties();
     p.put("parallel", "true");
+    intpGroup.put("note", new LinkedList<Interpreter>());
 
     final RemoteInterpreter intpA = createMockInterpreterA(p);
 
-    intpGroup.add(intpA);
+    intpGroup.get("note").add(intpA);
     intpA.setInterpreterGroup(intpGroup);
 
     intpA.open();
@@ -507,6 +525,7 @@ public class RemoteInterpreterTest {
   @Test
   public void testInterpreterGroupResetAfterProcessFinished() {
     Properties p = new Properties();
+    intpGroup.put("note", new LinkedList<Interpreter>());
 
     RemoteInterpreter intpA = createMockInterpreterA(p);
 
@@ -525,10 +544,11 @@ public class RemoteInterpreterTest {
   @Test
   public void testInterpreterGroupResetDuringProcessRunning() throws InterruptedException {
     Properties p = new Properties();
+    intpGroup.put("note", new LinkedList<Interpreter>());
 
     final RemoteInterpreter intpA = createMockInterpreterA(p);
 
-    intpGroup.add(intpA);
+    intpGroup.get("note").add(intpA);
     intpA.setInterpreterGroup(intpGroup);
 
     intpA.open();
@@ -577,7 +597,12 @@ public class RemoteInterpreterTest {
     // restart interpreter
     RemoteInterpreterProcess processA = intpA.getInterpreterProcess();
     intpA.close();
-    intpA.setInterpreterGroup(new InterpreterGroup(intpA.getInterpreterGroup().getId()));
+
+    InterpreterGroup newInterpreterGroup =
+        new InterpreterGroup(intpA.getInterpreterGroup().getId());
+    newInterpreterGroup.put("note", new LinkedList<Interpreter>());
+
+    intpA.setInterpreterGroup(newInterpreterGroup);
     intpA.open();
     RemoteInterpreterProcess processB = intpA.getInterpreterProcess();
 
@@ -588,20 +613,55 @@ public class RemoteInterpreterTest {
   @Test
   public void testRemoteInterpreterSharesTheSameSchedulerInstanceInTheSameGroup() {
     Properties p = new Properties();
+    intpGroup.put("note", new LinkedList<Interpreter>());
 
     RemoteInterpreter intpA = createMockInterpreterA(p);
 
-    intpGroup.add(intpA);
+    intpGroup.get("note").add(intpA);
     intpA.setInterpreterGroup(intpGroup);
 
     RemoteInterpreter intpB = createMockInterpreterB(p);
 
-    intpGroup.add(intpB);
+    intpGroup.get("note").add(intpB);
     intpB.setInterpreterGroup(intpGroup);
 
     intpA.open();
     intpB.open();
 
     assertEquals(intpA.getScheduler(), intpB.getScheduler());
+  }
+
+  @Test
+  public void testMultiInterpreterSession() {
+    Properties p = new Properties();
+    intpGroup.put("sessionA", new LinkedList<Interpreter>());
+    intpGroup.put("sessionB", new LinkedList<Interpreter>());
+
+    RemoteInterpreter intpAsessionA = createMockInterpreterA(p, "sessionA");
+    intpGroup.get("sessionA").add(intpAsessionA);
+    intpAsessionA.setInterpreterGroup(intpGroup);
+
+    RemoteInterpreter intpBsessionA = createMockInterpreterB(p, "sessionA");
+    intpGroup.get("sessionA").add(intpBsessionA);
+    intpBsessionA.setInterpreterGroup(intpGroup);
+
+    intpAsessionA.open();
+    intpBsessionA.open();
+
+    assertEquals(intpAsessionA.getScheduler(), intpBsessionA.getScheduler());
+
+    RemoteInterpreter intpAsessionB = createMockInterpreterA(p, "sessionB");
+    intpGroup.get("sessionB").add(intpAsessionB);
+    intpAsessionB.setInterpreterGroup(intpGroup);
+
+    RemoteInterpreter intpBsessionB = createMockInterpreterB(p, "sessionB");
+    intpGroup.get("sessionB").add(intpBsessionB);
+    intpBsessionB.setInterpreterGroup(intpGroup);
+
+    intpAsessionB.open();
+    intpBsessionB.open();
+
+    assertEquals(intpAsessionB.getScheduler(), intpBsessionB.getScheduler());
+    assertNotEquals(intpAsessionA.getScheduler(), intpAsessionB.getScheduler());
   }
 }

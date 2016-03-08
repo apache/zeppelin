@@ -30,7 +30,8 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
   websocketCalls.sendNewEvent = function(data) {
     data.principal = $rootScope.ticket.principal;
     data.ticket = $rootScope.ticket.ticket;
-    console.log('Send >> %o, %o, %o, %o', data.op, data.principal, data.ticket, data);
+    data.roles = $rootScope.ticket.roles;
+    console.log('Send >> %o, %o, %o, %o, %o', data.op, data.principal, data.ticket, data.roles, data);
     websocketCalls.ws.send(JSON.stringify(data));
   };
 
@@ -52,12 +53,14 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
       $location.path('notebook/' + data.note.id);
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes);
+    } else if (op === 'AUTH_INFO') {
+      alert(data.info.toString());
     } else if (op === 'PARAGRAPH') {
       $rootScope.$broadcast('updateParagraph', data);
     } else if (op === 'PARAGRAPH_APPEND_OUTPUT') {
       $rootScope.$broadcast('appendParagraphOutput', data);
     } else if (op === 'PARAGRAPH_UPDATE_OUTPUT') {
-      $rootScope.$broadcast('updateParagraphOutput', data);      
+      $rootScope.$broadcast('updateParagraphOutput', data);
     } else if (op === 'PROGRESS') {
       $rootScope.$broadcast('updateProgress', data);
     } else if (op === 'COMPLETION_LIST') {

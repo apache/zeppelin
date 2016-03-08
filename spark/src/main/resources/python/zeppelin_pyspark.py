@@ -84,6 +84,16 @@ class PyZeppelinContext(dict):
     iterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(tuples)
     return self.z.select(name, defaultValue, iterables)
 
+  def checkbox(self, name, options, defaultChecked = None):
+    if defaultChecked is None:
+      defaultChecked = map(lambda items: items[0], options)
+    optionTuples = map(lambda items: self.__tupleToScalaTuple2(items), options)
+    optionIterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(optionTuples)
+    defaultCheckedIterables = gateway.jvm.scala.collection.JavaConversions.collectionAsScalaIterable(defaultChecked)
+
+    checkedIterables = self.z.checkbox(name, defaultCheckedIterables, optionIterables)
+    return gateway.jvm.scala.collection.JavaConversions.asJavaCollection(checkedIterables)
+
   def __tupleToScalaTuple2(self, tuple):
     if (len(tuple) == 2):
       return gateway.jvm.scala.Tuple2(tuple[0], tuple[1])

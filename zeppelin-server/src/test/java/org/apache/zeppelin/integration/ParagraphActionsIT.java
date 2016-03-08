@@ -30,6 +30,7 @@ import org.junit.rules.ErrorCollector;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.Select;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,21 +70,21 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       waitForParagraph(1, "READY");
       Integer oldNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("Before Insert New : the number of  paragraph ",
-              oldNosOfParas,
-              CoreMatchers.equalTo(1));
+          oldNosOfParas,
+          CoreMatchers.equalTo(1));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='insertNew()']")).click();
       waitForParagraph(2, "READY");
       Integer newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("After Insert New (using Insert New button) :  number of  paragraph",
-              oldNosOfParas + 1,
-              CoreMatchers.equalTo(newNosOfParas));
+          oldNosOfParas + 1,
+          CoreMatchers.equalTo(newNosOfParas));
 
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='removeParagraph()']")).click();
       ZeppelinITUtils.sleep(1000, false);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
-              "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+          "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
       ZeppelinITUtils.sleep(1000, false);
 
       WebElement oldParagraphEditor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
@@ -95,8 +96,8 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       waitForParagraph(1, "READY");
 
       collector.checkThat("Paragraph is created above",
-              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
-              CoreMatchers.equalTo(""));
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
+          CoreMatchers.equalTo(""));
       WebElement aboveParagraphEditor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
       aboveParagraphEditor.sendKeys(" this is above ");
 
@@ -106,31 +107,30 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       waitForParagraph(3, "READY");
 
       collector.checkThat("Paragraph is created below",
-              driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
-              CoreMatchers.equalTo(""));
+          driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
+          CoreMatchers.equalTo(""));
       WebElement belowParagraphEditor = driver.findElement(By.xpath(getParagraphXPath(3) + "//textarea"));
       belowParagraphEditor.sendKeys(" this is below ");
 
       collector.checkThat("The output field of paragraph1 contains",
-              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
-              CoreMatchers.equalTo(" this is above "));
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
+          CoreMatchers.equalTo(" this is above "));
       collector.checkThat("The output field paragraph2 contains",
-              driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
-              CoreMatchers.equalTo(" original paragraph "));
+          driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
+          CoreMatchers.equalTo(" original paragraph "));
       collector.checkThat("The output field paragraph3 contains",
-              driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
-              CoreMatchers.equalTo(" this is below "));
+          driver.findElement(By.xpath(getParagraphXPath(3) + "//div[contains(@class, 'editor')]")).getText(),
+          CoreMatchers.equalTo(" this is below "));
       collector.checkThat("The current number of paragraphs after creating  paragraph above and below",
-              driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size(),
-              CoreMatchers.equalTo(3));
+          driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size(),
+          CoreMatchers.equalTo(3));
 
       ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
     } catch (Exception e) {
-       handleException("Exception in ParagraphActionsIT while testCreateNewButton ", e);
+      handleException("Exception in ParagraphActionsIT while testCreateNewButton ", e);
     }
-
 
   }
 
@@ -148,17 +148,17 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       waitForParagraph(2, "READY");
       Integer oldNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("Before Remove : Number of paragraphs are ",
-              oldNosOfParas,
-              CoreMatchers.equalTo(2));
+          oldNosOfParas,
+          CoreMatchers.equalTo(2));
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='removeParagraph()']")).click();
       sleep(1000, true);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this paragraph')]" +
-              "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
+          "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
       Integer newNosOfParas = driver.findElements(By.xpath("//div[@ng-controller=\"ParagraphCtrl\"]")).size();
       collector.checkThat("After Remove : Number of paragraphs are",
-              oldNosOfParas-1,
-              CoreMatchers.equalTo(newNosOfParas));
+          oldNosOfParas-1,
+          CoreMatchers.equalTo(newNosOfParas));
       ZeppelinITUtils.sleep(1000, false);
       deleteTestNotebook(driver);
 
@@ -166,7 +166,7 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       handleException("Exception in ParagraphActionsIT while testMoveUpAndDown ", e);
     }
   }
-  
+
   @Test
   public void testMoveUpAndDown() throws Exception {
     if (!endToEndTestEnabled()) {
@@ -189,11 +189,11 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
 
 
       collector.checkThat("The paragraph1 value contains",
-              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
-              CoreMatchers.equalTo("1"));
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
+          CoreMatchers.equalTo("1"));
       collector.checkThat("The paragraph1 value contains",
-              driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
-              CoreMatchers.equalTo("2"));
+          driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
+          CoreMatchers.equalTo("2"));
 
       driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='moveDown()']")).click();
@@ -201,11 +201,11 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       ZeppelinITUtils.sleep(1000,false);
 
       collector.checkThat("The paragraph1 value contains",
-              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
-              CoreMatchers.equalTo("2"));
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
+          CoreMatchers.equalTo("2"));
       collector.checkThat("The paragraph1 value contains",
-              driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
-              CoreMatchers.equalTo("1"));
+          driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
+          CoreMatchers.equalTo("1"));
 
       driver.findElement(By.xpath(getParagraphXPath(2) + "//span[@class='icon-settings']")).click();
       driver.findElement(By.xpath(getParagraphXPath(2) + "//ul/li/a[@ng-click='moveUp()']")).click();
@@ -213,11 +213,11 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
       ZeppelinITUtils.sleep(1000,false);
 
       collector.checkThat("The paragraph1 value contains",
-              driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
-              CoreMatchers.equalTo("1"));
+          driver.findElement(By.xpath(getParagraphXPath(1) + "//div[contains(@class, 'editor')]")).getText(),
+          CoreMatchers.equalTo("1"));
       collector.checkThat("The paragraph1 value contains",
-              driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
-              CoreMatchers.equalTo("2"));
+          driver.findElement(By.xpath(getParagraphXPath(2) + "//div[contains(@class, 'editor')]")).getText(),
+          CoreMatchers.equalTo("2"));
       ZeppelinITUtils.sleep(1000,false);
       deleteTestNotebook(driver);
 
@@ -264,4 +264,67 @@ public class ParagraphActionsIT extends AbstractZeppelinIT {
     }
 
   }
+
+  @Test
+  public void testClearOutputButton() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+
+      waitForParagraph(1, "READY");
+      String xpathToOutputField=getParagraphXPath(1) + "//div[contains(@ng-if,'getResultType()')]";
+      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
+      paragraph1Editor.sendKeys("println" + Keys.chord(Keys.SHIFT, "9") + "\""
+          + "abcd\")");
+      collector.checkThat("Before Run Output field contains ",
+          driver.findElement(By.xpath(xpathToOutputField)).getText(),
+          CoreMatchers.equalTo(""));
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@ng-click='runParagraph(getEditorValue())']")).click();
+      waitForParagraph(1, "FINISHED");
+      collector.checkThat("After Run Output field contains  ",
+          driver.findElement(By.xpath(xpathToOutputField)).getText(),
+          CoreMatchers.equalTo("abcd"));
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+      driver.findElement(By.xpath(getParagraphXPath(1) + "//ul/li/a[@ng-click='clearParagraphOutput()']")).click();
+      collector.checkThat("After Clear  Output field contains ",
+          driver.findElement(By.xpath(xpathToOutputField)).getText(),
+          CoreMatchers.equalTo(""));
+      ZeppelinITUtils.sleep(1000, false);
+      deleteTestNotebook(driver);
+
+    } catch (Exception e) {
+      handleException("Exception in ParagraphActionsIT while testClearOutputButton ",e);
+    }
+
+  }
+
+  @Test
+  public void testWidth() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
+    }
+    try {
+      createNewNote();
+      waitForParagraph(1, "READY");
+
+      collector.checkThat("Default Width is 12 ",
+          driver.findElement(By.xpath("//div[contains(@class,'col-md-12')]")).isDisplayed(),
+          CoreMatchers.equalTo(true));
+      for (Integer newWidth = 1; newWidth <= 11; newWidth++) {
+        driver.findElement(By.xpath(getParagraphXPath(1) + "//span[@class='icon-settings']")).click();
+        String visibleText = newWidth.toString();
+        new Select(driver.findElement(By.xpath(getParagraphXPath(1)
+            + "//ul/li/a/form/select[(@ng-change='changeColWidth()')]"))).selectByVisibleText(visibleText);
+        collector.checkThat("New Width is : " + newWidth,
+            driver.findElement(By.xpath("//div[contains(@class,'col-md-" + newWidth + "')]")).isDisplayed(),
+            CoreMatchers.equalTo(true));
+      }
+    } catch (Exception e) {
+        handleException("Exception in ParagraphActionsIT while testWidth ", e);
+    }
+
+  }
+
 }

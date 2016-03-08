@@ -52,8 +52,9 @@ public class DepInterpreterTest {
     dep.open();
 
     InterpreterGroup intpGroup = new InterpreterGroup();
-    intpGroup.add(new SparkInterpreter(p));
-    intpGroup.add(dep);
+    intpGroup.put("note", new LinkedList<Interpreter>());
+    intpGroup.get("note").add(new SparkInterpreter(p));
+    intpGroup.get("note").add(dep);
     dep.setInterpreterGroup(intpGroup);
 
     context = new InterpreterContext("note", "id", "title", "text", new AuthenticationInfo(),

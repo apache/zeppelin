@@ -51,17 +51,22 @@ public class SparkSqlInterpreterTest {
 
       if (SparkInterpreterTest.repl == null) {
         repl = new SparkInterpreter(p);
+        intpGroup = new InterpreterGroup();
+        repl.setInterpreterGroup(intpGroup);
         repl.open();
         SparkInterpreterTest.repl = repl;
+        SparkInterpreterTest.intpGroup = intpGroup;
       } else {
         repl = SparkInterpreterTest.repl;
+        intpGroup = SparkInterpreterTest.intpGroup;
       }
 
-    sql = new SparkSqlInterpreter(p);
+      sql = new SparkSqlInterpreter(p);
 
-    intpGroup = new InterpreterGroup();
-      intpGroup.add(repl);
-      intpGroup.add(sql);
+      intpGroup = new InterpreterGroup();
+      intpGroup.put("note", new LinkedList<Interpreter>());
+      intpGroup.get("note").add(repl);
+      intpGroup.get("note").add(sql);
       sql.setInterpreterGroup(intpGroup);
       sql.open();
     }

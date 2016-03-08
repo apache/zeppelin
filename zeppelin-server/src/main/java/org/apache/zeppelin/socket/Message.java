@@ -96,6 +96,7 @@ public class Message {
     PARAGRAPH_APPEND_OUTPUT,  // [s-c] append output
     PARAGRAPH_UPDATE_OUTPUT,  // [s-c] update (replace) output
     PING,
+    AUTH_INFO,
 
     ANGULAR_OBJECT_UPDATE,  // [s-c] add/update angular object
     ANGULAR_OBJECT_REMOVE,  // [s-c] add angular object del
@@ -116,6 +117,7 @@ public class Message {
   public Map<String, Object> data = new HashMap<String, Object>();
   public String ticket = "anonymous";
   public String principal = "anonymous";
+  public String roles = "";
 
   public Message(OP op) {
     this.op = op;
