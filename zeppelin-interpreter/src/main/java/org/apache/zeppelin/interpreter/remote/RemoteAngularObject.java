@@ -19,20 +19,20 @@ package org.apache.zeppelin.interpreter.remote;
 
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectListener;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
 
 /**
  * Proxy for AngularObject that exists in remote interpreter process
  */
 public class RemoteAngularObject extends AngularObject {
 
-  private transient RemoteInterpreterProcess remoteInterpreterProcess;
+  private transient InterpreterGroup interpreterGroup;
 
-  RemoteAngularObject(String name, Object o, String noteId, String paragraphId, String
-          interpreterGroupId,
-      AngularObjectListener listener,
-      RemoteInterpreterProcess remoteInterpreterProcess) {
+  RemoteAngularObject(String name, Object o, String noteId, String paragraphId,
+      InterpreterGroup interpreterGroup,
+      AngularObjectListener listener) {
     super(name, o, noteId, paragraphId, listener);
-    this.remoteInterpreterProcess = remoteInterpreterProcess;
+    this.interpreterGroup = interpreterGroup;
   }
 
   @Override
@@ -45,8 +45,9 @@ public class RemoteAngularObject extends AngularObject {
 
     if (emitRemoteProcess) {
       // send updated value to remote interpreter
-      remoteInterpreterProcess.updateRemoteAngularObject(getName(), getNoteId(), getParagraphId()
-              , o);
+      interpreterGroup.getRemoteInterpreterProcess().
+          updateRemoteAngularObject(
+              getName(), getNoteId(), getParagraphId(), o);
     }
   }
 }

@@ -21,12 +21,15 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.server.JsonResponse;
 import org.apache.zeppelin.ticket.TicketContainer;
 import org.apache.zeppelin.utils.SecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -36,6 +39,8 @@ import java.util.Map;
 @Path("/security")
 @Produces("application/json")
 public class SecurityRestApi {
+  private static final Logger LOG = LoggerFactory.getLogger(SecurityRestApi.class);
+
   /**
    * Required by Swagger.
    */
@@ -56,6 +61,7 @@ public class SecurityRestApi {
   public Response ticket() {
     ZeppelinConfiguration conf = ZeppelinConfiguration.create();
     String principal = SecurityUtils.getPrincipal();
+    HashSet<String> roles = SecurityUtils.getRoles();
     JsonResponse response;
     // ticket set to anonymous for anonymous user. Simplify testing.
     String ticket;
@@ -66,9 +72,11 @@ public class SecurityRestApi {
 
     Map<String, String> data = new HashMap<>();
     data.put("principal", principal);
+    data.put("roles", roles.toString());
     data.put("ticket", ticket);
 
     response = new JsonResponse(Response.Status.OK, "", data);
+    LOG.warn(response.toString());
     return response.build();
   }
 }

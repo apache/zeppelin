@@ -629,11 +629,16 @@ angular.module('zeppelinWebApp')
       value = params[formulaire.name];
     }
 
-    if (value === '') {
-      value = formulaire.options[0].value;
-    }
-
     $scope.paragraph.settings.params[formulaire.name] = value;
+  };
+
+  $scope.toggleCheckbox = function(formulaire, option) {
+    var idx = $scope.paragraph.settings.params[formulaire.name].indexOf(option.value);
+    if (idx > -1) {
+      $scope.paragraph.settings.params[formulaire.name].splice(idx, 1);
+    } else {
+      $scope.paragraph.settings.params[formulaire.name].push(option.value);
+    }
   };
 
   $scope.aceChanged = function() {
@@ -968,6 +973,12 @@ angular.module('zeppelinWebApp')
         } else {
           $scope.showLineNumbers();
         }
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 189) { // Ctrl + Shift + -
+        $scope.paragraph.config.colWidth = Math.max(1, $scope.paragraph.config.colWidth - 1);
+        $scope.changeColWidth();
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 187) { // Ctrl + Shift + =
+        $scope.paragraph.config.colWidth = Math.min(12, $scope.paragraph.config.colWidth + 1);
+        $scope.changeColWidth();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && ((keyCode >= 48 && keyCode <=57) || keyCode === 189 || keyCode === 187)) { // Ctrl + Alt + [1~9,0,-,=]
         var colWidth = 12;
         if (keyCode === 48) {

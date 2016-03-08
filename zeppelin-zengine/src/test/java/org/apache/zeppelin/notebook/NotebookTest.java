@@ -26,21 +26,14 @@ import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.AngularObjectRegistry;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterOption;
-import org.apache.zeppelin.interpreter.InterpreterOutput;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter1;
 import org.apache.zeppelin.interpreter.mock.MockInterpreter2;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
@@ -426,6 +419,31 @@ public class NotebookTest implements JobListenerFactory{
   }
 
   @Test
+  public void testPermissions() throws IOException {
+    // create a note and a paragraph
+    Note note = notebook.createNote();
+    // empty owners, readers and writers means note is public
+    assertEquals(note.isOwner(new HashSet<String>(Arrays.asList("user2"))), true);
+    assertEquals(note.isReader(new HashSet<String>(Arrays.asList("user2"))), true);
+    assertEquals(note.isWriter(new HashSet<String>(Arrays.asList("user2"))), true);
+
+    note.setOwners(new HashSet<String>(Arrays.asList("user1")));
+    note.setReaders(new HashSet<String>(Arrays.asList("user1", "user2")));
+    note.setWriters(new HashSet<String>(Arrays.asList("user1")));
+
+    assertEquals(note.isOwner(new HashSet<String>(Arrays.asList("user2"))), false);
+    assertEquals(note.isOwner(new HashSet<String>(Arrays.asList("user1"))), true);
+
+    assertEquals(note.isReader(new HashSet<String>(Arrays.asList("user3"))), false);
+    assertEquals(note.isReader(new HashSet<String>(Arrays.asList("user2"))), true);
+
+    assertEquals(note.isWriter(new HashSet<String>(Arrays.asList("user2"))), false);
+    assertEquals(note.isWriter(new HashSet<String>(Arrays.asList("user1"))), true);
+
+    notebook.removeNote(note.id());
+  }
+
+  @Test
   public void testAbortParagraphStatusOnInterpreterRestart() throws InterruptedException,
       IOException {
     Note note = notebook.createNote();
@@ -461,6 +479,109 @@ public class NotebookTest implements JobListenerFactory{
 
     assertTrue(isAborted);
   }
+
+  @Test
+  public void testPerSessionInterpreterCloseOnNoteRemoval() throws IOException {
+    // create a notes
+    Note note1  = notebook.createNote();
+    Paragraph p1 = note1.addParagraph();
+    p1.setText("getId");
+
+    // restart interpreter with per note session enabled
+    for (InterpreterSetting setting : note1.getNoteReplLoader().getInterpreterSettings()) {
+      setting.getOption().setPerNoteSession(true);
+      notebook.getInterpreterFactory().restart(setting.id());
+    }
+
+    note1.run(p1.getId());
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+    InterpreterResult result = p1.getResult();
+
+    // remove note and recreate
+    notebook.removeNote(note1.getId());
+    note1 = notebook.createNote();
+    p1 = note1.addParagraph();
+    p1.setText("getId");
+
+    note1.run(p1.getId());
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+    assertNotEquals(p1.getResult().message(), result.message());
+
+    notebook.removeNote(note1.getId());
+  }
+
+  @Test
+  public void testPerSessionInterpreter() throws IOException {
+    // create two notes
+    Note note1  = notebook.createNote();
+    Paragraph p1 = note1.addParagraph();
+
+    Note note2  = notebook.createNote();
+    Paragraph p2 = note2.addParagraph();
+
+    p1.setText("getId");
+    p2.setText("getId");
+
+    // run per note session disabled
+    note1.run(p1.getId());
+    note2.run(p2.getId());
+
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+    while (p2.getStatus() != Status.FINISHED) Thread.yield();
+
+    assertEquals(p1.getResult().message(), p2.getResult().message());
+
+
+    // restart interpreter with per note session enabled
+    for (InterpreterSetting setting : note1.getNoteReplLoader().getInterpreterSettings()) {
+      setting.getOption().setPerNoteSession(true);
+      notebook.getInterpreterFactory().restart(setting.id());
+    }
+
+    // run per note session enabled
+    note1.run(p1.getId());
+    note2.run(p2.getId());
+
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+    while (p2.getStatus() != Status.FINISHED) Thread.yield();
+
+    assertNotEquals(p1.getResult().message(), p2.getResult().message());
+
+    notebook.removeNote(note1.getId());
+    notebook.removeNote(note2.getId());
+  }
+
+  @Test
+  public void testPerSessionInterpreterCloseOnUnbindInterpreterSetting() throws IOException {
+    // create a notes
+    Note note1  = notebook.createNote();
+    Paragraph p1 = note1.addParagraph();
+    p1.setText("getId");
+
+    // restart interpreter with per note session enabled
+    for (InterpreterSetting setting : note1.getNoteReplLoader().getInterpreterSettings()) {
+      setting.getOption().setPerNoteSession(true);
+      notebook.getInterpreterFactory().restart(setting.id());
+    }
+
+    note1.run(p1.getId());
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+    InterpreterResult result = p1.getResult();
+
+
+    // unbind, and rebind setting. that result interpreter instance close
+    List<String> bindedSettings = notebook.getBindedInterpreterSettingsIds(note1.getId());
+    notebook.bindInterpretersToNote(note1.getId(), new LinkedList<String>());
+    notebook.bindInterpretersToNote(note1.getId(), bindedSettings);
+
+    note1.run(p1.getId());
+    while (p1.getStatus() != Status.FINISHED) Thread.yield();
+
+    assertNotEquals(result.message(), p1.getResult().message());
+
+    notebook.removeNote(note1.getId());
+  }
+
 
   private void delete(File file){
     if(file.isFile()) file.delete();
