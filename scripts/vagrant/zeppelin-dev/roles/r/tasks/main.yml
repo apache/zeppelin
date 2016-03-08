@@ -40,15 +40,12 @@
     - libssl-dev
     - libcurl4-openssl-dev
 
+# knitr will also pull in the `evaluate` R package as a dependency
 - name: Install R packages required for the R interpreter. This may take a while.
   shell: /usr/bin/Rscript --slave --no-save --no-restore-history -e "if (! ('{{item}}' %in% installed.packages()[,'Package'])) install.packages(pkgs=c('{{item}}'), repos=c('{{r_packages_repos}}'))"
   with_items:
-    - evaluate
     - knitr
     - devtools
-
-- name: Install R repr package recommended for the R interpreter display system (requires devtools first).
-  shell: /usr/bin/Rscript --slave --no-save --no-restore-history -e "if (! ('repr' %in% installed.packages()[,'Package'])) devtools::install_github('IRkernel/repr')"
 
 - name: Install rCharts (requires devtools first).
   shell: /usr/bin/Rscript --slave --no-save --no-restore-history -e "if (! ('rCharts' %in% installed.packages()[,'Package'])) devtools::install_github('rCharts', 'ramnathv')"
@@ -56,8 +53,6 @@
 - name: Install R packages recommended for the R interpreter.
   shell: /usr/bin/Rscript --slave --no-save --no-restore-history -e "if (! ('{{item}}' %in% installed.packages()[,'Package'])) install.packages(pkgs=c('{{item}}'), repos=c('{{r_packages_repos}}'))"
   with_items:
-    - htmltools
-    - base64enc
     - ggplot2
     - googleVis
 
