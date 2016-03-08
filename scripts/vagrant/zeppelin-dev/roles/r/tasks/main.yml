@@ -26,7 +26,7 @@
 # in order to get the latest version of R, add CRAN repository to the to the list of sources
 - name: repository | add cran-r
   apt_repository:
-    repo: "{{ item.type }} {{ item.url }}"
+    repo: "{{item.type}} {{item.url}}"
     state: present
     update_cache: true
   with_items: r_repository
@@ -34,18 +34,30 @@
 - name: Install R. This may take a while.
   apt: pkg=r-base state=present
 
+- name: openssl and libcurl required for R devtools package
+  apt: pkg={{item}} state=present
+  with_items:
+    - libssl-dev
+    - libcurl4-openssl-dev
+
 - name: Install R packages required for the R interpreter. This may take a while.
   shell: /usr/bin/Rscript --slave --no-save --no-restore-history -e "if (! ('{{item}}' %in% installed.packages()[,'Package'])) install.packages(pkgs=c('{{item}}'), repos=c('{{r_packages_repos}}'))"
   with_items:
-      - evaluate
-      - knitr
-      - devtools
+    - evaluate
+    - knitr
+    - devtools
 
 - name: Install R repr package recommended for the R interpreter display system (requires devtools first).
   shell: /usr/bin/Rscript --slave --no-save --no-restore-history -e "if (! ('repr' %in% installed.packages()[,'Package'])) devtools::install_github('IRkernel/repr')"
 
+- name: Install rCharts (requires devtools first).
+  shell: /usr/bin/Rscript --slave --no-save --no-restore-history -e "if (! ('rCharts' %in% installed.packages()[,'Package'])) devtools::install_github('rCharts', 'ramnathv')"
+
 - name: Install R packages recommended for the R interpreter.
   shell: /usr/bin/Rscript --slave --no-save --no-restore-history -e "if (! ('{{item}}' %in% installed.packages()[,'Package'])) install.packages(pkgs=c('{{item}}'), repos=c('{{r_packages_repos}}'))"
   with_items:
-      - htmltools
-      - base64enc
+    - htmltools
+    - base64enc
+    - ggplot2
+    - googleVis
+
