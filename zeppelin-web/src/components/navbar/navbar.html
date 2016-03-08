@@ -18,6 +18,7 @@ limitations under the License.
     <a tabindex="-1" href="#">{{note.name}}</a>
     <ul class="dropdown-menu">
       <li ng-repeat="note in note.children track by $index" ng-class="{'active' : navbar.isActive(note.id)}" ng-include="'notebook_list_renderer.html'">
+      </li>
     </ul>
   </li>
 </script>
