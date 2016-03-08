@@ -131,6 +131,7 @@ public class RemoteInterpreter extends Interpreter {
     interpreterProcess.reference(getInterpreterGroup());
     interpreterProcess.setMaxPoolSize(
         Math.max(this.maxPoolSize, interpreterProcess.getMaxPoolSize()));
+    String groupId = getInterpreterGroup().getId();
 
     synchronized (interpreterProcess) {
       Client client = null;
@@ -144,7 +145,7 @@ public class RemoteInterpreter extends Interpreter {
       try {
         logger.info("Create remote interpreter {}", getClassName());
         property.put("zeppelin.interpreter.localRepo", localRepoPath);
-        client.createInterpreter(getInterpreterGroup().getId(), noteId,
+        client.createInterpreter(groupId, noteId,
             getClassName(), (Map) property);
       } catch (TException e) {
         broken = true;
