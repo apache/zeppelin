@@ -41,6 +41,7 @@ Spark Interpreter group, which consisted of 4 interpreters.
 
 ## Configuration
 Zeppelin provides the below properties for Spark interpreter. 
+You can also set other Spark properties which are not listed in the table. If so, please refer to [Spark Available Properties](http://spark.apache.org/docs/latest/configuration.html#available-properties).
 <table class="table-configuration">
   <tr>
     <th>Property</th>
@@ -72,8 +73,8 @@ Zeppelin provides the below properties for Spark interpreter.
   </tr>
   <tr>
     <td>zeppelin.dep.additionalRemoteRepository</td>
-    <td>spark-packages,http://dl.bintray.com/spark-packages/maven,false;</td>
-    <td>A list of `id,remote-repository-URL,is-snapshot;` for each remote repository.</td>
+    <td>spark-packages, <br/> http://dl.bintray.com/spark-packages/maven, <br/> false;</td>
+    <td>A list of `id,remote-repository-URL,is-snapshot;` <br/> for each remote repository.</td>
   </tr>
   <tr>
     <td>zeppelin.dep.localrepo</td>
