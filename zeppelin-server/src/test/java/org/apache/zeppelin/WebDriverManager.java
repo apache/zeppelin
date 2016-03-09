@@ -106,8 +106,8 @@ public class WebDriverManager {
     }
 
     String url;
-    if (System.getProperty("url") != null) {
-      url = System.getProperty("url");
+    if (System.getenv("url") != null) {
+      url = System.getenv("url");
     } else {
       url = "http://localhost:8080";
     }
