@@ -664,6 +664,7 @@ public class InterpreterFactory {
         intpsetting.getInterpreterGroup().destroy();
 
         intpsetting.setOption(option);
+        intpsetting.setProperties(properties);
         intpsetting.setDependencies(dependencies);
 
         InterpreterGroup interpreterGroup = createInterpreterGroup(intpsetting.id(), option);

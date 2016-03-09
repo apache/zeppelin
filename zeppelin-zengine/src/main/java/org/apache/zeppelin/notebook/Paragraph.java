@@ -339,7 +339,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   }
 
   static class ParagraphRunner extends InterpreterContextRunner {
-    private Note note;
+    private transient Note note;
 
     public ParagraphRunner(Note note, String noteId, String paragraphId) {
       super(noteId, paragraphId);

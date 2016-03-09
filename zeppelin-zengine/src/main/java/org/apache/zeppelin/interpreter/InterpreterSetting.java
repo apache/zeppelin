@@ -129,6 +129,10 @@ public class InterpreterSetting {
     return properties;
   }
 
+  public void setProperties(Properties properties) {
+    this.properties = properties;
+  }
+
   public List<Dependency> getDependencies() {
     if (dependencies == null) {
       return new LinkedList<Dependency>();
