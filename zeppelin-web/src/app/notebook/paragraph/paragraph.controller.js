@@ -114,7 +114,7 @@ angular.module('zeppelinWebApp')
           $scope.appendTextOutput($scope.paragraph.result.msg);
         }
 
-        angular.element('#p' + $scope.paragraph.id + '_text').bind("mousewheel", function(e) {
+        angular.element('#p' + $scope.paragraph.id + '_text').bind('mousewheel', function(e) {
           $scope.keepScrollDown = false;
         });
 
@@ -2119,7 +2119,7 @@ angular.module('zeppelinWebApp')
 
   $scope.showScrollUpIcon = function(){
     if(angular.element('#p' + $scope.paragraph.id + '_text')[0]){
-      return angular.element('#p' + $scope.paragraph.id + '_text')[0].scrollTop != 0;
+      return angular.element('#p' + $scope.paragraph.id + '_text')[0].scrollTop !== 0;
     }
     return false;
 
