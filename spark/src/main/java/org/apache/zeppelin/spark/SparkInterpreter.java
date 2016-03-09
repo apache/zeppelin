@@ -82,31 +82,34 @@ public class SparkInterpreter extends Interpreter {
 
   static {
     Interpreter.register(
-        "spark",
-        "spark",
-        SparkInterpreter.class.getName(),
-        new InterpreterPropertyBuilder()
-            .add("spark.app.name",
-                getSystemDefault("SPARK_APP_NAME", "spark.app.name", "Zeppelin"),
-                "The name of spark application.")
-            .add("master",
-                getSystemDefault("MASTER", "spark.master", "local[*]"),
-                "Spark master uri. ex) spark://masterhost:7077")
-            .add("spark.executor.memory",
-                getSystemDefault(null, "spark.executor.memory", "512m"),
-                "Executor memory per worker instance. ex) 512m, 32g")
-            .add("spark.cores.max",
-                getSystemDefault(null, "spark.cores.max", ""),
-                "Total number of cores to use. Empty value uses all available core.")
-            .add("zeppelin.spark.useHiveContext",
-                getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT",
-                    "zeppelin.spark.useHiveContext", "true"),
-                "Use HiveContext instead of SQLContext if it is true.")
-            .add("zeppelin.spark.maxResult",
-                getSystemDefault("ZEPPELIN_SPARK_MAXRESULT", "zeppelin.spark.maxResult", "1000"),
-                "Max number of SparkSQL result to display.")
-            .add("args", "", "spark commandline args").build());
-
+      "spark",
+      "spark",
+      SparkInterpreter.class.getName(),
+      new InterpreterPropertyBuilder()
+        .add("spark.app.name",
+          getSystemDefault("SPARK_APP_NAME", "spark.app.name", "Zeppelin"),
+          "The name of spark application.")
+        .add("master",
+          getSystemDefault("MASTER", "spark.master", "local[*]"),
+          "Spark master uri. ex) spark://masterhost:7077")
+        .add("spark.executor.memory",
+          getSystemDefault(null, "spark.executor.memory", "512m"),
+          "Executor memory per worker instance. ex) 512m, 32g")
+        .add("spark.cores.max",
+          getSystemDefault(null, "spark.cores.max", ""),
+          "Total number of cores to use. Empty value uses all available core.")
+        .add("zeppelin.spark.useHiveContext",
+          getSystemDefault("ZEPPELIN_SPARK_USEHIVECONTEXT",
+            "zeppelin.spark.useHiveContext", "true"),
+          "Use HiveContext instead of SQLContext if it is true.")
+        .add("zeppelin.spark.maxResult",
+          getSystemDefault("ZEPPELIN_SPARK_MAXRESULT", "zeppelin.spark.maxResult", "1000"),
+          "Max number of SparkSQL result to display.")
+        .add("args", "", "spark commandline args")
+        .add("zeppelin.spark.printREPLOutput", "true",
+          "Print REPL output")
+        .build()
+    );
   }
 
   private ZeppelinContext z;
@@ -383,6 +386,10 @@ public class SparkInterpreter extends Interpreter {
     return defaultValue;
   }
 
+  public boolean printREPLOutput() {
+    return java.lang.Boolean.parseBoolean(getProperty("zeppelin.spark.printREPLOutput"));
+  }
+
   @Override
   public void open() {
     URL[] urls = getClassloaderUrls();
@@ -483,7 +490,11 @@ public class SparkInterpreter extends Interpreter {
 
     synchronized (sharedInterpreterLock) {
       /* create scala repl */
-      this.interpreter = new SparkILoop(null, new PrintWriter(out));
+      if (printREPLOutput()) {
+        this.interpreter = new SparkILoop(null, new PrintWriter(out));
+      } else {
+        this.interpreter = new SparkILoop(null, new PrintWriter(Console.out(), false));
+      }
 
       interpreter.settings_$eq(settings);
 
