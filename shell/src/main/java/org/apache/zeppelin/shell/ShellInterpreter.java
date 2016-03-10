@@ -19,17 +19,14 @@ package org.apache.zeppelin.shell;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
+import java.util.*;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
@@ -50,6 +47,10 @@ public class ShellInterpreter extends Interpreter {
   public static final String SHELL_COMMAND_TIMEOUT = "shell.command.timeout.millisecs";
   public static final String DEFAULT_COMMAND_TIMEOUT = "600000";
   int commandTimeOut;
+  private static final boolean isWindows = System
+          .getProperty("os.name")
+          .startsWith("Windows");
+  final String shell = isWindows ? "cmd /c" : "bash -c";
 
   static {
     Interpreter.register(
@@ -83,11 +84,15 @@ public class ShellInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     logger.debug("Run shell command '" + cmd + "'");
-    CommandLine cmdLine = CommandLine.parse("bash");
-    cmdLine.addArgument("-c", false);
+    CommandLine cmdLine = CommandLine.parse(shell);
+    // the Windows CMD shell doesn't handle multiline statements,
+    // they need to be delimited by '&&' instead
+    if (isWindows) {
+      String[] lines = StringUtils.split(cmd, "\n");
+      cmd = StringUtils.join(lines, " && ");
+    }
     cmdLine.addArgument(cmd, false);
     DefaultExecutor executor = new DefaultExecutor();
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
     executor.setStreamHandler(new PumpStreamHandler(contextInterpreter.out, errorStream));
     executor.setWatchdog(new ExecuteWatchdog(commandTimeOut));
