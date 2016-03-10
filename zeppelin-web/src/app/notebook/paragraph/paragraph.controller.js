@@ -1022,7 +1022,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
       for (var i = 0; i < data.rows.length; i++) {
         var row = data.rows[i];
         var rowMarker = mapChartModel(row);
-        newmarkers = $.extend(newmarkers, rowMarker);
+        newmarkers = angular.extend(newmarkers, rowMarker);
       }
     } 
 
@@ -1035,7 +1035,7 @@ angular.module('zeppelinWebApp').controller('ParagraphCtrl', function($scope, $r
 
     // set map chart height
     var height = $scope.paragraph.config.graph.height;
-    $('#p'+$scope.paragraph.id+'_mapChart').height(height);
+    angular.extend('#p'+$scope.paragraph.id+'_mapChart').height(height);
 
     $scope.center = {};
   };
