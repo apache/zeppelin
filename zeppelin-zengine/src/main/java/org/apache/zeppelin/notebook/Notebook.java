@@ -284,6 +284,7 @@ public class Notebook {
     }
     replFactory.removeNoteInterpreterSettingBinding(id);
     notebookIndex.deleteIndexDocs(note);
+    notebookAuthorization.removeNote(id);
 
     // remove from all interpreter instance's angular object registry
     for (InterpreterSetting settings : replFactory.get()) {

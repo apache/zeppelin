@@ -225,6 +225,7 @@ public class NotebookAuthorization {
 
   public void removeNote(String noteId) {
     authInfo.remove(noteId);
+    saveToFile();
   }
 
 }
