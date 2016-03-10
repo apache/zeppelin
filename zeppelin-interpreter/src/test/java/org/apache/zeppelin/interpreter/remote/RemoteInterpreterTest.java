@@ -46,6 +46,11 @@ import org.junit.Test;
 public class RemoteInterpreterTest {
 
 
+  private static final String INTERPRETER_SCRIPT =
+          System.getProperty("os.name").startsWith("Windows") ?
+                  "../bin/interpreter.cmd" :
+                  "../bin/interpreter.sh";
+
   private InterpreterGroup intpGroup;
   private HashMap<String, String> env;
 
@@ -71,7 +76,7 @@ public class RemoteInterpreterTest {
             p,
             noteId,
             MockInterpreterA.class.getName(),
-            new File("../bin/interpreter.sh").getAbsolutePath(),
+            new File(INTERPRETER_SCRIPT).getAbsolutePath(),
             "fake",
             "fakeRepo",
             env,
@@ -88,7 +93,7 @@ public class RemoteInterpreterTest {
             p,
             noteId,
             MockInterpreterB.class.getName(),
-            new File("../bin/interpreter.sh").getAbsolutePath(),
+            new File(INTERPRETER_SCRIPT).getAbsolutePath(),
             "fake",
             "fakeRepo",
             env,
@@ -186,7 +191,7 @@ public class RemoteInterpreterTest {
         p,
         "note",
         MockInterpreterA.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
+        new File(INTERPRETER_SCRIPT).getAbsolutePath(),
         "fake",
         "fakeRepo",
         env,
@@ -201,7 +206,7 @@ public class RemoteInterpreterTest {
         p,
         "note",
         MockInterpreterB.class.getName(),
-        new File("../bin/interpreter.sh").getAbsolutePath(),
+        new File(INTERPRETER_SCRIPT).getAbsolutePath(),
         "fake",
         "fakeRepo",
         env,
