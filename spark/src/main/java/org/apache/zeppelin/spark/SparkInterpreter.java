@@ -93,7 +93,7 @@ public class SparkInterpreter extends Interpreter {
           getSystemDefault("MASTER", "spark.master", "local[*]"),
           "Spark master uri. ex) spark://masterhost:7077")
         .add("spark.executor.memory",
-          getSystemDefault(null, "spark.executor.memory", "512m"),
+          getSystemDefault(null, "spark.executor.memory", ""),
           "Executor memory per worker instance. ex) 512m, 32g")
         .add("spark.cores.max",
           getSystemDefault(null, "spark.cores.max", ""),
