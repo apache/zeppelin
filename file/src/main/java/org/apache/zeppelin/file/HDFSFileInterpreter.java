@@ -39,7 +39,7 @@ public class HDFSFileInterpreter extends FileInterpreter {
   static {
     Interpreter.register(
         "hdfs",
-        "hdfs",
+        "file",
         HDFSFileInterpreter.class.getName(),
         new InterpreterPropertyBuilder()
             .add(HDFS_URL, "http://localhost:50070/webhdfs/v1/", "The URL for WebHDFS")
