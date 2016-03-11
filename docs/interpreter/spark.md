@@ -40,6 +40,74 @@ Spark Interpreter group, which consisted of 4 interpreters.
 </table>
 
 ## Configuration
+Zeppelin provides the below properties for Spark interpreter. 
+You can also set other Spark properties which are not listed in the table. If so, please refer to [Spark Available Properties](http://spark.apache.org/docs/latest/configuration.html#available-properties).
+<table class="table-configuration">
+  <tr>
+    <th>Property</th>
+    <th>Default</th>
+    <th>Description</th>
+  </tr>
+  <tr>
+    <td>args</td>
+    <td></td>
+    <td>Spark commandline args</td>
+  </tr>
+    <td>master</td>
+    <td>local[*]</td>
+    <td>Spark master uri. <br/> ex) spark://masterhost:7077</td>
+  <tr>
+    <td>spark.app.name</td>
+    <td>Zeppelin</td>
+    <td>The name of spark application.</td>
+  </tr>
+  <tr>
+    <td>spark.cores.max</td>
+    <td></td>
+    <td>Total number of cores to use. <br/> Empty value uses all available core.</td>
+  </tr>
+  <tr>
+    <td>spark.executor.memory </td>
+    <td>512m</td>
+    <td>Executor memory per worker instance. <br/> ex) 512m, 32g</td>
+  </tr>
+  <tr>
+    <td>zeppelin.dep.additionalRemoteRepository</td>
+    <td>spark-packages, <br/> http://dl.bintray.com/spark-packages/maven, <br/> false;</td>
+    <td>A list of `id,remote-repository-URL,is-snapshot;` <br/> for each remote repository.</td>
+  </tr>
+  <tr>
+    <td>zeppelin.dep.localrepo</td>
+    <td>local-repo</td>
+    <td>Local repository for dependency loader</td>
+  </tr>
+  <tr>
+    <td>zeppelin.pyspark.python</td>
+    <td>python</td>
+    <td>Python command to run pyspark with</td>
+  </tr>
+  <tr>
+    <td>zeppelin.spark.concurrentSQL</td>
+    <td>false</td>
+    <td>Execute multiple SQL concurrently if set true.</td>
+  </tr>
+  <tr>
+    <td>zeppelin.spark.maxResult</td>
+    <td>1000</td>
+    <td>Max number of SparkSQL result to display.</td>
+  </tr>
+  <tr>
+    <td>zeppelin.spark.printREPLOutput</td>
+    <td>true</td>
+    <td>Print REPL output</td>
+  </tr>
+  <tr>
+    <td>zeppelin.spark.useHiveContext</td>
+    <td>true</td>
+    <td>Use HiveContext instead of SQLContext if it is true.</td>
+  </tr>
+</table>
+
 Without any configuration, Spark interpreter works out of box in local mode. But if you want to connect to your Spark cluster, you'll need to follow below two simple steps.
 
 ### 1. Export SPARK_HOME
@@ -269,7 +337,7 @@ To learn more about dynamic form, checkout [Dynamic Form](../manual/dynamicform.
 In 'Separate Interpreter for each note' mode, SparkInterpreter creates scala compiler per each notebook. However it still shares the single SparkContext.
 
 ## Setting up Zeppelin with Kerberos
-Logical setup with Zeppelin, Kerberos Distribution Center (KDC), and Spark on YARN:
+Logical setup with Zeppelin, Kerberos Key Distribution Center (KDC), and Spark on YARN:
 
 <img src="../assets/themes/zeppelin/img/docs-img/kdc_zeppelin.png">
 
