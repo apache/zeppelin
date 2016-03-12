@@ -87,6 +87,7 @@ public class Notebook {
    * @param replFactory
    * @param jobListenerFactory
    * @param notebookIndex - (nullable) for indexing all notebooks on creating.
+   * @param notebookAuthorization
    *
    * @throws IOException
    * @throws SchedulerException

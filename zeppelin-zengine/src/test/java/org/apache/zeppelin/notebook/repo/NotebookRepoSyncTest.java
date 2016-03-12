@@ -62,6 +62,7 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
   private InterpreterFactory factory;
   private DependencyResolver depResolver;
   private SearchService search;
+  private NotebookAuthorization notebookAuthorization;
   private static final Logger LOG = LoggerFactory.getLogger(NotebookRepoSyncTest.class);
   
   @Before
@@ -95,7 +96,8 @@ public class NotebookRepoSyncTest implements JobListenerFactory {
     
     search = mock(SearchService.class);
     notebookRepoSync = new NotebookRepoSync(conf);
-    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this, search, null);
+    notebookAuthorization = new NotebookAuthorization(conf);
+    notebookSync = new Notebook(conf, notebookRepoSync, schedulerFactory, factory, this, search, notebookAuthorization);
   }
 
   @After
