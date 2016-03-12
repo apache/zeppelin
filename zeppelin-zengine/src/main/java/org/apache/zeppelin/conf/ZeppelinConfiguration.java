@@ -342,6 +342,10 @@ public class ZeppelinConfiguration extends XMLConfiguration {
     return getRelativeDir(String.format("%s/interpreter.json", getConfDir()));
   }
 
+  public String getNotebookAuthorizationPath() {
+    return getRelativeDir(String.format("%s/notebook-authorization.json", getConfDir()));
+  }
+
   public String getInterpreterRemoteRunnerPath() {
     return getRelativeDir(ConfVars.ZEPPELIN_INTERPRETER_REMOTE_RUNNER);
   }

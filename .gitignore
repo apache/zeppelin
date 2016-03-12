@@ -21,6 +21,7 @@ conf/zeppelin-site.xml
 conf/keystore
 conf/truststore
 conf/interpreter.json
+conf/notebook-authorization.json
 
 # other generated files
 spark/dependency-reduced-pom.xml

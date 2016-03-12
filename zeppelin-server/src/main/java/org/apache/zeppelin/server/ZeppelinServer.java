@@ -33,6 +33,7 @@ import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
 import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.NotebookAuthorization;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.rest.*;
@@ -71,6 +72,7 @@ public class ZeppelinServer extends Application {
   private InterpreterFactory replFactory;
   private NotebookRepo notebookRepo;
   private SearchService notebookIndex;
+  private NotebookAuthorization notebookAuthorization;
   private DependencyResolver depResolver;
 
   public ZeppelinServer() throws Exception {
@@ -83,9 +85,10 @@ public class ZeppelinServer extends Application {
             notebookWsServer, depResolver);
     this.notebookRepo = new NotebookRepoSync(conf);
     this.notebookIndex = new LuceneSearch();
-
+    this.notebookAuthorization = new NotebookAuthorization(conf);
     notebook = new Notebook(conf, 
-        notebookRepo, schedulerFactory, replFactory, notebookWsServer, notebookIndex);
+        notebookRepo, schedulerFactory, replFactory, notebookWsServer,
+            notebookIndex, notebookAuthorization);
   }
 
   public static void main(String[] args) throws InterruptedException {
