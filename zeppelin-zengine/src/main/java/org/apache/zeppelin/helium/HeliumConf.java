@@ -16,20 +16,20 @@
  */
 package org.apache.zeppelin.helium;
 
-import java.net.URI;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
- * Helium registry
+ * Helium config. This object will be persisted to conf/heliumc.conf
  */
-public abstract class HeliumRegistry {
-  private final URI uri;
+public class HeliumConf {
+  List<HeliumRegistry> registry = new LinkedList<HeliumRegistry>();
 
-  public HeliumRegistry(URI uri) {
-    this.uri = uri;
+  public List<HeliumRegistry> getRegistry() {
+    return registry;
   }
 
-  public URI uri() {
-    return uri;
+  public void setRegistry(List<HeliumRegistry> registry) {
+    this.registry = registry;
   }
-
 }

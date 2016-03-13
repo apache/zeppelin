@@ -29,13 +29,12 @@ import org.apache.thrift.TException;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
+import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.display.*;
+import org.apache.zeppelin.helium.*;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterContext;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterResult;
-import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
+import org.apache.zeppelin.interpreter.thrift.*;
 import org.apache.zeppelin.resource.*;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
@@ -61,6 +60,8 @@ public class RemoteInterpreterServer
   InterpreterGroup interpreterGroup;
   AngularObjectRegistry angularObjectRegistry;
   DistributedResourcePool resourcePool;
+  private ApplicationLoader appLoader;
+
   Gson gson = new Gson();
 
   RemoteInterpreterService.Processor<RemoteInterpreterServer> processor;
@@ -69,6 +70,11 @@ public class RemoteInterpreterServer
   private TThreadPoolServer server;
 
   RemoteInterpreterEventClient eventClient = new RemoteInterpreterEventClient();
+  private DependencyResolver depLoader;
+
+  private final Map<String, Application> runningApplications =
+      Collections.synchronizedMap(new HashMap<String, Application>());
+
 
   public RemoteInterpreterServer(int port) throws TTransportException {
     this.port = port;
@@ -137,14 +143,17 @@ public class RemoteInterpreterServer
 
   @Override
   public void createInterpreter(String interpreterGroupId, String noteId, String
-      className,
-                                Map<String, String> properties) throws TException {
+      className, Map<String, String> properties) throws TException {
     if (interpreterGroup == null) {
       interpreterGroup = new InterpreterGroup(interpreterGroupId);
       angularObjectRegistry = new AngularObjectRegistry(interpreterGroup.getId(), this);
       resourcePool = new DistributedResourcePool(interpreterGroup.getId(), eventClient);
       interpreterGroup.setAngularObjectRegistry(angularObjectRegistry);
       interpreterGroup.setResourcePool(resourcePool);
+
+      String localRepoPath = properties.get("zeppelin.interpreter.localRepo");
+      depLoader = new DependencyResolver(localRepoPath);
+      appLoader = new ApplicationLoader(resourcePool, depLoader);
     }
 
     try {
@@ -694,6 +703,75 @@ public class RemoteInterpreterServer
       interpreterGroup.getAngularObjectRegistry().setRegistry(deserializedRegistry);
     } catch (Exception e) {
       logger.info("Exception in RemoteInterpreterServer while angularRegistryPush, nolock", e);
+    }
+  }
+
+  private ApplicationContext getApplicationContext(
+      HeliumPackage packageInfo, String noteId, String paragraphId) {
+    return new ApplicationContext(noteId, paragraphId);
+  }
+
+  @Override
+  public RemoteApplicationResult loadApplication(
+      String applicationInstanceId, String packageInfo, String noteId, String paragraphId)
+      throws TException {
+    if (runningApplications.containsKey(applicationInstanceId)) {
+      logger.warn("Application instance {} is already running");
+      return new RemoteApplicationResult(true, "");
+    }
+    HeliumPackage pkgInfo = gson.fromJson(packageInfo, HeliumPackage.class);
+    ApplicationContext context = getApplicationContext(pkgInfo, noteId, paragraphId);
+    try {
+      Application app = null;
+      logger.info(
+          "Loading application {}({}). artifact={}, className={} into note={}, paragraph={}",
+          pkgInfo.getName(),
+          applicationInstanceId,
+          pkgInfo.getArtifact(),
+          pkgInfo.getClassName(),
+          noteId,
+          paragraphId);
+      app = appLoader.load(pkgInfo, context);
+      runningApplications.put(applicationInstanceId, app);
+      return new RemoteApplicationResult(true, "");
+    } catch (Exception e) {
+      logger.error(e.getMessage(), e);
+      return new RemoteApplicationResult(false, e.getMessage());
+    }
+  }
+
+  @Override
+  public RemoteApplicationResult unloadApplication(String applicationInstanceId)
+      throws TException {
+    Application app = runningApplications.remove(applicationInstanceId);
+    if (app != null) {
+      try {
+        logger.info("Unloading application {}", applicationInstanceId);
+        app.unload();
+      } catch (ApplicationException e) {
+        logger.error(e.getMessage(), e);
+        return new RemoteApplicationResult(false, e.getMessage());
+      }
+    }
+    return new RemoteApplicationResult(true, "");
+  }
+
+  @Override
+  public RemoteApplicationResult runApplication(String applicationInstanceId)
+      throws TException {
+    logger.info("run application {}", applicationInstanceId);
+
+    Application app = runningApplications.get(applicationInstanceId);
+    if (app == null) {
+      logger.error("Application instance {} not exists", applicationInstanceId);
+      return new RemoteApplicationResult(false, "Application instance does not exists");
+    } else {
+      try {
+        app.run();
+        return new RemoteApplicationResult(true, "");
+      } catch (ApplicationException e) {
+        return new RemoteApplicationResult(false, e.getMessage());
+      }
     }
   }
 }

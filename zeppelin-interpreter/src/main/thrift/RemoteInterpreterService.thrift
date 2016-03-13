@@ -56,6 +56,11 @@ struct RemoteInterpreterEvent {
   2: string data      // json serialized data
 }
 
+struct RemoteApplicationResult {
+  1: bool success,
+  2: string msg
+}
+
 service RemoteInterpreterService {
   void createInterpreter(1: string intpGroupId, 2: string noteId, 3: string className, 4: map<string, string> properties);
 
@@ -88,4 +93,8 @@ service RemoteInterpreterService {
   void angularObjectAdd(1: string name, 2: string noteId, 3: string paragraphId, 4: string object);
   void angularObjectRemove(1: string name, 2: string noteId, 3: string paragraphId);
   void angularRegistryPush(1: string registry);
+
+  RemoteApplicationResult loadApplication(1: string applicationInstanceId, 2: string packageInfo, 3: string noteId, 4: string paragraphId);
+  RemoteApplicationResult unloadApplication(1: string applicationInstanceId);
+  RemoteApplicationResult runApplication(1: string applicationInstanceId);
 }

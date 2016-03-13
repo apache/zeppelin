@@ -17,7 +17,6 @@
 package org.apache.zeppelin.helium;
 
 import org.apache.zeppelin.dep.DependencyResolver;
-import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.resource.DistributedResourcePool;
 import org.apache.zeppelin.resource.Resource;
 import org.apache.zeppelin.resource.ResourcePool;
@@ -39,32 +38,30 @@ public class ApplicationLoader {
 
   private final DependencyResolver depResolver;
   private final ResourcePool resourcePool;
-  private final Map<HeliumPackageInfo, Class<Application>> cached;
-  private final Map<RunningApplication, Application> runningApplications;
+  private final Map<HeliumPackage, Class<Application>> cached;
 
   public ApplicationLoader(ResourcePool resourcePool, DependencyResolver depResolver) {
     this.depResolver = depResolver;
     this.resourcePool = resourcePool;
     cached = Collections.synchronizedMap(
-        new HashMap<HeliumPackageInfo, Class<Application>>());
-    runningApplications = new HashMap<RunningApplication, Application>();
+        new HashMap<HeliumPackage, Class<Application>>());
   }
 
   /**
    * Information of loaded application
    */
   private static class RunningApplication {
-    HeliumPackageInfo packageInfo;
+    HeliumPackage packageInfo;
     String noteId;
     String paragraphId;
 
-    public RunningApplication(HeliumPackageInfo packageInfo, String noteId, String paragraphId) {
+    public RunningApplication(HeliumPackage packageInfo, String noteId, String paragraphId) {
       this.packageInfo = packageInfo;
       this.noteId = noteId;
       this.paragraphId = paragraphId;
     }
 
-    public HeliumPackageInfo getPackageInfo() {
+    public HeliumPackage getPackageInfo() {
       return packageInfo;
     }
 
@@ -103,9 +100,9 @@ public class ApplicationLoader {
    * @return
    * @throws Exception
    */
-  public Application load(HeliumPackageInfo packageInfo, ApplicationContext context)
+  public Application load(HeliumPackage packageInfo, ApplicationContext context)
     throws Exception {
-    if (packageInfo.getType() != HeliumPackageInfo.Type.APPLICATION) {
+    if (packageInfo.getType() != HeliumPackage.Type.APPLICATION) {
       throw new ApplicationException(
           "Can't instantiate " + packageInfo.getType() + " package using ApplicationLoader");
     }
@@ -113,11 +110,6 @@ public class ApplicationLoader {
     // check if already loaded
     RunningApplication key =
         new RunningApplication(packageInfo, context.getNoteId(), context.getParagraphId());
-    synchronized (runningApplications) {
-      if (runningApplications.containsKey(key)) {
-        return runningApplications.get(key);
-      }
-    }
 
     // get resource required by this package
     ResourceSet resources = findRequiredResourceSet(packageInfo.getResources(),
@@ -134,57 +126,12 @@ public class ApplicationLoader {
       Constructor<Application> constructor =
           appClass.getConstructor(ResourceSet.class, ApplicationContext.class);
 
-      synchronized (runningApplications) {
-        if (!runningApplications.containsKey(key)) {
-          logger.info("Load {} {} from note {} paragraph {}",
-              packageInfo.getArtifact(),
-              packageInfo.getClassName(),
-              context.getNoteId(),
-              context.getParagraphId());
-
-          Application app = new ClassLoaderApplication(
-              constructor.newInstance(resources, context),
-              cl);
-          runningApplications.put(key, app);
-          return app;
-        } else {
-          return runningApplications.get(key);
-        }
-      }
+      Application app = new ClassLoaderApplication(constructor.newInstance(resources, context), cl);
+      return app;
     } catch (Exception e) {
       throw new ApplicationException(e);
     } finally {
       Thread.currentThread().setContextClassLoader(oldcl);
-    }
-  }
-
-  public void unload(HeliumPackageInfo packageInfo, ApplicationContext context)
-      throws ApplicationException {
-    Application appToUnload = null;
-    synchronized (runningApplications) {
-      RunningApplication key
-          = new RunningApplication(packageInfo, context.getNoteId(), context.getParagraphId());
-
-      if (runningApplications.containsKey(key)) {
-        appToUnload = runningApplications.remove(key);
-      }
-    }
-
-    if (appToUnload != null) {
-      logger.info("Unload {} {} from note {} paragraph {}",
-          packageInfo.getArtifact(),
-          packageInfo.getClassName(),
-          context.getNoteId(),
-          context.getParagraphId());
-      appToUnload.unload();
-    }
-  }
-
-  public Application get(HeliumPackageInfo packageInfo, ApplicationContext context) {
-    synchronized (runningApplications) {
-      RunningApplication key
-          = new RunningApplication(packageInfo, context.getNoteId(), context.getParagraphId());
-      return runningApplications.get(key);
     }
   }
 
@@ -234,7 +181,7 @@ public class ApplicationLoader {
   }
 
 
-  private Class<Application> loadClass(HeliumPackageInfo packageInfo) throws Exception {
+  private Class<Application> loadClass(HeliumPackage packageInfo) throws Exception {
     if (cached.containsKey(packageInfo)) {
       return cached.get(packageInfo);
     }

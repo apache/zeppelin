@@ -17,9 +17,9 @@
 package org.apache.zeppelin.helium;
 
 /**
- * Helium package information
+ * Helium package definition
  */
-public class HeliumPackageInfo {
+public class HeliumPackage {
   private Type type;
   private String name;           // user friendly name of this application
   private String description;    // description
@@ -34,12 +34,12 @@ public class HeliumPackageInfo {
     APPLICATION
   }
 
-  public HeliumPackageInfo(Type type,
-                           String name,
-                           String description,
-                           String artifact,
-                           String className,
-                           String[][] resources) {
+  public HeliumPackage(Type type,
+                       String name,
+                       String description,
+                       String artifact,
+                       String className,
+                       String[][] resources) {
     this.type = type;
     this.name = name;
     this.description = description;
@@ -55,11 +55,11 @@ public class HeliumPackageInfo {
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof HeliumPackageInfo)) {
+    if (!(o instanceof HeliumPackage)) {
       return false;
     }
 
-    HeliumPackageInfo info = (HeliumPackageInfo) o;
+    HeliumPackage info = (HeliumPackage) o;
     return type == info.type && artifact.equals(info.artifact) && className.equals(info.className);
   }
 

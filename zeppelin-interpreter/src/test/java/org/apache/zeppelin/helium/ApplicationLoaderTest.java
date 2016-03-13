@@ -19,7 +19,6 @@ package org.apache.zeppelin.helium;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.zeppelin.dep.DependencyResolver;
-import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.resource.LocalResourcePool;
 import org.junit.After;
 import org.junit.Before;
@@ -46,36 +45,33 @@ public class ApplicationLoaderTest {
 
   @Test
   public void loadUnloadApplication() throws Exception {
+    // given
     LocalResourcePool resourcePool = new LocalResourcePool("pool1");
     DependencyResolver dep = new DependencyResolver(tmpDir.getAbsolutePath());
     ApplicationLoader appLoader = new ApplicationLoader(resourcePool, dep);
 
-    HeliumPackageInfo pkg1 = createPackageInfo(MockApplication1.class.getName(), "artifact1");
+    HeliumPackage pkg1 = createPackageInfo(MockApplication1.class.getName(), "artifact1");
     ApplicationContext context1 = createContext("note1", "paragraph1");
 
-    // app not loaded yet
-    assertEquals(null, appLoader.get(pkg1, context1));
-
-    // load application
+    // when load application
     MockApplication1 app = (MockApplication1) ((ClassLoaderApplication)
         appLoader.load(pkg1, context1)).getInnerApplication();
 
     // then
     assertFalse(app.isUnloaded());
     assertEquals(0, app.getNumRun());
-    assertNotNull(appLoader.get(pkg1, context1));
 
-    // unload application
-    appLoader.unload(pkg1, context1);
+    // when unload
+    app.unload();
 
     // then
     assertTrue(app.isUnloaded());
     assertEquals(0, app.getNumRun());
   }
 
-  public HeliumPackageInfo createPackageInfo(String className, String artifact) {
-    HeliumPackageInfo app1 = new HeliumPackageInfo(
-        HeliumPackageInfo.Type.APPLICATION,
+  public HeliumPackage createPackageInfo(String className, String artifact) {
+    HeliumPackage app1 = new HeliumPackage(
+        HeliumPackage.Type.APPLICATION,
         "name1",
         "desc1",
         artifact,
