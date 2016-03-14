@@ -12,6 +12,7 @@
 spark/derby.log
 spark/metastore_db
 spark-1.*-bin-hadoop*
+zeppelin-server/derby.log
 
 lens/lens-cli-hist.log
 
