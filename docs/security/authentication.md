@@ -62,7 +62,7 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
 
     # Zeppelin Website
     server {
-        listen 80;
+        listen [YOUR-ZEPPELIN-WEB-SERVER-PORT];
         listen 443 ssl;  # optional, to serve HTTPS connection
         server_name [YOUR-ZEPPELIN-SERVER-HOST];    # for example: zeppelin.mycompany.com
 
@@ -87,7 +87,7 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
 
     # Zeppelin Websocket
     server {
-        listen 8091 ssl;
+        listen [YOUR-ZEPPELIN-WEBSOCKET-PORT] ssl;    # add ssl is optional, to serve HTTPS connection
         server_name [YOUR-ZEPPELIN-SERVER-HOST];    # for example: zeppelin.mycompany.com
 
         ssl_certificate [PATH-TO-YOUR-CERT-FILE];            # optional, to serve HTTPS connection
