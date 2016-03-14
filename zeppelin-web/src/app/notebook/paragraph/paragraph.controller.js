@@ -1191,7 +1191,7 @@ angular.module('zeppelinWebApp')
 
     var renderTable = function() {
       var html = '';
-      html += '<table class="table table-hover table-condensed" cellspacing="0" width="100%">';
+      html += '<table class="table table-hover table-condensed compact display">';
       html += '  <thead>';
       html += '    <tr style="background-color: #F6F6F6; font-weight: bold;">';
       for (var titleIndex in $scope.paragraph.result.columnNames) {
@@ -1221,6 +1221,8 @@ angular.module('zeppelinWebApp')
 	  angular.element('#p' + $scope.paragraph.id + '_table').children(1).DataTable({
 		    paging: false,
 			info:     false,
+			autoWidth: true,
+			lengthChange: false,
 		    dom: '<"row"<"col-sm-6"B><"col-sm-6"f>>'+
 				'<"row"<"col-sm-12"t>>',
 			buttons: [
