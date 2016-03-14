@@ -66,8 +66,8 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
         listen 443 ssl;  # optional, to serve HTTPS connection
         server_name [YOUR-ZEPPELIN-SERVER-HOST];    # for example: zeppelin.mycompany.com
 
-        ssl_certificate /etc/nginx/conf.d/yimocall.chained.crt;    # optional, to serve HTTPS connection
-        ssl_certificate_key /etc/nginx/conf.d/yimocall.key;        # optional, to serve HTTPS connection
+        ssl_certificate [PATH-TO-YOUR-CERT-FILE];            # optional, to serve HTTPS connection
+        ssl_certificate_key [PATH-TO-YOUR-CERT-KEY-FILE];    # optional, to serve HTTPS connection
 
         if ($ssl_protocol = "") { 
             rewrite ^ https://$host$request_uri? permanent;        # optional, force to use HTTPS
@@ -90,8 +90,8 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
         listen 8091 ssl;
         server_name [YOUR-ZEPPELIN-SERVER-HOST];    # for example: zeppelin.mycompany.com
 
-        ssl_certificate /etc/nginx/conf.d/yimocall.chained.crt;    # optional, to serve HTTPS connection
-        ssl_certificate_key /etc/nginx/conf.d/yimocall.key;        # optional, to serve HTTPS connection
+        ssl_certificate [PATH-TO-YOUR-CERT-FILE];            # optional, to serve HTTPS connection
+        ssl_certificate_key [PATH-TO-YOUR-CERT-KEY-FILE];    # optional, to serve HTTPS connection
 
         location / {
             proxy_pass http://zeppelin-wss;
