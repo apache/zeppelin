@@ -32,6 +32,10 @@ if [[ -z "${ZEPPELIN_CONF_DIR}" ]]; then
   export ZEPPELIN_CONF_DIR="${ZEPPELIN_HOME}/conf"
 fi
 
+if [[ -z "${ZEPPELIN_INTERPRETER_CONF}" ]]; then
+  export ZEPPELIN_INTERPRETER_CONF="${ZEPPELIN_CONF_DIR}/interpreter.json"
+fi
+
 if [[ -z "${ZEPPELIN_LOG_DIR}" ]]; then
   export ZEPPELIN_LOG_DIR="${ZEPPELIN_HOME}/logs"
 fi
