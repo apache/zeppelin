@@ -20,7 +20,7 @@ limitations under the License.
         <span class="icon-bar"></span>
       </button>
       <a class="navbar-brand" href="#/">
-        <img style="margin-top: -7px;s" src="assets/images/zepLogoW.png" width="50" alt="I'm zeppelin"> Zeppelin
+        <img style="margin-top: -7px;" src="assets/images/zepLogoW.png" width="50" alt="I'm zeppelin"> Zeppelin
       </a>
     </div>
 
@@ -32,7 +32,8 @@ limitations under the License.
             <li><a href="" data-toggle="modal" data-target="#noteNameModal"><i class="fa fa-plus"></i> Create new note</a></li>
             <li class="divider"></li>
             <div id="notebook-list" class="scrollbar-container">
-              <li ng-repeat="note in navbar.notes.list | orderBy:navbar.arrayOrderingSrv.notebookListOrdering track by $index"
+              <li class="filter-names" ng-include="'components/filterNoteNames/filter-note-names.html'"></li>
+              <li ng-repeat="note in navbar.notes.list | filter:query | orderBy:navbar.arrayOrderingSrv.notebookListOrdering track by $index"
                   ng-class="{'active' : navbar.isActive(note.id)}">
                 <a href="#/notebook/{{note.id}}">{{note.name || 'Note ' + note.id}} </a>
               </li>
@@ -41,6 +42,9 @@ limitations under the License.
         </li>
         <li>
           <a href="#/interpreter">Interpreter</a>
+        </li>
+        <li>
+          <a href="#/configuration">Configuration</a>
         </li>
       </ul>
 

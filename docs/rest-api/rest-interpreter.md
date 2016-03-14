@@ -23,9 +23,8 @@ limitations under the License.
  Zeppelin provides several REST API's for interaction and remote activation of zeppelin functionality.
  
  All REST API are available starting with the following endpoint `http://[zeppelin-server]:[zeppelin-port]/api`.
- Note that zeppein REST API receive or return JSON objects, it it recommended you install some JSON view such as 
+ Note that zeppein REST API receive or return JSON objects, it it recommended you install some JSON viewers such as 
  [JSON View](https://chrome.google.com/webstore/detail/jsonview/chklaanhfefbnpoihckbnefhakgolnmc).
- 
  
  If you work with zeppelin and find a need for an additional REST API, please [file an issue or send us mail](http://zeppelin.incubator.apache.org/community.html). 
 
@@ -152,7 +151,8 @@ limitations under the License.
           "class": "org.apache.zeppelin.markdown.Markdown",
           "name": "md"
         }
-      ]
+      ],
+      "dependencies": []
     },  
     {
       "id": "2AY6GV7Q3",
@@ -170,6 +170,11 @@ limitations under the License.
         {
           "class": "org.apache.zeppelin.spark.SparkSqlInterpreter",
           "name": "sql"
+        }
+      ],
+      "dependencies": [
+        {
+          "groupArtifactVersion": "com.databricks:spark-csv_2.10:1.3.0"
         }
       ]
     }
@@ -220,6 +225,12 @@ limitations under the License.
       "class": "org.apache.zeppelin.markdown.Markdown",
       "name": "md"
     }
+  ],
+  "dependencies": [
+    {
+      "groupArtifactVersion": "groupId:artifactId:version",
+      "exclusions": "groupId:artifactId"
+    }
   ]
 }
         </pre>
@@ -243,6 +254,12 @@ limitations under the License.
       {
         "class": "org.apache.zeppelin.markdown.Markdown",
         "name": "md"
+      }
+    ],
+    "dependencies": [
+      {
+        "groupArtifactVersion": "groupId:artifactId:version",
+        "exclusions": "groupId:artifactId"
       }
     ]
   }
@@ -293,6 +310,12 @@ limitations under the License.
       "class": "org.apache.zeppelin.markdown.Markdown",
       "name": "md"
     }
+  ],
+  "dependencies": [
+    {
+      "groupArtifactVersion": "groupId:artifactId:version",
+      "exclusions": "groupId:artifactId"
+    }
   ]
 }
         </pre>
@@ -316,6 +339,12 @@ limitations under the License.
       {
         "class": "org.apache.zeppelin.markdown.Markdown",
         "name": "md"
+      }
+    ],
+    "dependencies": [
+      {
+        "groupArtifactVersion": "groupId:artifactId:version",
+        "exclusions": "groupId:artifactId"
       }
     ]
   }
@@ -390,5 +419,77 @@ limitations under the License.
       <td>
         <code>{"status":"OK"}</code>
       </td>
+    </tr>
+  </table>
+
+<br/>
+### 6. Add repository for dependency resolving
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <th>Add new repository for dependency loader</th>
+      <th></th>
+    </tr>
+    <tr>
+      <td>Description</td>
+      <td>This ```POST``` method adds new repository.</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/repository```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>201</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td> 500 </td>
+    </tr>
+    <tr>
+      <td>Sample JSON input</td>
+      <td>
+        <pre>
+{
+  "id": "securecentral",
+  "url": "https://repo1.maven.org/maven2",
+  "snapshot": false
+}
+        </pre>
+      </td>
+    </tr>
+    <tr>
+      <td>Sample JSON response</td>
+      <td>
+        <code>{"status":"OK"}</code>
+      </td>
+    </tr>
+  </table>
+
+<br/>
+### 7. Delete repository for dependency resolving
+
+  <table class="table-configuration">
+    <col width="200">
+    <tr>
+      <th>Delete repository for dependency loader</th>
+      <th></th>
+    </tr>
+    <tr>
+      <td>Description</td>
+      <td>This ```DELETE``` method delete repository with given id.</td>
+    </tr>
+    <tr>
+      <td>URL</td>
+      <td>```http://[zeppelin-server]:[zeppelin-port]/api/interpreter/repository/[repository ID]```</td>
+    </tr>
+    <tr>
+      <td>Success code</td>
+      <td>200</td>
+    </tr>
+    <tr>
+      <td>Fail code</td>
+      <td> 500 </td>
     </tr>
   </table>

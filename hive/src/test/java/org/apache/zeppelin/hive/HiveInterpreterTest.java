@@ -66,7 +66,53 @@ public class HiveInterpreterTest {
   @After
   public void tearDown() throws Exception {
   }
+  
+  @Test
+  public void testForParsePropertyKey() throws IOException {
+    HiveInterpreter t = new HiveInterpreter(new Properties());
+    
+    assertEquals(t.getPropertyKey("(fake) select max(cant) from test_table where id >= 2452640"),
+        "fake");
+    
+    assertEquals(t.getPropertyKey("() select max(cant) from test_table where id >= 2452640"),
+        "");
+    
+    assertEquals(t.getPropertyKey(")fake( select max(cant) from test_table where id >= 2452640"),
+        "default");
+        
+    // when you use a %hive(prefix1), prefix1 is the propertyKey as form part of the cmd string
+    assertEquals(t.getPropertyKey("(prefix1)\n select max(cant) from test_table where id >= 2452640"),
+        "prefix1");
+    
+    assertEquals(t.getPropertyKey("(prefix2) select max(cant) from test_table where id >= 2452640"),
+            "prefix2");
+    
+    // when you use a %hive, prefix is the default
+    assertEquals(t.getPropertyKey("select max(cant) from test_table where id >= 2452640"),
+            "default");
+  }
+  
+  @Test
+  public void testForMapPrefix() throws SQLException, IOException {
+    Properties properties = new Properties();
+    properties.setProperty("common.max_count", "1000");
+    properties.setProperty("common.max_retry", "3");
+    properties.setProperty("default.driver", "org.h2.Driver");
+    properties.setProperty("default.url", getJdbcConnection());
+    properties.setProperty("default.user", "");
+    properties.setProperty("default.password", "");
+    HiveInterpreter t = new HiveInterpreter(properties);
+    t.open();
 
+    String sqlQuery = "(fake) select * from test_table";
+
+    InterpreterResult interpreterResult = t.interpret(sqlQuery, new InterpreterContext("", "1", "", "", null, null, null, null, null, null, null));
+
+    // if prefix not found return ERROR and Prefix not found.
+    assertEquals(InterpreterResult.Code.ERROR, interpreterResult.code());
+    assertEquals("Prefix not found.", interpreterResult.message());
+  }
+  
   @Test
   public void readTest() throws IOException {
     Properties properties = new Properties();
@@ -79,9 +125,9 @@ public class HiveInterpreterTest {
     HiveInterpreter t = new HiveInterpreter(properties);
     t.open();
 
-    assertTrue(t.interpret("show databases", new InterpreterContext("", "1", "","", null,null,null,null)).message().contains("SCHEMA_NAME"));
+    assertTrue(t.interpret("show databases", new InterpreterContext("", "1", "", "", null, null, null, null, null, null, null)).message().contains("SCHEMA_NAME"));
     assertEquals("ID\tNAME\na\ta_name\nb\tb_name\n",
-        t.interpret("select * from test_table", new InterpreterContext("", "1", "","", null,null,null,null)).message());
+        t.interpret("select * from test_table", new InterpreterContext("", "1", "", "", null, null, null, null, null, null, null)).message());
   }
 
   @Test
@@ -101,7 +147,7 @@ public class HiveInterpreterTest {
     t.open();
 
     assertEquals("ID\tNAME\na\ta_name\nb\tb_name\n",
-        t.interpret("(h2)\n select * from test_table", new InterpreterContext("", "1", "","", null,null,null,null)).message());
+        t.interpret("(h2)\n select * from test_table", new InterpreterContext("", "1", "", "", null, null, null, null, null, null, null)).message());
   }
 
   @Test
@@ -117,13 +163,13 @@ public class HiveInterpreterTest {
     t.open();
 
     InterpreterResult interpreterResult =
-        t.interpret("select * from test_table", new InterpreterContext("", "1", "","", null,null,null,null));
+        t.interpret("select * from test_table", new InterpreterContext("", "1", "", "", null, null, null, null, null, null, null));
     assertEquals("ID\tNAME\na\ta_name\nb\tb_name\n", interpreterResult.message());
 
     t.getConnection("default").close();
 
     interpreterResult =
-        t.interpret("select * from test_table", new InterpreterContext("", "1", "","", null,null,null,null));
+        t.interpret("select * from test_table", new InterpreterContext("", "1", "", "", null, null, null, null, null, null, null));
     assertEquals("ID\tNAME\na\ta_name\nb\tb_name\n", interpreterResult.message());
   }
 
@@ -139,7 +185,7 @@ public class HiveInterpreterTest {
     HiveInterpreter t = new HiveInterpreter(properties);
     t.open();
 
-    InterpreterContext interpreterContext = new InterpreterContext(null, "a", null, null, null, null, null, null);
+    InterpreterContext interpreterContext = new InterpreterContext(null, "a", null, null, null, null, null, null, null, null, null);
 
     //simple select test
     InterpreterResult result = t.interpret("select * from test_table", interpreterContext);

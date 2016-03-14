@@ -26,9 +26,10 @@ import java.util.Map;
 /**
  * AngularObjectRegistry keeps all the object that binded to Angular Display System.
  * AngularObjectRegistry is created per interpreter group.
- * It keeps two different set of AngularObjects :
- *  - globalRegistry: Shared to all notebook that uses the same interpreter group
- *  - localRegistry: AngularObject is valid only inside of a single notebook
+ * It provides three different scope of AngularObjects :
+ *  - Paragraphscope : AngularObject is valid in specific paragraph
+ *  - Notebook scope: AngularObject is valid in a single notebook
+ *  - Global scope : Shared to all notebook that uses the same interpreter group
  */
 public class AngularObjectRegistry {
   Map<String, Map<String, AngularObject>> registry = 
@@ -60,26 +61,36 @@ public class AngularObjectRegistry {
 
   /**
    * Add object into registry
-   * @param name
-   * @param o
-   * @param noteId noteId belonging to. null for global object.
-   * @return
+   *
+   * Paragraph scope when noteId and paragraphId both not null
+   * Notebook scope when paragraphId is null
+   * Global scope when noteId and paragraphId both null
+   *
+   * @param name Name of object
+   * @param o Reference to the object
+   * @param noteId noteId belonging to. null for global scope
+   * @param paragraphId paragraphId belongs to. null for notebook scope
+   * @return AngularObject that added
    */
-  public AngularObject add(String name, Object o, String noteId) {
-    return add(name, o, noteId, true);
+  public AngularObject add(String name, Object o, String noteId, String paragraphId) {
+    return add(name, o, noteId, paragraphId, true);
   }
 
-  private String getRegistryKey(String noteId) {
+  private String getRegistryKey(String noteId, String paragraphId) {
     if (noteId == null) {
       return GLOBAL_KEY;
     } else {
-      return noteId;
+      if (paragraphId == null) {
+        return noteId;
+      } else {
+        return noteId + "_" + paragraphId;
+      }
     }
   }
   
-  private Map<String, AngularObject> getRegistryForKey(String noteId) {
+  private Map<String, AngularObject> getRegistryForKey(String noteId, String paragraphId) {
     synchronized (registry) {
-      String key = getRegistryKey(noteId);
+      String key = getRegistryKey(noteId, paragraphId);
       if (!registry.containsKey(key)) {
         registry.put(key, new HashMap<String, AngularObject>());
       }
@@ -87,12 +98,27 @@ public class AngularObjectRegistry {
       return registry.get(key);
     }
   }
- 
-  public AngularObject add(String name, Object o, String noteId, boolean emit) {
-    AngularObject ao = createNewAngularObject(name, o, noteId);
+
+  /**
+   * Add object into registry
+   *
+   * Paragraph scope when noteId and paragraphId both not null
+   * Notebook scope when paragraphId is null
+   * Global scope when noteId and paragraphId both null
+   *
+   * @param name Name of object
+   * @param o Reference to the object
+   * @param noteId noteId belonging to. null for global scope
+   * @param paragraphId paragraphId belongs to. null for notebook scope
+   * @param emit skip firing onAdd event on false
+   * @return AngularObject that added
+   */
+  public AngularObject add(String name, Object o, String noteId, String paragraphId,
+                           boolean emit) {
+    AngularObject ao = createNewAngularObject(name, o, noteId, paragraphId);
 
     synchronized (registry) {
-      Map<String, AngularObject> noteLocalRegistry = getRegistryForKey(noteId);
+      Map<String, AngularObject> noteLocalRegistry = getRegistryForKey(noteId, paragraphId);
       noteLocalRegistry.put(name, ao);
       if (listener != null && emit) {
         listener.onAdd(interpreterId, ao);
@@ -102,49 +128,90 @@ public class AngularObjectRegistry {
     return ao;
   }
 
-  protected AngularObject createNewAngularObject(String name, Object o, String noteId) {
-    return new AngularObject(name, o, noteId, angularObjectListener);
+  protected AngularObject createNewAngularObject(String name, Object o, String noteId,
+                                                 String paragraphId) {
+    return new AngularObject(name, o, noteId, paragraphId, angularObjectListener);
   }
 
   protected AngularObjectListener getAngularObjectListener() {
     return angularObjectListener;
   }
 
-  public AngularObject remove(String name, String noteId) {
-    return remove(name, noteId, true);
+  /**
+   * Remove a object from registry
+   *
+   * @param name Name of object to remove
+   * @param noteId noteId belongs to. null for global scope
+   * @param paragraphId paragraphId belongs to. null for notebook scope
+   * @return removed object. null if object is not found in registry
+   */
+  public AngularObject remove(String name, String noteId, String paragraphId) {
+    return remove(name, noteId, paragraphId, true);
   }
 
-  public AngularObject remove(String name, String noteId, boolean emit) {
+  /**
+   * Remove a object from registry
+   *
+   * @param name Name of object to remove
+   * @param noteId noteId belongs to. null for global scope
+   * @param paragraphId paragraphId belongs to. null for notebook scope
+   * @param emit skip fireing onRemove event on false
+   * @return removed object. null if object is not found in registry
+   */
+  public AngularObject remove(String name, String noteId, String paragraphId, boolean emit) {
     synchronized (registry) {
-      Map<String, AngularObject> r = getRegistryForKey(noteId);
+      Map<String, AngularObject> r = getRegistryForKey(noteId, paragraphId);
       AngularObject o = r.remove(name);
       if (listener != null && emit) {
-        listener.onRemove(interpreterId, name, noteId);;
+        listener.onRemove(interpreterId, name, noteId, paragraphId);;
       }
       return o;
     }
   }
 
-  public void removeAll(String noteId) {
+  /**
+   * Remove all angular object in the scope.
+   *
+   * Remove all paragraph scope angular object when noteId and paragraphId both not null
+   * Remove all notebook scope angular object when paragraphId is null
+   * Remove all global scope angular objects when noteId and paragraphId both null
+   *
+   * @param noteId noteId
+   * @param paragraphId paragraphId
+   */
+  public void removeAll(String noteId, String paragraphId) {
     synchronized (registry) {
-      List<AngularObject> all = getAll(noteId);
+      List<AngularObject> all = getAll(noteId, paragraphId);
       for (AngularObject ao : all) {
-        remove(ao.getName(), noteId);
+        remove(ao.getName(), noteId, paragraphId);
       }
     }
   }
 
-  public AngularObject get(String name, String noteId) {
+  /**
+   * Get a object from registry
+   * @param name name of object
+   * @param noteId noteId that belongs to
+   * @param paragraphId paragraphId that belongs to
+   * @return angularobject. null when not found
+   */
+  public AngularObject get(String name, String noteId, String paragraphId) {
     synchronized (registry) {
-      Map<String, AngularObject> r = getRegistryForKey(noteId);
+      Map<String, AngularObject> r = getRegistryForKey(noteId, paragraphId);
       return r.get(name);
     }
   }
 
-  public List<AngularObject> getAll(String noteId) {
+  /**
+   * Get all object in the scope
+   * @param noteId noteId that belongs to
+   * @param paragraphId paragraphId that belongs to
+   * @return all angularobject in the scope
+   */
+  public List<AngularObject> getAll(String noteId, String paragraphId) {
     List<AngularObject> all = new LinkedList<AngularObject>();
     synchronized (registry) {
-      Map<String, AngularObject> r = getRegistryForKey(noteId);
+      Map<String, AngularObject> r = getRegistryForKey(noteId, paragraphId);
       if (r != null) {
         all.addAll(r.values());
       }
@@ -153,20 +220,24 @@ public class AngularObjectRegistry {
   }
   
   /**
-   * Get all object with global merged
+   * Get all angular object related to specific note.
+   * That includes all global scope objects, notebook scope objects and paragraph scope objects
+   * belongs to the noteId.
+   *
    * @param noteId
    * @return
    */
   public List<AngularObject> getAllWithGlobal(String noteId) {
     List<AngularObject> all = new LinkedList<AngularObject>();
     synchronized (registry) {
-      Map<String, AngularObject> global = getRegistryForKey(null);
+      Map<String, AngularObject> global = getRegistryForKey(null, null);
       if (global != null) {
         all.addAll(global.values());
       }
-      Map<String, AngularObject> local = getRegistryForKey(noteId);
-      if (local != null) {
-        all.addAll(local.values());
+      for (String key : registry.keySet()) {
+        if (key.startsWith(noteId)) {
+          all.addAll(registry.get(key).values());
+        }
       }
     }
     return all;

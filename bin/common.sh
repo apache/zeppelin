@@ -36,10 +36,6 @@ if [[ -z "${ZEPPELIN_LOG_DIR}" ]]; then
   export ZEPPELIN_LOG_DIR="${ZEPPELIN_HOME}/logs"
 fi
 
-if [[ -z "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
-  export ZEPPELIN_NOTEBOOK_DIR="${ZEPPELIN_HOME}/notebook"
-fi
-
 if [[ -z "$ZEPPELIN_PID_DIR" ]]; then
   export ZEPPELIN_PID_DIR="${ZEPPELIN_HOME}/run"
 fi
@@ -108,7 +104,7 @@ if [[ -z "${ZEPPELIN_INTP_MEM}" ]]; then
   export ZEPPELIN_INTP_MEM="${ZEPPELIN_MEM}"
 fi
 
-JAVA_INTP_OPTS+=" ${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING}"
+JAVA_INTP_OPTS="${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING}"
 export JAVA_INTP_OPTS
 
 

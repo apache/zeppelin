@@ -60,6 +60,10 @@ public class SparkSqlInterpreter extends Interpreter {
                 SparkInterpreter.getSystemDefault("ZEPPELIN_SPARK_CONCURRENTSQL",
                     "zeppelin.spark.concurrentSQL", "false"),
                 "Execute multiple SQL concurrently if set true.")
+            .add("zeppelin.spark.sql.stacktrace",
+                SparkInterpreter.getSystemDefault("ZEPPELIN_SPARK_SQL_STACKTRACE",
+                    "zeppelin.spark.sql.stacktrace", "false"),
+                "Show full exception stacktrace for SQL queries if set to true.")
             .build());
   }
 
@@ -79,23 +83,18 @@ public class SparkSqlInterpreter extends Interpreter {
   }
 
   private SparkInterpreter getSparkInterpreter() {
-    InterpreterGroup intpGroup = getInterpreterGroup();
     LazyOpenInterpreter lazy = null;
     SparkInterpreter spark = null;
-    synchronized (intpGroup) {
-      for (Interpreter intp : getInterpreterGroup()){
-        if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
-          Interpreter p = intp;
-          while (p instanceof WrappedInterpreter) {
-            if (p instanceof LazyOpenInterpreter) {
-              lazy = (LazyOpenInterpreter) p;
-            }
-            p = ((WrappedInterpreter) p).getInnerInterpreter();
-          }
-          spark = (SparkInterpreter) p;
-        }
+    Interpreter p = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class.getName());
+
+    while (p instanceof WrappedInterpreter) {
+      if (p instanceof LazyOpenInterpreter) {
+        lazy = (LazyOpenInterpreter) p;
       }
+      p = ((WrappedInterpreter) p).getInnerInterpreter();
     }
+    spark = (SparkInterpreter) p;
+
     if (lazy != null) {
       lazy.open();
     }
@@ -136,8 +135,16 @@ public class SparkSqlInterpreter extends Interpreter {
       // Therefore need to use reflection to keep binary compatibility for all spark versions.
       Method sqlMethod = sqlc.getClass().getMethod("sql", String.class);
       rdd = sqlMethod.invoke(sqlc, st);
+    } catch (InvocationTargetException ite) {
+      if (Boolean.parseBoolean(getProperty("zeppelin.spark.sql.stacktrace"))) {
+        throw new InterpreterException(ite);
+      }
+      logger.error("Invocation target exception", ite);
+      String msg = ite.getTargetException().getMessage()
+              + "\nset zeppelin.spark.sql.stacktrace = true to see full stacktrace";
+      return new InterpreterResult(Code.ERROR, msg);
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException
-        | IllegalArgumentException | InvocationTargetException e) {
+        | IllegalArgumentException e) {
       throw new InterpreterException(e);
     }
 
@@ -179,15 +186,14 @@ public class SparkSqlInterpreter extends Interpreter {
       // It's because of scheduler is not created yet, and scheduler is created by this function.
       // Therefore, we can still use getSparkInterpreter() here, but it's better and safe
       // to getSparkInterpreter without opening it.
-      for (Interpreter intp : getInterpreterGroup()) {
-        if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
-          Interpreter p = intp;
-          return p.getScheduler();
-        } else {
-          continue;
-        }
+
+      Interpreter intp =
+          getInterpreterInTheSameSessionByClassName(SparkInterpreter.class.getName());
+      if (intp != null) {
+        return intp.getScheduler();
+      } else {
+        return null;
       }
-      throw new InterpreterException("Can't find SparkInterpreter");
     }
   }
 

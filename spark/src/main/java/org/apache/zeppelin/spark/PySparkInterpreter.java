@@ -59,9 +59,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
 
 import py4j.GatewayServer;
 
@@ -73,8 +70,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   private GatewayServer gatewayServer;
   private DefaultExecutor executor;
   private int port;
-  private ByteArrayOutputStream outputStream;
-  private ByteArrayOutputStream errStream;
+  private SparkOutputStream outputStream;
   private BufferedWriter ins;
   private PipedInputStream in;
   private ByteArrayOutputStream input;
@@ -125,12 +121,12 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
     // load libraries from Dependency Interpreter
     URL [] urls = new URL[0];
+    List<URL> urlList = new LinkedList<URL>();
 
     if (depInterpreter != null) {
       SparkDependencyContext depc = depInterpreter.getDependencyContext();
       if (depc != null) {
         List<File> files = depc.getFiles();
-        List<URL> urlList = new LinkedList<URL>();
         if (files != null) {
           for (File f : files) {
             try {
@@ -139,11 +135,28 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
               logger.error("Error", e);
             }
           }
-
-          urls = urlList.toArray(urls);
         }
       }
     }
+
+    String localRepo = getProperty("zeppelin.interpreter.localRepo");
+    if (localRepo != null) {
+      File localRepoDir = new File(localRepo);
+      if (localRepoDir.exists()) {
+        File[] files = localRepoDir.listFiles();
+        if (files != null) {
+          for (File f : files) {
+            try {
+              urlList.add(f.toURI().toURL());
+            } catch (MalformedURLException e) {
+              logger.error("Error", e);
+            }
+          }
+        }
+      }
+    }
+
+    urls = urlList.toArray(urls);
 
     ClassLoader oldCl = Thread.currentThread().getContextClassLoader();
     try {
@@ -173,7 +186,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     cmd.addArgument(Integer.toString(port), false);
     cmd.addArgument(Integer.toString(getSparkInterpreter().getSparkVersion().toNumber()), false);
     executor = new DefaultExecutor();
-    outputStream = new ByteArrayOutputStream();
+    outputStream = new SparkOutputStream();
     PipedOutputStream ps = new PipedOutputStream();
     in = null;
     try {
@@ -274,7 +287,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       statementError = error;
       statementFinishedNotifier.notify();
     }
-
   }
 
   boolean pythonScriptInitialized = false;
@@ -285,6 +297,10 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       pythonScriptInitialized = true;
       pythonScriptInitializeNotifier.notifyAll();
     }
+  }
+
+  public void appendOutput(String message) throws IOException {
+    outputStream.getInterpreterOutput().write(message);
   }
 
   @Override
@@ -300,7 +316,7 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
           + outputStream.toString());
     }
 
-    outputStream.reset();
+    outputStream.setInterpreterOutput(context.out);
 
     synchronized (pythonScriptInitializeNotifier) {
       long startTime = System.currentTimeMillis();
@@ -314,15 +330,24 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
       }
     }
 
+    String errorMessage = "";
+    try {
+      context.out.flush();
+      errorMessage = new String(context.out.toByteArray());
+    } catch (IOException e) {
+      throw new InterpreterException(e);
+    }
+
+
     if (pythonscriptRunning == false) {
       // python script failed to initialize and terminated
       return new InterpreterResult(Code.ERROR, "failed to start pyspark"
-          + outputStream.toString());
+          + errorMessage);
     }
     if (pythonScriptInitialized == false) {
       // timeout. didn't get initialized message
       return new InterpreterResult(Code.ERROR, "pyspark is not responding "
-          + outputStream.toString());
+          + errorMessage);
     }
 
     if (!sparkInterpreter.getSparkVersion().isPysparkSupported()) {
@@ -352,7 +377,14 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
     if (statementError) {
       return new InterpreterResult(Code.ERROR, statementOutput);
     } else {
-      return new InterpreterResult(Code.SUCCESS, statementOutput);
+
+      try {
+        context.out.flush();
+      } catch (IOException e) {
+        throw new InterpreterException(e);
+      }
+
+      return new InterpreterResult(Code.SUCCESS);
     }
   }
 
@@ -388,8 +420,6 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
             && pythonscriptRunning == false) {
       return new LinkedList<String>();
     }
-
-    outputStream.reset();
 
     pythonInterpretRequest = new PythonInterpretRequest(completionCommand, "");
     statementOutput = null;
@@ -464,23 +494,18 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
 
 
   private SparkInterpreter getSparkInterpreter() {
-    InterpreterGroup intpGroup = getInterpreterGroup();
     LazyOpenInterpreter lazy = null;
     SparkInterpreter spark = null;
-    synchronized (intpGroup) {
-      for (Interpreter intp : getInterpreterGroup()){
-        if (intp.getClassName().equals(SparkInterpreter.class.getName())) {
-          Interpreter p = intp;
-          while (p instanceof WrappedInterpreter) {
-            if (p instanceof LazyOpenInterpreter) {
-              lazy = (LazyOpenInterpreter) p;
-            }
-            p = ((WrappedInterpreter) p).getInnerInterpreter();
-          }
-          spark = (SparkInterpreter) p;
-        }
+    Interpreter p = getInterpreterInTheSameSessionByClassName(SparkInterpreter.class.getName());
+
+    while (p instanceof WrappedInterpreter) {
+      if (p instanceof LazyOpenInterpreter) {
+        lazy = (LazyOpenInterpreter) p;
       }
+      p = ((WrappedInterpreter) p).getInnerInterpreter();
     }
+    spark = (SparkInterpreter) p;
+
     if (lazy != null) {
       lazy.open();
     }
@@ -524,20 +549,15 @@ public class PySparkInterpreter extends Interpreter implements ExecuteResultHand
   }
 
   private DepInterpreter getDepInterpreter() {
-    InterpreterGroup intpGroup = getInterpreterGroup();
-    if (intpGroup == null) return null;
-    synchronized (intpGroup) {
-      for (Interpreter intp : intpGroup) {
-        if (intp.getClassName().equals(DepInterpreter.class.getName())) {
-          Interpreter p = intp;
-          while (p instanceof WrappedInterpreter) {
-            p = ((WrappedInterpreter) p).getInnerInterpreter();
-          }
-          return (DepInterpreter) p;
-        }
-      }
+    Interpreter p = getInterpreterInTheSameSessionByClassName(DepInterpreter.class.getName());
+    if (p == null) {
+      return null;
     }
-    return null;
+
+    while (p instanceof WrappedInterpreter) {
+      p = ((WrappedInterpreter) p).getInnerInterpreter();
+    }
+    return (DepInterpreter) p;
   }
 
 

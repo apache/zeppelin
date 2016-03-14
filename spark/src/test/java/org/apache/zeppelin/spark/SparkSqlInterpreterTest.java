@@ -24,11 +24,9 @@ import java.util.LinkedList;
 import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
-import org.apache.zeppelin.interpreter.InterpreterContext;
-import org.apache.zeppelin.interpreter.InterpreterContextRunner;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
+import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterResult.Type;
 import org.junit.After;
 import org.junit.Before;
@@ -53,23 +51,40 @@ public class SparkSqlInterpreterTest {
 
       if (SparkInterpreterTest.repl == null) {
         repl = new SparkInterpreter(p);
+        intpGroup = new InterpreterGroup();
+        repl.setInterpreterGroup(intpGroup);
         repl.open();
         SparkInterpreterTest.repl = repl;
+        SparkInterpreterTest.intpGroup = intpGroup;
       } else {
         repl = SparkInterpreterTest.repl;
+        intpGroup = SparkInterpreterTest.intpGroup;
       }
 
-    sql = new SparkSqlInterpreter(p);
+      sql = new SparkSqlInterpreter(p);
 
-    intpGroup = new InterpreterGroup();
-      intpGroup.add(repl);
-      intpGroup.add(sql);
+      intpGroup = new InterpreterGroup();
+      intpGroup.put("note", new LinkedList<Interpreter>());
+      intpGroup.get("note").add(repl);
+      intpGroup.get("note").add(sql);
       sql.setInterpreterGroup(intpGroup);
       sql.open();
     }
-    context = new InterpreterContext("note", "id", "title", "text", new HashMap<String, Object>(), new GUI(),
+    context = new InterpreterContext("note", "id", "title", "text", new AuthenticationInfo(),
+        new HashMap<String, Object>(), new GUI(),
         new AngularObjectRegistry(intpGroup.getId(), null),
-        new LinkedList<InterpreterContextRunner>());
+        null,
+        new LinkedList<InterpreterContextRunner>(), new InterpreterOutput(new InterpreterOutputListener() {
+      @Override
+      public void onAppend(InterpreterOutput out, byte[] line) {
+
+      }
+
+      @Override
+      public void onUpdate(InterpreterOutput out, byte[] output) {
+
+      }
+    }));
   }
 
   @After
@@ -95,13 +110,10 @@ public class SparkSqlInterpreterTest {
     assertEquals(Type.TABLE, ret.type());
     assertEquals("name\tage\nmoon\t33\npark\t34\n", ret.message());
 
-    try {
-      sql.interpret("select wrong syntax", context);
-      fail("Exception not catched");
-    } catch (Exception e) {
-      // okay
-      LOGGER.info("Exception in SparkSqlInterpreterTest while test ", e);
-    }
+    ret = sql.interpret("select wrong syntax", context);
+    assertEquals(InterpreterResult.Code.ERROR, ret.code());
+    assertTrue(ret.message().length() > 0);
+
     assertEquals(InterpreterResult.Code.SUCCESS, sql.interpret("select case when name==\"aa\" then name else name end from test", context).code());
   }
 

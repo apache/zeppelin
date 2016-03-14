@@ -234,6 +234,15 @@
   padding-left: 0;
 }
 
+.paragraphForm.form-horizontal .form-group .checkbox-item {
+  padding-left: 0;
+  padding-right: 10px;
+}
+
+.paragraphForm.form-horizontal .form-group .checkbox-item input {
+  margin-right: 2px;
+}
+
 /*
   Ace Text Editor CSS
 */
@@ -410,4 +419,18 @@
 table.table-striped {
   border-top: 1px solid #ddd;
   margin-top: 20px;
+}
+
+.scroll-paragraph-down {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+}
+
+
+.scroll-paragraph-up {
+  bottom: 5px;
+  cursor: pointer;
+  position: absolute;
+  right: 15px;
 }

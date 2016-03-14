@@ -26,31 +26,29 @@ fi
 SPARK_VERSION="${1}"
 HADOOP_VERSION="${2}"
 
+echo ${SPARK_VERSION} | grep "^1.[123].[0-9]" > /dev/null
+if [ $? -eq 0 ]; then
+  echo "${SPARK_VERSION}" | grep "^1.[12].[0-9]" > /dev/null
+  if [ $? -eq 0 ]; then
+    SPARK_VER_RANGE="<=1.2"
+  else
+    SPARK_VER_RANGE="<=1.3"
+  fi
+else
+  SPARK_VER_RANGE=">1.3"
+fi
+
+
+set -xe
+
 FWDIR=$(dirname "${BASH_SOURCE-$0}")
 ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
 export SPARK_HOME=${ZEPPELIN_HOME}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
-echo "SPARK_HOME is ${SPARK_HOME} " 
-if [ ! -d "${SPARK_HOME}" ]; then
-    echo "${SPARK_VERSION}" | grep "^1.[12].[0-9]" > /dev/null
-    if [ $? -eq 0 ]; then
-        # spark 1.1.x and spark 1.2.x can be downloaded from archive
-        wget http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
-    else
-        # spark 1.3.x and later can be downloaded from mirror
-        # get download address from mirror
-        MIRROR_INFO=$(curl -s "http://www.apache.org/dyn/closer.cgi/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz?asjson=1")
-
-        PREFFERED=$(echo "${MIRROR_INFO}" | grep preferred | sed 's/[^"]*.preferred.: .\([^"]*\).*/\1/g')
-        PATHINFO=$(echo "${MIRROR_INFO}" | grep path_info | sed 's/[^"]*.path_info.: .\([^"]*\).*/\1/g')
-        wget "${PREFFERED}${PATHINFO}"
-    fi
-    tar zxf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
-fi
+echo "SPARK_HOME is ${SPARK_HOME}"
 
 # create PID dir. test case detect pid file so they can select active spark home dir for test
 mkdir -p ${SPARK_HOME}/run
 export SPARK_PID_DIR=${SPARK_HOME}/run
-
 
 # start
 export SPARK_MASTER_PORT=7071
@@ -58,9 +56,11 @@ export SPARK_MASTER_WEBUI_PORT=7072
 export SPARK_WORKER_WEBUI_PORT=8082
 ${SPARK_HOME}/sbin/start-master.sh
 
-echo ${SPARK_VERSION} | grep "^1.[123].[0-9]" > /dev/null
-if [ $? -eq 0 ]; then   # spark 1.3 or prior
+if [ "${SPARK_VER_RANGE}" == "<=1.3" ]||[ "${SPARK_VER_RANGE}" == "<=1.2" ]; then
+    # spark 1.3 or prior
     ${SPARK_HOME}/sbin/start-slave.sh 1 `hostname`:${SPARK_MASTER_PORT}
 else
     ${SPARK_HOME}/sbin/start-slave.sh spark://`hostname`:7071
 fi
+
+set +xe

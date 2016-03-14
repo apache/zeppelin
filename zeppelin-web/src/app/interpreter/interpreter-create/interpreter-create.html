@@ -12,10 +12,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <div>
-  <div class="row">
-    <div class="col-md-12">
-      <div class="interpreterSettingAdd" ng-show="showAddNewSetting">
-        <hr />
+  <div class="row interpreter">
+    <div class="col-md-12" ng-show="showAddNewSetting">
+      <hr />
+      <div class="interpreterSettingAdd">
         <h4>Create new interpreter</h4>
 
         <div class="form-group" style="width:200px">
@@ -35,6 +35,11 @@ limitations under the License.
           </select>
         </div>
 
+        <b>Option</b>
+        <div class="checkbox">
+          <label><input type="checkbox" style="top:-5px" ng-model="newInterpreterSetting.option.perNoteSession">Separate Interpreter for each note</input></label>
+        </div>
+        
         <b>Properties</b>
         <table class="table table-striped properties">
           <tr>
@@ -62,6 +67,50 @@ limitations under the License.
             <td></td>
             <td>
               <div class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterProperty()">
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <b>Dependencies</b>
+        <table class="table table-striped properties">
+          <tr>
+            <th>artifact</th>
+            <th>exclude</th>
+            <th>action</th>
+          </tr>
+
+          <tr ng-repeat="dep in newInterpreterSetting.dependencies">
+            <td>
+              <input ng-model="dep.groupArtifactVersion" style="width:100%" />
+            </td>
+            <td>
+              <textarea msd-elastic ng-model="dep.exclusions"
+                        ng-list
+                        placeholder="(Optional) comma separated groupId:artifactId list">
+              </textarea>
+            </td>
+            <td>
+              <div class="btn btn-default btn-sm fa fa-remove"
+                   ng-click="removeInterpreterDependency(dep.groupArtifactVersion)">
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td>
+              <input ng-model="newInterpreterSetting.depArtifact"
+                     placeholder="groupId:artifactId:version or local file path"
+                     style="width: 100%" />
+            </td>
+            <td>
+              <textarea msd-elastic ng-model="newInterpreterSetting.depExclude"
+                        ng-list
+                        placeholder="(Optional) comma separated groupId:artifactId list">
+              </textarea>
+            </td>
+            <td>
+              <div class="btn btn-default btn-sm fa fa-plus" ng-click="addNewInterpreterDependency()">
               </div>
             </td>
           </tr>

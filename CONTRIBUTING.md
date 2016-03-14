@@ -7,12 +7,17 @@ Contributing to Zeppelin (Source code, Documents, Image, Website) means you agre
 2. If not, create a ticket describing the change you're proposing in the [Jira issue tracker](https://issues.apache.org/jira/browse/ZEPPELIN)
 3. Contribute your patch via Pull Request.
 
+Before you start, please read the [Code of Conduct](http://www.apache.org/foundation/policies/conduct.html) carefully, familiarize yourself with it and refer to it whenever you need it.
+
+For those of you who are not familiar with Apache project, understanding [How it works](http://www.apache.org/foundation/how-it-works.html) would be quite helpful.
+
 ## Creating a Pull Request
 In order to make the review process easier, please follow this template when making a Pull Request:
 
 ```
 ### What is this PR for?
 A few sentences describing the overall goals of the pull request's commits.
+First time? Check out the contributing guide - https://github.com/apache/incubator-zeppelin/blob/master/CONTRIBUTING.md
 
 ### What type of PR is it?
 [Bug Fix | Improvement | Feature | Documentation | Hot Fix | Refactoring]
@@ -20,7 +25,9 @@ A few sentences describing the overall goals of the pull request's commits.
 ### Todos
 * [ ] - Task
 
-### Is there a relevant Jira issue?
+### What is the Jira issue?
+* Open an issue on Jira https://issues.apache.org/jira/browse/ZEPPELIN/
+* Put link here, and add [ZEPPELIN-*Jira number*] in PR title, eg. [ZEPPELIN-533]
 
 ### How should this be tested?
 Outline the steps to test the PR here.
@@ -33,11 +40,28 @@ Outline the steps to test the PR here.
 * Does this needs documentation?
 ```
 
-You can also use this small bookmarklet tool to fill your Pull Request fields automatically:
+## Testing a Pull Request
+You can also test and review a particular Pull Request. Here are two useful ways.
 
-```
-javascript:(function() {var e = document.getElementById('pull_request_body');if (e) {e.value += '### What is this PR for?\nA few sentences describing the overall goals of the pull request\'s commits.\n\n### What type of PR is it?\n[Bug Fix | Improvement | Feature | Documentation | Hot Fix | Refactoring]\n\n### Todos\n* [ ] - Task\n\n### Is there a relevant Jira issue?\n\n### How should this be tested?\nOutline the steps to test the PR here.\n\n### Screenshots (if appropriate)\n\n### Questions:\n* Does the licenses files need update?\n* Is there breaking changes for older versions?\n* Does this needs documentation?';}})();
-```
+* Using a utility provided from Zeppelin. 
+    
+    ```
+    dev/test_zeppelin_pr.py [# of PR]
+    ```
+
+    For example, if you want to test `#513`, then the command will be:
+
+    ```
+    dev/test_zeppelin_pr.py 513
+    ```
+
+* Another way is using [github/hub](https://github.com/github/hub). 
+     
+    ```
+    hub checkout https://github.com/apache/incubator-zeppelin/pull/[# of PR]
+    ```
+
+The above two methods will help you test and review Pull Requests.
 
 ## Source Control Workflow
 Zeppelin follows [Fork & Pull] (https://github.com/sevntu-checkstyle/sevntu.checkstyle/wiki/Development-workflow-with-Git:-Fork,-Branching,-Commits,-and-Pull-Request) model.
@@ -52,7 +76,6 @@ When a Pull Request is submitted, it is being merged or rejected by following re
 * Pull request is open for 1 or 2 days for potential additional review, unless it's got enough indication of suitable for merging.
 * Committer can initiate lazy consensus ("Merge if there is no more discussion") and the code can be merged after certain time (normally 24 hours) when there is no review exists.
 * Contributor can ping reviewers (including committer) by commenting 'Ready to review' or suitable indication.
-
 
 ## Becoming a Committer
 
@@ -122,13 +145,13 @@ First of all, you need the Zeppelin source code. The official location for Zeppe
 Get the source code on your development machine using git.
 
 ```
-git clone http://git.apache.org/incubator-zeppelin.git zeppelin
+git clone git://git.apache.org/incubator-zeppelin.git zeppelin
 ```
 
-You may also want to develop against a specific release. For example, for branch-0.1
+You may also want to develop against a specific branch. For example, for branch-0.5.6
 
 ```
-git clone -b branch-0.1 http://git.apache.org/incubator-zeppelin.git zeppelin
+git clone -b branch-0.5.6 git://git.apache.org/incubator-zeppelin.git zeppelin
 ```
 
 or with write access

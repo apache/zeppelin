@@ -17,14 +17,18 @@
 
 package org.apache.zeppelin.dep;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.util.Collections;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.sonatype.aether.RepositoryException;
 
 public class DependencyResolverTest {
   private static DependencyResolver resolver;
@@ -50,13 +54,47 @@ public class DependencyResolverTest {
   public static void tearDown() throws Exception {
     FileUtils.deleteDirectory(new File(home + "/" + testPath));
     FileUtils.deleteDirectory(new File(home + "/" + testCopyPath)); 
-  }    
-  
+  }
+
+  @Rule
+  public final ExpectedException exception = ExpectedException.none();
+
+  @Test
+  public void testAddRepo() {
+    int reposCnt = resolver.getRepos().size();
+    resolver.addRepo("securecentral", "https://repo1.maven.org/maven2", false);
+    assertEquals(reposCnt + 1, resolver.getRepos().size());
+  }
+
+  @Test
+  public void testDelRepo() {
+    int reposCnt = resolver.getRepos().size();
+    resolver.delRepo("securecentral");
+    resolver.delRepo("badId");
+    assertEquals(reposCnt - 1, resolver.getRepos().size());
+  }
+
   @Test
   public void testLoad() throws Exception {
-    resolver.load("org.apache.commons:commons-lang3:3.4", testCopyPath);
+    // basic load
+    resolver.load("com.databricks:spark-csv_2.10:1.3.0", testCopyPath);
+    assertEquals(new File(home + "/" + testCopyPath).list().length, 4);
+    FileUtils.cleanDirectory(new File(home + "/" + testCopyPath));
 
-    assertTrue(new File(home + "/" + testPath + "/org/apache/commons/commons-lang3/3.4/").exists());
-    assertTrue(new File(home + "/" + testCopyPath + "/commons-lang3-3.4.jar").exists());
+    // load with exclusions parameter
+    resolver.load("com.databricks:spark-csv_2.10:1.3.0",
+        Collections.singletonList("org.scala-lang:scala-library"), testCopyPath);
+    assertEquals(new File(home + "/" + testCopyPath).list().length, 3);
+    FileUtils.cleanDirectory(new File(home + "/" + testCopyPath));
+
+    // load from added repository
+    resolver.addRepo("sonatype", "https://oss.sonatype.org/content/repositories/agimatec-releases/", false);
+    resolver.load("com.agimatec:agimatec-validation:0.9.3", testCopyPath);
+    assertEquals(new File(home + "/" + testCopyPath).list().length, 8);
+
+    // load invalid artifact
+    resolver.delRepo("sonatype");
+    exception.expect(RepositoryException.class);
+    resolver.load("com.agimatec:agimatec-validation:0.9.3", testCopyPath);
   }
 }

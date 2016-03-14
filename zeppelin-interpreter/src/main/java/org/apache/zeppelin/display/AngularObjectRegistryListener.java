@@ -24,5 +24,5 @@ package org.apache.zeppelin.display;
 public interface AngularObjectRegistryListener {
   public void onAdd(String interpreterGroupId, AngularObject object);
   public void onUpdate(String interpreterGroupId, AngularObject object);
-  public void onRemove(String interpreterGroupId, String name, String noteId);
+  public void onRemove(String interpreterGroupId, String name, String noteId, String paragraphId);
 }

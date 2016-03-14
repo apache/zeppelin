@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
@@ -62,10 +63,10 @@ public class ScaldingInterpreterTest {
     }
 
     InterpreterGroup intpGroup = new InterpreterGroup();
-    context = new InterpreterContext("note", "id", "title", "text",
+    context = new InterpreterContext("note", "id", "title", "text", new AuthenticationInfo(),
         new HashMap<String, Object>(), new GUI(), new AngularObjectRegistry(
-            intpGroup.getId(), null),
-        new LinkedList<InterpreterContextRunner>());
+            intpGroup.getId(), null), null,
+        new LinkedList<InterpreterContextRunner>(), null);
   }
 
   @After

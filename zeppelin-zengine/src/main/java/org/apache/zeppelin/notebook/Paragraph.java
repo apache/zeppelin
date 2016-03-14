@@ -18,16 +18,20 @@
 package org.apache.zeppelin.notebook;
 
 import org.apache.zeppelin.display.AngularObjectRegistry;
+import org.apache.zeppelin.user.AuthenticationInfo;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.display.Input;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.FormType;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.resource.ResourcePool;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.JobListener;
+import org.apache.zeppelin.scheduler.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
@@ -43,6 +47,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   String title;
   String text;
+  AuthenticationInfo authenticationInfo;
   Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
@@ -53,6 +58,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.replLoader = replLoader;
     title = null;
     text = null;
+    authenticationInfo = null;
     dateUpdated = null;
     settings = new GUI();
     config = new HashMap<String, Object>();
@@ -72,6 +78,13 @@ public class Paragraph extends Job implements Serializable, Cloneable {
     this.dateUpdated = new Date();
   }
 
+  public AuthenticationInfo getAuthenticationInfo() {
+    return authenticationInfo;
+  }
+
+  public void setAuthenticationInfo(AuthenticationInfo authenticationInfo) {
+    this.authenticationInfo = authenticationInfo;
+  }
 
   public String getTitle() {
     return title;
@@ -87,6 +100,11 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   public Note getNote() {
     return note;
+  }
+
+  public boolean isEnabled() {
+    Boolean enabled = (Boolean) config.get("enabled");
+    return enabled == null || enabled.booleanValue();
   }
 
   public String getRequiredReplName() {
@@ -213,7 +231,29 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       if (Code.KEEP_PREVIOUS_RESULT == ret.code()) {
         return getReturn();
       }
-      return ret;
+
+      String message = "";
+
+      context.out.flush();
+      InterpreterResult.Type outputType = context.out.getType();
+      byte[] interpreterOutput = context.out.toByteArray();
+      context.out.clear();
+
+      if (interpreterOutput != null && interpreterOutput.length > 0) {
+        message = new String(interpreterOutput);
+      }
+
+      if (message.isEmpty()) {
+        return ret;
+      } else {
+        String interpreterResultMessage = ret.message();
+        if (interpreterResultMessage != null && !interpreterResultMessage.isEmpty()) {
+          message += interpreterResultMessage;
+          return new InterpreterResult(ret.code(), ret.type(), message);
+        } else {
+          return new InterpreterResult(ret.code(), outputType, message);
+        }
+      }
     } finally {
       InterpreterContext.remove();
     }
@@ -222,7 +262,17 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   @Override
   protected boolean jobAbort() {
     Interpreter repl = getRepl(getRequiredReplName());
-    Job job = repl.getScheduler().removeFromWaitingQueue(getId());
+    if (repl == null) {
+      // when interpreters are already destroyed
+      return true;
+    }
+
+    Scheduler scheduler = repl.getScheduler();
+    if (scheduler == null) {
+      return true;
+    }
+
+    Job job = scheduler.removeFromWaitingQueue(getId());
     if (job != null) {
       job.setStatus(Status.ABORT);
     } else {
@@ -233,10 +283,12 @@ public class Paragraph extends Job implements Serializable, Cloneable {
 
   private InterpreterContext getInterpreterContext() {
     AngularObjectRegistry registry = null;
+    ResourcePool resourcePool = null;
 
     if (!getNoteReplLoader().getInterpreterSettings().isEmpty()) {
       InterpreterSetting intpGroup = getNoteReplLoader().getInterpreterSettings().get(0);
       registry = intpGroup.getInterpreterGroup().getAngularObjectRegistry();
+      resourcePool = intpGroup.getInterpreterGroup().getResourcePool();
     }
 
     List<InterpreterContextRunner> runners = new LinkedList<InterpreterContextRunner>();
@@ -244,20 +296,50 @@ public class Paragraph extends Job implements Serializable, Cloneable {
       runners.add(new ParagraphRunner(note, note.id(), p.getId()));
     }
 
+    final Paragraph self = this;
     InterpreterContext interpreterContext = new InterpreterContext(
             note.id(),
             getId(),
             this.getTitle(),
             this.getText(),
+            this.getAuthenticationInfo(),
             this.getConfig(),
             this.settings,
             registry,
-            runners);
+            resourcePool,
+            runners,
+            new InterpreterOutput(new InterpreterOutputListener() {
+              @Override
+              public void onAppend(InterpreterOutput out, byte[] line) {
+                updateParagraphResult(out);
+                ((ParagraphJobListener) getListener()).onOutputAppend(self, out, new String(line));
+              }
+
+              @Override
+              public void onUpdate(InterpreterOutput out, byte[] output) {
+                updateParagraphResult(out);
+                ((ParagraphJobListener) getListener()).onOutputUpdate(self, out,
+                        new String(output));
+              }
+
+              private void updateParagraphResult(InterpreterOutput out) {
+                // update paragraph result
+                Throwable t = null;
+                String message = null;
+                try {
+                  message = new String(out.toByteArray());
+                } catch (IOException e) {
+                  logger().error(e.getMessage(), e);
+                  t = e;
+                }
+                setReturn(new InterpreterResult(Code.SUCCESS, out.getType(), message), t);
+              }
+            }));
     return interpreterContext;
   }
 
   static class ParagraphRunner extends InterpreterContextRunner {
-    private Note note;
+    private transient Note note;
 
     public ParagraphRunner(Note note, String noteId, String paragraphId) {
       super(noteId, paragraphId);

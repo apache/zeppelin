@@ -17,10 +17,17 @@
 angular.module('zeppelinWebApp')
   .controller('ParagraphCtrl', function($scope,$rootScope, $route, $window, $element, $routeParams, $location,
                                          $timeout, $compile, websocketMsgSrv) {
-
+  var ANGULAR_FUNCTION_OBJECT_NAME_PREFIX = '_Z_ANGULAR_FUNC_';
   $scope.paragraph = null;
   $scope.originalText = '';
   $scope.editor = null;
+
+  var paragraphScope = $rootScope.$new(true, $rootScope);
+  // to keep backward compatibility
+  $scope.compiledScope = paragraphScope;
+
+  var angularObjectRegistry = {};
+
 
   var editorModes = {
     'ace/mode/scala': /^%spark/,
@@ -54,11 +61,13 @@ angular.module('zeppelinWebApp')
       $scope.renderHtml();
     } else if ($scope.getResultType() === 'ANGULAR') {
       $scope.renderAngular();
+    } else if ($scope.getResultType() === 'TEXT') {
+      $scope.renderText();
     }
   };
 
-  $scope.renderHtml = function() {
-    var retryRenderer = function() {
+    $scope.renderHtml = function() {
+      var retryRenderer = function() {
       if (angular.element('#p' + $scope.paragraph.id + '_html').length) {
         try {
           angular.element('#p' + $scope.paragraph.id + '_html').html($scope.paragraph.result.msg);
@@ -82,7 +91,7 @@ angular.module('zeppelinWebApp')
         try {
           angular.element('#p'+$scope.paragraph.id+'_angular').html($scope.paragraph.result.msg);
 
-          $compile(angular.element('#p'+$scope.paragraph.id+'_angular').contents())($rootScope.compiledScope);
+          $compile(angular.element('#p'+$scope.paragraph.id+'_angular').contents())(paragraphScope);
         } catch(err) {
           console.log('ANGULAR rendering error %o', err);
         }
@@ -93,6 +102,130 @@ angular.module('zeppelinWebApp')
     $timeout(retryRenderer);
   };
 
+  $scope.renderText = function() {
+    var retryRenderer = function() {
+
+      var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
+      if (textEl.length) {
+        // clear all lines before render
+        $scope.clearTextOutput();
+
+        if ($scope.paragraph.result && $scope.paragraph.result.msg) {
+          $scope.appendTextOutput($scope.paragraph.result.msg);
+        }
+
+        angular.element('#p' + $scope.paragraph.id + '_text').bind('mousewheel', function(e) {
+          $scope.keepScrollDown = false;
+        });
+
+      } else {
+        $timeout(retryRenderer, 10);
+      }
+    };
+    $timeout(retryRenderer);
+  };
+
+  $scope.clearTextOutput = function() {
+    var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
+    if (textEl.length) {
+      textEl.children().remove();
+    }
+  };
+
+  $scope.appendTextOutput = function(msg) {
+    var textEl = angular.element('#p' + $scope.paragraph.id + '_text');
+    if (textEl.length) {
+      var lines = msg.split('\n');
+      for (var i=0; i < lines.length; i++) {
+        textEl.append(angular.element('<div></div>').text(lines[i]));
+      }
+    }
+    if ($scope.keepScrollDown) {
+      var doc = angular.element('#p' + $scope.paragraph.id + '_text');
+      doc[0].scrollTop = doc[0].scrollHeight;
+    }
+  };
+
+
+
+  $scope.$on('angularObjectUpdate', function(event, data) {
+    var noteId = $route.current.pathParams.noteId;
+    if (!data.noteId || (data.noteId === noteId && (!data.paragraphId || data.paragraphId === $scope.paragraph.id))) {
+      var scope = paragraphScope;
+      var varName = data.angularObject.name;
+
+      if (angular.equals(data.angularObject.object, scope[varName])) {
+        // return when update has no change
+        return;
+      }
+
+      if (!angularObjectRegistry[varName]) {
+        angularObjectRegistry[varName] = {
+          interpreterGroupId : data.interpreterGroupId,
+          noteId : data.noteId,
+          paragraphId : data.paragraphId
+        };
+      } else {
+        angularObjectRegistry[varName].noteId = angularObjectRegistry[varName].noteId || data.noteId;
+        angularObjectRegistry[varName].paragraphId = angularObjectRegistry[varName].paragraphId || data.paragraphId;
+      }
+
+      angularObjectRegistry[varName].skipEmit = true;
+
+      if (!angularObjectRegistry[varName].clearWatcher) {
+        angularObjectRegistry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
+          console.log('angular object (paragraph) updated %o %o', varName, angularObjectRegistry[varName]);
+          if (angularObjectRegistry[varName].skipEmit) {
+            angularObjectRegistry[varName].skipEmit = false;
+            return;
+          }
+          websocketMsgSrv.updateAngularObject(
+            angularObjectRegistry[varName].noteId,
+            angularObjectRegistry[varName].paragraphId,
+            varName,
+            newValue,
+            angularObjectRegistry[varName].interpreterGroupId);
+        });
+      }
+      console.log('angular object (paragraph) created %o', varName);
+      scope[varName] = data.angularObject.object;
+
+      // create proxy for AngularFunction
+      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
+        scope[funcName] = function() {
+          scope[varName] = arguments;
+          console.log('angular function (paragraph) invoked %o', arguments);
+        };
+
+        console.log('angular function (paragraph) created %o', scope[funcName]);
+      }
+    }
+  });
+
+
+  $scope.$on('angularObjectRemove', function(event, data) {
+    var noteId = $route.current.pathParams.noteId;
+    if (!data.noteId || (data.noteId === noteId && (!data.paragraphId || data.paragraphId === $scope.paragraph.id))) {
+      var scope = paragraphScope;
+      var varName = data.name;
+
+      // clear watcher
+      if (angularObjectRegistry[varName]) {
+        angularObjectRegistry[varName].clearWatcher();
+        angularObjectRegistry[varName] = undefined;
+      }
+
+      // remove scope variable
+      scope[varName] = undefined;
+
+      // remove proxy for AngularFunction
+      if (varName.startsWith(ANGULAR_FUNCTION_OBJECT_NAME_PREFIX)) {
+        var funcName = varName.substring((ANGULAR_FUNCTION_OBJECT_NAME_PREFIX).length);
+        scope[funcName] = undefined;
+      }
+    }
+  });
 
   var initializeDefault = function() {
     var config = $scope.paragraph.config;
@@ -156,6 +289,10 @@ angular.module('zeppelinWebApp')
     }
   });
 
+  var isEmpty = function (object) {
+    return !object;
+  };
+
   // TODO: this may have impact on performance when there are many paragraphs in a note.
   $scope.$on('updateParagraph', function(event, data) {
     if (data.paragraph.id === $scope.paragraph.id &&
@@ -166,6 +303,7 @@ angular.module('zeppelinWebApp')
          data.paragraph.status !== $scope.paragraph.status ||
          data.paragraph.jobName !== $scope.paragraph.jobName ||
          data.paragraph.title !== $scope.paragraph.title ||
+         isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
          data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
          !angular.equals(data.paragraph.settings, $scope.paragraph.settings) ||
          !angular.equals(data.paragraph.config, $scope.paragraph.config))
@@ -175,7 +313,8 @@ angular.module('zeppelinWebApp')
       var newType = $scope.getResultType(data.paragraph);
       var oldGraphMode = $scope.getGraphMode();
       var newGraphMode = $scope.getGraphMode(data.paragraph);
-      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished);
+      var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) || isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result);
+
       var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
 
       //console.log("updateParagraph oldData %o, newData %o. type %o -> %o, mode %o -> %o", $scope.paragraph, data, oldType, newType, oldGraphMode, newGraphMode);
@@ -234,6 +373,8 @@ angular.module('zeppelinWebApp')
         $scope.renderHtml();
       } else if (newType === 'ANGULAR' && resultRefreshed) {
         $scope.renderAngular();
+      } else if (newType === 'TEXT' && resultRefreshed) {
+        $scope.renderText();
       }
 
       if (statusChanged || resultRefreshed) {
@@ -250,6 +391,19 @@ angular.module('zeppelinWebApp')
 
     }
 
+  });
+
+  $scope.$on('appendParagraphOutput', function(event, data) {
+    if ($scope.paragraph.id === data.paragraphId) {
+      $scope.appendTextOutput(data.data);
+    }
+  });
+
+  $scope.$on('updateParagraphOutput', function(event, data) {
+    if ($scope.paragraph.id === data.paragraphId) {
+      $scope.clearTextOutput(data.data);
+      $scope.appendTextOutput(data.data);
+    }
   });
 
   $scope.isRunning = function() {
@@ -475,11 +629,16 @@ angular.module('zeppelinWebApp')
       value = params[formulaire.name];
     }
 
-    if (value === '') {
-      value = formulaire.options[0].value;
-    }
-
     $scope.paragraph.settings.params[formulaire.name] = value;
+  };
+
+  $scope.toggleCheckbox = function(formulaire, option) {
+    var idx = $scope.paragraph.settings.params[formulaire.name].indexOf(option.value);
+    if (idx > -1) {
+      $scope.paragraph.settings.params[formulaire.name].splice(idx, 1);
+    } else {
+      $scope.paragraph.settings.params[formulaire.name].push(option.value);
+    }
   };
 
   $scope.aceChanged = function() {
@@ -515,9 +674,11 @@ angular.module('zeppelinWebApp')
 
       if (navigator.appVersion.indexOf('Mac') !== -1 ) {
         $scope.editor.setKeyboardHandler('ace/keyboard/emacs');
+        $rootScope.isMac = true;
       } else if (navigator.appVersion.indexOf('Win') !== -1 ||
                  navigator.appVersion.indexOf('X11') !== -1 ||
                  navigator.appVersion.indexOf('Linux') !== -1) {
+        $rootScope.isMac = false;
         // not applying emacs key binding while the binding override Ctrl-v. default behavior of paste text on windows.
       }
 
@@ -802,6 +963,8 @@ angular.module('zeppelinWebApp')
         $scope.insertNew('below');
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 79) { // Ctrl + Alt + o
         $scope.toggleOutput();
+      } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 82) { // Ctrl + Alt + r
+        $scope.toggleEnableDisable();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 69) { // Ctrl + Alt + e
         $scope.toggleEditor();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && keyCode === 77) { // Ctrl + Alt + m
@@ -810,6 +973,12 @@ angular.module('zeppelinWebApp')
         } else {
           $scope.showLineNumbers();
         }
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 189) { // Ctrl + Shift + -
+        $scope.paragraph.config.colWidth = Math.max(1, $scope.paragraph.config.colWidth - 1);
+        $scope.changeColWidth();
+      } else if (keyEvent.ctrlKey && keyEvent.shiftKey && keyCode === 187) { // Ctrl + Shift + =
+        $scope.paragraph.config.colWidth = Math.min(12, $scope.paragraph.config.colWidth + 1);
+        $scope.changeColWidth();
       } else if (keyEvent.ctrlKey && keyEvent.altKey && ((keyCode >= 48 && keyCode <=57) || keyCode === 189 || keyCode === 187)) { // Ctrl + Alt + [1~9,0,-,=]
         var colWidth = 12;
         if (keyCode === 48) {
@@ -1094,7 +1263,9 @@ angular.module('zeppelinWebApp')
 
   };
 
-  var integerFormatter = d3.format(',.1d');
+  var groupedThousandsWith3DigitsFormatter = function(x){
+    return d3.format(',')(d3.round(x, 3));
+  };
 
   var customAbbrevFormatter = function(x) {
     var s = d3.format('.3s')(x);
@@ -1116,7 +1287,7 @@ angular.module('zeppelinWebApp')
     if(d >= Math.pow(10,6)){
       return customAbbrevFormatter(d);
     }
-    return integerFormatter(d);
+    return groupedThousandsWith3DigitsFormatter(d);
   };
 
   var setD3Chart = function(type, data, refresh) {
@@ -1931,4 +2102,33 @@ angular.module('zeppelinWebApp')
     var redirectToUrl = location.protocol + '//' + location.host + location.pathname + '#/notebook/' + noteId + '/paragraph/' + $scope.paragraph.id+'?asIframe';
     $window.open(redirectToUrl);
   };
+
+  $scope.showScrollDownIcon = function(){
+    var doc = angular.element('#p' + $scope.paragraph.id + '_text');
+    if(doc[0]){
+      return doc[0].scrollHeight > doc.innerHeight();
+    }
+    return false;
+  };
+
+  $scope.scrollParagraphDown = function() {
+    var doc = angular.element('#p' + $scope.paragraph.id + '_text');
+    doc.animate({scrollTop: doc[0].scrollHeight}, 500);
+    $scope.keepScrollDown = true;
+  };
+
+  $scope.showScrollUpIcon = function(){
+    if(angular.element('#p' + $scope.paragraph.id + '_text')[0]){
+      return angular.element('#p' + $scope.paragraph.id + '_text')[0].scrollTop !== 0;
+    }
+    return false;
+
+  };
+
+  $scope.scrollParagraphUp = function() {
+    var doc = angular.element('#p' + $scope.paragraph.id + '_text');
+    doc.animate({scrollTop: 0}, 500);
+    $scope.keepScrollDown = false;
+  };
+
 });

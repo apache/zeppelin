@@ -57,11 +57,12 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       websocketEvents.sendNewEvent({ op: 'INSERT_PARAGRAPH', data : {index: newIndex}});
     },
 
-    updateAngularObject: function(noteId, name, value, interpreterGroupId) {
+    updateAngularObject: function(noteId, paragraphId, name, value, interpreterGroupId) {
       websocketEvents.sendNewEvent({
         op: 'ANGULAR_OBJECT_UPDATED',
         data: {
           noteId: noteId,
+          paragraphId: paragraphId,
           name: name,
           value: value,
           interpreterGroupId: interpreterGroupId
@@ -123,6 +124,16 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
         op: 'IMPORT_NOTE',
         data: {
           notebook: notebook
+        }
+      });
+    },
+
+    checkpointNotebook: function(noteId, commitMessage) {
+      websocketEvents.sendNewEvent({
+        op: 'CHECKPOINT_NOTEBOOK',
+        data: {
+          noteId: noteId,
+          commitMessage: commitMessage
         }
       });
     },

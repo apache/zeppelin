@@ -19,12 +19,11 @@
 bin=$(dirname "${BASH_SOURCE-$0}")
 bin=$(cd "${bin}">/dev/null; pwd)
 
-
 function usage() {
-    echo "usage) $0 -p <port> -d <directory to load>"
+    echo "usage) $0 -p <port> -d <interpreter dir to load> -l <local interpreter repo dir to load>"
 }
 
-while getopts "hp:d:" o; do
+while getopts "hp:d:l:" o; do
     case ${o} in
         h)
             usage
@@ -35,6 +34,9 @@ while getopts "hp:d:" o; do
             ;;
         p)
             PORT=${OPTARG}
+            ;;
+        l)
+            LOCAL_INTERPRETER_REPO=${OPTARG}
             ;;
         esac
 done
@@ -79,7 +81,7 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
     export SPARK_SUBMIT="${SPARK_HOME}/bin/spark-submit"
     SPARK_APP_JAR="$(ls ${ZEPPELIN_HOME}/interpreter/spark/zeppelin-spark*.jar)"
     # This will evantually passes SPARK_APP_JAR to classpath of SparkIMain
-    ZEPPELIN_CLASSPATH=${SPARK_APP_JAR}
+    ZEPPELIN_CLASSPATH+=${SPARK_APP_JAR}
 
     pattern="$SPARK_HOME/python/lib/py4j-*-src.zip"
     py4j=($pattern)
@@ -127,6 +129,8 @@ if [[ "${INTERPRETER_ID}" == "spark" ]]; then
     export SPARK_CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
   fi
 fi
+
+addJarInDir "${LOCAL_INTERPRETER_REPO}"
 
 CLASSPATH+=":${ZEPPELIN_CLASSPATH}"
 

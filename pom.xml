@@ -86,12 +86,14 @@
   <modules>
     <module>zeppelin-interpreter</module>
     <module>zeppelin-zengine</module>
+    <module>zeppelin-display</module>
     <module>spark-dependencies</module>
     <module>spark</module>
     <module>markdown</module>
     <module>angular</module>
     <module>shell</module>
     <module>hive</module>
+    <module>hbase</module>
     <module>phoenix</module>
     <module>postgresql</module>
     <module>jdbc</module>
@@ -102,6 +104,7 @@
     <module>lens</module>
     <module>cassandra</module>
     <module>elasticsearch</module>
+    <module>alluxio</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
@@ -443,6 +446,7 @@
               <exclude>**/.idea/</exclude>
               <exclude>**/*.iml</exclude>
               <exclude>.git/</exclude>
+              <exclude>.github/*</exclude>
               <exclude>.gitignore</exclude>
               <exclude>.repository/</exclude>
               <exclude>**/*.diff</exclude>
@@ -632,6 +636,16 @@
   </build>
 
   <profiles>
+    <profile>
+      <id>vendor-repo</id>
+      <repositories>
+        <repository>
+          <id>cloudera</id>
+          <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+        </repository>
+      </repositories>
+    </profile>
+
     <!-- Geode can be enabled by -Pgeode. see https://issues.apache.org/jira/browse/ZEPPELIN-375 -->
     <profile>
       <id>geode</id>

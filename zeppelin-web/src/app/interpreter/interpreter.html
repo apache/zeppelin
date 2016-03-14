@@ -18,11 +18,18 @@ limitations under the License.
         <h3 class="new_h3">
           Interpreters
         </h3>
-        <span class="btn btn-default fa fa-plus"
-              ng-click="showAddNewSetting = !showAddNewSetting"
-              style="float:right;margin-top:10px;">
-          Create
-        </span>
+        <div class="pull-right" style="margin-top:10px;">
+          <span class="btn btn-default fa fa-plus"
+                ng-click="showAddNewSetting = !showAddNewSetting"
+                style="margin-right:6px;">
+            Create
+          </span>
+          <span style="cursor:pointer;margin-right:4px;"
+                ng-click="showRepositoryInfo = !showRepositoryInfo"
+                tooltip-placement="bottom" tooltip="Repository information">
+            <i class="fa fa-cog" ng-style="{color: showRepositoryInfo ? '#3071A9' : 'black' }"></i>
+          </span>
+        </div>
       </div>
     </div>
     <div class="row">
@@ -31,6 +38,42 @@ limitations under the License.
       </div>
     </div>
   </div>
+
+  <div class="row" ng-if="showRepositoryInfo">
+    <div class="col-md-12">
+      <hr />
+      <h4>Repositories</h4>
+      <p>Available repository lists. These repositories are used to resolve external dependencies of interpreter.</p>
+      <ul class="noDot">
+        <li class="liVertical" ng-repeat="repo in repositories">
+          <a tabindex="0" class="btn btn-info" role="button"
+             popover-trigger="focus"
+             popover-placement="right"
+             popover-html-unsafe="
+               <label>URL: </label>
+               {{repo.url}}<br>
+               <label>Snapshot: </label>
+               {{repo.snapshotPolicy.enabled}}<br>
+               <label>Username: </label>
+               {{repo.authentication.username}}">
+            <span class="fa fa-database"></span>
+            {{repo.id}}&nbsp;
+            <span ng-if="!isDefaultRepository(repo.id)"
+                  class="fa fa-close blackOpc" ng-click="removeRepository(repo.id)"></span>
+          </a>
+        </li>
+        <li class="liVertical">
+          <div ng-include src="'components/repository-create/repository-dialog.html'"></div>
+          <div class="btn btn-default"
+               data-toggle="modal"
+               data-target="#repoModal">
+            <span class="fa fa-plus"></span>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
   <div ng-include src="'app/interpreter/interpreter-create/interpreter-create.html'"></div>
 </div>
 
@@ -66,8 +109,21 @@ limitations under the License.
       </div>
     </div>
     <div class="row interpreter">
-      <div ng-show="_.isEmpty(setting.properties) || valueform.$hidden" class="col-md-12 empty-properties-message">
-        <em>Currently there are no properties set for this interpreter</em>
+      <div class="col-md-12">
+        <h5>Option</h5>
+        <div class="checkbox">
+          <label>
+            <input type="checkbox"
+                   style="top:-5px"
+                   ng-disabled="!valueform.$visible"
+                   ng-model="setting.option.perNoteSession">
+            Separate Interpreter for each note</input>
+          </label>
+        </div>
+      </div>
+      
+      <div ng-show="_.isEmpty(setting.properties) && _.isEmpty(setting.dependencies) || valueform.$hidden" class="col-md-12 gray40-message">
+        <em>Currently there are no properties and dependencies set for this interpreter</em>
       </div>
       <div class="col-md-12" ng-show="!_.isEmpty(setting.properties) || valueform.$visible">
         <h5>Properties</h5>
@@ -96,8 +152,7 @@ limitations under the License.
             <td>
               <input ng-model="setting.propertyKey"
                      pu-elastic-input
-                     pu-elastic-input-minwidth="180px">
-              </input>
+                     pu-elastic-input-minwidth="180px" />
             </td>
             <td>
               <textarea msd-elastic ng-model="setting.propertyValue"></textarea>
@@ -109,9 +164,66 @@ limitations under the License.
             </td>
           </tr>
         </table>
-        <form editable-form name="valueform" onaftersave="updateInterpreterSetting(setting.id)" ng-show="valueform.$visible">
-          <button type="submit" class="btn btn-primary"
-                  ng-disabled="valueform.$waiting">
+      </div>
+
+      <div class="col-md-12" ng-show="!_.isEmpty(setting.dependencies) || valueform.$visible">
+        <h5>Dependencies</h5>
+        <p class="gray40-message" style="font-size:12px" ng-show="valueform.$visible">
+          These dependencies will be added to classpath when interpreter process starts.</p>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th style="width:40%">artifact</th>
+              <th>exclude</th>
+              <th ng-if="valueform.$visible">action</th>
+            </tr>
+          </thead>
+          <tr ng-repeat="dep in setting.dependencies">
+            <td>
+              <span editable-text="dep.groupArtifactVersion" e-placeholder="groupId:artifactId:version or local file path"
+                    e-form="valueform" e-msd-elastic e-style="width:100%">
+                {{dep.groupArtifactVersion | breakFilter}}
+              </span>
+            </td>
+            <td>
+              <textarea ng-if="valueform.$visible" ng-model="dep.exclusions"
+                        placeholder="(Optional) comma separated groupId:artifactId list"
+                        form="valueform"
+                        e-msd-elastic
+                        ng-list="">
+              </textarea>
+              <div ng-if="!valueform.$visible">{{dep.exclusions.join()}}</div>
+            </td>
+            <td ng-if="valueform.$visible">
+              <div class="btn btn-default btn-sm fa fa-remove"
+                   ng-click="removeInterpreterDependency(dep.groupArtifactVersion, setting.id)">
+              </div>
+            </td>
+          </tr>
+          <tr ng-if="valueform.$visible">
+            <td>
+              <input ng-model="setting.depArtifact"
+                     placeholder="groupId:artifactId:version or local file path"
+                     style="width: 100%" />
+            </td>
+            <td>
+              <textarea ng-model="setting.depExclude"
+                        placeholder="(Optional) comma separated groupId:artifactId list"
+                        msd-elastic
+                        ng-list="">
+              </textarea>
+            </td>
+            <td>
+              <div class="btn btn-default btn-sm fa fa-plus"
+                   ng-click="addNewInterpreterDependency(setting.id)">
+              </div>
+            </td>
+          </tr>
+        </table>
+        <form editable-form name="valueform"
+              onaftersave="updateInterpreterSetting(valueform, setting.id)"
+              ng-show="valueform.$visible">
+          <button type="submit" class="btn btn-primary">
             Save
           </button>
           <button type="button" class="btn btn-default"

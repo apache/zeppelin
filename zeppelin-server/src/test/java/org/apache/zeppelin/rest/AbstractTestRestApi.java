@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -35,6 +36,7 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.zeppelin.dep.Dependency;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
@@ -48,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
+import org.sonatype.aether.RepositoryException;
 
 public abstract class AbstractTestRestApi {
 
@@ -363,10 +366,14 @@ public abstract class AbstractTestRestApi {
   }
 
   //Create new Setting and return Setting ID
-  protected String createTempSetting(String tempName) throws IOException {
-
-    InterpreterGroup interpreterGroup =  ZeppelinServer.notebook.getInterpreterFactory().add(tempName,"newGroup",
-        new InterpreterOption(false),new Properties());
+  protected String createTempSetting(String tempName)
+      throws IOException, RepositoryException {
+    InterpreterGroup interpreterGroup = ZeppelinServer.notebook.getInterpreterFactory()
+        .add(tempName,
+            "newGroup",
+            new LinkedList<Dependency>(),
+            new InterpreterOption(false),
+            new Properties());
     return interpreterGroup.getId();
   }
 

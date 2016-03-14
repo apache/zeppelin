@@ -24,6 +24,7 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
+import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.rest.AbstractTestRestApi;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.socket.Message.OP;
@@ -45,8 +46,6 @@ import static org.mockito.Mockito.*;
  * BASIC Zeppelin rest api tests
  */
 public class NotebookServerTest extends AbstractTestRestApi {
-
-
   private static Notebook notebook;
   private static NotebookServer notebookServer;
   private static Gson gson;
@@ -88,16 +87,19 @@ public class NotebookServerTest extends AbstractTestRestApi {
     InterpreterGroup interpreterGroup = null;
     List<InterpreterSetting> settings = note1.getNoteReplLoader().getInterpreterSettings();
     for (InterpreterSetting setting : settings) {
-      if (setting.getInterpreterGroup() == null) {
-        continue;
+      if (setting.getName().equals("md")) {
+        interpreterGroup = setting.getInterpreterGroup();
+        break;
       }
-
-      interpreterGroup = setting.getInterpreterGroup();
-      break;
     }
 
+    // start interpreter process
+    Paragraph p1 = note1.addParagraph();
+    p1.setText("%md start remote interpreter process");
+    note1.run(p1.getId());
+
     // add angularObject
-    interpreterGroup.getAngularObjectRegistry().add("object1", "value1", note1.getId());
+    interpreterGroup.getAngularObjectRegistry().add("object1", "value1", note1.getId(), null);
 
     // create two sockets and open it
     NotebookSocket sock1 = createWebSocket();
@@ -142,7 +144,7 @@ public class NotebookServerTest extends AbstractTestRestApi {
     Message messageReceived = notebookServer.deserializeMessage(msg);
     Note note = null;
     try {
-      note = notebookServer.importNote(null, notebook, messageReceived);
+      note = notebookServer.importNote(null, null, notebook, messageReceived);
     } catch (NullPointerException e) {
       //broadcastNoteList(); failed nothing to worry.
       LOG.error("Exception in NotebookServerTest while testImportNotebook, failed nothing to " +

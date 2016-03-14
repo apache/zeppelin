@@ -133,6 +133,28 @@
 }
 
 /*
+  Note Permissions Panel
+*/
+
+.permissions {
+  background: white;
+  padding: 10px 15px 15px 15px;
+  margin-left: -10px;
+  margin-right: -10px;
+  font-family: 'Roboto', sans-serif;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid #E5E5E5;
+}
+
+.permissions .permissionsForm {
+  list-style-type: none;
+  background: #EFEFEF;
+  padding: 10px 10px 10px 10px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+  border: 1px solid #E5E5E5;
+}
+
+/*
   Note Setting Panel
 */
 

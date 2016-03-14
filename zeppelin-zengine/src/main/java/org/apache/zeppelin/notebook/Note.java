@@ -19,41 +19,49 @@ package org.apache.zeppelin.notebook;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.Input;
-import org.apache.zeppelin.interpreter.Interpreter;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterGroup;
-import org.apache.zeppelin.interpreter.InterpreterResult;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
+import org.apache.zeppelin.interpreter.*;
+import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
 import org.apache.zeppelin.notebook.utility.IdHashes;
 import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Job.Status;
 import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.search.SearchService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Binded interpreters for a note
  */
 public class Note implements Serializable, JobListener {
+  static Logger logger = LoggerFactory.getLogger(Note.class);
   private static final long serialVersionUID = 7920699076577612429L;
 
+  // threadpool for delayed persist of note
+  private static final ScheduledThreadPoolExecutor delayedPersistThreadPool =
+          new ScheduledThreadPoolExecutor(0);
+  static {
+    delayedPersistThreadPool.setRemoveOnCancelPolicy(true);
+  }
+
   final List<Paragraph> paragraphs = new LinkedList<>();
+
   private String name = "";
   private String id;
+  private HashSet<String> owners = new HashSet<String>();
+  private HashSet<String> readers = new HashSet<String>();
+  private HashSet<String> writers = new HashSet<String>();
 
   @SuppressWarnings("rawtypes")
   Map<String, List<AngularObject>> angularObjects = new HashMap<>();
@@ -62,6 +70,7 @@ public class Note implements Serializable, JobListener {
   private transient JobListenerFactory jobListenerFactory;
   private transient NotebookRepo repo;
   private transient SearchService index;
+  private transient ScheduledFuture delayedPersist;
 
   /**
    * note configurations.
@@ -109,6 +118,51 @@ public class Note implements Serializable, JobListener {
     this.name = name;
   }
 
+  public HashSet<String> getOwners() {
+    return (new HashSet<String>(owners));
+  }
+
+  public void setOwners(HashSet<String> owners) {
+    this.owners = new HashSet<String>(owners);
+  }
+
+  public HashSet<String> getReaders() {
+    return (new HashSet<String>(readers));
+  }
+
+  public void setReaders(HashSet<String> readers) {
+    this.readers = new HashSet<String>(readers);
+  }
+
+  public HashSet<String> getWriters() {
+    return (new HashSet<String>(writers));
+  }
+
+  public void setWriters(HashSet<String> writers) {
+    this.writers = new HashSet<String>(writers);
+  }
+
+  public boolean isOwner(HashSet<String> entities) {
+    return isMember(entities, this.owners);
+  }
+
+  public boolean isWriter(HashSet<String> entities) {
+    return isMember(entities, this.writers) || isMember(entities, this.owners);
+  }
+
+  public boolean isReader(HashSet<String> entities) {
+    return isMember(entities, this.readers) ||
+            isMember(entities, this.owners) ||
+            isMember(entities, this.writers);
+  }
+
+  // return true if b is empty or if (a intersection b) is non-empty
+  private boolean isMember(HashSet<String> a, HashSet<String> b) {
+    Set<String> intersection = new HashSet<String>(b);
+    intersection.retainAll(a);
+    return (b.isEmpty() || (intersection.size() > 0));
+  }
+
   public NoteInterpreterLoader getNoteReplLoader() {
     return replLoader;
   }
@@ -144,9 +198,8 @@ public class Note implements Serializable, JobListener {
 
   /**
    * Add paragraph last.
-   *
-   * @param p
    */
+
   public Paragraph addParagraph() {
     Paragraph p = new Paragraph(this, this, replLoader);
     synchronized (paragraphs) {
@@ -187,7 +240,6 @@ public class Note implements Serializable, JobListener {
    * Insert paragraph in given index.
    *
    * @param index
-   * @param p
    */
   public Paragraph insertParagraph(int index) {
     Paragraph p = new Paragraph(this, this, replLoader);
@@ -215,6 +267,8 @@ public class Note implements Serializable, JobListener {
         }
       }
     }
+
+    removeAllAngularObjectInParagraph(paragraphId);
     return null;
   }
 
@@ -339,12 +393,13 @@ public class Note implements Serializable, JobListener {
 
   /**
    * Run all paragraphs sequentially.
-   *
-   * @param jobListener
    */
   public void runAll() {
     synchronized (paragraphs) {
       for (Paragraph p : paragraphs) {
+        if (!p.isEnabled()) {
+          continue;
+        }
         p.setNoteReplLoader(replLoader);
         p.setListener(jobListenerFactory.getParagraphJobListener(this));
         Interpreter intp = replLoader.get(p.getRequiredReplName());
@@ -399,14 +454,75 @@ public class Note implements Serializable, JobListener {
     }
   }
 
+  private void removeAllAngularObjectInParagraph(String paragraphId) {
+    angularObjects = new HashMap<String, List<AngularObject>>();
+
+    List<InterpreterSetting> settings = replLoader.getInterpreterSettings();
+    if (settings == null || settings.size() == 0) {
+      return;
+    }
+
+    for (InterpreterSetting setting : settings) {
+      InterpreterGroup intpGroup = setting.getInterpreterGroup();
+      AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
+
+      if (registry instanceof RemoteAngularObjectRegistry) {
+        // remove paragraph scope object
+        ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, paragraphId);
+      } else {
+        registry.removeAll(id, paragraphId);
+      }
+    }
+  }
+
   public void persist() throws IOException {
+    stopDelayedPersistTimer();
     snapshotAngularObjectRegistry();
     index.updateIndexDoc(this);
     repo.save(this);
   }
 
+  /**
+   * Persist this note with maximum delay.
+   * @param maxDelaySec
+   */
+  public void persist(int maxDelaySec) {
+    startDelayedPersistTimer(maxDelaySec);
+  }
+
   public void unpersist() throws IOException {
     repo.remove(id());
+  }
+
+
+  private void startDelayedPersistTimer(int maxDelaySec) {
+    synchronized (this) {
+      if (delayedPersist != null) {
+        return;
+      }
+
+      delayedPersist = delayedPersistThreadPool.schedule(new Runnable() {
+
+        @Override
+        public void run() {
+          try {
+            persist();
+          } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+          }
+        }
+      }, maxDelaySec, TimeUnit.SECONDS);
+    }
+  }
+
+  private void stopDelayedPersistTimer() {
+    synchronized (this) {
+      if (delayedPersist == null) {
+        return;
+      }
+
+      delayedPersist.cancel(false);
+    }
   }
 
   public Map<String, Object> getConfig() {

@@ -15,41 +15,23 @@
  * limitations under the License.
  */
 
-package org.apache.zeppelin;
+package org.apache.zeppelin.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
+import org.apache.zeppelin.AbstractZeppelinIT;
+import org.apache.zeppelin.WebDriverManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.ElementNotVisibleException;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.firefox.FirefoxBinary;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxProfile;
-import org.openqa.selenium.safari.SafariDriver;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.FluentWait;
-import org.openqa.selenium.support.ui.Wait;
-import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
+import java.io.File;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test Zeppelin with web browser.
@@ -57,16 +39,14 @@ import com.google.common.base.Function;
  * To test, ZeppelinServer should be running on port 8080
  * On OSX, you'll need firefox 42.0 installed, then you can run with
  *
- * PATH=~/Applications/Firefox.app/Contents/MacOS/:$PATH CI="" \
- *    mvn -Dtest=org.apache.zeppelin.ZeppelinIT -Denforcer.skip=true \
+ * PATH=~/Applications/Firefox.app/Contents/MacOS/:$PATH TEST_SELENIUM="" \
+ *    mvn -Dtest=org.apache.zeppelin.integration.ZeppelinIT -Denforcer.skip=true \
  *    test -pl zeppelin-server
  *
  */
-public class ZeppelinIT {
+public class ZeppelinIT extends AbstractZeppelinIT {
   private static final Logger LOG = LoggerFactory.getLogger(ZeppelinIT.class);
-  private static final long MAX_BROWSER_TIMEOUT_SEC = 30;
-  private static final long MAX_PARAGRAPH_TIMEOUT_SEC = 60;
-  private WebDriver driver;
+
 
   @Before
   public void startUp() {
@@ -85,46 +65,8 @@ public class ZeppelinIT {
     driver.quit();
   }
 
-  String getParagraphXPath(int paragraphNo) {
-    return "//div[@ng-controller=\"ParagraphCtrl\"][" + paragraphNo +"]";
-  }
-
-  boolean waitForParagraph(final int paragraphNo, final String state) {
-    By locator = By.xpath(getParagraphXPath(paragraphNo)
-        + "//div[contains(@class, 'control')]//span[1][contains(.,'" + state + "')]");
-    WebElement element = pollingWait(locator, MAX_PARAGRAPH_TIMEOUT_SEC);
-    return element.isDisplayed();
-  }
-
-  boolean waitForText(final String txt, final By locator) {
-    try {
-      WebElement element = pollingWait(locator, MAX_BROWSER_TIMEOUT_SEC);
-      return txt.equals(element.getText());
-    } catch (TimeoutException e) {
-      LOG.error("Exception in ZeppelinIT while waitForText ", e);
-      return false;
-    }
-  }
-
-  public WebElement pollingWait(final By locator, final long timeWait) {
-    Wait<WebDriver> wait = new FluentWait<WebDriver>(driver)
-            .withTimeout(timeWait, TimeUnit.SECONDS)
-            .pollingEvery(1, TimeUnit.SECONDS)
-            .ignoring(NoSuchElementException.class);
-
-    return wait.until(new Function<WebDriver, WebElement>() {
-        public WebElement apply(WebDriver driver) {
-            return driver.findElement(locator);
-        }
-    });
-  };
-
-  boolean endToEndTestEnabled() {
-    return null != System.getenv("CI");
-  }
-
   @Test
-  public void testAngularDisplay() throws InterruptedException{
+  public void testAngularDisplay() throws Exception {
     if (!endToEndTestEnabled()) {
       return;
     }
@@ -149,7 +91,7 @@ public class ZeppelinIT {
 
       // check expected text
       waitForText("BindingTest__", By.xpath(
-          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
       /*
        * Bind variable
@@ -163,7 +105,7 @@ public class ZeppelinIT {
 
       // check expected text
       waitForText("BindingTest_1_", By.xpath(
-          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
 
       /*
@@ -179,17 +121,17 @@ public class ZeppelinIT {
 
       // check expected text
       waitForText("myVar=1", By.xpath(
-          getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]"));
+              getParagraphXPath(3) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
 
       /*
        * Click element
        */
       driver.findElement(By.xpath(
-          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
 
       // check expected text
       waitForText("BindingTest_2_", By.xpath(
-          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
       /*
        * Register watcher
@@ -211,16 +153,16 @@ public class ZeppelinIT {
        * Click element, again and see watcher works
        */
       driver.findElement(By.xpath(
-          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]")).click();
 
       // check expected text
       waitForText("BindingTest_3_", By.xpath(
-          getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
+              getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
       waitForParagraph(3, "FINISHED");
 
       // check expected text by watcher
       waitForText("myVar=3", By.xpath(
-          getParagraphXPath(3) + "//div[@ng-bind=\"paragraph.result.msg\"]"));
+              getParagraphXPath(3) + "//div[contains(@id,\"_text\") and @class=\"text\"]"));
 
       /*
        * Unbind
@@ -247,41 +189,72 @@ public class ZeppelinIT {
       waitForText("BindingTest_1_",
           By.xpath(getParagraphXPath(1) + "//div[@id=\"angularTestButton\"]"));
 
-      driver.findElement(By.xpath("//*[@id='main']/div//h3/span[1]/button[@tooltip='Remove the notebook']"))
+      driver.findElement(By.xpath("//*[@id='main']/div//h3/span/button[@tooltip='Remove the notebook']"))
           .sendKeys(Keys.ENTER);
-      ZeppelinITUtils.sleep(1000, true);
+      sleep(1000, true);
       driver.findElement(By.xpath("//div[@class='modal-dialog'][contains(.,'delete this notebook')]" +
           "//div[@class='modal-footer']//button[contains(.,'OK')]")).click();
-      ZeppelinITUtils.sleep(100, true);
+      sleep(100, true);
 
-      System.out.println("testCreateNotebook Test executed");
-    } catch (ElementNotVisibleException e) {
-      LOG.error("Exception in ZeppelinIT while testAngularDisplay ", e);
-      File scrFile = ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
-
+      LOG.info("testCreateNotebook Test executed");
+    } catch (Exception e) {
+      handleException("Exception in ZeppelinIT while testAngularDisplay ", e);
     }
   }
 
-  private void createNewNote() {
-    List<WebElement> notebookLinks = driver.findElements(By
-        .xpath("//div[contains(@class, \"col-md-4\")]/div/ul/li"));
-    List<String> notebookTitles = new LinkedList<String>();
-    for (WebElement el : notebookLinks) {
-      notebookTitles.add(el.getText());
+  @Test
+  public void testSparkInterpreterDependencyLoading() throws Exception {
+    if (!endToEndTestEnabled()) {
+      return;
     }
-
-    WebElement createNoteLink = driver.findElement(By.xpath("//div[contains(@class, \"col-md-4\")]/div/h5/a[contains(.,'Create new note')]"));
-    createNoteLink.click();
-
-    WebDriverWait block = new WebDriverWait(driver, MAX_BROWSER_TIMEOUT_SEC);
-    WebElement modal = block.until(ExpectedConditions.visibilityOfElementLocated(By.id("noteNameModal")));
-    WebElement createNoteButton = modal.findElement(By.id("createNoteButton"));
-    createNoteButton.click();
-
     try {
-      Thread.sleep(500); // wait for notebook list updated
-    } catch (InterruptedException e) {
-      LOG.error("Exception in ZeppelinIT while createNewNote Thread.sleep", e);
+      // navigate to interpreter page
+      WebElement interpreterLink = driver.findElement(By.linkText("Interpreter"));
+      interpreterLink.click();
+
+      // add new dependency to spark interpreter
+      WebElement sparkEditBtn = pollingWait(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]"),
+          MAX_BROWSER_TIMEOUT_SEC);
+      sparkEditBtn.click();
+      WebElement depArtifact = driver.findElement(By.xpath("//input[@ng-model='setting.depArtifact']"));
+      String artifact = "org.apache.commons:commons-csv:1.1";
+      depArtifact.sendKeys(artifact);
+      driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
+      driver.switchTo().alert().accept();
+
+      driver.navigate().back();
+      createNewNote();
+
+      // wait for first paragraph's " READY " status text
+      waitForParagraph(1, "READY");
+
+      WebElement paragraph1Editor = driver.findElement(By.xpath(getParagraphXPath(1) + "//textarea"));
+
+      paragraph1Editor.sendKeys("import org.apache.commons.csv.CSVFormat");
+      paragraph1Editor.sendKeys(Keys.chord(Keys.SHIFT, Keys.ENTER));
+      waitForParagraph(1, "FINISHED");
+
+      // check expected text
+      assertTrue(waitForText("import org.apache.commons.csv.CSVFormat",
+          By.xpath(getParagraphXPath(1) + "//div[starts-with(@id, 'p') and contains(@id, 'text')]/div")));
+
+      //delete created notebook for cleanup.
+      deleteTestNotebook(driver);
+      sleep(1000, true);
+
+      // reset dependency
+      interpreterLink.click();
+      sparkEditBtn = pollingWait(By.xpath("//div[h3[text()[contains(.,'spark')]]]//button[contains(.,'edit')]"),
+          MAX_BROWSER_TIMEOUT_SEC);
+      sparkEditBtn.click();
+      WebElement testDepRemoveBtn = driver.findElement(By.xpath("//tr[descendant::text()[contains(.,'" +
+          artifact + "')]]/td[3]/div"));
+      sleep(5000, true);
+      testDepRemoveBtn.click();
+      driver.findElement(By.xpath("//button[contains(.,'Save')]")).submit();
+      driver.switchTo().alert().accept();
+    } catch (Exception e) {
+      handleException("Exception in ZeppelinIT while testSparkInterpreterDependencyLoading ", e);
     }
   }
 }

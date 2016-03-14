@@ -16,8 +16,6 @@
  */
 package org.apache.zeppelin.notebook;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -25,6 +23,7 @@ import java.util.HashMap;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
+import org.apache.zeppelin.dep.DependencyResolver;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterFactory;
 import org.apache.zeppelin.interpreter.InterpreterOption;
@@ -35,11 +34,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.*;
+
 public class NoteInterpreterLoaderTest {
 
   private File tmpDir;
   private ZeppelinConfiguration conf;
   private InterpreterFactory factory;
+  private DependencyResolver depResolver;
 
   @Before
   public void setUp() throws Exception {
@@ -58,7 +60,8 @@ public class NoteInterpreterLoaderTest {
     MockInterpreter11.register("mock11", "group1", "org.apache.zeppelin.interpreter.mock.MockInterpreter11");
     MockInterpreter2.register("mock2", "group2", "org.apache.zeppelin.interpreter.mock.MockInterpreter2");
 
-    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null);
+    depResolver = new DependencyResolver(tmpDir.getAbsolutePath() + "/local-repo");
+    factory = new InterpreterFactory(conf, new InterpreterOption(false), null, null, depResolver);
   }
 
   @After
@@ -89,6 +92,43 @@ public class NoteInterpreterLoaderTest {
     assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter1", loader.get("group1.mock1").getClassName());
     assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter11", loader.get("group1.mock11").getClassName());
     assertEquals("org.apache.zeppelin.interpreter.mock.MockInterpreter2", loader.get("group2.mock2").getClassName());
+
+    loader.close();
+  }
+
+  @Test
+  public void testNoteSession() throws IOException {
+    NoteInterpreterLoader loaderA = new NoteInterpreterLoader(factory);
+    loaderA.setNoteId("noteA");
+    loaderA.setInterpreters(factory.getDefaultInterpreterSettingList());
+    loaderA.getInterpreterSettings().get(0).getOption().setPerNoteSession(true);
+
+    NoteInterpreterLoader loaderB = new NoteInterpreterLoader(factory);
+    loaderB.setNoteId("noteB");
+    loaderB.setInterpreters(factory.getDefaultInterpreterSettingList());
+    loaderB.getInterpreterSettings().get(0).getOption().setPerNoteSession(true);
+
+    // interpreters are not created before accessing it
+    assertNull(loaderA.getInterpreterSettings().get(0).getInterpreterGroup().get("noteA"));
+    assertNull(loaderB.getInterpreterSettings().get(0).getInterpreterGroup().get("noteB"));
+
+    // per note session interpreter instance in the same interpreter process
+    assertTrue(
+        loaderA.get(null).getInterpreterGroup().getRemoteInterpreterProcess() ==
+        loaderB.get(null).getInterpreterGroup().getRemoteInterpreterProcess());
+
+    // interpreters are created after accessing it
+    assertNotNull(loaderA.getInterpreterSettings().get(0).getInterpreterGroup().get("noteA"));
+    assertNotNull(loaderB.getInterpreterSettings().get(0).getInterpreterGroup().get("noteB"));
+
+    // when
+    loaderA.close();
+    loaderB.close();
+
+    // interpreters are destroyed after close
+    assertNull(loaderA.getInterpreterSettings().get(0).getInterpreterGroup().get("noteA"));
+    assertNull(loaderB.getInterpreterSettings().get(0).getInterpreterGroup().get("noteB"));
+
   }
 
   private void delete(File file){

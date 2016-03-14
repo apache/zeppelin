@@ -19,18 +19,23 @@ package org.apache.zeppelin.shell;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.ExecuteWatchdog;
+import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
+import org.apache.zeppelin.interpreter.InterpreterPropertyBuilder;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
+import org.apache.zeppelin.scheduler.Job;
 import org.apache.zeppelin.scheduler.Scheduler;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
@@ -41,10 +46,23 @@ import org.slf4j.LoggerFactory;
  */
 public class ShellInterpreter extends Interpreter {
   Logger logger = LoggerFactory.getLogger(ShellInterpreter.class);
-  int commandTimeOut = 600000;
+  private static final String EXECUTOR_KEY = "executor";
+  public static final String SHELL_COMMAND_TIMEOUT = "shell.command.timeout.millisecs";
+  public static final String DEFAULT_COMMAND_TIMEOUT = "600000";
+  int commandTimeOut;
 
   static {
-    Interpreter.register("sh", ShellInterpreter.class.getName());
+    Interpreter.register(
+            "sh",
+            "sh",
+            ShellInterpreter.class.getName(),
+            new InterpreterPropertyBuilder()
+              .add(
+                SHELL_COMMAND_TIMEOUT,
+                DEFAULT_COMMAND_TIMEOUT,
+                "Shell command time out in millisecs. Default = 600000")
+              .build()
+    );
   }
 
   public ShellInterpreter(Properties property) {
@@ -52,7 +70,11 @@ public class ShellInterpreter extends Interpreter {
   }
 
   @Override
-  public void open() {}
+  public void open() {
+    logger.info("Command timeout is set as:", SHELL_COMMAND_TIMEOUT);
+
+    commandTimeOut = Integer.valueOf(getProperty(SHELL_COMMAND_TIMEOUT));
+  }
 
   @Override
   public void close() {}
@@ -61,30 +83,66 @@ public class ShellInterpreter extends Interpreter {
   @Override
   public InterpreterResult interpret(String cmd, InterpreterContext contextInterpreter) {
     logger.debug("Run shell command '" + cmd + "'");
-    long start = System.currentTimeMillis();
     CommandLine cmdLine = CommandLine.parse("bash");
     cmdLine.addArgument("-c", false);
     cmdLine.addArgument(cmd, false);
     DefaultExecutor executor = new DefaultExecutor();
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    executor.setStreamHandler(new PumpStreamHandler(outputStream));
-
+    ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
+    executor.setStreamHandler(new PumpStreamHandler(contextInterpreter.out, errorStream));
     executor.setWatchdog(new ExecuteWatchdog(commandTimeOut));
+
+    Job runningJob = getRunningJob(contextInterpreter.getParagraphId());
+    Map<String, Object> info = runningJob.info();
+    info.put(EXECUTOR_KEY, executor);
     try {
-      int exitValue = executor.execute(cmdLine);
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, outputStream.toString());
+      int exitVal = executor.execute(cmdLine);
+      logger.info("Paragraph " + contextInterpreter.getParagraphId()
+          + "return with exit value: " + exitVal);
+      return new InterpreterResult(InterpreterResult.Code.SUCCESS, null);
     } catch (ExecuteException e) {
+      int exitValue = e.getExitValue();
       logger.error("Can not run " + cmd, e);
-      return new InterpreterResult(Code.ERROR, e.getMessage());
+      Code code = Code.ERROR;
+      String msg = errorStream.toString();
+      if (exitValue == 143) {
+        code = Code.INCOMPLETE;
+        msg = msg + "Paragraph received a SIGTERM.\n";
+        logger.info("The paragraph " + contextInterpreter.getParagraphId()
+            + " stopped executing: " + msg);
+      }
+      msg += "ExitValue: " + exitValue;
+      return new InterpreterResult(code, msg);
     } catch (IOException e) {
       logger.error("Can not run " + cmd, e);
       return new InterpreterResult(Code.ERROR, e.getMessage());
     }
   }
 
-  @Override
-  public void cancel(InterpreterContext context) {}
+  private Job getRunningJob(String paragraphId) {
+    Job foundJob = null;
+    Collection<Job> jobsRunning = getScheduler().getJobsRunning();
+    for (Job job : jobsRunning) {
+      if (job.getId().equals(paragraphId)) {
+        foundJob = job;
+      }
+    }
+    return foundJob;
+  }
 
+  @Override
+  public void cancel(InterpreterContext context) {
+    Job runningJob = getRunningJob(context.getParagraphId());
+    if (runningJob != null) {
+      Map<String, Object> info = runningJob.info();
+      Object object = info.get(EXECUTOR_KEY);
+      if (object != null) {
+        Executor executor = (Executor) object;
+        ExecuteWatchdog watchdog = executor.getWatchdog();
+        watchdog.destroyProcess();
+      }
+    }
+  }
   @Override
   public FormType getFormType() {
     return FormType.SIMPLE;
@@ -97,8 +155,8 @@ public class ShellInterpreter extends Interpreter {
 
   @Override
   public Scheduler getScheduler() {
-    return SchedulerFactory.singleton().createOrGetFIFOScheduler(
-        ShellInterpreter.class.getName() + this.hashCode());
+    return SchedulerFactory.singleton().createOrGetParallelScheduler(
+        ShellInterpreter.class.getName() + this.hashCode(), 10);
   }
 
   @Override

@@ -41,7 +41,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
   $scope.isNoteDirty = null;
   $scope.saveTimer = null;
 
-  var angularObjectRegistry = {};
   var connectedOnce = false;
 
   $scope.$on('setConnectedStatus', function(event, param) {
@@ -153,6 +152,21 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
         }
       }
     });
+  };
+
+  // checkpoint/commit notebook
+  $scope.checkpointNotebook = function(commitMessage) {
+    BootstrapDialog.confirm({
+      closable: true,
+      title: '',
+      message: 'Commit notebook to current repository?',
+      callback: function(result) {
+        if (result) {
+          websocketMsgSrv.checkpointNotebook($routeParams.noteId, commitMessage);
+        }
+      }
+    });
+    document.getElementById('note.checkpoint.message').value='';
   };
 
   $scope.runNote = function() {
@@ -618,6 +632,69 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     }
   };
 
+  var getPermissions = function(callback) {
+    $http.get(baseUrlSrv.getRestApiBase()+ '/notebook/' +$scope.note.id + '/permissions').
+    success(function(data, status, headers, config) {
+      $scope.permissions = data.body;
+      $scope.permissionsOrig = angular.copy($scope.permissions); // to check dirty
+      if (callback) {
+        callback();
+      }
+    }).
+    error(function(data, status, headers, config) {
+      if (status !== 0) {
+        console.log('Error %o %o', status, data.message);
+      }
+    });
+  };
+
+  $scope.openPermissions = function() {
+    $scope.showPermissions = true;
+    getPermissions();
+  };
+
+
+  $scope.closePermissions = function() {
+    if (isPermissionsDirty()) {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: '',
+        message: 'Changes will be discarded.',
+        callback: function(result) {
+          if (result) {
+            $scope.$apply(function() {
+              $scope.showPermissions = false;
+            });
+          }
+        }
+      });
+    } else {
+      $scope.showPermissions = false;
+    }
+  };
+
+  $scope.savePermissions = function() {
+    $http.put(baseUrlSrv.getRestApiBase() + '/notebook/' +$scope.note.id + '/permissions',
+      $scope.permissions, {withCredentials: true}).
+    success(function(data, status, headers, config) {
+      console.log('Note permissions %o saved', $scope.permissions);
+      $scope.showPermissions = false;
+    }).
+    error(function(data, status, headers, config) {
+      console.log('Error %o %o', status, data.message);
+      alert(data.message);
+    });
+  };
+
+  $scope.togglePermissions = function() {
+    if ($scope.showPermissions) {
+      $scope.closePermissions();
+    } else {
+      $scope.openPermissions();
+    }
+  };
+
+
   var isSettingDirty = function() {
     if (angular.equals($scope.interpreterBindings, $scope.interpreterBindingsOrig)) {
       return false;
@@ -626,51 +703,12 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl',
     }
   };
 
-  $scope.$on('angularObjectUpdate', function(event, data) {
-    if (data.noteId === $scope.note.id) {
-      var scope = $rootScope.compiledScope;
-      var varName = data.angularObject.name;
-
-      if (angular.equals(data.angularObject.object, scope[varName])) {
-        // return when update has no change
-        return;
-      }
-
-      if (!angularObjectRegistry[varName]) {
-        angularObjectRegistry[varName] = {
-          interpreterGroupId : data.interpreterGroupId,
-        };
-      }
-
-      angularObjectRegistry[varName].skipEmit = true;
-
-      if (!angularObjectRegistry[varName].clearWatcher) {
-        angularObjectRegistry[varName].clearWatcher = scope.$watch(varName, function(newValue, oldValue) {
-          if (angularObjectRegistry[varName].skipEmit) {
-            angularObjectRegistry[varName].skipEmit = false;
-            return;
-          }
-          websocketMsgSrv.updateAngularObject($routeParams.noteId, varName, newValue, angularObjectRegistry[varName].interpreterGroupId);
-        });
-      }
-      scope[varName] = data.angularObject.object;
+  var isPermissionsDirty = function() {
+    if (angular.equals($scope.permissions, $scope.permissionsOrig)) {
+      return false;
+    } else {
+      return true;
     }
-  });
-
-  $scope.$on('angularObjectRemove', function(event, data) {
-    if (!data.noteId || data.noteId === $scope.note.id) {
-      var scope = $rootScope.compiledScope;
-      var varName = data.name;
-
-      // clear watcher
-      if (angularObjectRegistry[varName]) {
-        angularObjectRegistry[varName].clearWatcher();
-        angularObjectRegistry[varName] = undefined;
-      }
-
-      // remove scope variable
-      scope[varName] = undefined;
-    }
-  });
+  };
 
 });
