@@ -646,7 +646,7 @@ public class RemoteInterpreterServer
   }
 
   @Override
-  public List<String> resoucePoolGetAll() throws TException {
+  public List<String> resourcePoolGetAll() throws TException {
     logger.debug("Request getAll from ZeppelinServer");
 
     ResourceSet resourceSet = resourcePool.getAll(false);
