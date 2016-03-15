@@ -45,7 +45,7 @@ If you don't have requirements prepared, please check instructions in [README.md
 <a name="zeppelin-configuration"> </a>
 ## Zeppelin Configuration
 
-You can configure Zeppelin with both **environment variables** in `conf/zeppelin-env.sh` and **java properties** in `conf/zeppelin-site.xml`. If both are defined, then the **environment variables** will be used priorly.
+You can configure Zeppelin with both **environment variables** in `conf/zeppelin-env.sh` (`conf\zeppelin-env.cmd` for Windows) and **Java properties** in `conf/zeppelin-site.xml`. If both are defined, then the **environment variables** will take priority.
 
 <table class="table-configuration">
   <tr>
@@ -278,4 +278,9 @@ chdir /usr/share/zeppelin
 exec bin/zeppelin-daemon.sh upstart
 ```
 
+#### Running on Windows
+
+```
+bin\zeppelin.cmd
+```
 
