@@ -36,10 +36,6 @@ if [[ -z "${ZEPPELIN_LOG_DIR}" ]]; then
   export ZEPPELIN_LOG_DIR="${ZEPPELIN_HOME}/logs"
 fi
 
-if [[ -z "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
-  export ZEPPELIN_NOTEBOOK_DIR="${ZEPPELIN_HOME}/notebook"
-fi
-
 if [[ -z "$ZEPPELIN_PID_DIR" ]]; then
   export ZEPPELIN_PID_DIR="${ZEPPELIN_HOME}/run"
 fi
@@ -49,14 +45,6 @@ if [[ -z "${ZEPPELIN_WAR}" ]]; then
     export ZEPPELIN_WAR="${ZEPPELIN_HOME}/zeppelin-web/dist"
   else
     export ZEPPELIN_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-web*.war")
-  fi
-fi
-
-if [[ -z "${ZEPPELIN_API_WAR}" ]]; then
-  if [[ -d "${ZEPPELIN_HOME}/zeppelin-docs/src/main/swagger" ]]; then
-    export ZEPPELIN_API_WAR="${ZEPPELIN_HOME}/zeppelin-docs/src/main/swagger"
-  else
-    export ZEPPELIN_API_WAR=$(find -L "${ZEPPELIN_HOME}" -name "zeppelin-api-ui*.war")
   fi
 fi
 
@@ -78,13 +66,20 @@ function addEachJarInDir(){
   fi
 }
 
+function addEachJarInDirRecursive(){
+  if [[ -d "${1}" ]]; then
+    for jar in $(find -L "${1}" -type f -name '*jar'); do
+      ZEPPELIN_CLASSPATH="$jar:$ZEPPELIN_CLASSPATH"
+    done
+  fi
+}
+
+
 function addJarInDir(){
   if [[ -d "${1}" ]]; then
     ZEPPELIN_CLASSPATH="${1}/*:${ZEPPELIN_CLASSPATH}"
   fi
 }
-
-export ZEPPELIN_CLASSPATH
 
 # Text encoding for 
 # read/write job into files,
@@ -94,7 +89,7 @@ if [[ -z "${ZEPPELIN_ENCODING}" ]]; then
 fi
 
 if [[ -z "$ZEPPELIN_MEM" ]]; then
-  export ZEPPELIN_MEM="-Xmx1024m -XX:MaxPermSize=512m"
+  export ZEPPELIN_MEM="-Xms1024m -Xmx1024m -XX:MaxPermSize=512m"
 fi
 
 JAVA_OPTS+=" ${ZEPPELIN_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_MEM}"
@@ -109,7 +104,7 @@ if [[ -z "${ZEPPELIN_INTP_MEM}" ]]; then
   export ZEPPELIN_INTP_MEM="${ZEPPELIN_MEM}"
 fi
 
-JAVA_INTP_OPTS+=" ${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING} ${ZEPPELIN_INTP_MEM}"
+JAVA_INTP_OPTS="${ZEPPELIN_INTP_JAVA_OPTS} -Dfile.encoding=${ZEPPELIN_ENCODING}"
 export JAVA_INTP_OPTS
 
 

@@ -30,22 +30,20 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.Session;
-import info.archinnov.achilles.junit.AchillesResource;
-import info.archinnov.achilles.junit.AchillesResourceBuilder;
+
+import info.archinnov.achilles.embedded.CassandraEmbeddedServerBuilder;
+
+import org.apache.zeppelin.interpreter.Interpreter;
 import org.apache.zeppelin.interpreter.InterpreterContext;
 import org.apache.zeppelin.interpreter.InterpreterResult;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import scala.io.Source;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -58,16 +56,14 @@ public class CassandraInterpreterTest {
 
     private static final String ARTISTS_TABLE = "zeppelin.artists";
 
-    @ClassRule
-    public static AchillesResource resource = AchillesResourceBuilder
+    public static Session session = CassandraEmbeddedServerBuilder
         .noEntityPackages()
         .withKeyspaceName("zeppelin")
         .withScript("prepare_schema.cql")
         .withScript("prepare_data.cql")
-        .build();
-
-    private static Session session = resource.getNativeSession();
-
+        .withProtocolVersion(ProtocolVersion.V3)
+        .buildNativeSessionOnly();
+//    public static Session session = null;
     private static CassandraInterpreter interpreter;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
@@ -76,7 +72,8 @@ public class CassandraInterpreterTest {
     @BeforeClass
     public static void setUp() {
         Properties properties = new Properties();
-        final Cluster cluster = resource.getNativeSession().getCluster();
+        final Cluster cluster = session.getCluster();
+//        final Cluster cluster = null;
         properties.setProperty(CASSANDRA_CLUSTER_NAME, cluster.getClusterName());
         properties.setProperty(CASSANDRA_COMPRESSION_PROTOCOL, "NONE");
         properties.setProperty(CASSANDRA_CREDENTIALS_USERNAME, "none");
@@ -131,7 +128,7 @@ public class CassandraInterpreterTest {
     @Test
     public void should_create_cluster_and_session_upon_call_to_open() throws Exception {
         assertThat(interpreter.cluster).isNotNull();
-        assertThat(interpreter.cluster.getClusterName()).isEqualTo(resource.getNativeSession().getCluster().getClusterName());
+        assertThat(interpreter.cluster.getClusterName()).isEqualTo(session.getCluster().getClusterName());
         assertThat(interpreter.session).isNotNull();
         assertThat(interpreter.helper).isNotNull();
     }
@@ -241,7 +238,7 @@ public class CassandraInterpreterTest {
         //Then
         assertThat(actual.code()).isEqualTo(Code.ERROR);
         assertThat(actual.message())
-                .contains("Not enough replica available for query at consistency THREE (3 required but only 1 alive)");
+                .contains("Not enough replicas available for query at consistency THREE (3 required but only 1 alive)");
     }
 
     @Test
@@ -329,14 +326,14 @@ public class CassandraInterpreterTest {
         assertThat(actual.message()).isEqualTo(
                 "login\taddresses\tage\tdeceased\tfirstname\tlast_update\tlastname\tlocation\n" +
                         "jdoe\t" +
-                        "{street_number:3, street_name:'Beverly Hills Bld', zip_code:90209," +
-                        " country:'USA', extra_info:['Right on the hills', 'Next to the post box'], " +
-                        "phone_numbers:{'office':2015790847, 'home':2016778524}}\tnull\t" +
+                        "{street_number:3,street_name:'Beverly Hills Bld',zip_code:90209," +
+                        "country:'USA',extra_info:['Right on the hills','Next to the post box']," +
+                        "phone_numbers:{'office':2015790847,'home':2016778524}}\tnull\t" +
                         "null\t" +
                         "John\t" +
                         "null\t" +
                         "DOE\t" +
-                        "('USA', 90209, 'Beverly Hills')\n");
+                        "('USA',90209,'Beverly Hills')\n");
     }
 
     @Test
@@ -554,6 +551,76 @@ public class CassandraInterpreterTest {
     }
 
     @Test
+    @Ignore
+    //TODO activate test when using Java 8 and C* 3.x
+    public void should_describe_function() throws Exception {
+        //Given
+        Properties properties = new Properties();
+        properties.setProperty(CASSANDRA_HOSTS, "127.0.0.1");
+        properties.setProperty(CASSANDRA_PORT,  "9042");
+        Interpreter interpreter = new CassandraInterpreter(properties);
+        interpreter.open();
+
+        String createFunction = "CREATE FUNCTION zeppelin.maxof(val1 int,val2 int) " +
+                "RETURNS NULL ON NULL INPUT " +
+                "RETURNS int " +
+                "LANGUAGE java " +
+                "AS $$" +
+                "    return Math.max(val1, val2);\n" +
+                "$$;";
+        interpreter.interpret(createFunction, intrContext);
+        String query = "DESCRIBE FUNCTION zeppelin.maxOf;";
+
+        //When
+        final InterpreterResult actual = interpreter.interpret(query, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+        assertThat(actual.message()).isEqualTo("xxxxx");
+    }
+
+    @Test
+    @Ignore
+    //TODO activate test when using Java 8 and C* 3.x
+    public void should_describe_aggregate() throws Exception {
+        //Given
+        Properties properties = new Properties();
+        properties.setProperty(CASSANDRA_HOSTS, "127.0.0.1");
+        properties.setProperty(CASSANDRA_PORT,  "9042");
+        Interpreter interpreter = new CassandraInterpreter(properties);
+        interpreter.open();
+
+        final String query = "DESCRIBE AGGREGATES;";
+
+        //When
+        final InterpreterResult actual = interpreter.interpret(query, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+
+    }
+
+    @Test
+    @Ignore
+    //TODO activate test when using Java 8 and C* 3.x
+    public void should_describe_materialized_view() throws Exception {
+        //Given
+        Properties properties = new Properties();
+        properties.setProperty(CASSANDRA_HOSTS, "127.0.0.1");
+        properties.setProperty(CASSANDRA_PORT,  "9042");
+        Interpreter interpreter = new CassandraInterpreter(properties);
+        interpreter.open();
+
+        final String query = "DESCRIBE MATERIALIZED VIEWS;";
+
+        //When
+        final InterpreterResult actual = interpreter.interpret(query, intrContext);
+
+        //Then
+        assertThat(actual.code()).isEqualTo(Code.SUCCESS);
+    }
+
+    @Test
     public void should_describe_table() throws Exception {
         //Given
         String query = "DESCRIBE TABLE live_data.complex_table;";
@@ -601,6 +668,7 @@ public class CassandraInterpreterTest {
 
         assertThat(reformatHtml(actual.message())).isEqualTo(expected);
     }
+
     @Test
     public void should_error_describing_non_existing_table() throws Exception {
         //Given
@@ -647,8 +715,8 @@ public class CassandraInterpreterTest {
         return  rawHtml
                 .replaceAll("\\s*\n\\s*","")
                 .replaceAll(">\\s+<", "><")
-                .replaceAll("(?s)data-target=\"#[a-f0-9-]+(?:_asCQL)?\"", "")
-                .replaceAll("(?s)id=\"[a-f0-9-]+(?:_asCQL)?\"", "")
+                .replaceAll("(?s)data-target=\"#[a-f0-9-]+(?:_asCQL|_indices_asCQL)?\"", "")
+                .replaceAll("(?s)id=\"[a-f0-9-]+(?:_asCQL|_indices_asCQL)?\"", "")
                 .trim();
     }
 

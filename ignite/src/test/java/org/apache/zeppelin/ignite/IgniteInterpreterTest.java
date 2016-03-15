@@ -40,7 +40,7 @@ public class IgniteInterpreterTest {
   private static final String HOST = "127.0.0.1:47500..47509";
 
   private static final InterpreterContext INTP_CONTEXT =
-          new InterpreterContext(null, null, null, null, null, null, null, null);
+      new InterpreterContext(null, null, null, null, null, null, null, null, null, null, null);
 
   private IgniteInterpreter intp;
   private Ignite ignite;
@@ -61,7 +61,7 @@ public class IgniteInterpreterTest {
     ignite = Ignition.start(cfg);
 
     Properties props = new Properties();
-    props.setProperty(IgniteSqlInterpreter.IGNITE_JDBC_URL, "jdbc:intp://localhost:11211/person");
+    props.setProperty(IgniteSqlInterpreter.IGNITE_JDBC_URL, "jdbc:ignite:cfg://cache=person@default-ignite-jdbc.xml");
     props.setProperty(IgniteInterpreter.IGNITE_CLIENT_MODE, "false");
     props.setProperty(IgniteInterpreter.IGNITE_PEER_CLASS_LOADING_ENABLED, "false");
 

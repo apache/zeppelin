@@ -13,7 +13,7 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope, $websocket, baseUrlSrv) {
+angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope, $websocket, $location, baseUrlSrv) {
   var websocketCalls = {};
 
   websocketCalls.ws = $websocket(baseUrlSrv.getWebsocketUrl());
@@ -28,7 +28,10 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
   });
 
   websocketCalls.sendNewEvent = function(data) {
-    console.log('Send >> %o, %o', data.op, data);
+    data.principal = $rootScope.ticket.principal;
+    data.ticket = $rootScope.ticket.ticket;
+    data.roles = $rootScope.ticket.roles;
+    console.log('Send >> %o, %o, %o, %o, %o', data.op, data.principal, data.ticket, data.roles, data);
     websocketCalls.ws.send(JSON.stringify(data));
   };
 
@@ -46,10 +49,18 @@ angular.module('zeppelinWebApp').factory('websocketEvents', function($rootScope,
     var data = payload.data;
     if (op === 'NOTE') {
       $rootScope.$broadcast('setNoteContent', data.note);
+    } else if (op === 'NEW_NOTE') {
+      $location.path('notebook/' + data.note.id);
     } else if (op === 'NOTES_INFO') {
       $rootScope.$broadcast('setNoteMenu', data.notes);
+    } else if (op === 'AUTH_INFO') {
+      alert(data.info.toString());
     } else if (op === 'PARAGRAPH') {
       $rootScope.$broadcast('updateParagraph', data);
+    } else if (op === 'PARAGRAPH_APPEND_OUTPUT') {
+      $rootScope.$broadcast('appendParagraphOutput', data);
+    } else if (op === 'PARAGRAPH_UPDATE_OUTPUT') {
+      $rootScope.$broadcast('updateParagraphOutput', data);
     } else if (op === 'PROGRESS') {
       $rootScope.$broadcast('updateProgress', data);
     } else if (op === 'COMPLETION_LIST') {

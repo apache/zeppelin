@@ -1,0 +1,51 @@
+<!--
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<form id="{{paragraph.id}}_form" role="form"
+      ng-show="!paragraph.config.tableHide"
+      class=" paragraphForm form-horizontal row">
+  <div class="form-group col-sm-6 col-md-6 col-lg-4"
+       ng-repeat="formulaire in paragraph.settings.forms"
+       ng-Init="loadForm(formulaire, paragraph.settings.params)">
+    <label class="control-label input-sm" ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }">{{formulaire.name}}</label>
+    <div>
+
+      <input class="form-control input-sm"
+             ng-if="!paragraph.settings.forms[formulaire.name].options"
+             ng-enter="runParagraph(getEditorValue())"
+             ng-model="paragraph.settings.params[formulaire.name]"
+             ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
+             name="{{formulaire.name}}" />
+
+      <select class="form-control input-sm"
+             ng-if="paragraph.settings.forms[formulaire.name].options && paragraph.settings.forms[formulaire.name].type != 'checkbox'"
+             ng-change="runParagraph(getEditorValue())"
+             ng-model="paragraph.settings.params[formulaire.name]"
+             ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
+             name="{{formulaire.name}}"
+             ng-options="option.value as (option.displayName||option.value) for option in paragraph.settings.forms[formulaire.name].options">
+      </select>
+
+      <div ng-if="paragraph.settings.forms[formulaire.name].type == 'checkbox'">
+        <label ng-repeat="option in paragraph.settings.forms[formulaire.name].options"
+               class="checkbox-item input-sm">
+          <input type="checkbox"
+                 ng-class="{'disable': paragraph.status == 'RUNNING' || paragraph.status == 'PENDING' }"
+                 ng-checked="paragraph.settings.params[formulaire.name].indexOf(option.value) > -1"
+                 ng-click="toggleCheckbox(formulaire, option, false)"/>{{option.displayName||option.value}}
+        </label>
+      </div>
+
+    </div>
+  </div>
+</form>

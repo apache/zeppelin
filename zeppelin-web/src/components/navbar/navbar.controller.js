@@ -1,4 +1,3 @@
-/* global $:false */
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,15 +14,17 @@
 
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams, notebookListDataFactory, websocketMsgSrv) {
+angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootScope, $routeParams,
+    $location, notebookListDataFactory, websocketMsgSrv, arrayOrderingSrv) {
   /** Current list of notes (ids) */
 
   var vm = this;
   vm.notes = notebookListDataFactory;
   vm.connected = websocketMsgSrv.isConnected();
   vm.websocketMsgSrv = websocketMsgSrv;
+  vm.arrayOrderingSrv = arrayOrderingSrv;
 
-  $('#notebook-list').perfectScrollbar({suppressScrollX : true});
+  angular.element('#notebook-list').perfectScrollbar({suppressScrollX: true});
 
   $scope.$on('setNoteMenu', function(event, notes) {
     notebookListDataFactory.setNotes(notes);
@@ -32,6 +33,19 @@ angular.module('zeppelinWebApp').controller('NavCtrl', function($scope, $rootSco
   $scope.$on('setConnectedStatus', function(event, param) {
     vm.connected = param;
   });
+
+  $rootScope.$on('$locationChangeSuccess', function () {
+    var path = $location.path();
+    // hacky solution to clear search bar
+    // TODO(felizbear): figure out how to make ng-click work in navbar
+    if (path === '/') {
+      $scope.searchTerm = '';
+    }
+  });
+
+  $scope.search = function() {
+    $location.url(/search/ + $scope.searchTerm);
+  };
 
   function loadNotes() {
     websocketMsgSrv.getNotebookList();

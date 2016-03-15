@@ -35,18 +35,19 @@
     <url>http://zeppelin.incubator.apache.org</url>
 
     <properties>
-        <cassandra.driver.version>2.1.7.1</cassandra.driver.version>
+        <cassandra.driver.version>3.0.0-rc1</cassandra.driver.version>
         <snappy.version>1.0.5.4</snappy.version>
-        <lz4.version>1.2.0</lz4.version>
-        <scala.version>2.11.7</scala.version>
-        <scala.binary.version>2.11</scala.binary.version>
+        <lz4.version>1.3.0</lz4.version>
+        <scala.version>2.10.4</scala.version>
+        <scala.binary.version>2.10</scala.binary.version>
         <commons-lang.version>3.3.2</commons-lang.version>
         <scalate.version>1.7.1</scalate.version>
+        <cassandra.guava.version>16.0.1</cassandra.guava.version>
 
         <!--TEST-->
         <scalatest.version>2.2.4</scalatest.version>
         <junit.version>4.12</junit.version>
-        <achilles.version>3.2.2</achilles.version>
+        <achilles.version>3.2.4-Zeppelin</achilles.version>
         <assertj.version>1.7.0</assertj.version>
         <mockito.version>1.9.5</mockito.version>
     </properties>
@@ -63,6 +64,12 @@
             <groupId>com.datastax.cassandra</groupId>
             <artifactId>cassandra-driver-core</artifactId>
             <version>${cassandra.driver.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${cassandra.guava.version}</version>
         </dependency>
 
         <!-- Compression libraries for the cassandra-driver protocol. -->
@@ -130,7 +137,7 @@
 
         <dependency>
             <groupId>info.archinnov</groupId>
-            <artifactId>achilles-junit</artifactId>
+            <artifactId>achilles-embedded</artifactId>
             <version>${achilles.version}</version>
             <scope>test</scope>
             <exclusions>
@@ -143,13 +150,6 @@
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>16.0</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -166,7 +166,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 
     <build>
         <plugins>
@@ -293,7 +292,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 </project>

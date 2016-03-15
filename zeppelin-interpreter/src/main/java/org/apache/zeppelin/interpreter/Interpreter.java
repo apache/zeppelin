@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * If you want to implement new Zeppelin interpreter, extend this class
  *
  * Please see,
- * http://zeppelin.incubator.apache.org/docs/development/writingzeppelininterpreter.html
+ * https://zeppelin.incubator.apache.org/docs/latest/development/writingzeppelininterpreter.html
  *
  * open(), close(), interpreter() is three the most important method you need to implement.
  * cancel(), getProgress(), completion() is good to have
@@ -121,14 +121,9 @@ public abstract class Interpreter {
    * Called when interpreter is no longer used.
    */
   public void destroy() {
-    getScheduler().stop();
   }
 
-
-
-
-
-  static Logger logger = LoggerFactory.getLogger(Interpreter.class);
+  public static Logger logger = LoggerFactory.getLogger(Interpreter.class);
   private InterpreterGroup interpreterGroup;
   private URL [] classloaderUrls;
   protected Properties property;
@@ -192,6 +187,33 @@ public abstract class Interpreter {
 
   public void setClassloaderUrls(URL[] classloaderUrls) {
     this.classloaderUrls = classloaderUrls;
+  }
+
+  public Interpreter getInterpreterInTheSameSessionByClassName(String className) {
+    synchronized (interpreterGroup) {
+      for (List<Interpreter> interpreters : interpreterGroup.values()) {
+        boolean belongsToSameNoteGroup = false;
+        Interpreter interpreterFound = null;
+        for (Interpreter intp : interpreters) {
+          if (intp.getClassName().equals(className)) {
+            interpreterFound = intp;
+          }
+
+          Interpreter p = intp;
+          while (p instanceof WrappedInterpreter) {
+            p = ((WrappedInterpreter) p).getInnerInterpreter();
+          }
+          if (this == p) {
+            belongsToSameNoteGroup = true;
+          }
+        }
+
+        if (belongsToSameNoteGroup) {
+          return interpreterFound;
+        }
+      }
+    }
+    return null;
   }
 
 

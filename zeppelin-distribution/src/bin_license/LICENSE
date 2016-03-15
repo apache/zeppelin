@@ -1,0 +1,226 @@
+    (Apache 2.0) nvd3.js v1.7.1 (http://nvd3.org/) - https://github.com/novus/nvd3/blob/v1.7.1/LICENSE.md
+    (Apache 2.0) gson v2.2 (com.google.code.gson:gson:jar:2.2 - https://github.com/google/gson) - https://github.com/google/gson/blob/gson-2.2/LICENSE
+    (Apache 2.0) Amazon Web Services SDK for Java v1.10.1 (https://aws.amazon.com/sdk-for-java/) - https://raw.githubusercontent.com/aws/aws-sdk-java/1.10.1/LICENSE.txt
+    (Apache 2.0) JavaEWAH v0.7.9 (https://github.com/lemire/javaewah) - https://github.com/lemire/javaewah/blob/master/LICENSE-2.0.txt
+
+
+The following components are provided under Apache License.
+
+
+    (Apache 2.0) Apache Commons Logging (commons-logging:commons-logging:1.1.1 - http://commons.apache.org/proper/commons-logging/)
+    (Apache 2.0) Apache Commons Codec (commons-codec:commons-codec:1.5 - http://commons.apache.org/proper/commons-codec/)
+    (Apache 2.0) Apache Commons Collections (commons-collections:commons-collections:3.2.1 - http://commons.apache.org/proper/commons-configuration/)
+    (Apache 2.0) Apache Commons Compress (org.apache.commons:commons-compress:1.9 - http://commons.apache.org/proper/commons-compress/)
+    (Apache 2.0) Apache Commons Configuration (commons-configuration:commons-configuration:1.9 - http://commons.apache.org/configuration/)
+    (Apache 2.0) Apache Commons CLI (commons-cli:commons-cli:1.2 - http://commons.apache.org/cli/)
+    (Apache 2.0) Apache Commons Exec (commons-exec:commons-exec:1.3 - http://commons.apache.org/exec/)
+    (Apache 2.0) Http Components (org.apache.httpcomponents:httpcore:4.3.3 - https://github.com/apache/httpclient)
+    (Apache 2.0) Http Components (org.apache.httpcomponents:httpclient:4.3.6 - https://github.com/apache/httpclient)
+    (Apache 2.0) Apache Commons Lang (org.apache.commons:commons-lang:2.5 - http://commons.apache.org/proper/commons-lang/)
+    (Apache 2.0) Apache Commons Lang 3 (org.apache.commons:commons-lang3:3.4 - http://commons.apache.org/proper/commons-lang/)
+    (Apache 2.0) Apache Commons Math 3 (org.apache.commons:commons-math3:3.4.1 - http://commons.apache.org/proper/commons-math/)
+    (Apache 2.0) Apache Commons Net (commons-net:commons-net:2.2 - http://commons.apache.org/proper/commons-net/)
+    (Apache 2.0) Apache log4j (log4j:log4j:1.2.17 - http://logging.apache.org/log4j/1.2/)
+    (Apache 2.0) Apache Commons Pool2 (commons-exec:commons-pool2:2.3 - https://commons.apache.org/proper/commons-pool/)
+    (Apache 2.0) Apache Commons FileUpload (commons-fileupload:commons-fileupload:1.3.1 - http://commons.apache.org/fileupload/)
+    (Apache 2.0) Apache Commons IO (commons-io:commons-io:2.4 - http://commons.apache.org/io/)
+    (Apache 2.0) Apache Commons VFS2 (org.apache.commons:commons-vfs2:2.0 - https://commons.apache.org/proper/commons-vfs/)
+    (Apache 2.0) Apache Jackrabbit webdav (org.apache.jackrabbit:jackrabbit-webdav:jar:1.5.2 - https://jackrabbit.apache.org/jcr/components/jackrabbit-webdav-library.html)
+    (Apache 2.0) Apache Jackrabbit JCR commons - http://jackrabbit.apache.org/jcr/components/jackrabbit-jcr-commons.html)
+    (Apache 2.0) Apache Maven scm api (org.apache.maven.scm:maven-scm-api:jar:1.4 - https://maven.apache.org/scm/)
+    (Apache 2.0) Apache Maven scm provider svnexe (org.apache.maven.scm:maven-scm-provider-svnexe:jar:1.4 - http://maven.apache.org/scm/maven-scm-providers/maven-scm-providers-svn/maven-scm-provider-svnexe/index.html/)
+    (Apache 2.0) Apache Maven scm provider common (org.apache.maven.scm:maven-scm-provider-svn-commons:jar:1.4 - http://maven.apache.org/scm/maven-scm-providers/maven-scm-providers-svn/maven-scm-provider-svn-commons/)
+    (Apache 2.0) Apache Spark (org.apache.spark:spark:1.5.1) - http://spark.apache.org
+    (Apache 2.0) Apache Hadoop (http://hadoop.apache.org)
+    (Apache 2.0) Apache Avro (org.apache.avro:avro:1.7.7 - http://avro.apache.org)
+    (Apache 2.0) Apache Curator (org.apache.curator:curator:2.4.0 - http://curator.apache.org/)
+    (Apache 2.0) Apache Cassandra (http://cassandra.apache.org/)
+    (Apache 2.0) Apache CXF (http://cxf.apache.org/)
+    (Apache 2.0) Apache Hive (http://hive.apache.org/)
+    (Apache 2.0) Apache HBase (http://hbase.apache.org/)
+    (Apache 2.0) Apache Ignite (http://ignite.apache.org/)
+    (Apache 2.0) Apache Kylin (http://kylin.apache.org/)
+    (Apache 2.0) Apache Lens (http://lens.apache.org/)
+    (Apache 2.0) Apache Phoenix (http://phoenix.apache.org/)
+    (Apache 2.0) Apache Tajo (http://tajo.apache.org/)
+    (Apache 2.0) Apache Flink (http://flink.apache.org/)
+    (Apache 2.0) Apache Thrift (http://thrift.apache.org/)
+    (Apache 2.0) Apache Lucene (https://lucene.apache.org/)
+    (Apache 2.0) Apache Zookeeper (org.apache.zookeeper:zookeeper:jar:3.4.5 - http://zookeeper.apache.org/)
+    (Apache 2.0) Chill (com.twitter:chill-java:jar:0.5.0 - https://github.com/twitter/chill/)
+    (Apache 2.0) Codehaus Plexus (org.codehaus.plexus:plexus:jar:1.5.6 - https://codehaus-plexus.github.io/)
+    (Apache 2.0) findbugs jsr305 (com.google.code.findbugs:jsr305:jar:1.3.9 - http://findbugs.sourceforge.net/)
+    (Apache 2.0) Google Guava (com.google.guava:guava:15.0 - https://code.google.com/p/guava-libraries/)
+    (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-core:2.5.3 - https://github.com/FasterXML/jackson-core)
+    (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-annotations:2.5.0 - https://github.com/FasterXML/jackson-core)
+    (Apache 2.0) Jackson (com.fasterxml.jackson.core:jackson-databind:2.5.3 - https://github.com/FasterXML/jackson-core)
+    (Apache 2.0) javax.servlet (org.eclipse.jetty.orbit:javax.servlet:jar:3.0.0.v201112011016 - http://www.eclipse.org/jetty)
+    (Apache 2.0) Joda-Time (joda-time:joda-time:2.8.1 - http://www.joda.org/joda-time/)
+    (Apache 2.0) Jackson (org.codehaus.jackson:jackson-core-asl:1.9.13 - http://jackson.codehaus.org/)
+    (Apache 2.0) JetS3t (net.java.dev.jets3t:jets3t:jar:0.9.3) - http://www.jets3t.org/
+    (Apache 2.0) Jetty (org.eclipse.jetty:jetty - http://www.eclipse.org/jetty)
+    (Apache 2.0) mx4j (mx4j:mx4j:jar:3.0.2) - http://mx4j.sourceforge.net/
+    (Apache 2.0) Quartz Scheduler (org.quartz-scheduler:quartz:jar:2.2.1 - https://quartz-scheduler.org/)
+    (Apache 2.0) xml apis (xml-apis:xml-apis:jar:1.4.01 - http://xerces.apache.org/xml-commons/components/external)
+    (Apache 2.0) java-xmlbuilder (com.jamesmurty.utils:java-xmlbuilder:jar:1.0 - https://github.com/jmurty/java-xmlbuilder)
+    (Apache 2.0) compress-lzf (com.ning:compress-lzf:jar:1.0.3 - https://github.com/ning/compress) Copyright 2009-2010 Ning, Inc.
+    (Apache 2.0) Snappy-java (org.xerial.snappy:snappy-java:1.1.1.7 - https://github.com/xerial/snappy-java/)
+    (Apache 2.0) lz4-java (net.jpountz.lz4:lz4:jar:1.3.0 - https://github.com/jpountz/lz4-java)
+    (Apache 2.0) RoaringBitmap (org.roaringbitmap:RoaringBitmap:jar:0.4.5 - https://github.com/lemire/RoaringBitmap)
+    (Apache 2.0) json4s (org.json4s:json4s-ast_2.10:jar:3.2.10 - https://github.com/json4s/json4s)
+    (Apache 2.0) HPPC Collections (com.carrotsearch:hppc:0.7.1 - http://labs.carrotsearch.com/hppc.html/hppc)
+    (Apache 2.0) Jackson-dataformat-CBOR (com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:2.6.2 - http://wiki.fasterxml.com/JacksonForCbor)
+    (Apache 2.0) Jackson-dataformat-Smile (com.fasterxml.jackson.dataformat:jackson-dataformat-smile:2.6.2 - http://wiki.fasterxml.com/JacksonForSmile)
+    (Apache 2.0) Jackson-dataformat-YAML (com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.6.2 - https://github.com/FasterXML/jackson)
+    (Apache 2.0) json-flattener (com.github.wnameless:json-flattener:0.1.1 - https://github.com/wnameless/json-flattener)
+    (Apache 2.0) Spatial4J (com.spatial4j:spatial4j:0.4.1 - https://github.com/spatial4j/spatial4j)
+    (Apache 2.0) T-Digest (com.tdunning:t-digest:3.0 - https://github.com/tdunning/t-digest)
+    (Apache 2.0) Netty (io.netty:netty:3.10.5.Final - http://netty.io/)
+    (Apache 2.0) Lucene Common Analyzers (org.apache.lucene:lucene-analyzers-common:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-analyzers-common)
+    (Apache 2.0) Lucene Memory (org.apache.lucene:lucene-backward-codecs:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-backward-codecs)
+    (Apache 2.0) Lucene Core (org.apache.lucene:lucene-core:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-core)
+    (Apache 2.0) Lucene Grouping (org.apache.lucene:lucene-grouping:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-grouping)
+    (Apache 2.0) Lucene Highlighter (org.apache.lucene:lucene-highlighter:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-highlighter)
+    (Apache 2.0) Lucene Join (org.apache.lucene:lucene-join:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-join)
+    (Apache 2.0) Lucene Memory (org.apache.lucene:lucene-memory:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-memory)
+    (Apache 2.0) Lucene Miscellaneous (org.apache.lucene:lucene-misc:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-misc)
+    (Apache 2.0) Lucene Queries (org.apache.lucene:lucene-queries:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-queries)
+    (Apache 2.0) Lucene QueryParsers (org.apache.lucene:lucene-queryparser:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-queryparser)
+    (Apache 2.0) Lucene Sandbox (org.apache.lucene:lucene-sandbox:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-sandbox)
+    (Apache 2.0) Lucene Spatial (org.apache.lucene:lucene-spatial:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-spatial)
+    (Apache 2.0) Lucene Spatial 3D (org.apache.lucene:lucene-spatial3d:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-spatial3d)
+    (Apache 2.0) Lucene Suggest (org.apache.lucene:lucene-suggest:5.3.1 - http://lucene.apache.org/lucene-parent/lucene-suggest)
+    (Apache 2.0) Elasticsearch: Core (org.elasticsearch:elasticsearch:2.1.0 - http://nexus.sonatype.org/oss-repository-hosting.html/parent/elasticsearch)
+    (Apache 2.0) Joda convert (org.joda:joda-convert:1.2 - http://joda-convert.sourceforge.net)
+    (Apache 2.0) Shiro Core (org.apache.shiro:shiro-core:1.2.3 - https://shiro.apache.org)
+    (Apache 2.0) Shiro Web (org.apache.shiro:shiro-web:1.2.3 - https://shiro.apache.org)
+    (Apache 2.0) SnakeYAML (org.yaml:snakeyaml:1.15 - http://www.snakeyaml.org)
+    (Apache 2.0) Protocol Buffers (com.google.protobuf:protobuf-java:2.4.1 - https://github.com/google/protobuf/releases)
+    (Apache 2.0) Alluxio Shell (org.alluxio:alluxio-shell:1.0.0 - http://alluxio.org)
+    (Apache 2.0) Alluxio Servers (org.alluxio:alluxio-core-server:1.0.0 - http://alluxio.org)
+    (Apache 2.0) Alluxio Minicluster (org.alluxio:alluxio-minicluster:1.0.0 - http://alluxio.org)
+    (Apache 2.0) Alluxio Underfs Local (org.alluxio:alluxio-underfs-local:1.0.0 - http://alluxio.org)
+    (Apache 2.0) Microsoft Azure Storage Library for Java (com.microsoft.azure:azure-storage:4.0.0 - https://github.com/Azure/azure-storage-java)
+
+
+
+========================================================================
+MIT licenses
+========================================================================
+
+The following components are provided under the MIT License. See project link for details.
+The text of each license is also included at licenses/LICENSE-[project]-[version].txt.
+
+    (The MIT License) AngularJS v1.3.8 (https://angularjs.org/) - https://github.com/angular/angular.js/blob/v1.3.8/LICENSE
+    (The MIT License) Json3 v3.3.1 (http://bestiejs.github.io/json3) - https://github.com/bestiejs/json3/blob/v3.3.1/LICENSE
+    (The MIT License) es5-shim v3.1.0 (https://github.com/es-shims/es5-shim) - https://github.com/es-shims/es5-shim/blob/v3.1.0/LICENSE
+    (The MIT License) bootstrap v3.2.0 (http://getbootstrap.com/) - https://github.com/twbs/bootstrap/blob/v3.2.0/LICENSE
+    (The MIT License) UI Bootstrap v0.13.0 (http://angular-ui.github.io/bootstrap/) - https://github.com/angular-ui/bootstrap/blob/0.13.0/LICENSE
+    (The MIT License) bootstrap3-dialog v1.34.7 (https://github.com/nakupanda/bootstrap3-dialog/tree/v1.34.7) - https://github.com/nakupanda/bootstrap3-dialog/tree/v1.34.7
+    (The MIT License) Angular Websocket v1.0.13 (http://angularclass.github.io/angular-websocket/) - https://github.com/AngularClass/angular-websocket/blob/v1.0.13/LICENSE
+    (The MIT License) UI.Ace v0.1.1 (http://angularclass.github.io/angular-websocket/) - https://github.com/angular-ui/ui-ace/blob/master/LICENSE
+    (The MIT License) jquery.scrollTo v1.4.13 (https://github.com/flesler/jquery.scrollTo) - https://github.com/flesler/jquery.scrollTo/blob/1.4.13/LICENSE
+    (The MIT License) jquery.floatThead v1.3.2 (https://github.com/mkoryak/floatThead) - https://github.com/mkoryak/floatThead/blob/master/license.txt
+    (The MIT License) angular-dragdrop v1.0.8 (http://codef0rmer.github.io/angular-dragdrop/#/) - https://github.com/codef0rmer/angular-dragdrop/blob/v1.0.8/LICENSE
+    (The MIT License) perfect-scrollbar v0.5.4 (http://noraesae.github.io/perfect-scrollbar/) - https://github.com/noraesae/perfect-scrollbar/tree/0.5.4
+    (The MIT License) ng-sortable v1.1.9 (https://github.com/a5hik/ng-sortable) - https://github.com/a5hik/ng-sortable/blob/1.1.9/LICENSE
+    (The MIT License) angular-elastic v2.4.2 (https://github.com/monospaced/angular-elastic) - https://github.com/monospaced/angular-elastic/blob/v2.4.2/LICENCE.txt
+    (The MIT License) angular-elastic-input v2.2.0 (https://github.com/jacek-pulit/angular-elastic-input) - https://github.com/jacek-pulit/angular-elastic-input/blob/v2.2.0/LICENSE
+    (The MIT License) ng-focus-if v1.0.2 (https://github.com/hiebj/ng-focus-if) - https://github.com/hiebj/ng-focus-if/blob/v1.0.2/LICENSE
+    (The MIT License) angular-xeditable v0.1.8 (http://vitalets.github.io/angular-xeditable/) - https://github.com/vitalets/angular-xeditable/tree/0.1.8
+    (The MIT License) lodash v3.9.3 (https://lodash.com/) - https://github.com/lodash/lodash/blob/3.9.3/LICENSE.txt
+    (The MIT License) angular-filter v0.5.4 (https://github.com/a8m/angular-filter) - https://github.com/a8m/angular-filter/blob/v0.5.4/license.md
+    (The MIT License) ngToast v1.5.5 (http://tamerayd.in/ngToast/) - http://tameraydin.mit-license.org/
+    (The MIT License) slf4j v1.7.10 (org.slf4j:slf4j-api:jar:1.7.10 - http://www.slf4j.org) - http://www.slf4j.org/license.html
+    (The MIT License) slf4j-log4j12 v1.7.10 (org.slf4j:slf4j-log4j12:jar:1.7.10 - http://www.slf4j.org) - http://www.slf4j.org/license.html
+    (The MIT License) bcprov-jdk15on v1.51 (org.bouncycastle:bcprov-jdk15on:jar:1.51 - http://www.bouncycastle.org/java.html) - http://www.bouncycastle.org/licence.html
+
+The following components are provided under the MIT License.
+
+    (The MIT License) Objenesis (org.objenesis:objenesis:2.1 - https://github.com/easymock/objenesis) - Copyright (c) 2006-2015 the original author and authors
+    (The MIT License) JCL 1.1.1 implemented over SLF4J (org.slf4j:jcl-over-slf4j:1.7.5 - http://www.slf4j.org)
+    (The MIT License) JUL to SLF4J bridge (org.slf4j:jul-to-slf4j:1.7.5 - http://www.slf4j.org)
+    (The MIT License) angular-resource (angular-resource - https://github.com/angular/angular.js/tree/master/src/ngResource)
+    (The MIT License) minimal-json (com.eclipsesource.minimal-json:minimal-json:0.9.4 - https://github.com/ralfstx/minimal-json)
+
+
+========================================================================
+BSD-style licenses
+========================================================================
+
+The following components are provided under the BSD-style license. See project link for details.
+The text of each license is also included at licenses/LICENSE-[project]-[version].txt.
+
+    (BSD 3 Clause) d3 v2.10.2 (https://d3js.org/) - https://github.com/mbostock/d3/blob/v2.10.2/LICENSE
+    (BSD 3 Clause) ace-builds v1.1.9 (https://github.com/ajaxorg/ace-builds) - https://github.com/ajaxorg/ace-builds/blob/v1.1.9/LICENSE
+    (BSD 3 Clause) Ace v1.1.9 (http://ace.c9.io/) - https://github.com/ajaxorg/ace/blob/v1.1.9/LICENSE
+    (BSD Style) dom4j v1.6.1 (http://www.dom4j.org) - https://github.com/dom4j/dom4j/blob/dom4j_1_6_1/LICENSE.txt
+    (BSD Style) JSch v0.1.53 (http://www.jcraft.com) - http://www.jcraft.com/jsch/LICENSE.txt
+    (BSD 3 Clause) highlightjs v8.4.0 (https://highlightjs.org/) - https://github.com/isagalaev/highlight.js/blob/8.4/LICENSE
+    (BSD 3 Clause) hamcrest v1.3 (http://hamcrest.org/JavaHamcrest/) - http://opensource.org/licenses/BSD-3-Clause
+    (BSD Style) JLine v2.12.1 (https://github.com/jline/jline2) - https://github.com/jline/jline2/blob/master/LICENSE.txt
+
+
+
+The following components are provided under the BSD-style License.
+
+    (New BSD License) JGit (org.eclipse.jgit:org.eclipse.jgit:jar:4.1.1.201511131810-r - https://eclipse.org/jgit/)
+    (New BSD License) Kryo (com.esotericsoftware.kryo:kryo:2.21 - http://code.google.com/p/kryo/)
+    (New BSD License) MinLog (com.esotericsoftware.minlog:minlog:1.2 - http://code.google.com/p/minlog/)
+    (New BSD License) ReflectASM (com.esotericsoftware.reflectasm:reflectasm:1.07 - http://code.google.com/p/reflectasm/)
+    (BSD-like) Scala Library (org.scala-lang:scala-library:2.10.4 - http://www.scala-lang.org/)
+    (BSD-like) Scalap (org.scala-lang:scalap:2.10.4 - http://www.scala-lang.org/)
+    (BSD-like) (The BSD License) jline (org.scala-lang:jline:2.10.4 - http://www.scala-lang.org/)
+    (BSD-like) Scala Actors library (org.scala-lang:scala-actors:2.10.4 - http://www.scala-lang.org/)
+    (BSD-like) Scala Compiler (org.scala-lang:scala-compiler:2.10.4 - http://www.scala-lang.org/)
+    (BSD-like) Scala Compiler (org.scala-lang:scala-reflect:2.10.4 - http://www.scala-lang.org/)
+    (BSD-like) ASM (asm:asm:jar:3.1 - http://asm.ow2.org/) - Copyright (c) 2000-2011 INRIA, France Telecom
+    (New BSD License) Py4J (net.sf.py4j:py4j:0.9 - http://py4j.sourceforge.net/)
+    (New BSD License) Markdown4j (org.commonjava.googlecode.markdown4j:markdown4j:jar:2.2-cj-1.0 - https://code.google.com/p/markdown4j/)
+
+
+
+========================================================================
+CDDL license
+========================================================================
+
+The following components are provided under the CDDL License.
+
+    (CDDL 1.0) javax.activation (javax.activation:activation:jar:1.1.1 - http://java.sun.com/javase/technologies/desktop/javabeans/jaf/index.jsp)
+    (CDDL 1.1) Jersey (com.sun.jersey:jersey:jar:1.9 - https://jersey.java.net/)
+
+
+
+========================================================================
+EPL license
+========================================================================
+
+The following components are provided under the EPL License.
+
+    (EPL 1.0) Aether (org.sonatype.aether - http://www.eclipse.org/aether/)
+    (EPL 1.0) JDT Annotations For Enhanced Null Analysis (org.eclipse.jdt:org.eclipse.jdt.annotation:1.1.0 - https://repo.eclipse.org/content/repositories/eclipse-releases/org/eclipse/jdt/org.eclipse.jdt.annotation)
+    (EPL 1.0) JRuby (org.jruby.jruby-complete:v1.6.8 - http://www.jruby.org/)
+
+
+========================================================================
+WTFPL - (http://www.wtfpl.net/)
+========================================================================
+
+    (WTFPL) Reflections (org.reflections:reflections:jar:0.9.8 - https://code.google.com/p/reflections/)
+
+
+
+========================================================================
+For the PostgreSQL JDBC driver jar
+========================================================================
+
+See licenses/LICENSE-postgresql
+
+
+
+========================================================================
+Creative Commons CC0 (http://creativecommons.org/publicdomain/zero/1.0/)
+========================================================================
+
+    (CC0 1.0 Universal) JSR166e (com.twitter:jsr166e:1.1.0 - http://github.com/twitter/jsr166e)
+    (Public Domain, per Creative Commons CC0) HdrHistogram (org.hdrhistogram:HdrHistogram:2.1.6 - http://hdrhistogram.github.io/HdrHistogram/)

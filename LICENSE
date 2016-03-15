@@ -187,7 +187,7 @@
       same "printed page" as the copyright notice for easier
       identification within third-party archives.
 
-   Copyright 2014, NFLabs inc.
+   Copyright [yyyy] [name of copyright owner]
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -202,6 +202,7 @@
    limitations under the License.
 
 
+============================================================================
    APACHE ZEPPELIN SUBCOMPONENTS:
 
    The Apache Zeppelin project contains subcomponents with separate copyright
@@ -209,31 +210,38 @@
    subcomponents is subject to the terms and conditions of the following
    licenses.
 
-   For the PostgreSQL JDBC driver jar file:
 
-   Copyright (c) 1997-2011, PostgreSQL Global Development Group
-   All rights reserved.
 
-   Redistribution and use in source and binary forms, with or without
-   modification, are permitted provided that the following conditions are met:
 
-   1. Redistributions of source code must retain the above copyright notice,
-      this list of conditions and the following disclaimer.
-   2. Redistributions in binary form must reproduce the above copyright notice,
-      this list of conditions and the following disclaimer in the documentation
-      and/or other materials provided with the distribution.
-   3. Neither the name of the PostgreSQL Global Development Group nor the names
-      of its contributors may be used to endorse or promote products derived
-      from this software without specific prior written permission.
+========================================================================
+ The Open Font License
+========================================================================
 
-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-   POSSIBILITY OF SUCH DAMAGE.
+The following components are provided under the Open Font License. See project link for details.
+The text of each license is also included at licenses/LICENSE-[project]-[version].txt.
+
+    (OFT 1.1) Font Awesome v4.2.0 (http://fortawesome.github.io/Font-Awesome/) - http://scripts.sil.org/OFL
+
+
+========================================================================
+MIT licenses
+========================================================================
+
+The following components are provided under the MIT License. See project link for details.
+The text of each license is also included at licenses/LICENSE-[project]-[version].txt.
+
+    (The MIT License) Font Awesome (stylesheet) 4.2.0 (http://fortawesome.github.io/Font-Awesome/) - https://fortawesome.github.io/Font-Awesome/license/
+    (The MIT License) Simple line icons v1.0.0 (http://thesabbir.github.io/simple-line-icons/) - https://github.com/thesabbir/simple-line-icons/tree/1.0.0
+    (The MIT License) jekyll-bootstrap 0.3.0 (https://github.com/plusjade/jekyll-bootstrap) - https://github.com/plusjade/jekyll-bootstrap
+    (The MIT License) jekyll 1.3.0 (http://jekyllrb.com/) - https://github.com/jekyll/jekyll/blob/v1.3.0/LICENSE
+
+
+
+========================================================================
+Apache licenses
+========================================================================
+
+The following components are provided under the Apache License. See project link for details.
+The text of each license is also included at licenses/LICENSE-[project]-[version].txt.
+
+    (Apache 2.0) Bootstrap v3.0.2 (http://getbootstrap.com/) - https://github.com/twbs/bootstrap/blob/v3.0.2/LICENSE

@@ -16,12 +16,15 @@
  */
 package org.apache.zeppelin.utils;
 
+import org.apache.shiro.subject.Subject;
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.HashSet;
 
 /**
  * Tools for securing Zeppelin
@@ -44,4 +47,41 @@ public class SecurityUtils {
             "localhost".equals(sourceUriHost) ||
             conf.getAllowedOrigins().contains(sourceHost);
   }
+
+  /**
+   * Return the authenticated user if any otherwise returns "anonymous"
+   * @return shiro principal
+   */
+  public static String getPrincipal() {
+    Subject subject = org.apache.shiro.SecurityUtils.getSubject();
+
+    String principal;
+    if (subject.isAuthenticated()) {
+      principal = subject.getPrincipal().toString();
+    }
+    else {
+      principal = "anonymous";
+    }
+    return principal;
+  }
+
+  /**
+   * Return the roles associated with the authenticated user if any otherwise returns empty set
+   * TODO(prasadwagle) Find correct way to get user roles (see SHIRO-492)
+   * @return shiro roles
+   */
+  public static HashSet<String> getRoles() {
+    Subject subject = org.apache.shiro.SecurityUtils.getSubject();
+    HashSet<String> roles = new HashSet<>();
+
+    if (subject.isAuthenticated()) {
+      for (String role : Arrays.asList("role1", "role2", "role3")) {
+        if (subject.hasRole(role)) {
+          roles.add(role);
+        }
+      }
+    }
+    return roles;
+  }
+
 }

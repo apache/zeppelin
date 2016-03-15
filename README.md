@@ -1,9 +1,10 @@
 #Zeppelin 
 
-**Documentation:** [User Guide](http://zeppelin.incubator.apache.org/docs/index.html)<br/>
-**Mailing List:** [User and Dev mailing list](http://zeppelin.incubator.apache.org/community.html)<br/>
+**Documentation:** [User Guide](http://zeppelin.incubator.apache.org/docs/latest/index.html)<br/>
+**Mailing Lists:** [User and Dev mailing list](http://zeppelin.incubator.apache.org/community.html)<br/>
 **Continuous Integration:** [![Build Status](https://secure.travis-ci.org/apache/incubator-zeppelin.png?branch=master)](https://travis-ci.org/apache/incubator-zeppelin) <br/>
 **Contributing:** [Contribution Guide](https://github.com/apache/incubator-zeppelin/blob/master/CONTRIBUTING.md)<br/>
+**Issue Tracker:** [Jira](https://issues.apache.org/jira/browse/ZEPPELIN)<br/>
 **License:** [Apache 2.0](https://github.com/apache/incubator-zeppelin/blob/master/LICENSE)
 
 
@@ -27,74 +28,142 @@ To know more about Zeppelin, visit our web site [http://zeppelin.incubator.apach
 ### Before Build
 If you don't have requirements prepared, install it. 
 (The installation method may vary according to your environment, example is for Ubuntu.)
+
 ```
 sudo apt-get update
-sudo apt-get install openjdk-7-jdk
 sudo apt-get install git
-sudo apt-get install maven
+sudo apt-get install openjdk-7-jdk
 sudo apt-get install npm
+sudo apt-get install libfontconfig
+
+# install maven
+wget http://www.eu.apache.org/dist/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
+sudo tar -zxf apache-maven-3.3.3-bin.tar.gz -C /usr/local/
+sudo ln -s /usr/local/apache-maven-3.3.3/bin/mvn /usr/local/bin/mvn
 ```
+
+_Notes:_ 
+ - Ensure node is installed by running `node --version`  
+ - Ensure maven is running version 3.1.x or higher with `mvn -version`
+ - Configure maven to use more memory than usual by ```export MAVEN_OPTS="-Xmx2g -XX:MaxPermSize=1024m"```
 
 ### Build
-If you want to build Zeppelin from the source, please first clone this repository. And then:
+If you want to build Zeppelin from the source, please first clone this repository, then:
+
 ```
-mvn clean package -DskipTests
+mvn clean package -DskipTests [Options]
 ```
 
-Build with specific Spark version
+Each Interpreter requires different Options.
 
-Spark 1.4.x
+
+#### Spark Interpreter
+
+To build with a specific Spark version, Hadoop version or specific features, define one or more of the following profiles and options:
+
+##### -Pspark-[version]
+
+Set spark major version
+
+Available profiles are
+
 ```
-mvn clean package -Pspark-1.4 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests
-```
-Spark 1.3.x
-```
-mvn clean package -Pspark-1.3 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests
-```
-Spark 1.2.x
-```
-mvn clean package -Pspark-1.2 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests 
-```
-Spark 1.1.x
-```
-mvn clean package -Pspark-1.1 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests 
-```
-Spark 1.5.x
-```
-mvn clean package -Pspark-1.5 -Dhadoop.version=2.2.0 -Phadoop-2.2 -DskipTests
-```
-CDH 5.X
-```
-mvn clean package -Pspark-1.2 -Dhadoop.version=2.5.0-cdh5.3.0 -Phadoop-2.4 -DskipTests
-```
-Yarn (Hadoop 2.7.x)
-```
-mvn clean package -Pspark-1.4 -Dspark.version=1.4.1 -Dhadoop.version=2.7.0 -Phadoop-2.6 -Pyarn -DskipTests
-```
-Yarn (Hadoop 2.6.x)
-```
-mvn clean package -Pspark-1.1 -Dhadoop.version=2.6.0 -Phadoop-2.6 -Pyarn -DskipTests
-```
-Yarn (Hadoop 2.4.x)
-```
-mvn clean package -Pspark-1.1 -Dhadoop.version=2.4.0 -Phadoop-2.4 -Pyarn -DskipTests
-```
-Yarn (Hadoop 2.3.x)
-```
-mvn clean package -Pspark-1.1 -Dhadoop.version=2.3.0 -Phadoop-2.3 -Pyarn -DskipTests
-```
-Yarn (Hadoop 2.2.x)
-```
-mvn clean package -Pspark-1.1 -Dhadoop.version=2.2.0 -Phadoop-2.2 -Pyarn -DskipTests
+-Pspark-1.6
+-Pspark-1.5
+-Pspark-1.4
+-Pspark-1.3
+-Pspark-1.2
+-Pspark-1.1
+-Pcassandra-spark-1.5
+-Pcassandra-spark-1.4
+-Pcassandra-spark-1.3
+-Pcassandra-spark-1.2
+-Pcassandra-spark-1.1
 ```
 
-Ignite (1.1.0-incubating and later)
+minor version can be adjusted by `-Dspark.version=x.x.x`
+
+
+##### -Phadoop-[version]
+
+set hadoop major version
+
+Available profiles are
+
+```
+-Phadoop-0.23
+-Phadoop-1
+-Phadoop-2.2
+-Phadoop-2.3
+-Phadoop-2.4
+-Phadoop-2.6
+```
+
+minor version can be adjusted by `-Dhadoop.version=x.x.x`
+
+##### -Pyarn (optional)
+
+enable YARN support for local mode
+> YARN for local mode is not supported for Spark v1.5.0 or higher. Set SPARK_HOME instead.
+
+##### -Ppyspark (optional)
+
+enable PySpark support for local mode
+
+
+##### -Pvendor-repo (optional)
+
+enable 3rd party vendor repository (cloudera)
+
+
+##### -Pmapr[version] (optional)
+
+For the MapR Hadoop Distribution, these profiles will handle the Hadoop version. As MapR allows different versions
+of Spark to be installed, you should specify which version of Spark is installed on the cluster by adding a Spark profile (-Pspark-1.2, -Pspark-1.3, etc.) as needed. For Hive, check the hive/pom.xml and adjust the version installed as well. The correct Maven
+artifacts can be found for every version of MapR at http://doc.mapr.com
+
+Available profiles are
+
+```
+-Pmapr3
+-Pmapr40
+-Pmapr41
+-Pmapr50
+```
+
+
+Here're some examples:
+
+```
+# basic build
+mvn clean package -Pspark-1.6 -Phadoop-2.4 -Pyarn -Ppyspark
+
+# spark-cassandra integration
+mvn clean package -Pcassandra-spark-1.5 -Dhadoop.version=2.6.0 -Phadoop-2.6 -DskipTests
+
+# with CDH
+mvn clean package -Pspark-1.5 -Dhadoop.version=2.6.0-cdh5.5.0 -Phadoop-2.6 -Pvendor-repo -DskipTests
+
+# with MapR
+mvn clean package -Pspark-1.5 -Pmapr50 -DskipTests
+```
+
+
+#### Ignite Interpreter
+
 ```
 mvn clean package -Dignite.version=1.1.0-incubating -DskipTests
 ```
 
+#### Scalding Interpreter
+
+```
+mvn clean package -Pscalding -DskipTests
+```
+
 ### Configure
 If you wish to configure Zeppelin option (like port number), configure the following files:
+
 ```
 ./conf/zeppelin-env.sh
 ./conf/zeppelin-site.xml
@@ -139,9 +208,15 @@ Yarn
 For configuration details check __./conf__ subdirectory.
 
 ### Package
-To package final distribution do:
+To package the final distribution including the compressed archive, run:
 
-      mvn clean package -P build-distr
+      mvn clean package -Pbuild-distr
+
+To build a distribution with specific profiles, run:
+
+      mvn clean package -Pbuild-distr -Pspark-1.5 -Phadoop-2.4 -Pyarn -Ppyspark
+
+The profiles `-Pspark-1.5 -Phadoop-2.4 -Pyarn -Ppyspark` can be adjusted if you wish to build to a specific spark versions, or omit support such as `yarn`.  
 
 The archive is generated under _zeppelin-distribution/target_ directory
 

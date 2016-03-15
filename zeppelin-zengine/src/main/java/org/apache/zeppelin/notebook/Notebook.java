@@ -18,6 +18,7 @@
 package org.apache.zeppelin.notebook;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -27,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.conf.ZeppelinConfiguration.ConfVars;
@@ -37,7 +39,9 @@ import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.remote.RemoteAngularObjectRegistry;
 import org.apache.zeppelin.notebook.repo.NotebookRepo;
+import org.apache.zeppelin.notebook.repo.NotebookRepoSync;
 import org.apache.zeppelin.scheduler.SchedulerFactory;
+import org.apache.zeppelin.search.SearchService;
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
 import org.quartz.JobBuilder;
@@ -51,12 +55,18 @@ import org.quartz.impl.StdSchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonReader;
 /**
  * Collection of Notes.
  */
 public class Notebook {
-  Logger logger = LoggerFactory.getLogger(Notebook.class);
+  static Logger logger = LoggerFactory.getLogger(Notebook.class);
+
+  @SuppressWarnings("unused") @Deprecated //TODO(bzz): remove unused
   private SchedulerFactory schedulerFactory;
+
   private InterpreterFactory replFactory;
   /** Keep the order. */
   Map<String, Note> notes = new LinkedHashMap<String, Note>();
@@ -65,22 +75,49 @@ public class Notebook {
   private org.quartz.Scheduler quartzSched;
   private JobListenerFactory jobListenerFactory;
   private NotebookRepo notebookRepo;
+  private SearchService notebookIndex;
+  private NotebookAuthorization notebookAuthorization;
 
+  /**
+   * Main constructor \w manual Dependency Injection
+   *
+   * @param conf
+   * @param notebookRepo
+   * @param schedulerFactory
+   * @param replFactory
+   * @param jobListenerFactory
+   * @param notebookIndex - (nullable) for indexing all notebooks on creating.
+   * @param notebookAuthorization
+   *
+   * @throws IOException
+   * @throws SchedulerException
+   */
   public Notebook(ZeppelinConfiguration conf, NotebookRepo notebookRepo,
       SchedulerFactory schedulerFactory,
-      InterpreterFactory replFactory, JobListenerFactory jobListenerFactory) throws IOException,
-      SchedulerException {
+      InterpreterFactory replFactory, JobListenerFactory jobListenerFactory,
+      SearchService notebookIndex,
+      NotebookAuthorization notebookAuthorization) throws IOException, SchedulerException {
     this.conf = conf;
     this.notebookRepo = notebookRepo;
     this.schedulerFactory = schedulerFactory;
     this.replFactory = replFactory;
     this.jobListenerFactory = jobListenerFactory;
+    this.notebookIndex = notebookIndex;
+    this.notebookAuthorization = notebookAuthorization;
     quertzSchedFact = new org.quartz.impl.StdSchedulerFactory();
     quartzSched = quertzSchedFact.getScheduler();
     quartzSched.start();
     CronJob.notebook = this;
 
     loadAllNotes();
+    if (this.notebookIndex != null) {
+      long start = System.nanoTime();
+      logger.info("Notebook indexing started...");
+      notebookIndex.addIndexDocs(notes.values());
+      logger.info("Notebook indexing finished: {} indexed in {}s", notes.size(),
+          TimeUnit.NANOSECONDS.toSeconds(start - System.nanoTime()));
+    }
+
   }
 
   /**
@@ -90,11 +127,14 @@ public class Notebook {
    * @throws IOException
    */
   public Note createNote() throws IOException {
+    Note note;
     if (conf.getBoolean(ConfVars.ZEPPELIN_NOTEBOOK_AUTO_INTERPRETER_BINDING)) {
-      return createNote(replFactory.getDefaultInterpreterSettingList());
+      note = createNote(replFactory.getDefaultInterpreterSettingList());
     } else {
-      return createNote(null);
+      note = createNote(null);
     }
+    notebookIndex.addIndexDoc(note);
+    return note;
   }
 
   /**
@@ -105,7 +145,7 @@ public class Notebook {
    */
   public Note createNote(List<String> interpreterIds) throws IOException {
     NoteInterpreterLoader intpLoader = new NoteInterpreterLoader(replFactory);
-    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory);
+    Note note = new Note(notebookRepo, intpLoader, jobListenerFactory, notebookIndex);
     intpLoader.setNoteId(note.id());
     synchronized (notes) {
       notes.put(note.id(), note);
@@ -114,8 +154,93 @@ public class Notebook {
       bindInterpretersToNote(note.id(), interpreterIds);
     }
 
+    notebookIndex.addIndexDoc(note);
     note.persist();
     return note;
+  }
+  
+  /**
+   * Export existing note.
+   * @param noteId - the note ID to clone
+   * @return Note JSON
+   * @throws IOException, IllegalArgumentException
+   */
+  public String exportNote(String noteId) throws IOException, IllegalArgumentException {
+    GsonBuilder gsonBuilder = new GsonBuilder();
+    gsonBuilder.setPrettyPrinting();
+    Gson gson = gsonBuilder.create();
+    Note note = getNote(noteId);
+    if (note == null) {
+      throw new IllegalArgumentException(noteId + " not found");
+    }
+    return gson.toJson(note);
+  }
+
+  /**
+   * import JSON as a new note.
+   * @param sourceJson - the note JSON to import
+   * @param noteName - the name of the new note
+   * @return notebook ID
+   * @throws IOException
+   */
+  public Note importNote(String sourceJson, String noteName) throws IOException {
+    GsonBuilder gsonBuilder = new GsonBuilder();
+    gsonBuilder.setPrettyPrinting();
+    Gson gson = gsonBuilder.create();
+    JsonReader reader = new JsonReader(new StringReader(sourceJson));
+    reader.setLenient(true);
+    Note newNote;
+    try {
+      Note oldNote = gson.fromJson(reader, Note.class);
+      newNote = createNote();
+      if (noteName != null)
+        newNote.setName(noteName);
+      else
+        newNote.setName(oldNote.getName());
+      List<Paragraph> paragraphs = oldNote.getParagraphs();
+      for (Paragraph p : paragraphs) {
+        newNote.addCloneParagraph(p);
+      }
+
+      newNote.persist();
+    } catch (IOException e) {
+      logger.error(e.toString(), e);
+      throw e;
+    }
+    
+    return newNote;
+  }
+
+  /**
+   * Clone existing note.
+   * @param sourceNoteID - the note ID to clone
+   * @param newNoteName - the name of the new note
+   * @return noteId
+   * @throws IOException, CloneNotSupportedException, IllegalArgumentException
+   */
+  public Note cloneNote(String sourceNoteID, String newNoteName) throws
+      IOException, CloneNotSupportedException, IllegalArgumentException {
+
+    Note sourceNote = getNote(sourceNoteID);
+    if (sourceNote == null) {
+      throw new IllegalArgumentException(sourceNoteID + "not found");
+    }
+    Note newNote = createNote();
+    if (newNoteName != null) {
+      newNote.setName(newNoteName);
+    }
+    // Copy the interpreter bindings
+    List<String> boundInterpreterSettingsIds = getBindedInterpreterSettingsIds(sourceNote.id());
+    bindInterpretersToNote(newNote.id(), boundInterpreterSettingsIds);
+
+    List<Paragraph> paragraphs = sourceNote.getParagraphs();
+    for (Paragraph p : paragraphs) {
+      newNote.addCloneParagraph(p);
+    }
+
+    notebookIndex.addIndexDoc(newNote);
+    newNote.persist();
+    return newNote;
   }
 
   public void bindInterpretersToNote(String id,
@@ -123,7 +248,8 @@ public class Notebook {
     Note note = getNote(id);
     if (note != null) {
       note.getNoteReplLoader().setInterpreters(interpreterSettingIds);
-      replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
+      // comment out while note.getNoteReplLoader().setInterpreters(...) do the same
+      // replFactory.putNoteInterpreterSettingBinding(id, interpreterSettingIds);
     }
   }
 
@@ -153,27 +279,46 @@ public class Notebook {
 
   public void removeNote(String id) {
     Note note;
+
     synchronized (notes) {
       note = notes.remove(id);
     }
+    replFactory.removeNoteInterpreterSettingBinding(id);
+    notebookIndex.deleteIndexDocs(note);
+    notebookAuthorization.removeNote(id);
 
     // remove from all interpreter instance's angular object registry
     for (InterpreterSetting settings : replFactory.get()) {
       AngularObjectRegistry registry = settings.getInterpreterGroup().getAngularObjectRegistry();
       if (registry instanceof RemoteAngularObjectRegistry) {
-        ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id);
+        // remove paragraph scope object
+        for (Paragraph p : note.getParagraphs()) {
+          ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, p.getId());
+        }
+        // remove notebook scope object
+        ((RemoteAngularObjectRegistry) registry).removeAllAndNotifyRemoteProcess(id, null);
       } else {
-        registry.removeAll(id);
+        // remove paragraph scope object
+        for (Paragraph p : note.getParagraphs()) {
+          registry.removeAll(id, p.getId());
+        }
+        // remove notebook scope object
+        registry.removeAll(id, null);
       }
     }
 
     try {
       note.unpersist();
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.error(e.toString(), e);
     }
   }
 
+  public void checkpointNote(String noteId, String checkpointMessage) throws IOException {
+    notebookRepo.checkpoint(noteId, checkpointMessage);
+  }
+
+  @SuppressWarnings("rawtypes")
   private Note loadNoteFromRepo(String id) {
     Note note = null;
     try {
@@ -185,20 +330,17 @@ public class Notebook {
       return null;
     }
 
-    // set NoteInterpreterLoader
-    NoteInterpreterLoader noteInterpreterLoader = new NoteInterpreterLoader(
-        replFactory);
-    note.setReplLoader(noteInterpreterLoader);
-    noteInterpreterLoader.setNoteId(note.id());
+    //Manually inject ALL dependencies, as DI constructor was NOT used
+    note.setIndex(this.notebookIndex);
 
-    // set JobListenerFactory
+    NoteInterpreterLoader replLoader = new NoteInterpreterLoader(replFactory);
+    note.setReplLoader(replLoader);
+    replLoader.setNoteId(note.id());
+
     note.setJobListenerFactory(jobListenerFactory);
-
-    // set notebookRepo
     note.setNotebookRepo(notebookRepo);
 
-    Map<String, SnapshotAngularObject> angularObjectSnapshot =
-        new HashMap<String, SnapshotAngularObject>();
+    Map<String, SnapshotAngularObject> angularObjectSnapshot = new HashMap<>();
 
     // restore angular object --------------
     Date lastUpdatedDate = new Date(0);
@@ -216,15 +358,11 @@ public class Notebook {
       for (String intpGroupName : savedObjects.keySet()) {
         List<AngularObject> objectList = savedObjects.get(intpGroupName);
 
-        for (AngularObject savedObject : objectList) {
-          SnapshotAngularObject snapshot = angularObjectSnapshot.get(savedObject.getName());
+        for (AngularObject object : objectList) {
+          SnapshotAngularObject snapshot = angularObjectSnapshot.get(object.getName());
           if (snapshot == null || snapshot.getLastUpdate().before(lastUpdatedDate)) {
-            angularObjectSnapshot.put(
-                savedObject.getName(),
-                new SnapshotAngularObject(
-                    intpGroupName,
-                    savedObject,
-                    lastUpdatedDate));
+            angularObjectSnapshot.put(object.getName(),
+                new SnapshotAngularObject(intpGroupName, object, lastUpdatedDate));
           }
         }
       }
@@ -243,12 +381,13 @@ public class Notebook {
         if (intpGroup.getId().equals(snapshot.getIntpGroupId())) {
           AngularObjectRegistry registry = intpGroup.getAngularObjectRegistry();
           String noteId = snapshot.getAngularObject().getNoteId();
+          String paragraphId = snapshot.getAngularObject().getParagraphId();
           // at this point, remote interpreter process is not created.
           // so does not make sense add it to the remote.
-          // 
+          //
           // therefore instead of addAndNotifyRemoteProcess(), need to use add()
           // that results add angularObject only in ZeppelinServer side not remoteProcessSide
-          registry.add(name, snapshot.getAngularObject().get(), noteId);
+          registry.add(name, snapshot.getAngularObject().get(), noteId, paragraphId);
         }
       }
     }
@@ -263,6 +402,32 @@ public class Notebook {
     }
   }
 
+  /**
+   * Reload all notes from repository after clearing `notes`
+   * to reflect the changes of added/deleted/modified notebooks on file system level.
+   *
+   * @return
+   * @throws IOException
+   */
+  public void reloadAllNotes() throws IOException {
+    synchronized (notes) {
+      notes.clear();
+    }
+
+    if (notebookRepo instanceof NotebookRepoSync) {
+      NotebookRepoSync mainRepo = (NotebookRepoSync) notebookRepo;
+      if (mainRepo.getRepoCount() > 1) {
+        mainRepo.sync();
+      }
+    }
+
+    List<NoteInfo> noteInfos = notebookRepo.list();
+    for (NoteInfo info : noteInfos) {
+      loadNoteFromRepo(info.getId());
+    }
+  }
+
+  @SuppressWarnings("rawtypes")
   class SnapshotAngularObject {
     String intpGroupId;
     AngularObject angularObject;
@@ -290,12 +455,9 @@ public class Notebook {
   public List<Note> getAllNotes() {
     synchronized (notes) {
       List<Note> noteList = new ArrayList<Note>(notes.values());
-      Collections.sort(noteList, new Comparator() {
+      Collections.sort(noteList, new Comparator<Note>() {
         @Override
-        public int compare(Object one, Object two) {
-          Note note1 = (Note) one;
-          Note note2 = (Note) two;
-
+        public int compare(Note note1, Note note2) {
           String name1 = note1.id();
           if (note1.getName() != null) {
             name1 = note1.getName();
@@ -304,7 +466,6 @@ public class Notebook {
           if (note2.getName() != null) {
             name2 = note2.getName();
           }
-          ((Note) one).getName();
           return name1.compareTo(name2);
         }
       });
@@ -322,9 +483,6 @@ public class Notebook {
 
   /**
    * Cron task for the note.
-   *
-   * @author Leemoonsoo
-   *
    */
   public static class CronJob implements org.quartz.Job {
     public static Notebook notebook;
@@ -335,6 +493,29 @@ public class Notebook {
       String noteId = context.getJobDetail().getJobDataMap().getString("noteId");
       Note note = notebook.getNote(noteId);
       note.runAll();
+    
+      while (!note.getLastParagraph().isTerminated()) {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          logger.error(e.toString(), e);
+        }
+      }
+      
+      boolean releaseResource = false;
+      try {
+        Map<String, Object> config = note.getConfig();
+        if (config != null && config.containsKey("releaseresource")) {
+          releaseResource = (boolean) note.getConfig().get("releaseresource");
+        }
+      } catch (ClassCastException e) {
+        logger.error(e.getMessage(), e);
+      }
+      if (releaseResource) {
+        for (InterpreterSetting setting : note.getNoteReplLoader().getInterpreterSettings()) {
+          notebook.getInterpreterFactory().restart(setting.id());
+        }
+      }      
     }
   }
 
@@ -399,8 +580,17 @@ public class Notebook {
     return replFactory;
   }
 
+  public NotebookAuthorization getNotebookAuthorization() {
+    return notebookAuthorization;
+  }
+
   public ZeppelinConfiguration getConf() {
     return conf;
+  }
+
+  public void close() {
+    this.notebookRepo.close();
+    this.notebookIndex.close();
   }
 
 }

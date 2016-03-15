@@ -86,15 +86,17 @@
   <modules>
     <module>zeppelin-interpreter</module>
     <module>zeppelin-zengine</module>
+    <module>zeppelin-display</module>
     <module>spark-dependencies</module>
     <module>spark</module>
     <module>markdown</module>
     <module>angular</module>
     <module>shell</module>
     <module>hive</module>
+    <module>hbase</module>
     <module>phoenix</module>
-    <module>geode</module>
     <module>postgresql</module>
+    <module>jdbc</module>
     <module>tajo</module>
     <module>file</module>
     <module>flink</module>
@@ -102,6 +104,8 @@
     <module>kylin</module>
     <module>lens</module>
     <module>cassandra</module>
+    <module>elasticsearch</module>
+    <module>alluxio</module>
     <module>zeppelin-web</module>
     <module>zeppelin-server</module>
     <module>zeppelin-distribution</module>
@@ -208,6 +212,18 @@
         <artifactId>junit</artifactId>
         <version>4.11</version>
         <scope>test</scope>
+      </dependency>
+
+      <!-- Apache Shiro -->
+      <dependency>
+        <groupId>org.apache.shiro</groupId>
+        <artifactId>shiro-core</artifactId>
+        <version>1.2.3</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.shiro</groupId>
+        <artifactId>shiro-web</artifactId>
+        <version>1.2.3</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -343,6 +359,27 @@
       </plugin>
 
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-remote-resources-plugin</artifactId>
+        <version>1.4</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>process</goal>
+            </goals>
+            <configuration>
+              <resourceBundles>
+                <!-- Will generate META-INF/DEPENDENCIES META-INF/LICENSE META-INF/NOTICE -->
+                <resourceBundle>org.apache.apache.resources:apache-jar-resource-bundle:1.5-SNAPSHOT</resourceBundle>
+                <!-- Will generate META-INF/DISCLAIMER  -->
+                <resourceBundle>org.apache.apache.resources:apache-incubator-disclaimer-resource-bundle:1.2-SNAPSHOT</resourceBundle>
+              </resourceBundles>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9.1</version>
         <configuration><!-- Default configuration for all reports -->
@@ -406,9 +443,11 @@
           <configuration>
             <excludes>
               <exclude>**/*.keywords</exclude>
+              <exclude>reports/**</exclude>
               <exclude>**/.idea/</exclude>
               <exclude>**/*.iml</exclude>
               <exclude>.git/</exclude>
+              <exclude>.github/*</exclude>
               <exclude>.gitignore</exclude>
               <exclude>.repository/</exclude>
               <exclude>**/*.diff</exclude>
@@ -416,7 +455,6 @@
               <exclude>**/*.avsc</exclude>
               <exclude>**/*.avro</exclude>
               <exclude>**/*.log</exclude>
-              <exclude>**/docs/**</exclude>
               <exclude>**/test/resources/**</exclude>
               <exclude>**/.settings/*</exclude>
               <exclude>**/.classpath</exclude>
@@ -432,12 +470,45 @@
               <exclude>**/notebook/**</exclude>
               <exclude>_tools/site/css/*</exclude>
               <exclude>**/README.md</exclude>
+              <exclude>DEPENDENCIES</exclude>
               <exclude>DEPLOY.md</exclude>
               <exclude>CONTRIBUTING.md</exclude>
               <exclude>STYLE.md</exclude>
               <exclude>Roadmap.md</exclude>
+              <exclude>**/licenses/**</exclude>
+              <exclude>**/zeppelin-distribution/src/bin_license/**</exclude>
               <exclude>conf/interpreter.json</exclude>
+              <exclude>conf/notebook-authorization.json</exclude>
+              <exclude>conf/zeppelin-env.sh</exclude>
               <exclude>spark-*-bin*/**</exclude>
+
+              <!-- bundled from bootstrap -->
+              <exclude>docs/assets/themes/zeppelin/bootstrap/**</exclude>
+              <exclude>docs/assets/themes/zeppelin/css/style.css</exclude>
+              <exclude>docs/_includes/themes/zeppelin/_jumbotron.html</exclude>
+              <exclude>docs/_includes/themes/zeppelin/_navigation.html</exclude>
+
+              <!-- bundled from jekyll-bootstrap -->
+              <exclude>docs/404.html</exclude>
+              <exclude>docs/_config.yml</exclude>
+              <exclude>docs/_includes/JB/**</exclude>
+              <exclude>docs/_layouts/**</exclude>
+              <exclude>docs/_plugins/**</exclude>
+              <exclude>docs/atom.xml</exclude>
+              <exclude>docs/_includes/themes/zeppelin/default.html</exclude>
+              <exclude>docs/_includes/themes/zeppelin/page.html</exclude>
+              <exclude>docs/_includes/themes/zeppelin/post.html</exclude>
+              <exclude>docs/_includes/themes/zeppelin/settings.yml</exclude>
+              <exclude>docs/Rakefile</exclude>
+              <exclude>docs/rss.xml</exclude>
+              <exclude>docs/sitemap.txt</exclude>
+
+              <!-- bundled from jekyll -->
+              <exclude>docs/assets/themes/zeppelin/css/syntax.css</exclude>
+
+              <!-- docs (website) build target dir -->
+              <exclude>docs/_site/**</exclude>
+              <exclude>docs/Gemfile.lock</exclude>
             </excludes>
           </configuration>
 
@@ -568,6 +639,31 @@
 
   <profiles>
     <profile>
+      <id>vendor-repo</id>
+      <repositories>
+        <repository>
+          <id>cloudera</id>
+          <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+        </repository>
+      </repositories>
+    </profile>
+
+    <!-- Geode can be enabled by -Pgeode. see https://issues.apache.org/jira/browse/ZEPPELIN-375 -->
+    <profile>
+      <id>geode</id>
+      <modules>
+        <module>geode</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>scalding</id>
+      <modules>
+        <module>scalding</module>
+      </modules>
+    </profile>
+
+    <profile>
       <id>build-distr</id>
       <activation>
         <activeByDefault>false</activeByDefault>
@@ -627,7 +723,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.4</version>
+            <version>1.6</version>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
@@ -642,4 +738,5 @@
       </build>
     </profile>
   </profiles>
+
 </project>

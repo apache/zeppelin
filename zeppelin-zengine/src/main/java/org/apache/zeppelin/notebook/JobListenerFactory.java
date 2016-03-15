@@ -17,14 +17,9 @@
 
 package org.apache.zeppelin.notebook;
 
-import org.apache.zeppelin.scheduler.JobListener;
-
 /**
  * TODO(moon): provide description.
- *
- * @author Leemoonsoo
- *
  */
 public interface JobListenerFactory {
-  public JobListener getParagraphJobListener(Note note);
+  public ParagraphJobListener getParagraphJobListener(Note note);
 }

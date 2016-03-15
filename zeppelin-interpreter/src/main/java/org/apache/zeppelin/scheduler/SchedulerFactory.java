@@ -30,12 +30,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * TODO(moon) : add description.
- *
- * @author Leemoonsoo
- *
  */
 public class SchedulerFactory implements SchedulerListener {
-  private final Logger logger = LoggerFactory.getLogger(SchedulerFactory.class);
+  private static final Logger logger = LoggerFactory.getLogger(SchedulerFactory.class);
   ExecutorService executor;
   Map<String, Scheduler> schedulers = new LinkedHashMap<String, Scheduler>();
 
@@ -49,7 +46,7 @@ public class SchedulerFactory implements SchedulerListener {
           try {
             singleton = new SchedulerFactory();
           } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.toString(), e);
           }
         }
       }
@@ -89,6 +86,7 @@ public class SchedulerFactory implements SchedulerListener {
 
   public Scheduler createOrGetRemoteScheduler(
       String name,
+      String noteId,
       RemoteInterpreterProcess interpreterProcess,
       int maxConcurrency) {
 
@@ -97,6 +95,7 @@ public class SchedulerFactory implements SchedulerListener {
         Scheduler s = new RemoteScheduler(
             name,
             executor,
+            noteId,
             interpreterProcess,
             this,
             maxConcurrency);

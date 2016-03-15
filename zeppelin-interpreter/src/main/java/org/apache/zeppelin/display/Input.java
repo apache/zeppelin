@@ -17,8 +17,12 @@
 
 package org.apache.zeppelin.display;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,16 +32,10 @@ import java.util.regex.Pattern;
 
 /**
  * Input type.
- *
- * @author Leemoonsoo
- *
  */
 public class Input implements Serializable {
   /**
    * Parameters option.
-   *
-   * @author Leemoonsoo
-   *
    */
   public static class ParamOption {
     Object value;
@@ -47,6 +45,25 @@ public class Input implements Serializable {
       super();
       this.value = value;
       this.displayName = displayName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+
+      ParamOption that = (ParamOption) o;
+
+      if (value != null ? !value.equals(that.value) : that.value != null) return false;
+      return displayName != null ? displayName.equals(that.displayName) : that.displayName == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+      int result = value != null ? value.hashCode() : 0;
+      result = 31 * result + (displayName != null ? displayName.hashCode() : 0);
+      return result;
     }
 
     public Object getValue() {
@@ -70,29 +87,32 @@ public class Input implements Serializable {
   String name;
   String displayName;
   String type;
+  String argument;
   Object defaultValue;
   ParamOption[] options;
   boolean hidden;
 
-  public Input(String name, Object defaultValue) {
+  public Input(String name, Object defaultValue, String type) {
     this.name = name;
     this.displayName = name;
     this.defaultValue = defaultValue;
+    this.type = type;
   }
 
-  public Input(String name, Object defaultValue, ParamOption[] options) {
+  public Input(String name, Object defaultValue, String type, ParamOption[] options) {
     this.name = name;
     this.displayName = name;
     this.defaultValue = defaultValue;
+    this.type = type;
     this.options = options;
   }
 
-
-  public Input(String name, String displayName, String type, Object defaultValue,
+  public Input(String name, String displayName, String type, String argument, Object defaultValue,
       ParamOption[] options, boolean hidden) {
     super();
     this.name = name;
     this.displayName = displayName;
+    this.argument = argument;
     this.type = type;
     this.defaultValue = defaultValue;
     this.options = options;
@@ -148,6 +168,18 @@ public class Input implements Serializable {
     return hidden;
   }
 
+  // Syntax of variables: ${TYPE:NAME=DEFAULT_VALUE1|DEFAULT_VALUE2|...,VALUE1|VALUE2|...}
+  // Type is optional. Type may contain an optional argument with syntax: TYPE(ARG)
+  // NAME and VALUEs may contain an optional display name with syntax: NAME(DISPLAY_NAME)
+  // DEFAULT_VALUEs may not contain display name
+  // Examples:  ${age}                              input form without default value
+  //            ${age=3}                            input form with default value
+  //            ${age(Age)=3}                       input form with display name and default value
+  //            ${country=US(United States)|UK|JP}  select form with
+  //            ${checkbox( or ):country(Country)=US|JP,US(United States)|UK|JP}
+  //                                                checkbox form with " or " as delimiter: will be
+  //                                                expanded to "US or JP"
+  private static final Pattern VAR_PTN = Pattern.compile("([_])?[$][{]([^=}]*([=][^}]*)?)[}]");
 
   private static String[] getNameAndDisplayName(String str) {
     Pattern p = Pattern.compile("([^(]*)\\s*[(]([^)]*)[)]");
@@ -162,15 +194,101 @@ public class Input implements Serializable {
   }
 
   private static String[] getType(String str) {
-    Pattern p = Pattern.compile("([^:]*)\\s*:\\s*(.*)");
+    Pattern p = Pattern.compile("([^:()]*)\\s*([(][^()]*[)])?\\s*:(.*)");
     Matcher m = p.matcher(str.trim());
     if (m == null || m.find() == false) {
       return null;
     }
-    String[] ret = new String[2];
+    String[] ret = new String[3];
     ret[0] = m.group(1).trim();
-    ret[1] = m.group(2).trim();
+    if (m.group(2) != null) {
+      ret[1] = m.group(2).trim().replaceAll("[()]", "");
+    }
+    ret[2] = m.group(3).trim();
     return ret;
+  }
+
+  private static Input getInputForm(Matcher match) {
+    String hiddenPart = match.group(1);
+    boolean hidden = false;
+    if ("_".equals(hiddenPart)) {
+      hidden = true;
+    }
+    String m = match.group(2);
+
+    String namePart;
+    String valuePart;
+
+    int p = m.indexOf('=');
+    if (p > 0) {
+      namePart = m.substring(0, p);
+      valuePart = m.substring(p + 1);
+    } else {
+      namePart = m;
+      valuePart = null;
+    }
+
+
+    String varName;
+    String displayName = null;
+    String type = null;
+    String arg = null;
+    Object defaultValue = "";
+    ParamOption[] paramOptions = null;
+
+    // get var name type
+    String varNamePart;
+    String[] typeArray = getType(namePart);
+    if (typeArray != null) {
+      type = typeArray[0];
+      arg = typeArray[1];
+      varNamePart = typeArray[2];
+    } else {
+      varNamePart = namePart;
+    }
+
+    // get var name and displayname
+    String[] varNameArray = getNameAndDisplayName(varNamePart);
+    if (varNameArray != null) {
+      varName = varNameArray[0];
+      displayName = varNameArray[1];
+    } else {
+      varName = varNamePart.trim();
+    }
+
+    // get defaultValue
+    if (valuePart != null) {
+      // find default value
+      int optionP = valuePart.indexOf(",");
+      if (optionP >= 0) { // option available
+        defaultValue = valuePart.substring(0, optionP);
+        if (type != null && type.equals("checkbox")) {
+          // checkbox may contain multiple default checks
+          defaultValue = Input.splitPipe((String) defaultValue);
+        }
+        String optionPart = valuePart.substring(optionP + 1);
+        String[] options = Input.splitPipe(optionPart);
+
+        paramOptions = new ParamOption[options.length];
+
+        for (int i = 0; i < options.length; i++) {
+
+          String[] optNameArray = getNameAndDisplayName(options[i]);
+          if (optNameArray != null) {
+            paramOptions[i] = new ParamOption(optNameArray[0], optNameArray[1]);
+          } else {
+            paramOptions[i] = new ParamOption(options[i], null);
+          }
+        }
+
+
+      } else { // no option
+        defaultValue = valuePart;
+      }
+
+    }
+
+    return new Input(varName, displayName, type, arg, defaultValue, paramOptions, hidden);
   }
 
   public static Map<String, Input> extractSimpleQueryParam(String script) {
@@ -180,122 +298,57 @@ public class Input implements Serializable {
     }
     String replaced = script;
 
-    Pattern pattern = Pattern.compile("([_])?[$][{]([^=}]*([=][^}]*)?)[}]");
-
-    Matcher match = pattern.matcher(replaced);
+    Matcher match = VAR_PTN.matcher(replaced);
     while (match.find()) {
-      String hiddenPart = match.group(1);
-      boolean hidden = false;
-      if ("_".equals(hiddenPart)) {
-        hidden = true;
-      }
-      String m = match.group(2);
-
-      String namePart;
-      String valuePart;
-
-      int p = m.indexOf('=');
-      if (p > 0) {
-        namePart = m.substring(0, p);
-        valuePart = m.substring(p + 1);
-      } else {
-        namePart = m;
-        valuePart = null;
-      }
-
-
-      String varName;
-      String displayName = null;
-      String type = null;
-      String defaultValue = "";
-      ParamOption[] paramOptions = null;
-
-      // get var name type
-      String varNamePart;
-      String[] typeArray = getType(namePart);
-      if (typeArray != null) {
-        type = typeArray[0];
-        varNamePart = typeArray[1];
-      } else {
-        varNamePart = namePart;
-      }
-
-      // get var name and displayname
-      String[] varNameArray = getNameAndDisplayName(varNamePart);
-      if (varNameArray != null) {
-        varName = varNameArray[0];
-        displayName = varNameArray[1];
-      } else {
-        varName = varNamePart.trim();
-      }
-
-      // get defaultValue
-      if (valuePart != null) {
-        // find default value
-        int optionP = valuePart.indexOf(",");
-        if (optionP > 0) { // option available
-          defaultValue = valuePart.substring(0, optionP);
-          String optionPart = valuePart.substring(optionP + 1);
-          String[] options = Input.splitPipe(optionPart);
-
-          paramOptions = new ParamOption[options.length];
-
-          for (int i = 0; i < options.length; i++) {
-
-            String[] optNameArray = getNameAndDisplayName(options[i]);
-            if (optNameArray != null) {
-              paramOptions[i] = new ParamOption(optNameArray[0], optNameArray[1]);
-            } else {
-              paramOptions[i] = new ParamOption(options[i], null);
-            }
-          }
-
-
-        } else { // no option
-          defaultValue = valuePart;
-        }
-
-      }
-
-      Input param = new Input(varName, displayName, type, defaultValue, paramOptions, hidden);
-      params.put(varName, param);
+      Input param = getInputForm(match);
+      params.put(param.name, param);
     }
 
     params.remove("pql");
     return params;
   }
 
+  private static final String DEFAULT_DELIMITER = ",";
+
   public static String getSimpleQuery(Map<String, Object> params, String script) {
     String replaced = script;
 
-    for (String key : params.keySet()) {
-      Object value = params.get(key);
-      replaced =
-          replaced.replaceAll("[_]?[$][{]([^:]*[:])?" + key + "([(][^)]*[)])?(=[^}]*)?[}]",
-                              value.toString());
-    }
-
-    Pattern pattern = Pattern.compile("[$][{]([^=}]*[=][^}]*)[}]");
-    while (true) {
-      Matcher match = pattern.matcher(replaced);
-      if (match != null && match.find()) {
-        String m = match.group(1);
-        int p = m.indexOf('=');
-        String replacement = m.substring(p + 1);
-        int optionP = replacement.indexOf(",");
-        if (optionP > 0) {
-          replacement = replacement.substring(0, optionP);
-        }
-        replaced =
-            replaced.replaceFirst("[_]?[$][{]"
-                + m.replaceAll("[(]", ".").replaceAll("[)]", ".").replaceAll("[|]", ".") + "[}]",
-                replacement);
+    Matcher match = VAR_PTN.matcher(replaced);
+    while (match.find()) {
+      Input input = getInputForm(match);
+      Object value;
+      if (params.containsKey(input.name)) {
+        value = params.get(input.name);
       } else {
-        break;
+        value = input.defaultValue;
       }
+
+      String expanded;
+      if (value instanceof Object[] || value instanceof Collection) {  // multi-selection
+        String delimiter = input.argument;
+        if (delimiter == null) {
+          delimiter = DEFAULT_DELIMITER;
+        }
+        Collection<Object> checked = value instanceof Collection ? (Collection<Object>) value
+                : Arrays.asList((Object[]) value);
+        List<Object> validChecked = new LinkedList<Object>();
+        for (Object o : checked) {  // filter out obsolete checked values
+          for (ParamOption option : input.getOptions()) {
+            if (option.getValue().equals(o)) {
+              validChecked.add(o);
+              break;
+            }
+          }
+        }
+        params.put(input.name, validChecked);
+        expanded = StringUtils.join(validChecked, delimiter);
+      } else {  // single-selection
+        expanded = value.toString();
+      }
+      replaced = match.replaceFirst(expanded);
+      match = VAR_PTN.matcher(replaced);
     }
 
-    replaced = replaced.replace("[_]?[$][{]([^=}]*)[}]", "");
     return replaced;
   }
 

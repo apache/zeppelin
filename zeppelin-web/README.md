@@ -24,22 +24,37 @@ Here are the basic commands to compile the WebApplication with a configured envi
 
 ``./grunt serve``
 
-This will launch a Zeppelin WebApplication on port **9000** and update on code changes.
+This will launch a Zeppelin WebApplication on port **9000** that will update on code changes.
 (You will need to have Zeppelin running on the side)
 
 
 #### Troubleshooting
 
+**git error**
+
 In case of the error `ECMDERR Failed to execute "git ls-remote --tags --heads git://xxxxx", exit code of #128`
 
 change your git config with `git config --global url."https://".insteadOf git://`
 
-**OR**
+**proxy issues**
 
 Try to add to the `.bowerrc` file the following content:
 ```
   "proxy" : "http://<host>:<port>",
   "https-proxy" : "http://<host>:<port>"
+  ```
+
+also try to add proxy info  to npm install command:
+```
+<execution>
+	<id>npm install</id>
+	<goals>
+    	<goal>npm</goal>
+    </goals>
+    <configuration>
+    	<arguments>--proxy=http://<host>:<port> --https-proxy=http://<host>:<port></arguments>
+    </configuration>
+</execution>
 ```
 
 

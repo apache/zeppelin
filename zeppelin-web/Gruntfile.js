@@ -83,7 +83,7 @@ module.exports = function (grunt) {
           '<%= yeoman.app %>/assets/styles/**/*.css',
           '<%= yeoman.app %>/fonts/**/*.css'
         ],
-        tasks: ['newer:copy:styles', 'autoprefixer']
+        tasks: ['newer:copy:styles', 'postcss']
       },
       gruntfile: {
         files: ['Gruntfile.js']
@@ -186,9 +186,12 @@ module.exports = function (grunt) {
     },
 
     // Add vendor prefixed styles
-    autoprefixer: {
+    postcss: {
       options: {
-        browsers: ['last 1 version']
+        map: true,
+        processors: [
+          require('autoprefixer')({browsers: ['last 2 versions']})
+        ]
       },
       dist: {
         files: [{
@@ -410,7 +413,7 @@ module.exports = function (grunt) {
       'clean:server',
       'wiredep',
       'concurrent:server',
-      'autoprefixer',
+      'postcss',
       'connect:livereload',
       'watch'
     ]);
@@ -425,33 +428,18 @@ module.exports = function (grunt) {
     'clean:server',
     'wiredep',
     'concurrent:test',
-    'autoprefixer',
+    'postcss',
     'connect:test',
     'karma'
   ]);
 
   grunt.registerTask('build', [
-    'test',
+    'newer:jshint',
     'clean:dist',
     'wiredep',
     'useminPrepare',
     'concurrent:dist',
-    'autoprefixer',
-    'concat',
-    'ngAnnotate',
-    'copy:dist',
-    'cssmin',
-    'uglify',
-    'usemin',
-    'htmlmin'
-  ]);
-
-  grunt.registerTask('buildSkipTests', [
-    'clean:dist',
-    'wiredep',
-    'useminPrepare',
-    'concurrent:dist',
-    'autoprefixer',
+    'postcss',
     'concat',
     'ngAnnotate',
     'copy:dist',
@@ -462,12 +450,7 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('default', [
-    'newer:jshint',
-    /*
-     * Since we dont have test (or up to date) there is no reason to keep this task
-     * I am commented this, but can be changed in the future (if someone want to implement front tests).
-    'test',
-    */
-    'build'
+    'build',
+    'test'
   ]);
 };

@@ -19,9 +19,6 @@ package org.apache.zeppelin.scheduler;
 
 /**
  * TODO(moon) : add description.
- *
- * @author Leemoonsoo
- *
  */
 public interface JobListener {
   public void onProgressUpdate(Job job, int progress);

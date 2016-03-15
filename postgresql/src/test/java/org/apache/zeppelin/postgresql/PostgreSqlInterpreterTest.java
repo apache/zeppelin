@@ -127,6 +127,27 @@ public class PostgreSqlInterpreterTest extends BasicJDBCTestCaseAdapter {
   }
 
   @Test
+  public void testNullColumnResult() throws SQLException {
+
+    when(psqlInterpreter.getMaxResult()).thenReturn(1000);
+
+    String sqlQuery = "select * from t";
+
+    result.addColumn("col1", new String[] {"val11", null});
+    result.addColumn("col2", new String[] {null, "val22"});
+
+    InterpreterResult interpreterResult = psqlInterpreter.interpret(sqlQuery, null);
+
+    assertEquals(InterpreterResult.Code.SUCCESS, interpreterResult.code());
+    assertEquals(InterpreterResult.Type.TABLE, interpreterResult.type());
+    assertEquals("col1\tcol2\nval11\t\n\tval22\n", interpreterResult.message());
+
+    verifySQLStatementExecuted(sqlQuery);
+    verifyAllResultSetsClosed();
+    verifyAllStatementsClosed();
+  }
+
+  @Test
   public void testSelectQuery() throws SQLException {
 
     when(psqlInterpreter.getMaxResult()).thenReturn(1000);

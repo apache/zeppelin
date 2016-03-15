@@ -22,16 +22,10 @@ import java.util.Map;
 
 /**
  * Zeppelin websocker massage template class.
- *
- * @author Leemoonsoo
- *
  */
 public class Message {
   /**
    * Representation of event type.
-   *
-   * @author Leemoonsoo
-   *
    */
   public static enum OP {
     GET_HOME_NOTE, // [c-s] load note for home screen
@@ -55,6 +49,8 @@ public class Message {
     CLONE_NOTE, // [c-s] clone new notebook
                 // @param id id of note to clone
                 // @param name name fpor the cloned note
+    IMPORT_NOTE,  // [c-s] import notebook
+                  // @param object notebook
     NOTE_UPDATE,
 
     RUN_PARAGRAPH, // [c-s] run paragraph
@@ -90,21 +86,38 @@ public class Message {
                      // @param completions list of string
 
     LIST_NOTES, // [c-s] ask list of note
+    RELOAD_NOTES_FROM_REPO, // [c-s] reload notes from repo
 
     NOTES_INFO, // [s-c] list of note infos
                 // @param notes serialized List<NoteInfo> object
 
     PARAGRAPH_REMOVE,
+    PARAGRAPH_CLEAR_OUTPUT,
+    PARAGRAPH_APPEND_OUTPUT,  // [s-c] append output
+    PARAGRAPH_UPDATE_OUTPUT,  // [s-c] update (replace) output
     PING,
+    AUTH_INFO,
 
     ANGULAR_OBJECT_UPDATE,  // [s-c] add/update angular object
     ANGULAR_OBJECT_REMOVE,  // [s-c] add angular object del
+    
+    ANGULAR_OBJECT_UPDATED,  // [c-s] angular object value updated,
 
-    ANGULAR_OBJECT_UPDATED  // [c-s] angular object value updated
+    LIST_CONFIGURATIONS, // [c-s] ask all key/value pairs of configurations
+    CONFIGURATIONS_INFO, // [s-c] all key/value pairs of configurations
+                  // @param settings serialized Map<String, String> object
+
+    CHECKPOINT_NOTEBOOK     // [c-s] checkpoint notebook to storage repository
+                            // @param noteId
+                            // @param checkpointName
+
   }
 
   public OP op;
   public Map<String, Object> data = new HashMap<String, Object>();
+  public String ticket = "anonymous";
+  public String principal = "anonymous";
+  public String roles = "";
 
   public Message(OP op) {
     this.op = op;

@@ -5,6 +5,8 @@ permalink: /:categories/:year/:month/:day/:title
 exclude: [".rvmrc", ".rbenv-version", "README.md", "Rakefile", "changelog.md", "vendor", "node_modules", "scss"]
 pygments: true
 markdown: redcarpet
+redcarpet:
+  extensions: ["tables"]
 encoding: utf-8
 
 # Themes are encouraged to use these universal variables 
@@ -14,10 +16,12 @@ title : Apache Zeppelin (incubating)
 tagline: Simplify bigdata analytics
 author :
   name : The Apache Software Foundation
-  email : contacts@nflabs.com
+  email : dev@zeppelin.incubator.apache.org
   github : apache
   twitter : ASF
   feedburner : feedname
+
+ZEPPELIN_VERSION : 0.6.0-incubating-SNAPSHOT
 
 # The production_url is only used when full-domain names are needed
 # such as sitemap.txt 
@@ -55,7 +59,7 @@ JB :
   #   - Only the following values are falsy: ["", null, false]
   #   - When setting BASE_PATH it must be a valid url.
   #     This means always setting the protocol (http|https) or prefixing with "/"
-  BASE_PATH : false
+  BASE_PATH : /docs/0.6.0-incubating-SNAPSHOT
 
   # By default, the asset_path is automatically defined relative to BASE_PATH plus the enabled theme.
   # ex: [BASE_PATH]/assets/themes/[THEME-NAME]

@@ -32,6 +32,18 @@
 </property>
 
 <property>
+  <name>zeppelin.server.context.path</name>
+  <value>/</value>
+  <description>Context Path of the Web Application</description>
+</property>
+
+<property>
+  <name>zeppelin.war.tempdir</name>
+  <value>webapps</value>
+  <description>Location of jetty temporary directory</description>
+</property>
+
+<property>
   <name>zeppelin.notebook.dir</name>
   <value>notebook</value>
   <description>path or URI for notebook persist</description>
@@ -71,6 +83,41 @@
 </property>
 -->
 
+<!-- If using Azure for storage use the following settings -->
+<!--
+<property>
+  <name>zeppelin.notebook.azure.user</name>
+  <value>user</value>
+  <description>optional user name for Azure folder structure</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.azure.share</name>
+  <value>zeppelin</value>
+  <description>share name for notebook storage</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.azure.connectionString</name>
+  <value>DefaultEndpointsProtocol=https;AccountName=<accountName>;AccountKey=<accountKey></value>
+  <description>share name for notebook storage</description>
+</property>
+
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.AzureNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+-->
+
+<!-- For versioning your local norebook storage using Git repository
+<property>
+  <name>zeppelin.notebook.storage</name>
+  <value>org.apache.zeppelin.notebook.repo.GitNotebookRepo</value>
+  <description>notebook persistence layer implementation</description>
+</property>
+-->
+
 <property>
   <name>zeppelin.notebook.storage</name>
   <value>org.apache.zeppelin.notebook.repo.VFSNotebookRepo</value>
@@ -81,6 +128,12 @@
   <name>zeppelin.interpreter.dir</name>
   <value>interpreter</value>
   <description>Interpreter implementation base directory</description>
+</property>
+
+<property>
+  <name>zeppelin.interpreter.localRepo</name>
+  <value>local-repo</value>
+  <description>Local repository for interpreter's additional dependency loading</description>
 </property>
 
 <property>
@@ -158,6 +211,12 @@
   <name>zeppelin.server.allowed.origins</name>
   <value>*</value>
   <description>Allowed sources for REST and WebSocket requests (i.e. http://onehost:8080,http://otherhost.com). If you leave * you are vulnerable to https://issues.apache.org/jira/browse/ZEPPELIN-173</description>
+</property>
+
+<property>
+  <name>zeppelin.anonymous.allowed</name>
+  <value>true</value>
+  <description>Anonymous user allowed by default</description>
 </property>
 
 </configuration>

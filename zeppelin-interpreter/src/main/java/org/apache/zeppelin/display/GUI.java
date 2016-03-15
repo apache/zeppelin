@@ -18,7 +18,10 @@
 package org.apache.zeppelin.display;
 
 import java.io.Serializable;
+
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -26,9 +29,6 @@ import org.apache.zeppelin.display.Input.ParamOption;
 
 /**
  * Settings of a form.
- *
- * @author Leemoonsoo
- *
  */
 public class GUI implements Serializable {
 
@@ -62,7 +62,7 @@ public class GUI implements Serializable {
       value = defaultValue;
     }
 
-    forms.put(id, new Input(id, defaultValue));
+    forms.put(id, new Input(id, defaultValue, "input"));
     return value;
   }
 
@@ -75,8 +75,33 @@ public class GUI implements Serializable {
     if (value == null) {
       value = defaultValue;
     }
-    forms.put(id, new Input(id, defaultValue, options));
+    forms.put(id, new Input(id, defaultValue, "select", options));
     return value;
+  }
+
+  public Collection<Object> checkbox(String id, Collection<Object> defaultChecked,
+                                     ParamOption[] options) {
+    Collection<Object> checked = (Collection<Object>) params.get(id);
+    if (checked == null) {
+      checked = defaultChecked;
+    }
+    forms.put(id, new Input(id, defaultChecked, "checkbox", options));
+    Collection<Object> filtered = new LinkedList<Object>();
+    for (Object o : checked) {
+      if (isValidOption(o, options)) {
+        filtered.add(o);
+      }
+    }
+    return filtered;
+  }
+
+  private boolean isValidOption(Object o, ParamOption[] options) {
+    for (ParamOption option : options) {
+      if (o.equals(option.getValue())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public void clear() {

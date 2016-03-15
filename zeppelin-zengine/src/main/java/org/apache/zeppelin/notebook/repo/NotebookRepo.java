@@ -31,4 +31,14 @@ public interface NotebookRepo {
   public Note get(String noteId) throws IOException;
   public void save(Note note) throws IOException;
   public void remove(String noteId) throws IOException;
+
+  /**
+   * Release any underlying resources
+   */
+  public void close();
+
+  /**
+   * chekpoint (versioning) for notebooks (optional)
+   */
+  public void checkpoint(String noteId, String checkPointName) throws IOException;
 }

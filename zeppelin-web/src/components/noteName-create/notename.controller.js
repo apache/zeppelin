@@ -14,33 +14,46 @@
 
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, $rootScope, $routeParams, websocketMsgSrv) {
+angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, notebookListDataFactory,
+                                                             $rootScope, $routeParams, websocketMsgSrv) {
   var vm = this;
+  vm.clone = false;
+  vm.notes = notebookListDataFactory;
   vm.websocketMsgSrv = websocketMsgSrv;
   $scope.note = {};
-  vm.createNote = function(){
-  	  if(!vm.clone){
-		  vm.websocketMsgSrv.createNotebook($scope.note.notename);
-  	  }else{
-	  	 var noteId = $routeParams.noteId;
-  	  	 vm.websocketMsgSrv.cloneNotebook(noteId, $scope.note.notename);
-  	  }
+
+  vm.createNote = function() {
+      if (!vm.clone) {
+        vm.websocketMsgSrv.createNotebook($scope.note.notename);
+      } else {
+       var noteId = $routeParams.noteId;
+       vm.websocketMsgSrv.cloneNotebook(noteId, $scope.note.notename);
+      }
   };
-  vm.preVisible = function(clone){
-		var generatedName = vm.generateName();
-		$scope.note.notename = 'Note ' + generatedName;
-		vm.clone = clone;
-		$scope.$apply();
+
+  vm.handleNameEnter = function(){
+    angular.element('#noteNameModal').modal('toggle');
+    vm.createNote();
   };
-  vm.generateName = function () {
-		var DICTIONARY = [ '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B',
-				'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'M', 'N', 'P', 'Q', 'R',
-				'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' ];
-		var randIndex, name = '';
-		for (var i = 0; i < 9; i++) {
-			randIndex = Math.floor(Math.random() * 32);
-			name += DICTIONARY[randIndex];
-		}
-		return name;
-	};
+
+  vm.preVisible = function(clone) {
+    $scope.note.notename = vm.newNoteName();
+    vm.clone = clone;
+    $scope.$apply();
+  };
+
+  vm.newNoteName = function () {
+    var newCount = 1;
+    angular.forEach(vm.notes.list, function (noteName) {
+      noteName = noteName.name;
+      if (noteName.match(/^Untitled Note [0-9]*$/)) {
+        var lastCount = noteName.substr(14) * 1;
+        if (newCount <= lastCount) {
+          newCount = lastCount + 1;
+        }
+      }
+    });
+    return 'Untitled Note ' + newCount;
+  };
+
 });

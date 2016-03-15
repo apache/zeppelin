@@ -15,7 +15,7 @@ describe('Controller: MainCtrl', function() {
     });
   }));
 
-  it('should attach a asIframe to the scope and the default value should be false', function() {
+  it('should attach "asIframe" to the scope and the default value should be false', function() {
     expect(scope.asIframe).toBeDefined();
     expect(scope.asIframe).toEqual(false);
   });
@@ -24,7 +24,7 @@ describe('Controller: MainCtrl', function() {
     expect(scope.looknfeel).toEqual('default');
   });
 
-  it('should set asIframe flag to true when a controller broadcasts setIframe event', function() {
+  it('should set "asIframe" flag to true when a controller broadcasts setIframe event', function() {
     rootScope.$broadcast('setIframe', true);
     expect(scope.asIframe).toEqual(true);
   });

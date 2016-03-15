@@ -1,7 +1,5 @@
 #!/bin/bash
 #
-# Copyright 2007 The Apache Software Foundation
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -21,7 +19,7 @@
 # description: Start and stop daemon script for.
 #
 
-USAGE="Usage: zeppelin-daemon.sh [--config <conf-dir>] {start|stop|restart|reload|status}"
+USAGE="Usage: zeppelin-daemon.sh [--config <conf-dir>] {start|stop|upstart|restart|reload|status}"
 
 if [[ "$1" == "--config" ]]; then
   shift
@@ -67,6 +65,9 @@ if [[ -d "${ZEPPELIN_HOME}/zeppelin-server/target/classes" ]]; then
   ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/zeppelin-server/target/classes"
 fi
 
+# Add jdbc connector jar
+# ZEPPELIN_CLASSPATH+=":${ZEPPELIN_HOME}/jdbc/jars/jdbc-connector-jar"
+
 addJarInDir "${ZEPPELIN_HOME}"
 addJarInDir "${ZEPPELIN_HOME}/lib"
 addJarInDir "${ZEPPELIN_HOME}/zeppelin-interpreter/target/lib"
@@ -89,11 +90,6 @@ function initialize_default_directories() {
   if [[ ! -d "${ZEPPELIN_PID_DIR}" ]]; then
     echo "Pid dir doesn't exist, create ${ZEPPELIN_PID_DIR}"
     $(mkdir -p "${ZEPPELIN_PID_DIR}")
-  fi
-
-  if [[ ! -d "${ZEPPELIN_NOTEBOOK_DIR}" ]]; then
-    echo "Notebook dir doesn't exist, create ${ZEPPELIN_NOTEBOOK_DIR}"
-    $(mkdir -p "${ZEPPELIN_NOTEBOOK_DIR}")
   fi
 }
 
@@ -156,6 +152,16 @@ function check_if_process_is_alive() {
   fi
 }
 
+function upstart() {
+
+  # upstart() allows zeppelin to be run and managed as a service
+  # for example, this could be called from an upstart script in /etc/init
+  # where the service manager starts and stops the process
+  initialize_default_directories
+
+  $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:$CLASSPATH $ZEPPELIN_MAIN >> "${ZEPPELIN_OUTFILE}"
+}
+
 function start() {
   local pid
 
@@ -169,7 +175,7 @@ function start() {
 
   initialize_default_directories
 
-  nohup nice -n $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER $JAVA_OPTS -cp $CLASSPATH $ZEPPELIN_MAIN >> "${ZEPPELIN_OUTFILE}" 2>&1 < /dev/null &
+  nohup nice -n $ZEPPELIN_NICENESS $ZEPPELIN_RUNNER $JAVA_OPTS -cp $ZEPPELIN_CLASSPATH_OVERRIDES:$CLASSPATH $ZEPPELIN_MAIN >> "${ZEPPELIN_OUTFILE}" 2>&1 < /dev/null &
   pid=$!
   if [[ -z "${pid}" ]]; then
     action_msg "${ZEPPELIN_NAME} start" "${SET_ERROR}"
@@ -237,6 +243,9 @@ case "${1}" in
     ;;
   stop)
     stop
+    ;;
+  upstart)
+    upstart
     ;;
   reload)
     stop

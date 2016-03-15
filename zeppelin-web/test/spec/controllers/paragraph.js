@@ -13,6 +13,8 @@ describe('Controller: ParagraphCtrl', function() {
 
   beforeEach(inject(function($controller, $rootScope) {
     scope = $rootScope.$new();
+    $rootScope.notebookScope = $rootScope.$new(true, $rootScope);
+
     ParagraphCtrl = $controller('ParagraphCtrl', {
       $scope: scope,
       websocketMsgSrv: websocketMsgSrvMock,
@@ -37,19 +39,19 @@ describe('Controller: ParagraphCtrl', function() {
     });
   });
 
-  it('getResultType should return "TEXT" when the type is unknown', function() {
+  it('should return "TEXT" by default when getResultType() is called with no parameter', function() {
     expect(scope.getResultType()).toEqual('TEXT');
   });
 
-  it('init value for colWidthOption should be false', function() {
+  it('should have this array of values for "colWidthOption"', function() {
     expect(scope.colWidthOption).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
   });
 
-  it('init value for paragraphFocused should be false', function() {
+  it('should set default value of "paragraphFocused" as false', function() {
     expect(scope.paragraphFocused).toEqual(false);
   });
 
-  it('loadTableData should be called when the result type is "TABLE" and the Graph mode should be "table"', function() {
+  it('should call loadTableData() and getGraphMode() should return "table" when the result type is "TABLE"', function() {
     scope.getResultType = jasmine.createSpy('getResultType spy').andCallFake(function() {
       return 'TABLE';
     });
@@ -61,7 +63,7 @@ describe('Controller: ParagraphCtrl', function() {
     expect(scope.getGraphMode()).toEqual('table');
   });
 
-  it('renderHtml should be called when the result type is "HTML"', function() {
+  it('should call renderHtml() when the result type is "HTML"', function() {
     scope.getResultType = jasmine.createSpy('getResultType spy').andCallFake(function() {
       return 'HTML';
     });
@@ -70,7 +72,7 @@ describe('Controller: ParagraphCtrl', function() {
     expect(scope.renderHtml).toHaveBeenCalled();
   });
 
-  it('renderAngular should be called when the result type is "ANGULAR"', function() {
+  it('should call renderAngular() when the result type is "ANGULAR"', function() {
     scope.getResultType = jasmine.createSpy('getResultType spy').andCallFake(function() {
       return 'ANGULAR';
     });

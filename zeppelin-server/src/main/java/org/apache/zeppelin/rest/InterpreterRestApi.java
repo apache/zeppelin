@@ -33,6 +33,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.dep.Repository;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.Interpreter.RegisteredInterpreter;
 import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
@@ -42,10 +43,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import org.sonatype.aether.RepositoryException;
+import org.sonatype.aether.repository.RemoteRepository;
 
 /**
  * Interpreter Rest API
@@ -53,7 +52,6 @@ import com.wordnik.swagger.annotations.ApiResponses;
  */
 @Path("/interpreter")
 @Produces("application/json")
-@Api(value = "/interpreter", description = "Zeppelin Interpreter REST API")
 public class InterpreterRestApi {
   Logger logger = LoggerFactory.getLogger(InterpreterRestApi.class);
 
@@ -71,12 +69,10 @@ public class InterpreterRestApi {
 
   /**
    * List all interpreter settings
-     * @return
+   * @return
    */
   @GET
   @Path("setting")
-  @ApiOperation(httpMethod = "GET", value = "List all interpreter setting")
-  @ApiResponses(value = {@ApiResponse(code = 500, message = "When something goes wrong")})
   public Response listSettings() {
     List<InterpreterSetting> interpreterSettings = null;
     interpreterSettings = interpreterFactory.get();
@@ -92,19 +88,33 @@ public class InterpreterRestApi {
    */
   @POST
   @Path("setting")
-  @ApiOperation(httpMethod = "GET", value = "Create new interpreter setting")
-  @ApiResponses(value = {@ApiResponse(code = 201, message = "On success")})
-  public Response newSettings(String message) throws InterpreterException, IOException {
-    NewInterpreterSettingRequest request = gson.fromJson(message,
-        NewInterpreterSettingRequest.class);
-    Properties p = new Properties();
-    p.putAll(request.getProperties());
-    // Option is deprecated from API, always use remote = true
-    InterpreterGroup interpreterGroup = interpreterFactory.add(request.getName(),
-        request.getGroup(), new InterpreterOption(true), p);
-    InterpreterSetting setting = interpreterFactory.get(interpreterGroup.getId());
-    logger.info("new setting created with " + setting.id());
-    return new JsonResponse(Status.CREATED, "", setting ).build();
+  public Response newSettings(String message) {
+    try {
+      NewInterpreterSettingRequest request = gson.fromJson(message,
+          NewInterpreterSettingRequest.class);
+      Properties p = new Properties();
+      p.putAll(request.getProperties());
+      InterpreterGroup interpreterGroup = interpreterFactory.add(request.getName(),
+          request.getGroup(),
+          request.getDependencies(),
+          request.getOption(),
+          p);
+      InterpreterSetting setting = interpreterFactory.get(interpreterGroup.getId());
+      logger.info("new setting created with {}", setting.id());
+      return new JsonResponse(Status.CREATED, "", setting).build();
+    } catch (InterpreterException e) {
+      logger.error("Exception in InterpreterRestApi while creating ", e);
+      return new JsonResponse(
+          Status.NOT_FOUND,
+          e.getMessage(),
+          ExceptionUtils.getStackTrace(e)).build();
+    } catch (IOException | RepositoryException e) {
+      logger.error("Exception in InterpreterRestApi while creating ", e);
+      return new JsonResponse(
+          Status.INTERNAL_SERVER_ERROR,
+          e.getMessage(),
+          ExceptionUtils.getStackTrace(e)).build();
+    }
   }
 
   @PUT
@@ -113,15 +123,18 @@ public class InterpreterRestApi {
     logger.info("Update interpreterSetting {}", settingId);
 
     try {
-      UpdateInterpreterSettingRequest p = gson.fromJson(message,
+      UpdateInterpreterSettingRequest request = gson.fromJson(message,
           UpdateInterpreterSettingRequest.class);
-      // Option is deprecated from API, always use remote = true
       interpreterFactory.setPropertyAndRestart(settingId,
-          new InterpreterOption(true), p.getProperties());
+          request.getOption(),
+          request.getProperties(),
+          request.getDependencies());
     } catch (InterpreterException e) {
+      logger.error("Exception in InterpreterRestApi while updateSetting ", e);
       return new JsonResponse(
           Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
-    } catch (IOException e) {
+    } catch (IOException | RepositoryException e) {
+      logger.error("Exception in InterpreterRestApi while updateSetting ", e);
       return new JsonResponse(
           Status.INTERNAL_SERVER_ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
     }
@@ -132,26 +145,28 @@ public class InterpreterRestApi {
     return new JsonResponse(Status.OK, "", setting).build();
   }
 
+  /**
+   * Remove interpreter setting
+   */
   @DELETE
   @Path("setting/{settingId}")
-  @ApiOperation(httpMethod = "GET", value = "Remove interpreter setting")
-  @ApiResponses(value = {@ApiResponse(code = 500, message = "When something goes wrong")})
   public Response removeSetting(@PathParam("settingId") String settingId) throws IOException {
     logger.info("Remove interpreterSetting {}", settingId);
     interpreterFactory.remove(settingId);
     return new JsonResponse(Status.OK).build();
   }
 
+  /**
+   * Restart interpreter setting
+   */
   @PUT
   @Path("setting/restart/{settingId}")
-  @ApiOperation(httpMethod = "GET", value = "restart interpreter setting")
-  @ApiResponses(value = {
-      @ApiResponse(code = 404, message = "Not found")})
   public Response restartSetting(@PathParam("settingId") String settingId) {
     logger.info("Restart interpreterSetting {}", settingId);
     try {
       interpreterFactory.restart(settingId);
     } catch (InterpreterException e) {
+      logger.error("Exception in InterpreterRestApi while restartSetting ", e);
       return new JsonResponse(
           Status.NOT_FOUND, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
     }
@@ -166,11 +181,63 @@ public class InterpreterRestApi {
    * List all available interpreters by group
    */
   @GET
-  @ApiOperation(httpMethod = "GET", value = "List all available interpreters")
-  @ApiResponses(value = {
-      @ApiResponse(code = 500, message = "When something goes wrong")})
   public Response listInterpreter(String message) {
     Map<String, RegisteredInterpreter> m = Interpreter.registeredInterpreters;
     return new JsonResponse(Status.OK, "", m).build();
+  }
+
+  /**
+   * List of dependency resolving repositories
+   * @return
+   */
+  @GET
+  @Path("repository")
+  public Response listRepositories() {
+    List<RemoteRepository> interpreterRepositories = null;
+    interpreterRepositories = interpreterFactory.getRepositories();
+    return new JsonResponse(Status.OK, "", interpreterRepositories).build();
+  }
+
+  /**
+   * Add new repository
+   * @param message
+   * @return
+   */
+  @POST
+  @Path("repository")
+  public Response addRepository(String message) {
+    try {
+      Repository request = gson.fromJson(message, Repository.class);
+      interpreterFactory.addRepository(
+          request.getId(),
+          request.getUrl(),
+          request.isSnapshot(),
+          request.getAuthentication());
+      logger.info("New repository {} added", request.getId());
+    } catch (Exception e) {
+      logger.error("Exception in InterpreterRestApi while adding repository ", e);
+      return new JsonResponse(
+          Status.INTERNAL_SERVER_ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
+    }
+    return new JsonResponse(Status.CREATED).build();
+  }
+
+  /**
+   * Delete repository
+   * @param repoId
+   * @return
+   */
+  @DELETE
+  @Path("repository/{repoId}")
+  public Response removeRepository(@PathParam("repoId") String repoId) {
+    logger.info("Remove repository {}", repoId);
+    try {
+      interpreterFactory.removeRepository(repoId);
+    } catch (Exception e) {
+      logger.error("Exception in InterpreterRestApi while removing repository ", e);
+      return new JsonResponse(
+          Status.INTERNAL_SERVER_ERROR, e.getMessage(), ExceptionUtils.getStackTrace(e)).build();
+    }
+    return new JsonResponse(Status.OK).build();
   }
 }

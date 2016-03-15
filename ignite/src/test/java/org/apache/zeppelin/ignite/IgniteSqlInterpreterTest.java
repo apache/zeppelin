@@ -24,6 +24,7 @@ import org.apache.ignite.IgniteCache;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.configuration.CacheConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
+import org.apache.ignite.marshaller.optimized.OptimizedMarshaller;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder;
 import org.apache.zeppelin.interpreter.InterpreterContext;
@@ -43,7 +44,7 @@ public class IgniteSqlInterpreterTest {
   private static final String HOST = "127.0.0.1:47500..47509";
 
   private static final InterpreterContext INTP_CONTEXT =
-          new InterpreterContext(null, null, null, null, null, null, null, null);
+      new InterpreterContext(null, null, null, null, null, null, null, null, null, null, null);
 
   private Ignite ignite;
   private IgniteSqlInterpreter intp;
@@ -58,14 +59,14 @@ public class IgniteSqlInterpreterTest {
 
     IgniteConfiguration cfg = new IgniteConfiguration();
     cfg.setDiscoverySpi(discoSpi);
+    cfg.setPeerClassLoadingEnabled(true);
 
     cfg.setGridName("test");
 
     ignite = Ignition.start(cfg);
 
     Properties props = new Properties();
-    props.setProperty(IgniteSqlInterpreter.IGNITE_JDBC_URL, "jdbc:ignite://localhost:11211/person");
-    props.setProperty(IgniteInterpreter.IGNITE_CLIENT_MODE, "false");
+    props.setProperty(IgniteSqlInterpreter.IGNITE_JDBC_URL, "jdbc:ignite:cfg://cache=person@default-ignite-jdbc.xml");
 
     intp = new IgniteSqlInterpreter(props);
 

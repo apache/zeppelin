@@ -54,17 +54,17 @@ describe('Controller: NotebookCtrl', function() {
     expect(scope.editorToggled).toEqual(false);
   });
 
-  it('should set showSetting to true when openSetting is called', function() {
+  it('should set "showSetting" to true when openSetting() is called', function() {
     scope.openSetting();
     expect(scope.showSetting).toEqual(true);
   });
 
-  it('should set showSetting to false when closeSetting is called', function() {
+  it('should set "showSetting" to false when closeSetting() is called', function() {
     scope.closeSetting();
     expect(scope.showSetting).toEqual(false);
   });
 
-  it('should return the correct value for getCronOptionNameFromValue', function() {
+  it('should return the correct value for getCronOptionNameFromValue()', function() {
     var none = scope.getCronOptionNameFromValue();
     var oneMin = scope.getCronOptionNameFromValue('0 0/1 * * * ?');
     var fiveMin = scope.getCronOptionNameFromValue('0 0/5 * * * ?');
@@ -84,18 +84,21 @@ describe('Controller: NotebookCtrl', function() {
     expect(oneDay).toEqual('1d');
   });
 
-  it('default value for isNoteDirty should be null', function() {
+  it('should have "isNoteDirty" as null by default', function() {
     expect(scope.isNoteDirty).toEqual(null);
   });
 
-  it('calling startSaveTimer should first call killSaveTimer and start a new timer', function() {
+  it('should first call killSaveTimer() when calling startSaveTimer()', function() {
     expect(scope.saveTimer).toEqual(null);
+    spyOn(scope, 'killSaveTimer');
     scope.startSaveTimer();
-    expect(scope.isNoteDirty).toEqual(true);
-    expect(scope.saveTimer).toBeTruthy();
+    expect(scope.killSaveTimer).toHaveBeenCalled();
   });
 
-  it('calling killSaveTimer should clear saveTimer flag', function() {
+  it('should set "saveTimer" when saveTimer() and killSaveTimer() are called', function() {
+    expect(scope.saveTimer).toEqual(null);
+    scope.startSaveTimer();
+    expect(scope.saveTimer).toBeTruthy();
     scope.killSaveTimer();
     expect(scope.saveTimer).toEqual(null);
   });

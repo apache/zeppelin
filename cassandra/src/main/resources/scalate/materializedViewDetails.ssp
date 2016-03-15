@@ -1,0 +1,109 @@
+<%--
+/*
+* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+--%>
+#import(org.apache.zeppelin.cassandra.MetaDataHierarchy._)
+<%@ val mvDetails: MaterializedViewDetails %>
+<%@ val withCaption: Boolean%>
+<div class="row">
+    <div class="col-md-2"/>
+    <div class="col-md-8 col-offset-md-2">
+        <div class="panel panel-default table-responsive table-bordered">
+            <table class="table">
+                #if(withCaption)
+                <caption>
+                    <h4 class="text-primary">
+                        <i class="glyphicon glyphicon-eye-open"/>
+                        &nbsp;${mvDetails.name}
+                        &nbsp;<i class="glyphicon glyphicon-arrow-right"/>
+                        &nbsp;<i class="glyphicon glyphicon-th-list"/>
+                        &nbsp;${mvDetails.baseTable}&nbsp;
+                    </h4>
+                </caption>
+                #end
+                <thead>
+                    <tr>
+                        <th class="col-md-4">Column Type</th>
+                        <th class="col-md-4">Column Name</th>
+                        <th class="col-md-4">Data Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    #for (column <- mvDetails.columns)
+                        #match (column.columnType)
+                        #case(PartitionKey)
+
+                    <tr class="info">
+                        <td class="col-md-4">
+                            <i class="glyphicon glyphicon-fullscreen" title="Partition Key"/>
+                        </td>
+                        <td class="col-md-4">${column.name}</td>
+                        <td class="col-md-4">${column.dataType}</td>
+                    </tr>
+                        #case(StaticColumn)
+                    <tr class="warning">
+                        <td class="col-md-4">
+                            <i class="glyphicon glyphicon-pushpin" title="Static Column"/>
+                        </td>
+                        <td class="col-md-4">${column.name}</td>
+                        <td class="col-md-4">${column.dataType}</td>
+                    </tr>
+                        #case(ClusteringColumn(ASC))
+                    <tr class="success">
+                        <td class="col-md-4">
+                            <i class="glyphicon glyphicon-sort" title="Clustering Column"/>
+                            &nbsp;
+                            <i class="glyphicon glyphicon-sort-by-attributes" title="Sort ASC"/>
+                        </td>
+                        <td class="col-md-4">${column.name}</td>
+                        <td class="col-md-4">${column.dataType}</td>
+                    </tr>
+                        #case(ClusteringColumn(DESC))
+                    <tr class="success">
+                        <td class="col-md-4">
+                            <i class="glyphicon glyphicon-sort" title="Clustering Column"/>
+                            &nbsp;
+                            <i class="glyphicon glyphicon-sort-by-attributes-alt" title="Sort DESC"/>
+                        </td>
+                        <td class="col-md-4">${column.name}</td>
+                        <td class="col-md-4">${column.dataType}</td>
+                    </tr>
+                        #otherwise
+                    <tr>
+                        <td class="col-md-4"></td>
+                        <td class="col-md-4">${column.name}</td>
+                        <td class="col-md-4">${column.dataType}</td>
+                    </tr>
+                        #end
+                    #end
+
+                </tbody>
+            </table>
+            <div class="panel-footer">
+                <a data-toggle="collapse" data-target="#${mvDetails.uniqueId}_asCQL" class="text-primary">
+                    <strong>As CQL statement</strong>
+                    <span class="caret"></span>
+                </a>
+                <br/><br/>
+                <div class="collapse" id="${mvDetails.uniqueId}_asCQL">
+                    <pre class="well">${mvDetails.asCQL}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2"></div>
+</div>
