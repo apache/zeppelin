@@ -18,6 +18,8 @@
 package org.apache.zeppelin.resource;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import org.apache.zeppelin.interpreter.InterpreterGroup;
 import org.apache.zeppelin.interpreter.remote.RemoteInterpreterProcess;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService;
@@ -54,8 +56,11 @@ public class ResourcePoolUtils {
         boolean broken = false;
         try {
           client = remoteInterpreterProcess.getClient();
-          List<String> resourceList = client.resoucePoolGetAll();
-          Gson gson = new Gson();
+          List<String> resourceList = client.resourcePoolGetAll();
+          GsonBuilder gsonBuilder = new GsonBuilder();
+          gsonBuilder.registerTypeAdapter(Resource.class, new ResourceSerializer());
+          Gson gson = gsonBuilder.create();
+          
           for (String res : resourceList) {
             resourceSet.add(gson.fromJson(res, Resource.class));
           }
