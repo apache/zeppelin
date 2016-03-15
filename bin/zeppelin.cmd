@@ -37,11 +37,10 @@ if not exist "%conf_dir%" (
 call "%bin%\common.cmd"
 
 set HOSTNAME=%COMPUTERNAME%
-set ZEPPELIN_LOGFILE="%ZEPPELIN_LOG_DIR%\zeppelin-%ZEPPELIN_IDENT_STRING%-%HOSTNAME%.log"
-set LOG="%ZEPPELIN_LOG_DIR%\zeppelin-cli-%ZEPPELIN_IDENT_STRING%-%HOSTNAME%.out"
+set ZEPPELIN_LOGFILE=%ZEPPELIN_LOG_DIR%\zeppelin-%ZEPPELIN_IDENT_STRING%-%HOSTNAME%.log
 
 set ZEPPELIN_SERVER=org.apache.zeppelin.server.ZeppelinServer
-set JAVA_OPTS=%JAVA_OPTS% -Dzeppelin.log.file=%ZEPPELIN_LOGFILE%
+set JAVA_OPTS=%JAVA_OPTS% -Dzeppelin.log.file="%ZEPPELIN_LOGFILE%"
 
 if exist "%ZEPPELIN_HOME%\zeppelin-interpreter\target\classes" (
     set ZEPPELIN_CLASSPATH=%ZEPPELIN_CLASSPATH%;"%ZEPPELIN_HOME%\zeppelin-interpreter\target\classes"
@@ -62,25 +61,31 @@ call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-zengine\target\
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-server\target\lib"
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-web\target\lib"
 
-if "%CLASSPATH%"=="" (
+if not defined CLASSPATH (
     set CLASSPATH=%ZEPPELIN_CLASSPATH%
 ) else (
     set CLASSPATH=%CLASSPATH%;%ZEPPELIN_CLASSPATH%
 )
 
+if not defined ZEPPELIN_CLASSPATH_OVERRIDES (
+    set CLASSPATH=%ZEPPELIN_CLASSPATH%
+) else (
+    set CLASSPATH=%ZEPPELIN_CLASSPATH_OVERRIDES%;%ZEPPELIN_CLASSPATH%
+)
+
 if not exist %ZEPPELIN_LOG_DIR% (
     echo Log dir doesn't exist, create %ZEPPELIN_LOG_DIR%
-    mkdir %ZEPPELIN_LOG_DIR%
+    mkdir "%ZEPPELIN_LOG_DIR%"
 )
 
 if not exist %ZEPPELIN_PID_DIR% (
     echo Pid dir doesn't exist, create %ZEPPELIN_PID_DIR%
-    mkdir %ZEPPELIN_PID_DIR%
+    mkdir "%ZEPPELIN_PID_DIR%"
 )
 
 if not exist %ZEPPELIN_NOTEBOOK_DIR% (
     echo Notebook dir doesn't exist, create %ZEPPELIN_NOTEBOOK_DIR%
-    mkdir %ZEPPELIN_NOTEBOOK_DIR%
+    mkdir "%ZEPPELIN_NOTEBOOK_DIR%"
 )
 
-"%ZEPPELIN_RUNNER%" %JAVA_OPTS% -cp %ZEPPELIN_CLASSPATH_OVERRIDES%;%CLASSPATH% %ZEPPELIN_SERVER% "%*"
+"%ZEPPELIN_RUNNER%" %JAVA_OPTS% -cp %CLASSPATH% %ZEPPELIN_SERVER% "%*"

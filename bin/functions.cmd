@@ -21,18 +21,18 @@ exit /b
 
 :ADDEACHJARINDIR
 for %%d in ("%~2\*.jar") do (
-    set ZEPPELIN_CLASSPATH=%%d;!ZEPPELIN_CLASSPATH!
+    set ZEPPELIN_CLASSPATH="%%d";!ZEPPELIN_CLASSPATH!
 )
 exit /b
 
 :ADDEACHJARINDIRRECURSIVE
 for /r "%~2" %%d in (*.jar) do (
-    set ZEPPELIN_CLASSPATH=%%d;!ZEPPELIN_CLASSPATH!
+    set ZEPPELIN_CLASSPATH="%%d";!ZEPPELIN_CLASSPATH!
 )
 exit /b
 
 :ADDJARINDIR
 if exist "%~2" (
-    set ZEPPELIN_CLASSPATH=%~2\*;%ZEPPELIN_CLASSPATH%
+    set ZEPPELIN_CLASSPATH="%~2\*";%ZEPPELIN_CLASSPATH%
 )
 exit /b

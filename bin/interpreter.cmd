@@ -37,15 +37,13 @@ if "%INTERPRETER_DIR%"=="" goto usage
 
 call "%bin%\common.cmd"
 
-set ZEPPELIN_CLASSPATH=%ZEPPELIN_CLASSPATH%;%ZEPPELIN_CONF_DIR%
-
 if exist "%ZEPPELIN_HOME%\zeppelin-interpreter\target\classes" (
-    set ZEPPELIN_CLASSPATH=%ZEPPELIN_CLASSPATH%;%ZEPPELIN_HOME%\zeppelin-interpreter\target\classes
+    set ZEPPELIN_CLASSPATH=%ZEPPELIN_CLASSPATH%;"%ZEPPELIN_HOME%\zeppelin-interpreter\target\classes"
 ) else (
     for %%d in ("%ZEPPELIN_HOME%\lib\zeppelin-interpreter*.jar") do (
         set ZEPPELIN_INTERPRETER_JAR=%%d
     )
-    set ZEPPELIN_CLASSPATH=%ZEPPELIN_CLASSPATH%;!ZEPPELIN_INTERPRETER_JAR!
+    set ZEPPELIN_CLASSPATH=%ZEPPELIN_CLASSPATH%;"!ZEPPELIN_INTERPRETER_JAR!"
 )
 
 call "%bin%\functions.cmd" ADDJARINDIR "%ZEPPELIN_HOME%\zeppelin-interpreter\target\lib"
@@ -55,32 +53,31 @@ set HOSTNAME=%COMPUTERNAME%
 set ZEPPELIN_SERVER=org.apache.zeppelin.interpreter.remote.RemoteInterpreterServer
 
 set ZEPPELIN_LOGFILE=%ZEPPELIN_LOG_DIR%\zeppelin-interpreter-%INTERPRETER_ID%-%ZEPPELIN_IDENT_STRING%-%HOSTNAME%.log
-set JAVA_INTP_OPTS=%JAVA_INTP_OPTS% -Dzeppelin.log.file=%ZEPPELIN_LOGFILE%
 
 if not exist "%ZEPPELIN_LOG_DIR%" (
     echo Log dir doesn't exist, create %ZEPPELIN_LOG_DIR%
-    mkdir %ZEPPELIN_LOG_DIR%
+    mkdir "%ZEPPELIN_LOG_DIR%"
 )
 
 if /I "%INTERPRETER_ID%"=="spark" (
-    if not "%SPARK_HOME%"=="" (
+    if defined SPARK_HOME (
         set SPARK_SUBMIT=%SPARK_HOME%\bin\spark-submit.cmd
         for %%d in ("%ZEPPELIN_HOME%\interpreter\spark\zeppelin-spark*.jar") do (
             set SPARK_APP_JAR=%%d
         )
-        set ZEPPELIN_CLASSPATH=!SPARK_APP_JAR!
+        set ZEPPELIN_CLASSPATH="!SPARK_APP_JAR!"
         
         for %%d in ("%SPARK_HOME%\python\lib\py4j-*-src.zip") do (
             set py4j=%%d
         )
         
-        if "%PYTHONPATH%"=="" (
+        if not defined PYTHONPATH (
             set PYTHONPATH=!py4j!;%SPARK_HOME%\python
         ) else (
             set PYTHONPATH=!py4j!;%SPARK_HOME%\python;%PYTHONPATH%
         )
     ) else (
-        if not "%HADOOP_HOME%"=="" if exist "%HADOOP_HOME%\bin\hadoop.cmd" (
+        if defined HADOOP_HOME if exist "%HADOOP_HOME%\bin\hadoop.cmd" (
             for /f "tokens=*" %%d in ('"%HADOOP_HOME%\bin\hadoop.cmd" classpath') do (
                 set LOCAL_HADOOP_CLASSPATH=%%d
             )
@@ -95,7 +92,7 @@ if /I "%INTERPRETER_ID%"=="spark" (
         
         set PYSPARKPATH=%ZEPPELIN_HOME%\interpreter\spark\pyspark\pyspark.zip;!py4j!
         
-        if "%PYTHONPATH%"=="" (
+        if not defined PYTHONPATH (
             set PYTHONPATH=!PYSPARKPATH!
         ) else (
             set PYTHONPATH=%PYTHONPATH%;!PYSPARKPATH!
@@ -103,34 +100,34 @@ if /I "%INTERPRETER_ID%"=="spark" (
         
         set PYSPARKPATH=
         
-        if not "%HADOOP_HOME%"=="" if "%HADOOP_CONF_DIR%"=="" (
+        if defined HADOOP_HOME if not defined HADOOP_CONF_DIR (
             if exist "%HADOOP_HOME%\etc\hadoop" (
                 set HADOOP_CONF_DIR=%HADOOP_HOME%\etc\hadoop
-            ) else if exist "/etc/hadoop/conf" (
-                set HADOOP_CONF_DIR=/etc/hadoop/conf
             )
         )
         
         if exist "%HADOOP_CONF_DIR%" (
-            set ZEPPELIN_CLASSPATH=%ZEPPELIN_CLASSPATH%;%HADOOP_CONF_DIR%
-        )
-        
-        if "%SPARK_CLASSPATH%"=="" (
-            set SPARK_CLASSPATH=%ZEPPELIN_CLASSPATH%
-        ) else (
-            set SPARK_CLASSPATH=%SPARK_CLASSPATH%;%ZEPPELIN_CLASSPATH%
-        )    
-    )    
+            set ZEPPELIN_CLASSPATH=%ZEPPELIN_CLASSPATH%;"%HADOOP_CONF_DIR%"
+        )        
+    )
 )
 
 call "%bin%\functions.cmd" ADDJARINDIR "%LOCAL_INTERPRETER_REPO%"
 
-set CLASSPATH=%ZEPPELIN_CLASSPATH%
-
-if not "%SPARK_SUBMIT%"=="" (
-    "%SPARK_SUBMIT%" --class %ZEPPELIN_SERVER% --driver-class-path %ZEPPELIN_CLASSPATH_OVERRIDES%;%CLASSPATH% --driver-java-options "%JAVA_INTP_OPTS%" %SPARK_SUBMIT_OPTIONS% %SPARK_APP_JAR% %PORT%
+if not defined ZEPPELIN_CLASSPATH_OVERRIDES (
+    set CLASSPATH=%ZEPPELIN_CLASSPATH%
 ) else (
-    "%ZEPPELIN_RUNNER%" %JAVA_INTP_OPTS% %ZEPPELIN_INTP_MEM% -cp %ZEPPELIN_CLASSPATH_OVERRIDES%;%CLASSPATH% %ZEPPELIN_SERVER% %PORT%
+    set CLASSPATH=%ZEPPELIN_CLASSPATH_OVERRIDES%;%ZEPPELIN_CLASSPATH%
+)
+
+if defined SPARK_SUBMIT (
+    set JAVA_INTP_OPTS=%JAVA_INTP_OPTS% -Dzeppelin.log.file='%ZEPPELIN_LOGFILE%'
+
+    "%SPARK_SUBMIT%" --class %ZEPPELIN_SERVER% --jars %CLASSPATH% --driver-java-options "!JAVA_INTP_OPTS!" %SPARK_SUBMIT_OPTIONS% "%SPARK_APP_JAR%" %PORT%
+) else (
+    set JAVA_INTP_OPTS=%JAVA_INTP_OPTS% -Dzeppelin.log.file="%ZEPPELIN_LOGFILE%"
+
+    "%ZEPPELIN_RUNNER%" !JAVA_INTP_OPTS! %ZEPPELIN_INTP_MEM% -cp %ZEPPELIN_CLASSPATH_OVERRIDES%;%CLASSPATH% %ZEPPELIN_SERVER% %PORT%
 )
 
 exit /b
