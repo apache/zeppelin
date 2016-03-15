@@ -134,7 +134,7 @@ This instruction based on Ubuntu 14.04 LTS but may work with other OS with few c
 1. More security consideration
 
 * Using HTTPS connection with Basic Authentication is highly recommended since basic auth without encryption may expose your important credential information over the network.
-* Using [Shiro Security feature built-into Zeppelin](https://github.com/apache/incubator-zeppelin/pull/53) is recommended if you prefer all-in-one solution for authentication but NGINX may provides ad-hoc solution for re-use authentication served by your system's NGINX server or in case of you need to separate authentication from zeppelin server.
+* Using [Shiro Security feature built-into Zeppelin](https://github.com/apache/incubator-zeppelin/blob/master/SECURITY-README.md) is recommended if you prefer all-in-one solution for authentication but NGINX may provides ad-hoc solution for re-use authentication served by your system's NGINX server or in case of you need to separate authentication from zeppelin server.
 * It is recommended to isolate direct connection to Zeppelin server from public internet or external services to secure your zeppelin instance from unexpected attack or problems caused by public zone.
 
 ### Another option
