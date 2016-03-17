@@ -28,7 +28,6 @@ import org.apache.zeppelin.scheduler.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +51,9 @@ public class SparkRInterpreter extends Interpreter {
           .add("zeppelin.R.cmd",
               SparkInterpreter.getSystemDefault("ZEPPELIN_R_CMD", "zeppelin.R.cmd", "R"),
               "R repl path")
+          .add("zeppelin.R.knitr",
+              SparkInterpreter.getSystemDefault("ZEPPELIN_R_KNITR", "zeppelin.R.knitr", "true"),
+              "whether use knitr or not")
           .add("zeppelin.R.image.width",
               SparkInterpreter.getSystemDefault("ZEPPELIN_R_IMAGE_WIDTH",
                   "zeppelin.R.image.width", "100%"),
@@ -90,15 +92,20 @@ public class SparkRInterpreter extends Interpreter {
 
     int port = SparkRBackend.port();
 
-//    SparkInterpreter sparkInterpreter = getSparkInterpreter();
-//    ZeppelinRContext.setSparkContext(sparkInterpreter.getSparkContext());
-//    ZeppelinRContext.setSqlContext(sparkInterpreter.getSQLContext());
+    SparkInterpreter sparkInterpreter = getSparkInterpreter();
+    ZeppelinRContext.setSparkContext(sparkInterpreter.getSparkContext());
+    ZeppelinRContext.setSqlContext(sparkInterpreter.getSQLContext());
+    ZeppelinRContext.setZepplinContext(sparkInterpreter.getZeppelinContext());
 
     zeppelinR = new ZeppelinR(rCmdPath, sparkRLibPath, port);
     try {
       zeppelinR.open();
     } catch (IOException e) {
       throw new InterpreterException(e);
+    }
+
+    if (useKnitr()) {
+      zeppelinR.eval("library('knitr')");
     }
     renderOptions = getProperty("zeppelin.R.render.options");
   }
@@ -125,26 +132,29 @@ public class SparkRInterpreter extends Interpreter {
       }
     }
 
-    interpreterContext.out.clear();
-    zeppelinR.setInterpreterOutput(interpreterContext.out);
+
 
     try {
-/*
-      zeppelinR.set(".zcmd", "\n```{r " + renderOptions + "}\n" + lines + "\n```");
-      zeppelinR.eval(".zres <- knit2html(text=.zcmd)");
-      String html = zeppelinR.getS0(".zres");
+      // render output with knitr
+      if (useKnitr()) {
+        zeppelinR.setInterpreterOutput(null);
+        zeppelinR.set(".zcmd", "\n```{r " + renderOptions + "}\n" + lines + "\n```");
+        zeppelinR.eval(".zres <- knit2html(text=.zcmd)");
+        String html = zeppelinR.getS0(".zres");
 
-      RDisplay rDisplay = render(html, imageWidth);
+        RDisplay rDisplay = render(html, imageWidth);
 
-      return new InterpreterResult(
-              rDisplay.code(),
-              rDisplay.type(),
-              rDisplay.content()
-      );
-*/
-      zeppelinR.eval(lines);
-
-      return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
+        return new InterpreterResult(
+            rDisplay.code(),
+            rDisplay.type(),
+            rDisplay.content()
+        );
+      } else {
+        // alternatively, stream the output (without knitr)
+        zeppelinR.setInterpreterOutput(interpreterContext.out);
+        zeppelinR.eval(lines);
+        return new InterpreterResult(InterpreterResult.Code.SUCCESS, "");
+      }
     } catch (Exception e) {
       logger.error("Exception while connecting to R", e);
       return new InterpreterResult(InterpreterResult.Code.ERROR, e.getMessage());
@@ -202,6 +212,14 @@ public class SparkRInterpreter extends Interpreter {
       lazy.open();
     }
     return spark;
+  }
+
+  private boolean useKnitr() {
+    try {
+      return Boolean.parseBoolean(getProperty("zeppelin.R.knitr"));
+    } catch (Exception e) {
+      return false;
+    }
   }
 
 }

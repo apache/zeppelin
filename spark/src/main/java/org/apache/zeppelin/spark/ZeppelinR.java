@@ -156,9 +156,12 @@ public class ZeppelinR implements ExecuteResultHandler {
       public void onUpdate(InterpreterOutput out, byte[] output) {
       }
     });
-    //outputStream.setInterpreterOutput(initialOutput);
+    outputStream.setInterpreterOutput(initialOutput);
     executor.execute(cmd, env, this);
     rScriptRunning = true;
+
+    // flush output
+    eval("cat('')");
   }
 
   /**
