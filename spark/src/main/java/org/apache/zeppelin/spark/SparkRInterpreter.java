@@ -44,7 +44,7 @@ public class SparkRInterpreter extends Interpreter {
 
   static {
     Interpreter.register(
-      "R",
+      "r",
       "spark",
       SparkRInterpreter.class.getName(),
       new InterpreterPropertyBuilder()
