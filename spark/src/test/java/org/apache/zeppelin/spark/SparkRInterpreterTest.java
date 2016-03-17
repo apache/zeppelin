@@ -24,6 +24,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.*;
 
+import org.apache.spark.SparkRBackend;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
 import org.apache.zeppelin.interpreter.*;
@@ -43,7 +44,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(SparkRInterpreter.ZeppelinRFactory.class)
 @PowerMockIgnore({"org.apache.spark.*", "org.apache.hadoop.*", "akka.*", "org.w3c.*", "javax.xml.*", "org.xml.*", "scala.*", "org.apache.cxf.*"})
 public class SparkRInterpreterTest {
   private static final Logger LOGGER = LoggerFactory.getLogger(SparkRInterpreterTest.class);
@@ -54,7 +54,6 @@ public class SparkRInterpreterTest {
   private static InterpreterContext context;
   private static InterpreterGroup intpGroup;
   private static SparkInterpreter sparkInterpreter;
-  private static SparkRInterpreter.ZeppelinRFactory zeppelinRFactory;
   private static SparkRInterpreter sparkRInterpreter;
 
   @BeforeClass
@@ -70,19 +69,13 @@ public class SparkRInterpreterTest {
     assertEquals(InterpreterResult.Type.TEXT, ret.type());
   }
 
+
   private static void initInterpreters() {
 
     Properties p = new Properties();
 
     sparkInterpreter = new SparkInterpreter(p);
     intpGroup = new InterpreterGroup();
-
-    zeppelinRFactory = mock(SparkRInterpreter.ZeppelinRFactory.class);
-    doNothing().when(zeppelinRFactory).open(Mockito.anyString(), Mockito.anyString(), any(SparkInterpreter.class));
-    when(zeppelinRFactory.getS0(anyString())).thenReturn(MOCK_RSCALA_RESULT);
-
-    mockStatic(SparkRInterpreter.ZeppelinRFactory.class);
-    when(SparkRInterpreter.ZeppelinRFactory.instance()).thenReturn(zeppelinRFactory);
 
     sparkRInterpreter = new SparkRInterpreter(p);
     sparkRInterpreter.setInterpreterGroup(intpGroup);

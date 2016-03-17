@@ -239,14 +239,6 @@
       <version>${jsoup.version}</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.ddahl</groupId>
-      <artifactId>rscala</artifactId>
-      <version>${rscala.version}</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/lib/rscala/inst/java/rscala_${scala.binary.version}-${rscala.version}.jar</systemPath>
-    </dependency>
-
     <!--TEST-->
     <dependency>
       <groupId>org.scalatest</groupId>
@@ -321,7 +313,6 @@
             <exclude>**/metastore_db/</exclude>
             <exclude>**/README.md</exclude>
             <exclude>**/dependency-reduced-pom.xml</exclude>
-            <exclude>**/lib/rscala/**</exclude>
           </excludes>
         </configuration>
       </plugin>
